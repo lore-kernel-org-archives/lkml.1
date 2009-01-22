@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZAVA3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755552AbZAVAbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbZAVA3z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 19:29:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZAVA3q
+	id S1755552AbZAVAbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 19:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753195AbZAVAbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 19:29:46 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:60980 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753195AbZAVA3p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 19:29:45 -0500
-Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Chandru <chandru@in.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <200901191700.03580.chandru@in.ibm.com>
-References: <200812241325.49404.chandru@in.ibm.com>
-	 <200901161746.36584.chandru@in.ibm.com> <1232128377.27278.69.camel@nimitz>
-	 <200901191700.03580.chandru@in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 21 Jan 2009 16:29:39 -0800
-Message-Id: <1232584180.27278.86.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 21 Jan 2009 19:31:24 -0500
+Received: from smtp.ultrahosting.com ([74.213.174.254]:50780 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753030AbZAVAbY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 19:31:24 -0500
+Date: Wed, 21 Jan 2009 19:13:44 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+In-Reply-To: <20090119061856.GB22584@wotan.suse.de>
+Message-ID: <alpine.DEB.1.10.0901211903540.18367@qirst.com>
+References: <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com> <20090114150900.GC25401@wotan.suse.de> <20090114152207.GD25401@wotan.suse.de> <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com> <20090114155923.GC1616@wotan.suse.de>
+ <Pine.LNX.4.64.0901141219140.26507@quilx.com> <20090115061931.GC17810@wotan.suse.de> <Pine.LNX.4.64.0901151434150.28387@quilx.com> <20090116034356.GM17810@wotan.suse.de> <Pine.LNX.4.64.0901161509160.27283@quilx.com> <20090119061856.GB22584@wotan.suse.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 17:00 +0530, Chandru wrote:
-> --- linux-2.6.29-rc2/arch/powerpc/mm/numa.c.orig	2009-01-19 16:14:49.000000000 +0530
-> +++ linux-2.6.29-rc2/arch/powerpc/mm/numa.c	2009-01-19 16:36:38.000000000 +0530
-> @@ -901,7 +901,8 @@ static void mark_reserved_regions_for_ni
->  		get_node_active_region(start_pfn, &node_ar);
->  		while (start_pfn < end_pfn &&
->  			node_ar.start_pfn < node_ar.end_pfn) {
-> -			unsigned long reserve_size = size;
-> +			unsigned long reserve_size = (size >> PAGE_SHIFT) <<
-> +								PAGE_SHIFT;
->  			/*
->  			 * if reserved region extends past active region
->  			 * then trim size to active region
-> @@ -917,7 +918,8 @@ static void mark_reserved_regions_for_ni
->  				dbg("reserve_bootmem %lx %lx nid=%d\n",
->  					physbase, reserve_size, node_ar.nid);
->  				reserve_bootmem_node(NODE_DATA(node_ar.nid),
-> -						physbase, reserve_size,
-> +						(start_pfn << PAGE_SHIFT),
-> +						reserve_size,
->  						BOOTMEM_DEFAULT);
->  			}
->  			/*
+On Mon, 19 Jan 2009, Nick Piggin wrote:
 
-Chandru, I don't mean to keep ragging on your patches, but I really
-don't think this is right, yet.
+> > > You only go to the allocator when the percpu queue goes empty though, so
+> > > if memory policy changes (eg context switch or something), then subsequent
+> > > allocations will be of the wrong policy.
+> >
+> > The per cpu queue size in SLUB is limited by the queues only containing
+> > objects from the same page. If you have large queues like SLAB/SLQB(?)
+> > then this could be an issue.
+>
+> And it could be a problem in SLUB too. Chances are that several allocations
+> will be wrong after every policy switch. I could describe situations in which
+> SLUB will allocate with the _wrong_ policy literally 100% of the time.
 
-Let's take, for instance, a 1-byte reservation.  With this code, you've
-suddenly turned that into a 0-byte reservation, and that *can't* be
-right.  The same thing happens if you have a reservation that spans two
-pages.  If you unconditionally round it down, then you might miss the
-part that spans a portion of the second page.
+No it cannot because in SLUB objects must come from the same page.
+Multiple objects in a queue will only ever require a single page and not
+multiple like in SLAB.
 
-It needs to be rounded down like you are suggesting here, but only in
-the case where we've gone over the *CURRENT* node's boundary.  This is
-kinda what that "if (end_pfn > node_ar.end_pfn)" check is doing.  But,
-it evidently screws it up if the overlap isn't by an entire page or
-something.
+> > That means large amounts of memory are going to be caught in these queues.
+> > If its per cpu and one cpu does allocation and the other frees then the
+> > first cpu will consume more and more memory from the page allocator
+> > whereas the second will build up huge per cpu lists.
+>
+> Wrong. I said I would allow an option to turn off *periodic trimming*.
+> Or just modify the existing tunables or look at making the trimming
+> more fine grained etc etc. I won't know until I see a workload where it
+> hurts, and I will try to solve it then.
 
-Please also, for pete's sake, use masks (a la PAGE_MASK) or macros if
-you're going to page-align something.  Don't shift down and up like
-that.  
+You are not responding to the issue. If you have queues that contain
+objects from multiple pages then every object pointer in these queues can
+pin a page although this actually is a free object.
 
--- Dave
+> > It seems that on SMP systems SLQB will actually increase the number of
+> > queues since it needs 2 queues per cpu instead of the 1 of SLAB.
+>
+> I don't know what you mean when you say queues, but SLQB has more
+> than 2 queues per CPU. Great. I like them ;)
 
+This gets better and better.
+
+> > SLAB also
+> > has resizable queues.
+>
+> Not significantly because that would require large memory allocations for
+> large queues. And there is no code there to do runtime resizing.
+
+Groan. Please have a look at do_tune_cpucache() in slab.c
