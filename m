@@ -1,87 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZAVAbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbZAVAdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755614AbZAVAbu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 19:31:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755207AbZAVAbc
+	id S1755884AbZAVAdX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 19:33:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753272AbZAVAdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 19:31:32 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:45831 "EHLO
+	Wed, 21 Jan 2009 19:33:14 -0500
+Received: from smtp.ultrahosting.com ([74.213.174.254]:55136 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754940AbZAVAbb (ORCPT
+	with ESMTP id S1753030AbZAVAdN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 19:31:31 -0500
-Date: Wed, 21 Jan 2009 18:58:10 -0500 (EST)
+	Wed, 21 Jan 2009 19:33:13 -0500
+Date: Wed, 21 Jan 2009 19:19:08 -0500 (EST)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@qirst.com
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
-Subject: Re: Mainline kernel OLTP performance update
-In-Reply-To: <1232428583.11429.83.camel@ymzhang>
-Message-ID: <alpine.DEB.1.10.0901211852060.18367@qirst.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>  <200901161503.13730.nickpiggin@yahoo.com.au>  <20090115201210.ca1a9542.akpm@linux-foundation.org>  <200901161746.25205.nickpiggin@yahoo.com.au>  <20090116065546.GJ31013@parisc-linux.org>
-  <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org> <1232428583.11429.83.camel@ymzhang>
+To: Nick Piggin <npiggin@suse.de>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+In-Reply-To: <20090119054730.GA22584@wotan.suse.de>
+Message-ID: <alpine.DEB.1.10.0901211914140.18367@qirst.com>
+References: <20090114114707.GA24673@wotan.suse.de> <84144f020901140544v56b856a4w80756b90f5b59f26@mail.gmail.com> <20090114142200.GB25401@wotan.suse.de> <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com> <20090114150900.GC25401@wotan.suse.de>
+ <Pine.LNX.4.64.0901141158090.26507@quilx.com> <20090115060330.GB17810@wotan.suse.de> <Pine.LNX.4.64.0901151320250.26467@quilx.com> <20090116031940.GL17810@wotan.suse.de> <Pine.LNX.4.64.0901161500080.27283@quilx.com> <20090119054730.GA22584@wotan.suse.de>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-716562517-983847473-1232582290=:18367"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, 19 Jan 2009, Nick Piggin wrote:
 
----716562517-983847473-1232582290=:18367
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+> The thing IMO you forget with all these doomsday scenarios about SGI's peta
+> scale systems is that no matter what you do, you can't avoid the fact that
+> computing is about locality. Even if you totally take the TLB out of the
+> equation, you still have the small detail of other caches. Code that jumps
+> all over that 1024 TB of memory with no locality is going to suck regardless
+> of what the kernel ever does, due to physical limitations of hardware.
 
-On Tue, 20 Jan 2009, Zhang, Yanmin wrote:
+Typically we traverse lists of objects that are in the same slab cache.
 
-> kmem_cache =EF=BB=BFskbuff_head_cache's object size is just 256, so it sh=
-ares the kmem_cache
-> with =EF=BB=BF:0000256. Their order is 1 which means every slab consists =
-of 2 physical pages.
-
-That order can be changed. Try specifying slub_max_order=3D0 on the kernel
-command line to force an order 0 alloc.
-
-The queues of the page allocator are of limited use due to their overhead.
-Order-1 allocations can actually be 5% faster than order-0. order-0 makes
-sense if pages are pushed rapidly to the page allocator and are then
-reissues elsewhere. If there is a linear consumption then the page
-allocator queues are just overhead.
-
-> Page allocator has an array at zone_pcp(zone, cpu)->pcp to keep a page bu=
-ffer for page order 0.
-> But here =EF=BB=BFskbuff_head_cache's order is 1, so UDP-U-4k couldn't be=
-nefit from the page buffer.
-
-That usually does not matter because of partial list avoiding page
-allocator actions.
-
-> SLQB has no such issue, because:
-> 1) SLQB has a percpu freelist. Free objects are put to the list firstly a=
-nd can be picked up
-> later on quickly without lock. A batch parameter to control the free obje=
-ct recollection is mostly
-> 1024.
-> 2) SLQB slab order mostly is 0, so although sometimes it calls alloc_page=
-s/free_pages, it can
-> benefit from =EF=BB=BFzone_pcp(zone, cpu)->pcp page buffer.
+> > Sorry not at all. SLAB and SLQB queue objects from different pages in the
+> > same queue.
 >
-> So SLUB need resolve such issues that one process allocates a batch of ob=
-jects and another process
-> frees them batchly.
+> The last sentence is what I was replying to. Ie. "simplification of
+> numa handling" does not follow from the SLUB implementation of per-page
+> freelists.
 
-SLUB has a percpu freelist but its bounded by the basic allocation unit.
-You can increase that by modifying the allocation order. Writing a 3 or 5
-into the order value in /sys/kernel/slab/xxx/order would do the trick.
----716562517-983847473-1232582290=:18367--
+If all objects are from the same page then you need not check
+the NUMA locality of any object on that queue.
+
+> > As I sad it pins a single page in the per cpu page and uses that in a way
+> > that you call a queue and I call a freelist.
+>
+> And you found you have to increase the size of your pages because you
+> need bigger queues. (must we argue semantics? it is a list of free
+> objects)
+
+Right. That may be the case and its a similar tuning to what SLAB does.
+
+> > SLAB and SLUB can have large quantities of objects in their queues that
+> > each can keep a single page out of circulation if its the last
+> > object in that page. This is per queue thing and you have at least two
+>
+> And if that were a problem, SLQB can easily be runtime tuned to keep no
+> objects in its object lists. But as I said, queueing is good, so why
+> would anybody want to get rid of it?
+
+Queing is sometimes good....
+
+> Again, this doesn't really go anywhere while we disagree on the
+> fundamental goodliness of queueing. This is just describing the
+> implementation.
+
+I am not sure that you understand the fine points of queuing in slub. I am
+not a fundamentalist: Queues are good if used the right way and as you say
+SLUB has "queues" designed in a particular fashion that solves issus that
+we had with SLAB queues.
+
+
