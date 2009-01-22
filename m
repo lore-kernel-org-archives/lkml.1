@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZAVITT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbZAVIUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645AbZAVITT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 03:19:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750802AbZAVITI
+	id S1754972AbZAVIUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 03:20:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751055AbZAVIUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 03:19:08 -0500
-Received: from jenny.ondioline.org ([66.220.1.122]:44387 "EHLO
-	jenny.ondioline.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751055AbZAVITH (ORCPT
+	Thu, 22 Jan 2009 03:20:31 -0500
+Received: from E23SMTP05.au.ibm.com ([202.81.18.174]:47237 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750802AbZAVIUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 03:19:07 -0500
-From: Paul Collins <paul@burly.ondioline.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Badness at kernel/time/timekeeping.c:98 in pmud (timekeeping_suspended)
-References: <87prihcepl.fsf@burly.wgtn.ondioline.org>
-	<200901211713.39630.rjw@sisk.pl>
-Date: Thu, 22 Jan 2009 21:19:04 +1300
-In-Reply-To: <200901211713.39630.rjw@sisk.pl> (Rafael J. Wysocki's message of
-	"Wed, 21 Jan 2009 17:13:39 +0100")
-Message-ID: <87k58nda87.fsf@burly.wgtn.ondioline.org>
-User-Agent: Gnus/5.110011 (No Gnus v0.11) Emacs/23.0.60 (gnu/linux)
+	Thu, 22 Jan 2009 03:20:30 -0500
+From: Chandru <chandru@in.ibm.com>
+Organization: ibm
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Subject: Re: 2.6.28-rc9 panics with crashkernel=256M while booting
+Date: Thu, 22 Jan 2009 13:50:21 +0530
+User-Agent: KMail/1.9.10
+Cc: Paul Mackerras <paulus@samba.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+References: <200812241325.49404.chandru@in.ibm.com> <200901191700.03580.chandru@in.ibm.com> <1232584180.27278.86.camel@nimitz>
+In-Reply-To: <1232584180.27278.86.camel@nimitz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901221350.21601.chandru@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Rafael J. Wysocki" <rjw@sisk.pl> writes:
+On Thursday 22 January 2009 05:59:39 Dave Hansen wrote:
+> Let's take, for instance, a 1-byte reservation.  With this code, you've
+> suddenly turned that into a 0-byte reservation, and that *can't* be
+> right.  The same thing happens if you have a reservation that spans two
+> pages.  If you unconditionally round it down, then you might miss the
+> part that spans a portion of the second page.
+> 
+> It needs to be rounded down like you are suggesting here, but only in
+> the case where we've gone over the *CURRENT* node's boundary.  This is
+> kinda what that "if (end_pfn > node_ar.end_pfn)" check is doing.  But,
+> it evidently screws it up if the overlap isn't by an entire page or
+> something.
 
-> On Wednesday 21 January 2009, Paul Collins wrote:
->> Got a couple of these on a PowerBook running 2.6.29-rc2 either during
->> suspend or resume -- it's hard to tell.  (The suspend message is
->> timestamped in syslog with the time I resumed, so I guess it was
->> buffered along with the subsequent "Badness" messages.)
->
-> Please check if the patch from http://lkml.org/lkml/2009/1/13/144 fixes the
-> problem for you.
+I assumed the condition 'while (start_pfn < end_pfn  && .. )' asks for atleast
+a PAGE_SIZE difference between them and hence went ahead with that patch.
+My guess was a 1-byte , 2-byte or a (PAGE_SIZE -1)-byte reservations may not even
+go into that loop.  However we just need a fix for this problem. So if there is a 
+better fix that you have please post it to lkml. 
 
-It does not fix the problem.
-
--- 
-Paul Collins
-Wellington, New Zealand
-
-Dag vijandelijk luchtschip de huismeester is dood
+Thanks,
+Chandru
