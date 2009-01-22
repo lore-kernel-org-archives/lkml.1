@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZAVKYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZAVK2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757562AbZAVKYY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 05:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZAVKYQ
+	id S1757417AbZAVK2Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 05:28:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbZAVK2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 05:24:16 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:19361 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754659AbZAVKYP (ORCPT
+	Thu, 22 Jan 2009 05:28:00 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:4094 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753934AbZAVK17 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 05:24:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=xees2HLH9d9QjetlrOsD5OpbKiJFlyHwx+JC6/Ct4al2vOY/FJ+xawwulsNWh4oW4T
-         qmN/T9HJThI2rZ1tuiCPeiCvmR687NFintO2dUdjhT4Xb3WSnr1IF/Z4lnSMfFcPNAyq
-         yyCZxc6OjzFqyXi9Ej1BTRBcvvSIoD6tc80uo=
-Message-ID: <4978499E.2040808@gmail.com>
-Date: Thu, 22 Jan 2009 11:25:34 +0100
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Thu, 22 Jan 2009 05:27:59 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=v8M3MmEN11Uxk0uke0U+AxzQpWU4f8woPjZIGrNAaIAR+AaSj2X0tAbggz8dJORTQ
+	MwWYr1TzU2HVV2qnaEvqg==
+Date: Thu, 22 Jan 2009 02:27:19 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Evgeniy Polyakov <zbr@ioremap.net>
+cc: Nikanth Karthikesan <knikanth@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>,
+       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+In-Reply-To: <20090122101424.GA12317@ioremap.net>
+Message-ID: <alpine.DEB.2.00.0901220218120.2851@chino.kir.corp.google.com>
+References: <200901211638.23101.knikanth@suse.de> <200901212054.34929.knikanth@suse.de> <alpine.DEB.2.00.0901211241040.21080@chino.kir.corp.google.com> <200901221042.30957.knikanth@suse.de> <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com>
+ <20090122095026.GA10579@ioremap.net> <alpine.DEB.2.00.0901220156310.1738@chino.kir.corp.google.com> <20090122101424.GA12317@ioremap.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Alexey Starikovskiy <astarikovskiy@suse.de>
-CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       len.brown@intel.com
-Subject: Re: [ACPI] GPE storm detected on FS Amilo Pro
-References: <4977352B.1040303@gmail.com> <49778AAF.5000604@suse.de>
-In-Reply-To: <49778AAF.5000604@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.25.146.37
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alex,
+On Thu, 22 Jan 2009, Evgeniy Polyakov wrote:
 
-Alexey Starikovskiy pisze:
-> Hi Jacek,
+> > In an exclusive cpuset, a task's memory is restricted to a set of mems 
+> > that the administrator has designated.  If it is oom, the kernel must free 
+> > memory on those nodes or the next allocation will again trigger an oom 
+> > (leading to a needlessly killed task that was in a disjoint cpuset).
+> > 
+> > Really.
 > 
-> You did not receive "GPE storm detected" message in earlier kernel only
-> because
-> there was no detection of it. You can check if you have one by enabling
-> "#define DEBUG" at the beginning of the /drivers/acpi/ec.c and looking
-> into dmesg.
+> The whole point of oom-killer is to kill the most appropriate task to
+> free the memory. And while task is selected system-wide and some
+> tunables are added to tweak the behaviour local to some subsystems, this
+> cpuset feature is hardcoded into the selection algorithm.
 
-I know, I was bit confused as I've seen that message before. I've double checked
-and found that it appeared while I was fixing some stuff in 2.6.26 release
-cycle, mea culpa.
+Of course, because the oom killer must be aware that tasks in disjoint 
+cpusets are more likely than not to result in no memory freeing for 
+current's subsequent allocations.
 
-> If there is no storm,
-> you should see ony 2-3 interrupt messages per single transaction. Storm
-> detector fires up at 8 excess interrupts.
+> And when some tunable starts doing own calculation, behaviour of this
+> hardcoded feature changes.
 > 
 
-thanks for your answer, it was exactly what I was looking for.
+Yes, it is possible to elevate oom_adj scores to override the cpuset 
+preference.  That's actually intended since it is now possible for the 
+administrator to specify that, against the belief of the kernel, that 
+killing a task will free memory in these cpuset-constrained ooms.  That's 
+probably because it has either been moved to a different cpuset or its set 
+of allowable nodes is dynamic.
 
-While I was doing that 2.6.26 work I've found that IRQ 19 (sata ahci chip) is
-doing some ugly stuff, I've reported that and stopped in half of my debug as I
-didn't had more time to work on that. There was some ,,nobody cared'' bugs and
-so one, I will return to that problem now and check if it's still present. All
-those IRQ problems were appearing with suspend/resume. Nevertheless it isn't a
-point here.
+> > Then the scope of this new cgroup is restricted to not being used with 
+> > cpusets that could oom.
+> 
+> These are perpendicular tasks - cpusets limit one area of the oom
+> handling, cgroup order - another. Some people needs cpusets, others want
+> cgroups. cpusets are not something exceptional so that only they have to
+> be taken into account when doing system-wide operation like OOM
+> condition handling.
+> 
 
--Jacek
+A cpuset is a cgroup.  If I am using cpusets, this patch fails to 
+adequately allow me to describe my oom preferences for both 
+cpuset-constrained ooms and global unconstrained ooms, which is a major 
+drawback.
+
+I would encourage you to look at the per-cgroup oom notifier patch[*] that 
+defers most of these decisions to userspace.  Given your interest in 
+priority based oom preferences as exhibited by your oom_victim patch, I 
+think you'll find it of interest since it allows you much greater 
+flexibility than you could ever hope for from the kernel's heuristics.
+
+ [*] http://marc.info/?l=linux-mm&m=122575082227252
