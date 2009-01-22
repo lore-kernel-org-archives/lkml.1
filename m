@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756200AbZAVWQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758447AbZAVWRc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756200AbZAVWQl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 17:16:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZAVWQb
+	id S1758447AbZAVWRc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 17:17:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZAVWRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 17:16:31 -0500
-Received: from ns1.suse.de ([195.135.220.2]:42307 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752148AbZAVWQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 17:16:31 -0500
-Date: Thu, 22 Jan 2009 14:15:08 -0800
-From: Greg KH <gregkh@suse.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       David Brown <lkml@davidb.org>, Phil Oester <kernel@linuxace.com>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Christoph Hellwig <hch@infradead.org>, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-Message-ID: <20090122221508.GA30019@suse.de>
-References: <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu> <20090110165033.GA23943@logfs.org> <20090110101235.7ca24c44.akpm@linux-foundation.org> <20090110221528.GA31774@elte.hu> <Pine.LNX.4.64.0901111022590.30201@anakin> <20090111153920.GC7401@elte.hu> <20090111163018.GA9300@suse.de> <20090122215041.GA29369@redhat.com> <4978EBE1.9080403@oracle.com>
+	Thu, 22 Jan 2009 17:17:25 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43146 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752296AbZAVWRY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 17:17:24 -0500
+Date: Thu, 22 Jan 2009 23:17:08 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Frans Pop <elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: HP accelerometer driver: testers wanted
+Message-ID: <20090122221708.GA3430@elf.ucw.cz>
+References: <20090122213139.GD2159@elf.ucw.cz> <200901222301.57681.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4978EBE1.9080403@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <200901222301.57681.elendil@planet.nl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 01:57:53PM -0800, Randy Dunlap wrote:
-> I agree that crap is the right name for lots of it.  For the ones that
-> people & distros care about, someone should step up and do some real
-> work on them.
+On Thu 2009-01-22 23:01:57, Frans Pop wrote:
+> Hi Pavel,
+> 
+> Pavel Machek wrote:
+> > It is in latest -mm. Enable CONFIG_SENSORS_LIS3LV02D,
+> > recompile/reboot. Documentation is in Documentation/hwmon/lis3lv02d
+> > and Documentation/hwmon/hpfall.c is standalone binary that should park
+> > your disk (and light a led) as soon as freefall is detected.
+> 
+> My HP 2510p notebook has the device. By chance I activated the driver with 
+> my last few builds and at least the input device works perfectly with 
+> the -rc2 kernel (tested with jstest and Tux Racer).
+> 
+> What are the differences relative to -rc2? Looks like it adds the freefall 
+> device?
 
-Are people ignoring the fact that there _are_ people stepping up and
-doing real work on these drivers?  Look at all of the cleanup patches
-that went into 2.6.29-rc1 in drivers/staging.  There were hundreds.
+Yes.
 
-And I already have 75+ staging cleanup patches in -next right now.
+> Could you please give some additional info what exactly you want tested, 
+> how to test it, and how safe it is to do the test?
 
-This work is being done right now, is it somehow being missed?
+Run hpfall, and see if LED lights and disk parks if you "drop" a
+computer. (*)
 
-Yeah, compiler warnings are annoying, I totally agree, that is why it is
-very hard to enable the staging tree.  To do so, you really have to want
-to, and I'm eagerly taking any patch sent to me to do this work.
+> I'd be willing to test, but not if to do so I'd have to throw the notebook 
+> out of the window... Or even if there is the slightest risk of somehow 
+> damaging the hard disk.
 
-thanks,
+(*) drop: just move it quickly downwards for 5-10cm. Even walking with
+the computer usually triggers it for me.
 
-greg k-h
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
