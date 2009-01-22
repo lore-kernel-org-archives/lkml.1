@@ -1,68 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbZAVRVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZAVRXI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbZAVRVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 12:21:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbZAVRVb
+	id S1757939AbZAVRXI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 12:23:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZAVRW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 12:21:31 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:22783 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbZAVRVb (ORCPT
+	Thu, 22 Jan 2009 12:22:56 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:47726 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754378AbZAVRWz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 12:21:31 -0500
-Message-ID: <4978AB0C.4080801@oracle.com>
-Date: Thu, 22 Jan 2009 09:21:16 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 22 Jan 2009 12:22:55 -0500
+Date: Thu, 22 Jan 2009 17:22:39 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Daniel Lowengrub <lowdanie@gmail.com>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 2.6.28 1/2] memory: improve find_vma
+In-Reply-To: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0901221658550.14302@blonde.anvils>
+References: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com>
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Greg KH <gregkh@suse.de>
-Subject: Re: linux-next: Tree for January 22 (staging/rtl8187se)
-References: <20090122180543.1ab0baa6.sfr@canb.auug.org.au> <4978A975.60002@oracle.com> <4978AA7F.5070306@oracle.com>
-In-Reply-To: <4978AA7F.5070306@oracle.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4978AB0F.021A:SCFSTAT928724,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> Randy Dunlap wrote:
->> Stephen Rothwell wrote:
->>> Hi all,
->>>
->>> Changes since 20090121:
->>
->> drivers/staging/rtl8187se/r8180_core.c:5973: error: 'struct net_device' has no member named 'wireless_handlers'
->> drivers/staging/rtl8187se/r8180_core.c:5982: error: 'struct net_device' has no member named 'wireless_handlers'
->>
->>
-> 
-> and
-> drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c:845: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-> drivers/staging/rtl8187se/ieee80211/ieee80211_wx.c:852: warning: format '%d' expects type 'int', but argument 2 has type 'size_t'
-> 
+On Thu, 22 Jan 2009, Daniel Lowengrub wrote:
+> The goal of this patch is to improve the efficiency of the find_vma
+> function in mm/mmap.c. The function first checks whether the vma
+> stored in the cache is the one it's looking for. Currently, it's
+> possible for the cache to be correct and still get rejected because
+> the function checks whether the given address is inside the vma in the
+> cache, not whether the cached vma is the smallest one that's bigger
+> than the address.  To solve this problem I turned the list of vma's
+> into a doubly linked list, and using that list made a function that
+> can check if a given vma is the one that find_vma is looking for.
+> This gives a greater number of cache hits than the standerd method.
+> The doubly linked list can be used to optimize other parts of the
+> memory management as well.  I'll implement some of those possibilities
+> in the next patch.
+> Signed-off-by: Daniel Lowengrub <lowdanie@gmail.com>
 
+Do you have some performance figures to support this patch?
+Some of the lmbench tests may be appropriate.
 
-and
-drivers/staging/rtl8187se/r8180_core.c: In function 'rtl8180_shutdown':
-drivers/staging/rtl8187se/r8180_core.c:201: error: 'struct net_device' has no member named 'stop'
-drivers/staging/rtl8187se/r8180_core.c: In function 'rtl8180_init':
-drivers/staging/rtl8187se/r8180_core.c:4584: error: 'struct net_device' has no member named 'get_stats'
-drivers/staging/rtl8187se/r8180_core.c: In function 'rtl8180_pci_probe':
-drivers/staging/rtl8187se/r8180_core.c:5969: error: 'struct net_device' has no member named 'open'
-drivers/staging/rtl8187se/r8180_core.c:5970: error: 'struct net_device' has no member named 'stop'
-drivers/staging/rtl8187se/r8180_core.c:5972: error: 'struct net_device' has no member named 'tx_timeout'
-drivers/staging/rtl8187se/r8180_core.c:5973: error: 'struct net_device' has no member named 'wireless_handlers'
-drivers/staging/rtl8187se/r8180_core.c:5974: error: 'struct net_device' has no member named 'do_ioctl'
-drivers/staging/rtl8187se/r8180_core.c:5975: error: 'struct net_device' has no member named 'set_multicast_list'
-drivers/staging/rtl8187se/r8180_core.c:5976: error: 'struct net_device' has no member named 'set_mac_address'
-drivers/staging/rtl8187se/r8180_core.c:5982: error: 'struct net_device' has no member named 'wireless_handlers'
+The thing is, expanding vm_area_struct to include another pointer
+will have its own cost, which may well outweigh the efficiency
+(in one particular case) which you're adding.  Expanding mm_struct
+for this would be much more palatable, but I don't think that flies.
 
--- 
-~Randy
+And it seems a little greedy to require both an rbtree and a doubly
+linked list for working our way around the vmas.
+
+I suspect that originally your enhancement would only have hit when
+extending the stack: which I guess isn't enough to justify the cost.
+But it could well be that unmapped area handling has grown more
+complex down the years, and you get some hits now from that.
+
+You mention using the doubly linked list to optimize some other parts
+of mm too: I guess those interfaces where we have to pass around prev
+would be simplified, are you thinking of those, or something else?
+
+(I don't think we need unmap_vmas to go backwards!)
+
+Hugh
