@@ -1,90 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbZAVDnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757256AbZAVDxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757216AbZAVDnA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 22:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756418AbZAVDmv
+	id S1757256AbZAVDxW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 22:53:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756447AbZAVDxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 22:42:51 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:59310 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756401AbZAVDmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 22:42:50 -0500
-Message-ID: <4977EB1C.4030405@cn.fujitsu.com>
-Date: Thu, 22 Jan 2009 11:42:20 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] workqueue: don't alloc_percpu for single workqueue
-References: <4976EE0B.5090200@cn.fujitsu.com> <20090121121756.GA11942@redhat.com>
-In-Reply-To: <20090121121756.GA11942@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 21 Jan 2009 22:53:12 -0500
+Received: from e35.co.us.ibm.com ([32.97.110.153]:33096 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756431AbZAVDxL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 22:53:11 -0500
+Subject: [PATCH][RFC] Sanity check sysfs clocksource changes
+From: john stultz <johnstul@us.ibm.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0901220014240.27472@localhost.localdomain>
+References: <20090121145236.04c17ed7.akpm@linux-foundation.org>
+	 <20090121225547.GA16127@elte.hu>
+	 <alpine.LFD.2.00.0901220006170.27472@localhost.localdomain>
+	 <20090121231006.GA9967@elte.hu>
+	 <alpine.LFD.2.00.0901220014240.27472@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 21 Jan 2009 19:53:06 -0800
+Message-Id: <1232596386.6997.39.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov wrote:
-> On 01/21, Lai Jiangshan wrote:
->> allocating memory for every cpu for single workqueue is waste.
-> 
-> Yes, perhaps this makes sense, we can save a bit of per-cpu memory
-> for each single-threaded wq, and the patch looks correct.
-> 
->> -static struct cpu_workqueue_struct *
->> -init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
->> +static void init_cpu_workqueue(struct workqueue_struct *wq,
->> +		struct cpu_workqueue_struct *cwq)
->>  {
->> -	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
->> -
->>  	cwq->wq = wq;
->>  	spin_lock_init(&cwq->lock);
->>  	INIT_LIST_HEAD(&cwq->worklist);
->>  	init_waitqueue_head(&cwq->more_work);
->> -
->> -	return cwq;
->>  }
-> 
-> Do we really need to change the prototype of init_cpu_workqueue()
-> and change then change __create_workqueue_key() accordingly?
-> Afaics, the only change in init_cpu_workqueue() we need is
-> 
-> 	-	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-> 	+	struct cpu_workqueue_struct *cwq = wq_per_cpu(wq, cpu);
-> 
-> no?
+Hey all,
+	Thomas, Andrew and Ingo pointed out that we don't have any safety
+checks in the clocksource sysfs entries to make sure sysadmins don't try
+to change the clocksource to a non high-res timer capable clocksource
+(such as jiffies) when high-res timers (HRT) is enabled. Doing so will
+likely hang a system.
 
-Thanks, it is simpler.
+This patch tries to correct this by filtering non HRT clocksources from
+available_clocksources and not accepting non HRT clocksources with HRT
+is is enabled.
 
-> 
->> @@ -906,6 +907,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
->>  	const struct cpumask *cpu_map = wq_cpu_map(wq);
->>  	int cpu;
->>
->> +	if (is_wq_single_threaded(wq)) {
->> +		cleanup_workqueue_thread(wq->cpu_wq);
->> +		kfree(wq->cpu_wq);
->> +		kfree(wq);
->> +		return;
->> +	}
-> 
-> again, not sure I understand why this change is needed. Afaics we
-> only need to use kfree(wq->cpu_wq) instead of free_percpu() if
-> it is single-threaded.
-> 
+This has been lightly tested, and seems to work, but there may be some
+drawbacks.
 
-I think this change is needed.
-In the single thread case, we don't need
-1) cpu_maps_update_begin(). --> require cpu_add_remove_lock
-2) remove workqueue from the list. (we did not inserted it)
+One issue I realized was that when TSCs disqualified, they are marked as
+not CLOCK_SOURCE_VALID_FOR_HRES. This means on boxes with unsycned TSCs,
+the only available clocksource may be the slower acpi_pm and the user
+will not be able to override it with the TSC as is currently possible.
+(even if that seems ill-advised).
 
-It is indeed that there is no bad result occurred when we do these
-things for single thread. But I think the destroying should not
-do things more than the creating.
+So Thomas, what do you think? Should we just use
+CLOCK_SOURCE_IS_CONTINUOUS flag or is CLOCK_SOURCE_VALID_FOR_HRES really
+what we want?
 
-Thanks, Lai
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+
+diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
+index bd37078..05f67f0 100644
+--- a/include/linux/hrtimer.h
++++ b/include/linux/hrtimer.h
+@@ -305,7 +305,7 @@ static inline int hrtimer_is_hres_active(struct hrtimer *timer)
+ 
+ extern ktime_t ktime_get(void);
+ extern ktime_t ktime_get_real(void);
+-
++extern int hrtimer_hres_active(void);
+ 
+ DECLARE_PER_CPU(struct tick_device, tick_cpu_device);
+ 
+diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+index 2dc30c5..fa4abdc 100644
+--- a/kernel/hrtimer.c
++++ b/kernel/hrtimer.c
+@@ -476,7 +476,7 @@ static inline int hrtimer_is_hres_enabled(void)
+ /*
+  * Is the high resolution mode active ?
+  */
+-static inline int hrtimer_hres_active(void)
++int hrtimer_hres_active(void)
+ {
+ 	return __get_cpu_var(hrtimer_bases).hres_active;
+ }
+@@ -689,7 +689,7 @@ static int hrtimer_switch_to_hres(void)
+ 
+ #else
+ 
+-static inline int hrtimer_hres_active(void) { return 0; }
++int hrtimer_hres_active(void) { return 0; }
+ static inline int hrtimer_is_hres_enabled(void) { return 0; }
+ static inline int hrtimer_switch_to_hres(void) { return 0; }
+ static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index ca89e15..1bb1161 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -30,6 +30,7 @@
+ #include <linux/module.h>
+ #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
+ #include <linux/tick.h>
++#include <linux/hrtimer.h>
+ 
+ /* XXX - Would like a better way for initializing curr_clocksource */
+ extern struct clocksource clocksource_jiffies;
+@@ -436,6 +437,17 @@ static ssize_t sysfs_override_clocksource(struct sys_device *dev,
+ 		}
+ 	}
+ 
++	/* Check to make sure we don't switch to a non-HRT usable
++	 * clocksource if HRT is enabled and running
++	 */
++	if (hrtimer_hres_active() &&
++	    !(ovr->flags & CLOCK_SOURCE_VALID_FOR_HRES)) {
++		printk(KERN_WARNING "%s clocksource is not HRT compatible. "
++			"Cannot switch while in HRT mode\n", ovr->name);
++		ovr = NULL;
++		override_name[0] = 0;
++	}
++
+ 	/* Reselect, when the override name has changed */
+ 	if (ovr != clocksource_override) {
+ 		clocksource_override = ovr;
+@@ -464,7 +476,10 @@ sysfs_show_available_clocksources(struct sys_device *dev,
+ 
+ 	spin_lock_irq(&clocksource_lock);
+ 	list_for_each_entry(src, &clocksource_list, list) {
+-		count += snprintf(buf + count,
++		/* Don't show non-HRES clocksource if HRES is enabled */
++		if (!hrtimer_hres_active() ||
++				(src->flags & CLOCK_SOURCE_VALID_FOR_HRES))
++			count += snprintf(buf + count,
+ 				  max((ssize_t)PAGE_SIZE - count, (ssize_t)0),
+ 				  "%s ", src->name);
+ 	}
 
 
