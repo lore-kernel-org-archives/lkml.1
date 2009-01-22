@@ -1,93 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757417AbZAVK2Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757213AbZAVKiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757417AbZAVK2Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 05:28:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755108AbZAVK2A
+	id S1757213AbZAVKiA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 05:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZAVKht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 05:28:00 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:4094 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753934AbZAVK17 (ORCPT
+	Thu, 22 Jan 2009 05:37:49 -0500
+Received: from ug-out-1314.google.com ([66.249.92.174]:14101 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbZAVKhs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 05:27:59 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=v8M3MmEN11Uxk0uke0U+AxzQpWU4f8woPjZIGrNAaIAR+AaSj2X0tAbggz8dJORTQ
-	MwWYr1TzU2HVV2qnaEvqg==
-Date: Thu, 22 Jan 2009 02:27:19 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: Nikanth Karthikesan <knikanth@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-In-Reply-To: <20090122101424.GA12317@ioremap.net>
-Message-ID: <alpine.DEB.2.00.0901220218120.2851@chino.kir.corp.google.com>
-References: <200901211638.23101.knikanth@suse.de> <200901212054.34929.knikanth@suse.de> <alpine.DEB.2.00.0901211241040.21080@chino.kir.corp.google.com> <200901221042.30957.knikanth@suse.de> <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com>
- <20090122095026.GA10579@ioremap.net> <alpine.DEB.2.00.0901220156310.1738@chino.kir.corp.google.com> <20090122101424.GA12317@ioremap.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 22 Jan 2009 05:37:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=OhrqL1F6ZXcEoaOGPFoOJoUwpCfZAvYn02qyNODh5lKlXSJcgDsUp7iQaGKDbQdE/k
+         5glB5n7rqe1mkWusuR6GM9G4hlINDz0zl5exwd+DRUV/gLX3lJzgJqfdVhGg3hS6Xsa7
+         S8j8sOh249Vom7L8sVEl5ZDK5FAPYFrEBCPyU=
+Date: Thu, 22 Jan 2009 13:43:16 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: [GIT PULL] Finish fs/Kconfig split
+Message-ID: <20090122104316.GA3631@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.25.146.37
-X-GMailtapped: rientjes
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009, Evgeniy Polyakov wrote:
+Linus, please pull from
 
-> > In an exclusive cpuset, a task's memory is restricted to a set of mems 
-> > that the administrator has designated.  If it is oom, the kernel must free 
-> > memory on those nodes or the next allocation will again trigger an oom 
-> > (leading to a needlessly killed task that was in a disjoint cpuset).
-> > 
-> > Really.
-> 
-> The whole point of oom-killer is to kill the most appropriate task to
-> free the memory. And while task is selected system-wide and some
-> tunables are added to tweak the behaviour local to some subsystems, this
-> cpuset feature is hardcoded into the selection algorithm.
+	git://git.kernel.org/pub/scm/linux/kernel/git/adobriyan/misc.git Kconfig
 
-Of course, because the oom killer must be aware that tasks in disjoint 
-cpusets are more likely than not to result in no memory freeing for 
-current's subsequent allocations.
+to get finalization of fs/Kconfig split into individual fs/*/Kconfig files.
+FS maintainers liked the idea overall and patches for ext* et al are already in.
 
-> And when some tunable starts doing own calculation, behaviour of this
-> hardcoded feature changes.
-> 
+I can sit here and carefully minimize reject pain for everyone or you can do
+the right thing.
 
-Yes, it is possible to elevate oom_adj scores to override the cpuset 
-preference.  That's actually intended since it is now possible for the 
-administrator to specify that, against the belief of the kernel, that 
-killing a task will free memory in these cpuset-constrained ooms.  That's 
-probably because it has either been moved to a different cpuset or its set 
-of allowable nodes is dynamic.
+Alexey Dobriyan (36):
+      fs/Kconfig: move reiserfs out
+      fs/Kconfig: move jfs out
+      fs/Kconfig: move ocfs2 out
+      fs/Kconfig: move btrfs out
+      fs/Kconfig: move autofs, autofs4 out
+      fs/Kconfig: move fuse out
+      fs/Kconfig: move iso9660, udf out
+      fs/Kconfig: move fat out
+      fs/Kconfig: move ntfs out
+      fs/Kconfig: move sysfs out
+      fs/Kconfig: move configfs out
+      fs/Kconfig: move adfs out
+      fs/Kconfig: move affs out
+      fs/Kconfig: move ecryptfs out
+      fs/Kconfig: move hfs, hfsplus out
+      fs/Kconfig: move befs out
+      fs/Kconfig: move bfs out
+      fs/Kconfig: move efs out
+      fs/Kconfig: move cramfs out
+      fs/Kconfig: move squashfs out
+      fs/Kconfig: move vxfs out
+      fs/Kconfig: move minix out
+      fs/Kconfig: move omfs out
+      fs/Kconfig: move hpfs out
+      fs/Kconfig: move qnx4 out
+      fs/Kconfig: move romfs out
+      fs/Kconfig: move sysv out
+      fs/Kconfig: move ufs out
+      fs/Kconfig: move nfs out
+      fs/Kconfig: move nfsd out
+      fs/Kconfig: move sunrpc out
+      fs/Kconfig: move smbfs out
+      fs/Kconfig: move the rest of ncpfs out
+      fs/Kconfig: move coda out
+      fs/Kconfig: move afs out
+      fs/Kconfig: move 9p out
 
-> > Then the scope of this new cgroup is restricted to not being used with 
-> > cpusets that could oom.
-> 
-> These are perpendicular tasks - cpusets limit one area of the oom
-> handling, cgroup order - another. Some people needs cpusets, others want
-> cgroups. cpusets are not something exceptional so that only they have to
-> be taken into account when doing system-wide operation like OOM
-> condition handling.
-> 
-
-A cpuset is a cgroup.  If I am using cpusets, this patch fails to 
-adequately allow me to describe my oom preferences for both 
-cpuset-constrained ooms and global unconstrained ooms, which is a major 
-drawback.
-
-I would encourage you to look at the per-cgroup oom notifier patch[*] that 
-defers most of these decisions to userspace.  Given your interest in 
-priority based oom preferences as exhibited by your oom_victim patch, I 
-think you'll find it of interest since it allows you much greater 
-flexibility than you could ever hope for from the kernel's heuristics.
-
- [*] http://marc.info/?l=linux-mm&m=122575082227252
+ fs/9p/Kconfig       |   10 
+ fs/Kconfig          | 1401 +---------------------------------------------------
+ fs/adfs/Kconfig     |   27 +
+ fs/affs/Kconfig     |   21 
+ fs/afs/Kconfig      |   21 
+ fs/autofs/Kconfig   |   21 
+ fs/autofs4/Kconfig  |   20 
+ fs/befs/Kconfig     |   26 
+ fs/bfs/Kconfig      |   19 
+ fs/btrfs/Kconfig    |   18 
+ fs/coda/Kconfig     |   21 
+ fs/configfs/Kconfig |   11 
+ fs/cramfs/Kconfig   |   19 
+ fs/ecryptfs/Kconfig |   11 
+ fs/efs/Kconfig      |   14 
+ fs/fat/Kconfig      |   97 +++
+ fs/freevxfs/Kconfig |   16 
+ fs/fuse/Kconfig     |   15 
+ fs/hfs/Kconfig      |   12 
+ fs/hfsplus/Kconfig  |   13 
+ fs/hpfs/Kconfig     |   14 
+ fs/isofs/Kconfig    |   39 +
+ fs/jfs/Kconfig      |   49 +
+ fs/minix/Kconfig    |   17 
+ fs/ncpfs/Kconfig    |   21 
+ fs/nfs/Kconfig      |   86 +++
+ fs/nfsd/Kconfig     |   80 ++
+ fs/ntfs/Kconfig     |   78 ++
+ fs/ocfs2/Kconfig    |   85 +++
+ fs/omfs/Kconfig     |   13 
+ fs/qnx4/Kconfig     |   25 
+ fs/reiserfs/Kconfig |   85 +++
+ fs/romfs/Kconfig    |   16 
+ fs/smbfs/Kconfig    |   55 ++
+ fs/squashfs/Kconfig |   51 +
+ fs/sysfs/Kconfig    |   23 
+ fs/sysv/Kconfig     |   36 +
+ fs/udf/Kconfig      |   18 
+ fs/ufs/Kconfig      |   43 +
+ net/sunrpc/Kconfig  |   79 ++
+ 40 files changed, 1363 insertions(+), 1363 deletions(-)
