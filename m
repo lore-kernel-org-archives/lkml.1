@@ -1,161 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbZAVEiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZAVEqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757314AbZAVEiG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 23:38:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbZAVEhy
+	id S1757347AbZAVEqi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 23:46:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756555AbZAVEq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 23:37:54 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:48871 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755874AbZAVEhy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 23:37:54 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEACCFd0l5LAUp/2dsb2JhbADJT4Vz
-X-IronPort-AV: E=Sophos;i="4.37,304,1231075800"; 
-   d="scan'208";a="272861008"
-Date: Thu, 22 Jan 2009 15:37:47 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Eric Sesterhenn <snakebyte@gmx.de>, Pavel Machek <pavel@suse.cz>,
-       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       npiggin@yahoo.com.au, xfs@oss.sgi.com
-Subject: [PATCH] Re: Corrupted XFS log replay oops.
-Message-ID: <20090122043747.GU10158@disturbed>
-Mail-Followup-To: Nick Piggin <nickpiggin@yahoo.com.au>,
-	Eric Sesterhenn <snakebyte@gmx.de>, Pavel Machek <pavel@suse.cz>,
-	Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-	npiggin@yahoo.com.au, xfs@oss.sgi.com
-References: <20090113142147.GE16333@alice> <20090120173455.GC21339@alice> <20090121035703.GH10158@disturbed> <200901211503.07308.nickpiggin@yahoo.com.au>
+	Wed, 21 Jan 2009 23:46:29 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:35076 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756519AbZAVEq2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 23:46:28 -0500
+Date: Thu, 22 Jan 2009 04:46:26 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@linux-foundation.org
+cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org
+Subject: [git pull] drm-fixes
+Message-ID: <alpine.DEB.2.00.0901220432480.25266@skynet.skynet.ie>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901211503.07308.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 03:03:06PM +1100, Nick Piggin wrote:
-> On Wednesday 21 January 2009 14:57:03 Dave Chinner wrote:
-> > > [  235.250167] ------------[ cut here ]------------
-> > > [  235.250354] kernel BUG at mm/vmalloc.c:164!
-> > > [  235.250478] invalid opcode: 0000 [#1] PREEMPT DEBUG_PAGEALLOC
-> > > [  235.250869] last sysfs file: /sys/block/ram9/range
-> > > [  235.250998] Modules linked in:
-......
-> > > [  235.251037] Call Trace:
-> > > [  235.251037]  [<c01414cf>] ? trace_hardirqs_on+0xb/0xd
-> > > [  235.251037]  [<c018367c>] ? vm_map_ram+0x36e/0x38a
-> > > [  235.251037]  [<c03b2e1e>] ? _xfs_buf_map_pages+0x42/0x6d
-> > > [  235.251037]  [<c03b3773>] ? xfs_buf_get_noaddr+0xbc/0x11f
-> > > [  235.251037]  [<c03a2406>] ? xlog_get_bp+0x5a/0x5d
-> > > [  235.251037]  [<c03a28fa>] ? xlog_find_verify_log_record+0x26/0x208
-> > > [  235.251037]  [<c03a3521>] ? xlog_find_zeroed+0x1d6/0x214
-> > > [  235.251037]  [<c03a3584>] ? xlog_find_head+0x25/0x358
-> >
-> > .....
-> >
-> > Ok, that's crashing in the new vmap code. It might take a couple
-> > of days before I get a chance to look at this, but I've cc'd Nick Piggin
-> > in case he has a chance to look at it before that. It's probably
-> > an XFS bug, anyway.
-> 
-> Hmm, it is crashing in BUG_ON(addr >= end); where this could happen
-> if XFS asks to map a really huge (or -ve) number of pages and wraps
-> the range, or if vmap subsystem returns an address right near the
-> end of the address range and addr+size wraps (which would be a bug
-> in vmap of course, but I think maybe less likely).
 
-It's a zero length range, not a negative value. A debug XFS would
-have assert failed on it, but it was completely unchecked on
-production builds. The following patch checks the length of blocks
-to build/read/write for being valid. Instead of an oops, we get:
+Hi Linus,
 
-[ 1572.665001] XFS mounting filesystem loop0
-[ 1572.666942] XFS: Invalid block length (0x0) given for buffer
-[ 1572.667141] XFS: Log inconsistent (didn't find previous header)
-[ 1572.667141] XFS: empty log check failed
-[ 1572.667141] XFS: log mount/recovery failed: error 5
-[ 1572.671487] XFS: log mount failed
+Please pull the 'drm-fixes' branch from
+ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-fixes
 
-Cheers,
+This includes a bunch of kms fixes, along one with regression with the 
+freeing of maps from the multi-master changes, along with make drm build 
+on MIPS work.
 
 Dave.
--- 
-Dave Chinner
-david@fromorbit.com
 
-[XFS] Check buffer lengths in log recovery
+ drivers/gpu/drm/drm_agpsupport.c  |    3 ++-
+ drivers/gpu/drm/drm_crtc.c        |   14 +++++++++-----
+ drivers/gpu/drm/drm_drv.c         |    4 ++++
+ drivers/gpu/drm/drm_edid.c        |    2 +-
+ drivers/gpu/drm/drm_stub.c        |    8 ++++++++
+ drivers/gpu/drm/i915/i915_dma.c   |    7 ++++---
+ drivers/gpu/drm/i915/i915_gem.c   |    2 +-
+ drivers/gpu/drm/i915/intel_lvds.c |   13 +++++++++++++
+ include/drm/drm_crtc.h            |    3 ++-
+ 9 files changed, 44 insertions(+), 12 deletions(-)
 
-Before trying to obtain, read or write a buffer,
-check that the buffer length is actually valid. If
-it is not valid, then something read in the recovery
-process has been corrupted and we should abort
-recovery. 
+commit 2906f0258770d3a9c4e65364df8acc904e148bbe
+Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date:   Tue Jan 20 19:10:54 2009 -0800
 
-Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
----
- fs/xfs/xfs_log_recover.c |   31 +++++++++++++++++++++++++------
- 1 files changed, 25 insertions(+), 6 deletions(-)
+    drm/i915: Fix cursor physical address choice to match the 2D driver.
+    
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+    Signed-off-by: Eric Anholt <eric@anholt.net>
 
-diff --git a/fs/xfs/xfs_log_recover.c b/fs/xfs/xfs_log_recover.c
-index 35cca98..b1047de 100644
---- a/fs/xfs/xfs_log_recover.c
-+++ b/fs/xfs/xfs_log_recover.c
-@@ -70,16 +70,21 @@ STATIC void	xlog_recover_check_summary(xlog_t *);
- xfs_buf_t *
- xlog_get_bp(
- 	xlog_t		*log,
--	int		num_bblks)
-+	int		nbblks)
- {
--	ASSERT(num_bblks > 0);
-+	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
-+		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
-+		XFS_ERROR_REPORT("xlog_get_bp(1)",
-+				 XFS_ERRLEVEL_HIGH, log->l_mp);
-+		return NULL;
-+	}
- 
- 	if (log->l_sectbb_log) {
--		if (num_bblks > 1)
--			num_bblks += XLOG_SECTOR_ROUNDUP_BBCOUNT(log, 1);
--		num_bblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, num_bblks);
-+		if (nbblks > 1)
-+			nbblks += XLOG_SECTOR_ROUNDUP_BBCOUNT(log, 1);
-+		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
- 	}
--	return xfs_buf_get_noaddr(BBTOB(num_bblks), log->l_mp->m_logdev_targp);
-+	return xfs_buf_get_noaddr(BBTOB(nbblks), log->l_mp->m_logdev_targp);
- }
- 
- void
-@@ -102,6 +107,13 @@ xlog_bread(
- {
- 	int		error;
- 
-+	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
-+		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
-+		XFS_ERROR_REPORT("xlog_bread(1)",
-+				 XFS_ERRLEVEL_HIGH, log->l_mp);
-+		return EFSCORRUPTED;
-+	}
-+
- 	if (log->l_sectbb_log) {
- 		blk_no = XLOG_SECTOR_ROUNDDOWN_BLKNO(log, blk_no);
- 		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
-@@ -139,6 +151,13 @@ xlog_bwrite(
- {
- 	int		error;
- 
-+	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
-+		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
-+		XFS_ERROR_REPORT("xlog_bwrite(1)",
-+				 XFS_ERRLEVEL_HIGH, log->l_mp);
-+		return EFSCORRUPTED;
-+	}
-+
- 	if (log->l_sectbb_log) {
- 		blk_no = XLOG_SECTOR_ROUNDDOWN_BLKNO(log, blk_no);
- 		nbblks = XLOG_SECTOR_ROUNDUP_BBCOUNT(log, nbblks);
+commit 1bb88edb7a3769992026f34fd648bb459b0469aa
+Author: Eric Anholt <eric@anholt.net>
+Date:   Thu Jan 15 01:16:25 2009 -0800
+
+    drm: stash AGP include under the do-we-have-AGP ifdef
+    
+    This fixes the MIPS with DRM build.
+    
+    Signed-off-by: Eric Anholt <eric@anholt.net>
+    Tested-by: Martin Michlmayr <tbm@cyrius.com>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 4942f8b23b56a3f9a713d4436338710579329ffc
+Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date:   Thu Jan 22 22:23:53 2009 +1000
+
+    drm: don't whine about not reading EDID data
+    
+    Make this message a little quieter, since it's common and not necessarily
+    indicative of a problem.
+    
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 335041ed31d774391d9add49824d05e7d19d93e9
+Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date:   Thu Jan 22 22:22:06 2009 +1000
+
+    drm/i915: hook up LVDS DPMS property
+    
+    The LVDS output supports DPMS calls, but we never hooked up the property code,
+    so set property calls didn't actually do anything.  Implement a set_property
+    callback for the LVDS output so that the right thing happens.
+    
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+commit ed2dd4b0cc1494c27478f4ea8452f68d2037a60c
+Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date:   Thu Jan 22 22:21:16 2009 +1000
+
+    drm/i915: remove unnecessary debug output in KMS init
+    
+    We don't really need to print out the FB BAR...
+    
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit 260883c85611d3a7e27130af9aef15252856e14f
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Thu Jan 22 17:58:49 2009 +1000
+
+    i915: fix freeing path for gem phys objects.
+    
+    This off-by-one was pointed out by Jesse Barnes.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit ad2563c2e42fc67b0976aeb70e9f3faf1c1196e8
+Author: Jesse Barnes <jbarnes@virtuousgeek.org>
+Date:   Mon Jan 19 17:21:45 2009 +1000
+
+    drm: create mode_config idr lock
+    
+    Create a separate mode_config IDR lock for simplicity.  The core DRM
+    config structures (connector, mode, etc. lists) are still protected by
+    the mode_config mutex, but the CRTC IDR (used for the various identifier
+    IDs) is now protected by the mode_config idr_mutex.  Simplifies the
+    locking a bit and removes a warning.
+    
+    All objects are protected by the config mutex, we may in the future,
+    split the object further to have reference counts.
+    
+    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
+
+commit c1ff85d97708550e634fb6fa099c463db90fc40d
+Author: Dave Airlie <airlied@redhat.com>
+Date:   Mon Jan 19 17:17:58 2009 +1000
+
+    drm: fix leak of device mappings since multi-master changes.
+    
+    Device maps now contain a link to the master that created them, so
+    when cleaning up the master, remove any maps that are connected to it.
+    Also delete any remaining maps at driver unload time.
+    
+    Signed-off-by: Dave Airlie <airlied@redhat.com>
