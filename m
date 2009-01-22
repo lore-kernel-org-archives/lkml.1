@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757323AbZAVKVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZAVKYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757323AbZAVKVU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 05:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbZAVKVG
+	id S1757562AbZAVKYY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 05:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755491AbZAVKYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 05:21:06 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:16145 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755089AbZAVKVF (ORCPT
+	Thu, 22 Jan 2009 05:24:16 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:19361 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754659AbZAVKYP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 05:21:05 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=qNKTWs4Gd9NDzMrnWqXH3UI/N/9Qq6Y43mEK/gpkVm/ZQBuP91c/zit7aTjgncmPC
-	ukPorB7s3DbZdANASa2rA==
-Date: Thu, 22 Jan 2009 02:18:04 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Nikanth Karthikesan <knikanth@suse.de>
-cc: Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-In-Reply-To: <200901221540.08108.knikanth@suse.de>
-Message-ID: <alpine.DEB.2.00.0901220214450.2851@chino.kir.corp.google.com>
-References: <200901211638.23101.knikanth@suse.de> <200901221453.14860.knikanth@suse.de> <alpine.DEB.2.00.0901220134200.32502@chino.kir.corp.google.com> <200901221540.08108.knikanth@suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 22 Jan 2009 05:24:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=xees2HLH9d9QjetlrOsD5OpbKiJFlyHwx+JC6/Ct4al2vOY/FJ+xawwulsNWh4oW4T
+         qmN/T9HJThI2rZ1tuiCPeiCvmR687NFintO2dUdjhT4Xb3WSnr1IF/Z4lnSMfFcPNAyq
+         yyCZxc6OjzFqyXi9Ej1BTRBcvvSIoD6tc80uo=
+Message-ID: <4978499E.2040808@gmail.com>
+Date: Thu, 22 Jan 2009 11:25:34 +0100
+From: Jacek Luczak <difrost.kernel@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.28.16.146
-X-GMailtapped: rientjes
+To: Alexey Starikovskiy <astarikovskiy@suse.de>
+CC: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       len.brown@intel.com
+Subject: Re: [ACPI] GPE storm detected on FS Amilo Pro
+References: <4977352B.1040303@gmail.com> <49778AAF.5000604@suse.de>
+In-Reply-To: <49778AAF.5000604@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009, Nikanth Karthikesan wrote:
+Hi Alex,
 
-> I think cpusets preference could be improved, not to depend on badness, with 
-> something similar to what memcg does. With or without adding overhead of 
-> tracking processes that has memory from a node.
+Alexey Starikovskiy pisze:
+> Hi Jacek,
+> 
+> You did not receive "GPE storm detected" message in earlier kernel only
+> because
+> there was no detection of it. You can check if you have one by enabling
+> "#define DEBUG" at the beginning of the /drivers/acpi/ec.c and looking
+> into dmesg.
+
+I know, I was bit confused as I've seen that message before. I've double checked
+and found that it appeared while I was fixing some stuff in 2.6.26 release
+cycle, mea culpa.
+
+> If there is no storm,
+> you should see ony 2-3 interrupt messages per single transaction. Storm
+> detector fires up at 8 excess interrupts.
 > 
 
-We actually used to do that: we excluded all tasks that did not share the 
-same cpuset in select_bad_process().  That exclusion was reimplemented as 
-a preference in badness() since, again, it is quite possible that a large 
-memory-hogging task without a sufficient oom_adj score, as you mentioned, 
-has allocated memory on the cpuset's nodes before being moved to a 
-different cpuset or changing its set of allowable nodes.
+thanks for your answer, it was exactly what I was looking for.
 
-I think you would find the per-cgroup oom notifier patch[*] of interest.  
-It seems to have been dropped after some discussion on improvements, but 
-allows you to defer all of these decisions to userspace.  Would something 
-like that fix your problem?
+While I was doing that 2.6.26 work I've found that IRQ 19 (sata ahci chip) is
+doing some ugly stuff, I've reported that and stopped in half of my debug as I
+didn't had more time to work on that. There was some ,,nobody cared'' bugs and
+so one, I will return to that problem now and check if it's still present. All
+those IRQ problems were appearing with suspend/resume. Nevertheless it isn't a
+point here.
 
- [*] http://marc.info/?l=linux-mm&m=122575082227252
+-Jacek
