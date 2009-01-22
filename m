@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbZAVNhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZAVNhx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757605AbZAVNhR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 08:37:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZAVNhE
+	id S1758025AbZAVNhx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 08:37:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZAVNhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 08:37:04 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.121]:42496 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752689AbZAVNhD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 08:37:03 -0500
-Message-ID: <4978767D.4060700@intertwingly.net>
-Date: Thu, 22 Jan 2009 08:37:01 -0500
-From: Sam Ruby <rubys@intertwingly.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 22 Jan 2009 08:37:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38924 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752767AbZAVNhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 08:37:42 -0500
+Date: Thu, 22 Jan 2009 14:37:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Robert Richter <robert.richter@amd.com>
+Cc: Tony Luck <tony.luck@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] cpumask: modifiy oprofile initialization
+Message-ID: <20090122133729.GB26529@elte.hu>
+References: <20090122131153.GP21604@erda.amd.com> <1232630055-32451-1-git-send-email-robert.richter@amd.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232630055-32451-1-git-send-email-robert.richter@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0027]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hardware summary: http://tinyurl.com/ap79ra
-APIC details: http://intertwingly.net/stories/2009/01/22/
-Note acpidump.err: Wrong checksum for OEMB!
 
-Messages on boot using Intrepid, Jaunty Alpha 3, or Fedora 10:
+* Robert Richter <robert.richter@amd.com> wrote:
 
-[    0.296001] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-[    0.296001] Kernel panic - not syncing: IO-APIC + timer doesn't work! 
-  Boot with apic=debug and send a report.  Then try booting with the 
-'noapic' option.
-[    0.296001]
+> Delta patch to f7df8ed164996cd2c6aca9674388be6ef78d8b37 for
+> tip/cpus4096.
+> 
+> Moved initialization to sync_start()/sync_stop(). No changes needed in
+> buffer_sync.h and oprof.c anymore.
+> 
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Mike Travis <travis@sgi.com>
+> Signed-off-by: Robert Richter <robert.richter@amd.com>
+> ---
+>  drivers/oprofile/buffer_sync.c |   20 ++++++--------------
+>  drivers/oprofile/buffer_sync.h |    4 ----
+>  drivers/oprofile/oprof.c       |    9 +--------
+>  3 files changed, 7 insertions(+), 26 deletions(-)
 
-Able to get past this issue using "noapic", at which point things mostly 
-work, but rsync of large iso images result in corrupt files.  Able to 
-copy those same files using Vista on the same machine, or using Hardy on 
-another machine.  This problem may not be related to the above, but it 
-seems plausible to me that this might be an interrupt issue.
+applied to tip/cpus4096, thanks Robert!
 
-memtest86+ runs clean.
-
-Quite willing to invest time in installing kernels or distributions on 
-fresh hard drives, run tests, obtain debug information, and report back.
-
-More background here: http://intertwingly.net/blog/2009/01/20/noAPIC
-
-Not subscribed, but will actively monitor the web archives for this 
-mailing list for the next several days.
-
-- Sam Ruby
+	Ingo
