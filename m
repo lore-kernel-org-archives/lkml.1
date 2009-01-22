@@ -1,77 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756641AbZAVHRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbZAVHay@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756641AbZAVHRV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 02:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZAVHRK
+	id S1756366AbZAVHay (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 02:30:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbZAVHao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 02:17:10 -0500
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:40022 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753929AbZAVHRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 02:17:08 -0500
-Date: Wed, 21 Jan 2009 23:17:05 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rcu: remove duplicate CONFIG_RCU_CPU_STALL_DETECTOR
-Message-ID: <20090122071705.GC6290@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4977CFFE.2020405@cn.fujitsu.com>
+	Thu, 22 Jan 2009 02:30:44 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:52140 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754672AbZAVHan (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 02:30:43 -0500
+Date: Thu, 22 Jan 2009 18:30:40 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Huang Ying <ying.huang@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: Re: [RFC] per-CPU cryptd thread implementation based on workqueue
+Message-ID: <20090122073040.GA12395@gondor.apana.org.au>
+References: <1232075437.13948.12.camel@yhuang-dev.sh.intel.com> <20090116033105.GB10390@gondor.apana.org.au> <1232591537.6101.3.camel@yhuang-dev.sh.intel.com> <20090122030400.GA10229@gondor.apana.org.au> <1232608558.6101.13.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4977CFFE.2020405@cn.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1232608558.6101.13.camel@yhuang-dev.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 09:46:38AM +0800, Lai Jiangshan wrote:
+On Thu, Jan 22, 2009 at 03:15:58PM +0800, Huang Ying wrote:
 > 
-> Impact: remove the old CONFIG_RCU_CPU_STALL_DETECTOR
-> 
-> tree_rcu introduce CONFIG_RCU_CPU_STALL_DETECTOR again.
-> 
-> These two are the same exactly except:
-> the old one "depends on CLASSIC_RCU"
-> the new one "depends on CLASSIC_RCU || TREE_RCU"
-> 
-> This patch remove the old one.
+> Yes. Except that, now we do not need a spin lock really. I think the
+> spin lock may be useful if we enqueue a request on other CPU's queue to
+> do load balance. And if it is possible that the work_struct to be
+> executed on CPU other original CPU for CPU hotplug (current code do
+> not).
 
-Good eyes!
+Right, but I think load-balancing should be explicitly enabled,
+i.e., we probably don't want to do it by default for AES-NI.
 
-However, Jiri Kosina has already queued this up for the trivial tree:
+The way I see load balancing work is if you had a template that
+sat on top of cryptd pass the requests to the cryptd on a CPU
+it chooses.
 
-	http://lkml.org/lkml/2009/1/15/218
+Then we can enable it for any algorithm in the system simply
+by instantiating that template for it.
 
-						Thanx, Paul
-
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index 4c9ae60..e770e85 100644
-> --- a/lib/Kconfig.debug
-> +++ b/lib/Kconfig.debug
-> @@ -633,19 +633,6 @@ config RCU_TORTURE_TEST_RUNNABLE
-> 
->  config RCU_CPU_STALL_DETECTOR
->  	bool "Check for stalled CPUs delaying RCU grace periods"
-> -	depends on CLASSIC_RCU
-> -	default n
-> -	help
-> -	  This option causes RCU to printk information on which
-> -	  CPUs are delaying the current grace period, but only when
-> -	  the grace period extends for excessive time periods.
-> -
-> -	  Say Y if you want RCU to perform such checks.
-> -
-> -	  Say N if you are unsure.
-> -
-> -config RCU_CPU_STALL_DETECTOR
-> -	bool "Check for stalled CPUs delaying RCU grace periods"
->  	depends on CLASSIC_RCU || TREE_RCU
->  	default n
->  	help
-> 
-> 
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
