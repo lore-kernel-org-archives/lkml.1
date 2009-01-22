@@ -1,114 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZAVPfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZAVPm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbZAVPfa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 10:35:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752761AbZAVPfU
+	id S1755233AbZAVPm6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 10:42:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbZAVPmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 10:35:20 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:41275 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752483AbZAVPfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 10:35:19 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: stable@kernel.org
-Cc: smfrench@gmail.com, linux-cifs-client@lists.samba.org,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [PATCH -stable] cifs: make sure we allocate enough storage for socket address
-Date: Thu, 22 Jan 2009 10:35:13 -0500
-Message-Id: <1232638513-9022-1-git-send-email-jlayton@redhat.com>
+	Thu, 22 Jan 2009 10:42:50 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:43311 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752616AbZAVPmu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 10:42:50 -0500
+Date: Thu, 22 Jan 2009 10:42:48 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>, <akpm@linux-foundation.org>,
+       <mingo@elte.hu>, <richardj_moore@uk.ibm.com>,
+       <naren@linux.vnet.ibm.com>
+Subject: Re: [RFC Patch 0/9] Hardware Breakpoint interfaces - v4
+In-Reply-To: <20090122135640.GA11161@in.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0901221032220.2417-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cifs_mount declares a struct sockaddr on the stack and then casts it
-to the proper address type. The storage allocated is fine for ipv4,
-but is too small for ipv6 addresses. Declare it as
-"struct sockaddr_storage" instead of struct sockaddr".
+On Thu, 22 Jan 2009, K.Prasad wrote:
 
-This bug was manifesting itself as oopses and address corruption when
-mounting IPv6 addresses.
+> Hi All,
+> 	Please find the new set of patches that introduce kernel
+> interfaces to use Hardware Breakpoint registers and an implementation
+> for x86 (and x86_64) architecture, now labelled as Version IV.
+> 
+> The patches are based on 2.6.29-rc2 and have been tested to work fine on
+> x86 architecture. Some of the major changes over the previous version of
+> patches include:
+> i) A sample kernel module that uses Data Hardware breakpoint over a
+> kernel variable to monitor write operations. See
+> samples/hw_breakpoint/data_breakpoint.c.
+> ii) Changes in the register_kernel_hw_breakpoint() interface to accept
+> only one parameter - pointer to a 'hw_breakpoint' structure which will
+> contain all relevant data members.
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Tested-by: Stefan Bader <stefan.bader@canonical.com>
----
- fs/cifs/connect.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+I see some problems with this immediately.  Firstly, as a result of
+this change the sample code in include/asm-generic/hw_breakpoint.h is
+now incorrect.  You need to change the comments when you change the
+code.
 
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index 223647f..f254235 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -1349,7 +1349,7 @@ cifs_parse_mount_options(char *options, const char *devname,
- }
- 
- static struct TCP_Server_Info *
--cifs_find_tcp_session(struct sockaddr *addr)
-+cifs_find_tcp_session(struct sockaddr_storage *addr)
- {
- 	struct list_head *tmp;
- 	struct TCP_Server_Info *server;
-@@ -1369,11 +1369,11 @@ cifs_find_tcp_session(struct sockaddr *addr)
- 		if (server->tcpStatus == CifsNew)
- 			continue;
- 
--		if (addr->sa_family == AF_INET &&
-+		if (addr->ss_family == AF_INET &&
- 		    (addr4->sin_addr.s_addr !=
- 		     server->addr.sockAddr.sin_addr.s_addr))
- 			continue;
--		else if (addr->sa_family == AF_INET6 &&
-+		else if (addr->ss_family == AF_INET6 &&
- 			 memcmp(&server->addr.sockAddr6.sin6_addr,
- 				&addr6->sin6_addr, sizeof(addr6->sin6_addr)))
- 			continue;
-@@ -2027,7 +2027,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 	int rc = 0;
- 	int xid;
- 	struct socket *csocket = NULL;
--	struct sockaddr addr;
-+	struct sockaddr_storage addr;
- 	struct sockaddr_in *sin_server = (struct sockaddr_in *) &addr;
- 	struct sockaddr_in6 *sin_server6 = (struct sockaddr_in6 *) &addr;
- 	struct smb_vol volume_info;
-@@ -2039,7 +2039,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 
- /* cFYI(1, ("Entering cifs_mount. Xid: %d with: %s", xid, mount_data)); */
- 
--	memset(&addr, 0, sizeof(struct sockaddr));
-+	memset(&addr, 0, sizeof(struct sockaddr_storage));
- 	memset(&volume_info, 0, sizeof(struct smb_vol));
- 	if (cifs_parse_mount_options(mount_data, devname, &volume_info)) {
- 		rc = -EINVAL;
-@@ -2069,9 +2069,9 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 			rc = cifs_inet_pton(AF_INET6, volume_info.UNCip,
- 					    &sin_server6->sin6_addr.in6_u);
- 			if (rc > 0)
--				addr.sa_family = AF_INET6;
-+				addr.ss_family = AF_INET6;
- 		} else {
--			addr.sa_family = AF_INET;
-+			addr.ss_family = AF_INET;
- 		}
- 
- 		if (rc <= 0) {
-@@ -2113,7 +2113,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 
- 	srvTcp = cifs_find_tcp_session(&addr);
- 	if (!srvTcp) { /* create socket */
--		if (addr.sa_family == AF_INET6) {
-+		if (addr.ss_family == AF_INET6) {
- 			cFYI(1, ("attempting ipv6 connect"));
- 			/* BB should we allow ipv6 on port 139? */
- 			/* other OS never observed in Wild doing 139 with v6 */
-@@ -2144,7 +2144,7 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 		} else {
- 			srvTcp->noblocksnd = volume_info.noblocksnd;
- 			srvTcp->noautotune = volume_info.noautotune;
--			if (addr.sa_family == AF_INET6)
-+			if (addr.ss_family == AF_INET6)
- 				memcpy(&srvTcp->addr.sockAddr6, sin_server6,
- 					sizeof(struct sockaddr_in6));
- 			else
--- 
-1.5.5.6
+Second, your arch_store_info() routine is broken.  It checks for a
+kernel symbol name even if when a userspace breakpoint is being
+registered.  You should move that check up into validate_settings().
+
+As a related matter, why did you put the "name" field into the
+arch-dependent part?  Clearly it should be arch-independent.
+
+Alan Stern
 
