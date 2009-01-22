@@ -1,122 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZAVIkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756265AbZAVIlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755338AbZAVIkY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 03:40:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbZAVIkK
+	id S1756265AbZAVIlj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 03:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbZAVIlb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 03:40:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53897 "EHLO hera.kernel.org"
+	Thu, 22 Jan 2009 03:41:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51803 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750788AbZAVIkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 03:40:09 -0500
-Message-ID: <497830A0.3070805@kernel.org>
-Date: Thu, 22 Jan 2009 00:38:56 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1750788AbZAVIla (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 03:41:30 -0500
+Date: Thu, 22 Jan 2009 09:41:05 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 1/5] trace: do not disable wake up tracer on output of
+	trace
+Message-ID: <20090122084105.GD7438@elte.hu>
+References: <20090121235306.224764198@goodmis.org> <20090121235805.771064570@goodmis.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: David Miller <davem@davemloft.net>, mpm@selenic.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: sparc64 build breakage...
-References: <20090121.171553.142827920.davem@davemloft.net> <20090121.172451.72573335.davem@davemloft.net> <20090122081101.GA32212@elte.hu>
-In-Reply-To: <20090122081101.GA32212@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090121235805.771064570@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.1
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.1 required=5.9 tests=BAYES_05 autolearn=no SpamAssassin version=3.2.3
+	-1.1 BAYES_05               BODY: Bayesian spam probability is 1 to 5%
+	[score: 0.0430]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * David Miller <davem@davemloft.net> wrote:
-> 
->> From: David Miller <davem@davemloft.net>
->> Date: Wed, 21 Jan 2009 17:15:53 -0800 (PST)
->>
->>> This change:
->>>
->>> commit d7e51e66899f95dabc89b4d4c6674a6e50fa37fc
->>> Author: Yinghai Lu <yinghai@kernel.org>
->>> Date:   Wed Jan 7 15:03:13 2009 -0800
->>>
->>>     sparseirq: make some func to be used with genirq
->>>
->>> breaks the sparc64 build:
->> ..
->>> This should fix it:
->>>
->>> sparc64: Fix build by using kstat_irqs_cpu().
->> And here is a mix for the next failure.
-> 
-> Applied your fixes to tip/irq/sparseirq:
-> 
->  e81838d: sparc64: Fix build by using kstat_irqs_cpu()
->  623d3f0: sparc64: Fix build by including linux/irq.h into time_64.c
-> 
-> thanks David!
-> 
->> But really, either linux/kernel_stat.h provides the 
->> kstat_incr_irqs_this_cpu interface or linux/irq.h does, not both.
-> 
-> Yes, but every time someone tries to clean those dependencies up, it gets 
-> held up by non-genirq architectures:
-> 
->  /*
->   * Please do not include this file in generic code.  There is currently
->   * no requirement for any architecture to implement anything held
->   * within this file.
->   *
->   * Thanks. --rmk
->   */
-> 
-> Meanwhile that particular comment is moot because ARM is genirq - but 
-> there's a handful of other non-genirq architectures so this area of code 
-> continues to be a mess.
-> 
-> I guess we could move all the APIs to kernel_stat.h. Yinghai?
 
-sth like:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index 5d6ad5d..7977d54 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -202,12 +202,6 @@ extern struct irq_desc irq_desc[NR_IRQS];
- extern struct irq_desc *move_irq_desc(struct irq_desc *old_desc, int cpu);
- #endif /* CONFIG_SPARSE_IRQ */
- 
--#define kstat_irqs_this_cpu(DESC) \
--	((DESC)->kstat_irqs[smp_processor_id()])
--#define kstat_incr_irqs_this_cpu(irqno, DESC) \
--	((DESC)->kstat_irqs[smp_processor_id()]++)
--
--
- extern struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu);
- 
- static inline struct irq_desc *
-diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
-index 51d2129..b6d2887 100644
---- a/include/linux/kernel_stat.h
-+++ b/include/linux/kernel_stat.h
-@@ -52,16 +52,19 @@ static inline void kstat_incr_irqs_this_cpu(unsigned int irq,
- {
- 	kstat_this_cpu.irqs[irq]++;
- }
--#endif
--
- 
--#ifndef CONFIG_GENERIC_HARDIRQS
- static inline unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
- {
-        return kstat_cpu(cpu).irqs[irq];
- }
- #else
-+#include <linux/irq.h>
- extern unsigned int kstat_irqs_cpu(unsigned int irq, int cpu);
-+#define kstat_irqs_this_cpu(DESC) \
-+	((DESC)->kstat_irqs[smp_processor_id()])
-+#define kstat_incr_irqs_this_cpu(irqno, DESC) \
-+	((DESC)->kstat_irqs[smp_processor_id()]++)
-+
- #endif
- 
- /*
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> Impact: fix to erased trace output
+> 
+> To try not to have the outputing of a trace interfere with the wakeup 
+> tracer, it would disable tracing while the output was printing. But if a 
+> trace had started when it was disabled, it can show a partial trace. To 
+> try to solve this, on closing of the tracer, it would clear the trace 
+> buffer.
+> 
+> The latency tracers (wakeup and irqsoff) have two buffers. One for 
+> recording and one for holding the max trace that is printed. The 
+> clearing of the trace above should only affect the recording buffer. But 
+> for some reason it would move the erased trace to the print buffer. 
+> Probably due to a race with the closing of the trace and the saving ofhe 
+> max race.
+
+hm, that race needs to be fixed then.
+
+> The above is all pretty useless, and if the user does not want the 
+> printing of the trace to be traced itself, then the user can manual 
+> disable tracing. This patch removes all the code that tries to keep the 
+> output of the tracer from modifying the trace.
+
+printing of the trace should not be traced. I cannot imagine any usage 
+mode where that would be interesting - and i can imagine a ton of cases 
+where users would be confused/distracted by the tracer in essence zapping 
+their measurement by replacing it with some uninteresting 'the tracer 
+itself has wakeup delays' data.
+
+auto-disabling latency tracing while the trace is being output is 
+essential. Measurement should never impact the workload that is being 
+measured.
+
+We should fix that race instead.
+
+	Ingo
