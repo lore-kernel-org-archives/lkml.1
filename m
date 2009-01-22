@@ -1,99 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbZAVIhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755338AbZAVIkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbZAVIhB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 03:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZAVIgq
+	id S1755338AbZAVIkY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 03:40:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750981AbZAVIkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 03:36:46 -0500
-Received: from mga07.intel.com ([143.182.124.22]:47737 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750788AbZAVIgp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 03:36:45 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,305,1231142400"; 
-   d="scan'208";a="102650659"
-Subject: Re: Mainline kernel OLTP performance update
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
-In-Reply-To: <alpine.DEB.1.10.0901211852060.18367@qirst.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <200901161503.13730.nickpiggin@yahoo.com.au>
-	 <20090115201210.ca1a9542.akpm@linux-foundation.org>
-	 <200901161746.25205.nickpiggin@yahoo.com.au>
-	 <20090116065546.GJ31013@parisc-linux.org>
-	 <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>
-	 <1232428583.11429.83.camel@ymzhang>
-	 <alpine.DEB.1.10.0901211852060.18367@qirst.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Thu, 22 Jan 2009 16:36:34 +0800
-Message-Id: <1232613395.11429.122.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Thu, 22 Jan 2009 03:40:10 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53897 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750788AbZAVIkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 03:40:09 -0500
+Message-ID: <497830A0.3070805@kernel.org>
+Date: Thu, 22 Jan 2009 00:38:56 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: David Miller <davem@davemloft.net>, mpm@selenic.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: sparc64 build breakage...
+References: <20090121.171553.142827920.davem@davemloft.net> <20090121.172451.72573335.davem@davemloft.net> <20090122081101.GA32212@elte.hu>
+In-Reply-To: <20090122081101.GA32212@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-21 at 18:58 -0500, Christoph Lameter wrote:
-> On Tue, 20 Jan 2009, Zhang, Yanmin wrote:
+Ingo Molnar wrote:
+> * David Miller <davem@davemloft.net> wrote:
 > 
-> > kmem_cache ﻿skbuff_head_cache's object size is just 256, so it shares the kmem_cache
-> > with ﻿:0000256. Their order is 1 which means every slab consists of 2 physical pages.
+>> From: David Miller <davem@davemloft.net>
+>> Date: Wed, 21 Jan 2009 17:15:53 -0800 (PST)
+>>
+>>> This change:
+>>>
+>>> commit d7e51e66899f95dabc89b4d4c6674a6e50fa37fc
+>>> Author: Yinghai Lu <yinghai@kernel.org>
+>>> Date:   Wed Jan 7 15:03:13 2009 -0800
+>>>
+>>>     sparseirq: make some func to be used with genirq
+>>>
+>>> breaks the sparc64 build:
+>> ..
+>>> This should fix it:
+>>>
+>>> sparc64: Fix build by using kstat_irqs_cpu().
+>> And here is a mix for the next failure.
 > 
-> That order can be changed. Try specifying slub_max_order=0 on the kernel
-> command line to force an order 0 alloc.
-I tried ﻿slub_max_order=0 and there is no improvement on this UDP-U-4k issue.
-Both get_page_from_freelist and __free_pages_ok's cpu time are still very high.
-
-I checked my instrumentation in kernel and found it's caused by large object allocation/free
-whose size is more than PAGE_SIZE. Here its order is 1.
-
-The right free callchain is __kfree_skb => skb_release_all => skb_release_data.
-
-So this case isn't the issue that batch of allocation/free might erase partial page
-functionality.
-
-'#slaninfo -AD' couldn't show statistics of large object allocation/free. Can we add
-such info? That will be more helpful.
-
-In addition, I didn't find such issue wih TCP stream testing.
-
+> Applied your fixes to tip/irq/sparseirq:
 > 
-> The queues of the page allocator are of limited use due to their overhead.
-> Order-1 allocations can actually be 5% faster than order-0. order-0 makes
-> sense if pages are pushed rapidly to the page allocator and are then
-> reissues elsewhere. If there is a linear consumption then the page
-> allocator queues are just overhead.
+>  e81838d: sparc64: Fix build by using kstat_irqs_cpu()
+>  623d3f0: sparc64: Fix build by including linux/irq.h into time_64.c
 > 
-> > Page allocator has an array at zone_pcp(zone, cpu)->pcp to keep a page buffer for page order 0.
-> > But here ﻿skbuff_head_cache's order is 1, so UDP-U-4k couldn't benefit from the page buffer.
+> thanks David!
 > 
-> That usually does not matter because of partial list avoiding page
-> allocator actions.
+>> But really, either linux/kernel_stat.h provides the 
+>> kstat_incr_irqs_this_cpu interface or linux/irq.h does, not both.
+> 
+> Yes, but every time someone tries to clean those dependencies up, it gets 
+> held up by non-genirq architectures:
+> 
+>  /*
+>   * Please do not include this file in generic code.  There is currently
+>   * no requirement for any architecture to implement anything held
+>   * within this file.
+>   *
+>   * Thanks. --rmk
+>   */
+> 
+> Meanwhile that particular comment is moot because ARM is genirq - but 
+> there's a handful of other non-genirq architectures so this area of code 
+> continues to be a mess.
+> 
+> I guess we could move all the APIs to kernel_stat.h. Yinghai?
 
-> 
-> > SLQB has no such issue, because:
-> > 1) SLQB has a percpu freelist. Free objects are put to the list firstly and can be picked up
-> > later on quickly without lock. A batch parameter to control the free object recollection is mostly
-> > 1024.
-> > 2) SLQB slab order mostly is 0, so although sometimes it calls alloc_pages/free_pages, it can
-> > benefit from ﻿zone_pcp(zone, cpu)->pcp page buffer.
-> >
-> > So SLUB need resolve such issues that one process allocates a batch of objects and another process
-> > frees them batchly.
-> 
-> SLUB has a percpu freelist but its bounded by the basic allocation unit.
-> You can increase that by modifying the allocation order. Writing a 3 or 5
-> into the order value in /sys/kernel/slab/xxx/order would do the trick.
+sth like:
 
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 5d6ad5d..7977d54 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -202,12 +202,6 @@ extern struct irq_desc irq_desc[NR_IRQS];
+ extern struct irq_desc *move_irq_desc(struct irq_desc *old_desc, int cpu);
+ #endif /* CONFIG_SPARSE_IRQ */
+ 
+-#define kstat_irqs_this_cpu(DESC) \
+-	((DESC)->kstat_irqs[smp_processor_id()])
+-#define kstat_incr_irqs_this_cpu(irqno, DESC) \
+-	((DESC)->kstat_irqs[smp_processor_id()]++)
+-
+-
+ extern struct irq_desc *irq_to_desc_alloc_cpu(unsigned int irq, int cpu);
+ 
+ static inline struct irq_desc *
+diff --git a/include/linux/kernel_stat.h b/include/linux/kernel_stat.h
+index 51d2129..b6d2887 100644
+--- a/include/linux/kernel_stat.h
++++ b/include/linux/kernel_stat.h
+@@ -52,16 +52,19 @@ static inline void kstat_incr_irqs_this_cpu(unsigned int irq,
+ {
+ 	kstat_this_cpu.irqs[irq]++;
+ }
+-#endif
+-
+ 
+-#ifndef CONFIG_GENERIC_HARDIRQS
+ static inline unsigned int kstat_irqs_cpu(unsigned int irq, int cpu)
+ {
+        return kstat_cpu(cpu).irqs[irq];
+ }
+ #else
++#include <linux/irq.h>
+ extern unsigned int kstat_irqs_cpu(unsigned int irq, int cpu);
++#define kstat_irqs_this_cpu(DESC) \
++	((DESC)->kstat_irqs[smp_processor_id()])
++#define kstat_incr_irqs_this_cpu(irqno, DESC) \
++	((DESC)->kstat_irqs[smp_processor_id()]++)
++
+ #endif
+ 
+ /*
