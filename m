@@ -1,129 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756790AbZAVCm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZAVCwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756790AbZAVCm0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 21:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbZAVCmR
+	id S1756786AbZAVCwW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 21:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbZAVCwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 21:42:17 -0500
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:42471 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755307AbZAVCmQ (ORCPT
+	Wed, 21 Jan 2009 21:52:12 -0500
+Received: from hiauly1.hia.nrc.ca ([132.246.100.193]:2094 "EHLO
+	hiauly1.hia.nrc.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755667AbZAVCwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 21:42:16 -0500
-Date: Thu, 22 Jan 2009 11:37:29 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] cgroup: add CSS ID
-Message-Id: <20090122113729.878e96cf.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090115192522.0130e550.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090115192120.9956911b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090115192522.0130e550.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
+	Wed, 21 Jan 2009 21:52:11 -0500
+Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
+To: hpa@zytor.com (H. Peter Anvin)
+Date: Wed, 21 Jan 2009 21:52:08 -0500 (EST)
+From: "John David Anglin" <dave@hiauly1.hia.nrc.ca>
+Cc: grundler@parisc-linux.org, arnd@arndb.de, davem@davemloft.net,
+       jaswinder@kernel.org, mingo@elte.hu, x86@kernel.org,
+       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
+In-Reply-To: <4977C1D3.2010801@zytor.com> from "H. Peter Anvin" at Jan 21, 2009 04:46:11 pm
+X-Mailer: ELM [version 2.4 PL25]
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090122025209.307E54F30@hiauly1.hia.nrc.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+> CONFIG_* macros are not (or at least should not) be exported to 
+> userspace!  Userspace should not make compile-time decisions based on 
+> kernel configuration -- a runtime property!
 
-Sorry for very late reply.
+Unfortunately, this decision was made years ago...
 
-It looks good in general.
-Just a few comments.
+dave@mx3210:~$ uname -m
+parisc64
+dave@hiauly6:~/gnu/gcc-4.4/gcc$ uname -m
+parisc
 
-> +/**
-> + * css_lookup - lookup css by id
-> + * @ss: cgroup subsys to be looked into.
-> + * @id: the id
-> + *
-> + * Returns pointer to cgroup_subsys_state if there is valid one with id.
-> + * NULL if not. Should be called under rcu_read_lock()
-> + */
-> +struct cgroup_subsys_state *css_lookup(struct cgroup_subsys *ss, int id)
-> +{
-> +	struct css_id *cssid = NULL;
-> +
-> +	BUG_ON(!ss->use_id);
-> +	cssid = idr_find(&ss->idr, id);
-> +
-> +	if (unlikely(!cssid))
-> +		return NULL;
-> +
-> +	return rcu_dereference(cssid->css);
-> +}
-> +
-Just for clarification, is there any user of this function ?
-(I agree it's natulal to define 'lookup' function, though.)
+The only significant difference between the above two machines is that
+mx3210 is running a 64-bit kernel and hiauly6 is running a 32-bit kernel.
+Both are PA 2.0 machines.  Some PA 2.0 machines can only run 64-bit
+kernels.  The workstations can typically run both.
 
-> +/**
-> + * css_get_next - lookup next cgroup under specified hierarchy.
-> + * @ss: pointer to subsystem
-> + * @id: current position of iteration.
-> + * @root: pointer to css. search tree under this.
-> + * @foundid: position of found object.
-> + *
-> + * Search next css under the specified hierarchy of rootid. Calling under
-> + * rcu_read_lock() is necessary. Returns NULL if it reaches the end.
-> + */
-> +struct cgroup_subsys_state *
-> +css_get_next(struct cgroup_subsys *ss, int id,
-> +	     struct cgroup_subsys_state *root, int *foundid)
-> +{
-> +	struct cgroup_subsys_state *ret = NULL;
-> +	struct css_id *tmp;
-> +	int tmpid;
-> +	int rootid = css_id(root);
-> +	int depth = css_depth(root);
-> +
-I think it's safe here, but isn't it better to call css_id/css_depth
-under rcu_read_lock(they call rcu_dereference) ?
+The issue for user space is that 64-bit kernels can support both 32 and
+64-bit applications.  This affects build scripts and make files.  The
+default machine selected by config.guess for parisc64 is hppa64.
+Separate applications provide 32-bit and 64-bit support in binutils, 
+cc and gdb.  hppa64 selects 64-bit support when build these applications.
+So, if you want a 32-bit compiler, you need to explicitly override
+the default chosen by config.guess.
 
-> +	if (!rootid)
-> +		return NULL;
-> +
-> +	BUG_ON(!ss->use_id);
-> +	rcu_read_lock();
-> +	/* fill start point for scan */
-> +	tmpid = id;
-> +	while (1) {
-> +		/*
-> +		 * scan next entry from bitmap(tree), tmpid is updated after
-> +		 * idr_get_next().
-> +		 */
-> +		spin_lock(&ss->id_lock);
-> +		tmp = idr_get_next(&ss->idr, &tmpid);
-> +		spin_unlock(&ss->id_lock);
-> +
-> +		if (!tmp)
-> +			break;
-> +		if (tmp->depth >= depth && tmp->stack[depth] == rootid) {
-Can't be css_is_ancestor used here ?
-I think it would be more easy to understand.
+Historically, this occurred on parisc because the runtime differences
+(on HP-UX) between 32 and 64-bit code are large, making it very difficult
+to combine 32 and 64-bit support without changing a significant number
+of macro defines affecting many targets.  There is still a lot of code
+in gcc which depends on whether a given macro is defined or not.
 
-> +			ret = rcu_dereference(tmp->css);
-> +			if (ret) {
-> +				*foundid = tmpid;
-> +				break;
-> +			}
-> +		}
-> +		/* continue to scan from next id */
-> +		tmpid = tmpid + 1;
-> +	}
-> +
-> +	rcu_read_unlock();
-> +	return ret;
-> +}
-> +
+In theory, it should be possible to use a single application to
+generate 32 and 64-bit code on parisc for linux.  Jeff Law, who did
+the 64-bit gcc implementation for parisc, said it wasn't worth the
+effort to merge the two.  So far, the work to integrate the two
+hasn't been done.
 
+The situation on hpux is even more confusing, but in every case
+config.guess effectively returns the assembler level that the kernel
+was built with (hppa1.0, hppa1.1, hppa2.0n, hppa2.0w or hppa64) when
+doing native builds.  It doesn't provide the processor family, or
+specific hardware model of the build system.
 
-Thanks,
-Daisuke Nishimura.
+In summary, config.guess has always made decisions based on kernel
+configuration as this affects what can be supported in user space.
+I'm sure that there are many other applications that depend on
+kernel configuration in both direct and subtle ways.
+
+Dave
+-- 
+J. David Anglin                                  dave.anglin@nrc-cnrc.gc.ca
+National Research Council of Canada              (613) 990-0752 (FAX: 952-6602)
