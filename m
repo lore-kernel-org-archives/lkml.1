@@ -1,96 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbZAVSb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbZAVTE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757937AbZAVSb0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 13:31:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZAVSbS
+	id S1756941AbZAVTE1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 14:04:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZAVTER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 13:31:18 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:52244 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752602AbZAVSbR (ORCPT
+	Thu, 22 Jan 2009 14:04:17 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38607 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754916AbZAVTEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 13:31:17 -0500
-Date: Thu, 22 Jan 2009 21:31:15 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Pierre Ossman <drzeus-sdhci@drzeus.cx>, Ben Dooks <ben-linux@fluff.org>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Liu Dave <DaveLiu@freescale.com>, Xie Xiaobo <X.Xie@freescale.com>,
-       Konjin Lai <Konjin.Lai@freescale.com>,
-       "Joe D'Abbraccio" <Joe.D'abbraccio@freescale.com>,
-       sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 02/10] sdhci: Add support for bus-specific IO memory
-	accessors
-Message-ID: <20090122183115.GA27961@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090122015649.GA6835@oksana.dev.rtsoft.ru> <20090122020019.GB11492@oksana.dev.rtsoft.ru> <200901221255.49724.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901221255.49724.arnd@arndb.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 22 Jan 2009 14:04:16 -0500
+Date: Thu, 22 Jan 2009 19:04:32 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Risto Suominen <risto.suominen@gmail.com>
+Cc: adaplas@pol.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] vt - fb: hide cursor in graphics mode
+Message-ID: <20090122190432.55696781@lxorguk.ukuu.org.uk>
+In-Reply-To: <46e1c7760901221023r2766a57ey4564d05c05751b6e@mail.gmail.com>
+References: <46e1c7760901221023r2766a57ey4564d05c05751b6e@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 12:55:48PM +0100, Arnd Bergmann wrote:
-> On Thursday 22 January 2009, Anton Vorontsov wrote:
-> > +       /*
-> > +        * These accessors duplicate sdhci_ops, but there are two reasons for
-> > +        * this:
-> > +        * 1. sdhci_ops are const, so the sdhci driver won't able to assign
-> > +        *    default ops;
+On Thu, 22 Jan 2009 20:23:05 +0200
+Risto Suominen <risto.suominen@gmail.com> wrote:
+
+> Xserver Xfbdev (kdrive) uses linux framebuffer in graphics mode. It doesn't
+> need the text mode cursor, it's a bit annoying to have it there sitting in a
+> corner. This patch disables the cursor when switching to graphics mode.
 > 
-> You could assign the pointer to a const default_sdhci_ops structure,
-> which IMHO would be cleaner than copying the function pointers
-> separately.
+> Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
 
-This won't work because ops also specify non-memory accessors ops
-(i.e. enable_dma, set_clock, ...), so we can't just assign
-default_ops ptr.
+NAK. You need to work out what your real problem is I think. When we
+enter graphics mode we hide the cursor automatically and always have done.
 
-> > +        * 2. Using host->X instead of host->ops->X saves us one dereference.
-> > +        *    This can be useful in PIO mode. (Though the benefit of this
-> > +        *    is negligibly small).
-> > +        */
-> 
-> I doubt that this is even measurable.
-
-Yeah, I didn't even bother w/ measuring. ;-)
-
-> If it was, you could still use a copy of that structure, like
-> 
-> struct sdhci_host {
-> 	...
-> 	struct sdhci_ops ops; /* not struct sdhci_ops *ops */
-> 	...
-> };
-> 
-> and do an assignment of the structure, like
-> 
-> static void assign_ops(struct sdhci_host *host, struct sdhci_ops *ops)
-> {
-> 	host->ops = *ops;
-> }
-
-This will work. Pierre, what do you think? That way drivers
-will call this routine instead of "host->ops = driver_ops_ptr".
-
-The other option would be to remove const from the ops. Or implement
-another non-const ops struct (struct sdhci_io_ops?).
-
-In any way, the type-checked variant will be even longer to type:
-
-host->mem_ops->writel(val, host->ioaddr + reg);
-host->ops.writel(val, host->ioaddr + reg);
-host->writel(val, host->ioaddr + reg);
+See set_cursor() and also do_blank_screen(1)
 
 
-Thanks,
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
