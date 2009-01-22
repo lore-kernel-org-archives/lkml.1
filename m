@@ -1,51 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbZAVSZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbZAVSZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758528AbZAVSZi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 13:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZAVSZI
+	id S1758764AbZAVSZx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 13:25:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758140AbZAVSZS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 13:25:08 -0500
-Received: from cantor.suse.de ([195.135.220.2]:35933 "EHLO mx1.suse.de"
+	Thu, 22 Jan 2009 13:25:18 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:43910 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753541AbZAVSZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 13:25:07 -0500
-Date: Thu, 22 Jan 2009 10:23:01 -0800
-From: Greg KH <gregkh@suse.de>
-To: Mike Rapoport <mike@compulab.co.il>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] staging: fix Android binder compilation
-Message-ID: <20090122182300.GB11328@suse.de>
-References: <497817C1.2020200@compulab.co.il>
+	id S1758088AbZAVSZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 13:25:17 -0500
+Date: Thu, 22 Jan 2009 19:22:12 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+Message-ID: <20090122182212.GA603@redhat.com>
+References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere> <20090122172312.GB27250@redhat.com> <c62985530901220947r7cae081bj8660603912769baa@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <497817C1.2020200@compulab.co.il>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530901220947r7cae081bj8660603912769baa@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 08:52:49AM +0200, Mike Rapoport wrote:
-> Building kernel with ARCH=arm and xm_x2xx_defconfig and Android binder driver
-> enabled gives the following error:
-> 
->   CC      drivers/staging/android/binder.o
-> /mnt/sdb1/git/linux-2.6-arm/drivers/staging/android/binder.c: In function
-> 'binder_vma_open':
-> /mnt/sdb1/git/linux-2.6-arm/drivers/staging/android/binder.c:2652: error:
-> request for member 'pgprot' in something not a structure or union
-> /mnt/sdb1/git/linux-2.6-arm/drivers/staging/android/binder.c: In function
-> 'binder_vma_close':
-> /mnt/sdb1/git/linux-2.6-arm/drivers/staging/android/binder.c:2659: error:
-> request for member 'pgprot' in something not a structure or union
-> /mnt/sdb1/git/linux-2.6-arm/drivers/staging/android/binder.c: In function
-> 'binder_mmap':
-> /mnt/sdb1/git/linux-2.6-arm/drivers/staging/android/binder.c:2680: error:
-> request for member 'pgprot' in something not a structure or union
-> 
-> Fix it.
+On 01/22, Frédéric Weisbecker wrote:
+>
+> 2009/1/22 Oleg Nesterov <oleg@redhat.com>:
+> > On 01/22, Frederic Weisbecker wrote:
+> >>
+> >> BUG_ON seems perhaps a bit too much for such case. The system
+> >> will run in an endless loop because of a mistake that will not have
+> >> necessarily a fatal end.
+> >
+> > Confused. Why do you think the system will run in an endless loop?
+> > cwq-thread will exit.
+>
+> Because a BUG_ON panics and then spin for ever. Yeah I shoud have said "panic",
+> sorry... It was just to tell that a BUG_ON is the end...
 
-Thanks, but this is already fixed in the -next tree and will be sent to
-Linus when he returns from linux.conf.au next week or so.
+BUG_ON() only panics when panic_on_oops == T, no?
 
-greg k-h
+But let me repeat, this is minor issue. I agree with WARN().
+
+> >> WARN_ON should be enough (plus the warn that lockdep will raise
+> >> too in this case).
+> >
+> > and if cwq-thread proceeds after WARN_ON() it will be "lost" anyway
+> > because it will sleep forever.
+>
+> You want to say spin forever?
+> Why would it? cwq->lock is unlocked at this time.
+
+No, it will sleep forever, unless I missed something.
+
+Even if ->worklist is empty, ->current_work != NULL, we are ->current_work.
+We insert the barrier work and call wait_for_completion(). But nobody
+can do complete() except us.
+
+> If we keep the usual path:
+>
+> if (cwq->thread == current) {
+> 		run_workqueue(cwq);
+> 		active = 1;
+> 	}
+>
+> it shouldn't hurt.
+
+If we keep this path then we have the different patch ;) In that
+case of course BUG_ON() is overkill.
+
+
+But again, as Peter says, we already have the warning from lockdep.
+
+Oleg.
+
