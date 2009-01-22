@@ -1,85 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZAVJHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755300AbZAVJOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756193AbZAVJHc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:07:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZAVJHO
+	id S1755300AbZAVJOr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZAVJOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:07:14 -0500
-Received: from mxpdbe2.wincor-nixdorf.com ([80.154.98.130]:39799 "EHLO
-	mxpdbe2.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752714AbZAVJHM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:07:12 -0500
-Message-ID: <49783679.8010005@wincor-nixdorf.com>
-Date: Thu, 22 Jan 2009 10:03:53 +0100
-From: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Organization: Wincor Nixdorf International
-User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
+	Thu, 22 Jan 2009 04:14:30 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57424 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753015AbZAVJO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 04:14:29 -0500
+Message-ID: <497838DF.2040605@cn.fujitsu.com>
+Date: Thu, 22 Jan 2009 17:14:07 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Tosoni <jp.tosoni@acksys.fr>
-CC: "'Michael Bramer'" <michael@debsupport.de>,
-       "'Alan Cox'" <alan@lxorguk.ukuu.org.uk>,
-       "'Paulius Zaleckas'" <paulius.zaleckas@teltonika.lt>,
-       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org
-Subject: Re: [PATCH] drivers/serial/8250_pci.c (add support for '8-port RS-232
- MIC-3620 from advantech'
-References: <6E0880DF84464BF2AA0275ABFFCCDAF2@acksys.local>
-In-Reply-To: <6E0880DF84464BF2AA0275ABFFCCDAF2@acksys.local>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigFEEE667096B364B681E561B2"
-X-OriginalArrivalTime: 22 Jan 2009 09:06:51.0275 (UTC) FILETIME=[C35F3DB0:01C97C70]
+To: Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/3] workqueue: don't alloc_percpu for single workqueue
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigFEEE667096B364B681E561B2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+allocating memory for every cpu for single workqueue is waste.
 
-Tosoni wrote:
->> On Wed, Jan 21, 2009 at 12:32:15PM +0000, Alan Cox wrote:
->>>>>>  static struct pci_device_id serial_pci_tbl[] =3D {
->>>>>> +       {       PCI_VENDOR_ID_ADVANTECH,
->> PCI_DEVICE_ID_ADVANTECH_PCI3620,
->>>>>> +               0x3620, PCI_ANY_ID, 0, 0,
->>>> Why not use PCI_VENDOR_ID_ADVANTECH as PCI_SUBVENDOR_ID too?
->>> The Advantech vendor id is not 0x3620. This confused me as
->> well which is
->>> why I asked for an lspci. Advantech has stuck the device id in the
->>> subvendor bits and '1' in the subdevice (so it should be 1 not
->>> PCI_ANY_ID).
->> is this better?
->>
->> +       {       PCI_VENDOR_ID_ADVANTECH,
->> PCI_DEVICE_ID_ADVANTECH_PCI3620,
->> +               PCI_DEVICE_ID_ADVANTECH_PCI3620, 1, 0, 0,
->=20
-> Since the name describes a device id where it should be a (sub)vendor i=
-d,
-> I would suggest that you add a line of comment to explain the case.
-> So that no one will be tempted to change it back to PCI_VENDOR_ID_ADVAN=
-TECH
-> in the future.
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/workqueue.c b/kernel/workqueue.c
+index 2f44583..6c1e31b 100644
+--- a/kernel/workqueue.c
++++ b/kernel/workqueue.c
+@@ -99,7 +99,7 @@ static
+ struct cpu_workqueue_struct *wq_per_cpu(struct workqueue_struct *wq, int cpu)
+ {
+ 	if (unlikely(is_wq_single_threaded(wq)))
+-		cpu = singlethread_cpu;
++		return wq->cpu_wq;
+ 	return per_cpu_ptr(wq->cpu_wq, cpu);
+ }
+ 
+@@ -417,7 +417,7 @@ void flush_workqueue(struct workqueue_struct *wq)
+ 	lock_map_acquire(&wq->lockdep_map);
+ 	lock_map_release(&wq->lockdep_map);
+ 	for_each_cpu_mask_nr(cpu, *cpu_map)
+-		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
++		flush_cpu_workqueue(wq_per_cpu(wq, cpu));
+ }
+ EXPORT_SYMBOL_GPL(flush_workqueue);
+ 
+@@ -548,7 +548,7 @@ static void wait_on_work(struct work_struct *work)
+ 	cpu_map = wq_cpu_map(wq);
+ 
+ 	for_each_cpu_mask_nr(cpu, *cpu_map)
+-		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
++		wait_on_cpu_work(wq_per_cpu(wq, cpu), work);
+ }
+ 
+ static int __cancel_work_timer(struct work_struct *work,
+@@ -755,7 +755,7 @@ int current_is_keventd(void)
+ static struct cpu_workqueue_struct *
+ init_cpu_workqueue(struct workqueue_struct *wq, int cpu)
+ {
+-	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
++	struct cpu_workqueue_struct *cwq = wq_per_cpu(wq, cpu);
+ 
+ 	cwq->wq = wq;
+ 	spin_lock_init(&cwq->lock);
+@@ -816,7 +816,10 @@ struct workqueue_struct *__create_workqueue_key(const char *name,
+ 	if (!wq)
+ 		return NULL;
+ 
+-	wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
++	if (singlethread)
++		wq->cpu_wq = kzalloc(sizeof(*cwq), GFP_KERNEL);
++	else
++		wq->cpu_wq = alloc_percpu(struct cpu_workqueue_struct);
+ 	if (!wq->cpu_wq) {
+ 		kfree(wq);
+ 		return NULL;
+@@ -906,6 +910,13 @@ void destroy_workqueue(struct workqueue_struct *wq)
+ 	const struct cpumask *cpu_map = wq_cpu_map(wq);
+ 	int cpu;
+ 
++	if (is_wq_single_threaded(wq)) {
++		cleanup_workqueue_thread(wq->cpu_wq);
++		kfree(wq->cpu_wq);
++		kfree(wq);
++		return;
++	}
++
+ 	cpu_maps_update_begin();
+ 	spin_lock(&workqueue_lock);
+ 	list_del(&wq->list);
 
-Definitely!
-
-Niels
-
-
---------------enigFEEE667096B364B681E561B2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFJeDZ55KAkGQPO/QoRAhWlAKDfr/kTM19Nf5amrlEVFpaadxB50QCeMehC
-6XE0CeYNWP2iAam1+/dYRSA=
-=lf7o
------END PGP SIGNATURE-----
-
---------------enigFEEE667096B364B681E561B2--
