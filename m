@@ -1,83 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758764AbZAVSZx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbZAVSb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758764AbZAVSZx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 13:25:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758140AbZAVSZS
+	id S1757937AbZAVSb0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 13:31:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZAVSbS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 13:25:18 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43910 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758088AbZAVSZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 13:25:17 -0500
-Date: Thu, 22 Jan 2009 19:22:12 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
-Message-ID: <20090122182212.GA603@redhat.com>
-References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere> <20090122172312.GB27250@redhat.com> <c62985530901220947r7cae081bj8660603912769baa@mail.gmail.com>
+	Thu, 22 Jan 2009 13:31:18 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:52244 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752602AbZAVSbR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 13:31:17 -0500
+Date: Thu, 22 Jan 2009 21:31:15 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Pierre Ossman <drzeus-sdhci@drzeus.cx>, Ben Dooks <ben-linux@fluff.org>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Liu Dave <DaveLiu@freescale.com>, Xie Xiaobo <X.Xie@freescale.com>,
+       Konjin Lai <Konjin.Lai@freescale.com>,
+       "Joe D'Abbraccio" <Joe.D'abbraccio@freescale.com>,
+       sdhci-devel@list.drzeus.cx, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 02/10] sdhci: Add support for bus-specific IO memory
+	accessors
+Message-ID: <20090122183115.GA27961@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090122015649.GA6835@oksana.dev.rtsoft.ru> <20090122020019.GB11492@oksana.dev.rtsoft.ru> <200901221255.49724.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530901220947r7cae081bj8660603912769baa@mail.gmail.com>
+In-Reply-To: <200901221255.49724.arnd@arndb.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/22, Fr�d�ric Weisbecker wrote:
->
-> 2009/1/22 Oleg Nesterov <oleg@redhat.com>:
-> > On 01/22, Frederic Weisbecker wrote:
-> >>
-> >> BUG_ON seems perhaps a bit too much for such case. The system
-> >> will run in an endless loop because of a mistake that will not have
-> >> necessarily a fatal end.
-> >
-> > Confused. Why do you think the system will run in an endless loop?
-> > cwq-thread will exit.
->
-> Because a BUG_ON panics and then spin for ever. Yeah I shoud have said "panic",
-> sorry... It was just to tell that a BUG_ON is the end...
+On Thu, Jan 22, 2009 at 12:55:48PM +0100, Arnd Bergmann wrote:
+> On Thursday 22 January 2009, Anton Vorontsov wrote:
+> > +       /*
+> > +        * These accessors duplicate sdhci_ops, but there are two reasons for
+> > +        * this:
+> > +        * 1. sdhci_ops are const, so the sdhci driver won't able to assign
+> > +        *    default ops;
+> 
+> You could assign the pointer to a const default_sdhci_ops structure,
+> which IMHO would be cleaner than copying the function pointers
+> separately.
 
-BUG_ON() only panics when panic_on_oops == T, no?
+This won't work because ops also specify non-memory accessors ops
+(i.e. enable_dma, set_clock, ...), so we can't just assign
+default_ops ptr.
 
-But let me repeat, this is minor issue. I agree with WARN().
+> > +        * 2. Using host->X instead of host->ops->X saves us one dereference.
+> > +        *    This can be useful in PIO mode. (Though the benefit of this
+> > +        *    is negligibly small).
+> > +        */
+> 
+> I doubt that this is even measurable.
 
-> >> WARN_ON should be enough (plus the warn that lockdep will raise
-> >> too in this case).
-> >
-> > and if cwq-thread proceeds after WARN_ON() it will be "lost" anyway
-> > because it will sleep forever.
->
-> You want to say spin forever?
-> Why would it? cwq->lock is unlocked at this time.
+Yeah, I didn't even bother w/ measuring. ;-)
 
-No, it will sleep forever, unless I missed something.
+> If it was, you could still use a copy of that structure, like
+> 
+> struct sdhci_host {
+> 	...
+> 	struct sdhci_ops ops; /* not struct sdhci_ops *ops */
+> 	...
+> };
+> 
+> and do an assignment of the structure, like
+> 
+> static void assign_ops(struct sdhci_host *host, struct sdhci_ops *ops)
+> {
+> 	host->ops = *ops;
+> }
 
-Even if ->worklist is empty, ->current_work != NULL, we are ->current_work.
-We insert the barrier work and call wait_for_completion(). But nobody
-can do complete() except us.
+This will work. Pierre, what do you think? That way drivers
+will call this routine instead of "host->ops = driver_ops_ptr".
 
-> If we keep the usual path:
->
-> if (cwq->thread == current) {
-> 		run_workqueue(cwq);
-> 		active = 1;
-> 	}
->
-> it shouldn't hurt.
+The other option would be to remove const from the ops. Or implement
+another non-const ops struct (struct sdhci_io_ops?).
 
-If we keep this path then we have the different patch ;) In that
-case of course BUG_ON() is overkill.
+In any way, the type-checked variant will be even longer to type:
+
+host->mem_ops->writel(val, host->ioaddr + reg);
+host->ops.writel(val, host->ioaddr + reg);
+host->writel(val, host->ioaddr + reg);
 
 
-But again, as Peter says, we already have the warning from lockdep.
+Thanks,
 
-Oleg.
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
