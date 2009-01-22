@@ -1,154 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757340AbZAVGN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757737AbZAVGOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757340AbZAVGN2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 01:13:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755285AbZAVGNT
+	id S1757737AbZAVGOk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 01:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754609AbZAVGOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 01:13:19 -0500
-Received: from ey-out-2122.google.com ([74.125.78.27]:40899 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754766AbZAVGNR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 01:13:17 -0500
+	Thu, 22 Jan 2009 01:14:30 -0500
+Received: from ns.suse.de ([195.135.220.2]:42917 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753929AbZAVGO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 01:14:29 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Date: Thu, 22 Jan 2009 11:41:56 +0530
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Evgeniy Polyakov <zbr@ioremap.net>, Chris Snook <csnook@redhat.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
+References: <200901211638.23101.knikanth@suse.de> <200901221043.13684.knikanth@suse.de> <20090122142721.34068fdf.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090122142721.34068fdf.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <2f11576a0901160518g52a3e70endc98fe4792a98b9b@mail.gmail.com>
-References: <20090114010223.GA21380@kroah.com>
-	 <20090114104307.GA20451@elf.ucw.cz>
-	 <20090114104834.18387fca@lxorguk.ukuu.org.uk>
-	 <d6200be20901141426r1d48ea33gc9a380451e4aaf93@mail.gmail.com>
-	 <20090114231739.GB24111@kroah.com>
-	 <d6200be20901141532y6f236104kd521041d640c152e@mail.gmail.com>
-	 <20090115001224.GC11328@kroah.com>
-	 <5d5443650901150532r20a4c25q834afadde2f98a3@mail.gmail.com>
-	 <2f11576a0901160342x291267cn11b33d65ec9239b4@mail.gmail.com>
-	 <2f11576a0901160518g52a3e70endc98fe4792a98b9b@mail.gmail.com>
-Date: Wed, 21 Jan 2009 22:13:14 -0800
-Message-ID: <d6200be20901212213x1069762cpd377d04bc5a04a91@mail.gmail.com>
-Subject: Re: lowmemory android driver not needed?
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Greg KH <greg@kroah.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Pavel Machek <pavel@suse.cz>, Brian Swetland <swetland@google.com>,
-       arve@google.com, San Mehat <san@android.com>,
-       Robert Love <rlove@google.com>, linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>,
-       =?ISO-8859-1?Q?ext_Juha_Yrj=F6l=E4?= <juha.yrjola@solidboot.com>,
-       viktor.rosendahl@nokia.com, Trilok Soni <soni.trilok@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901221141.57374.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 5:18 AM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
-> also quick review to lowmemorykiller.c
-
->> static struct shrinker lowmem_shrinker = {
->>         .shrink = lowmem_shrink,
->>         .seeks = DEFAULT_SEEKS * 16
->> };
+On Thursday 22 January 2009 10:57:21 KAMEZAWA Hiroyuki wrote:
+> On Thu, 22 Jan 2009 10:43:12 +0530
 >
-> why do you choice *16?
+> Nikanth Karthikesan <knikanth@suse.de> wrote:
+> > On Thursday 22 January 2009 08:58:43 KAMEZAWA Hiroyuki wrote:
+> > > On Wed, 21 Jan 2009 16:38:21 +0530
+> > >
+> > > Nikanth Karthikesan <knikanth@suse.de> wrote:
+> > > > As Alan Cox suggested/wondered in this thread,
+> > > > http://lkml.org/lkml/2009/1/12/235 , this is a container group based
+> > > > approach to override the oom killer selection without losing all the
+> > > > benefits of the current oom killer heuristics and oom_adj interface.
+> > > >
+> > > > It adds a tunable oom.victim to the oom cgroup. The oom killer will
+> > > > kill the process using the usual badness value but only within the
+> > > > cgroup with the maximum value for oom.victim before killing any
+> > > > process from a cgroup with a lesser oom.victim number. Oom killing
+> > > > could be disabled by setting oom.victim=0.
+> > > >
+> > > > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> > >
+> > > Assume following
+> > >   - the usar can tell "which process should be killed at first"
+> > >
+> > > What is the difference between oom_adj and this cgroup to users ?
+> >
+> > It is next to impossible to specify the order among say 10 memory hogging
+> > tasks using oom_adj. Using this oom-controller users can specify the
+> > exact order.
+> >
+> > > If oom_adj is hard to use, making it simpler is a good way, I think.
+> > > rather than adding new complication.
+> > >
+> > > It seems both of oom_adj and this cgroup will be hard-to-use functions
+> > > for usual system administrators. But no better idea than using memcg
+> > > and committing memory usage.
+> >
+> > To use oom_adj effectively one should continuously monitor oom_score of
+> > all the processes, which is a complex moving target and keep on adjusting
+> > the oom_adj of many tasks which still cannot guarantee the order. This
+> > controller is deterministic and hence easier to use.
 >
-
-To indicate that it is more expensive to restart a killed process than
-a regular cache page.
-
+> Okay, thank you for explanation :)
+> I think it's better to explain "why this is much easier to use rather
+> than oom_adj and what is the benefit to users." in your patch description
+> and to improve your documentation.
 >
->> static uint32_t lowmem_debug_level = 2;
->> static int lowmem_adj[6] = {
+> +But it is very difficult to suggest an order among tasks to be killed
+> during +Out Of Memory situation. The OOM Killer controller aids in doing
+> that.
 >
-> why do you choice [6]?
-
-We use six levels.
-
-
->> static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
->> {
->>         struct task_struct *p;
->>         struct task_struct *selected = NULL;
->>         int rem = 0;
->>         int tasksize;
->>         int i;
->>         int min_adj = OOM_ADJUST_MAX + 1;
->>         int selected_tasksize = 0;
->>         int array_size = ARRAY_SIZE(lowmem_adj);
->>         int other_free = global_page_state(NR_FREE_PAGES) + global_page_state(NR_FILE_PAGES);
+> As.
+>  Difference from oom_adj:
+>  This allows users to specify "strict order" of oom-kill's
+> select-bad-process operation. While oom_adj just works as a hint for the
+> kernel, OOM Killer Controller gives users full control.
 >
-> I think you don't consider mlocked page (and/or other unevictable page).
-> if much mlocked file page exist, other_free can become large value.
-> then, this routine don't kill any process.
->
-
-Yes, this is a problem we have seen, but I did not find counter for
-pinned cache pages. I may be able to use NR_UNEVICTABLE if
-CONFIG_UNEVICTABLE_LRU is enabled now though.
-
-Another problem we run into is that allocations of contiguous pages
-can cause kswapd to empty all the caches. This will not trigger this
-lowmemorykiller or the regular oom killer.
-
->>         read_lock(&tasklist_lock);
->>         for_each_process(p) {
->
-> Oops. too long locking.
-> shrink_slab() is freqentlly called function. I don't like costly operation.
->
->>                 if(p->oomkilladj >= 0 && p->mm) {
->>                         tasksize = get_mm_rss(p->mm);
->>                         if(nr_to_scan > 0 && tasksize > 0 && p->oomkilladj >= min_adj) {
->>                                 if(selected == NULL ||
->>                                    p->oomkilladj > selected->oomkilladj ||
->>                                    (p->oomkilladj == selected->oomkilladj &&
->>                                     tasksize > selected_tasksize)) {
->>                                         selected = p;
->>                                         selected_tasksize = tasksize;
->>                                         lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
->>                                                      p->pid, p->comm, p->oomkilladj, tasksize);
->>                                 }
->>                         }
->>                         rem += tasksize;
->
-> this code mean,
-> shrinker->shrink(0, gfp_mask) indicate to recalculate total rss every time.
-> it is too CPU and battery wasting.
+>  In general, it's very hard to specify oom-kill order of several
+> applications only by oom_adj because it's just affects "badness"
+> calculation.
 >
 
-How about this:
-----
-diff --git a/drivers/misc/lowmemorykiller.c b/drivers/misc/lowmemorykiller.c
-index 3715d56..3f4e41a 100644
---- a/drivers/misc/lowmemorykiller.c
-+++ b/drivers/misc/lowmemorykiller.c
-@@ -71,6 +71,12 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
-        }
-        if(nr_to_scan > 0)
-                lowmem_print(3, "lowmem_shrink %d, %x, ofree %d, ma
-%d\n", nr_to_scan, gfp_mask, other_free, min_adj);
-+       rem = global_page_state(NR_ACTIVE_ANON) +
-global_page_state(NR_ACTIVE_FILE);
-+       if (!nr_to_scan || min_adj == OOM_ADJUST_MAX + 1) {
-+               lowmem_print(5, "lowmem_shrink %d, %x, return %d\n",
-nr_to_scan, gfp_mask, rem);
-+               return rem;
-+       }
-+
-        read_lock(&tasklist_lock);
-        for_each_process(p) {
-                if(p->oomkilladj >= 0 && p->mm) {
-@@ -86,7 +92,6 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
-                                                     p->pid, p->comm,
-p->oomkilladj, tasksize);
-                                }
-                        }
--                       rem += tasksize;
-                }
-        }
-        if(selected != NULL) {
-----
+Yes, this could be added to the patch description or the documentation.
 
-
--- 
-Arve Hjønnevåg
+Thanks
+Nikanth
