@@ -1,81 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZAVJdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbZAVJd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbZAVJdX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 04:33:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZAVJdO
+	id S1757581AbZAVJd6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 04:33:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZAVJdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 04:33:14 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:46460 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753644AbZAVJdN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 04:33:13 -0500
-Subject: Re: [patch] SLQB slab allocator
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <1232616638.11429.131.camel@ymzhang>
-References: <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com>
-	 <20090114150900.GC25401@wotan.suse.de>
-	 <20090114152207.GD25401@wotan.suse.de>
-	 <84144f020901140730l747b4e06j41fb8a35daeaf6c8@mail.gmail.com>
-	 <20090114155923.GC1616@wotan.suse.de>
-	 <Pine.LNX.4.64.0901141219140.26507@quilx.com>
-	 <20090115061931.GC17810@wotan.suse.de>
-	 <Pine.LNX.4.64.0901151434150.28387@quilx.com>
-	 <20090116034356.GM17810@wotan.suse.de>
-	 <Pine.LNX.4.64.0901161509160.27283@quilx.com>
-	 <20090119061856.GB22584@wotan.suse.de>
-	 <alpine.DEB.1.10.0901211903540.18367@qirst.com>
-	 <1232616430.14549.11.camel@penberg-laptop>
-	 <1232616638.11429.131.camel@ymzhang>
-Date: Thu, 22 Jan 2009 11:33:12 +0200
-Message-Id: <1232616792.14549.19.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 22 Jan 2009 04:33:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48894 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754073AbZAVJds (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 04:33:48 -0500
+Date: Thu, 22 Jan 2009 10:33:42 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/function-graph-tracer: various fixes and
+	features
+Message-ID: <20090122093342.GC24758@elte.hu>
+References: <4977cacb.1358560a.19ec.ffffcb09@mx.google.com> <alpine.DEB.1.10.0901212037090.1737@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901212037090.1737@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-22 at 17:30 +0800, Zhang, Yanmin wrote:
-> On Thu, 2009-01-22 at 11:27 +0200, Pekka Enberg wrote:
-> > Hi Christoph,
+
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> 
+> On Wed, 21 Jan 2009, Frederic Weisbecker wrote:
+> 
+> > I thought I would have the time to implement the callbacks in trace_event too but I
+> > really have to sleep :-(
+> > That will be for later.
+> 
+> No need to rush. Get to sleep.
+> 
+> > --
 > > 
-> > On Mon, 19 Jan 2009, Nick Piggin wrote:
-> > > > > > You only go to the allocator when the percpu queue goes empty though, so
-> > > > > > if memory policy changes (eg context switch or something), then subsequent
-> > > > > > allocations will be of the wrong policy.
-> > > > >
-> > > > > The per cpu queue size in SLUB is limited by the queues only containing
-> > > > > objects from the same page. If you have large queues like SLAB/SLQB(?)
-> > > > > then this could be an issue.
-> > > >
-> > > > And it could be a problem in SLUB too. Chances are that several allocations
-> > > > will be wrong after every policy switch. I could describe situations in which
-> > > > SLUB will allocate with the _wrong_ policy literally 100% of the time.
+> > This patch brings various bugfixes:
 > > 
-> > On Wed, 2009-01-21 at 19:13 -0500, Christoph Lameter wrote:
-> > > No it cannot because in SLUB objects must come from the same page.
-> > > Multiple objects in a queue will only ever require a single page and not
-> > > multiple like in SLAB.
+> > _ Drop the first irrelevant task switch on the very beginning of a trace.
+> >   But actually that only solves the first time one does print the trace file.
+> >   I have to fix the others cases too.
+> 
+> I'm not sure what you mean by the first time here. Can you explain it
+> a bit better.
+> 
+> > _ Drop the OVERHEAD word from the headers, the DURATION word is sufficient and will not
+> >   overlap other columns.
+> > _ Make the headers fit well their respective columns whatever the selected options.
 > > 
-> > There's one potential problem with "per-page queues", though. The bigger
-> > the object, the smaller the "queue" (i.e. less objects per page). Also,
-> > partial lists are less likely to help for big objects because they get
-> > emptied so quickly and returned to the page allocator. Perhaps we should
-> > do a small "full list" for caches with large objects?
-> That helps definitely. We could use a batch to control the list size.
+> > Ie, default options:
+> > 
+> > # tracer: function_graph
+> > #
+> > # CPU  DURATION                  FUNCTION CALLS
+> > # |     |   |                     |   |   |   |
+> > 
+> >  1)   0.646 us    |                    }
+> >  1)               |                    mem_cgroup_del_lru_list() {
+> >  1)   0.624 us    |                      lookup_page_cgroup();
+> >  1)   1.970 us    |                    }
+> > 
+> > echo funcgraph-proc > trace_options
+> > 
+> > # tracer: function_graph
+> > #
+> > # CPU  TASK/PID        DURATION                  FUNCTION CALLS
+> > # |    |    |           |   |                     |   |   |   |
+> > 
+> >  0)   bash-2937    |   0.895 us    |                }
+> >  0)   bash-2937    |   0.888 us    |                __rcu_read_unlock();
+> >  0)   bash-2937    |   0.864 us    |                conv_uni_to_pc();
+> >  0)   bash-2937    |   1.015 us    |                __rcu_read_lock();
+> > 
+> > echo nofuncgraph-cpu > trace_options
+> > echo nofuncgraph-proc > trace_options
+> > 
+> > # tracer: function_graph
+> > #
+> > #   DURATION                  FUNCTION CALLS
+> > #    |   |                     |   |   |   |
+> > 
+> >   3.752 us    |                  native_pud_val();
+> >   0.616 us    |                  native_pud_val();
+> >   0.624 us    |                  native_pmd_val();
+> > 
+> > 
+> > About features, one can now disable the duration (this will hide the overhead too
+> > for convenient reasons and because on  doesn't need overhead if it hasn't the duration
+> > 
+> > echo nofuncgraph-duration > trace_options
+> > 
+> > # tracer: function_graph
+> > #
+> > #                FUNCTION CALLS
+> > #                |   |   |   |
+> > 
+> >           cap_vm_enough_memory() {
+> >             __vm_enough_memory() {
+> >               vm_acct_memory();
+> >             }
+> >           }
+> >         }
+> > 
+> > And at last, an option to print the absolute time:
+> > 
+> > //Restart from default options
+> > echo funcgraph-abstime > trace_options
+> > 
+> > # tracer: function_graph
+> > #
+> > #      TIME       CPU  DURATION                  FUNCTION CALLS
+> > #       |         |     |   |                     |   |   |   |
+> > 
+> >   261.339774 |   1) + 42.823 us   |    }
+> >   261.339775 |   1)   1.045 us    |    _spin_lock_irq();
+> >   261.339777 |   1)   0.940 us    |    _spin_lock_irqsave();
+> >   261.339778 |   1)   0.752 us    |    _spin_unlock_irqrestore();
+> >   261.339780 |   1)   0.857 us    |    _spin_unlock_irq();
+> >   261.339782 |   1)               |    flush_to_ldisc() {
+> >   261.339783 |   1)               |      tty_ldisc_ref() {
+> >   261.339783 |   1)               |        tty_ldisc_try() {
+> >   261.339784 |   1)   1.075 us    |          _spin_lock_irqsave();
+> >   261.339786 |   1)   0.842 us    |          _spin_unlock_irqrestore();
+> >   261.339788 |   1)   4.211 us    |        }
+> >   261.339788 |   1)   5.662 us    |      }
+> > 
+> > The format is seconds.usecs
+> > I guess no one needs the nanosec precision here, the main goal is to find when happened
+> > the events on a cpu when the trace switches from one cpu to another.
+> > 
+> > ie:
+> > 
+> >   274.874760 |   1)   0.676 us    |      _spin_unlock();
+> >   274.874762 |   1)   0.609 us    |      native_load_sp0();
+> >   274.874763 |   1)   0.602 us    |      native_load_tls();
+> >   274.878739 |   0)   0.722 us    |                  }
+> >   274.878740 |   0)   0.714 us    |                  native_pmd_val();
+> >   274.878741 |   0)   0.730 us    |                  native_pmd_val();
+> > 
+> > Here there is a 4000 usecs difference when we switch the cpu.
+> 
+> These examples will most likely be cut from the change log. Updating
+> ftrace.txt would be nice ;-)
 
-s/full list/empty list/g
+Updating ftrace.txt is definitely a good idea, but also, please dont cut 
+such examples from changelogs ... i keep them most of the time, they are 
+really useful.
 
-That is, a list of pages that could be returned to the page allocator
-but are pooled in SLUB to avoid the page allocator overhead. Note that
-this will not help allocators that trigger page allocator pass-through.
-
-		Pekka
-
+	Ingo
