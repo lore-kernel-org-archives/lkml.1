@@ -1,41 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZAVPn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZAVPsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbZAVPn5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 10:43:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZAVPns
+	id S1754711AbZAVPsf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 10:48:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751161AbZAVPs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 10:43:48 -0500
-Received: from kuber.nabble.com ([216.139.236.158]:56327 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751889AbZAVPnr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 10:43:47 -0500
-Message-ID: <21606877.post@talk.nabble.com>
-Date: Thu, 22 Jan 2009 07:43:47 -0800 (PST)
-From: gsmd <gsmdib@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: plz help fixing lirc_igorplugusb kernel module
-In-Reply-To: <4237.49788488.6c688@altium.nl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-X-Nabble-From: gsmdib@gmail.com
-References: <567e52cd0901201139s1bd4e585o4a3af400c213d237@mail.gmail.com> <87c.4976ffbf.5f61c@altium.nl> <21605162.post@talk.nabble.com> <4237.49788488.6c688@altium.nl>
+	Thu, 22 Jan 2009 10:48:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37425 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750750AbZAVPsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 10:48:25 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: smfrench@gmail.com
+Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: [PATCH] cifs: make sure we allocate enough storage for socket address
+Date: Thu, 22 Jan 2009 10:48:18 -0500
+Message-Id: <1232639298-9168-1-git-send-email-jlayton@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The sockaddr declared on the stack in cifs_get_tcp_session is too small
+for IPv6 addresses. Change it from "struct sockaddr" to "struct
+sockaddr_storage" to prevent stack corruption when IPv6 is used.
 
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+---
+ fs/cifs/connect.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-Dick Streefland wrote:
-> 
-> I suggest removing at least this line, to see if
-> that helps.
-> 
-Well, removing the entire if (ir->buf_in[2] != 0) block leads to nothing
-being displayed on key press. Only occasional GET_INFRACODE: error 0
-messages.
+diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
+index a3537a9..2209be9 100644
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -1354,7 +1354,7 @@ cifs_parse_mount_options(char *options, const char *devname,
+ }
+ 
+ static struct TCP_Server_Info *
+-cifs_find_tcp_session(struct sockaddr *addr)
++cifs_find_tcp_session(struct sockaddr_storage *addr)
+ {
+ 	struct list_head *tmp;
+ 	struct TCP_Server_Info *server;
+@@ -1374,11 +1374,11 @@ cifs_find_tcp_session(struct sockaddr *addr)
+ 		if (server->tcpStatus == CifsNew)
+ 			continue;
+ 
+-		if (addr->sa_family == AF_INET &&
++		if (addr->ss_family == AF_INET &&
+ 		    (addr4->sin_addr.s_addr !=
+ 		     server->addr.sockAddr.sin_addr.s_addr))
+ 			continue;
+-		else if (addr->sa_family == AF_INET6 &&
++		else if (addr->ss_family == AF_INET6 &&
+ 			 memcmp(&server->addr.sockAddr6.sin6_addr,
+ 				&addr6->sin6_addr, sizeof(addr6->sin6_addr)))
+ 			continue;
+@@ -1419,12 +1419,12 @@ static struct TCP_Server_Info *
+ cifs_get_tcp_session(struct smb_vol *volume_info)
+ {
+ 	struct TCP_Server_Info *tcp_ses = NULL;
+-	struct sockaddr addr;
++	struct sockaddr_storage addr;
+ 	struct sockaddr_in *sin_server = (struct sockaddr_in *) &addr;
+ 	struct sockaddr_in6 *sin_server6 = (struct sockaddr_in6 *) &addr;
+ 	int rc;
+ 
+-	memset(&addr, 0, sizeof(struct sockaddr));
++	memset(&addr, 0, sizeof(struct sockaddr_storage));
+ 
+ 	if (volume_info->UNCip && volume_info->UNC) {
+ 		rc = cifs_inet_pton(AF_INET, volume_info->UNCip,
+@@ -1435,9 +1435,9 @@ cifs_get_tcp_session(struct smb_vol *volume_info)
+ 			rc = cifs_inet_pton(AF_INET6, volume_info->UNCip,
+ 					    &sin_server6->sin6_addr.in6_u);
+ 			if (rc > 0)
+-				addr.sa_family = AF_INET6;
++				addr.ss_family = AF_INET6;
+ 		} else {
+-			addr.sa_family = AF_INET;
++			addr.ss_family = AF_INET;
+ 		}
+ 
+ 		if (rc <= 0) {
+@@ -1502,7 +1502,7 @@ cifs_get_tcp_session(struct smb_vol *volume_info)
+ 	tcp_ses->tcpStatus = CifsNew;
+ 	++tcp_ses->srv_count;
+ 
+-	if (addr.sa_family == AF_INET6) {
++	if (addr.ss_family == AF_INET6) {
+ 		cFYI(1, ("attempting ipv6 connect"));
+ 		/* BB should we allow ipv6 on port 139? */
+ 		/* other OS never observed in Wild doing 139 with v6 */
 -- 
-View this message in context: http://www.nabble.com/plz-help-fixing-lirc_igorplugusb-kernel-module-tp21570131p21606877.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
+1.5.5.6
 
