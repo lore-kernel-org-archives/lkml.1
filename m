@@ -1,129 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbZAUX76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755846AbZAVAEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754732AbZAUX76 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 21 Jan 2009 18:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbZAUX6O
+	id S1755846AbZAVAEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 21 Jan 2009 19:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbZAVAE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 21 Jan 2009 18:58:14 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:60406 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754350AbZAUX6I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 21 Jan 2009 18:58:08 -0500
-Message-Id: <20090121235806.289123098@goodmis.org>
-References: <20090121235306.224764198@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Wed, 21 Jan 2009 18:53:09 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 3/5] trace: separate out rt tasks from wakeup tracer
-Content-Disposition: inline; filename=0003-trace-separate-out-rt-tasks-from-wakeup-tracer.patch
+	Wed, 21 Jan 2009 19:04:29 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:52331 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753913AbZAVAE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 21 Jan 2009 19:04:28 -0500
+Date: Thu, 22 Jan 2009 11:03:48 +1100
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Duyck, Alexander H" <alexander.h.duyck@intel.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       "Waskiewicz Jr, Peter P" <peter.p.waskiewicz.jr@intel.com>,
+       "Allan, Bruce W" <bruce.w.allan@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: igb regression (interface hang) with latest -git
+Message-ID: <20090122110348.4f92d82f@s6510>
+In-Reply-To: <80769D7B14936844A23C0C43D9FBCF0F24F15EAD@orsmsx501.amr.corp.intel.com>
+References: <20090121102840.GA24967@elte.hu>
+	<200901212234.42749.rjw@sisk.pl>
+	<20090121214810.GB27665@elte.hu>
+	<200901212322.14875.rjw@sisk.pl>
+	<80769D7B14936844A23C0C43D9FBCF0F24F15EAD@orsmsx501.amr.corp.intel.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Wed, 21 Jan 2009 14:51:07 -0800
+"Duyck, Alexander H" <alexander.h.duyck@intel.com> wrote:
 
-Impact: add option to trace all tasks or just RT tasks
+> Rafael J. Wysocki wrote:
+> > On Wednesday 21 January 2009, Ingo Molnar wrote:
+> >> 
+> >> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> 
+> >>> On Wednesday 21 January 2009, Ingo Molnar wrote:
+> >>>> 
+> >>>> * Ingo Molnar <mingo@elte.hu> wrote:
+> >>>> 
+> >>>>>> One other piece of info (in addition to what Bruce requested)
+> >>>>>> that would be useful is after you've done ifconfig eht0 up, cat
+> >>>>>> /proc/interrupts | grep eth0 and send that output (I want to see
+> >>>>>> your MSI-X configuration).
+> >>>>> 
+> >>>>> here it is:
+> >>>>> 
+> >>>>>  79:         35          0       9836       7451       1197      
+> >>>>>  1360        766          0       2196        995        770     
+> >>>>>  0       2051        863       4714       1879   PCI-MSI-edge    
+> >>>>>  eth0-tx-0 80:       2335          0       2718       3651      
+> >>>>>  5024       9850        533          0       1405       1095     
+> >>>>>  0          0       4421       1229          0       2002  
+> >>>>>  PCI-MSI-edge      eth0-tx-1 81:         33          0          0
+> >>>>>  5478       1125       6585       4865       6306          0     
+> >>>>>  0          0        714       3757          0       2662      
+> >>>>> 1020   PCI-MSI-edge      eth0-tx-2 82:         21       1428     
+> >>>>> 3136       3783       4249       6833          0          0      
+> >>>>> 4175          0          0       1465       1940       1780      
+> >>>>> 6286          0   PCI-MSI-edge      eth0-tx-3 83:         40     
+> >>>>> 0          0       4788          0       1486          0      
+> >>>>> 7185       3998       8637       1409       6785          0      
+> >>>>> 0          0      10060   PCI-MSI-edge      eth0-rx-0 84:        
+> >>>>> 70       1441       2606       1342          0       1678      
+> >>>>> 4301       1839          0       6507       6910      16470      
+> >>>>> 0       1484       1004          0   PCI-MSI-edge      eth0-rx-1
+> >>>>> 85:         40       1368          0       3560       5022      
+> >>>>> 2040          5       1719          0       2037        956      
+> >>>>> 40          0      17264       6456       2833   PCI-MSI-edge    
+> >>>>> eth0-rx-2 86:         44        414          5       1164        
+> >>>>> 30       4513       4595       1542          0      10033      
+> >>>>> 1151          0       4961       4203          0      10703  
+> >>>>> PCI-MSI-edge      eth0-rx-3 87:          1          0          0 
+> >>>>> 0          0          0          0          0          0         
+> >>>>> 0          0          0          0          0          0         
+> >>>>> 0   PCI-MSI-edge      eth0                    
+> >>>> 
+> >>>> btw., i turned off CONFIG_PCI_MSI and that worked around the
+> >>>> interface 
+> >>>> hang - the box has 40 minutes uptime now and still no hang. (it
+> >>>> would hang 
+> >>>> within 5 minutes previously)
+> >>>> 
+> >>>> can test the revert of any of these commits:
+> >>>> 
+> >>>> e42e4ba: igb: fix anoying type mismatch warning on rx/tx queue
+> >>>> sizing 8d25332: igb: Fix build warning when DCA is disabled.
+> >>>> 26bc19e: igb: re-order queues to support cleaner use of ivar on
+> >>>> 82576 0e014cb: igb: defeature tx head writeback
+> >>>> 678c610: drivers/net/igb: remove dead code (function
+> >>>> 'igb_read_pci_cfg') 908a7a1: net: Remove unused netdev arg from
+> >>>> some NAPI interfaces. 
+> >>>> ea943d4: igb: fixup AER with proper error handling
+> >>>> 5e8427e: igb: Correctly determine pci-e function number in virtual
+> >>>> environment 
+> >>>> b4557be: igb: update handling of RCTL for smaller buffer sizes
+> >>>> cb7b48f: igb/e1000e: Naming interrupt vectors
+> >>>> 40a914f: igb: Add support for pci-e Advanced Error Reporting
+> >>>> 527d47c: igb: link up/down messages must follow a specific format
+> >>>> 5b9ab2e: Merge branch 'master' of
+> >>>> master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6 69d728b:
+> >>>> igb: loopback bits not correctly cleared from RCTL register
+> >>>> 9b07f3d: igb: remove unneeded bit refrence when enabling jumbo
+> >>>> frames  
+> >>>> f5f4cf0: igb: do not use phy ops in ethtool test cleanup for
+> >>>> non-copper parts 0082982: netdev: add more functions to netdevice
+> >>>> ops 68fd991: igb: Fix tx/rx_ring_count parameters for igb on
+> >>>> suspend/resume/ring resize b2d5653: igb: simplify swap in
+> >>>> clean_rx_irq if using packet split 2e5c692: igb: convert to
+> >>>> net_device_ops 198d6ba: Merge branch 'master' of
+> >>>> master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6 4cf1653:
+> >>>> netdevice: safe convert to netdev_priv() #part-2 
+> >>>> babcda7: drivers/net: Kill now superfluous ->last_rx stores.
+> >>>> 7c510e4: net: convert more to %pM
+> >>>> 
+> >>>> i had a quick look at all of them but none seem to have a direct
+> >>>> connection to MSI-X interrupt generation.
+> >>>> 
+> >>>> There's a couple of ones that could have side effects:
+> >>>> 
+> >>>> Maybe this one:
+> >>>> 
+> >>>>   26bc19e: igb: re-order queues to support cleaner use of ivar on
+> >>>> 82576 
+> >>>> 
+> >>>> due to its sheer commit size and due to its impact on the hw
+> >>>> programming. 
+> >>>> 
+> >>>> or:
+> >>>> 
+> >>>>   0e014cb: igb: defeature tx head writeback
+> >>>> 
+> >>>> Might have some side-effect on tx-completion IRQs and might tickle
+> >>>> firmware bugs?
+> >>>> 
+> >>>> Or:
+> >>>> 
+> >>>>   5e8427e: igb: Correctly determine pci-e function number in
+> >>>> virtual environment 
+> >>>> 
+> >>>> while it should have no impact on a native kernel, it does change
+> >>>> the PCI 
+> >>>> config space access sequences.
+> >>>> 
+> >>>> Or maybe:
+> >>>> 
+> >>>>   69d728b: igb: loopback bits not correctly cleared from RCTL
+> >>>> register 
+> >>>> 
+> >>>> as this impacts the PCI programming too.
+> >>>> 
+> >>>> But ... i dont really know this code so i'm guessing around.
+> >>> 
+> >>> Well, AER (Advanced Error Reporting) is currently broken w/ MSI-X,
+> >>> so maybe this one: 
+> >>> 
+> >>> 40a914f: igb: Add support for pci-e Advanced Error Reporting
+> >> 
+> >> ah, yeah, that makes sense. I discarded that commit because i was
+> >> unsure whether this box has AER and the boot log said:
+> >> 
+> >>  calling  aer_service_init+0x0/0x20 @ 1
+> >>  initcall aer_service_init+0x0/0x20 returned 0 after 61 usecs
+> >> 
+> >> shouldnt it have printed something if AER was available?
+> > 
+> > The driver doesn't seem to print anything on success as far as I can
+> > see. It only reports faliures, apparently.
+> > 
+> > Thanks,
+> > Rafael
+> 
+> I have noticed that too after going through the logs on one of the Nahalem systems I have here.  It might just be best to disable AER in the kernel if it isn't functional on the system and see if that helps to clear up the issue.
+> 
+> I am leaning torward some external influence affecting the igb driver.  Of the changes I made the only one I could really think of that would have much affect on MSI-X interrupts would be queue reordering, but that should have little to no effect on 82575 parts as it was intended to only reorder queues on 82576, in addition I would expect an immediate issue since the configuration is pretty much static after the queues are allocated.  The only other patch that could even have a remote possiblity would be the TX head writeback defeature, but I would only expect that one to affect tx.
+> 
+> Thanks,
+> 
+> Alex
 
-The current wakeup tracer only traces RT task wakeups. This is
-fine for those interested in wake up timings of RT tasks, but
-it is useless for those that are interested in the causes
-of long wakeups for non RT tasks.
-
-This patch creates a "wakeup_rt" to implement the tracing of just
-RT tasks (as the current "wakeup" does). And makes "wakeup" now
-trace all tasks as an average developer would expect.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/trace_sched_wakeup.c |   34 ++++++++++++++++++++++++++++++++--
- 1 files changed, 32 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-index e27adef..f489578 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -25,6 +25,7 @@ static int __read_mostly	tracer_enabled;
- static struct task_struct	*wakeup_task;
- static int			wakeup_cpu;
- static unsigned			wakeup_prio = -1;
-+static int			wakeup_rt;
- 
- static raw_spinlock_t wakeup_lock =
- 	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
-@@ -224,7 +225,7 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int success)
- 	tracing_record_cmdline(p);
- 	tracing_record_cmdline(current);
- 
--	if (likely(!rt_task(p)) ||
-+	if ((wakeup_rt && !rt_task(p)) ||
- 			p->prio >= wakeup_prio ||
- 			p->prio >= current->prio)
- 		return;
-@@ -321,7 +322,7 @@ static void stop_wakeup_tracer(struct trace_array *tr)
- 	unregister_trace_sched_wakeup(probe_wakeup);
- }
- 
--static int wakeup_tracer_init(struct trace_array *tr)
-+static int __wakeup_tracer_init(struct trace_array *tr)
- {
- 	tracing_max_latency = 0;
- 	wakeup_trace = tr;
-@@ -329,6 +330,18 @@ static int wakeup_tracer_init(struct trace_array *tr)
- 	return 0;
- }
- 
-+static int wakeup_tracer_init(struct trace_array *tr)
-+{
-+	wakeup_rt = 0;
-+	return __wakeup_tracer_init(tr);
-+}
-+
-+static int wakeup_rt_tracer_init(struct trace_array *tr)
-+{
-+	wakeup_rt = 1;
-+	return __wakeup_tracer_init(tr);
-+}
-+
- static void wakeup_tracer_reset(struct trace_array *tr)
- {
- 	stop_wakeup_tracer(tr);
-@@ -360,6 +373,19 @@ static struct tracer wakeup_tracer __read_mostly =
- #endif
- };
- 
-+static struct tracer wakeup_rt_tracer __read_mostly =
-+{
-+	.name		= "wakeup_rt",
-+	.init		= wakeup_rt_tracer_init,
-+	.reset		= wakeup_tracer_reset,
-+	.start		= wakeup_tracer_start,
-+	.stop		= wakeup_tracer_stop,
-+	.print_max	= 1,
-+#ifdef CONFIG_FTRACE_SELFTEST
-+	.selftest    = trace_selftest_startup_wakeup,
-+#endif
-+};
-+
- __init static int init_wakeup_tracer(void)
- {
- 	int ret;
-@@ -368,6 +394,10 @@ __init static int init_wakeup_tracer(void)
- 	if (ret)
- 		return ret;
- 
-+	ret = register_tracer(&wakeup_rt_tracer);
-+	if (ret)
-+		return ret;
-+
- 	return 0;
- }
- device_initcall(init_wakeup_tracer);
--- 
-1.5.6.5
-
--- 
+AER wont work unless PCI supports MMCONFIG.
+This is a real problem, that I ended up giving up on standard pci access for sky2.
