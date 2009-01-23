@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbZAWQ1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbZAWQdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758185AbZAWQ1w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 11:27:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbZAWQ1n
+	id S1760039AbZAWQdN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 11:33:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbZAWQc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 11:27:43 -0500
-Received: from coding-badger.net ([88.191.17.171]:46014 "EHLO
-	sd-1367.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756048AbZAWQ1m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 11:27:42 -0500
-X-Greylist: delayed 1570 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Jan 2009 11:27:42 EST
-Message-ID: <4979E9ED.2090402@yahoo.fr>
-Date: Fri, 23 Jan 2009 17:01:49 +0100
-From: strawks <strawks@yahoo.fr>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1b3pre) Gecko/20081204 Lightning/1.0pre Thunderbird/3.0b1
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: USB: lost page write but no error reported on closing raw device
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Fri, 23 Jan 2009 11:32:58 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53854 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751542AbZAWQc5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 11:32:57 -0500
+Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jan Engelhardt <jengelh@medozas.de>, "H. Peter Anvin" <hpa@kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
+       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
+       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
+       netdev@vger.kernel.org, greg@kroah.com, linux-usb@vger.kernel.org,
+       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090123162153.GA25766@uranus.ravnborg.org>
+References: <1232223441.3966.22.camel@localhost.localdomain>
+	 <1232228261.27094.0.camel@macbook.infradead.org>
+	 <20090117221932.GA4956@uranus.ravnborg.org> <49725B1E.604@kernel.org>
+	 <1232498319.3123.34.camel@localhost.localdomain>
+	 <1232726359.3504.18.camel@localhost.localdomain>
+	 <1232726658.3504.22.camel@localhost.localdomain>
+	 <alpine.LSU.2.00.0901231710350.15413@fbirervta.pbzchgretzou.qr>
+	 <20090123162153.GA25766@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Fri, 23 Jan 2009 22:01:44 +0530
+Message-Id: <1232728304.3504.28.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Fri, 2009-01-23 at 17:21 +0100, Sam Ravnborg wrote:
+> On Fri, Jan 23, 2009 at 05:11:13PM +0100, Jan Engelhardt wrote:
+> > 
+> > On Friday 2009-01-23 17:04, Jaswinder Singh Rajput wrote:
+> > >> > diff --git a/include/linux/dvb/audio.h b/include/linux/dvb/audio.h
+> > >> > index 89412e1..758a48c 100644
+> > >> > --- a/include/linux/dvb/audio.h
+> > >> > +++ b/include/linux/dvb/audio.h
+> > >> > @@ -24,9 +24,8 @@
+> > >> >  #ifndef _DVBAUDIO_H_
+> > >> >  #define _DVBAUDIO_H_
+> > >> >  
+> > >> > -#ifdef __KERNEL__
+> > >> >  #include <linux/types.h>
+> > >> > -#else
+> > >> > +#ifndef __KERNEL__
+> > >> >  #include <stdint.h>
+> > >> >  #endif
+> > >> > 
+> > >> 
+> > >> It seems one have objection for this. So I will again insert this in my
+> > >> new patchset.
+> > >> 
+> > >
+> > >oops, s/seems one/seems no one ;-)
+> > 
+> > I had an objection as previously stated -- namely that
+> > <stdint.h> should be included to remain friendly to C++0x
+> > programs which should use <cstdint> instead. Forcing
+> > stdint.h is therefore not nice.
+> 
+> This is fully agreed.
+> Jaswinder - can I ask you to do this change (remove of the stdint.h include)
+> in a follow-up patch. It is two independent changes.
+> You original patch is fine as is.
 
-I was trying to copy my entire internal HDD to an USB HDD :
- > dd if=/dev/hda of=/dev/sdb
+So is this OK:
 
-dd finished without reporting errors but some blocks (around 102GB of 
-160) were not copied and I got in the syslog :
+-#ifdef __KERNEL__
+ #include <linux/types.h>
+-#else
+-#include <stdint.h>
+-#endif
+-
 
-Jan 21 19:04:43 kernel: usb 4-2: reset high speed USB device using
-ehci_hcd and address 4
-Jan 21 19:04:43 kernel: sd 6:0:0:0: [sda] Result: hostbyte=DID_ERROR
-driverbyte=DRIVER_OK,SUGGEST_OK
-Jan 21 19:04:43 kernel: end_request: I/O error, dev sda, sector 272136241
-Jan 21 19:04:43 kernel: Buffer I/O error on device sda4, logical block
-104765468
+--
+JSR
 
-
-I don't really know what caused the problem (btw I didn't disconnect the 
-USB drive) but the fact is that there were an error copying data to the 
-usb drive but this error were not reported to dd.
-
-Is this the expected behaviour? Shouldn't the close() call repports the 
-write error to dd?
-
-Note : I tried on debian 2.6.26 stock kernel and 2.6.29-rc2, same behavior.
-
-I have already copied HDD this way (IDE and SCSI but not USB), and each 
-time IO errors occured dd would print some error message. I think
-
--- 
-regards
-strawks
