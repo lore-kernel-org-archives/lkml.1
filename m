@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760510AbZAWBR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759967AbZAWBSN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760510AbZAWBR2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760049AbZAWBOs
+	id S1759967AbZAWBSN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:18:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760121AbZAWBOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:14:48 -0500
-Received: from kroah.org ([198.145.64.141]:50435 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:14:51 -0500
+Received: from kroah.org ([198.145.64.141]:50455 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759955AbZAWBOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:14:47 -0500
-Date: Thu, 22 Jan 2009 17:11:46 -0800
+	id S1760091AbZAWBOt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:14:49 -0500
+Date: Thu, 22 Jan 2009 17:11:51 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 10/46] ALSA: hda - Add quirk for another HP dv5
-Message-ID: <20090123011146.GK19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Luke Yelavich <themuso@ubuntu.com>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 12/46] ALSA: hda - Add automatic model setting for Samsung
+	Q45
+Message-ID: <20090123011151.GM19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-add-quirk-for-another-hp-dv5.patch"
+Content-Disposition: inline; filename="alsa-hda-add-automatic-model-setting-for-samsung-q45.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,30 +41,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Giuseppe Bilotta <giuseppe.bilotta@gmail.com>
+From: Luke Yelavich <themuso@ubuntu.com>
 
-commit dafb70ce1026d4d6ef1b16ad6996c9589bb11cce upstream.
+commit 3e420e78ece6f9d2accc1568e80dfd0501e13df1 upstream.
 
-Add the model=hp-m4 quirk for another HP dv5 (103c:3603)
-Reference: kernel bug#12440
-	http://bugzilla.kernel.org/show_bug.cgi?id=12440
+Have the Samsung Q45 (144d:c510) select ALC262_HIPPO by default
 
+Reference: Ubuntu bug 200210
+	http://launchpad.net/bugs/200210
+
+Signed-off-by: Luke Yelavich <themuso@ubuntu.com>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_sigmatel.c |    2 ++
- 1 file changed, 2 insertions(+)
+ sound/pci/hda/patch_realtek.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/sound/pci/hda/patch_sigmatel.c
-+++ b/sound/pci/hda/patch_sigmatel.c
-@@ -1722,6 +1722,8 @@ static struct snd_pci_quirk stac92hd71bx
- 		      "HP dv7", STAC_HP_M4),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_HP, 0x30fc,
- 		      "HP dv7", STAC_HP_M4),
-+	SND_PCI_QUIRK(PCI_VENDOR_ID_HP, 0x3603,
-+		      "HP dv5", STAC_HP_M4),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_HP, 0x361a,
- 				"unknown HP", STAC_HP_M4),
- 	SND_PCI_QUIRK(PCI_VENDOR_ID_DELL, 0x0233,
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -10473,6 +10473,7 @@ static struct snd_pci_quirk alc262_cfg_t
+ 	SND_PCI_QUIRK(0x10cf, 0x142d, "Fujitsu Lifebook E8410", ALC262_FUJITSU),
+ 	SND_PCI_QUIRK(0x144d, 0xc032, "Samsung Q1 Ultra", ALC262_ULTRA),
+ 	SND_PCI_QUIRK(0x144d, 0xc039, "Samsung Q1U EL", ALC262_ULTRA),
++	SND_PCI_QUIRK(0x144d, 0xc510, "Samsung Q45", ALC262_HIPPO),
+ 	SND_PCI_QUIRK(0x17aa, 0x384e, "Lenovo 3000 y410", ALC262_LENOVO_3000),
+ 	SND_PCI_QUIRK(0x17ff, 0x0560, "Benq ED8", ALC262_BENQ_ED8),
+ 	SND_PCI_QUIRK(0x17ff, 0x058d, "Benq T31-16", ALC262_BENQ_T31),
 
