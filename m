@@ -1,100 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761901AbZAWJsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbZAWJuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761901AbZAWJsW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 04:48:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756473AbZAWJsL
+	id S1761596AbZAWJuW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 04:50:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbZAWJuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 04:48:11 -0500
-Received: from ns1.suse.de ([195.135.220.2]:59359 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755303AbZAWJsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 04:48:10 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-Date: Fri, 23 Jan 2009 15:15:36 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
-References: <200901211638.23101.knikanth@suse.de> <20090122101424.GA12317@ioremap.net> <alpine.DEB.2.00.0901220218120.2851@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0901220218120.2851@chino.kir.corp.google.com>
+	Fri, 23 Jan 2009 04:50:05 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41605 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756473AbZAWJuB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 04:50:01 -0500
+Message-ID: <c2cf91864adcd1461b14f491dcafd17e.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090123162232.5a81e0d3.nishimura@mxp.nes.nec.co.jp>
+References: <20090122183411.3cabdfd2.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090122183557.3b058e98.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090123162232.5a81e0d3.nishimura@mxp.nes.nec.co.jp>
+Date: Fri, 23 Jan 2009 18:49:57 +0900 (JST)
+Subject: Re: [PATCH 2/7] memcg : use CSS ID in memcg
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Daisuke Nishimura" <nishimura@mxp.nes.nec.co.jp>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "menage@google.com" <menage@google.com>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain;charset=iso-2022-jp
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901231515.37442.knikanth@suse.de>
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 22 January 2009 15:57:19 David Rientjes wrote:
-> On Thu, 22 Jan 2009, Evgeniy Polyakov wrote:
-> > > In an exclusive cpuset, a task's memory is restricted to a set of mems
-> > > that the administrator has designated.  If it is oom, the kernel must
-> > > free memory on those nodes or the next allocation will again trigger an
-> > > oom (leading to a needlessly killed task that was in a disjoint
-> > > cpuset).
-> > >
-> > > Really.
-> >
-> > The whole point of oom-killer is to kill the most appropriate task to
-> > free the memory. And while task is selected system-wide and some
-> > tunables are added to tweak the behaviour local to some subsystems, this
-> > cpuset feature is hardcoded into the selection algorithm.
+Daisuke Nishimura さんは書きました：
+> On Thu, 22 Jan 2009 18:35:57 +0900, KAMEZAWA Hiroyuki
+> <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+>>
+>> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>> Use css ID in memcg.
+>>
+>> Assigning CSS ID for each memcg and use css_get_next() for scanning
+>> hierarchy.
+>>
+>> 	Assume folloing tree.
+>>
+>> 	group_A (ID=3)
+>> 		/01 (ID=4)
+>> 		   /0A (ID=7)
+>> 		/02 (ID=10)
+>> 	group_B (ID=5)
+>> 	and task in group_A/01/0A hits limit at group_A.
+>>
+>> 	reclaim will be done in following order (round-robin).
+>> 	group_A(3) -> group_A/01 (4) -> group_A/01/0A (7) -> group_A/02(10)
+>> 	-> group_A -> .....
+>>
+>> 	Round robin by ID. The last visited cgroup is recorded and restart
+>> 	from it when it start reclaim again.
+>> 	(More smart algorithm can be implemented..)
+>>
+>> 	No cgroup_mutex or hierarchy_mutex is required.
+>>
+>> Changelog (v3) -> (v4)
+>>   - dropped css_is_populated() check
+>>   - removed scan_age and use more simple logic.
+>>
+> I think a check for mem_cgroup_local_usage is also added by this version
+> :)
 >
-> Of course, because the oom killer must be aware that tasks in disjoint
-> cpusets are more likely than not to result in no memory freeing for
-> current's subsequent allocations.
+>> Changelog (v2) -> (v3)
+>>   - Added css_is_populatd() check
+>>   - Adjusted to rc1 + Nishimrua's fixes.
+>>   - Increased comments.
+>>
+>> Changelog (v1) -> (v2)
+>>   - Updated texts.
+>>
+>> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>>
+>> ---
+>>  mm/memcontrol.c |  220
+>> ++++++++++++++++++++------------------------------------
+>>  1 file changed, 82 insertions(+), 138 deletions(-)
+>>
+>> Index: mmotm-2.6.29-Jan16/mm/memcontrol.c
+>> ===================================================================
+>> --- mmotm-2.6.29-Jan16.orig/mm/memcontrol.c
+>> +++ mmotm-2.6.29-Jan16/mm/memcontrol.c
+>> @@ -95,6 +95,15 @@ static s64 mem_cgroup_read_stat(struct m
+>>  	return ret;
+>>  }
+>>
+>> +static s64 mem_cgroup_local_usage(struct mem_cgroup_stat *stat)
+>> +{
+>> +	s64 ret;
+>> +
+> It would be better to initialize it to 0.
+>
+Hmm ? why ?
+> 	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+>
+> Thanks,
+> Daisuke Nishimura.
 >
 
-Yes, the problem is cpuset does not track the tasks which has allocated from 
-this node - who has either moved or changed it set of allowable nodes. And 
-because of that it does not limit oom killing to the tasks with in those tasks 
-and could kill some innocent tasks at times.
+Thanks,
+-Kame
 
-As it is unable to take deterministic decision as memcg does, it plays with 
-badness value and only suggests but does not restricts within those tasks that 
-has to be killed.
 
-This bug is present even without this patch.
+>> +	ret = mem_cgroup_read_stat(stat, MEM_CGROUP_STAT_CACHE);
+>> +	ret += mem_cgroup_read_stat(stat, MEM_CGROUP_STAT_RSS);
+>> +	return ret;
+>> +}
+>> +
 
-> > And when some tunable starts doing own calculation, behaviour of this
-> > hardcoded feature changes.
->
-> Yes, it is possible to elevate oom_adj scores to override the cpuset
-> preference.  That's actually intended since it is now possible for the
-> administrator to specify that, against the belief of the kernel, that
-> killing a task will free memory in these cpuset-constrained ooms.  That's
-> probably because it has either been moved to a different cpuset or its set
-> of allowable nodes is dynamic.
->
 
-This patch adds one more easier way for the administrator to over-ride.
-
-> > > Then the scope of this new cgroup is restricted to not being used with
-> > > cpusets that could oom.
-> >
-> > These are perpendicular tasks - cpusets limit one area of the oom
-> > handling, cgroup order - another. Some people needs cpusets, others want
-> > cgroups. cpusets are not something exceptional so that only they have to
-> > be taken into account when doing system-wide operation like OOM
-> > condition handling.
->
-> A cpuset is a cgroup.  If I am using cpusets, this patch fails to
-> adequately allow me to describe my oom preferences for both
-> cpuset-constrained ooms and global unconstrained ooms, which is a major
-> drawback.
->
-
-The current cpuset oom handling has to be fixed and the exact problem of 
-killing innocent processes exists even without the oom-controller.
-
-Thanks
-Nikanth
