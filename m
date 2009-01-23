@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759745AbZAWBHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbZAWBMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759745AbZAWBHF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:07:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZAWBGy
+	id S1759565AbZAWBMo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:12:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZAWBMg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:06:54 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:57920 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754990AbZAWBGy (ORCPT
+	Thu, 22 Jan 2009 20:12:36 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:64518 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754576AbZAWBMf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:06:54 -0500
-X-Greylist: delayed 3002 seconds by postgrey-1.27 at vger.kernel.org; Thu, 22 Jan 2009 20:06:53 EST
-Date: Thu, 22 Jan 2009 16:16:47 -0800
-From: Josh Hunt <josh@scalex86.org>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       kiran@scalex86.org
-Subject: [PATCH] Add vmlinux to kernel rpm
-Message-ID: <20090123001647.GB31925@localhost.localdomain>
+	Thu, 22 Jan 2009 20:12:35 -0500
+Message-ID: <49791978.8080709@oracle.com>
+Date: Thu, 22 Jan 2009 17:12:24 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+To: Nico Schottelius <nico-linux-20090121@schottelius.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29-rc2: drivers/mfd/pcf50633-core.ko has undefined symbols
+References: <20090121114432.GA4590@denkbrett.schottelius.org>
+In-Reply-To: <20090121114432.GA4590@denkbrett.schottelius.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4979197B.0264:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds compressed vmlinux to rpm when doing "make {rpm-pkg,binrpm-pkg}".
-Installs vmlinux.bz2 to /boot.
+Nico Schottelius wrote:
+> Hello!
+> 
+> When trying to compile latest kernel from linux-2.6 or iwlwifi I get:
+> 
+> CRC e950f5f4
+> Kernel: arch/x86/boot/bzImage is ready  (#7)
+>   Building modules, stage 2.
+>   MODPOST 1666 modules
+> ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
+> ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
+> make[1]: *** [__modpost] Fehler 1
+> make: *** [modules] Fehler 2
+> 
+> Kernels tested:
+> 
+>   v2.6.29-rc2 (git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git)
+>   v2.6.29-rc2-27573-g599c546 (git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6.git)
+> 
+> .config is attached from v2.6.29-rc2.
 
-Signed-off-by: Josh Hunt <josh@scalex86.org>
+Patch is available & pull request has been sent to Linus, but he is
+traveling/at a conference/not merging patches at the moment.
 
-Index: linux-2.6.28/scripts/package/mkspec
-===================================================================
---- linux-2.6.28.orig/scripts/package/mkspec    2008-12-24
-15:26:37.000000000 -0800
-+++ linux-2.6.28/scripts/package/mkspec    2009-01-21
-16:53:03.000000000 -0800
-@@ -86,6 +86,14 @@ echo "%endif"
- echo 'cp System.map $RPM_BUILD_ROOT'"/boot/System.map-$KERNELRELEASE"
-
- echo 'cp .config $RPM_BUILD_ROOT'"/boot/config-$KERNELRELEASE"
-+
-+echo "%ifnarch ppc64"
-+echo 'cp vmlinux vmlinux.orig'
-+echo 'bzip2 -9 vmlinux'
-+echo 'mv vmlinux.bz2
-$RPM_BUILD_ROOT'"/boot/vmlinux-$KERNELRELEASE.bz2"
-+echo 'mv vmlinux.orig vmlinux'
-+echo "%endif"
-+
- echo ""
- echo "%clean"
- echo '#echo -rf $RPM_BUILD_ROOT' 
+-- 
+~Randy
