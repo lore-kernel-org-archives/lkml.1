@@ -1,505 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759643AbZAWXuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbZAWXwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759643AbZAWXuw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 18:50:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758557AbZAWXuk
+	id S1759333AbZAWXwm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 18:52:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755423AbZAWXwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 18:50:40 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:14285 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758534AbZAWXuj (ORCPT
+	Fri, 23 Jan 2009 18:52:33 -0500
+Received: from mtiwmhc12.worldnet.att.net ([204.127.131.116]:52385 "EHLO
+	mtiwmhc12.worldnet.att.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753062AbZAWXwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 18:50:39 -0500
-Message-ID: <497A57CE.3080602@ct.jp.nec.com>
-Date: Fri, 23 Jan 2009 15:50:38 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 23 Jan 2009 18:52:33 -0500
+Message-ID: <497A5836.2070904@lwfinger.net>
+Date: Fri, 23 Jan 2009 17:52:22 -0600
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: [RFC v2 -tip 3/3] x86: ia32_signal: use {get|put}_user_try and catch
-References: <4962CAAE.6090300@ct.jp.nec.com> <496476D0.5040607@zytor.com> <497A5737.8030408@ct.jp.nec.com>
-In-Reply-To: <497A5737.8030408@ct.jp.nec.com>
-Content-Type: text/plain; charset=UTF-8
+To: LKML <linux-kernel@vger.kernel.org>
+CC: linux-ide@vger.kernel.org
+Subject: v2.6.29-rc2 gets HSM violations for CD drive
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Sometime since v2.6.28, one of my systems started getting libata
+errors for my CD drive.
 
-Impact: use new framework
+I have started bisecting this problem, but that system is very slow so
+it will likely take a while.
 
-Use {get|put}_user_try, catch, and _ex in arch/x86/ia32/ia32_signal.c.
+The ide/ata parts of the dmesg output:
 
-Note: this patch contains "WARNING: line over 80 characters", because when
-introducing new block I insert an indent to avoid mistakes by edit.
+=============================
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/ia32/ia32_signal.c |  365 +++++++++++++++++++++++--------------------
- 1 files changed, 195 insertions(+), 170 deletions(-)
-
-diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-index 9dabd00..dd77ac0 100644
---- a/arch/x86/ia32/ia32_signal.c
-+++ b/arch/x86/ia32/ia32_signal.c
-@@ -46,78 +46,83 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
- 
- int copy_siginfo_to_user32(compat_siginfo_t __user *to, siginfo_t *from)
- {
--	int err;
-+	int err = 0;
- 
- 	if (!access_ok(VERIFY_WRITE, to, sizeof(compat_siginfo_t)))
- 		return -EFAULT;
- 
--	/* If you change siginfo_t structure, please make sure that
--	   this code is fixed accordingly.
--	   It should never copy any pad contained in the structure
--	   to avoid security leaks, but must copy the generic
--	   3 ints plus the relevant union member.  */
--	err = __put_user(from->si_signo, &to->si_signo);
--	err |= __put_user(from->si_errno, &to->si_errno);
--	err |= __put_user((short)from->si_code, &to->si_code);
--
--	if (from->si_code < 0) {
--		err |= __put_user(from->si_pid, &to->si_pid);
--		err |= __put_user(from->si_uid, &to->si_uid);
--		err |= __put_user(ptr_to_compat(from->si_ptr), &to->si_ptr);
--	} else {
--		/*
--		 * First 32bits of unions are always present:
--		 * si_pid === si_band === si_tid === si_addr(LS half)
--		 */
--		err |= __put_user(from->_sifields._pad[0],
--				  &to->_sifields._pad[0]);
--		switch (from->si_code >> 16) {
--		case __SI_FAULT >> 16:
--			break;
--		case __SI_CHLD >> 16:
--			err |= __put_user(from->si_utime, &to->si_utime);
--			err |= __put_user(from->si_stime, &to->si_stime);
--			err |= __put_user(from->si_status, &to->si_status);
--			/* FALL THROUGH */
--		default:
--		case __SI_KILL >> 16:
--			err |= __put_user(from->si_uid, &to->si_uid);
--			break;
--		case __SI_POLL >> 16:
--			err |= __put_user(from->si_fd, &to->si_fd);
--			break;
--		case __SI_TIMER >> 16:
--			err |= __put_user(from->si_overrun, &to->si_overrun);
--			err |= __put_user(ptr_to_compat(from->si_ptr),
--					  &to->si_ptr);
--			break;
--			 /* This is not generated by the kernel as of now.  */
--		case __SI_RT >> 16:
--		case __SI_MESGQ >> 16:
--			err |= __put_user(from->si_uid, &to->si_uid);
--			err |= __put_user(from->si_int, &to->si_int);
--			break;
-+	put_user_try {
-+		/* If you change siginfo_t structure, please make sure that
-+		   this code is fixed accordingly.
-+		   It should never copy any pad contained in the structure
-+		   to avoid security leaks, but must copy the generic
-+		   3 ints plus the relevant union member.  */
-+		put_user_ex(from->si_signo, &to->si_signo);
-+		put_user_ex(from->si_errno, &to->si_errno);
-+		put_user_ex((short)from->si_code, &to->si_code);
-+
-+		if (from->si_code < 0) {
-+			put_user_ex(from->si_pid, &to->si_pid);
-+			put_user_ex(from->si_uid, &to->si_uid);
-+			put_user_ex(ptr_to_compat(from->si_ptr), &to->si_ptr);
-+		} else {
-+			/*
-+			 * First 32bits of unions are always present:
-+			 * si_pid === si_band === si_tid === si_addr(LS half)
-+			 */
-+			put_user_ex(from->_sifields._pad[0],
-+					  &to->_sifields._pad[0]);
-+			switch (from->si_code >> 16) {
-+			case __SI_FAULT >> 16:
-+				break;
-+			case __SI_CHLD >> 16:
-+				put_user_ex(from->si_utime, &to->si_utime);
-+				put_user_ex(from->si_stime, &to->si_stime);
-+				put_user_ex(from->si_status, &to->si_status);
-+				/* FALL THROUGH */
-+			default:
-+			case __SI_KILL >> 16:
-+				put_user_ex(from->si_uid, &to->si_uid);
-+				break;
-+			case __SI_POLL >> 16:
-+				put_user_ex(from->si_fd, &to->si_fd);
-+				break;
-+			case __SI_TIMER >> 16:
-+				put_user_ex(from->si_overrun, &to->si_overrun);
-+				put_user_ex(ptr_to_compat(from->si_ptr),
-+					    &to->si_ptr);
-+				break;
-+				 /* This is not generated by the kernel as of now.  */
-+			case __SI_RT >> 16:
-+			case __SI_MESGQ >> 16:
-+				put_user_ex(from->si_uid, &to->si_uid);
-+				put_user_ex(from->si_int, &to->si_int);
-+				break;
-+			}
- 		}
--	}
-+	} put_user_catch(err);
-+
- 	return err;
- }
- 
- int copy_siginfo_from_user32(siginfo_t *to, compat_siginfo_t __user *from)
- {
--	int err;
-+	int err = 0;
- 	u32 ptr32;
- 
- 	if (!access_ok(VERIFY_READ, from, sizeof(compat_siginfo_t)))
- 		return -EFAULT;
- 
--	err = __get_user(to->si_signo, &from->si_signo);
--	err |= __get_user(to->si_errno, &from->si_errno);
--	err |= __get_user(to->si_code, &from->si_code);
-+	get_user_try {
-+		get_user_ex(to->si_signo, &from->si_signo);
-+		get_user_ex(to->si_errno, &from->si_errno);
-+		get_user_ex(to->si_code, &from->si_code);
- 
--	err |= __get_user(to->si_pid, &from->si_pid);
--	err |= __get_user(to->si_uid, &from->si_uid);
--	err |= __get_user(ptr32, &from->si_ptr);
--	to->si_ptr = compat_ptr(ptr32);
-+		get_user_ex(to->si_pid, &from->si_pid);
-+		get_user_ex(to->si_uid, &from->si_uid);
-+		get_user_ex(ptr32, &from->si_ptr);
-+		to->si_ptr = compat_ptr(ptr32);
-+	} get_user_catch(err);
- 
- 	return err;
- }
-@@ -142,17 +147,23 @@ asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
- 				  struct pt_regs *regs)
- {
- 	stack_t uss, uoss;
--	int ret;
-+	int ret, err = 0;
- 	mm_segment_t seg;
- 
- 	if (uss_ptr) {
- 		u32 ptr;
- 
- 		memset(&uss, 0, sizeof(stack_t));
--		if (!access_ok(VERIFY_READ, uss_ptr, sizeof(stack_ia32_t)) ||
--			    __get_user(ptr, &uss_ptr->ss_sp) ||
--			    __get_user(uss.ss_flags, &uss_ptr->ss_flags) ||
--			    __get_user(uss.ss_size, &uss_ptr->ss_size))
-+		if (!access_ok(VERIFY_READ, uss_ptr, sizeof(stack_ia32_t)))
-+			return -EFAULT;
-+
-+		get_user_try {
-+			get_user_ex(ptr, &uss_ptr->ss_sp);
-+			get_user_ex(uss.ss_flags, &uss_ptr->ss_flags);
-+			get_user_ex(uss.ss_size, &uss_ptr->ss_size);
-+		} get_user_catch(err);
-+
-+		if (err)
- 			return -EFAULT;
- 		uss.ss_sp = compat_ptr(ptr);
- 	}
-@@ -161,10 +172,16 @@ asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
- 	ret = do_sigaltstack(uss_ptr ? &uss : NULL, &uoss, regs->sp);
- 	set_fs(seg);
- 	if (ret >= 0 && uoss_ptr)  {
--		if (!access_ok(VERIFY_WRITE, uoss_ptr, sizeof(stack_ia32_t)) ||
--		    __put_user(ptr_to_compat(uoss.ss_sp), &uoss_ptr->ss_sp) ||
--		    __put_user(uoss.ss_flags, &uoss_ptr->ss_flags) ||
--		    __put_user(uoss.ss_size, &uoss_ptr->ss_size))
-+		if (!access_ok(VERIFY_WRITE, uoss_ptr, sizeof(stack_ia32_t)))
-+			return -EFAULT;
-+
-+		put_user_try {
-+			put_user_ex(ptr_to_compat(uoss.ss_sp), &uoss_ptr->ss_sp);
-+			put_user_ex(uoss.ss_flags, &uoss_ptr->ss_flags);
-+			put_user_ex(uoss.ss_size, &uoss_ptr->ss_size);
-+		} put_user_catch(err);
-+
-+		if (err)
- 			ret = -EFAULT;
- 	}
- 	return ret;
-@@ -174,18 +191,18 @@ asmlinkage long sys32_sigaltstack(const stack_ia32_t __user *uss_ptr,
-  * Do a signal return; undo the signal stack.
-  */
- #define COPY(x)			{		\
--	err |= __get_user(regs->x, &sc->x);	\
-+	get_user_ex(regs->x, &sc->x);		\
- }
- 
- #define COPY_SEG_CPL3(seg)	{			\
- 		unsigned short tmp;			\
--		err |= __get_user(tmp, &sc->seg);	\
-+		get_user_ex(tmp, &sc->seg);		\
- 		regs->seg = tmp | 3;			\
- }
- 
- #define RELOAD_SEG(seg)		{		\
- 	unsigned int cur, pre;			\
--	err |= __get_user(pre, &sc->seg);	\
-+	get_user_ex(pre, &sc->seg);		\
- 	savesegment(seg, cur);			\
- 	pre |= 3;				\
- 	if (pre != cur)				\
-@@ -209,39 +226,42 @@ static int ia32_restore_sigcontext(struct pt_regs *regs,
- 	       sc, sc->err, sc->ip, sc->cs, sc->flags);
- #endif
- 
--	/*
--	 * Reload fs and gs if they have changed in the signal
--	 * handler.  This does not handle long fs/gs base changes in
--	 * the handler, but does not clobber them at least in the
--	 * normal case.
--	 */
--	err |= __get_user(gs, &sc->gs);
--	gs |= 3;
--	savesegment(gs, oldgs);
--	if (gs != oldgs)
--		load_gs_index(gs);
--
--	RELOAD_SEG(fs);
--	RELOAD_SEG(ds);
--	RELOAD_SEG(es);
--
--	COPY(di); COPY(si); COPY(bp); COPY(sp); COPY(bx);
--	COPY(dx); COPY(cx); COPY(ip);
--	/* Don't touch extended registers */
--
--	COPY_SEG_CPL3(cs);
--	COPY_SEG_CPL3(ss);
--
--	err |= __get_user(tmpflags, &sc->flags);
--	regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
--	/* disable syscall checks */
--	regs->orig_ax = -1;
--
--	err |= __get_user(tmp, &sc->fpstate);
--	buf = compat_ptr(tmp);
--	err |= restore_i387_xstate_ia32(buf);
--
--	err |= __get_user(*pax, &sc->ax);
-+	get_user_try {
-+		/*
-+		 * Reload fs and gs if they have changed in the signal
-+		 * handler.  This does not handle long fs/gs base changes in
-+		 * the handler, but does not clobber them at least in the
-+		 * normal case.
-+		 */
-+		get_user_ex(gs, &sc->gs);
-+		gs |= 3;
-+		savesegment(gs, oldgs);
-+		if (gs != oldgs)
-+			load_gs_index(gs);
-+
-+		RELOAD_SEG(fs);
-+		RELOAD_SEG(ds);
-+		RELOAD_SEG(es);
-+
-+		COPY(di); COPY(si); COPY(bp); COPY(sp); COPY(bx);
-+		COPY(dx); COPY(cx); COPY(ip);
-+		/* Don't touch extended registers */
-+
-+		COPY_SEG_CPL3(cs);
-+		COPY_SEG_CPL3(ss);
-+
-+		get_user_ex(tmpflags, &sc->flags);
-+		regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
-+		/* disable syscall checks */
-+		regs->orig_ax = -1;
-+
-+		get_user_ex(tmp, &sc->fpstate);
-+		buf = compat_ptr(tmp);
-+		err |= restore_i387_xstate_ia32(buf);
-+
-+		get_user_ex(*pax, &sc->ax);
-+	} get_user_catch(err);
-+
- 	return err;
- }
- 
-@@ -319,36 +339,38 @@ static int ia32_setup_sigcontext(struct sigcontext_ia32 __user *sc,
- {
- 	int tmp, err = 0;
- 
--	savesegment(gs, tmp);
--	err |= __put_user(tmp, (unsigned int __user *)&sc->gs);
--	savesegment(fs, tmp);
--	err |= __put_user(tmp, (unsigned int __user *)&sc->fs);
--	savesegment(ds, tmp);
--	err |= __put_user(tmp, (unsigned int __user *)&sc->ds);
--	savesegment(es, tmp);
--	err |= __put_user(tmp, (unsigned int __user *)&sc->es);
--
--	err |= __put_user(regs->di, &sc->di);
--	err |= __put_user(regs->si, &sc->si);
--	err |= __put_user(regs->bp, &sc->bp);
--	err |= __put_user(regs->sp, &sc->sp);
--	err |= __put_user(regs->bx, &sc->bx);
--	err |= __put_user(regs->dx, &sc->dx);
--	err |= __put_user(regs->cx, &sc->cx);
--	err |= __put_user(regs->ax, &sc->ax);
--	err |= __put_user(current->thread.trap_no, &sc->trapno);
--	err |= __put_user(current->thread.error_code, &sc->err);
--	err |= __put_user(regs->ip, &sc->ip);
--	err |= __put_user(regs->cs, (unsigned int __user *)&sc->cs);
--	err |= __put_user(regs->flags, &sc->flags);
--	err |= __put_user(regs->sp, &sc->sp_at_signal);
--	err |= __put_user(regs->ss, (unsigned int __user *)&sc->ss);
--
--	err |= __put_user(ptr_to_compat(fpstate), &sc->fpstate);
--
--	/* non-iBCS2 extensions.. */
--	err |= __put_user(mask, &sc->oldmask);
--	err |= __put_user(current->thread.cr2, &sc->cr2);
-+	put_user_try {
-+		savesegment(gs, tmp);
-+		put_user_ex(tmp, (unsigned int __user *)&sc->gs);
-+		savesegment(fs, tmp);
-+		put_user_ex(tmp, (unsigned int __user *)&sc->fs);
-+		savesegment(ds, tmp);
-+		put_user_ex(tmp, (unsigned int __user *)&sc->ds);
-+		savesegment(es, tmp);
-+		put_user_ex(tmp, (unsigned int __user *)&sc->es);
-+
-+		put_user_ex(regs->di, &sc->di);
-+		put_user_ex(regs->si, &sc->si);
-+		put_user_ex(regs->bp, &sc->bp);
-+		put_user_ex(regs->sp, &sc->sp);
-+		put_user_ex(regs->bx, &sc->bx);
-+		put_user_ex(regs->dx, &sc->dx);
-+		put_user_ex(regs->cx, &sc->cx);
-+		put_user_ex(regs->ax, &sc->ax);
-+		put_user_ex(current->thread.trap_no, &sc->trapno);
-+		put_user_ex(current->thread.error_code, &sc->err);
-+		put_user_ex(regs->ip, &sc->ip);
-+		put_user_ex(regs->cs, (unsigned int __user *)&sc->cs);
-+		put_user_ex(regs->flags, &sc->flags);
-+		put_user_ex(regs->sp, &sc->sp_at_signal);
-+		put_user_ex(regs->ss, (unsigned int __user *)&sc->ss);
-+
-+		put_user_ex(ptr_to_compat(fpstate), &sc->fpstate);
-+
-+		/* non-iBCS2 extensions.. */
-+		put_user_ex(mask, &sc->oldmask);
-+		put_user_ex(current->thread.cr2, &sc->cr2);
-+	} put_user_catch(err);
- 
- 	return err;
- }
-@@ -437,13 +459,17 @@ int ia32_setup_frame(int sig, struct k_sigaction *ka,
- 		else
- 			restorer = &frame->retcode;
- 	}
--	err |= __put_user(ptr_to_compat(restorer), &frame->pretcode);
- 
--	/*
--	 * These are actually not used anymore, but left because some
--	 * gdb versions depend on them as a marker.
--	 */
--	err |= __put_user(*((u64 *)&code), (u64 *)frame->retcode);
-+	put_user_try {
-+		put_user_ex(ptr_to_compat(restorer), &frame->pretcode);
-+
-+		/*
-+		 * These are actually not used anymore, but left because some
-+		 * gdb versions depend on them as a marker.
-+		 */
-+		put_user_ex(*((u64 *)&code), (u64 *)frame->retcode);
-+	} put_user_catch(err);
-+
- 	if (err)
- 		return -EFAULT;
- 
-@@ -496,41 +522,40 @@ int ia32_setup_rt_frame(int sig, struct k_sigaction *ka, siginfo_t *info,
- 	if (!access_ok(VERIFY_WRITE, frame, sizeof(*frame)))
- 		return -EFAULT;
- 
--	err |= __put_user(sig, &frame->sig);
--	err |= __put_user(ptr_to_compat(&frame->info), &frame->pinfo);
--	err |= __put_user(ptr_to_compat(&frame->uc), &frame->puc);
--	err |= copy_siginfo_to_user32(&frame->info, info);
--	if (err)
--		return -EFAULT;
-+	put_user_try {
-+		put_user_ex(sig, &frame->sig);
-+		put_user_ex(ptr_to_compat(&frame->info), &frame->pinfo);
-+		put_user_ex(ptr_to_compat(&frame->uc), &frame->puc);
-+		err |= copy_siginfo_to_user32(&frame->info, info);
- 
--	/* Create the ucontext.  */
--	if (cpu_has_xsave)
--		err |= __put_user(UC_FP_XSTATE, &frame->uc.uc_flags);
--	else
--		err |= __put_user(0, &frame->uc.uc_flags);
--	err |= __put_user(0, &frame->uc.uc_link);
--	err |= __put_user(current->sas_ss_sp, &frame->uc.uc_stack.ss_sp);
--	err |= __put_user(sas_ss_flags(regs->sp),
--			  &frame->uc.uc_stack.ss_flags);
--	err |= __put_user(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
--	err |= ia32_setup_sigcontext(&frame->uc.uc_mcontext, fpstate,
--				     regs, set->sig[0]);
--	err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
--	if (err)
--		return -EFAULT;
-+		/* Create the ucontext.  */
-+		if (cpu_has_xsave)
-+			put_user_ex(UC_FP_XSTATE, &frame->uc.uc_flags);
-+		else
-+			put_user_ex(0, &frame->uc.uc_flags);
-+		put_user_ex(0, &frame->uc.uc_link);
-+		put_user_ex(current->sas_ss_sp, &frame->uc.uc_stack.ss_sp);
-+		put_user_ex(sas_ss_flags(regs->sp),
-+			    &frame->uc.uc_stack.ss_flags);
-+		put_user_ex(current->sas_ss_size, &frame->uc.uc_stack.ss_size);
-+		err |= ia32_setup_sigcontext(&frame->uc.uc_mcontext, fpstate,
-+					     regs, set->sig[0]);
-+		err |= __copy_to_user(&frame->uc.uc_sigmask, set, sizeof(*set));
-+
-+		if (ka->sa.sa_flags & SA_RESTORER)
-+			restorer = ka->sa.sa_restorer;
-+		else
-+			restorer = VDSO32_SYMBOL(current->mm->context.vdso,
-+						 rt_sigreturn);
-+		put_user_ex(ptr_to_compat(restorer), &frame->pretcode);
-+
-+		/*
-+		 * Not actually used anymore, but left because some gdb
-+		 * versions need it.
-+		 */
-+		put_user_ex(*((u64 *)&code), (u64 *)frame->retcode);
-+	} put_user_catch(err);
- 
--	if (ka->sa.sa_flags & SA_RESTORER)
--		restorer = ka->sa.sa_restorer;
--	else
--		restorer = VDSO32_SYMBOL(current->mm->context.vdso,
--					 rt_sigreturn);
--	err |= __put_user(ptr_to_compat(restorer), &frame->pretcode);
--
--	/*
--	 * Not actually used anymore, but left because some gdb
--	 * versions need it.
--	 */
--	err |= __put_user(*((u64 *)&code), (u64 *)frame->retcode);
- 	if (err)
- 		return -EFAULT;
- 
--- 
-1.6.0.4
+SCSI subsystem initialized
+libata version 3.00 loaded.
+pata_ali 0000:00:0f.0: can't derive routing for PCI INT A
+pata_ali 0000:00:0f.0: setting latency timer to 64
+scsi0 : pata_ali
+scsi1 : pata_ali
+ata1: PATA max MWDMA2 cmd 0x1f0 ctl 0x3f6 bmdma 0xfc90 irq 14
+ata2: PATA max MWDMA2 cmd 0x170 ctl 0x376 bmdma 0xfc98 irq 15
+ata1.00: ATA-6: HTS541010G9AT00, MBZOA60A, max UDMA/100
+ata1.00: 195371568 sectors, multi 16: LBA48
+ata1.00: configured for MWDMA2
+scsi 0:0:0:0: Direct-Access     ATA      HTS541010G9AT00  MBZO PQ: 0
+ANSI: 5
+ata2.00: ATAPI: SR242S, z03, max MWDMA2
+ata2.00: WARNING: ATAPI DMA disabled for reliablity issues.  It can be
+enabled
+ata2.00: WARNING: via pata_ali.atapi_dma modparam or corresponding
+sysfs node.
+ata2.00: configured for PIO4
+scsi 1:0:0:0: CD-ROM            MITSUMI  CD-ROM SR242S !A z03  PQ: 0
+ANSI: 5
+Uniform Multi-Platform E-IDE driver
+BIOS EDD facility v0.16 2004-Jun-25, 1 devices found
+udevd version 128 started
+ACPI: EC: missing confirmations, switch off interrupt mode.
+Driver 'sd' needs updating - please use bus_type methods
+sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors: (100 GB/93.1 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors: (100 GB/93.1 GiB)
+sd 0:0:0:0: [sda] Write Protect is off
+sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
+support DPO or FUA
+ sda1 sda2 sda3 sda4
+sd 0:0:0:0: [sda] Attached SCSI disk
+ACPI: PCI Interrupt Link [LNK5] enabled at IRQ 9
+PCI: setting IRQ 9 as level-triggered
+kjournald starting.  Commit interval 5 seconds
+EXT3 FS on sda3, internal journal
+EXT3-fs: mounted filesystem with ordered data mode.
+EXT3 (no)acl options not supported
+EXT3 (no)user_xattr options not supported
+udevd version 128 started
+pci_hotplug: PCI Hot Plug PCI Core version: 0.5
+sd 0:0:0:0: Attached scsi generic sg0 type 0
+scsi 1:0:0:0: Attached scsi generic sg1 type 5
+shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+Driver 'sr' needs updating - please use bus_type methods
+ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata2.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         cdb 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+         res 51/20:03:00:00:00/00:00:00:00:00/a0 Emask 0x3 (HSM violation)
+ata2.00: status: { DRDY ERR }
+ata2: soft resetting link
+ata2.00: configured for PIO4
+ata2: EH complete
+sr0: scsi3-mmc drive: 24x/24x cd/rw xa/form2 cdda tray
+Uniform CD-ROM driver Revision: 3.20
+sr 1:0:0:0: Attached scsi CD-ROM sr0
+ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+ata2.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+         cdb 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
+         res 51/20:03:00:00:00/00:00:00:00:00/a0 Emask 0x3 (HSM violation)
+ata2.00: status: { DRDY ERR }
+ata2: soft resetting link
 
