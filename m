@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764421AbZAWG2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763006AbZAWG3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764421AbZAWG2u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:28:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZAWGQ5
+	id S1763006AbZAWG3Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:29:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761264AbZAWGQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:57 -0500
-Received: from kroah.org ([198.145.64.141]:36435 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:58 -0500
+Received: from kroah.org ([198.145.64.141]:36444 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752065AbZAWGQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:54 -0500
-Date: Thu, 22 Jan 2009 22:14:41 -0800
+	id S1761230AbZAWGQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:55 -0500
+Date: Thu, 22 Jan 2009 22:14:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
        Chris Mason <chris.mason@oracle.com>,
        Dave Chinner <david@fromorbit.com>
-Subject: [patch 33/40] mm: write_cache_pages optimise page cleaning
-Message-ID: <20090123061441.GG2922@kroah.com>
+Subject: [patch 34/40] mm: write_cache_pages terminate quickly
+Message-ID: <20090123061444.GH2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-write_cache_pages-optimise-page-cleaning.patch"
+Content-Disposition: inline; filename="mm-write_cache_pages-terminate-quickly.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,17 +43,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nick Piggin <npiggin@suse.de>
 
-commit 515f4a037fb9ab736f8bad733fcd2ffd350cf265 upstream.
+commit d5482cdf8a0aacb1e6468a97d5544f5829c8d8c4 upstream.
 
-In write_cache_pages, if we get stuck behind another process that is
-cleaning pages, we will be forced to wait for them to finish, then perform
-our own writeout (if it was redirtied during the long wait), then wait for
-that.
-
-If a page under writeout is still clean, we can skip waiting for it (if
-we're part of a data integrity sync, we'll be waiting for all writeout
-pages afterwards, so we'll still be waiting for the other guy's write
-that's cleaned the page).
+Terminate the write_cache_pages loop upon encountering the first page past
+end, without locking the page.  Pages cannot have their index change when
+we have a reference on them (truncate, eg truncate_inode_pages_range
+performs the same check without the page lock).
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 Cc: Chris Mason <chris.mason@oracle.com>
@@ -63,34 +58,57 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page-writeback.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ mm/page-writeback.c |   32 ++++++++++++++++----------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
-@@ -948,11 +948,20 @@ continue_unlock:
- 				goto continue_unlock;
- 			}
+@@ -914,15 +914,24 @@ retry:
+ 		for (i = 0; i < nr_pages; i++) {
+ 			struct page *page = pvec.pages[i];
  
--			if (wbc->sync_mode != WB_SYNC_NONE)
--				wait_on_page_writeback(page);
-+			if (!PageDirty(page)) {
-+				/* someone wrote it for us */
-+				goto continue_unlock;
+-			done_index = page->index + 1;
+-
+ 			/*
+-			 * At this point we hold neither mapping->tree_lock nor
+-			 * lock on the page itself: the page may be truncated or
+-			 * invalidated (changing page->mapping to NULL), or even
+-			 * swizzled back from swapper_space to tmpfs file
+-			 * mapping
++			 * At this point, the page may be truncated or
++			 * invalidated (changing page->mapping to NULL), or
++			 * even swizzled back from swapper_space to tmpfs file
++			 * mapping. However, page->index will not change
++			 * because we have a reference on the page.
+ 			 */
++			if (page->index > end) {
++				/*
++				 * can't be range_cyclic (1st pass) because
++				 * end == -1 in that case.
++				 */
++				done = 1;
++				break;
 +			}
 +
-+			if (PageWriteback(page)) {
-+				if (wbc->sync_mode != WB_SYNC_NONE)
-+					wait_on_page_writeback(page);
-+				else
-+					goto continue_unlock;
-+			}
++			done_index = page->index + 1;
++
+ 			lock_page(page);
  
--			if (PageWriteback(page) ||
--			    !clear_page_dirty_for_io(page))
-+			BUG_ON(PageWriteback(page));
-+			if (!clear_page_dirty_for_io(page))
+ 			/*
+@@ -939,15 +948,6 @@ continue_unlock:
+ 				continue;
+ 			}
+ 
+-			if (page->index > end) {
+-				/*
+-				 * can't be range_cyclic (1st pass) because
+-				 * end == -1 in that case.
+-				 */
+-				done = 1;
+-				goto continue_unlock;
+-			}
+-
+ 			if (!PageDirty(page)) {
+ 				/* someone wrote it for us */
  				goto continue_unlock;
- 
- 			ret = (*writepage)(page, wbc, data);
 
