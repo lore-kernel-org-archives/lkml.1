@@ -1,67 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760345AbZAWNqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759137AbZAWNsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760345AbZAWNqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 08:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756288AbZAWNqL
+	id S1759137AbZAWNsz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 08:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756246AbZAWNsq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 08:46:11 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:65220 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756232AbZAWNqJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 08:46:09 -0500
-MIME-Version: 1.0
+	Fri, 23 Jan 2009 08:48:46 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:36329 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756232AbZAWNsq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 08:48:46 -0500
+Date: Fri, 23 Jan 2009 15:04:06 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andi Kleen <andi@firstfloor.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+Subject: Re: [patch] SLQB slab allocator
+Message-ID: <20090123140406.GR15750@one.firstfloor.org>
+References: <20090121143008.GV24891@wotan.suse.de> <87hc3qcpo1.fsf@basil.nowhere.org> <20090123112555.GF19986@wotan.suse.de> <20090123115731.GO15750@one.firstfloor.org> <20090123131800.GH19986@wotan.suse.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18809.51738.660327.55822@harpo.it.uu.se>
-Date: Fri, 23 Jan 2009 14:46:02 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Uros Bizjak <ubizjak@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] x86: Unneeded assignment to tsk in recent x86 change, v2
-In-Reply-To: <5787cf470901212333m749085ebjda40e869ab4bdffc@mail.gmail.com>
-References: <5787cf470901212333m749085ebjda40e869ab4bdffc@mail.gmail.com>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+In-Reply-To: <20090123131800.GH19986@wotan.suse.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uros Bizjak writes:
- > On Wed, Jan 21, 2009 at 10:13 PM, Mikael Pettersson <mikpe@it.uu.se> wrote:
- > 
- > Impact: Cleanup.
- > 
- > Remove unneeded assignment to tsk in recent x86 change.
- > 
- > >  > Hm, I'm not sure I see the inconsistency here. Care to explain this
- > >  > inconsistency in a couple of words?
- > >
- > > You're initialising some variables in their declarations, and some
- > > using assignments at the start of the procedure body. In particular,
- > > for some reason you don't initialise 'mm' in its declaration even
- > > though you could do so for consistency with 'tsk'.
- > >
- > > However, I'm strongly in favour of separating declarations and
- > > initialisations (esp. ones that need actual computations), so
- > > rather than subjecting 'mm' to the treatment you gave 'tsk',
- > > just leave the code alone.
- > >
- > 
- > Patch v2 with the second hunk removed is attached to this message.
- > 
- > Thanks,
- > Uros.
- > diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
- > index 93a563b..621e9b3 100644
- > --- a/arch/x86/mm/fault.c
- > +++ b/arch/x86/mm/fault.c
- > @@ -421,7 +421,6 @@ static noinline void pgtable_bad(struct pt_regs *regs,
- >  	printk(KERN_ALERT "%s: Corrupted page table at address %lx\n",
- >  	       tsk->comm, address);
- >  	dump_pagetable(address);
- > -	tsk = current;
- >  	tsk->thread.cr2 = address;
- >  	tsk->thread.trap_no = 14;
- >  	tsk->thread.error_code = error_code;
+[dropping lameters' outdated address]
 
-ACKed, but an equivalent patch from Johannes Weiner has already been committed
-to the x86 git tree.
+On Fri, Jan 23, 2009 at 02:18:00PM +0100, Nick Piggin wrote:
+>  
+> > > Probably the best way would
+> > > be to have dynamic cpu and node allocs for them, I agree.
+> > 
+> > It's really needed.
+> > 
+> > > Any plans for an alloc_pernode?
+> > 
+> > It shouldn't be very hard to implement. Or do you ask if I'm volunteering? @)
+> 
+> Just if you knew about plans. I won't get too much time to work on
+
+Not aware of anyone working on it.
+
+> it next week, so I hope to have something in slab tree in the
+> meantime. I think it is OK to leave now, with a mind to improving
+
+Sorry, the NR_CPUS/MAX_NUMNODE arrays are a merge blocker imho
+because they explode with CONFIG_MAXSMP.
+
+> it before a possible mainline merge (there will possibly be more
+> serious issues discovered anyway).
+
+I see you fixed the static arrays.
+
+Doing the same for the kmem_cache arrays with making them a pointer
+and then using num_possible_{cpus,nodes}() would seem straight forward,
+wouldn't it?
+
+Although I think I would prefer alloc_percpu, possibly with
+per_cpu_ptr(first_cpu(node_to_cpumask(node)), ...)
+
+> > > > > + * - investiage performance with memoryless nodes. Perhaps CPUs can be given
+> > > > > + *   a default closest home node via which it can use fastpath functions.
+> > > > 
+> > > > FWIW that is what x86-64 always did. Perhaps you can just fix ia64 to do 
+> > > > that too and be happy.
+> > > 
+> > > What if the node is possible but not currently online?
+> > 
+> > Nobody should allocate on it then.
+> 
+> But then it goes online and what happens? 
+
+You already have a node online notifier that should handle that then, don't you?
+
+x86-64 btw currently doesn't support node hotplug (but I expect it will
+be added at some point), but it should be ok even on architectures
+that do.
+
+> Your numa_node_id() changes?
+
+What do you mean?
+
+> How does that work? Or you mean x86-64 does not do that same trick for
+> possible but offline nodes?
+
+All I'm saying is that when x86-64 finds a memory less node it assigns
+its CPUs to other nodes. Hmm ok perhaps there's a backdoor when someone
+sets it with kmalloc_node() but that should normally not happen I think.
+
+> 
+> > > git grep -l -e cache_line_size arch/ | egrep '\.h$'
+> > > 
+> > > Only ia64, mips, powerpc, sparc, x86...
+> > 
+> > It's straight forward to that define everywhere.
+> 
+> OK, but this code is just copied straight from SLAB... I don't want
+> to add such dependency at this point I'm trying to get something
+
+I'm sure such a straight forward change could be still put into .29
+
+> reasonable to merge. But it would be a fine cleanup.
+
+Hmm to be honest it's a little weird to post so much code and then
+say you can't change large parts of it.
+
+Could you perhaps mark all the code you don't want to change?
+
+I'm not sure I follow the rationale for not changing code that has been
+copied from elsewhere. If you copied it why can't you change it?
+ 
+> > 
+> > Hmm, then fix slub? 
+> 
+> That's my plan, but I go about it a different way ;) I don't want to
+> spend too much time on other allocators or cleanup etc code too much
+> right now (except cleanups in SLQB, which of course is required).
+
+But still if you copy code from slub you can improve it, can't you?
+The sysfs code definitely could be done much nicer (ok for small values
+of "nice"; sysfs is always ugly of course @). But at least it can be
+done in a way that doesn't bloat the text so much.
+
+Thanks for the patch.
+
+One thing I'm not sure about is using a private lock to hold off hotplug.
+I don't have a concrete scenario, but it makes me uneasy considering
+deadlocks when someone sleeps etc. Safer is get/put_online_cpus() 
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
