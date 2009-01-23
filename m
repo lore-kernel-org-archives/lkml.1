@@ -1,129 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762260AbZAWGha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757313AbZAWG45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762260AbZAWGha (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:37:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZAWGhP
+	id S1757313AbZAWG45 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:56:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZAWG4n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:37:15 -0500
-Received: from rv-out-0506.google.com ([209.85.198.228]:45827 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751398AbZAWGhN (ORCPT
+	Fri, 23 Jan 2009 01:56:43 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:37331 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751967AbZAWG4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:37:13 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZxwJLV75D8nfFWM3j0VFcq79Ky1owywItJgEJ454/PKd0+lwPYe3VXMtwUvoKQJRS2
-         39T4wf/1/0DYVzaIqLbjILfTuJFK4iYL78OkyRls4apie93uunO2JQ3G1WF7o8qx6ipH
-         ezZu2yBuBE7yfxKtT2rsxBouWLFVD1gr00MJg=
+	Fri, 23 Jan 2009 01:56:41 -0500
+Message-ID: <4979692B.3050703@cs.helsinki.fi>
+Date: Fri, 23 Jan 2009 08:52:27 +0200
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
 MIME-Version: 1.0
-In-Reply-To: <20090122133107.GA27592@sgi.com>
-References: <4104961b0901220259u51677cbdkda2ed84dc2892543@mail.gmail.com>
-	 <20090122133107.GA27592@sgi.com>
-Date: Fri, 23 Jan 2009 14:37:12 +0800
-Message-ID: <4104961b0901222237h7fac5b1vf1b3b7f9d06d550c@mail.gmail.com>
-Subject: Re: How to generate a Kerntypes file?
-From: jidong xiao <jidong.xiao@gmail.com>
-To: Cliff Wickman <cpw@sgi.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com,
+       mingo@elte.hu
+Subject: Re: Mainline kernel OLTP performance update
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>	 <200901161503.13730.nickpiggin@yahoo.com.au>	 <20090115201210.ca1a9542.akpm@linux-foundation.org>	 <200901161746.25205.nickpiggin@yahoo.com.au>	 <20090116065546.GJ31013@parisc-linux.org>	 <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>	 <1232428583.11429.83.camel@ymzhang>	 <alpine.DEB.1.10.0901211852060.18367@qirst.com>	 <1232613395.11429.122.camel@ymzhang>	 <1232615707.14549.6.camel@penberg-laptop>	 <1232616517.11429.129.camel@ymzhang>	 <1232617672.14549.25.camel@penberg-laptop> <1232679773.11429.155.camel@ymzhang>
+In-Reply-To: <1232679773.11429.155.camel@ymzhang>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 9:31 PM, Cliff Wickman <cpw@sgi.com> wrote:
-> Hi Jason,
->
-> On Thu, Jan 22, 2009 at 06:59:34PM +0800, jidong xiao wrote:
->> Hi,All,
+Zhang, Yanmin wrote:
+>>>> If it's the former, with big enough size passed to __alloc_skb(), the
+>>>> networking code might be taking a hit from the SLUB page allocator
+>>>> pass-through.
+>> Do we know what kind of size is being passed to __alloc_skb() in this
+>> case?
+> In function __alloc_skb, original parameter size=4155,
+> SKB_DATA_ALIGN(size)=4224, sizeof(struct skb_shared_info)=472, so
+> __kmalloc_track_caller's parameter size=4696.
+
+OK, so all allocations go straight to the page allocator.
+
+> 
+>>  Maybe we want to do something like this.
 >>
->> Sometimes when I install a kernel I saw there is a Kerntypes file
->> installed under /boot directory, but sometimes no, I remember when I
->> install a sles9 kernel, there must be a Kerntypes file installed, but
->> most of other kernels doesn't include such a Kerntypes file. This file
->> is very useful for me to do some analysis, so I hope I can generate it
->> every time I build a kernel. Do I need a patch for this or there are
->> already some patches I can take use of?Thanks.
->
-> You had a init/kerntypes.c in sles9 and sles10. It included a lot
-> of basic kernel types.  It was compiled with -g to make the kerntypes.
-> I presume that you used the LKCD project's lcrash with the kerntypes.
->
-Hi, Cliff,
+>> SLUB: revert page allocator pass-through
+> This patch amost fixes the netperf UDP-U-4k issue.
+> 
+> #slabinfo -AD
+> Name                   Objects    Alloc     Free   %Fast
+> :0000256                  1658 70350463 70348946  99  99 
+> kmalloc-8192                31 70322309 70322293  99  99 
+> :0000168                  2592   143154   140684  93  28 
+> :0004096                  1456    91072    89644  99  96 
+> :0000192                  3402    63838    60491  89  11 
+> :0000064                  6177    49635    43743  98  77 
+> 
+> So ﻿kmalloc-8192 appears. Without the patch, ﻿kmalloc-8192 hides.
+> ﻿kmalloc-8192's default order on my 8-core stoakley is 2.
 
-Thanks for your guides.
+Christoph, should we merge my patch as-is or do you have an alternative 
+fix in mind? We could, of course, increase kmalloc() caches one level up 
+to 8192 or higher.
 
-Well yes I am intending to use lcrash to load the kernel debug information.
+> 
+> 1) If I start CPU_NUM clients and servers, SLUB's result is about 2% better than SLQB's;
+> 2) If I start 1 clinet and 1 server, and bind them to different physical cpu, SLQB's result
+> is about 10% better than SLUB's.
+> 
+> I don't know why there is still 10% difference with item 2). Maybe cachemiss causes it?
 
-I noticed that recently kdb is going to be able to print out kernel
-structures, and now I want to test that feature, I started my
-experiments by reading the instructions inside
-kdb/modules/kdbm_debugtypes.c which is saying:
+Maybe we can use the perfstat and/or kerneltop utilities of the new perf 
+counters patch to diagnose this:
 
- * Usage:
- *  in order for the insmod kdbm_debugtypes.ko to succeed in loading types
- *  you must first use  lcrash -t kerntypes.xxxx -o debug_info
- *  and echo debug_info > /proc/kdb/debug_info_name
+http://lkml.org/lkml/2009/1/21/273
 
-so I have to generate kerntypes file. I looked into init/kerntypes.c,
-it seems there is nothing but just includes some header files, like
-below:
+And do oprofile, of course. Thanks!
 
-     16 #include <linux/compile.h>
-     17 #include <linux/module.h>
-     18 #include <linux/mm.h>
-     19 #include <linux/vmalloc.h>
-     20 #include <linux/config.h>
-     21 #include <linux/utsname.h>
-     22 #include <linux/kernel_stat.h>
-     23 #include <linux/dump.h>
-     24
-     25 #include <asm/kerntypes.h>
-
-We can see here are 9 files are included, does this mean the resulted
-Kerntypes file only provides kernel structures that are defined within
-these 9 files? If I want to print out more kernel structures I need to
-change this file so as to include more header files?
-
-In addition, if I want to generate Kerntypes file via building a
-mainline kernel(rather than SLES kernel), the only thing I need to do
-is:
-1. add this init/kerntypes.c and include/asm/kerntypes.h into kernel
-source code.
-2. change the Makefile accordingly.
-
-After that I just compile the kernel as usual and I should be able to
-get the Kerntypes file(which is actually nothing but just
-init/kerntypes.o), right?
-
-Regards
-Jason
-
-> If you download lkcd (lkcd.svn.sourceforge.net) you also build a
-> tool called dwarfextract.  It is able to pull all the structure
-> definitions out of a -g (CONFIG_DEBUG_INFO) kernel and any selected
-> modules.  That is useful with the lcrash command.
->
-> If you want to analyze your live system or a dump with the crash command
-> (people.redhat.com/~anderson/) you don't need the kerntypes, as you use
-> the -g kernel itself.  Although you may make kerntypes with dwarfextract
-> and use them with crash also.
->
-> -Cliff
->
->> Regards
->> Jason
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->
-> --
-> Cliff Wickman
-> Silicon Graphics, Inc.
-> cpw@sgi.com
-> (651) 683-3824
->
+		Pekka
