@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761950AbZAWBUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbZAWBVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761950AbZAWBUu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:20:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760218AbZAWBO7
+	id S1762154AbZAWBVe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:21:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbZAWBPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:14:59 -0500
-Received: from kroah.org ([198.145.64.141]:50531 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:15:04 -0500
+Received: from kroah.org ([198.145.64.141]:50514 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760161AbZAWBOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:14:55 -0500
-Date: Thu, 22 Jan 2009 17:12:06 -0800
+	id S1760156AbZAWBOy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:14:54 -0500
+Date: Thu, 22 Jan 2009 17:12:02 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jarek Poplawski <jarkao2@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 18/46] pkt_sched: sch_htb: Fix deadlock in hrtimers
-	triggered by HTB
-Message-ID: <20090123011206.GS19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 17/46] usb-storage: set CAPACITY_HEURISTICS flag for bad
+	vendors
+Message-ID: <20090123011202.GR19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pkt_sched-sch_htb-fix-deadlock-in-hrtimers-triggered-by-htb.patch"
+Content-Disposition: inline; filename="usb-storage-set-capacity_heuristics-flag-for-bad-vendors.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,37 +42,259 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jarek Poplawski <jarkao2@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-[ Upstream commit: none
+commit a81a81a25d3ecdab777abca87c5ddf484056103d upstream.
 
-  This is a quick fix for -stable purposes.  Upstream fixes these
-  problems via a large set of invasive hrtimer changes.  ]
+This patch (as1194b) makes usb-storage set the CAPACITY_HEURISTICS flag
+for all devices made by Nokia, Nikon, or Motorola.  These companies
+seem to include the READ CAPACITY bug in all of their devices.
 
-Most probably there is a (still unproven) race in hrtimers (before
-2.6.29 kernels), which causes a corruption of hrtimers rbtree. This
-patch doesn't fix it, but should let HTB avoid triggering the bug.
+Since cell phones and digital cameras rely on flash storage, which
+always has an even number of sectors, setting CAPACITY_HEURISTICS
+shouldn't cause any problems.  Not even if the companies wise up and
+start making devices without the bug.
 
-Reported-by: Denys Fedoryschenko <denys@visp.net.lb>
-Reported-by: Badalian Vyacheslav <slavon@bigtelecom.ru>
-Reported-by: Chris Caputo <ccaputo@alt.net>
-Tested-by: Badalian Vyacheslav <slavon@bigtelecom.ru>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+A large number of unusual_devs entries are now unnecessary, so the
+patch removes them.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sched/sch_htb.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/usb/storage/scsiglue.c     |   23 +++++
+ drivers/usb/storage/unusual_devs.h |  162 -------------------------------------
+ 2 files changed, 23 insertions(+), 162 deletions(-)
 
---- a/net/sched/sch_htb.c
-+++ b/net/sched/sch_htb.c
-@@ -924,6 +924,7 @@ static struct sk_buff *htb_dequeue(struc
- 		}
- 	}
- 	sch->qstats.overlimits++;
-+	qdisc_watchdog_cancel(&q->watchdog);
- 	qdisc_watchdog_schedule(&q->watchdog, next_event);
- fin:
- 	return skb;
+--- a/drivers/usb/storage/scsiglue.c
++++ b/drivers/usb/storage/scsiglue.c
+@@ -59,6 +59,13 @@
+ #include "transport.h"
+ #include "protocol.h"
+ 
++/* Vendor IDs for companies that seem to include the READ CAPACITY bug
++ * in all their devices
++ */
++#define VENDOR_ID_NOKIA		0x0421
++#define VENDOR_ID_NIKON		0x04b0
++#define VENDOR_ID_MOTOROLA	0x22b8
++
+ /***********************************************************************
+  * Host functions 
+  ***********************************************************************/
+@@ -134,6 +141,22 @@ static int slave_configure(struct scsi_d
+ 	 * settings can't be overridden via the scsi devinfo mechanism. */
+ 	if (sdev->type == TYPE_DISK) {
+ 
++		/* Some vendors seem to put the READ CAPACITY bug into
++		 * all their devices -- primarily makers of cell phones
++		 * and digital cameras.  Since these devices always use
++		 * flash media and can be expected to have an even number
++		 * of sectors, we will always enable the CAPACITY_HEURISTICS
++		 * flag unless told otherwise. */
++		switch (le16_to_cpu(us->pusb_dev->descriptor.idVendor)) {
++		case VENDOR_ID_NOKIA:
++		case VENDOR_ID_NIKON:
++		case VENDOR_ID_MOTOROLA:
++			if (!(us->fflags & (US_FL_FIX_CAPACITY |
++					US_FL_CAPACITY_OK)))
++				us->fflags |= US_FL_CAPACITY_HEURISTICS;
++			break;
++		}
++
+ 		/* Disk-type devices use MODE SENSE(6) if the protocol
+ 		 * (SubClass) is Transparent SCSI, otherwise they use
+ 		 * MODE SENSE(10). */
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -167,34 +167,6 @@ UNUSUAL_DEV(  0x0421, 0x0019, 0x0592, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_MAX_SECTORS_64 ),
+ 
+-/* Reported by Filip Joelsson <filip@blueturtle.nu> */
+-UNUSUAL_DEV(  0x0421, 0x005d, 0x0001, 0x0600,
+-		"Nokia",
+-		"Nokia 3110c",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY ),
+-
+-/* Reported by Ozan Sener <themgzzy@gmail.com> */
+-UNUSUAL_DEV(  0x0421, 0x0060, 0x0551, 0x0551,
+-		"Nokia",
+-		"3500c",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY ),
+-
+-/* Reported by CSECSY Laszlo <boobaa@frugalware.org> */
+-UNUSUAL_DEV(  0x0421, 0x0063, 0x0001, 0x0601,
+-		"Nokia",
+-		"Nokia 3109c",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY ),
+-
+-/* Patch for Nokia 5310 capacity */
+-UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0701,
+-		"Nokia",
+-		"5310",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY ),
+-
+ /* Reported by Mario Rettig <mariorettig@web.de> */
+ UNUSUAL_DEV(  0x0421, 0x042e, 0x0100, 0x0100,
+ 		"Nokia",
+@@ -260,42 +232,6 @@ UNUSUAL_DEV(  0x0421, 0x0495, 0x0370, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ 		US_FL_MAX_SECTORS_64 ),
+ 
+-/* Reported by Cedric Godin <cedric@belbone.be> */
+-UNUSUAL_DEV(  0x0421, 0x04b9, 0x0500, 0x0551,
+-		"Nokia",
+-		"5300",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY ),
+-
+-/* Reported by Paulo Fessel <pfessel@gmail.com> */
+-UNUSUAL_DEV(  0x0421, 0x04bd, 0x0000, 0x9999,
+-		"Nokia",
+-		"5200",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY ),
+-
+-/* Reported by Richard Nauber <RichardNauber@web.de> */
+-UNUSUAL_DEV(  0x0421, 0x04fa, 0x0550, 0x0660,
+-		"Nokia",
+-		"6300",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY ),
+-
+-/* Patch for Nokia 5310 capacity */
+-UNUSUAL_DEV(  0x0421, 0x006a, 0x0000, 0x0591,
+-	"Nokia",
+-	"5310",
+-	US_SC_DEVICE, US_PR_DEVICE, NULL,
+-	US_FL_FIX_CAPACITY ),
+-
+-/* Submitted by Ricky Wong Yung Fei <evilbladewarrior@gmail.com> */
+-/* Nokia 7610 Supernova - Too many sectors reported in usb storage mode */
+-UNUSUAL_DEV(  0x0421, 0x00f5, 0x0000, 0x0470,
+-	"Nokia",
+-	"7610 Supernova",
+-	US_SC_DEVICE, US_PR_DEVICE, NULL,
+-	US_FL_FIX_CAPACITY ),
+-
+ /* Reported by Olaf Hering <olh@suse.de> from novell bug #105878 */
+ UNUSUAL_DEV(  0x0424, 0x0fdc, 0x0210, 0x0210,
+ 		"SMSC",
+@@ -410,83 +346,6 @@ UNUSUAL_DEV(  0x04b0, 0x0301, 0x0010, 0x
+ 		US_SC_DEVICE, US_PR_DEVICE,NULL,
+ 		US_FL_NOT_LOCKABLE ),
+ 
+-/* Reported by Stefan de Konink <skinkie@xs4all.nl> */
+-UNUSUAL_DEV(  0x04b0, 0x0401, 0x0200, 0x0200,
+-		"NIKON",
+-		"NIKON DSC D100",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Tobias Kunze Briseno <t-linux@fictive.com> */
+-UNUSUAL_DEV(  0x04b0, 0x0403, 0x0200, 0x0200,
+-		"NIKON",
+-		"NIKON DSC D2H",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Milinevsky Dmitry <niam.niam@gmail.com> */
+-UNUSUAL_DEV(  0x04b0, 0x0409, 0x0100, 0x0100,
+-		"NIKON",
+-		"NIKON DSC D50",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Andreas Bockhold <andreas@bockionline.de> */
+-UNUSUAL_DEV(  0x04b0, 0x0405, 0x0100, 0x0100,
+-		"NIKON",
+-		"NIKON DSC D70",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Jamie Kitson <jamie@staberinde.fsnet.co.uk> */
+-UNUSUAL_DEV(  0x04b0, 0x040d, 0x0100, 0x0100,
+-		"NIKON",
+-		"NIKON DSC D70s",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Graber and Mike Pagano <mpagano-kernel@mpagano.com> */
+-UNUSUAL_DEV(  0x04b0, 0x040f, 0x0100, 0x0200,
+-		"NIKON",
+-		"NIKON DSC D200",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Emil Larsson <emil@swip.net> */
+-UNUSUAL_DEV(  0x04b0, 0x0411, 0x0100, 0x0111,
+-		"NIKON",
+-		"NIKON DSC D80",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Ortwin Glueck <odi@odi.ch> */
+-UNUSUAL_DEV(  0x04b0, 0x0413, 0x0110, 0x0111,
+-		"NIKON",
+-		"NIKON DSC D40",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Paul Check <paul@openstreet.com> */
+-UNUSUAL_DEV(  0x04b0, 0x0415, 0x0100, 0x0100,
+-		"NIKON",
+-		"NIKON DSC D2Xs",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by Shan Destromp (shansan@gmail.com) */
+-UNUSUAL_DEV(  0x04b0, 0x0417, 0x0100, 0x0100,
+-		"NIKON",
+-		"NIKON DSC D40X",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/* Reported by paul ready <lxtwin@homecall.co.uk> */
+-UNUSUAL_DEV(  0x04b0, 0x0419, 0x0100, 0x0200,
+-		"NIKON",
+-		"NIKON DSC D300",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+ /* Reported by Doug Maxey (dwm@austin.ibm.com) */
+ UNUSUAL_DEV(  0x04b3, 0x4001, 0x0110, 0x0110,
+ 		"IBM",
+@@ -2121,27 +1980,6 @@ UNUSUAL_DEV(  0x22b8, 0x3010, 0x0001, 0x
+ 		US_FL_FIX_CAPACITY | US_FL_IGNORE_RESIDUE ),
+ 
+ /*
+- * Patch by Pete Zaitcev <zaitcev@redhat.com>
+- * Report by Mark Patton. Red Hat bz#208928.
+- * Added support for rev 0x0002 (Motorola ROKR W5)
+- * by Javier Smaldone <javier@smaldone.com.ar>
+- */
+-UNUSUAL_DEV(  0x22b8, 0x4810, 0x0001, 0x0002,
+-		"Motorola",
+-		"RAZR V3i/ROKR W5",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/*
+- * Patch by Jost Diederichs <jost@qdusa.com>
+- */
+-UNUSUAL_DEV(0x22b8, 0x6410, 0x0001, 0x9999,
+-		"Motorola Inc.",
+-		"Motorola Phone (RAZRV3xx)",
+-		US_SC_DEVICE, US_PR_DEVICE, NULL,
+-		US_FL_FIX_CAPACITY),
+-
+-/*
+  * Patch by Constantin Baranov <const@tltsu.ru>
+  * Report by Andreas Koenecke.
+  * Motorola ROKR Z6.
 
