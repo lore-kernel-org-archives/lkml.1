@@ -1,94 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZAWFGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZAWFP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbZAWFGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 00:06:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750771AbZAWFGJ
+	id S1755482AbZAWFP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 00:15:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750841AbZAWFPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 00:06:09 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:50496 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750721AbZAWFGI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 00:06:08 -0500
-X-Sasl-enc: vJO2gHOi56AdAE2jtSYUxw0xx41JjX+T76WupVSt5K6P 1232686104
-Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
-	task_pgrp_nr()
-From: Ian Kent <raven@themaw.net>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
-In-Reply-To: <20090118073441.GA699@redhat.com>
-References: <20090118073441.GA699@redhat.com>
-Content-Type: text/plain
-Date: Fri, 23 Jan 2009 13:48:20 +0900
-Message-Id: <1232686100.3011.18.camel@zeus.themaw.net>
+	Fri, 23 Jan 2009 00:15:12 -0500
+Received: from vena.lwn.net ([206.168.112.25]:46883 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbZAWFPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 00:15:11 -0500
+Date: Thu, 22 Jan 2009 22:15:00 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, viro@ZenIV.linux.org.uk,
+       oleg@redhat.com, linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
+Message-ID: <20090122221500.4c62aa54@tpl>
+In-Reply-To: <20090122065104.2787df2d.akpm@linux-foundation.org>
+References: <20090115153211.663df310@bike.lwn.net>
+	<20090122065104.2787df2d.akpm@linux-foundation.org>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-18 at 08:34 +0100, Oleg Nesterov wrote:
-> parse_options(&pgid) sets pgid = task_pgrp_nr() which uses the global
-> namespace. This is wrong, we use this pgid to find "struct pid" in the
-> current's namespace. Change parse_options() to use task_pgrp_vnr().
+On Thu, 22 Jan 2009 06:51:04 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> OK, replacing a lock_kernel() with a spin_lock(&global_lock) is pretty
+> straightforwad.  But it's really really sad.  It basically leaves a
+> great big FIXME in there.  It'd be better to fix it.
 > 
-> Also do s/task_pgrp_nr/task_pgrp_vnr/ in the debugging printks.
-> checkpatch.pl complains about "line over 80 characters", but it should
-> blame the cuurent code, not the patch.
+> We don't have a handy lock in struct file which could be borrowed.
 
-Following the lengthy discussion, largely for my benefit, I'm now
-looking at the patch with some idea of sensibility.
+Yeah, I noticed that too.
+ 
+> - We could add one
 
-It seems to me that when setting sbi->oz_pgrp we should use
-task_pgrp_vnr(). As Oleg says, and I agree, this should always give
-correct results when checking if current is the session leader.
+The problem there is that this bloats struct file, and that seemed like
+something worth avoiding.  It could easily be done, but I don't know
+why we would before knowing that the global spinlock is a problem. 
 
-But I think that for debug logging we should always report numbers that
-correspond to the object as it is seen in the global namespace as that
-is the most likely reference point someone examining debug logging will
-be working from.
+But... it's *already* protected by a global spinlock (the BKL) which is
+(still) more widely used.
 
-Oleg, what should be the recommended call to report that, instead of the
-task_pgrp_nr() call?
+> - We could borrow file->f_path.dentry->d_inode->i_lock
 
-> 
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-> 
-> --- CUR/fs/autofs/inode.c~1_AUTOFS	2009-01-12 23:07:46.000000000 +0100
-> +++ CUR/fs/autofs/inode.c	2009-01-18 06:18:49.000000000 +0100
-> @@ -78,7 +78,7 @@ static int parse_options(char *options, 
->  
->  	*uid = current_uid();
->  	*gid = current_gid();
-> -	*pgrp = task_pgrp_nr(current);
-> +	*pgrp = task_pgrp_vnr(current);
->  
->  	*minproto = *maxproto = AUTOFS_PROTO_VERSION;
->  
-> --- CUR/fs/autofs/root.c~1_AUTOFS	2008-10-10 00:13:53.000000000 +0200
-> +++ CUR/fs/autofs/root.c	2009-01-18 06:15:42.000000000 +0100
-> @@ -215,7 +215,7 @@ static struct dentry *autofs_root_lookup
->  	oz_mode = autofs_oz_mode(sbi);
->  	DPRINTK(("autofs_lookup: pid = %u, pgrp = %u, catatonic = %d, "
->  				"oz_mode = %d\n", task_pid_nr(current),
-> -				task_pgrp_nr(current), sbi->catatonic,
-> +				task_pgrp_vnr(current), sbi->catatonic,
->  				oz_mode));
->  
->  	/*
-> @@ -550,7 +550,8 @@ static int autofs_root_ioctl(struct inod
->  	struct autofs_sb_info *sbi = autofs_sbi(inode->i_sb);
->  	void __user *argp = (void __user *)arg;
->  
-> -	DPRINTK(("autofs_ioctl: cmd = 0x%08x, arg = 0x%08lx, sbi = %p, pgrp = %u\n",cmd,arg,sbi,task_pgrp_nr(current)));
-> +	DPRINTK(("autofs_ioctl: cmd = 0x%08x, arg = 0x%08lx, sbi = %p, pgrp = %u\n",
-> +		cmd, arg, sbi, task_pgrp_vnr(current)));
->  
->  	if (_IOC_TYPE(cmd) != _IOC_TYPE(AUTOFS_IOC_FIRST) ||
->  	     _IOC_NR(cmd) - _IOC_NR(AUTOFS_IOC_FIRST) >= AUTOFS_IOC_COUNT)
-> 
+I didn't think of that one.  Using a lock which is three indirections
+away seems a little obscure; again, I guess we could do that if the
+global spinlock actually turns out to be a problem.
 
+> - We could convert that field to long and use bitops (sounds nice?)
+
+I did think of that one.  Reasons not to include growing struct file
+and the fact that there are places which set more than one flag at
+once.  So we'd replace assignments with loops - and we still don't
+solve the fasync() problem.
+
+So that was my thinking.
+
+I'll address your other comments when I get back home.
+
+Thanks,
+
+jon
