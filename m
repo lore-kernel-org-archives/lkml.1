@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760660AbZAWBQq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761323AbZAWBSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760660AbZAWBQq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:16:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756495AbZAWBOo
+	id S1761323AbZAWBSb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:18:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760144AbZAWBOx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:14:44 -0500
-Received: from kroah.org ([198.145.64.141]:50378 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:14:53 -0500
+Received: from kroah.org ([198.145.64.141]:50488 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757335AbZAWBOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:14:43 -0500
-Date: Thu, 22 Jan 2009 17:11:37 -0800
+	id S1760126AbZAWBOw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:14:52 -0500
+Date: Thu, 22 Jan 2009 17:11:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dean Nelson <dcn@sgi.com>,
-       Robin Holt <holt@sgi.com>
-Subject: [patch 06/46] sgi-xp: eliminate false detection of no heartbeat
-Message-ID: <20090123011137.GG19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "David S. Miller" <davem@davemloft.net>
+Subject: [patch 15/46] drivers/net/irda/irda-usb.c: fix buffer overflow
+Message-ID: <20090123011158.GP19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sgi-xp-eliminate-false-detection-of-no-heartbeat.patch"
+Content-Disposition: inline; filename="drivers-net-irda-irda-usb.c-fix-buffer-overflow.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,42 +39,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dean Nelson <dcn@sgi.com>
+From: Jos-Vicente Gilabert <josevteg@gmail.com>
 
-commit 158bc69effbf96f59c01cdeb20f8d4c184e59f8e upstream.
+commit 2950e952920811be465ec95c6b56f03dc66a05c0 upstream.
 
-After XPC has been up and running on multiple partitions for any length of
-time, if XPC on one of the partitions is stopped and restarted (either by
-a rmmod/insmod or a system restart), it is possible for the XPCs running
-on the other partitions to falsely detect a lack of heartbeat from the XPC
-that was just restarted.  This false detection will occur if the restarted
-XPC comes up within the five-seconds preceding one of the other XPC's
-heartbeat check (which occurs once every twenty seconds).
+Taken from http://bugzilla.kernel.org/show_bug.cgi?id=12397
 
-The detection of no heartbeat results in the detecting XPC deactivating
-from the just restarted XPC.  The only remedy is to restart one of the
-XPCs and hope that one doesn't hit this five-second window on any of the
-other partitions.
+We're doing an sprintf of an 11-char string into an 11-char buffer.
+Whoops.  It breaks firmware uploading.
 
-Signed-off-by: Dean Nelson <dcn@sgi.com>
-Signed-off-by: Robin Holt <holt@sgi.com>
+Reported-by: Jos-Vicente Gilabert <josevteg@gmail.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/sgi-xp/xpc_sn2.c |    2 +-
+ drivers/net/irda/irda-usb.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/misc/sgi-xp/xpc_sn2.c
-+++ b/drivers/misc/sgi-xp/xpc_sn2.c
-@@ -904,7 +904,7 @@ xpc_update_partition_info_sn2(struct xpc
- 	dev_dbg(xpc_part, "  remote_vars_pa = 0x%016lx\n",
- 		part_sn2->remote_vars_pa);
- 
--	part->last_heartbeat = remote_vars->heartbeat;
-+	part->last_heartbeat = remote_vars->heartbeat - 1;
- 	dev_dbg(xpc_part, "  last_heartbeat = 0x%016lx\n",
- 		part->last_heartbeat);
- 
+--- a/drivers/net/irda/irda-usb.c
++++ b/drivers/net/irda/irda-usb.c
+@@ -1075,7 +1075,7 @@ static int stir421x_patch_device(struct 
+ {
+ 	unsigned int i;
+ 	int ret;
+-	char stir421x_fw_name[11];
++	char stir421x_fw_name[12];
+ 	const struct firmware *fw;
+ 	const unsigned char *fw_version_ptr; /* pointer to version string */
+ 	unsigned long fw_version = 0;
 
