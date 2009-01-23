@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZAWFrA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760503AbZAWFvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759609AbZAWFrA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 00:47:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZAWFqv
+	id S1760503AbZAWFvW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 00:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750964AbZAWFvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 00:46:51 -0500
-Received: from waste.org ([66.93.16.53]:51214 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751172AbZAWFqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 00:46:51 -0500
-Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, viro@ZenIV.linux.org.uk, oleg@redhat.com,
-       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20090122213105.74142908.akpm@linux-foundation.org>
-References: <20090115153211.663df310@bike.lwn.net>
-	 <20090122065104.2787df2d.akpm@linux-foundation.org>
-	 <20090122221500.4c62aa54@tpl>
-	 <20090122213105.74142908.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 22 Jan 2009 23:45:49 -0600
-Message-Id: <1232689549.5202.385.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Jan 2009 00:51:14 -0500
+Received: from eazy.amigager.de ([213.239.192.238]:35417 "EHLO
+	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750904AbZAWFvN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 00:51:13 -0500
+Date: Fri, 23 Jan 2009 06:51:09 +0100
+From: Tino Keitel <tino.keitel@gmx.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Lars Noschinski <lkml@ml.noschinski.de>, linux-kernel@vger.kernel.org
+Subject: Re: XFS error & call trace
+Message-ID: <20090123055109.GA25601@x61>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Lars Noschinski <lkml@ml.noschinski.de>,
+	linux-kernel@vger.kernel.org
+References: <20090121222703.GA5522@aprove.informatik.rwth-aachen.de> <20090121231435.GA6810@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090121231435.GA6810@infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-22 at 21:31 -0800, Andrew Morton wrote:
-> > On Thu, 22 Jan 2009 22:15:00 -0700 Jonathan Corbet <corbet@lwn.net> wrote:
-> > On Thu, 22 Jan 2009 06:51:04 -0800
-> > Andrew Morton <akpm@linux-foundation.org> wrote:
+On Wed, Jan 21, 2009 at 18:14:35 -0500, Christoph Hellwig wrote:
+> On Wed, Jan 21, 2009 at 11:27:03PM +0100, Lars Noschinski wrote:
+> > Hello!
 > > 
-> > > OK, replacing a lock_kernel() with a spin_lock(&global_lock) is pretty
-> > > straightforwad.  But it's really really sad.  It basically leaves a
-> > > great big FIXME in there.  It'd be better to fix it.
-> > > 
-> > > We don't have a handy lock in struct file which could be borrowed.
-> > 
-> > Yeah, I noticed that too.
-> >  
-> > > - We could add one
-> > 
-> > The problem there is that this bloats struct file, and that seemed like
-> > something worth avoiding.
+> > I just had a crash of my XFS file system on 2.6.29-rc1 (syslog output
+> > follows) After this, the file system on /home returned -EIO on most (all?)
+> > operations.  After a reboot from cdrom, I found it interesting to see that
+> > xfs_check found no error on this partition. Instead, the XFS on the /
+> > partition had a lot of errors.
 > 
-> Not a big deal, really.  There's one of these for each presently-open file.
-> It's not like dentries and inodes, which we cache after userspace has
-> closed off the file handles.
+> The patch below from Dave Chinner fixes it:
+> 
+> ---
+> 
+> [XFS] Long btree pointers are still 64 bit on disk
+> 
+> On 32 bit machines with CONFIG_LBD=n, XFS reduces the
+> in memory size of xfs_fsblock_t to 32 bits so that it
+> will fit within 32 bit addressing. However, the disk format
+> for long btree pointers are still 64 bits in size.
+> 
+> The recent btree rewrite failed to take this into account
 
-I have to agree with Christoph. The priority here is breaking down the
-BKL and document all the things being protected by it and we've got a
-reasonably obvious patch in that direction. Meanwhile, there's not
-currently a pressing demand to make fasync in particular scale that I'm
-aware of.
+Hi,
 
-Having a single big lock here is quite possibly something we'll want to
-fix down the road, agreed, but until we can actually measure it hurting
-us, debating about whether to use a bit lock or reuse an existing lock
-or add a new lock to all struct files is a bit premature.
+does this commit also fix http://lkml.org/lkml/2009/1/7/324 ?
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
-
-
+Regards,
+Tino
