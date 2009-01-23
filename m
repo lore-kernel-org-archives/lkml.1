@@ -1,114 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbZAWKGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbZAWKIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762212AbZAWKGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:06:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbZAWKGL
+	id S1760864AbZAWKIA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 05:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZAWKHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:06:11 -0500
-Received: from ribosome.natur.cuni.cz ([195.113.57.20]:58706 "EHLO
-	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755869AbZAWKGJ (ORCPT
+	Fri, 23 Jan 2009 05:07:51 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:43619 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752734AbZAWKHu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:06:09 -0500
-Message-ID: <49799691.3070701@ribosome.natur.cuni.cz>
-Date: Fri, 23 Jan 2009 11:06:09 +0100
-From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081227 SeaMonkey/1.1.14
+	Fri, 23 Jan 2009 05:07:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Pdx1ItZX0dBaSNELa6oxDSyjeNEUUMu81D7qLRMs3OIPIDibpWDgpx6zTTrK/CYs71
+         hHC6Cn7//hD7CSEUCJi94jTpYLqywOA2XOONXJuVe4H8wfeMQu+ouJcRrS1c9Titdknz
+         76ovxTwkLLhJRv+VecQ+arl7JL7WAakNtVlvk=
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [BUG #12515] 2.6.29-rc2-git1: possible circular locking #0: (sk_lock-AF_PACKET){--..},
- at: [<c1279838>] sock_setsockopt+0x12b/0x4a4
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20090123004702.GA18362@redhat.com>
+References: <20090117215110.GA3300@redhat.com>
+	 <20090118013802.GA12214@cmpxchg.org>
+	 <20090118023211.GA14539@redhat.com>
+	 <20090120203131.GA20985@cmpxchg.org>
+	 <20090121143602.GA16584@redhat.com>
+	 <20090121213813.GB23270@cmpxchg.org>
+	 <20090122202550.GA5726@redhat.com>
+	 <b647ffbd0901221626o5e654682t147625fa3e19976f@mail.gmail.com>
+	 <20090123004702.GA18362@redhat.com>
+Date: Fri, 23 Jan 2009 11:07:48 +0100
+Message-ID: <b647ffbd0901230207u642e24cdg98700aa68ed1aa33@mail.gmail.com>
+Subject: Re: [RFC v4] wait: prevent waiter starvation in __wait_on_bit_lock
+From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  I haven't received any answer on this bug report so I am re-trying
-over the email list. Running tcpdump under heavy load/io I got this
-stacktrace. Snippet from dmesg output follows:
+2009/1/23 Oleg Nesterov <oleg@redhat.com>:
+> On 01/23, Dmitry Adamushko wrote:
+>>
+>> 2009/1/22 Oleg Nesterov <oleg@redhat.com>:
+>> >
+>> > I think this is correct, and (unfortunately ;) you are right:
+>> > we need rmb() even after finish_wait().
+>>
+>> Hum, I think it's actually not necessary in this particular case when
+>> (1) "the next contender is us" and (2) we are in the "ret != 0" path
+>> so that the only thing we really care about -- if we were exclusivly
+>> woken up, then wake up somebody else [*].
+>>
+>> "the next contender is us" implies that we were still on the 'wq'
+>> queue when __wake_up_bit() -> __wake_up() has been called, meaning
+>> that wq->lock has also been taken (in __wake_up()).
+>>
+>> Now, on our side, we are definitely on the 'wq' queue before calling
+>> finish_wait(), meaning that we also take the wq->lock.
+>>
+>> In short, wq->lock is a sync. mechanism in this case. The scheme is as follows:
+>>
+>> our side:
+>>
+>> [ finish_wait() ]
+>>
+>> lock(wq->lock);
+>
+> But we can skip lock(wq->lock), afaics.
+>
+> Without rmb(), test_bit() can be re-ordered with list_empty_careful()
+> in finish_wait() and even with __set_task_state(TASK_RUNNING).
+
+But taking into account the constraints of this special case, namely
+(1), we can't skip lock(wq->lock).
+
+(1) "the next contender is us"
+
+In this particular situation, we are only interested in the case when
+we were woken up by __wake_up_bit().
+
+that means we are _on_ the 'wq' list when we do finish_wait() -> we do
+take the 'wq->lock'.
+
+Moreover, imagine the following case (roughly similar to finish_wait()):
+
+if (LOAD(a) == 1) {
+    // do something here
+    mb();
+}
+
+LOAD(b);
+
+Can LOAD(b) be reordered with LOAD(a)?
+
+I'd imagine that it can be done with CPUs that do execute 2 branch
+paths in advance but then LOAD(b) must be re-loaded if (a == 1) and we
+hit mb().
 
 
-device eth0 entered promiscuous mode
+>
+> Oleg.
+>
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.29-rc2-git1 #1
--------------------------------------------------------
-tcpdump/3734 is trying to acquire lock:
- (&mm->mmap_sem){----}, at: [<c1053294>] might_fault+0x30/0x6b
-
-but task is already holding lock:
- (sk_lock-AF_PACKET){--..}, at: [<c12798c8>] sock_setsockopt+0x12b/0x4a4
-
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (sk_lock-AF_PACKET){--..}:
-       [<c1033a0d>] add_lock_to_list+0x5e/0x8b
-       [<c10365ae>] __lock_acquire+0xfb8/0x12e5
-       [<c12cc63c>] packet_mmap+0x2e/0xf4
-       [<c12cc63c>] packet_mmap+0x2e/0xf4
-       [<c1036922>] lock_acquire+0x47/0x5e
-       [<c12cc63c>] packet_mmap+0x2e/0xf4
-       [<c1278548>] lock_sock_nested+0xac/0xb9
-       [<c12cc63c>] packet_mmap+0x2e/0xf4
-       [<c12cc63c>] packet_mmap+0x2e/0xf4
-       [<c1034e94>] trace_hardirqs_on_caller+0x104/0x124
-       [<c12759fa>] sock_mmap+0xc/0xe
-       [<c10588f9>] mmap_region+0x27e/0x4b4
-       [<c1058d1e>] do_mmap_pgoff+0x1ef/0x239
-       [<c10057cf>] sys_mmap2+0x58/0x76
-       [<c1002cd5>] sysenter_do_call+0x12/0x35
-       [<ffffffff>] 0xffffffff
-
--> #0 (&mm->mmap_sem){----}:
-       [<c103507d>] print_circular_bug_entry+0x36/0x3d
-       [<c10362d1>] __lock_acquire+0xcdb/0x12e5
-       [<c1034cf3>] mark_held_locks+0x50/0x66
-       [<c101ff01>] local_bh_enable+0x97/0x9a
-       [<c1036922>] lock_acquire+0x47/0x5e
-       [<c1053294>] might_fault+0x30/0x6b
-       [<c10532b1>] might_fault+0x4d/0x6b
-       [<c1053294>] might_fault+0x30/0x6b
-       [<c1137907>] copy_from_user+0x27/0x10e
-       [<c1279bcb>] sock_setsockopt+0x42e/0x4a4
-       [<c10532b4>] might_fault+0x50/0x6b
-       [<c127636a>] sys_setsockopt+0x4c/0x7d
-       [<c1277957>] sys_socketcall+0x135/0x18c
-       [<c1002cd5>] sysenter_do_call+0x12/0x35
-       [<ffffffff>] 0xffffffff
-
-other info that might help us debug this:
-
-1 lock held by tcpdump/3734:
- #0:  (sk_lock-AF_PACKET){--..}, at: [<c12798c8>] sock_setsockopt+0x12b/0x4a4
-
-stack backtrace:
-Pid: 3734, comm: tcpdump Not tainted 2.6.29-rc2-git1 #1
-Call Trace:
- [<c10352c1>] print_circular_bug_tail+0xa5/0xaf
- [<c103507d>] print_circular_bug_entry+0x36/0x3d
- [<c10362d1>] __lock_acquire+0xcdb/0x12e5
- [<c1034cf3>] mark_held_locks+0x50/0x66
- [<c101ff01>] local_bh_enable+0x97/0x9a
- [<c1036922>] lock_acquire+0x47/0x5e
- [<c1053294>] might_fault+0x30/0x6b
- [<c10532b1>] might_fault+0x4d/0x6b
- [<c1053294>] might_fault+0x30/0x6b
- [<c1137907>] copy_from_user+0x27/0x10e
- [<c1279bcb>] sock_setsockopt+0x42e/0x4a4
- [<c10532b4>] might_fault+0x50/0x6b
- [<c127636a>] sys_setsockopt+0x4c/0x7d
- [<c1277957>] sys_socketcall+0x135/0x18c
- [<c1002cd5>] sysenter_do_call+0x12/0x35
-device eth0 left promiscuous mode
-
-
-More details are at http://bugzilla.kernel.org/show_bug.cgi?id=12515
-Please Cc: me in replies. Thanks.
-Martin
+-- 
+Best regards,
+Dmitry Adamushko
