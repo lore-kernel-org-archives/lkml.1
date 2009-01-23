@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763323AbZAWGXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762059AbZAWGUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763323AbZAWGXe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:23:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761080AbZAWGQl
+	id S1762059AbZAWGUw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:20:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760812AbZAWGQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:41 -0500
-Received: from kroah.org ([198.145.64.141]:36281 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:32 -0500
+Received: from kroah.org ([198.145.64.141]:36202 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760948AbZAWGQh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:37 -0500
-Date: Thu, 22 Jan 2009 22:13:57 -0800
+	id S1760869AbZAWGQb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:31 -0500
+Date: Thu, 22 Jan 2009 22:13:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Shaohua Li <shaohua.li@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 18/40] PCI: keep ASPM link state consistent throughout PCIe
-	hierarchy
-Message-ID: <20090123061357.GR2922@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>,
+       Daniel Drake <dsd@gentoo.org>
+Subject: [patch 12/40] ALSA: hda - make laptop-eapd model back for AD1986A
+Message-ID: <20090123061334.GL2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-keep-aspm-link-state-consistent-throughout-pcie-hierarchy.patch"
+Content-Disposition: inline; filename="alsa-hda-make-laptop-eapd-model-back-for-ad1986a.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,241 +40,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Shaohua Li <shaohua.li@intel.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 46bbdfa44cfc0d352148a0dc33ba9f6db02ccdf0 upstream.
+commit 1725b82a6e2721612a3572d0336f51f1f1c3cf54 upstream.
 
-In a PCIe hierarchy with a switch present, if the link state of an
-endpoint device is changed, we must check the whole hierarchy from the
-endpoint device to root port, and for each link in the hierarchy, the new
-link state should be configured. Previously, the implementation checked
-the state but forgot to configure the links between root port to switch.
-Fixes Novell bz #448987.
+The changes specific for Samsung laptops seem unapplicable to other
+hardware models like ASUS.  The mic inputs are lost on such hardware
+by the change 5d5d5f43f1b835c375de9bd270cce030d16e2871.
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Tested-by: Andrew Patterson <andrew.patterson@hp.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+This patch adds back the old laptop-eapd model, and create a new
+model "samsung" for the new one specific to Samsung laptops with
+automatic mic selection feature.
+
+Reference: kernel bugzilla #12070
+	http://bugzilla.kernel.org/show_bug.cgi?id=12070
+
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Cc: Daniel Drake <dsd@gentoo.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/pcie/aspm.c |  127 ++++++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 107 insertions(+), 20 deletions(-)
+ Documentation/sound/alsa/ALSA-Configuration.txt |    3 -
+ sound/pci/hda/patch_analog.c                    |   49 ++++++++++++++++++++++--
+ 2 files changed, 48 insertions(+), 4 deletions(-)
 
---- a/drivers/pci/pcie/aspm.c
-+++ b/drivers/pci/pcie/aspm.c
-@@ -33,6 +33,11 @@ struct endpoint_state {
- struct pcie_link_state {
- 	struct list_head sibiling;
- 	struct pci_dev *pdev;
-+	bool downstream_has_switch;
+--- a/Documentation/sound/alsa/ALSA-Configuration.txt
++++ b/Documentation/sound/alsa/ALSA-Configuration.txt
+@@ -960,9 +960,10 @@ Prior to version 0.9.0rc4 options had a 
+ 	  6stack	6-jack, separate surrounds (default)
+ 	  3stack	3-stack, shared surrounds
+ 	  laptop	2-channel only (FSC V2060, Samsung M50)
+-	  laptop-eapd	2-channel with EAPD (Samsung R65, ASUS A6J)
++	  laptop-eapd	2-channel with EAPD (ASUS A6J)
+ 	  laptop-automute 2-channel with EAPD and HP-automute (Lenovo N100)
+ 	  ultra		2-channel with EAPD (Samsung Ultra tablet PC)
++	  samsung	2-channel with EAPD (Samsung R65)
+ 
+ 	AD1988/AD1988B/AD1989A/AD1989B
+ 	  6stack	6-jack
+--- a/sound/pci/hda/patch_analog.c
++++ b/sound/pci/hda/patch_analog.c
+@@ -629,6 +629,36 @@ static struct snd_kcontrol_new ad1986a_l
+ 	HDA_BIND_SW("Master Playback Switch", &ad1986a_laptop_master_sw),
+ 	HDA_CODEC_VOLUME("PCM Playback Volume", 0x03, 0x0, HDA_OUTPUT),
+ 	HDA_CODEC_MUTE("PCM Playback Switch", 0x03, 0x0, HDA_OUTPUT),
++	HDA_CODEC_VOLUME("Internal Mic Playback Volume", 0x17, 0, HDA_OUTPUT),
++	HDA_CODEC_MUTE("Internal Mic Playback Switch", 0x17, 0, HDA_OUTPUT),
++	HDA_CODEC_VOLUME("Mic Playback Volume", 0x13, 0x0, HDA_OUTPUT),
++	HDA_CODEC_MUTE("Mic Playback Switch", 0x13, 0x0, HDA_OUTPUT),
++	HDA_CODEC_VOLUME("Mic Boost", 0x0f, 0x0, HDA_OUTPUT),
++	HDA_CODEC_VOLUME("Capture Volume", 0x12, 0x0, HDA_OUTPUT),
++	HDA_CODEC_MUTE("Capture Switch", 0x12, 0x0, HDA_OUTPUT),
++	{
++		.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
++		.name = "Capture Source",
++		.info = ad198x_mux_enum_info,
++		.get = ad198x_mux_enum_get,
++		.put = ad198x_mux_enum_put,
++	},
++	{
++		.iface = SNDRV_CTL_ELEM_IFACE_MIXER,
++		.name = "External Amplifier",
++		.info = ad198x_eapd_info,
++		.get = ad198x_eapd_get,
++		.put = ad198x_eapd_put,
++		.private_value = 0x1b | (1 << 8), /* port-D, inversed */
++	},
++	{ } /* end */
++};
 +
-+	struct pcie_link_state *parent;
-+	struct list_head children;
-+	struct list_head link;
++static struct snd_kcontrol_new ad1986a_samsung_mixers[] = {
++	HDA_BIND_VOL("Master Playback Volume", &ad1986a_laptop_master_vol),
++	HDA_BIND_SW("Master Playback Switch", &ad1986a_laptop_master_sw),
++	HDA_CODEC_VOLUME("PCM Playback Volume", 0x03, 0x0, HDA_OUTPUT),
++	HDA_CODEC_MUTE("PCM Playback Switch", 0x03, 0x0, HDA_OUTPUT),
+ 	HDA_CODEC_VOLUME("Mic Playback Volume", 0x13, 0x0, HDA_OUTPUT),
+ 	HDA_CODEC_MUTE("Mic Playback Switch", 0x13, 0x0, HDA_OUTPUT),
+ 	HDA_CODEC_VOLUME("Mic Boost", 0x0f, 0x0, HDA_OUTPUT),
+@@ -917,6 +947,7 @@ enum {
+ 	AD1986A_LAPTOP_EAPD,
+ 	AD1986A_LAPTOP_AUTOMUTE,
+ 	AD1986A_ULTRA,
++	AD1986A_SAMSUNG,
+ 	AD1986A_MODELS
+ };
  
- 	/* ASPM state */
- 	unsigned int support_state;
-@@ -125,7 +130,7 @@ static void pcie_set_clock_pm(struct pci
- 	link_state->clk_pm_enabled = !!enable;
- }
+@@ -927,6 +958,7 @@ static const char *ad1986a_models[AD1986
+ 	[AD1986A_LAPTOP_EAPD]	= "laptop-eapd",
+ 	[AD1986A_LAPTOP_AUTOMUTE] = "laptop-automute",
+ 	[AD1986A_ULTRA]		= "ultra",
++	[AD1986A_SAMSUNG]	= "samsung",
+ };
  
--static void pcie_check_clock_pm(struct pci_dev *pdev)
-+static void pcie_check_clock_pm(struct pci_dev *pdev, int blacklist)
- {
- 	int pos;
- 	u32 reg32;
-@@ -149,10 +154,26 @@ static void pcie_check_clock_pm(struct p
- 		if (!(reg16 & PCI_EXP_LNKCTL_CLKREQ_EN))
- 			enabled = 0;
- 	}
--	link_state->clk_pm_capable = capable;
- 	link_state->clk_pm_enabled = enabled;
- 	link_state->bios_clk_state = enabled;
--	pcie_set_clock_pm(pdev, policy_to_clkpm_state(pdev));
-+	if (!blacklist) {
-+		link_state->clk_pm_capable = capable;
-+		pcie_set_clock_pm(pdev, policy_to_clkpm_state(pdev));
-+	} else {
-+		link_state->clk_pm_capable = 0;
-+		pcie_set_clock_pm(pdev, 0);
-+	}
-+}
-+
-+static bool pcie_aspm_downstream_has_switch(struct pci_dev *pdev)
-+{
-+	struct pci_dev *child_dev;
-+
-+	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
-+		if (child_dev->pcie_type == PCI_EXP_TYPE_UPSTREAM)
-+			return true;
-+	}
-+	return false;
- }
- 
- /*
-@@ -419,9 +440,9 @@ static unsigned int pcie_aspm_check_stat
- {
- 	struct pci_dev *child_dev;
- 
--	/* If no child, disable the link */
-+	/* If no child, ignore the link */
- 	if (list_empty(&pdev->subordinate->devices))
--		return 0;
-+		return state;
- 	list_for_each_entry(child_dev, &pdev->subordinate->devices, bus_list) {
- 		if (child_dev->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE) {
- 			/*
-@@ -462,6 +483,9 @@ static void __pcie_aspm_config_link(stru
- 	int valid = 1;
- 	struct pcie_link_state *link_state = pdev->link_state;
- 
-+	/* If no child, disable the link */
-+	if (list_empty(&pdev->subordinate->devices))
-+		state = 0;
- 	/*
- 	 * if the downstream component has pci bridge function, don't do ASPM
- 	 * now
-@@ -493,20 +517,52 @@ static void __pcie_aspm_config_link(stru
- 	link_state->enabled_state = state;
- }
- 
-+static struct pcie_link_state *get_root_port_link(struct pcie_link_state *link)
-+{
-+	struct pcie_link_state *root_port_link = link;
-+	while (root_port_link->parent)
-+		root_port_link = root_port_link->parent;
-+	return root_port_link;
-+}
-+
-+/* check the whole hierarchy, and configure each link in the hierarchy */
- static void __pcie_aspm_configure_link_state(struct pci_dev *pdev,
- 	unsigned int state)
- {
- 	struct pcie_link_state *link_state = pdev->link_state;
-+	struct pcie_link_state *root_port_link = get_root_port_link(link_state);
-+	struct pcie_link_state *leaf;
- 
--	if (link_state->support_state == 0)
--		return;
- 	state &= PCIE_LINK_STATE_L0S|PCIE_LINK_STATE_L1;
- 
--	/* state 0 means disabling aspm */
--	state = pcie_aspm_check_state(pdev, state);
-+	/* check all links who have specific root port link */
-+	list_for_each_entry(leaf, &link_list, sibiling) {
-+		if (!list_empty(&leaf->children) ||
-+			get_root_port_link(leaf) != root_port_link)
-+			continue;
-+		state = pcie_aspm_check_state(leaf->pdev, state);
-+	}
-+	/* check root port link too in case it hasn't children */
-+	state = pcie_aspm_check_state(root_port_link->pdev, state);
-+
- 	if (link_state->enabled_state == state)
- 		return;
--	__pcie_aspm_config_link(pdev, state);
-+
-+	/*
-+	 * we must change the hierarchy. See comments in
-+	 * __pcie_aspm_config_link for the order
-+	 **/
-+	if (state & PCIE_LINK_STATE_L1) {
-+		list_for_each_entry(leaf, &link_list, sibiling) {
-+			if (get_root_port_link(leaf) == root_port_link)
-+				__pcie_aspm_config_link(leaf->pdev, state);
-+		}
-+	} else {
-+		list_for_each_entry_reverse(leaf, &link_list, sibiling) {
-+			if (get_root_port_link(leaf) == root_port_link)
-+				__pcie_aspm_config_link(leaf->pdev, state);
-+		}
-+	}
- }
- 
- /*
-@@ -570,6 +626,7 @@ void pcie_aspm_init_link_state(struct pc
- 	unsigned int state;
- 	struct pcie_link_state *link_state;
- 	int error = 0;
-+	int blacklist;
- 
- 	if (aspm_disabled || !pdev->is_pcie || pdev->link_state)
- 		return;
-@@ -580,29 +637,58 @@ void pcie_aspm_init_link_state(struct pc
- 	if (list_empty(&pdev->subordinate->devices))
- 		goto out;
- 
--	if (pcie_aspm_sanity_check(pdev))
--		goto out;
-+	blacklist = !!pcie_aspm_sanity_check(pdev);
- 
- 	mutex_lock(&aspm_lock);
- 
- 	link_state = kzalloc(sizeof(*link_state), GFP_KERNEL);
- 	if (!link_state)
- 		goto unlock_out;
--	pdev->link_state = link_state;
- 
--	pcie_aspm_configure_common_clock(pdev);
--
--	pcie_aspm_cap_init(pdev);
-+	link_state->downstream_has_switch = pcie_aspm_downstream_has_switch(pdev);
-+	INIT_LIST_HEAD(&link_state->children);
-+	INIT_LIST_HEAD(&link_state->link);
-+	if (pdev->bus->self) {/* this is a switch */
-+		struct pcie_link_state *parent_link_state;
-+
-+		parent_link_state = pdev->bus->parent->self->link_state;
-+		if (!parent_link_state) {
-+			kfree(link_state);
-+			goto unlock_out;
-+		}
-+		list_add(&link_state->link, &parent_link_state->children);
-+		link_state->parent = parent_link_state;
-+	}
- 
--	/* config link state to avoid BIOS error */
--	state = pcie_aspm_check_state(pdev, policy_to_aspm_state(pdev));
--	__pcie_aspm_config_link(pdev, state);
-+	pdev->link_state = link_state;
- 
--	pcie_check_clock_pm(pdev);
-+	if (!blacklist) {
-+		pcie_aspm_configure_common_clock(pdev);
-+		pcie_aspm_cap_init(pdev);
-+	} else {
-+		link_state->enabled_state = PCIE_LINK_STATE_L0S|PCIE_LINK_STATE_L1;
-+		link_state->bios_aspm_state = 0;
-+		/* Set support state to 0, so we will disable ASPM later */
-+		link_state->support_state = 0;
-+	}
- 
- 	link_state->pdev = pdev;
- 	list_add(&link_state->sibiling, &link_list);
- 
-+	if (link_state->downstream_has_switch) {
-+		/*
-+		 * If link has switch, delay the link config. The leaf link
-+		 * initialization will config the whole hierarchy. but we must
-+		 * make sure BIOS doesn't set unsupported link state
-+		 **/
-+		state = pcie_aspm_check_state(pdev, link_state->bios_aspm_state);
-+		__pcie_aspm_config_link(pdev, state);
-+	} else
-+		__pcie_aspm_configure_link_state(pdev,
-+			policy_to_aspm_state(pdev));
-+
-+	pcie_check_clock_pm(pdev, blacklist);
-+
- unlock_out:
- 	if (error)
- 		free_link_state(pdev);
-@@ -635,6 +721,7 @@ void pcie_aspm_exit_link_state(struct pc
- 	/* All functions are removed, so just disable ASPM for the link */
- 	__pcie_aspm_config_one_dev(parent, 0);
- 	list_del(&link_state->sibiling);
-+	list_del(&link_state->link);
- 	/* Clock PM is for endpoint device */
- 
- 	free_link_state(parent);
+ static struct snd_pci_quirk ad1986a_cfg_tbl[] = {
+@@ -949,9 +981,9 @@ static struct snd_pci_quirk ad1986a_cfg_
+ 	SND_PCI_QUIRK(0x1179, 0xff40, "Toshiba", AD1986A_LAPTOP_EAPD),
+ 	SND_PCI_QUIRK(0x144d, 0xb03c, "Samsung R55", AD1986A_3STACK),
+ 	SND_PCI_QUIRK(0x144d, 0xc01e, "FSC V2060", AD1986A_LAPTOP),
+-	SND_PCI_QUIRK(0x144d, 0xc023, "Samsung X60", AD1986A_LAPTOP_EAPD),
+-	SND_PCI_QUIRK(0x144d, 0xc024, "Samsung R65", AD1986A_LAPTOP_EAPD),
+-	SND_PCI_QUIRK(0x144d, 0xc026, "Samsung X11", AD1986A_LAPTOP_EAPD),
++	SND_PCI_QUIRK(0x144d, 0xc023, "Samsung X60", AD1986A_SAMSUNG),
++	SND_PCI_QUIRK(0x144d, 0xc024, "Samsung R65", AD1986A_SAMSUNG),
++	SND_PCI_QUIRK(0x144d, 0xc026, "Samsung X11", AD1986A_SAMSUNG),
+ 	SND_PCI_QUIRK(0x144d, 0xc027, "Samsung Q1", AD1986A_ULTRA),
+ 	SND_PCI_QUIRK(0x144d, 0xc504, "Samsung Q35", AD1986A_3STACK),
+ 	SND_PCI_QUIRK(0x17aa, 0x1011, "Lenovo M55", AD1986A_LAPTOP),
+@@ -1033,6 +1065,17 @@ static int patch_ad1986a(struct hda_code
+ 		break;
+ 	case AD1986A_LAPTOP_EAPD:
+ 		spec->mixers[0] = ad1986a_laptop_eapd_mixers;
++		spec->num_init_verbs = 2;
++		spec->init_verbs[1] = ad1986a_eapd_init_verbs;
++		spec->multiout.max_channels = 2;
++		spec->multiout.num_dacs = 1;
++		spec->multiout.dac_nids = ad1986a_laptop_dac_nids;
++		if (!is_jack_available(codec, 0x25))
++			spec->multiout.dig_out_nid = 0;
++		spec->input_mux = &ad1986a_laptop_eapd_capture_source;
++		break;
++	case AD1986A_SAMSUNG:
++		spec->mixers[0] = ad1986a_samsung_mixers;
+ 		spec->num_init_verbs = 3;
+ 		spec->init_verbs[1] = ad1986a_eapd_init_verbs;
+ 		spec->init_verbs[2] = ad1986a_automic_verbs;
 
