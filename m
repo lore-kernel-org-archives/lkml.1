@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764099AbZAWG11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764192AbZAWG1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764099AbZAWG11 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:27:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761236AbZAWGQx
+	id S1764192AbZAWG1o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:27:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761240AbZAWGQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:53 -0500
-Received: from kroah.org ([198.145.64.141]:36435 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:54 -0500
+Received: from kroah.org ([198.145.64.141]:36444 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752146AbZAWGQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:50 -0500
-Date: Thu, 22 Jan 2009 22:14:30 -0800
+	id S1761226AbZAWGQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:51 -0500
+Date: Thu, 22 Jan 2009 22:14:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
        Chris Mason <chris.mason@oracle.com>,
        Dave Chinner <david@fromorbit.com>
-Subject: [patch 29/40] mm: write_cache_pages early loop termination
-Message-ID: <20090123061430.GC2922@kroah.com>
+Subject: [patch 30/40] mm: write_cache_pages writepage error fix
+Message-ID: <20090123061432.GD2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-write_cache_pages-early-loop-termination.patch"
+Content-Disposition: inline; filename="mm-write_cache_pages-writepage-error-fix.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,21 +43,20 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nick Piggin <npiggin@suse.de>
 
-commit bd19e012f6fd3b7309689165ea865cbb7bb88c1e upstream.
+commit 00266770b8b3a6a77f896ca501a0613739086832 upstream.
 
-We'd like to break out of the loop early in many situations, however the
-existing code has been setting mapping->writeback_index past the final
-page in the pagevec lookup for cyclic writeback.  This is a problem if we
-don't process all pages up to the final page.
+In write_cache_pages, if ret signals a real error, but we still have some
+pages left in the pagevec, done would be set to 1, but the remaining pages
+would continue to be processed and ret will be overwritten in the process.
 
-Currently the code mostly keeps writeback_index reasonable and hacked
-around this by not breaking out of the loop or writing pages outside the
-range in these cases.  Keep track of a real "done index" that enables us
-to terminate the loop in a much more flexible manner.
+It could easily be overwritten with success, and thus success will be
+returned even if there is an error.  Thus the caller is told all writes
+succeeded, wheras in reality some did not.
 
-Needed by the subsequent patch to preserve writepage errors, and then
-further patches to break out of the loop early for other reasons.  However
-there are no functional changes with this patch alone.
+Fix this by bailing immediately if there is an error, and retaining the
+first error code.
+
+This is a data integrity bug.
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 Cc: Chris Mason <chris.mason@oracle.com>
@@ -67,43 +66,41 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page-writeback.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ mm/page-writeback.c |   25 ++++++++++++++++++++-----
+ 1 file changed, 20 insertions(+), 5 deletions(-)
 
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
-@@ -875,6 +875,7 @@ int write_cache_pages(struct address_spa
- 	pgoff_t uninitialized_var(writeback_index);
- 	pgoff_t index;
- 	pgoff_t end;		/* Inclusive */
-+	pgoff_t done_index;
- 	int cycled;
- 	int range_whole = 0;
+@@ -948,11 +948,26 @@ retry:
  
-@@ -900,6 +901,7 @@ int write_cache_pages(struct address_spa
- 		cycled = 1; /* ignore range_cyclic tests */
- 	}
- retry:
-+	done_index = index;
- 	while (!done && (index <= end) &&
- 	       (nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
- 					      PAGECACHE_TAG_DIRTY,
-@@ -909,6 +911,8 @@ retry:
- 		for (i = 0; i < nr_pages; i++) {
- 			struct page *page = pvec.pages[i];
+ 			ret = (*writepage)(page, wbc, data);
  
-+			done_index = page->index + 1;
+-			if (unlikely(ret == AOP_WRITEPAGE_ACTIVATE)) {
+-				unlock_page(page);
+-				ret = 0;
+-			}
+-			if (ret || (--(wbc->nr_to_write) <= 0))
++			if (unlikely(ret)) {
++				if (ret == AOP_WRITEPAGE_ACTIVATE) {
++					unlock_page(page);
++					ret = 0;
++				} else {
++					/*
++					 * done_index is set past this page,
++					 * so media errors will not choke
++					 * background writeout for the entire
++					 * file. This has consequences for
++					 * range_cyclic semantics (ie. it may
++					 * not be suitable for data integrity
++					 * writeout).
++					 */
++					done = 1;
++					break;
++				}
++ 			}
 +
- 			/*
- 			 * At this point we hold neither mapping->tree_lock nor
- 			 * lock on the page itself: the page may be truncated or
-@@ -970,7 +974,7 @@ retry:
- 		goto retry;
- 	}
- 	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
--		mapping->writeback_index = index;
-+		mapping->writeback_index = done_index;
- 
- 	if (wbc->range_cont)
- 		wbc->range_start = index << PAGE_CACHE_SHIFT;
++			if (--(wbc->nr_to_write) <= 0)
+ 				done = 1;
+ 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 				wbc->encountered_congestion = 1;
 
