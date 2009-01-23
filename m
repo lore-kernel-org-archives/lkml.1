@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760218AbZAWBtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760397AbZAWBub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760218AbZAWBtn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbZAWBtf
+	id S1760397AbZAWBub (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:50:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbZAWBuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:49:35 -0500
-Received: from vs02.svr02.mucip.net ([83.170.6.69]:51591 "EHLO
-	mailout.mucip.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755783AbZAWBte (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:49:34 -0500
-Date: Fri, 23 Jan 2009 02:49:30 +0100
-From: Bernhard Schmidt <berni@birkenwald.de>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org,
-       stefan.bader@canonical.com, Suresh Jayaraman <sjayaraman@suse.de>,
-       Shirish Pargaonkar <shirishpargaonkar@gmail.com>,
-       Steve French <smfrench@gmail.com>
-Subject: Re: [linux-cifs-client] BUG: Possible cifs+IPv6-Regression
-	2.6.27.4 -> 2.6.27.9
-Message-ID: <20090123014930.GA6579@pest>
-References: <20090118221329.GA12742@pest> <20090118210314.30832598@tleilax.poochiereds.net> <20090119103248.GA28699@schleppi.birkenwald.de> <20090119160725.34124637@tleilax.poochiereds.net> <20090119213819.GA6532@pest> <20090122094517.42e724e4@barsoom.rdu.redhat.com>
+	Thu, 22 Jan 2009 20:50:23 -0500
+Received: from mail.gmx.net ([213.165.64.20]:34429 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755943AbZAWBuW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:50:22 -0500
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX1/RuT0D6wLRVYBSwosb9IskTrl3AXDuzSZ//Ap3tz
+	y+COVYcoLaTWCf
+From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 00/46] 2.6.28-stable review
+Date: Fri, 23 Jan 2009 02:50:18 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20090123011110.GA19756@kroah.com>
+In-Reply-To: <20090123011110.GA19756@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090122094517.42e724e4@barsoom.rdu.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901230250.21363.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.65
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 09:45:17AM -0500, Jeff Layton wrote:
+Hi
 
-> I think I may see the bug...
-> 
-> I think the "addr" struct in cifs_mount is too small for ipv6 addresses.
-> Here's a proposed patch for 2.6.27.y. Could you apply it and let me
-> know if it fixes the bug?
+On Freitag, 23. Januar 2009, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.28.2 release.
+[...]
+> The whole patch series can be found in one patch at:
+> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.28.2-rc1.gz
+[...]
 
-I can confirm that Ubuntu kernel 2.6.27-11.25 (which has only your patch
-in the changes) fixes this issue.
+As it seems the actual rc patches haven't been pushed yet?
 
-Thanks a lot,
-Bernhard
+Given that patch-2.6.27.13-rc1.gz is also missing, which has been announced
+an hour earlier, I don't think that's related to the mirroring delay.
+
+Regards
+	Stefan Lippers-Hollmann
