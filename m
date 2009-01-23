@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760400AbZAWKXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbZAWK2o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760400AbZAWKXy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:23:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZAWKXq
+	id S1760383AbZAWK2o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 05:28:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZAWK2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:23:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41486 "EHLO mx3.mail.elte.hu"
+	Fri, 23 Jan 2009 05:28:35 -0500
+Received: from 8bytes.org ([88.198.83.132]:44910 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752897AbZAWKXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:23:45 -0500
-Date: Fri, 23 Jan 2009 11:22:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Menage <menage@google.com>
-Cc: akpm@linux-foundation.org, serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] cgroup: Fix root_count when mount fails due to busy
-	subsystem
-Message-ID: <20090123102253.GF15188@elte.hu>
-References: <20090123004703.25103.29754.stgit@menage.corp.google.com>
+	id S1753951AbZAWK2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 05:28:33 -0500
+Date: Fri, 23 Jan 2009 11:28:27 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, Oliver Neukum <oliver@neukum.org>,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, ceggers@gmx.de, David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 09/16] dma-debug: add checking for map/unmap_page/single
+Message-ID: <20090123102827.GO9466@8bytes.org>
+References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com> <1232376423-11067-10-git-send-email-joerg.roedel@amd.com> <200901210117.33153.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090123004703.25103.29754.stgit@menage.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200901210117.33153.arnd@arndb.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 21, 2009 at 01:17:32AM +0100, Arnd Bergmann wrote:
+> On Monday 19 January 2009, Joerg Roedel wrote:
+> > Impact: add debug callbacks for dma_{un}map_[page|single]
+> 
+> In the discussion about "[PATCH] usb/mcs7830: Don't use buffers from
+> stack for USB transfers", I have raised the question of whether we can
+> add a check for the DMA address being on the stack, I guess this would
+> be the right place for it.
+> 
+> Maybe you can add another check like:
+> 
+> WARN_ON(is_kernel_stack(page_to_virt(page)));
 
-* Paul Menage <menage@google.com> wrote:
+Good idea. This would be the right place for such a check.
 
-> cgroup: Fix root_count when mount fails due to busy subsystem
+> Unfortunately, I can't think of a way to define a generic is_kernel_stack
+> function. On most architectures (all that put thread_info at the top of the
+> stack), something like this should work:
 > 
-> root_count was being incremented in cgroup_get_sb() after all error 
-> checking was complete, but decremented in cgroup_kill_sb(), which can be 
-> called on a superblock that we gave up on due to an error.  This patch 
-> changes cgroup_kill_sb() to only decrement root_count if the root was 
-> previously linked into the list of roots.
-> 
-> Signed-off-by: Paul Menage <menage@google.com>
-> 
-> ---
-> 
-> I was actually surprised to find that list_del() doesn't crash when
-> run on an unattached list_head structure.
-> 
->  kernel/cgroup.c |    6 ++++--
->  1 files changed, 4 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-> index adcd0bb..9ce27e8 100644
-> --- a/kernel/cgroup.c
-> +++ b/kernel/cgroup.c
-> @@ -1115,8 +1115,10 @@ static void cgroup_kill_sb(struct super_block *sb) {
->  	}
->  	write_unlock(&css_set_lock);
->  
-> -	list_del(&root->root_list);
-> -	root_count--;
-> +	if (!list_empty(&root->root_list)) {
-> +		list_del(&root->root_list);
-> +		root_count--;
-> +	}
+> #ifndef is_kernel_stack
+> static inline int is_kernel_stack(void *p)
+> {
+> 	return (unsigned long)p & ~(THREAD_SIZE - 1) == current_thread_info();
+> }
+> #endif
 
-That's ugly. It is _much_ cleaner to always keep the link head consistent 
-- i.e. initialize it with INIT_LIST_HEAD() and then remove from it via 
-list_del_init().
+Hmm, this function is indeed required on all architectures. If you send
+a patchset which adds it I will add the check for stack addresses to
+this debugging code :)
 
-That way the error path will do the right thing automatically, and there's 
-no need for that ugly "if !list_empty" construct either.
+Joerg
 
-	Ingo
