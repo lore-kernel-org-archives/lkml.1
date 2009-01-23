@@ -1,80 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762070AbZAWKEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762212AbZAWKGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762070AbZAWKEt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758381AbZAWKEm
+	id S1762212AbZAWKGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 05:06:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756351AbZAWKGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:04:42 -0500
-Received: from fk-out-0910.google.com ([209.85.128.191]:18655 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756351AbZAWKEl (ORCPT
+	Fri, 23 Jan 2009 05:06:11 -0500
+Received: from ribosome.natur.cuni.cz ([195.113.57.20]:58706 "EHLO
+	ribosome.natur.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755869AbZAWKGJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:04:41 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=in2tfzfMhfLZ3zsAfexsZBnj7nSKjZW7kOwTVLfsrHifhS5kNfO7p2ZfYWXWMzbnEq
-         SW0uLJpEtvJjQYKc+6YNC/5Uii26FO/KD3GUjDqH6QX2oMQ7M1Yyku8thtm1vfLqd8eT
-         CRmrfJyMg1jmx9Kk1iD5oli0AiBpiwhh6a2qM=
+	Fri, 23 Jan 2009 05:06:09 -0500
+Message-ID: <49799691.3070701@ribosome.natur.cuni.cz>
+Date: Fri, 23 Jan 2009 11:06:09 +0100
+From: =?UTF-8?B?TWFydGluIE1PS1JFSsWg?= <mmokrejs@ribosome.natur.cuni.cz>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081227 SeaMonkey/1.1.14
 MIME-Version: 1.0
-In-Reply-To: <20090123092306.GB29820@elte.hu>
-References: <20090122083457.GC7438@elte.hu> <20090122195513.GA22146@google.com>
-	 <1fe6c7900901221921m586b129dwf8c3446f897b57f0@mail.gmail.com>
-	 <20090123092306.GB29820@elte.hu>
-Date: Fri, 23 Jan 2009 11:04:39 +0100
-Message-ID: <c62985530901230204i3880c3f8xbebdb6844f35addf@mail.gmail.com>
-Subject: Re: [PATCH v3] softlockup: remove hung_task_check_count
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mandeep Baines <msb@google.com>, linux-kernel@vger.kernel.org,
-       rientjes@google.com, mbligh@google.com, thockin@google.com
-Content-Type: text/plain; charset=ISO-8859-1
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [BUG #12515] 2.6.29-rc2-git1: possible circular locking #0: (sk_lock-AF_PACKET){--..},
+ at: [<c1279838>] sock_setsockopt+0x12b/0x4a4
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/23 Ingo Molnar <mingo@elte.hu>:
->
-> * Mandeep Baines <msb@google.com> wrote:
->
->> On Thu, Jan 22, 2009 at 11:55 AM, Mandeep Singh Baines <msb@google.com> wrote:
->> >
->> > The unlock and lock could be removed and only compiled in if PREEMPT.
->> > If the number of tasks isn't bound, the lock might be held too long.
->> >
->>
->> This is incorrect. The adding the lock and unlock will not make the
->> system more pre-emptive. To be more pre-emptive you'd want to check
->> need_resched() as often as possible.
->>
->> > It would be kinda funny if hung_task caused a softlockup.
->> >
->>
->> Again. This is incorrect. Rescheduling if need_resched() will prevent
->> softlockup.
->>
->> Not sure what I was thinking this morning;)
->>
->> However, I am happy with the patch. To give writers a chance, the lock
->> should held for bounded time. Holding the lock in khungtask (which is
->> running at low scheduler priority) could potentially be delaying
->> important work. The longer the lock is held, the bigger the priority
->> inversion problem.
->
-> not sure i like the whole idea of removing the max iterations check. In
-> theory if there's a _ton_ of tasks, we could spend a lot of time looping
-> there. So it always looked prudent to limit it somewhat.
->
->        Ingo
->
+Hi,
+  I haven't received any answer on this bug report so I am re-trying
+over the email list. Running tcpdump under heavy load/io I got this
+stacktrace. Snippet from dmesg output follows:
 
-Which means we can loose several of them. Would it hurt to iterate as
-much as possible along the task list,
-keeping some care about writers starvation and latency?
-BTW I thought about the slow work framework, but I can't retrieve
-it....  But this thread has already a slow priority.
 
-Would it be interesting to provide a way for rwlocks to know if there
-is writer waiting for the lock?
+device eth0 entered promiscuous mode
+
+=======================================================
+[ INFO: possible circular locking dependency detected ]
+2.6.29-rc2-git1 #1
+-------------------------------------------------------
+tcpdump/3734 is trying to acquire lock:
+ (&mm->mmap_sem){----}, at: [<c1053294>] might_fault+0x30/0x6b
+
+but task is already holding lock:
+ (sk_lock-AF_PACKET){--..}, at: [<c12798c8>] sock_setsockopt+0x12b/0x4a4
+
+which lock already depends on the new lock.
+
+
+the existing dependency chain (in reverse order) is:
+
+-> #1 (sk_lock-AF_PACKET){--..}:
+       [<c1033a0d>] add_lock_to_list+0x5e/0x8b
+       [<c10365ae>] __lock_acquire+0xfb8/0x12e5
+       [<c12cc63c>] packet_mmap+0x2e/0xf4
+       [<c12cc63c>] packet_mmap+0x2e/0xf4
+       [<c1036922>] lock_acquire+0x47/0x5e
+       [<c12cc63c>] packet_mmap+0x2e/0xf4
+       [<c1278548>] lock_sock_nested+0xac/0xb9
+       [<c12cc63c>] packet_mmap+0x2e/0xf4
+       [<c12cc63c>] packet_mmap+0x2e/0xf4
+       [<c1034e94>] trace_hardirqs_on_caller+0x104/0x124
+       [<c12759fa>] sock_mmap+0xc/0xe
+       [<c10588f9>] mmap_region+0x27e/0x4b4
+       [<c1058d1e>] do_mmap_pgoff+0x1ef/0x239
+       [<c10057cf>] sys_mmap2+0x58/0x76
+       [<c1002cd5>] sysenter_do_call+0x12/0x35
+       [<ffffffff>] 0xffffffff
+
+-> #0 (&mm->mmap_sem){----}:
+       [<c103507d>] print_circular_bug_entry+0x36/0x3d
+       [<c10362d1>] __lock_acquire+0xcdb/0x12e5
+       [<c1034cf3>] mark_held_locks+0x50/0x66
+       [<c101ff01>] local_bh_enable+0x97/0x9a
+       [<c1036922>] lock_acquire+0x47/0x5e
+       [<c1053294>] might_fault+0x30/0x6b
+       [<c10532b1>] might_fault+0x4d/0x6b
+       [<c1053294>] might_fault+0x30/0x6b
+       [<c1137907>] copy_from_user+0x27/0x10e
+       [<c1279bcb>] sock_setsockopt+0x42e/0x4a4
+       [<c10532b4>] might_fault+0x50/0x6b
+       [<c127636a>] sys_setsockopt+0x4c/0x7d
+       [<c1277957>] sys_socketcall+0x135/0x18c
+       [<c1002cd5>] sysenter_do_call+0x12/0x35
+       [<ffffffff>] 0xffffffff
+
+other info that might help us debug this:
+
+1 lock held by tcpdump/3734:
+ #0:  (sk_lock-AF_PACKET){--..}, at: [<c12798c8>] sock_setsockopt+0x12b/0x4a4
+
+stack backtrace:
+Pid: 3734, comm: tcpdump Not tainted 2.6.29-rc2-git1 #1
+Call Trace:
+ [<c10352c1>] print_circular_bug_tail+0xa5/0xaf
+ [<c103507d>] print_circular_bug_entry+0x36/0x3d
+ [<c10362d1>] __lock_acquire+0xcdb/0x12e5
+ [<c1034cf3>] mark_held_locks+0x50/0x66
+ [<c101ff01>] local_bh_enable+0x97/0x9a
+ [<c1036922>] lock_acquire+0x47/0x5e
+ [<c1053294>] might_fault+0x30/0x6b
+ [<c10532b1>] might_fault+0x4d/0x6b
+ [<c1053294>] might_fault+0x30/0x6b
+ [<c1137907>] copy_from_user+0x27/0x10e
+ [<c1279bcb>] sock_setsockopt+0x42e/0x4a4
+ [<c10532b4>] might_fault+0x50/0x6b
+ [<c127636a>] sys_setsockopt+0x4c/0x7d
+ [<c1277957>] sys_socketcall+0x135/0x18c
+ [<c1002cd5>] sysenter_do_call+0x12/0x35
+device eth0 left promiscuous mode
+
+
+More details are at http://bugzilla.kernel.org/show_bug.cgi?id=12515
+Please Cc: me in replies. Thanks.
+Martin
