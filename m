@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762343AbZAWGT5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762210AbZAWGTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762343AbZAWGT5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:19:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760859AbZAWGQa
+	id S1762210AbZAWGTm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760850AbZAWGQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:30 -0500
-Received: from kroah.org ([198.145.64.141]:36177 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760817AbZAWGQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 23 Jan 2009 01:16:29 -0500
-Date: Thu, 22 Jan 2009 22:13:27 -0800
+Received: from kroah.org ([198.145.64.141]:36163 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1760718AbZAWGQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:28 -0500
+Date: Thu, 22 Jan 2009 22:13:23 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk,
        USB Storage list <usb-storage@lists.one-eyed-alien.net>,
        Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 10/40] usb-storage: set CAPACITY_HEURISTICS flag for bad
-	vendors
-Message-ID: <20090123061327.GJ2922@kroah.com>
+Subject: [patch 09/40] usb-storage: add last-sector hacks
+Message-ID: <20090123061323.GI2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-storage-set-capacity_heuristics-flag-for-bad-vendors.patch"
+Content-Disposition: inline; filename="usb-storage-add-last-sector-hacks.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -44,64 +43,310 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-commit a81a81a25d3ecdab777abca87c5ddf484056103d upstream.
+commit 25ff1c316f6a763f1eefe7f8984b2d8c03888432 upstream.
 
-This patch (as1194c) makes usb-storage set the CAPACITY_HEURISTICS flag
-for all devices made by Nokia, Nikon, or Motorola.  These companies
-seem to include the READ CAPACITY bug in all of their devices.
+This patch (as1189d) adds some hacks to usb-storage for dealing with
+the growing problems involving bad capacity values and last-sector
+accesses:
 
-Since cell phones and digital cameras rely on flash storage, which
-always has an even number of sectors, setting CAPACITY_HEURISTICS
-shouldn't cause any problems.  Not even if the companies wise up and
-start making devices without the bug.
+	A new flag, US_FL_CAPACITY_OK, is created to indicate that
+	the device is known to report its capacity correctly.  An
+	unusual_devs entry for Linux's own File-backed Storage Gadget
+	is added with this flag set, since g_file_storage always
+	reports the correct capacity and since the capacity need
+	not be even (it is determined by the size of the backing
+	file).
 
-A large number of unusual_devs entries are now unnecessary, so the
-patch removes them.
+	An entry in unusual_devs.h which has only the CAPACITY_OK
+	flag set shouldn't prejudice libusual, since the device will
+	work perfectly well with either usb-storage or ub.  So a
+	new macro, COMPLIANT_DEV, is added to let libusual know
+	about these entries.
+
+	When a last-sector access fails three times in a row and
+	neither the FIX_CAPACITY nor the CAPACITY_OK flag is set,
+	we assume the last-sector bug is present.  We replace the
+	existing status and sense data with values that will cause
+	the SCSI core to fail the access immediately rather than
+	retry indefinitely.  This should fix the difficulties
+	people have been having with Nokia phones.
+
+This version of the patch differs from the version accepted into the
+mainline only in that it does not trigger a WARN() when an
+odd-numbered last-sector access succeeds.  In a stable kernel series
+we don't want to go around spamming users' logs and consoles for no
+good reason.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/scsiglue.c |   23 +++++++++++++++++++++++
- 1 file changed, 23 insertions(+)
+ drivers/usb/storage/libusual.c     |    7 +++
+ drivers/usb/storage/scsiglue.c     |    8 +++
+ drivers/usb/storage/transport.c    |   80 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/storage/unusual_devs.h |   16 ++++++-
+ drivers/usb/storage/usb.c          |    6 ++
+ drivers/usb/storage/usb.h          |    4 +
+ include/linux/usb_usual.h          |    5 +-
+ 7 files changed, 123 insertions(+), 3 deletions(-)
 
+--- a/drivers/usb/storage/libusual.c
++++ b/drivers/usb/storage/libusual.c
+@@ -46,6 +46,12 @@ static int usu_probe_thread(void *arg);
+ { USB_DEVICE_VER(id_vendor, id_product, bcdDeviceMin,bcdDeviceMax), \
+   .driver_info = (flags)|(USB_US_TYPE_STOR<<24) }
+ 
++#define COMPLIANT_DEV(id_vendor, id_product, bcdDeviceMin, bcdDeviceMax, \
++		    vendorName, productName, useProtocol, useTransport, \
++		    initFunction, flags) \
++{ USB_DEVICE_VER(id_vendor, id_product, bcdDeviceMin, bcdDeviceMax), \
++  .driver_info = (flags) }
++
+ #define USUAL_DEV(useProto, useTrans, useType) \
+ { USB_INTERFACE_INFO(USB_CLASS_MASS_STORAGE, useProto, useTrans), \
+   .driver_info = ((useType)<<24) }
+@@ -57,6 +63,7 @@ struct usb_device_id storage_usb_ids [] 
+ 
+ #undef USUAL_DEV
+ #undef UNUSUAL_DEV
++#undef COMPLIANT_DEV
+ 
+ MODULE_DEVICE_TABLE(usb, storage_usb_ids);
+ EXPORT_SYMBOL_GPL(storage_usb_ids);
 --- a/drivers/usb/storage/scsiglue.c
 +++ b/drivers/usb/storage/scsiglue.c
-@@ -59,6 +59,13 @@
- #include "transport.h"
- #include "protocol.h"
- 
-+/* Vendor IDs for companies that seem to include the READ CAPACITY bug
-+ * in all their devices
-+ */
-+#define VENDOR_ID_NOKIA		0x0421
-+#define VENDOR_ID_NIKON		0x04b0
-+#define VENDOR_ID_MOTOROLA	0x22b8
+@@ -196,6 +196,14 @@ static int slave_configure(struct scsi_d
+ 		 * sector in a larger then 1 sector read, since the performance
+ 		 * impact is negible we set this flag for all USB disks */
+ 		sdev->last_sector_bug = 1;
 +
++		/* Enable last-sector hacks for single-target devices using
++		 * the Bulk-only transport, unless we already know the
++		 * capacity will be decremented or is correct. */
++		if (!(us->fflags & (US_FL_FIX_CAPACITY | US_FL_CAPACITY_OK |
++					US_FL_SCM_MULT_TARG)) &&
++				us->protocol == US_PR_BULK)
++			us->use_last_sector_hacks = 1;
+ 	} else {
+ 
+ 		/* Non-disk-type devices don't need to blacklist any pages
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -57,6 +57,9 @@
+ #include "scsiglue.h"
+ #include "debug.h"
+ 
++#include <linux/blkdev.h>
++#include "../../scsi/sd.h"
++
+ 
  /***********************************************************************
-  * Host functions 
+  * Data transfer routines
+@@ -511,6 +514,80 @@ int usb_stor_bulk_transfer_sg(struct us_
+  * Transport routines
   ***********************************************************************/
-@@ -134,6 +141,22 @@ static int slave_configure(struct scsi_d
- 	 * settings can't be overridden via the scsi devinfo mechanism. */
- 	if (sdev->type == TYPE_DISK) {
  
-+		/* Some vendors seem to put the READ CAPACITY bug into
-+		 * all their devices -- primarily makers of cell phones
-+		 * and digital cameras.  Since these devices always use
-+		 * flash media and can be expected to have an even number
-+		 * of sectors, we will always enable the CAPACITY_HEURISTICS
-+		 * flag unless told otherwise. */
-+		switch (le16_to_cpu(us->pusb_dev->descriptor.idVendor)) {
-+		case VENDOR_ID_NOKIA:
-+		case VENDOR_ID_NIKON:
-+		case VENDOR_ID_MOTOROLA:
-+			if (!(us->fflags & (US_FL_FIX_CAPACITY |
-+					US_FL_CAPACITY_OK)))
-+				us->fflags |= US_FL_CAPACITY_HEURISTICS;
-+			break;
-+		}
++/* There are so many devices that report the capacity incorrectly,
++ * this routine was written to counteract some of the resulting
++ * problems.
++ */
++static void last_sector_hacks(struct us_data *us, struct scsi_cmnd *srb)
++{
++	struct gendisk *disk;
++	struct scsi_disk *sdkp;
++	u32 sector;
 +
- 		/* Disk-type devices use MODE SENSE(6) if the protocol
- 		 * (SubClass) is Transparent SCSI, otherwise they use
- 		 * MODE SENSE(10). */
++	/* To Report "Medium Error: Record Not Found */
++	static unsigned char record_not_found[18] = {
++		[0]	= 0x70,			/* current error */
++		[2]	= MEDIUM_ERROR,		/* = 0x03 */
++		[7]	= 0x0a,			/* additional length */
++		[12]	= 0x14			/* Record Not Found */
++	};
++
++	/* If last-sector problems can't occur, whether because the
++	 * capacity was already decremented or because the device is
++	 * known to report the correct capacity, then we don't need
++	 * to do anything.
++	 */
++	if (!us->use_last_sector_hacks)
++		return;
++
++	/* Was this command a READ(10) or a WRITE(10)? */
++	if (srb->cmnd[0] != READ_10 && srb->cmnd[0] != WRITE_10)
++		goto done;
++
++	/* Did this command access the last sector? */
++	sector = (srb->cmnd[2] << 24) | (srb->cmnd[3] << 16) |
++			(srb->cmnd[4] << 8) | (srb->cmnd[5]);
++	disk = srb->request->rq_disk;
++	if (!disk)
++		goto done;
++	sdkp = scsi_disk(disk);
++	if (!sdkp)
++		goto done;
++	if (sector + 1 != sdkp->capacity)
++		goto done;
++
++	if (srb->result == SAM_STAT_GOOD && scsi_get_resid(srb) == 0) {
++
++		/* The command succeeded.  We know this device doesn't
++		 * have the last-sector bug, so stop checking it.
++		 */
++		us->use_last_sector_hacks = 0;
++
++	} else {
++		/* The command failed.  Allow up to 3 retries in case this
++		 * is some normal sort of failure.  After that, assume the
++		 * capacity is wrong and we're trying to access the sector
++		 * beyond the end.  Replace the result code and sense data
++		 * with values that will cause the SCSI core to fail the
++		 * command immediately, instead of going into an infinite
++		 * (or even just a very long) retry loop.
++		 */
++		if (++us->last_sector_retries < 3)
++			return;
++		srb->result = SAM_STAT_CHECK_CONDITION;
++		memcpy(srb->sense_buffer, record_not_found,
++				sizeof(record_not_found));
++	}
++
++ done:
++	/* Don't reset the retry counter for TEST UNIT READY commands,
++	 * because they get issued after device resets which might be
++	 * caused by a failed last-sector access.
++	 */
++	if (srb->cmnd[0] != TEST_UNIT_READY)
++		us->last_sector_retries = 0;
++}
++
+ /* Invoke the transport and basic error-handling/recovery methods
+  *
+  * This is used by the protocol layers to actually send the message to
+@@ -544,6 +621,7 @@ void usb_stor_invoke_transport(struct sc
+ 	/* if the transport provided its own sense data, don't auto-sense */
+ 	if (result == USB_STOR_TRANSPORT_NO_SENSE) {
+ 		srb->result = SAM_STAT_CHECK_CONDITION;
++		last_sector_hacks(us, srb);
+ 		return;
+ 	}
+ 
+@@ -667,6 +745,7 @@ void usb_stor_invoke_transport(struct sc
+ 			scsi_bufflen(srb) - scsi_get_resid(srb) < srb->underflow)
+ 		srb->result = (DID_ERROR << 16) | (SUGGEST_RETRY << 24);
+ 
++	last_sector_hacks(us, srb);
+ 	return;
+ 
+ 	/* Error and abort processing: try to resynchronize with the device
+@@ -694,6 +773,7 @@ void usb_stor_invoke_transport(struct sc
+ 		us->transport_reset(us);
+ 	}
+ 	clear_bit(US_FLIDX_RESETTING, &us->dflags);
++	last_sector_hacks(us, srb);
+ }
+ 
+ /* Stop the current URB transfer */
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -27,7 +27,8 @@
+ 
+ /* IMPORTANT NOTE: This file must be included in another file which does
+  * the following thing for it to work:
+- * The macro UNUSUAL_DEV() must be defined before this file is included
++ * The UNUSUAL_DEV, COMPLIANT_DEV, and USUAL_DEV macros must be defined
++ * before this file is included.
+  */
+ 
+ /* If you edit this file, please try to keep it sorted first by VendorID,
+@@ -46,6 +47,12 @@
+  * <usb-storage@lists.one-eyed-alien.net>
+  */
+ 
++/* Note: If you add an entry only in order to set the CAPACITY_OK flag,
++ * use the COMPLIANT_DEV macro instead of UNUSUAL_DEV.  This is
++ * because such entries mark devices which actually work correctly,
++ * as opposed to devices that do something strangely or wrongly.
++ */
++
+ /* patch submitted by Vivian Bregier <Vivian.Bregier@imag.fr>
+  */
+ UNUSUAL_DEV(  0x03eb, 0x2002, 0x0100, 0x0100,
+@@ -692,6 +699,13 @@ UNUSUAL_DEV(  0x0525, 0xa140, 0x0100, 0x
+ 		US_SC_8070, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_INQUIRY ),
+ 
++/* Added by Alan Stern <stern@rowland.harvard.edu> */
++COMPLIANT_DEV(0x0525, 0xa4a5, 0x0000, 0x9999,
++		"Linux",
++		"File-backed Storage Gadget",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_CAPACITY_OK ),
++
+ /* Yakumo Mega Image 37
+  * Submitted by Stephan Fuhrmann <atomenergie@t-online.de> */
+ UNUSUAL_DEV(  0x052b, 0x1801, 0x0100, 0x0100,
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -126,6 +126,8 @@ MODULE_PARM_DESC(delay_use, "seconds to 
+ { USB_DEVICE_VER(id_vendor, id_product, bcdDeviceMin,bcdDeviceMax), \
+   .driver_info = (flags)|(USB_US_TYPE_STOR<<24) }
+ 
++#define COMPLIANT_DEV	UNUSUAL_DEV
++
+ #define USUAL_DEV(useProto, useTrans, useType) \
+ { USB_INTERFACE_INFO(USB_CLASS_MASS_STORAGE, useProto, useTrans), \
+   .driver_info = (USB_US_TYPE_STOR<<24) }
+@@ -134,6 +136,7 @@ static struct usb_device_id storage_usb_
+ 
+ #	include "unusual_devs.h"
+ #undef UNUSUAL_DEV
++#undef COMPLIANT_DEV
+ #undef USUAL_DEV
+ 	/* Terminating entry */
+ 	{ }
+@@ -164,6 +167,8 @@ MODULE_DEVICE_TABLE (usb, storage_usb_id
+ 	.initFunction = init_function,	\
+ }
+ 
++#define COMPLIANT_DEV	UNUSUAL_DEV
++
+ #define USUAL_DEV(use_protocol, use_transport, use_type) \
+ { \
+ 	.useProtocol = use_protocol,	\
+@@ -173,6 +178,7 @@ MODULE_DEVICE_TABLE (usb, storage_usb_id
+ static struct us_unusual_dev us_unusual_dev_list[] = {
+ #	include "unusual_devs.h" 
+ #	undef UNUSUAL_DEV
++#	undef COMPLIANT_DEV
+ #	undef USUAL_DEV
+ 
+ 	/* Terminating entry */
+--- a/drivers/usb/storage/usb.h
++++ b/drivers/usb/storage/usb.h
+@@ -155,6 +155,10 @@ struct us_data {
+ #ifdef CONFIG_PM
+ 	pm_hook			suspend_resume_hook;
+ #endif
++
++	/* hacks for READ CAPACITY bug handling */
++	int			use_last_sector_hacks;
++	int			last_sector_retries;
+ };
+ 
+ /* Convert between us_data and the corresponding Scsi_Host */
+--- a/include/linux/usb_usual.h
++++ b/include/linux/usb_usual.h
+@@ -52,8 +52,9 @@
+ 	US_FLAG(MAX_SECTORS_MIN,0x00002000)			\
+ 		/* Sets max_sectors to arch min */		\
+ 	US_FLAG(BULK_IGNORE_TAG,0x00004000)			\
+-		/* Ignore tag mismatch in bulk operations */
+-
++		/* Ignore tag mismatch in bulk operations */	\
++	US_FLAG(CAPACITY_OK,	0x00010000)			\
++		/* READ CAPACITY response is correct */
+ 
+ #define US_FLAG(name, value)	US_FL_##name = value ,
+ enum { US_DO_ALL_FLAGS };
 
