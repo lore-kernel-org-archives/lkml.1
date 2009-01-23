@@ -1,66 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbZAWRae@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbZAWRdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758238AbZAWRae (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 12:30:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZAWRaQ
+	id S1759204AbZAWRdE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 12:33:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZAWRcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 12:30:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42501 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754464AbZAWRaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 12:30:13 -0500
-Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jan Engelhardt <jengelh@medozas.de>, "H. Peter Anvin" <hpa@kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
-       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
-       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
-       netdev@vger.kernel.org, greg@kroah.com, linux-usb@vger.kernel.org,
-       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20090123170904.GA26083@uranus.ravnborg.org>
-References: <1232223441.3966.22.camel@localhost.localdomain>
-	 <1232228261.27094.0.camel@macbook.infradead.org>
-	 <20090117221932.GA4956@uranus.ravnborg.org> <49725B1E.604@kernel.org>
-	 <1232498319.3123.34.camel@localhost.localdomain>
-	 <1232726359.3504.18.camel@localhost.localdomain>
-	 <1232726658.3504.22.camel@localhost.localdomain>
-	 <alpine.LSU.2.00.0901231710350.15413@fbirervta.pbzchgretzou.qr>
-	 <20090123162153.GA25766@uranus.ravnborg.org>
-	 <1232728304.3504.28.camel@localhost.localdomain>
-	 <20090123170904.GA26083@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Fri, 23 Jan 2009 22:58:37 +0530
-Message-Id: <1232731717.3504.36.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Jan 2009 12:32:51 -0500
+Received: from ns1.siteground211.com ([209.62.36.12]:56058 "EHLO
+	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755972AbZAWRcu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 12:32:50 -0500
+Date: Fri, 23 Jan 2009 19:31:36 +0200
+From: Felipe Balbi <me@felipebalbi.com>
+To: Julia Lawall <julia@diku.dk>
+Cc: felipe.balbi@nokia.com, linux-usb@vger.kernel.org, gregkh@suse.de,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 12/13] drivers/usb/musb: use USB API functions rather
+	than constants
+Message-ID: <20090123173135.GR440@frodo>
+Reply-To: me@felipebalbi.com
+References: <Pine.LNX.4.64.0812291123050.9555@pc-004.diku.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0812291123050.9555@pc-004.diku.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - serv01.siteground211.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - felipebalbi.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-23 at 18:09 +0100, Sam Ravnborg wrote:
-> On Fri, Jan 23, 2009 at 10:01:44PM +0530, Jaswinder Singh Rajput wrote:
-
-> > So is this OK:
-> > 
-> > -#ifdef __KERNEL__
-> >  #include <linux/types.h>
-> > -#else
-> > -#include <stdint.h>
-> > -#endif
+On Mon, Dec 29, 2008 at 11:23:22AM +0100, Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> That was what I expected the final change to look like.
-> If you want then combine it in one patch.
+> This set of patches introduces calls to the following set of functions:
 > 
+> usb_endpoint_dir_in(epd)
+> usb_endpoint_dir_out(epd)
+> usb_endpoint_is_bulk_in(epd)
+> usb_endpoint_is_bulk_out(epd)
+> usb_endpoint_is_int_in(epd)
+> usb_endpoint_is_int_out(epd)
+> usb_endpoint_num(epd)
+> usb_endpoint_type(epd)
+> usb_endpoint_xfer_bulk(epd)
+> usb_endpoint_xfer_control(epd)
+> usb_endpoint_xfer_int(epd)
+> usb_endpoint_xfer_isoc(epd)
+> 
+> In some cases, introducing one of these functions is not possible, and it
+> just replaces an explicit integer value by one of the following constants:
+> 
+> USB_ENDPOINT_XFER_BULK
+> USB_ENDPOINT_XFER_CONTROL
+> USB_ENDPOINT_XFER_INT
+> USB_ENDPOINT_XFER_ISOC
+> 
+> An extract of the semantic patch that makes these changes is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @r1@ struct usb_endpoint_descriptor *epd; @@
+> 
+> - ((epd->bmAttributes & \(USB_ENDPOINT_XFERTYPE_MASK\|3\)) ==
+> - \(USB_ENDPOINT_XFER_CONTROL\|0\))
+> + usb_endpoint_xfer_control(epd)
+> 
+> @r5@ struct usb_endpoint_descriptor *epd; @@
+> 
+> - ((epd->bEndpointAddress & \(USB_ENDPOINT_DIR_MASK\|0x80\)) ==
+> -  \(USB_DIR_IN\|0x80\))
+> + usb_endpoint_dir_in(epd)
+> 
+> @inc@
+> @@
+> 
+> #include <linux/usb.h>
+> 
+> @depends on !inc && (r1||r5)@
+> @@
+> 
+> + #include <linux/usb.h>
+>   #include <linux/usb/...>
+> // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Ok, thanks.
+Acked-by: Felipe Balbi <felipe.balbi@nokia.com>
 
---
-JSR
+> ---
+>  drivers/usb/musb/musb_gadget.c |    6 +++---
+>  drivers/usb/musb/musb_host.c   |    4 ++--
+>  2 files changed, 5 insertions(+), 5 deletions(-)
+> 
+> diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
+> index 6197dae..4ea3053 100644
+> --- a/drivers/usb/musb/musb_gadget.c
+> +++ b/drivers/usb/musb/musb_gadget.c
+> @@ -874,10 +874,10 @@ static int musb_gadget_enable(struct usb_ep *ep,
+>  		status = -EBUSY;
+>  		goto fail;
+>  	}
+> -	musb_ep->type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
+> +	musb_ep->type = usb_endpoint_type(desc);
+>  
+>  	/* check direction and (later) maxpacket size against endpoint */
+> -	if ((desc->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK) != epnum)
+> +	if (usb_endpoint_num(desc) != epnum)
+>  		goto fail;
+>  
+>  	/* REVISIT this rules out high bandwidth periodic transfers */
+> @@ -890,7 +890,7 @@ static int musb_gadget_enable(struct usb_ep *ep,
+>  	 * packet size (or fail), set the mode, clear the fifo
+>  	 */
+>  	musb_ep_select(mbase, epnum);
+> -	if (desc->bEndpointAddress & USB_DIR_IN) {
+> +	if (usb_endpoint_dir_in(desc)) {
+>  		u16 int_txe = musb_readw(mbase, MUSB_INTRTXE);
+>  
+>  		if (hw_ep->is_shared_fifo)
+> diff --git a/drivers/usb/musb/musb_host.c b/drivers/usb/musb/musb_host.c
+> index 99fa612..a035cec 100644
+> --- a/drivers/usb/musb/musb_host.c
+> +++ b/drivers/usb/musb/musb_host.c
+> @@ -1847,8 +1847,8 @@ static int musb_urb_enqueue(
+>  		goto done;
+>  	}
+>  
+> -	qh->epnum = epd->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
+> -	qh->type = epd->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
+> +	qh->epnum = usb_endpoint_num(epd);
+> +	qh->type = usb_endpoint_type(epd);
+>  
+>  	/* NOTE: urb->dev->devnum is wrong during SET_ADDRESS */
+>  	qh->addr_reg = (u8) usb_pipedevice(urb->pipe);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
+-- 
+balbi
