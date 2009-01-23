@@ -1,52 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759900AbZAWQH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758675AbZAWQK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759900AbZAWQH2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 11:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbZAWQHQ
+	id S1758675AbZAWQK2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 11:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755898AbZAWQKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 11:07:16 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57800 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756188AbZAWQHP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 11:07:15 -0500
-Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>, yanmin_zhang@linux.intel.com,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <200901240254.01552.nickpiggin@yahoo.com.au>
-References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI>
-	 <200901240237.10522.nickpiggin@yahoo.com.au>
-	 <1232725468.6094.97.camel@penberg-laptop>
-	 <200901240254.01552.nickpiggin@yahoo.com.au>
-Date: Fri, 23 Jan 2009 18:07:13 +0200
-Message-Id: <1232726833.6094.110.camel@penberg-laptop>
+	Fri, 23 Jan 2009 11:10:20 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:50265 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754930AbZAWQKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 11:10:20 -0500
+Date: Fri, 23 Jan 2009 17:10:17 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+Message-ID: <20090123161017.GC14517@wotan.suse.de>
+References: <20090114150900.GC25401@wotan.suse.de> <Pine.LNX.4.64.0901141158090.26507@quilx.com> <20090115060330.GB17810@wotan.suse.de> <Pine.LNX.4.64.0901151320250.26467@quilx.com> <20090116031940.GL17810@wotan.suse.de> <Pine.LNX.4.64.0901161500080.27283@quilx.com> <20090119054730.GA22584@wotan.suse.de> <alpine.DEB.1.10.0901211914140.18367@qirst.com> <20090123041756.GH20098@wotan.suse.de> <alpine.DEB.1.10.0901231042380.32253@qirst.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901231042380.32253@qirst.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-24 at 02:37 +1100, Nick Piggin wrote:
-> > > However, I don't know if netperf udp 4K over loopback is totally
-> > > realistic. Maybe real network drivers have different allocation patterns.
-> > > If I were you I wouldn't be too hasty to make big changes based on that
-> > > alone, if it could introduce regression in somewhere more important.
+On Fri, Jan 23, 2009 at 10:52:43AM -0500, Christoph Lameter wrote:
+> On Fri, 23 Jan 2009, Nick Piggin wrote:
+> 
+> > > Typically we traverse lists of objects that are in the same slab cache.
+> >
+> > Very often that is not the case. And the price you pay for that is that
+> > you have to drain and switch freelists whenever you encounter an object
+> > that is not on the same page.
+> 
+> SLUB can directly free an object to any slab page. "Queuing" on free via
+> the per cpu slab is only possible if the object came from that per cpu
+> slab. This is typically only the case for objects that were recently
+> allocated.
 
-On Saturday 24 January 2009 02:44:28 Pekka Enberg wrote:
-> > Yup, I'm putting it in linux-next to see if anything pops up. It's of
-> > course possible that it will introduce regression somewhere but seeing
-> > the hit SLUB is taking from the page allocator, I'm bound to think that
-> > performance increase claims of commit
-> > aadb4bc4a1f9108c1d0fbd121827c936c2ed4217 ("SLUB: direct pass through of
-> > page size or higher kmalloc requests") don't hold anymore.
+Ah yes ok that's right. But then you don't get LIFO allocation
+behaviour for those cases.
 
-On Sat, 2009-01-24 at 02:54 +1100, Nick Piggin wrote:
-> Well what workload were they relating to? That could easily be retested.
+ 
+> > This gives your freelists a chaotic and unpredictable behaviour IMO in
+> > a running system where pages succumb to fragmentation so your freelist
+> > maximum sizes are limited. It also means you can lose track of cache
+> > hot objects when you switch to different "fast" pages. I don't consider
+> > this to be "queueing done right".
+> 
+> Yes you can loose track of caching hot objects. That is one of the
+> concerns with the SLUB approach. On the other hand: Caching architectures
+> get more and more complex these days (especially in a NUMA system). The
 
-No idea. I'm not sure I even reviewed that patch as it went in.
+Because it is more important to get good cache behaviour. 
+
+
+> SLAB approach is essentially trying to guess which objects are cache hot
+> and queue them. Sometimes the queueing is advantageous (may be a reason
+> that SLAB is better than SLUB in some cases). In other cases SLAB keeps
+> objects on queues but the object have become sale (context switch, slab
+> unused for awhile). Then its no advantage anymore.
+
+But in those cases would be expected to be encountered if that slab
+is not used as frequently, ergo less performance critical. And
+ones that are used frequently should be more likely to have recently
+freed cache hot objects.
+
+
+> > > If all objects are from the same page then you need not check
+> > > the NUMA locality of any object on that queue.
+> >
+> > In SLAB and SLQB, all objects on the freelist are on the same node. So
+> > tell me how does same-page objects simplify numa  handling?
+> 
+> F.e. On free you need to determine the node to find the right queue in
+> SLAB. SLUB does not need to do that. It simply determines the page address
+> and does not care about the node when freeing the object. It is irrelevant
+> on which node the object sits.
+
+OK, but how much does that help?
+
+ 
+> Also on alloc: The per cpu slab can be from a foreign node. NUMA locality
+> does only matter if the caller wants memory from a particular node. So
+> cpus that have no local memory can still use the per cpu slabs to have
+> fast allocations etc etc.
+
+Yeah. In my experience I haven't needed to optimise this type of behaviour
+yet, but other allocators could definitely do similar things to switch their
+queues to different nodes.
+
+
+> > > > And you found you have to increase the size of your pages because you
+> > > > need bigger queues. (must we argue semantics? it is a list of free
+> > > > objects)
+> > >
+> > > Right. That may be the case and its a similar tuning to what SLAB does.
+> >
+> > SLAB and SLQB doesn't need bigger pages to do that.
+> 
+> But they require more metadata handling because they need to manage lists
+> of order-0 pages. metadata handling is reduced by orders of magnitude in
+> SLUB.
+
+SLQB's page lists typically get accessed eg. 1% of the time (sometimes far
+less, other workloads more). So it is several orders of magnitude removed
+from the fastpath which is handled by the freelist.
+
+So I think it is wrong to say it requires more metadata handling. SLUB
+will have to switch pages more often or free objects to pages other than
+the "fast" page (what do you call it?), so quite often I think you'll
+find SLUB has just as much if not more metadata handling.
 
