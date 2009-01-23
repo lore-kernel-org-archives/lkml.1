@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762311AbZAWG06@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764099AbZAWG11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762311AbZAWG06 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:26:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753862AbZAWGQw
+	id S1764099AbZAWG11 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:27:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761236AbZAWGQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:52 -0500
-Received: from kroah.org ([198.145.64.141]:36415 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:53 -0500
+Received: from kroah.org ([198.145.64.141]:36435 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761196AbZAWGQs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:48 -0500
-Date: Thu, 22 Jan 2009 22:14:27 -0800
+	id S1752146AbZAWGQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:50 -0500
+Date: Thu, 22 Jan 2009 22:14:30 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
        Chris Mason <chris.mason@oracle.com>,
        Dave Chinner <david@fromorbit.com>
-Subject: [patch 28/40] mm: write_cache_pages cyclic fix
-Message-ID: <20090123061427.GB2922@kroah.com>
+Subject: [patch 29/40] mm: write_cache_pages early loop termination
+Message-ID: <20090123061430.GC2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-write_cache_pages-cyclic-fix.patch"
+Content-Disposition: inline; filename="mm-write_cache_pages-early-loop-termination.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,21 +43,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nick Piggin <npiggin@suse.de>
 
-commit 31a12666d8f0c22235297e1c1575f82061480029 upstream.
+commit bd19e012f6fd3b7309689165ea865cbb7bb88c1e upstream.
 
-In write_cache_pages, scanned == 1 is supposed to mean that cyclic
-writeback has circled through zero, thus we should not circle again.
-However it gets set to 1 after the first successful pagevec lookup.  This
-leads to cases where not enough data gets written.
+We'd like to break out of the loop early in many situations, however the
+existing code has been setting mapping->writeback_index past the final
+page in the pagevec lookup for cyclic writeback.  This is a problem if we
+don't process all pages up to the final page.
 
-Counterexample: file with first 10 pages dirty, writeback_index == 5,
-nr_to_write == 10.  Then the 5 last pages will be found, and scanned will
-be set to 1, after writing those out, we will not cycle back to get the
-first 5.
+Currently the code mostly keeps writeback_index reasonable and hacked
+around this by not breaking out of the loop or writing pages outside the
+range in these cases.  Keep track of a real "done index" that enables us
+to terminate the loop in a much more flexible manner.
 
-Rework this logic, now we'll always cycle unless we started off from index
-0.  When cycling, only write out as far as 1 page before the start page
-from the first cycle (so we don't write parts of the file twice).
+Needed by the subsequent patch to preserve writepage errors, and then
+further patches to break out of the loop early for other reasons.  However
+there are no functional changes with this patch alone.
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 Cc: Chris Mason <chris.mason@oracle.com>
@@ -67,82 +67,43 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page-writeback.c |   25 ++++++++++++++++++-------
- 1 file changed, 18 insertions(+), 7 deletions(-)
+ mm/page-writeback.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
-@@ -872,9 +872,10 @@ int write_cache_pages(struct address_spa
- 	int done = 0;
- 	struct pagevec pvec;
- 	int nr_pages;
-+	pgoff_t uninitialized_var(writeback_index);
+@@ -875,6 +875,7 @@ int write_cache_pages(struct address_spa
+ 	pgoff_t uninitialized_var(writeback_index);
  	pgoff_t index;
  	pgoff_t end;		/* Inclusive */
--	int scanned = 0;
-+	int cycled;
++	pgoff_t done_index;
+ 	int cycled;
  	int range_whole = 0;
  
- 	if (wbc->nonblocking && bdi_write_congested(bdi)) {
-@@ -884,14 +885,19 @@ int write_cache_pages(struct address_spa
- 
- 	pagevec_init(&pvec, 0);
- 	if (wbc->range_cyclic) {
--		index = mapping->writeback_index; /* Start from prev offset */
-+		writeback_index = mapping->writeback_index; /* prev offset */
-+		index = writeback_index;
-+		if (index == 0)
-+			cycled = 1;
-+		else
-+			cycled = 0;
- 		end = -1;
- 	} else {
- 		index = wbc->range_start >> PAGE_CACHE_SHIFT;
- 		end = wbc->range_end >> PAGE_CACHE_SHIFT;
- 		if (wbc->range_start == 0 && wbc->range_end == LLONG_MAX)
- 			range_whole = 1;
--		scanned = 1;
-+		cycled = 1; /* ignore range_cyclic tests */
+@@ -900,6 +901,7 @@ int write_cache_pages(struct address_spa
+ 		cycled = 1; /* ignore range_cyclic tests */
  	}
  retry:
++	done_index = index;
  	while (!done && (index <= end) &&
-@@ -900,7 +906,6 @@ retry:
- 					      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1))) {
- 		unsigned i;
- 
--		scanned = 1;
+ 	       (nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
+ 					      PAGECACHE_TAG_DIRTY,
+@@ -909,6 +911,8 @@ retry:
  		for (i = 0; i < nr_pages; i++) {
  			struct page *page = pvec.pages[i];
  
-@@ -918,7 +923,11 @@ retry:
- 				continue;
- 			}
- 
--			if (!wbc->range_cyclic && page->index > end) {
-+			if (page->index > end) {
-+				/*
-+				 * can't be range_cyclic (1st pass) because
-+				 * end == -1 in that case.
-+				 */
- 				done = 1;
- 				unlock_page(page);
- 				continue;
-@@ -949,13 +958,15 @@ retry:
- 		pagevec_release(&pvec);
- 		cond_resched();
- 	}
--	if (!scanned && !done) {
-+	if (!cycled) {
- 		/*
-+		 * range_cyclic:
- 		 * We hit the last page and there is more work to be done: wrap
- 		 * back to the start of the file
- 		 */
--		scanned = 1;
-+		cycled = 1;
- 		index = 0;
-+		end = writeback_index - 1;
++			done_index = page->index + 1;
++
+ 			/*
+ 			 * At this point we hold neither mapping->tree_lock nor
+ 			 * lock on the page itself: the page may be truncated or
+@@ -970,7 +974,7 @@ retry:
  		goto retry;
  	}
  	if (wbc->range_cyclic || (range_whole && wbc->nr_to_write > 0))
+-		mapping->writeback_index = index;
++		mapping->writeback_index = done_index;
+ 
+ 	if (wbc->range_cont)
+ 		wbc->range_start = index << PAGE_CACHE_SHIFT;
 
