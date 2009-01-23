@@ -1,98 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZAWLCM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762909AbZAWLCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbZAWLCM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 06:02:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761876AbZAWLAs
+	id S1762909AbZAWLCa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 06:02:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762088AbZAWLA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 06:00:48 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34876 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761798AbZAWLAr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 06:00:47 -0500
-Date: Fri, 23 Jan 2009 12:00:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2 v2] tracing/function-graph-tracer: various fixes
-	and features
-Message-ID: <20090123110037.GI15188@elte.hu>
-References: <497917b5.09cc660a.5f4c.ffffc568@mx.google.com> <20090123101949.GD15188@elte.hu> <c62985530901230236v4a8f5d6od80924cb6542d994@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530901230236v4a8f5d6od80924cb6542d994@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 23 Jan 2009 06:00:56 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:5663 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762033AbZAWLAy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 06:00:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=gtAZVGH5cNpG92fxHKKkICR8meVhWHzpTwzuxjftw/5Kmq2kTPl8TGH8OI+hcB8f3Q
+         cZh3TUWPxL0jpqld/OY52bhnmCGyJUqfRTWt+yXE7Nt/u5j+Xxo3DEpycR7cvIQklwbp
+         5loI8HLoLeI5YJsYQDoRCia6jh1L5uKeDTvIk=
+From: Magnus Damm <magnus.damm@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: johnstul@us.ibm.com, gregkh@suse.de, roel.kluin@gmail.com,
+       lethal@linux-sh.org, tglx@linutronix.de,
+       Magnus Damm <magnus.damm@gmail.com>, mingo@redhat.com,
+       akpm@linux-foundation.org
+Date: Fri, 23 Jan 2009 19:58:50 +0900
+Message-Id: <20090123105850.18779.88018.sendpatchset@rx1.opensource.se>
+In-Reply-To: <20090123105721.18779.80514.sendpatchset@rx1.opensource.se>
+References: <20090123105721.18779.80514.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 007/011] sh: plat_early_device_setup() for sh4a
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Magnus Damm <damm@igel.co.jp>
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+This patch adds sh4a code to register early platform devices
+using plat_early_device_setup().
 
-> > Still needs a solution - if we do cross-CPU traces we want to have a 
-> > global trace clock with 'seemless' transition between CPUs.
-> 
-> So it doesn't only need a monotonic clock. It needs a global consistent 
-> clock like ktime for example? Unfortunately this one uses seq_locks and 
-> would add some drawbacks like verifying if the traced function doesn't 
-> hold the write seq_lock and it will bring some more ftrace recursion...
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+---
 
-using ktime_get() is indeed out of question - GTOD callpaths are too 
-complex (and also too slow).
+ arch/sh/kernel/cpu/sh4a/setup-sh7343.c |    5 +++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7366.c |    5 +++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c |    5 +++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7723.c |    5 +++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7763.c |    5 +++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7770.c |    5 +++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7780.c |    5 +++++
+ arch/sh/kernel/cpu/sh4a/setup-sh7785.c |    5 +++++
+ arch/sh/kernel/cpu/sh4a/setup-shx3.c   |    5 +++++
+ 9 files changed, 45 insertions(+)
 
-I'd not change anything in the current logic, but i was thinking of a new 
-trace_option, which can be set optionally. If that trace option is set 
-then this bit of ring_buffer_time_stamp():
-
-        time = sched_clock() << DEBUG_SHIFT;
-
-gets turned into:
-
-        time = cpu_clock(cpu) << DEBUG_SHIFT;
-
-This way we default to sched_clock(), but also gain some 'global' 
-properties if the trace_option is set.
-
-Furthermore, another trace_option could introduce a third 'strongly 
-ordered' trace-clock variant, which would use cmpxchg and per cpu 
-timestamps, something like this:
-
-atomic64_t curr_time;
-
-DEFINE_PER_CPU(u64, prev_cpu_time);
-...
-
-retry:
-	prev_cpu_time = per_cpu(prev_cpu_time, cpu);
-	cpu_time = sched_clock();
-	old_time = atomic64_read(&curr_time);
-
-	delta = cpu_time - prev_cpu_time;
-	if (unlikely((s64)delta <= 0))
-		delta = 1;
-
-	new_time = old_time + delta;
-
-	if (atomic64_cmpxchg(&curr_time, old_time, new_time) != new_time)
-		goto repeat;
-
-        time = new_time << DEBUG_SHIFT;
-
-This would be a monotonic, global clock wrapped around sched_clock(). It 
-uses a cmpxchg to achieve it, but we have to use global ordering anyway. 
-
-It would still be _much_ faster than any GTOD clocksource we have.
-
-Hm?
-
-	Ingo
+--- 0019/arch/sh/kernel/cpu/sh4a/setup-sh7343.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7343.c	2009-01-23 14:26:37.000000000 +0900
+@@ -267,6 +267,11 @@ static int __init sh7343_devices_setup(v
+ }
+ __initcall(sh7343_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(sh7343_devices, ARRAY_SIZE(sh7343_devices));
++}
++
+ enum {
+ 	UNUSED = 0,
+ 
+--- 0019/arch/sh/kernel/cpu/sh4a/setup-sh7366.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7366.c	2009-01-23 14:28:10.000000000 +0900
+@@ -223,6 +223,11 @@ static int __init sh7366_devices_setup(v
+ }
+ __initcall(sh7366_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(sh7366_devices, ARRAY_SIZE(sh7366_devices));
++}
++
+ enum {
+ 	UNUSED=0,
+ 
+--- 0019/arch/sh/kernel/cpu/sh4a/setup-sh7722.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7722.c	2009-01-23 14:25:34.000000000 +0900
+@@ -288,6 +288,11 @@ static int __init sh7722_devices_setup(v
+ }
+ __initcall(sh7722_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(sh7722_devices, ARRAY_SIZE(sh7722_devices));
++}
++
+ enum {
+ 	UNUSED=0,
+ 
+--- 0019/arch/sh/kernel/cpu/sh4a/setup-sh7723.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7723.c	2009-01-23 14:26:02.000000000 +0900
+@@ -338,6 +338,11 @@ static int __init sh7723_devices_setup(v
+ }
+ __initcall(sh7723_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(sh7723_devices, ARRAY_SIZE(sh7723_devices));
++}
++
+ enum {
+ 	UNUSED=0,
+ 
+--- 0010/arch/sh/kernel/cpu/sh4a/setup-sh7763.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7763.c	2009-01-23 14:28:36.000000000 +0900
+@@ -155,6 +155,11 @@ static int __init sh7763_devices_setup(v
+ }
+ __initcall(sh7763_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(sh7363_devices, ARRAY_SIZE(sh7363_devices));
++}
++
+ enum {
+ 	UNUSED = 0,
+ 
+--- 0001/arch/sh/kernel/cpu/sh4a/setup-sh7770.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7770.c	2009-01-23 14:29:14.000000000 +0900
+@@ -87,6 +87,11 @@ static int __init sh7770_devices_setup(v
+ }
+ __initcall(sh7770_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(sh7770_devices, ARRAY_SIZE(sh7770_devices));
++}
++
+ void __init plat_irq_setup(void)
+ {
+ }
+--- 0010/arch/sh/kernel/cpu/sh4a/setup-sh7780.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7780.c	2009-01-23 14:29:46.000000000 +0900
+@@ -86,6 +86,11 @@ static int __init sh7780_devices_setup(v
+ }
+ __initcall(sh7780_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(sh7780_devices, ARRAY_SIZE(sh7780_devices));
++}
++
+ enum {
+ 	UNUSED = 0,
+ 
+--- 0010/arch/sh/kernel/cpu/sh4a/setup-sh7785.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-sh7785.c	2009-01-23 14:30:02.000000000 +0900
+@@ -121,6 +121,11 @@ static int __init sh7785_devices_setup(v
+ }
+ __initcall(sh7785_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(sh7785_devices, ARRAY_SIZE(sh7785_devices));
++}
++
+ enum {
+ 	UNUSED = 0,
+ 
+--- 0010/arch/sh/kernel/cpu/sh4a/setup-shx3.c
++++ work/arch/sh/kernel/cpu/sh4a/setup-shx3.c	2009-01-23 14:30:29.000000000 +0900
+@@ -88,6 +88,11 @@ static int __init shx3_devices_setup(voi
+ }
+ __initcall(shx3_devices_setup);
+ 
++void __init plat_early_device_setup(void)
++{
++	early_platform_add_devices(shx3_devices, ARRAY_SIZE(shx3_devices));
++}
++
+ enum {
+ 	UNUSED = 0,
+ 
