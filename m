@@ -1,26 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761433AbZAWKJl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbZAWKMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761433AbZAWKJl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:09:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZAWKJd
+	id S1761536AbZAWKMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 05:12:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbZAWKMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:09:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37435 "EHLO mx3.mail.elte.hu"
+	Fri, 23 Jan 2009 05:12:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54950 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751383AbZAWKJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:09:32 -0500
-Date: Fri, 23 Jan 2009 11:09:20 +0100
+	id S1752734AbZAWKMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 05:12:03 -0500
+Date: Fri, 23 Jan 2009 11:11:43 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/2] ftrace: updates for tip
-Message-ID: <20090123100920.GB15188@elte.hu>
-References: <20090122202030.210768976@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] trace, lockdep: manual preempt count adding for
+	local_bh_disable
+Message-ID: <20090123101143.GC15188@elte.hu>
+References: <alpine.DEB.1.10.0901221523400.5838@gandalf.stny.rr.com> <1232658518.4739.3.camel@laptop> <alpine.DEB.1.10.0901221714030.5838@gandalf.stny.rr.com> <alpine.DEB.1.10.0901221926540.5838@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090122202030.210768976@goodmis.org>
+In-Reply-To: <alpine.DEB.1.10.0901221926540.5838@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,24 +39,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Ingo,
 > 
-> The following patches are in:
+> The following patch is in:
 > 
 >   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
 > 
 >     branch: tip/devel
 > 
 > 
-> Steven Rostedt (2):
->       trace: remove internal irqsoff disabling for trace output
->       trace: fix logic to start/stop counting
+> Steven Rostedt (1):
+>       trace, lockdep: manual preempt count adding for local_bh_disable
 > 
 > ----
->  kernel/trace/trace.c         |   13 ++++++-------
->  kernel/trace/trace_irqsoff.c |   34 ++--------------------------------
->  2 files changed, 8 insertions(+), 39 deletions(-)
+>  include/linux/sched.h |    2 ++
+>  kernel/sched.c        |    8 ++++----
+>  kernel/softirq.c      |   13 ++++++++++++-
+>  3 files changed, 18 insertions(+), 5 deletions(-)
 
-Pulled into tip/tracing/ftrace, thanks Steve!
+pulled, thanks Steve!
 
 	Ingo
