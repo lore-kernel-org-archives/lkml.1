@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbZAWK5A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759196AbZAWK7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757565AbZAWK5A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:57:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbZAWK4w
+	id S1759196AbZAWK7c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 05:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZAWK7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:56:52 -0500
-Received: from smtp02.citrix.com ([66.165.176.63]:43383 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753013AbZAWK4v (ORCPT
+	Fri, 23 Jan 2009 05:59:24 -0500
+Received: from wa-out-1112.google.com ([209.85.146.178]:5663 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753013AbZAWK7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:56:51 -0500
-X-IronPort-AV: E=Sophos;i="4.37,311,1231131600"; 
-   d="scan'208";a="36900991"
-From: Ian Campbell <Ian.Campbell@citrix.com>
+	Fri, 23 Jan 2009 05:59:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=iQf1JaD/HcC8i6oUi+2U3mu7tXNNRhhDXD9jA7RItVuuvLfnAbOZBu0HfOrIXPJc44
+         MgE5Tmg71IoFEd31xDvinS28D1+J28hAkdT/os8u1YVjfUgF2EFAnbRazyxcjk9NhNWV
+         tng0m2ygK+nNAJpx1GNASgv6jQQ5rzex3cq5E=
+From: Magnus Damm <magnus.damm@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Ian Campbell <Ian.Campbell@citrix.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: rename arch/x86/kernel/pci-swiotlb_64.o => pci-swiotlb.o
-Date: Fri, 23 Jan 2009 10:56:16 +0000
-Message-Id: <1232708176-26379-1-git-send-email-Ian.Campbell@citrix.com>
-X-Mailer: git-send-email 1.5.6.5
-X-OriginalArrivalTime: 23 Jan 2009 10:56:50.0142 (UTC) FILETIME=[4B042FE0:01C97D49]
+Cc: akpm@linux-foundation.org, lethal@linux-sh.org, johnstul@us.ibm.com,
+       gregkh@suse.de, roel.kluin@gmail.com, mingo@redhat.com,
+       Magnus Damm <magnus.damm@gmail.com>, tglx@linutronix.de
+Date: Fri, 23 Jan 2009 19:57:21 +0900
+Message-Id: <20090123105721.18779.80514.sendpatchset@rx1.opensource.se>
+Subject: [PATCH 000/011] early platform patches
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The file is used for 32 and 64 bit since:
+early platform patches
 
-  commit cfb80c9eae8c7ed8f2ee81090062d15ead51cbe8
-  Author: Jeremy Fitzhardinge <jeremy@goop.org>
-  Date:   Tue Dec 16 12:17:36 2008 -0800
+[PATCH 001/011] early platform driver V3
+[PATCH 002/011] sh: add plat_early_device_setup() function
+[PATCH 003/011] sh: plat_early_device_setup() for sh2
+[PATCH 004/011] sh: plat_early_device_setup() for sh2a
+[PATCH 005/011] sh: plat_early_device_setup() for sh3
+[PATCH 006/011] sh: plat_early_device_setup() for sh4
+[PATCH 007/011] sh: plat_early_device_setup() for sh4a
+[PATCH 008/011] sh: add early platform support for earlyprintk
+[PATCH 009/011] sh-sci: add early platform support
+[PATCH 010/011] sh: add early platform support for earlytimer
+[PATCH 011/011] sh_cmt: add early platform support
 
-    x86: unify pci iommu setup and allow swiotlb to compile for 32 bit
+These patches add early platform driver support to the serial port
+driver and the CMT timer driver on the SuperH architecture.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+The following patch sets posted to linuxsh-dev are required:
+
+- [PATCH 000/013] sh-sci: platform device, clock and console changes
+- [PATCH 00/05] sh: timer patches
+
+The early platform driver V3 patch is a replacement for V2 in -mm.
+
+Thanks for the feedback so far, more is always welcome. =)
+
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
- arch/x86/kernel/Makefile                           |    2 +-
- .../x86/kernel/{pci-swiotlb_64.c => pci-swiotlb.c} |    0 
- 2 files changed, 1 insertions(+), 1 deletions(-)
- rename arch/x86/kernel/{pci-swiotlb_64.c => pci-swiotlb.c} (100%)
 
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index d364df0..bb1eef6 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -109,7 +109,7 @@ obj-$(CONFIG_MICROCODE)			+= microcode.o
- 
- obj-$(CONFIG_X86_CHECK_BIOS_CORRUPTION) += check.o
- 
--obj-$(CONFIG_SWIOTLB)			+= pci-swiotlb_64.o # NB rename without _64
-+obj-$(CONFIG_SWIOTLB)			+= pci-swiotlb.o
- 
- ###
- # 64 bit specific files
-diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb.c
-similarity index 100%
-rename from arch/x86/kernel/pci-swiotlb_64.c
-rename to arch/x86/kernel/pci-swiotlb.c
--- 
-1.5.6.5
-
+ Documentation/driver-model/platform.txt |   59 +++++++
+ arch/sh/Kconfig.debug                   |   27 ---
+ arch/sh/include/asm/device.h            |    2 
+ arch/sh/kernel/cpu/sh2/setup-sh7619.c   |    5 
+ arch/sh/kernel/cpu/sh2a/setup-mxg.c     |    5 
+ arch/sh/kernel/cpu/sh2a/setup-sh7201.c  |    5 
+ arch/sh/kernel/cpu/sh2a/setup-sh7203.c  |    5 
+ arch/sh/kernel/cpu/sh2a/setup-sh7206.c  |    5 
+ arch/sh/kernel/cpu/sh3/setup-sh7705.c   |    5 
+ arch/sh/kernel/cpu/sh3/setup-sh770x.c   |    5 
+ arch/sh/kernel/cpu/sh3/setup-sh7710.c   |    5 
+ arch/sh/kernel/cpu/sh3/setup-sh7720.c   |    5 
+ arch/sh/kernel/cpu/sh4/setup-sh4-202.c  |    5 
+ arch/sh/kernel/cpu/sh4/setup-sh7750.c   |    5 
+ arch/sh/kernel/cpu/sh4/setup-sh7760.c   |    5 
+ arch/sh/kernel/cpu/sh4a/setup-sh7343.c  |    5 
+ arch/sh/kernel/cpu/sh4a/setup-sh7366.c  |    5 
+ arch/sh/kernel/cpu/sh4a/setup-sh7722.c  |    5 
+ arch/sh/kernel/cpu/sh4a/setup-sh7723.c  |    5 
+ arch/sh/kernel/cpu/sh4a/setup-sh7763.c  |    5 
+ arch/sh/kernel/cpu/sh4a/setup-sh7770.c  |    5 
+ arch/sh/kernel/cpu/sh4a/setup-sh7780.c  |    5 
+ arch/sh/kernel/cpu/sh4a/setup-sh7785.c  |    5 
+ arch/sh/kernel/cpu/sh4a/setup-shx3.c    |    5 
+ arch/sh/kernel/early_printk.c           |  142 ------------------
+ arch/sh/kernel/setup.c                  |   10 +
+ arch/sh/kernel/time_32.c                |   11 +
+ drivers/base/platform.c                 |  239 +++++++++++++++++++++++++++++++
+ drivers/clocksource/sh_cmt.c            |   18 ++
+ drivers/serial/sh-sci.c                 |   49 +++++-
+ include/linux/init.h                    |    1 
+ include/linux/platform_device.h         |   42 +++++
+ init/main.c                             |    7 
+ 33 files changed, 533 insertions(+), 179 deletions(-)
