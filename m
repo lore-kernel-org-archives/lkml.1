@@ -1,47 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756554AbZAWPQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbZAWPTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756554AbZAWPQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 10:16:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753675AbZAWPQ3
+	id S1756954AbZAWPTW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 10:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZAWPTI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 10:16:29 -0500
-Received: from mail-ew0-f20.google.com ([209.85.219.20]:51995 "EHLO
-	mail-ew0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbZAWPQ2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 10:16:28 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=N2vJjQtk72oSsKhvX7vZkEPY1oeyxmyVzc/YaEBWhp0i/3TL3n/Y78zYixi6Dy72p1
-         NtBSgB8uvXzXVAL57sr031KvUrZHl2+YuSBveMR2rFLWxuyUJooLsM0E2SUq5rzykoeq
-         NsuFGqoDd20/tZmrWEgaxRDIYGKZxvlxFWXp8=
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0901230955470.13690@qirst.com>
-References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI>
-	 <200901231952.53961.nickpiggin@yahoo.com.au>
-	 <alpine.DEB.1.10.0901230955470.13690@qirst.com>
-Date: Fri, 23 Jan 2009 17:16:25 +0200
-X-Google-Sender-Auth: d4f4dd597ef4c047
-Message-ID: <84144f020901230716n3f106034x8a10463b411c9a9b@mail.gmail.com>
-Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, yanmin_zhang@linux.intel.com,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 23 Jan 2009 10:19:08 -0500
+Received: from hera.kernel.org ([140.211.167.34]:51182 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754388AbZAWPTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 10:19:07 -0500
+Subject: Re: Confusion in usr/include/asm-generic/fcntl.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: David Miller <davem@davemloft.net>, mingo@elte.hu, x86@kernel.org,
+       linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <497670C6.7010304@zytor.com>
+References: <1232496257.3123.19.camel@localhost.localdomain>
+	 <20090120.161626.93641145.davem@davemloft.net> <497670C6.7010304@zytor.com>
+Content-Type: text/plain
+Date: Fri, 23 Jan 2009 20:48:20 +0530
+Message-Id: <1232723900.3504.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 5:03 PM, Christoph Lameter
-<cl@linux-foundation.org> wrote:
-> It seems that we currently need the slab allocators to compensate for the
-> performance problems in the page allocator for these higher order allocs.
-> I'd rather have the page allocator fixed but things are as they are.
+On Tue, 2009-01-20 at 16:48 -0800, H. Peter Anvin wrote:
+> David Miller wrote:
+> > From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+> > Date: Wed, 21 Jan 2009 05:34:17 +0530
+> > 
+> >> usr/include/asm-generic/fcntl.h is giving 2 'make headers_check' warnings:
+> >>  usr/include/asm-generic/fcntl.h:127: leaks CONFIG_64BIT to userspace where it is not valid
+> >>  usr/include/asm-generic/fcntl.h:149: leaks CONFIG_64BIT to userspace where it is not valid
+> >>
+> >> usr/include/asm-generic/fcntl.h:
+> > ...
+> >> #ifndef CONFIG_64BIT will always be true for userspace. So what is the use of #ifndef CONFIG_64BIT ?
+> > 
+> > Good catch.
+> > 
+> > This file needs to test for 64-bit'ness using some non-CONFIG_*
+> > test.  And the standard built-in CPP macros which can be used
+> > to check for that are different on every platform.
+> > 
+> 
+> There are a few ways to check for 64-bitness that are 
+> platform-independent, unfortunately each of them have drawbacks.
+> 
 
-So, is that an ACK or a NAK for the patch?-)
+So who wins the race for CONFIG_64BIT and will be right candidate for
+usr/include/asm-generic/fcntl.h:
+
+1. #if BITS_PER_LONG == 64
+
+OR
+
+2. #if __BITS_PER_LONG == 64
+
+OR
+
+3. #ifdef __LP64__
+
+OR
+
+4. #if __SIZEOF_POINTER__ == 8
+
+OR
+
+5. #if LONG_MAX > 2147483647L
+
+OR
+
+6. #ifdef __64BIT
+
+
+Thanks
+--
+JSR
+
