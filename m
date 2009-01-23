@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762751AbZAWLF0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZAWLHe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762751AbZAWLF0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 06:05:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755722AbZAWLFM
+	id S1756878AbZAWLHe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 06:07:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZAWLHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 06:05:12 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47483 "EHLO mx3.mail.elte.hu"
+	Fri, 23 Jan 2009 06:07:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33799 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755316AbZAWLFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 06:05:10 -0500
-Date: Fri, 23 Jan 2009 12:04:39 +0100
+	id S1750793AbZAWLHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 06:07:25 -0500
+Date: Fri, 23 Jan 2009 12:07:14 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Miklos Vajna <vmiklos@frugalware.org>,
-       Florian Fainelli <florian.fainelli@telecomint.eu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Gabriel C <nix.or.die@googlemail.com>,
-       =?iso-8859-1?Q?CS=C9CSY_L=E1szl=F3?= <boobaa@frugalware.org>
-Subject: Re: System clock runs too fast after 2.6.27 -> 2.6.28.1 upgrade
-Message-ID: <20090123110439.GK15188@elte.hu>
-References: <20090121171423.GI21473@genesis.frugalware.org> <1f1b08da0901211200l88fa89s78a51c4e90878d85@mail.gmail.com> <20090121210726.GK21473@genesis.frugalware.org> <1232573646.6997.21.camel@localhost.localdomain> <20090122195132.GZ21473@genesis.frugalware.org> <20090122235727.GB21473@genesis.frugalware.org> <1232674994.6678.45.camel@localhost.localdomain>
+To: Ian Campbell <Ian.Campbell@citrix.com>
+Cc: linux-kernel@vger.kernel.org,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH] x86: rename arch/x86/kernel/pci-swiotlb_64.o =>
+	pci-swiotlb.o
+Message-ID: <20090123110714.GM15188@elte.hu>
+References: <1232708176-26379-1-git-send-email-Ian.Campbell@citrix.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232674994.6678.45.camel@localhost.localdomain>
+In-Reply-To: <1232708176-26379-1-git-send-email-Ian.Campbell@citrix.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -40,41 +36,20 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* john stultz <johnstul@us.ibm.com> wrote:
+* Ian Campbell <Ian.Campbell@citrix.com> wrote:
 
-> On Fri, 2009-01-23 at 00:57 +0100, Miklos Vajna wrote:
-> > On Thu, Jan 22, 2009 at 12:03:14PM -0800, john stultz 
-> > > CONFIG_X86_VISWS: If I recall, this is support for SGI workstations that
-> > > had different apics then most systems, and might be related.
-> > > 
-> > I just did a new build with CONFIG_X86_VISWS and CONFIG_X86_RDC321X
-> > disabled, but I kept CONFIG_PARAVIRT_GUEST enabled and that works fine
-> > as well. So CONFIG_PARAVIRT_GUEST seems to be unrelated.
+> The file is used for 32 and 64 bit since:
 > 
-> Ah. CONFIG_X86_RDC321X is indeed the issue.
+>   commit cfb80c9eae8c7ed8f2ee81090062d15ead51cbe8
+>   Author: Jeremy Fitzhardinge <jeremy@goop.org>
+>   Date:   Tue Dec 16 12:17:36 2008 -0800
 > 
-> >From arch/x86/include/asm/timex.h:
+>     x86: unify pci iommu setup and allow swiotlb to compile for 32 bit
 > 
-> #ifdef CONFIG_X86_ELAN
-> #  define PIT_TICK_RATE 1189200 /* AMD Elan has different frequency! */
-> #elif defined(CONFIG_X86_RDC321X)
-> #  define PIT_TICK_RATE 1041667 /* Underlying HZ for R8610 */
-> #else
-> #  define PIT_TICK_RATE 1193182 /* Underlying HZ */
-> #endif
-> 
-> This gives the kernel an incorrect slower frequency for the PIT hardware 
-> on your system and is why the TSC calibration is off and why the ACPI PM 
-> gets thrown out.
-> 
-> I'd think this would ideally be more of a subarch in the config 
-> selection like the AMD Elan is, so folks know it really is not just a 
-> extra-support feature and in fact limits what hardware you can use the 
-> resulting kernel on.
+> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+> Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
 
-a better solution is that if RDC is set [it is unset by default] we should 
-turn PIT_TICK_RATE into a variable, defaulting it to 1193182. If a real 
-RDC or ELAN system is running, that variable is changed during early 
-bootup, in the init functions for those platforms.
+applied to tip/core/iommu, thanks Ian!
 
 	Ingo
