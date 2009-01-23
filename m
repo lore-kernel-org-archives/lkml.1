@@ -1,94 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764685AbZAWBd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760147AbZAWBn3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764685AbZAWBd7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:33:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763014AbZAWBb0
+	id S1760147AbZAWBn3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:43:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755203AbZAWBnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:31:26 -0500
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:14036 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764036AbZAWBbY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:31:24 -0500
-Date: Fri, 23 Jan 2009 02:31:22 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Greg KH <gregkh@suse.de>
-cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Florian Fainelli <florian@openwrt.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch 24/46] r6040: bump release number to 0.19
-In-Reply-To: <20090123011219.GY19756@kroah.com>
-Message-ID: <alpine.LNX.2.00.0901230225430.12187@swampdragon.chaosbits.net>
-References: <20090123010651.683741823@mini.kroah.org> <20090123011219.GY19756@kroah.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 22 Jan 2009 20:43:20 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:52333 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755142AbZAWBnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:43:19 -0500
+Subject: Re: System clock runs too fast after 2.6.27 -> 2.6.28.1 upgrade
+From: john stultz <johnstul@us.ibm.com>
+To: Miklos Vajna <vmiklos@frugalware.org>,
+       Florian Fainelli <florian.fainelli@telecomint.eu>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       =?ISO-8859-1?Q?CS=C9CSY_L=E1szl=F3?= <boobaa@frugalware.org>
+In-Reply-To: <20090122235727.GB21473@genesis.frugalware.org>
+References: <20090121171423.GI21473@genesis.frugalware.org>
+	 <1f1b08da0901211200l88fa89s78a51c4e90878d85@mail.gmail.com>
+	 <20090121210726.GK21473@genesis.frugalware.org>
+	 <1232573646.6997.21.camel@localhost.localdomain>
+	 <20090122195132.GZ21473@genesis.frugalware.org>
+	 <20090122235727.GB21473@genesis.frugalware.org>
+Content-Type: text/plain
+Date: Thu, 22 Jan 2009 17:43:14 -0800
+Message-Id: <1232674994.6678.45.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009, Greg KH wrote:
+On Fri, 2009-01-23 at 00:57 +0100, Miklos Vajna wrote:
+> On Thu, Jan 22, 2009 at 12:03:14PM -0800, john stultz 
+> > CONFIG_X86_VISWS: If I recall, this is support for SGI workstations that
+> > had different apics then most systems, and might be related.
+> > 
+> I just did a new build with CONFIG_X86_VISWS and CONFIG_X86_RDC321X
+> disabled, but I kept CONFIG_PARAVIRT_GUEST enabled and that works fine
+> as well. So CONFIG_PARAVIRT_GUEST seems to be unrelated.
 
-> 2.6.28-stable review patch.  If anyone has any objections, please let us know.
-> 
+Ah. CONFIG_X86_RDC321X is indeed the issue.
 
-It's simple enough, sure, but it doesn't really conform to the guidelines 
-set out for -stable patches in Documentation/stable_kernel_rules.txt : 
+>From arch/x86/include/asm/timex.h:
 
-...
- - It must fix a real bug that bothers people (not a, "This could be a
-   problem..." type thing).
-...
- - It cannot contain any "trivial" fixes in it (spelling changes,
-   whitespace cleanups, etc).
-...
-
-I'm trying to come up with some real problem this fixes and a reason why 
-we want it in -stable, but I cannot...
+#ifdef CONFIG_X86_ELAN
+#  define PIT_TICK_RATE 1189200 /* AMD Elan has different frequency! */
+#elif defined(CONFIG_X86_RDC321X)
+#  define PIT_TICK_RATE 1041667 /* Underlying HZ for R8610 */
+#else
+#  define PIT_TICK_RATE 1193182 /* Underlying HZ */
+#endif
 
 
-> 
-> From: Florian Fainelli <florian@openwrt.org>
-> 
-> [ Upstream commit: 4707470ae7441733822efcd680b0ef3971921c4d ]
-> 
-> This patch bumps the release number of the driver.
-> 
-> Signed-off-by: Florian Fainelli <florian@openwrt.org>
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
->  drivers/net/r6040.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- a/drivers/net/r6040.c
-> +++ b/drivers/net/r6040.c
-> @@ -49,8 +49,8 @@
->  #include <asm/processor.h>
->  
->  #define DRV_NAME	"r6040"
-> -#define DRV_VERSION	"0.18"
-> -#define DRV_RELDATE	"13Jul2008"
-> +#define DRV_VERSION	"0.19"
-> +#define DRV_RELDATE	"18Dec2008"
->  
->  /* PHY CHIP Address */
->  #define PHY1_ADDR	1	/* For MAC1 */
-> 
+This gives the kernel an incorrect slower frequency for the PIT hardware
+on your system and is why the TSC calibration is off and why the ACPI PM
+gets thrown out.
 
--- 
-Jesper Juhl <jj@chaosbits.net>        http://personal.chaosbits.net/
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+I'd think this would ideally be more of a subarch in the config
+selection like the AMD Elan is, so folks know it really is not just a
+extra-support feature and in fact limits what hardware you can use the
+resulting kernel on.
+
+Florian, any thoughts on this? Would a patch like the following
+(untested) be ok by you?
+
+thanks
+-john
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 862adb9..6d8ac94 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -300,6 +300,16 @@ config X86_ELAN
+ 
+ 	  If unsure, choose "PC-compatible" instead.
+ 
++config X86_RDC321X
++	bool "RDC R-321x SoC"
++	depends on X86_32
++	select M486
++	select X86_REBOOTFIXUPS
++	help
++	  This option is needed for RDC R-321x system-on-chip, also known
++	  as R-8610-(G).
++	  If you don't have one of these chips, you should say N here.
++
+ config X86_VOYAGER
+ 	bool "Voyager (NCR)"
+ 	depends on X86_32 && (SMP || BROKEN) && !PCI
+@@ -380,16 +390,6 @@ config X86_VISWS
+ 	  A kernel compiled for the Visual Workstation will run on general
+ 	  PCs as well. See <file:Documentation/sgi-visws.txt> for details.
+ 
+-config X86_RDC321X
+-	bool "RDC R-321x SoC"
+-	depends on X86_32
+-	select M486
+-	select X86_REBOOTFIXUPS
+-	help
+-	  This option is needed for RDC R-321x system-on-chip, also known
+-	  as R-8610-(G).
+-	  If you don't have one of these chips, you should say N here.
+-
+ config SCHED_OMIT_FRAME_POINTER
+ 	def_bool y
+ 	prompt "Single-depth WCHAN output"
+
+
+
 
