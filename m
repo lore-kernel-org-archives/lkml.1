@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbZAWGR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761248AbZAWGRp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760968AbZAWGR0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:17:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZAWGQX
+	id S1761248AbZAWGRp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:17:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZAWGQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 23 Jan 2009 01:16:23 -0500
-Received: from kroah.org ([198.145.64.141]:36085 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:36103 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752027AbZAWGQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:22 -0500
-Date: Thu, 22 Jan 2009 22:12:58 -0800
+	id S1752087AbZAWGQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:23 -0500
+Date: Thu, 22 Jan 2009 22:13:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Wei Yongjun <yjwei@cn.fujitsu.com>,
-       Vlad Yasevich <vladislav.yasevich@hp.com>,
+       alan@lxorguk.ukuu.org.uk, Jarek Poplawski <jarkao2@gmail.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 03/40] sctp: Avoid memory overflow while FWD-TSN chunk is
-	received with bad stream ID
-Message-ID: <20090123061258.GC2922@kroah.com>
+Subject: [patch 04/40] pkt_sched: cls_u32: Fix locking in u32_change()
+Message-ID: <20090123061302.GD2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sctp-avoid-memory-overflow-while-fwd-tsn-chunk-is-received-with-bad-stream-id.patch"
+Content-Disposition: inline; filename="pkt_sched-cls_u32-fix-locking-in-u32_change.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,78 +40,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Wei Yongjun <yjwei@cn.fujitsu.com>
+From: Jarek Poplawski <jarkao2@gmail.com>
 
-[ Upstream commit: 9fcb95a105758b81ef0131cd18e2db5149f13e95 ]
+[ Upstream commit: 6f57321422e0d359e83c978c2b03db77b967b7d5 ]
 
-If FWD-TSN chunk is received with bad stream ID, the sctp will not do the
-validity check, this may cause memory overflow when overwrite the TSN of
-the stream ID.
+New nodes are inserted in u32_change() under rtnl_lock() with wmb(),
+so without tcf_tree_lock() like in other classifiers (e.g. cls_fw).
+This isn't enough without rmb() on the read side, but on the other
+hand adding such barriers doesn't give any savings, so the lock is
+added instead.
 
-The FORWARD-TSN chunk is like this:
-
-FORWARD-TSN chunk
-  Type                       = 192
-  Flags                      = 0
-  Length                     = 172
-  NewTSN                     = 99
-  Stream                     = 10000
-  StreamSequence             = 0xFFFF
-
-This patch fix this problem by discard the chunk if stream ID is not
-less than MIS.
-
-Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
-Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
+Reported-by: m0sia <m0sia@plotinka.ru>
+Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sctp/sm_statefuns.c |   14 ++++++++++++++
- 1 file changed, 14 insertions(+)
+ net/sched/cls_u32.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/net/sctp/sm_statefuns.c
-+++ b/net/sctp/sm_statefuns.c
-@@ -3635,6 +3635,7 @@ sctp_disposition_t sctp_sf_eat_fwd_tsn(c
- {
- 	struct sctp_chunk *chunk = arg;
- 	struct sctp_fwdtsn_hdr *fwdtsn_hdr;
-+	struct sctp_fwdtsn_skip *skip;
- 	__u16 len;
- 	__u32 tsn;
+--- a/net/sched/cls_u32.c
++++ b/net/sched/cls_u32.c
+@@ -637,8 +637,9 @@ static int u32_change(struct tcf_proto *
+ 				break;
  
-@@ -3664,6 +3665,12 @@ sctp_disposition_t sctp_sf_eat_fwd_tsn(c
- 	if (sctp_tsnmap_check(&asoc->peer.tsn_map, tsn) < 0)
- 		goto discard_noforce;
+ 		n->next = *ins;
+-		wmb();
++		tcf_tree_lock(tp);
+ 		*ins = n;
++		tcf_tree_unlock(tp);
  
-+	/* Silently discard the chunk if stream-id is not valid */
-+	sctp_walk_fwdtsn(skip, chunk) {
-+		if (ntohs(skip->stream) >= asoc->c.sinit_max_instreams)
-+			goto discard_noforce;
-+	}
-+
- 	sctp_add_cmd_sf(commands, SCTP_CMD_REPORT_FWDTSN, SCTP_U32(tsn));
- 	if (len > sizeof(struct sctp_fwdtsn_hdr))
- 		sctp_add_cmd_sf(commands, SCTP_CMD_PROCESS_FWDTSN,
-@@ -3695,6 +3702,7 @@ sctp_disposition_t sctp_sf_eat_fwd_tsn_f
- {
- 	struct sctp_chunk *chunk = arg;
- 	struct sctp_fwdtsn_hdr *fwdtsn_hdr;
-+	struct sctp_fwdtsn_skip *skip;
- 	__u16 len;
- 	__u32 tsn;
- 
-@@ -3724,6 +3732,12 @@ sctp_disposition_t sctp_sf_eat_fwd_tsn_f
- 	if (sctp_tsnmap_check(&asoc->peer.tsn_map, tsn) < 0)
- 		goto gen_shutdown;
- 
-+	/* Silently discard the chunk if stream-id is not valid */
-+	sctp_walk_fwdtsn(skip, chunk) {
-+		if (ntohs(skip->stream) >= asoc->c.sinit_max_instreams)
-+			goto gen_shutdown;
-+	}
-+
- 	sctp_add_cmd_sf(commands, SCTP_CMD_REPORT_FWDTSN, SCTP_U32(tsn));
- 	if (len > sizeof(struct sctp_fwdtsn_hdr))
- 		sctp_add_cmd_sf(commands, SCTP_CMD_PROCESS_FWDTSN,
+ 		*arg = (unsigned long)n;
+ 		return 0;
 
