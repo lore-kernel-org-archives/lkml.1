@@ -1,62 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764492AbZAWBdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764612AbZAWBdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764492AbZAWBdV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:33:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbZAWBWA
+	id S1764612AbZAWBdk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761798AbZAWBXj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:22:00 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:57722 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762314AbZAWBV6 (ORCPT
+	Thu, 22 Jan 2009 20:23:39 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:27543 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762689AbZAWBXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:21:58 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 22 Jan 2009 17:21:46 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Unexpected cascaded epoll behavior - my mistake or kernel bug
-In-Reply-To: <200901230109.55706.pisa@cmp.felk.cvut.cz>
-Message-ID: <alpine.DEB.1.10.0901221711500.7789@alien.or.mcafeemobile.com>
-References: <200901230109.55706.pisa@cmp.felk.cvut.cz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 22 Jan 2009 20:23:38 -0500
+Message-ID: <49791C06.6010805@oracle.com>
+Date: Thu, 22 Jan 2009 17:23:18 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Matt LaPlante <kernel1@cyberdogtech.com>
+CC: linux-kernel@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH 2/2] Kconfig cleanup - new.
+References: <1232569236-11926-1-git-send-email-kernel1@cyberdogtech.com>
+In-Reply-To: <1232569236-11926-1-git-send-email-kernel1@cyberdogtech.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.49791C09.01BF:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Jan 2009, Pavel Pisa wrote:
+Matt LaPlante wrote:
+> These are new kconfig cleanups, as of 2.6.29-rc2.
 
-> Hello Davide and all others,
+I only reviewed the new patch since you said that the other one had
+already been approved.
+
+> Not yet reviewed.
 > 
-> I have got to implementing yet another event library and I experience
-> something strange when level triggered epoll_wait() monitors another
-> level triggered epoll set. Top level epoll_wait() return information
-> about one event pending. The event points correctly to the monitored
-> second level epoll fd, but epoll_wait() on this fd with 0 or small timeout
-> returns zero/no events and top level epoll reporting is not reset at this
-> point so program enters busy loop. If there are events, they are processed
-> correctly.
+> Signed-off-by: Matt LaPlante <kernel1@cyberdogtech.com>
+> ---
+>  arch/avr32/Kconfig                  |    6 +++---
+>  drivers/hid/Kconfig                 |    2 +-
+>  drivers/isdn/mISDN/Kconfig          |   10 ++++++----
+>  drivers/media/common/tuners/Kconfig |    2 +-
+>  drivers/mfd/Kconfig                 |    2 +-
+>  drivers/mmc/host/Kconfig            |    2 +-
+>  drivers/scsi/Kconfig                |    4 ++--
+>  drivers/staging/Kconfig             |    4 ++--
+>  drivers/staging/comedi/Kconfig      |    4 ++--
+>  drivers/staging/go7007/Kconfig      |    4 ++--
+>  drivers/staging/panel/Kconfig       |    2 +-
+>  drivers/usb/gadget/Kconfig          |    2 +-
+>  drivers/uwb/Kconfig                 |    4 ++--
+>  drivers/xen/Kconfig                 |    2 +-
+>  fs/Kconfig                          |    2 +-
+>  fs/ext4/Kconfig                     |    2 +-
+>  fs/ubifs/Kconfig                    |    4 ++--
+>  init/Kconfig                        |    2 +-
+>  kernel/trace/Kconfig                |    9 ++++-----
+>  net/phonet/Kconfig                  |    2 +-
+>  net/wimax/Kconfig                   |    2 +-
+>  sound/soc/blackfin/Kconfig          |    2 +-
+>  22 files changed, 38 insertions(+), 37 deletions(-)
 
-I'm ashamed to say, I know. It has been reported to me about three months 
-ago, I coded patches, but I did not have the time to test them carefully.
-The problem is that inside the epoll wakeup callback, we don't know which 
-even we got (and we can't call ->poll()). So we add the fd to the 
-ready-list and we wake up the waiters. The current code simply does return 
-EPOLLIN (from epoll's poll()) if the ready-list is not empty. The problem 
-is that the even we received in the epoll callback could have been a 
-POLLIN when the fd is waiting for POLLOUT. THis situations gets sorted out 
-in epoll_wait(), but inside epoll's poll() only a quick test was used 
-(ready-list not empty).
-The patch was not exactly a one-liner, so I need a few days to double 
-check it and test it. I'll try to do it this w/end.
+
+> diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+> index e2a4ff6..d85ab89 100644
+> --- a/kernel/trace/Kconfig
+> +++ b/kernel/trace/Kconfig
+> @@ -71,11 +71,10 @@ config FUNCTION_GRAPH_TRACER
+>  	help
+>  	  Enable the kernel to trace a function at both its return
+>  	  and its entry.
+> -	  It's first purpose is to trace the duration of functions and
+> -	  draw a call graph for each thread with some informations like
+> -	  the return value.
+> -	  This is done by setting the current return address on the current
+> -	  task structure into a stack of calls.
+> +	  Its first purpose is to trace the duration of functions and
+> +	  draw a call graph for each thread with some information like
+> +	  the return value. This is done by setting the current return 
+> +    address on the current task structure into a stack of calls.
+
+spacing typo.
+Fix that & add:
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+
+>  
+>  config IRQSOFF_TRACER
+>  	bool "Interrupts-off Latency Tracer"
 
 
-
-- Davide
-
-
+Thanks,
+-- 
+~Randy
