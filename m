@@ -1,83 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZAWQ7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbZAWRHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759609AbZAWQ7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 11:59:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbZAWQ7R
+	id S1758383AbZAWRHh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 12:07:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbZAWRHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 11:59:17 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:42411 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752397AbZAWQ7Q (ORCPT
+	Fri, 23 Jan 2009 12:07:25 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:50682 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753557AbZAWRHX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 11:59:16 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:
-	x-gmailtapped-by:x-gmailtapped;
-	b=FeZ4M8sqiRTjx8wkwQXFyYG8UzOYMt8Hu0w2AW88eBtprW9lA2sOCGVwM7uR7WGVK
-	tsJE02pJ2/Jgsqjj1g1Qg==
-MIME-Version: 1.0
-In-Reply-To: <20090123102253.GF15188@elte.hu>
-References: <20090123004703.25103.29754.stgit@menage.corp.google.com>
-	 <20090123102253.GF15188@elte.hu>
-Date: Fri, 23 Jan 2009 08:59:10 -0800
-Message-ID: <6599ad830901230859p5453b166tfb384caad210f84b@mail.gmail.com>
-Subject: Re: [PATCH] cgroup: Fix root_count when mount fails due to busy 
-	subsystem
-From: Paul Menage <menage@google.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, serue@us.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.osdl.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.28.16.143
-X-GMailtapped: menage
+	Fri, 23 Jan 2009 12:07:23 -0500
+Date: Fri, 23 Jan 2009 18:09:04 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Jan Engelhardt <jengelh@medozas.de>, "H. Peter Anvin" <hpa@kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
+       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
+       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
+       netdev@vger.kernel.org, greg@kroah.com, linux-usb@vger.kernel.org,
+       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
+Message-ID: <20090123170904.GA26083@uranus.ravnborg.org>
+References: <1232223441.3966.22.camel@localhost.localdomain> <1232228261.27094.0.camel@macbook.infradead.org> <20090117221932.GA4956@uranus.ravnborg.org> <49725B1E.604@kernel.org> <1232498319.3123.34.camel@localhost.localdomain> <1232726359.3504.18.camel@localhost.localdomain> <1232726658.3504.22.camel@localhost.localdomain> <alpine.LSU.2.00.0901231710350.15413@fbirervta.pbzchgretzou.qr> <20090123162153.GA25766@uranus.ravnborg.org> <1232728304.3504.28.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232728304.3504.28.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 2:22 AM, Ingo Molnar <mingo@elte.hu> wrote:
->> --- a/kernel/cgroup.c
->> +++ b/kernel/cgroup.c
->> @@ -1115,8 +1115,10 @@ static void cgroup_kill_sb(struct super_block *sb) {
->>       }
->>       write_unlock(&css_set_lock);
->>
->> -     list_del(&root->root_list);
->> -     root_count--;
->> +     if (!list_empty(&root->root_list)) {
->> +             list_del(&root->root_list);
->> +             root_count--;
->> +     }
->
-> That's ugly. It is _much_ cleaner to always keep the link head consistent
-> - i.e. initialize it with INIT_LIST_HEAD()
+On Fri, Jan 23, 2009 at 10:01:44PM +0530, Jaswinder Singh Rajput wrote:
+> On Fri, 2009-01-23 at 17:21 +0100, Sam Ravnborg wrote:
+> > On Fri, Jan 23, 2009 at 05:11:13PM +0100, Jan Engelhardt wrote:
+> > > 
+> > > On Friday 2009-01-23 17:04, Jaswinder Singh Rajput wrote:
+> > > >> > diff --git a/include/linux/dvb/audio.h b/include/linux/dvb/audio.h
+> > > >> > index 89412e1..758a48c 100644
+> > > >> > --- a/include/linux/dvb/audio.h
+> > > >> > +++ b/include/linux/dvb/audio.h
+> > > >> > @@ -24,9 +24,8 @@
+> > > >> >  #ifndef _DVBAUDIO_H_
+> > > >> >  #define _DVBAUDIO_H_
+> > > >> >  
+> > > >> > -#ifdef __KERNEL__
+> > > >> >  #include <linux/types.h>
+> > > >> > -#else
+> > > >> > +#ifndef __KERNEL__
+> > > >> >  #include <stdint.h>
+> > > >> >  #endif
+> > > >> > 
+> > > >> 
+> > > >> It seems one have objection for this. So I will again insert this in my
+> > > >> new patchset.
+> > > >> 
+> > > >
+> > > >oops, s/seems one/seems no one ;-)
+> > > 
+> > > I had an objection as previously stated -- namely that
+> > > <stdint.h> should be included to remain friendly to C++0x
+> > > programs which should use <cstdint> instead. Forcing
+> > > stdint.h is therefore not nice.
+> > 
+> > This is fully agreed.
+> > Jaswinder - can I ask you to do this change (remove of the stdint.h include)
+> > in a follow-up patch. It is two independent changes.
+> > You original patch is fine as is.
+> 
+> So is this OK:
+> 
+> -#ifdef __KERNEL__
+>  #include <linux/types.h>
+> -#else
+> -#include <stdint.h>
+> -#endif
 
-It is initialized with INIT_LIST_HEAD().
+That was what I expected the final change to look like.
+If you want then combine it in one patch.
 
-> and then remove from it via
-> list_del_init().
-
-There's not much point doing list_del_init() rather than list_del()
-here since we're about to delete the root.
-
->
-> That way the error path will do the right thing automatically, and there's
-> no need for that ugly "if !list_empty" construct either.
-
-The important part here is avoiding decrementing root_count.
-
-So the code could equally be:
-
-if (!list_empty(&root->root_list)) {
-  root_count--;
-}
-list_del(&root->root_list);
-
-but what I have in this patch seems more straightforward. It's
-actually how the code used to be before it was removed as a
-"redundant" check by a patch that I unfortunately didn't get a chance
-to read properly (or Ack) because I was too snowed under with other
-work.
-
-Paul
+	Sam
