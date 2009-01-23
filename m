@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbZAWB1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763481AbZAWB1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762513AbZAWB1i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:27:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbZAWBPh
+	id S1763481AbZAWB1x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:27:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZAWBPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:15:37 -0500
-Received: from kroah.org ([198.145.64.141]:50911 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:15:40 -0500
+Received: from kroah.org ([198.145.64.141]:50896 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757989AbZAWBPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:20 -0500
-Date: Thu, 22 Jan 2009 17:13:07 -0800
+	id S1760002AbZAWBPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:15:19 -0500
+Date: Thu, 22 Jan 2009 17:13:05 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
        Chris Mason <chris.mason@oracle.com>,
        Dave Chinner <david@fromorbit.com>
-Subject: [patch 42/46] mm: do_sync_mapping_range integrity fix
-Message-ID: <20090123011307.GQ19756@kroah.com>
+Subject: [patch 41/46] mm: write_cache_pages more terminate quickly
+Message-ID: <20090123011305.GP19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-do_sync_mapping_range-integrity-fix.patch"
+Content-Disposition: inline; filename="mm-write_cache_pages-more-terminate-quickly.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,15 +41,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Nick Piggin <npiggin@suse.de>
+From: Andrew Morton <akpm@linux-foundation.org>
 
-commit ee53a891f47444c53318b98dac947ede963db400 upstream.
+commit 82fd1a9a8ced9607312b54859572bcc6211e8919 upstream.
 
-Chris Mason notices do_sync_mapping_range didn't actually ask for data
-integrity writeout.  Unfortunately, it is advertised as being usable for
-data integrity operations.
-
-This is a data integrity bug.
+Now that we have the early-termination logic in place, it makes sense to
+bail out early in all other cases where done is set to 1.
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 Cc: Chris Mason <chris.mason@oracle.com>
@@ -59,18 +56,26 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/sync.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/page-writeback.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -287,7 +287,7 @@ int do_sync_mapping_range(struct address
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -983,12 +983,15 @@ continue_unlock:
  
- 	if (flags & SYNC_FILE_RANGE_WRITE) {
- 		ret = __filemap_fdatawrite_range(mapping, offset, endbyte,
--						WB_SYNC_NONE);
-+						WB_SYNC_ALL);
- 		if (ret < 0)
- 			goto out;
- 	}
+ 			if (wbc->sync_mode == WB_SYNC_NONE) {
+ 				wbc->nr_to_write--;
+-				if (wbc->nr_to_write <= 0)
++				if (wbc->nr_to_write <= 0) {
+ 					done = 1;
++					break;
++				}
+ 			}
+ 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 				wbc->encountered_congestion = 1;
+ 				done = 1;
++				break;
+ 			}
+ 		}
+ 		pagevec_release(&pvec);
 
