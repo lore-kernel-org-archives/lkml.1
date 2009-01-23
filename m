@@ -1,52 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbZAWPrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbZAWPxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbZAWPrj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 10:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757477AbZAWPrP
+	id S1757944AbZAWPxV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 10:53:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZAWPxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 10:47:15 -0500
-Received: from mail.netone.net.tr ([193.192.98.182]:47753 "EHLO
-	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756818AbZAWPrN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 10:47:13 -0500
-Message-ID: <4979E67D.5040604@turknet.net.tr>
-Date: Fri, 23 Jan 2009 17:47:09 +0200
-From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Matt Carlson <mcarlson@broadcom.com>
-CC: Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] tg3 module problem on Linux-2.6.29-rc1-2
-References: <49771D65.3090205@turknet.net.tr> <20090121152818.GA3438@x200.localdomain> <497870A3.4070200@turknet.net.tr> <20090122203252.GA3258@xw6200.broadcom.net>
-In-Reply-To: <20090122203252.GA3258@xw6200.broadcom.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 23 Jan 2009 15:47:10.0017 (UTC) FILETIME=[DA122B10:01C97D71]
+	Fri, 23 Jan 2009 10:53:11 -0500
+Received: from cantor.suse.de ([195.135.220.2]:41665 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755471AbZAWPxJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 10:53:09 -0500
+Date: Fri, 23 Jan 2009 16:53:07 +0100
+From: Nick Piggin <npiggin@suse.de>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+Message-ID: <20090123155307.GB14517@wotan.suse.de>
+References: <20090114155923.GC1616@wotan.suse.de> <Pine.LNX.4.64.0901141219140.26507@quilx.com> <20090115061931.GC17810@wotan.suse.de> <Pine.LNX.4.64.0901151434150.28387@quilx.com> <20090116034356.GM17810@wotan.suse.de> <Pine.LNX.4.64.0901161509160.27283@quilx.com> <20090119061856.GB22584@wotan.suse.de> <alpine.DEB.1.10.0901211903540.18367@qirst.com> <20090123040913.GG20098@wotan.suse.de> <alpine.DEB.1.10.0901231033210.32253@qirst.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901231033210.32253@qirst.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Carlson wrote:
-> The error message is coming from the
-> /usr/share/initramfs-tools/hook-functions script.  You are right that
-> the script does not look at the config file for
-> CONFIG_FIRMWARE_IN_KERNEL=y, but I'm not sure if it should or not.
->
-> The script uses the command 'modinfo -F firmware tg3' to determine
-> whether or not it should include firmware images in the initrd.  The
-> modinfo command simply inspects the tg3.ko module binary reports if the
-> module makes any firmware requests.  Obviously this isn't the complete
-> picture.
->
-> Somewhere in this process, the script or modinfo needs to find out if
-> the kernel has firmware images builtin.  How this gets accomplished is
-> probably best left to the script maintainers.
->
->   
-Yep, you are right. It looks to me a bit like standard kernel compile 
-process' fault/bug.
-Because all the previous kernel versions prior to 2.6.29-rc1/2 work 
-flawlessly.
+On Fri, Jan 23, 2009 at 10:41:15AM -0500, Christoph Lameter wrote:
+> On Fri, 23 Jan 2009, Nick Piggin wrote:
+> 
+> > > No it cannot because in SLUB objects must come from the same page.
+> > > Multiple objects in a queue will only ever require a single page and not
+> > > multiple like in SLAB.
+> >
+> > I don't know how that solves the problem. Task with memory policy A
+> > allocates an object, which allocates the "fast" page with policy A
+> > and allocates an object. Then context switch to task with memory
+> > policy B which allocates another object, which is taken from the page
+> > allocated with policy A. Right?
+> 
+> Correct. But this is only an issue if you think about policies applying to
+> individual object allocations (like realized in SLAB). If policies only
+> apply to pages (which is sufficient for balancing IMHO) then this is okay.
 
+According to memory policies, a task's memory policy is supposed to
+apply to its slab allocations too.
+
+ 
+> > > (OK this doesn't give the wrong policy 100% of the time; I thought
+> > there could have been a context switch race during page allocation
+> > that would result in 100% incorrect, but anyway it could still be
+> > significantly incorrect couldn't it?)
+> 
+> Memory policies are applied in a fuzzy way anyways. A context switch can
+> result in page allocation action that changes the expected interleave
+> pattern. Page populations in an address space depend on the task policy.
+> So the exact policy applied to a page depends on the task. This isnt an
+> exact thing.
+
+There are other memory policies than just interleave though.
+
+ 
+> >  "the first cpu will consume more and more memory from the page allocator
+> >   whereas the second will build up huge per cpu lists"
+> >
+> > And this is wrong. There is another possible issue where every single
+> > object on the freelist might come from a different (and otherwise free)
+> > page, and thus eg 100 8 byte objects might consume 400K.
+> >
+> > That's not an invalid concern, but I think it will be quite rare, and
+> > the periodic queue trimming should naturally help this because it will
+> > cycle out those objects and if new allocations are needed, they will
+> > come from new pages which can be packed more densely.
+> 
+> Well but you said that you would defer the trimming (due to latency
+> concerns). The longer you defer the larger the lists will get.
+
+But that is wrong. The lists obviously have high water marks that
+get trimmed down. Periodic trimming as I keep saying basically is
+alrady so infrequent that it is irrelevant (millions of objects
+per cpu can be allocated anyway between existing trimming interval)
