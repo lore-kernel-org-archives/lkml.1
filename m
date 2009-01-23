@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759171AbZAWH44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758338AbZAWIBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759171AbZAWH44 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 02:56:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZAWH4r
+	id S1758338AbZAWIBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 03:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZAWIBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 02:56:47 -0500
-Received: from 1wt.eu ([62.212.114.60]:1722 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752572AbZAWH4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 02:56:47 -0500
-Date: Fri, 23 Jan 2009 08:53:34 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Greg KH <greg@kroah.com>
-Cc: Jesper Juhl <jj@chaosbits.net>, Greg KH <gregkh@suse.de>,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "David S. Miller" <davem@davemloft.net>,
-       Florian Fainelli <florian@openwrt.org>, torvalds@linux-foundation.org,
-       Eugene Teo <eteo@redhat.com>, Justin Forbes <jmforbes@linuxtx.org>,
-       linux-kernel@vger.kernel.org, Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Domenico Andreoli <cavokz@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Michael Krufky <mkrufky@linuxtv.org>, alan@lxorguk.ukuu.org.uk,
-       Chuck Ebbert <cebbert@redhat.com>, Dave Jones <davej@redhat.com>,
-       akpm@linux-foundation.org, Jake Edge <jake@lwn.net>,
-       Chuck Wolber <chuckw@quantumlinux.com>, stable@kernel.org,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>
-Subject: Re: [stable] [patch 24/46] r6040: bump release number to 0.19
-Message-ID: <20090123075334.GA1415@1wt.eu>
-References: <20090123010651.683741823@mini.kroah.org> <20090123011219.GY19756@kroah.com> <alpine.LNX.2.00.0901230225430.12187@swampdragon.chaosbits.net> <20090123020403.GA4712@kroah.com>
+	Fri, 23 Jan 2009 03:01:04 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54871 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752149AbZAWIBC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 03:01:02 -0500
+Subject: Re: [RFC PATCH 01/19] lockdep: annotate reclaim context
+ (__GFP_NOFS)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090123073326.GA19986@wotan.suse.de>
+References: <20090122173701.674448070@chello.nl>
+	 <20090122174052.061744802@chello.nl> <1232653234.4890.135.camel@laptop>
+	 <1232656187.4890.136.camel@laptop>  <20090123073326.GA19986@wotan.suse.de>
+Content-Type: text/plain
+Date: Fri, 23 Jan 2009 09:00:57 +0100
+Message-Id: <1232697657.4791.8.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090123020403.GA4712@kroah.com>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 06:04:03PM -0800, Greg KH wrote:
-> On Fri, Jan 23, 2009 at 02:31:22AM +0100, Jesper Juhl wrote:
-> > On Thu, 22 Jan 2009, Greg KH wrote:
-> > 
-> > > 2.6.28-stable review patch.  If anyone has any objections, please let us know.
+On Fri, 2009-01-23 at 08:33 +0100, Nick Piggin wrote:
+> On Thu, Jan 22, 2009 at 09:29:47PM +0100, Peter Zijlstra wrote:
+> > On Thu, 2009-01-22 at 20:40 +0100, Peter Zijlstra wrote:
+> > > > +               return;
+> > > > +       if (DEBUG_LOCKS_WARN_ON(irqs_disabled()))
+> > > > +               return;
+> > > > +
+> > > > +       mark_held_locks(curr, RECLAIM_FS);
+> > > > +}
 > > > 
+> > > Not quite seeing how this happens though...
+> > > 
+> > > [    6.998258] WARNING: at /usr/src/linux-2.6/kernel/lockdep.c:2266
+> > > lockdep_trace_alloc+0x58/0x69() 
 > > 
-> > It's simple enough, sure, but it doesn't really conform to the guidelines 
-> > set out for -stable patches in Documentation/stable_kernel_rules.txt : 
-> > 
-> > ...
-> >  - It must fix a real bug that bothers people (not a, "This could be a
-> >    problem..." type thing).
-> > ...
-> >  - It cannot contain any "trivial" fixes in it (spelling changes,
-> >    whitespace cleanups, etc).
-> > ...
-> > 
-> > I'm trying to come up with some real problem this fixes and a reason why 
-> > we want it in -stable, but I cannot...
+> > Doh, its getting there without __GFP_WAIT...
 > 
-> You missed the patches leading up to this one that updated the driver to
-> this version number, without changing the number.  This patch is then
-> valid.
+> Ah, sorry. Thanks for debugging. Should just be a matter of sticking
+> a check for GFP_WAIT in there somewhere?
 
-I too find it important for bug reports that version numbers reflect the
-driver status as close as possible.
+Yeah, I'll stick a check in there, that ought to suffice.
 
-Willy
+> Thanks for pulling this in BTW (hopefully you don't see any more issues).
+> Your subsequent improvements all seem pretty nice to me too (although I
+> don't know the lockdep code well, but I didn't see any obviuos problems).
+
+Thanks, I'll test it some today, and hopefully stuff will just work ;-)
 
