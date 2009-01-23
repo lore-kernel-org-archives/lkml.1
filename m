@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZAWVQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbZAWVpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbZAWVQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 16:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbZAWVP7
+	id S1757869AbZAWVpI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 16:45:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbZAWVoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 16:15:59 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:45843 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755879AbZAWVP4 (ORCPT
+	Fri, 23 Jan 2009 16:44:46 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47875 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755673AbZAWVop (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 16:15:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=kqmleNQfxugSKuOpLYLC/7B61NbovwPQ/TbHPTICoIS7NK9blS/zrnsKEP6QF8qR13
-         aXITMVpL0U9/SLtc+3LtuLmnFOW/jKpW0cUb04uC7ZhJBzDBiGvvBpfqqCodr341gpmz
-         gdxZR3zVueNZI6UlJwP33cO3SeAcuczIySC90=
-Date: Sat, 24 Jan 2009 00:21:26 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, wim@iguana.be
-Subject: Re: linux-next: Tree for January 23 (drivers/watchdog/cpwd.c:411:
-	error: 'inode' undeclared (first use in this function))
-Message-ID: <20090123212126.GA4937@x200.localdomain>
-References: <20090123184826.f2c91472.sfr@canb.auug.org.au>
+	Fri, 23 Jan 2009 16:44:45 -0500
+Message-ID: <497A3793.5090502@zytor.com>
+Date: Fri, 23 Jan 2009 13:33:07 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090123184826.f2c91472.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jan Engelhardt <jengelh@medozas.de>
+CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       "H. Peter Anvin" <hpa@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
+       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
+       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
+       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
+       netdev@vger.kernel.org, greg@kroah.com, linux-usb@vger.kernel.org,
+       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
+References: <1232223441.3966.22.camel@localhost.localdomain>  <1232228261.27094.0.camel@macbook.infradead.org>  <20090117221932.GA4956@uranus.ravnborg.org>  <49725B1E.604@kernel.org>  <1232498319.3123.34.camel@localhost.localdomain>  <1232726359.3504.18.camel@localhost.localdomain> <1232726658.3504.22.camel@localhost.localdomain> <alpine.LSU.2.00.0901231710350.15413@fbirervta.pbzchgretzou.qr>
+In-Reply-To: <alpine.LSU.2.00.0901231710350.15413@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On sparc:
+Jan Engelhardt wrote:
+> 
+> I had an objection as previously stated -- namely that
+> <stdint.h> should be included to remain friendly to C++0x
+> programs which should use <cstdint> instead. Forcing
+> stdint.h is therefore not nice.
+> 
 
-drivers/watchdog/cpwd.c: In function 'cpwd_ioctl':
-drivers/watchdog/cpwd.c:411: error: 'inode' undeclared (first use in this function)
-drivers/watchdog/cpwd.c:411: error: (Each undeclared identifier is reported only once
-drivers/watchdog/cpwd.c:411: error: for each function it appears in.)
-drivers/watchdog/cpwd.c: In function 'cpwd_compat_ioctl':
-drivers/watchdog/cpwd.c:483: warning: passing argument 1 of 'cpwd_ioctl' from incompatible pointer type
-drivers/watchdog/cpwd.c:483: warning: passing argument 2 of 'cpwd_ioctl' makes integer from pointer without a cast
-drivers/watchdog/cpwd.c:483: error: too many arguments to function 'cpwd_ioctl'
+FWIW, it's kind of pointless in that case; <cstdint> exports it into the 
+std:: namespace rather than the root namespace, so using stdint types 
+still don't work.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+It again comes down to: for headers exported to userspace we *have* to 
+use double-underscore types.
 
- drivers/watchdog/cpwd.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- a/drivers/watchdog/cpwd.c
-+++ b/drivers/watchdog/cpwd.c
-@@ -402,6 +402,7 @@ static int cpwd_release(struct inode *inode, struct file *file)
- 
- static long cpwd_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
-+	struct inode *inode = file->f_path.dentry->d_inode;
- 	static struct watchdog_info info = {
- 		.options		= WDIOF_SETTIMEOUT,
- 		.firmware_version	= 1,
-@@ -480,7 +481,7 @@ static long cpwd_compat_ioctl(struct file *file, unsigned int cmd,
- 	case WIOCSTOP:
- 	case WIOCGSTAT:
- 		lock_kernel();
--		rval = cpwd_ioctl(file->f_path.dentry->d_inode, file, cmd, arg);
-+		rval = cpwd_ioctl(file, cmd, arg);
- 		unlock_kernel();
- 		break;
- 
+	-hpa
