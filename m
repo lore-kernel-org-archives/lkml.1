@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbZAWBcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763315AbZAWBcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764212AbZAWBcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbZAWBQE
+	id S1763315AbZAWBcg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:32:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760931AbZAWBRj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:16:04 -0500
-Received: from kroah.org ([198.145.64.141]:50710 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756532AbZAWBPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:08 -0500
-Date: Thu, 22 Jan 2009 17:12:35 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
-       davem@davemloft.net
-Subject: [patch 30/46] netfilter: nf_conntrack: fix ICMP/ICMPv6 timeout
-	sysctls on big-endian
-Message-ID: <20090123011235.GE19756@kroah.com>
-References: <20090123010651.683741823@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="netfilter-nf_conntrack-fix-icmp-icmpv6-timeout-sysctls-on-big-endian.patch"
-In-Reply-To: <20090123011110.GA19756@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 22 Jan 2009 20:17:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39602 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760923AbZAWBRh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:17:37 -0500
+Date: Thu, 22 Jan 2009 20:17:19 -0500
+From: Jeff Layton <jlayton@redhat.com>
+To: Steve French <smfrench@gmail.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-cifs-client@lists.samba.org,
+       linux-kernel@vger.kernel.org, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [linux-cifs-client] [PATCH] cifs: wrap cifs_dnotify_thread in 
+ CONFIG_BROKEN
+Message-ID: <20090122201719.4d1f0b75@tleilax.poochiereds.net>
+In-Reply-To: <524f69650901221556q62726c9fg15d9819dca1248fe@mail.gmail.com>
+References: <1232642078-9717-1-git-send-email-jlayton@redhat.com>
+	<20090122210655.GA6065@infradead.org>
+	<524f69650901221513m7857488by6713eca64ee31681@mail.gmail.com>
+	<20090122183115.1cef1b53@tleilax.poochiereds.net>
+	<524f69650901221541x63ae3940oaaa75f12a3e2ff97@mail.gmail.com>
+	<524f69650901221556q62726c9fg15d9819dca1248fe@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+On Thu, 22 Jan 2009 17:56:09 -0600
+Steve French <smfrench@gmail.com> wrote:
 
-------------------
+> One of the obvious reasons that we could throw away the idea of a cifs
+> dnotify thread for cifs is if we could guarantee that all of the
+> functions in include/linux/fsnotify.h are nonblocking.  If the
+> fsnotify.h worker functions are nonblocking then we could safely
+> process all of the notify responses in cifs_demultiplex_thread (since
+> we wouldn't have to queue them) without clogging up response
+> processing for the socket.   Note that notify responses are unusual -
+> they don't have an application thread waiting on them ("multishot"
+> responses) typically (there is only one other type of SMB response
+> that does not have an application thread associated with it).
+> 
 
-From: Patrick McHardy <kaber@trash.net>
+I'm not arguing against the need for a kthread to handle notifications.
+Heck, I'm even ok with more than one thread if it's necessary.
 
-Upstream commit 71320af:
+We simply don't have such an implementation today. Until we do, this
+kthread is just dead weight. There's simply no need to keep this in
+place until we have working code that uses it.
 
-An old bug crept back into the ICMP/ICMPv6 conntrack protocols: the timeout
-values are defined as unsigned longs, the sysctl's maxsize is set to
-sizeof(unsigned int). Use unsigned int for the timeout values as in the
-other conntrack protocols.
-
-Reported-by: Jean-Mickael Guerin <jean-mickael.guerin@6wind.com>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- net/ipv4/netfilter/nf_conntrack_proto_icmp.c   |    2 +-
- net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
---- a/net/ipv4/netfilter/nf_conntrack_proto_icmp.c
-+++ b/net/ipv4/netfilter/nf_conntrack_proto_icmp.c
-@@ -20,7 +20,7 @@
- #include <net/netfilter/nf_conntrack_core.h>
- #include <net/netfilter/nf_log.h>
- 
--static unsigned long nf_ct_icmp_timeout __read_mostly = 30*HZ;
-+static unsigned int nf_ct_icmp_timeout __read_mostly = 30*HZ;
- 
- static bool icmp_pkt_to_tuple(const struct sk_buff *skb, unsigned int dataoff,
- 			      struct nf_conntrack_tuple *tuple)
---- a/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
-+++ b/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
-@@ -26,7 +26,7 @@
- #include <net/netfilter/ipv6/nf_conntrack_icmpv6.h>
- #include <net/netfilter/nf_log.h>
- 
--static unsigned long nf_ct_icmpv6_timeout __read_mostly = 30*HZ;
-+static unsigned int nf_ct_icmpv6_timeout __read_mostly = 30*HZ;
- 
- static bool icmpv6_pkt_to_tuple(const struct sk_buff *skb,
- 				unsigned int dataoff,
-
+-- 
+Jeff Layton <jlayton@redhat.com>
