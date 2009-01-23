@@ -1,87 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758383AbZAWRHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759925AbZAWRJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758383AbZAWRHh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 12:07:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbZAWRHZ
+	id S1759925AbZAWRJB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 12:09:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZAWRIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 12:07:25 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:50682 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753557AbZAWRHX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 12:07:23 -0500
-Date: Fri, 23 Jan 2009 18:09:04 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Jan Engelhardt <jengelh@medozas.de>, "H. Peter Anvin" <hpa@kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
-       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
-       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
-       netdev@vger.kernel.org, greg@kroah.com, linux-usb@vger.kernel.org,
-       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
-Message-ID: <20090123170904.GA26083@uranus.ravnborg.org>
-References: <1232223441.3966.22.camel@localhost.localdomain> <1232228261.27094.0.camel@macbook.infradead.org> <20090117221932.GA4956@uranus.ravnborg.org> <49725B1E.604@kernel.org> <1232498319.3123.34.camel@localhost.localdomain> <1232726359.3504.18.camel@localhost.localdomain> <1232726658.3504.22.camel@localhost.localdomain> <alpine.LSU.2.00.0901231710350.15413@fbirervta.pbzchgretzou.qr> <20090123162153.GA25766@uranus.ravnborg.org> <1232728304.3504.28.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Fri, 23 Jan 2009 12:08:54 -0500
+Received: from mx2.suse.de ([195.135.220.15]:51777 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754388AbZAWRIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 12:08:53 -0500
+Date: Fri, 23 Jan 2009 09:06:31 -0800
+From: Greg KH <gregkh@suse.de>
+To: Bron Gondwana <brong@fastmail.fm>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
+Subject: Re: [patch 016/104] epoll: introduce resource usage limits
+Message-ID: <20090123170631.GB11566@suse.de>
+References: <20081203193901.715896543@mini.kroah.org> <20081203194849.GQ8950@kroah.com> <1232686261.9977.1296303473@webmail.messagingengine.com> <20090123051620.GA8122@suse.de> <1232704065.25510.1296328851@webmail.messagingengine.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232728304.3504.28.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1232704065.25510.1296328851@webmail.messagingengine.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 10:01:44PM +0530, Jaswinder Singh Rajput wrote:
-> On Fri, 2009-01-23 at 17:21 +0100, Sam Ravnborg wrote:
-> > On Fri, Jan 23, 2009 at 05:11:13PM +0100, Jan Engelhardt wrote:
-> > > 
-> > > On Friday 2009-01-23 17:04, Jaswinder Singh Rajput wrote:
-> > > >> > diff --git a/include/linux/dvb/audio.h b/include/linux/dvb/audio.h
-> > > >> > index 89412e1..758a48c 100644
-> > > >> > --- a/include/linux/dvb/audio.h
-> > > >> > +++ b/include/linux/dvb/audio.h
-> > > >> > @@ -24,9 +24,8 @@
-> > > >> >  #ifndef _DVBAUDIO_H_
-> > > >> >  #define _DVBAUDIO_H_
-> > > >> >  
-> > > >> > -#ifdef __KERNEL__
-> > > >> >  #include <linux/types.h>
-> > > >> > -#else
-> > > >> > +#ifndef __KERNEL__
-> > > >> >  #include <stdint.h>
-> > > >> >  #endif
-> > > >> > 
-> > > >> 
-> > > >> It seems one have objection for this. So I will again insert this in my
-> > > >> new patchset.
-> > > >> 
-> > > >
-> > > >oops, s/seems one/seems no one ;-)
-> > > 
-> > > I had an objection as previously stated -- namely that
-> > > <stdint.h> should be included to remain friendly to C++0x
-> > > programs which should use <cstdint> instead. Forcing
-> > > stdint.h is therefore not nice.
+On Fri, Jan 23, 2009 at 08:47:45PM +1100, Bron Gondwana wrote:
+> On Thu, 22 Jan 2009 21:16 -0800, "Greg KH" <gregkh@suse.de> wrote:
+> > > This is a kvm virtual machine running on a reasonably beefy external box, but
+> > > with 2Gb RAM allocated to the mx instance because that's all kvm would let me
+> > > use last time I checked.  We're using KVM so the local copy of the database is
+> > > a little further away from the "internet facing side" and so we can build each
+> > > machine with our standard FAI setup.
 > > 
-> > This is fully agreed.
-> > Jaswinder - can I ask you to do this change (remove of the stdint.h include)
-> > in a follow-up patch. It is two independent changes.
-> > You original patch is fine as is.
+> > I would suggest just changing this default value then, it's a simple
+> > userspace configuration item, and for your boxes, it sounds like a
+> > larger value would be more suitable.
 > 
-> So is this OK:
+> Yes - I've pushed it up to 4096 now.  Should be plenty!
 > 
-> -#ifdef __KERNEL__
->  #include <linux/types.h>
-> -#else
-> -#include <stdint.h>
-> -#endif
+> I guess Postfix is a bit of an odd case here.   It runs lots of processes, yet
+> uses epoll within many of them as well - sort of a historical design in some ways,
+> but also to enforce maximum privilege separation with many of the daemons able to
+> be run under chroot with limited capabilities.
+> 
+> So I guess I have a few questions left:
+> 
+> 1) is this value ever supposed to be hit in practice by non-malicious software?
+>    If not, it appears 128 is too low.
 
-That was what I expected the final change to look like.
-If you want then combine it in one patch.
+It does appear a bit low.  What looks to you like a good value to use as
+a default?
 
-	Sam
+> 2) if we're going to stick with 128, is there any way to query the kernel as to how
+>    close to the limit it's getting?  As an example, our system checks poll
+>    /proc/sys/fs/file-max every 2 minutes, and warn us if its getting "full".
+
+Good idea, we should report this somewhere for the very reasons you
+suggest.  Can you write up a patch to do this?  If not, I'll see what I
+can do.
+
+thanks,
+
+greg k-h
