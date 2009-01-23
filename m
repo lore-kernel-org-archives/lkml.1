@@ -1,115 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbZAWQQg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760274AbZAWQR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759447AbZAWQQg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 11:16:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbZAWQQ3
+	id S1760274AbZAWQR5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 11:17:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756954AbZAWQRu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 11:16:29 -0500
-Received: from gw.goop.org ([64.81.55.164]:35761 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756954AbZAWQQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 11:16:28 -0500
-Message-ID: <4979ED5A.1070005@goop.org>
-Date: Fri, 23 Jan 2009 08:16:26 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 23 Jan 2009 11:17:50 -0500
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:25020 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756663AbZAWQRt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 11:17:49 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=f1tBxkeyb94mmTdAv35wfvYlgBislSW4nrOvuQzXd1VpZjOecMSoDy+m5Jdrh6YlqFG0zukTrEUQAy55xV++a3v4pKg4zZVf96gBTu4o3rc6ZHp6/CkFEREAZjuoW/OufXFE6ndV5urZpg7lcL6Uu7ykiqi+v5+PSUSYbW/12I0=  ;
+X-YMail-OSG: e0GncX8VM1l_6yBRSCaXiY3uQ35eF_rbgsuL8e9XljgaIw.M5pkCLH1CYdkuHRNGups9jU8idcOe7hbK1Q7BSbGHTFDc8L1PwAgBm1NZgYzmlBtrq0wXnUwN5ZrPhZEGQZqLlq4R9OjOxnBqwrwHAS36zf8Cms4urYooQhngxb8lFEe9F3_eaIT3.mHFsA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
+Date: Sat, 24 Jan 2009 03:17:25 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, yanmin_zhang@linux.intel.com,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI> <200901240241.06670.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0901231057280.32253@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0901231057280.32253@qirst.com>
 MIME-Version: 1.0
-To: Ian Campbell <Ian.Campbell@citrix.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       "dan.magenheimer@oracle.com" <dan.magenheimer@oracle.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stable Kernel <stable@kernel.org>
-Subject: Re: [Xen-devel] [PATCH] xen: actually release memory when	shrinking
- domain
-References: <4978F4D8.6090706@goop.org> <1232719748.27712.19.camel@zakaz.uk.xensource.com>
-In-Reply-To: <1232719748.27712.19.camel@zakaz.uk.xensource.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901240317.26227.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> On Thu, 2009-01-22 at 14:36 -0800, Jeremy Fitzhardinge wrote:
->   
->> From: Dan Magenheimer <dan.magenheimer@oracle.com>
->>
->> Fix this:
->>
->>     
->>> It appears that in the upstream balloon driver,
->>>       
->>>> the call to HYPERVISOR_update_va_mapping is missing
->>>> from decrease_reservation.  I think as a result,
->>>> the balloon driver is eating memory but not
->>>> releasing it to Xen, thus rendering the balloon
->>>> driver essentially useless.  (Can be observed via xentop.)
->>>>         
+On Saturday 24 January 2009 02:59:17 Christoph Lameter wrote:
+> On Sat, 24 Jan 2009, Nick Piggin wrote:
+> > Page allocator is never going to be as fast as slab allocator, for
+> > issues I explained a long time ago. Not to say it can't be improved,
+> > just stating facts.
 >
-> Fails on 32 bit with HighMem pages:
->         
->         kernel BUG at /local/scratch/ianc/devel/kernels/paravirt/drivers/xen/balloon.c:298!
->   
+> Why not? Remember the discussion we had a while ago. You can bring the
+> pages into a state where minimal manipulations are required for alloc free
+> and avoid all the checks in the hot paths. The SLUB method could be used
+> taking a big contiguous chunk and then issueing page size portions of it.
+> That could be quite fast.
+>
+> Or if you prefer order-0. Do a single linked list like SLQB does.
 
-Ah, good point.  Could you package this up into a proper patch for Ingo?
+The fundamental issues I guess are that slab pages are kernel mapped, and
+within a given slab, the zone and movability are irrelevant.
 
-Thanks,
-    J
->         invalid opcode: 0000 [#1] SMP 
->         last sysfs file: /sys/devices/system/xen_memory/xen_memory0/info/current_kb
->         Modules linked in:
->         
->         Pid: 9, comm: events/0 Tainted: G        W  (2.6.29-rc1-x86_32p-xen0-tip #726)         
->         EIP: 0061:[<c0266c57>] EFLAGS: 00010282 CPU: 0
->         EIP is at balloon_process+0x527/0x530
->         EAX: ffffffea EBX: deadbeef ECX: deadbeef EDX: deadbeef
->         ESI: deadbeef EDI: c1000000 EBP: 00000000 ESP: f64b5f44
->          DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0069
->         Process events/0 (pid: 9, ti=f64b4000 task=f642d830 task.ti=f64b4000)
->         Stack:
->          00000000 ffffa0c0 0000002e 00000192 0000019d 00000000 00000400 f6427a00
->          00000000 00000000 00000000 00000000 00007ff0 c04afcb0 f6427a00 c04afcac
->          c0266730 c0143cf1 c0106bc2 f6427a0c c0107810 f642020c f6427a04 f6427a0c
->         Call Trace:
->          [<c0266730>] balloon_process+0x0/0x530
->          [<c0143cf1>] run_workqueue+0x91/0x140
->          [<c0106bc2>] check_events+0x8/0x16
->          [<c0107810>] xen_spin_unlock+0x0/0x50
->          [<c01473e0>] autoremove_wake_function+0x0/0x50
->          [<c0144718>] worker_thread+0x98/0xf0
->          [<c01473e0>] autoremove_wake_function+0x0/0x50
->          [<c0144680>] worker_thread+0x0/0xf0
->          [<c01470c2>] kthread+0x42/0x70
->          [<c0147080>] kthread+0x0/0x70
->          [<c010a5f3>] kernel_thread_helper+0x7/0x10
->         Code: 00 00 00 00 e8 9b a1 f0 ff 31 f6 e8 e4 2f eb ff b8 e0 7b 54 c0 e8 1a 90 16 00 8b 6c 24 18 89 44 24 14 89 74 24 10 e9 eb fe ff ff <0f> 0b eb fe 90 8d 74 26 00 83 ec 04 b8 20 fc 4a c0 e8 13 dc ff 
->         EIP: [<c0266c57>] balloon_process+0x527/0x530 SS:ESP 0069:f64b5f44
->         ---[ end trace 4eaa2a86a8e2da28 ]---
->
-> diff -r b64a63f076cd drivers/xen/balloon.c
-> --- a/drivers/xen/balloon.c	Fri Jan 23 13:29:48 2009 +0000
-> +++ b/drivers/xen/balloon.c	Fri Jan 23 14:09:08 2009 +0000
-> @@ -292,10 +292,13 @@
->  
->  		scrub_page(page);
->  
-> -		ret = HYPERVISOR_update_va_mapping(
-> -			(unsigned long)__va(pfn << PAGE_SHIFT),
-> -			__pte_ma(0), 0);
-> -		BUG_ON(ret);
-> +		if (!PageHighMem(page)) {
-> +			ret = HYPERVISOR_update_va_mapping(
-> +				(unsigned long)__va(pfn << PAGE_SHIFT),
-> +				__pte_ma(0), 0);
-> +			BUG_ON(ret);
-> +                }
-> +
->  	}
->  
->  	/* Ensure that ballooned highmem pages don't have kmaps. */
->
->
->   
+Other ones which could be changed but could introduce regressions are
+watermarks, buddy merging, and struct page error checking and setup.
+
+I brought all this up when it was discussed. Did you find any ways to
+improve anything?
+
+(I did make that patch to enable refcounting to be avoided FWIW, which
+avoids a couple of atomic operations, but I don't think it brought
+performance up too much, but I still intend to dust it off at some
+point).
 
