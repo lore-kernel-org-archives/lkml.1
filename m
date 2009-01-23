@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760362AbZAWCJd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760297AbZAWCU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760362AbZAWCJd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 21:09:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755590AbZAWCJZ
+	id S1760297AbZAWCU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 21:20:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755808AbZAWCUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 21:09:25 -0500
-Received: from hera.kernel.org ([140.211.167.34]:42377 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755177AbZAWCJZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 21:09:25 -0500
-Message-ID: <497926C2.4090203@kernel.org>
-Date: Fri, 23 Jan 2009 11:09:06 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 22 Jan 2009 21:20:17 -0500
+Received: from e33.co.us.ibm.com ([32.97.110.151]:57082 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755076AbZAWCUQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 21:20:16 -0500
+Date: Thu, 22 Jan 2009 20:20:14 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Paul Menage <menage@google.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org
+Subject: Re: [PATCH] cgroup: Fix root_count when mount fails due to busy
+	subsystem
+Message-ID: <20090123022014.GB9267@us.ibm.com>
+References: <20090123004703.25103.29754.stgit@menage.corp.google.com>
 MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] x86: Merge hardirq.h
-References: <73c1f2160901220533n53cdbb33q2eec14d47176533d@mail.gmail.com>
-In-Reply-To: <73c1f2160901220533n53cdbb33q2eec14d47176533d@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 23 Jan 2009 02:09:14 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090123004703.25103.29754.stgit@menage.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brian Gerst wrote:
-> This patch series merges the 32-bit and 64-bit hardirq.h headers and
-> does several associated cleanups.  Based on tip/core/percpu.
+Quoting Paul Menage (menage@google.com):
+> cgroup: Fix root_count when mount fails due to busy subsystem
 > 
->  arch/x86/include/asm/hardirq.h    |   49 ++++++++++++++++++++++++++++++++++---
->  arch/x86/include/asm/hardirq_32.h |   33 -------------------------
->  arch/x86/include/asm/hardirq_64.h |   39 -----------------------------
->  arch/x86/kernel/efi_64.c          |    1 +
->  arch/x86/kernel/irq_64.c          |    1 +
->  arch/x86/kernel/process_32.c      |    1 -
->  6 files changed, 47 insertions(+), 77 deletions(-)
+> root_count was being incremented in cgroup_get_sb() after all error
+> checking was complete, but decremented in cgroup_kill_sb(), which can
+> be called on a superblock that we gave up on due to an error.  This
+> patch changes cgroup_kill_sb() to only decrement root_count if the
+> root was previously linked into the list of roots.
+> 
+> Signed-off-by: Paul Menage <menage@google.com>
 
-Patch tree reviewed and imported into the following git tree (sync
-seems slow today if it doesn't appear please pull directly from
-master)
+Tested-by: Serge Hallyn <serue@us.ibm.com>
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+thanks,
+-serge
 
-with the following changes.
-
-* commit messages modified according to x86-ism
-* added missing #include <asm/apic.h> to mce_intel_64.c for patch 0002
-
-Thanks.
-
--- 
-tejun
+> 
+> ---
+> 
+> I was actually surprised to find that list_del() doesn't crash when
+> run on an unattached list_head structure.
+> 
+>  kernel/cgroup.c |    6 ++++--
+>  1 files changed, 4 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+> index adcd0bb..9ce27e8 100644
+> --- a/kernel/cgroup.c
+> +++ b/kernel/cgroup.c
+> @@ -1115,8 +1115,10 @@ static void cgroup_kill_sb(struct super_block *sb) {
+>  	}
+>  	write_unlock(&css_set_lock);
+> 
+> -	list_del(&root->root_list);
+> -	root_count--;
+> +	if (!list_empty(&root->root_list)) {
+> +		list_del(&root->root_list);
+> +		root_count--;
+> +	}
+> 
+>  	mutex_unlock(&cgroup_mutex);
+> 
