@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZAWAcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758666AbZAWAtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbZAWAcU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 19:32:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZAWAcI
+	id S1758666AbZAWAtk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 19:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754096AbZAWAt1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 19:32:08 -0500
-Received: from cantor.suse.de ([195.135.220.2]:46008 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754671AbZAWAcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 19:32:07 -0500
-Date: Thu, 22 Jan 2009 16:30:34 -0800
-From: Greg KH <gregkh@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dave Jones <davej@redhat.com>, mingo@elte.hu, geert@linux-m68k.org,
-       joern@logfs.org, lkml@davidb.org, kernel@linuxace.com,
-       kay.sievers@vrfy.org, phillip@lougher.demon.co.uk, hch@infradead.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
-Message-ID: <20090123003034.GA8141@suse.de>
-References: <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu> <20090110165033.GA23943@logfs.org> <20090110101235.7ca24c44.akpm@linux-foundation.org> <20090110221528.GA31774@elte.hu> <Pine.LNX.4.64.0901111022590.30201@anakin> <20090111153920.GC7401@elte.hu> <20090111163018.GA9300@suse.de> <20090122215041.GA29369@redhat.com> <20090122161659.53de9e56.akpm@linux-foundation.org>
+	Thu, 22 Jan 2009 19:49:27 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:19194 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754671AbZAWAtZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 19:49:25 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=from:subject:to:cc:date:message-id:user-agent:
+	mime-version:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=OAibRAXySRhAqprmaWbaOEJqD/PcBVLh+mmTUsx8x4ZBqf0mSYgXsmplKM3OBKfI3
+	mHx5HtZrUWMm/CTb8hYNA==
+From: Paul Menage <menage@google.com>
+Subject: [PATCH] cgroup: Fix root_count when mount fails due to busy subsystem
+To: akpm@linux-foundation.org, serue@us.ibm.com
+Cc: linux-kernel@vger.kernel.org, containers@lists.osdl.org
+Date: Thu, 22 Jan 2009 16:48:41 -0800
+Message-ID: <20090123004703.25103.29754.stgit@menage.corp.google.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090122161659.53de9e56.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.75
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 22, 2009 at 04:16:59PM -0800, Andrew Morton wrote:
-> My question is: what is the process for moving things out of staging/ and
-> into the kernel proper?  We don't want to be merging ex-crap code which has
-> had its whitespace and wrappers cleaned up by a person who is not suitably
-> experienced in the relevant subsystem.
-> 
-> It _should_ (I think) be "OK, this is ready for us to start reviewing". 
-> ie: treat it as if it had just come in from a random new submitter.
+cgroup: Fix root_count when mount fails due to busy subsystem
 
-I agree, and I will do just that.
+root_count was being incremented in cgroup_get_sb() after all error
+checking was complete, but decremented in cgroup_kill_sb(), which can
+be called on a superblock that we gave up on due to an error.  This
+patch changes cgroup_kill_sb() to only decrement root_count if the
+root was previously linked into the list of roots.
 
-> a) If that happens, who will be responding to the review comments?  Who
->    was the submitter?
+Signed-off-by: Paul Menage <menage@google.com>
 
-For drivers that don't have an active developer, I'll handle the review
-commends and fix things up.  Some of these drivers do have active
-developers, and I'm sure they will be the ones handling the review as
-well.
+---
 
-> b) What happens if it is then decided that we just don't want that code
->    in the tree at all?
+I was actually surprised to find that list_del() doesn't crash when
+run on an unattached list_head structure.
 
-As it's "just a driver", the odds of that happening are probably going
-to be very slim.  We can cross that bridge when we come to it.
+ kernel/cgroup.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-> c) Has any code yet made the transition out of staging and into the
->    kernel proper?  If so, which?
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index adcd0bb..9ce27e8 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1115,8 +1115,10 @@ static void cgroup_kill_sb(struct super_block *sb) {
+ 	}
+ 	write_unlock(&css_set_lock);
+ 
+-	list_del(&root->root_list);
+-	root_count--;
++	if (!list_empty(&root->root_list)) {
++		list_del(&root->root_list);
++		root_count--;
++	}
+ 
+ 	mutex_unlock(&cgroup_mutex);
+ 
 
-Not yet, but some of the network drivers are looking much better and I
-think they will move out soon.
-
-One of the v4l drivers should move out for .30, I need to get some time
-to send the patch to those developers.
-
-thanks,
-
-greg k-h
