@@ -1,145 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbZAWUM2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbZAWUOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756572AbZAWUM2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 15:12:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZAWUMS
+	id S1756933AbZAWUOq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 15:14:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbZAWUOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 15:12:18 -0500
-Received: from e208.rev.megiteam.pl ([77.79.226.8]:44434 "EHLO
-	vadmin.megiteam.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752186AbZAWUMQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 15:12:16 -0500
-X-Greylist: delayed 1682 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Jan 2009 15:12:16 EST
-Date: Fri, 23 Jan 2009 20:44:10 +0100
-From: Grzegorz Nosek <root@localdomain.pl>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: smartctl on aic94xx causes a kernel warning in libata
-Message-ID: <20090123194410.GA8639@megiteam.pl>
+	Fri, 23 Jan 2009 15:14:38 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:34221 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402AbZAWUOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 15:14:37 -0500
+Date: Fri, 23 Jan 2009 15:14:30 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Christoph Hellwig <hch@infradead.org>
+cc: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: spurious -ENOSPC on XFS
+In-Reply-To: <20090122224347.GA18751@infradead.org>
+Message-ID: <Pine.LNX.4.64.0901231509010.5179@hs20-bc2-1.build.redhat.com>
+References: <Pine.LNX.4.64.0901120509550.11089@hs20-bc2-1.build.redhat.com>
+ <20090113214949.GN8071@disturbed> <Pine.LNX.4.64.0901132324070.16396@hs20-bc2-1.build.redhat.com>
+ <20090118173144.GA1999@infradead.org> <Pine.LNX.4.64.0901201430250.4603@hs20-bc2-1.build.redhat.com>
+ <20090120232422.GF10158@disturbed> <20090122205913.GA30859@infradead.org>
+ <20090122224347.GA18751@infradead.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-This is a trivially reproducible (in my setup at least) WARN_ON that
-triggers whenever I run smartctl on a SATA disk connected via an aic94xx
-controller (Adaptec AIC-9410W SAS (Razor ASIC RAID)=20 (rev 09)).
 
-The kernel is (as far as device drivers are concerned) vanilla
-2.6.27.12.
+On Thu, 22 Jan 2009, Christoph Hellwig wrote:
 
-Other than the warning and the fact that smartctl requires '-T
-permissive' to show the disk status, I can't see any negative effects.
+> On Thu, Jan 22, 2009 at 03:59:13PM -0500, Christoph Hellwig wrote:
+> > On Wed, Jan 21, 2009 at 10:24:22AM +1100, Dave Chinner wrote:
+> > > Right, so you need to use internal xfs sync functions that don't
+> > > have these problems. That is:
+> > > 
+> > > 	error = xfs_sync_inodes(ip->i_mount, SYNC_DELWRI|SYNC_WAIT);
+> > > 
+> > > will do a blocking flush of all the inodes without deadlocks occurring.
+> > > Then you can remove the 500ms wait.
+> > 
+> > I've given this a try with Eric's testcase from #724 in the oss bugzilla,
+> > but it's not enough yet.  I thinks that's because SYNC_WAIT is rather
+> > meaningless for data writeout, and we need SYNC_IOWAIT instead.  The
+> > patch below gets the testcase working for me:
+> 
+> Actually I still see failures happing sometimes.  I guess tha'ts because
+> our flush is still asynchronous due to the schedule_work..
 
-(please keep cc'd)
+If I placed
+xfs_sync_inodes(ip->i_mount, SYNC_DELWRI);
+xfs_sync_inodes(ip->i_mount, SYNC_DELWRI | SYNC_IOWAIT);
+directly to xfs_flush_device, I got lock dependency warning (though not a 
+real deadlock).
 
-Best regards,
- Grzegorz Nosek
+So synchronous flushing definitely needs some thinking and lock 
+rearchitecting. If you sync it asynchronously, a deadlock possibility will 
+actually turn into spurious -ENOSPC (because the flushing thread will wait 
+untill the main thread sleeps for 500ms, drops the lock and returns 
+ENOSPC).
 
-*** smartctl -a /dev/sdb (without -T permissive) ***
+Mikulas
 
-smartctl version 5.37 [i686-pc-linux-gnu] Copyright (C) 2002-6 Bruce Allen
-Home page is http://smartmontools.sourceforge.net/
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.29-rc1-devel #2
+---------------------------------------------
+mc/336 is trying to acquire lock:
+ (&(&ip->i_iolock)->mr_lock){----}, at: [<0000000010186b88>] 
+xfs_ilock+0x68/0xa0 [xfs]
 
-=== START OF INFORMATION SECTION ===
-Device Model:     ST3500630NS
-Serial Number:    9QG93FV5
-Firmware Version: 3.AEK
-User Capacity:    500,107,862,016 bytes
-Device is:        Not in smartctl database [for details use: -P showall]
-ATA Version is:   7
-ATA Standard is:  Exact ATA specification draft version not indicated
-Local Time is:    Fri Jan 23 20:17:30 2009 CET
-SMART support is: Available - device has SMART capability.
-SMART support is: Enabled
+but task is already holding lock:
+ (&(&ip->i_iolock)->mr_lock){----}, at: [<0000000010186bb0>] 
+xfs_ilock+0x90/0xa0 [xfs]
 
-Error SMART Status command failed
-Please get assistance from http://smartmontools.sourceforge.net/
-Values from ATA status return descriptor are:
- 00     09 0c 00 00 00 00 00 00  00 00 00 00 00 00
-A mandatory SMART command failed: exiting. To continue, add one or more '-T permissive' options.
+other info that might help us debug this:
+2 locks held by mc/336:
+ #0:  (&sb->s_type->i_mutex_key#8){--..}, at: [<00000000101b1560>] 
+xfs_write+0x340/0x6a0 [xfs]
+ #1:  (&(&ip->i_iolock)->mr_lock){----}, at: [<0000000010186bb0>] 
+xfs_ilock+0x90/0xa0 [xfs]
 
-*** the code in question ***
-
-void ata_qc_issue(struct ata_queued_cmd *qc)
-{
-        struct ata_port *ap = qc->ap;
-        struct ata_link *link = qc->dev->link;
-        u8 prot = qc->tf.protocol;
-
-        /* Make sure only one non-NCQ command is outstanding.  The
-         * check is skipped for old EH because it reuses active qc to
-         * request ATAPI sense.
-         */
-        WARN_ON(ap->ops->error_handler && ata_tag_valid(link->active_tag));
-
-        if (ata_is_ncq(prot)) {
-                WARN_ON(link->sactive & (1 << qc->tag));
-
-                if (!link->sactive)
-                        ap->nr_active_links++;
-                link->sactive |= 1 << qc->tag;
-        } else {
-                WARN_ON(link->sactive);       /* <-- this is line 4867 */
-
-                ap->nr_active_links++;
-                link->active_tag = qc->tag;
-        }
-
-*** and the warning itself ***
-
-[251374.059375] ------------[ cut here ]------------
-[251374.064287] WARNING: at drivers/ata/libata-core.c:4867 ata_qc_issue+0xe1/0x2ba()
-[251374.067805] Modules linked in: drbd i2c_i801 xt_owner ipt_account ipt_MASQUERADE xt_multiport ipt_REJECT xt_comment xt_state xt_hashlimit iptable_mangle iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack iptable_filter ip_t
-ables tg3 libphy psmouse e1000e
-[251374.067805] Pid: 9450, comm: smartctl Tainted: G        W 2.6.27.12 #12
-[251374.067805]
-[251374.067805] Call Trace:
-[251374.067805]  [<ffffffff81031103>] warn_on_slowpath+0x58/0x7f
-[251374.067805]  [<ffffffff8107c8d0>] ? mempool_alloc_slab+0x11/0x13
-[251374.067805]  [<ffffffff8107c9da>] ? mempool_alloc+0x48/0xf9
-[251374.067805]  [<ffffffff81247015>] ? scsi_sg_alloc+0x43/0x45
-[251374.067805]  [<ffffffff811bb301>] ? __sg_alloc_table+0x78/0xfa
-[251374.067805]  [<ffffffff81272adc>] ata_qc_issue+0xe1/0x2ba
-[251374.067805]  [<ffffffff812423fd>] ? scsi_done+0x0/0x21
-[251374.067805]  [<ffffffff8127a015>] ? ata_scsi_pass_thru+0x0/0x24b
-[251374.067805]  [<ffffffff8127756a>] ata_scsi_translate+0x11f/0x155
-[251374.067805]  [<ffffffff812423fd>] ? scsi_done+0x0/0x21
-[251374.067805]  [<ffffffff812780fc>] ata_sas_queuecmd+0x186/0x1a5
-[251374.067805]  [<ffffffff812575f1>] sas_queuecommand+0x82/0x27b
-[251374.067805]  [<ffffffff81242b66>] scsi_dispatch_cmd+0x196/0x1ea
-[251374.067805]  [<ffffffff812482be>] scsi_request_fn+0x28a/0x35f
-[251374.067805]  [<ffffffff811a4776>] elv_insert+0x7f/0x18e
-[251374.067805]  [<ffffffff811a4915>] __elv_add_request+0x90/0x98
-[251374.067805]  [<ffffffff811a8d0f>] blk_execute_rq_nowait+0x65/0x8e
-[251374.067805]  [<ffffffff811a8dd8>] blk_execute_rq+0xa0/0xcc
-[251374.067805]  [<ffffffff811a5076>] ? blk_rq_bio_prep+0x3a/0x108
-[251374.067805]  [<ffffffff811a8962>] ? blk_rq_append_bio+0x19/0x49
-[251374.067805]  [<ffffffff811a8aa6>] ? blk_rq_map_user+0x114/0x1bb
-[251374.067805]  [<ffffffff811abbb6>] sg_io+0x263/0x373
-[251374.067805]  [<ffffffff811ac326>] scsi_cmd_ioctl+0x1d3/0x3a9
-[251374.067805]  [<ffffffff810482b5>] ? sched_clock_cpu+0x134/0x140
-[251374.067805]  [<ffffffff81026edb>] ? task_rq_lock+0x40/0x79
-[251374.067805]  [<ffffffff8126a5b9>] sd_ioctl+0x7c/0xa1
-[251374.067805]  [<ffffffff811a9cbf>] blkdev_driver_ioctl+0x63/0x78
-[251374.067805]  [<ffffffff811aa3a5>] blkdev_ioctl+0x6d1/0x6fc
-[251374.067805]  [<ffffffff8120062c>] ? n_tty_receive_buf+0xe1a/0xe5a
-[251374.067805]  [<ffffffff810821c7>] ? mark_page_accessed+0x20/0x34
-[251374.067805]  [<ffffffff8107c696>] ? filemap_fault+0x1c9/0x32b
-[251374.067805]  [<ffffffff810c9a08>] block_ioctl+0x1b/0x1f
-[251374.067805]  [<ffffffff810af72e>] vfs_ioctl+0x2a/0x77
-[251374.067805]  [<ffffffff810af9b0>] do_vfs_ioctl+0x235/0x246
-[251374.067805]  [<ffffffff810afa03>] sys_ioctl+0x42/0x67
-[251374.067805]  [<ffffffff81026e8e>] ? __wake_up+0x43/0x50
-[251374.067805]  [<ffffffff810d4edb>] sg_ioctl_trans+0x1e0/0x248
-[251374.067805]  [<ffffffff810d3929>] compat_sys_ioctl+0x2d2/0x316
-[251374.067805]  [<ffffffff810a313f>] ? vfs_write+0x122/0x157
-[251374.067805]  [<ffffffff81023326>] sysenter_dispatch+0x7/0x27
-[251374.067805]
-[251374.067805] ---[ end trace 5c5fec5d7ca0c598 ]---
+stack backtrace:
+Call Trace:
+ [000000000047e924] validate_chain+0x1184/0x1460
+ [000000000047ee88] __lock_acquire+0x288/0xae0
+ [000000000047f734] lock_acquire+0x54/0x80
+ [0000000000470b20] down_read_nested+0x40/0x60
+ [0000000010186b88] xfs_ilock+0x68/0xa0 [xfs]
+ [00000000101b4f78] xfs_sync_inodes_ag+0x218/0x320 [xfs]
+ [00000000101b5100] xfs_sync_inodes+0x80/0x100 [xfs]
+ [00000000101b51a0] xfs_flush_device+0x20/0x60 [xfs]
+ [000000001018e654] xfs_flush_space+0x94/0x100 [xfs]
+ [000000001018e95c] xfs_iomap_write_delay+0x13c/0x240 [xfs]
+ [000000001018f100] xfs_iomap+0x280/0x300 [xfs]
+ [00000000101a84d4] __xfs_get_blocks+0x74/0x260 [xfs]
+ [00000000101a8724] xfs_get_blocks+0x24/0x40 [xfs]
+ [00000000004e6800] __block_prepare_write+0x220/0x4e0
+ [00000000004e6b68] block_write_begin+0x48/0x100
+ [00000000101a785c] xfs_vm_write_begin+0x3c/0x60 [xfs]
 
