@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbZAWPpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759150AbZAWPpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbZAWPpO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 10:45:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758034AbZAWPob
+	id S1759150AbZAWPpq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 10:45:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZAWPph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 10:44:31 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52940 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758017AbZAWPoa (ORCPT
+	Fri, 23 Jan 2009 10:45:37 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:48350 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbZAWPpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 10:44:30 -0500
-Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>, yanmin_zhang@linux.intel.com,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <200901240237.10522.nickpiggin@yahoo.com.au>
-References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI>
-	 <200901240212.58829.nickpiggin@yahoo.com.au>
-	 <alpine.DEB.1.10.0901231025320.21692@qirst.com>
-	 <200901240237.10522.nickpiggin@yahoo.com.au>
-Date: Fri, 23 Jan 2009 17:44:28 +0200
-Message-Id: <1232725468.6094.97.camel@penberg-laptop>
+	Fri, 23 Jan 2009 10:45:35 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: At0FALxweUlMQWt2/2dsb2JhbACBbcsJhXM
+Date: Fri, 23 Jan 2009 10:45:20 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] asm-generic: fix local_add_unless macro
+Message-ID: <20090123154520.GB7774@Krystal>
+References: <49787DB4.8080308@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Content-Disposition: inline
+In-Reply-To: <49787DB4.8080308@gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:42:07 up 22 days, 15:40,  2 users,  load average: 0.53, 0.69,
+	0.61
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-24 at 02:37 +1100, Nick Piggin wrote:
-> However, I don't know if netperf udp 4K over loopback is totally
-> realistic. Maybe real network drivers have different allocation patterns.
-> If I were you I wouldn't be too hasty to make big changes based on that
-> alone, if it could introduce regression in somewhere more important.
+* Roel Kluin (roel.kluin@gmail.com) wrote:
+> When this macro isn't called with 'a' this will 
+> result in a build failure.
+> 
 
-Yup, I'm putting it in linux-next to see if anything pops up. It's of
-course possible that it will introduce regression somewhere but seeing
-the hit SLUB is taking from the page allocator, I'm bound to think that
-performance increase claims of commit
-aadb4bc4a1f9108c1d0fbd121827c936c2ed4217 ("SLUB: direct pass through of
-page size or higher kmalloc requests") don't hold anymore.
+Maybe we can add to the changelog, for prople like me who fail to see
+the obvious :
 
-		Pekka
+"because local_add_unless(x, y, z) will be expanded to 
+(&(x)->y, (y), (x)), where (x)->y should be (x)->a.
 
+Thanks,
+
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/include/asm-generic/local.h b/include/asm-generic/local.h
+> index dbd6150..fc21844 100644
+> --- a/include/asm-generic/local.h
+> +++ b/include/asm-generic/local.h
+> @@ -42,7 +42,7 @@ typedef struct
+>  
+>  #define local_cmpxchg(l, o, n) atomic_long_cmpxchg((&(l)->a), (o), (n))
+>  #define local_xchg(l, n) atomic_long_xchg((&(l)->a), (n))
+> -#define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
+> +#define local_add_unless(l, _a, u) atomic_long_add_unless((&(l)->a), (_a), (u))
+>  #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
+>  
+>  /* Non-atomic variants, ie. preemption disabled and won't be touched
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
