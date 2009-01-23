@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760574AbZAWBWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762835AbZAWBYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760574AbZAWBWM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:22:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbZAWBPI
+	id S1762835AbZAWBYc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:24:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760288AbZAWBPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:15:08 -0500
-Received: from kroah.org ([198.145.64.141]:50566 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:15:24 -0500
+Received: from kroah.org ([198.145.64.141]:50680 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760212AbZAWBO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:14:58 -0500
-Date: Thu, 22 Jan 2009 17:12:13 -0800
+	id S1760240AbZAWBPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:15:05 -0500
+Date: Thu, 22 Jan 2009 17:12:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jarek Poplawski <jarkao2@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 21/46] pkt_sched: cls_u32: Fix locking in u32_change()
-Message-ID: <20090123011213.GV19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       davem@davemloft.net
+Subject: [patch 28/46] netfilter: x_tables: fix match/target revision lookup
+Message-ID: <20090123011231.GC19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pkt_sched-cls_u32-fix-locking-in-u32_change.patch"
+Content-Disposition: inline; filename="netfilter-x_tables-fix-match-target-revision-lookup.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,36 +41,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jarek Poplawski <jarkao2@gmail.com>
+From: Patrick McHardy <kaber@trash.net>
 
-[ Upstream commit: 6f57321422e0d359e83c978c2b03db77b967b7d5 ]
+Upstream commit 656caff:
 
-New nodes are inserted in u32_change() under rtnl_lock() with wmb(),
-so without tcf_tree_lock() like in other classifiers (e.g. cls_fw).
-This isn't enough without rmb() on the read side, but on the other
-hand adding such barriers doesn't give any savings, so the lock is
-added instead.
+Commit 55b69e91 (netfilter: implement NFPROTO_UNSPEC as a wildcard
+for extensions) broke revision probing for matches and targets that
+are registered with NFPROTO_UNSPEC.
 
-Reported-by: m0sia <m0sia@plotinka.ru>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+Fix by continuing the search on the NFPROTO_UNSPEC list if nothing
+is found on the af-specific lists.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sched/cls_u32.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ net/netfilter/x_tables.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/net/sched/cls_u32.c
-+++ b/net/sched/cls_u32.c
-@@ -637,8 +637,9 @@ static int u32_change(struct tcf_proto *
- 				break;
+--- a/net/netfilter/x_tables.c
++++ b/net/netfilter/x_tables.c
+@@ -273,6 +273,10 @@ static int match_revfn(u8 af, const char
+ 				have_rev = 1;
+ 		}
+ 	}
++
++	if (af != NFPROTO_UNSPEC && !have_rev)
++		return match_revfn(NFPROTO_UNSPEC, name, revision, bestp);
++
+ 	return have_rev;
+ }
  
- 		n->next = *ins;
--		wmb();
-+		tcf_tree_lock(tp);
- 		*ins = n;
-+		tcf_tree_unlock(tp);
+@@ -289,6 +293,10 @@ static int target_revfn(u8 af, const cha
+ 				have_rev = 1;
+ 		}
+ 	}
++
++	if (af != NFPROTO_UNSPEC && !have_rev)
++		return target_revfn(NFPROTO_UNSPEC, name, revision, bestp);
++
+ 	return have_rev;
+ }
  
- 		*arg = (unsigned long)n;
- 		return 0;
 
