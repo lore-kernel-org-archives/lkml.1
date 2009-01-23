@@ -1,101 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbZAWM5W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758591AbZAWNEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbZAWM5W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 07:57:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbZAWM5N
+	id S1758591AbZAWNEk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 08:04:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbZAWNEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 07:57:13 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42349 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754717AbZAWM5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 07:57:12 -0500
-Date: Fri, 23 Jan 2009 13:56:49 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [patch] SLQB slab allocator
-Message-ID: <20090123125649.GA20883@elte.hu>
-References: <20090121143008.GV24891@wotan.suse.de> <20090121145918.GA11311@elte.hu> <20090121165600.GA16695@wotan.suse.de> <20090121174010.GA2998@elte.hu> <20090123061405.GK20098@wotan.suse.de>
+	Fri, 23 Jan 2009 08:04:31 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:6738 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755333AbZAWNEa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 08:04:30 -0500
+X-BigFish: VPS-41(zz1432R98dR936eQ4015M1805M936fMzzzzz32i6bh43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KDXDN3-02-AL7-01
+Date: Fri, 23 Jan 2009 14:04:16 +0100
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+CC: markh@compro.net, john stultz <johnstul@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       "Petkov, Borislav" <borislav.petkov@amd.com>
+Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD Phenom-II
+	processor
+Message-ID: <20090123130416.GA27616@alberich.amd.com>
+References: <497322CC.7050900@cfl.rr.com> <1f1b08da0901191625i6ac12312g9ae9ab599958a818@mail.gmail.com> <49759499.4050708@cfl.rr.com> <20090120093732.GC3764@alberich.amd.com> <49763D49.7050907@compro.net> <49798F33.8070906@cfl.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090123061405.GK20098@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <49798F33.8070906@cfl.rr.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 23 Jan 2009 13:04:17.0889 (UTC) FILETIME=[196DC510:01C97D5B]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nick Piggin <npiggin@suse.de> wrote:
-
-> On Wed, Jan 21, 2009 at 06:40:10PM +0100, Ingo Molnar wrote:
-> > -static inline void slqb_stat_inc(struct kmem_cache_list *list,
-> > -				enum stat_item si)
-> > +static inline void
-> > +slqb_stat_inc(struct kmem_cache_list *list, enum stat_item si)
-> >  {
+On Fri, Jan 23, 2009 at 10:34:43AM +0100, Mark Hounschell wrote:
+> Mark Hounschell wrote:
+> > The MB is a Biostar TA770+. It is not yet listed as one with new
+> > BIOS support for the Phenom-II. Only the TA770+ SE is at the moment.
+> > The only difference in the Sata port arrangement and the BIOS type.
+> > 
+> > I guess I'll just keep pinging them.
 > 
-> Hmm, I'm not entirely fond of this style. [...]
+> OK I have now the official bios for this CPU/MB combo. I still cannot boot a
+> 1000 HZ kernel.
 
-well, it's a borderline situation and a nuance, and i think we agree on 
-the two (much more common) boundary conditions:
+Looking at the Biostar pages I am still not completely convinced that
+your CPU/MB combo is supported. At least it is not listed there.
+So far TA770 A2+ SE, rev. 6.X, is listed. Did the Biostar folks confirm you
+that your mobo model/revision is supported, too?
 
- 1) line fits into 80 cols - in that case we keep it all on a single line
-    (this is the ideal case)
+>  Here is my new dmesg while running a 250Hz kernel.
 
- 2) line does not fit on two lines either - in that case we do the style
-    that you used above.
+...
 
-On the boundary there's a special case though, and i tend to prefer:
+> Linux version 2.6.26.8 (root@harley) (gcc version 4.3.1 20080507 (prerelease)
+...
+> CPU0: AMD Phenom(tm) II X4 940 Processor stepping 02
+...
+> CPU1: AMD Phenom(tm) II X4 940 Processor stepping 02
+...
+> CPU2: AMD Phenom(tm) II X4 940 Processor stepping 02
+...
+> CPU3: AMD Phenom(tm) II X4 940 Processor stepping 02
 
- +static inline void
- +slqb_stat_inc(struct kmem_cache_list *list, enum stat_item si)
+Looks good so far.
 
-over:
+> eth0: no IPv6 routers present
+> warning: `ntpd' uses deprecated v2 capabilities in a way that may be insecure.
+> hda-intel: Invalid position buffer, using LPIB read method instead.
+> NET: Registered protocol family 4
+> NET: Registered protocol family 3
+> NET: Registered protocol family 5
 
- -static inline void slqb_stat_inc(struct kmem_cache_list *list,
- -				enum stat_item si)
+This reminds me of some system hangs with older kernels when C1E was
+activated.
 
-for two reasons:
+Can you please try to boot with idle=poll, or idle=mwait, or nolapic_timer
+when using 2.6.26.X?
+Can you also try to boot .27 or .28?
 
- 1) the line break is not just arbitrarily in the middle of the 
-    enumeration of arguments - it is right after function return type.
 
- 2) the arguments fit on a single line - and often one wants to know that 
-    signature. (return values are usually a separate thought)
+Thanks,
 
- 3) the return type stands out much better.
+Andreas
 
-But again ... this is a nuance.
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
-> [...] The former scales to longer lines with just a single style change 
-> (putting args into new lines), wheras the latter first moves its 
-> prefixes to a newline, then moves args as the line grows even longer.
 
-the moment this 'boundary style' "overflows", it falls back to the 'lots 
-of lines' case, where we generally put the function return type and the 
-function name on the first line.
-
-> I guess it is a matter of taste, not wrong either way... but I think 
-> most of the mm code I'm used to looking at uses the former. Do you feel 
-> strongly?
-
-there are a handful of cases where the return type (and the function 
-attributes) are _really_ long - in this case it really helps to have them 
-decoupled from the arguments.
-
-	Ingo
