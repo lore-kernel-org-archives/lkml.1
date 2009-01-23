@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764381AbZAWBcy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764492AbZAWBdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764381AbZAWBcy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:32:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762317AbZAWBV7
+	id S1764492AbZAWBdV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:33:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbZAWBWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:21:59 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:63684 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762309AbZAWBV6 (ORCPT
+	Thu, 22 Jan 2009 20:22:00 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:57722 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762314AbZAWBV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 22 Jan 2009 20:21:58 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ai4EAOKpeEl5LAUpgWdsb2JhbACTegEBFiK2U4Vz
-X-IronPort-AV: E=Sophos;i="4.37,309,1231075800"; 
-   d="scan'208";a="273453583"
-Date: Fri, 23 Jan 2009 12:10:42 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Eric Sesterhenn <snakebyte@gmx.de>, Christoph Hellwig <hch@infradead.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Pavel Machek <pavel@suse.cz>,
-       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       npiggin@yahoo.com.au, xfs@oss.sgi.com
-Subject: Re: [PATCH] Re: Corrupted XFS log replay oops.
-Message-ID: <20090123011042.GD32390@disturbed>
-Mail-Followup-To: Eric Sesterhenn <snakebyte@gmx.de>,
-	Christoph Hellwig <hch@infradead.org>,
-	Nick Piggin <nickpiggin@yahoo.com.au>, Pavel Machek <pavel@suse.cz>,
-	Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-	npiggin@yahoo.com.au, xfs@oss.sgi.com
-References: <20090113142147.GE16333@alice> <20090120173455.GC21339@alice> <20090121035703.GH10158@disturbed> <200901211503.07308.nickpiggin@yahoo.com.au> <20090122043747.GU10158@disturbed> <20090122061158.GA31104@infradead.org> <20090122100648.GA16660@alice> <20090122233717.GB32390@disturbed>
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 22 Jan 2009 17:21:46 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Unexpected cascaded epoll behavior - my mistake or kernel bug
+In-Reply-To: <200901230109.55706.pisa@cmp.felk.cvut.cz>
+Message-ID: <alpine.DEB.1.10.0901221711500.7789@alien.or.mcafeemobile.com>
+References: <200901230109.55706.pisa@cmp.felk.cvut.cz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090122233717.GB32390@disturbed>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 10:37:17AM +1100, Dave Chinner wrote:
-> On Thu, Jan 22, 2009 at 11:06:48AM +0100, Eric Sesterhenn wrote:
-> > * Christoph Hellwig (hch@infradead.org) wrote:
-> > > On Thu, Jan 22, 2009 at 03:37:47PM +1100, Dave Chinner wrote:
-> > > >  xfs_buf_t *
-> > > >  xlog_get_bp(
-> > > >  	xlog_t		*log,
-> > > > -	int		num_bblks)
-> > > > +	int		nbblks)
-> > > 
-> > > Any reason for reanming this variable?  That causes quite a bit of
-> > > churn.
-> > > 
-> > > >  {
-> > > > -	ASSERT(num_bblks > 0);
-> > > > +	if (nbblks <= 0 || nbblks > log->l_logBBsize) {
-> > > > +		xlog_warn("XFS: Invalid block length (0x%x) given for buffer", nbblks);
-> > > 
-> > > And doesn't prevent this line from needing a linebreak to stay under 80
-> > > characters :)
-> > > 
-> > > Except for these nitpicks it looks fine to me.
-> > 
-> > Using the image at http://www.cccmz.de/~snakebyte/xfs.254.img.bz2
-> > I was able to produce a pretty similar error with the patch applied
+On Fri, 23 Jan 2009, Pavel Pisa wrote:
+
+> Hello Davide and all others,
 > 
-> Different problem, obviously. ;)
-> 
-> I'll have a look at this later today....
+> I have got to implementing yet another event library and I experience
+> something strange when level triggered epoll_wait() monitors another
+> level triggered epoll set. Top level epoll_wait() return information
+> about one event pending. The event points correctly to the monitored
+> second level epoll fd, but epoll_wait() on this fd with 0 or small timeout
+> returns zero/no events and top level epoll reporting is not reset at this
+> point so program enters busy loop. If there are events, they are processed
+> correctly.
 
-One word: Ouch.
+I'm ashamed to say, I know. It has been reported to me about three months 
+ago, I coded patches, but I did not have the time to test them carefully.
+The problem is that inside the epoll wakeup callback, we don't know which 
+even we got (and we can't call ->poll()). So we add the fd to the 
+ready-list and we wake up the waiters. The current code simply does return 
+EPOLLIN (from epoll's poll()) if the ready-list is not empty. The problem 
+is that the even we received in the epoll callback could have been a 
+POLLIN when the fd is waiting for POLLOUT. THis situations gets sorted out 
+in epoll_wait(), but inside epoll's poll() only a quick test was used 
+(ready-list not empty).
+The patch was not exactly a one-liner, so I need a few days to double 
+check it and test it. I'll try to do it this w/end.
 
-Basically the corruption introduced adds random feature bits into the
-superblock that aren't actually in use. And hence instead of having
-valid superblock fields for each of those features, they are zero
-and so strange stuff happens.
 
-What is really stupid is that the fields are often checked. By
-ASSERT(), not by production code so a debug kernel will pick up the
-problem and panic, while a production kernel will continue onwards
-until it panics. This is not going to be a small patch.....
 
-Cheers,
+- Davide
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+
