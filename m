@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761749AbZAWB1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762513AbZAWB1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761749AbZAWB1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760062AbZAWBPf
+	id S1762513AbZAWB1i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:27:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbZAWBPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:15:35 -0500
-Received: from kroah.org ([198.145.64.141]:50857 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:15:37 -0500
+Received: from kroah.org ([198.145.64.141]:50911 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756811AbZAWBPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:17 -0500
-Date: Thu, 22 Jan 2009 17:12:58 -0800
+	id S1757989AbZAWBPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:15:20 -0500
+Date: Thu, 22 Jan 2009 17:13:07 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
        Chris Mason <chris.mason@oracle.com>,
        Dave Chinner <david@fromorbit.com>
-Subject: [patch 39/46] mm: write_cache_pages optimise page cleaning
-Message-ID: <20090123011258.GN19756@kroah.com>
+Subject: [patch 42/46] mm: do_sync_mapping_range integrity fix
+Message-ID: <20090123011307.GQ19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-write_cache_pages-optimise-page-cleaning.patch"
+Content-Disposition: inline; filename="mm-do_sync_mapping_range-integrity-fix.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,17 +43,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nick Piggin <npiggin@suse.de>
 
-commit 515f4a037fb9ab736f8bad733fcd2ffd350cf265 upstream.
+commit ee53a891f47444c53318b98dac947ede963db400 upstream.
 
-In write_cache_pages, if we get stuck behind another process that is
-cleaning pages, we will be forced to wait for them to finish, then perform
-our own writeout (if it was redirtied during the long wait), then wait for
-that.
+Chris Mason notices do_sync_mapping_range didn't actually ask for data
+integrity writeout.  Unfortunately, it is advertised as being usable for
+data integrity operations.
 
-If a page under writeout is still clean, we can skip waiting for it (if
-we're part of a data integrity sync, we'll be waiting for all writeout
-pages afterwards, so we'll still be waiting for the other guy's write
-that's cleaned the page).
+This is a data integrity bug.
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 Cc: Chris Mason <chris.mason@oracle.com>
@@ -63,34 +59,18 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page-writeback.c |   17 +++++++++++++----
- 1 file changed, 13 insertions(+), 4 deletions(-)
+ fs/sync.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -945,11 +945,20 @@ continue_unlock:
- 				goto continue_unlock;
- 			}
+--- a/fs/sync.c
++++ b/fs/sync.c
+@@ -287,7 +287,7 @@ int do_sync_mapping_range(struct address
  
--			if (wbc->sync_mode != WB_SYNC_NONE)
--				wait_on_page_writeback(page);
-+			if (!PageDirty(page)) {
-+				/* someone wrote it for us */
-+				goto continue_unlock;
-+			}
-+
-+			if (PageWriteback(page)) {
-+				if (wbc->sync_mode != WB_SYNC_NONE)
-+					wait_on_page_writeback(page);
-+				else
-+					goto continue_unlock;
-+			}
- 
--			if (PageWriteback(page) ||
--			    !clear_page_dirty_for_io(page))
-+			BUG_ON(PageWriteback(page));
-+			if (!clear_page_dirty_for_io(page))
- 				goto continue_unlock;
- 
- 			ret = (*writepage)(page, wbc, data);
+ 	if (flags & SYNC_FILE_RANGE_WRITE) {
+ 		ret = __filemap_fdatawrite_range(mapping, offset, endbyte,
+-						WB_SYNC_NONE);
++						WB_SYNC_ALL);
+ 		if (ret < 0)
+ 			goto out;
+ 	}
 
