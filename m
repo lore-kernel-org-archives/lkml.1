@@ -1,120 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764829AbZAWGbc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764209AbZAWGbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764829AbZAWGbc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:31:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760646AbZAWGRG
+	id S1764209AbZAWGbz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:31:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761673AbZAWGVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:17:06 -0500
-Received: from kroah.org ([198.145.64.141]:36615 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:21:25 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:47735 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760975AbZAWGRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:17:05 -0500
-Date: Thu, 22 Jan 2009 22:15:01 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>
-Subject: [patch 40/40] fs: sys_sync fix
-Message-ID: <20090123061501.GN2922@kroah.com>
-References: <20090123001330.046404396@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fs-sys_sync-fix.patch"
-In-Reply-To: <20090123001908.GA7397@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	id S1762112AbZAWGVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:21:24 -0500
+In-Reply-To: <20090123000617.GB4970@infradead.org>
+References: <20090113142147.GE16333@alice> <20090120173455.GC21339@alice> <20090121035703.GH10158@disturbed> <200901211503.07308.nickpiggin@yahoo.com.au> <20090122043747.GU10158@disturbed> <20090122061158.GA31104@infradead.org> <20090123000203.GC32390@disturbed> <20090123000617.GB4970@infradead.org>
+Mime-Version: 1.0 (Apple Message framework v753.1)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <287917FE-424B-4DAD-B957-6B37C171E888@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Eric Sesterhenn <snakebyte@gmx.de>,
+       Pavel Machek <pavel@suse.cz>, Chris Mason <chris.mason@oracle.com>,
+       linux-kernel@vger.kernel.org, npiggin@yahoo.com.au, xfs@oss.sgi.com
+Content-Transfer-Encoding: 7bit
+From: Felix Blyakher <felixb@sgi.com>
+Subject: Re: [PATCH] Re: Corrupted XFS log replay oops.
+Date: Fri, 23 Jan 2009 00:20:44 -0600
+To: Christoph Hellwig <hch@infradead.org>
+X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-------------------
+On Jan 22, 2009, at 6:06 PM, Christoph Hellwig wrote:
 
-From: Nick Piggin <npiggin@suse.de>
+>> [XFS] Check buffer lengths in log recovery
+>>
+>> Before trying to obtain, read or write a buffer,
+>> check that the buffer length is actually valid. If
+>> it is not valid, then something read in the recovery
+>> process has been corrupted and we should abort
+>> recovery.
+>>
+>> Reported-by: Eric Sesterhenn <snakebyte@gmx.de>
+>> Signed-off-by: Dave Chinner <david@fromorbit.com>
+>> Tested-by: Eric Sesterhenn <snakebyte@gmx.de>
+>
+>
+> Reviewed-by: Christoph Hellwig <hch@lst.de>
 
-commit 856bf4d717feb8c55d4e2f817b71ebb70cfbc67b upstream.
+Reviewed-by: Felix Blyakher <felixb@sgi.com>
 
-s_syncing livelock avoidance was breaking data integrity guarantee of
-sys_sync, by allowing sys_sync to skip writing or waiting for superblocks
-if there is a concurrent sys_sync happening.
-
-This livelock avoidance is much less important now that we don't have the
-get_super_to_sync() call after every sb that we sync.  This was replaced
-by __put_super_and_need_restart.
-
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/fs-writeback.c  |   20 +-------------------
- include/linux/fs.h |    1 -
- 2 files changed, 1 insertion(+), 20 deletions(-)
-
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -652,18 +652,6 @@ void sync_inodes_sb(struct super_block *
- 	sync_sb_inodes(sb, &wbc);
- }
- 
--/*
-- * Rather lame livelock avoidance.
-- */
--static void set_sb_syncing(int val)
--{
--	struct super_block *sb;
--	spin_lock(&sb_lock);
--	list_for_each_entry_reverse(sb, &super_blocks, s_list)
--		sb->s_syncing = val;
--	spin_unlock(&sb_lock);
--}
--
- /**
-  * sync_inodes - writes all inodes to disk
-  * @wait: wait for completion
-@@ -690,9 +678,6 @@ static void __sync_inodes(int wait)
- 	spin_lock(&sb_lock);
- restart:
- 	list_for_each_entry(sb, &super_blocks, s_list) {
--		if (sb->s_syncing)
--			continue;
--		sb->s_syncing = 1;
- 		sb->s_count++;
- 		spin_unlock(&sb_lock);
- 		down_read(&sb->s_umount);
-@@ -710,13 +695,10 @@ restart:
- 
- void sync_inodes(int wait)
- {
--	set_sb_syncing(0);
- 	__sync_inodes(0);
- 
--	if (wait) {
--		set_sb_syncing(0);
-+	if (wait)
- 		__sync_inodes(1);
--	}
- }
- 
- /**
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1080,7 +1080,6 @@ struct super_block {
- 	struct rw_semaphore	s_umount;
- 	struct mutex		s_lock;
- 	int			s_count;
--	int			s_syncing;
- 	int			s_need_sync_fs;
- 	atomic_t		s_active;
- #ifdef CONFIG_SECURITY
 
