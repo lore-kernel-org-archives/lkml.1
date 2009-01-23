@@ -1,73 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759308AbZAWHs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759492AbZAWHtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759308AbZAWHs5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 02:48:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbZAWHsg
+	id S1759492AbZAWHtn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 02:49:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZAWHtc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 02:48:36 -0500
-Received: from hera.kernel.org ([140.211.167.34]:54391 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753503AbZAWHsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 02:48:36 -0500
-Message-ID: <49797634.7040500@kernel.org>
-Date: Thu, 22 Jan 2009 23:48:04 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Fwd: kernel panic when using disable_mtrr_trim [was: Re: memory
- 	beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y]]
-References: <49763718.7010501@kernel.org> <86802c440901201249v3c877a88ie8e5f3bbf6abb871@mail.gmail.com> <49794422.2080109@kernel.org>
-In-Reply-To: <49794422.2080109@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 23 Jan 2009 02:49:32 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39551
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751864AbZAWHtb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 02:49:31 -0500
+Date: Thu, 22 Jan 2009 23:49:33 -0800 (PST)
+Message-Id: <20090122.234933.130619322.davem@davemloft.net>
+To: jj@chaosbits.net
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, stable@kernel.org,
+       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
+       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
+       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
+       cavokz@gmail.com, w@1wt.eu, rbranco@la.checkpoint.com, jake@lwn.net,
+       eteo@redhat.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       florian@openwrt.org
+Subject: Re: [patch 24/46] r6040: bump release number to 0.19
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LNX.2.00.0901230225430.12187@swampdragon.chaosbits.net>
+References: <20090123010651.683741823@mini.kroah.org>
+	<20090123011219.GY19756@kroah.com>
+	<alpine.LNX.2.00.0901230225430.12187@swampdragon.chaosbits.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Yinghai Lu wrote:
->> On Tue, Jan 20, 2009 at 12:42 PM, Yinghai Lu <yinghai@kernel.org> wrote:
->>> with the config
->>>
->>> current tip said:
->>>
->>>  RELOCS  arch/x86/boot/compressed/vmlinux.relocs
->>> WARNING: Absolute relocations present
->>> Offset     Info     Type     Sym.Value Sym.Name
->>> c14d2186 00920e01   R_386_32 c1514000  __per_cpu_load
->>>
->> and will casue system reboot after
->>
->> [    0.000000] NR_CPUS:2 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
->> [    0.000000] PERCPU: Allocating 36864 bytes of per cpu dat
+From: Jesper Juhl <jj@chaosbits.net>
+Date: Fri, 23 Jan 2009 02:31:22 +0100 (CET)
+
+> On Thu, 22 Jan 2009, Greg KH wrote:
 > 
-> Can you please try the current core/percpu branch?  I tried your
-> config but the problem doesn't happen here.
+> > 2.6.28-stable review patch.  If anyone has any objections, please let us know.
+> > 
+> 
+> It's simple enough, sure, but it doesn't really conform to the guidelines 
+> set out for -stable patches in Documentation/stable_kernel_rules.txt : 
 
-current tip:
-still got
+We went over this two release ago.
 
-WARNING: Absolute relocations present
-Offset     Info     Type     Sym.Value Sym.Name
-c14d21ef 00921101   R_386_32 c1514000  __per_cpu_load
+Version bumps for drivers are fine.
 
-reboot after
+Please bring this up again and again every time you see it in the
+future too, thanks. :-/
 
-[    0.000000] NR_CPUS:2 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:1
-[    0.000000] PERCPU: Allocating 36864 bytes of per cpu data
-[    0.000000] Built 1 zonelists in Zone order, mobility grouping on.  Total pages: 2079274
-[    0.000000] Kernel command line: console=uart8250,io,0x3f8,115200n8 initrd=kernel.org/mydisk11_x86.gz rw root=/dev/ram0 loglevel=10,apic:13,acpi:10,dev:10,pci:10 initcall_debug apic=verbose pci=routeirq ip=dhcp load_ramdisk=1 ramdisk_size=131072 BOOT_IMAGE=kernel.org/bzImage_2.6.29_x86.1 
-[    0.000000] Enabling fast FPU save and restore... done.
-[    0.000000] Enabling unmasked SIMD FPU exception support... done.
-[    0.000000] Initializing CPU#0
-[    0.000000] NR_IRQS:320
-[    0.000000] PID hash table entries: 4096 (order: 12, 16384 bytes)
-[    0.000000] Fast TSC calibration using PIT
-[    0.000000] Detected 2700.114 MHz processor.
-
-
-YH
