@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZAWG3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbZAWGaV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbZAWG3u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:29:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761274AbZAWGRA
+	id S1761338AbZAWGaV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:30:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761280AbZAWGRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:17:00 -0500
-Received: from kroah.org ([198.145.64.141]:36444 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:17:01 -0500
+Received: from kroah.org ([198.145.64.141]:36435 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761251AbZAWGQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:56 -0500
-Date: Thu, 22 Jan 2009 22:14:50 -0800
+	id S1761260AbZAWGQ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:57 -0500
+Date: Thu, 22 Jan 2009 22:14:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
-       Chris Mason <chris.mason@oracle.com>,
-       Dave Chinner <david@fromorbit.com>
-Subject: [patch 36/40] mm: do_sync_mapping_range integrity fix
-Message-ID: <20090123061450.GJ2922@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>
+Subject: [patch 37/40] mm: direct IO starvation improvement
+Message-ID: <20090123061452.GK2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-do_sync_mapping_range-integrity-fix.patch"
+Content-Disposition: inline; filename="mm-direct-io-starvation-improvement.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,34 +41,70 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nick Piggin <npiggin@suse.de>
 
-commit ee53a891f47444c53318b98dac947ede963db400 upstream.
+commit 48b47c561e41525061b5bc0cfd67d6367fd11dc4 upstream.
 
-Chris Mason notices do_sync_mapping_range didn't actually ask for data
-integrity writeout.  Unfortunately, it is advertised as being usable for
-data integrity operations.
+Direct IO can invalidate and sync a lot of pagecache pages in the mapping.
+ A 4K direct IO will actually try to sync and/or invalidate the pagecache
+of the entire file, for example (which might be many GB or TB large).
 
-This is a data integrity bug.
+Improve this by doing range syncs.  Also, memory no longer has to be
+unmapped to catch the dirty bits for syncing, as dirty bits would remain
+coherent due to dirty mmap accounting.
+
+This fixes the immediate DM deadlocks when doing direct IO reads to block
+device with a mounted filesystem, if only by papering over the problem
+somewhat rather than addressing the fsync starvation cases.
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: Dave Chinner <david@fromorbit.com>
+Reviewed-by: Jeff Moyer <jmoyer@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/sync.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ mm/filemap.c |   16 +++++-----------
+ 1 file changed, 5 insertions(+), 11 deletions(-)
 
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -287,7 +287,7 @@ int do_sync_mapping_range(struct address
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1304,7 +1304,8 @@ generic_file_aio_read(struct kiocb *iocb
+ 			goto out; /* skip atime */
+ 		size = i_size_read(inode);
+ 		if (pos < size) {
+-			retval = filemap_write_and_wait(mapping);
++			retval = filemap_write_and_wait_range(mapping, pos,
++					pos + iov_length(iov, nr_segs) - 1);
+ 			if (!retval) {
+ 				retval = mapping->a_ops->direct_IO(READ, iocb,
+ 							iov, pos, nr_segs);
+@@ -2117,18 +2118,10 @@ generic_file_direct_write(struct kiocb *
+ 	if (count != ocount)
+ 		*nr_segs = iov_shorten((struct iovec *)iov, *nr_segs, count);
  
- 	if (flags & SYNC_FILE_RANGE_WRITE) {
- 		ret = __filemap_fdatawrite_range(mapping, offset, endbyte,
--						WB_SYNC_NONE);
-+						WB_SYNC_ALL);
- 		if (ret < 0)
- 			goto out;
- 	}
+-	/*
+-	 * Unmap all mmappings of the file up-front.
+-	 *
+-	 * This will cause any pte dirty bits to be propagated into the
+-	 * pageframes for the subsequent filemap_write_and_wait().
+-	 */
+ 	write_len = iov_length(iov, *nr_segs);
+ 	end = (pos + write_len - 1) >> PAGE_CACHE_SHIFT;
+-	if (mapping_mapped(mapping))
+-		unmap_mapping_range(mapping, pos, write_len, 0);
+ 
+-	written = filemap_write_and_wait(mapping);
++	written = filemap_write_and_wait_range(mapping, pos, pos + write_len - 1);
+ 	if (written)
+ 		goto out;
+ 
+@@ -2519,7 +2512,8 @@ generic_file_buffered_write(struct kiocb
+ 	 * the file data here, to try to honour O_DIRECT expectations.
+ 	 */
+ 	if (unlikely(file->f_flags & O_DIRECT) && written)
+-		status = filemap_write_and_wait(mapping);
++		status = filemap_write_and_wait_range(mapping,
++					pos, pos + written - 1);
+ 
+ 	return written ? written : status;
+ }
 
