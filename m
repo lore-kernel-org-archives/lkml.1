@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbZAWQUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbZAWQ0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761283AbZAWQUc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 11:20:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756301AbZAWQUR
+	id S1759123AbZAWQ0i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 11:26:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZAWQ0a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 11:20:17 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:37159 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757067AbZAWQUO (ORCPT
+	Fri, 23 Jan 2009 11:26:30 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:31290 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752067AbZAWQ03 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 11:20:14 -0500
-Date: Fri, 23 Jan 2009 17:21:53 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, urs.thuermann@volkswagen.de,
-       oliver.hartkopp@volkswagen.de, linux-media@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, netfilter@vger.kernel.org,
-       bfields@fieldses.org, neilb@suse.de, linux-nfs@vger.kernel.org,
-       linux-raid@vger.kernel.org, dbrownell@users.sourceforge.net,
-       netdev@vger.kernel.org, greg@kroah.com, linux-usb@vger.kernel.org,
-       linux-mtd@lists.infradead.org, tiwai@suse.de, mchehab@infradead.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [GIT PULL -tip] fix 33 make headers_check warnings
-Message-ID: <20090123162153.GA25766@uranus.ravnborg.org>
-References: <1232223441.3966.22.camel@localhost.localdomain> <1232228261.27094.0.camel@macbook.infradead.org> <20090117221932.GA4956@uranus.ravnborg.org> <49725B1E.604@kernel.org> <1232498319.3123.34.camel@localhost.localdomain> <1232726359.3504.18.camel@localhost.localdomain> <1232726658.3504.22.camel@localhost.localdomain> <alpine.LSU.2.00.0901231710350.15413@fbirervta.pbzchgretzou.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LSU.2.00.0901231710350.15413@fbirervta.pbzchgretzou.qr>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 23 Jan 2009 11:26:29 -0500
+X-IronPort-AV: E=Sophos;i="4.37,312,1231131600"; 
+   d="scan'208";a="36938296"
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Subject: [PATCH] xen: handle highmem pages correctly when shrinking a domain
+X-Mercurial-Node: 70c0102ea4c18ecab426aa32e2dee29c76a8d827
+Message-Id: <70c0102ea4c18ecab426.1232727981@localhost.localdomain>
+Date: Fri, 23 Jan 2009 16:26:21 +0000
+From: Ian Campbell <ian.campbell@citrix.com>
+To: linux-kernel@vger.kernel.org
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       "dan.magenheimer@oracle.com" <dan.magenheimer@oracle.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Stable Kernel <stable@kernel.org>
+X-OriginalArrivalTime: 23 Jan 2009 16:26:27.0617 (UTC) FILETIME=[574F6110:01C97D77]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 05:11:13PM +0100, Jan Engelhardt wrote:
-> 
-> On Friday 2009-01-23 17:04, Jaswinder Singh Rajput wrote:
-> >> > diff --git a/include/linux/dvb/audio.h b/include/linux/dvb/audio.h
-> >> > index 89412e1..758a48c 100644
-> >> > --- a/include/linux/dvb/audio.h
-> >> > +++ b/include/linux/dvb/audio.h
-> >> > @@ -24,9 +24,8 @@
-> >> >  #ifndef _DVBAUDIO_H_
-> >> >  #define _DVBAUDIO_H_
-> >> >  
-> >> > -#ifdef __KERNEL__
-> >> >  #include <linux/types.h>
-> >> > -#else
-> >> > +#ifndef __KERNEL__
-> >> >  #include <stdint.h>
-> >> >  #endif
-> >> > 
-> >> 
-> >> It seems one have objection for this. So I will again insert this in my
-> >> new patchset.
-> >> 
-> >
-> >oops, s/seems one/seems no one ;-)
-> 
-> I had an objection as previously stated -- namely that
-> <stdint.h> should be included to remain friendly to C++0x
-> programs which should use <cstdint> instead. Forcing
-> stdint.h is therefore not nice.
+This commit causes a crash if the page being released is a highmem
+page.
 
-This is fully agreed.
-Jaswinder - can I ask you to do this change (remove of the stdint.h include)
-in a follow-up patch. It is two independent changes.
-You original patch is fine as is.
+  commit 1058a75f07b9bb8323fb5197be5526220f8b75cf
+  Author: Dan Magenheimer <dan.magenheimer@oracle.com>
+  Date:   Thu Jan 22 14:36:08 2009 -0800
 
-Thanks,
-	Sam
+    xen: actually release memory when shrinking domain
 
+If a page is highmem then there is no need to unmap it.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: dan.magenheimer@oracle.com <dan.magenheimer@oracle.com>
+Cc: Xen-devel <xen-devel@lists.xensource.com>
+Cc: Stable Kernel <stable@kernel.org>
+---
+ drivers/xen/balloon.c |   11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff -r 7f26a03c3e02 -r 70c0102ea4c1 drivers/xen/balloon.c
+--- a/drivers/xen/balloon.c	Fri Jan 23 14:14:59 2009 +0000
++++ b/drivers/xen/balloon.c	Fri Jan 23 16:24:09 2009 +0000
+@@ -292,10 +292,13 @@
+ 
+ 		scrub_page(page);
+ 
+-		ret = HYPERVISOR_update_va_mapping(
+-			(unsigned long)__va(pfn << PAGE_SHIFT),
+-			__pte_ma(0), 0);
+-		BUG_ON(ret);
++		if (!PageHighMem(page)) {
++			ret = HYPERVISOR_update_va_mapping(
++				(unsigned long)__va(pfn << PAGE_SHIFT),
++				__pte_ma(0), 0);
++			BUG_ON(ret);
++                }
++
+ 	}
+ 
+ 	/* Ensure that ballooned highmem pages don't have kmaps. */
