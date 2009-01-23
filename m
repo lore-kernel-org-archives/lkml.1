@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756639AbZAWTqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbZAWTse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756639AbZAWTqV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 14:46:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750772AbZAWTqH
+	id S1756924AbZAWTse (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 14:48:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZAWTs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 14:46:07 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:36033 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753563AbZAWTqE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 14:46:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=CiJGoQMzD5pCU93XpKzfoOHASa8/St1EeZeT4tlwgHcSkL7CFghgtnQ7J1z1tQTRRM
-         bA7NTN9Rwf5CPyS1bpAj5t81oStCThLiUhcPpeqc3fT8Z91CpsErLGiGUcyTsvWUSMxQ
-         RHuD1VJzT60pI1zdbbkEqS+GFMWH8jQKFFQoQ=
+	Fri, 23 Jan 2009 14:48:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:50251 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753562AbZAWTsZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 14:48:25 -0500
+Message-ID: <497A1EDD.6070600@kernel.org>
+Date: Fri, 23 Jan 2009 11:47:41 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Date: Sat, 24 Jan 2009 01:46:03 +0600
-Message-ID: <b9df5fa10901231146k89cd1adoee590b6743bb349f@mail.gmail.com>
-Subject: [PATCH] x86: Fix setion mismatch warning.
-From: Rakib Mullick <rakib.mullick@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+CC: Tejun Heo <tj@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Fwd: kernel panic when using disable_mtrr_trim [was: Re:	memory
+ beyond4GB invisible to the system even though	CONFIG_HIGHMEM64G=y]]
+References: <49763718.7010501@kernel.org> <86802c440901201249v3c877a88ie8e5f3bbf6abb871@mail.gmail.com> <49794422.2080109@kernel.org> <49797634.7040500@kernel.org> <4979771E.5050001@kernel.org> <49797788.2080603@kernel.org> <20090123092556.GC29820@elte.hu>
+In-Reply-To: <20090123092556.GC29820@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Fix section mismatch warning.
+Ingo Molnar wrote:
+>>> Hmm... weird.  Can you please attach the .config file you used and the 
+>>> commit ID and the version of toolchain?  I'll try to reproduce it 
+>>> here.
+> 
+> Yinghai, please send the binutils package version too - if this is a 
+> linker bug or linker interaction then it might matter.
+> 
+> GCC is 4.3.2 according to your boot log:
+> 
+>    (gcc version 4.3.2 [gcc-4_3-branch revision 141291] 
 
-Here function vmi_activate calls a init function activate_vmi , which
-causes the following section mismatch warnings. This patch fixes it.
-
-  LD      arch/x86/kernel/built-in.o
-WARNING: arch/x86/kernel/built-in.o(.text+0x13ba9): Section mismatch
-in reference from the function vmi_activate() to the function
-.init.text:vmi_time_init()
-The function vmi_activate() references
-the function __init vmi_time_init().
-This is often because vmi_activate lacks a __init
-annotation or the annotation of vmi_time_init is wrong.
-
-WARNING: arch/x86/kernel/built-in.o(.text+0x13bd1): Section mismatch
-in reference from the function vmi_activate() to the function
-.devinit.text:vmi_time_bsp_init()
-The function vmi_activate() references
-the function __devinit vmi_time_bsp_init().
-This is often because vmi_activate lacks a __devinit
-annotation or the annotation of vmi_time_bsp_init is wrong.
-
-WARNING: arch/x86/kernel/built-in.o(.text+0x13bdb): Section mismatch
-in reference from the function vmi_activate() to the function
-.devinit.text:vmi_time_ap_init()
-The function vmi_activate() references
-the function __devinit vmi_time_ap_init().
-This is often because vmi_activate lacks a __devinit
-annotation or the annotation of vmi_time_ap_init is wrong.
+yhlu@linux-mstp:~> rpm -qa | grep binutils
+binutils-2.19-9.3
+binutils-devel-2.19-9.3
 
 
-Thanks.
+it is OpenSuse 11.1 x86_64 version
 
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-
---- linux-2.6-orig/arch/x86/kernel/vmi_32.c	2009-01-23 18:28:05.000000000 +0600
-+++ linux-2.6/arch/x86/kernel/vmi_32.c	2009-01-24 00:10:53.000000000 +0600
-@@ -858,7 +858,7 @@ void __init vmi_init(void)
- #endif
- }
-
--void vmi_activate(void)
-+void __init vmi_activate(void)
- {
- 	unsigned long flags;
+YH
