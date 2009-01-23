@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbZAWQ5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759609AbZAWQ7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758759AbZAWQ5h (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 11:57:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbZAWQ5Z
+	id S1759609AbZAWQ7Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 11:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756179AbZAWQ7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 11:57:25 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:41310 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756171AbZAWQ5Y (ORCPT
+	Fri, 23 Jan 2009 11:59:17 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:42411 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752397AbZAWQ7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 11:57:24 -0500
-Date: Fri, 23 Jan 2009 10:55:23 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, matthew.r.wilcox@intel.com,
-       chinang.ma@intel.com, linux-kernel@vger.kernel.org,
-       sharad.c.tripathi@intel.com, arjan@linux.intel.com,
-       suresh.b.siddha@intel.com, harita.chilukuri@intel.com,
-       douglas.w.styner@intel.com, peter.xihong.wang@intel.com,
-       hubert.nueckel@intel.com, chris.mason@oracle.com, srostedt@redhat.com,
-       linux-scsi@vger.kernel.org, andrew.vasquez@qlogic.com,
-       anirban.chakraborty@qlogic.com, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Mainline kernel OLTP performance update
-In-Reply-To: <1232724691.6094.86.camel@penberg-laptop>
-Message-ID: <alpine.DEB.1.10.0901231054590.32253@qirst.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>  <200901161503.13730.nickpiggin@yahoo.com.au>  <20090115201210.ca1a9542.akpm@linux-foundation.org>  <200901161746.25205.nickpiggin@yahoo.com.au>  <20090116065546.GJ31013@parisc-linux.org>
-  <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>  <1232428583.11429.83.camel@ymzhang>  <alpine.DEB.1.10.0901211852060.18367@qirst.com>  <1232613395.11429.122.camel@ymzhang>  <1232615707.14549.6.camel@penberg-laptop> 
- <1232616517.11429.129.camel@ymzhang>  <1232617672.14549.25.camel@penberg-laptop>  <1232679773.11429.155.camel@ymzhang>  <4979692B.3050703@cs.helsinki.fi>  <1232697998.6094.17.camel@penberg-laptop>  <1232699401.11429.163.camel@ymzhang> 
- <1232703989.6094.29.camel@penberg-laptop>  <alpine.DEB.1.10.0901231020030.21692@qirst.com> <1232724691.6094.86.camel@penberg-laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 23 Jan 2009 11:59:16 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=FeZ4M8sqiRTjx8wkwQXFyYG8UzOYMt8Hu0w2AW88eBtprW9lA2sOCGVwM7uR7WGVK
+	tsJE02pJ2/Jgsqjj1g1Qg==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090123102253.GF15188@elte.hu>
+References: <20090123004703.25103.29754.stgit@menage.corp.google.com>
+	 <20090123102253.GF15188@elte.hu>
+Date: Fri, 23 Jan 2009 08:59:10 -0800
+Message-ID: <6599ad830901230859p5453b166tfb384caad210f84b@mail.gmail.com>
+Subject: Re: [PATCH] cgroup: Fix root_count when mount fails due to busy 
+	subsystem
+From: Paul Menage <menage@google.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, serue@us.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.osdl.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.143
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Jan 2009, Pekka Enberg wrote:
+On Fri, Jan 23, 2009 at 2:22 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>> --- a/kernel/cgroup.c
+>> +++ b/kernel/cgroup.c
+>> @@ -1115,8 +1115,10 @@ static void cgroup_kill_sb(struct super_block *sb) {
+>>       }
+>>       write_unlock(&css_set_lock);
+>>
+>> -     list_del(&root->root_list);
+>> -     root_count--;
+>> +     if (!list_empty(&root->root_list)) {
+>> +             list_del(&root->root_list);
+>> +             root_count--;
+>> +     }
+>
+> That's ugly. It is _much_ cleaner to always keep the link head consistent
+> - i.e. initialize it with INIT_LIST_HEAD()
 
-> I wonder why that doesn't happen already, actually. The slub_max_order
-> know is capped to PAGE_ALLOC_COSTLY_ORDER ("3") by default and obviously
-> order 3 should be as good fit as order 2 so 'fraction' can't be too high
-> either. Hmm.
+It is initialized with INIT_LIST_HEAD().
 
-The kmalloc-8192 is new. Look at slabinfo output to see what allocation
-orders are chosen.
+> and then remove from it via
+> list_del_init().
 
+There's not much point doing list_del_init() rather than list_del()
+here since we're about to delete the root.
+
+>
+> That way the error path will do the right thing automatically, and there's
+> no need for that ugly "if !list_empty" construct either.
+
+The important part here is avoiding decrementing root_count.
+
+So the code could equally be:
+
+if (!list_empty(&root->root_list)) {
+  root_count--;
+}
+list_del(&root->root_list);
+
+but what I have in this patch seems more straightforward. It's
+actually how the code used to be before it was removed as a
+"redundant" check by a patch that I unfortunately didn't get a chance
+to read properly (or Ack) because I was too snowed under with other
+work.
+
+Paul
