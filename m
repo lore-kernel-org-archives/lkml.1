@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756079AbZAWBX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761860AbZAWBX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756079AbZAWBX3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760047AbZAWBPR
+	id S1761860AbZAWBX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:23:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757434AbZAWBPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:15:17 -0500
-Received: from kroah.org ([198.145.64.141]:50644 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:15:22 -0500
+Received: from kroah.org ([198.145.64.141]:50664 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755893AbZAWBPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:03 -0500
-Date: Thu, 22 Jan 2009 17:12:22 -0800
+	id S1755943AbZAWBPF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:15:05 -0500
+Date: Thu, 22 Jan 2009 17:12:26 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lennert Buytenhek <buytenh@marvell.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 25/46] tcp: dont mask EOF and socket errors on nonblocking
-	splice receive
-Message-ID: <20090123011222.GZ19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
+       Linux wireless <linux-wireless@vger.kernel.org>,
+       Christian Lamparter <chunkeey@web.de>
+Subject: [patch 27/46] p54usb: fix traffic stalls / packet drop
+Message-ID: <20090123011226.GB19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-don-t-mask-eof-and-socket-errors-on-nonblocking-splice-receive.patch"
+Content-Disposition: inline; filename="p54usb-fix-traffic-stalls-packet-drop.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,45 +41,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lennert Buytenhek <buytenh@marvell.com>
+From: Christian Lamparter <chunkeey@web.de>
 
-[ Upstream commit: 4f7d54f59bc470f0aaa932f747a95232d7ebf8b1 ]
+commit 00627f229c9807e4cb825a7ce36b886e2adf2229 upstream.
 
-Currently, setting SPLICE_F_NONBLOCK on splice from a TCP socket
-results in masking of EOF (RDHUP) and error conditions on the socket
-by an -EAGAIN return.  Move the NONBLOCK check in tcp_splice_read()
-to be after the EOF and error checks to fix this.
+All p54usb devices need a explicit termination packet, in oder to finish the pending transfer properly.
+Else, the firmware could freeze, or simply drop the frame.
 
-Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Christian Lamparter <chunkeey@web.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/wireless/p54/p54usb.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -578,10 +578,6 @@ ssize_t tcp_splice_read(struct socket *s
- 		else if (!ret) {
- 			if (spliced)
- 				break;
--			if (flags & SPLICE_F_NONBLOCK) {
--				ret = -EAGAIN;
--				break;
--			}
- 			if (sock_flag(sk, SOCK_DONE))
- 				break;
- 			if (sk->sk_err) {
-@@ -599,6 +595,10 @@ ssize_t tcp_splice_read(struct socket *s
- 					ret = -ENOTCONN;
- 				break;
- 			}
-+			if (flags & SPLICE_F_NONBLOCK) {
-+				ret = -EAGAIN;
-+				break;
-+			}
- 			if (!timeo) {
- 				ret = -EAGAIN;
- 				break;
+--- a/drivers/net/wireless/p54/p54usb.c
++++ b/drivers/net/wireless/p54/p54usb.c
+@@ -215,6 +215,8 @@ static void p54u_tx_3887(struct ieee8021
+ 	usb_fill_bulk_urb(data_urb, priv->udev,
+ 		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), data, len,
+ 		free_on_tx ? p54u_tx_free_cb : p54u_tx_cb, dev);
++	addr_urb->transfer_flags |= URB_ZERO_PACKET;
++	data_urb->transfer_flags |= URB_ZERO_PACKET;
+ 
+ 	usb_submit_urb(addr_urb, GFP_ATOMIC);
+ 	usb_submit_urb(data_urb, GFP_ATOMIC);
+@@ -252,6 +254,7 @@ static void p54u_tx_lm87(struct ieee8021
+ 		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr,
+ 		len + sizeof(*hdr), free_on_tx ? p54u_tx_free_cb : p54u_tx_cb,
+ 		dev);
++	data_urb->transfer_flags |= URB_ZERO_PACKET;
+ 
+ 	usb_submit_urb(data_urb, GFP_ATOMIC);
+ }
+@@ -294,11 +297,13 @@ static void p54u_tx_net2280(struct ieee8
+ 	usb_fill_bulk_urb(int_urb, priv->udev,
+ 		usb_sndbulkpipe(priv->udev, P54U_PIPE_DEV), reg, sizeof(*reg),
+ 		p54u_tx_free_cb, dev);
++	int_urb->transfer_flags |= URB_ZERO_PACKET;
+ 	usb_submit_urb(int_urb, GFP_ATOMIC);
+ 
+ 	usb_fill_bulk_urb(data_urb, priv->udev,
+ 		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr, len + sizeof(*hdr),
+ 		free_on_tx ? p54u_tx_free_cb : p54u_tx_cb, dev);
++	data_urb->transfer_flags |= URB_ZERO_PACKET;
+ 	usb_submit_urb(data_urb, GFP_ATOMIC);
+ }
+ 
 
