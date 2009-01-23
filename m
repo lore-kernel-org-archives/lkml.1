@@ -1,58 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759565AbZAWBMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbZAWBOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759565AbZAWBMo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:12:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZAWBMg
+	id S1760044AbZAWBOr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:14:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZAWBOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:12:36 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:64518 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576AbZAWBMf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:12:35 -0500
-Message-ID: <49791978.8080709@oracle.com>
-Date: Thu, 22 Jan 2009 17:12:24 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 22 Jan 2009 20:14:38 -0500
+Received: from kroah.org ([198.145.64.141]:50284 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755144AbZAWBOh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:14:37 -0500
+Date: Thu, 22 Jan 2009 17:11:10 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/46] 2.6.28-stable review
+Message-ID: <20090123011110.GA19756@kroah.com>
 MIME-Version: 1.0
-To: Nico Schottelius <nico-linux-20090121@schottelius.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29-rc2: drivers/mfd/pcf50633-core.ko has undefined symbols
-References: <20090121114432.GA4590@denkbrett.schottelius.org>
-In-Reply-To: <20090121114432.GA4590@denkbrett.schottelius.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4979197B.0264:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nico Schottelius wrote:
-> Hello!
-> 
-> When trying to compile latest kernel from linux-2.6 or iwlwifi I get:
-> 
-> CRC e950f5f4
-> Kernel: arch/x86/boot/bzImage is ready  (#7)
->   Building modules, stage 2.
->   MODPOST 1666 modules
-> ERROR: "__set_irq_handler" [drivers/mfd/pcf50633-core.ko] undefined!
-> ERROR: "handle_level_irq" [drivers/mfd/pcf50633-core.ko] undefined!
-> make[1]: *** [__modpost] Fehler 1
-> make: *** [modules] Fehler 2
-> 
-> Kernels tested:
-> 
->   v2.6.29-rc2 (git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux-2.6.git)
->   v2.6.29-rc2-27573-g599c546 (git://git.kernel.org/pub/scm/linux/kernel/git/iwlwifi/iwlwifi-2.6.git)
-> 
-> .config is attached from v2.6.29-rc2.
+This is the start of the stable review cycle for the 2.6.28.2 release.
+There are 46 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-Patch is available & pull request has been sent to Linus, but he is
-traveling/at a conference/not merging patches at the moment.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
--- 
-~Randy
+Responses should be made by Sunday, January 25, 00:00:00 UTC.  Anything
+received after that time might be too late.
+
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.28.2-rc1.gz
+and the diffstat can be found below.
+
+
+thanks,
+
+greg k-h
+
+
+ Documentation/sound/alsa/ALSA-Configuration.txt |    3 +-
+ Makefile                                        |    2 +-
+ arch/ia64/Kconfig                               |    1 +
+ arch/powerpc/mm/slice.c                         |   11 ++-
+ drivers/firmware/dell_rbu.c                     |    4 +-
+ drivers/hwmon/abituguru3.c                      |    2 +-
+ drivers/misc/sgi-xp/xpc_sn2.c                   |    2 +-
+ drivers/net/irda/irda-usb.c                     |    2 +-
+ drivers/net/r6040.c                             |   17 ++-
+ drivers/net/wireless/p54/p54usb.c               |    6 +
+ drivers/net/wireless/rt2x00/rt73usb.c           |    1 +
+ drivers/pci/pcie/aspm.c                         |  125 ++++++++++++++---
+ drivers/usb/core/driver.c                       |    9 +-
+ drivers/usb/core/hub.c                          |    2 +-
+ drivers/usb/core/message.c                      |   25 ++--
+ drivers/usb/core/usb.c                          |    2 +-
+ drivers/usb/core/usb.h                          |    4 +-
+ drivers/usb/storage/libusual.c                  |    7 +
+ drivers/usb/storage/scsiglue.c                  |   31 ++++
+ drivers/usb/storage/transport.c                 |   80 ++++++++++
+ drivers/usb/storage/unusual_devs.h              |  178 ++---------------------
+ drivers/usb/storage/usb.c                       |    6 +
+ drivers/usb/storage/usb.h                       |    4 +
+ fs/fs-writeback.c                               |   92 +++++++-----
+ fs/sync.c                                       |    2 +-
+ include/linux/fs.h                              |    1 -
+ include/linux/usb_usual.h                       |    5 +-
+ include/linux/writeback.h                       |    1 -
+ kernel/sched_fair.c                             |    2 +-
+ lib/idr.c                                       |   10 +-
+ mm/filemap.c                                    |   18 +--
+ mm/page-writeback.c                             |  121 +++++++++++-----
+ net/bridge/netfilter/ebtables.c                 |    2 +-
+ net/ipv4/netfilter/nf_conntrack_proto_icmp.c    |    2 +-
+ net/ipv4/tcp.c                                  |    8 +-
+ net/ipv6/ip6_fib.c                              |   15 +-
+ net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c  |    2 +-
+ net/netfilter/x_tables.c                        |    8 +
+ net/sched/cls_u32.c                             |    3 +-
+ net/sched/sch_htb.c                             |    1 +
+ net/sctp/sm_statefuns.c                         |   14 ++
+ security/keys/keyctl.c                          |    1 +
+ sound/pci/hda/patch_analog.c                    |   49 ++++++-
+ sound/pci/hda/patch_realtek.c                   |    1 +
+ sound/pci/hda/patch_sigmatel.c                  |   16 ++
+ sound/pci/oxygen/virtuoso.c                     |   17 ++-
+ 46 files changed, 585 insertions(+), 330 deletions(-)
