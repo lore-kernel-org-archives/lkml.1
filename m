@@ -1,122 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbZAWJDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZAWJEm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbZAWJDD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 04:03:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZAWJCm
+	id S1760243AbZAWJEm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 04:04:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZAWJE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 04:02:42 -0500
-Received: from mga06.intel.com ([134.134.136.21]:21100 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753883AbZAWJCj (ORCPT
+	Fri, 23 Jan 2009 04:04:28 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:45174 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754038AbZAWJE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 04:02:39 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,311,1231142400"; 
-   d="sh'?scan'208";a="380879596"
-Subject: Re: Mainline kernel OLTP performance update
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+	Fri, 23 Jan 2009 04:04:26 -0500
+Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
+Cc: cl@linux-foundation.org, yanmin_zhang@linux.intel.com,
        Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
-In-Reply-To: <200901231933.10101.nickpiggin@yahoo.com.au>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <1232617672.14549.25.camel@penberg-laptop>
-	 <1232679773.11429.155.camel@ymzhang>
-	 <200901231933.10101.nickpiggin@yahoo.com.au>
-Content-Type: multipart/mixed; boundary="=-iJ7pR5ZGKvuT2d2vXHGE"
-Date: Fri, 23 Jan 2009 17:02:28 +0800
-Message-Id: <1232701348.11429.170.camel@ymzhang>
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+In-Reply-To: <200901231952.53961.nickpiggin@yahoo.com.au>
+References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI>
+	 <200901231952.53961.nickpiggin@yahoo.com.au>
+Date: Fri, 23 Jan 2009 11:04:24 +0200
+Message-Id: <1232701464.6094.21.camel@penberg-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 23 January 2009 19:43:20 Pekka J Enberg wrote:
+> > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> >
+> > This patch reverts page allocator pass-through logic from the SLUB
+> > allocator.
+> >
+> > Commit aadb4bc4a1f9108c1d0fbd121827c936c2ed4217 ("SLUB: direct pass through
+> > of page size or higher kmalloc requests")
 
---=-iJ7pR5ZGKvuT2d2vXHGE
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+On Fri, 2009-01-23 at 19:52 +1100, Nick Piggin wrote:
+> Hmm, it lists quite a number of advantages that I guess are being
+> reverted too? What was the test case(s) that prompted this commit
+> in the first place? Better ensure it doesn't slow down...
 
-On Fri, 2009-01-23 at 19:33 +1100, Nick Piggin wrote:
-> On Friday 23 January 2009 14:02:53 Zhang, Yanmin wrote:
-> 
-> > 1) If I start CPU_NUM clients and servers, SLUB's result is about 2% better
-> > than SLQB's;
-> 
-> I'll have to look into this too. Could be evidence of the possible
-> TLB improvement from using bigger pages and/or page-specific freelist,
-> I suppose.
-> 
-> Do you have a scripted used to start netperf in that configuration?
-See the attachment.
+Oh, I see I forgot to put an RFC in the patch subject line. I'm not
+going to merge this just yet.
 
-Steps to run testing:
-1) compile netperf;
-2) Change PROG_DIR to path/to/netperf/src;
-3) ./start_netperf_udp_v4.sh 8 #Assume your machine has 8 logical cpus.
-
-
---=-iJ7pR5ZGKvuT2d2vXHGE
-Content-Disposition: attachment; filename=start_netperf_udp_v4.sh
-Content-Type: application/x-shellscript; name=start_netperf_udp_v4.sh
-Content-Transfer-Encoding: 7bit
-
-#!/bin/sh
-
-PROG_DIR=/home/ymzhang/test/netperf/src
-date=`date +%H%M%N`
-#PROG_DIR=/root/netperf/netperf/src
-client_num=$1
-pin_cpu=$2
-
-start_port_server=12384
-start_port_client=15888
-
-killall netserver
-${PROG_DIR}/netserver
-sleep 2
-
-if [ ! -d result ]; then
-	mkdir result
-fi
-
-all_result_files=""
-for i in `seq 1 ${client_num}`; do
-	if [ "${pin_cpu}" == "pin" ]; then
-		pin_param="-T ${i} ${i}"
-	fi
-	result_file=result/netperf_${start_port_client}.${date}
-	#./netperf -t UDP_STREAM -l 60 -H 127.0.0.1 -- -P 15895 12391 -s 32768 -S 32768 -m 4096
-	#./netperf -t UDP_STREAM -l 60 -H 127.0.0.1 -i 50 3 -I 99 5 -- -P 12384 12888 -s 32768 -S 32768 -m 4096
-	#${PROG_DIR}/netperf -p ${port_num} -t TCP_RR -l 60 -H 127.0.0.1 ${pin_param} -- -r 1,1 >${result_file} &
-	${PROG_DIR}/netperf -t UDP_STREAM -l 60 -H 127.0.0.1 ${pin_param} -- -P ${start_port_client} ${start_port_server} -s 32768 -S 32768 -m 4096 >${result_file}  &
-	sub_pid="${sub_pid} `echo $!`"
-	port_num=$((${port_num}+1))
-	all_result_files="${all_result_files} ${result_file}"
-	start_port_server=$((${start_port_server}+1))
-	start_port_client=$((${start_port_client}+1))
-done;
-
-wait ${sub_pid}
-killall netserver
-
-result="0"
-for i in `echo ${all_result_files}`; do
-	sub_result=`awk '/Throughput/ {getline; getline; getline; print " "$6}' ${i}`
-	result=`echo "${result}+${sub_result}"|bc`
-done;
-
-echo $result
-
-
---=-iJ7pR5ZGKvuT2d2vXHGE--
+Christoph, suggestions on the test case?
 
