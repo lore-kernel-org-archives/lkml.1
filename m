@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbZAWGTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761750AbZAWGSB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752501AbZAWGTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757994AbZAWGQ1
+	id S1761750AbZAWGSB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:18:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbZAWGQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:27 -0500
-Received: from kroah.org ([198.145.64.141]:36145 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:24 -0500
+Received: from kroah.org ([198.145.64.141]:36109 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756037AbZAWGQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:26 -0500
-Date: Thu, 22 Jan 2009 22:13:20 -0800
+	id S1752614AbZAWGQY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:24 -0500
+Date: Thu, 22 Jan 2009 22:13:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lennert Buytenhek <buytenh@marvell.com>,
+       alan@lxorguk.ukuu.org.uk, Joe Chou <Joe.Chou@rdc.com.tw>,
+       Florian Fainelli <florian@openwrt.org>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 08/40] tcp: dont mask EOF and socket errors on nonblocking
-	splice receive
-Message-ID: <20090123061320.GH2922@kroah.com>
+Subject: [patch 05/40] r6040: fix wrong logic in mdio code
+Message-ID: <20090123061308.GE2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="tcp-don-t-mask-eof-and-socket-errors-on-nonblocking-splice-receive.patch"
+Content-Disposition: inline; filename="r6040-fix-wrong-logic-in-mdio-code.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,45 +41,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lennert Buytenhek <buytenh@marvell.com>
+From: Joe Chou <Joe.Chou@rdc.com.tw>
 
-[ Upstream commit: 4f7d54f59bc470f0aaa932f747a95232d7ebf8b1 ]
+[ Upstream commit: 11e5e8f5d14a1229706576184d2cf4c4556ed94c ]
 
-Currently, setting SPLICE_F_NONBLOCK on splice from a TCP socket
-results in masking of EOF (RDHUP) and error conditions on the socket
-by an -EAGAIN return.  Move the NONBLOCK check in tcp_splice_read()
-to be after the EOF and error checks to fix this.
+This patch fixes a reverse logic in the MDIO code.
 
-Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
+Signed-off-by: Joe Chou <Joe.Chou@rdc.com.tw>
+Signed-off-by: Florian Fainelli <florian@openwrt.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/tcp.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/net/r6040.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -576,10 +576,6 @@ ssize_t tcp_splice_read(struct socket *s
- 		else if (!ret) {
- 			if (spliced)
- 				break;
--			if (flags & SPLICE_F_NONBLOCK) {
--				ret = -EAGAIN;
--				break;
--			}
- 			if (sock_flag(sk, SOCK_DONE))
- 				break;
- 			if (sk->sk_err) {
-@@ -597,6 +593,10 @@ ssize_t tcp_splice_read(struct socket *s
- 					ret = -ENOTCONN;
- 				break;
- 			}
-+			if (flags & SPLICE_F_NONBLOCK) {
-+				ret = -EAGAIN;
-+				break;
-+			}
- 			if (!timeo) {
- 				ret = -EAGAIN;
- 				break;
+--- a/drivers/net/r6040.c
++++ b/drivers/net/r6040.c
+@@ -214,7 +214,7 @@ static int r6040_phy_read(void __iomem *
+ 	/* Wait for the read bit to be cleared */
+ 	while (limit--) {
+ 		cmd = ioread16(ioaddr + MMDIO);
+-		if (cmd & MDIO_READ)
++		if (!(cmd & MDIO_READ))
+ 			break;
+ 	}
+ 
+@@ -233,7 +233,7 @@ static void r6040_phy_write(void __iomem
+ 	/* Wait for the write bit to be cleared */
+ 	while (limit--) {
+ 		cmd = ioread16(ioaddr + MMDIO);
+-		if (cmd & MDIO_WRITE)
++		if (!(cmd & MDIO_WRITE))
+ 			break;
+ 	}
+ }
 
