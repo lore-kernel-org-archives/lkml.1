@@ -1,121 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756684AbZAWT0L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbZAWT2A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756684AbZAWT0L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 14:26:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZAWTZ4
+	id S1757391AbZAWT2A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 14:28:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753436AbZAWT1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 14:25:56 -0500
-Received: from cmpxchg.org ([85.214.51.133]:33142 "EHLO cmpxchg.org"
+	Fri, 23 Jan 2009 14:27:52 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59830 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752797AbZAWTZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 14:25:56 -0500
-Date: Fri, 23 Jan 2009 20:24:55 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC v4] wait: prevent waiter starvation in __wait_on_bit_lock
-Message-ID: <20090123192454.GA23107@cmpxchg.org>
-References: <20090117215110.GA3300@redhat.com> <20090118013802.GA12214@cmpxchg.org> <20090118023211.GA14539@redhat.com> <20090120203131.GA20985@cmpxchg.org> <20090121143602.GA16584@redhat.com> <20090121213813.GB23270@cmpxchg.org> <20090122202550.GA5726@redhat.com> <20090123095904.GA22890@cmpxchg.org> <20090123113541.GB12684@redhat.com>
-Mime-Version: 1.0
+	id S1753035AbZAWT1v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 14:27:51 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Linux Mailing <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@liux-foundation.org>
+Subject: [patch, rfc] do_generic_file_read: clear page errors when issuing a fresh read of the page
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Fri, 23 Jan 2009 14:27:48 -0500
+Message-ID: <x49d4edesaz.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090123113541.GB12684@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 12:35:41PM +0100, Oleg Nesterov wrote:
-> On 01/23, Johannes Weiner wrote:
-> >
-> > On Thu, Jan 22, 2009 at 09:25:50PM +0100, Oleg Nesterov wrote:
-> > > On 01/21, Johannes Weiner wrote:
-> > > >
-> > > 	int finish_wait_xxx(wait_queue_head_t *q, wait_queue_t *wait)
-> > > 	{
-> > > 		unsigned long flags;
-> > > 		int woken;
-> > >
-> > > 		__set_current_state(TASK_RUNNING);
-> > > 		spin_lock_irqsave(&q->lock, flags);
-> > > 		woken = list_empty(&wait->task_list);
-> > > 		list_del_init(&wait->task_list);
-> > > 		spin_unlock_irqrestore(&q->lock, flags);
-> > >
-> > > 		return woken;
-> > > 	}
-> >
-> > Hehe, there is only n solutions to this problem.  I had thought about
-> > that too, even written it down.  But I was not sure if taking the
-> > spinlock, toggling irqs and (re)storing the flags is better than an
-> > untaken branch. ;)
-> 
-> Yes. Fortunately, this is "unlikely" path.
-> 
-> > > 		if (test_bit(q->key.bit_nr, q->key.flags)) {
-> > > 			if ((ret = (*action)(q->key.flags))) {
-> > > 				if (finish_wait_xxx(...))
-> > > 					__wake_up_bit(...);
-> > > 				return ret;
-> > > 			}
-> > > 		}
-> >
-> > If you don't mind putting a second finish_wait() in there (you still
-> > need the one after the loop, right?), we can fix up my version to not
-> > check ret twice but do finish_wait() as you describe and then the
-> > test_bit() && wake up:
-> >
-> > 	do {
-> > 		if (test_bit())
-> > 			if ((ret = action())) {
-> > 				finish_wait()
-> > 				smp_rmb()
-> > 				if (!test_bit())
-> > 					__wake_up_bit()
-> 
-> Yes sure. Except this wakeup can be false.
-> 
-> > > 	int finish_wait_yyy(wait_queue_head_t *q, wait_queue_t *wait,
-> > > 				int mode, void *key)
-> > > 	{
-> > > 		unsigned long flags;
-> > > 		int woken;
-> > >
-> > > 		__set_current_state(TASK_RUNNING);
-> > > 		spin_lock_irqsave(&q->lock, flags);
-> > > 		woken = list_empty(&wait->task_list);
-> > > 		if (woken)
-> > > 			__wake_up_common(q, mode, 1, key);
-> > > 		else
-> > > 			list_del_init(&wait->task_list);
-> > > 		spin_unlock_irqrestore(&q->lock, flags);
-> > >
-> > > 		return woken;
-> > > 	}
-> > >
-> > > Perhaps a bit too much for this particular case, but I am thinking
-> > > about other cases when we need to abort the exclusive wait.
-> > >
-> > > For example, don't we have the similar problems with
-> > > wait_event_interruptible_exclusive() ?
-> >
-> > Yeah, we do IIUC.  Then having finish_wait() extended is probably a
-> > good idea.
-> 
-> Yes.
-> 
-> It is no that I think this new helper is really needed for this
-> particular case, personally I agree with the patch you sent.
-> 
-> But if we have other places with the similar problem, then perhaps
-> it is better to introduce the special finish_wait_exclusive() or
-> whatever.
+Hi,
 
-Agreed.  I will whip up another series that adds
-finish_wait_exclusive() and adjusts the problematic callsites.
+In testing older kernels, I've seen I/O errors set PG_error for the page
+cache page (for a failure of the last path in a mulitpath setup).  Then,
+when the device is back online, the page error is never cleared, so all
+reads from the previously bad disk location fail.  You can actually get
+around this by simply mmap()ing the file (the device node, in my case)
+and accessing the page that way, as filemap_fault will clear the page
+error bit.
 
-	Hannes
+So, hopefully this patch makes sense.  As implied above, I haven't
+verified empirically that this is the case on newer kernels (though,
+from code inspection, it looks to still be a problem).  I'll try to
+reproduce the problem, but just in case I can't, I wanted to get this
+rfc out there.
+
+Cheers,
+Jeff
+
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 0e77f4a..3adafc8 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -1139,6 +1139,12 @@ page_not_up_to_date_locked:
+ 		}
+ 
+ readpage:
++		/*
++		 * If there was an I/O error flagged previously, clear it
++		 * here.  PG_error will be set again if the readpage fails.
++		 */
++		ClearPageError(page);
++
+ 		/* Start the actual read. The read will unlock the page. */
+ 		error = mapping->a_ops->readpage(filp, page);
+ 
