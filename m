@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762194AbZAWBbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764212AbZAWBcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762194AbZAWBbv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:31:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758968AbZAWBQB
+	id S1764212AbZAWBcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:32:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760180AbZAWBQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:16:01 -0500
-Received: from kroah.org ([198.145.64.141]:50736 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:16:04 -0500
+Received: from kroah.org ([198.145.64.141]:50710 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756623AbZAWBPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:10 -0500
-Date: Thu, 22 Jan 2009 17:12:40 -0800
+	id S1756532AbZAWBPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:15:08 -0500
+Date: Thu, 22 Jan 2009 17:12:35 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 32/46] powerpc: is_hugepage_only_range() must account for
-	both 4kB and 64kB slices
-Message-ID: <20090123011240.GG19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, Patrick McHardy <kaber@trash.net>,
+       davem@davemloft.net
+Subject: [patch 30/46] netfilter: nf_conntrack: fix ICMP/ICMPv6 timeout
+	sysctls on big-endian
+Message-ID: <20090123011235.GE19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="powerpc-is_hugepage_only_range-must-account-for-both-4kb-and-64kb-slices.patch"
+Content-Disposition: inline; filename="netfilter-nf_conntrack-fix-icmp-icmpv6-timeout-sysctls-on-big-endian.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,44 +42,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+From: Patrick McHardy <kaber@trash.net>
 
-commit 9ba0fdbfaed2e74005d87fab948c5522b86ff733 upstream.
+Upstream commit 71320af:
 
-powerpc: is_hugepage_only_range() must account for both 4kB and 64kB slices
+An old bug crept back into the ICMP/ICMPv6 conntrack protocols: the timeout
+values are defined as unsigned longs, the sysctl's maxsize is set to
+sizeof(unsigned int). Use unsigned int for the timeout values as in the
+other conntrack protocols.
 
-The subpage_prot syscall fails on second and subsequent calls for a given
-region, because is_hugepage_only_range() is mis-identifying the 4 kB
-slices when the process has a 64 kB page size.
-
-Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Reported-by: Jean-Mickael Guerin <jean-mickael.guerin@6wind.com>
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/powerpc/mm/slice.c |   11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
+ net/ipv4/netfilter/nf_conntrack_proto_icmp.c   |    2 +-
+ net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
---- a/arch/powerpc/mm/slice.c
-+++ b/arch/powerpc/mm/slice.c
-@@ -710,9 +710,18 @@ int is_hugepage_only_range(struct mm_str
- 			   unsigned long len)
- {
- 	struct slice_mask mask, available;
-+	unsigned int psize = mm->context.user_psize;
+--- a/net/ipv4/netfilter/nf_conntrack_proto_icmp.c
++++ b/net/ipv4/netfilter/nf_conntrack_proto_icmp.c
+@@ -20,7 +20,7 @@
+ #include <net/netfilter/nf_conntrack_core.h>
+ #include <net/netfilter/nf_log.h>
  
- 	mask = slice_range_to_mask(addr, len);
--	available = slice_mask_for_size(mm, mm->context.user_psize);
-+	available = slice_mask_for_size(mm, psize);
-+#ifdef CONFIG_PPC_64K_PAGES
-+	/* We need to account for 4k slices too */
-+	if (psize == MMU_PAGE_64K) {
-+		struct slice_mask compat_mask;
-+		compat_mask = slice_mask_for_size(mm, MMU_PAGE_4K);
-+		or_mask(available, compat_mask);
-+	}
-+#endif
+-static unsigned long nf_ct_icmp_timeout __read_mostly = 30*HZ;
++static unsigned int nf_ct_icmp_timeout __read_mostly = 30*HZ;
  
- #if 0 /* too verbose */
- 	slice_dbg("is_hugepage_only_range(mm=%p, addr=%lx, len=%lx)\n",
+ static bool icmp_pkt_to_tuple(const struct sk_buff *skb, unsigned int dataoff,
+ 			      struct nf_conntrack_tuple *tuple)
+--- a/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
++++ b/net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c
+@@ -26,7 +26,7 @@
+ #include <net/netfilter/ipv6/nf_conntrack_icmpv6.h>
+ #include <net/netfilter/nf_log.h>
+ 
+-static unsigned long nf_ct_icmpv6_timeout __read_mostly = 30*HZ;
++static unsigned int nf_ct_icmpv6_timeout __read_mostly = 30*HZ;
+ 
+ static bool icmpv6_pkt_to_tuple(const struct sk_buff *skb,
+ 				unsigned int dataoff,
 
