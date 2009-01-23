@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759492AbZAWHtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758071AbZAWHwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759492AbZAWHtn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 02:49:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZAWHtc
+	id S1758071AbZAWHwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 02:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZAWHwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 02:49:32 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39551
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751864AbZAWHtb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 02:49:31 -0500
-Date: Thu, 22 Jan 2009 23:49:33 -0800 (PST)
-Message-Id: <20090122.234933.130619322.davem@davemloft.net>
-To: jj@chaosbits.net
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, stable@kernel.org,
-       jmforbes@linuxtx.org, zwane@arm.linux.org.uk, tytso@mit.edu,
-       rdunlap@xenotime.net, davej@redhat.com, chuckw@quantumlinux.com,
-       reviews@ml.cw.f00f.org, mkrufky@linuxtv.org, cebbert@redhat.com,
-       cavokz@gmail.com, w@1wt.eu, rbranco@la.checkpoint.com, jake@lwn.net,
-       eteo@redhat.com, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       florian@openwrt.org
-Subject: Re: [patch 24/46] r6040: bump release number to 0.19
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LNX.2.00.0901230225430.12187@swampdragon.chaosbits.net>
-References: <20090123010651.683741823@mini.kroah.org>
-	<20090123011219.GY19756@kroah.com>
-	<alpine.LNX.2.00.0901230225430.12187@swampdragon.chaosbits.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 23 Jan 2009 02:52:14 -0500
+Received: from hera.kernel.org ([140.211.167.34]:42866 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751396AbZAWHwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 02:52:13 -0500
+Message-ID: <4979771E.5050001@kernel.org>
+Date: Fri, 23 Jan 2009 16:51:58 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Fwd: kernel panic when using disable_mtrr_trim [was: Re: memory
+ 	beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y]]
+References: <49763718.7010501@kernel.org> <86802c440901201249v3c877a88ie8e5f3bbf6abb871@mail.gmail.com> <49794422.2080109@kernel.org> <49797634.7040500@kernel.org>
+In-Reply-To: <49797634.7040500@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 23 Jan 2009 07:52:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jesper Juhl <jj@chaosbits.net>
-Date: Fri, 23 Jan 2009 02:31:22 +0100 (CET)
+Hello,
 
-> On Thu, 22 Jan 2009, Greg KH wrote:
+Yinghai Lu wrote:
+> current tip:
+> still got
 > 
-> > 2.6.28-stable review patch.  If anyone has any objections, please let us know.
-> > 
-> 
-> It's simple enough, sure, but it doesn't really conform to the guidelines 
-> set out for -stable patches in Documentation/stable_kernel_rules.txt : 
+> WARNING: Absolute relocations present
+> Offset     Info     Type     Sym.Value Sym.Name
+> c14d21ef 00921101   R_386_32 c1514000  __per_cpu_load
 
-We went over this two release ago.
+Hmm... weird.  Can you please attach the .config file you used and the
+commit ID and the version of toolchain?  I'll try to reproduce it
+here.
 
-Version bumps for drivers are fine.
+Thanks.
 
-Please bring this up again and again every time you see it in the
-future too, thanks. :-/
-
+-- 
+tejun
