@@ -1,208 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761255AbZAWQMp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759447AbZAWQQg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761255AbZAWQMp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 11:12:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZAWQMg
+	id S1759447AbZAWQQg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 11:16:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757430AbZAWQQ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 11:12:36 -0500
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:60023 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755588AbZAWQMf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 11:12:35 -0500
-Date: Fri, 23 Jan 2009 17:12:32 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [GIT PULL] s390 fixes for 2.6.29-rc3
-Message-ID: <20090123171232.7a247bc6@osiris.boeblingen.de.ibm.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 23 Jan 2009 11:16:29 -0500
+Received: from gw.goop.org ([64.81.55.164]:35761 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756954AbZAWQQ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 11:16:28 -0500
+Message-ID: <4979ED5A.1070005@goop.org>
+Date: Fri, 23 Jan 2009 08:16:26 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Ian Campbell <Ian.Campbell@citrix.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       "dan.magenheimer@oracle.com" <dan.magenheimer@oracle.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stable Kernel <stable@kernel.org>
+Subject: Re: [Xen-devel] [PATCH] xen: actually release memory when	shrinking
+ domain
+References: <4978F4D8.6090706@goop.org> <1232719748.27712.19.camel@zakaz.uk.xensource.com>
+In-Reply-To: <1232719748.27712.19.camel@zakaz.uk.xensource.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Ian Campbell wrote:
+> On Thu, 2009-01-22 at 14:36 -0800, Jeremy Fitzhardinge wrote:
+>   
+>> From: Dan Magenheimer <dan.magenheimer@oracle.com>
+>>
+>> Fix this:
+>>
+>>     
+>>> It appears that in the upstream balloon driver,
+>>>       
+>>>> the call to HYPERVISOR_update_va_mapping is missing
+>>>> from decrease_reservation.  I think as a result,
+>>>> the balloon driver is eating memory but not
+>>>> releasing it to Xen, thus rendering the balloon
+>>>> driver essentially useless.  (Can be observed via xentop.)
+>>>>         
+>
+> Fails on 32 bit with HighMem pages:
+>         
+>         kernel BUG at /local/scratch/ianc/devel/kernels/paravirt/drivers/xen/balloon.c:298!
+>   
 
- please pull from 'for-linus' branch of
+Ah, good point.  Could you package this up into a proper patch for Ingo?
 
-	git://git390.osdl.marist.edu/pub/scm/linux-2.6.git for-linus
+Thanks,
+    J
+>         invalid opcode: 0000 [#1] SMP 
+>         last sysfs file: /sys/devices/system/xen_memory/xen_memory0/info/current_kb
+>         Modules linked in:
+>         
+>         Pid: 9, comm: events/0 Tainted: G        W  (2.6.29-rc1-x86_32p-xen0-tip #726)         
+>         EIP: 0061:[<c0266c57>] EFLAGS: 00010282 CPU: 0
+>         EIP is at balloon_process+0x527/0x530
+>         EAX: ffffffea EBX: deadbeef ECX: deadbeef EDX: deadbeef
+>         ESI: deadbeef EDI: c1000000 EBP: 00000000 ESP: f64b5f44
+>          DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0069
+>         Process events/0 (pid: 9, ti=f64b4000 task=f642d830 task.ti=f64b4000)
+>         Stack:
+>          00000000 ffffa0c0 0000002e 00000192 0000019d 00000000 00000400 f6427a00
+>          00000000 00000000 00000000 00000000 00007ff0 c04afcb0 f6427a00 c04afcac
+>          c0266730 c0143cf1 c0106bc2 f6427a0c c0107810 f642020c f6427a04 f6427a0c
+>         Call Trace:
+>          [<c0266730>] balloon_process+0x0/0x530
+>          [<c0143cf1>] run_workqueue+0x91/0x140
+>          [<c0106bc2>] check_events+0x8/0x16
+>          [<c0107810>] xen_spin_unlock+0x0/0x50
+>          [<c01473e0>] autoremove_wake_function+0x0/0x50
+>          [<c0144718>] worker_thread+0x98/0xf0
+>          [<c01473e0>] autoremove_wake_function+0x0/0x50
+>          [<c0144680>] worker_thread+0x0/0xf0
+>          [<c01470c2>] kthread+0x42/0x70
+>          [<c0147080>] kthread+0x0/0x70
+>          [<c010a5f3>] kernel_thread_helper+0x7/0x10
+>         Code: 00 00 00 00 e8 9b a1 f0 ff 31 f6 e8 e4 2f eb ff b8 e0 7b 54 c0 e8 1a 90 16 00 8b 6c 24 18 89 44 24 14 89 74 24 10 e9 eb fe ff ff <0f> 0b eb fe 90 8d 74 26 00 83 ec 04 b8 20 fc 4a c0 e8 13 dc ff 
+>         EIP: [<c0266c57>] balloon_process+0x527/0x530 SS:ESP 0069:f64b5f44
+>         ---[ end trace 4eaa2a86a8e2da28 ]---
+>
+> diff -r b64a63f076cd drivers/xen/balloon.c
+> --- a/drivers/xen/balloon.c	Fri Jan 23 13:29:48 2009 +0000
+> +++ b/drivers/xen/balloon.c	Fri Jan 23 14:09:08 2009 +0000
+> @@ -292,10 +292,13 @@
+>  
+>  		scrub_page(page);
+>  
+> -		ret = HYPERVISOR_update_va_mapping(
+> -			(unsigned long)__va(pfn << PAGE_SHIFT),
+> -			__pte_ma(0), 0);
+> -		BUG_ON(ret);
+> +		if (!PageHighMem(page)) {
+> +			ret = HYPERVISOR_update_va_mapping(
+> +				(unsigned long)__va(pfn << PAGE_SHIFT),
+> +				__pte_ma(0), 0);
+> +			BUG_ON(ret);
+> +                }
+> +
+>  	}
+>  
+>  	/* Ensure that ballooned highmem pages don't have kmaps. */
+>
+>
+>   
 
-to receive the following updates:
-
-Heiko Carstens (3):
-      [S390] personality: fix personality loss on execve
-      [S390] cputime: fix lowcore initialization on cpu hotplug
-      [S390] etr/stp: fix possible deadlock
-
-Michael Holzheu (2):
-      [S390] fix compat sigaltstack syscall table entry
-      [S390] Add missing compat system call wrappers.
-
- arch/s390/include/asm/elf.h       |   16 +++++++-------
- arch/s390/kernel/compat_wrapper.S |   38 +++++++++++++++++++++++++++++++++++++
- arch/s390/kernel/syscalls.S       |   12 +++++-----
- arch/s390/kernel/time.c           |    6 +++-
- arch/s390/kernel/vtime.c          |    4 +++
- 5 files changed, 60 insertions(+), 16 deletions(-)
-
-diff --git a/arch/s390/include/asm/elf.h b/arch/s390/include/asm/elf.h
-index d480f39..74d0bbb 100644
---- a/arch/s390/include/asm/elf.h
-+++ b/arch/s390/include/asm/elf.h
-@@ -172,14 +172,14 @@ extern char elf_platform[];
- #ifndef __s390x__
- #define SET_PERSONALITY(ex) set_personality(PER_LINUX)
- #else /* __s390x__ */
--#define SET_PERSONALITY(ex)				\
--do {							\
--	if (current->personality != PER_LINUX32)	\
--		set_personality(PER_LINUX);		\
--	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)	\
--		set_thread_flag(TIF_31BIT);		\
--	else						\
--		clear_thread_flag(TIF_31BIT);		\
-+#define SET_PERSONALITY(ex)					\
-+do {								\
-+	if (personality(current->personality) != PER_LINUX32)	\
-+		set_personality(PER_LINUX);			\
-+	if ((ex).e_ident[EI_CLASS] == ELFCLASS32)		\
-+		set_thread_flag(TIF_31BIT);			\
-+	else							\
-+		clear_thread_flag(TIF_31BIT);			\
- } while (0)
- #endif /* __s390x__ */
- 
-diff --git a/arch/s390/kernel/compat_wrapper.S b/arch/s390/kernel/compat_wrapper.S
-index 6035cd2..62c706e 100644
---- a/arch/s390/kernel/compat_wrapper.S
-+++ b/arch/s390/kernel/compat_wrapper.S
-@@ -1767,3 +1767,41 @@ sys_dup3_wrapper:
- sys_epoll_create1_wrapper:
- 	lgfr	%r2,%r2			# int
- 	jg	sys_epoll_create1	# branch to system call
-+
-+	.globl	sys32_readahead_wrapper
-+sys32_readahead_wrapper:
-+	lgfr	%r2,%r2			# int
-+	llgfr	%r3,%r3			# u32
-+	llgfr	%r4,%r4			# u32
-+	lgfr	%r5,%r5			# s32
-+	jg	sys32_readahead		# branch to system call
-+
-+	.globl	sys32_sendfile64_wrapper
-+sys32_sendfile64_wrapper:
-+	lgfr	%r2,%r2			# int
-+	lgfr	%r3,%r3			# int
-+	llgtr	%r4,%r4			# compat_loff_t *
-+	lgfr	%r5,%r5			# s32
-+	jg	sys32_sendfile64	# branch to system call
-+
-+	.globl	sys_tkill_wrapper
-+sys_tkill_wrapper:
-+	lgfr	%r2,%r2			# pid_t
-+	lgfr	%r3,%r3			# int
-+	jg	sys_tkill		# branch to system call
-+
-+	.globl	sys_tgkill_wrapper
-+sys_tgkill_wrapper:
-+	lgfr	%r2,%r2			# pid_t
-+	lgfr	%r3,%r3			# pid_t
-+	lgfr	%r4,%r4			# int
-+	jg	sys_tgkill		# branch to system call
-+
-+	.globl	compat_sys_keyctl_wrapper
-+compat_sys_keyctl_wrapper:
-+	llgfr	%r2,%r2			# u32
-+	llgfr	%r3,%r3			# u32
-+	llgfr	%r4,%r4			# u32
-+	llgfr	%r5,%r5			# u32
-+	llgfr	%r6,%r6			# u32
-+	jg	compat_sys_keyctl	# branch to system call
-diff --git a/arch/s390/kernel/syscalls.S b/arch/s390/kernel/syscalls.S
-index 76d16e0..fe5b25a 100644
---- a/arch/s390/kernel/syscalls.S
-+++ b/arch/s390/kernel/syscalls.S
-@@ -194,7 +194,7 @@ SYSCALL(sys_chown16,sys_ni_syscall,sys32_chown16_wrapper)	/* old chown16 syscall
- SYSCALL(sys_getcwd,sys_getcwd,sys32_getcwd_wrapper)
- SYSCALL(sys_capget,sys_capget,sys32_capget_wrapper)
- SYSCALL(sys_capset,sys_capset,sys32_capset_wrapper)		/* 185 */
--SYSCALL(sys_sigaltstack,sys_sigaltstack,sys32_sigaltstack)
-+SYSCALL(sys_sigaltstack,sys_sigaltstack,sys32_sigaltstack_wrapper)
- SYSCALL(sys_sendfile,sys_sendfile64,sys32_sendfile_wrapper)
- NI_SYSCALL							/* streams1 */
- NI_SYSCALL							/* streams2 */
-@@ -230,8 +230,8 @@ SYSCALL(sys_mincore,sys_mincore,sys32_mincore_wrapper)
- SYSCALL(sys_madvise,sys_madvise,sys32_madvise_wrapper)
- SYSCALL(sys_getdents64,sys_getdents64,sys32_getdents64_wrapper)	/* 220 */
- SYSCALL(sys_fcntl64,sys_ni_syscall,compat_sys_fcntl64_wrapper)
--SYSCALL(sys_readahead,sys_readahead,sys32_readahead)
--SYSCALL(sys_sendfile64,sys_ni_syscall,sys32_sendfile64)
-+SYSCALL(sys_readahead,sys_readahead,sys32_readahead_wrapper)
-+SYSCALL(sys_sendfile64,sys_ni_syscall,sys32_sendfile64_wrapper)
- SYSCALL(sys_setxattr,sys_setxattr,sys32_setxattr_wrapper)
- SYSCALL(sys_lsetxattr,sys_lsetxattr,sys32_lsetxattr_wrapper)	/* 225 */
- SYSCALL(sys_fsetxattr,sys_fsetxattr,sys32_fsetxattr_wrapper)
-@@ -245,11 +245,11 @@ SYSCALL(sys_removexattr,sys_removexattr,sys32_removexattr_wrapper)
- SYSCALL(sys_lremovexattr,sys_lremovexattr,sys32_lremovexattr_wrapper)
- SYSCALL(sys_fremovexattr,sys_fremovexattr,sys32_fremovexattr_wrapper)	/* 235 */
- SYSCALL(sys_gettid,sys_gettid,sys_gettid)
--SYSCALL(sys_tkill,sys_tkill,sys_tkill)
-+SYSCALL(sys_tkill,sys_tkill,sys_tkill_wrapper)
- SYSCALL(sys_futex,sys_futex,compat_sys_futex_wrapper)
- SYSCALL(sys_sched_setaffinity,sys_sched_setaffinity,sys32_sched_setaffinity_wrapper)
- SYSCALL(sys_sched_getaffinity,sys_sched_getaffinity,sys32_sched_getaffinity_wrapper)	/* 240 */
--SYSCALL(sys_tgkill,sys_tgkill,sys_tgkill)
-+SYSCALL(sys_tgkill,sys_tgkill,sys_tgkill_wrapper)
- NI_SYSCALL							/* reserved for TUX */
- SYSCALL(sys_io_setup,sys_io_setup,sys32_io_setup_wrapper)
- SYSCALL(sys_io_destroy,sys_io_destroy,sys32_io_destroy_wrapper)
-@@ -288,7 +288,7 @@ SYSCALL(sys_mq_getsetattr,sys_mq_getsetattr,compat_sys_mq_getsetattr_wrapper)
- SYSCALL(sys_kexec_load,sys_kexec_load,compat_sys_kexec_load_wrapper)
- SYSCALL(sys_add_key,sys_add_key,compat_sys_add_key_wrapper)
- SYSCALL(sys_request_key,sys_request_key,compat_sys_request_key_wrapper)
--SYSCALL(sys_keyctl,sys_keyctl,compat_sys_keyctl)		/* 280 */
-+SYSCALL(sys_keyctl,sys_keyctl,compat_sys_keyctl_wrapper)		/* 280 */
- SYSCALL(sys_waitid,sys_waitid,compat_sys_waitid_wrapper)
- SYSCALL(sys_ioprio_set,sys_ioprio_set,sys_ioprio_set_wrapper)
- SYSCALL(sys_ioprio_get,sys_ioprio_get,sys_ioprio_get_wrapper)
-diff --git a/arch/s390/kernel/time.c b/arch/s390/kernel/time.c
-index d649600..fc468ca 100644
---- a/arch/s390/kernel/time.c
-+++ b/arch/s390/kernel/time.c
-@@ -399,8 +399,10 @@ static struct workqueue_struct *time_sync_wq;
- 
- static void __init time_init_wq(void)
- {
--	if (!time_sync_wq)
--		time_sync_wq = create_singlethread_workqueue("timesync");
-+	if (time_sync_wq)
-+		return;
-+	time_sync_wq = create_singlethread_workqueue("timesync");
-+	stop_machine_create();
- }
- 
- /*
-diff --git a/arch/s390/kernel/vtime.c b/arch/s390/kernel/vtime.c
-index 2fb36e4..ecf0304 100644
---- a/arch/s390/kernel/vtime.c
-+++ b/arch/s390/kernel/vtime.c
-@@ -516,8 +516,12 @@ EXPORT_SYMBOL(del_virt_timer);
-  */
- void init_cpu_vtimer(void)
- {
-+	struct thread_info *ti = current_thread_info();
- 	struct vtimer_queue *vq;
- 
-+	S390_lowcore.user_timer = ti->user_timer;
-+	S390_lowcore.system_timer = ti->system_timer;
-+
- 	/* kick the virtual timer */
- 	asm volatile ("STCK %0" : "=m" (S390_lowcore.last_update_clock));
- 	asm volatile ("STPT %0" : "=m" (S390_lowcore.last_update_timer));
