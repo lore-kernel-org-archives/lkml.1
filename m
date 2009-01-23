@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763813AbZAWGZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762720AbZAWGY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763813AbZAWGZy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:25:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761218AbZAWGQt
+	id S1762720AbZAWGY5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:24:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761191AbZAWGQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:49 -0500
-Received: from kroah.org ([198.145.64.141]:36359 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:46 -0500
+Received: from kroah.org ([198.145.64.141]:36355 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761153AbZAWGQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:45 -0500
-Date: Thu, 22 Jan 2009 22:14:21 -0800
+	id S1760990AbZAWGQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:43 -0500
+Date: Thu, 22 Jan 2009 22:14:12 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Alistair John Strachan <alistair@devzero.co.uk>,
-       Hans de Goede <hdegoede@redhat.com>, Jean Delvare <khali@linux-fr.org>
-Subject: [patch 26/40] hwmon: (abituguru3) Fix CONFIG_DMI=n fallback to
-	probe
-Message-ID: <20090123061421.GZ2922@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>,
+       Rudolf Marek <r.marek@assembler.cz>
+Subject: [patch 23/40] hwmon-vid: Add support for AMD family 10h CPUs
+Message-ID: <20090123061412.GW2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="hwmon-fix-config_dmi-n-fallback-to-probe.patch"
+Content-Disposition: inline; filename="hwmon-vid-add-support-for-amd-family-10h-cpus.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,34 +40,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alistair John Strachan <alistair@devzero.co.uk>
+From: Jean Delvare <khali@linux-fr.org>
 
-commit 46a5f173fc88ffc22651162033696d8a9fbcdc5c upstream.
+commit 1b871826b3dfcdcd78140d17c00e452eec6c12a4 upstream.
 
-When CONFIG_DMI is not enabled, dmi detection should flag that no board
-could be detected (err=1) rather than another error condition (err<0).
+The AMD family 10h CPUs use the same VID decoding table as the family
+0Fh CPUs.
 
-This fixes the fallback to manual probing for all motherboards, even
-those without DMI strings, when CONFIG_DMI=n.
-
-Signed-off-by: Alistair John Strachan <alistair@devzero.co.uk>
-Cc: Hans de Goede <hdegoede@redhat.com>
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Cc: Rudolf Marek <r.marek@assembler.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/abituguru3.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/hwmon/hwmon-vid.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/hwmon/abituguru3.c
-+++ b/drivers/hwmon/abituguru3.c
-@@ -1153,7 +1153,7 @@ static int __init abituguru3_dmi_detect(
- 
- static inline int abituguru3_dmi_detect(void)
- {
--	return -ENODEV;
-+	return 1;
- }
- 
- #endif /* CONFIG_DMI */
+--- a/drivers/hwmon/hwmon-vid.c
++++ b/drivers/hwmon/hwmon-vid.c
+@@ -180,6 +180,7 @@ static struct vrm_model vrm_models[] = {
+ 	{X86_VENDOR_AMD, 0x6, ANY, ANY, 90},		/* Athlon Duron etc */
+ 	{X86_VENDOR_AMD, 0xF, 0x3F, ANY, 24},		/* Athlon 64, Opteron */
+ 	{X86_VENDOR_AMD, 0xF, ANY, ANY, 25},		/* NPT family 0Fh */
++	{X86_VENDOR_AMD, 0x10, ANY, ANY, 25},		/* NPT family 10h */
+ 	{X86_VENDOR_INTEL, 0x6, 0x9, ANY, 13},		/* Pentium M (130 nm) */
+ 	{X86_VENDOR_INTEL, 0x6, 0xB, ANY, 85},		/* Tualatin */
+ 	{X86_VENDOR_INTEL, 0x6, 0xD, ANY, 13},		/* Pentium M (90 nm) */
 
