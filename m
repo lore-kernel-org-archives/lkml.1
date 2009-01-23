@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761794AbZAWBXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761693AbZAWBT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761794AbZAWBXn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:23:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758892AbZAWBPU
+	id S1761693AbZAWBT6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:19:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760187AbZAWBO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:15:20 -0500
-Received: from kroah.org ([198.145.64.141]:50652 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:14:57 -0500
+Received: from kroah.org ([198.145.64.141]:50496 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760239AbZAWBPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:04 -0500
-Date: Thu, 22 Jan 2009 17:12:24 -0800
+	id S1760138AbZAWBOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:14:53 -0500
+Date: Thu, 22 Jan 2009 17:12:00 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 26/46] USB: re-enable interface after driver unbinds
-Message-ID: <20090123011224.GA19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       USB Storage list <usb-storage@lists.one-eyed-alien.net>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 16/46] usb-storage: add last-sector hacks
+Message-ID: <20090123011200.GQ19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-re-enable-interface-after-driver-unbinds.patch"
+Content-Disposition: inline; filename="usb-storage-add-last-sector-hacks.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,174 +43,310 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 2caf7fcdb8532045680f06b67b9e63f0c9613aaa upstream.
+commit 25ff1c316f6a763f1eefe7f8984b2d8c03888432 upstream.
 
-This patch (as1197) fixes an error introduced recently.  Since a
-significant number of devices can't handle Set-Interface requests, we
-no longer call usb_set_interface() when a driver unbinds from an
-interface, provided the interface is already in altsetting 0.  However
-the interface still does get disabled, and the call to
-usb_set_interface() was the only thing re-enabling it.  Since the
-interface doesn't get re-enabled, further attempts to use it fail.
+This patch (as1189c) adds some hacks to usb-storage for dealing with
+the growing problems involving bad capacity values and last-sector
+accesses:
 
-So the patch adds a call to usb_enable_interface() when a driver
-unbinds and the interface is in altsetting 0.  For this to work
-right, the interface's endpoints have to be re-enabled but their
-toggles have to be left alone.  Therefore an additional argument is
-added to usb_enable_endpoint() and usb_enable_interface(), a flag
-indicating whether or not the endpoint toggles should be reset.
+	A new flag, US_FL_CAPACITY_OK, is created to indicate that
+	the device is known to report its capacity correctly.  An
+	unusual_devs entry for Linux's own File-backed Storage Gadget
+	is added with this flag set, since g_file_storage always
+	reports the correct capacity and since the capacity need
+	not be even (it is determined by the size of the backing
+	file).
 
-This is a forward-ported version of a patch which fixes Bugzilla
-#12301.
+	An entry in unusual_devs.h which has only the CAPACITY_OK
+	flag set shouldn't prejudice libusual, since the device will
+	work perfectly well with either usb-storage or ub.  So a
+	new macro, COMPLIANT_DEV, is added to let libusual know
+	about these entries.
+
+	When a last-sector access fails three times in a row and
+	neither the FIX_CAPACITY nor the CAPACITY_OK flag is set,
+	we assume the last-sector bug is present.  We replace the
+	existing status and sense data with values that will cause
+	the SCSI core to fail the access immediately rather than
+	retry indefinitely.  This should fix the difficulties
+	people have been having with Nokia phones.
+
+This version of the patch differs from the version accepted into the
+mainline only in that it does not trigger a WARN() when an
+odd-numbered last-sector access succeeds.  In a stable kernel series
+we don't want to go around spamming users' logs and consoles for no
+good reason.
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-by: David Roka <roka@dawid.hu>
-Reported-by: Erik Ekman <erik@kryo.se>
-Tested-by: Erik Ekman <erik@kryo.se>
-Tested-by: Alon Bar-Lev <alon.barlev@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/driver.c  |    9 ++++++---
- drivers/usb/core/hub.c     |    2 +-
- drivers/usb/core/message.c |   25 +++++++++++++++----------
- drivers/usb/core/usb.c     |    2 +-
- drivers/usb/core/usb.h     |    4 +++-
- 5 files changed, 26 insertions(+), 16 deletions(-)
+ drivers/usb/storage/libusual.c     |    7 +++
+ drivers/usb/storage/scsiglue.c     |    8 +++
+ drivers/usb/storage/transport.c    |   80 +++++++++++++++++++++++++++++++++++++
+ drivers/usb/storage/unusual_devs.h |   16 ++++++-
+ drivers/usb/storage/usb.c          |    6 ++
+ drivers/usb/storage/usb.h          |    4 +
+ include/linux/usb_usual.h          |    5 +-
+ 7 files changed, 123 insertions(+), 3 deletions(-)
 
---- a/drivers/usb/core/driver.c
-+++ b/drivers/usb/core/driver.c
-@@ -279,9 +279,12 @@ static int usb_unbind_interface(struct d
- 	 * altsetting means creating new endpoint device entries).
- 	 * When either of these happens, defer the Set-Interface.
- 	 */
--	if (intf->cur_altsetting->desc.bAlternateSetting == 0)
--		;	/* Already in altsetting 0 so skip Set-Interface */
--	else if (!error && intf->dev.power.status == DPM_ON)
-+	if (intf->cur_altsetting->desc.bAlternateSetting == 0) {
-+		/* Already in altsetting 0 so skip Set-Interface.
-+		 * Just re-enable it without affecting the endpoint toggles.
+--- a/drivers/usb/storage/libusual.c
++++ b/drivers/usb/storage/libusual.c
+@@ -46,6 +46,12 @@ static int usu_probe_thread(void *arg);
+ { USB_DEVICE_VER(id_vendor, id_product, bcdDeviceMin,bcdDeviceMax), \
+   .driver_info = (flags)|(USB_US_TYPE_STOR<<24) }
+ 
++#define COMPLIANT_DEV(id_vendor, id_product, bcdDeviceMin, bcdDeviceMax, \
++		    vendorName, productName, useProtocol, useTransport, \
++		    initFunction, flags) \
++{ USB_DEVICE_VER(id_vendor, id_product, bcdDeviceMin, bcdDeviceMax), \
++  .driver_info = (flags) }
++
+ #define USUAL_DEV(useProto, useTrans, useType) \
+ { USB_INTERFACE_INFO(USB_CLASS_MASS_STORAGE, useProto, useTrans), \
+   .driver_info = ((useType)<<24) }
+@@ -57,6 +63,7 @@ struct usb_device_id storage_usb_ids [] 
+ 
+ #undef USUAL_DEV
+ #undef UNUSUAL_DEV
++#undef COMPLIANT_DEV
+ 
+ MODULE_DEVICE_TABLE(usb, storage_usb_ids);
+ EXPORT_SYMBOL_GPL(storage_usb_ids);
+--- a/drivers/usb/storage/scsiglue.c
++++ b/drivers/usb/storage/scsiglue.c
+@@ -196,6 +196,14 @@ static int slave_configure(struct scsi_d
+ 		 * sector in a larger then 1 sector read, since the performance
+ 		 * impact is negible we set this flag for all USB disks */
+ 		sdev->last_sector_bug = 1;
++
++		/* Enable last-sector hacks for single-target devices using
++		 * the Bulk-only transport, unless we already know the
++		 * capacity will be decremented or is correct. */
++		if (!(us->fflags & (US_FL_FIX_CAPACITY | US_FL_CAPACITY_OK |
++					US_FL_SCM_MULT_TARG)) &&
++				us->protocol == US_PR_BULK)
++			us->use_last_sector_hacks = 1;
+ 	} else {
+ 
+ 		/* Non-disk-type devices don't need to blacklist any pages
+--- a/drivers/usb/storage/transport.c
++++ b/drivers/usb/storage/transport.c
+@@ -57,6 +57,9 @@
+ #include "scsiglue.h"
+ #include "debug.h"
+ 
++#include <linux/blkdev.h>
++#include "../../scsi/sd.h"
++
+ 
+ /***********************************************************************
+  * Data transfer routines
+@@ -511,6 +514,80 @@ int usb_stor_bulk_transfer_sg(struct us_
+  * Transport routines
+  ***********************************************************************/
+ 
++/* There are so many devices that report the capacity incorrectly,
++ * this routine was written to counteract some of the resulting
++ * problems.
++ */
++static void last_sector_hacks(struct us_data *us, struct scsi_cmnd *srb)
++{
++	struct gendisk *disk;
++	struct scsi_disk *sdkp;
++	u32 sector;
++
++	/* To Report "Medium Error: Record Not Found */
++	static unsigned char record_not_found[18] = {
++		[0]	= 0x70,			/* current error */
++		[2]	= MEDIUM_ERROR,		/* = 0x03 */
++		[7]	= 0x0a,			/* additional length */
++		[12]	= 0x14			/* Record Not Found */
++	};
++
++	/* If last-sector problems can't occur, whether because the
++	 * capacity was already decremented or because the device is
++	 * known to report the correct capacity, then we don't need
++	 * to do anything.
++	 */
++	if (!us->use_last_sector_hacks)
++		return;
++
++	/* Was this command a READ(10) or a WRITE(10)? */
++	if (srb->cmnd[0] != READ_10 && srb->cmnd[0] != WRITE_10)
++		goto done;
++
++	/* Did this command access the last sector? */
++	sector = (srb->cmnd[2] << 24) | (srb->cmnd[3] << 16) |
++			(srb->cmnd[4] << 8) | (srb->cmnd[5]);
++	disk = srb->request->rq_disk;
++	if (!disk)
++		goto done;
++	sdkp = scsi_disk(disk);
++	if (!sdkp)
++		goto done;
++	if (sector + 1 != sdkp->capacity)
++		goto done;
++
++	if (srb->result == SAM_STAT_GOOD && scsi_get_resid(srb) == 0) {
++
++		/* The command succeeded.  We know this device doesn't
++		 * have the last-sector bug, so stop checking it.
 +		 */
-+		usb_enable_interface(udev, intf, false);
-+	} else if (!error && intf->dev.power.status == DPM_ON)
- 		usb_set_interface(udev, intf->altsetting[0].
- 				desc.bInterfaceNumber, 0);
- 	else
---- a/drivers/usb/core/hub.c
-+++ b/drivers/usb/core/hub.c
-@@ -2385,7 +2385,7 @@ void usb_ep0_reinit(struct usb_device *u
- {
- 	usb_disable_endpoint(udev, 0 + USB_DIR_IN);
- 	usb_disable_endpoint(udev, 0 + USB_DIR_OUT);
--	usb_enable_endpoint(udev, &udev->ep0);
-+	usb_enable_endpoint(udev, &udev->ep0, true);
- }
- EXPORT_SYMBOL_GPL(usb_ep0_reinit);
- 
---- a/drivers/usb/core/message.c
-+++ b/drivers/usb/core/message.c
-@@ -1113,22 +1113,26 @@ void usb_disable_device(struct usb_devic
-  * usb_enable_endpoint - Enable an endpoint for USB communications
-  * @dev: the device whose interface is being enabled
-  * @ep: the endpoint
-+ * @reset_toggle: flag to set the endpoint's toggle back to 0
++		us->use_last_sector_hacks = 0;
++
++	} else {
++		/* The command failed.  Allow up to 3 retries in case this
++		 * is some normal sort of failure.  After that, assume the
++		 * capacity is wrong and we're trying to access the sector
++		 * beyond the end.  Replace the result code and sense data
++		 * with values that will cause the SCSI core to fail the
++		 * command immediately, instead of going into an infinite
++		 * (or even just a very long) retry loop.
++		 */
++		if (++us->last_sector_retries < 3)
++			return;
++		srb->result = SAM_STAT_CHECK_CONDITION;
++		memcpy(srb->sense_buffer, record_not_found,
++				sizeof(record_not_found));
++	}
++
++ done:
++	/* Don't reset the retry counter for TEST UNIT READY commands,
++	 * because they get issued after device resets which might be
++	 * caused by a failed last-sector access.
++	 */
++	if (srb->cmnd[0] != TEST_UNIT_READY)
++		us->last_sector_retries = 0;
++}
++
+ /* Invoke the transport and basic error-handling/recovery methods
   *
-- * Resets the endpoint toggle, and sets dev->ep_{in,out} pointers.
-+ * Resets the endpoint toggle if asked, and sets dev->ep_{in,out} pointers.
-  * For control endpoints, both the input and output sides are handled.
-  */
--void usb_enable_endpoint(struct usb_device *dev, struct usb_host_endpoint *ep)
-+void usb_enable_endpoint(struct usb_device *dev, struct usb_host_endpoint *ep,
-+		bool reset_toggle)
- {
- 	int epnum = usb_endpoint_num(&ep->desc);
- 	int is_out = usb_endpoint_dir_out(&ep->desc);
- 	int is_control = usb_endpoint_xfer_control(&ep->desc);
- 
- 	if (is_out || is_control) {
--		usb_settoggle(dev, epnum, 1, 0);
-+		if (reset_toggle)
-+			usb_settoggle(dev, epnum, 1, 0);
- 		dev->ep_out[epnum] = ep;
+  * This is used by the protocol layers to actually send the message to
+@@ -544,6 +621,7 @@ void usb_stor_invoke_transport(struct sc
+ 	/* if the transport provided its own sense data, don't auto-sense */
+ 	if (result == USB_STOR_TRANSPORT_NO_SENSE) {
+ 		srb->result = SAM_STAT_CHECK_CONDITION;
++		last_sector_hacks(us, srb);
+ 		return;
  	}
- 	if (!is_out || is_control) {
--		usb_settoggle(dev, epnum, 0, 0);
-+		if (reset_toggle)
-+			usb_settoggle(dev, epnum, 0, 0);
- 		dev->ep_in[epnum] = ep;
- 	}
- 	ep->enabled = 1;
-@@ -1138,17 +1142,18 @@ void usb_enable_endpoint(struct usb_devi
-  * usb_enable_interface - Enable all the endpoints for an interface
-  * @dev: the device whose interface is being enabled
-  * @intf: pointer to the interface descriptor
-+ * @reset_toggles: flag to set the endpoints' toggles back to 0
-  *
-  * Enables all the endpoints for the interface's current altsetting.
-  */
--static void usb_enable_interface(struct usb_device *dev,
--				 struct usb_interface *intf)
-+void usb_enable_interface(struct usb_device *dev,
-+		struct usb_interface *intf, bool reset_toggles)
- {
- 	struct usb_host_interface *alt = intf->cur_altsetting;
- 	int i;
  
- 	for (i = 0; i < alt->desc.bNumEndpoints; ++i)
--		usb_enable_endpoint(dev, &alt->endpoint[i]);
-+		usb_enable_endpoint(dev, &alt->endpoint[i], reset_toggles);
+@@ -667,6 +745,7 @@ void usb_stor_invoke_transport(struct sc
+ 			scsi_bufflen(srb) - scsi_get_resid(srb) < srb->underflow)
+ 		srb->result = (DID_ERROR << 16) | (SUGGEST_RETRY << 24);
+ 
++	last_sector_hacks(us, srb);
+ 	return;
+ 
+ 	/* Error and abort processing: try to resynchronize with the device
+@@ -694,6 +773,7 @@ void usb_stor_invoke_transport(struct sc
+ 		us->transport_reset(us);
+ 	}
+ 	clear_bit(US_FLIDX_RESETTING, &us->dflags);
++	last_sector_hacks(us, srb);
  }
  
- /**
-@@ -1271,7 +1276,7 @@ int usb_set_interface(struct usb_device 
- 	 * during the SETUP stage - hence EP0 toggles are "don't care" here.
- 	 * (Likewise, EP0 never "halts" on well designed devices.)
- 	 */
--	usb_enable_interface(dev, iface);
-+	usb_enable_interface(dev, iface, true);
- 	if (device_is_registered(&iface->dev))
- 		usb_create_sysfs_intf_files(iface);
+ /* Stop the current URB transfer */
+--- a/drivers/usb/storage/unusual_devs.h
++++ b/drivers/usb/storage/unusual_devs.h
+@@ -27,7 +27,8 @@
  
-@@ -1346,7 +1351,7 @@ int usb_reset_configuration(struct usb_d
- 			alt = &intf->altsetting[0];
+ /* IMPORTANT NOTE: This file must be included in another file which does
+  * the following thing for it to work:
+- * The macro UNUSUAL_DEV() must be defined before this file is included
++ * The UNUSUAL_DEV, COMPLIANT_DEV, and USUAL_DEV macros must be defined
++ * before this file is included.
+  */
  
- 		intf->cur_altsetting = alt;
--		usb_enable_interface(dev, intf);
-+		usb_enable_interface(dev, intf, true);
- 		if (device_is_registered(&intf->dev))
- 			usb_create_sysfs_intf_files(intf);
- 	}
-@@ -1604,7 +1609,7 @@ free_interfaces:
- 			alt = &intf->altsetting[0];
+ /* If you edit this file, please try to keep it sorted first by VendorID,
+@@ -46,6 +47,12 @@
+  * <usb-storage@lists.one-eyed-alien.net>
+  */
  
- 		intf->cur_altsetting = alt;
--		usb_enable_interface(dev, intf);
-+		usb_enable_interface(dev, intf, true);
- 		intf->dev.parent = &dev->dev;
- 		intf->dev.driver = NULL;
- 		intf->dev.bus = &usb_bus_type;
---- a/drivers/usb/core/usb.c
-+++ b/drivers/usb/core/usb.c
-@@ -362,7 +362,7 @@ struct usb_device *usb_alloc_dev(struct 
- 	dev->ep0.desc.bLength = USB_DT_ENDPOINT_SIZE;
- 	dev->ep0.desc.bDescriptorType = USB_DT_ENDPOINT;
- 	/* ep0 maxpacket comes later, from device descriptor */
--	usb_enable_endpoint(dev, &dev->ep0);
-+	usb_enable_endpoint(dev, &dev->ep0, true);
- 	dev->can_submit = 1;
++/* Note: If you add an entry only in order to set the CAPACITY_OK flag,
++ * use the COMPLIANT_DEV macro instead of UNUSUAL_DEV.  This is
++ * because such entries mark devices which actually work correctly,
++ * as opposed to devices that do something strangely or wrongly.
++ */
++
+ /* patch submitted by Vivian Bregier <Vivian.Bregier@imag.fr>
+  */
+ UNUSUAL_DEV(  0x03eb, 0x2002, 0x0100, 0x0100,
+@@ -692,6 +699,13 @@ UNUSUAL_DEV(  0x0525, 0xa140, 0x0100, 0x
+ 		US_SC_8070, US_PR_DEVICE, NULL,
+ 		US_FL_FIX_INQUIRY ),
  
- 	/* Save readable and stable topology id, distinguishing devices
---- a/drivers/usb/core/usb.h
-+++ b/drivers/usb/core/usb.h
-@@ -10,7 +10,9 @@ extern int usb_create_ep_files(struct de
- extern void usb_remove_ep_files(struct usb_host_endpoint *endpoint);
++/* Added by Alan Stern <stern@rowland.harvard.edu> */
++COMPLIANT_DEV(0x0525, 0xa4a5, 0x0000, 0x9999,
++		"Linux",
++		"File-backed Storage Gadget",
++		US_SC_DEVICE, US_PR_DEVICE, NULL,
++		US_FL_CAPACITY_OK ),
++
+ /* Yakumo Mega Image 37
+  * Submitted by Stephan Fuhrmann <atomenergie@t-online.de> */
+ UNUSUAL_DEV(  0x052b, 0x1801, 0x0100, 0x0100,
+--- a/drivers/usb/storage/usb.c
++++ b/drivers/usb/storage/usb.c
+@@ -126,6 +126,8 @@ MODULE_PARM_DESC(delay_use, "seconds to 
+ { USB_DEVICE_VER(id_vendor, id_product, bcdDeviceMin,bcdDeviceMax), \
+   .driver_info = (flags)|(USB_US_TYPE_STOR<<24) }
  
- extern void usb_enable_endpoint(struct usb_device *dev,
--		struct usb_host_endpoint *ep);
-+		struct usb_host_endpoint *ep, bool reset_toggle);
-+extern void usb_enable_interface(struct usb_device *dev,
-+		struct usb_interface *intf, bool reset_toggles);
- extern void usb_disable_endpoint(struct usb_device *dev, unsigned int epaddr);
- extern void usb_disable_interface(struct usb_device *dev,
- 		struct usb_interface *intf);
++#define COMPLIANT_DEV	UNUSUAL_DEV
++
+ #define USUAL_DEV(useProto, useTrans, useType) \
+ { USB_INTERFACE_INFO(USB_CLASS_MASS_STORAGE, useProto, useTrans), \
+   .driver_info = (USB_US_TYPE_STOR<<24) }
+@@ -134,6 +136,7 @@ static struct usb_device_id storage_usb_
+ 
+ #	include "unusual_devs.h"
+ #undef UNUSUAL_DEV
++#undef COMPLIANT_DEV
+ #undef USUAL_DEV
+ 	/* Terminating entry */
+ 	{ }
+@@ -164,6 +167,8 @@ MODULE_DEVICE_TABLE (usb, storage_usb_id
+ 	.initFunction = init_function,	\
+ }
+ 
++#define COMPLIANT_DEV	UNUSUAL_DEV
++
+ #define USUAL_DEV(use_protocol, use_transport, use_type) \
+ { \
+ 	.useProtocol = use_protocol,	\
+@@ -173,6 +178,7 @@ MODULE_DEVICE_TABLE (usb, storage_usb_id
+ static struct us_unusual_dev us_unusual_dev_list[] = {
+ #	include "unusual_devs.h" 
+ #	undef UNUSUAL_DEV
++#	undef COMPLIANT_DEV
+ #	undef USUAL_DEV
+ 
+ 	/* Terminating entry */
+--- a/drivers/usb/storage/usb.h
++++ b/drivers/usb/storage/usb.h
+@@ -155,6 +155,10 @@ struct us_data {
+ #ifdef CONFIG_PM
+ 	pm_hook			suspend_resume_hook;
+ #endif
++
++	/* hacks for READ CAPACITY bug handling */
++	int			use_last_sector_hacks;
++	int			last_sector_retries;
+ };
+ 
+ /* Convert between us_data and the corresponding Scsi_Host */
+--- a/include/linux/usb_usual.h
++++ b/include/linux/usb_usual.h
+@@ -52,8 +52,9 @@
+ 	US_FLAG(MAX_SECTORS_MIN,0x00002000)			\
+ 		/* Sets max_sectors to arch min */		\
+ 	US_FLAG(BULK_IGNORE_TAG,0x00004000)			\
+-		/* Ignore tag mismatch in bulk operations */
+-
++		/* Ignore tag mismatch in bulk operations */	\
++	US_FLAG(CAPACITY_OK,	0x00010000)			\
++		/* READ CAPACITY response is correct */
+ 
+ #define US_FLAG(name, value)	US_FL_##name = value ,
+ enum { US_DO_ALL_FLAGS };
 
