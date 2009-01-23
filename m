@@ -1,216 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbZAWGOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751639AbZAWGOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760408AbZAWGOX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:14:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZAWGON
+	id S1751639AbZAWGOk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:14:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZAWGO0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:14:13 -0500
-Received: from ns.suse.de ([195.135.220.2]:54103 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751398AbZAWGOM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:14:12 -0500
-Date: Fri, 23 Jan 2009 07:14:06 +0100
-From: Nick Piggin <npiggin@suse.de>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <clameter@engr.sgi.com>
-Subject: Re: [patch] SLQB slab allocator
-Message-ID: <20090123061405.GK20098@wotan.suse.de>
-References: <20090121143008.GV24891@wotan.suse.de> <20090121145918.GA11311@elte.hu> <20090121165600.GA16695@wotan.suse.de> <20090121174010.GA2998@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Jan 2009 01:14:26 -0500
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:32305 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760717AbZAWGOY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:14:24 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=LJhVXdqnEMDv1KSN29rB3mMxdEIexYfH1oATvzNrnNQVU4ZEGGGxTb5TxwFEK1ZdHu9IpY6WFrXT1tczfMlrA3SJo40XyJ3QJOGLXubGHhpvhd1/CaOwAzR7hEgruqQlSQrYZCnRnlcF4fOjTN06B3lSVkniKdys7mXJFKRaz84=  ;
+X-YMail-OSG: vaxoV_IVM1myunO1NofL0zWfeWjdq67g8kVBw.Lqh5kwyZz0UJhyLDOTAdxpMAX9HB3i2jz.kbhZMy6kEaZM26xIK1Hae.IG3fbz_FMY4qqLNJBuewc4qhI7Z3nHZTp_805VPmvVFIcVf1CW0LInbq9uIFXJ_f2tSCRay8wJ0BhbM8dC0GVVO1EivpRM
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Subject: Re: RFC: Working around dynamic device allocation in i2c.  Interaction with other subystems.
+Date: Thu, 22 Jan 2009 22:14:22 -0800
+User-Agent: KMail/1.9.10
+Cc: linux-i2c@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       eric miao <eric.y.miao@gmail.com>, Jean Delvare <khali@linux-fr.org>,
+       Ben Dooks <ben-linux@fluff.org>,
+       spi-devel-general@lists.sourceforge.net
+References: <4974D20F.20209@cam.ac.uk> <49786CA6.8010303@cam.ac.uk>
+In-Reply-To: <49786CA6.8010303@cam.ac.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 Content-Disposition: inline
-In-Reply-To: <20090121174010.GA2998@elte.hu>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200901222214.22806.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 06:40:10PM +0100, Ingo Molnar wrote:
-> -static inline void slqb_stat_inc(struct kmem_cache_list *list,
-> -				enum stat_item si)
-> +static inline void
-> +slqb_stat_inc(struct kmem_cache_list *list, enum stat_item si)
->  {
+On Thursday 22 January 2009, Jonathan Cameron wrote:
+> > Within board configuration files, i2c devices are currently allocated
+> > using i2c_board_info structures.  The only element of these that retains
+> > it's memory address once the struct device elements are allocated (upon
+> > adapter initialization) is the platform data pointer.
+> >
+> > Several subsystems (regulator and clock for example) use an association
+> > method based upon a device specific string associated with a pointer to
+> > a device structure.  Unfortunately as things currently stand there is no
+> > means of obtaining a suitable device for i2c devices at the point when
+> > it is required (in the board config).
 
-Hmm, I'm not entirely fond of this style. The former scales to longer lines
-with just a single style change (putting args into new lines), wheras the
-latter first moves its prefixes to a newline, then moves args as the
-line grows even longer.
+Yeah, kind of awkward.  Multi-Function Device (MFD) drivers have
+this kind of problem a lot.  A given I2C device might have a few
+dozen child devices -- including regulators and clock generators,
+RTCs, GPIOs, input devices, etc -- that can't be set up until the
+parent I2C device is probed.
 
-I guess it is a matter of taste, not wrong either way... but I think most
-of the mm code I'm used to looking at uses the former. Do you feel strongly?
-
-
-> +static void
-> +trace(struct kmem_cache *s, struct slqb_page *page, void *object, int alloc)
->  {
-> -	if (s->flags & SLAB_TRACE) {
-> -		printk(KERN_INFO "TRACE %s %s 0x%p inuse=%d fp=0x%p\n",
-> -			s->name,
-> -			alloc ? "alloc" : "free",
-> -			object, page->inuse,
-> -			page->freelist);
-> +	if (likely(!(s->flags & SLAB_TRACE)))
-> +		return;
-
-I think most of your flow control changes are improvements (others even
-more than this, but this is the first one so I comment here). Thanks.
+It's solved easily enough by making sure the associations and their
+devices get set up after the core of the MFD comes up ... in the
+probe() routine.  And by making sure the MFD and its subsystem
+initializes early enough that those other devices don't fail too
+many hidden assumptions.
 
 
-> @@ -1389,7 +1402,9 @@ static noinline void *__remote_slab_allo
->  	}
->  	if (likely(object))
->  		slqb_stat_inc(l, ALLOC);
-> +
->  	spin_unlock(&n->list_lock);
-> +
->  	return object;
->  }
->  #endif
+> > What do people think? In particular can anyone come up with any other /
+> > better way round this issue. (or am I missing something?)
+> > In particular, are there any similar cases already in kernel that would
+> > suggest a particular approach to solving this issue?
 
-Whitespace, I never really know if I'm "doing it right" or not :) And
-often it is easy to tell a badly wrong one, but harder to tell what is
-better between two reasonable ones. But I guess I'm the same way with
-paragraphs in my writing...
+This is a special case of a general problem:  init sequencing.
+The initcall levels don't provide sufficient control, so you
+need to work around them.
 
+Static device allocation is a bit problematic, and some folk
+really dislike it ... I'm not that averse to it, but since
+the cost of a device keeps growing I'd rather avoid that in
+most cases.  A couple dozen bytes of board_info, especially
+if it's __initdata, versus several hundred bytes of "struct
+foo_device", multiplied by even just a dozen devices that
+won't always be present, adds up.
 
-> @@ -1399,12 +1414,12 @@ static noinline void *__remote_slab_allo
->   *
->   * Must be called with interrupts disabled.
->   */
-> -static __always_inline void *__slab_alloc(struct kmem_cache *s,
-> -				gfp_t gfpflags, int node)
-> +static __always_inline void *
-> +__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node)
->  {
-> -	void *object;
-> -	struct kmem_cache_cpu *c;
->  	struct kmem_cache_list *l;
-> +	struct kmem_cache_cpu *c;
-> +	void *object;
+That leaves a dynamic solution for setting up linkage between
+various devices.  In the past I've done that using callbacks
+to board-specific code that knows what linkages to establish.
 
-Same with order of local variables. You like longest lines to
-shortest I know. I think I vaguely try to arrange them from the
-most important or high level "actor" to the least, and then in
-order of when they get discovered/used.
+You can see that with the GPIO controllers that use I2C or SPI
+communications:  they have setup callbacks that receive the
+device and GPIO information, which can continue to set the
+stage for the main event ... and teardown callbacks to break
+it all down after the show is done.
 
-For example, in the above function, "object" is the raison d'etre.
-kmem_cache_cpu is found first, and from that, kmem_cache_list is
-found. Which slightly explains the order.
+So for example those callbacks can be used to configure and
+then register the devices which rely on those GPIOs ... like
+LED banks, MMC/SD card sense switches, voltage regulator
+enables, and so on.
 
+- Dave
 
-> +static __always_inline void *
-> +slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node, void *addr)
->  {
-> -	void *object;
->  	unsigned long flags;
-> +	void *object;
-
-And here, eg. flags comes last because mostly inconsequential to
-the bigger picture.
-
-Your method is easier though, I'll grant you that :)
-
-
->  static void init_kmem_cache_list(struct kmem_cache *s,
->  				struct kmem_cache_list *l)
->  {
-> -	l->cache		= s;
-> -	l->freelist.nr		= 0;
-> -	l->freelist.head	= NULL;
-> -	l->freelist.tail	= NULL;
-> -	l->nr_partial		= 0;
-> -	l->nr_slabs		= 0;
-> +	l->cache		 = s;
-> +	l->freelist.nr		 = 0;
-> +	l->freelist.head	 = NULL;
-> +	l->freelist.tail	 = NULL;
-> +	l->nr_partial		 = 0;
-> +	l->nr_slabs		 = 0;
->  	INIT_LIST_HEAD(&l->partial);
-
-Hmm, we seem to have gathered an extra space...
-
->  
->  #ifdef CONFIG_SMP
-> -	l->remote_free_check	= 0;
-> +	l->remote_free_check	 = 0;
->  	spin_lock_init(&l->remote_free.lock);
-> -	l->remote_free.list.nr	= 0;
-> +	l->remote_free.list.nr	 = 0;
->  	l->remote_free.list.head = NULL;
->  	l->remote_free.list.tail = NULL;
->  #endif
-
-... ah, to line up with this guy. TBH, I prefer not to religiously
-line things up like this. If there is the odd long-line, just give
-it the normal single space. I find it just keeps it easier to
-maintain. Although you might counter that of course it is easier to
-keep something clean if one relaxes their definition of "clean".
-
-
->  static s8 size_index[24] __cacheline_aligned = {
-> -	3,	/* 8 */
-> -	4,	/* 16 */
-> -	5,	/* 24 */
-> -	5,	/* 32 */
-> -	6,	/* 40 */
-> -	6,	/* 48 */
-> -	6,	/* 56 */
-> -	6,	/* 64 */
-> +	 3,	/* 8 */
-> +	 4,	/* 16 */
-> +	 5,	/* 24 */
-> +	 5,	/* 32 */
-> +	 6,	/* 40 */
-> +	 6,	/* 48 */
-> +	 6,	/* 56 */
-> +	 6,	/* 64 */
-
-However justifying numbers, like this, I'm happy to do (may as well
-align the numbers in the comments too while we're here).
-
-
-> @@ -2278,9 +2294,8 @@ static struct kmem_cache *get_slab(size_
->  
->  void *__kmalloc(size_t size, gfp_t flags)
->  {
-> -	struct kmem_cache *s;
-> +	struct kmem_cache *s = get_slab(size, flags);
->  
-> -	s = get_slab(size, flags);
->  	if (unlikely(ZERO_OR_NULL_PTR(s)))
->  		return s;
-
-I've got yet the same problem with these... I mostly try to avoid
-doing this, although there are some cases where it works well
-(eg. constants, or a simple assignment of an argument to a local).
-
-At some point, you start putting real code in there, at which point
-the space after the local vars doesn't seem to serve much purpose.
-get_slab I feel logically belongs close to the subsequent check,
-because that's basically sanitizing its return value / extracting
-the error case from it and leaving the rest of the function to work
-on the common case.
-
-
-> -static int sysfs_available __read_mostly = 0;
-> +static int sysfs_available __read_mostly;
-
-These, I actually like initializing to zero explicitly. I'm pretty
-sure gcc no longer makes it any more expensive than leaving out.
-Yes of course everybody who knows C has to know this, but.... I
-just don't feel much harm in leaving it.
-
-Lots of good stuff, lots I'm on the fence with, some I dislike ;)
-I'll concentrate on picking up the obvious ones, and get the bugs
-fixed. Will see where the discussion goes with the rest.
-
-Thanks,
-Nick
