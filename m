@@ -1,153 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbZAWA21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZAWAcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760181AbZAWA21 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 19:28:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758818AbZAWA2B
+	id S1759525AbZAWAcU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 19:32:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754739AbZAWAcI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 19:28:01 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:65462 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757230AbZAWA2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 19:28:00 -0500
-Date: Thu, 22 Jan 2009 19:27:58 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] trace, lockdep: manual preempt count adding for
- local_bh_disable
-In-Reply-To: <alpine.DEB.1.10.0901221714030.5838@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.1.10.0901221926540.5838@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901221523400.5838@gandalf.stny.rr.com> <1232658518.4739.3.camel@laptop> <alpine.DEB.1.10.0901221714030.5838@gandalf.stny.rr.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 22 Jan 2009 19:32:08 -0500
+Received: from cantor.suse.de ([195.135.220.2]:46008 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754671AbZAWAcH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 19:32:07 -0500
+Date: Thu, 22 Jan 2009 16:30:34 -0800
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dave Jones <davej@redhat.com>, mingo@elte.hu, geert@linux-m68k.org,
+       joern@logfs.org, lkml@davidb.org, kernel@linuxace.com,
+       kay.sievers@vrfy.org, phillip@lougher.demon.co.uk, hch@infradead.org,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [GIT PULL] Squashfs pull request for 2.6.29
+Message-ID: <20090123003034.GA8141@suse.de>
+References: <20090109211937.GA14342@logfs.org> <20090110124335.GB30744@elte.hu> <20090110165033.GA23943@logfs.org> <20090110101235.7ca24c44.akpm@linux-foundation.org> <20090110221528.GA31774@elte.hu> <Pine.LNX.4.64.0901111022590.30201@anakin> <20090111153920.GC7401@elte.hu> <20090111163018.GA9300@suse.de> <20090122215041.GA29369@redhat.com> <20090122161659.53de9e56.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090122161659.53de9e56.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 22, 2009 at 04:16:59PM -0800, Andrew Morton wrote:
+> My question is: what is the process for moving things out of staging/ and
+> into the kernel proper?  We don't want to be merging ex-crap code which has
+> had its whitespace and wrappers cleaned up by a person who is not suitably
+> experienced in the relevant subsystem.
+> 
+> It _should_ (I think) be "OK, this is ready for us to start reviewing". 
+> ie: treat it as if it had just come in from a random new submitter.
 
-The following patch is in:
+I agree, and I will do just that.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> a) If that happens, who will be responding to the review comments?  Who
+>    was the submitter?
 
-    branch: tip/devel
+For drivers that don't have an active developer, I'll handle the review
+commends and fix things up.  Some of these drivers do have active
+developers, and I'm sure they will be the ones handling the review as
+well.
 
+> b) What happens if it is then decided that we just don't want that code
+>    in the tree at all?
 
-Steven Rostedt (1):
-      trace, lockdep: manual preempt count adding for local_bh_disable
+As it's "just a driver", the odds of that happening are probably going
+to be very slim.  We can cross that bridge when we come to it.
 
-----
- include/linux/sched.h |    2 ++
- kernel/sched.c        |    8 ++++----
- kernel/softirq.c      |   13 ++++++++++++-
- 3 files changed, 18 insertions(+), 5 deletions(-)
----------------------------
-commit f635d8460f544ffa64c8456f53356c28960ee46f
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Thu Jan 22 19:01:40 2009 -0500
+> c) Has any code yet made the transition out of staging and into the
+>    kernel proper?  If so, which?
 
-    trace, lockdep: manual preempt count adding for local_bh_disable
-    
-    Impact: fix to preempt trace triggering lockdep check_flag failure
-    
-    In local_bh_disable, the use of add_preempt_count causes the
-    preempt tracer to start recording the time preemption is off.
-    But because it already modified the preempt_count to show
-    softirqs disabled, and before it called the lockdep code to
-    handle this, it causes a state that lockdep can not handle.
-    
-    The preempt tracer will reset the ring buffer on start of a trace,
-    and the ring buffer reset code does a spin_lock_irqsave. This
-    calls into lockdep and lockdep will fail when it detects the
-    invalid state of having softirqs disabled but the internal
-    current->softirqs_enabled is still set.
-    
-    The fix is to manually add the SOFTIRQ_OFFSET to preempt count
-    and call the preempt tracer code outside the lockdep critical
-    area.
-    
-    Thanks to Peter Zijlstra for suggesting this solution.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+Not yet, but some of the network drivers are looking much better and I
+think they will move out soon.
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 5305e61..8545057 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -138,6 +138,8 @@ extern unsigned long nr_uninterruptible(void);
- extern unsigned long nr_active(void);
- extern unsigned long nr_iowait(void);
- 
-+extern unsigned long get_parent_ip(unsigned long addr);
-+
- struct seq_file;
- struct cfs_rq;
- struct task_group;
-diff --git a/kernel/sched.c b/kernel/sched.c
-index d7ae5f4..440a6b1 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4559,10 +4559,7 @@ void scheduler_tick(void)
- #endif
- }
- 
--#if defined(CONFIG_PREEMPT) && (defined(CONFIG_DEBUG_PREEMPT) || \
--				defined(CONFIG_PREEMPT_TRACER))
--
--static inline unsigned long get_parent_ip(unsigned long addr)
-+unsigned long get_parent_ip(unsigned long addr)
- {
- 	if (in_lock_functions(addr)) {
- 		addr = CALLER_ADDR2;
-@@ -4572,6 +4569,9 @@ static inline unsigned long get_parent_ip(unsigned long addr)
- 	return addr;
- }
- 
-+#if defined(CONFIG_PREEMPT) && (defined(CONFIG_DEBUG_PREEMPT) || \
-+				defined(CONFIG_PREEMPT_TRACER))
-+
- void __kprobes add_preempt_count(int val)
- {
- #ifdef CONFIG_DEBUG_PREEMPT
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 7e93870..3dd0d13 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -21,6 +21,7 @@
- #include <linux/freezer.h>
- #include <linux/kthread.h>
- #include <linux/rcupdate.h>
-+#include <linux/ftrace.h>
- #include <linux/smp.h>
- #include <linux/tick.h>
- 
-@@ -79,13 +80,23 @@ static void __local_bh_disable(unsigned long ip)
- 	WARN_ON_ONCE(in_irq());
- 
- 	raw_local_irq_save(flags);
--	add_preempt_count(SOFTIRQ_OFFSET);
-+	/*
-+	 * The preempt tracer hooks into add_preempt_count and will break
-+	 * lockdep because it calls back into lockdep after SOFTIRQ_OFFSET
-+	 * is set and before current->softirq_enabled is cleared.
-+	 * We must manually increment preempt_count here and manually
-+	 * call the trace_preempt_off later.
-+	 */
-+	preempt_count() += SOFTIRQ_OFFSET;
- 	/*
- 	 * Were softirqs turned off above:
- 	 */
- 	if (softirq_count() == SOFTIRQ_OFFSET)
- 		trace_softirqs_off(ip);
- 	raw_local_irq_restore(flags);
-+
-+	if (preempt_count() == SOFTIRQ_OFFSET)
-+		trace_preempt_off(CALLER_ADDR0, get_parent_ip(CALLER_ADDR1));
- }
- #else /* !CONFIG_TRACE_IRQFLAGS */
- static inline void __local_bh_disable(unsigned long ip)
+One of the v4l drivers should move out for .30, I need to get some time
+to send the patch to those developers.
 
+thanks,
 
+greg k-h
