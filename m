@@ -1,170 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760004AbZAWNg3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759461AbZAWNnj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760004AbZAWNg3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 08:36:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756146AbZAWNgV
+	id S1759461AbZAWNnj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 08:43:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755402AbZAWNnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 08:36:21 -0500
-Received: from mail.gmx.net ([213.165.64.20]:54964 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753818AbZAWNgU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 08:36:20 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/oERUGpOroGZiHGGH2loBotOK+RTobWHHYsFjajm
-	r963uy4Bty8M+n
-Subject: Re: [patch] ratelimit performance counter interrupts
-From: Mike Galbraith <efault@gmx.de>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <b9df5fa10901230532v57acec78qe949c44c4be2fbd9@mail.gmail.com>
-References: <1232716030.8750.11.camel@marge.simson.net>
-	 <b9df5fa10901230532v57acec78qe949c44c4be2fbd9@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 23 Jan 2009 14:36:16 +0100
-Message-Id: <1232717776.8978.2.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.41
+	Fri, 23 Jan 2009 08:43:31 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:39632 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753818AbZAWNna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 08:43:30 -0500
+Date: Fri, 23 Jan 2009 07:45:18 -0600
+From: Cliff Wickman <cpw@sgi.com>
+To: jidong xiao <jidong.xiao@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: How to generate a Kerntypes file?
+Message-ID: <20090123134518.GA23513@sgi.com>
+References: <4104961b0901220259u51677cbdkda2ed84dc2892543@mail.gmail.com> <20090122133107.GA27592@sgi.com> <4104961b0901222237h7fac5b1vf1b3b7f9d06d550c@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4104961b0901222237h7fac5b1vf1b3b7f9d06d550c@mail.gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-23 at 19:32 +0600, Rakib Mullick wrote:
-> On 1/23/09, Mike Galbraith <efault@gmx.de> wrote:
+On Fri, Jan 23, 2009 at 02:37:12PM +0800, jidong xiao wrote:
+> On Thu, Jan 22, 2009 at 9:31 PM, Cliff Wickman <cpw@sgi.com> wrote:
+> > Hi Jason,
+> >
+> > On Thu, Jan 22, 2009 at 06:59:34PM +0800, jidong xiao wrote:
+> >> Hi,All,
+> >>
+> >> Sometimes when I install a kernel I saw there is a Kerntypes file
+> >> installed under /boot directory, but sometimes no, I remember when I
+> >> install a sles9 kernel, there must be a Kerntypes file installed, but
+> >> most of other kernels doesn't include such a Kerntypes file. This file
+> >> is very useful for me to do some analysis, so I hope I can generate it
+> >> every time I build a kernel. Do I need a patch for this or there are
+> >> already some patches I can take use of?Thanks.
+> >
+> > You had a init/kerntypes.c in sles9 and sles10. It included a lot
+> > of basic kernel types.  It was compiled with -g to make the kerntypes.
+> > I presume that you used the LKCD project's lcrash with the kerntypes.
+> >
+> Hi, Cliff,
 > 
-> >  + * Mamimum interrupt frequency of 100KHz per CPU
-> >  + */
+> Thanks for your guides.
 > 
-> Hi Mike, I think you misspelled the word Maximum here.
+> Well yes I am intending to use lcrash to load the kernel debug information.
+> 
+> I noticed that recently kdb is going to be able to print out kernel
+> structures, and now I want to test that feature, I started my
+> experiments by reading the instructions inside
+> kdb/modules/kdbm_debugtypes.c which is saying:
+> 
+>  * Usage:
+>  *  in order for the insmod kdbm_debugtypes.ko to succeed in loading types
+>  *  you must first use  lcrash -t kerntypes.xxxx -o debug_info
+>  *  and echo debug_info > /proc/kdb/debug_info_name
+> 
+> so I have to generate kerntypes file. I looked into init/kerntypes.c,
+> it seems there is nothing but just includes some header files, like
+> below:
+> 
+>      16 #include <linux/compile.h>
+>      17 #include <linux/module.h>
+>      18 #include <linux/mm.h>
+>      19 #include <linux/vmalloc.h>
+>      20 #include <linux/config.h>
+>      21 #include <linux/utsname.h>
+>      22 #include <linux/kernel_stat.h>
+>      23 #include <linux/dump.h>
+>      24
+>      25 #include <asm/kerntypes.h>
+> 
+> We can see here are 9 files are included, does this mean the resulted
+> Kerntypes file only provides kernel structures that are defined within
+> these 9 files?
+Yes
+> If I want to print out more kernel structures I need to
+> change this file so as to include more header files?
 
-Yup, thanks.
+Yes, in theory. But not so easily done, as you can't throw in any and every
+header and get a clean compile.
+ 
+> In addition, if I want to generate Kerntypes file via building a
+> mainline kernel(rather than SLES kernel), the only thing I need to do
+> is:
+> 1. add this init/kerntypes.c and include/asm/kerntypes.h into kernel
+> source code.
+> 2. change the Makefile accordingly.
+> 
+> After that I just compile the kernel as usual and I should be able to
+> get the Kerntypes file(which is actually nothing but just
+> init/kerntypes.o), right?
 
-Ratelimit performance counter interrupts to 100KHz per CPU.
+You wouldn't use init/kerntypes.c
+In your .config file set CONFIG_DEBUG_INFO=y
+That will cause the whole kernel to be compiled with -g.
+Then:   dwarfextract -Pp vmlinux kerntypes
+You can append the structures from any modules:
+ dwarfextract kerntypes -c xxx.ko,yyy.ko,zzz.ko kerntypes.with.modules
 
-Signed-off-by: Mike Galbraith <efault@gmx.de>
+> 
+> Regards
+> Jason
+> 
+> > If you download lkcd (lkcd.svn.sourceforge.net) you also build a
+> > tool called dwarfextract.  It is able to pull all the structure
+> > definitions out of a -g (CONFIG_DEBUG_INFO) kernel and any selected
+> > modules.  That is useful with the lcrash command.
+BTW  there are recent additions to dwarfextract. you might want to
+     re-download lkcd.
 
----
- arch/x86/kernel/apic.c             |    2 +
- arch/x86/kernel/cpu/perf_counter.c |   43 ++++++++++++++++++++++++++++++-------
- include/linux/perf_counter.h       |    2 +
- 3 files changed, 40 insertions(+), 7 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic.c
-+++ linux-2.6/arch/x86/kernel/apic.c
-@@ -781,6 +781,8 @@ static void local_apic_timer_interrupt(v
- 	inc_irq_stat(apic_timer_irqs);
- 
- 	evt->event_handler(evt);
-+
-+	perf_counter_unthrottle();
- }
- 
- /*
-Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-@@ -33,6 +33,8 @@ static int nr_counters_fixed __read_most
- struct cpu_hw_counters {
- 	struct perf_counter	*counters[X86_PMC_IDX_MAX];
- 	unsigned long		used[BITS_TO_LONGS(X86_PMC_IDX_MAX)];
-+	unsigned long		interrupts;
-+	u64			global_enable;
- };
- 
- /*
-@@ -468,23 +470,26 @@ perf_handle_group(struct perf_counter *s
- }
- 
- /*
-+ * Maximum interrupt frequency of 100KHz per CPU
-+ */
-+#define PERFMON_MAX_INTERRUPTS 100000/HZ
-+
-+/*
-  * This handler is triggered by the local APIC, so the APIC IRQ handling
-  * rules apply:
-  */
- static void __smp_perf_counter_interrupt(struct pt_regs *regs, int nmi)
- {
- 	int bit, cpu = smp_processor_id();
--	u64 ack, status, saved_global;
--	struct cpu_hw_counters *cpuc;
-+	u64 ack, status;
-+	struct cpu_hw_counters *cpuc = &per_cpu(cpu_hw_counters, cpu);
- 
--	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, saved_global);
-+	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, cpuc->global_enable);
- 
- 	/* Disable counters globally */
- 	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, 0);
- 	ack_APIC_irq();
- 
--	cpuc = &per_cpu(cpu_hw_counters, cpu);
--
- 	rdmsrl(MSR_CORE_PERF_GLOBAL_STATUS, status);
- 	if (!status)
- 		goto out;
-@@ -533,9 +538,33 @@ again:
- 		goto again;
- out:
- 	/*
--	 * Restore - do not reenable when global enable is off:
-+	 * Restore - do not reenable when global enable is off or throttled:
- 	 */
--	wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, saved_global);
-+	if (++cpuc->interrupts < PERFMON_MAX_INTERRUPTS)
-+		wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, cpuc->global_enable);
-+}
-+
-+void perf_counter_unthrottle(void)
-+{
-+	struct cpu_hw_counters *cpuc;
-+	u64 global_enable;
-+
-+	if (!cpu_has(&boot_cpu_data, X86_FEATURE_ARCH_PERFMON))
-+		return;
-+
-+	if (unlikely(!perf_counters_initialized))
-+		return;
-+
-+	cpuc = &per_cpu(cpu_hw_counters, smp_processor_id());
-+	if (cpuc->interrupts >= PERFMON_MAX_INTERRUPTS) {
-+		if (printk_ratelimit())
-+			printk(KERN_WARNING "PERFMON: max interrupts exceeded!\n");
-+		wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, cpuc->global_enable);
-+	}
-+	rdmsrl(MSR_CORE_PERF_GLOBAL_CTRL, global_enable);
-+	if (unlikely(cpuc->global_enable && !global_enable))
-+		wrmsrl(MSR_CORE_PERF_GLOBAL_CTRL, cpuc->global_enable);
-+	cpuc->interrupts = 0;
- }
- 
- void smp_perf_counter_interrupt(struct pt_regs *regs)
-Index: linux-2.6/include/linux/perf_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -254,6 +254,7 @@ extern void perf_counter_init_task(struc
- extern void perf_counter_exit_task(struct task_struct *child);
- extern void perf_counter_notify(struct pt_regs *regs);
- extern void perf_counter_print_debug(void);
-+extern void perf_counter_unthrottle(void);
- extern u64 hw_perf_save_disable(void);
- extern void hw_perf_restore(u64 ctrl);
- extern int perf_counter_task_disable(void);
-@@ -281,6 +282,7 @@ static inline void perf_counter_init_tas
- static inline void perf_counter_exit_task(struct task_struct *child)	{ }
- static inline void perf_counter_notify(struct pt_regs *regs)		{ }
- static inline void perf_counter_print_debug(void)			{ }
-+static inline void perf_counter_unthrottle(void)			{ }
- static inline void hw_perf_restore(u64 ctrl)			{ }
- static inline u64 hw_perf_save_disable(void)		      { return 0; }
- static inline int perf_counter_task_disable(void)	{ return -EINVAL; }
-
-
+-Cliff
+-- 
+Cliff Wickman
+Silicon Graphics, Inc.
+cpw@sgi.com
+(651) 683-3824
