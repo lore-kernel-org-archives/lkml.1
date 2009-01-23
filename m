@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762050AbZAWG2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764421AbZAWG2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762050AbZAWG2b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:28:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761228AbZAWGQ4
+	id S1764421AbZAWG2u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:28:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZAWGQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:56 -0500
-Received: from kroah.org ([198.145.64.141]:36444 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:57 -0500
+Received: from kroah.org ([198.145.64.141]:36435 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761200AbZAWGQx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:53 -0500
-Date: Thu, 22 Jan 2009 22:14:38 -0800
+	id S1752065AbZAWGQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:54 -0500
+Date: Thu, 22 Jan 2009 22:14:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
        Chris Mason <chris.mason@oracle.com>,
        Dave Chinner <david@fromorbit.com>
-Subject: [patch 32/40] mm: write_cache_pages cleanups
-Message-ID: <20090123061438.GF2922@kroah.com>
+Subject: [patch 33/40] mm: write_cache_pages optimise page cleaning
+Message-ID: <20090123061441.GG2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-write_cache_pages-cleanups.patch"
+Content-Disposition: inline; filename="mm-write_cache_pages-optimise-page-cleaning.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,10 +43,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nick Piggin <npiggin@suse.de>
 
-commit 5a3d5c9813db56a75934eb1015367fda23a8b0b4 upstream.
+commit 515f4a037fb9ab736f8bad733fcd2ffd350cf265 upstream.
 
-Get rid of some complex expressions from flow control statements, add a
-comment, remove some duplicate code.
+In write_cache_pages, if we get stuck behind another process that is
+cleaning pages, we will be forced to wait for them to finish, then perform
+our own writeout (if it was redirtied during the long wait), then wait for
+that.
+
+If a page under writeout is still clean, we can skip waiting for it (if
+we're part of a data integrity sync, we'll be waiting for all writeout
+pages afterwards, so we'll still be waiting for the other guy's write
+that's cleaned the page).
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 Cc: Chris Mason <chris.mason@oracle.com>
@@ -56,78 +63,34 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page-writeback.c |   34 ++++++++++++++++++++++------------
- 1 file changed, 22 insertions(+), 12 deletions(-)
+ mm/page-writeback.c |   17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
 --- a/mm/page-writeback.c
 +++ b/mm/page-writeback.c
-@@ -902,11 +902,14 @@ int write_cache_pages(struct address_spa
- 	}
- retry:
- 	done_index = index;
--	while (!done && (index <= end) &&
--	       (nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
--					      PAGECACHE_TAG_DIRTY,
--					      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1))) {
--		unsigned i;
-+	while (!done && (index <= end)) {
-+		int i;
+@@ -948,11 +948,20 @@ continue_unlock:
+ 				goto continue_unlock;
+ 			}
+ 
+-			if (wbc->sync_mode != WB_SYNC_NONE)
+-				wait_on_page_writeback(page);
++			if (!PageDirty(page)) {
++				/* someone wrote it for us */
++				goto continue_unlock;
++			}
 +
-+		nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
-+			      PAGECACHE_TAG_DIRTY,
-+			      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1);
-+		if (nr_pages == 0)
-+			break;
++			if (PageWriteback(page)) {
++				if (wbc->sync_mode != WB_SYNC_NONE)
++					wait_on_page_writeback(page);
++				else
++					goto continue_unlock;
++			}
  
- 		for (i = 0; i < nr_pages; i++) {
- 			struct page *page = pvec.pages[i];
-@@ -922,7 +925,16 @@ retry:
- 			 */
- 			lock_page(page);
- 
-+			/*
-+			 * Page truncated or invalidated. We can freely skip it
-+			 * then, even for data integrity operations: the page
-+			 * has disappeared concurrently, so there could be no
-+			 * real expectation of this data interity operation
-+			 * even if there is now a new, dirty page at the same
-+			 * pagecache address.
-+			 */
- 			if (unlikely(page->mapping != mapping)) {
-+continue_unlock:
- 				unlock_page(page);
- 				continue;
- 			}
-@@ -933,18 +945,15 @@ retry:
- 				 * end == -1 in that case.
- 				 */
- 				done = 1;
--				unlock_page(page);
--				continue;
-+				goto continue_unlock;
- 			}
- 
- 			if (wbc->sync_mode != WB_SYNC_NONE)
- 				wait_on_page_writeback(page);
- 
- 			if (PageWriteback(page) ||
--			    !clear_page_dirty_for_io(page)) {
--				unlock_page(page);
--				continue;
--			}
-+			    !clear_page_dirty_for_io(page))
-+				goto continue_unlock;
+-			if (PageWriteback(page) ||
+-			    !clear_page_dirty_for_io(page))
++			BUG_ON(PageWriteback(page));
++			if (!clear_page_dirty_for_io(page))
+ 				goto continue_unlock;
  
  			ret = (*writepage)(page, wbc, data);
- 
-@@ -968,7 +977,8 @@ retry:
-  			}
- 
- 			if (wbc->sync_mode == WB_SYNC_NONE) {
--				if (--wbc->nr_to_write <= 0)
-+				wbc->nr_to_write--;
-+				if (wbc->nr_to_write <= 0)
- 					done = 1;
- 			}
- 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
 
