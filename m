@@ -1,64 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761042AbZAWKcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761359AbZAWKek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761042AbZAWKcB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:32:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZAWKbx
+	id S1761359AbZAWKek (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 05:34:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZAWKec
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:31:53 -0500
-Received: from mail-out.m-online.net ([212.18.0.10]:45341 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753862AbZAWKbw (ORCPT
+	Fri, 23 Jan 2009 05:34:32 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:49775 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753905AbZAWKeb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:31:52 -0500
-X-Auth-Info: l95FxliFk3gYGZlrLDtpcO3uW37GT6yAlbbMBL19d+g=
-Message-ID: <49799C8C.80903@denx.de>
-Date: Fri, 23 Jan 2009 11:31:40 +0100
-From: Anatolij Gustschin <agust@denx.de>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 23 Jan 2009 05:34:31 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=LuQhf+RCtN2yW2c2KQxZovT9UkcucLTjXEphvfGIsNd1+jJt1vAI+WUk+EJvSJ6/P
+	n1/wYZhqc/GjZNuV7aSKQ==
+Date: Fri, 23 Jan 2009 02:33:49 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Nikanth Karthikesan <knikanth@suse.de>
+cc: Evgeniy Polyakov <zbr@ioremap.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>,
+       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+In-Reply-To: <200901231515.37442.knikanth@suse.de>
+Message-ID: <alpine.DEB.2.00.0901230223500.15719@chino.kir.corp.google.com>
+References: <200901211638.23101.knikanth@suse.de> <20090122101424.GA12317@ioremap.net> <alpine.DEB.2.00.0901220218120.2851@chino.kir.corp.google.com> <200901231515.37442.knikanth@suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Julian Calaby <julian.calaby@gmail.com>
-CC: avorontsov@ru.mvista.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Matteo Fortini <m.fortini@selcomgroup.com>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] mb862xx: Restrict compliation of platform driver to PPC
-References: <496A89A1.8050302@gmail.com>	 <646765f40901191650v5320f5e4tcc5fb7da0555ade1@mail.gmail.com>	 <20090120011945.GA23380@oksana.dev.rtsoft.ru> <646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
-In-Reply-To: <646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.24.198.101
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Julian Calaby wrote:
-> On Tue, Jan 20, 2009 at 12:19, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
->> Should be Anatolij. ;-)
+On Fri, 23 Jan 2009, Nikanth Karthikesan wrote:
+
+> > Of course, because the oom killer must be aware that tasks in disjoint
+> > cpusets are more likely than not to result in no memory freeing for
+> > current's subsequent allocations.
+> >
 > 
-> Who is the first person on the list, I guess he's missed this or isn't
-> reading his email.
+> Yes, the problem is cpuset does not track the tasks which has allocated from 
+> this node - who has either moved or changed it set of allowable nodes. And 
+> because of that it does not limit oom killing to the tasks with in those tasks 
+> and could kill some innocent tasks at times.
+> 
 
-I missed this, sorry.
+Right, the logic to prefer tasks that share the same set of allowable 
+nodes as the oom-triggering task is implemented in badness() and being in 
+a completely disjoint cpuset does not specifically exclude a task from 
+being chosen as the oom killer's victim.  That's because, as you said, it 
+could have allocated memory elsewhere before changing cpusets or its set 
+of allowable mems.
 
-> Before we commit to fixing this properly, is it really worth it? Is
-> this hardware ever likely to be used with SPARC?
+> As it is unable to take deterministic decision as memcg does, it plays with 
+> badness value and only suggests but does not restricts within those tasks that 
+> has to be killed.
+> 
+> This bug is present even without this patch.
+> 
 
-I don't think it will ever be used with SPARC, so your patch is Ok.
+It's not a bug, it can actually help in a couple instances:
 
-> Given that there are PCI and OF versions of the driver, it seems to me
-> that this is available as a PCI expansion card, and as a graphics chip
-> built into some PPC motherboards. The initial commit says: "Lime GDC
-> support is known to work on PPC440EPx based lwmon5 and MPC8544E based
-> socrates embedded boards, both equipped with Lime GDC." so I'm
-> guessing that this graphics chip is designed for embedded boards. I
-> can find references to it's use in embedded automotive applications on
-> Google but I can't find any reference to the Fujitsu LIME (MB86276)
-> and SPARC on Google.
+ - a much larger memory hogging task is identified in a disjoint cpuset
+   and the liklihood it has allocated memory elsewhere either previously 
+   or atomically, or
 
-If LIME chip should ever be used with SPARC, support for this
-could be added later. LIME doesn't have PCI interface, it is
-connected to the host cpu bus. PCI version of the driver is for
-CoralP and Carmine chips which have PCI interface.
+ - an administrator tunes the oom_adj value for such a task to describe 
+   the above behavior even for smaller tasks and their liklihood to 
+   allocate outside of their exclusive cpuset.
 
-Anatolij
+> This patch adds one more easier way for the administrator to over-ride.
+> 
 
+Yeah, I know.  But the problem with the approach is that it specifies an 
+oom priority for both global unconstrained ooms and cpuset-constrained 
+ooms.
+
+It's quite possible with your patch to identify an aggregate of tasks that 
+should be killed first whenever the system is completely out of memory.  
+That's great, and solves your problem.  But that same system cannot 
+correctly use cpusets that have the potential to ever oom because your 
+patch completely overrides the victim priority and could needlessly kill 
+tasks that will not lead to future memory freeing.
+
+That's my objection to the proposal: it doesn't behave appropriately for 
+both global unconstrained ooms and cpuset-constrained ooms at the same 
+time.
+
+I think if you look at the cgroup oom notifier patch I referred you to, 
+you will find it trivial to implement a handler that can issue a SIGKILL 
+for an aggregate of tasks and implement the functional equivalent of this 
+patch in userspace where it belongs.  It's nearly impossible to code oom 
+killer heuristics in the kernel that work for every possible workload and 
+configuration without some unfortunate casualties.
+
+> The current cpuset oom handling has to be fixed and the exact problem of 
+> killing innocent processes exists even without the oom-controller.
+> 
+
+I think the heuristic could be tuned to penalize tasks in disjoint cpusets 
+a little more, but its implementation as a factor of the badness score is 
+actually very well placed.
