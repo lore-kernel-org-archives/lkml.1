@@ -1,110 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761359AbZAWKek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZAWKgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761359AbZAWKek (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:34:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZAWKec
+	id S1758155AbZAWKgt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 05:36:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753905AbZAWKgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:34:32 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:49775 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753905AbZAWKeb (ORCPT
+	Fri, 23 Jan 2009 05:36:41 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:24147 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753514AbZAWKgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:34:31 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=LuQhf+RCtN2yW2c2KQxZovT9UkcucLTjXEphvfGIsNd1+jJt1vAI+WUk+EJvSJ6/P
-	n1/wYZhqc/GjZNuV7aSKQ==
-Date: Fri, 23 Jan 2009 02:33:49 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Nikanth Karthikesan <knikanth@suse.de>
-cc: Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-In-Reply-To: <200901231515.37442.knikanth@suse.de>
-Message-ID: <alpine.DEB.2.00.0901230223500.15719@chino.kir.corp.google.com>
-References: <200901211638.23101.knikanth@suse.de> <20090122101424.GA12317@ioremap.net> <alpine.DEB.2.00.0901220218120.2851@chino.kir.corp.google.com> <200901231515.37442.knikanth@suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 23 Jan 2009 05:36:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IYQtIGENuI1L3nMXW8LyHevPrl6IN42WWreL+X39y/Ag2AaNJ7rrDW9u1H26jJWvF0
+         mw24rkfeXCjeeBeOAZLTOhzX1p0avT8dPT1jQpy3mNVLpMzD8A8AT7mSjXP2439sUg4B
+         8i2h7YPj25dZMPPqKQK5ykU9N+cMYK8wQx/xg=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.24.198.101
-X-GMailtapped: rientjes
+In-Reply-To: <20090123101949.GD15188@elte.hu>
+References: <497917b5.09cc660a.5f4c.ffffc568@mx.google.com>
+	 <20090123101949.GD15188@elte.hu>
+Date: Fri, 23 Jan 2009 11:36:38 +0100
+Message-ID: <c62985530901230236v4a8f5d6od80924cb6542d994@mail.gmail.com>
+Subject: Re: [PATCH 1/2 v2] tracing/function-graph-tracer: various fixes and 
+	features
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Jan 2009, Nikanth Karthikesan wrote:
+2009/1/23 Ingo Molnar <mingo@elte.hu>:
+>
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>
+>>
+>> This patch brings various bugfixes:
+>>
+>> _ Drop the first irrelevant task switch on the very beginning of a trace.
+>> _ Drop the OVERHEAD word from the headers, the DURATION word is sufficient and will not
+>>   overlap other columns.
+>> _ Make the headers fit well their respective columns whatever the selected options.
+>
+>> About features, one can now disable the duration (this will hide the
+>> overhead too for convenient reasons and because on doesn't need overhead
+>> if it hasn't the duration
+>
+> very nice! I've applied this to tip/tracing/function-graph-tracer, thanks
+> Frederic!
+>
+> this:
+>
+>> I guess no one needs the nanosec precision here, the main goal is to
+>> find when happened the events on a cpu when the trace switches from one
+>> cpu to another.
+>>
+>> ie:
+>>
+>>   274.874760 |   1)   0.676 us    |      _spin_unlock();
+>>   274.874762 |   1)   0.609 us    |      native_load_sp0();
+>>   274.874763 |   1)   0.602 us    |      native_load_tls();
+>>   274.878739 |   0)   0.722 us    |                  }
+>>   274.878740 |   0)   0.714 us    |                  native_pmd_val();
+>>   274.878741 |   0)   0.730 us    |                  native_pmd_val();
+>>
+>> Here there is a 4000 usecs difference when we switch the cpu.
+>
+> Still needs a solution - if we do cross-CPU traces we want to have a
+> global trace clock with 'seemless' transition between CPUs.
+>
+>        Ingo
+>
 
-> > Of course, because the oom killer must be aware that tasks in disjoint
-> > cpusets are more likely than not to result in no memory freeing for
-> > current's subsequent allocations.
-> >
-> 
-> Yes, the problem is cpuset does not track the tasks which has allocated from 
-> this node - who has either moved or changed it set of allowable nodes. And 
-> because of that it does not limit oom killing to the tasks with in those tasks 
-> and could kill some innocent tasks at times.
-> 
-
-Right, the logic to prefer tasks that share the same set of allowable 
-nodes as the oom-triggering task is implemented in badness() and being in 
-a completely disjoint cpuset does not specifically exclude a task from 
-being chosen as the oom killer's victim.  That's because, as you said, it 
-could have allocated memory elsewhere before changing cpusets or its set 
-of allowable mems.
-
-> As it is unable to take deterministic decision as memcg does, it plays with 
-> badness value and only suggests but does not restricts within those tasks that 
-> has to be killed.
-> 
-> This bug is present even without this patch.
-> 
-
-It's not a bug, it can actually help in a couple instances:
-
- - a much larger memory hogging task is identified in a disjoint cpuset
-   and the liklihood it has allocated memory elsewhere either previously 
-   or atomically, or
-
- - an administrator tunes the oom_adj value for such a task to describe 
-   the above behavior even for smaller tasks and their liklihood to 
-   allocate outside of their exclusive cpuset.
-
-> This patch adds one more easier way for the administrator to over-ride.
-> 
-
-Yeah, I know.  But the problem with the approach is that it specifies an 
-oom priority for both global unconstrained ooms and cpuset-constrained 
-ooms.
-
-It's quite possible with your patch to identify an aggregate of tasks that 
-should be killed first whenever the system is completely out of memory.  
-That's great, and solves your problem.  But that same system cannot 
-correctly use cpusets that have the potential to ever oom because your 
-patch completely overrides the victim priority and could needlessly kill 
-tasks that will not lead to future memory freeing.
-
-That's my objection to the proposal: it doesn't behave appropriately for 
-both global unconstrained ooms and cpuset-constrained ooms at the same 
-time.
-
-I think if you look at the cgroup oom notifier patch I referred you to, 
-you will find it trivial to implement a handler that can issue a SIGKILL 
-for an aggregate of tasks and implement the functional equivalent of this 
-patch in userspace where it belongs.  It's nearly impossible to code oom 
-killer heuristics in the kernel that work for every possible workload and 
-configuration without some unfortunate casualties.
-
-> The current cpuset oom handling has to be fixed and the exact problem of 
-> killing innocent processes exists even without the oom-controller.
-> 
-
-I think the heuristic could be tuned to penalize tasks in disjoint cpusets 
-a little more, but its implementation as a factor of the badness score is 
-actually very well placed.
+So it doesn't only need a monotonic clock. It needs a global
+consistent clock like ktime for example?
+Unfortunately this one uses seq_locks and would add some drawbacks
+like verifying if the traced
+function doesn't hold the write seq_lock and it will bring some more
+ftrace recursion...
