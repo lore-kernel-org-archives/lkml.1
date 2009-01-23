@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758337AbZAWSKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932091AbZAWSKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758337AbZAWSKY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 13:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZAWSKG
+	id S932091AbZAWSKp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 13:10:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbZAWSKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 13:10:06 -0500
+	Fri, 23 Jan 2009 13:10:09 -0500
 Received: from 12-130-157-75.attens.net ([12.130.157.75]:60035 "EHLO
 	eng-pool-55.spikesource.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753023AbZAWSKD (ORCPT
+	by vger.kernel.org with ESMTP id S1753279AbZAWSKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 13:10:03 -0500
-Date: Fri, 23 Jan 2009 09:49:41 -0800
+	Fri, 23 Jan 2009 13:10:04 -0500
+Date: Fri, 23 Jan 2009 09:53:54 -0800
 From: narendramind@spikesource.com
-Message-Id: <200901231749.n0NHnfBb009072@eng-pool-55.spikesource.com>
+Message-Id: <200901231753.n0NHrs7K009077@eng-pool-55.spikesource.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Subject: [PATCH 1/1] x86: syscalls: sys_setrlimit64/sys_getrlimit64 calls to provide FSIZE  limits > 2^32-1
 Sender: linux-kernel-owner@vger.kernel.org
