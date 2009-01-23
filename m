@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760243AbZAWJEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759541AbZAWJKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760243AbZAWJEm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 04:04:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbZAWJE2
+	id S1759541AbZAWJKY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 04:10:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZAWJKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 04:04:28 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:45174 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754038AbZAWJE0 (ORCPT
+	Fri, 23 Jan 2009 04:10:05 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54367 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753262AbZAWJKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 04:04:26 -0500
-Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: cl@linux-foundation.org, yanmin_zhang@linux.intel.com,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-In-Reply-To: <200901231952.53961.nickpiggin@yahoo.com.au>
-References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI>
-	 <200901231952.53961.nickpiggin@yahoo.com.au>
-Date: Fri, 23 Jan 2009 11:04:24 +0200
-Message-Id: <1232701464.6094.21.camel@penberg-laptop>
+	Fri, 23 Jan 2009 04:10:01 -0500
+X-Sasl-enc: 8W3FHgWNIhSi/5DoWyu/h54GP3pkkMv67prjp1NSeViO 1232701799
+Subject: Re: [PATCH] autofs: fix the wrong usage of the deprecated
+	task_pgrp_nr()
+From: Ian Kent <raven@themaw.net>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, "Serge E. Hallyn" <serue@us.ibm.com>
+In-Reply-To: <20090123081312.GB4002@redhat.com>
+References: <20090118073441.GA699@redhat.com>
+	 <1232686100.3011.18.camel@zeus.themaw.net>
+	 <20090123081312.GB4002@redhat.com>
+Content-Type: text/plain
+Date: Fri, 23 Jan 2009 18:09:55 +0900
+Message-Id: <1232701795.3011.39.camel@zeus.themaw.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 January 2009 19:43:20 Pekka J Enberg wrote:
-> > From: Pekka Enberg <penberg@cs.helsinki.fi>
+On Fri, 2009-01-23 at 09:13 +0100, Oleg Nesterov wrote:
+> On 01/23, Ian Kent wrote:
 > >
-> > This patch reverts page allocator pass-through logic from the SLUB
-> > allocator.
+> > But I think that for debug logging we should always report numbers that
+> > correspond to the object as it is seen in the global namespace as that
+> > is the most likely reference point someone examining debug logging will
+> > be working from.
 > >
-> > Commit aadb4bc4a1f9108c1d0fbd121827c936c2ed4217 ("SLUB: direct pass through
-> > of page size or higher kmalloc requests")
+> > Oleg, what should be the recommended call to report that, instead of the
+> > task_pgrp_nr() call?
+> 
+> task_pgrp_nr_ns(tsk, &init_pid_ns) gives the same result. Except, if the
+> tsk has already exited it returns 0.
+> 
+> 
+> But, Ian, if you prefer to use task_pgrp_nr() - just use it. Personally,
+> I'd like to kill task_pgrp_nr(), but I can't "prove" it should die.
 
-On Fri, 2009-01-23 at 19:52 +1100, Nick Piggin wrote:
-> Hmm, it lists quite a number of advantages that I guess are being
-> reverted too? What was the test case(s) that prompted this commit
-> in the first place? Better ensure it doesn't slow down...
+I'm not concerned with what's used so much as fitting in with the pid
+namespace effort and maintaining sensible debug output. This stuff has
+been in autofs4 since long before the pid namespace work began and the
+changes to it weren't done by me anyway.
 
-Oh, I see I forgot to put an RFC in the patch subject line. I'm not
-going to merge this just yet.
+Ian
 
-Christoph, suggestions on the test case?
 
