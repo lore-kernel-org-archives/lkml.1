@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbZAWIG4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760392AbZAWIJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760521AbZAWIG4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 03:06:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751396AbZAWIGm
+	id S1760392AbZAWIJs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 03:09:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753740AbZAWIJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 03:06:42 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:39632 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750798AbZAWIGl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 03:06:41 -0500
-Subject: Re: Mainline kernel OLTP performance update
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
-       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
-       arjan@linux.intel.com, suresh.b.siddha@intel.com,
-       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
-       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
-       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
-       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com,
-       mingo@elte.hu
-In-Reply-To: <4979692B.3050703@cs.helsinki.fi>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <200901161503.13730.nickpiggin@yahoo.com.au>
-	 <20090115201210.ca1a9542.akpm@linux-foundation.org>
-	 <200901161746.25205.nickpiggin@yahoo.com.au>
-	 <20090116065546.GJ31013@parisc-linux.org>
-	 <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>
-	 <1232428583.11429.83.camel@ymzhang>
-	 <alpine.DEB.1.10.0901211852060.18367@qirst.com>
-	 <1232613395.11429.122.camel@ymzhang>
-	 <1232615707.14549.6.camel@penberg-laptop>
-	 <1232616517.11429.129.camel@ymzhang>
-	 <1232617672.14549.25.camel@penberg-laptop>
-	 <1232679773.11429.155.camel@ymzhang>  <4979692B.3050703@cs.helsinki.fi>
-Date: Fri, 23 Jan 2009 10:06:38 +0200
-Message-Id: <1232697998.6094.17.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 23 Jan 2009 03:09:40 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:54149 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753583AbZAWIJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 03:09:39 -0500
+Date: Fri, 23 Jan 2009 09:06:17 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, hpa@zytor.com,
+       Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
+       Eric Biederman <ebiederm@xmission.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Serge Hallyn <serue@us.ibm.com>,
+       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] autofs4: turn ->oz_pgrp into "struct pid *"
+Message-ID: <20090123080617.GA4002@redhat.com>
+References: <20090118073449.GA707@redhat.com> <1232686627.3011.26.camel@zeus.themaw.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232686627.3011.26.camel@zeus.themaw.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-23 at 08:52 +0200, Pekka Enberg wrote:
-> > 1) If I start CPU_NUM clients and servers, SLUB's result is about 2% better than SLQB's;
-> > 2) If I start 1 clinet and 1 server, and bind them to different physical cpu, SLQB's result
-> > is about 10% better than SLUB's.
-> > 
-> > I don't know why there is still 10% difference with item 2). Maybe cachemiss causes it?
-> 
-> Maybe we can use the perfstat and/or kerneltop utilities of the new perf 
-> counters patch to diagnose this:
-> 
-> http://lkml.org/lkml/2009/1/21/273
-> 
-> And do oprofile, of course. Thanks!
+On 01/23, Ian Kent wrote:
+>
+> On Sun, 2009-01-18 at 08:34 +0100, Oleg Nesterov wrote:
+> >
+> > I guess autofs4_show_options()->pid_vnr() is not exactly right, but hopefully
+> > not worse than the current code.
+>
+> But shouldn't pid_vnr(sbi->oz_pgrp) report the pid as seen in the
+> namespace of the calling process? In which case the only problem would
+> be listing the mount table from a subordinate namespace that cannot see
+> the process which did the mount, assuming fs namespace is not linked in
+> some strict way to pid namespace, this could give an odd result. What
+> might happen in this case Oleg?
 
-I assume binding the client and the server to different physical CPUs
-also  means that the SKB is always allocated on CPU 1 and freed on CPU
-2? If so, we will be taking the __slab_free() slow path all the time on
-kfree() which will cause cache effects, no doubt.
+Yes, nothing bad can happen. pid_vnr() just returns 0 if the calling
+process can't see the namespace.
 
-But there's another potential performance hit we're taking because the
-object size of the cache is so big. As allocations from CPU 1 keep
-coming in, we need to allocate new pages and unfreeze the per-cpu page.
-That in turn causes __slab_free() to be more eager to discard the slab
-(see the PageSlubFrozen check there).
+But I was worried about the case when, say, we are looking at
+/subnamespace_root_mount/proc/mounts.
 
-So before going for cache profiling, I'd really like to see an oprofile
-report. I suspect we're still going to see much more page allocator
-activity there than with SLAB or SLQB which is why we're still behaving
-so badly here.
+In that case pid_vnr() will report the pid_t in the global namespace,
+this differs from the case when this file is read by its own namespace
+as /proc/mounts.
 
-		Pekka
+I do not know whether this is right or not, though.
+
+Oleg.
 
