@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbZAWB0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763159AbZAWB0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760011AbZAWB0d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:26:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760157AbZAWBPc
+	id S1763159AbZAWB0J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:26:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760112AbZAWBPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:15:32 -0500
-Received: from kroah.org ([198.145.64.141]:50788 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:15:31 -0500
+Received: from kroah.org ([198.145.64.141]:50720 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756410AbZAWBPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:16 -0500
-Date: Thu, 22 Jan 2009 17:12:52 -0800
+	id S1756379AbZAWBPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:15:08 -0500
+Date: Thu, 22 Jan 2009 17:12:37 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
-       Chris Mason <chris.mason@oracle.com>,
-       Dave Chinner <david@fromorbit.com>
-Subject: [patch 38/46] mm: write_cache_pages cleanups
-Message-ID: <20090123011252.GL19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Pavel Roskin <proski@gnu.org>
+Subject: [patch 31/46] dell_rbu: use scnprintf() instead of less secure
+	sprintf()
+Message-ID: <20090123011237.GF19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="mm-write_cache_pages-cleanups.patch"
+Content-Disposition: inline; filename="dell_rbu-use-scnprintf-instead-of-less-secure-sprintf.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,93 +40,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Nick Piggin <npiggin@suse.de>
+From: Pavel Roskin <proski@gnu.org>
 
-commit 5a3d5c9813db56a75934eb1015367fda23a8b0b4 upstream.
+commit 81156928f8fe31621e467490b9d441c0285998c3 upstream.
 
-Get rid of some complex expressions from flow control statements, add a
-comment, remove some duplicate code.
+Reading 0 bytes from /sys/devices/platform/dell_rbu/image_type or
+/sys/devices/platform/dell_rbu/packet_size by an ordinary user causes an
+oops.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: Dave Chinner <david@fromorbit.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Pavel Roskin <proski@gnu.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page-writeback.c |   34 ++++++++++++++++++++++------------
- 1 file changed, 22 insertions(+), 12 deletions(-)
+ drivers/firmware/dell_rbu.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -899,11 +899,14 @@ int write_cache_pages(struct address_spa
+--- a/drivers/firmware/dell_rbu.c
++++ b/drivers/firmware/dell_rbu.c
+@@ -576,7 +576,7 @@ static ssize_t read_rbu_image_type(struc
+ {
+ 	int size = 0;
+ 	if (!pos)
+-		size = sprintf(buffer, "%s\n", image_type);
++		size = scnprintf(buffer, count, "%s\n", image_type);
+ 	return size;
+ }
+ 
+@@ -648,7 +648,7 @@ static ssize_t read_rbu_packet_size(stru
+ 	int size = 0;
+ 	if (!pos) {
+ 		spin_lock(&rbu_data.lock);
+-		size = sprintf(buffer, "%lu\n", rbu_data.packetsize);
++		size = scnprintf(buffer, count, "%lu\n", rbu_data.packetsize);
+ 		spin_unlock(&rbu_data.lock);
  	}
- retry:
- 	done_index = index;
--	while (!done && (index <= end) &&
--	       (nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
--					      PAGECACHE_TAG_DIRTY,
--					      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1))) {
--		unsigned i;
-+	while (!done && (index <= end)) {
-+		int i;
-+
-+		nr_pages = pagevec_lookup_tag(&pvec, mapping, &index,
-+			      PAGECACHE_TAG_DIRTY,
-+			      min(end - index, (pgoff_t)PAGEVEC_SIZE-1) + 1);
-+		if (nr_pages == 0)
-+			break;
- 
- 		for (i = 0; i < nr_pages; i++) {
- 			struct page *page = pvec.pages[i];
-@@ -919,7 +922,16 @@ retry:
- 			 */
- 			lock_page(page);
- 
-+			/*
-+			 * Page truncated or invalidated. We can freely skip it
-+			 * then, even for data integrity operations: the page
-+			 * has disappeared concurrently, so there could be no
-+			 * real expectation of this data interity operation
-+			 * even if there is now a new, dirty page at the same
-+			 * pagecache address.
-+			 */
- 			if (unlikely(page->mapping != mapping)) {
-+continue_unlock:
- 				unlock_page(page);
- 				continue;
- 			}
-@@ -930,18 +942,15 @@ retry:
- 				 * end == -1 in that case.
- 				 */
- 				done = 1;
--				unlock_page(page);
--				continue;
-+				goto continue_unlock;
- 			}
- 
- 			if (wbc->sync_mode != WB_SYNC_NONE)
- 				wait_on_page_writeback(page);
- 
- 			if (PageWriteback(page) ||
--			    !clear_page_dirty_for_io(page)) {
--				unlock_page(page);
--				continue;
--			}
-+			    !clear_page_dirty_for_io(page))
-+				goto continue_unlock;
- 
- 			ret = (*writepage)(page, wbc, data);
- 			if (unlikely(ret)) {
-@@ -964,7 +973,8 @@ retry:
-  			}
- 
- 			if (wbc->sync_mode == WB_SYNC_NONE) {
--				if (--wbc->nr_to_write <= 0)
-+				wbc->nr_to_write--;
-+				if (wbc->nr_to_write <= 0)
- 					done = 1;
- 			}
- 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 	return size;
 
