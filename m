@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760890AbZAWGQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbZAWGRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760890AbZAWGQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751464AbZAWGQU
+	id S1761005AbZAWGRA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:17:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZAWGQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:20 -0500
-Received: from kroah.org ([198.145.64.141]:36041 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:21 -0500
+Received: from kroah.org ([198.145.64.141]:36062 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751418AbZAWGQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751864AbZAWGQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 23 Jan 2009 01:16:20 -0500
-Date: Thu, 22 Jan 2009 22:12:41 -0800
+Date: Thu, 22 Jan 2009 22:12:47 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jarek Poplawski <jarkao2@gmail.com>,
+       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 01/40] pkt_sched: sch_htb: Fix deadlock in hrtimers
-	triggered by HTB
-Message-ID: <20090123061241.GA2922@kroah.com>
+Subject: [patch 02/40] ipv6: Fix fib6_dump_table walker leak
+Message-ID: <20090123061247.GB2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pkt_sched-sch_htb-fix-deadlock-in-hrtimers-triggered-by-htb.patch"
+Content-Disposition: inline; filename="ipv6-fix-fib6_dump_table-walker-leak.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,37 +40,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jarek Poplawski <jarkao2@gmail.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-[ Upstream commit: none
+[ Upstream commit: 7891cc818967e186be68caac32d84bfd0a3f0bd2 ]
 
-  This is a quick fix for -stable purposes.  Upstream fixes these
-  problems via a large set of invasive hrtimer changes.  ]
+When a fib6 table dump is prematurely ended, we won't unlink
+its walker from the list.  This causes all sorts of grief for
+other users of the list later.
 
-Most probably there is a (still unproven) race in hrtimers (before
-2.6.29 kernels), which causes a corruption of hrtimers rbtree. This
-patch doesn't fix it, but should let HTB avoid triggering the bug.
-
-Reported-by: Denys Fedoryschenko <denys@visp.net.lb>
-Reported-by: Badalian Vyacheslav <slavon@bigtelecom.ru>
 Reported-by: Chris Caputo <ccaputo@alt.net>
-Tested-by: Badalian Vyacheslav <slavon@bigtelecom.ru>
-Signed-off-by: Jarek Poplawski <jarkao2@gmail.com>
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sched/sch_htb.c |    1 +
- 1 file changed, 1 insertion(+)
+ net/ipv6/ip6_fib.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
---- a/net/sched/sch_htb.c
-+++ b/net/sched/sch_htb.c
-@@ -924,6 +924,7 @@ static struct sk_buff *htb_dequeue(struc
- 		}
+--- a/net/ipv6/ip6_fib.c
++++ b/net/ipv6/ip6_fib.c
+@@ -298,6 +298,10 @@ static void fib6_dump_end(struct netlink
+ 	struct fib6_walker_t *w = (void*)cb->args[2];
+ 
+ 	if (w) {
++		if (cb->args[4]) {
++			cb->args[4] = 0;
++			fib6_walker_unlink(w);
++		}
+ 		cb->args[2] = 0;
+ 		kfree(w);
  	}
- 	sch->qstats.overlimits++;
-+	qdisc_watchdog_cancel(&q->watchdog);
- 	qdisc_watchdog_schedule(&q->watchdog, next_event);
- fin:
- 	return skb;
+@@ -330,15 +334,12 @@ static int fib6_dump_table(struct fib6_t
+ 		read_lock_bh(&table->tb6_lock);
+ 		res = fib6_walk_continue(w);
+ 		read_unlock_bh(&table->tb6_lock);
+-		if (res != 0) {
+-			if (res < 0)
+-				fib6_walker_unlink(w);
+-			goto end;
++		if (res <= 0) {
++			fib6_walker_unlink(w);
++			cb->args[4] = 0;
+ 		}
+-		fib6_walker_unlink(w);
+-		cb->args[4] = 0;
+ 	}
+-end:
++
+ 	return res;
+ }
+ 
 
