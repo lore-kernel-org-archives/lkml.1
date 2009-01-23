@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763657AbZAWB3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763717AbZAWB31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763657AbZAWB3A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:29:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758682AbZAWBPo
+	id S1763717AbZAWB31 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760043AbZAWBPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:15:44 -0500
-Received: from kroah.org ([198.145.64.141]:50788 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:15:46 -0500
+Received: from kroah.org ([198.145.64.141]:50945 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757057AbZAWBPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:22 -0500
-Date: Thu, 22 Jan 2009 17:13:11 -0800
+	id S1759349AbZAWBPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:15:23 -0500
+Date: Thu, 22 Jan 2009 17:13:14 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -23,12 +23,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>
-Subject: [patch 44/46] fs: remove WB_SYNC_HOLD
-Message-ID: <20090123011311.GS19756@kroah.com>
+Subject: [patch 45/46] fs: sync_sb_inodes fix
+Message-ID: <20090123011314.GT19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fs-remove-wb_sync_hold.patch"
+Content-Disposition: inline; filename="fs-sync_sb_inodes-fix.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,27 +41,11 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Nick Piggin <npiggin@suse.de>
 
-commit 4f5a99d64c17470a784a6c68064207d82e3e74a5 upstream.
+commit 38f21977663126fef53f5585e7f1653d8ebe55c4 upstream.
 
-Remove WB_SYNC_HOLD.  The primary motiviation is the design of my
-anti-starvation code for fsync.  It requires taking an inode lock over the
-sync operation, so we could run into lock ordering problems with multiple
-inodes.  It is possible to take a single global lock to solve the ordering
-problem, but then that would prevent a future nice implementation of "sync
-multiple inodes" based on lock order via inode address.
-
-Seems like a backward step to remove this, but actually it is busted
-anyway: we can't use the inode lists for data integrity wait: an inode can
-be taken off the dirty lists but still be under writeback.  In order to
-satisfy data integrity semantics, we should wait for it to finish
-writeback, but if we only search the dirty lists, we'll miss it.
-
-It would be possible to have a "writeback" list, for sys_sync, I suppose.
-But why complicate things by prematurely optimise?  For unmounting, we
-could avoid the "livelock avoidance" code, which would be easier, but
-again premature IMO.
-
-Fixing the existing data integrity problem will come next.
+Fix data integrity semantics required by sys_sync, by iterating over all
+inodes and waiting for any writeback pages after the initial writeout.
+Comments explain the exact problem.
 
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
@@ -69,60 +53,91 @@ Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/fs-writeback.c         |   12 ++----------
- include/linux/writeback.h |    1 -
- 2 files changed, 2 insertions(+), 11 deletions(-)
+ fs/fs-writeback.c |   60 +++++++++++++++++++++++++++++++++++++++++++++++-------
+ 1 file changed, 53 insertions(+), 7 deletions(-)
 
 --- a/fs/fs-writeback.c
 +++ b/fs/fs-writeback.c
-@@ -421,9 +421,6 @@ __writeback_single_inode(struct inode *i
-  * If we're a pdlfush thread, then implement pdflush collision avoidance
-  * against the entire list.
-  *
-- * WB_SYNC_HOLD is a hack for sys_sync(): reattach the inode to sb->s_dirty so
-- * that it can be located for waiting on in __writeback_single_inode().
-- *
-  * If `bdi' is non-zero then we're being asked to writeback a specific queue.
-  * This function assumes that the blockdev superblock's inodes are backed by
-  * a variety of queues, so all inodes are searched.  For other superblocks,
-@@ -499,10 +496,6 @@ void generic_sync_sb_inodes(struct super
- 		__iget(inode);
- 		pages_skipped = wbc->pages_skipped;
- 		__writeback_single_inode(inode, wbc);
--		if (wbc->sync_mode == WB_SYNC_HOLD) {
--			inode->dirtied_when = jiffies;
--			list_move(&inode->i_list, &sb->s_dirty);
--		}
- 		if (current_is_pdflush())
- 			writeback_release(bdi);
- 		if (wbc->pages_skipped != pages_skipped) {
-@@ -588,8 +581,7 @@ restart:
- 
- /*
-  * writeback and wait upon the filesystem's dirty inodes.  The caller will
-- * do this in two passes - one to write, and one to wait.  WB_SYNC_HOLD is
-- * used to park the written inodes on sb->s_dirty for the wait pass.
-+ * do this in two passes - one to write, and one to wait.
-  *
-  * A finite limit is set on the number of pages which will be written.
-  * To prevent infinite livelock of sys_sync().
-@@ -600,7 +592,7 @@ restart:
- void sync_inodes_sb(struct super_block *sb, int wait)
+@@ -440,6 +440,7 @@ void generic_sync_sb_inodes(struct super
+ 				struct writeback_control *wbc)
  {
- 	struct writeback_control wbc = {
--		.sync_mode	= wait ? WB_SYNC_ALL : WB_SYNC_HOLD,
-+		.sync_mode	= wait ? WB_SYNC_ALL : WB_SYNC_NONE,
+ 	const unsigned long start = jiffies;	/* livelock avoidance */
++	int sync = wbc->sync_mode == WB_SYNC_ALL;
+ 
+ 	spin_lock(&inode_lock);
+ 	if (!wbc->for_kupdate || list_empty(&sb->s_io))
+@@ -516,7 +517,49 @@ void generic_sync_sb_inodes(struct super
+ 		if (!list_empty(&sb->s_more_io))
+ 			wbc->more_io = 1;
+ 	}
+-	spin_unlock(&inode_lock);
++
++	if (sync) {
++		struct inode *inode, *old_inode = NULL;
++
++		/*
++		 * Data integrity sync. Must wait for all pages under writeback,
++		 * because there may have been pages dirtied before our sync
++		 * call, but which had writeout started before we write it out.
++		 * In which case, the inode may not be on the dirty list, but
++		 * we still have to wait for that writeout.
++		 */
++		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
++			struct address_space *mapping;
++
++			if (inode->i_state & (I_FREEING|I_WILL_FREE))
++				continue;
++			mapping = inode->i_mapping;
++			if (mapping->nrpages == 0)
++				continue;
++			__iget(inode);
++			spin_unlock(&inode_lock);
++			/*
++			 * We hold a reference to 'inode' so it couldn't have
++			 * been removed from s_inodes list while we dropped the
++			 * inode_lock.  We cannot iput the inode now as we can
++			 * be holding the last reference and we cannot iput it
++			 * under inode_lock. So we keep the reference and iput
++			 * it later.
++			 */
++			iput(old_inode);
++			old_inode = inode;
++
++			filemap_fdatawait(mapping);
++
++			cond_resched();
++
++			spin_lock(&inode_lock);
++		}
++		spin_unlock(&inode_lock);
++		iput(old_inode);
++	} else
++		spin_unlock(&inode_lock);
++
+ 	return;		/* Leave any unwritten inodes on s_io */
+ }
+ EXPORT_SYMBOL_GPL(generic_sync_sb_inodes);
+@@ -596,13 +639,16 @@ void sync_inodes_sb(struct super_block *
  		.range_start	= 0,
  		.range_end	= LLONG_MAX,
  	};
---- a/include/linux/writeback.h
-+++ b/include/linux/writeback.h
-@@ -30,7 +30,6 @@ static inline int task_is_pdflush(struct
- enum writeback_sync_modes {
- 	WB_SYNC_NONE,	/* Don't wait on anything */
- 	WB_SYNC_ALL,	/* Wait on every mapping */
--	WB_SYNC_HOLD,	/* Hold the inode on sb_dirty for sys_sync() */
- };
+-	unsigned long nr_dirty = global_page_state(NR_FILE_DIRTY);
+-	unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
  
- /*
+-	wbc.nr_to_write = nr_dirty + nr_unstable +
+-			(inodes_stat.nr_inodes - inodes_stat.nr_unused) +
+-			nr_dirty + nr_unstable;
+-	wbc.nr_to_write += wbc.nr_to_write / 2;		/* Bit more for luck */
++	if (!wait) {
++		unsigned long nr_dirty = global_page_state(NR_FILE_DIRTY);
++		unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
++
++		wbc.nr_to_write = nr_dirty + nr_unstable +
++			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
++	} else
++		wbc.nr_to_write = LONG_MAX; /* doesn't actually matter */
++
+ 	sync_sb_inodes(sb, &wbc);
+ }
+ 
 
