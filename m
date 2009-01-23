@@ -1,147 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759204AbZAWRdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759592AbZAWRfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759204AbZAWRdE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 12:33:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756180AbZAWRcv
+	id S1759592AbZAWRfU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 12:35:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbZAWRfH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 12:32:51 -0500
-Received: from ns1.siteground211.com ([209.62.36.12]:56058 "EHLO
-	serv01.siteground211.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755972AbZAWRcu (ORCPT
+	Fri, 23 Jan 2009 12:35:07 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:50710 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752714AbZAWRfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 12:32:50 -0500
-Date: Fri, 23 Jan 2009 19:31:36 +0200
-From: Felipe Balbi <me@felipebalbi.com>
-To: Julia Lawall <julia@diku.dk>
-Cc: felipe.balbi@nokia.com, linux-usb@vger.kernel.org, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 12/13] drivers/usb/musb: use USB API functions rather
-	than constants
-Message-ID: <20090123173135.GR440@frodo>
-Reply-To: me@felipebalbi.com
-References: <Pine.LNX.4.64.0812291123050.9555@pc-004.diku.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0812291123050.9555@pc-004.diku.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - serv01.siteground211.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - felipebalbi.com
+	Fri, 23 Jan 2009 12:35:06 -0500
+Subject: Re: [PATCH] x86,mm: fix pte_free()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       L-K <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       David Howells <dhowells@redhat.com>
+In-Reply-To: <1232728669.4826.143.camel@laptop>
+References: <1232728669.4826.143.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 23 Jan 2009 18:34:28 +0100
+Message-Id: <1232732068.4850.0.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Dec 29, 2008 at 11:23:22AM +0100, Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+On Fri, 2009-01-23 at 17:37 +0100, Peter Zijlstra wrote:
+> On -rt we were seeing spurious bad page states like:
 > 
-> This set of patches introduces calls to the following set of functions:
+> Bad page state in process 'firefox'
+> page:c1bc2380 flags:0x40000000 mapping:c1bc2390 mapcount:0 count:0
+> Trying to fix it up, but a reboot is needed
+> Backtrace:
+> Pid: 503, comm: firefox Not tainted 2.6.26.8-rt13 #3
+> [<c043d0f3>] ? printk+0x14/0x19
+> [<c0272d4e>] bad_page+0x4e/0x79
+> [<c0273831>] free_hot_cold_page+0x5b/0x1d3
+> [<c02739f6>] free_hot_page+0xf/0x11
+> [<c0273a18>] __free_pages+0x20/0x2b
+> [<c027d170>] __pte_alloc+0x87/0x91
+> [<c027d25e>] handle_mm_fault+0xe4/0x733
+> [<c043f680>] ? rt_mutex_down_read_trylock+0x57/0x63
+> [<c043f680>] ? rt_mutex_down_read_trylock+0x57/0x63
+> [<c0218875>] do_page_fault+0x36f/0x88a
 > 
-> usb_endpoint_dir_in(epd)
-> usb_endpoint_dir_out(epd)
-> usb_endpoint_is_bulk_in(epd)
-> usb_endpoint_is_bulk_out(epd)
-> usb_endpoint_is_int_in(epd)
-> usb_endpoint_is_int_out(epd)
-> usb_endpoint_num(epd)
-> usb_endpoint_type(epd)
-> usb_endpoint_xfer_bulk(epd)
-> usb_endpoint_xfer_control(epd)
-> usb_endpoint_xfer_int(epd)
-> usb_endpoint_xfer_isoc(epd)
+> This is the case where a concurrent fault already installed the PTE
+> and
+> we get to free the newly allocated one.
 > 
-> In some cases, introducing one of these functions is not possible, and it
-> just replaces an explicit integer value by one of the following constants:
+> This is due to pgtable_page_ctor() doing the
+> spin_lock_init(&page->ptl)
+> which is overlaid with the {private, mapping} struct.
 > 
-> USB_ENDPOINT_XFER_BULK
-> USB_ENDPOINT_XFER_CONTROL
-> USB_ENDPOINT_XFER_INT
-> USB_ENDPOINT_XFER_ISOC
+> union {
+>     struct {
+>         unsigned long private;
+>         struct address_space *mapping;
+>     };
+> #if NR_CPUS >= CONFIG_SPLIT_PTLOCK_CPUS
+>     spinlock_t ptl;
+> #endif
+>     struct kmem_cache *slab;
+>     struct page *first_page;
+> };
 > 
-> An extract of the semantic patch that makes these changes is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
+> Normally the spinlock is small enough to not stomp on page->mapping,
+> but
+> PREEMPT_RT=y has huge 'spin'locks.
 > 
-> // <smpl>
-> @r1@ struct usb_endpoint_descriptor *epd; @@
+> But lockdep kernels should also be able to trigger this splat, as the
+> lock tracking code grows the spinlock to cover page->mapping.
 > 
-> - ((epd->bmAttributes & \(USB_ENDPOINT_XFERTYPE_MASK\|3\)) ==
-> - \(USB_ENDPOINT_XFER_CONTROL\|0\))
-> + usb_endpoint_xfer_control(epd)
+> The obvious fix is calling pgtable_page_dtor() like the regular pte
+> free
+> path __pte_free_tlb() does.
 > 
-> @r5@ struct usb_endpoint_descriptor *epd; @@
+> It seems all architectures except x86 and nm10300 already do this, and
+> nm10300 doesn't seem to use pgtable_page_ctor(), which suggests it
+> doesn't do SMP or simply doesnt do MMU at all or something.
 > 
-> - ((epd->bEndpointAddress & \(USB_ENDPOINT_DIR_MASK\|0x80\)) ==
-> -  \(USB_DIR_IN\|0x80\))
-> + usb_endpoint_dir_in(epd)
-> 
-> @inc@
-> @@
-> 
-> #include <linux/usb.h>
-> 
-> @depends on !inc && (r1||r5)@
-> @@
-> 
-> + #include <linux/usb.h>
->   #include <linux/usb/...>
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+> Signed-off-by: Peter Zijlstra <a.p.zijlsta@chello.nl>
+> CC: stable@kernel.org
 
-Acked-by: Felipe Balbi <felipe.balbi@nokia.com>
+Now one that's not obviously borken,..
 
-> ---
->  drivers/usb/musb/musb_gadget.c |    6 +++---
->  drivers/usb/musb/musb_host.c   |    4 ++--
->  2 files changed, 5 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/usb/musb/musb_gadget.c b/drivers/usb/musb/musb_gadget.c
-> index 6197dae..4ea3053 100644
-> --- a/drivers/usb/musb/musb_gadget.c
-> +++ b/drivers/usb/musb/musb_gadget.c
-> @@ -874,10 +874,10 @@ static int musb_gadget_enable(struct usb_ep *ep,
->  		status = -EBUSY;
->  		goto fail;
->  	}
-> -	musb_ep->type = desc->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-> +	musb_ep->type = usb_endpoint_type(desc);
->  
->  	/* check direction and (later) maxpacket size against endpoint */
-> -	if ((desc->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK) != epnum)
-> +	if (usb_endpoint_num(desc) != epnum)
->  		goto fail;
->  
->  	/* REVISIT this rules out high bandwidth periodic transfers */
-> @@ -890,7 +890,7 @@ static int musb_gadget_enable(struct usb_ep *ep,
->  	 * packet size (or fail), set the mode, clear the fifo
->  	 */
->  	musb_ep_select(mbase, epnum);
-> -	if (desc->bEndpointAddress & USB_DIR_IN) {
-> +	if (usb_endpoint_dir_in(desc)) {
->  		u16 int_txe = musb_readw(mbase, MUSB_INTRTXE);
->  
->  		if (hw_ep->is_shared_fifo)
-> diff --git a/drivers/usb/musb/musb_host.c b/drivers/usb/musb/musb_host.c
-> index 99fa612..a035cec 100644
-> --- a/drivers/usb/musb/musb_host.c
-> +++ b/drivers/usb/musb/musb_host.c
-> @@ -1847,8 +1847,8 @@ static int musb_urb_enqueue(
->  		goto done;
->  	}
->  
-> -	qh->epnum = epd->bEndpointAddress & USB_ENDPOINT_NUMBER_MASK;
-> -	qh->type = epd->bmAttributes & USB_ENDPOINT_XFERTYPE_MASK;
-> +	qh->epnum = usb_endpoint_num(epd);
-> +	qh->type = usb_endpoint_type(epd);
->  
->  	/* NOTE: urb->dev->devnum is wrong during SET_ADDRESS */
->  	qh->addr_reg = (u8) usb_pipedevice(urb->pipe);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+---
+ arch/x86/include/asm/pgalloc.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
--- 
-balbi
+diff --git a/arch/x86/include/asm/pgalloc.h b/arch/x86/include/asm/pgalloc.h
+index cb7c151..dd14c54 100644
+--- a/arch/x86/include/asm/pgalloc.h
++++ b/arch/x86/include/asm/pgalloc.h
+@@ -42,6 +42,7 @@ static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+ 
+ static inline void pte_free(struct mm_struct *mm, struct page *pte)
+ {
++	pgtable_page_dtor(pte);
+ 	__free_page(pte);
+ }
+ 
+
+
