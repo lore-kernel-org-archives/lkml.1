@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbZAWK2o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761042AbZAWKcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760383AbZAWK2o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:28:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZAWK2f
+	id S1761042AbZAWKcB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 05:32:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZAWKbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:28:35 -0500
-Received: from 8bytes.org ([88.198.83.132]:44910 "EHLO 8bytes.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753951AbZAWK2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:28:33 -0500
-Date: Fri, 23 Jan 2009 11:28:27 +0100
-From: Joerg Roedel <joro@8bytes.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, Oliver Neukum <oliver@neukum.org>,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       mingo@redhat.com, ceggers@gmx.de, David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 09/16] dma-debug: add checking for map/unmap_page/single
-Message-ID: <20090123102827.GO9466@8bytes.org>
-References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com> <1232376423-11067-10-git-send-email-joerg.roedel@amd.com> <200901210117.33153.arnd@arndb.de>
+	Fri, 23 Jan 2009 05:31:53 -0500
+Received: from mail-out.m-online.net ([212.18.0.10]:45341 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753862AbZAWKbw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 05:31:52 -0500
+X-Auth-Info: l95FxliFk3gYGZlrLDtpcO3uW37GT6yAlbbMBL19d+g=
+Message-ID: <49799C8C.80903@denx.de>
+Date: Fri, 23 Jan 2009 11:31:40 +0100
+From: Anatolij Gustschin <agust@denx.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901210117.33153.arnd@arndb.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Julian Calaby <julian.calaby@gmail.com>
+CC: avorontsov@ru.mvista.com, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Dmitry Baryshkov <dbaryshkov@gmail.com>,
+       Matteo Fortini <m.fortini@selcomgroup.com>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] mb862xx: Restrict compliation of platform driver to PPC
+References: <496A89A1.8050302@gmail.com>	 <646765f40901191650v5320f5e4tcc5fb7da0555ade1@mail.gmail.com>	 <20090120011945.GA23380@oksana.dev.rtsoft.ru> <646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
+In-Reply-To: <646765f40901191800y27530acaw74edc01abdd13e68@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 21, 2009 at 01:17:32AM +0100, Arnd Bergmann wrote:
-> On Monday 19 January 2009, Joerg Roedel wrote:
-> > Impact: add debug callbacks for dma_{un}map_[page|single]
+Julian Calaby wrote:
+> On Tue, Jan 20, 2009 at 12:19, Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+>> Should be Anatolij. ;-)
 > 
-> In the discussion about "[PATCH] usb/mcs7830: Don't use buffers from
-> stack for USB transfers", I have raised the question of whether we can
-> add a check for the DMA address being on the stack, I guess this would
-> be the right place for it.
-> 
-> Maybe you can add another check like:
-> 
-> WARN_ON(is_kernel_stack(page_to_virt(page)));
+> Who is the first person on the list, I guess he's missed this or isn't
+> reading his email.
 
-Good idea. This would be the right place for such a check.
+I missed this, sorry.
 
-> Unfortunately, I can't think of a way to define a generic is_kernel_stack
-> function. On most architectures (all that put thread_info at the top of the
-> stack), something like this should work:
-> 
-> #ifndef is_kernel_stack
-> static inline int is_kernel_stack(void *p)
-> {
-> 	return (unsigned long)p & ~(THREAD_SIZE - 1) == current_thread_info();
-> }
-> #endif
+> Before we commit to fixing this properly, is it really worth it? Is
+> this hardware ever likely to be used with SPARC?
 
-Hmm, this function is indeed required on all architectures. If you send
-a patchset which adds it I will add the check for stack addresses to
-this debugging code :)
+I don't think it will ever be used with SPARC, so your patch is Ok.
 
-Joerg
+> Given that there are PCI and OF versions of the driver, it seems to me
+> that this is available as a PCI expansion card, and as a graphics chip
+> built into some PPC motherboards. The initial commit says: "Lime GDC
+> support is known to work on PPC440EPx based lwmon5 and MPC8544E based
+> socrates embedded boards, both equipped with Lime GDC." so I'm
+> guessing that this graphics chip is designed for embedded boards. I
+> can find references to it's use in embedded automotive applications on
+> Google but I can't find any reference to the Fujitsu LIME (MB86276)
+> and SPARC on Google.
+
+If LIME chip should ever be used with SPARC, support for this
+could be added later. LIME doesn't have PCI interface, it is
+connected to the host cpu bus. PCI version of the driver is for
+CoralP and Carmine chips which have PCI interface.
+
+Anatolij
 
