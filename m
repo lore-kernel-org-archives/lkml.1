@@ -1,489 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZAWK7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbZAWLAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZAWK7x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 05:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZAWK7n
+	id S1760386AbZAWLAT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 06:00:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbZAWK7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:59:43 -0500
+	Fri, 23 Jan 2009 05:59:52 -0500
 Received: from wa-out-1112.google.com ([209.85.146.178]:5663 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754763AbZAWK7l (ORCPT
+	with ESMTP id S1761035AbZAWK7v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:59:41 -0500
+	Fri, 23 Jan 2009 05:59:51 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=qaA+ayUUz+chlVx9fJsJAbvjAab4hygJQb2QEDh7cNqmAaMBDHfLuNSDAg2QMJPZHr
-         Rf5EoaiClOb1emfgZtVt4x+OKCvEV8DG2wLruqj1VaFPk/bfyY4ohCkUaJpCCJllANji
-         aU8mQCcOkaVRAmGwbYvETiNPCmKiqPPP2Buwk=
+        b=uTXFGjjZhyxlk7fSA+3vo1UrgVh0eiywfX/qdiZMA9icGbBL6ZTmAIAszvzMr0hfbl
+         Fnzj1DJkr6tqy7DtsOknbtlGz6WbxCfHzRHfRtS84BHXRUPo9ioKy5ltC1IkyHiJM1ZU
+         ORWMbx3WoTHEKcwmLIuZ2htEmZHkTtztgtfuc=
 From: Magnus Damm <magnus.damm@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: johnstul@us.ibm.com, gregkh@suse.de, roel.kluin@gmail.com,
-       lethal@linux-sh.org, tglx@linutronix.de,
-       Magnus Damm <magnus.damm@gmail.com>, akpm@linux-foundation.org,
-       mingo@redhat.com
-Date: Fri, 23 Jan 2009 19:57:32 +0900
-Message-Id: <20090123105732.18779.86667.sendpatchset@rx1.opensource.se>
+Cc: akpm@linux-foundation.org, johnstul@us.ibm.com, gregkh@suse.de,
+       roel.kluin@gmail.com, lethal@linux-sh.org, tglx@linutronix.de,
+       mingo@redhat.com, Magnus Damm <magnus.damm@gmail.com>
+Date: Fri, 23 Jan 2009 19:57:50 +0900
+Message-Id: <20090123105750.18779.89143.sendpatchset@rx1.opensource.se>
 In-Reply-To: <20090123105721.18779.80514.sendpatchset@rx1.opensource.se>
 References: <20090123105721.18779.80514.sendpatchset@rx1.opensource.se>
-Subject: [PATCH 001/011] early platform driver V3
+Subject: [PATCH 002/011] sh: add plat_early_device_setup() function
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch is V3 of the early platform driver implementation.
-
-Platform drivers are great for embedded platforms because we
-can separate driver configuration from the actual driver. So
-base addresses, interrupts and other configuration can be kept
-with the processor or board code, and the platform driver can
-be reused by many different platforms.
-
-For early devices we have nothing today. For instance, to configure
-early timers and early serial ports we cannot use platform devices.
-This because the setup order during boot. Timers are needed before
-the platform driver core code is available. The same goes for early
-printk support. Early in this case means before initcalls.
-
-These early drivers today have their configuration either hard coded
-or they receive it using some special configuration method. This is
-working quite well, but if we want to support both regular kernel
-modules and early devices then we need to have two ways of configuring
-the same driver. A single way would be better.
-
-The early platform driver patch is basically a set of functions that
-allow drivers to register themselves and architecture code to locate
-them and probe. Registration happens through early_param(). The time
-for the probe is decided by the architecture code.
-
-See Documentation/driver-model/platform.txt for more details.
+This patch adds the function plat_early_device_setup() which
+cpu code can use for early platform device registation.
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- Tested with serial ports and timers on sh7722 and sh7723.
+ arch/sh/include/asm/device.h |    2 ++
+ arch/sh/kernel/setup.c       |    7 +++++++
+ 2 files changed, 9 insertions(+)
 
- Changes since V2:
- - use strict_strtoul() instead of simple_strtoul()
- - command line parsing fixes to support "class_str=drv_name.id"
- - added early_platform_add_devices() for device registration
- - broke out early_platform_driver_register_all() function
- - modified early_platform_driver_probe() to support user_only case
- - added cleanup code
- - added documentation
-
- Changes since V1:
- - changed function names to use "early_" prefix
- - use struct early_platform_driver for data
- - added support for matching against pdev->id
- - use early_platform_init() in device drivers
- - added more comments
-
- Documentation/driver-model/platform.txt |   59 +++++++
- drivers/base/platform.c                 |  239 +++++++++++++++++++++++++++++++
- include/linux/init.h                    |    1 
- include/linux/platform_device.h         |   42 +++++
- init/main.c                             |    7 
- 5 files changed, 347 insertions(+), 1 deletion(-)
-
---- 0001/Documentation/driver-model/platform.txt
-+++ work/Documentation/driver-model/platform.txt	2009-01-23 18:41:32.000000000 +0900
-@@ -169,3 +169,62 @@ three different ways to find such a matc
-       be probed later if another device registers.  (Which is OK, since
-       this interface is only for use with non-hotpluggable devices.)
+--- 0001/arch/sh/include/asm/device.h
++++ work/arch/sh/include/asm/device.h	2009-01-22 17:03:40.000000000 +0900
+@@ -10,3 +10,5 @@ struct platform_device;
+ int platform_resource_setup_memory(struct platform_device *pdev,
+ 				   char *name, unsigned long memsize);
  
++void plat_early_device_setup(void);
 +
-+Early Platform Devices and Drivers
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+The early platform interfaces provide platform data to platform device
-+drivers early on during the system boot. The code is built on top of the
-+early_param() command line parsing and can be executed very early on.
-+
-+Example: "earlyprintk" class early serial console in 6 steps
-+
-+1. Registering early platform device data
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+The architecture code registers platform device data using the function
-+early_platform_add_devices(). In the case of early serial console this
-+should be hardware configuration for the serial port. Devices registered
-+at this point will later on be matched against early platform drivers.
-+
-+2. Parsing kernel command line
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+The architecture code calls parse_early_param() to parse the kernel
-+command line. This will execute all matching early_param() callbacks.
-+User specified early platform devices will be registered at this point.
-+For the early serial console case the user can specify port on the
-+kernel command line as "earlyprintk=serial.0" where "earlyprintk" is
-+the class string, "serial" is the name of the platfrom driver and
-+0 is the platform device id. If the id is -1 then the dot and the
-+id can be omitted.
-+
-+3. Installing early platform drivers belonging to a certain class
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+The architecture code may optionally force registration of all early
-+platform drivers belonging to a certain class using the function
-+early_platform_driver_register_all(). User specified devices from
-+step 2 have priority over these. This step is omitted by the serial
-+driver example since the early serial driver code should be disabled
-+unless the user has specified port on the kernel command line.
-+
-+4. Early platform driver registration
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+Compiled-in platform drivers making use of early_platform_init() are
-+automatically registered during step 2 or 3. The serial driver example
-+should use early_platform_init("earlyprintk", &platform_driver).
-+
-+5. Probing of early platform drivers belonging to a certain class
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+The architecture code calls early_platform_driver_probe() to match
-+registered early platform devices associated with a certain class with
-+registered early platform drivers. Matched devices will get probed().
-+This step can be executed at any point during the early boot. As soon
-+as possible may be good for the serial port case.
-+
-+6. Inside the early platform driver probe()
-+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+The driver code needs to take special care during early boot, especially
-+when it comes to memory allocation and interrupt registration. The code
-+in the probe() function can use is_early_platform_device() to check if
-+it is called at early platform device or at the regular platform device
-+time. The early serial driver performs register_console() at this point.
-+
-+For further information, see <linux/platform_device.h>.
---- 0001/drivers/base/platform.c
-+++ work/drivers/base/platform.c	2009-01-23 16:11:24.000000000 +0900
-@@ -956,6 +956,8 @@ int __init platform_bus_init(void)
- {
- 	int error;
- 
-+	early_platform_cleanup();
-+
- 	error = device_register(&platform_bus);
- 	if (error)
- 		return error;
-@@ -986,3 +988,240 @@ u64 dma_get_required_mask(struct device 
- }
- EXPORT_SYMBOL_GPL(dma_get_required_mask);
+--- 0001/arch/sh/kernel/setup.c
++++ work/arch/sh/kernel/setup.c	2009-01-22 17:06:39.000000000 +0900
+@@ -29,6 +29,7 @@
+ #include <linux/mmzone.h>
+ #include <linux/clk.h>
+ #include <linux/delay.h>
++#include <linux/platform_device.h>
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+ #include <asm/page.h>
+@@ -329,6 +330,10 @@ static int __init parse_elfcorehdr(char 
+ early_param("elfcorehdr", parse_elfcorehdr);
  #endif
-+
-+static __initdata LIST_HEAD(early_platform_driver_list);
-+static __initdata LIST_HEAD(early_platform_device_list);
-+
-+/**
-+ * early_platform_driver_register
-+ * @edrv: early_platform driver structure
-+ * @buf: string passed from early_param()
-+ */
-+int __init early_platform_driver_register(struct early_platform_driver *epdrv,
-+					  char *buf)
-+{
-+	unsigned long index;
-+	int n;
-+
-+	/* Simply add the driver to the end of the global list.
-+	 * Drivers will by default be put on the list in compiled-in order.
-+	 */
-+	if (!epdrv->list.next) {
-+		INIT_LIST_HEAD(&epdrv->list);
-+		list_add_tail(&epdrv->list, &early_platform_driver_list);
-+	}
-+
-+	/* If the user has specified device then make sure the driver
-+	 * gets prioritized. The driver of the last device specified on
-+	 * command line will be put first on the list.
-+	 */
-+	n = strlen(epdrv->pdrv->driver.name);
-+	if (buf && !strncmp(buf, epdrv->pdrv->driver.name, n)) {
-+		list_move(&epdrv->list, &early_platform_driver_list);
-+
-+		if (!strcmp(buf, epdrv->pdrv->driver.name))
-+			epdrv->requested_id = -1;
-+		else if (buf[n] == '.' && strict_strtoul(&buf[n + 1], 10,
-+							 &index) == 0)
-+			epdrv->requested_id = index;
-+		else
-+			epdrv->requested_id = EARLY_PLATFORM_ID_ERROR;
-+	}
-+
-+	return 0;
-+}
-+
-+/**
-+ * early_platform_add_devices - add a numbers of early platform devices
-+ * @devs: array of early platform devices to add
-+ * @num: number of early platform devices in array
-+ */
-+void __init early_platform_add_devices(struct platform_device **devs, int num)
-+{
-+	struct device *dev;
-+	int i;
-+
-+	/* simply add the devices to list */
-+	for (i = 0; i < num; i++) {
-+		dev = &devs[i]->dev;
-+
-+		if (!dev->devres_head.next) {
-+			INIT_LIST_HEAD(&dev->devres_head);
-+			list_add_tail(&dev->devres_head,
-+				      &early_platform_device_list);
-+		}
-+	}
-+}
-+
-+/**
-+ * early_platform_driver_register_all
-+ * @class_str: string to identify early platform driver class
-+ */
-+void __init early_platform_driver_register_all(char *class_str)
-+{
-+	/* The "class_str" parameter may or may not be present on the kernel
-+	 * command line. If it is present then there may be more than one
-+	 * matching parameter.
-+	 *
-+	 * Since we register our early platform drivers using early_param()
-+	 * we need to make sure that they also get registered in the case
-+	 * when the parameter is missing from the kernel command line.
-+	 *
-+	 * We use parse_early_options() to make sure the early_param() gets
-+	 * called at least once. The early_param() may be called more than
-+	 * once since the name of the preferred device may be specified on
-+	 * the kernel command line. early_platform_driver_register() handles
-+	 * this case for us.
-+	 */
-+	parse_early_options(class_str);
-+}
-+
-+/**
-+ * early_platform_match
-+ * @edrv: early platform driver structure
-+ * @id: id to match against
-+ */
-+static  __init struct platform_device *
-+early_platform_match(struct early_platform_driver *epdrv, int id)
-+{
-+	struct platform_device *pd;
-+
-+	list_for_each_entry(pd, &early_platform_device_list, dev.devres_head)
-+		if (platform_match(&pd->dev, &epdrv->pdrv->driver))
-+			if(pd->id == id)
-+				return pd;
-+
-+	return NULL;
-+}
-+
-+/**
-+ * early_platform_left
-+ * @edrv: early platform driver structure
-+ * @id: return true if id or above exists
-+ */
-+static  __init int early_platform_left(struct early_platform_driver *epdrv,
-+				       int id)
-+{
-+	struct platform_device *pd;
-+
-+	list_for_each_entry(pd, &early_platform_device_list, dev.devres_head)
-+		if (platform_match(&pd->dev, &epdrv->pdrv->driver))
-+			if(pd->id >= id)
-+				return 1;
-+
-+	return 0;
-+}
-+
-+/**
-+ * early_platform_driver_probe_id
-+ * @class_str: string to identify early platform driver class
-+ * @id: id to match against
-+ * @nr_probe: number of platform devices to successfully probe before exiting
-+ */
-+static int __init early_platform_driver_probe_id(char *class_str,
-+						 int id,
-+						 int nr_probe)
-+{
-+	struct early_platform_driver *epdrv;
-+	struct platform_device *match;
-+	int match_id;
-+	int n = 0;
-+	int left = 0;
-+
-+	list_for_each_entry(epdrv, &early_platform_driver_list, list) {
-+		/* only use drivers matching our class_str */
-+		if (strcmp(class_str, epdrv->class_str))
-+			continue;
-+
-+		if (id == -2) {
-+			match_id = epdrv->requested_id;
-+			left = 1;
-+
-+		} else {
-+			match_id = id;
-+			left += early_platform_left(epdrv, id);
-+
-+			/* skip requested id */
-+			switch (epdrv->requested_id) {
-+			case EARLY_PLATFORM_ID_ERROR:
-+			case EARLY_PLATFORM_ID_UNSET:
-+				break;
-+			default:
-+				if (epdrv->requested_id == id)
-+					match_id = EARLY_PLATFORM_ID_UNSET;
-+			}
-+		}
-+
-+		switch (match_id) {
-+		case EARLY_PLATFORM_ID_ERROR:
-+			pr_warning("%s: unable to parse %s parameter\n",
-+				   class_str, epdrv->pdrv->driver.name);
-+			/* fall-through */
-+		case EARLY_PLATFORM_ID_UNSET:
-+			match = NULL;
-+			break;
-+		default:
-+			match = early_platform_match(epdrv, match_id);
-+		}
-+
-+		if (match) {
-+			if (epdrv->pdrv->probe(match))
-+				pr_warning("%s: unable to probe %s early.\n",
-+					   class_str, match->name);
-+		        else
-+				n++;
-+		}
-+
-+		if (n >= nr_probe)
-+			break;
-+	}
-+
-+	if (left)
-+		return n;
-+	else
-+		return -ENODEV;
-+}
-+
-+/**
-+ * early_platform_driver_probe
-+ * @class_str: string to identify early platform driver class
-+ * @nr_probe: number of platform devices to successfully probe before exiting
-+ * @user_only: only probe user specified early platform devices
-+ */
-+int __init early_platform_driver_probe(char *class_str,
-+				       int nr_probe,
-+				       int user_only)
-+{
-+	int k, n, i;
-+
-+	n = 0;
-+	for (i = -2; n < nr_probe; i++) {
-+		k = early_platform_driver_probe_id(class_str, i, nr_probe - n);
-+
-+		if (k < 0)
-+			 break;
-+
-+		n += k;
-+
-+		if (user_only)
-+			 break;
-+	}
-+
-+	return n;
-+}
-+
-+/**
-+ * early_platform_cleanup - clean up early platform code
-+ */
-+void __init early_platform_cleanup(void)
-+{
-+	struct platform_device *pd, *pd2;
-+
-+	/* clean up the devres list used to chain devices */
-+	list_for_each_entry_safe(pd, pd2, &early_platform_device_list,
-+				 dev.devres_head) {
-+		list_del(&pd->dev.devres_head);
-+		memset(&pd->dev.devres_head, 0, sizeof(pd->dev.devres_head));
-+	}
-+}
-+
---- 0001/include/linux/init.h
-+++ work/include/linux/init.h	2009-01-23 16:11:24.000000000 +0900
-@@ -247,6 +247,7 @@ struct obs_kernel_param {
  
- /* Relies on boot_command_line being set */
- void __init parse_early_param(void);
-+void __init parse_early_options(char *cmdline);
- #endif /* __ASSEMBLY__ */
- 
- /**
---- 0001/include/linux/platform_device.h
-+++ work/include/linux/platform_device.h	2009-01-23 16:11:24.000000000 +0900
-@@ -70,4 +70,46 @@ extern int platform_driver_probe(struct 
- #define platform_get_drvdata(_dev)	dev_get_drvdata(&(_dev)->dev)
- #define platform_set_drvdata(_dev,data)	dev_set_drvdata(&(_dev)->dev, (data))
- 
-+/* early platform driver interface */
-+struct early_platform_driver {
-+	const char *class_str;
-+	struct platform_driver *pdrv;
-+	struct list_head list;
-+	int requested_id;
-+};
-+
-+#define EARLY_PLATFORM_ID_UNSET -2
-+#define EARLY_PLATFORM_ID_ERROR -3
-+
-+extern int early_platform_driver_register(struct early_platform_driver *epdrv,
-+					  char *buf);
-+extern void early_platform_add_devices(struct platform_device **devs, int num);
-+
-+static inline int is_early_platform_device(struct platform_device *pdev)
++void __init __attribute__ ((weak)) plat_early_device_setup(void)
 +{
-+	return !pdev->dev.driver;
 +}
 +
-+extern void early_platform_driver_register_all(char *class_str);
-+extern int early_platform_driver_probe(char *class_str,
-+				       int nr_probe, int user_only);
-+extern void early_platform_cleanup(void);
-+
-+
-+#ifndef MODULE
-+#define early_platform_init(class_string, platform_driver)		\
-+static __initdata struct early_platform_driver early_driver = {		\
-+	.class_str = class_string,					\
-+	.pdrv = platform_driver,					\
-+	.requested_id = EARLY_PLATFORM_ID_UNSET,			\
-+};									\
-+static int __init early_platform_driver_setup_func(char *buf)		\
-+{									\
-+	return early_platform_driver_register(&early_driver, buf);	\
-+}									\
-+early_param(class_string, early_platform_driver_setup_func)
-+#else /* MODULE */
-+#define early_platform_init(class_string, platform_driver)
-+#endif /* MODULE */
-+
- #endif /* _PLATFORM_DEVICE_H_ */
---- 0001/init/main.c
-+++ work/init/main.c	2009-01-23 16:11:24.000000000 +0900
-@@ -490,6 +490,11 @@ static int __init do_early_param(char *p
- 	return 0;
- }
- 
-+void __init parse_early_options(char *cmdline)
-+{
-+	parse_args("early options", cmdline, NULL, 0, do_early_param);
-+}
-+
- /* Arch code calls this early on, or if not, just before other parsing. */
- void __init parse_early_param(void)
+ void __init setup_arch(char **cmdline_p)
  {
-@@ -501,7 +506,7 @@ void __init parse_early_param(void)
+ 	enable_mmu();
+@@ -382,6 +387,8 @@ void __init setup_arch(char **cmdline_p)
  
- 	/* All fall through to do_early_param. */
- 	strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
--	parse_args("early options", tmp_cmdline, NULL, 0, do_early_param);
-+	parse_early_options(tmp_cmdline);
- 	done = 1;
- }
+ 	parse_early_param();
  
++	plat_early_device_setup();
++
+ 	sh_mv_setup();
+ 
+ 	/*
