@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZAWPGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbZAWPIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbZAWPGt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 10:06:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZAWPGk
+	id S1755899AbZAWPIX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 10:08:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZAWPIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 10:06:40 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:35305 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751070AbZAWPGj (ORCPT
+	Fri, 23 Jan 2009 10:08:15 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60815 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbZAWPIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 10:06:39 -0500
-Date: Fri, 23 Jan 2009 10:03:22 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Pekka J Enberg <penberg@cs.helsinki.fi>, yanmin_zhang@linux.intel.com,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
-In-Reply-To: <200901231952.53961.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.DEB.1.10.0901230955470.13690@qirst.com>
-References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI> <200901231952.53961.nickpiggin@yahoo.com.au>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 23 Jan 2009 10:08:14 -0500
+Subject: Re: [RFC PATCH 01/19] lockdep: annotate reclaim context
+ (__GFP_NOFS)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <1232697657.4791.8.camel@laptop>
+References: <20090122173701.674448070@chello.nl>
+	 <20090122174052.061744802@chello.nl> <1232653234.4890.135.camel@laptop>
+	 <1232656187.4890.136.camel@laptop>  <20090123073326.GA19986@wotan.suse.de>
+	 <1232697657.4791.8.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 23 Jan 2009 16:08:08 +0100
+Message-Id: <1232723288.4826.117.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Jan 2009, Nick Piggin wrote:
+On Fri, 2009-01-23 at 09:00 +0100, Peter Zijlstra wrote:
+> 
+> Yeah, I'll stick a check in there, that ought to suffice.
 
-> Hmm, it lists quite a number of advantages that I guess are being
-> reverted too? What was the test case(s) that prompted this commit
-> in the first place? Better ensure it doesn't slow down...
+FWIW, I've ended up with the below, which I folded into your patch
+(along with the fix from MinChan Kim).
 
-The advantage was mainly memory savings and abilty to redefined kmallocs
-to go directly to the page allocator. Totally avoids slab allocator overhead.
-
-I thought higher order allocations were not supposed to be used in
-performance critical paths? Didnt you want to do everything with order-0
-allocs?
-
-It seems that we currently need the slab allocators to compensate for the
-performance problems in the page allocator for these higher order allocs.
-I'd rather have the page allocator fixed but things are as they are.
-
+--- 
+Index: linux-2.6/kernel/lockdep.c
+===================================================================
+--- linux-2.6.orig/kernel/lockdep.c
++++ linux-2.6/kernel/lockdep.c
+@@ -2471,16 +2471,21 @@ void lockdep_trace_alloc(gfp_t gfp_mask)
+ {
+ 	struct task_struct *curr = current;
+ 
++	if (unlikely(!debug_locks))
++		return;
++
++	/* no reclaim without waiting on it */
++	if (!(gfp_mask & __GFP_WAIT))
++		return;
++
+ 	/* this guy won't enter reclaim */
+-	if (curr->flags & PF_MEMALLOC)
++	if ((curr->flags & PF_MEMALLOC) && !(gfp_mask & __GFP_NOMEMALLOC))
+ 		return;
+ 
+ 	/* We're only interested __GFP_FS allocations for now */
+ 	if (!(gfp_mask & __GFP_FS))
+ 		return;
+ 
+-	if (unlikely(!debug_locks))
+-		return;
+ 	if (DEBUG_LOCKS_WARN_ON(irqs_disabled()))
+ 		return;
+ 
 
 
