@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761364AbZAWBbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbZAWBbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761364AbZAWBbV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 22 Jan 2009 20:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760083AbZAWBPu
+	id S1760286AbZAWBbh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 22 Jan 2009 20:31:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759420AbZAWBP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 22 Jan 2009 20:15:50 -0500
-Received: from kroah.org ([198.145.64.141]:50953 "EHLO coco.kroah.org"
+	Thu, 22 Jan 2009 20:15:59 -0500
+Received: from kroah.org ([198.145.64.141]:50746 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760294AbZAWBPY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 22 Jan 2009 20:15:24 -0500
-Date: Thu, 22 Jan 2009 17:13:16 -0800
+	id S1760247AbZAWBPK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 22 Jan 2009 20:15:10 -0500
+Date: Thu, 22 Jan 2009 17:12:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>
-Subject: [patch 46/46] fs: sys_sync fix
-Message-ID: <20090123011316.GU19756@kroah.com>
+       alan@lxorguk.ukuu.org.uk,
+       Alistair John Strachan <alistair@devzero.co.uk>,
+       Hans de Goede <hdegoede@redhat.com>, Jean Delvare <khali@linux-fr.org>
+Subject: [patch 33/46] hwmon: (abituguru3) Fix CONFIG_DMI=n fallback to
+	probe
+Message-ID: <20090123011242.GH19756@kroah.com>
 References: <20090123010651.683741823@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fs-sys_sync-fix.patch"
+Content-Disposition: inline; filename="hwmon-fix-config_dmi-n-fallback-to-probe.patch"
 In-Reply-To: <20090123011110.GA19756@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,82 +42,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Nick Piggin <npiggin@suse.de>
+From: Alistair John Strachan <alistair@devzero.co.uk>
 
-commit 856bf4d717feb8c55d4e2f817b71ebb70cfbc67b upstream.
+commit 46a5f173fc88ffc22651162033696d8a9fbcdc5c upstream.
 
-s_syncing livelock avoidance was breaking data integrity guarantee of
-sys_sync, by allowing sys_sync to skip writing or waiting for superblocks
-if there is a concurrent sys_sync happening.
+When CONFIG_DMI is not enabled, dmi detection should flag that no board
+could be detected (err=1) rather than another error condition (err<0).
 
-This livelock avoidance is much less important now that we don't have the
-get_super_to_sync() call after every sb that we sync.  This was replaced
-by __put_super_and_need_restart.
+This fixes the fallback to manual probing for all motherboards, even
+those without DMI strings, when CONFIG_DMI=n.
 
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: Hans de Goede <hdegoede@redhat.com>
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/fs-writeback.c  |   20 +-------------------
- include/linux/fs.h |    1 -
- 2 files changed, 1 insertion(+), 20 deletions(-)
+ drivers/hwmon/abituguru3.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -652,18 +652,6 @@ void sync_inodes_sb(struct super_block *
- 	sync_sb_inodes(sb, &wbc);
- }
+--- a/drivers/hwmon/abituguru3.c
++++ b/drivers/hwmon/abituguru3.c
+@@ -1153,7 +1153,7 @@ static int __init abituguru3_dmi_detect(
  
--/*
-- * Rather lame livelock avoidance.
-- */
--static void set_sb_syncing(int val)
--{
--	struct super_block *sb;
--	spin_lock(&sb_lock);
--	list_for_each_entry_reverse(sb, &super_blocks, s_list)
--		sb->s_syncing = val;
--	spin_unlock(&sb_lock);
--}
--
- /**
-  * sync_inodes - writes all inodes to disk
-  * @wait: wait for completion
-@@ -690,9 +678,6 @@ static void __sync_inodes(int wait)
- 	spin_lock(&sb_lock);
- restart:
- 	list_for_each_entry(sb, &super_blocks, s_list) {
--		if (sb->s_syncing)
--			continue;
--		sb->s_syncing = 1;
- 		sb->s_count++;
- 		spin_unlock(&sb_lock);
- 		down_read(&sb->s_umount);
-@@ -710,13 +695,10 @@ restart:
- 
- void sync_inodes(int wait)
+ static inline int abituguru3_dmi_detect(void)
  {
--	set_sb_syncing(0);
- 	__sync_inodes(0);
- 
--	if (wait) {
--		set_sb_syncing(0);
-+	if (wait)
- 		__sync_inodes(1);
--	}
+-	return -ENODEV;
++	return 1;
  }
  
- /**
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1124,7 +1124,6 @@ struct super_block {
- 	struct rw_semaphore	s_umount;
- 	struct mutex		s_lock;
- 	int			s_count;
--	int			s_syncing;
- 	int			s_need_sync_fs;
- 	atomic_t		s_active;
- #ifdef CONFIG_SECURITY
+ #endif /* CONFIG_DMI */
 
