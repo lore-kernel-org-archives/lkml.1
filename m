@@ -1,51 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757554AbZAWIx1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758909AbZAWI4t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757554AbZAWIx1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 03:53:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753363AbZAWIxS
+	id S1758909AbZAWI4t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 03:56:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZAWI4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 03:53:18 -0500
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:35542 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753262AbZAWIxS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 03:53:18 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=X1KvotWnQHE21SWCsT3HnTAwBV83nitTGvymIeEC0PUGl8p9UeEXR7HA/2oHBRlASQU5JQdoH8HeS84BGHKD2OEipTct/QElz5U9eD7uE9lpkqlsqwGqAY2DEKItXdbS+PTEleZ+lSP+mIKNbs7OwVWTjjUKlvXJG9Z3GJvz1fY=  ;
-X-YMail-OSG: PuIlFEMVM1nb2ZH.w_kgq41Vw32Neg_Iar2jLRbRZL5LYs5I28r_3bXKUtPS9CpKaYmaz_9NZmBFwnCOaD0jLU.BrqL7RNg3DhWrNDuGOvOT4kYnwjipbBfamse.pL1nJSsIDiV5UqpMBRv0dW1BNdlus96KKpMaYz3HEev5CkGD.5gLmJnpKgwjJAwfei1MkeTyp2VVuvbuTdHKubukK_7BfEgnTzkA
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
-Date: Fri, 23 Jan 2009 19:52:53 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: cl@linux-foundation.org, yanmin_zhang@linux.intel.com,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI>
-In-Reply-To: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI>
+	Fri, 23 Jan 2009 03:56:40 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36812 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752146AbZAWI4j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 03:56:39 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Subject: Re: How can I fix errors and warnings in nvidia module for Tesla C1060
+Date: Fri, 23 Jan 2009 09:55:53 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: fero@drama.obuda.kando.hu, linux-nvidia@lists.surfsouth.com,
+       adaplas@gmail.com, npaci-rocks-discussion@sdsc.edu,
+       linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <3f9a31f40901222126t5baf80f8t12513dc9fd9b3f29@mail.gmail.com>
+In-Reply-To: <3f9a31f40901222126t5baf80f8t12513dc9fd9b3f29@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901231952.53961.nickpiggin@yahoo.com.au>
+Message-Id: <200901230955.53828.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 January 2009 19:43:20 Pekka J Enberg wrote:
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
->
-> This patch reverts page allocator pass-through logic from the SLUB
-> allocator.
->
-> Commit aadb4bc4a1f9108c1d0fbd121827c936c2ed4217 ("SLUB: direct pass through
-> of page size or higher kmalloc requests")
+On Friday 23 January 2009, Jaswinder Singh Rajput wrote:
+> Hello,
+> 
+> I am trying to install driver of nvidia Tesla C1060 on x86 based
+> compute node of Rockcluster 5.1
+> 
+> But  I am following errors and warnings:
+> 
+>    make -f /usr/src/kernels/2.6.18-92.1.13.el5-i686/scripts/Makefile.build obj=
+>    /tmp/selfgz3379/NVIDIA-Linux-x86-177.72-pkg1/usr/src/nv
+>      cc -Wp,-MD,/tmp/selfgz3379/NVIDIA-Linux-x86-177.72-pkg1/usr/src/nv/.nv.o.d
+>     -nostdinc -isystem /usr/lib/gcc/i386-redhat-linux/4.1.2/include -D__KERNEL_
+>    _ -Iinclude -Iinclude2 -I/usr/src/kernels/2.6.18-92.1.13.el5-i686/include -i
+>    nclude include/linux/autoconf.h   -I/tmp/selfgz3379/NVIDIA-Linux-x86-177.72-
+>    pkg1/usr/src/nv -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs -fno-strict
+>    -aliasing -fno-common -Wstrict-prototypes -Wundef -Werror-implicit-function-
+>    declaration -Os -pipe -msoft-float -fno-builtin-sprintf -fno-builtin-log2 -f
+>    no-builtin-puts -mpreferred-stack-boundary=2 -march=i686 -mtune=generic -mtu
+>    ne=generic -mregparm=3 -ffreestanding -I/usr/src/kernels/2.6.18-92.1.13.el5-
+>    i686/include/asm-i386/mach-generic -Iinclude/asm-i386/mach-generic -I/usr/sr
+>    c/kernels/2.6.18-92.1.13.el5-i686/include/asm-i386/mach-default -Iinclude/as
+>    m-i386/mach-default -fomit-frame-pointer -g -fno-stack-protector -Wdeclarati
+>    on-after-statement -Wno-pointer-sign  -I/tmp/self
+>    gz3379/NVIDIA-Linux-x86-177.72-pkg1/usr/src/nv -Wall -Wimplicit -Wreturn-typ
+>    e -Wswitch -Wformat -Wchar-subscripts -Wparentheses -Wpointer-arith -Wno-mul
+>    tichar -Werror -MD -Wsign-compare -Wno-cast-qual -Wno-error -D__KERNEL__ -DM
+>    ODULE -DNVRM -DNV_VERSION_STRING=\"177.72\" -UDEBUG -U_DEBUG -DNDEBUG -DMODU
+>    LE -D"KBUILD_STR(s)=#s" -D"KBUILD_BASENAME=KBUILD_STR(nv)"  -D"KBUILD_MODNAM
+>    E=KBUILD_STR(nvidia)" -c -o /tmp/selfgz3379/NVIDIA-Linux-x86-177.72-pkg1/usr
+>    /src/nv/.tmp_nv.o /tmp/selfgz3379/NVIDIA-Linux-x86-177.72-pkg1/usr/src/nv/nv
+>    .c
+>    In file included from include/linux/list.h:8,
+>                     from include/linux/lockdep.h:13,
+>                     from include/linux/spinlock_types.h:18,
+>                     from include/linux/spinlock.h:78,
+>                     from include/linux/capability.h:45,
+>                     from include/linux/sched.h:44,
+>                     from include/linux/module.h:9,
+>                     from /tmp/selfgz3379/NVIDIA-Linux-x86-177.72-pkg1/usr/src/n
+>    v/nv-linux.h:59,
+>                     from /tmp/selfgz3379/NVIDIA-Linux-x86-177.72-pkg1/usr/src/n
+>    v/nv.c:14:
+>    include/linux/prefetch.h: In function 'prefetch_range':
+>    include/linux/prefetch.h:62: warning: pointer of type 'void *' used in arith
+>    metic
+>    In file included from include/linux/dmapool.h:14,
+>                     from include/linux/pci.h:616,
+>                     from /tmp/selfgz3379/NVIDIA-Linux-x86-177.72-pkg1/usr/src/n
+>    v/nv-linux.h:86,
+>                     from /tmp/selfgz3379/NVIDIA-Linux-x86-177.72-pkg1/usr/src/n
+>    v/nv.c:14:
+>    include/asm/io.h: In function 'check_signature':
+>    include/asm/io.h:245: warning: wrong type argument to increment
+> 
+> ...
+> 
+> -> Kernel module compilation complete.
+> ERROR: Unable to load the kernel module 'nvidia.ko'.  This happens most
+>        frequently when this kernel module was built against the wrong or
+>        improperly configured kernel sources, with a version of gcc that differs
+>        from the one used to build the target kernel, or if a driver such as
+>        rivafb/nvidiafb is present and prevents the NVIDIA kernel module from
+>        obtaining ownership of the NVIDIA graphics device(s).
+> 
+>        Please see the log entries 'Kernel module load error' and 'Kernel
+>        messages' at the end of the file '/var/log/nvidia-installer.log' for
+>        more information.
+> -> Kernel module load error: insmod: error inserting './usr/src/nv/nvidia.ko':
+>    -1 No such device
+> 
+> I am attaching complete log file for your reference.
+> 
+> I cannot see any source code for these modules. How can I fix these
+> error and warnings.
 
-Hmm, it lists quite a number of advantages that I guess are being
-reverted too? What was the test case(s) that prompted this commit
-in the first place? Better ensure it doesn't slow down...
+That's likely because the NVidia driver expects the arch asm headers to be in
+include/linux .
 
+Thanks,
+Rafael
