@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760386AbZAWLAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761943AbZAWLAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760386AbZAWLAT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 06:00:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbZAWK7w
+	id S1761943AbZAWLAt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 06:00:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756938AbZAWLAJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 05:59:52 -0500
+	Fri, 23 Jan 2009 06:00:09 -0500
 Received: from wa-out-1112.google.com ([209.85.146.178]:5663 "EHLO
 	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761035AbZAWK7v (ORCPT
+	with ESMTP id S1761530AbZAWLAH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 05:59:51 -0500
+	Fri, 23 Jan 2009 06:00:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=uTXFGjjZhyxlk7fSA+3vo1UrgVh0eiywfX/qdiZMA9icGbBL6ZTmAIAszvzMr0hfbl
-         Fnzj1DJkr6tqy7DtsOknbtlGz6WbxCfHzRHfRtS84BHXRUPo9ioKy5ltC1IkyHiJM1ZU
-         ORWMbx3WoTHEKcwmLIuZ2htEmZHkTtztgtfuc=
+        b=HTEe5MPNitIWV63rxWwHChV9WtrukPtv94jixcGT0m5MIdH51FhqMXoPwNNL1Go2r/
+         hL8SSalkkdpOvbHgeICZvXIAn8xQHH9tjFijPnj4uJ9kwlS6pBxTeDsyyPdaZZrcrYqL
+         p+cJVof/QUqJWkiakGrBy4/G2hx0KDnAMSqu0=
 From: Magnus Damm <magnus.damm@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, johnstul@us.ibm.com, gregkh@suse.de,
-       roel.kluin@gmail.com, lethal@linux-sh.org, tglx@linutronix.de,
-       mingo@redhat.com, Magnus Damm <magnus.damm@gmail.com>
-Date: Fri, 23 Jan 2009 19:57:50 +0900
-Message-Id: <20090123105750.18779.89143.sendpatchset@rx1.opensource.se>
+Cc: johnstul@us.ibm.com, gregkh@suse.de, roel.kluin@gmail.com,
+       lethal@linux-sh.org, Magnus Damm <magnus.damm@gmail.com>,
+       akpm@linux-foundation.org, mingo@redhat.com, tglx@linutronix.de
+Date: Fri, 23 Jan 2009 19:58:00 +0900
+Message-Id: <20090123105800.18779.61288.sendpatchset@rx1.opensource.se>
 In-Reply-To: <20090123105721.18779.80514.sendpatchset@rx1.opensource.se>
 References: <20090123105721.18779.80514.sendpatchset@rx1.opensource.se>
-Subject: [PATCH 002/011] sh: add plat_early_device_setup() function
+Subject: [PATCH 003/011] sh: plat_early_device_setup() for sh2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Magnus Damm <damm@igel.co.jp>
 
-This patch adds the function plat_early_device_setup() which
-cpu code can use for early platform device registation.
+This patch adds sh2 code to register early platform devices
+using plat_early_device_setup().
 
 Signed-off-by: Magnus Damm <damm@igel.co.jp>
 ---
 
- arch/sh/include/asm/device.h |    2 ++
- arch/sh/kernel/setup.c       |    7 +++++++
- 2 files changed, 9 insertions(+)
+ arch/sh/kernel/cpu/sh2/setup-sh7619.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- 0001/arch/sh/include/asm/device.h
-+++ work/arch/sh/include/asm/device.h	2009-01-22 17:03:40.000000000 +0900
-@@ -10,3 +10,5 @@ struct platform_device;
- int platform_resource_setup_memory(struct platform_device *pdev,
- 				   char *name, unsigned long memsize);
+--- 0013/arch/sh/kernel/cpu/sh2/setup-sh7619.c
++++ work/arch/sh/kernel/cpu/sh2/setup-sh7619.c	2009-01-23 17:31:44.000000000 +0900
+@@ -149,6 +149,11 @@ static int __init sh7619_devices_setup(v
+ }
+ __initcall(sh7619_devices_setup);
  
-+void plat_early_device_setup(void);
-+
---- 0001/arch/sh/kernel/setup.c
-+++ work/arch/sh/kernel/setup.c	2009-01-22 17:06:39.000000000 +0900
-@@ -29,6 +29,7 @@
- #include <linux/mmzone.h>
- #include <linux/clk.h>
- #include <linux/delay.h>
-+#include <linux/platform_device.h>
- #include <asm/uaccess.h>
- #include <asm/io.h>
- #include <asm/page.h>
-@@ -329,6 +330,10 @@ static int __init parse_elfcorehdr(char 
- early_param("elfcorehdr", parse_elfcorehdr);
- #endif
- 
-+void __init __attribute__ ((weak)) plat_early_device_setup(void)
++void __init plat_early_device_setup(void)
 +{
++	early_platform_add_devices(sh7619_devices, ARRAY_SIZE(sh7619_devices));
 +}
 +
- void __init setup_arch(char **cmdline_p)
+ void __init plat_irq_setup(void)
  {
- 	enable_mmu();
-@@ -382,6 +387,8 @@ void __init setup_arch(char **cmdline_p)
- 
- 	parse_early_param();
- 
-+	plat_early_device_setup();
-+
- 	sh_mv_setup();
- 
- 	/*
+ 	register_intc_controller(&intc_desc);
