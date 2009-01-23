@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759732AbZAWTwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760107AbZAWTww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759732AbZAWTwe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 14:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757856AbZAWTum
+	id S1760107AbZAWTww (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 14:52:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758005AbZAWTuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 14:50:42 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:63435 "EHLO
+	Fri, 23 Jan 2009 14:50:44 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:63442 "EHLO
 	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755122AbZAWTul (ORCPT
+	by vger.kernel.org with ESMTP id S1757916AbZAWTun (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 14:50:41 -0500
-Date: Fri, 23 Jan 2009 22:50:39 +0300
+	Fri, 23 Jan 2009 14:50:43 -0500
+Date: Fri, 23 Jan 2009 22:50:41 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: David Brownell <dbrownell@users.sourceforge.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Kumar Gala <galak@kernel.crashing.org>,
        Grant Likely <grant.likely@secretlab.ca>, linuxppc-dev@ozlabs.org,
        spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/6] powerpc/83xx: Add mmc-spi support via the device tree
-	for MPC8323E-RDB
-Message-ID: <20090123195039.GE21237@oksana.dev.rtsoft.ru>
+Subject: [PATCH 6/6] powerpc/fsl_soc: Isolate legacy fsl_spi support to
+	mpc832x_rdb boards
+Message-ID: <20090123195041.GF21237@oksana.dev.rtsoft.ru>
 References: <20090123194958.GA17355@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -30,86 +30,275 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- Add gpio-controller node to manage QE GPIO Bank D;
-- Add mmc-spi node;
-- Modify board file so that it won't use legacy SPI support with the new
-  device trees.
+The advantages of this:
+- Don't encourage legacy support;
+- Less external symbols, less code to compile-in for !MPC832x_RDB
+  platforms.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- arch/powerpc/boot/dts/mpc832x_rdb.dts     |   24 ++++++++++++++++++++++++
- arch/powerpc/platforms/83xx/mpc832x_rdb.c |    6 ++++++
- 2 files changed, 30 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/83xx/mpc832x_rdb.c |  107 +++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.c             |  107 -----------------------------
+ arch/powerpc/sysdev/fsl_soc.h             |    4 -
+ 3 files changed, 107 insertions(+), 111 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index dea3091..4319bd7 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -152,10 +152,21 @@
- 		};
- 
- 		par_io@1400 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
- 			reg = <0x1400 0x100>;
-+			ranges = <3 0x1448 0x18>;
-+			compatible = "fsl,mpc8323-qe-pario";
- 			device_type = "par_io";
- 			num-ports = <7>;
- 
-+			qe_pio_d: gpio-controller@1448 {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,mpc8323-qe-pario-bank";
-+				reg = <3 0x18>;
-+				gpio-controller;
-+			};
-+
- 			ucc2pio:ucc_pin@02 {
- 				pio-map = <
- 			/* port  pin  dir  open_drain  assignment  has_irq */
-@@ -225,12 +236,25 @@
- 		};
- 
- 		spi@4c0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
- 			cell-index = <0>;
- 			compatible = "fsl,spi";
- 			reg = <0x4c0 0x40>;
- 			interrupts = <2>;
- 			interrupt-parent = <&qeic>;
-+			gpios = <&qe_pio_d 13 0>;
- 			mode = "cpu-qe";
-+
-+			mmc-slot@0 {
-+				compatible = "fsl,mpc8323rdb-mmc-slot",
-+					     "mmc-spi-slot";
-+				reg = <0>;
-+				gpios = <&qe_pio_d 14 1
-+					 &qe_pio_d 15 0>;
-+				voltage-ranges = <3300 3300>;
-+				spi-max-frequency = <50000000>;
-+			};
- 		};
- 
- 		spi@500 {
 diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index 28e23cd..e1e7eeb 100644
+index e1e7eeb..567ded7 100644
 --- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
 +++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -68,6 +68,12 @@ static int __init mpc832x_spi_init(void)
- 	par_io_config_pin(3, 14, 2, 0, 0, 0); /* SD_INSERT, I */
- 	par_io_config_pin(3, 15, 2, 0, 0, 0); /* SD_PROTECT,I */
+@@ -20,6 +20,7 @@
+ #include <linux/spi/mmc_spi.h>
+ #include <linux/mmc/host.h>
+ #include <linux/of_platform.h>
++#include <linux/fsl_devices.h>
  
-+	/*
-+	 * Don't bother with legacy stuff when device tree contains
-+	 * mmc-spi-slot node.
-+	 */
-+	if (of_find_compatible_node(NULL, NULL, "mmc-spi-slot"))
-+		return 0;
- 	return fsl_spi_init(&mpc832x_spi_boardinfo, 1, mpc83xx_spi_cs_control);
- }
- machine_device_initcall(mpc832x_rdb, mpc832x_spi_init);
+ #include <asm/time.h>
+ #include <asm/ipic.h>
+@@ -39,6 +40,112 @@
+ #endif
+ 
+ #ifdef CONFIG_QUICC_ENGINE
++static int __init of_fsl_spi_probe(char *type, char *compatible, u32 sysclk,
++				   struct spi_board_info *board_infos,
++				   unsigned int num_board_infos,
++				   void (*cs_control)(struct spi_device *dev,
++						      bool on))
++{
++	struct device_node *np;
++	unsigned int i = 0;
++
++	for_each_compatible_node(np, type, compatible) {
++		int ret;
++		unsigned int j;
++		const void *prop;
++		struct resource res[2];
++		struct platform_device *pdev;
++		struct fsl_spi_platform_data pdata = {
++			.cs_control = cs_control,
++		};
++
++		memset(res, 0, sizeof(res));
++
++		pdata.sysclk = sysclk;
++
++		prop = of_get_property(np, "reg", NULL);
++		if (!prop)
++			goto err;
++		pdata.bus_num = *(u32 *)prop;
++
++		prop = of_get_property(np, "cell-index", NULL);
++		if (prop)
++			i = *(u32 *)prop;
++
++		prop = of_get_property(np, "mode", NULL);
++		if (prop && !strcmp(prop, "cpu-qe"))
++			pdata.qe_mode = 1;
++
++		for (j = 0; j < num_board_infos; j++) {
++			if (board_infos[j].bus_num == pdata.bus_num)
++				pdata.max_chipselect++;
++		}
++
++		if (!pdata.max_chipselect)
++			continue;
++
++		ret = of_address_to_resource(np, 0, &res[0]);
++		if (ret)
++			goto err;
++
++		ret = of_irq_to_resource(np, 0, &res[1]);
++		if (ret == NO_IRQ)
++			goto err;
++
++		pdev = platform_device_alloc("mpc83xx_spi", i);
++		if (!pdev)
++			goto err;
++
++		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++		if (ret)
++			goto unreg;
++
++		ret = platform_device_add_resources(pdev, res,
++						    ARRAY_SIZE(res));
++		if (ret)
++			goto unreg;
++
++		ret = platform_device_add(pdev);
++		if (ret)
++			goto unreg;
++
++		goto next;
++unreg:
++		platform_device_del(pdev);
++err:
++		pr_err("%s: registration failed\n", np->full_name);
++next:
++		i++;
++	}
++
++	return i;
++}
++
++static int __init fsl_spi_init(struct spi_board_info *board_infos,
++			       unsigned int num_board_infos,
++			       void (*cs_control)(struct spi_device *spi,
++						  bool on))
++{
++	u32 sysclk = -1;
++	int ret;
++
++	/* SPI controller is either clocked from QE or SoC clock */
++	sysclk = get_brgfreq();
++	if (sysclk == -1) {
++		sysclk = fsl_get_sys_freq();
++		if (sysclk == -1)
++			return -ENODEV;
++	}
++
++	ret = of_fsl_spi_probe(NULL, "fsl,spi", sysclk, board_infos,
++			       num_board_infos, cs_control);
++	if (!ret)
++		of_fsl_spi_probe("spi", "fsl_spi", sysclk, board_infos,
++				 num_board_infos, cs_control);
++
++	return spi_register_board_info(board_infos, num_board_infos);
++}
++
+ static void mpc83xx_spi_cs_control(struct spi_device *spi, bool on)
+ {
+ 	pr_debug("%s %d %d\n", __func__, spi->chip_select, on);
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 0a545a9..18e49ef 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -413,113 +413,6 @@ err:
+ 
+ arch_initcall(fsl_usb_of_init);
+ 
+-static int __init of_fsl_spi_probe(char *type, char *compatible, u32 sysclk,
+-				   struct spi_board_info *board_infos,
+-				   unsigned int num_board_infos,
+-				   void (*cs_control)(struct spi_device *dev,
+-						      bool on))
+-{
+-	struct device_node *np;
+-	unsigned int i = 0;
+-
+-	for_each_compatible_node(np, type, compatible) {
+-		int ret;
+-		unsigned int j;
+-		const void *prop;
+-		struct resource res[2];
+-		struct platform_device *pdev;
+-		struct fsl_spi_platform_data pdata = {
+-			.cs_control = cs_control,
+-		};
+-
+-		memset(res, 0, sizeof(res));
+-
+-		pdata.sysclk = sysclk;
+-
+-		prop = of_get_property(np, "reg", NULL);
+-		if (!prop)
+-			goto err;
+-		pdata.bus_num = *(u32 *)prop;
+-
+-		prop = of_get_property(np, "cell-index", NULL);
+-		if (prop)
+-			i = *(u32 *)prop;
+-
+-		prop = of_get_property(np, "mode", NULL);
+-		if (prop && !strcmp(prop, "cpu-qe"))
+-			pdata.qe_mode = 1;
+-
+-		for (j = 0; j < num_board_infos; j++) {
+-			if (board_infos[j].bus_num == pdata.bus_num)
+-				pdata.max_chipselect++;
+-		}
+-
+-		if (!pdata.max_chipselect)
+-			continue;
+-
+-		ret = of_address_to_resource(np, 0, &res[0]);
+-		if (ret)
+-			goto err;
+-
+-		ret = of_irq_to_resource(np, 0, &res[1]);
+-		if (ret == NO_IRQ)
+-			goto err;
+-
+-		pdev = platform_device_alloc("mpc83xx_spi", i);
+-		if (!pdev)
+-			goto err;
+-
+-		ret = platform_device_add_data(pdev, &pdata, sizeof(pdata));
+-		if (ret)
+-			goto unreg;
+-
+-		ret = platform_device_add_resources(pdev, res,
+-						    ARRAY_SIZE(res));
+-		if (ret)
+-			goto unreg;
+-
+-		ret = platform_device_add(pdev);
+-		if (ret)
+-			goto unreg;
+-
+-		goto next;
+-unreg:
+-		platform_device_del(pdev);
+-err:
+-		pr_err("%s: registration failed\n", np->full_name);
+-next:
+-		i++;
+-	}
+-
+-	return i;
+-}
+-
+-int __init fsl_spi_init(struct spi_board_info *board_infos,
+-			unsigned int num_board_infos,
+-			void (*cs_control)(struct spi_device *spi, bool on))
+-{
+-	u32 sysclk = -1;
+-	int ret;
+-
+-#ifdef CONFIG_QUICC_ENGINE
+-	/* SPI controller is either clocked from QE or SoC clock */
+-	sysclk = get_brgfreq();
+-#endif
+-	if (sysclk == -1) {
+-		sysclk = fsl_get_sys_freq();
+-		if (sysclk == -1)
+-			return -ENODEV;
+-	}
+-
+-	ret = of_fsl_spi_probe(NULL, "fsl,spi", sysclk, board_infos,
+-			       num_board_infos, cs_control);
+-	if (!ret)
+-		of_fsl_spi_probe("spi", "fsl_spi", sysclk, board_infos,
+-				 num_board_infos, cs_control);
+-
+-	return spi_register_board_info(board_infos, num_board_infos);
+-}
+-
+ #if defined(CONFIG_PPC_85xx) || defined(CONFIG_PPC_86xx)
+ static __be32 __iomem *rstcr;
+ 
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index b5f3456..42381bb 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -19,10 +19,6 @@ extern u32 fsl_get_sys_freq(void);
+ struct spi_board_info;
+ struct device_node;
+ 
+-extern int fsl_spi_init(struct spi_board_info *board_infos,
+-			unsigned int num_board_infos,
+-			void (*cs_control)(struct spi_device *spi, bool on));
+-
+ extern void fsl_rstcr_restart(char *cmd);
+ 
+ #if defined(CONFIG_FB_FSL_DIU) || defined(CONFIG_FB_FSL_DIU_MODULE)
 -- 
 1.5.6.5
-
