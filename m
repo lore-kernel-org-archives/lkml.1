@@ -1,101 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760746AbZAWQ1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758185AbZAWQ1w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760746AbZAWQ1U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 11:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754265AbZAWQ1M
+	id S1758185AbZAWQ1w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 11:27:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756492AbZAWQ1n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 11:27:12 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:37707 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752067AbZAWQ1L (ORCPT
+	Fri, 23 Jan 2009 11:27:43 -0500
+Received: from coding-badger.net ([88.191.17.171]:46014 "EHLO
+	sd-1367.dedibox.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756048AbZAWQ1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 11:27:11 -0500
-Date: Fri, 23 Jan 2009 10:52:43 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <20090123041756.GH20098@wotan.suse.de>
-Message-ID: <alpine.DEB.1.10.0901231042380.32253@qirst.com>
-References: <20090114142200.GB25401@wotan.suse.de> <84144f020901140645o68328e01ne0e10ace47555e19@mail.gmail.com> <20090114150900.GC25401@wotan.suse.de> <Pine.LNX.4.64.0901141158090.26507@quilx.com> <20090115060330.GB17810@wotan.suse.de>
- <Pine.LNX.4.64.0901151320250.26467@quilx.com> <20090116031940.GL17810@wotan.suse.de> <Pine.LNX.4.64.0901161500080.27283@quilx.com> <20090119054730.GA22584@wotan.suse.de> <alpine.DEB.1.10.0901211914140.18367@qirst.com>
- <20090123041756.GH20098@wotan.suse.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 23 Jan 2009 11:27:42 -0500
+X-Greylist: delayed 1570 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Jan 2009 11:27:42 EST
+Message-ID: <4979E9ED.2090402@yahoo.fr>
+Date: Fri, 23 Jan 2009 17:01:49 +0100
+From: strawks <strawks@yahoo.fr>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.1b3pre) Gecko/20081204 Lightning/1.0pre Thunderbird/3.0b1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-kernel@vger.kernel.org
+Subject: USB: lost page write but no error reported on closing raw device
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Jan 2009, Nick Piggin wrote:
+Hi all,
 
-> > > The thing IMO you forget with all these doomsday scenarios about SGI's peta
-> > > scale systems is that no matter what you do, you can't avoid the fact that
-> > > computing is about locality. Even if you totally take the TLB out of the
-> > > equation, you still have the small detail of other caches. Code that jumps
-> > > all over that 1024 TB of memory with no locality is going to suck regardless
-> > > of what the kernel ever does, due to physical limitations of hardware.
-> >
-> > Typically we traverse lists of objects that are in the same slab cache.
->
-> Very often that is not the case. And the price you pay for that is that
-> you have to drain and switch freelists whenever you encounter an object
-> that is not on the same page.
+I was trying to copy my entire internal HDD to an USB HDD :
+ > dd if=/dev/hda of=/dev/sdb
 
-SLUB can directly free an object to any slab page. "Queuing" on free via
-the per cpu slab is only possible if the object came from that per cpu
-slab. This is typically only the case for objects that were recently
-allocated.
+dd finished without reporting errors but some blocks (around 102GB of 
+160) were not copied and I got in the syslog :
 
-There is no switching of queues because they do not exist in that form in
-SLUB. We always determine the page address and put the object into the
-freelist of that page. Also results in nice parallelism since the lock is
-not even cpu specific.
+Jan 21 19:04:43 kernel: usb 4-2: reset high speed USB device using
+ehci_hcd and address 4
+Jan 21 19:04:43 kernel: sd 6:0:0:0: [sda] Result: hostbyte=DID_ERROR
+driverbyte=DRIVER_OK,SUGGEST_OK
+Jan 21 19:04:43 kernel: end_request: I/O error, dev sda, sector 272136241
+Jan 21 19:04:43 kernel: Buffer I/O error on device sda4, logical block
+104765468
 
-> This gives your freelists a chaotic and unpredictable behaviour IMO in
-> a running system where pages succumb to fragmentation so your freelist
-> maximum sizes are limited. It also means you can lose track of cache
-> hot objects when you switch to different "fast" pages. I don't consider
-> this to be "queueing done right".
 
-Yes you can loose track of caching hot objects. That is one of the
-concerns with the SLUB approach. On the other hand: Caching architectures
-get more and more complex these days (especially in a NUMA system). The
-SLAB approach is essentially trying to guess which objects are cache hot
-and queue them. Sometimes the queueing is advantageous (may be a reason
-that SLAB is better than SLUB in some cases). In other cases SLAB keeps
-objects on queues but the object have become sale (context switch, slab
-unused for awhile). Then its no advantage anymore.
+I don't really know what caused the problem (btw I didn't disconnect the 
+USB drive) but the fact is that there were an error copying data to the 
+usb drive but this error were not reported to dd.
 
-> > If all objects are from the same page then you need not check
-> > the NUMA locality of any object on that queue.
->
-> In SLAB and SLQB, all objects on the freelist are on the same node. So
-> tell me how does same-page objects simplify numa  handling?
+Is this the expected behaviour? Shouldn't the close() call repports the 
+write error to dd?
 
-F.e. On free you need to determine the node to find the right queue in
-SLAB. SLUB does not need to do that. It simply determines the page address
-and does not care about the node when freeing the object. It is irrelevant
-on which node the object sits.
+Note : I tried on debian 2.6.26 stock kernel and 2.6.29-rc2, same behavior.
 
-Also on alloc: The per cpu slab can be from a foreign node. NUMA locality
-does only matter if the caller wants memory from a particular node. So
-cpus that have no local memory can still use the per cpu slabs to have
-fast allocations etc etc.
+I have already copied HDD this way (IDE and SCSI but not USB), and each 
+time IO errors occured dd would print some error message. I think
 
-> > > And you found you have to increase the size of your pages because you
-> > > need bigger queues. (must we argue semantics? it is a list of free
-> > > objects)
-> >
-> > Right. That may be the case and its a similar tuning to what SLAB does.
->
-> SLAB and SLQB doesn't need bigger pages to do that.
-
-But they require more metadata handling because they need to manage lists
-of order-0 pages. metadata handling is reduced by orders of magnitude in
-SLUB.
+-- 
+regards
+strawks
