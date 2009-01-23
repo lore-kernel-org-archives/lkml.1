@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZAWPeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbZAWPhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756822AbZAWPeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 10:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZAWPeK
+	id S1756743AbZAWPhm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 10:37:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbZAWPhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 10:34:10 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54010 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753056AbZAWPeJ (ORCPT
+	Fri, 23 Jan 2009 10:37:34 -0500
+Received: from smtp116.mail.mud.yahoo.com ([209.191.84.165]:35602 "HELO
+	smtp116.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750785AbZAWPhd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 10:34:09 -0500
-Date: Fri, 23 Jan 2009 16:34:00 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Daniel Troeder <daniel@admin-box.com>
-Cc: deller@gmx.de, kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: LED (leds_hp_disk) causes BUG: scheduling while atomic
-Message-ID: <20090123153400.GC23668@elf.ucw.cz>
-References: <1231156352.9735.6.camel@maya.local> <20090106101415.GA13972@elf.ucw.cz> <1231401855.8422.15.camel@maya.local> <20090108114956.GB12120@elf.ucw.cz> <1232719747.18163.96.camel@maya.local>
+	Fri, 23 Jan 2009 10:37:33 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=sSRrixHCMM1VA/q+0nYkrRaGO/nEVg0VnnPESgVOhzz5W9Anj8LjCWJmWwRdKV3GWuvjxqNZaC835m/VOEbTj/CbLUvv8WbOkW20mkcFOLKb2Ltvwk9RPozgshDqPzuuZrWe3d0XgVbrs43ui94yp7/riggOkZTT2Cvgx66CEM0=  ;
+X-YMail-OSG: vXdyEUMVM1k3xHzjJp.VUmT3pCSc8bX.mbwYe7rQRgIedFa9vs6gz7L7aqSHZ5WGALTFjbiHvfOfKn1GSZ_L3EoCbsdTp.8Xa1JWmUVCxzqPS_a6BJ8WFrqYSo5noMzUB_6Krx6IOgV4gWhhrXrx4mh.4TZJHDjkygjg2c5YwXs29HMYRmZXIWS.VBjvAg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
+Date: Sat, 24 Jan 2009 02:37:09 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Pekka J Enberg <penberg@cs.helsinki.fi>, yanmin_zhang@linux.intel.com,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI> <200901240212.58829.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0901231025320.21692@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0901231025320.21692@qirst.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1232719747.18163.96.camel@maya.local>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901240237.10522.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-01-23 15:09:07, Daniel Troeder wrote:
-> Am Donnerstag, den 08.01.2009, 12:49 +0100 schrieb Pavel Machek:
-> > On Thu 2009-01-08 09:04:15, Daniel Troeder wrote:
-> > > Am Dienstag, den 06.01.2009, 11:14 +0100 schrieb Pavel Machek:
-> > > > > I have a HP Compaq nc2400 notebook, and having recently installed 2.6.28
-> > > > > (gentoo patchset, self configured), I have observed the following:
-> > > > > 
-> > > > > When {I manually, udev automatically} load the leds_hp_disk module, my
-> > > > > disk-led flashes regularly _without_ disk activity. When I look at my
-> > > > > dmesg I see the following:
-> > > > 
-> > > > Yes, that's a (mis-feature).
-> > 
-> > What did does it flash, btw? It is red on hp2133 (while disk light is
-> > normally white).
-> It flashes orange, while normal HDD-activity-color is green.
+On Saturday 24 January 2009 02:27:29 Christoph Lameter wrote:
+> On Sat, 24 Jan 2009, Nick Piggin wrote:
+> > > I thought higher order allocations were not supposed to be used in
+> > > performance critical paths?
+> >
+> > ? You use them all the time in SLUB alone.
+>
+> But SLUB compensates for the slow higher order allocs by using them as
+> buffers for smaller objects.. The higher order allocs are in the slow
+> paths.
 
-Thanks.
+I don't quite know what you're asking of me. If you see higher order
+allocations in performance critical code, then you answer your own
+question?
 
-> (BTW: Problem persists in 2.6.28.1.)
+However, I don't know if netperf udp 4K over loopback is totally
+realistic. Maybe real network drivers have different allocation patterns.
+If I were you I wouldn't be too hasty to make big changes based on that
+alone, if it could introduce regression in somewhere more important.
 
-Should be fixed in 2.6.29-rc2.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
