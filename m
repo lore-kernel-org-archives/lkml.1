@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761005AbZAWGRA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760968AbZAWGR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761005AbZAWGRA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 01:17:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752010AbZAWGQV
+	id S1760968AbZAWGR0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 01:17:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZAWGQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 01:16:21 -0500
-Received: from kroah.org ([198.145.64.141]:36062 "EHLO coco.kroah.org"
+	Fri, 23 Jan 2009 01:16:23 -0500
+Received: from kroah.org ([198.145.64.141]:36085 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751864AbZAWGQU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 01:16:20 -0500
-Date: Thu, 22 Jan 2009 22:12:47 -0800
+	id S1752027AbZAWGQW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 01:16:22 -0500
+Date: Thu, 22 Jan 2009 22:12:58 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
+       alan@lxorguk.ukuu.org.uk, Wei Yongjun <yjwei@cn.fujitsu.com>,
+       Vlad Yasevich <vladislav.yasevich@hp.com>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 02/40] ipv6: Fix fib6_dump_table walker leak
-Message-ID: <20090123061247.GB2922@kroah.com>
+Subject: [patch 03/40] sctp: Avoid memory overflow while FWD-TSN chunk is
+	received with bad stream ID
+Message-ID: <20090123061258.GC2922@kroah.com>
 References: <20090123001330.046404396@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ipv6-fix-fib6_dump_table-walker-leak.patch"
+Content-Disposition: inline; filename="sctp-avoid-memory-overflow-while-fwd-tsn-chunk-is-received-with-bad-stream-id.patch"
 In-Reply-To: <20090123001908.GA7397@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,54 +42,78 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Wei Yongjun <yjwei@cn.fujitsu.com>
 
-[ Upstream commit: 7891cc818967e186be68caac32d84bfd0a3f0bd2 ]
+[ Upstream commit: 9fcb95a105758b81ef0131cd18e2db5149f13e95 ]
 
-When a fib6 table dump is prematurely ended, we won't unlink
-its walker from the list.  This causes all sorts of grief for
-other users of the list later.
+If FWD-TSN chunk is received with bad stream ID, the sctp will not do the
+validity check, this may cause memory overflow when overwrite the TSN of
+the stream ID.
 
-Reported-by: Chris Caputo <ccaputo@alt.net>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+The FORWARD-TSN chunk is like this:
+
+FORWARD-TSN chunk
+  Type                       = 192
+  Flags                      = 0
+  Length                     = 172
+  NewTSN                     = 99
+  Stream                     = 10000
+  StreamSequence             = 0xFFFF
+
+This patch fix this problem by discard the chunk if stream ID is not
+less than MIS.
+
+Signed-off-by: Wei Yongjun <yjwei@cn.fujitsu.com>
+Signed-off-by: Vlad Yasevich <vladislav.yasevich@hp.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv6/ip6_fib.c |   15 ++++++++-------
- 1 file changed, 8 insertions(+), 7 deletions(-)
+ net/sctp/sm_statefuns.c |   14 ++++++++++++++
+ 1 file changed, 14 insertions(+)
 
---- a/net/ipv6/ip6_fib.c
-+++ b/net/ipv6/ip6_fib.c
-@@ -298,6 +298,10 @@ static void fib6_dump_end(struct netlink
- 	struct fib6_walker_t *w = (void*)cb->args[2];
+--- a/net/sctp/sm_statefuns.c
++++ b/net/sctp/sm_statefuns.c
+@@ -3635,6 +3635,7 @@ sctp_disposition_t sctp_sf_eat_fwd_tsn(c
+ {
+ 	struct sctp_chunk *chunk = arg;
+ 	struct sctp_fwdtsn_hdr *fwdtsn_hdr;
++	struct sctp_fwdtsn_skip *skip;
+ 	__u16 len;
+ 	__u32 tsn;
  
- 	if (w) {
-+		if (cb->args[4]) {
-+			cb->args[4] = 0;
-+			fib6_walker_unlink(w);
-+		}
- 		cb->args[2] = 0;
- 		kfree(w);
- 	}
-@@ -330,15 +334,12 @@ static int fib6_dump_table(struct fib6_t
- 		read_lock_bh(&table->tb6_lock);
- 		res = fib6_walk_continue(w);
- 		read_unlock_bh(&table->tb6_lock);
--		if (res != 0) {
--			if (res < 0)
--				fib6_walker_unlink(w);
--			goto end;
-+		if (res <= 0) {
-+			fib6_walker_unlink(w);
-+			cb->args[4] = 0;
- 		}
--		fib6_walker_unlink(w);
--		cb->args[4] = 0;
- 	}
--end:
+@@ -3664,6 +3665,12 @@ sctp_disposition_t sctp_sf_eat_fwd_tsn(c
+ 	if (sctp_tsnmap_check(&asoc->peer.tsn_map, tsn) < 0)
+ 		goto discard_noforce;
+ 
++	/* Silently discard the chunk if stream-id is not valid */
++	sctp_walk_fwdtsn(skip, chunk) {
++		if (ntohs(skip->stream) >= asoc->c.sinit_max_instreams)
++			goto discard_noforce;
++	}
 +
- 	return res;
- }
+ 	sctp_add_cmd_sf(commands, SCTP_CMD_REPORT_FWDTSN, SCTP_U32(tsn));
+ 	if (len > sizeof(struct sctp_fwdtsn_hdr))
+ 		sctp_add_cmd_sf(commands, SCTP_CMD_PROCESS_FWDTSN,
+@@ -3695,6 +3702,7 @@ sctp_disposition_t sctp_sf_eat_fwd_tsn_f
+ {
+ 	struct sctp_chunk *chunk = arg;
+ 	struct sctp_fwdtsn_hdr *fwdtsn_hdr;
++	struct sctp_fwdtsn_skip *skip;
+ 	__u16 len;
+ 	__u32 tsn;
  
+@@ -3724,6 +3732,12 @@ sctp_disposition_t sctp_sf_eat_fwd_tsn_f
+ 	if (sctp_tsnmap_check(&asoc->peer.tsn_map, tsn) < 0)
+ 		goto gen_shutdown;
+ 
++	/* Silently discard the chunk if stream-id is not valid */
++	sctp_walk_fwdtsn(skip, chunk) {
++		if (ntohs(skip->stream) >= asoc->c.sinit_max_instreams)
++			goto gen_shutdown;
++	}
++
+ 	sctp_add_cmd_sf(commands, SCTP_CMD_REPORT_FWDTSN, SCTP_U32(tsn));
+ 	if (len > sizeof(struct sctp_fwdtsn_hdr))
+ 		sctp_add_cmd_sf(commands, SCTP_CMD_PROCESS_FWDTSN,
 
