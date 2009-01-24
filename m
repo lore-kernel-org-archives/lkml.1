@@ -1,91 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756309AbZAXCf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZAXCjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756309AbZAXCf2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 21:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbZAXCfP
+	id S1756038AbZAXCjH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 21:39:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbZAXCiz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 21:35:15 -0500
-Received: from smtp.infotech.no ([82.134.31.41]:34723 "EHLO
-	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbZAXCfO (ORCPT
+	Fri, 23 Jan 2009 21:38:55 -0500
+Received: from mga12.intel.com ([143.182.124.36]:44228 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753654AbZAXCiz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 21:35:14 -0500
-Message-ID: <497A7E5E.50505@interlog.com>
-Date: Fri, 23 Jan 2009 21:35:10 -0500
-From: Douglas Gilbert <dgilbert@interlog.com>
-Reply-To: dgilbert@interlog.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Grzegorz Nosek <root@localdomain.pl>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: smartctl on aic94xx causes a kernel warning in libata
-References: <20090123194410.GA8639@megiteam.pl>
-In-Reply-To: <20090123194410.GA8639@megiteam.pl>
-Content-Type: text/plain; charset=utf-8; format=flowed
+	Fri, 23 Jan 2009 21:38:55 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,315,1231142400"; 
+   d="scan'208";a="103352905"
+Subject: Re: [patch] SLQB slab allocator (try 2)
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <20090123154653.GA14517@wotan.suse.de>
+References: <20090123154653.GA14517@wotan.suse.de>
+Content-Type: text/plain
+Date: Sat, 24 Jan 2009 10:38:46 +0800
+Message-Id: <1232764726.11429.185.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grzegorz Nosek wrote:
+On Fri, 2009-01-23 at 16:46 +0100, Nick Piggin wrote:
 > Hi,
 > 
-> This is a trivially reproducible (in my setup at least) WARN_ON that
-> triggers whenever I run smartctl on a SATA disk connected via an aic94xx
-> controller (Adaptec AIC-9410W SAS (Razor ASIC RAID)=20 (rev 09)).
+> Since last time, fixed bugs pointed out by Hugh and Andi, cleaned up the
+> code suggested by Ingo (haven't yet incorporated Ingo's last patch).
 > 
-> The kernel is (as far as device drivers are concerned) vanilla
-> 2.6.27.12.
+> Should have fixed the crash reported by Yanmin (I was able to reproduce it
+> on an ia64 system and fix it).
 > 
-> Other than the warning and the fact that smartctl requires '-T
-> permissive' to show the disk status, I can't see any negative effects.
+> Significantly reduced static footprint of init arrays, thanks to Andi's
+> suggestion.
 > 
-> (please keep cc'd)
-> 
-> Best regards,
->  Grzegorz Nosek
-> 
-> *** smartctl -a /dev/sdb (without -T permissive) ***
-> 
-> smartctl version 5.37 [i686-pc-linux-gnu] Copyright (C) 2002-6 Bruce Allen
-> Home page is http://smartmontools.sourceforge.net/
-> 
-> === START OF INFORMATION SECTION ===
-> Device Model:     ST3500630NS
-> Serial Number:    9QG93FV5
-> Firmware Version: 3.AEK
-> User Capacity:    500,107,862,016 bytes
-> Device is:        Not in smartctl database [for details use: -P showall]
-> ATA Version is:   7
-> ATA Standard is:  Exact ATA specification draft version not indicated
-> Local Time is:    Fri Jan 23 20:17:30 2009 CET
-> SMART support is: Available - device has SMART capability.
-> SMART support is: Enabled
-> 
-> Error SMART Status command failed
-> Please get assistance from http://smartmontools.sourceforge.net/
-> Values from ATA status return descriptor are:
->  00     09 0c 00 00 00 00 00 00  00 00 00 00 00 00
-> A mandatory SMART command failed: exiting. To continue, add one or more '-T permissive' options.
-
-Putting my smartmontools hat on that SAT ATA status
-return descriptor for an ATA SMART RETURN STATUS
-command looks broken, most likely not correctly "wired"
-as the payload is zeros. Using a LSI SAS controller
-(which implements SAT in firmware) here is what the
-response should look like:
-
-Values from ATA Return Descriptor are:
-  00     09 0c 00 00 00 00 00 00  00 4f 00 c2 00 50
-
-assuming the disk is healthy. [And if it was unhealthy
-then 4f -> f4 and c2 -> 2c (t13 dyslexic humour ?).]
-
-To my knowledge that usage of the ATA SMART RETURN
-status command is the only occasion when smartctl
-needs to read the ATA registers _after_ command completion.
-
-Doug Gilbert
-
+> Please consider for trial merge for linux-next.
+When applying the patch to 2.6.29-rc2, I got:
+[ymzhang@lkp-h01 linux-2.6.29-rc2_slqb0123]$ patch -p1<../patch-slqb0123
+patching file include/linux/rcupdate.h
+patching file include/linux/slqb_def.h
+patching file init/Kconfig
+patching file lib/Kconfig.debug
+patching file mm/slqb.c
+patch: **** malformed patch at line 4042: Index: linux-2.6/include/linux/slab.h
 
 
