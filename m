@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZAXXvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZAYAAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZAXXvT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 18:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbZAXXvI
+	id S1756205AbZAYAAk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 19:00:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZAYAAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 18:51:08 -0500
-Received: from mail-ew0-f10.google.com ([209.85.219.10]:50906 "EHLO
-	mail-ew0-f10.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751629AbZAXXvH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 18:51:07 -0500
-X-Greylist: delayed 318 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Jan 2009 18:51:06 EST
-MIME-Version: 1.0
-In-Reply-To: <20090124185612.5afddbb0@mjolnir.drzeus.cx>
-References: <1231268198-12556-1-git-send-email-apw@canonical.com>
-	 <20090112160519.3ba21848@mjolnir.drzeus.cx>
-	 <20090115150003.GB6896@shadowen.org>
-	 <20090124185612.5afddbb0@mjolnir.drzeus.cx>
-Date: Sun, 25 Jan 2009 00:45:46 +0100
-Message-ID: <ac3eb2510901241545l4eb9f77dvebd5861340b3447e@mail.gmail.com>
-Subject: Re: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sat, 24 Jan 2009 19:00:32 -0500
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:37121 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752065AbZAYAAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Jan 2009 19:00:31 -0500
+Date: Sat, 24 Jan 2009 21:45:43 +0100
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+To: Adrian Hunter <ext-adrian.hunter@nokia.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MMC: Add Extended CSD as a device attribute
+Message-ID: <20090124214543.60d7c939@mjolnir.drzeus.cx>
+In-Reply-To: <4970646E.5020404@nokia.com>
+References: <496E1187.60305@nokia.com>
+	<20090115160527.4cdbe94b.akpm@linux-foundation.org>
+	<4970646E.5020404@nokia.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 24, 2009 at 18:56, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> On Thu, 15 Jan 2009 15:00:03 +0000
-> Andy Whitcroft <apw@canonical.com> wrote:
->
->>
->> Would it make more sense to simply use mmc: with no data as the MODALIAS
->> tag here.  And make mmc-block have mmc:* as an alias.  That way the
->> actual (useless) numeric data is not exposed but we still will load the
->> mmc-block module for everything exactly as we do with the udev rule.
->> This should still make things work from a distro point of view and not
->> expose anything which might then get relied on.  If we do it so extra
->> data can still be added later we won't prevent sane data being exposed
->> should we ever have any.
->>
->> If you are happier with that I can re-spin the patches that way?
->>
->
-> Well, as long as we're on the track of temporary hack, we might as well
-> just export "mmc_block" as the modalias. Or would there be any
-> side-effects to that?
+On Fri, 16 Jan 2009 12:41:50 +0200
+Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
 
-The common format is to prefix with "<subsystem>:". Something like
-"mmc:block" sounds fine to me.
+> From: Adrian Hunter <ext-adrian.hunter@nokia.com>
+> Date: Wed, 14 Jan 2009 17:45:53 +0200
+> Subject: [PATCH] MMC: Add Extended CSD as a device attribute
+> 
+> Extended CSD is a MMC card register.  The Card Identification
+> (CID) register and the Card-Specific Data (CSD) register are
+> already device attributes.  As increasingly interesting
+> fields are being added to Extended CSD, it seems reasonable to
+> add it too.  Note that SD cards do not have an Extended CSD
+> register, so it is MMC only.
+> 
+> Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+> ---
 
-Thanks,
-Kay
+Well, this might be interesting for debugging, but I don't see anything
+of general interest for user space in there. What's your use case?
+
+Rgds
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
