@@ -1,355 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbZAXMqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbZAXMrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757419AbZAXMqc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 07:46:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZAXMqX
+	id S1758018AbZAXMrU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 07:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZAXMrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 07:46:23 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35893 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751794AbZAXMqW (ORCPT
+	Sat, 24 Jan 2009 07:47:11 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:56040 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751641AbZAXMrK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 07:46:22 -0500
-Subject: Re: [PATCH 2/2] Optimization of function rb_erase() in lib/rbtree.c
-From: Peter Zijlstra <peterz@infradead.org>
-To: Wolfram Strepp <wstrepp@gmx.de>
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       akpm@linux-foundation.org
-In-Reply-To: <20090120215839.74570@gmx.net>
-References: <20090120215839.74570@gmx.net>
-Content-Type: text/plain
-Date: Sat, 24 Jan 2009 13:46:15 +0100
-Message-Id: <1232801175.4859.61.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Jan 2009 07:47:10 -0500
+From: "Henrik Rydberg" <rydberg@euromail.se>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Bharath Ramesh <bramesh@vt.edu>, Nicolas Boichat <nicolas@boichat.ch>,
+       lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org,
+       Henrik Rydberg <rydberg@euromail.se>
+Subject: [PATCH] hwmon: applesmc: Add support for MacPro 3 temperature sensors
+Date: Sat, 24 Jan 2009 13:46:14 +0100
+Message-Id: <1232801174-6701-1-git-send-email-rydberg@euromail.se>
+X-Mailer: git-send-email 1.5.6.3
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1LQhuf-00037p-3M.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1LQhuf-00037p-3M b38d0dfc801439ef7e9049fb93fa92ce
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-20 at 22:58 +0100, Wolfram Strepp wrote:
-> This patch reorganizes some lines, and therefore one if-condition
-> can be omitted. Here an explanation.
-> 
-> There are two cases when a node is erased:
-> 'normal case': the successor is not the right-hand-child of the node to be erased
-> 'special case': the successor is the right-hand child of the node to be erased
-> 
-> In the normal case, the pointers from the nodes to its parents and vice-versa
-> have all to be reconnected to its new parents/childs. 
-> The current code basically ignores this special case, doing the reconnections
-> always in the way as if it were the normal case. This is ok, but not optimal.
-> The patch re-arranges the lines, such that it makes use of one particular
-> feature of the special case: when the node to be deleted is replaced by its successor,
-> it pulls it child behind - so no reconnection is necessary. As a result, the 
-> if-condition, which checks if this child is a NIL-leave, can be omitted.
-> 
-> Here some ascii-art, with following symbols (referring to the code):
-> O: node to be deleted
-> N: the successor of O
-> P: parent of N
-> C: child of N
-> L: some other node
-> 
-> normal case:
-> 
->                O                         N
->               / \                       / \
->              /   \                     /   \
->             L     \                   L     \
->            / \     P      ---->      / \     P
->                   / \                       / \
->                  /                         /
->                 N                         C
->                  \                       / \
->                   \
->                    C
->                   / \
-> 
-> 
-> special case:
->               O|P                        N
->               / \                       / \
->              /   \                     /   \
->             L     \                   L     \
->            / \     N      ---->      /       C
-> 		          \                       / \
->                      \
->                       C
->                      / \
-> 
-> 
-> Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
-> 
-> ======================================
-> 
-> --- a/lib/rbtree.c
-> +++ b/lib/rbtree.c
-> @@ -231,22 +231,13 @@ void rb_erase(struct rb_node *node, struct rb_root *root)
->  		node = node->rb_right;
->  		while ((left = node->rb_left) != NULL)
->  			node = left;
-> +
->  		child = node->rb_right;
->  		parent = rb_parent(node);
->  		color = rb_color(node);
->  
-> -		if (child)
-> -			rb_set_parent(child, parent);
-> -		if (parent == old) {
-> -			parent->rb_right = child;
-> -			parent = node;
-> -		} else
-> -			parent->rb_left = child;
-> -
-> +		/* connect 'node' with its new parent */
->  		node->rb_parent_color = old->rb_parent_color;
-> -		node->rb_right = old->rb_right;
-> -		node->rb_left = old->rb_left;
-> -
->  		if (rb_parent(old))
->  		{
->  			if (rb_parent(old)->rb_left == old)
-> @@ -256,9 +247,26 @@ void rb_erase(struct rb_node *node, struct rb_root *root)
->  		} else
->  			root->rb_node = node;
->  
-> -		rb_set_parent(old->rb_left, node);
-> -		if (old->rb_right)
-> +
-> +		if (parent == old) {
-> +			/* special case: 'node' becomes parent, pulling its
-> +			child up behind --> no re-connecting necessary ! */
-> +			parent = node;
-> +		} else {
-> +			/* replace 'node' with its former child */
-> +			parent->rb_left = child;
-> +			if (child)
-> +				rb_set_parent(child, parent);
-> +			
-> +			/* connect 'node' to its new right-hand child */
-> +			node->rb_right = old->rb_right;
->  			rb_set_parent(old->rb_right, node);
-> +		}
-> +
-> +		/* connect 'node' to its new left-hand child */
-> +		node->rb_left = old->rb_left;
-> +		rb_set_parent(old->rb_left, node);
-> +
->  		goto color;
->  	}
+From: Bharath Ramesh <bramesh@vt.edu>
 
-OK, this patch is better done in smaller steps.
+MacPro 3 have more temperature sensors than the previous MacPro's also
+the sensor THTG has been removed. This patch add supports for the
+newer temperature sensors in the MacPro3.
 
-I'll have to admit to not having tested any of the below patches, but
-they represent how I went about understanding your patch.
+Signed-off-by: Bharath Ramesh <bramesh@vt.edu>
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
 
 ---
-Subject: rbtree: code movement
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Sat Jan 24 13:14:11 CET 2009
+ drivers/hwmon/applesmc.c |   30 +++++++++++++++++++++++++++++-
+ 1 files changed, 29 insertions(+), 1 deletions(-)
 
-Move some code around in order to make the next change more obvious.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- lib/rbtree.c |   19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
-
-Index: linux-2.6/lib/rbtree.c
-===================================================================
---- linux-2.6.orig/lib/rbtree.c
-+++ linux-2.6/lib/rbtree.c
-@@ -237,6 +237,16 @@ void rb_erase(struct rb_node *node, stru
- 		node = node->rb_right;
- 		while ((left = node->rb_left) != NULL)
- 			node = left;
-+
-+		if (rb_parent(old))
-+		{
-+			if (rb_parent(old)->rb_left == old)
-+				rb_parent(old)->rb_left = node;
-+			else
-+				rb_parent(old)->rb_right = node;
-+		} else
-+			root->rb_node = node;
-+
- 		child = node->rb_right;
- 		parent = rb_parent(node);
- 		color = rb_color(node);
-@@ -253,15 +263,6 @@ void rb_erase(struct rb_node *node, stru
- 		node->rb_right = old->rb_right;
- 		node->rb_left = old->rb_left;
+diff --git a/drivers/hwmon/applesmc.c b/drivers/hwmon/applesmc.c
+index e301862..678e34b 100644
+--- a/drivers/hwmon/applesmc.c
++++ b/drivers/hwmon/applesmc.c
+@@ -83,7 +83,7 @@
+ /*
+  * Temperature sensors keys (sp78 - 2 bytes).
+  */
+-static const char* temperature_sensors_sets[][36] = {
++static const char *temperature_sensors_sets[][41] = {
+ /* Set 0: Macbook Pro */
+ 	{ "TA0P", "TB0T", "TC0D", "TC0P", "TG0H", "TG0P", "TG0T", "Th0H",
+ 	  "Th1H", "Tm0P", "Ts0P", "Ts1P", NULL },
+@@ -135,6 +135,13 @@ static const char* temperature_sensors_sets[][36] = {
+ 	{ "TB0T", "TB1S", "TB1T", "TB2S", "TB2T", "TC0D", "TN0D", "TTF0",
+ 	  "TV0P", "TVFP", "TW0P", "Th0P", "Tp0P", "Tp1P", "TpFP", "Ts0P",
+ 	  "Ts0S", NULL },
++/* Set 16: Mac Pro 3,1 (2 x Quad-Core) */
++	{ "TA0P", "TCAG", "TCAH", "TCBG", "TCBH", "TC0C", "TC0D", "TC0P",
++	  "TC1C", "TC1D", "TC2C", "TC2D", "TC3C", "TC3D", "TH0P", "TH1P",
++	  "TH2P", "TH3P", "TMAP", "TMAS", "TMBS", "TM0P", "TM0S", "TM1P",
++	  "TM1S", "TM2P", "TM2S", "TM3S", "TM8P", "TM8S", "TM9P", "TM9S",
++	  "TN0C", "TN0D", "TN0H", "TS0C", "Tp0C", "Tp1C", "Tv0S", "Tv1S",
++	  NULL },
+ };
  
--		if (rb_parent(old))
--		{
--			if (rb_parent(old)->rb_left == old)
--				rb_parent(old)->rb_left = node;
--			else
--				rb_parent(old)->rb_right = node;
--		} else
--			root->rb_node = node;
--
- 		rb_set_parent(old->rb_left, node);
- 		if (old->rb_right)
- 			rb_set_parent(old->rb_right, node);
-
-
--------------------
-
-Subject: rbtree: optimize a special case in rb_erase()
-From: Wolfram Strepp <wstrepp@gmx.de>
-Date: Sat Jan 24 13:17:04 CET 2009
-
-There are two cases when a node is erased:
-'normal case': the successor is not the right-hand-child of the node to be erased
-'special case': the successor is the right-hand child of the node to be erased
-
-Here some ascii-art, with following symbols (referring to the code):
-O: node to be deleted
-N: the successor of O
-P: parent of N
-C: child of N
-L: some other node
-
-normal case:
-
-               O                         N
-              / \                       / \
-             /   \                     /   \
-            L     \                   L     \
-           / \     P      ---->      / \     P
-                  / \                       / \
-                 /                         /
-                N                         C
-                 \                       / \
-                  \
-                   C
-                  / \
-
-
-special case:
-              O|P                        N
-              / \                       / \
-             /   \                     /   \
-            L     \                   L     \
-           / \     N      ---->      /       C
-                    \                       / \
-                     \
-                      C
-                     / \
-
-Notice that for the special case we don't have to reconnect C to N.
-
-Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- lib/rbtree.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/lib/rbtree.c
-===================================================================
---- linux-2.6.orig/lib/rbtree.c
-+++ linux-2.6/lib/rbtree.c
-@@ -251,13 +251,13 @@ void rb_erase(struct rb_node *node, stru
- 		parent = rb_parent(node);
- 		color = rb_color(node);
+ /* List of keys used to read/write fan speeds */
+@@ -1153,6 +1160,16 @@ static SENSOR_DEVICE_ATTR(temp34_input, S_IRUGO,
+ 					applesmc_show_temperature, NULL, 33);
+ static SENSOR_DEVICE_ATTR(temp35_input, S_IRUGO,
+ 					applesmc_show_temperature, NULL, 34);
++static SENSOR_DEVICE_ATTR(temp36_input, S_IRUGO,
++					applesmc_show_temperature, NULL, 35);
++static SENSOR_DEVICE_ATTR(temp37_input, S_IRUGO,
++					applesmc_show_temperature, NULL, 36);
++static SENSOR_DEVICE_ATTR(temp38_input, S_IRUGO,
++					applesmc_show_temperature, NULL, 37);
++static SENSOR_DEVICE_ATTR(temp39_input, S_IRUGO,
++					applesmc_show_temperature, NULL, 38);
++static SENSOR_DEVICE_ATTR(temp40_input, S_IRUGO,
++					applesmc_show_temperature, NULL, 39);
  
--		if (child)
--			rb_set_parent(child, parent);
- 		if (parent == old) {
--			parent->rb_right = child;
- 			parent = node;
--		} else
-+		} else {
-+			if (child)
-+				rb_set_parent(child, parent);
- 			parent->rb_left = child;
-+		}
+ static struct attribute *temperature_attributes[] = {
+ 	&sensor_dev_attr_temp1_input.dev_attr.attr,
+@@ -1190,6 +1207,11 @@ static struct attribute *temperature_attributes[] = {
+ 	&sensor_dev_attr_temp33_input.dev_attr.attr,
+ 	&sensor_dev_attr_temp34_input.dev_attr.attr,
+ 	&sensor_dev_attr_temp35_input.dev_attr.attr,
++	&sensor_dev_attr_temp36_input.dev_attr.attr,
++	&sensor_dev_attr_temp37_input.dev_attr.attr,
++	&sensor_dev_attr_temp38_input.dev_attr.attr,
++	&sensor_dev_attr_temp39_input.dev_attr.attr,
++	&sensor_dev_attr_temp40_input.dev_attr.attr,
+ 	NULL
+ };
  
- 		node->rb_parent_color = old->rb_parent_color;
- 		node->rb_right = old->rb_right;
-
-
---------------
-
-Subject: rbtree: further optimize the special case
-From: Wolfram Strepp <wstrepp@gmx.de>
-Date: Sat Jan 24 13:30:39 CET 2009
-
-
-normal case:
-
-               O                         N
-              / \                       / \
-             /   \                     /   \
-            L     \                   L     \
-           / \     P      ---->      / \     P
-                  / \                       / \
-                 /                         /
-                N                         C
-                 \                       / \
-                  \
-                   C
-                  / \
-
-
-special case:
-              O|P                        N
-              / \                       / \
-             /   \                     /   \
-            L     \                   L     \
-           / \     N      ---->      /       C
-                    \                       / \
-                     \
-                      C
-                     / \
-
-Notice that for the special case we don't have to reconnect N to C.
-
-Furthermore, notice that the initial checks:
-
-	if (!node->rb_left)
-		child = node->rb_right;
-	else if (!node->rb_right)
-		child = node->rb_left;
-	else
-	{
-		...
-	}
-
-guarantee that old->rb_right is set in the final else branch, therefore
-we can omit checking that again.
-
-Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- lib/rbtree.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/lib/rbtree.c
-===================================================================
---- linux-2.6.orig/lib/rbtree.c
-+++ linux-2.6/lib/rbtree.c
-@@ -257,15 +257,15 @@ void rb_erase(struct rb_node *node, stru
- 			if (child)
- 				rb_set_parent(child, parent);
- 			parent->rb_left = child;
-+
-+			node->rb_right = old->rb_right;
-+			rb_set_parent(old->rb_right, node);
- 		}
+@@ -1312,6 +1334,8 @@ static __initdata struct dmi_match_data applesmc_dmi_data[] = {
+ 	{ .accelerometer = 0, .light = 0, .temperature_set = 14 },
+ /* MacBook Air 2,1: accelerometer, backlight and temperature set 15 */
+ 	{ .accelerometer = 1, .light = 1, .temperature_set = 15 },
++/* MacPro3,1: temperature set 16 */
++	{ .accelerometer = 0, .light = 0, .temperature_set = 16 },
+ };
  
- 		node->rb_parent_color = old->rb_parent_color;
--		node->rb_right = old->rb_right;
- 		node->rb_left = old->rb_left;
--
- 		rb_set_parent(old->rb_left, node);
--		if (old->rb_right)
--			rb_set_parent(old->rb_right, node);
-+
- 		goto color;
- 	}
- 
-
+ /* Note that DMI_MATCH(...,"MacBook") will match "MacBookPro1,1".
+@@ -1369,6 +1393,10 @@ static __initdata struct dmi_system_id applesmc_whitelist[] = {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR,"Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME,"MacPro2") },
+ 		&applesmc_dmi_data[4]},
++	{ applesmc_dmi_match, "Apple MacPro3", {
++	  DMI_MATCH(DMI_BOARD_VENDOR, "Apple"),
++	  DMI_MATCH(DMI_PRODUCT_NAME, "MacPro3") },
++		&applesmc_dmi_data[16]},
+ 	{ applesmc_dmi_match, "Apple MacPro", {
+ 	  DMI_MATCH(DMI_BOARD_VENDOR, "Apple"),
+ 	  DMI_MATCH(DMI_PRODUCT_NAME, "MacPro") },
+-- 
+1.5.6.3
 
