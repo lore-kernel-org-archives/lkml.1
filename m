@@ -1,172 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbZAXCAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZAXCds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758770AbZAXCAH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 21:00:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZAXB7w
+	id S1755614AbZAXCds (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 21:33:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZAXCdj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 20:59:52 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:34482 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754378AbZAXB7v (ORCPT
+	Fri, 23 Jan 2009 21:33:39 -0500
+Received: from rv-out-0506.google.com ([209.85.198.232]:27107 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751996AbZAXCdi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 20:59:51 -0500
-X-YMail-OSG: IPFzqn4VM1mUCtg5HNxtLd5C_X6vvOzBhCkgPeowFI2FH2WlzflMx_mJ0Z2b_ygEBVftp5.9RcHWjiTg3j5xY8W8n9PhyxzBxj3MlyJ_uYvCYQEsoC8cs887NdSjlAL7PHVuBz3DFs1BqxeiXiQg3znWJuwEhHa37_Uh_Ye5FlzNEyrtrhPpJefW2EX_C9t09MPpgtmqLGux8MiKEfGV8ODrBxd_NJzZYN07lstHMSeKN.pzW0A-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 6/6] [Target_Core_Mod/ConfigFS]: Add support for
-	$STORAGE_OBJECT EVPD Unit Serial Number emulation
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 23 Jan 2009 17:59:26 -0800
-Message-Id: <1232762366.24642.24.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 23 Jan 2009 21:33:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=vIqnrIWB2on09rdN7v/orD+PQZIITmbcq6/xbxIZqh4RlyH8alk3VaPnb06Ec7gAlZ
+         Xz/evMTf6OxlJzbgLNUMP/8qmh0wx5znsm/1PFu1+dve4DDBoZ8HEJUW58M10tZr6Xwp
+         PJmzUpT/wJS4OSKQlU727KzrRKUJ2pMTnjNGg=
+MIME-Version: 1.0
+In-Reply-To: <1232751312.3990.59.camel@perihelion.bos.jonmasters.org>
+References: <1232751312.3990.59.camel@perihelion.bos.jonmasters.org>
+Date: Fri, 23 Jan 2009 21:33:37 -0500
+X-Google-Sender-Auth: d59d75b56fafa0d2
+Message-ID: <75b66ecd0901231833j2fda4554sb0f47457ab838566@mail.gmail.com>
+Subject: Re: [RT] [RFC] simple SMI detector
+From: Lee Revell <rlrevell@joe-job.com>
+To: Jon Masters <jcm@redhat.com>
+Cc: linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       williams <williams@redhat.com>,
+       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From a50c8a50550ab3d41f716711e08ec6f116a45f28 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Fri, 23 Jan 2009 17:34:14 -0800
-Subject: [PATCH 6/6] [Target_Core_Mod/ConfigFS]: Add support for $STORAGE_OBJECT EVPD Unit Serial Number emulation
+On Fri, Jan 23, 2009 at 5:55 PM, Jon Masters <jcm@redhat.com> wrote:
+> Here's a simple SMI detector we've been playing around with internally.
+> In case anyone wants to play with it, and especially help clean it up :)
+>
+> SMI events are particularly unhelpful on Real Time systems because we
+> effectively have the CPU stolen from under us. We can't prevent this
+> easily without BIOS vendors/system vendor co-operation, but we can help
+> to diagnose and log that these are occuring...which can be very helpful
+> too.
+>
 
-This patch support for writeable EVPD Unit Serial configfs attribute at:
+FYI the RTAI project has a patch to allow disabling of SMI:
 
-/sys/kernel/config/target/core/$HBA/$STORAGE_OBJECT/wwn/evpd_unit_serial
+https://listas.upv.es/pipermail/rtlinuxgpl/2007-April/000609.html
 
-It works with Linux/Block and Linux/FILEIO $STORAGE_OBJECTS, as well as through
-target_core_mod/RAMDISK subsystem plugins.
-
-This logic checks se_subsystem_dev_t->su_dev_flags & SDF_FIRMWARE_EVPD_UNIT_SERIAL
-to see if SCSI firmware (or software emulation for non SCSI devices) is being
-handled by Linux/SCSI for us.  It does right by the firmware and if said device
-reports EVPD INQUIRY response payload information see target_core_pscsi.c:
-pscsi_transport_complete()
-
-The changing of configfs evpd_unit_serial with this patch is limited to only while
-said $STORAGE_OBJECT is *NOT* in use by $FABRIC_MOD exports.  This is mentioned
-in the comment in target_core_dev_wwn_store_attr_evpd_unit_serial():
-
-	<SNIP>
-       /*
-        * Check to see if any active $FABRIC_MOD exports exist.  If they
-        * do exist, fail here as changing this information on the fly
-        * (underneath the initiator side OS dependent multipath code)
-        * could cause negative effects.
-        */
-       if ((dev = su_dev->se_dev_ptr)) {
-               if (DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj)) {
-                       printk(KERN_ERR "Unable to set EVPD Unit Serial while"
-                               " active %d $FABRIC_MOD exports exist\n",
-                               DEV_OBJ_API(dev)->check_count(
-                                       &dev->dev_access_obj));
-                       return(-EINVAL);
-               }
-       }
-	<SNIP>
-
-This logic may end up allowing to be overwritten for those who
-"really know what they are doing" and to allow RAMDISK and IBLOCK/FILEIO
-exports for the EVPD information that has no assoicated underlying
-device firmware.  For now, this assoicated target_core_mod subsystem
-plugin logic just disables emulation when firmware and Linux/SCSI LLDs
-report EVPD to us upon $HBA/$STORAGE_OBJECT enablement.
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_configfs.c |   59 +++++++++++++++++++++++++++++-
- 1 files changed, 57 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
-index 5b1d275..1788fbb 100644
---- a/drivers/lio-core/target_core_configfs.c
-+++ b/drivers/lio-core/target_core_configfs.c
-@@ -38,6 +38,7 @@
- #include <target_core_device.h>
- #include <target_core_hba.h>
- #include <target_core_plugin.h>
-+#include <target_core_seobj.h>
- #include <target_core_transport.h>
- 
- #ifdef SNMP_SUPPORT
-@@ -536,7 +537,7 @@ static ssize_t target_core_dev_wwn_show_attr_evpd_unit_serial (
-         if (!(dev = se_dev->se_dev_ptr)) 
-                 return(-ENODEV);
- 
--	return(sprintf(page, "T10 EVPD Unit Serial Number:: %s\n",
-+	return(sprintf(page, "T10 EVPD Unit Serial Number: %s\n",
- 		&t10_wwn->unit_serial[0]));
- }
- 
-@@ -545,7 +546,61 @@ static ssize_t target_core_dev_wwn_store_attr_evpd_unit_serial (
- 	const char *page,
- 	size_t count)
- {
--	return(-ENOMEM);
-+	se_subsystem_dev_t *su_dev = t10_wwn->t10_sub_dev;
-+	se_device_t *dev;
-+	unsigned char buf[INQUIRY_EVPD_SERIAL_LEN];
-+
-+	/*
-+	 * If Linux/SCSI subsystem_api_t plugin got a EVPD Unit Serial
-+	 * from the struct scsi_device level firmware, do not allow
-+	 * EVPD Unit Serial to be emulated.
-+	 *
-+	 * Note this struct scsi_device could also be emulating EVPD
-+	 * information from its drivers/scsi LLD.  But for now we assume
-+	 * it is doing 'the right thing' wrt a world wide unique
-+	 * EVPD Unit Serial Number that OS dependent multipath can depend on.
-+	 */
-+	if (su_dev->su_dev_flags & SDF_FIRMWARE_EVPD_UNIT_SERIAL) {
-+		printk(KERN_ERR "Underlying SCSI device firmware provided EVPD"
-+			" Unit Serial, ignoring request\n");
-+		return(-EOPNOTSUPP);
-+	}
-+
-+	if ((strlen(page) + 1) > INQUIRY_EVPD_SERIAL_LEN) {
-+		printk(KERN_ERR "Emulated EVPD Unit Serial exceeds"
-+		" INQUIRY_EVPD_SERIAL_LEN: %d\n", INQUIRY_EVPD_SERIAL_LEN);
-+		return(-EOVERFLOW);
-+	}
-+	/*
-+	 * Check to see if any active $FABRIC_MOD exports exist.  If they
-+	 * do exist, fail here as changing this information on the fly 
-+	 * (underneath the initiator side OS dependent multipath code)
-+	 * could cause negative effects.
-+	 */
-+	if ((dev = su_dev->se_dev_ptr)) {
-+		if (DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj)) {
-+			printk(KERN_ERR "Unable to set EVPD Unit Serial while"
-+				" active %d $FABRIC_MOD exports exist\n",
-+				DEV_OBJ_API(dev)->check_count(
-+					&dev->dev_access_obj));
-+			return(-EINVAL);
-+		}
-+	}
-+	/*
-+	 * This currently assumes ASCII encoding for emulated EVPD Unit Serial.
-+	 *
-+	 * Also, strip any newline added from the userspace
-+	 * echo $UUID > $TARGET/$HBA/$STORAGE_OBJECT/wwn/evpd_unit_serial
-+	 */
-+	memset(buf, 0, INQUIRY_EVPD_SERIAL_LEN);
-+	snprintf(buf, INQUIRY_EVPD_SERIAL_LEN, "%s", page);
-+	snprintf(su_dev->t10_wwn.unit_serial, INQUIRY_EVPD_SERIAL_LEN,
-+			"%s", strstrip(buf));
-+	su_dev->su_dev_flags |= SDF_EMULATED_EVPD_UNIT_SERIAL;
-+
-+	printk("Target_Core_ConfigFS: Set emulated EVPD Unit Serial: %s\n",
-+			su_dev->t10_wwn.unit_serial);
-+	return(count);
- }
- 
- SE_DEV_WWN_ATTR(evpd_unit_serial, S_IRUGO | S_IWUSR);
--- 
-1.5.4.1
-
-
-
+Lee
