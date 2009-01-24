@@ -1,122 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZAXHgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZAXHhU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755291AbZAXHgv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 02:36:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbZAXHgn
+	id S1757410AbZAXHhU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 02:37:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755636AbZAXHgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 02:36:43 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:61000 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750848AbZAXHgm (ORCPT
+	Sat, 24 Jan 2009 02:36:52 -0500
+Received: from casper.infradead.org ([85.118.1.10]:57114 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752527AbZAXHgu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 02:36:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Rbz5AYwUiwO2xCek9fU6JD2YoyTaSTGTMk5QgQ1xarENO/3jcCuRqQb8M1UkVyXbes
-         woIXbCZWWKhb164SzPlwNKNeJiW2iWbrPQsBhn6cKymDf3JirZp8zpoqGKQRFuTCsGba
-         CuUqMR3Q1+KYc2TXTAy4tQo0kE24lHgy0NtT8=
-Date: Sat, 24 Jan 2009 10:36:38 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC v2 -tip 3/3] x86: ia32_signal: use {get|put}_user_try and
-	catch
-Message-ID: <20090124073638.GA8752@localhost>
-References: <4962CAAE.6090300@ct.jp.nec.com> <496476D0.5040607@zytor.com> <497A5737.8030408@ct.jp.nec.com> <497A57CE.3080602@ct.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <497A57CE.3080602@ct.jp.nec.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Sat, 24 Jan 2009 02:36:50 -0500
+Subject: Re: kernel BUG at fs/ext/super.c:428
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Theodore Tso <tytso@MIT.EDU>, Arjan van de Ven <arjan@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Darren Hart <dvhltc@us.ibm.com>
+In-Reply-To: <1232568618.16682.20.camel@jamoon.sc.intel.com>
+References: <20090110003645.GA16107@linux-os.sc.intel.com>
+	 <20090113164842.c6aa7095.akpm@linux-foundation.org>
+	 <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com>
+	 <20090114044059.GA6222@mit.edu>
+	 <20090114191632.GA13114@linux-os.sc.intel.com>
+	 <1231961377.14825.51.camel@laptop>  <20090114212038.GJ6222@mit.edu>
+	 <1232568618.16682.20.camel@jamoon.sc.intel.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 24 Jan 2009 08:36:35 +0100
+Message-Id: <1232782595.4859.3.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Hiroshi Shimamoto - Fri, Jan 23, 2009 at 03:50:38PM -0800]
-| From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-| 
-| Impact: use new framework
-| 
-| Use {get|put}_user_try, catch, and _ex in arch/x86/ia32/ia32_signal.c.
-| 
-| Note: this patch contains "WARNING: line over 80 characters", because when
-| introducing new block I insert an indent to avoid mistakes by edit.
-| 
-| Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-| ---
-|  arch/x86/ia32/ia32_signal.c |  365 +++++++++++++++++++++++--------------------
-|  1 files changed, 195 insertions(+), 170 deletions(-)
-| 
-| diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-| index 9dabd00..dd77ac0 100644
-| --- a/arch/x86/ia32/ia32_signal.c
-| +++ b/arch/x86/ia32/ia32_signal.c
-| @@ -46,78 +46,83 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
-|
-... 
-| +	put_user_try {
-| +		/* If you change siginfo_t structure, please make sure that
-| +		   this code is fixed accordingly.
-| +		   It should never copy any pad contained in the structure
-| +		   to avoid security leaks, but must copy the generic
-| +		   3 ints plus the relevant union member.  */
-| +		put_user_ex(from->si_signo, &to->si_signo);
-| +		put_user_ex(from->si_errno, &to->si_errno);
-| +		put_user_ex((short)from->si_code, &to->si_code);
-| +
-| +		if (from->si_code < 0) {
-| +			put_user_ex(from->si_pid, &to->si_pid);
-| +			put_user_ex(from->si_uid, &to->si_uid);
-| +			put_user_ex(ptr_to_compat(from->si_ptr), &to->si_ptr);
-| +		} else {
-| +			/*
-| +			 * First 32bits of unions are always present:
-| +			 * si_pid === si_band === si_tid === si_addr(LS half)
-| +			 */
-| +			put_user_ex(from->_sifields._pad[0],
-| +					  &to->_sifields._pad[0]);
-| +			switch (from->si_code >> 16) {
-| +			case __SI_FAULT >> 16:
-| +				break;
-| +			case __SI_CHLD >> 16:
-| +				put_user_ex(from->si_utime, &to->si_utime);
-| +				put_user_ex(from->si_stime, &to->si_stime);
-| +				put_user_ex(from->si_status, &to->si_status);
-| +				/* FALL THROUGH */
-| +			default:
+On Wed, 2009-01-21 at 12:10 -0800, Pallipadi, Venkatesh wrote:
+> On Wed, 2009-01-14 at 13:20 -0800, Theodore Tso wrote:
+> > On Wed, Jan 14, 2009 at 08:29:37PM +0100, Peter Zijlstra wrote:
+> > > > 38d47c1b7075bd7ec3881141bb3629da58f88dab is first bad commit
+> > > > commit 38d47c1b7075bd7ec3881141bb3629da58f88dab
+> > > > Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > > Date:   Fri Sep 26 19:32:20 2008 +0200
+> > > >
+> > > >     futex: rely on get_user_pages() for shared futexes
+> > > >
+> > > >     On the way of getting rid of the mmap_sem requirement for shared futexes,
+> > > >     start by relying on get_user_pages().
+> > > >
+> > > >     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > > >     Acked-by: Nick Piggin <nickpiggin@yahoo.com.au>
+> > > >     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > > >
+> > > However does a futex change make ext3 crap its pants?
+> > 
+> > I agree, this doesn't make much sense.  I've looked at the patch, and
+> > I don't see how this would cause an ext3 orphaned-inode list handling
+> > problem
+> > 
+> > Are you sure the bisect was done correctly?  Have you tried reverting
+> > that one commit, or otherwise conclusively shown that a kernel with
+> > this commit fails, and one without this commit works just fine?
+> > 
+> 
+> Unfortunately, I cannot revert this patch alone from upstream git.
+> But I consistently see
+> upstream git: Always produces this oops on reboot
+> checkout of ﻿38d47c1b: Always produces this oops on reboot
+> checkout of ﻿﻿94aca1da (one patch before the above commit): Reboots fine
+> without the oops.
+> 
+> This is petty specific to the particular userspace, looks like.
+> I only see this on SLES10 installation. Also, I need a non-root user
+> logged in at least once after boot through X to see this problem. I was
+> always seeing this as I had autologin on local terminal and was remotely
+> rebooting the system. If I just boot to init 3 or boot to init 5 with no
+> user logged in or boot to init 5 with root logged in, I do not see this
+> problem.
 
-Hi Hiroshi,
+Ted, could this happen due an extra iput()?
 
-may I ask why we use default here?
+In that case, Venki, does the below patch fix it?
 
-| +			case __SI_KILL >> 16:
-| +				put_user_ex(from->si_uid, &to->si_uid);
-| +				break;
-| +			case __SI_POLL >> 16:
-| +				put_user_ex(from->si_fd, &to->si_fd);
-| +				break;
-| +			case __SI_TIMER >> 16:
-| +				put_user_ex(from->si_overrun, &to->si_overrun);
-| +				put_user_ex(ptr_to_compat(from->si_ptr),
-| +					    &to->si_ptr);
-| +				break;
-| +				 /* This is not generated by the kernel as of now.  */
-| +			case __SI_RT >> 16:
-| +			case __SI_MESGQ >> 16:
-| +				put_user_ex(from->si_uid, &to->si_uid);
-| +				put_user_ex(from->si_int, &to->si_int);
-| +				break;
-| +			}
-|  		}
-| -	}
-| +	} put_user_catch(err);
-| +
-|  	return err;
-|  }
-|  
-...
+Credit goes to Darren for spotting this.
+
+---
+ kernel/futex.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/futex.c b/kernel/futex.c
+index f89d373..f4132ab 100644
+--- a/kernel/futex.c
++++ b/kernel/futex.c
+@@ -929,7 +929,7 @@ out_unlock:
  
-		- Cyrill -
+ 	/* drop_futex_key_refs() must be called outside the spinlocks. */
+ 	while (--drop_count >= 0)
+-		drop_futex_key_refs(&key1);
++		drop_futex_key_refs(&key2);
+ 
+ out_put_keys:
+ 	put_futex_key(fshared, &key2);
+
+
