@@ -1,40 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZAXHli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZAXHtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbZAXHli (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 02:41:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZAXHl3
+	id S1756117AbZAXHtq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 02:49:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750961AbZAXHtf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 02:41:29 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:44624 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750961AbZAXHl3 (ORCPT
+	Sat, 24 Jan 2009 02:49:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49977 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750878AbZAXHte (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 02:41:29 -0500
-Date: Sat, 24 Jan 2009 08:43:13 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       reiserfs-devel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: usr/include/linux/reiserfs_fs.h is having lot of KERNEL data
-Message-ID: <20090124074313.GA31882@uranus.ravnborg.org>
-References: <1232465242.3088.25.camel@localhost.localdomain> <1232778934.10414.4.camel@localhost.localdomain> <20090124073236.GA6166@x200.localdomain>
+	Sat, 24 Jan 2009 02:49:34 -0500
+Date: Fri, 23 Jan 2009 23:49:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 01/11] quota: Improve locking
+Message-Id: <20090123234912.f78d75a0.akpm@linux-foundation.org>
+In-Reply-To: <1232129299-22018-2-git-send-email-jack@suse.cz>
+References: <yes>
+	<1232129299-22018-1-git-send-email-jack@suse.cz>
+	<1232129299-22018-2-git-send-email-jack@suse.cz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090124073236.GA6166@x200.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  
-> > -/* debug levels.  Right now, CONFIG_REISERFS_CHECK means print all debug
-> > -** messages.
-> > -*/
-> > +/* debug levels.  Right now, REISERFS_CHECK means print all debug messages */
-> 
-> Whoa, fix the tool!
+On Fri, 16 Jan 2009 19:08:09 +0100 Jan Kara <jack@suse.cz> wrote:
 
-This comment does not make sense in userspace so the tool was right - no?
+>  static DEFINE_SPINLOCK(dq_list_lock);
+> +static DEFINE_SPINLOCK(dq_state_lock);
+>  DEFINE_SPINLOCK(dq_data_lock);
 
-	Sam
+The chances are very good that two or even three of these locks will
+all get placed into the same cacheline in main memory.  The effects
+will be quite bad if different CPUs (or, worse, different nodes) are
+taking these locks.
+
+For single, kernel-wide locks like these I think we should almost
+always pad out to a cacheline.
+
+With __cacheline_aligned_in_smp, rather than __cacheline_aligned. 
+Because spinlocks do take space even in uniprocessor builds.
+
+There are probably lots of existing locks which should be converted.
