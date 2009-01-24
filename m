@@ -1,39 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbZAXVgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbZAXSms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757755AbZAXVgO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 16:36:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZAXVf6
+	id S1758977AbZAXSms (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 13:42:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758601AbZAXSme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 16:35:58 -0500
-Received: from mail-out4.apple.com ([17.254.13.23]:63127 "EHLO
-	mail-out4.apple.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbZAXVf6 convert rfc822-to-8bit (ORCPT
+	Sat, 24 Jan 2009 13:42:34 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57544 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758478AbZAXSmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 16:35:58 -0500
-X-Greylist: delayed 604 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Jan 2009 16:35:58 EST
-X-AuditID: 11807130-a508abb000000fcd-6c-497b876113c1
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Message-Id: <F9975969-B497-4BBB-BAB9-A3112A12D1D0@apple.com>
-From: Mike Stump <mrs@apple.com>
-To: LLVM Developers Mailing List <llvmdev@cs.uiuc.edu>
-In-Reply-To: <497B648E.7020805@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [LLVMdev] inline asm semantics: output constraint width smaller than input
-Date: Sat, 24 Jan 2009 13:25:52 -0800
-References: <497A0500.3080706@gmail.com> <20090123181721.GA32545@elte.hu> <497A0C0A.7080207@gmail.com> <497B408C.20802@gmail.com> <20090124172758.GA31699@elte.hu> <497B648E.7020805@gmail.com>
-X-Mailer: Apple Mail (2.930.3)
-X-Brightmail-Tracker: AAAAAA==
+	Sat, 24 Jan 2009 13:42:33 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 24 Jan 2009 19:42:21 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 1/7] firewire: sbp2: fix payload limit at S1600 and S3200
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de>
+Message-ID: <tkrat.e9a47dac79d6739c@s5r6.in-berlin.de>
+References: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Jan 24, 2009, at 10:57 AM, Török Edwin wrote:
-> With an unpatched LLVM I would also need weak attributes to be on the
-> function type, instead of the return type,
-> but I think thats an LLVM bug, and a one-line patch corrects it.
+1394-2008 clause 16.3.4.1 (1394b-2002 clause 16.3.1.1) defines tighter
+limits than 1394-2008 clause 6.2.2.3 (1394a-2000 clause 6.2.2.3).
 
-This is indeed a bug in llvm.  We'll find a way to get it fixed.
+Our previously too large limit doesn't matter though if the controller
+reports its max_receive correctly.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-sbp2.c |   23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
+
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -168,6 +168,7 @@ struct sbp2_target {
+ 	int address_high;
+ 	unsigned int workarounds;
+ 	unsigned int mgt_orb_timeout;
++	unsigned int max_payload;
+ 
+ 	int dont_block;	/* counter for each logical unit */
+ 	int blocked;	/* ditto */
+@@ -1150,6 +1151,15 @@ static int sbp2_probe(struct device *dev
+ 
+ 	sbp2_init_workarounds(tgt, model, firmware_revision);
+ 
++	/*
++	 * At S100 we can do 512 bytes per packet, at S200 1024 bytes,
++	 * and so on up to 4096 bytes.  The SBP-2 max_payload field
++	 * specifies the max payload size as 2 ^ (max_payload + 2), so
++	 * if we set this to max_speed + 7, we get the right value.
++	 */
++	tgt->max_payload = min(device->max_speed + 7, 10U);
++	tgt->max_payload = min(tgt->max_payload, device->card->max_receive - 1);
++
+ 	/* Do the login in a workqueue so we can easily reschedule retries. */
+ 	list_for_each_entry(lu, &tgt->lu_list, link)
+ 		sbp2_queue_work(lu, DIV_ROUND_UP(HZ, 5));
+@@ -1426,7 +1436,6 @@ static int sbp2_scsi_queuecommand(struct
+ 	struct sbp2_logical_unit *lu = cmd->device->hostdata;
+ 	struct fw_device *device = fw_device(lu->tgt->unit->device.parent);
+ 	struct sbp2_command_orb *orb;
+-	unsigned int max_payload;
+ 	int generation, retval = SCSI_MLQUEUE_HOST_BUSY;
+ 
+ 	/*
+@@ -1454,17 +1463,9 @@ static int sbp2_scsi_queuecommand(struct
+ 	orb->done = done;
+ 	orb->cmd  = cmd;
+ 
+-	orb->request.next.high   = cpu_to_be32(SBP2_ORB_NULL);
+-	/*
+-	 * At speed 100 we can do 512 bytes per packet, at speed 200,
+-	 * 1024 bytes per packet etc.  The SBP-2 max_payload field
+-	 * specifies the max payload size as 2 ^ (max_payload + 2), so
+-	 * if we set this to max_speed + 7, we get the right value.
+-	 */
+-	max_payload = min(device->max_speed + 7,
+-			  device->card->max_receive - 1);
++	orb->request.next.high = cpu_to_be32(SBP2_ORB_NULL);
+ 	orb->request.misc = cpu_to_be32(
+-		COMMAND_ORB_MAX_PAYLOAD(max_payload) |
++		COMMAND_ORB_MAX_PAYLOAD(lu->tgt->max_payload) |
+ 		COMMAND_ORB_SPEED(device->max_speed) |
+ 		COMMAND_ORB_NOTIFY);
+ 
+
+-- 
+Stefan Richter
+-=====-==--= ---= ==---
+http://arcgraph.de/sr/
+
