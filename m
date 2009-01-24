@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZAXR4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZAXSmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756398AbZAXR4Y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 12:56:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbZAXR4R
+	id S1756860AbZAXSmR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 13:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZAXSl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 12:56:17 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:35180 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753305AbZAXR4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 12:56:16 -0500
-Date: Sat, 24 Jan 2009 18:56:12 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
-Message-ID: <20090124185612.5afddbb0@mjolnir.drzeus.cx>
-In-Reply-To: <20090115150003.GB6896@shadowen.org>
-References: <1231268198-12556-1-git-send-email-apw@canonical.com>
-	<20090112160519.3ba21848@mjolnir.drzeus.cx>
-	<20090115150003.GB6896@shadowen.org>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Jan 2009 13:41:57 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:44070 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754281AbZAXSl4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Jan 2009 13:41:56 -0500
+Date: Sat, 24 Jan 2009 10:41:54 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>,
+       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] virtio_net: use correct accessors for scatterlists
+Message-ID: <20090124184154.GA18513@ovro.caltech.edu>
+Mail-Followup-To: Rusty Russell <rusty@rustcorp.com.au>,
+	linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>,
+	netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+References: <20090124001053.GA20156@ovro.caltech.edu> <200901250010.11434.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901250010.11434.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Sat, 24 Jan 2009 10:41:56 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 15 Jan 2009 15:00:03 +0000
-Andy Whitcroft <apw@canonical.com> wrote:
-
+On Sun, Jan 25, 2009 at 12:10:10AM +1030, Rusty Russell wrote:
+> On Saturday 24 January 2009 10:40:53 Ira Snyder wrote:
+> > Without this fix, virtio_net makes incorrect usage of scatterlists. It sets
+> > the end of the scatterlist chain after the first element, despite the fact
+> > that more entries come after it.
 > 
-> Would it make more sense to simply use mmc: with no data as the MODALIAS
-> tag here.  And make mmc-block have mmc:* as an alias.  That way the
-> actual (useless) numeric data is not exposed but we still will load the
-> mmc-block module for everything exactly as we do with the udev rule.
-> This should still make things work from a distro point of view and not
-> expose anything which might then get relied on.  If we do it so extra
-> data can still be added later we won't prevent sane data being exposed
-> should we ever have any.
-> 
-> If you are happier with that I can re-spin the patches that way?
+> Yes, but shouldn't you also be doing sg_mark_end() here somewhere if we're
+> going to use this new sg mechanism?
 > 
 
-Well, as long as we're on the track of temporary hack, we might as well
-just export "mmc_block" as the modalias. Or would there be any
-side-effects to that?
+sg_init_table() and sg_init_one() have an sg_mark_end() inside them, so
+the scatterlists are terminated at their last entry.
 
-Rgds
--- 
-     -- Pierre Ossman
+In the only case where the scatterlist has a single entry, we use
+sg_init_one(), which is terminated correctly.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+In all other cases, we use skb_to_sgvec(), which calls sg_mark_end().
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+In other words, they're all magically terminated at the right place. I
+didn't even think about it until you mentioned it, but I just verified
+that in every case, they get terminated correctly. So the patch is ok
+as-is.
+
+The only reason they can't be terminated early is that the for_each_sg()
+loop in arch/x86/kernel/pci-nommu.c nommu_map_sg() gets a null pointer
+for s, and then we oops. It doesn't check that the scatterlist ended
+early. I'd argue that it is the definition of for_each_sg() that is
+wrong, because it doesn't check for sg == NULL, which sg_next() returns
+when you reach the end of the chain. I don't want to be changing core
+kernel code, though.
+
+> I despise the new scatterlist magic chaining no-typesafety crap too much to get around to doing the Right Thing, which is to change vq_ops->add_buf to take two (terminated) scatterlists instead of a sg array and two numbers.
+> 
+
+I didn't want to change the API. I'm comfortable with how virtio_net
+works, but I haven't even tried to understand virtio_console or
+virtio_blk yet.
+
+The main problem I've run into is that the scatterlists are allocated on
+the stack. Since I'm trying to do DMA transfers, I run dma_map_sg() on
+them in add_buf(), and then I need to run dma_unmap_sg() on them in
+get_buf(), after the DMA has completed. I've resorted to making copies
+of the scatterlists.
+
+Also, I have no idea how get()/set(), get_status()/set_status(), and
+get_features()/finalize_features() are supposed to work. I'm going to
+try and hook up two instances of virtio_net in memory, and see if I can
+get them to communicate. Any pointers on that? :)
+
+> But if you want to look at that... :)
+
+Maybe later. I need to get something working first.
+
+Thanks for the input.
+Ira
