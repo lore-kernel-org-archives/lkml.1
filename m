@@ -1,110 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751558AbZAXFzj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751662AbZAXF7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751558AbZAXFzj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 00:55:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750778AbZAXFzb
+	id S1751662AbZAXF7b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 00:59:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbZAXF7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 00:55:31 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:26751 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750762AbZAXFza (ORCPT
+	Sat, 24 Jan 2009 00:59:21 -0500
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:39525 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750789AbZAXF7U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 00:55:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QTnqzvarPHmVENoUKQmzNTDiz7N9bnTmeowMfY7NQirH0I89BWVebT8geUPP729xoO
-         f/ASCRxEgo2i/08W7uEEL9XmvdiGhWBQ/mNGp/tbjIuO6iwgmOR6jXWdwmns4a0GFT/A
-         uzvh+WCpw6GQ/aMqia1iKzGP5hvt3OG4NdeBg=
+	Sat, 24 Jan 2009 00:59:20 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=O5YdORPryxc3DkXryiip2xoetqPR5TKk5Gmn5Q6+tsqJmMVG3EmpSOorATvjo0L3CSKgZ+fNvtwGmfLxVivIzASAYADH/UOU6Lu9vZSm5YGb9kWnhl1hdSMtru3xZZsX7O1VwzjVbczlRKGBvhgDgOu4sKfWyYr50U61cesQI60=  ;
+X-YMail-OSG: 8u_jDvEVM1mZWv9rjwOVODELf8Kvwm_8.x0fweb9MN5PQ044qp4.jujSLITakGc9Wxrgeuow4kkKN79VvJ6A95JwCsolzQTBzRssxShcjH971_dRIY6UTCPWHgSjwTkVXDdDOpKO3to96CzfC8JK0QMG0lkz_zstY4HutizWSpZ1G.KjvpgQ.V0rrB5ixDmt.GxowgaHg4rOms20jWWEojB4tp6xiCRGyytW9w--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH 1/2] usb: composite: Fix bug: should test set_alt function pointer before use it
+Date: Fri, 23 Jan 2009 21:59:18 -0800
+User-Agent: KMail/1.9.10
+Cc: gregkh@suse.de, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1231345279-26618-1-git-send-email-cooloney@kernel.org> <1231345279-26618-2-git-send-email-cooloney@kernel.org>
+In-Reply-To: <1231345279-26618-2-git-send-email-cooloney@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <1210931362-18422-9-git-send-email-jirislaby@gmail.com>
-References: <1210931362-18422-1-git-send-email-jirislaby@gmail.com>
-	 <1210931362-18422-2-git-send-email-jirislaby@gmail.com>
-	 <1210931362-18422-3-git-send-email-jirislaby@gmail.com>
-	 <1210931362-18422-4-git-send-email-jirislaby@gmail.com>
-	 <1210931362-18422-5-git-send-email-jirislaby@gmail.com>
-	 <1210931362-18422-6-git-send-email-jirislaby@gmail.com>
-	 <1210931362-18422-7-git-send-email-jirislaby@gmail.com>
-	 <1210931362-18422-8-git-send-email-jirislaby@gmail.com>
-	 <1210931362-18422-9-git-send-email-jirislaby@gmail.com>
-Date: Sat, 24 Jan 2009 11:25:27 +0530
-Message-ID: <3f9a31f40901232155q7f898f00l9a1cf16ca6c8fb75@mail.gmail.com>
-Subject: Re: [PATCH 09/10] HID: add compat support
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input@vger.kernel.org, marcel@holtmann.org,
-       linux-kernel@vger.kernel.org, anssi.hannula@gmail.com, gregkh@suse.de,
-       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901232159.18863.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 16, 2008 at 3:19 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> Add compat option to hid code to allow loading of all modules on
-> systems which don't allow autoloading because of old userspace.
->
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+On Wednesday 07 January 2009, Bryan Wu wrote:
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+
+Include a real patch comment -- "test the *correct* function
+pointer" would suffice, and:
+
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+
+
 > ---
->  Documentation/feature-removal-schedule.txt |    7 +++++++
->  drivers/hid/Kconfig                        |   11 +++++++++++
->  drivers/hid/Makefile                       |    4 ++++
->  drivers/hid/hid-apple.c                    |    2 ++
->  drivers/hid/hid-core.c                     |   12 ++++++++++++
->  drivers/hid/hid-dummy.c                    |   13 +++++++++++++
->  drivers/hid/hid-logitech.c                 |    2 ++
->  include/linux/hid.h                        |   17 +++++++++++++++--
->  8 files changed, 66 insertions(+), 2 deletions(-)
->  create mode 100644 drivers/hid/hid-dummy.c
->
-
-> diff --git a/include/linux/hid.h b/include/linux/hid.h
-> index c67e5fe..447aed9 100644
-> --- a/include/linux/hid.h
-> +++ b/include/linux/hid.h
-
-> +#ifdef CONFIG_HID_COMPAT
-> +#define HID_COMPAT_LOAD_DRIVER(name)   \
-> +void hid_compat_##name(void) { }       \
-> +EXPORT_SYMBOL(hid_compat_##name)
-> +#else
-> +#define HID_COMPAT_LOAD_DRIVER(name)
-> +#endif /* HID_COMPAT */
-> +#define HID_COMPAT_CALL_DRIVER(name)   do {    \
-> +       extern void hid_compat_##name(void);    \
-> +       hid_compat_##name();                    \
-> +} while (0)
-> +
->  #endif
->
-
-This leads to 3 headers_check warnings:
-
- usr/include/linux/hid.h:66: leaks CONFIG_HID to userspace where it is not valid
- usr/include/linux/hid.h:69: extern's make no sense in userspace
- usr/include/linux/hid.h:76: extern's make no sense in userspace
-
-So I  am moving whole above block in #ifdef __KEREL__
-
-If you have any objections, then let me know, now it will look like this:
-
- #endif /* HID_FF */
-
-+#ifdef __KERNEL__
- #ifdef CONFIG_HID_COMPAT
- #define HID_COMPAT_LOAD_DRIVER(name)   \
- /* prototype to avoid sparse warning */        \
-@@ -804,6 +805,7 @@ EXPORT_SYMBOL(hid_compat_##name)
-        extern void hid_compat_##name(void);    \
-        hid_compat_##name();                    \
- } while (0)
-+#endif /* __KERNEL__ */
-
- #endif
+>  drivers/usb/gadget/composite.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/usb/gadget/composite.c b/drivers/usb/gadget/composite.c
+> index f2da026..363951e 100644
+> --- a/drivers/usb/gadget/composite.c
+> +++ b/drivers/usb/gadget/composite.c
+> @@ -772,7 +772,7 @@ composite_setup(struct usb_gadget *gadget, const struct usb_ctrlrequest *ctrl)
+>  		f = cdev->config->interface[w_index];
+>  		if (!f)
+>  			break;
+> -		if (w_value && !f->get_alt)
+> +		if (w_value && !f->set_alt)
+>  			break;
+>  		value = f->set_alt(f, w_index, w_value);
+>  		break;
+> -- 
+> 1.5.6
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-usb" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 
 
---
-JSR
