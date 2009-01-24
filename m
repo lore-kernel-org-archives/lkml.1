@@ -1,262 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbZAXQyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbZAXR22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbZAXQyR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 11:54:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754456AbZAXQyA
+	id S1758263AbZAXR22 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 12:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZAXR2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 11:54:00 -0500
-Received: from mail.gmx.net ([213.165.64.20]:47973 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753870AbZAXQyA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 11:54:00 -0500
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       akpm@linux-foundation.org
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Sat, 24 Jan 2009 17:53:57 +0100
-From: "Wolfram Strepp" <wstrepp@gmx.de>
-In-Reply-To: <1232801175.4859.61.camel@laptop>
-Message-ID: <20090124165357.119090@gmx.net>
+	Sat, 24 Jan 2009 12:28:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54242 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752297AbZAXR2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Jan 2009 12:28:19 -0500
+Date: Sat, 24 Jan 2009 18:27:58 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       LLVM Developers Mailing List <llvmdev@cs.uiuc.edu>
+Subject: Re: inline asm semantics: output constraint width smaller than
+	input
+Message-ID: <20090124172758.GA31699@elte.hu>
+References: <497A0500.3080706@gmail.com> <20090123181721.GA32545@elte.hu> <497A0C0A.7080207@gmail.com> <497B408C.20802@gmail.com>
 MIME-Version: 1.0
-References: <20090120215839.74570@gmx.net> <1232801175.4859.61.camel@laptop>
-Subject: Re: [PATCH 2/2] Optimization of function rb_erase() in lib/rbtree.c
-To: Peter Zijlstra <peterz@infradead.org>
-X-Authenticated: #14768304
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/ZS24bPbjZH+dN94gLPvIMmWbFdKay84xY5ODSlT
- nTGcU9w5tHvUssK6E1EI8E3qbDbCrzVXqjjg== 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-GMX-UID: nXVIfe9nX1V6J4Q1jWFyzUR/SDc4NEw3
-X-FuHaFi: 0.52
+In-Reply-To: <497B408C.20802@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Peter,
 
-> On Tue, 2009-01-20 at 22:58 +0100, Wolfram Strepp wrote:
-> > This patch reorganizes some lines, and therefore one if-condition
-> > can be omitted. Here an explanation.
-> OK, this patch is better done in smaller steps.
-> 
-> I'll have to admit to not having tested any of the below patches, but
-> they represent how I went about understanding your patch.
-> 
-> ---
-> Subject: rbtree: code movement
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Sat Jan 24 13:14:11 CET 2009
-> 
-> Move some code around in order to make the next change more obvious.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  lib/rbtree.c |   19 ++++++++++---------
->  1 file changed, 10 insertions(+), 9 deletions(-)
-> 
-> Index: linux-2.6/lib/rbtree.c
-> ===================================================================
-> --- linux-2.6.orig/lib/rbtree.c
-> +++ linux-2.6/lib/rbtree.c
-> @@ -237,6 +237,16 @@ void rb_erase(struct rb_node *node, stru
->  		node = node->rb_right;
->  		while ((left = node->rb_left) != NULL)
->  			node = left;
-> +
-> +		if (rb_parent(old))
-> +		{
-> +			if (rb_parent(old)->rb_left == old)
-> +				rb_parent(old)->rb_left = node;
-> +			else
-> +				rb_parent(old)->rb_right = node;
-> +		} else
-> +			root->rb_node = node;
-> +
->  		child = node->rb_right;
->  		parent = rb_parent(node);
->  		color = rb_color(node);
-> @@ -253,15 +263,6 @@ void rb_erase(struct rb_node *node, stru
->  		node->rb_right = old->rb_right;
->  		node->rb_left = old->rb_left;
->  
-> -		if (rb_parent(old))
-> -		{
-> -			if (rb_parent(old)->rb_left == old)
-> -				rb_parent(old)->rb_left = node;
-> -			else
-> -				rb_parent(old)->rb_right = node;
-> -		} else
-> -			root->rb_node = node;
-> -
->  		rb_set_parent(old->rb_left, node);
->  		if (old->rb_right)
->  			rb_set_parent(old->rb_right, node);
-> 
-> 
-> -------------------
-> 
-> Subject: rbtree: optimize a special case in rb_erase()
-> From: Wolfram Strepp <wstrepp@gmx.de>
-> Date: Sat Jan 24 13:17:04 CET 2009
-> 
-> There are two cases when a node is erased:
-> 'normal case': the successor is not the right-hand-child of the node to be
-> erased
-> 'special case': the successor is the right-hand child of the node to be
-> erased
-> 
-> Here some ascii-art, with following symbols (referring to the code):
-> O: node to be deleted
-> N: the successor of O
-> P: parent of N
-> C: child of N
-> L: some other node
-> 
-> normal case:
-> 
->                O                         N
->               / \                       / \
->              /   \                     /   \
->             L     \                   L     \
->            / \     P      ---->      / \     P
->                   / \                       / \
->                  /                         /
->                 N                         C
->                  \                       / \
->                   \
->                    C
->                   / \
-> 
-> 
-> special case:
->               O|P                        N
->               / \                       / \
->              /   \                     /   \
->             L     \                   L     \
->            / \     N      ---->      /       C
->                     \                       / \
->                      \
->                       C
->                      / \
-> 
-> Notice that for the special case we don't have to reconnect C to N.
-> 
-> Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  lib/rbtree.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/lib/rbtree.c
-> ===================================================================
-> --- linux-2.6.orig/lib/rbtree.c
-> +++ linux-2.6/lib/rbtree.c
-> @@ -251,13 +251,13 @@ void rb_erase(struct rb_node *node, stru
->  		parent = rb_parent(node);
->  		color = rb_color(node);
->  
-> -		if (child)
-> -			rb_set_parent(child, parent);
->  		if (parent == old) {
-> -			parent->rb_right = child;
->  			parent = node;
-> -		} else
-> +		} else {
-> +			if (child)
-> +				rb_set_parent(child, parent);
->  			parent->rb_left = child;
-> +		}
->  
->  		node->rb_parent_color = old->rb_parent_color;
->  		node->rb_right = old->rb_right;
-> 
-> 
-> --------------
-> 
-> Subject: rbtree: further optimize the special case
-> From: Wolfram Strepp <wstrepp@gmx.de>
-> Date: Sat Jan 24 13:30:39 CET 2009
-> 
-> 
-> normal case:
-> 
->                O                         N
->               / \                       / \
->              /   \                     /   \
->             L     \                   L     \
->            / \     P      ---->      / \     P
->                   / \                       / \
->                  /                         /
->                 N                         C
->                  \                       / \
->                   \
->                    C
->                   / \
-> 
-> 
-> special case:
->               O|P                        N
->               / \                       / \
->              /   \                     /   \
->             L     \                   L     \
->            / \     N      ---->      /       C
->                     \                       / \
->                      \
->                       C
->                      / \
-> 
-> Notice that for the special case we don't have to reconnect N to C.
-> 
-> Furthermore, notice that the initial checks:
-> 
-> 	if (!node->rb_left)
-> 		child = node->rb_right;
-> 	else if (!node->rb_right)
-> 		child = node->rb_left;
-> 	else
-> 	{
-> 		...
-> 	}
-> 
-> guarantee that old->rb_right is set in the final else branch, therefore
-> we can omit checking that again.
-> 
-> Signed-off-by: Wolfram Strepp <wstrepp@gmx.de>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  lib/rbtree.c |    8 ++++----
->  1 file changed, 4 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/lib/rbtree.c
-> ===================================================================
-> --- linux-2.6.orig/lib/rbtree.c
-> +++ linux-2.6/lib/rbtree.c
-> @@ -257,15 +257,15 @@ void rb_erase(struct rb_node *node, stru
->  			if (child)
->  				rb_set_parent(child, parent);
->  			parent->rb_left = child;
-> +
-> +			node->rb_right = old->rb_right;
-> +			rb_set_parent(old->rb_right, node);
->  		}
->  
->  		node->rb_parent_color = old->rb_parent_color;
-> -		node->rb_right = old->rb_right;
->  		node->rb_left = old->rb_left;
-> -
->  		rb_set_parent(old->rb_left, node);
-> -		if (old->rb_right)
-> -			rb_set_parent(old->rb_right, node);
-> +
->  		goto color;
->  	}
->  
-> 
-I'm fine with your reorganization.
-Im just building a kernel to test it, but quite sure it will work.
-Regards,
+* Török Edwin <edwintorok@gmail.com> wrote:
 
-Wolfram
--- 
-Psssst! Schon vom neuen GMX MultiMessenger gehört? Der kann`s mit allen: http://www.gmx.net/de/go/multimessenger
+> On 2009-01-23 20:27, Török Edwin wrote:
+> >>>    
+> >>>       
+> >> i'd not mind it at all if the kernel could be built with other open-source 
+> >> compilers too.
+> >>
+> >> Now in this case the patch you suggest might end up hurting the end result 
+> >> so it's not an unconditional 'yes'. But ... how much it actually matters 
+> >> depends on the circumstances.
+> >>
+> >> So could you please send a sample patch for some of most common inline 
+> >> assembly statements that are affected by this, so that we can see:
+> >>
+> >>    1) how ugly the LLVM workarounds are
+> >>   
+> >>     
+> >
+> > Ok, I will prepare a patch for both cases.
+> >
+> >   
+> >>    2) how they affect the generated kernel image in practice
+> >>
+> >> My gut feeling is that it's going to be acceptable with a bit of thinking 
+> >> (we might even do some wrappers to do this cleanly) - but i'd really like 
+> >> to see it before giving you that judgement.
+> >>     
+> 
+> The below patch is to build the kernel for x86_64, with the attached
+> .config,
+> using llvm-gcc (trunk, with patch from
+> http://llvm.org/bugs/show_bug.cgi?id=2989#c2).
+> 
+> The .config has KVM turned off, because I didn't know how to change
+> x86_emulate.c so that LLVM builds it
+> (http://llvm.org/bugs/show_bug.cgi?id=3373#c10)
+> For 32-bit some more changes are required.
+> 
+> The resulting kernel image are of the same size
+> $ ls -l vmlinux.patched
+> -rwxr-xr-x 1 edwin edwin 11277206 2009-01-24 17:58 vmlinux.patched
+> $ ls -l vmlinux
+> -rwxr-xr-x 1 edwin edwin 11277206 2009-01-24 18:01 vmlinux
+> 
+> They aren't identical though, a disassembly shows that the address of
+> most of functions changed,
+> also some register assignments changed (r14 instead of r15, and so on).
+> 
+> Are these changes correct, and are they acceptable?
+> 
+> Best regards,
+> --Edwin
+> 
+> ---
+>  arch/x86/include/asm/uaccess.h |   10 ++++++----
+>  arch/x86/lib/delay.c           |    2 +-
+>  2 files changed, 7 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+> index 69d2757..28280de 100644
+> --- a/arch/x86/include/asm/uaccess.h
+> +++ b/arch/x86/include/asm/uaccess.h
+> @@ -154,7 +154,7 @@ extern int __get_user_bad(void);
+>  
+>  #define get_user(x, ptr)                        \
+>  ({                                    \
+> -    int __ret_gu;                            \
+> +    unsigned long __ret_gu;                        \
+>      unsigned long __val_gu;                        \
+>      __chk_user_ptr(ptr);                        \
+>      might_fault();                            \
+> @@ -176,7 +176,7 @@ extern int __get_user_bad(void);
+>          break;                            \
+>      }                                \
+>      (x) = (__typeof__(*(ptr)))__val_gu;                \
+> -    __ret_gu;                            \
+> +    (int)__ret_gu;                            \
+>  })
+>  
+>  #define __put_user_x(size, x, ptr, __ret_pu)            \
+> @@ -239,11 +239,13 @@ extern void __put_user_8(void);
+>   */
+>  #define put_user(x, ptr)                    \
+>  ({                                \
+> -    int __ret_pu;                        \
+> +    __typeof__(*(ptr)) __ret_pu;                \
+
+This does not look right. We can sometimes have put_user() of non-integer 
+types (say structures). How does the (int)__ret_pu cast work in that case? 
+We'll fall into this branch in that case:
+
+        default:                                                \
+                __put_user_x(X, __pu_val, ptr, __ret_pu);       \
+                break;                                          \
+
+and __ret_pu has a nonsensical type in that case.
+
+>      __typeof__(*(ptr)) __pu_val;                \
+>      __chk_user_ptr(ptr);                    \
+>      might_fault();                        \
+>      __pu_val = x;                        \
+> +       /* return value is 0 or -EFAULT, both fit in 1 byte, and \
+> +    * are sign-extendable to int */                \
+>      switch (sizeof(*(ptr))) {                \
+>      case 1:                            \
+>          __put_user_x(1, __pu_val, ptr, __ret_pu);    \
+> @@ -261,7 +263,7 @@ extern void __put_user_8(void);
+>          __put_user_x(X, __pu_val, ptr, __ret_pu);    \
+>          break;                        \
+>      }                            \
+> -    __ret_pu;                        \
+> +    (int)__ret_pu;                        \
+>  })
+>  
+>  #define __put_user_size(x, ptr, size, retval, errret)            \
+> diff --git a/arch/x86/lib/delay.c b/arch/x86/lib/delay.c
+> index f456860..12d27f8 100644
+> --- a/arch/x86/lib/delay.c
+> +++ b/arch/x86/lib/delay.c
+> @@ -112,7 +112,7 @@ EXPORT_SYMBOL(__delay);
+>  
+>  inline void __const_udelay(unsigned long xloops)
+>  {
+> -    int d0;
+> +    unsigned long d0;
+>  
+>      xloops *= 4;
+>      asm("mull %%edx"
+
+Is this all that you need (plus the 16-bit setup code tweaks) to get LLVM 
+to successfully build a 64-bit kernel image?
+
+If yes then this doesnt look all that bad or invasive at first sight (if 
+the put_user() workaround can be expressed in a cleaner way), but in any 
+case it would be nice to hear an LLVM person's opinion about roughly when 
+this is going to be solved in LLVM itself.
+
+	Ingo
