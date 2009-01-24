@@ -1,88 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZAXSmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbZAXSnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbZAXSmR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 13:42:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZAXSl5
+	id S1759174AbZAXSnY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 13:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbZAXSnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 13:41:57 -0500
-Received: from ovro.ovro.caltech.edu ([192.100.16.2]:44070 "EHLO
-	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754281AbZAXSl4 (ORCPT
+	Sat, 24 Jan 2009 13:43:09 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57558 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754878AbZAXSnH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 13:41:56 -0500
-Date: Sat, 24 Jan 2009 10:41:54 -0800
-From: Ira Snyder <iws@ovro.caltech.edu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>,
-       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] virtio_net: use correct accessors for scatterlists
-Message-ID: <20090124184154.GA18513@ovro.caltech.edu>
-Mail-Followup-To: Rusty Russell <rusty@rustcorp.com.au>,
-	linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>,
-	netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-References: <20090124001053.GA20156@ovro.caltech.edu> <200901250010.11434.rusty@rustcorp.com.au>
+	Sat, 24 Jan 2009 13:43:07 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 24 Jan 2009 19:42:47 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH 2/7] firewire: sbp2: define some magic numbers as macros
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+In-Reply-To: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de>
+Message-ID: <tkrat.99a09faf4c137c20@s5r6.in-berlin.de>
+References: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901250010.11434.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Sat, 24 Jan 2009 10:41:56 -0800 (PST)
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 25, 2009 at 12:10:10AM +1030, Rusty Russell wrote:
-> On Saturday 24 January 2009 10:40:53 Ira Snyder wrote:
-> > Without this fix, virtio_net makes incorrect usage of scatterlists. It sets
-> > the end of the scatterlist chain after the first element, despite the fact
-> > that more entries come after it.
-> 
-> Yes, but shouldn't you also be doing sg_mark_end() here somewhere if we're
-> going to use this new sg mechanism?
-> 
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-sbp2.c |   23 ++++++++++++-----------
+ 1 file changed, 12 insertions(+), 11 deletions(-)
 
-sg_init_table() and sg_init_one() have an sg_mark_end() inside them, so
-the scatterlists are terminated at their last entry.
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -311,14 +311,16 @@ struct sbp2_command_orb {
+ 	dma_addr_t page_table_bus;
+ };
+ 
++#define SBP2_ROM_VALUE_WILDCARD ~0         /* match all */
++#define SBP2_ROM_VALUE_MISSING  0xff000000 /* not present in the unit dir. */
++
+ /*
+  * List of devices with known bugs.
+  *
+  * The firmware_revision field, masked with 0xffff00, is the best
+  * indicator for the type of bridge chip of a device.  It yields a few
+  * false positives but this did not break correctly behaving devices
+- * so far.  We use ~0 as a wildcard, since the 24 bit values we get
+- * from the config rom can never match that.
++ * so far.
+  */
+ static const struct {
+ 	u32 firmware_revision;
+@@ -340,22 +342,22 @@ static const struct {
+ 	},
+ 	/* Initio bridges, actually only needed for some older ones */ {
+ 		.firmware_revision	= 0x000200,
+-		.model			= ~0,
++		.model			= SBP2_ROM_VALUE_WILDCARD,
+ 		.workarounds		= SBP2_WORKAROUND_INQUIRY_36,
+ 	},
+ 	/* PL-3507 bridge with Prolific firmware */ {
+ 		.firmware_revision	= 0x012800,
+-		.model			= ~0,
++		.model			= SBP2_ROM_VALUE_WILDCARD,
+ 		.workarounds		= SBP2_WORKAROUND_POWER_CONDITION,
+ 	},
+ 	/* Symbios bridge */ {
+ 		.firmware_revision	= 0xa0b800,
+-		.model			= ~0,
++		.model			= SBP2_ROM_VALUE_WILDCARD,
+ 		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS,
+ 	},
+ 	/* Datafab MD2-FW2 with Symbios/LSILogic SYM13FW500 bridge */ {
+ 		.firmware_revision	= 0x002600,
+-		.model			= ~0,
++		.model			= SBP2_ROM_VALUE_WILDCARD,
+ 		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS,
+ 	},
+ 
+@@ -1087,7 +1089,7 @@ static void sbp2_init_workarounds(struct
+ 			continue;
+ 
+ 		if (sbp2_workarounds_table[i].model != model &&
+-		    sbp2_workarounds_table[i].model != ~0)
++		    sbp2_workarounds_table[i].model != SBP2_ROM_VALUE_WILDCARD)
+ 			continue;
+ 
+ 		w |= sbp2_workarounds_table[i].workarounds;
+@@ -1137,14 +1139,13 @@ static int sbp2_probe(struct device *dev
+ 	fw_device_get(device);
+ 	fw_unit_get(unit);
+ 
+-	/* Initialize to values that won't match anything in our table. */
+-	firmware_revision = 0xff000000;
+-	model = 0xff000000;
+-
+ 	/* implicit directory ID */
+ 	tgt->directory_id = ((unit->directory - device->config_rom) * 4
+ 			     + CSR_CONFIG_ROM) & 0xffffff;
+ 
++	firmware_revision = SBP2_ROM_VALUE_MISSING;
++	model		  = SBP2_ROM_VALUE_MISSING;
++
+ 	if (sbp2_scan_unit_dir(tgt, unit->directory, &model,
+ 			       &firmware_revision) < 0)
+ 		goto fail_tgt_put;
 
-In the only case where the scatterlist has a single entry, we use
-sg_init_one(), which is terminated correctly.
+-- 
+Stefan Richter
+-=====-==--= ---= ==---
+http://arcgraph.de/sr/
 
-In all other cases, we use skb_to_sgvec(), which calls sg_mark_end().
-
-In other words, they're all magically terminated at the right place. I
-didn't even think about it until you mentioned it, but I just verified
-that in every case, they get terminated correctly. So the patch is ok
-as-is.
-
-The only reason they can't be terminated early is that the for_each_sg()
-loop in arch/x86/kernel/pci-nommu.c nommu_map_sg() gets a null pointer
-for s, and then we oops. It doesn't check that the scatterlist ended
-early. I'd argue that it is the definition of for_each_sg() that is
-wrong, because it doesn't check for sg == NULL, which sg_next() returns
-when you reach the end of the chain. I don't want to be changing core
-kernel code, though.
-
-> I despise the new scatterlist magic chaining no-typesafety crap too much to get around to doing the Right Thing, which is to change vq_ops->add_buf to take two (terminated) scatterlists instead of a sg array and two numbers.
-> 
-
-I didn't want to change the API. I'm comfortable with how virtio_net
-works, but I haven't even tried to understand virtio_console or
-virtio_blk yet.
-
-The main problem I've run into is that the scatterlists are allocated on
-the stack. Since I'm trying to do DMA transfers, I run dma_map_sg() on
-them in add_buf(), and then I need to run dma_unmap_sg() on them in
-get_buf(), after the DMA has completed. I've resorted to making copies
-of the scatterlists.
-
-Also, I have no idea how get()/set(), get_status()/set_status(), and
-get_features()/finalize_features() are supposed to work. I'm going to
-try and hook up two instances of virtio_net in memory, and see if I can
-get them to communicate. Any pointers on that? :)
-
-> But if you want to look at that... :)
-
-Maybe later. I need to get something working first.
-
-Thanks for the input.
-Ira
