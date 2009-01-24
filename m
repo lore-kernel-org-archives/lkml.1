@@ -1,84 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZAXC4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757832AbZAXC4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756246AbZAXC4B (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 21:56:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbZAXCzs
+	id S1757832AbZAXC4k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 21:56:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbZAXC4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 21:55:48 -0500
-Received: from mga06.intel.com ([134.134.136.21]:44830 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752956AbZAXCzr (ORCPT
+	Fri, 23 Jan 2009 21:56:31 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:28736 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753259AbZAXC4b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 21:55:47 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,315,1231142400"; 
-   d="scan'208";a="484307480"
-Subject: Re: Mainline kernel OLTP performance update
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
-       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>, matthew.r.wilcox@intel.com,
-       chinang.ma@intel.com, linux-kernel@vger.kernel.org,
-       sharad.c.tripathi@intel.com, arjan@linux.intel.com,
-       suresh.b.siddha@intel.com, harita.chilukuri@intel.com,
-       douglas.w.styner@intel.com, peter.xihong.wang@intel.com,
-       hubert.nueckel@intel.com, chris.mason@oracle.com, srostedt@redhat.com,
-       linux-scsi@vger.kernel.org, andrew.vasquez@qlogic.com,
-       anirban.chakraborty@qlogic.com, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.DEB.1.10.0901231020030.21692@qirst.com>
-References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
-	 <200901161503.13730.nickpiggin@yahoo.com.au>
-	 <20090115201210.ca1a9542.akpm@linux-foundation.org>
-	 <200901161746.25205.nickpiggin@yahoo.com.au>
-	 <20090116065546.GJ31013@parisc-linux.org>
-	 <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>
-	 <1232428583.11429.83.camel@ymzhang>
-	 <alpine.DEB.1.10.0901211852060.18367@qirst.com>
-	 <1232613395.11429.122.camel@ymzhang>
-	 <1232615707.14549.6.camel@penberg-laptop>
-	 <1232616517.11429.129.camel@ymzhang>
-	 <1232617672.14549.25.camel@penberg-laptop>
-	 <1232679773.11429.155.camel@ymzhang>  <4979692B.3050703@cs.helsinki.fi>
-	 <1232697998.6094.17.camel@penberg-laptop>
-	 <1232699401.11429.163.camel@ymzhang>
-	 <1232703989.6094.29.camel@penberg-laptop>
-	 <alpine.DEB.1.10.0901231020030.21692@qirst.com>
-Content-Type: text/plain
-Date: Sat, 24 Jan 2009 10:55:28 +0800
-Message-Id: <1232765728.11429.193.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 23 Jan 2009 21:56:31 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:references:
+	mime-version:content-type:content-disposition:in-reply-to:
+	x-operating-system:user-agent:x-gmailtapped-by:x-gmailtapped;
+	b=U66/8ODvrfPJ0hjG5JCAr39/JugGcq5INx4F1z2memFhlpOQGZ/4rFstKT92s/49v
+	KRq7mIiCkGBT2JR7s/V3w==
+Date: Fri, 23 Jan 2009 18:56:18 -0800
+From: Mandeep Singh Baines <msb@google.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: fweisbec@gmail.com, linux-kernel@vger.kernel.org, rientjes@google.com,
+       mbligh@google.com, thockin@google.com
+Subject: Re: [PATCH v3] softlockup: remove hung_task_check_count
+Message-ID: <20090124025618.GB31189@google.com>
+References: <20090122083457.GC7438@elte.hu> <20090122195513.GA22146@google.com> <1fe6c7900901221921m586b129dwf8c3446f897b57f0@mail.gmail.com> <20090123092306.GB29820@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090123092306.GB29820@elte.hu>
+X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
+User-Agent: Mutt/1.5.11
+X-GMailtapped-By: 172.24.198.77
+X-GMailtapped: msb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-23 at 10:22 -0500, Christoph Lameter wrote:
-> On Fri, 23 Jan 2009, Pekka Enberg wrote:
+Ingo Molnar (mingo@elte.hu) wrote:
 > 
-> > Looking at __slab_free(), unless page->inuse is constantly zero and we
-> > discard the slab, it really is just cache effects (10% sounds like a
-> > lot, though!). AFAICT, the only way to optimize that is with Christoph's
-> > unfinished pointer freelists patches or with a remote free list like in
-> > SLQB.
+> not sure i like the whole idea of removing the max iterations check. In 
+> theory if there's a _ton_ of tasks, we could spend a lot of time looping 
+> there. So it always looked prudent to limit it somewhat.
 > 
-> No there is another way. Increase the allocator order to 3 for the
-> kmalloc-8192 slab then multiple 8k blocks can be allocated from one of the
-> larger chunks of data gotten from the page allocator. That will allow slub
-> to do fast allocs.
-After I change kmalloc-8192/order to 3, the result(pinned netperf UDP-U-4k)
-difference between SLUB and SLQB becomes 1% which can be considered as fluctuation.
 
-But when trying to increased it to 4, I got:
-[root@lkp-st02-x8664 slab]# echo "3">kmalloc-8192/order
-[root@lkp-st02-x8664 slab]# echo "4">kmalloc-8192/order
--bash: echo: write error: Invalid argument
+We could go back to exporting max iterations to proc, and set the nice
+value higher.
 
-Comparing with SLQB, it seems SLUB needs too many investigation/manual finer-tuning
-against specific benchmarks. One hard is to tune page order number. Although SLQB also
-has many tuning options, I almost doesn't tune it manually, just run benchmark and
-collect results to compare. Does that mean the scalability of SLQB is better?
+Or:
 
+Instead of searching the tasklist from the beginning every time, continue
+where you left off. On loaded systems, will take a while to search the
+entire list but at least all tasks will be checked.
 
+Something like this:
+
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index ba8ccd4..d220796 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -109,6 +109,15 @@ static void check_hung_task(struct task_struct *t, unsigned long now,
+ 		panic("hung_task: blocked tasks");
+ }
+ 
++static void wait_till_next_iteration(struct task_struct *t)
++{
++	get_task_state(t);
++	read_unlock(&tasklist_lock);
++	schedule_timeout_interruptible(hung_task_poll_jiffies);
++	read_lock(&tasklist_lock);
++	put_task_state(t);
++}
++
+ /*
+  * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
+  * a really long time (120 seconds). If that happens, print out
+@@ -129,8 +138,14 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
+ 
+ 	read_lock(&tasklist_lock);
+ 	do_each_thread(g, t) {
+-		if (!--max_count)
+-			goto unlock;
++		if (!--max_count) {
++			max_count = HUNG_TASK_CHECK_COUNT;
++			wait_till_next_iteration(t);
++			timeout = sysctl_hung_task_timeout_secs;
++			/* Exit loop if t was unlinked or timeout set to 0. */
++			if (!timeout || t->state == TASK_DEAD)
++				goto unlock;
++		}
+ 		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
+ 		if (t->state == TASK_UNINTERRUPTIBLE)
+ 			check_hung_task(t, now, timeout);
