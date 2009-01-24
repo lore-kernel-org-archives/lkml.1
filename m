@@ -1,74 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750934AbZAXIeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbZAXIgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750934AbZAXIeT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 03:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751009AbZAXIeI
+	id S1757857AbZAXIgf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 03:36:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbZAXIg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 03:34:08 -0500
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:2889 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750975AbZAXIeH (ORCPT
+	Sat, 24 Jan 2009 03:36:27 -0500
+Received: from fk-out-0910.google.com ([209.85.128.184]:14495 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751017AbZAXIg0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 03:34:07 -0500
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=0 a=4cncSJfDi2vJL7ohYqEA:9 a=Tmmt65Crnv0o-Rn7w3JlVnNoE78A:4 a=F3aLDEtscPAA:10 a=O7oCZswB7c4A:10
-Message-ID: <497AD27B.8000204@shaw.ca>
-Date: Sat, 24 Jan 2009 02:34:03 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sat, 24 Jan 2009 03:36:26 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=B68nDgtD95YD+Q8g1Oo9IgTWQImVMa/ryKvtR4W6N1zO8c3XaRBCXrrdLUEDRLyOJF
+         Q2b6FWd1ALLsghtKXHVrYFKDMWwDbXgj+02cmD0lGoyR+ZDfAwph2AEsVuiYvnDkFKRb
+         GT31pSjSHvhsj+r1qN3mEhWG5hJxZVIOS9d5E=
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Nathan <nathan.stocks@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Did my SATA drive fail? What should I do?
-References: <96c9d6a80901221431u16dbf135ife7b59f7b38cb8fa@mail.gmail.com>
-In-Reply-To: <96c9d6a80901221431u16dbf135ife7b59f7b38cb8fa@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090124035006.GA8051@brong.net>
+References: <20081203193901.715896543@mini.kroah.org>
+	 <20081203194849.GQ8950@kroah.com>
+	 <1232686261.9977.1296303473@webmail.messagingengine.com>
+	 <20090123051620.GA8122@suse.de>
+	 <1232704065.25510.1296328851@webmail.messagingengine.com>
+	 <20090123170631.GB11566@suse.de> <20090124035006.GA8051@brong.net>
+Date: Sat, 24 Jan 2009 09:36:22 +0100
+Message-ID: <19f34abd0901240036pbcd9323pa62af60276cd25bb@mail.gmail.com>
+Subject: Re: [patch 016/104] epoll: introduce resource usage limits
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Bron Gondwana <brong@fastmail.fm>
+Cc: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nathan wrote:
-> First off:  Hi!  I'm new to this list.  Googling some of the errors in
-> my logs brought up several posts to this list, none of which led to
-> any obvious resolutions, so I thought I'd try joining the list...
-> 
-> I have a linux server[1] that has been acting as an asterisk pbx for
-> about three months without a problem.  Today, the SATA hard drive
-> suddenly went into read-only mode (!?).  Reading seems to work just
-> fine, as I've ssh'd in and looked at a bunch of files, including
-> /var/log/messages [2].
-> 
-> Is this just my hardware failing?  Could this a kernel bug?
-> Recommendations?  I would just reboot the thing, but asterisk is still
-> successfully handling dozens of calls right now, despite not being
-> able to write to the disk...
-> 
-> [1] # uname -a
-> Linux phoneserver3 2.6.25-gentoo-r7 #2 SMP Thu Oct 16 20:59:53 MDT
-> 2008 x86_64 Intel(R) Xeon(R) CPU E5410 @ 2.33GHz GenuineIntel
-> GNU/Linux
-> 
-> [2] (last several lines from /var/log/messages)
-> 
-> Jan 22 14:43:09 phoneserver3 dhcpd: DHCPDISCOVER from
-> 00:04:f2:1e:7e:21 via eth2: network 10.254.254/24: no free leases
-> Jan 22 14:43:09 phoneserver3 dhcpd: DHCPDISCOVER from
-> 00:04:f2:1e:7c:6b via eth2: network 10.254.254/24: no free leases
-> Jan 22 14:43:35 phoneserver3 dhcpd: DHCPDISCOVER from
-> 00:04:f2:1e:0d:47 via eth2: network 10.254.254/24: no free leases
-> Jan 22 14:43:36 phoneserver3 dhcpd: DHCPDISCOVER from
-> 00:1f:28:83:00:80 via eth2: network 10.254.254/24: no free leases
-> Jan 22 14:43:41 phoneserver3 ata1.00: exception Emask 0x0 SAct 0x0
-> SErr 0x0 action 0x0
-> Jan 22 14:43:41 phoneserver3 ata1.00: BMDMA stat 0x25
-> Jan 22 14:43:41 phoneserver3 ata1.00: cmd
-> ca/00:20:00:7c:ef/00:00:00:00:00/ef tag 0 dma 16384 out
-> Jan 22 14:43:41 phoneserver3 res 51/10:20:00:7c:ef/00:00:00:00:00/ef
-> Emask 0x81 (invalid argument)
-> Jan 22 14:43:41 phoneserver3 ata1.00: status: { DRDY ERR }
-> Jan 22 14:43:41 phoneserver3 ata1.00: error: { IDNF }
+On Sat, Jan 24, 2009 at 4:50 AM, Bron Gondwana <brong@fastmail.fm> wrote:
+> On Fri, Jan 23, 2009 at 09:06:31AM -0800, Greg KH wrote:
+>> On Fri, Jan 23, 2009 at 08:47:45PM +1100, Bron Gondwana wrote:
+>> > On Thu, 22 Jan 2009 21:16 -0800, "Greg KH" <gregkh@suse.de> wrote:
+>> > >
+>> > > I would suggest just changing this default value then, it's a simple
+>> > > userspace configuration item, and for your boxes, it sounds like a
+>> > > larger value would be more suitable.
+>
+> If everyone, or every distribution at least, has to change it then the
+> default is probably wrong.  The error message in the postfix logs didn't
+> immediately point me at the issue, especially since I tried debugging on
+> one of our "production" mxes, only to discover that the epoll limit
+> didn't exist there.  They're slightly behind in kernel versions.
+>
+>> > I guess Postfix is a bit of an odd case here.   It runs lots of
+>> > processes, yet uses epoll within many of them as well - sort of
+>> > a historical design in some ways, but also to enforce maximum
+>> > privilege separation with many of the daemons able to
+>> > be run under chroot with limited capabilities.
+>> >
+>> > So I guess I have a few questions left:
+>> >
+>> > 1) is this value ever supposed to be hit in practice by
+>> >    non-malicious software? If not, it appears 128 is too low.
+>>
+>> It does appear a bit low.  What looks to you like a good value to use as
+>> a default?
+>
+> This thread suggests that it's not just postfix having the issue, and
+> offers 1024 as a saner default:
+>
+> http://www.mail-archive.com/fedora-kernel-list@redhat.com/msg01618.html
+>
+> There's also a Russian thread that pointed me at this patch in the first
+> place, and another place that suggested 1024 as well.  Seems "the
+> cloud"[tm] is converging on 1024.
 
-Most likely this is the disk failing. It's reporting the sector wasn't 
-found during a write operation.
+With the default limit of 128 (max_user_instances) and 274274
+(max_user_watches) on my machine, the maximum amount of memory
+consumed by one user's epoll instances is barely noticable (around
+1.5M).
+
+Raising the max_user_instances to 512 brings us up to a maximum memory
+usage of 43M already. However, from here on, we are already getting
+limited by the number of user watches.
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
