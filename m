@@ -1,135 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZAXH1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbZAXHgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbZAXH1T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 02:27:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbZAXH1H
+	id S1755291AbZAXHgv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 02:36:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750878AbZAXHgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 02:27:07 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:59092 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbZAXH1E (ORCPT
+	Sat, 24 Jan 2009 02:36:43 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:61000 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbZAXHgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 02:27:04 -0500
+	Sat, 24 Jan 2009 02:36:42 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=JpBdpdgXtkDtqIWSb+xWIOHlP+iCBQioeOFDwiU0a6TKAEqK1dAULawy49HDSO47aM
-         E7IFPGViAk3S+SmGwBRgZqJY4uS7vTl1uN6SEai64AFmVfAubaoz+E3Eqdx6ulMkZ03u
-         WNn8EY/qDGJMXqdKv4yDt3+npUDERJ9QHkcms=
-Date: Sat, 24 Jan 2009 10:32:36 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: reiserfs-devel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: usr/include/linux/reiserfs_fs.h is having lot of KERNEL data
-Message-ID: <20090124073236.GA6166@x200.localdomain>
-References: <1232465242.3088.25.camel@localhost.localdomain> <1232778934.10414.4.camel@localhost.localdomain>
+        b=Rbz5AYwUiwO2xCek9fU6JD2YoyTaSTGTMk5QgQ1xarENO/3jcCuRqQb8M1UkVyXbes
+         woIXbCZWWKhb164SzPlwNKNeJiW2iWbrPQsBhn6cKymDf3JirZp8zpoqGKQRFuTCsGba
+         CuUqMR3Q1+KYc2TXTAy4tQo0kE24lHgy0NtT8=
+Date: Sat, 24 Jan 2009 10:36:38 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC v2 -tip 3/3] x86: ia32_signal: use {get|put}_user_try and
+	catch
+Message-ID: <20090124073638.GA8752@localhost>
+References: <4962CAAE.6090300@ct.jp.nec.com> <496476D0.5040607@zytor.com> <497A5737.8030408@ct.jp.nec.com> <497A57CE.3080602@ct.jp.nec.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232778934.10414.4.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <497A57CE.3080602@ct.jp.nec.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 24, 2009 at 12:05:34PM +0530, Jaswinder Singh Rajput wrote:
-> On Tue, 2009-01-20 at 20:57 +0530, Jaswinder Singh Rajput wrote:
-> > usr/include/linux/reiserfs_fs.h is giving 21 'make headers_clean' warnings:
-> >  usr/include/linux/reiserfs_fs.h:64: leaks CONFIG_REISERFS to userspace where it is not valid
-> >  usr/include/linux/reiserfs_fs.h:81: leaks CONFIG_REISERFS to userspace where it is not valid
-> >  usr/include/linux/reiserfs_fs.h:687: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:995: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:997: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1467: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1587: leaks CONFIG_QUOTA to userspace where it is not valid
-> >  usr/include/linux/reiserfs_fs.h:1760: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1764: extern's make no sense in userspace 
-> >  usr/include/linux/reiserfs_fs.h:1766: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1769: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1771: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1805: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1908: leaks CONFIG_PROC to userspace where it is not valid
-> >  usr/include/linux/reiserfs_fs.h:1948: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1949: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1950: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1951: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1962: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1963: extern's make no sense in userspace
-> >  usr/include/linux/reiserfs_fs.h:1964: extern's make no sense in userspace
-> > 
-> > This file is huge and need lot of cleanup.
-> > 
-> 
-> 
-> If no one have any objections can I forward this patch to fix above
-> warnings:
+[Hiroshi Shimamoto - Fri, Jan 23, 2009 at 03:50:38PM -0800]
+| From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+| 
+| Impact: use new framework
+| 
+| Use {get|put}_user_try, catch, and _ex in arch/x86/ia32/ia32_signal.c.
+| 
+| Note: this patch contains "WARNING: line over 80 characters", because when
+| introducing new block I insert an indent to avoid mistakes by edit.
+| 
+| Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+| ---
+|  arch/x86/ia32/ia32_signal.c |  365 +++++++++++++++++++++++--------------------
+|  1 files changed, 195 insertions(+), 170 deletions(-)
+| 
+| diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+| index 9dabd00..dd77ac0 100644
+| --- a/arch/x86/ia32/ia32_signal.c
+| +++ b/arch/x86/ia32/ia32_signal.c
+| @@ -46,78 +46,83 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
+|
+... 
+| +	put_user_try {
+| +		/* If you change siginfo_t structure, please make sure that
+| +		   this code is fixed accordingly.
+| +		   It should never copy any pad contained in the structure
+| +		   to avoid security leaks, but must copy the generic
+| +		   3 ints plus the relevant union member.  */
+| +		put_user_ex(from->si_signo, &to->si_signo);
+| +		put_user_ex(from->si_errno, &to->si_errno);
+| +		put_user_ex((short)from->si_code, &to->si_code);
+| +
+| +		if (from->si_code < 0) {
+| +			put_user_ex(from->si_pid, &to->si_pid);
+| +			put_user_ex(from->si_uid, &to->si_uid);
+| +			put_user_ex(ptr_to_compat(from->si_ptr), &to->si_ptr);
+| +		} else {
+| +			/*
+| +			 * First 32bits of unions are always present:
+| +			 * si_pid === si_band === si_tid === si_addr(LS half)
+| +			 */
+| +			put_user_ex(from->_sifields._pad[0],
+| +					  &to->_sifields._pad[0]);
+| +			switch (from->si_code >> 16) {
+| +			case __SI_FAULT >> 16:
+| +				break;
+| +			case __SI_CHLD >> 16:
+| +				put_user_ex(from->si_utime, &to->si_utime);
+| +				put_user_ex(from->si_stime, &to->si_stime);
+| +				put_user_ex(from->si_status, &to->si_status);
+| +				/* FALL THROUGH */
+| +			default:
 
-This file need more throrough cleanup than some tool thinks it needs to be:
+Hi Hiroshi,
 
-> --- a/include/linux/reiserfs_fs.h
-> +++ b/include/linux/reiserfs_fs.h
-> @@ -74,9 +74,7 @@ struct fid;
->  // FIXME: do not change 4 by anything else: there is code which relies on that
->  #define ROUND_UP(x) _ROUND_UP(x,8LL)
->  
-> -/* debug levels.  Right now, CONFIG_REISERFS_CHECK means print all debug
-> -** messages.
-> -*/
-> +/* debug levels.  Right now, REISERFS_CHECK means print all debug messages */
+may I ask why we use default here?
 
-Whoa, fix the tool!
-
-> @@ -91,11 +89,13 @@ if( !( cond ) ) 								\
->  
->  #define RASSERT(cond, format, args...) __RASSERT(cond, #cond, format, ##args)
->  
-> +#ifdef __KERNEL__
-
-What about RASSERT?
-
->  #if defined( CONFIG_REISERFS_CHECK )
->  #define RFALSE(cond, format, args...) __RASSERT(!(cond), "!(" #cond ")", format, ##args)
->  #else
->  #define RFALSE( cond, format, args... ) do {;} while( 0 )
->  #endif
-> +#endif
->  
->  #define CONSTF __attribute_const__
->  /*
-> @@ -698,7 +698,9 @@ static inline void cpu_key_k_offset_dec(struct cpu_key *key)
->  /* object identifier for root dir */
->  #define REISERFS_ROOT_OBJECTID 2
->  #define REISERFS_ROOT_PARENT_OBJECTID 1
-> +#ifdef __KERNEL__
->  extern struct reiserfs_key root_key;
-> +#endif /* __KERNEL__ */
->  
->  /* 
->   * Picture represents a leaf of the S+tree
-> @@ -1006,10 +1008,12 @@ struct reiserfs_de_head {
->  #define de_visible(deh)	    	    test_bit_unaligned (DEH_Visible, &((deh)->deh_state))
->  #define de_hidden(deh)	    	    !test_bit_unaligned (DEH_Visible, &((deh)->deh_state))
->  
-> +#ifdef __KERNEL__
->  extern void make_empty_dir_item_v1(char *body, __le32 dirid, __le32 objid,
->  				   __le32 par_dirid, __le32 par_objid);
->  extern void make_empty_dir_item(char *body, __le32 dirid, __le32 objid,
->  				__le32 par_dirid, __le32 par_objid);
-> +#endif /* __KERNEL__ */
->  
->  /* array of the entry headers */
->   /* get item body */
-> @@ -1478,7 +1482,9 @@ struct item_operations {
->  	void (*print_vi) (struct virtual_item * vi);
->  };
->  
-> +#ifdef __KERNEL__
->  extern struct item_operations *item_ops[TYPE_ANY + 1];
-> +#endif /* __KERNEL__ */
-
-item_ops are unused, AFAICS.
-
-> @@ -1688,6 +1696,7 @@ struct reiserfs_jh {
-
-struct reiserfs_jh is kernel-internal as well.
+| +			case __SI_KILL >> 16:
+| +				put_user_ex(from->si_uid, &to->si_uid);
+| +				break;
+| +			case __SI_POLL >> 16:
+| +				put_user_ex(from->si_fd, &to->si_fd);
+| +				break;
+| +			case __SI_TIMER >> 16:
+| +				put_user_ex(from->si_overrun, &to->si_overrun);
+| +				put_user_ex(ptr_to_compat(from->si_ptr),
+| +					    &to->si_ptr);
+| +				break;
+| +				 /* This is not generated by the kernel as of now.  */
+| +			case __SI_RT >> 16:
+| +			case __SI_MESGQ >> 16:
+| +				put_user_ex(from->si_uid, &to->si_uid);
+| +				put_user_ex(from->si_int, &to->si_int);
+| +				break;
+| +			}
+|  		}
+| -	}
+| +	} put_user_catch(err);
+| +
+|  	return err;
+|  }
+|  
+...
+ 
+		- Cyrill -
