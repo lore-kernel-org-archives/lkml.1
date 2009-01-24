@@ -1,222 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754256AbZAXHH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZAXHNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754256AbZAXHH6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 02:07:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZAXHHt
+	id S1754789AbZAXHNJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 02:13:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750875AbZAXHMz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 02:07:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33776 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750820AbZAXHHr (ORCPT
+	Sat, 24 Jan 2009 02:12:55 -0500
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:62214 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750862AbZAXHMy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 02:07:47 -0500
-Date: Fri, 23 Jan 2009 23:07:06 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [RFC] per-CPU cryptd thread implementation based on workqueue
-Message-Id: <20090123230706.4c8ae0ea.akpm@linux-foundation.org>
-In-Reply-To: <1232591537.6101.3.camel@yhuang-dev.sh.intel.com>
-References: <1232075437.13948.12.camel@yhuang-dev.sh.intel.com>
-	<20090116033105.GB10390@gondor.apana.org.au>
-	<1232591537.6101.3.camel@yhuang-dev.sh.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 24 Jan 2009 02:12:54 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtACAEpOekl5LAUpgWdsb2JhbACTewEBFiK2AIVM
+X-IronPort-AV: E=Sophos;i="4.37,316,1231075800"; 
+   d="scan'208";a="274278729"
+Date: Sat, 24 Jan 2009 18:12:49 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: spurious -ENOSPC on XFS
+Message-ID: <20090124071249.GF32390@disturbed>
+Mail-Followup-To: Mikulas Patocka <mpatocka@redhat.com>,
+	Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+	linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.64.0901120509550.11089@hs20-bc2-1.build.redhat.com> <20090113214949.GN8071@disturbed> <Pine.LNX.4.64.0901132324070.16396@hs20-bc2-1.build.redhat.com> <20090118173144.GA1999@infradead.org> <Pine.LNX.4.64.0901201430250.4603@hs20-bc2-1.build.redhat.com> <20090120232422.GF10158@disturbed> <20090122205913.GA30859@infradead.org> <20090122224347.GA18751@infradead.org> <Pine.LNX.4.64.0901231509010.5179@hs20-bc2-1.build.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0901231509010.5179@hs20-bc2-1.build.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009 10:32:17 +0800 Huang Ying <ying.huang@intel.com> wrote:
-
-> Use dedicate workqueue for crypto
+On Fri, Jan 23, 2009 at 03:14:30PM -0500, Mikulas Patocka wrote:
 > 
-> - A dedicated workqueue named kcrypto_wq is created.
 > 
-> - chainiv uses kcrypto_wq instead of keventd_wq.
+> On Thu, 22 Jan 2009, Christoph Hellwig wrote:
 > 
-> - For cryptd, struct cryptd_queue is defined to be a per-CPU queue,
->   which holds one struct cryptd_cpu_queue for each CPU. In struct
->   cryptd_cpu_queue, a struct crypto_queue holds all requests for the
->   CPU, a struct work_struct is used to run all requests for the CPU.
+> > On Thu, Jan 22, 2009 at 03:59:13PM -0500, Christoph Hellwig wrote:
+> > > On Wed, Jan 21, 2009 at 10:24:22AM +1100, Dave Chinner wrote:
+> > > > Right, so you need to use internal xfs sync functions that don't
+> > > > have these problems. That is:
+> > > > 
+> > > > 	error = xfs_sync_inodes(ip->i_mount, SYNC_DELWRI|SYNC_WAIT);
+> > > > 
+> > > > will do a blocking flush of all the inodes without deadlocks occurring.
+> > > > Then you can remove the 500ms wait.
+> > > 
+> > > I've given this a try with Eric's testcase from #724 in the oss bugzilla,
+> > > but it's not enough yet.  I thinks that's because SYNC_WAIT is rather
+> > > meaningless for data writeout, and we need SYNC_IOWAIT instead.  The
+> > > patch below gets the testcase working for me:
+> > 
+> > Actually I still see failures happing sometimes.  I guess tha'ts because
+> > our flush is still asynchronous due to the schedule_work..
 > 
+> If I placed
+> xfs_sync_inodes(ip->i_mount, SYNC_DELWRI);
+> xfs_sync_inodes(ip->i_mount, SYNC_DELWRI | SYNC_IOWAIT);
+> directly to xfs_flush_device, I got lock dependency warning (though not a 
+> real deadlock).
 
-Please always prefer to include performance measurements when proposing
-a performance-enhancing patch.  Otherwise we have no basis upon which
-to evaluate the patch's worth.
+Same reason memory reclaim gives lockdep warnings on XFS - we're
+recursing into operations that take inode locks while we currently
+hold an inode lock.  However, it shouldn't deadlock because
+we should ever try to take the iolock on the inode that we current
+hold it on.
 
-> +++ b/crypto/crypto_wq.c
-> @@ -0,0 +1,39 @@
-> +/*
-> + * Workqueue for crypto subsystem
-> + *
-> + * Copyright (c) 2009 Intel Corp.
-> + *   Author: Huang Ying <ying.huang@intel.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published by the Free
-> + * Software Foundation; either version 2 of the License, or (at your option)
-> + * any later version.
-> + *
-> + */
-> +
-> +#include <linux/workqueue.h>
-> +#include <crypto/algapi.h>
-> +#include <crypto/crypto_wq.h>
-> +
-> +struct workqueue_struct *kcrypto_wq;
-> +EXPORT_SYMBOL_GPL(kcrypto_wq);
-> +
-> +static int __init crypto_wq_init(void)
-> +{
-> +	kcrypto_wq = create_workqueue("crypto");
-> +	if (unlikely(!kcrypto_wq))
-> +		return -ENOMEM;
-> +	return 0;
-> +}
-> +
-> +static void __exit crypto_wq_exit(void)
-> +{
-> +	if (likely(kcrypto_wq))
-> +		destroy_workqueue(kcrypto_wq);
+> So synchronous flushing definitely needs some thinking and lock 
+> rearchitecting.
 
-I don't believe that it is possible to get here with kcrypto_wq==NULL.
+No, not at all. At most the grabbing of the iolock in
+xfs_sync_inodes_ag() needs to become a trylock....
 
->
-> ...
->
-> +int cryptd_enqueue_request(struct cryptd_queue *queue,
-> +			   struct crypto_async_request *request)
-> +{
-> +	int cpu, err, queued;
-> +	struct cryptd_cpu_queue *cpu_queue;
-> +
-> +	cpu = get_cpu();
-> +	cpu_queue = per_cpu_ptr(queue->cpu_queue, cpu);
-> +	spin_lock_bh(&cpu_queue->lock);
-> +	err = crypto_enqueue_request(&cpu_queue->queue, request);
-> +	spin_unlock_bh(&cpu_queue->lock);
-> +	/* INUSE should be set after queue->qlen assigned, but
-> +	 * spin_unlock_bh imply a memory barrior already */
-> +	if (!test_and_set_bit_lock(CRYPTD_STATE_INUSE, &cpu_queue->state)) {
-> +		queued = queue_work(kcrypto_wq, &cpu_queue->work);
-> +		BUG_ON(!queued);
-> +	}
+Cheers,
 
-Do we actually need to use CRYPTD_STATE_INUSE here?  The
-WORK_STRUCT_PENDING handling in the workqueue does basically the same
-thing?
-
-> +	put_cpu();
-> +
-> +	return err;
-> +}
-> +
-> +int cryptd_tfm_in_queue(struct cryptd_queue *queue, struct crypto_tfm *tfm)
-
-Did this need to have global scope?
-
-> +{
-> +	int cpu, in_queue;
-> +	struct cryptd_cpu_queue *cpu_queue;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		cpu_queue = per_cpu_ptr(queue->cpu_queue, cpu);
-> +		spin_lock_bh(&cpu_queue->lock);
-> +		in_queue = crypto_tfm_in_queue(&cpu_queue->queue, tfm);
-> +		spin_unlock_bh(&cpu_queue->lock);
-> +		if (in_queue)
-> +			return 1;
-> +	}
-> +	return 0;
-> +}
-
-Did you consider using for_each_online_cpu() and implementing CPU
-hotplug?  There might be situations where the number of possible CPUs
-is much greater than the number of online CPUs.
-
-> +static void cryptd_queue_work_done(struct cryptd_cpu_queue *cpu_queue)
-> +{
-> +	int queued;
-> +
-> +	if (!cpu_queue->queue.qlen) {
-> +		clear_bit_unlock(CRYPTD_STATE_INUSE, &cpu_queue->state);
-> +		/* queue.qlen must be checked after INUSE bit cleared */
-> +		smp_mb();
-> +		if (!cpu_queue->queue.qlen ||
-> +		    test_and_set_bit_lock(CRYPTD_STATE_INUSE,
-> +					  &cpu_queue->state))
-> +			return;
-> +	}
-> +
-> +	queued = queue_work(kcrypto_wq, &cpu_queue->work);
-> +	BUG_ON(!queued);
-> +}
-
-It is unclear (to me) why this code is using the special "locked"
-bitops.  This should be explained in a code comment.
-
-It isn't immediately clear (to me) what this function does, what its
-role is in the overall scheme.  It wouldn't hurt at all to put a nice
-comment over non-trivial functions explaining such things.
-
-> +static void cryptd_queue_work(struct work_struct *work)
-> +{
-> +	struct cryptd_cpu_queue *cpu_queue =
-> +		container_of(work, struct cryptd_cpu_queue, work);
-
-You could just do
-
-	struct cryptd_cpu_queue *cpu_queue;
-
-	cpu_queue = container_of(work, struct cryptd_cpu_queue, work);
-
-rather than uglifying the code to fit in 80-cols.
-
-> +	struct crypto_async_request *req, *backlog;
-> +
-> +	/* Only handle one request at a time to avoid hogging crypto
-> +	 * workqueue */
-> +	spin_lock_bh(&cpu_queue->lock);
-> +	backlog = crypto_get_backlog(&cpu_queue->queue);
-> +	req = crypto_dequeue_request(&cpu_queue->queue);
-> +	spin_unlock_bh(&cpu_queue->lock);
-> +
-> +	if (!req)
-> +		goto out;
-> +
-> +	if (backlog)
-> +		backlog->complete(backlog, -EINPROGRESS);
-> +	req->complete(req, 0);
-> +out:
-> +	cryptd_queue_work_done(cpu_queue);
-> +}
-> +
-> +static inline struct cryptd_queue *cryptd_get_queue(struct crypto_tfm *tfm)
->  {
->  	struct crypto_instance *inst = crypto_tfm_alg_instance(tfm);
->  	struct cryptd_instance_ctx *ictx = crypto_instance_ctx(inst);
-> -	return ictx->state;
-> +	return ictx->queue;
->  }
->  
->  static int cryptd_blkcipher_setkey(struct crypto_ablkcipher *parent,
-> @@ -131,19 +248,13 @@ static int cryptd_blkcipher_enqueue(stru
->  {
->  	struct cryptd_blkcipher_request_ctx *rctx = ablkcipher_request_ctx(req);
->  	struct crypto_ablkcipher *tfm = crypto_ablkcipher_reqtfm(req);
-> -	struct cryptd_state *state =
-> -		cryptd_get_state(crypto_ablkcipher_tfm(tfm));
-> -	int err;
-> +	struct cryptd_queue *queue =
-> +		cryptd_get_queue(crypto_ablkcipher_tfm(tfm));
-
-ditto
-
->
-> ...
->
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
