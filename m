@@ -1,154 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751887AbZAXGf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751956AbZAXGuU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751887AbZAXGf6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 01:35:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbZAXGfu
+	id S1751956AbZAXGuU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 01:50:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZAXGuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 01:35:50 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35466 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750792AbZAXGft (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 01:35:49 -0500
-Subject: Re: usr/include/linux/reiserfs_fs.h is having lot of KERNEL data
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: reiserfs-devel@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1232465242.3088.25.camel@localhost.localdomain>
-References: <1232465242.3088.25.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 24 Jan 2009 12:05:34 +0530
-Message-Id: <1232778934.10414.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 (2.24.2-3.fc10) 
+	Sat, 24 Jan 2009 01:50:06 -0500
+Received: from wa-out-1112.google.com ([209.85.146.179]:33557 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750830AbZAXGuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Jan 2009 01:50:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XD9PgWXR6+oA0bTEtVnggbxJcMTp2stDtJdiaZ1RucFw6e7ucfofR6473YLZW34PE+
+         121bD2zxyhGgtvHduFOVyeBcTRzi28XG8JNmM7cB5f941hbv9noJtRLy8fod4tYTnKv6
+         r2StA39v67qpciVs5akAHwCKyaaJWFaDZK+dw=
+MIME-Version: 1.0
+In-Reply-To: <s5h7i4psepm.wl%tiwai@suse.de>
+References: <1232465902.3088.31.camel@localhost.localdomain>
+	 <s5h7i4psepm.wl%tiwai@suse.de>
+Date: Sat, 24 Jan 2009 12:20:03 +0530
+Message-ID: <3f9a31f40901232250i27a673a9r8b0620f968e351e1@mail.gmail.com>
+Subject: Re: usr/include/linux/soundcard.h warnings for 'make headers_check'
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, alsa-devel@alsa-project.org,
+       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-20 at 20:57 +0530, Jaswinder Singh Rajput wrote:
-> usr/include/linux/reiserfs_fs.h is giving 21 'make headers_clean' warnings:
->  usr/include/linux/reiserfs_fs.h:64: leaks CONFIG_REISERFS to userspace where it is not valid
->  usr/include/linux/reiserfs_fs.h:81: leaks CONFIG_REISERFS to userspace where it is not valid
->  usr/include/linux/reiserfs_fs.h:687: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:995: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:997: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1467: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1587: leaks CONFIG_QUOTA to userspace where it is not valid
->  usr/include/linux/reiserfs_fs.h:1760: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1764: extern's make no sense in userspace 
->  usr/include/linux/reiserfs_fs.h:1766: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1769: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1771: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1805: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1908: leaks CONFIG_PROC to userspace where it is not valid
->  usr/include/linux/reiserfs_fs.h:1948: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1949: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1950: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1951: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1962: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1963: extern's make no sense in userspace
->  usr/include/linux/reiserfs_fs.h:1964: extern's make no sense in userspace
-> 
-> This file is huge and need lot of cleanup.
-> 
+On Wed, Jan 21, 2009 at 5:38 AM, Takashi Iwai <tiwai@suse.de> wrote:
+> At Tue, 20 Jan 2009 21:08:22 +0530,
+> Jaswinder Singh Rajput wrote:
+>>
+>> usr/include/linux/soundcard.h is giving following warnings for 'make headers_check':
+>>  usr/include/linux/soundcard.h:1047: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1048: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1049: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1050: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1051: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1053: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1055: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1056: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1061: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1062: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1078: extern's make no sense in userspace
+>>  usr/include/linux/soundcard.h:1079: extern's make no sense in userspace
+>>
+>> Do we need to fix these warnings.
+>
+> No, these are declarations for OSS-lib.
+> It doesn't belong to kernel, but it's better to keep it for
+> compatibility in some way.
+>
 
+Do you find some better place for:
 
-If no one have any objections can I forward this patch to fix above
-warnings:
+void seqbuf_dump(void); /* This function must be provided by programs */
 
-diff --git a/include/linux/reiserfs_fs.h b/include/linux/reiserfs_fs.h
-index bc5114d..4dae991 100644
---- a/include/linux/reiserfs_fs.h
-+++ b/include/linux/reiserfs_fs.h
-@@ -74,9 +74,7 @@ struct fid;
- // FIXME: do not change 4 by anything else: there is code which relies on that
- #define ROUND_UP(x) _ROUND_UP(x,8LL)
- 
--/* debug levels.  Right now, CONFIG_REISERFS_CHECK means print all debug
--** messages.
--*/
-+/* debug levels.  Right now, REISERFS_CHECK means print all debug messages */
- #define REISERFS_DEBUG_CODE 5	/* extra messages to help find/debug errors */
- 
- void reiserfs_warning(struct super_block *s, const char *fmt, ...);
-@@ -91,11 +89,13 @@ if( !( cond ) ) 								\
- 
- #define RASSERT(cond, format, args...) __RASSERT(cond, #cond, format, ##args)
- 
-+#ifdef __KERNEL__
- #if defined( CONFIG_REISERFS_CHECK )
- #define RFALSE(cond, format, args...) __RASSERT(!(cond), "!(" #cond ")", format, ##args)
- #else
- #define RFALSE( cond, format, args... ) do {;} while( 0 )
- #endif
-+#endif
- 
- #define CONSTF __attribute_const__
- /*
-@@ -698,7 +698,9 @@ static inline void cpu_key_k_offset_dec(struct cpu_key *key)
- /* object identifier for root dir */
- #define REISERFS_ROOT_OBJECTID 2
- #define REISERFS_ROOT_PARENT_OBJECTID 1
-+#ifdef __KERNEL__
- extern struct reiserfs_key root_key;
-+#endif /* __KERNEL__ */
- 
- /* 
-  * Picture represents a leaf of the S+tree
-@@ -1006,10 +1008,12 @@ struct reiserfs_de_head {
- #define de_visible(deh)	    	    test_bit_unaligned (DEH_Visible, &((deh)->deh_state))
- #define de_hidden(deh)	    	    !test_bit_unaligned (DEH_Visible, &((deh)->deh_state))
- 
-+#ifdef __KERNEL__
- extern void make_empty_dir_item_v1(char *body, __le32 dirid, __le32 objid,
- 				   __le32 par_dirid, __le32 par_objid);
- extern void make_empty_dir_item(char *body, __le32 dirid, __le32 objid,
- 				__le32 par_dirid, __le32 par_objid);
-+#endif /* __KERNEL__ */
- 
- /* array of the entry headers */
-  /* get item body */
-@@ -1478,7 +1482,9 @@ struct item_operations {
- 	void (*print_vi) (struct virtual_item * vi);
- };
- 
-+#ifdef __KERNEL__
- extern struct item_operations *item_ops[TYPE_ANY + 1];
-+#endif /* __KERNEL__ */
- 
- #define op_bytes_number(ih,bsize)                    item_ops[le_ih_k_type (ih)]->bytes_number (ih, bsize)
- #define op_is_left_mergeable(key,bsize)              item_ops[le_key_k_type (le_key_version (key), key)]->is_left_mergeable (key, bsize)
-@@ -1598,6 +1604,7 @@ struct reiserfs_journal_header {
- #define JOURNAL_MAX_COMMIT_AGE 30
- #define JOURNAL_MAX_TRANS_AGE 30
- #define JOURNAL_PER_BALANCE_CNT (3 * (MAX_HEIGHT-2) + 9)
-+#ifdef __KERNEL__
- #ifdef CONFIG_QUOTA
- /* We need to update data and inode (atime) */
- #define REISERFS_QUOTA_TRANS_BLOCKS(s) (REISERFS_SB(s)->s_mount_opt & (1<<REISERFS_QUOTA) ? 2 : 0)
-@@ -1612,6 +1619,7 @@ struct reiserfs_journal_header {
- #define REISERFS_QUOTA_INIT_BLOCKS(s) 0
- #define REISERFS_QUOTA_DEL_BLOCKS(s) 0
- #endif
-+#endif /* __KERNEL__ */
- 
- /* both of these can be as low as 1, or as high as you want.  The min is the
- ** number of 4k bitmap nodes preallocated on mount. New nodes are allocated
-@@ -1688,6 +1696,7 @@ struct reiserfs_jh {
- 	struct list_head list;
- };
- 
-+#ifdef __KERNEL__
- void reiserfs_free_jh(struct buffer_head *bh);
- int reiserfs_add_tail_list(struct inode *inode, struct buffer_head *bh);
- int reiserfs_add_ordered_list(struct inode *inode, struct buffer_head *bh);
-@@ -2203,4 +2212,5 @@ int reiserfs_unpack(struct inode *inode, struct file *filp);
- /* xattr stuff */
- #define REISERFS_XATTR_DIR_SEM(s) (REISERFS_SB(s)->xattr_dir_sem)
- 
-+#endif /* __KERNEL__ */
- #endif				/* _LINUX_REISER_FS_H */
+extern int OSS_init(int seqfd, int buflen);
+extern void OSS_seqbuf_dump(int fd, unsigned char *buf, int buflen);
+extern void OSS_seq_advbuf(int len, int fd, unsigned char *buf, int buflen);
+extern void OSS_seq_needbuf(int len, int fd, unsigned char *buf, int buflen);
+extern void OSS_patch_caching(int dev, int chn, int patch,
+                              int fd, unsigned char *buf, int buflen);
+extern void OSS_drum_caching(int dev, int chn, int patch,
+                              int fd, unsigned char *buf, int buflen);
+extern void OSS_write_patch(int fd, unsigned char *buf, int len);
+extern int OSS_write_patch2(int fd, unsigned char *buf, int len);
+..
+
+#ifdef OSSLIB
+#  define SEQ_USE_EXTBUF() \
+                extern unsigned char *_seqbuf; \
+                extern int _seqbuflen;extern int _seqbufptr
+#  define SEQ_DEFINEBUF(len) SEQ_USE_EXTBUF();static int
+_requested_seqbuflen=len
+#  define _SEQ_ADVBUF(len) OSS_seq_advbuf(len, seqfd, _seqbuf, _seqbuflen)
+#  define _SEQ_NEEDBUF(len) OSS_seq_needbuf(len, seqfd, _seqbuf, _seqbuflen)
+#  define SEQ_DUMPBUF() OSS_seqbuf_dump(seqfd, _seqbuf, _seqbuflen)
+
+#  define SEQ_LOAD_GMINSTR(dev, instr) \
+                OSS_patch_caching(dev, -1, instr, seqfd, _seqbuf, _seqbuflen)
+#  define SEQ_LOAD_GMDRUM(dev, drum) \
+                OSS_drum_caching(dev, -1, drum, seqfd, _seqbuf, _seqbuflen)
+#else /* !OSSLIB */
+
+#  define SEQ_LOAD_GMINSTR(dev, instr)
+#  define SEQ_LOAD_GMDRUM(dev, drum)
+
+#  define SEQ_USE_EXTBUF() \
+                extern unsigned char _seqbuf[]; \
+                extern int _seqbuflen;extern int _seqbufptr
+
+..
+
+what are your plans.
 
 --
 JSR
-
