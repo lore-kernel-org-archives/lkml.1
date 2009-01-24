@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbZAXEof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751293AbZAXFP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759343AbZAXEof (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 23:44:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbZAXEoK
+	id S1751293AbZAXFP3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 00:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750730AbZAXFPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 23:44:10 -0500
-Received: from rv-out-0506.google.com ([209.85.198.227]:35956 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754788AbZAXEoI (ORCPT
+	Sat, 24 Jan 2009 00:15:20 -0500
+Received: from flock1.newmail.ru ([82.204.219.207]:38068 "HELO
+	flock1.newmail.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750724AbZAXFPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 23:44:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=uvurV+PZocVeoUQXNrtUc7kacLky626N9Cj5fOHTbVjeNmhr+NI6gujWRFhPc+XdTM
-         bNxRqMh445JYvFGsjvL7x5q4AdwqiemY1o3HjtLPf6pSwkloCx02HykKQWZTdct7Cc/h
-         5Yt1YJelN/HliLTs0dJIcWk2k8C+HGM5YO2To=
-From: Cheng Renquan <crquan@gmail.com>
-To: Richard Henderson <rth@twiddle.net>, linux-alpha@vger.kernel.org
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Al Viro <viro@zeniv.linux.org.uk>, cr_quan@163.com,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] add the missing linux alpha port mailling list
-Date: Sat, 24 Jan 2009 12:43:51 +0800
-Message-Id: <1232772231-6523-2-git-send-email-crquan@gmail.com>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1232772231-6523-1-git-send-email-crquan@gmail.com>
-References: <1232772231-6523-1-git-send-email-crquan@gmail.com>
+	Sat, 24 Jan 2009 00:15:19 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: Clarification of allowed context for crypto routines
+Date: Sat, 24 Jan 2009 08:15:02 +0300
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-1avb; KDE/4.1.96; i686; ; )
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090123223150.GA1264@gondor.apana.org.au>
+In-Reply-To: <20090123223150.GA1264@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1971456.Rklm8hRX3Q";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901240815.08903.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Cheng Renquan <crquan@gmail.com>
----
- MAINTAINERS |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+--nextPart1971456.Rklm8hRX3Q
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 3fe4dc2..38e8d09 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -357,6 +357,7 @@ S:	Odd Fixes for 2.4; Maintained for 2.6.
- P:	Ivan Kokshaysky
- M:	ink@jurassic.park.msu.ru
- S:	Maintained for 2.4; PCI support for 2.6.
-+L:	linux-alpha@vger.kernel.org
- 
- AMD GEODE CS5536 USB DEVICE CONTROLLER DRIVER
- P:	Thomas Dahlmann
--- 
-1.6.0.6
+On 24 =D1=8F=D0=BD=D0=B2=D0=B0=D1=80=D1=8F 2009 01:31:50 Herbert Xu wrote:
+>
+> 2) The highmem primitives we use are currently softirq only.  We
+> could make them work for hardirq as well, but because of 1) we
+> didn't.
+>
 
+Could you point to example of such primitive in code under crypto?
+
+Thank you!
+
+--nextPart1971456.Rklm8hRX3Q
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkl6o9cACgkQR6LMutpd94zN8gCfZTFWXNkXz5VpKiRpnUOZvACe
+6wEAn1DmGc5hzBo1pjjp8caVyTmXhCTE
+=ZbNI
+-----END PGP SIGNATURE-----
+
+--nextPart1971456.Rklm8hRX3Q--
