@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZAXCm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756246AbZAXC4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbZAXCm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 21:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753654AbZAXCmT
+	id S1756246AbZAXC4B (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 21:56:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753259AbZAXCzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 21:42:19 -0500
-Received: from web15704.mail.cnb.yahoo.com ([202.165.102.71]:33795 "HELO
-	web15704.mail.cnb.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751996AbZAXCmT (ORCPT
+	Fri, 23 Jan 2009 21:55:48 -0500
+Received: from mga06.intel.com ([134.134.136.21]:44830 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752956AbZAXCzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 21:42:19 -0500
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 23 Jan 2009 21:42:18 EST
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.cn;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type:Message-ID;
-  b=jeI4Wf+9aNY/D8dq24BrH8TN4ZK7vglfe6esMts5jY3evGGO9OPBJMw7P9CdYIreI2vjuK+6iXarEknZtftDy3lSQ8oysDv5vZJFZH0CZjHsFtWCSZODXWWNaJYfSD+eYAJP3A5OpQd09c+xFmZdWCRUA8jdkQ16s0Kexct34lA=;
-X-YMail-OSG: ULbNaigVM1k_WBdQ9KYW1dmVmgu_9GYuI7DBgs1tqqUltjgN0Lor2poV
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Sat, 24 Jan 2009 10:35:35 +0800 (CST)
-From: peter meng <mengsanshui@yahoo.com.cn>
-Reply-To: mengsanshui@yahoo.com.cn
-Subject: Is this a bug related s3c24xx-spi-gpio driver 
-To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <494901.35869.qm@web15704.mail.cnb.yahoo.com>
+	Fri, 23 Jan 2009 21:55:47 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,315,1231142400"; 
+   d="scan'208";a="484307480"
+Subject: Re: Mainline kernel OLTP performance update
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>, matthew.r.wilcox@intel.com,
+       chinang.ma@intel.com, linux-kernel@vger.kernel.org,
+       sharad.c.tripathi@intel.com, arjan@linux.intel.com,
+       suresh.b.siddha@intel.com, harita.chilukuri@intel.com,
+       douglas.w.styner@intel.com, peter.xihong.wang@intel.com,
+       hubert.nueckel@intel.com, chris.mason@oracle.com, srostedt@redhat.com,
+       linux-scsi@vger.kernel.org, andrew.vasquez@qlogic.com,
+       anirban.chakraborty@qlogic.com, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.DEB.1.10.0901231020030.21692@qirst.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <200901161503.13730.nickpiggin@yahoo.com.au>
+	 <20090115201210.ca1a9542.akpm@linux-foundation.org>
+	 <200901161746.25205.nickpiggin@yahoo.com.au>
+	 <20090116065546.GJ31013@parisc-linux.org>
+	 <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>
+	 <1232428583.11429.83.camel@ymzhang>
+	 <alpine.DEB.1.10.0901211852060.18367@qirst.com>
+	 <1232613395.11429.122.camel@ymzhang>
+	 <1232615707.14549.6.camel@penberg-laptop>
+	 <1232616517.11429.129.camel@ymzhang>
+	 <1232617672.14549.25.camel@penberg-laptop>
+	 <1232679773.11429.155.camel@ymzhang>  <4979692B.3050703@cs.helsinki.fi>
+	 <1232697998.6094.17.camel@penberg-laptop>
+	 <1232699401.11429.163.camel@ymzhang>
+	 <1232703989.6094.29.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0901231020030.21692@qirst.com>
+Content-Type: text/plain
+Date: Sat, 24 Jan 2009 10:55:28 +0800
+Message-Id: <1232765728.11429.193.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HI,
+On Fri, 2009-01-23 at 10:22 -0500, Christoph Lameter wrote:
+> On Fri, 23 Jan 2009, Pekka Enberg wrote:
+> 
+> > Looking at __slab_free(), unless page->inuse is constantly zero and we
+> > discard the slab, it really is just cache effects (10% sounds like a
+> > lot, though!). AFAICT, the only way to optimize that is with Christoph's
+> > unfinished pointer freelists patches or with a remote free list like in
+> > SLQB.
+> 
+> No there is another way. Increase the allocator order to 3 for the
+> kmalloc-8192 slab then multiple 8k blocks can be allocated from one of the
+> larger chunks of data gotten from the page allocator. That will allow slub
+> to do fast allocs.
+After I change kmalloc-8192/order to 3, the result(pinned netperf UDP-U-4k)
+difference between SLUB and SLQB becomes 1% which can be considered as fluctuation.
 
-The .name field is different between platform_device and platform_driver
+But when trying to increased it to 4, I got:
+[root@lkp-st02-x8664 slab]# echo "3">kmalloc-8192/order
+[root@lkp-st02-x8664 slab]# echo "4">kmalloc-8192/order
+-bash: echo: write error: Invalid argument
 
-in drivers/spi/spi_s3c24xx_gpio.c 
-static struct platform_driver s3c2410_spigpio_drv = {
-        .probe          = s3c2410_spigpio_probe,
-        .remove         = s3c2410_spigpio_remove,
-        .suspend        = s3c2410_spigpio_suspend,
-        .resume         = s3c2410_spigpio_resume,
-        .driver         = {
-                .name   = "spi_s3c24xx_gpio",
-                .owner  = THIS_MODULE,
-        },
-};
-
-
-but 
-in arch/arm/mach-s3c2410/mach-qt2410.c 
-
-static struct platform_device qt2410_spi = {
-	.name		  = "s3c24xx-spi-gpio",
-	.id		  = 1,
-	.dev = {
-		.platform_data = &spi_gpio_cfg,
-	},
-};
-
-in arch/arm/mach-s3c2410/mach-jive.c
-static struct platform_device jive_device_lcdspi = {
-	.name		= "s3c24xx-spi-gpio",
-	.id		= 1,
-	.num_resources  = 0,
-	.dev.platform_data = &jive_lcd_spi,
-};
-
-in  sound/soc/s3c24xx/ smdk2440_wm8956.c 
-
-smdk2440_spi_device = platform_device_alloc("s3c24xx-spi-gpio",-1);
+Comparing with SLQB, it seems SLUB needs too many investigation/manual finer-tuning
+against specific benchmarks. One hard is to tune page order number. Although SLQB also
+has many tuning options, I almost doesn't tune it manually, just run benchmark and
+collect results to compare. Does that mean the scalability of SLQB is better?
 
 
-Peter Meng 
-
-
-
-
-
-      
