@@ -1,177 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbZAXSob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbZAXSsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758843AbZAXSob (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 13:44:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754978AbZAXSoW
+	id S1758242AbZAXSsV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 13:48:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbZAXSsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 13:44:22 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57576 "EHLO
+	Sat, 24 Jan 2009 13:48:13 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57678 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752527AbZAXSoV (ORCPT
+	with ESMTP id S1752746AbZAXSsN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 13:44:21 -0500
+	Sat, 24 Jan 2009 13:48:13 -0500
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 24 Jan 2009 19:44:12 +0100 (CET)
+Date: Sat, 24 Jan 2009 19:46:44 +0100 (CET)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 4/7] ieee1394: sbp2: don't assume zero model_id or
- firmware_revision if there is none
+Subject: [PATCH RFT 7/7] firewire: sbp2: add workarounds for 2nd and 3rd
+ generation iPods
 To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
+cc: linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>,
+       Jarod Wilson <jwilson@redhat.com>
 In-Reply-To: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de>
-Message-ID: <tkrat.0f00c754d7905d2c@s5r6.in-berlin.de>
+Message-ID: <tkrat.b82b9fbc17b1a032@s5r6.in-berlin.de>
 References: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Type: TEXT/PLAIN; CHARSET=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This makes sbp2 behave more like firewire-sbp2 which reports 0xff000000
-as immediate value if there are no unit directory entries for model_id
-or firmware_revision.
+According to https://bugs.launchpad.net/bugs/294391
+  - 3rd generation iPods need the "fix capacity" workaround after all
+    (apparently they crash after the last sector was accessed),
+  - 2nd generation iPods need the "128 kB maximum request size"
+    workaround.
 
-It does not reduce matches with the currently existing quirks table; the
-only zero entry there is for a device which actually does have a zero
-model_id.  It only changes how model_id and firmware_revision are logged
-if they are missing.
+Furthermore, Kristian Høgsberg mentioned that 2nd generation iPods
+treat page tables (scatter-gather lists) as data buffers, i.e. ignore
+the page_table_present bit of command block ORBs.  If this is true, then
+the 128 kB limit is not a sufficient workaround; instead we have to
+guarantee that all requests have only a single s/g element.  This could
+be up to 64 kByte - 4 Bytes in size.  But I expect the block layer to
+typically emit much smaller elements than that, alas.
 
-Other functionally unrelated changes:  The model_id member of quirks
-list entries is renamed to model;  the value (but not teh effect) of
-SBP2_ROM_VALUE_WILDCARD is changed.  Now this part of the source is
-identical with firewire-sbp2 for easier maintenance.
+Alas both iPod generations feature the same model ID in the config ROM,
+hence we can only define a shared quirks list entry for them.  This is
+bad since
+  - the "fix capacity" workaround prevents access to the very last
+    sector if a device does not actually have this bug,
+  - the "no page tables" workaround dramatically reduces throughput,
+    e.g. from 25 to 9 MB/s without gap count optimization, and from 36
+    11 MB/s with gap count optimization (as per hdparm with a regular
+    3.5" S400 disk on an i686 PC without IOMMU).  Whether this matters
+    with the already slow iPod disk is not yet known.
+
+This patch needs testing by somebody who has the hardware:
+  - Do 2nd and 3rd gen. iPods actually have a model_id == 0, or do they
+    have in fact no model_id at all?
+  - Does the "fix capacity" workaround harm usage of 2nd gen. iPods?
+  - Is the "no page tables" workaround really necessary for 2nd gen.
+    iPods, or is the 128k limit sufficient as reported for the Ubuntu
+    8.10 kernel?
+  - How badly does the "no page tables" workaround affect throughput of
+    3rd gen. iPods which don't need it?
+
+A side note:  Apple computers in target mode (or at least an x86 Mac
+mini) don't have firmware_version and model_id, hence none of the iPod
+quirks list entries is active for them.
 
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- drivers/ieee1394/sbp2.c |   38 ++++++++++++++++++++------------------
- 1 file changed, 20 insertions(+), 18 deletions(-)
+ drivers/firewire/fw-sbp2.c |   27 +++++++++++++++++++--------
+ 1 file changed, 19 insertions(+), 8 deletions(-)
 
-Index: linux/drivers/ieee1394/sbp2.c
+Index: linux/drivers/firewire/fw-sbp2.c
 ===================================================================
---- linux.orig/drivers/ieee1394/sbp2.c
-+++ linux/drivers/ieee1394/sbp2.c
-@@ -347,8 +347,8 @@ static struct scsi_host_template sbp2_sh
- 	.sdev_attrs		 = sbp2_sysfs_sdev_attrs,
- };
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -92,6 +92,10 @@ MODULE_PARM_DESC(exclusive_login, "Exclu
+  *   sd_mod on suspend, resume, and shutdown (if manage_start_stop is on).
+  *   Some disks need this to spin down or to resume properly.
+  *
++ * - no page tables
++ *   Limit data buffers to a single scatter/ gather element for buggy devices
++ *   which ignore the page_table_present bit in command block ORBs.
++ *
+  * - override internal blacklist
+  *   Instead of adding to the built-in blacklist, use only the workarounds
+  *   specified in the module load parameter.
+@@ -104,6 +108,7 @@ MODULE_PARM_DESC(exclusive_login, "Exclu
+ #define SBP2_WORKAROUND_DELAY_INQUIRY	0x10
+ #define SBP2_INQUIRY_DELAY		12
+ #define SBP2_WORKAROUND_POWER_CONDITION	0x20
++#define SBP2_WORKAROUND_NO_PAGE_TABLES	0x40
+ #define SBP2_WORKAROUND_OVERRIDE	0x100
  
--/* for match-all entries in sbp2_workarounds_table */
--#define SBP2_ROM_VALUE_WILDCARD 0x1000000
-+#define SBP2_ROM_VALUE_WILDCARD ~0         /* match all */
-+#define SBP2_ROM_VALUE_MISSING  0xff000000 /* not present in the unit dir. */
+ static int sbp2_param_workarounds;
+@@ -116,6 +121,7 @@ MODULE_PARM_DESC(workarounds, "Work arou
+ 	", delay inquiry = "      __stringify(SBP2_WORKAROUND_DELAY_INQUIRY)
+ 	", set power condition in start stop unit = "
+ 				  __stringify(SBP2_WORKAROUND_POWER_CONDITION)
++	", no page tables = "     __stringify(SBP2_WORKAROUND_NO_PAGE_TABLES)
+ 	", override internal blacklist = " __stringify(SBP2_WORKAROUND_OVERRIDE)
+ 	", or a combination)");
  
- /*
-  * List of devices with known bugs.
-@@ -359,60 +359,60 @@ static struct scsi_host_template sbp2_sh
-  */
+@@ -325,7 +331,7 @@ struct sbp2_command_orb {
  static const struct {
  	u32 firmware_revision;
--	u32 model_id;
-+	u32 model;
- 	unsigned workarounds;
+ 	u32 model;
+-	unsigned int workarounds;
++	unsigned workarounds;
  } sbp2_workarounds_table[] = {
  	/* DViCO Momobay CX-1 with TSB42AA9 bridge */ {
  		.firmware_revision	= 0x002800,
--		.model_id		= 0x001010,
-+		.model			= 0x001010,
- 		.workarounds		= SBP2_WORKAROUND_INQUIRY_36 |
- 					  SBP2_WORKAROUND_MODE_SENSE_8 |
- 					  SBP2_WORKAROUND_POWER_CONDITION,
+@@ -360,15 +366,17 @@ static const struct {
+ 		.model			= SBP2_ROM_VALUE_WILDCARD,
+ 		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS,
  	},
- 	/* DViCO Momobay FX-3A with TSB42AA9A bridge */ {
- 		.firmware_revision	= 0x002800,
--		.model_id		= 0x000000,
+-
+ 	/*
+-	 * There are iPods (2nd gen, 3rd gen) with model_id == 0, but
+-	 * these iPods do not feature the read_capacity bug according
+-	 * to one report.  Read_capacity behaviour as well as model_id
+-	 * could change due to Apple-supplied firmware updates though.
++	 * iPod 2nd generation: needs no-page-tables workaround
++	 * iPod 3rd generation: needs fix-capacity workaround
+ 	 */
+-
+-	/* iPod 4th generation. */ {
++	{
++		.firmware_revision	= 0x0a2700,
 +		.model			= 0x000000,
- 		.workarounds		= SBP2_WORKAROUND_DELAY_INQUIRY |
- 					  SBP2_WORKAROUND_POWER_CONDITION,
- 	},
- 	/* Initio bridges, actually only needed for some older ones */ {
- 		.firmware_revision	= 0x000200,
--		.model_id		= SBP2_ROM_VALUE_WILDCARD,
-+		.model			= SBP2_ROM_VALUE_WILDCARD,
- 		.workarounds		= SBP2_WORKAROUND_INQUIRY_36,
- 	},
- 	/* PL-3507 bridge with Prolific firmware */ {
- 		.firmware_revision	= 0x012800,
--		.model_id		= SBP2_ROM_VALUE_WILDCARD,
-+		.model			= SBP2_ROM_VALUE_WILDCARD,
- 		.workarounds		= SBP2_WORKAROUND_POWER_CONDITION,
- 	},
- 	/* Symbios bridge */ {
- 		.firmware_revision	= 0xa0b800,
--		.model_id		= SBP2_ROM_VALUE_WILDCARD,
-+		.model			= SBP2_ROM_VALUE_WILDCARD,
- 		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS,
- 	},
- 	/* Datafab MD2-FW2 with Symbios/LSILogic SYM13FW500 bridge */ {
- 		.firmware_revision	= 0x002600,
--		.model_id		= SBP2_ROM_VALUE_WILDCARD,
-+		.model			= SBP2_ROM_VALUE_WILDCARD,
- 		.workarounds		= SBP2_WORKAROUND_128K_MAX_TRANS,
- 	},
- 	/* iPod 4th generation */ {
++		.workarounds		= SBP2_WORKAROUND_NO_PAGE_TABLES |
++					  SBP2_WORKAROUND_FIX_CAPACITY,
++	},
++	/* iPod 4th generation */ {
  		.firmware_revision	= 0x0a2700,
--		.model_id		= 0x000021,
-+		.model			= 0x000021,
+ 		.model			= 0x000021,
  		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
- 	},
- 	/* iPod mini */ {
- 		.firmware_revision	= 0x0a2700,
--		.model_id		= 0x000022,
-+		.model			= 0x000022,
- 		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
- 	},
- 	/* iPod mini */ {
- 		.firmware_revision	= 0x0a2700,
--		.model_id		= 0x000023,
-+		.model			= 0x000023,
- 		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
- 	},
- 	/* iPod Photo */ {
- 		.firmware_revision	= 0x0a2700,
--		.model_id		= 0x00007e,
-+		.model			= 0x00007e,
- 		.workarounds		= SBP2_WORKAROUND_FIX_CAPACITY,
- 	}
- };
-@@ -1341,13 +1341,15 @@ static void sbp2_parse_unit_directory(st
- 	struct csr1212_keyval *kv;
- 	struct csr1212_dentry *dentry;
- 	u64 management_agent_addr;
--	u32 unit_characteristics, firmware_revision;
-+	u32 unit_characteristics, firmware_revision, model;
- 	unsigned workarounds;
- 	int i;
+@@ -1540,6 +1548,9 @@ static int sbp2_scsi_slave_configure(str
+ 	if (lu->tgt->workarounds & SBP2_WORKAROUND_128K_MAX_TRANS)
+ 		blk_queue_max_sectors(sdev->request_queue, 128 * 1024 / 512);
  
- 	management_agent_addr = 0;
- 	unit_characteristics = 0;
--	firmware_revision = 0;
-+	firmware_revision = SBP2_ROM_VALUE_MISSING;
-+	model = ud->flags & UNIT_DIRECTORY_MODEL_ID ?
-+				ud->model_id : SBP2_ROM_VALUE_MISSING;
++	if (lu->tgt->workarounds & SBP2_WORKAROUND_NO_PAGE_TABLES)
++		blk_queue_max_hw_segments(sdev->request_queue, 1);
++
+ 	blk_queue_max_segment_size(sdev->request_queue, SBP2_MAX_SEG_SIZE);
  
- 	csr1212_for_each_dir_entry(ud->ne->csr, kv, ud->ud_kv, dentry) {
- 		switch (kv->key.id) {
-@@ -1388,9 +1390,9 @@ static void sbp2_parse_unit_directory(st
- 			    sbp2_workarounds_table[i].firmware_revision !=
- 			    (firmware_revision & 0xffff00))
- 				continue;
--			if (sbp2_workarounds_table[i].model_id !=
-+			if (sbp2_workarounds_table[i].model !=
- 			    SBP2_ROM_VALUE_WILDCARD &&
--			    sbp2_workarounds_table[i].model_id != ud->model_id)
-+			    sbp2_workarounds_table[i].model != model)
- 				continue;
- 			workarounds |= sbp2_workarounds_table[i].workarounds;
- 			break;
-@@ -1403,7 +1405,7 @@ static void sbp2_parse_unit_directory(st
- 			  NODE_BUS_ARGS(ud->ne->host, ud->ne->nodeid),
- 			  workarounds, firmware_revision,
- 			  ud->vendor_id ? ud->vendor_id : ud->ne->vendor_id,
--			  ud->model_id);
-+			  model);
- 
- 	/* We would need one SCSI host template for each target to adjust
- 	 * max_sectors on the fly, therefore warn only. */
+ 	return 0;
 
 -- 
 Stefan Richter
