@@ -1,56 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758855AbZAXUzb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbZAXVgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758855AbZAXUzb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 15:55:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755646AbZAXUzX
+	id S1757755AbZAXVgO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 16:36:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZAXVf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 15:55:23 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:46087 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755513AbZAXUzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 15:55:22 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Philip Langdale <philipl@overt.org>
-Subject: Re: [PATCH] ricoh_mmc: Use suspend_late/resume_early
-Date: Sat, 24 Jan 2009 21:55:01 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Pierre Ossman <drzeus@drzeus.cx>,
-       linux kernel <linux-kernel@vger.kernel.org>, sdhci-devel@list.drzeus.cx
-References: <39393.98.210.152.237.1232305880.squirrel@overt.org> <20090124185723.7dc9a875@mjolnir.drzeus.cx> <497B7CA3.3080802@overt.org>
-In-Reply-To: <497B7CA3.3080802@overt.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901242155.02113.rjw@sisk.pl>
+	Sat, 24 Jan 2009 16:35:58 -0500
+Received: from mail-out4.apple.com ([17.254.13.23]:63127 "EHLO
+	mail-out4.apple.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbZAXVf6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Jan 2009 16:35:58 -0500
+X-Greylist: delayed 604 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Jan 2009 16:35:58 EST
+X-AuditID: 11807130-a508abb000000fcd-6c-497b876113c1
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Message-Id: <F9975969-B497-4BBB-BAB9-A3112A12D1D0@apple.com>
+From: Mike Stump <mrs@apple.com>
+To: LLVM Developers Mailing List <llvmdev@cs.uiuc.edu>
+In-Reply-To: <497B648E.7020805@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [LLVMdev] inline asm semantics: output constraint width smaller than input
+Date: Sat, 24 Jan 2009 13:25:52 -0800
+References: <497A0500.3080706@gmail.com> <20090123181721.GA32545@elte.hu> <497A0C0A.7080207@gmail.com> <497B408C.20802@gmail.com> <20090124172758.GA31699@elte.hu> <497B648E.7020805@gmail.com>
+X-Mailer: Apple Mail (2.930.3)
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 24 January 2009, Philip Langdale wrote:
-> Pierre Ossman wrote:
-> > On Sun, 18 Jan 2009 14:11:20 -0500 (EST)
-> > philipl@overt.org wrote:
-> > 
-> >> If ricoh_mmc suspends before sdhci_pci, it will pull the card
-> >> out from under the controller, which could leave the system in
-> >> a very confused state.
-> >>
-> >> Using suspend_late/resume_early ensures that sdhci_pci suspends first
-> >> and resumes second.
-> >>
-> >> Signed-off-by: Philip Langdale <philipl@overt.org>
-> >> ---
-> > 
-> > What's the plan here? Apply for .29?
-> 
-> That's what I'd recommend - we are seeing reports of problems that
-> would be fixed by this.
-> 
-> eg: http://lkml.org/lkml/2009/1/21/241
+On Jan 24, 2009, at 10:57 AM, Török Edwin wrote:
+> With an unpatched LLVM I would also need weak attributes to be on the
+> function type, instead of the return type,
+> but I think thats an LLVM bug, and a one-line patch corrects it.
 
-Agreed.
-
-Thanks,
-Rafael
+This is indeed a bug in llvm.  We'll find a way to get it fixed.
