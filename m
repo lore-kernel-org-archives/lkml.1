@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbZAXUuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbZAXUkc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbZAXUuf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 15:50:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbZAXUu0
+	id S1757506AbZAXUkc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 15:40:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755567AbZAXUkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 15:50:26 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:60186 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755428AbZAXUuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 15:50:25 -0500
-X-Greylist: delayed 654 seconds by postgrey-1.27 at vger.kernel.org; Sat, 24 Jan 2009 15:50:24 EST
-Message-ID: <497B7C7F.80104@msgid.tls.msk.ru>
-Date: Sat, 24 Jan 2009 23:39:27 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sat, 24 Jan 2009 15:40:23 -0500
+Received: from usul.saidi.cx ([204.11.33.34]:46158 "EHLO usul.overt.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755563AbZAXUkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 24 Jan 2009 15:40:22 -0500
+Message-ID: <497B7CA3.3080802@overt.org>
+Date: Sat, 24 Jan 2009 12:40:03 -0800
+From: Philip Langdale <philipl@overt.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-To: linux-serial@vger.kernel.org, Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [trivial patch] fix missing space in printk drivers/serial/8250.c
-Content-Type: multipart/mixed;
- boundary="------------030304000202010000080403"
+To: Pierre Ossman <drzeus@drzeus.cx>
+CC: rjw@sisk.pl, linux kernel <linux-kernel@vger.kernel.org>,
+       sdhci-devel@list.drzeus.cx
+Subject: Re: [PATCH] ricoh_mmc: Use suspend_late/resume_early
+References: <39393.98.210.152.237.1232305880.squirrel@overt.org> <20090124185723.7dc9a875@mjolnir.drzeus.cx>
+In-Reply-To: <20090124185723.7dc9a875@mjolnir.drzeus.cx>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-RunX1: Yes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------030304000202010000080403
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+Pierre Ossman wrote:
+> On Sun, 18 Jan 2009 14:11:20 -0500 (EST)
+> philipl@overt.org wrote:
+> 
+>> If ricoh_mmc suspends before sdhci_pci, it will pull the card
+>> out from under the controller, which could leave the system in
+>> a very confused state.
+>>
+>> Using suspend_late/resume_early ensures that sdhci_pci suspends first
+>> and resumes second.
+>>
+>> Signed-off-by: Philip Langdale <philipl@overt.org>
+>> ---
+> 
+> What's the plan here? Apply for .29?
 
-Again, I don't know where to push this trivia thing.
-8250 marked as Orphan in MAINTAINERS, so I'm sending
-to linux-serial@ AND to linux-kernel@
+That's what I'd recommend - we are seeing reports of problems that
+would be fixed by this.
 
-Because.. when I see such mess in dmesg, it annoys me ;)
+eg: http://lkml.org/lkml/2009/1/21/241
 
- Serial: 8250/16550 driver10 ports, IRQ sharing enabled
-
-Signed-Off-By: Michael Tokarev <mjt@tls.msk.ru>
-
-Thanks!
-
-/mjt
-
---------------030304000202010000080403
-Content-Type: text/x-patch;
- name="8250-space.diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="8250-space.diff"
-
---- linux-2.6.28/drivers/serial/8250.c.orig	2008-12-25 02:26:37.000000000 +0300
-+++ linux-2.6.28/drivers/serial/8250.c	2009-01-24 23:34:32.891807709 +0300
-@@ -3020,3 +3020,3 @@ static int __init serial8250_init(void)
- 
--	printk(KERN_INFO "Serial: 8250/16550 driver"
-+	printk(KERN_INFO "Serial: 8250/16550 driver "
- 		"%d ports, IRQ sharing %sabled\n", nr_uarts,
-
---------------030304000202010000080403--
+--phil
