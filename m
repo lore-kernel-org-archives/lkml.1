@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756053AbZAXIQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756827AbZAXIXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756053AbZAXIQU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 03:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750868AbZAXIQF
+	id S1756827AbZAXIXH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 03:23:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751029AbZAXIWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 03:16:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51968 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750989AbZAXIQE (ORCPT
+	Sat, 24 Jan 2009 03:22:55 -0500
+Received: from smtp02.citrix.com ([66.165.176.63]:57297 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbZAXIWy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 03:16:04 -0500
-Date: Sat, 24 Jan 2009 00:15:37 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mike Travis <travis@sgi.com>
-Cc: Ingo Molnar <mingo@redhat.com>, Dave Jones <davej@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090124001537.7cfde78e.akpm@linux-foundation.org>
-In-Reply-To: <20090116191108.533053000@polaris-admin.engr.sgi.com>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<20090116191108.533053000@polaris-admin.engr.sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 24 Jan 2009 03:22:54 -0500
+X-IronPort-AV: E=Sophos;i="4.37,317,1231131600"; 
+   d="scan'208";a="37026804"
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Subject: [PATCH] xen: unitialised return value in xenbus_write_transaction
+X-Mercurial-Node: 03f51a1eb4a7e77d6488bc661bc47a020243b4f9
+Message-Id: <03f51a1eb4a7e77d6488.1232785367@localhost.localdomain>
+Date: Sat, 24 Jan 2009 08:22:47 +0000
+From: Ian Campbell <ian.campbell@citrix.com>
+To: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+Cc: Adam Wendt <thelsdj@gmail.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Ingo Molnar <mingo@elte.hu>
+X-OriginalArrivalTime: 24 Jan 2009 08:22:53.0408 (UTC) FILETIME=[F3E82E00:01C97DFC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Jan 2009 11:11:10 -0800 Mike Travis <travis@sgi.com> wrote:
+The return value of xenbus_write_transaction can be uninitialised in
+the success case leading to the userspace xenstore utilities failing.
 
-> From: Rusty Russell <rusty@rustcorp.com.au>
-> 
-> Impact: remove potential clashes with generic kevent workqueue
-> 
-> Annoyingly, some places we want to use work_on_cpu are already in
-> workqueues.  As per Ingo's suggestion, we create a different workqueue
-> for work_on_cpu.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Signed-off-by: Mike Travis <travis@sgi.com>
-> ---
->  kernel/workqueue.c |    8 +++++++-
->  1 file changed, 7 insertions(+), 1 deletion(-)
-> 
-> --- linux-2.6-for-ingo.orig/kernel/workqueue.c
-> +++ linux-2.6-for-ingo/kernel/workqueue.c
-> @@ -971,6 +971,8 @@ undo:
->  }
->  
->  #ifdef CONFIG_SMP
-> +static struct workqueue_struct *work_on_cpu_wq __read_mostly;
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Adam Wendt <thelsdj@gmail.com>
+Cc: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Ingo Molnar <mingo@elte.hu>
 
-Pity the poor reader who comes along trying to work out why this exists.
+---
+ drivers/xen/xenfs/xenbus.c |   11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
->  struct work_for_cpu {
->  	struct work_struct work;
->  	long (*fn)(void *);
-> @@ -1001,7 +1003,7 @@ long work_on_cpu(unsigned int cpu, long 
->  	INIT_WORK(&wfc.work, do_work_for_cpu);
->  	wfc.fn = fn;
->  	wfc.arg = arg;
-> -	schedule_work_on(cpu, &wfc.work);
-> +	queue_work_on(cpu, work_on_cpu_wq, &wfc.work);
->  	flush_work(&wfc.work);
->  
->  	return wfc.ret;
-> @@ -1019,4 +1021,8 @@ void __init init_workqueues(void)
->  	hotcpu_notifier(workqueue_cpu_callback, 0);
->  	keventd_wq = create_workqueue("events");
->  	BUG_ON(!keventd_wq);
-> +#ifdef CONFIG_SMP
-> +	work_on_cpu_wq = create_workqueue("work_on_cpu");
-> +	BUG_ON(!work_on_cpu_wq);
-> +#endif
-
-Yet another kernel thread for each CPU.  All because of some dung way
-down in arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c.
-
-Is there no other way?
+diff -r 7c66d3ac6805 -r 03f51a1eb4a7 drivers/xen/xenfs/xenbus.c
+--- a/drivers/xen/xenfs/xenbus.c	Fri Jan 23 16:42:41 2009 +0000
++++ b/drivers/xen/xenfs/xenbus.c	Fri Jan 23 16:42:41 2009 +0000
+@@ -291,7 +291,7 @@
+ static int xenbus_write_transaction(unsigned msg_type,
+ 				    struct xenbus_file_priv *u)
+ {
+-	int rc, ret;
++	int rc;
+ 	void *reply;
+ 	struct xenbus_transaction_holder *trans = NULL;
+ 	LIST_HEAD(staging_q);
+@@ -326,15 +326,14 @@
+ 	}
+ 
+ 	mutex_lock(&u->reply_mutex);
+-	ret = queue_reply(&staging_q, &u->u.msg, sizeof(u->u.msg));
+-	if (!ret)
+-		ret = queue_reply(&staging_q, reply, u->u.msg.len);
+-	if (!ret) {
++	rc = queue_reply(&staging_q, &u->u.msg, sizeof(u->u.msg));
++	if (!rc)
++		rc = queue_reply(&staging_q, reply, u->u.msg.len);
++	if (!rc) {
+ 		list_splice_tail(&staging_q, &u->read_buffers);
+ 		wake_up(&u->read_waitq);
+ 	} else {
+ 		queue_cleanup(&staging_q);
+-		rc = ret;
+ 	}
+ 	mutex_unlock(&u->reply_mutex);
+ 
