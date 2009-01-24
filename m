@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756987AbZAXPdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbZAXPo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756987AbZAXPdT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 24 Jan 2009 10:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZAXPdA
+	id S1757253AbZAXPo3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 24 Jan 2009 10:44:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750970AbZAXPoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 24 Jan 2009 10:33:00 -0500
-Received: from khc.piap.pl ([195.187.100.11]:45287 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750859AbZAXPc7 convert rfc822-to-8bit (ORCPT
+	Sat, 24 Jan 2009 10:44:19 -0500
+Received: from mu-out-0910.google.com ([209.85.134.187]:5703 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789AbZAXPoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 24 Jan 2009 10:32:59 -0500
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: David Miller <davem@davemloft.net>, shemminger@vyatta.com,
-       sam@ravnborg.org, jaswinderlinux@gmail.com, arnd@arndb.de,
-       mingo@elte.hu, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: why usr/include/linux/if_frad.h is required
-References: <20090121053310.GA26395@uranus.ravnborg.org>
-	<20090120.221504.264090722.davem@davemloft.net>
-	<20090121173838.3390e5c9@s6510>
-	<20090121.153712.84781438.davem@davemloft.net>
-	<1232803533.17900.4.camel@localhost.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 24 Jan 2009 16:32:55 +0100
-In-Reply-To: <1232803533.17900.4.camel@localhost.localdomain> (Jaswinder Singh Rajput's message of "Sat\, 24 Jan 2009 18\:55\:33 +0530")
-Message-ID: <m3ljt0pvmg.fsf@intrepid.localdomain>
+	Sat, 24 Jan 2009 10:44:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=v6ufnA92DXH4vFSS93XOo/mNSgnkuJ9Rj7bUA7iis3uybMlkvKB1qGeE7WzCEjq0/L
+         WRlYBbN5/T8wpnVhX7fIBrBQn+Y9EabA1WwXjYFeREVrIXKoXL3tlGGLze0Wt3a7fWGW
+         xkZXrItCTCaE6sHBjVS5dyRcNNz4msIGHyEl4=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [PATCH] icside: use struct ide_port_info also for PCB version 5
+Date: Sat, 24 Jan 2009 16:44:16 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-next-20090123; KDE/4.1.3; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200901241514.23036.bzolnier@gmail.com> <20090124145051.GA26833@flint.arm.linux.org.uk>
+In-Reply-To: <20090124145051.GA26833@flint.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200901241644.16601.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+On Saturday 24 January 2009, Russell King wrote:
+> On Sat, Jan 24, 2009 at 03:14:22PM +0100, Bartlomiej Zolnierkiewicz wrote:
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] icside: use struct ide_port_info also for PCB version 5
+> > 
+> > This fixes hwif->channel and drive->dn assignments.
+> 
+> I really don't care about this driver anymore - people should
+> be using the PATA version instead.
 
-> After killing CONFIG_DLCI and CONFIG_DLCI_MODULE, it is also killing the
-> kernel:
->
->   CC      net/socket.o
-> In file included from net/socket.c:75:
-> include/linux/if_frad.h:170: error: ‘CONFIG_DLCI_MAX’ undeclared here (not in a function)
+I really don't see major technical arguments for using libata version
+(especially after 2.6.29 IDE changes) but it's your call so if you want
+icside removed just send me a patch and I'll apply it (given that there
+are no complaints from users).
 
-Perhaps this would do (untested).
-Signed-off-by: Krzysztof Hałasa <khc@pm.waw.pl>
+[ No strong feelings here as it will allow me to better use my time
+  and concentrate on working on code that people care about. ]
 
-diff --git a/include/linux/if_frad.h b/include/linux/if_frad.h
-index 5c34240..60e16a5 100644
---- a/include/linux/if_frad.h
-+++ b/include/linux/if_frad.h
-@@ -26,8 +26,6 @@
- 
- #include <linux/if.h>
- 
--#if defined(CONFIG_DLCI) || defined(CONFIG_DLCI_MODULE)
--
- /* Structures and constants associated with the DLCI device driver */
- 
- struct dlci_add
-@@ -127,6 +125,8 @@ struct frad_conf
- 
- #ifdef __KERNEL__
- 
-+#if defined(CONFIG_DLCI) || defined(CONFIG_DLCI_MODULE)
-+
- /* these are the fields of an RFC 1490 header */
- struct frhdr
- {
-@@ -190,12 +190,10 @@ struct frad_local
-    int               buffer;		/* current buffer for S508 firmware */
- };
- 
--#endif /* __KERNEL__ */
--
- #endif /* CONFIG_DLCI || CONFIG_DLCI_MODULE */
- 
--#ifdef __KERNEL__
- extern void dlci_ioctl_set(int (*hook)(unsigned int, void __user *));
--#endif
-+
-+#endif /* __KERNEL__ */
- 
- #endif
+> Nevertheless, this patch looks broken.
+> 
+> > @@ -534,7 +538,7 @@ icside_register_v6(struct icside_state *
+>                       ^^^^^^^^^^^^^^^^^^ v6 function
+> 
+> >  		d.dma_ops = NULL;
+> >  	}
+> >  
+> > -	ret = ide_host_register(host, NULL, hws);
+> > +	ret = ide_host_register(host, &icside_v5_port_info, hws);
+>                                       ^^^^^^^^^^^^^^^^^^^^^ v5 info
+
+Grrr.. and the other icside patch has v5->v6 mismatch.
+
+Thanks for noticing.  I'll post corrected patches in few minutes.
