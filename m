@@ -1,110 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757412AbZAXA20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbZAXAjT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757412AbZAXA20 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 19:28:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbZAXA2M
+	id S1755567AbZAXAjT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 19:39:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753143AbZAXAjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 19:28:12 -0500
-Received: from aun.it.uu.se ([130.238.12.36]:38916 "EHLO aun.it.uu.se"
+	Fri, 23 Jan 2009 19:39:08 -0500
+Received: from wine.ocn.ne.jp ([122.1.235.145]:59722 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752158AbZAXA2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 19:28:11 -0500
-MIME-Version: 1.0
+	id S1752797AbZAXAjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 23 Jan 2009 19:39:07 -0500
+To: frederik.deweerdt@xprog.eu, rjw@sisk.pl
+Cc: linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+Subject: Re: [Bug #12409] NULL pointer dereference at get_stats()
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera>
+	<cX2gZ6Cy9nC.A.N0B.pJRdJB@chimera>
+	<20090121161828.GA2739@gambetta>
+In-Reply-To: <20090121161828.GA2739@gambetta>
+Message-Id: <200901240939.EFD95330.VLFOStQHOFFMOJ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.50 PL2]
+X-Accept-Language: ja,en
+Date: Sat, 24 Jan 2009 09:39:03 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18810.24721.900344.239817@harpo.it.uu.se>
-Date: Sat, 24 Jan 2009 01:28:01 +0100
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Larry Finger <Larry.Finger@lwfinger.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org
-Subject: Re: v2.6.29-rc2 gets HSM violations for CD drive
-In-Reply-To: <497A5836.2070904@lwfinger.net>
-References: <497A5836.2070904@lwfinger.net>
-X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger writes:
- > Sometime since v2.6.28, one of my systems started getting libata
- > errors for my CD drive.
- > 
- > I have started bisecting this problem, but that system is very slow so
- > it will likely take a while.
- > 
- > The ide/ata parts of the dmesg output:
- > 
- > =============================
- > 
- > SCSI subsystem initialized
- > libata version 3.00 loaded.
- > pata_ali 0000:00:0f.0: can't derive routing for PCI INT A
- > pata_ali 0000:00:0f.0: setting latency timer to 64
- > scsi0 : pata_ali
- > scsi1 : pata_ali
- > ata1: PATA max MWDMA2 cmd 0x1f0 ctl 0x3f6 bmdma 0xfc90 irq 14
- > ata2: PATA max MWDMA2 cmd 0x170 ctl 0x376 bmdma 0xfc98 irq 15
- > ata1.00: ATA-6: HTS541010G9AT00, MBZOA60A, max UDMA/100
- > ata1.00: 195371568 sectors, multi 16: LBA48
- > ata1.00: configured for MWDMA2
- > scsi 0:0:0:0: Direct-Access     ATA      HTS541010G9AT00  MBZO PQ: 0
- > ANSI: 5
- > ata2.00: ATAPI: SR242S, z03, max MWDMA2
- > ata2.00: WARNING: ATAPI DMA disabled for reliablity issues.  It can be
- > enabled
- > ata2.00: WARNING: via pata_ali.atapi_dma modparam or corresponding
- > sysfs node.
- > ata2.00: configured for PIO4
- > scsi 1:0:0:0: CD-ROM            MITSUMI  CD-ROM SR242S !A z03  PQ: 0
- > ANSI: 5
- > Uniform Multi-Platform E-IDE driver
- > BIOS EDD facility v0.16 2004-Jun-25, 1 devices found
- > udevd version 128 started
- > ACPI: EC: missing confirmations, switch off interrupt mode.
- > Driver 'sd' needs updating - please use bus_type methods
- > sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors: (100 GB/93.1 GiB)
- > sd 0:0:0:0: [sda] Write Protect is off
- > sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
- > sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
- > support DPO or FUA
- > sd 0:0:0:0: [sda] 195371568 512-byte hardware sectors: (100 GB/93.1 GiB)
- > sd 0:0:0:0: [sda] Write Protect is off
- > sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
- > sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't
- > support DPO or FUA
- >  sda1 sda2 sda3 sda4
- > sd 0:0:0:0: [sda] Attached SCSI disk
- > ACPI: PCI Interrupt Link [LNK5] enabled at IRQ 9
- > PCI: setting IRQ 9 as level-triggered
- > kjournald starting.  Commit interval 5 seconds
- > EXT3 FS on sda3, internal journal
- > EXT3-fs: mounted filesystem with ordered data mode.
- > EXT3 (no)acl options not supported
- > EXT3 (no)user_xattr options not supported
- > udevd version 128 started
- > pci_hotplug: PCI Hot Plug PCI Core version: 0.5
- > sd 0:0:0:0: Attached scsi generic sg0 type 0
- > scsi 1:0:0:0: Attached scsi generic sg1 type 5
- > shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
- > Driver 'sr' needs updating - please use bus_type methods
- > ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
- > ata2.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
- >          cdb 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
- >          res 51/20:03:00:00:00/00:00:00:00:00/a0 Emask 0x3 (HSM violation)
- > ata2.00: status: { DRDY ERR }
- > ata2: soft resetting link
- > ata2.00: configured for PIO4
- > ata2: EH complete
- > sr0: scsi3-mmc drive: 24x/24x cd/rw xa/form2 cdda tray
- > Uniform CD-ROM driver Revision: 3.20
- > sr 1:0:0:0: Attached scsi CD-ROM sr0
- > ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
- > ata2.00: cmd a0/00:00:00:00:00/00:00:00:00:00/a0 tag 0
- >          cdb 00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00
- >          res 51/20:03:00:00:00/00:00:00:00:00/a0 Emask 0x3 (HSM violation)
- > ata2.00: status: { DRDY ERR }
- > ata2: soft resetting link
+Hello.
 
-pata_ali is one of the drivers that got converted to doing 32-bit PIO.
-Please try this <http://marc.info/?l=linux-kernel&m=123254501314058&w=2>
-patch. It's known to fix similar problems seen with ata_piix.
+Frederik Deweerdt wrote:
+> On Mon, Jan 19, 2009 at 10:45:43PM +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of regressions introduced between 2.6.27 and 2.6.28.
+> > 
+> > The following bug entry is on the current list of known regressions
+> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> > be listed and let me know (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12409
+> > Subject		: NULL pointer dereference at get_stats()
+> > Submitter	: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+> > Date		: 2008-12-30 12:53 (21 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123064167008695&w=4
+> > Handled-By	: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+> > 
+> > 
+> Hello Rafael,
+> 
+> Not sure what the status should be for that one, it sure seems vmware
+> related, and I don't have one handy.
+> 
+> Regards,
+> Frederik
+> 
+The latest post regarding this problem starts at http://lkml.org/lkml/2009/1/4/349 .
+It's not a VMware related problem.
+
+A patch at http://lkml.org/lkml/2009/1/5/557 reported that "nolapic" option
+doesn't prevent for_each_possible_cpu() from reaching CPU1, and per-CPU pointer
+for CPU1 is NULL.
+
+
+
+--- First call of for_each_possible_cpu() ---
+Entering get_stats()
+CPU=0
+Leaving get_stats()
+
+--- Second call of for_each_possible_cpu() ---
+Entering get_stats()
+CPU=0
+CPU=1
+lb_stats == NULL for CPU 1
+Leaving get_stats()
+
+
+
+Regards.
