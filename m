@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbZAXDud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbZAXEk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757289AbZAXDud (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 23 Jan 2009 22:50:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752384AbZAXDuY
+	id S1757444AbZAXEk0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 23 Jan 2009 23:40:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZAXEkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 23 Jan 2009 22:50:24 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:52245 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752262AbZAXDuX (ORCPT
+	Fri, 23 Jan 2009 23:40:11 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46634 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754485AbZAXEkK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 23 Jan 2009 22:50:23 -0500
-Date: Sat, 24 Jan 2009 14:50:07 +1100
-From: Bron Gondwana <brong@fastmail.fm>
-To: Greg KH <gregkh@suse.de>
-Cc: Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
-Subject: Re: [patch 016/104] epoll: introduce resource usage limits
-Message-ID: <20090124035006.GA8051@brong.net>
-References: <20081203193901.715896543@mini.kroah.org> <20081203194849.GQ8950@kroah.com> <1232686261.9977.1296303473@webmail.messagingengine.com> <20090123051620.GA8122@suse.de> <1232704065.25510.1296328851@webmail.messagingengine.com> <20090123170631.GB11566@suse.de>
+	Fri, 23 Jan 2009 23:40:10 -0500
+Message-ID: <497A9B93.2050703@zytor.com>
+Date: Fri, 23 Jan 2009 20:39:47 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090123170631.GB11566@suse.de>
-Organization: brong.net
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC v2 -tip 0/3] x86: reduce fixup of uaccess
+References: <4962CAAE.6090300@ct.jp.nec.com> <496476D0.5040607@zytor.com> <497A5737.8030408@ct.jp.nec.com>
+In-Reply-To: <497A5737.8030408@ct.jp.nec.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 09:06:31AM -0800, Greg KH wrote:
-> On Fri, Jan 23, 2009 at 08:47:45PM +1100, Bron Gondwana wrote:
-> > On Thu, 22 Jan 2009 21:16 -0800, "Greg KH" <gregkh@suse.de> wrote:
-> > > 
-> > > I would suggest just changing this default value then, it's a simple
-> > > userspace configuration item, and for your boxes, it sounds like a
-> > > larger value would be more suitable.
-
-If everyone, or every distribution at least, has to change it then the
-default is probably wrong.  The error message in the postfix logs didn't
-immediately point me at the issue, especially since I tried debugging on
-one of our "production" mxes, only to discover that the epoll limit
-didn't exist there.  They're slightly behind in kernel versions.
-
-> > I guess Postfix is a bit of an odd case here.   It runs lots of 
-> > processes, yet uses epoll within many of them as well - sort of 
-> > a historical design in some ways, but also to enforce maximum 
-> > privilege separation with many of the daemons able to
-> > be run under chroot with limited capabilities.
-> > 
-> > So I guess I have a few questions left:
-> > 
-> > 1) is this value ever supposed to be hit in practice by 
-> >    non-malicious software? If not, it appears 128 is too low.
+Hiroshi Shimamoto wrote:
+> This patch series redues fixup code for exceptions of uaccess in signal.
 > 
-> It does appear a bit low.  What looks to you like a good value to use as
-> a default?
-
-This thread suggests that it's not just postfix having the issue, and
-offers 1024 as a saner default:
-
-http://www.mail-archive.com/fedora-kernel-list@redhat.com/msg01618.html
-
-There's also a Russian thread that pointed me at this patch in the first
-place, and another place that suggested 1024 as well.  Seems "the
-cloud"[tm] is converging on 1024.
- 
-> > 2) if we're going to stick with 128, is there any way to query 
-> >    the kernel as to how close to the limit it's getting?  As an 
-> >    example, our system checks poll /proc/sys/fs/file-max every
-> >    2 minutes, and warn us if its getting "full".
+> There is a lot of fixup code which is generated by using __{get|put}_user.
+> I think that code can be reduced. The concept is that to add uaccess_err in
+> thread_info and set it to -EFAULT on exception, finally check this value on
+> the last of function.
 > 
-> Good idea, we should report this somewhere for the very reasons you
-> suggest.  Can you write up a patch to do this?  If not, I'll see what I
-> can do.
+> The code size reductions are below;
+> $ size *signal*.o.*
+>    text	   data	    bss	    dec	    hex	filename
+>    4596	      0	      0	   4596	   11f4	ia32_signal.o.new
+>    6006	      0	      0	   6006	   1776	ia32_signal.o.old
+>    3583	      0	      0	   3583	    dff	signal.o.new
+>    4540	      0	      0	   4540	   11bc	signal.o.old
+>    3863	      0	      0	   3863	    f17	signal32.o.new
+>    4876	      0	      0	   4876	   130c	signal32.o.old
+> [ signal32.o means signal.o on 32-bit. ]
+> 
 
-I'll have a look at it.  There are two main choices I think - either one
-file with just the "max", or some data view that shows all the users'
-counts.  It looks like it will have to enumerate the user list anyway.
-(I've been poking around in kernel/user.c.  Looks like a
-hlist_for_each_entry on uidhash_table will do the trick.  I'm guessing
-we only want to display the value for the current user_ns anyway.  I
-don't really understand the user namespacing stuff, since I've never
-used it)
+Applied to tip:x86/uaccess.  I haven't tested it much yet, but at least
+a visual lookover looks good.
 
-Most of all I'm interested in this because if it's a good way to
-actually have some viable statistics on what the default vaule 
-should be.
+Thanks!
 
-Bron ( still learning my way around the kernel - I've only written one
-       patch before, and it had a lot of babysitting from Linus! )
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
