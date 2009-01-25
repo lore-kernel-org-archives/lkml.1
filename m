@@ -1,74 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbZAYNXg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbZAYNpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757384AbZAYNXg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 08:23:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755099AbZAYNX1
+	id S1756594AbZAYNpm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 08:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZAYNpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 08:23:27 -0500
-Received: from lucidpixels.com ([75.144.35.66]:33693 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754721AbZAYNX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 08:23:26 -0500
-Date: Sun, 25 Jan 2009 08:23:25 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: linux-kernel@vger.kernel.org
-cc: linux-ide@vger.kernel.org
-Subject: Re: 2.6.28: Moved to SATA driver (w/PATA support), kernel OOPS at
- boot
-In-Reply-To: <alpine.DEB.1.10.0901250741300.11258@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0901250822320.15602@p34.internal.lan>
-References: <alpine.DEB.1.10.0901250741300.11258@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Sun, 25 Jan 2009 08:45:30 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:54309 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753100AbZAYNpa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 08:45:30 -0500
+Date: Sun, 25 Jan 2009 14:47:12 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Satish Eerpini <eerpini@gmail.com>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: building custom module on 2.6.28 fails
+Message-ID: <20090125134712.GA29757@uranus.ravnborg.org>
+References: <93655eb70901242057n7e0e3757p467f91352cbae932@mail.gmail.com> <1232866165.3195.1.camel@localhost.localdomain> <93655eb70901250037k79286904oc859118946155766@mail.gmail.com> <1232879436.4303.40.camel@localhost.localdomain> <1232880058.4303.46.camel@localhost.localdomain> <93655eb70901250319m334665bew9b5f6738ba6282a7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <93655eb70901250319m334665bew9b5f6738ba6282a7@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Jan 25, 2009 at 04:49:16PM +0530, Satish Eerpini wrote:
+> >> It seems you run "make clean" or "make distclean" in your kernel sources
+> >>
+> >> run "make prepare" in your kernel sources then you will not get this
+> >> error.
+> >
+> 
+> I ran make clean and then make prepare but it gives an error saying
+> "no such file or directory : modpost ", ....
+> Then i ran make( in the kernel source tree) , and terminated it after
+> a few files were compiled and then again tried to compile my module,
+> this time it worked without any errors, ....... any particular reason
+> for this ??
+We are currently lacking a dependency on "scripts" so doing:
+make scripts
+make prepare
+is needed today.
 
-
-On Sun, 25 Jan 2009, Justin Piszcz wrote:
-
-> Switched from the old IDE interface (disabled it) to SATA only in the kernel:
->
-> [    1.788921] irq 11: nobody cared (try booting with the "irqpoll" option)
-> [    1.788978] Pid: 0, comm: swapper Not tainted 2.6.28 #4
-> [    1.789031] Call Trace:
-> [    1.789085]  [<c0134153>] __report_bad_irq+0x24/0x81
-> [    1.789138]  [<c01342df>] note_interrupt+0x12f/0x170
-> [    1.789191]  [<c01338dc>] handle_IRQ_event+0x25/0x4a
-> [    1.789244]  [<c01348c4>] handle_level_irq+0x7a/0x90
-> [    1.789299]  [<c0104e07>] do_IRQ+0x6f/0x88
-> [    1.789352]  [<c012c1c4>] getnstimeofday+0x3b/0xd1
-> [    1.789407]  [<c010f150>] smp_apic_timer_interrupt+0x41/0x71
-> [    1.789461]  [<c0103973>] common_interrupt+0x23/0x28
-> [    1.789515]  [<c011c9bf>] __do_softirq+0x2d/0xea
-> [    1.789535]  [<c011caa2>] do_softirq+0x26/0x2e
-> [    1.789535]  [<c010f150>] smp_apic_timer_interrupt+0x41/0x71
-> [    1.789535]  [<c01039a0>] apic_timer_interrupt+0x28/0x30
-> [    1.789535]  [<c0108362>] default_idle+0x36/0x42
-> [    1.789535]  [<c0101f7c>] cpu_idle+0x4b/0x5f
-> [    1.789535]  [<c0586925>] start_kernel+0x221/0x261
-> [    1.789535]  [<c05864d3>] unknown_bootoption+0x0/0x1e3
-> [    1.789535] handlers:
-> [    1.789535] [<c039e087>] (ata_sff_interrupt+0x0/0x242)
-> [    1.789535] Disabling IRQ #11
->
-> Full dmesg:
-> http://home.comcast.net/~jpiszcz/20090125/dmesg20090125.txt
->
-> Kernel config:
-> http://home.comcast.net/~jpiszcz/20090125/2.6.28-config.txt
->
-> This never happened with the old IDE layer.
->
-> Justin.
->
->
-
-Disregard, this was because of a root=UUID option and another root= option 
-(via LILO cmdline) to get the machine to boot.
-
-Seems to be OK now.
-
-Justin.
+	Sam
