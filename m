@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbZAYOY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbZAYO2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756919AbZAYOY7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 09:24:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZAYOYt
+	id S1757104AbZAYO2e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 09:28:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbZAYO2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 09:24:49 -0500
-Received: from out3.smtp.messagingengine.com ([66.111.4.27]:44382 "EHLO
-	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753928AbZAYOYs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 09:24:48 -0500
-X-Greylist: delayed 1020 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Jan 2009 09:24:48 EST
-X-Sasl-enc: UoxG0hBmgLElBGGAMiE8IG1iGZ3DJzpzFtAbJnbgc4Xh 1232892467
-Date: Sun, 25 Jan 2009 12:07:45 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jon Masters <jcm@redhat.com>, Lee Revell <rlrevell@joe-job.com>,
-       linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       williams <williams@redhat.com>,
-       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>
-Subject: Re: [RT] [RFC] simple SMI detector
-Message-ID: <20090125140745.GC12776@khazad-dum.debian.net>
-References: <1232751312.3990.59.camel@perihelion.bos.jonmasters.org> <75b66ecd0901231833j2fda4554sb0f47457ab838566@mail.gmail.com> <alpine.LFD.2.00.0901241716540.3424@localhost.localdomain> <1232845026.3990.71.camel@perihelion.bos.jonmasters.org> <alpine.LFD.2.00.0901251032060.3424@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901251032060.3424@localhost.localdomain>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 25 Jan 2009 09:28:24 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41479 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750919AbZAYO2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 09:28:24 -0500
+Subject: Re: building custom module on 2.6.28 fails
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Satish Eerpini <eerpini@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090125134712.GA29757@uranus.ravnborg.org>
+References: <93655eb70901242057n7e0e3757p467f91352cbae932@mail.gmail.com>
+	 <1232866165.3195.1.camel@localhost.localdomain>
+	 <93655eb70901250037k79286904oc859118946155766@mail.gmail.com>
+	 <1232879436.4303.40.camel@localhost.localdomain>
+	 <1232880058.4303.46.camel@localhost.localdomain>
+	 <93655eb70901250319m334665bew9b5f6738ba6282a7@mail.gmail.com>
+	 <20090125134712.GA29757@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Sun, 25 Jan 2009 19:57:37 +0530
+Message-Id: <1232893657.10647.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Jan 2009, Thomas Gleixner wrote:
-> On Sat, 24 Jan 2009, Jon Masters wrote:
-> > > The only reasonable thing you can do on a SMI plagued system is to
-> > > identify the device which makes use of SMIs. Legacy ISA devices and
-> > > USB are usually good candidates. If that does not help, don't use it
-> > > for real-time :)
+On Sun, 2009-01-25 at 14:47 +0100, Sam Ravnborg wrote:
+> On Sun, Jan 25, 2009 at 04:49:16PM +0530, Satish Eerpini wrote:
+> > >> It seems you run "make clean" or "make distclean" in your kernel sources
+> > >>
+> > >> run "make prepare" in your kernel sources then you will not get this
+> > >> error.
+> > >
 > > 
-> > Indeed. This is why I wrote an smi_detector that sits in kernel space
-> > and can be reasonably sure measured discrepancies are attributable to
-> > SMI behavior. We want to log and detect such things before RT systems
-> > are deployed, not have users actively trying to work around SMI overhead
-> > after the fact.
-> 
-> Agreed. A tool to detect SMI disturbance is a good thing. It just
-> needs to be documented that users should take the results and talk to
-> their board vendor. I know that off the shelf hardware will not be
-> fixed, but industrial grade hardware vendors usually have an interest
-> to get such problems resolved.
+> > I ran make clean and then make prepare but it gives an error saying
+> > "no such file or directory : modpost ", ....
+> > Then i ran make( in the kernel source tree) , and terminated it after
+> > a few files were compiled and then again tried to compile my module,
+> > this time it worked without any errors, ....... any particular reason
+> > for this ??
+> We are currently lacking a dependency on "scripts" so doing:
+> make scripts
+> make prepare
+> is needed today.
 
-"gamer enthusiast" hardware might also get fixed.  You just need two or
-three posts to the "enthusiasts" forums about how SMI steals CPU cycles and
-slow down their framerates, and suddenly, benchmarks will start going on and
-on about how MoBo x has a high number of SMIs per minute, where MoBo y
-doesn't...
+As per makefile:
+# make clean     Delete most generated files
+#                Leave enough to build external modules
 
-The people who want low-latency desktops for audio work will also pay
-attention to such benchmarks and will vote with their wallet.
+So is this OK to delete include/linux/bounds.h by 'make clean'.
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+--
+JSR
+
