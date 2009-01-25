@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbZAYUST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751328AbZAYUSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752099AbZAYUST (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 15:18:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZAYUSL
+	id S1751328AbZAYUSg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 15:18:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZAYUSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 15:18:11 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:55446 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751133AbZAYUSK (ORCPT
+	Sun, 25 Jan 2009 15:18:23 -0500
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:22643 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752275AbZAYUSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 15:18:10 -0500
-Date: Sun, 25 Jan 2009 20:18:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Charles Landau <clandau@macslab.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Gateway DX4720-03 apic problem
-Message-ID: <20090125201825.0fbf1008@lxorguk.ukuu.org.uk>
-In-Reply-To: <497CBF12.10202@macslab.com>
-References: <497CBF12.10202@macslab.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 25 Jan 2009 15:18:22 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=C_IRinGWAAAA:8 a=5tqN9SLydy8itXzP9XUA:9 a=L2spvCWNNfRLAHbRUvqZMkYWrtcA:4 a=sGSJZ_U8SvAA:10 a=WDNqrCiJp4gA:10
+Message-ID: <497CC90B.1010605@shaw.ca>
+Date: Sun, 25 Jan 2009 14:18:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+Newsgroups: gmane.linux.kernel
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.28: Moved to SATA driver (w/PATA support), kernel OOPS at
+ boot
+References: <alpine.DEB.1.10.0901250741300.11258__18268.0605132648$1232890652$gmane$org@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0901250741300.11258__18268.0605132648$1232890652$gmane$org@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Jan 2009 11:35:46 -0800
-Charles Landau <clandau@macslab.com> wrote:
-
-> I have a new Gateway DX4720-03 PC and have discovered that it won't 
-> install Fedora 10 unless I give the kernel boot option "noapic" or 
-> "nolapic".
+Justin Piszcz wrote:
+> Switched from the old IDE interface (disabled it) to SATA only in the 
+> kernel:
 > 
-> This system's processor is the Intel Pentium Dual Core E5200.
+> [    1.788921] irq 11: nobody cared (try booting with the "irqpoll" option)
+> [    1.788978] Pid: 0, comm: swapper Not tainted 2.6.28 #4
+> [    1.789031] Call Trace:
+> [    1.789085]  [<c0134153>] __report_bad_irq+0x24/0x81
+> [    1.789138]  [<c01342df>] note_interrupt+0x12f/0x170
+> [    1.789191]  [<c01338dc>] handle_IRQ_event+0x25/0x4a
+> [    1.789244]  [<c01348c4>] handle_level_irq+0x7a/0x90
+> [    1.789299]  [<c0104e07>] do_IRQ+0x6f/0x88
+> [    1.789352]  [<c012c1c4>] getnstimeofday+0x3b/0xd1
+> [    1.789407]  [<c010f150>] smp_apic_timer_interrupt+0x41/0x71
+> [    1.789461]  [<c0103973>] common_interrupt+0x23/0x28
+> [    1.789515]  [<c011c9bf>] __do_softirq+0x2d/0xea
+> [    1.789535]  [<c011caa2>] do_softirq+0x26/0x2e
+> [    1.789535]  [<c010f150>] smp_apic_timer_interrupt+0x41/0x71
+> [    1.789535]  [<c01039a0>] apic_timer_interrupt+0x28/0x30
+> [    1.789535]  [<c0108362>] default_idle+0x36/0x42
+> [    1.789535]  [<c0101f7c>] cpu_idle+0x4b/0x5f
+> [    1.789535]  [<c0586925>] start_kernel+0x221/0x261
+> [    1.789535]  [<c05864d3>] unknown_bootoption+0x0/0x1e3
+> [    1.789535] handlers:
+> [    1.789535] [<c039e087>] (ata_sff_interrupt+0x0/0x242)
+> [    1.789535] Disabling IRQ #11
 > 
-> It would seem that this is either a kernel bug to be fixed, or a 
-> documentation bug so users of this machine know about the workaround. 
-> I'll report the bug if someone will tell me how.
+> Full dmesg:
+> http://home.comcast.net/~jpiszcz/20090125/dmesg20090125.txt
+> 
+> Kernel config:
+> http://home.comcast.net/~jpiszcz/20090125/2.6.28-config.txt
+> 
+> This never happened with the old IDE layer.
+> 
+> Justin.
+> 
 
-It should only be necessary if the system has BIOS problems. File a
-report anyway and include the lspci -vvxxx and dmidecode data as
-attached files
+That presumably is some kind of bug, yes, or oddity of that controller.. 
+OK, who knows pata_pdc2027x hardware? :-)
