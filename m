@@ -1,168 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbZAYVFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbZAYVHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753131AbZAYVFy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 16:05:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbZAYVFo
+	id S1753358AbZAYVHN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 16:07:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZAYVG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 16:05:44 -0500
-Received: from mu-out-0910.google.com ([209.85.134.190]:24218 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751582AbZAYVFm (ORCPT
+	Sun, 25 Jan 2009 16:06:58 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:51888 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751324AbZAYVG5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 16:05:42 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=gflsmzqr36CO2igKo+fMxK2jnIf2VSsfMhXziFIhk03vRa3B5od80AV5vM1gzN/Qpw
-         5SZun0UnMPSHwlAGJby4k8eqiJK4+LQqcrqLth01r3SahQIsscO8rLB0Nao96bOk58wP
-         EPR/e0q2rF4DheVMLJqkbWRa+6DSy35zMh/n0=
-Date: Sun, 25 Jan 2009 22:05:20 +0100
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: linux-acpi@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>,
-       Len Brown <lenb@kernel.org>
-Subject: [PATCH] ACPI: add "auto" to acpi_enforce_resources
-Message-ID: <20090125210520.GA12963@dreamland.darkstar.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 25 Jan 2009 16:06:57 -0500
+Subject: Re: [PATCH 1/4] [Linux/SCSI] Add support for SPC-4 CDBs referenced
+	in Persisent Reservations Allowed/Confict Table
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+Cc: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Matthew Wilcox <willy@debian.org>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+In-Reply-To: <1232612582.1274.529.camel@haakon2.linux-iscsi.org>
+References: <1232612582.1274.529.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain
+Date: Sun, 25 Jan 2009 15:06:53 -0600
+Message-Id: <1232917613.4586.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(This is an improved version of my earlier patch, I've reworked deviced
-detection to simply check for the desired HID)
+On Thu, 2009-01-22 at 00:23 -0800, Nicholas A. Bellinger wrote:
+> >From c177bb7ba55227d809d85aca3a9d4281e554f718 Mon Sep 17 00:00:00 2001
+> From: Nicholas Bellinger <nab@linux-iscsi.org>
+> Date: Wed, 21 Jan 2009 22:13:00 -0800
+> Subject: [PATCH 1/4] [Linux/SCSI] Add support for SPC-4 CDBs referenced in Persisent Reservations Allowed/Confict Table
+> 
+> This path adds support for a handful of SPC-4 CDBs, and fills out the MI_* and MO_* prefixed
+> service action codes for MAINTENANCE_IN and MAINTENANCE_OUT operations.
+> 
+> This information is from spc4r17 and Table D.4 for MI_ and MO_ prefixed defs.
+> 
+> Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 
-The following patch adds "auto" option to "acpi_enforce_resource"; this value
-is also the new default.
-"auto" enforces strict resource checking - disallowing access by native drivers
-to IO ports and memory regions claimed by ACPI firmware - when a device with a
-known ACPI driver is found (currently only ASUS ATK0110 is checked), and
-reverts to lax checking otherwise.
+These additions look reasonable, there are just a few semantic problems:
 
-The patch is mainly aimed to block native hwmon drivers from touching
-monitoring chips that ACPI thinks it own.
+>  include/scsi/scsi.h |   22 ++++++++++++++++++++++
+>  1 files changed, 22 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
+> index a109165..93af6ce 100644
+> --- a/include/scsi/scsi.h
+> +++ b/include/scsi/scsi.h
+> @@ -104,30 +104,52 @@
+>  #define PERSISTENT_RESERVE_IN 0x5e
+>  #define PERSISTENT_RESERVE_OUT 0x5f
+>  #define VARIABLE_LENGTH_CMD   0x7f
+> +#define RECEIVE_CREDENTIAL    0x7f // spc4r17 section 6.9 Table 204
 
-Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
----
-New revision, now it simply checks the HID.
+Actually 0x7f isn't receive credentials, that's VARIABLE_LENGTH_CMD
+(definition above) with a Service Action of 0x1800 ... it needs to be
+done something like READ CAPACITY(16) is
 
- Documentation/kernel-parameters.txt |   19 ++++++++++++++++
- drivers/acpi/osl.c                  |   41 +++++++++++++++++++++++++++++++++---
- 2 files changed, 57 insertions(+), 3 deletions(-)
+>  #define REPORT_LUNS           0xa0
+> +#define SECURITY_PROTOCOL_IN  0xa2
+>  #define MAINTENANCE_IN        0xa3
+>  #define MAINTENANCE_OUT       0xa4
+>  #define MOVE_MEDIUM           0xa5
+>  #define EXCHANGE_MEDIUM       0xa6
+>  #define READ_12               0xa8
+>  #define WRITE_12              0xaa
+> +#define READ_MEDIA_SERIAL_NUMBER 0xab
+>  #define WRITE_VERIFY_12       0xae
+>  #define SEARCH_HIGH_12        0xb0
+>  #define SEARCH_EQUAL_12       0xb1
+>  #define SEARCH_LOW_12         0xb2
+> +#define SECURITY_PROTOCOL_OUT 0xb5
+>  #define READ_ELEMENT_STATUS   0xb8
+>  #define SEND_VOLUME_TAG       0xb6
+>  #define WRITE_LONG_2          0xea
+> +#define EXTENDED_COPY         0x83
+> +#define RECEIVE_COPY_RESULTS  0x84
+> +#define ACCESS_CONTROL_IN     0x86
+> +#define ACCESS_CONTROL_OUT    0x87
+>  #define READ_16               0x88
+>  #define WRITE_16              0x8a
+> +#define READ_ATTRIBUTE        0x8c
+> +#define WRITE_ATTRIBUTE	      0x8d
+>  #define VERIFY_16	      0x8f
+>  #define SERVICE_ACTION_IN     0x9e
+>  /* values for service action in */
+>  #define	SAI_READ_CAPACITY_16  0x10
 
-Index: b/Documentation/kernel-parameters.txt
-===================================================================
---- a/Documentation/kernel-parameters.txt	2009-01-17 21:22:49.218882286 +0100
-+++ b/Documentation/kernel-parameters.txt	2009-01-21 23:25:41.262478018 +0100
-@@ -258,6 +258,25 @@
- 			to assume that this machine's pmtimer latches its value
- 			and always returns good values.
- 
-+	acpi_enforce_resources=	[ACPI]
-+			{ strict, auto, lax, no }
-+			Check for resource conflicts between native drivers
-+			and ACPI OperationRegions (SystemIO and System Memory
-+			only). IO ports and memory declared in ACPI might be
-+			used by the ACPI subsystem in arbitrary AML code and
-+			can interfere with legacy drivers.
-+			strict: access to resources claimed by ACPI is denied;
-+			legacy drivers trying to access reserved resources
-+			will fail to load.
-+			auto (default): try and detect ACPI devices with known
-+			ACPI drivers; escalates the setting to "strict" if such
-+			a device is found, otherwise behaves like "lax".
-+			lax: access to resources claimed by ACPI is allowed;
-+			legacy drivers trying to access reserved resources
-+			will load and a warning message is logged.
-+			no: ACPI OperationRegions are not marked as reserved,
-+			no further checks are performed.
-+
- 	agp=		[AGP]
- 			{ off | try_unsupported }
- 			off: disable AGP support
-Index: b/drivers/acpi/osl.c
-===================================================================
---- a/drivers/acpi/osl.c	2009-01-17 21:22:49.190882303 +0100
-+++ b/drivers/acpi/osl.c	2009-01-25 22:04:30.759209000 +0100
-@@ -1063,7 +1063,10 @@
-  * in arbitrary AML code and can interfere with legacy drivers.
-  * acpi_enforce_resources= can be set to:
-  *
-- *   - strict           (2)
-+ *   - auto             (2)
-+ *     -> detect possible conflicts with ACPI drivers and switch to
-+ *     strict if needed, otherwise act like lax
-+ *   - strict           (3)
-  *     -> further driver trying to access the resources will not load
-  *   - lax (default)    (1)
-  *     -> further driver trying to access the resources will load, but you
-@@ -1073,11 +1076,12 @@
-  *     -> ACPI Operation Region resources will not be registered
-  *
-  */
--#define ENFORCE_RESOURCES_STRICT 2
-+#define ENFORCE_RESOURCES_STRICT 3
-+#define ENFORCE_RESOURCES_AUTO   2
- #define ENFORCE_RESOURCES_LAX    1
- #define ENFORCE_RESOURCES_NO     0
- 
--static unsigned int acpi_enforce_resources = ENFORCE_RESOURCES_LAX;
-+static unsigned int acpi_enforce_resources = ENFORCE_RESOURCES_AUTO;
- 
- static int __init acpi_enforce_resources_setup(char *str)
- {
-@@ -1086,6 +1090,8 @@
- 
- 	if (!strcmp("strict", str))
- 		acpi_enforce_resources = ENFORCE_RESOURCES_STRICT;
-+	else if (!strcmp("auto", str))
-+		acpi_enforce_resources = ENFORCE_RESOURCES_AUTO;
- 	else if (!strcmp("lax", str))
- 		acpi_enforce_resources = ENFORCE_RESOURCES_LAX;
- 	else if (!strcmp("no", str))
-@@ -1096,6 +1102,35 @@
- 
- __setup("acpi_enforce_resources=", acpi_enforce_resources_setup);
- 
-+static acpi_status acpi_detect_asus_atk_cb(acpi_handle obj_handle,
-+		u32 nesting_level, void *context, void **return_value)
-+{
-+	*((bool *)return_value) = true;
-+	return AE_CTRL_TERMINATE;
-+}
-+
-+static int __init acpi_detect_asus_atk(void)
-+{
-+	acpi_status ret;
-+	bool found = false;
-+
-+	if (acpi_enforce_resources != ENFORCE_RESOURCES_AUTO)
-+		return 0;
-+
-+	ret = acpi_get_devices("ATK0110", acpi_detect_asus_atk_cb,
-+			NULL, (void **)&found);
-+
-+	if (ret == AE_OK && found) {
-+		printk(KERN_DEBUG "Asus ATK0110 interface detected: "
-+				"enforcing resource checking.\n");
-+		acpi_enforce_resources = ENFORCE_RESOURCES_STRICT;
-+	} else
-+		acpi_enforce_resources =  ENFORCE_RESOURCES_LAX;
-+
-+	return 0;
-+}
-+fs_initcall(acpi_detect_asus_atk);
-+
- /* Check for resource conflicts between ACPI OperationRegions and native
-  * drivers */
- int acpi_check_resource_conflict(struct resource *res)
+Here ^^^^^
+
+James
 
 
-Luca
--- 
-La vasca da bagno fu inventata nel 1850, il telefono nel 1875.
-Se fossi vissuto nel 1850, avrei potuto restare in vasca per 25 anni
-senza sentir squillare il telefono
