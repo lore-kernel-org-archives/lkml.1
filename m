@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZAYPvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZAYPxD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbZAYPvz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 10:51:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZAYPvr
+	id S1756386AbZAYPxD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 10:53:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZAYPwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 10:51:47 -0500
-Received: from wa-out-1112.google.com ([209.85.146.183]:11745 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751569AbZAYPvq (ORCPT
+	Sun, 25 Jan 2009 10:52:54 -0500
+Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:63851 "EHLO
+	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751173AbZAYPwx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 10:51:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=u0P3n7+ichAyx4UICuZukxrtm0rQgpLeIkvt46mvOOEiP+SRCEM1vmP/s0KOpzhMxb
-         Do1ARMfrFJhny/L938bvaIVhlMNZnjwNJJb3CXwZFvZAFdE4jJDfd6mkAEYI5TXDgYI/
-         ZfgY1hoAcHagaF8GRvBw4thFTihFnq+EpDB3M=
-MIME-Version: 1.0
-In-Reply-To: <20090125134712.GA29757@uranus.ravnborg.org>
-References: <93655eb70901242057n7e0e3757p467f91352cbae932@mail.gmail.com>
-	 <1232866165.3195.1.camel@localhost.localdomain>
-	 <93655eb70901250037k79286904oc859118946155766@mail.gmail.com>
-	 <1232879436.4303.40.camel@localhost.localdomain>
-	 <1232880058.4303.46.camel@localhost.localdomain>
-	 <93655eb70901250319m334665bew9b5f6738ba6282a7@mail.gmail.com>
-	 <20090125134712.GA29757@uranus.ravnborg.org>
-Date: Sun, 25 Jan 2009 21:21:44 +0530
-Message-ID: <93655eb70901250751p17330aapd4affc01651f34e0@mail.gmail.com>
-Subject: Re: building custom module on 2.6.28 fails
-From: Satish Eerpini <eerpini@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 25 Jan 2009 10:52:53 -0500
+Subject: Re: [PATCH] module: kzalloc mod->ref
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Kyle McMartin <kyle@infradead.org>, Takashi Iwai <tiwai@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <200901151303.20006.rusty@rustcorp.com.au>
+References: <20090114033533.GL25103@bombadil.infradead.org>
+	 <496E261F.9000803@rsk.demon.co.uk>
+	 <20090114181748.GQ25103@bombadil.infradead.org>
+	 <200901151303.20006.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Sun, 25 Jan 2009 15:52:51 +0000
+Message-Id: <1232898771.3658.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We are currently lacking a dependency on "scripts" so doing:
-> make scripts
-> make prepare
-> is needed today.
->
+On Thu, 2009-01-15 at 13:03 +1030, Rusty Russell wrote:
+>  
+> 
+> On Thursday 15 January 2009 04:47:48 Kyle McMartin wrote:
+> 
+> > On Wed, Jan 14, 2009 at 05:51:27PM +0000, richard kennedy wrote:
+> 
+> > > Aside from the code in socket does this reference count really get
+> used
+> 
+> > > that often? Atomic_t gets used for ref counts is lots of other
+> places in
+> 
+> > > the kernel, so why not turn module_ref into an atomic counter &
+> drop the
+> 
+> > > array entirely saving all of the memory & disk space?
+> 
+> The code was originally written with the intent that networking would
+> inc and dec a module count on every *packet*. It doesn't, however
+> (though it would be interesting to instrument who does manip it, and
+> how often).
+> 
+> I suspect that we could get away with an atomic_t and noone would
+> notice, but I'd like to see evidence one way or the other.
+> 
+> Cheers,
+> 
+> Rusty.
+Hi Rusty,
+I've been running module reference counts as atomic_t on my desktop
+(x86_64 AMD X2) all week and haven't been able to measure any
+significant performance differences. I guess more cpus & server
+workloads could show up something, but I don't have access to that sort
+of hardware.
 
-Just to confirm, ... doing the above works fine and I am able to
-compile the module.
+The one issue I am seeing is with my simple test harness, which is just
+a very basic socket client/server. With the existing ref counting code,
+when running several copies of the client I sometimes get EADDRNOTAVAIL
+(-99) errors on socket connect(). But I don't see any errors with the
+atomic_t ref counting. 
+I'm still trying to debug this, but I haven't yet found where in the
+network stack these errors are coming from. 
+
+regards
+Richard
 
 
-Thanks
-Satish
 
--- 
-http://satish.playdrupal.com
+
