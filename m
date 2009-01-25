@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZAYPtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZAYPvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbZAYPtT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 10:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZAYPtF
+	id S1755999AbZAYPvz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 10:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZAYPvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 10:49:05 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:34955 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751879AbZAYPtE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 10:49:04 -0500
-Date: Sun, 25 Jan 2009 16:48:58 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
-Message-ID: <20090125164858.6b281c6c@mjolnir.drzeus.cx>
-In-Reply-To: <ac3eb2510901241545l4eb9f77dvebd5861340b3447e@mail.gmail.com>
-References: <1231268198-12556-1-git-send-email-apw@canonical.com>
-	<20090112160519.3ba21848@mjolnir.drzeus.cx>
-	<20090115150003.GB6896@shadowen.org>
-	<20090124185612.5afddbb0@mjolnir.drzeus.cx>
-	<ac3eb2510901241545l4eb9f77dvebd5861340b3447e@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 25 Jan 2009 10:51:47 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:11745 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbZAYPvq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 10:51:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=u0P3n7+ichAyx4UICuZukxrtm0rQgpLeIkvt46mvOOEiP+SRCEM1vmP/s0KOpzhMxb
+         Do1ARMfrFJhny/L938bvaIVhlMNZnjwNJJb3CXwZFvZAFdE4jJDfd6mkAEYI5TXDgYI/
+         ZfgY1hoAcHagaF8GRvBw4thFTihFnq+EpDB3M=
+MIME-Version: 1.0
+In-Reply-To: <20090125134712.GA29757@uranus.ravnborg.org>
+References: <93655eb70901242057n7e0e3757p467f91352cbae932@mail.gmail.com>
+	 <1232866165.3195.1.camel@localhost.localdomain>
+	 <93655eb70901250037k79286904oc859118946155766@mail.gmail.com>
+	 <1232879436.4303.40.camel@localhost.localdomain>
+	 <1232880058.4303.46.camel@localhost.localdomain>
+	 <93655eb70901250319m334665bew9b5f6738ba6282a7@mail.gmail.com>
+	 <20090125134712.GA29757@uranus.ravnborg.org>
+Date: Sun, 25 Jan 2009 21:21:44 +0530
+Message-ID: <93655eb70901250751p17330aapd4affc01651f34e0@mail.gmail.com>
+Subject: Re: building custom module on 2.6.28 fails
+From: Satish Eerpini <eerpini@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Jan 2009 00:45:46 +0100
-Kay Sievers <kay.sievers@vrfy.org> wrote:
+> We are currently lacking a dependency on "scripts" so doing:
+> make scripts
+> make prepare
+> is needed today.
+>
 
-> On Sat, Jan 24, 2009 at 18:56, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> >
-> > Well, as long as we're on the track of temporary hack, we might as well
-> > just export "mmc_block" as the modalias. Or would there be any
-> > side-effects to that?
-> 
-> The common format is to prefix with "<subsystem>:". Something like
-> "mmc:block" sounds fine to me.
-> 
+Just to confirm, ... doing the above works fine and I am able to
+compile the module.
 
-My point was to have the kernel explicitly ask for the module it wants
-as there is no decent device to driver mapping scheme.
 
-Rgds
+Thanks
+Satish
+
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+http://satish.playdrupal.com
