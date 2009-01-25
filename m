@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbZAYO2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZAYOsH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104AbZAYO2e (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 09:28:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751056AbZAYO2Y
+	id S1756872AbZAYOsH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 09:48:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZAYOry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 09:28:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:41479 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbZAYO2Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 09:28:24 -0500
-Subject: Re: building custom module on 2.6.28 fails
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Satish Eerpini <eerpini@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090125134712.GA29757@uranus.ravnborg.org>
-References: <93655eb70901242057n7e0e3757p467f91352cbae932@mail.gmail.com>
-	 <1232866165.3195.1.camel@localhost.localdomain>
-	 <93655eb70901250037k79286904oc859118946155766@mail.gmail.com>
-	 <1232879436.4303.40.camel@localhost.localdomain>
-	 <1232880058.4303.46.camel@localhost.localdomain>
-	 <93655eb70901250319m334665bew9b5f6738ba6282a7@mail.gmail.com>
-	 <20090125134712.GA29757@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Sun, 25 Jan 2009 19:57:37 +0530
-Message-Id: <1232893657.10647.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Jan 2009 09:47:54 -0500
+Received: from out3.smtp.messagingengine.com ([66.111.4.27]:60236 "EHLO
+	out3.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754568AbZAYOry (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 09:47:54 -0500
+X-Sasl-enc: +UZ3s/rqSh3eZMA/AyWQQS+ge1YSu7F5pdF8j4myOrEa 1232894872
+Date: Sun, 25 Jan 2009 12:47:47 -0200
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.28: Moved to SATA driver (w/PATA support), kernel OOPS at
+	boot
+Message-ID: <20090125144747.GD12776@khazad-dum.debian.net>
+References: <alpine.DEB.1.10.0901250741300.11258@p34.internal.lan> <alpine.DEB.1.10.0901250822320.15602@p34.internal.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901250822320.15602@p34.internal.lan>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+	1CDB 0FE3
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-01-25 at 14:47 +0100, Sam Ravnborg wrote:
-> On Sun, Jan 25, 2009 at 04:49:16PM +0530, Satish Eerpini wrote:
-> > >> It seems you run "make clean" or "make distclean" in your kernel sources
-> > >>
-> > >> run "make prepare" in your kernel sources then you will not get this
-> > >> error.
-> > >
-> > 
-> > I ran make clean and then make prepare but it gives an error saying
-> > "no such file or directory : modpost ", ....
-> > Then i ran make( in the kernel source tree) , and terminated it after
-> > a few files were compiled and then again tried to compile my module,
-> > this time it worked without any errors, ....... any particular reason
-> > for this ??
-> We are currently lacking a dependency on "scripts" so doing:
-> make scripts
-> make prepare
-> is needed today.
+On Sun, 25 Jan 2009, Justin Piszcz wrote:
+> On Sun, 25 Jan 2009, Justin Piszcz wrote:
+>> Switched from the old IDE interface (disabled it) to SATA only in the kernel:
+>>
+>> [    1.788921] irq 11: nobody cared (try booting with the "irqpoll" option)
+>> [    1.788978] Pid: 0, comm: swapper Not tainted 2.6.28 #4
+>> [    1.789031] Call Trace:
+>> [    1.789085]  [<c0134153>] __report_bad_irq+0x24/0x81
+>> [    1.789138]  [<c01342df>] note_interrupt+0x12f/0x170
+>> [    1.789191]  [<c01338dc>] handle_IRQ_event+0x25/0x4a
+>> [    1.789244]  [<c01348c4>] handle_level_irq+0x7a/0x90
+>> [    1.789299]  [<c0104e07>] do_IRQ+0x6f/0x88
+>> [    1.789352]  [<c012c1c4>] getnstimeofday+0x3b/0xd1
+>> [    1.789407]  [<c010f150>] smp_apic_timer_interrupt+0x41/0x71
+>> [    1.789461]  [<c0103973>] common_interrupt+0x23/0x28
+>> [    1.789515]  [<c011c9bf>] __do_softirq+0x2d/0xea
+>> [    1.789535]  [<c011caa2>] do_softirq+0x26/0x2e
+>> [    1.789535]  [<c010f150>] smp_apic_timer_interrupt+0x41/0x71
+>> [    1.789535]  [<c01039a0>] apic_timer_interrupt+0x28/0x30
+>> [    1.789535]  [<c0108362>] default_idle+0x36/0x42
+>> [    1.789535]  [<c0101f7c>] cpu_idle+0x4b/0x5f
+>> [    1.789535]  [<c0586925>] start_kernel+0x221/0x261
+>> [    1.789535]  [<c05864d3>] unknown_bootoption+0x0/0x1e3
+>> [    1.789535] handlers:
+>> [    1.789535] [<c039e087>] (ata_sff_interrupt+0x0/0x242)
+>> [    1.789535] Disabling IRQ #11
+>>
+>> Full dmesg:
+>> http://home.comcast.net/~jpiszcz/20090125/dmesg20090125.txt
+>>
+>> Kernel config:
+>> http://home.comcast.net/~jpiszcz/20090125/2.6.28-config.txt
+>>
+>> This never happened with the old IDE layer.
+>>
+>> Justin.
+>>
+>>
+>
+> Disregard, this was because of a root=UUID option and another root= 
+> option (via LILO cmdline) to get the machine to boot.
 
-As per makefile:
-# make clean     Delete most generated files
-#                Leave enough to build external modules
+Are you sure it is not a bug that should be fixed, anyway?
 
-So is this OK to delete include/linux/bounds.h by 'make clean'.
-
---
-JSR
-
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
