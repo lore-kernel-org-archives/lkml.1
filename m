@@ -1,126 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZAYVEK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753131AbZAYVFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbZAYVEK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 16:04:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZAYVDw
+	id S1753131AbZAYVFy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 16:05:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbZAYVFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 16:03:52 -0500
-Received: from 1wt.eu ([62.212.114.60]:1774 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751433AbZAYVDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 16:03:51 -0500
-Date: Sun, 25 Jan 2009 22:03:25 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, jarkao2@gmail.com, zbr@ioremap.net,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH] tcp: splice as many packets as possible at once
-Message-ID: <20090125210325.GA31227@1wt.eu>
-References: <20090119061420.GB12946@1wt.eu> <20090118.221908.47032075.davem@davemloft.net> <20090119101924.GA1881@gondor.apana.org.au> <20090119.125941.240930524.davem@davemloft.net>
-Mime-Version: 1.0
+	Sun, 25 Jan 2009 16:05:44 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:24218 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751582AbZAYVFm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 16:05:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=gflsmzqr36CO2igKo+fMxK2jnIf2VSsfMhXziFIhk03vRa3B5od80AV5vM1gzN/Qpw
+         5SZun0UnMPSHwlAGJby4k8eqiJK4+LQqcrqLth01r3SahQIsscO8rLB0Nao96bOk58wP
+         EPR/e0q2rF4DheVMLJqkbWRa+6DSy35zMh/n0=
+Date: Sun, 25 Jan 2009 22:05:20 +0100
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: linux-acpi@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Hans de Goede <hdegoede@redhat.com>,
+       Len Brown <lenb@kernel.org>
+Subject: [PATCH] ACPI: add "auto" to acpi_enforce_resources
+Message-ID: <20090125210520.GA12963@dreamland.darkstar.lan>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090119.125941.240930524.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+(This is an improved version of my earlier patch, I've reworked deviced
+detection to simply check for the desired HID)
 
-On Mon, Jan 19, 2009 at 12:59:41PM -0800, David Miller wrote:
-> From: Herbert Xu <herbert@gondor.apana.org.au>
-> Date: Mon, 19 Jan 2009 21:19:24 +1100
-> 
-> > On Sun, Jan 18, 2009 at 10:19:08PM -0800, David Miller wrote:
-> > > 
-> > > Actually, I see, the myri10ge driver does put up to
-> > > 64 bytes of the initial packet into the linear area.
-> > > If the IPV4 + TCP headers are less than this, you will
-> > > hit the corruption case even with the myri10ge driver.
-> > 
-> > I thought splice only mapped the payload areas, no?
-> 
-> And the difference between 64 and IPV4+TCP header len becomes the
-> payload, don't you see? :-)
-> 
-> myri10ge just pulls min(64, skb->len) bytes from the SKB frags into
-> the linear area, unconditionally.  So a small number of payload bytes
-> can in fact end up there.
-> 
-> Otherwise Willy could never have triggered this bug.
+The following patch adds "auto" option to "acpi_enforce_resource"; this value
+is also the new default.
+"auto" enforces strict resource checking - disallowing access by native drivers
+to IO ports and memory regions claimed by ACPI firmware - when a device with a
+known ACPI driver is found (currently only ASUS ATK0110 is checked), and
+reverts to lax checking otherwise.
 
-Just FWIW, I've updated my tools in order to perform content checks more
-easily. I cannot reproduce the issue at all with the myri10ge NICs, neither
-with large frames nor with tiny ones (8 bytes).
+The patch is mainly aimed to block native hwmon drivers from touching
+monitoring chips that ACPI thinks it own.
 
-However, I have noticed that the load is now sensible to the number of
-concurrent sessions. I'm using 2.6.29-rc2 with the perfcounters patches,
-and I'm not sure whether the difference in behaviour came with the data
-corruption fixes or with the new kernel (which has some profiling options
-turned on). Basically, below 800-1000 concurrent sessions, I have no
-problem reaching 10 Gbps with LRO and MTU=1500, with about 60% CPU. Above
-this number of session, the CPU suddenly jumps to 100% and the data rate
-drops to about 6.7 Gbps.
+Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
+---
+New revision, now it simply checks the HID.
 
-I spent a long time trying to figure what it was, but I think that I
-have found. Kerneltop reports different figures above and below the
-limit.
+ Documentation/kernel-parameters.txt |   19 ++++++++++++++++
+ drivers/acpi/osl.c                  |   41 +++++++++++++++++++++++++++++++++---
+ 2 files changed, 57 insertions(+), 3 deletions(-)
 
-1) below the limit :
+Index: b/Documentation/kernel-parameters.txt
+===================================================================
+--- a/Documentation/kernel-parameters.txt	2009-01-17 21:22:49.218882286 +0100
++++ b/Documentation/kernel-parameters.txt	2009-01-21 23:25:41.262478018 +0100
+@@ -258,6 +258,25 @@
+ 			to assume that this machine's pmtimer latches its value
+ 			and always returns good values.
+ 
++	acpi_enforce_resources=	[ACPI]
++			{ strict, auto, lax, no }
++			Check for resource conflicts between native drivers
++			and ACPI OperationRegions (SystemIO and System Memory
++			only). IO ports and memory declared in ACPI might be
++			used by the ACPI subsystem in arbitrary AML code and
++			can interfere with legacy drivers.
++			strict: access to resources claimed by ACPI is denied;
++			legacy drivers trying to access reserved resources
++			will fail to load.
++			auto (default): try and detect ACPI devices with known
++			ACPI drivers; escalates the setting to "strict" if such
++			a device is found, otherwise behaves like "lax".
++			lax: access to resources claimed by ACPI is allowed;
++			legacy drivers trying to access reserved resources
++			will load and a warning message is logged.
++			no: ACPI OperationRegions are not marked as reserved,
++			no further checks are performed.
++
+ 	agp=		[AGP]
+ 			{ off | try_unsupported }
+ 			off: disable AGP support
+Index: b/drivers/acpi/osl.c
+===================================================================
+--- a/drivers/acpi/osl.c	2009-01-17 21:22:49.190882303 +0100
++++ b/drivers/acpi/osl.c	2009-01-25 22:04:30.759209000 +0100
+@@ -1063,7 +1063,10 @@
+  * in arbitrary AML code and can interfere with legacy drivers.
+  * acpi_enforce_resources= can be set to:
+  *
+- *   - strict           (2)
++ *   - auto             (2)
++ *     -> detect possible conflicts with ACPI drivers and switch to
++ *     strict if needed, otherwise act like lax
++ *   - strict           (3)
+  *     -> further driver trying to access the resources will not load
+  *   - lax (default)    (1)
+  *     -> further driver trying to access the resources will load, but you
+@@ -1073,11 +1076,12 @@
+  *     -> ACPI Operation Region resources will not be registered
+  *
+  */
+-#define ENFORCE_RESOURCES_STRICT 2
++#define ENFORCE_RESOURCES_STRICT 3
++#define ENFORCE_RESOURCES_AUTO   2
+ #define ENFORCE_RESOURCES_LAX    1
+ #define ENFORCE_RESOURCES_NO     0
+ 
+-static unsigned int acpi_enforce_resources = ENFORCE_RESOURCES_LAX;
++static unsigned int acpi_enforce_resources = ENFORCE_RESOURCES_AUTO;
+ 
+ static int __init acpi_enforce_resources_setup(char *str)
+ {
+@@ -1086,6 +1090,8 @@
+ 
+ 	if (!strcmp("strict", str))
+ 		acpi_enforce_resources = ENFORCE_RESOURCES_STRICT;
++	else if (!strcmp("auto", str))
++		acpi_enforce_resources = ENFORCE_RESOURCES_AUTO;
+ 	else if (!strcmp("lax", str))
+ 		acpi_enforce_resources = ENFORCE_RESOURCES_LAX;
+ 	else if (!strcmp("no", str))
+@@ -1096,6 +1102,35 @@
+ 
+ __setup("acpi_enforce_resources=", acpi_enforce_resources_setup);
+ 
++static acpi_status acpi_detect_asus_atk_cb(acpi_handle obj_handle,
++		u32 nesting_level, void *context, void **return_value)
++{
++	*((bool *)return_value) = true;
++	return AE_CTRL_TERMINATE;
++}
++
++static int __init acpi_detect_asus_atk(void)
++{
++	acpi_status ret;
++	bool found = false;
++
++	if (acpi_enforce_resources != ENFORCE_RESOURCES_AUTO)
++		return 0;
++
++	ret = acpi_get_devices("ATK0110", acpi_detect_asus_atk_cb,
++			NULL, (void **)&found);
++
++	if (ret == AE_OK && found) {
++		printk(KERN_DEBUG "Asus ATK0110 interface detected: "
++				"enforcing resource checking.\n");
++		acpi_enforce_resources = ENFORCE_RESOURCES_STRICT;
++	} else
++		acpi_enforce_resources =  ENFORCE_RESOURCES_LAX;
++
++	return 0;
++}
++fs_initcall(acpi_detect_asus_atk);
++
+ /* Check for resource conflicts between ACPI OperationRegions and native
+  * drivers */
+ int acpi_check_resource_conflict(struct resource *res)
 
-            1429.00 - 00000000784a7840 : tcp_sendpage
-             561.00 - 00000000784a6580 : tcp_read_sock
-             485.00 - 00000000f87e13c0 : myri10ge_xmit  [myri10ge]
-             433.00 - 00000000781a40c0 : sys_splice
-             411.00 - 00000000784a6eb0 : tcp_poll
-             344.00 - 000000007847bcf0 : dev_queue_xmit
-             342.00 - 0000000078470be0 : __skb_splice_bits
-             319.00 - 0000000078472950 : __alloc_skb
-             310.00 - 0000000078185870 : kmem_cache_alloc
-             285.00 - 00000000784b2260 : tcp_transmit_skb
-             285.00 - 000000007850cac0 : _spin_lock
-             250.00 - 00000000781afda0 : sys_epoll_ctl
-             238.00 - 000000007810334c : system_call
-             232.00 - 000000007850ac20 : schedule
-             230.00 - 000000007850cc10 : _spin_lock_bh
-             222.00 - 00000000784705f0 : __skb_clone
-             220.00 - 000000007850cbc0 : _spin_lock_irqsave
-             213.00 - 00000000784a08f0 : ip_queue_xmit
-             211.00 - 0000000078185ea0 : __kmalloc_track_caller
 
-2) above the limit :
-
-            1778.00 - 00000000784a7840 : tcp_sendpage
-            1281.00 - 0000000078472950 : __alloc_skb
-             639.00 - 00000000784a6780 : sk_stream_alloc_skb
-             507.00 - 0000000078185ea0 : __kmalloc_track_caller
-             484.00 - 0000000078185870 : kmem_cache_alloc
-             476.00 - 00000000784a6580 : tcp_read_sock
-             451.00 - 00000000784a08f0 : ip_queue_xmit
-             421.00 - 00000000f87e13c0 : myri10ge_xmit  [myri10ge]
-             374.00 - 00000000781852e0 : __slab_alloc
-             361.00 - 00000000781a40c0 : sys_splice
-             273.00 - 0000000078470be0 : __skb_splice_bits
-             231.00 - 000000007850cac0 : _spin_lock
-             206.00 - 0000000078168b30 : get_pageblock_flags_group
-             165.00 - 00000000784a0260 : ip_finish_output
-             165.00 - 00000000784b2260 : tcp_transmit_skb
-             161.00 - 0000000078470460 : __copy_skb_header
-             153.00 - 000000007816d6d0 : put_page
-             144.00 - 000000007850cbc0 : _spin_lock_irqsave
-             137.00 - 0000000078189be0 : fget_light
-
-The memory allocation clearly is the culprit here. I'll try Jarek's
-patch which reduces memory allocation to see if that changes something,
-as I'm sure we can do fairly better, given how it behaves with limited
-sessions.
-
-Regards,
-Willy
-
-PS: this thread is long, if some of the people in CC want to get off
-    the thread, please complain.
-
+Luca
+-- 
+La vasca da bagno fu inventata nel 1850, il telefono nel 1875.
+Se fossi vissuto nel 1850, avrei potuto restare in vasca per 25 anni
+senza sentir squillare il telefono
