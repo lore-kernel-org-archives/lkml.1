@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbZAYPDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbZAYPEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757133AbZAYPDq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 10:03:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZAYPDh
+	id S1757411AbZAYPEi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 10:04:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZAYPE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 10:03:37 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53031 "EHLO mx3.mail.elte.hu"
+	Sun, 25 Jan 2009 10:04:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53120 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755338AbZAYPDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 10:03:37 -0500
-Date: Sun, 25 Jan 2009 16:02:55 +0100
+	id S1752479AbZAYPE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 10:04:28 -0500
+Date: Sun, 25 Jan 2009 16:03:49 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Florian Fainelli <florian.fainelli@telecomint.eu>
 Cc: john stultz <johnstul@us.ibm.com>, Miklos Vajna <vmiklos@frugalware.org>,
@@ -20,13 +20,13 @@ Cc: john stultz <johnstul@us.ibm.com>, Miklos Vajna <vmiklos@frugalware.org>,
        =?iso-8859-1?Q?CS=C9CSY_L=E1szl=F3?= <boobaa@frugalware.org>,
        r.schwebel@pengutronix.de, sven@geggus.net
 Subject: Re: System clock runs too fast after 2.6.27 -> 2.6.28.1 upgrade
-Message-ID: <20090125150255.GA19168@elte.hu>
-References: <20090121171423.GI21473@genesis.frugalware.org> <20090123110439.GK15188@elte.hu> <1f1b08da0901231736u46d8981ckc4b89ac66d7d8a5e@mail.gmail.com> <200901251217.27995.florian.fainelli@telecomint.eu>
+Message-ID: <20090125150349.GB19168@elte.hu>
+References: <20090121171423.GI21473@genesis.frugalware.org> <1f1b08da0901231736u46d8981ckc4b89ac66d7d8a5e@mail.gmail.com> <20090124091404.GA32032@elte.hu> <200901251218.33255.florian.fainelli@telecomint.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <200901251217.27995.florian.fainelli@telecomint.eu>
+In-Reply-To: <200901251218.33255.florian.fainelli@telecomint.eu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -43,34 +43,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Florian Fainelli <florian.fainelli@telecomint.eu> wrote:
 
-> Le Saturday 24 January 2009 02:36:30 john stultz, vous avez écrit :
-> > On Fri, Jan 23, 2009 at 3:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> > > * john stultz <johnstul@us.ibm.com> wrote:
-> > >> I'd think this would ideally be more of a subarch in the config
-> > >> selection like the AMD Elan is, so folks know it really is not just a
-> > >> extra-support feature and in fact limits what hardware you can use the
-> > >> resulting kernel on.
+> Le Saturday 24 January 2009 10:14:04 Ingo Molnar, vous avez écrit :
+> > * john stultz <johnstul@us.ibm.com> wrote:
+> > > On Fri, Jan 23, 2009 at 3:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > * john stultz <johnstul@us.ibm.com> wrote:
+> > > >> I'd think this would ideally be more of a subarch in the config
+> > > >> selection like the AMD Elan is, so folks know it really is not just a
+> > > >> extra-support feature and in fact limits what hardware you can use the
+> > > >> resulting kernel on.
+> > > >
+> > > > a better solution is that if RDC is set [it is unset by default] we
+> > > > should turn PIT_TICK_RATE into a variable, defaulting it to 1193182. If
+> > > > a real RDC or ELAN system is running, that variable is changed during
+> > > > early bootup, in the init functions for those platforms.
 > > >
-> > > a better solution is that if RDC is set [it is unset by default] we
-> > > should turn PIT_TICK_RATE into a variable, defaulting it to 1193182. If a
-> > > real RDC or ELAN system is running, that variable is changed during early
-> > > bootup, in the init functions for those platforms.
+> > > Took a quick look at this, and I don't see any detection code for either
+> > > RDC. The X86_ELAN config also has no conditionals, but maybe the elan
+> > > cpufreq code can help here.
 > >
-> > Took a quick look at this, and I don't see any detection code for
-> > either RDC. The X86_ELAN config also has no conditionals, but maybe
-> > the elan cpufreq code can help here.
-> >
-> > Florian: Is there any way we can check very early (ie: in setup_arch)
-> > for an RDC box?
+> > i'd suggest to just remove the #ifdef for now (it's causing problems) and
+> > add the variable - we can add the quirks for those two platforms later on,
+> > separately from your patch(es).
 > 
-> Sorry for answering so late.
-> 
-> We cannot rely on the cpuid since there is not one, nor the bios, since 
-> most (if not all) boards use RedBoot as a bootloader. If we have PCI 
-> initiliazed, we could check the presence of a R6040 Ethernet MAC.
-> [...]
+> Fine with me. Ingo, is there any infrastructure yet to get an early 
+> quirk set the PIT tick rate accordingly ?
 
-yep, an early PCI quirk for that would suffice.
+Not yet but it should be easy - do you have the time to implement it?
 
 	Ingo
-
