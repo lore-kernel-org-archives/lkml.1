@@ -1,69 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752085AbZAYWA6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751317AbZAYWn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752085AbZAYWA6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 17:00:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750846AbZAYWAu
+	id S1751317AbZAYWn0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 17:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbZAYWnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 17:00:50 -0500
-Received: from ds.netgate.net ([205.214.170.232]:52087 "EHLO ds.netgate.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbZAYWAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 17:00:50 -0500
-Message-ID: <497CE10F.3030502@macslab.com>
-Date: Sun, 25 Jan 2009 14:00:47 -0800
-From: Charles Landau <clandau@macslab.com>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: Gateway DX4720-03 apic problem
-References: <497CBF12.10202@macslab.com> <497CC962.7060900@shaw.ca>
-In-Reply-To: <497CC962.7060900@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 25 Jan 2009 17:43:18 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:24603 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbZAYWnR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 17:43:17 -0500
+Subject: dma: struct device - replace bus_id with dev_name(), dev_set_name()
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 25 Jan 2009 23:42:26 +0100
+Message-Id: <1232923346.2924.5.camel@nga>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Charles Landau wrote:
->> I have a new Gateway DX4720-03 PC and have discovered that it won't 
->> install Fedora 10 unless I give the kernel boot option "noapic" or 
->> "nolapic".
->>
->> This system's processor is the Intel Pentium Dual Core E5200.
->>
->> It would seem that this is either a kernel bug to be fixed, or a 
->> documentation bug so users of this machine know about the workaround. 
->> I'll report the bug if someone will tell me how.
-> 
-> I think you just did report it :-)
-> 
-> Well, it's something that should be fixed in the kernel, either it's a 
-> kernel bug or hardware busted in some way that we should be detecting.
-> 
-> How is it failing to install, is it locking up at some point, etc?
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: dma: struct device - replace bus_id with dev_name(), dev_set_name()
 
-When I boot off the Fedora 10 full distribution DVD, which I believe is 
-kernel 2.6.27.5, at the first screen, "Welcome to Fedora 10!", I tell it 
-to Install or upgrade, and then I get a variety of errors on the text 
-console, including:
+Cc: Dan Williams <dan.j.williams@intel.com>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+ drivers/dma/dw_dmac.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-    ata1.00 failed to IDENTIFY
+--- a/drivers/dma/dw_dmac.c
++++ b/drivers/dma/dw_dmac.c
+@@ -1012,7 +1012,7 @@ static int __init dw_probe(struct platfo
+ 	dma_writel(dw, CFG, DW_CFG_DMA_EN);
+ 
+ 	printk(KERN_INFO "%s: DesignWare DMA Controller, %d channels\n",
+-			pdev->dev.bus_id, dw->dma.chancnt);
++			dev_name(&pdev->dev), dw->dma.chancnt);
+ 
+ 	dma_async_device_register(&dw->dma);
+ 
 
-and
-
-    PNP: PS/2 appears to have AUX port disabled ...
-
-and problems enumerating USB devices, and
-
-    ehci_hcd 0000:00:04.1: Unlink after no_IRQ? Controller is probably 
-using the wrong IRQ.
-
-and
-
-    ohci_hcd 0000:00:04.0: Unlink after no_IRQ? Controller is probably 
-using the wrong IRQ.
-
-after which it does nothing. There is no power to USB and PS/2 devices.
-
-Let me know any other ways I can help you diagnose this.
