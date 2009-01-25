@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751554AbZAYW4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751886AbZAYW6z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751554AbZAYW4a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 17:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZAYW4W
+	id S1751886AbZAYW6z (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 17:58:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750980AbZAYW6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 17:56:22 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:25871 "EHLO
+	Sun, 25 Jan 2009 17:58:46 -0500
+Received: from mu-out-0910.google.com ([209.85.134.184]:26099 "EHLO
 	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750888AbZAYW4V (ORCPT
+	with ESMTP id S1750912AbZAYW6q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 17:56:21 -0500
-Subject: rapidio: struct device - replace bus_id with dev_name(),
+	Sun, 25 Jan 2009 17:58:46 -0500
+Subject: serial: struct device - replace bus_id with dev_name(),
  dev_set_name()
 From: Kay Sievers <kay.sievers@vrfy.org>
-To: mporter@kernel.crashing.org
-Cc: gregkh <gregkh@suse.de>, linux-kernel <linux-kernel@vger.kernel.org>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Sun, 25 Jan 2009 23:55:29 +0100
-Message-Id: <1232924129.2924.20.camel@nga>
+Date: Sun, 25 Jan 2009 23:57:53 +0100
+Message-Id: <1232924273.2924.23.camel@nga>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
@@ -26,24 +27,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
-Subject: rapidio: struct device - replace bus_id with dev_name(), dev_set_name()
+Subject: serial: struct device - replace bus_id with dev_name(), dev_set_name()
 
-Cc: mporter@kernel.crashing.org
+Cc: davem@davemloft.net
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 ---
- drivers/rapidio/rio-driver.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/serial/sunzilog.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/drivers/rapidio/rio-driver.c
-+++ b/drivers/rapidio/rio-driver.c
-@@ -193,7 +193,7 @@ static int rio_match_bus(struct device *
- }
- 
- static struct device rio_bus = {
--	.bus_id = "rapidio",
-+	.init_name = "rapidio",
- };
- 
- struct bus_type rio_bus_type = {
+--- a/drivers/serial/sunzilog.c
++++ b/drivers/serial/sunzilog.c
+@@ -1438,12 +1438,12 @@ static int __devinit zs_probe(struct of_
+ 	} else {
+ 		printk(KERN_INFO "%s: Keyboard at MMIO 0x%llx (irq = %d) "
+ 		       "is a %s\n",
+-		       op->dev.bus_id,
++		       dev_name(&op->dev),
+ 		       (unsigned long long) up[0].port.mapbase,
+ 		       op->irqs[0], sunzilog_type(&up[0].port));
+ 		printk(KERN_INFO "%s: Mouse at MMIO 0x%llx (irq = %d) "
+ 		       "is a %s\n",
+-		       op->dev.bus_id,
++		       dev_name(&op->dev),
+ 		       (unsigned long long) up[1].port.mapbase,
+ 		       op->irqs[0], sunzilog_type(&up[1].port));
+ 		kbm_inst++;
+
 
