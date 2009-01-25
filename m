@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZAYL64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756472AbZAYMC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbZAYL64 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 06:58:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZAYL6r
+	id S1756472AbZAYMC5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 07:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752898AbZAYMCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 06:58:47 -0500
-Received: from www.tglx.de ([62.245.132.106]:42089 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752896AbZAYL6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 06:58:46 -0500
-Date: Sun, 25 Jan 2009 12:57:47 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
+	Sun, 25 Jan 2009 07:02:45 -0500
+Received: from mail-ew0-f10.google.com ([209.85.219.10]:52475 "EHLO
+	mail-ew0-f10.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752613AbZAYMCo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 07:02:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SqeP1VpMrSqSfGScaECbA5EcA+ohcKD5VXzHJFCKaYlUuL0OhRFEDxQFIbPRnwc02d
+         Xh6BryeJyoApo7EOhgmwkLUIK9zxOgATnI3h0RLd5iievXJKXFBfN5s7bJ0ZGdyfgiSZ
+         F/RRaSRn/LkFejQiRtJw7GnN6dkZiOfHd52fE=
+Date: Sun, 25 Jan 2009 15:08:18 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in
- preemptible
-In-Reply-To: <20090124183746.395f597b.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0901251254370.3424@localhost.localdomain>
-References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <20090124183746.395f597b.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+Cc: Paul Turner <pjt@google.com>, linux-kernel@vger.kernel.org
+Subject: Re: Migration of kernel interfaces to seq_files breaks pread()
+	consumers
+Message-ID: <20090125120818.GA4454@x200.localdomain>
+References: <Pine.LNX.4.64.0901162229420.12858@kitami.corp.google.com> <20090124181924.d633523c.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090124181924.d633523c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Jan 2009, Andrew Morton wrote:
+On Sat, Jan 24, 2009 at 06:19:24PM -0800, Andrew Morton wrote:
+> On Fri, 16 Jan 2009 23:51:35 -0800 (PST) Paul Turner <pjt@google.com> wrote:
 > 
-> Coming out of the hrtimer_hres_active() call, I assume.
+> > 
+> > (Specifically) Several interfaces under /proc have been migrated to use 
+> > seq_files.  This was previously observed to be a problem with VMware's 
+> > reading of /proc/uptime.  We're now running into the same problem on  
+> > /proc/<pid>/stat; we have many consumers performing preads on this 
+> > interface which break under new kernels.
+> > 
+> > Reverting these migrations presents other problems and doesn't scale with 
+> > everyones' pet dependencies over an abi that's been
+> > broken :(
+> 
+> We changed userspace-visible behaviour and broke real applications. 
+> This is a serious matter.  So serious in fact that your report has
+> languished without reply for a week.
+> 
+> Reverting those changes until we have a suitable reimplementation which
+> doesn't bust userspace is 100% justifiable.
+> 
+> In which kernel versions is this regression present?
+> 
+> What would a revert look like?  Big and ugly or small and simple?  Do
+> the original commits (which were they?) still revert OK?
 
-Yes.
- 
-> Is this new behaviour, or were 2.6.28 and earlier doing it?
+This is bug http://bugzilla.kernel.org/show_bug.cgi?id=11856
+Some of us think what to do here.
 
-This code is there since highres was merged, but something seems to
-have changed in the suspend/resume code as I'm pretty sure, that this
-code was always called with interrupts disabled.
- 
-> a) remove the wrong "Called with interrupts disabled via
->    on_each_cpu()" comment from retrigger_next_event(), and replace it
->    with something useful and truthful.
-
-Good point.
- 
-> b) change hres_timers_resume() to do local_irq_save/restore
-
-Right, but I'd like to know what changed below.
-
-Thanks,
-
-	tglx
+Original patch not revertable as is.
