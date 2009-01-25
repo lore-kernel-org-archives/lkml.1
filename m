@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZAYLVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755994AbZAYLtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbZAYLVR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 06:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752589AbZAYLU7
+	id S1755994AbZAYLtc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 06:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZAYLtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 06:20:59 -0500
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:54739 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752443AbZAYLU6 (ORCPT
+	Sun, 25 Jan 2009 06:49:23 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:23208 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752680AbZAYLtV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 06:20:58 -0500
-Date: Sun, 25 Jan 2009 12:20:24 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Jaya Kumar <jayakumar.lkml@gmail.com>
-Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org
-Subject: Re: [RFC 2.6.28 1/3] gpiolib: add batch set/get
-Message-ID: <20090125112024.GA28213@pengutronix.de>
-References: <123287728936-git-send-email-jayakumar.lkml@gmail.com>
+	Sun, 25 Jan 2009 06:49:21 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=cHyD5PFhGFOFkqM6zvMrabQk3whYwNzh9Rd9EqVAqw8FZpzKlnSQcgf5QrixZXPb6h
+         jlxGIgTpQ7Zo/9A55T30QiFwtFhfIDIQw2Al+58Djlow2P7HKSFhkggHF89IllKE9Brp
+         aZ79WM8ffvmDq7GVyqnhdb2TDB3DkiaDArdwY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <123287728936-git-send-email-jayakumar.lkml@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0901251035050.3424@localhost.localdomain>
+References: <1232751312.3990.59.camel@perihelion.bos.jonmasters.org>
+	 <75b66ecd0901231833j2fda4554sb0f47457ab838566@mail.gmail.com>
+	 <alpine.LFD.2.00.0901241716540.3424@localhost.localdomain>
+	 <1232845026.3990.71.camel@perihelion.bos.jonmasters.org>
+	 <1232849565.29318.112.camel@sven.thebigcorporation.com>
+	 <20090125040246.GE9216@mit.edu>
+	 <alpine.LFD.2.00.0901251035050.3424@localhost.localdomain>
+Date: Sun, 25 Jan 2009 12:49:18 +0100
+Message-ID: <195c7a900901250349t6c0cdc73gdbd71a9f87151d72@mail.gmail.com>
+Subject: Re: [RT] [RFC] simple SMI detector
+From: Bastien ROUCARIES <roucaries.bastien@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Theodore Tso <tytso@mit.edu>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Lee Revell <rlrevell@joe-job.com>,
+       linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       williams <williams@redhat.com>,
+       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Jaya,
+On Sun, Jan 25, 2009 at 10:40 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> On Sat, 24 Jan 2009, Theodore Tso wrote:
+>> On Sun, Jan 25, 2009 at 01:12:45PM +1100, Sven-Thorsten Dietrich wrote:
+>> I will also note that for some applications (i.e., military hardware
+>> running under battle conditions), where it might be that running the
+>> hardware beyond its thermal limits might actually be *desirable*.
+>> After all, an extra 15 minutes of running beyond thermal limits that
+>> eventually causes the CPU to get flakey might be worth it if the
+>> alternative is the ship getting sunk because the BIOS decided that
+>> shutting down the CPU to save it from thermal damage was more
+>> important than say, running the anti-aircraft guns....
+>
+> In that case the system designer knows exactly what he is doing and he
+> is aware of the consequences.
+>
+> My concern about the SMI disable module is that it can damage Joe
+> users hardware. I have at least two reports where the CPU got fried
+> and some others where people got confused because chips started
+> behaving weird and it took quite a time to figure out that they used
+> the SMI disabler. A big fat warning about this code is definitely
+> necessary.
+>
+> Thanks,
 
-On Sun, Jan 25, 2009 at 05:54:47PM +0800, Jaya Kumar wrote:
-> - split the patches into generic, arch specific and am300epd
-I would swap the order to have:
 
-	generic
-	am300epd
-	pxa specific
+I suppose the non joe user could flash their motherboard with
+linuxcore and therefore do not distrub by SMI :)
 
-This way the tree of the second commit is a test case for the generic
-implementation.
+Regards
 
-> - adjusting the API to remove width (note, the actual API call where
->   width was dropped is in the arch specific code, not here.)
-Nevertheless I would document the "generic" per arch specific
-implementation in gpio.txt.  For the functions like __gpio_get_value you
-can just do
-
-	#define gpio_get_value(gpio) __gpio_get_value(gpio)
-
-but for your batch functions you need something like
-
-	#define gpio_set_batch(startpin, mask, values) \
-		({ u32 __mask = mask; __gpio_set_batch(startpin, __mask, fls(__mask), values);})
-
-Maybe better use/recommend an inline function?
-
-> Cc: David Brownell <david-b@pacbell.net>
-> Cc: Eric Miao <eric.miao@marvell.com>
-> Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-> Cc: Geert Uytterhoeven <geert@linux-m68k.org>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> Cc: linux-arm-kernel@lists.arm.linux.org.uk
-> Cc: linux-fbdev-devel@lists.sourceforge.net
-> Cc: linux-kernel@vger.kernel.org
-> Cc: linux-embedded@vger.kernel.org
-> Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
-Note you didn't Cc: me.
-
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+Bastien
