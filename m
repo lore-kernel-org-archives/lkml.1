@@ -1,78 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752056AbZAYTeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZAYTmi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752056AbZAYTeS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 14:34:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751015AbZAYTeD
+	id S1751889AbZAYTmi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 14:42:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751041AbZAYTma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 14:34:03 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:62209 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbZAYTeB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 14:34:01 -0500
-X-Greylist: delayed 352 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Jan 2009 14:34:00 EST
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=d9GkE7BEOrrF/vI2iOEiPSsZNDCbvVsY2xRuP4Xaj9E453tOmWX97tul9F+k58sOuK
-         cCLGtZAsxEL45LyeH8MDVuKHFAVS4bEZ7TxBGu/FetR5O3QQDd+xvvlgzom7NXmtnf83
-         YfER/A1+8/uVy4e2m6bJiLLmkPqUukhRPVHpY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-Subject: Re: Switching from (deprecated) IDE driver -> SATA (PATA support)
-Date: Sun, 25 Jan 2009 20:27:43 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-next-20090123; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <alpine.DEB.1.10.0901250553430.2441@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0901250553430.2441@p34.internal.lan>
+	Sun, 25 Jan 2009 14:42:30 -0500
+Received: from ds.netgate.net ([205.214.170.232]:51576 "EHLO ds.netgate.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750921AbZAYTm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 14:42:29 -0500
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sun, 25 Jan 2009 14:42:29 EST
+Message-ID: <497CBF12.10202@macslab.com>
+Date: Sun, 25 Jan 2009 11:35:46 -0800
+From: Charles Landau <clandau@macslab.com>
+User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200901252027.43376.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+Subject: Gateway DX4720-03 apic problem
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 25 January 2009, Justin Piszcz wrote:
-> When switching (removing IDE support) in favor of the new PATA support 
-> under the SATA menu, is there any best practice/or method of knowing what 
-> the new root hdd will be upon reboot?
-> 
-> Example:
-> If I have 10 sata disks and 2 IDE disks on various cards/controllers, how 
-> do I know /dev/hda will become /dev/sda?  In one test on a system I have 
-> here, /dev/hda became /dev/sdb2 after reboot, not an issue if the box is 
-> local, but if the box is remote, how do you cope with this?  I ask now 
-> because some IDE drivers have been removed (nvidia I believe? in 2.6.28) 
-> and I cannot upgrade the kernel anymore unless I move to the 
-> PATA-supported SATA driver, but I have no idea what the root disk will be 
-> after a reboot and there is a high probability it will not come back after 
-> a reboot..
+I have a new Gateway DX4720-03 PC and have discovered that it won't 
+install Fedora 10 unless I give the kernel boot option "noapic" or 
+"nolapic".
 
-Hmmm?  That's news to me and I wonder where did you hear that?
+This system's processor is the Intel Pentium Dual Core E5200.
 
-The only driver that got removed recently was HPT34X (for very, very
-old HPT controllers) which was broken for ages.  In reality we are
-adding new IDE host drivers and not removing them.
-
-In 2.6.28 we got support for TX4938 and TX4939 chipsets.  2.6.29-rc1
-contains a new driver for IT8172 and 2.6.29-final will hopefully have
-drivers for AT91 and CS5536 chipsets.  Moreover except CS5536 all of
-above chipsets are not support in other ways under Linux...
-
-While we are at it 2.6.29 also got a whole bunch of updates to the core
-IDE code -- this includes complete rewrite of locking scheme (which
-is now superior to some other solutions), latency improvements for IRQ
-handling and port of ide-cd over generic ATAPI support (not to mention
-whole stack of bugfixes and cleanups).
-
-Thanks,
-Bart
-
-PS as usual I encourage people to try different solutions and choose
-whatever works best for them (please also remember that giving feedback
-is very important if you want to see some things improved).
+It would seem that this is either a kernel bug to be fixed, or a 
+documentation bug so users of this machine know about the workaround. 
+I'll report the bug if someone will tell me how.
