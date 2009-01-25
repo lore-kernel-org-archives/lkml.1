@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757441AbZAYPFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbZAYPXO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757441AbZAYPFt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 10:05:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbZAYPFk
+	id S1757104AbZAYPXO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 10:23:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZAYPW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 10:05:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:60477 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752832AbZAYPFj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 10:05:39 -0500
-Date: Sun, 25 Jan 2009 09:04:54 -0600
-From: Clark Williams <williams@redhat.com>
-To: Bastien ROUCARIES <roucaries.bastien@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Lee Revell <rlrevell@joe-job.com>,
-       linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>
-Subject: Re: [RT] [RFC] simple SMI detector
-Message-ID: <20090125090454.753c05dd@torg>
-In-Reply-To: <195c7a900901250349t6c0cdc73gdbd71a9f87151d72@mail.gmail.com>
-References: <1232751312.3990.59.camel@perihelion.bos.jonmasters.org>
-	<75b66ecd0901231833j2fda4554sb0f47457ab838566@mail.gmail.com>
-	<alpine.LFD.2.00.0901241716540.3424@localhost.localdomain>
-	<1232845026.3990.71.camel@perihelion.bos.jonmasters.org>
-	<1232849565.29318.112.camel@sven.thebigcorporation.com>
-	<20090125040246.GE9216@mit.edu>
-	<alpine.LFD.2.00.0901251035050.3424@localhost.localdomain>
-	<195c7a900901250349t6c0cdc73gdbd71a9f87151d72@mail.gmail.com>
-Organization: Red Hat, Inc
+	Sun, 25 Jan 2009 10:22:56 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40739 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754051AbZAYPWz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 10:22:55 -0500
+Date: Sun, 25 Jan 2009 15:22:11 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Mikael Pettersson <mikpe@it.uu.se>, Hugh Dickins <hugh@veritas.com>,
+       Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc libata sff 32bit PIO regression
+Message-ID: <20090125152211.18a838f9@lxorguk.ukuu.org.uk>
+In-Reply-To: <4977B1D1.2010305@ru.mvista.com>
+References: <Pine.LNX.4.64.0901211322010.15945@blonde.anvils>
+	<18807.33113.550070.329912@harpo.it.uu.se>
+	<20090121214746.2b15d1de@lxorguk.ukuu.org.uk>
+	<4977A6E5.6080506@ru.mvista.com>
+	<20090121225808.1f5ffac1@lxorguk.ukuu.org.uk>
+	<4977B10B.5050904@ru.mvista.com>
+	<4977B1D1.2010305@ru.mvista.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n0PF5qwM030102
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-On Sun, 25 Jan 2009 12:49:18 +0100
-Bastien ROUCARIES <roucaries.bastien@gmail.com> wrote:
-
-> On Sun, Jan 25, 2009 at 10:40 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
-> >
-> > My concern about the SMI disable module is that it can damage Joe
-> > users hardware. I have at least two reports where the CPU got fried
-> > and some others where people got confused because chips started
-> > behaving weird and it took quite a time to figure out that they used
-> > the SMI disabler. A big fat warning about this code is definitely
-> > necessary.
-> >
-> > Thanks,
+> >> "Note: only 32-bit writes to the data port are allowed when this bit is
+> >> set."
+> >>   
+> >  
+> >   Now tell me who forces you to set that bit (I assume it's the write 
+> > buffer enable) for the ATAPI devices?
 > 
-> 
-> I suppose the non joe user could flash their motherboard with
-> linuxcore and therefore do not distrub by SMI :)
-> 
+>    Yes, it's the write buffer enable (about which I have written already).
 
-Except for the fact that linuxcore is unaware of the specific
-requirements a particular motherboard has for thermal management.
+Yeah that seems the best way to go - not I note that the old drivers/ide
+driver programs it right for 16bit I/O or doing mixed 16/32 ..
 
-Turning off SMI's unconditionally is a *bad* idea. Better to start
-telling hardware vendors that we can't use their platform because of
-unexplained latencies (which we presume to be SMI's). 
+Patch added to my tree which together with Hugh's change should do the
+trick. The others I've checked seem to have no such rule except in VLB
+space. Never tried ATAPI in anger on a VLB box but it's easy enough to
+address and I'll do a third patch for those.
 
-Clark
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.10 (GNU/Linux)
-
-iEYEARECAAYFAkl8f5oACgkQHyuj/+TTEp0JuwCfQaaugU+MY8nWHKsvXuVNmE6X
-IEYAoMFn70BK9NczzHI1XnnQwy7bx/Ja
-=aRKl
------END PGP SIGNATURE-----
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Alan
