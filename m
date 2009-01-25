@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751609AbZAYXHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751686AbZAYXJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751609AbZAYXHe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 18:07:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbZAYXH0
+	id S1751686AbZAYXJj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 18:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750806AbZAYXJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 18:07:26 -0500
-Received: from kroah.org ([198.145.64.141]:42828 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750775AbZAYXHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 18:07:25 -0500
-Subject: patch staging-usbip-usbip_start_threads-handle-kernel_thread-failure.patch added to gregkh-2.6 tree
-To: roel.kluin@gmail.com, gregkh@suse.de, linux-kernel@vger.kernel.org
-From: <gregkh@suse.de>
-Date: Sun, 25 Jan 2009 15:00:58 -0800
-In-Reply-To: <494C222A.8050507@gmail.com>
-Message-ID: <12329244581987@kroah.org>
+	Sun, 25 Jan 2009 18:09:31 -0500
+Received: from rankki.sonarnerd.net ([83.145.240.118]:37581 "EHLO
+	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750781AbZAYXJa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 18:09:30 -0500
+Message-ID: <497CF128.2060903@sonarnerd.net>
+Date: Mon, 26 Jan 2009 01:09:28 +0200
+From: Jussi Laako <jussi@sonarnerd.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: James Courtier-Dutton <James@superbug.co.uk>
+CC: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC][PATCH] Multimedia scheduling class
+References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net> <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net> <4971D3D5.6040801@superbug.co.uk>
+In-Reply-To: <4971D3D5.6040801@superbug.co.uk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+James Courtier-Dutton wrote:
+>> For sure this is nice for certain tasks. I'm not entirely convinced if
+>> the average media player or Flash-plugin would or should start using these.
+> 
+> There is never a need for media players to use this.
+> Media players have time stamps on the displayed frames.
+> If the timestamp on a frame indicates it has taken too long to decode
+> it, the media player just skips the frame until it reaches frames that
+> have non-expired time stamps. No need for any kernel help here.
 
-This is a note to let you know that I've just added the patch titled
+This is completely irrelevant. These media players still play audio and
+sync video to audio. Many of these players are not programmed in a way
+that it would be safe to run these on SCHED_FIFO. Or the environment
+these are running in is not safe enough. But still smooth video and
+audio playback is needed, even in cases when locate database is being
+rebuilt in the background and possibly other CPU and IO intensive tasks
+are running. Any skipped frames make the video playback look jumpy, if
+frames are lost, it should be single frame periodically, not burst of
+frames at once...
 
-    Subject: Staging: usbip: usbip_start_threads(): handle kernel_thread failure
-
-to my gregkh-2.6 tree.  Its filename is
-
-    staging-usbip-usbip_start_threads-handle-kernel_thread-failure.patch
-
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
-
-
->From roel.kluin@gmail.com  Sun Jan 25 14:35:50 2009
-From: Roel Kluin <roel.kluin@gmail.com>
-Date: Fri, 19 Dec 2008 23:37:30 +0100
-Subject: Staging: usbip: usbip_start_threads(): handle kernel_thread failure
-To: Greg KH <gregkh@suse.de>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Message-ID: <494C222A.8050507@gmail.com>
-
-
-kernel_thread may fail, notice this.
-
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/staging/usbip/usbip_common.c |   16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
-
---- a/drivers/staging/usbip/usbip_common.c
-+++ b/drivers/staging/usbip/usbip_common.c
-@@ -406,8 +406,20 @@ void usbip_start_threads(struct usbip_de
- 	/*
- 	 * threads are invoked per one device (per one connection).
- 	 */
--	kernel_thread(usbip_thread, (void *)&ud->tcp_rx, 0);
--	kernel_thread(usbip_thread, (void *)&ud->tcp_tx, 0);
-+	int retval;
-+
-+	retval = kernel_thread(usbip_thread, (void *)&ud->tcp_rx, 0);
-+	if (retval < 0) {
-+		printk(KERN_ERR "Creating tcp_rx thread for ud %p failed.\n",
-+				ud);
-+		return;
-+	}
-+	retval = kernel_thread(usbip_thread, (void *)&ud->tcp_tx, 0);
-+	if (retval < 0) {
-+		printk(KERN_ERR "Creating tcp_tx thread for ud %p failed.\n",
-+				ud);
-+		return;
-+	}
- 
- 	/* confirm threads are starting */
- 	wait_for_completion(&ud->tcp_rx.thread_done);
-
-
-Patches currently in gregkh-2.6 which might be from roel.kluin@gmail.com are
-
-staging/staging-meilhaus-unsigned-won-t-get-negative-after-subtraction.patch
-staging/staging-otus-logical-bit-and-confusion.patch
-staging/staging-usbip-usbip_start_threads-handle-kernel_thread-failure.patch
+Good everyday normal example is HD video played from Youtube or similar
+site using Flash plugin inside browser. There can be various background
+tasks running at the same time, but the video playback should still be
+smooth. One may want to run thread doing video decoding at significantly
+lower priority than audio decoding thread in order to maintain overall
+system responsiveness in cases of high CPU load from the video decoding
+part. While the audio thread shouldn't starve or miss it's deadline.
