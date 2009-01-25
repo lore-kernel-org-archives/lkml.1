@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbZAYORp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757088AbZAYOUM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756748AbZAYORp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 09:17:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZAYORg
+	id S1757088AbZAYOUM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 09:20:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZAYOT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 09:17:36 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42529 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754839AbZAYORf (ORCPT
+	Sun, 25 Jan 2009 09:19:59 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:7860 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754242AbZAYOT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 09:17:35 -0500
-Date: Sun, 25 Jan 2009 14:16:57 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: linux-serial@vger.kernel.org, Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [trivial patch] fix missing space in printk
- drivers/serial/8250.c
-Message-ID: <20090125141657.3f74f73a@lxorguk.ukuu.org.uk>
-In-Reply-To: <497B7C7F.80104@msgid.tls.msk.ru>
-References: <497B7C7F.80104@msgid.tls.msk.ru>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 25 Jan 2009 09:19:58 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=pue1FD+FuQepDoLezM+vgfKZWQhb+ylAb/XYMNsOOAyjZMfDWg18gki6dlGU29GEZS
+         2BNcfZ6dTTrOyz836pwLRceya1AAxdDnOCBCdXObdMamLYD0Qo/xZW+laTngLDwvG59H
+         z6Ds5ulbiV2Eoe89CCTodNGI+6pwTehX+OpsU=
+MIME-Version: 1.0
+In-Reply-To: <20090124183746.395f597b.akpm@linux-foundation.org>
+References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com>
+	 <20090124183746.395f597b.akpm@linux-foundation.org>
+Date: Sun, 25 Jan 2009 15:19:56 +0100
+Message-ID: <8db1092f0901250619o2436ba7bkfaa988ccd9fd21bb@mail.gmail.com>
+Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Jan 2009 23:39:27 +0300
-Michael Tokarev <mjt@tls.msk.ru> wrote:
+2009/1/25 Andrew Morton <akpm@linux-foundation.org>:
 
-> Again, I don't know where to push this trivia thing.
-> 8250 marked as Orphan in MAINTAINERS, so I'm sending
-> to linux-serial@ AND to linux-kernel@
-> 
-> Because.. when I see such mess in dmesg, it annoys me ;)
-> 
->  Serial: 8250/16550 driver10 ports, IRQ sharing enabled
-> 
-> Signed-Off-By: Michael Tokarev <mjt@tls.msk.ru>
+>
+> Coming out of the hrtimer_hres_active() call, I assume.
+>
+> Is this new behaviour, or were 2.6.28 and earlier doing it?
 
-Doesn't apply and the upstream tree appears to have this fixed
+2.6.28 and 2.6.28-rcx works OK. 2.6.29-rc1 hangs on resume, so I
+cannot check it.
+
+
+
+>
+> Does this fix it?
+
+I will check it soon.
+
+
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
