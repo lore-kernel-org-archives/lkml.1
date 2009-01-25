@@ -1,60 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756407AbZAYQA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZAYQBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756407AbZAYQA1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 11:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbZAYQAQ
+	id S1756769AbZAYQBS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 11:01:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752262AbZAYQBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 11:00:16 -0500
-Received: from mail-ew0-f10.google.com ([209.85.219.10]:60008 "EHLO
-	mail-ew0-f10.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754308AbZAYQAP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 11:00:15 -0500
+	Sun, 25 Jan 2009 11:01:04 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:52107 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751303AbZAYQBC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 11:01:02 -0500
+Date: Sun, 25 Jan 2009 17:00:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Florian Fainelli <florian.fainelli@telecomint.eu>
+Cc: john stultz <johnstul@us.ibm.com>, Miklos Vajna <vmiklos@frugalware.org>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Gabriel C <nix.or.die@googlemail.com>,
+       =?iso-8859-1?Q?CS=C9CSY_L=E1szl=F3?= <boobaa@frugalware.org>,
+       r.schwebel@pengutronix.de, sven@geggus.net
+Subject: Re: System clock runs too fast after 2.6.27 -> 2.6.28.1 upgrade
+Message-ID: <20090125160019.GA21455@elte.hu>
+References: <20090121171423.GI21473@genesis.frugalware.org> <200901251218.33255.florian.fainelli@telecomint.eu> <20090125150349.GB19168@elte.hu> <200901251638.34040.florian.fainelli@telecomint.eu>
 MIME-Version: 1.0
-In-Reply-To: <20090125164858.6b281c6c@mjolnir.drzeus.cx>
-References: <1231268198-12556-1-git-send-email-apw@canonical.com>
-	 <20090112160519.3ba21848@mjolnir.drzeus.cx>
-	 <20090115150003.GB6896@shadowen.org>
-	 <20090124185612.5afddbb0@mjolnir.drzeus.cx>
-	 <ac3eb2510901241545l4eb9f77dvebd5861340b3447e@mail.gmail.com>
-	 <20090125164858.6b281c6c@mjolnir.drzeus.cx>
-Date: Sun, 25 Jan 2009 17:00:11 +0100
-Message-ID: <ac3eb2510901250800g40dd31d8q35e626413f2853a1@mail.gmail.com>
-Subject: Re: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200901251638.34040.florian.fainelli@telecomint.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 25, 2009 at 16:48, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> On Sun, 25 Jan 2009 00:45:46 +0100
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
->
->> On Sat, Jan 24, 2009 at 18:56, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
->> >
->> > Well, as long as we're on the track of temporary hack, we might as well
->> > just export "mmc_block" as the modalias. Or would there be any
->> > side-effects to that?
->>
->> The common format is to prefix with "<subsystem>:". Something like
->> "mmc:block" sounds fine to me.
->>
->
-> My point was to have the kernel explicitly ask for the module it wants
-> as there is no decent device to driver mapping scheme.
 
-Yep, which is what we do not want. Aliases are "aliases", and not
-"module names". We need to add a matching alias to the module then.
-Direct module names can not properly defined/blacklisted in userspace,
-and we would need to work around that.
-Every modalias should be
-"<subsystem>:<whatever-name-fits-for-the-subsystem>" to plug properly
-into the autoloading infrastructure. We rather have no modalias at
-all, then a kernel module name there.
+* Florian Fainelli <florian.fainelli@telecomint.eu> wrote:
 
-Thanks,
-Kay
+> Le Sunday 25 January 2009 16:03:49 Ingo Molnar, vous avez écrit :
+> > * Florian Fainelli <florian.fainelli@telecomint.eu> wrote:
+> > > Le Saturday 24 January 2009 10:14:04 Ingo Molnar, vous avez écrit :
+> > > > * john stultz <johnstul@us.ibm.com> wrote:
+> > > > > On Fri, Jan 23, 2009 at 3:04 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > > > > > * john stultz <johnstul@us.ibm.com> wrote:
+> > > > > >> I'd think this would ideally be more of a subarch in the config
+> > > > > >> selection like the AMD Elan is, so folks know it really is not
+> > > > > >> just a extra-support feature and in fact limits what hardware you
+> > > > > >> can use the resulting kernel on.
+> > > > > >
+> > > > > > a better solution is that if RDC is set [it is unset by default] we
+> > > > > > should turn PIT_TICK_RATE into a variable, defaulting it to
+> > > > > > 1193182. If a real RDC or ELAN system is running, that variable is
+> > > > > > changed during early bootup, in the init functions for those
+> > > > > > platforms.
+> > > > >
+> > > > > Took a quick look at this, and I don't see any detection code for
+> > > > > either RDC. The X86_ELAN config also has no conditionals, but maybe
+> > > > > the elan cpufreq code can help here.
+> > > >
+> > > > i'd suggest to just remove the #ifdef for now (it's causing problems)
+> > > > and add the variable - we can add the quirks for those two platforms
+> > > > later on, separately from your patch(es).
+> > >
+> > > Fine with me. Ingo, is there any infrastructure yet to get an early
+> > > quirk set the PIT tick rate accordingly ?
+> >
+> > Not yet but it should be easy - do you have the time to implement it?
+> 
+> Not until a week, sorry.
+
+ok - i've done the interim patch below. Please send a quirk patch for 
+RDC's non-standard PIT frequency.
+
+	Ingo
+
+------------------->
+>From e1b4d1143651fb3838be1117785b6e0386fa151f Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Sun, 25 Jan 2009 16:57:00 +0100
+Subject: [PATCH] x86: use standard PIT frequency
+
+the RDC and ELAN platforms use slighly different PIT clocks, resulting in
+a timex.h hack that changes PIT_TICK_RATE during build time. But if a
+tester enables any of these platform support .config options, the PIT
+will be miscalibrated on standard PC platforms.
+
+So use one frequency - in a subsequent patch we'll add a quirk to allow
+x86 platforms to define different PIT frequencies.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/timex.h |   13 ++++---------
+ 1 files changed, 4 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/include/asm/timex.h b/arch/x86/include/asm/timex.h
+index 1287dc1..b5c9d45 100644
+--- a/arch/x86/include/asm/timex.h
++++ b/arch/x86/include/asm/timex.h
+@@ -1,18 +1,13 @@
+-/* x86 architecture timex specifications */
+ #ifndef _ASM_X86_TIMEX_H
+ #define _ASM_X86_TIMEX_H
+ 
+ #include <asm/processor.h>
+ #include <asm/tsc.h>
+ 
+-#ifdef CONFIG_X86_ELAN
+-#  define PIT_TICK_RATE 1189200 /* AMD Elan has different frequency! */
+-#elif defined(CONFIG_X86_RDC321X)
+-#  define PIT_TICK_RATE 1041667 /* Underlying HZ for R8610 */
+-#else
+-#  define PIT_TICK_RATE 1193182 /* Underlying HZ */
+-#endif
+-#define CLOCK_TICK_RATE	PIT_TICK_RATE
++/* The PIT ticks at this frequency (in HZ): */
++#define PIT_TICK_RATE		1193182
++
++#define CLOCK_TICK_RATE		PIT_TICK_RATE
+ 
+ #define ARCH_HAS_READ_CURRENT_TIMER
+ 
