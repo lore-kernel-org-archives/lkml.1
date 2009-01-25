@@ -1,78 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbZAYNJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbZAYNN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbZAYNJt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 08:09:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZAYNJl
+	id S1757212AbZAYNN7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 08:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbZAYNNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 08:09:41 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:5186 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754148AbZAYNJk (ORCPT
+	Sun, 25 Jan 2009 08:13:50 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35933 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755032AbZAYNNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 08:09:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JRo2pBKWIOQdaL2MRF55Ql9trjbq1ur+zHKZR3VDIY3wD7jyu5RRUtBaeetbuU3WbQ
-         fxaxX9OS0zQLCjGwy+wB5gShuIS6aQ91TcpcHau1tQU3PqFLCK3vVs0dXJupSVgSErHC
-         IQ4S7idsCryRy8acl00QQjXnaSKFBlfnVctZw=
-Date: Sun, 25 Jan 2009 18:39:12 +0530
-From: Rabin Vincent <rabin@rab.in>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] kbuild: add sys_* entries for syscalls in tags
-Message-ID: <20090125130912.GA21034@debian>
-References: <20090125100553.GA18239@debian> <20090125111856.GA3268@x200.localdomain>
+	Sun, 25 Jan 2009 08:13:49 -0500
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: [PATCH] fix compilation error in ide code
+Date: Sun, 25 Jan 2009 14:13:44 +0100
+Message-Id: <1232889227-20887-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <20090125123023.GA12248@pengutronix.de>
+References: <20090125123023.GA12248@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090125111856.GA3268@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently, it is no longer possible to use the tags file to jump to
-system call function definitions with sys_foo, because the definitions
-are obscured by use of the SYSCALL_DEFINE* macros.
+Commit 97b45b274f48aeec changed a local_save_flags to
+local_save_flags_nort which is not defined and not used anywhere else.
+Change this back to local_save_flags as there is no reason not to read
+the flags in RT code.
 
-This patch adds the appropriate option to ctags to make it see through
-the macro.  Also, it adds the ENTRY() work already done for Exuberant
-to Emacs too.
-
-Signed-off-by: Rabin Vincent <rabin@rab.in>
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 ---
-This version of the patch makes the modifications for emacs too.
+ include/linux/ide.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- scripts/tags.sh |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/tags.sh b/scripts/tags.sh
-index fdbe78b..fe7c99d 100755
---- a/scripts/tags.sh
-+++ b/scripts/tags.sh
-@@ -99,7 +99,8 @@ exuberant()
- 	-I ____cacheline_internodealigned_in_smp                \
- 	-I EXPORT_SYMBOL,EXPORT_SYMBOL_GPL                      \
- 	--extra=+f --c-kinds=+px                                \
--	--regex-asm='/^ENTRY\(([^)]*)\).*/\1/'
-+	--regex-asm='/^ENTRY\(([^)]*)\).*/\1/'                  \
-+	--regex-c='/^SYSCALL_DEFINE[[:digit:]]?\(([^,)]*).*/sys_\1/'
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index dc5ac49..a3cf9c1 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1622,7 +1622,7 @@ extern struct mutex ide_cfg_mtx;
  
- 	all_kconfigs | xargs $1 -a                              \
- 	--langdef=kconfig --language-force=kconfig              \
-@@ -117,7 +118,9 @@ exuberant()
+ #define local_irq_set(flags)			\
+ 	do {					\
+-		local_save_flags_nort((flags)); \
++		local_save_flags((flags)); \
+ 		local_irq_enable_in_hardirq();	\
+ 	} while (0)
  
- emacs()
- {
--	all_sources | xargs $1 -a
-+	all_sources | xargs $1 -a                               \
-+	--regex='/^ENTRY(\([^)]*\)).*/\1/'                      \
-+	--regex='/^SYSCALL_DEFINE[0-9]?(\([^,)]*\).*/sys_\1/'
- 
- 	all_kconfigs | xargs $1 -a                              \
- 	--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/\3/'
 -- 
 1.5.6.5
 
