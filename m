@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755927AbZAYJzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbZAYJz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755927AbZAYJzm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 04:55:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZAYJzH
+	id S1756492AbZAYJz7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 04:55:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZAYJzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 04:55:07 -0500
+	Sun, 25 Jan 2009 04:55:12 -0500
 Received: from wf-out-1314.google.com ([209.85.200.172]:43495 "EHLO
 	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbZAYJzD (ORCPT
+	with ESMTP id S1752138AbZAYJzH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 04:55:03 -0500
+	Sun, 25 Jan 2009 04:55:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=NCOMiJQeYtJ2Cuy1FQUGbl/+4iTWVmS8bKSB2UijIKG8aM5qnEHupC4ulR/EoaJ1ix
-         ValE9pf580K0goErknOeNda7W/gcfwmtjZViA8Mwi38ANo9fN1m7Kla3JbwhvEUhG/bM
-         OxZ8SYyk8QAzuewLiV3j9DOS5UN9LIXSb3IBM=
+        b=G5rXX9lX0iDqyG1E6vfO+0byuUTedzZ1NBoIS9E3KY5FADBpnP+12GwNs3MU6UrUy7
+         6ysKbgzTm4D92nRhEZ/DZ392u9Jb1KZ3roaaavJokP5r/8eORqNSnM0K8TSu3iFWAouJ
+         P1oBjupA5L2dZi80wWpL8aaDwBhO0BcNn6R04=
 From: Jaya Kumar <jayakumar.lkml@gmail.com>
 To: jayakumar.lkml@gmail.com
 Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>,
@@ -25,9 +25,9 @@ Cc: David Brownell <david-b@pacbell.net>, Eric Miao <eric.miao@marvell.com>,
        linux-arm-kernel@lists.arm.linux.org.uk,
        linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
        linux-embedded@vger.kernel.org, Jaya Kumar <jayakumar.lkml@gmail.com>
-Subject: [RFC 2.6.28 2/3] mach-pxa: gpio add batch set/get
-Date: Sun, 25 Jan 2009 17:54:48 +0800
-Message-Id: <12328772954069-git-send-email-jayakumar.lkml@gmail.com>
+Subject: [RFC 2.6.28 3/3] mach-pxa: use batch set/get in am300epd
+Date: Sun, 25 Jan 2009 17:54:49 +0800
+Message-Id: <1232877301524-git-send-email-jayakumar.lkml@gmail.com>
 X-Mailer: git-send-email 1.5.2.3
 In-Reply-To: <123287728936-git-send-email-jayakumar.lkml@gmail.com>
 References: <123287728936-git-send-email-jayakumar.lkml@gmail.com>
@@ -35,10 +35,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for pxa specific batch set/get of gpio. This
-is exported to gpiolib via the gpio_chip interface. The API used
-conforms with the gpiolib batch set/get API described in
-Documentation/gpio.txt.
+This patch to am300epd uses the batch gpiolib set/get API in order
+to significantly improve performance when transferring framebuffer
+data.
 
 Cc: David Brownell <david-b@pacbell.net>
 Cc: Eric Miao <eric.miao@marvell.com>
@@ -51,173 +50,50 @@ Cc: linux-kernel@vger.kernel.org
 Cc: linux-embedded@vger.kernel.org
 Signed-off-by: Jaya Kumar <jayakumar.lkml@gmail.com>
 ---
- arch/arm/mach-pxa/Kconfig             |    1 +
- arch/arm/mach-pxa/gpio.c              |   63 +++++++++++++++++++++++++++++++++
- arch/arm/mach-pxa/include/mach/gpio.h |   51 ++++++++++++++++++++++++++
- 3 files changed, 115 insertions(+), 0 deletions(-)
+ arch/arm/mach-pxa/am300epd.c |   23 ++++++++++++-----------
+ 1 files changed, 12 insertions(+), 11 deletions(-)
 
-diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
-index f844425..1b3e631 100644
---- a/arch/arm/mach-pxa/Kconfig
-+++ b/arch/arm/mach-pxa/Kconfig
-@@ -41,6 +41,7 @@ config GUMSTIX_AM200EPD
- 	bool "Enable AM200EPD board support"
+diff --git a/arch/arm/mach-pxa/am300epd.c b/arch/arm/mach-pxa/am300epd.c
+index 4bd10a1..237e3be 100644
+--- a/arch/arm/mach-pxa/am300epd.c
++++ b/arch/arm/mach-pxa/am300epd.c
+@@ -187,24 +187,25 @@ static void am300_cleanup(struct broadsheetfb_par *par)
  
- config GUMSTIX_AM300EPD
-+	select GPIOLIB_BATCH
- 	bool "Enable AM300EPD board support"
+ static u16 am300_get_hdb(struct broadsheetfb_par *par)
+ {
+-	u16 res = 0;
+-	int i;
+-
+-	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
+-		res |= (gpio_get_value(DB0_GPIO_PIN + i)) ? (1 << i) : 0;
++	int err;
++	u32 val;
  
- endchoice
-diff --git a/arch/arm/mach-pxa/gpio.c b/arch/arm/mach-pxa/gpio.c
-index 5fec1e4..0e466e2 100644
---- a/arch/arm/mach-pxa/gpio.c
-+++ b/arch/arm/mach-pxa/gpio.c
-@@ -162,6 +162,67 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- 		__raw_writel(mask, pxa->regbase + GPCR_OFFSET);
+-	return res;
++	err = gpio_get_batch(DB0_GPIO_PIN, 0xFFFF, &val);
++	if (err) {
++		dev_err(&am300_device->dev, "get failed: %d\n", err);
++		return 0;
++	}
++	return (u16) val;
  }
  
-+#ifdef CONFIG_GPIOLIB_BATCH
-+/*
-+ * Set output GPIO level in batches
-+ */
-+static int pxa_gpio_set_batch(struct gpio_chip *chip, unsigned startpin,
-+				u32 mask, int width, u32 values)
-+{
-+	struct pxa_gpio_chip *pxa;
-+
-+	/* we're guaranteed by the caller that startpin + mask remains
-+	 * in this chip.
-+	 */
-+	pxa = container_of(chip, struct pxa_gpio_chip, chip);
-+
-+	/* mask is used twice in shifted form */
-+	mask <<= startpin;
-+
-+	values = (values << startpin) & mask;
-+	if (values)
-+		__raw_writel(values, pxa->regbase + GPSR_OFFSET);
-+
-+	values = ~values & mask;
-+	if (values)
-+		__raw_writel(values, pxa->regbase + GPCR_OFFSET);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Get output GPIO level in batches
-+ */
-+static int pxa_gpio_get_batch(struct gpio_chip *chip, unsigned startpin,
-+				u32 mask, int width, u32 *result)
-+{
-+	u32 values;
-+	struct pxa_gpio_chip *pxa;
-+
-+	/* we're guaranteed by the caller that startpin + mask remains
-+	 * in this chip.
-+	 */
-+	pxa = container_of(chip, struct pxa_gpio_chip, chip);
-+
-+	values = __raw_readl(pxa->regbase + GPLR_OFFSET);
-+
-+	/* shift the result back into original position */
-+	*result = (values >> startpin) & mask;
-+	return 0;
-+}
-+#endif
-+
-+/* this is done this way so that we can insert an ifdef-able value
-+ * into the following GPIO_CHIP macro
-+ */
-+#ifdef CONFIG_GPIOLIB_BATCH
-+#define SET_BATCH_MACRO	.set_batch 	  = pxa_gpio_set_batch,
-+#define GET_BATCH_MACRO	.get_batch	  = pxa_gpio_get_batch,
-+#else
-+#define SET_BATCH_MACRO
-+#define GET_BATCH_MACRO
-+#endif
-+
- #define GPIO_CHIP(_n)							\
- 	[_n] = {							\
- 		.regbase = GPIO##_n##_BASE,				\
-@@ -173,6 +234,8 @@ static void pxa_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
- 			.set		  = pxa_gpio_set,		\
- 			.base		  = (_n) * 32,			\
- 			.ngpio		  = 32,				\
-+			SET_BATCH_MACRO					\
-+			GET_BATCH_MACRO					\
- 		},							\
- 	}
- 
-diff --git a/arch/arm/mach-pxa/include/mach/gpio.h b/arch/arm/mach-pxa/include/mach/gpio.h
-index 2c538d8..7fa84fe 100644
---- a/arch/arm/mach-pxa/include/mach/gpio.h
-+++ b/arch/arm/mach-pxa/include/mach/gpio.h
-@@ -24,6 +24,7 @@
- #ifndef __ASM_ARCH_PXA_GPIO_H
- #define __ASM_ARCH_PXA_GPIO_H
- 
-+#include <linux/bitops.h>
- #include <mach/pxa-regs.h>
- #include <asm/irq.h>
- #include <mach/hardware.h>
-@@ -56,6 +57,56 @@ static inline void gpio_set_value(unsigned gpio, int value)
- 	}
+ static void am300_set_hdb(struct broadsheetfb_par *par, u16 data)
+ {
+-	int i;
+-
+-	for (i = 0; i <= (DB15_GPIO_PIN - DB0_GPIO_PIN) ; i++)
+-		gpio_set_value(DB0_GPIO_PIN + i, (data >> i) & 0x01);
++	int err;
++	err = gpio_set_batch(DB0_GPIO_PIN, 0xFFFF, data);
++	if (err)
++		dev_err(&am300_device->dev, "set failed: %d\n", err);
  }
  
-+#ifdef CONFIG_GPIOLIB_BATCH
-+static inline int gpio_set_batch(unsigned startpin, u32 mask, u32 values)
-+{
-+	int err = 0;
-+	int width = fls(mask);
-+
-+	if (__builtin_constant_p(startpin) &&
-+		(startpin + width < NR_BUILTIN_GPIO) &&
-+		((startpin + width) <= roundup(startpin + 1, 32))) {
-+		int shift;
-+
-+		shift = startpin % 32;
-+		mask <<= shift;
-+
-+		values = (values << shift) & mask;
-+		if (values)
-+			GPSR(startpin) = values;
-+
-+		values = ~values & mask;
-+		if (values)
-+			GPCR(startpin) = values;
-+	} else {
-+		err = __gpio_set_batch(startpin, mask, width, values);
-+	}
-+	return err;
-+}
-+
-+static inline int gpio_get_batch(unsigned startpin, u32 mask, u32 *result)
-+{
-+	int ret = 0;
-+	int width = fls(mask);
-+
-+	if (__builtin_constant_p(startpin) &&
-+		(startpin + width < NR_BUILTIN_GPIO) &&
-+		((startpin + width) <= roundup(startpin+1, 32))) {
-+		int shift;
-+		u32 values;
-+
-+		shift = startpin % 32;
-+
-+		values = GPLR(startpin);
-+
-+		*result = (values >> shift) & mask;
-+	} else {
-+		ret = __gpio_get_batch(startpin, mask, width, result);
-+	}
-+	return ret;
-+}
-+#endif
-+
- #define gpio_cansleep __gpio_cansleep
- 
- #define gpio_to_irq(gpio)	IRQ_GPIO(gpio)
+-
+ static void am300_set_ctl(struct broadsheetfb_par *par, unsigned char bit,
+ 				u8 state)
+ {
 -- 
 1.5.2.3
 
