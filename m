@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753301AbZAYVKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753151AbZAYVNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753301AbZAYVKw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 16:10:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751473AbZAYVKo
+	id S1753151AbZAYVNr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 16:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751731AbZAYVNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 16:10:44 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:47326 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751443AbZAYVKn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 16:10:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=R7yMxXkGHXrFa4qUIRRwWmlcFu86xWn5hxEmCUtu7ygXxUwV0B3vQMt3z1yIghkppQ
-         WqvndWO927/ImCBU0BHUOuNbx/0rar3XctPbZ3DjqAhQZFqIUd/H/3FJhmEwD1KQt6Yh
-         yi3bIcEpN+capGTxkhH/SEfFxEvFlTz0ak1ew=
+	Sun, 25 Jan 2009 16:13:36 -0500
+Received: from mail.tmr.com ([64.65.253.246]:44727 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751408AbZAYVNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 16:13:36 -0500
+Message-ID: <497CD5F3.8030901@tmr.com>
+Date: Sun, 25 Jan 2009 16:13:23 -0500
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 pango-text SeaMonkey/1.1.14
 MIME-Version: 1.0
-In-Reply-To: <497CD30D.80203@tmr.com>
-References: <3f9a31f40901251239k3e368feeib33661d82497725b@mail.gmail.com>
-	 <20090125204603.2ccb5169@lxorguk.ukuu.org.uk> <497CD30D.80203@tmr.com>
-Date: Mon, 26 Jan 2009 02:40:42 +0530
-Message-ID: <3f9a31f40901251310g38ecfe61t97e119533215d271@mail.gmail.com>
-Subject: Re: hdb: status error: error=0x40 <3>{ UncorrectableError }
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Newsgroups: gmane.linux.kernel
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
+Subject: Re: Switching from (deprecated) IDE driver -> SATA (PATA support)
+References: <alpine.DEB.1.10.0901250553430.2441@p34.internal.lan> <20090125110742.4ba54c0b@lxorguk.ukuu.org.uk> <alpine.DEB.1.10.0901250705300.6888@p34.internal.lan> <alpine.DEB.1.10.0901250715030.10379@p34.internal.lan> <alpine.DEB.1.10.0901250726530.10805__44823.8515914001$1232890466$gmane$org@p34.internal.lan>
+In-Reply-To: <alpine.DEB.1.10.0901250726530.10805__44823.8515914001$1232890466$gmane$org@p34.internal.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 2:31 AM, Bill Davidsen <davidsen@tmr.com> wrote:
->
->
-> Alan Cox wrote:
+Justin Piszcz wrote:
+> 
+> 
+> On Sun, 25 Jan 2009, Justin Piszcz wrote:
+> 
 >>
->> On Mon, 26 Jan 2009 02:09:56 +0530
->> Jaswinder Singh Rajput
->> <jaswinderlinux-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org> wrote:
 >>
->>> Hello all,
+>> On Sun, 25 Jan 2009, Justin Piszcz wrote:
+>>
 >>>
->>> I added extra IDE drive I get similar messages like below so I replace
->>> it another drive but I am still getting similar error messages on
->>> 2.6.29-rc2-tip:
 >>>
->>> hdb: status error: status=0x59 { DriveReady SeekComplete DataRequest
->>> Error }
->>> hdb: status error: error=0x40 <3>{ UncorrectableError },
->>> LBAsect=208845, sector=0
+>>> On Sun, 25 Jan 2009, Alan Cox wrote:
+>>>
+>>>> Easiest is to use labels. Old ide will keep hda,b,c,d constant
+>>>> providing you have interfaces using the legacy IDE port mappings (0x1f0
+>>>> and 0x170). Libata doesn't do that as pretty much every distribution 
+>>>> had
+>>>> already switched to volume labels, and the user space can do the job 
+>>>> far
+>>>> better than the kernel - especially as the newer devices with modern
+>>>> interfaces don't have the old BIOS/DOS legacy ideas any more.
+>>>>
+>>>> Mount by label also means you can flip back and forth between the
+>>>> different drivers and kernel revisions.
+>>>>
+>>>> Alan
+>>>>
+>> It comes with one :)
+>> # xfs_admin -u  /dev/sdd2
+>> UUID = 77ae4251-631f-4656-a365-c5723f5c5da8
 >>
->> Uncorrectable Error is an error from the drive, not the kernel. Looks
->> like you have bad sectors on that drive.
+>> Will try to use this to boot; however, I'd prefer the labels over the 
+>> UUID, wish there was an easy way to set it.
 >>
-> He noted that he tried another drive, so unless he has a pile of bad drives
-> it's probably something else. Being "hdb" may indicate that it's connected
-> to the same controller as "hda" and might not be jumpered for slave. Or it
-> might be a bad cable, a controller which doesn't like two drives, a dubious
-> power connector, etc. Or if he doesn't have an hda, perhaps the kernel
-> doesn't like a secondary drive without a primary.
->
-> Being hdb instead of sdb with a new kernel indicates he is using a config
-> which may get a lot less testing these days, perhaps?
->
-> In any case, I doubt he had two bad drives, so something else is more
-> likely.
->
+>> Justin.
+>>
+>> _______________________________________________
+>> xfs mailing list
+>> xfs@oss.sgi.com
+>> http://oss.sgi.com/mailman/listinfo/xfs
+>>
+> 
+> One final question, without udev, how does one determine the UUID of a 
+> non-XFS
+> partition, e.g., swap?
+> 
+One uses blkid. Which suggests that you can solve your name problem by not using 
+names and switching to UUID.
 
-But earlier both was working fine on some another machines.
 
---
-JSR
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
