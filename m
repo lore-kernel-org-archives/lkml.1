@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752562AbZAYUzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752538AbZAYVB0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752562AbZAYUzA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 15:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZAYUyw
+	id S1752538AbZAYVB0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 16:01:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZAYVBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 15:54:52 -0500
-Received: from mu-out-0910.google.com ([209.85.134.190]:23250 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751240AbZAYUyv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 15:54:51 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=an2vOl6X4O41M8c1lHCEyjwBLua6Jetlis5ypWFpZO5AQU+b8fSEiBlvMaUrhsPzQK
-         05pLvYR/ARwPm+jJFI6ZACn6Nx66YG1Y0qQ+nmdBN0IPm/anfJW5W+6vBY3mQDsS0B34
-         MTNr5fBTt0WZTDKihyi9vdlyk6yjpkOMaZJ8w=
-Message-ID: <497CD298.8080503@gmail.com>
-Date: Sun, 25 Jan 2009 22:59:04 +0200
-From: Aioanei Rares <krnl.list@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: Charles Landau <clandau@macslab.com>, linux-kernel@vger.kernel.org
-Subject: Re: Gateway DX4720-03 apic problem
-References: <497CBF12.10202@macslab.com> <497CC962.7060900@shaw.ca>
-In-Reply-To: <497CC962.7060900@shaw.ca>
+	Sun, 25 Jan 2009 16:01:17 -0500
+Received: from main.gmane.org ([80.91.229.2]:33958 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751344AbZAYVBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 16:01:16 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: hdb: status error: error=0x40 <3>{ UncorrectableError }
+Date: Sun, 25 Jan 2009 16:01:01 -0500
+Message-ID: <497CD30D.80203@tmr.com>
+References: <3f9a31f40901251239k3e368feeib33661d82497725b@mail.gmail.com> <20090125204603.2ccb5169@lxorguk.ukuu.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+Cc: kernel-testers@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: pool-68-236-142-151.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 pango-text SeaMonkey/1.1.14
+In-Reply-To: <20090125204603.2ccb5169@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> Charles Landau wrote:
->> I have a new Gateway DX4720-03 PC and have discovered that it won't 
->> install Fedora 10 unless I give the kernel boot option "noapic" or 
->> "nolapic".
+Alan Cox wrote:
+> On Mon, 26 Jan 2009 02:09:56 +0530
+> Jaswinder Singh Rajput <jaswinderlinux@gmail.com> wrote:
+> 
+>> Hello all,
 >>
->> This system's processor is the Intel Pentium Dual Core E5200.
+>> I added extra IDE drive I get similar messages like below so I replace
+>> it another drive but I am still getting similar error messages on
+>> 2.6.29-rc2-tip:
 >>
->> It would seem that this is either a kernel bug to be fixed, or a 
->> documentation bug so users of this machine know about the workaround. 
->> I'll report the bug if someone will tell me how.
->
-> I think you just did report it :-)
->
-> Well, it's something that should be fixed in the kernel, either it's a 
-> kernel bug or hardware busted in some way that we should be detecting.
->
-> How is it failing to install, is it locking up at some point, etc?
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-My guess is that anaconda fails at some point regarding storage options.
+>> hdb: status error: status=0x59 { DriveReady SeekComplete DataRequest Error }
+>> hdb: status error: error=0x40 <3>{ UncorrectableError },
+>> LBAsect=208845, sector=0
+> 
+> Uncorrectable Error is an error from the drive, not the kernel. Looks
+> like you have bad sectors on that drive.
+> 
+He noted that he tried another drive, so unless he has a pile of bad drives it's 
+probably something else. Being "hdb" may indicate that it's connected to the 
+same controller as "hda" and might not be jumpered for slave. Or it might be a 
+bad cable, a controller which doesn't like two drives, a dubious power 
+connector, etc. Or if he doesn't have an hda, perhaps the kernel doesn't like a 
+secondary drive without a primary.
+
+Being hdb instead of sdb with a new kernel indicates he is using a config which 
+may get a lot less testing these days, perhaps?
+
+In any case, I doubt he had two bad drives, so something else is more likely.
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
