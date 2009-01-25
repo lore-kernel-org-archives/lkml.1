@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZAYVWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752703AbZAYVfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbZAYVWa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 16:22:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZAYVWT
+	id S1752703AbZAYVfp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 16:35:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZAYVfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 16:22:19 -0500
-Received: from mail.tmr.com ([64.65.253.246]:58567 "EHLO partygirl.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751479AbZAYVWS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 16:22:18 -0500
-Message-ID: <497CD808.5060506@tmr.com>
-Date: Sun, 25 Jan 2009 16:22:16 -0500
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 pango-text SeaMonkey/1.1.14
+	Sun, 25 Jan 2009 16:35:37 -0500
+Received: from kroah.org ([198.145.64.141]:57061 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751318AbZAYVfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 16:35:36 -0500
+Date: Sun, 25 Jan 2009 13:34:03 -0800
+From: Greg KH <greg@kroah.com>
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: Greg KH <gregkh@suse.de>, Mike Frysinger <vapier.adi@gmail.com>,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: debugfs & vfs file permission issue?
+Message-ID: <20090125213403.GB3600@kroah.com>
+References: <200901052157.07306.rgetz@blackfin.uclinux.org> <8bd0f97a0901052232l22b60386pbcd9438cc752638f@mail.gmail.com> <200901060705.33294.rgetz@blackfin.uclinux.org> <200901061012.38888.rgetz@blackfin.uclinux.org>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel,gmane.linux.network.general
-To: linux-net@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: What happened to this NIC? Any ideas?
-References: <20090124192450.GA4721@tatooine.rebelbase.local>
-In-Reply-To: <20090124192450.GA4721@tatooine.rebelbase.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901061012.38888.rgetz@blackfin.uclinux.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-markus reichelt wrote:
-
-> Just for the fun of it, I plugged the faulty NIC into a sole win
-> machine, it worked. Doesn't work in the linux machine afterwards,
-> though. First time that I observe such strange behaviour, any ideas
-> what could be the cause?
+On Tue, Jan 06, 2009 at 10:12:38AM -0500, Robin Getz wrote:
+> On Tue 6 Jan 2009 07:05, Robin Getz suggested:
+> >
+> > adding a readonly, and writeonly, and ensuring that when you call 
+> > debugfs_create_*, the mode is checked, and the "correct" fops are set 
+> > doesn't seem like it would be a bad idea? This would enforce the
+> > kernel programmer's view on the world, and not allow pesky root users
+> > to override things....
+> > 
+> > Greg - would you take something like that?
 > 
-Did you put it in the same slot? Was there a firmware upgrade recently?
-Those are the things I would check, but not with any great expectation of 
-finding the cause.
+> How about this?
+> 
+> Feel free to nak it - we can do the same thing where we are calling the
+> debugfs_create_* functions - this just makes it cleaner in my opinion.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+I like the patch, but there are no changes to the debugfs.h file, which
+I think you need.
+
+Care to resend it with the needed header file changes so that I can
+apply it?
+
+thanks,
+
+greg k-h
