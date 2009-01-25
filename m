@@ -1,82 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbZAYNIn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbZAYNJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756958AbZAYNIn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 08:08:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZAYNIe
+	id S1756171AbZAYNJt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 08:09:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZAYNJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 08:08:34 -0500
-Received: from lucidpixels.com ([75.144.35.66]:49407 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754020AbZAYNId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 08:08:33 -0500
-Date: Sun, 25 Jan 2009 08:08:32 -0500 (EST)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Switching from (deprecated) IDE driver -> SATA (PATA support)
- (found solution (scratch that))
-In-Reply-To: <alpine.DEB.1.10.0901250752020.11258@p34.internal.lan>
-Message-ID: <alpine.DEB.1.10.0901250808020.15073@p34.internal.lan>
-References: <alpine.DEB.1.10.0901250553430.2441@p34.internal.lan> <20090125110742.4ba54c0b@lxorguk.ukuu.org.uk> <alpine.DEB.1.10.0901250705300.6888@p34.internal.lan> <alpine.DEB.1.10.0901250715030.10379@p34.internal.lan> <alpine.DEB.1.10.0901250726530.10805@p34.internal.lan>
- <alpine.DEB.1.10.0901250740360.11258@p34.internal.lan> <alpine.DEB.1.10.0901250752020.11258@p34.internal.lan>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 25 Jan 2009 08:09:41 -0500
+Received: from wf-out-1314.google.com ([209.85.200.170]:5186 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754148AbZAYNJk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 08:09:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JRo2pBKWIOQdaL2MRF55Ql9trjbq1ur+zHKZR3VDIY3wD7jyu5RRUtBaeetbuU3WbQ
+         fxaxX9OS0zQLCjGwy+wB5gShuIS6aQ91TcpcHau1tQU3PqFLCK3vVs0dXJupSVgSErHC
+         IQ4S7idsCryRy8acl00QQjXnaSKFBlfnVctZw=
+Date: Sun, 25 Jan 2009 18:39:12 +0530
+From: Rabin Vincent <rabin@rab.in>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH v2] kbuild: add sys_* entries for syscalls in tags
+Message-ID: <20090125130912.GA21034@debian>
+References: <20090125100553.GA18239@debian> <20090125111856.GA3268@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090125111856.GA3268@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Currently, it is no longer possible to use the tags file to jump to
+system call function definitions with sys_foo, because the definitions
+are obscured by use of the SYSCALL_DEFINE* macros.
 
+This patch adds the appropriate option to ctags to make it see through
+the macro.  Also, it adds the ENTRY() work already done for Exuberant
+to Emacs too.
 
-On Sun, 25 Jan 2009, Justin Piszcz wrote:
+Signed-off-by: Rabin Vincent <rabin@rab.in>
+---
+This version of the patch makes the modifications for emacs too.
 
->
->
-> On Sun, 25 Jan 2009, Justin Piszcz wrote:
->
->> 
->> 
->> On Sun, 25 Jan 2009, Justin Piszcz wrote:
->> 
->>> 
->>> 
->>> On Sun, 25 Jan 2009, Justin Piszcz wrote:
->>> 
->>>> 
->>>> 
->>>> On Sun, 25 Jan 2009, Justin Piszcz wrote:
->>>> 
->>>>> 
->>>>> 
->>>>> On Sun, 25 Jan 2009, Alan Cox wrote:
+ scripts/tags.sh |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-Hm, I may have spoke too fast:
-
-Added: (IDE ONLY), no SATA:
-image=/boot/2.6.26-6
-         label=2.6.26-6
-         read-only
-         root=current
-
-p254:/boot# lilo
-Added 2.6.26-6 *
-Added 2.6.28-4
-p254:/boot#
-
-Set to current.
-
-p254:/boot# grep =current /etc/lilo.conf
-root=current
-         root=current
-p254:/boot#
-
-The reason current may have worked before is because I manually booted with
-root=/dev/sdd2 (after I saw the error that it could not find root,302, etc)
-
-So I am booting the old kernel without the SATA drivers with root=current
-to see if it works..
-
-Nope, so I need to figure out how to get the UUID= option working in LILO.
-
-Justin.
+diff --git a/scripts/tags.sh b/scripts/tags.sh
+index fdbe78b..fe7c99d 100755
+--- a/scripts/tags.sh
++++ b/scripts/tags.sh
+@@ -99,7 +99,8 @@ exuberant()
+ 	-I ____cacheline_internodealigned_in_smp                \
+ 	-I EXPORT_SYMBOL,EXPORT_SYMBOL_GPL                      \
+ 	--extra=+f --c-kinds=+px                                \
+-	--regex-asm='/^ENTRY\(([^)]*)\).*/\1/'
++	--regex-asm='/^ENTRY\(([^)]*)\).*/\1/'                  \
++	--regex-c='/^SYSCALL_DEFINE[[:digit:]]?\(([^,)]*).*/sys_\1/'
+ 
+ 	all_kconfigs | xargs $1 -a                              \
+ 	--langdef=kconfig --language-force=kconfig              \
+@@ -117,7 +118,9 @@ exuberant()
+ 
+ emacs()
+ {
+-	all_sources | xargs $1 -a
++	all_sources | xargs $1 -a                               \
++	--regex='/^ENTRY(\([^)]*\)).*/\1/'                      \
++	--regex='/^SYSCALL_DEFINE[0-9]?(\([^,)]*\).*/sys_\1/'
+ 
+ 	all_kconfigs | xargs $1 -a                              \
+ 	--regex='/^[ \t]*\(\(menu\)*config\)[ \t]+\([a-zA-Z0-9_]+\)/\3/'
+-- 
+1.5.6.5
 
