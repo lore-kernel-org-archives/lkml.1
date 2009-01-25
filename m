@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756522AbZAYPqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZAYPso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756522AbZAYPqS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 10:46:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZAYPqC
+	id S1756117AbZAYPso (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 10:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751303AbZAYPsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 10:46:02 -0500
-Received: from sandeen.net ([209.173.210.139]:15835 "EHLO mail.sandeen.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753231AbZAYPqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 10:46:01 -0500
-Message-ID: <497C8937.8080102@sandeen.net>
-Date: Sun, 25 Jan 2009 09:45:59 -0600
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+	Sun, 25 Jan 2009 10:48:36 -0500
+Received: from mail-gx0-f24.google.com ([209.85.217.24]:46637 "EHLO
+	mail-gx0-f24.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751145AbZAYPsg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 10:48:36 -0500
 MIME-Version: 1.0
-To: Justin Piszcz <jpiszcz@lucidpixels.com>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Switching from (deprecated) IDE driver -> SATA (PATA support)
-References: <alpine.DEB.1.10.0901250553430.2441@p34.internal.lan>	<20090125110742.4ba54c0b@lxorguk.ukuu.org.uk>	<alpine.DEB.1.10.0901250705300.6888@p34.internal.lan>	<alpine.DEB.1.10.0901250715030.10379@p34.internal.lan> <alpine.DEB.1.10.0901250726530.10805@p34.internal.lan>
-In-Reply-To: <alpine.DEB.1.10.0901250726530.10805@p34.internal.lan>
+Date: Sun, 25 Jan 2009 18:48:34 +0300
+Message-ID: <4c57f5990901250748j7fffc4fv3150821156ce47a2@mail.gmail.com>
+Subject: GSPCA PAC207 patch to support genius ilook 111 webcam
+From: Lierdakil <root@livid.pp.ru>
+To: hdegoede@redhat.com
+Cc: linux-kernel@vger.kernel.org, video4linux-list@redhat.com
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin Piszcz wrote:
+It figures, that GSPCA PAC207 driver does not "know", that it can
+support genius i-look 111 webcam.
+The following patch simply adds usb ID of Genius iLook 111 to usb_de
+list of GSPCA PAC207 subdriver.
+=================
 
-> One final question, without udev, how does one determine the UUID of a non-XFS
-> partition, e.g., swap?
-> 
-> $ ls -l
-> total 0
-> lrwxrwxrwx 1 root root  9 2009-01-25 01:54 203fcd30-4e56-40e9-a8e5-93ddc8eb536a -> ../../md0
-> lrwxrwxrwx 1 root root 10 2009-01-25 01:54 2ef862e1-cf78-4065-a205-d1784716d633 -> ../../sdd1
-> lrwxrwxrwx 1 root root 10 2009-01-25 01:54 77ae4251-631f-4656-a365-c5723f5c5da8 -> ../../sdd2
-> 
-> p254:~# find /proc/|grep -i uuid
-> /proc/sys/kernel/random/uuid
-> p254:~# find /sys/|grep -i uuid 
-> p254:~#
-
-blkid:
-
-[root@mythbox ~]# blkid /dev/sda?
-/dev/sda1: LABEL="/movies" UUID="38da660b-3600-4508-a608-2e1a20041ecb"
-TYPE="xfs"
-/dev/sda2: LABEL="/video" UUID="7b5583ae-cd42-4db1-9868-d96a5ccd3fea"
-TYPE="xfs"
-/dev/sda3: LABEL="/boot" UUID="379dbe60-1988-47b9-9891-17038abcc1f0"
-TYPE="ext3" SEC_TYPE="ext2"
-/dev/sda5: LABEL="/" UUID="c7bd2307-e067-4185-a7a0-d8d54057f3b9" TYPE="xfs"
-/dev/sda6: TYPE="swap" LABEL="SWAP-sda6"
-UUID="ea3f5dae-2509-4764-a93e-b777e72fdfbd"
-
--Eric
+Index: linux-2.6.28.2/Documentation/video4linux/gspca.txt
+===================================================================
+--- linux-2.6.28.2.orig/Documentation/video4linux/gspca.txt
++++ linux-2.6.28.2/Documentation/video4linux/gspca.txt
+@@ -206,6 +206,7 @@ pac207		093a:2468	PAC207
+ pac207		093a:2470	Genius GF112
+ pac207		093a:2471	Genius VideoCam ge111
+ pac207		093a:2472	Genius VideoCam ge110
++pac207		093a:2474	Genius iLook 111
+ pac207		093a:2476	Genius e-Messenger 112
+ pac7311		093a:2600	PAC7311 Typhoon
+ pac7311		093a:2601	Philips SPC 610 NC
+Index: linux-2.6.28.2/drivers/media/video/gspca/pac207.c
+===================================================================
+--- linux-2.6.28.2.orig/drivers/media/video/gspca/pac207.c
++++ linux-2.6.28.2/drivers/media/video/gspca/pac207.c
+@@ -535,6 +535,7 @@ static const __devinitdata struct usb_de
+ 	{USB_DEVICE(0x093a, 0x2470)},
+ 	{USB_DEVICE(0x093a, 0x2471)},
+ 	{USB_DEVICE(0x093a, 0x2472)},
++	{USB_DEVICE(0x093a, 0x2474)},
+ 	{USB_DEVICE(0x093a, 0x2476)},
+ 	{USB_DEVICE(0x2001, 0xf115)},
+ 	{}
