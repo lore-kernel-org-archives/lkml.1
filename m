@@ -1,83 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbZAYVCy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZAYVEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753638AbZAYVCy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 16:02:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbZAYVCi
+	id S1753332AbZAYVEK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 16:04:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZAYVDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 16:02:38 -0500
-Received: from wa-out-1112.google.com ([209.85.146.182]:51079 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752748AbZAYVCg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 16:02:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=d16By++Puzt+OZy6fCcGbcftwb6HdUL0bF83hcXvwr9n5nvRNO+8LBcG6auIPhVl+J
-         c6sqyTV+FQibnhmSCDPsoMeENqAd7324QOevqA8qVBfhlO2al6kcf4uXkzmlAUBygUoI
-         XZl/fbSAn7pbc3orVZFdIuDMwfXhxgoQ9nHas=
-MIME-Version: 1.0
-In-Reply-To: <497CCF9B.6000102@yahoo.fr>
-References: <3f9a31f40901251239k3e368feeib33661d82497725b@mail.gmail.com>
-	 <497CCF9B.6000102@yahoo.fr>
-Date: Mon, 26 Jan 2009 02:32:35 +0530
-Message-ID: <3f9a31f40901251302s62949b8fs75c9099e4232b811@mail.gmail.com>
-Subject: Re: hdb: status error: error=0x40 <3>{ UncorrectableError }
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: strawks <strawks@yahoo.fr>
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       James Bottomley <James.Bottomley@hansenpartnership.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 25 Jan 2009 16:03:52 -0500
+Received: from 1wt.eu ([62.212.114.60]:1774 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751433AbZAYVDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 16:03:51 -0500
+Date: Sun, 25 Jan 2009 22:03:25 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, jarkao2@gmail.com, zbr@ioremap.net,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH] tcp: splice as many packets as possible at once
+Message-ID: <20090125210325.GA31227@1wt.eu>
+References: <20090119061420.GB12946@1wt.eu> <20090118.221908.47032075.davem@davemloft.net> <20090119101924.GA1881@gondor.apana.org.au> <20090119.125941.240930524.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090119.125941.240930524.davem@davemloft.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 2:16 AM, strawks <strawks@yahoo.fr> wrote:
-> -----BEGIN PGP SIGNED MESSAGE-----
-> Hash: SHA1
->
-> Jaswinder Singh Rajput wrote:
->> Hello all,
->>
->> I added extra IDE drive I get similar messages like below so I replace
->> it another drive but I am still getting similar error messages on
->> 2.6.29-rc2-tip:
->
-> Does it work with other kernels?
->
+Hi David,
 
-Earlier it was working, I was trying to install another OS, during
-format it fails.
+On Mon, Jan 19, 2009 at 12:59:41PM -0800, David Miller wrote:
+> From: Herbert Xu <herbert@gondor.apana.org.au>
+> Date: Mon, 19 Jan 2009 21:19:24 +1100
+> 
+> > On Sun, Jan 18, 2009 at 10:19:08PM -0800, David Miller wrote:
+> > > 
+> > > Actually, I see, the myri10ge driver does put up to
+> > > 64 bytes of the initial packet into the linear area.
+> > > If the IPV4 + TCP headers are less than this, you will
+> > > hit the corruption case even with the myri10ge driver.
+> > 
+> > I thought splice only mapped the payload areas, no?
+> 
+> And the difference between 64 and IPV4+TCP header len becomes the
+> payload, don't you see? :-)
+> 
+> myri10ge just pulls min(64, skb->len) bytes from the SKB frags into
+> the linear area, unconditionally.  So a small number of payload bytes
+> can in fact end up there.
+> 
+> Otherwise Willy could never have triggered this bug.
 
->> hdb: status error: status=0x59 { DriveReady SeekComplete DataRequest
-> Error }
->> hdb: status error: error=0x40 <3>{ UncorrectableError },
->> LBAsect=208845, sector=0
->> ide: failed opcode was: unknown
->> end_request: I/O error, dev hdb, sector 0
->> Buffer I/O error on device hdb, logical block 0
->> hdb: drive not ready for command
-> [...]
->> How can I fix these error.
->
-> What is the output of :
->
-> smartctl -A -l error /dev/hdb
->
+Just FWIW, I've updated my tools in order to perform content checks more
+easily. I cannot reproduce the issue at all with the myri10ge NICs, neither
+with large frames nor with tiny ones (8 bytes).
 
-[root@jaswinder jsr]# /usr/sbin/smartctl -A -l error /dev/hdb
-smartctl version 5.38 [i386-redhat-linux-gnu] Copyright (C) 2002-8 Bruce Allen
-Home page is http://smartmontools.sourceforge.net/
+However, I have noticed that the load is now sensible to the number of
+concurrent sessions. I'm using 2.6.29-rc2 with the perfcounters patches,
+and I'm not sure whether the difference in behaviour came with the data
+corruption fixes or with the new kernel (which has some profiling options
+turned on). Basically, below 800-1000 concurrent sessions, I have no
+problem reaching 10 Gbps with LRO and MTU=1500, with about 60% CPU. Above
+this number of session, the CPU suddenly jumps to 100% and the data rate
+drops to about 6.7 Gbps.
 
-Smartctl: Device Read Identity Failed (not an ATA/ATAPI device)
+I spent a long time trying to figure what it was, but I think that I
+have found. Kerneltop reports different figures above and below the
+limit.
 
-A mandatory SMART command failed: exiting. To continue, add one or
-more '-T permissive' options.
-[root@jaswinder jsr]#
+1) below the limit :
 
---
-JSR
+            1429.00 - 00000000784a7840 : tcp_sendpage
+             561.00 - 00000000784a6580 : tcp_read_sock
+             485.00 - 00000000f87e13c0 : myri10ge_xmit  [myri10ge]
+             433.00 - 00000000781a40c0 : sys_splice
+             411.00 - 00000000784a6eb0 : tcp_poll
+             344.00 - 000000007847bcf0 : dev_queue_xmit
+             342.00 - 0000000078470be0 : __skb_splice_bits
+             319.00 - 0000000078472950 : __alloc_skb
+             310.00 - 0000000078185870 : kmem_cache_alloc
+             285.00 - 00000000784b2260 : tcp_transmit_skb
+             285.00 - 000000007850cac0 : _spin_lock
+             250.00 - 00000000781afda0 : sys_epoll_ctl
+             238.00 - 000000007810334c : system_call
+             232.00 - 000000007850ac20 : schedule
+             230.00 - 000000007850cc10 : _spin_lock_bh
+             222.00 - 00000000784705f0 : __skb_clone
+             220.00 - 000000007850cbc0 : _spin_lock_irqsave
+             213.00 - 00000000784a08f0 : ip_queue_xmit
+             211.00 - 0000000078185ea0 : __kmalloc_track_caller
+
+2) above the limit :
+
+            1778.00 - 00000000784a7840 : tcp_sendpage
+            1281.00 - 0000000078472950 : __alloc_skb
+             639.00 - 00000000784a6780 : sk_stream_alloc_skb
+             507.00 - 0000000078185ea0 : __kmalloc_track_caller
+             484.00 - 0000000078185870 : kmem_cache_alloc
+             476.00 - 00000000784a6580 : tcp_read_sock
+             451.00 - 00000000784a08f0 : ip_queue_xmit
+             421.00 - 00000000f87e13c0 : myri10ge_xmit  [myri10ge]
+             374.00 - 00000000781852e0 : __slab_alloc
+             361.00 - 00000000781a40c0 : sys_splice
+             273.00 - 0000000078470be0 : __skb_splice_bits
+             231.00 - 000000007850cac0 : _spin_lock
+             206.00 - 0000000078168b30 : get_pageblock_flags_group
+             165.00 - 00000000784a0260 : ip_finish_output
+             165.00 - 00000000784b2260 : tcp_transmit_skb
+             161.00 - 0000000078470460 : __copy_skb_header
+             153.00 - 000000007816d6d0 : put_page
+             144.00 - 000000007850cbc0 : _spin_lock_irqsave
+             137.00 - 0000000078189be0 : fget_light
+
+The memory allocation clearly is the culprit here. I'll try Jarek's
+patch which reduces memory allocation to see if that changes something,
+as I'm sure we can do fairly better, given how it behaves with limited
+sessions.
+
+Regards,
+Willy
+
+PS: this thread is long, if some of the people in CC want to get off
+    the thread, please complain.
+
