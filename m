@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753260AbZAYVjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbZAYVlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753260AbZAYVjp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 16:39:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752514AbZAYVjY
+	id S1753361AbZAYVlj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 16:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZAYVlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 16:39:24 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:44600 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751511AbZAYVjX (ORCPT
+	Sun, 25 Jan 2009 16:41:32 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:50728 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbZAYVlb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 16:39:23 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=VxEa6UgAsLC7mNcgXVw/6MNqnA3sScnuJObIDm2XqYXq/ag7e4ZStVL//i/eWZuEHp
-         oSF82yhoBk6mmR29NRn3Jcz5LWE18CyeTuFD4huFUTCcf0jQk4dh51pq9eX6cf1PXyD+
-         S73y4URy7rix5Tc+m0fkX99Uk+xYBrYNNyM/4=
-Message-ID: <497CDC06.3030900@gmail.com>
-Date: Sun, 25 Jan 2009 22:39:18 +0100
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mmotm] mm: unify some pmd_*() functions
-References: <1232919337-21434-1-git-send-email-righi.andrea@gmail.com>
-In-Reply-To: <1232919337-21434-1-git-send-email-righi.andrea@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 25 Jan 2009 16:41:31 -0500
+Subject: Re: [RT] [RFC] simple SMI detector
+From: Jon Masters <jonathan@jonmasters.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Lee Revell <rlrevell@joe-job.com>,
+       linux-rt-users@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       williams <williams@redhat.com>,
+       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>
+In-Reply-To: <20090125040246.GE9216@mit.edu>
+References: <1232751312.3990.59.camel@perihelion.bos.jonmasters.org>
+	 <75b66ecd0901231833j2fda4554sb0f47457ab838566@mail.gmail.com>
+	 <alpine.LFD.2.00.0901241716540.3424@localhost.localdomain>
+	 <1232845026.3990.71.camel@perihelion.bos.jonmasters.org>
+	 <1232849565.29318.112.camel@sven.thebigcorporation.com>
+	 <20090125040246.GE9216@mit.edu>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Sun, 25 Jan 2009 16:41:20 -0500
+Message-Id: <1232919680.1326.11.camel@jcmlaptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 98.98.59.70
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-01-25 22:35, Andrea Righi wrote:
-> Unify all the identical implementations of pmd_free(), __pmd_free_tlb(),
-> pmd_alloc_one(), pmd_addr_end() in include/asm-generic/pgtable-nopmd.h
-> 
+On Sat, 2009-01-24 at 23:02 -0500, Theodore Tso wrote:
 
-BTW, I only tested this on x86 and x86_64. This needs more testing because it
-touches also a lot of other architectures.
+> I'm not sure exactly how one would do this certification, but I agree
+> that some kind of "real-time ready" logo/certification program would
+> make a huge amount of sense, with some standardized metrics of maximum
+> time spent in an SMI routine, and under what circumstances (in some
+> cases it occurs every 30-60 minutes; on other cases, only when the CPU
+> is about to melt itself into slag, or when there are ECC errors, etc.)
+> There is a huge difference between a system which stops the OS on all
+> CPU's dead in its tracks for milliseconds once every 45 minutes,
+> versus one which only triggers an SMI in extreme situations when the
+> hardware is about to destroy itself.
 
--Andrea
+I actually already talked to a certain industry group about a different
+program but will mention this idea also - some kind of industry notion
+of "real time platform" probably wouldn't be a bad idea. I'm not sure
+what the vendors would say/think, but it's probably worth having the
+discussion anyway. I think we're all right now having to do a lot of
+legwork in testing/certifying that systems have acceptable latencies.
+
+Jon.
+
+
