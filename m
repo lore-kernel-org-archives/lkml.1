@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752474AbZAZPZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZAZP2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752474AbZAZPZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 10:25:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751455AbZAZPZu
+	id S1752542AbZAZP2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 10:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZAZP2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 10:25:50 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:25917 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZAZPZt (ORCPT
+	Mon, 26 Jan 2009 10:28:08 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:44162 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbZAZP2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 10:25:49 -0500
+	Mon, 26 Jan 2009 10:28:07 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=r3+Y5OVZrrqaN+pvQM84UGIpd6BKIvexmjR0TncJaKKyIAfZ8LCKqsYU1NOltHltPu
-         XKuIFX/Hfb/dqMeYDMjPW80N1NCWIPkKZkNXHWf7IR1tf0MrXgYaJNo2bFdLVpKJOGQa
-         oKBD2f35ETbALf1VD6B25xtNAZQ//Th9JGfv4=
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=PfBLFxUhanK2Ln1bFuFQQ9RZZ69xq7k4hX4t2R6GRudLmVkvTvVepQR07g/7tXyS+j
+         Ewt62kZkpKc0WqFw7uW7VgkMZaiiKn8l3eTdOLAfCRfG4+euTJWD9Yt/U1L43fTe3CK3
+         eIECCY669qGA7y+r+1vrcw315Fo6ng3L7Pqrs=
+Date: Mon, 26 Jan 2009 18:28:02 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
+Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH -tip] x86: ftrace - simplify wait_for_nmi
+Message-ID: <20090126152802.GA12465@localhost>
 MIME-Version: 1.0
-In-Reply-To: <1232977715.4863.81.camel@laptop>
-References: <497cd08f.0c11660a.33a7.ffffdf39@mx.google.com>
-	 <1232977715.4863.81.camel@laptop>
-Date: Mon, 26 Jan 2009 16:25:47 +0100
-Message-ID: <c62985530901260725s2f36c6d8u1572775d790e7888@mail.gmail.com>
-Subject: Re: [RFC][PATCH 2/2] add a counter for writers spinning on a rwlock
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mandeep Singh Baines <msb@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/26 Peter Zijlstra <peterz@infradead.org>:
-> On Sun, 2009-01-25 at 12:50 -0800, Frederic Weisbecker wrote:
->> This patch adds a counter for writers that enter a rwlock slow path.
->> For example it can be useful for slow background tasks which perform some jobs
->> on the tasklist, such as the hung_task detector (kernel/hung_task.c).
->>
->> It adds a inc/dec pair on the slow path and 4 bytes for each rwlocks, so the overhead
->> is not null.
->>
->> Only x86 is supported for now, writers_spinning_lock() will return 0 on other archs (which
->> is perhaps not a good idea).
->>
->> Comments?
->
-> _why_ ?
+Get rid of 'waited' stack variable.
 
-The hung task detector runs a periodic loop through the task_list, and
-currently it doesn't run
-over an arbitrary threshold of tasks to not hold the task_list lock
-for too long.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+---
+ arch/x86/kernel/ftrace.c |   11 +++++------
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
-So we thought about a way to detect if there are some writers waiting
-for the lock, anf if so, release
-the lock, schedule and retry.
-
-I'm not sure this is something easy to measure, since this is more
-about small latency gains (if there are).
+Index: linux-2.6.git/arch/x86/kernel/ftrace.c
+===================================================================
+--- linux-2.6.git.orig/arch/x86/kernel/ftrace.c
++++ linux-2.6.git/arch/x86/kernel/ftrace.c
+@@ -133,15 +133,14 @@ void ftrace_nmi_exit(void)
+ 
+ static void wait_for_nmi(void)
+ {
+-	int waited = 0;
++	if (!atomic_read(&in_nmi))
++		return;
+ 
+-	while (atomic_read(&in_nmi)) {
+-		waited = 1;
++	do {
+ 		cpu_relax();
+-	}
++	} while(atomic_read(&in_nmi));
+ 
+-	if (waited)
+-		nmi_wait_count++;
++	nmi_wait_count++;
+ }
+ 
+ static int
