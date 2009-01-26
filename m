@@ -1,152 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZAZUtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbZAZVA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbZAZUtT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 15:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZAZUtK
+	id S1753516AbZAZVA1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:00:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZAZVAQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 15:49:10 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54460 "EHLO ogre.sisk.pl"
+	Mon, 26 Jan 2009 16:00:16 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36598 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752179AbZAZUtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 15:49:09 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
-Date: Mon, 26 Jan 2009 21:48:48 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: =?iso-8859-1?q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <200901262021.23763.rjw@sisk.pl> <20090126203559.GD8867@elte.hu>
-In-Reply-To: <20090126203559.GD8867@elte.hu>
+	id S1750988AbZAZVAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 16:00:14 -0500
+Message-ID: <497E2408.7050609@kernel.org>
+Date: Mon, 26 Jan 2009 12:58:48 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: make irqinit_32.c more like irqoinit_64.c
+References: <497C4111.8030904@kernel.org> <20090126124140.GA5812@elte.hu> <20090126141646.GA30919@elte.hu>
+In-Reply-To: <20090126141646.GA30919@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901262148.49717.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 January 2009, Ingo Molnar wrote:
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+>>> Impact: cleanup
+>>>
+>>> 1. add smp_intr_init and apic_intr_init for 32bit the same as 64bit
+>>> 2. move apic_intr_init() calling before set gate with interrupt[i]
+>>> 3. for 64bit, if ia32_emulation is not used, will make per_cpu to use 0x80 vector.
 > 
-> > On Monday 26 January 2009, Ingo Molnar wrote:
-> > > 
-> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > 
-> > > > On Monday 26 January 2009, Linus Torvalds wrote:
-> > > > > 
-> > > > > On Sat, 17 Jan 2009, Maciej Rutecki wrote:
-> > > > > >
-> > > > > > During suspend to ram:
-> > > > > > [  131.287012] BUG: using smp_processor_id() in preemptible [00000000]
-> > > > > > code: suspend_to_ram./2958
-> > > > > > [  131.287012] caller is retrigger_next_event+0x13/0xb0
-> > > > > > [  131.287012] Pid: 2958, comm: suspend_to_ram. Not tainted 2.6.29-rc2 #1
-> > > > > > [  131.287012] Call Trace:
-> > > > > > [  131.287012]  [<c025b41f>] debug_smp_processor_id+0xbf/0xd0
-> > > > > > [  131.287012]  [<c01473b3>] retrigger_next_event+0x13/0xb0
-> > > > > > [  131.287012]  [<c01489b7>] raw_notifier_call_chain+0x17/0x20
-> > > > > > [  131.287012]  [<c014b938>] timekeeping_resume+0xe8/0x110
-> > > > > > [  131.287012]  [<c02cc651>] __sysdev_resume+0x11/0x50
-> > > > > > [  131.287012]  [<c02cc6d7>] sysdev_resume+0x47/0x80
-> > > > > > [  131.287012]  [<c02d2478>] device_power_up+0x8/0x10
-> > > > > 
-> > > > > Very scary.
-> > > > > 
-> > > > > device_power_up() calls sysdev_resume _before_ it enables interrupts so it 
-> > > > > sounds like something else has - very incorrectly - enabled interrupts too 
-> > > > > early in your resume sequence. 
-> > > > > 
-> > > > > The patch that Andrew sent out and that apparently fixed things for you 
-> > > > > should absolutely not have made any difference. This is suspend_enter():
-> > > > > 
-> > > > > 	        arch_suspend_disable_irqs();
-> > > > > 	        BUG_ON(!irqs_disabled());
-> > > > > 
-> > > > > 	        if ((error = device_power_down(PMSG_SUSPEND))) {
-> > > > > 	                printk(KERN_ERR "PM: Some devices failed to power down\n");
-> > > > > 	                goto Done;
-> > > > > 	        }
-> > > > > 	
-> > > > > 	        if (!suspend_test(TEST_CORE))
-> > > > > 	                error = suspend_ops->enter(state);
-> > > > > 
-> > > > > 	        device_power_up(PMSG_RESUME);
-> > > > > 	 Done:
-> > > > > 	        arch_suspend_enable_irqs();
-> > > > > 
-> > > > > and notice how the whole thing is surrounded by that 
-> > > > > arch_suspend_disable/enable_irqs().
-> > > > > 
-> > > > > So it looks like some sysdev driver (device_power_up does the sysdev 
-> > > > > drivers first, so it can't be the regular low-level PCI drivers) is 
-> > > > > enabling interrupts in its resume function. Scary and very wrong.
-> > > > > 
-> > > > > It could easily be ACPI, of course. There was some other case where ACPI 
-> > > > > did that, iirc.
-> > > > 
-> > > > There is a known bug in the USB controllers' suspend that enables interrupts
-> > > > from within ->suspend_late().  It should be fixed by the next USB merge
-> > > > AFAICS.
-> > > 
-> > > the patch from Andrew looks wrong, as it hides the only place in the 
-> > > kernel that was able to report the resume bug. Nevertheless related to 
-> > > that bug we've got a new debug check queued up in timers/urgent:
-> > > 
-> > >  void hres_timers_resume(void)
-> > >  {
-> > > -       /* Retrigger the CPU local events: */
-> > > +       WARN_ONCE(!irqs_disabled(),
-> > > +                 KERN_INFO "hres_timers_resume() called with IRQs enabled!");
-> > > +
-> > >         retrigger_next_event(NULL);
-> > >  }
-> > > 
-> > > as the buggy 'irqs are enabled' condition was not detected reliably. (it 
-> > > was only detected with certain lockdep options turned on - and even then 
-> > > it did not seem to be 100% triggerable)
-> > 
-> > Yeah.
-> > 
-> > > i sent it to Linus earlier today.
-> > 
-> > OK, thanks.
-> > 
-> > I'll write a debug patch covering that more generally when I recover from the
-> > flu a bit.
-> > 
-> > Rafael
+> this change caused crashes/hangs on a 32-bit testsystem:
 > 
-> note, we could reuse the ftrace/irqtrace callbacks as well to create an: 
-> "enforce IRQs off and debug violations of that" facility.
+> Checking if this processor honours the WP bit even in supervisor mode...Ok.
+> SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
+> Unknown interrupt or fault at EIP 00000286 00000060 c0117e1c
+> Calibrating delay loop (skipped), value calculated using timer frequency.. 4020.82 BogoMIPS (lpj=8041640)
+> Security Framework initialized
+> Mount-cache hash table entries: 512
+> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+> CPU: L2 Cache: 512K (64 bytes/line)
+> CPU: Physical Processor ID: 0
+> CPU: Processor Core ID: 0
+> Checking 'hlt' instruction... [hard hang]
+> 
+> See the 'Unknown interrupt' entry (it is new) - which happens right after 
+> irqs are enabled. Reverting your patch makes it boot fine. Config 
+> attached.
+> 
+please check
 
-Well, do we have to? ;-)
+[PATCH] x86: make irqinit_32.c more like irqinit_64.c -v2
 
-> It would work like this, you could mark IRQs as disabled 'permanently':
-> 
->    force_irqs_off_start();
->    ...
->    force_irqs_off_end();
-> 
-> you could mark an arbitrarily complex code sequence that way, and ftrace 
-> would emit a WARN_ONCE() if irqs are enable anytime during that sequence - 
-> by using the irq-tracking facilities we have for the irqsoff tracer (and 
-> which we also have for lockdep).
-> 
-> Would that be useful?
+Impact: cleanup
 
-Not sure, I only know a little about ftrace, I really can't judge.
+1. add smp_intr_init and apic_intr_init for 32bit the same as 64bit
+2. move apic_intr_init() calling before set gate with interrupt[i]
+3. for 64bit, if ia32_emulation is not used, will make per_cpu to use 0x80 vector.
 
-Anyway, I think that putting the checks directly into the code path in question
-would be more reliable and would still work without ftrace.
+v2: should use !test_bit() instead of test_bit() with 32bit
 
-Thanks,
-Rafael
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/irqinit_32.c |   56 +++++++++++++++++++++++++------------------
+ arch/x86/kernel/irqinit_64.c |    7 +++--
+ arch/x86/kernel/traps.c      |   15 ++++-------
+ 3 files changed, 43 insertions(+), 35 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/irqinit_32.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/irqinit_32.c
++++ linux-2.6/arch/x86/kernel/irqinit_32.c
+@@ -120,28 +120,8 @@ int vector_used_by_percpu_irq(unsigned i
+ 	return 0;
+ }
+ 
+-/* Overridden in paravirt.c */
+-void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
+-
+-void __init native_init_IRQ(void)
++static void __init smp_intr_init(void)
+ {
+-	int i;
+-
+-	/* all the set up before the call gates are initialised */
+-	pre_intr_init_hook();
+-
+-	/*
+-	 * Cover the whole vector space, no vector can escape
+-	 * us. (some of these will be overridden and become
+-	 * 'special' SMP interrupts)
+-	 */
+-	for (i =  FIRST_EXTERNAL_VECTOR; i < NR_VECTORS; i++) {
+-		/* SYSCALL_VECTOR was reserved in trap_init. */
+-		if (i != SYSCALL_VECTOR)
+-			set_intr_gate(i, interrupt[i-FIRST_EXTERNAL_VECTOR]);
+-	}
+-
+-
+ #if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_SMP)
+ 	/*
+ 	 * The reschedule interrupt is a CPU-to-CPU reschedule-helper
+@@ -170,8 +150,13 @@ void __init native_init_IRQ(void)
+ 	set_intr_gate(IRQ_MOVE_CLEANUP_VECTOR, irq_move_cleanup_interrupt);
+ 	set_bit(IRQ_MOVE_CLEANUP_VECTOR, used_vectors);
+ #endif
++}
+ 
++static void __init apic_intr_init(void)
++{
+ #ifdef CONFIG_X86_LOCAL_APIC
++	smp_intr_init();
++
+ 	/* self generated IPI for local APIC timer */
+ 	alloc_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
+ 
+@@ -181,12 +166,37 @@ void __init native_init_IRQ(void)
+ # ifdef CONFIG_PERF_COUNTERS
+ 	alloc_intr_gate(LOCAL_PERF_VECTOR, perf_counter_interrupt);
+ # endif
+-#endif
+ 
+-#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_MCE_P4THERMAL)
++# ifdef CONFIG_X86_MCE_P4THERMAL
+ 	/* thermal monitor LVT interrupt */
+ 	alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
++# endif
+ #endif
++}
++
++/* Overridden in paravirt.c */
++void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
++
++void __init native_init_IRQ(void)
++{
++	int i;
++
++	/* all the set up before the call gates are initialised */
++	pre_intr_init_hook();
++
++	apic_intr_init();
++
++	/*
++	 * Cover the whole vector space, no vector can escape
++	 * us. (some of these will be overridden and become
++	 * 'special' SMP interrupts)
++	 */
++	for (i = 0; i < (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
++		int vector = FIRST_EXTERNAL_VECTOR + i;
++		/* SYSCALL_VECTOR was reserved in trap_init. */
++		if (!test_bit(vector, used_vectors))
++			set_intr_gate(vector, interrupt[i]);
++	}
+ 
+ 	if (!acpi_ioapic)
+ 		setup_irq(2, &irq2);
+Index: linux-2.6/arch/x86/kernel/irqinit_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/irqinit_64.c
++++ linux-2.6/arch/x86/kernel/irqinit_64.c
+@@ -162,6 +162,9 @@ void __init native_init_IRQ(void)
+ 	int i;
+ 
+ 	init_ISA_irqs();
++
++	apic_intr_init();
++
+ 	/*
+ 	 * Cover the whole vector space, no vector can escape
+ 	 * us. (some of these will be overridden and become
+@@ -169,12 +172,10 @@ void __init native_init_IRQ(void)
+ 	 */
+ 	for (i = 0; i < (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
+ 		int vector = FIRST_EXTERNAL_VECTOR + i;
+-		if (vector != IA32_SYSCALL_VECTOR)
++		if (!test_bit(vector, used_vectors))
+ 			set_intr_gate(vector, interrupt[i]);
+ 	}
+ 
+-	apic_intr_init();
+-
+ 	if (!acpi_ioapic)
+ 		setup_irq(2, &irq2);
+ }
+Index: linux-2.6/arch/x86/kernel/traps.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/traps.c
++++ linux-2.6/arch/x86/kernel/traps.c
+@@ -984,8 +984,13 @@ void __init trap_init(void)
+ #endif
+ 	set_intr_gate(19, &simd_coprocessor_error);
+ 
++	/* Reserve all the builtin and the syscall vector: */
++	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
++		set_bit(i, used_vectors);
++
+ #ifdef CONFIG_IA32_EMULATION
+ 	set_system_intr_gate(IA32_SYSCALL_VECTOR, ia32_syscall);
++	set_bit(IA32_SYSCALL_VECTOR, used_vectors);
+ #endif
+ 
+ #ifdef CONFIG_X86_32
+@@ -1002,17 +1007,9 @@ void __init trap_init(void)
+ 	}
+ 
+ 	set_system_trap_gate(SYSCALL_VECTOR, &system_call);
+-#endif
+-
+-	/* Reserve all the builtin and the syscall vector: */
+-	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
+-		set_bit(i, used_vectors);
+-
+-#ifdef CONFIG_X86_64
+-	set_bit(IA32_SYSCALL_VECTOR, used_vectors);
+-#else
+ 	set_bit(SYSCALL_VECTOR, used_vectors);
+ #endif
++
+ 	/*
+ 	 * Should be a barrier for any external CPU state:
+ 	 */
