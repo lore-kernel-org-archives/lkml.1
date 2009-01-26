@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754960AbZAZW5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753124AbZAZW6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754960AbZAZW5n (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 17:57:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbZAZW5L
+	id S1753124AbZAZW6P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 17:58:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZAZW55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 17:57:11 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38112
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752623AbZAZW5J (ORCPT
+	Mon, 26 Jan 2009 17:57:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46224 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752417AbZAZW54 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 17:57:09 -0500
-Date: Mon, 26 Jan 2009 14:57:06 -0800 (PST)
-Message-Id: <20090126.145706.154913313.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 26 Jan 2009 17:57:56 -0500
+Date: Mon, 26 Jan 2009 14:57:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bernd Schubert <bs@q-leap.de>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: cache flush timeouts by blk_queue_ordered()
+Message-Id: <20090126145716.cf7767aa.akpm@linux-foundation.org>
+In-Reply-To: <20090126223942.GA12463@lanczos.q-leap.de>
+References: <20081120181919.GA3818@lanczos.q-leap.de>
+	<20090126115540.694ea262.akpm@linux-foundation.org>
+	<20090126223942.GA12463@lanczos.q-leap.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 Jan 2009 23:39:42 +0100
+Bernd Schubert <bs@q-leap.de> wrote:
 
-Please pull to get these Sparc bug fixes, thanks!
+> Andrew, thanks a lot! I'm really always impressed how you manage to find time
+> to grep through all the threads, even those nobody cared to look at for months.
+> 
 
-The following changes since commit f3b8436ad9a8ad36b3c9fa1fe030c7f38e5d3d0b:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../roland/infiniband
+Only a very small subset, alas.
 
-are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+> I posted a patch, but never got a comment on it.
+> 
+> https://kerneltrap.org/mailarchive/linux-scsi/2008/11/26/4242484
 
-Christian Borntraeger (1):
-      [CVE-2009-0029] sparc: Enable syscall wrappers for 64-bit
+Three weeks ago: it's been forgotten about.
 
-David S. Miller (3):
-      sparc64: Initialize FHC/CLOCK LED platform_device 'id' field correctly.
-      sparc64: Annotate sparc64 specific syscalls with SYSCALL_DEFINEx()
-      sparc64: Fix DAX handling via userspace access from kernel.
+I suggest that you redo the patch series and resend the uncontroversial
+bits.  Feel free to copy me on them and I'll put them into my
+auto-resend queue.  That eventually causes something to happen.
 
-Sam Ravnborg (2):
-      sparc64: fix readout of cpu/fpu type
-      sparc64: fix modpost failure
 
- arch/sparc/Kconfig               |    1 +
- arch/sparc/kernel/central.c      |    2 +
- arch/sparc/kernel/cpu.c          |   18 ++++++++++++--
- arch/sparc/kernel/sys_sparc_64.c |   48 ++++++++++++++++++-------------------
- arch/sparc/kernel/syscalls.S     |    2 +-
- arch/sparc/kernel/systbls.h      |    3 --
- arch/sparc/kernel/systbls_64.S   |   16 ++++++------
- arch/sparc/kernel/traps_64.c     |   17 ++++++++++++-
- arch/sparc/lib/Makefile          |    3 +-
- 9 files changed, 68 insertions(+), 42 deletions(-)
