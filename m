@@ -1,143 +1,299 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZAZXnH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZAZXn0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755565AbZAZXnH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 18:43:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZAZXmv
+	id S1755812AbZAZXn0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 18:43:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbZAZXm4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 18:42:51 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55828 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752648AbZAZXmu (ORCPT
+	Mon, 26 Jan 2009 18:42:56 -0500
+Received: from wa-out-1112.google.com ([209.85.146.183]:61980 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753226AbZAZXmx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 18:42:50 -0500
-Date: Mon, 26 Jan 2009 15:42:17 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: oleg@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
-       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090126154217.b312e278.akpm@linux-foundation.org>
-In-Reply-To: <20090126225957.GA3999@elte.hu>
-References: <20090126202022.GA8867@elte.hu>
-	<20090126130046.37b8f34e.akpm@linux-foundation.org>
-	<20090126212727.GA13670@elte.hu>
-	<20090126133551.fab5e27a.akpm@linux-foundation.org>
-	<20090126214516.GA22142@elte.hu>
-	<20090126140116.35f9c173.akpm@linux-foundation.org>
-	<20090126220537.GA6755@elte.hu>
-	<20090126141605.707877bb.akpm@linux-foundation.org>
-	<20090126222002.GB10215@elte.hu>
-	<20090126145003.b29b81d7.akpm@linux-foundation.org>
-	<20090126225957.GA3999@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 26 Jan 2009 18:42:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=mUSPnJlnEXGdIOPqTTBOdBPkIC7BG5PGEYmxbBA32WrOYKy/ZlgovhJodKxPJveQjI
+         aWJyrgs51/aEXhMv39ZjKoWTco4AgY25ivZtVVFxMwDh9ThxqrhnCmkJaQuue86ZKRAJ
+         ZW2kgwPNxWIe89Apel96KEasQNTClHrugR7iI=
+MIME-Version: 1.0
+Reply-To: mtk.manpages@gmail.com
+In-Reply-To: <1232976389-13021-4-git-send-email-kraxel@redhat.com>
+References: <1232976389-13021-1-git-send-email-kraxel@redhat.com>
+	 <1232976389-13021-4-git-send-email-kraxel@redhat.com>
+Date: Tue, 27 Jan 2009 00:42:51 +0100
+Message-ID: <cfd18e0f0901261542x2d29e790tad3e940f1aed134f@mail.gmail.com>
+Subject: Re: [PATCH v7 3/5] Add preadv and pwritev system calls.
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       linux-api@vger.kernel.org, aarcange@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 23:59:57 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+Gerd,
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Mon, 26 Jan 2009 23:20:02 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > On Mon, 26 Jan 2009 23:05:37 +0100
-> > > > Ingo Molnar <mingo@elte.hu> wrote:
-> > > > 
-> > > > > 
-> > > > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > > > 
-> > > > > > Well it turns out that I was having a less-than-usually-senile moment:
-> > > > > > 
-> > > > > > :     implement flush_work()
-> > > > > 
-> > > > > > Why isn't that working in this case??
-> > > > > 
-> > > > > how would that work in this case? We defer processing into the workqueue 
-> > > > > exactly because we want its per-CPU properties.
-> > > > 
-> > > > It detaches the work item, moves it to head-of-queue, reinserts it then 
-> > > > waits on it.  I think.
-> > > > 
-> > > > This might have a race+hole.  If a currently-running "unrelated" work 
-> > > > item tries to take the lock which the flush_work() caller is holding 
-> > > > then there's no way in which keventd will come back to execute the work 
-> > > > item which we just put on the head of queue.
-> > > 
-> > > Correct - or the unrelated worklet might also be blocked on something - so 
-> > > the window is rather large.
-> > > 
-> > 
-> > hm, OK, that sucks.
-> > 
-> > But the deadlock still exists with Rusty's patches, doesn't it?  We 
-> > still have a single kernel thread per CPU processing all the unrelated 
-> > work_on_cpu() callers.  All we've done is to decouple work_on_cpu() from 
-> > the keventd queue.
-> 
-> This particular deadlock does not exist - but you are indeed right that 
-> similar types of 'unrelated' interactions might exist in the future, as 
-> the usage of this facility is extended.
+On Mon, Jan 26, 2009 at 2:26 PM, Gerd Hoffmann <kraxel@redhat.com> wrote:
+> This patch adds preadv and pwritev system calls.  These syscalls are a
+> pretty straightforward combination of pread and readv (same for write).
+> They are quite useful for doing vectored I/O in threaded applications.
+> Using lseek+readv instead opens race windows you'll have to plug with
+> locking.
+>
+> Other systems have such system calls too, for example NetBSD, check
+> here: http://www.daemon-systems.org/man/preadv.2.html
+>
+> The application-visible interface provided by glibc should look like
+> this to be compatible to the existing implementations in the *BSD family:
+>
+>  ssize_t preadv(int d, const struct iovec *iov, int iovcnt, off_t offset);
+>  ssize_t pwritev(int d, const struct iovec *iov, int iovcnt, off_t offset);
 
-So... can we call the new kernel threads [kbandaidd]?
+I earlier asked if you could provide some userspace example code using
+this API.  If there was a response, I missed it.  Could you please
+provide some working test using this interface.
 
-> > If correct, we'd need to create a gaggle of kernel threads on each call 
-> > to work_on_cpu(), which doesn't sound nice.
-> > 
-> > A more efficient but trickier approach would be to create kernel threads 
-> > within flush_work(), with which to run the CPU-specific worklet.  We 
-> > only need to do that in the case where the CPU's keventd thread was off 
-> > doing something and might deadlock, which will be rare. If the keventd 
-> > was just parked waiting for something to do then we can safely feed it 
-> > the to-be-flushed work item for immediate processing.
-> 
-> i think what you describe is a variant of the syslet thread pool ;-)
+Cheers,
 
-It's fairly simple.  The slightly tricky bit will be ensuring that
-keventd will reliably swallow the work item which we just fed it,
-before anything else.  But I guess the spinlock will be sufficient there.
-But I don't think we should do any of this.
+Michael
 
-> > It'd be saner to just say "don't call work_on_cpu() while holding locks"
-> > :( I bet there's some lockdep infrastructre which we could peek into to
-> > add the assertion check...
-> 
-> The problem isnt doing the assertions - lockdep already covers workqueue 
-> dependencies very efficiently.
-> 
-> The problem is the intrinsic utility of work_on_cpu(): we _really_ want 
-> such a generic facility to be usable from any (blockable) context, just 
-> like on_each_cpu(func, info) does for atomic functions, without 
-> restrictions on locking context.
+> This prototype has one problem though:  On 32bit archs is the (64bit)
+> offset argument unaligned, which the syscall ABI of several archs
+> doesn't allow to do.  At least s390 needs a wrapper in glibc to handle
+> this.  As we'll need a wrappers in glibc anyway I've decided to push
+> problem to glibc entriely and use a syscall prototype which works
+> without arch-specific wrappers inside the kernel:  The offset argument
+> is explicitly splitted into two 32bit values.
+>
+> The patch sports the actual system call implementation and the windup in
+> the x86 system call tables.  Other archs follow as separate patches.
+>
+> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+> ---
+>  arch/x86/ia32/ia32entry.S          |    2 +
+>  arch/x86/include/asm/unistd_32.h   |    2 +
+>  arch/x86/include/asm/unistd_64.h   |    4 +++
+>  arch/x86/kernel/syscall_table_32.S |    2 +
+>  fs/compat.c                        |   36 ++++++++++++++++++++++++++
+>  fs/read_write.c                    |   50 ++++++++++++++++++++++++++++++++++++
+>  include/linux/compat.h             |    6 ++++
+>  include/linux/syscalls.h           |    4 +++
+>  8 files changed, 106 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/x86/ia32/ia32entry.S b/arch/x86/ia32/ia32entry.S
+> index 256b00b..9a8501b 100644
+> --- a/arch/x86/ia32/ia32entry.S
+> +++ b/arch/x86/ia32/ia32entry.S
+> @@ -826,4 +826,6 @@ ia32_sys_call_table:
+>        .quad sys_dup3                  /* 330 */
+>        .quad sys_pipe2
+>        .quad sys_inotify_init1
+> +       .quad compat_sys_preadv
+> +       .quad compat_sys_pwritev
+>  ia32_syscall_end:
+> diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+> index f2bba78..6e72d74 100644
+> --- a/arch/x86/include/asm/unistd_32.h
+> +++ b/arch/x86/include/asm/unistd_32.h
+> @@ -338,6 +338,8 @@
+>  #define __NR_dup3              330
+>  #define __NR_pipe2             331
+>  #define __NR_inotify_init1     332
+> +#define __NR_preadv            333
+> +#define __NR_pwritev           334
+>
+>  #ifdef __KERNEL__
+>
+> diff --git a/arch/x86/include/asm/unistd_64.h b/arch/x86/include/asm/unistd_64.h
+> index d2e415e..f818294 100644
+> --- a/arch/x86/include/asm/unistd_64.h
+> +++ b/arch/x86/include/asm/unistd_64.h
+> @@ -653,6 +653,10 @@ __SYSCALL(__NR_dup3, sys_dup3)
+>  __SYSCALL(__NR_pipe2, sys_pipe2)
+>  #define __NR_inotify_init1                     294
+>  __SYSCALL(__NR_inotify_init1, sys_inotify_init1)
+> +#define __NR_preadv                            295
+> +__SYSCALL(__NR_preadv, sys_preadv)
+> +#define __NR_pwritev                           296
+> +__SYSCALL(__NR_pwritev, sys_pwritev)
+>
+>
+>  #ifndef __NO_STUBS
+> diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+> index e2e86a0..106204c 100644
+> --- a/arch/x86/kernel/syscall_table_32.S
+> +++ b/arch/x86/kernel/syscall_table_32.S
+> @@ -332,3 +332,5 @@ ENTRY(sys_call_table)
+>        .long sys_dup3                  /* 330 */
+>        .long sys_pipe2
+>        .long sys_inotify_init1
+> +       .long sys_preadv
+> +       .long sys_pwritev
+> diff --git a/fs/compat.c b/fs/compat.c
+> index 4e65644..1a67eee 100644
+> --- a/fs/compat.c
+> +++ b/fs/compat.c
+> @@ -1204,6 +1204,24 @@ compat_sys_readv(unsigned long fd, const struct compat_iovec __user *vec,
+>        return ret;
+>  }
+>
+> +asmlinkage ssize_t
+> +compat_sys_preadv(unsigned long fd, const struct compat_iovec __user *vec,
+> +                 unsigned long vlen, u32 pos_high, u32 pos_low)
+> +{
+> +       loff_t pos = ((loff_t)pos_high << 32) | pos_low;
+> +       struct file *file;
+> +       ssize_t ret;
+> +
+> +       if (pos < 0)
+> +               return -EINVAL;
+> +       file = fget(fd);
+> +       if (!file)
+> +               return -EBADF;
+> +       ret = compat_readv(file, vec, vlen, &pos);
+> +       fput(file);
+> +       return ret;
+> +}
+> +
+>  static size_t compat_writev(struct file *file,
+>                            const struct compat_iovec __user *vec,
+>                            unsigned long vlen, loff_t *pos)
+> @@ -1241,6 +1259,24 @@ compat_sys_writev(unsigned long fd, const struct compat_iovec __user *vec,
+>        return ret;
+>  }
+>
+> +asmlinkage ssize_t
+> +compat_sys_pwritev(unsigned long fd, const struct compat_iovec __user *vec,
+> +                  unsigned long vlen, u32 pos_high, u32 pos_low)
+> +{
+> +       loff_t pos = ((loff_t)pos_high << 32) | pos_low;
+> +       struct file *file;
+> +       ssize_t ret;
+> +
+> +       if (pos < 0)
+> +               return -EINVAL;
+> +       file = fget(fd);
+> +       if (!file)
+> +               return -EBADF;
+> +       ret = compat_writev(file, vec, vlen, &pos);
+> +       fput(file);
+> +       return ret;
+> +}
+> +
+>  asmlinkage long
+>  compat_sys_vmsplice(int fd, const struct compat_iovec __user *iov32,
+>                    unsigned int nr_segs, unsigned int flags)
+> diff --git a/fs/read_write.c b/fs/read_write.c
+> index 400fe81..6d5d8ff 100644
+> --- a/fs/read_write.c
+> +++ b/fs/read_write.c
+> @@ -731,6 +731,56 @@ SYSCALL_DEFINE3(writev, unsigned long, fd, const struct iovec __user *, vec,
+>        return ret;
+>  }
+>
+> +SYSCALL_DEFINE5(preadv, unsigned long, fd, const struct iovec __user *, vec,
+> +               unsigned long, vlen, u32, pos_high, u32, pos_low)
+> +{
+> +       loff_t pos = ((loff_t)pos_high << 32) | pos_low;
+> +       struct file *file;
+> +       ssize_t ret = -EBADF;
+> +       int fput_needed;
+> +
+> +       if (pos < 0)
+> +               return -EINVAL;
+> +
+> +       file = fget_light(fd, &fput_needed);
+> +       if (file) {
+> +               ret = -ESPIPE;
+> +               if (file->f_mode & FMODE_PREAD)
+> +                       ret = vfs_readv(file, vec, vlen, &pos);
+> +               fput_light(file, fput_needed);
+> +       }
+> +
+> +       if (ret > 0)
+> +               add_rchar(current, ret);
+> +       inc_syscr(current);
+> +       return ret;
+> +}
+> +
+> +SYSCALL_DEFINE5(pwritev, unsigned long, fd, const struct iovec __user *, vec,
+> +               unsigned long, vlen, u32, pos_high, u32, pos_low)
+> +{
+> +       loff_t pos = ((loff_t)pos_high << 32) | pos_low;
+> +       struct file *file;
+> +       ssize_t ret = -EBADF;
+> +       int fput_needed;
+> +
+> +       if (pos < 0)
+> +               return -EINVAL;
+> +
+> +       file = fget_light(fd, &fput_needed);
+> +       if (file) {
+> +               ret = -ESPIPE;
+> +               if (file->f_mode & FMODE_PWRITE)
+> +                       ret = vfs_writev(file, vec, vlen, &pos);
+> +               fput_light(file, fput_needed);
+> +       }
+> +
+> +       if (ret > 0)
+> +               add_wchar(current, ret);
+> +       inc_syscw(current);
+> +       return ret;
+> +}
+> +
+>  static ssize_t do_sendfile(int out_fd, int in_fd, loff_t *ppos,
+>                           size_t count, loff_t max)
+>  {
+> diff --git a/include/linux/compat.h b/include/linux/compat.h
+> index 3fd2194..79dba49 100644
+> --- a/include/linux/compat.h
+> +++ b/include/linux/compat.h
+> @@ -183,6 +183,12 @@ asmlinkage ssize_t compat_sys_readv(unsigned long fd,
+>                const struct compat_iovec __user *vec, unsigned long vlen);
+>  asmlinkage ssize_t compat_sys_writev(unsigned long fd,
+>                const struct compat_iovec __user *vec, unsigned long vlen);
+> +asmlinkage ssize_t compat_sys_preadv(unsigned long fd,
+> +               const struct compat_iovec __user *vec,
+> +               unsigned long vlen, u32 pos_high, u32 pos_low);
+> +asmlinkage ssize_t compat_sys_pwritev(unsigned long fd,
+> +               const struct compat_iovec __user *vec,
+> +               unsigned long vlen, u32 pos_high, u32 pos_low);
+>
+>  int compat_do_execve(char * filename, compat_uptr_t __user *argv,
+>                compat_uptr_t __user *envp, struct pt_regs * regs);
+> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> index 16875f8..b63e93d 100644
+> --- a/include/linux/syscalls.h
+> +++ b/include/linux/syscalls.h
+> @@ -456,6 +456,10 @@ asmlinkage long sys_pread64(unsigned int fd, char __user *buf,
+>                            size_t count, loff_t pos);
+>  asmlinkage long sys_pwrite64(unsigned int fd, const char __user *buf,
+>                             size_t count, loff_t pos);
+> +asmlinkage long sys_preadv(unsigned long fd, const struct iovec __user *vec,
+> +                          unsigned long vlen, u32 pos_high, u32 pos_low);
+> +asmlinkage long sys_pwritev(unsigned long fd, const struct iovec __user *vec,
+> +                           unsigned long vlen, u32 pos_high, u32 pos_low);
+>  asmlinkage long sys_getcwd(char __user *buf, unsigned long size);
+>  asmlinkage long sys_mkdir(const char __user *pathname, int mode);
+>  asmlinkage long sys_chdir(const char __user *filename);
+> --
+> 1.6.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-api" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-Do we?  work_on_cpu() is some last-gasp oh-i-screwed-my-code-up thing. 
-We _really_ want people to use on_each_cpu()!
-
-We should bust a gut to keep the number of callers to the
-resource-intensive (deadlocky!) work_on_cpu() to a minimum.
-
-(And to think that adding add_timer_on() creeped me out).
 
 
-hm.  None of that was very helpful.  How to move forward?
-
-I think I disagree that work_on_cpu() should be made into some robust,
-smiled-upon core kernel facility.  It _is_ slow, it _is_ deadlockable. 
-It should be positioned as something which is only used as a last
-resort.  And if you _have_ to use it, sort out your locking!
-
-Plus the number of code sites which want to fiddle with other CPUs in
-this manner will always be small.  cpufreq, MCE, irq-affinity, things
-like that.
-
-What is the deadlock in acpi-cpufreq?  Which lock, and who is the
-"other" holder of that lock?
+-- 
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
