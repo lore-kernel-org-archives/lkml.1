@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752149AbZAZQAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbZAZQEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752149AbZAZQAM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZAZP77
+	id S1752179AbZAZQEp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:04:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZAZQEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 10:59:59 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57510 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751310AbZAZP77 (ORCPT
+	Mon, 26 Jan 2009 11:04:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:32998 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751331AbZAZQEg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 10:59:59 -0500
-Date: Mon, 26 Jan 2009 07:59:57 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: "Chris Friesen" <cfriesen@nortel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: marching through all physical memory in software
-Message-ID: <20090126075957.69b64a2e@infradead.org>
-In-Reply-To: <497DD8E5.1040305@nortel.com>
-References: <497DD8E5.1040305@nortel.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 26 Jan 2009 11:04:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=oRj+1AXSLnFqxCEHQnjeL6ECSi2xSLTZdWAcoS4J6FtbyMoauuDcINbrQ6DOgAkdVe
+         4JrfQ5efIOMz7Xrp65ETGzKpVZ6g+0Fl1cVG1XfeIeP30uJyWQNyr/zAZDr9rcONH40q
+         ZqRwCi/r3LyYQSxQi7io+kgUH0mZDcF1+Hm6w=
+MIME-Version: 1.0
+In-Reply-To: <1232984248.4863.106.camel@laptop>
+References: <497cd08f.0c11660a.33a7.ffffdf39@mx.google.com>
+	 <1232977715.4863.81.camel@laptop>
+	 <c62985530901260725s2f36c6d8u1572775d790e7888@mail.gmail.com>
+	 <1232984248.4863.106.camel@laptop>
+Date: Mon, 26 Jan 2009 17:04:34 +0100
+Message-ID: <c62985530901260804o4022e0c0t5acba3f7c32c48ac@mail.gmail.com>
+Subject: Re: [RFC][PATCH 2/2] add a counter for writers spinning on a rwlock
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Mandeep Singh Baines <msb@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 09:38:13 -0600
-"Chris Friesen" <cfriesen@nortel.com> wrote:
+2009/1/26 Peter Zijlstra <peterz@infradead.org>:
+> On Mon, 2009-01-26 at 16:25 +0100, Frédéric Weisbecker wrote:
+>> 2009/1/26 Peter Zijlstra <peterz@infradead.org>:
+>> > On Sun, 2009-01-25 at 12:50 -0800, Frederic Weisbecker wrote:
+>> >> This patch adds a counter for writers that enter a rwlock slow path.
+>> >> For example it can be useful for slow background tasks which perform some jobs
+>> >> on the tasklist, such as the hung_task detector (kernel/hung_task.c).
+>> >>
+>> >> It adds a inc/dec pair on the slow path and 4 bytes for each rwlocks, so the overhead
+>> >> is not null.
+>> >>
+>> >> Only x86 is supported for now, writers_spinning_lock() will return 0 on other archs (which
+>> >> is perhaps not a good idea).
+>> >>
+>> >> Comments?
+>> >
+>> > _why_ ?
+>>
+>> The hung task detector runs a periodic loop through the task_list, and
+>> currently it doesn't run
+>> over an arbitrary threshold of tasks to not hold the task_list lock
+>> for too long.
+>>
+>> So we thought about a way to detect if there are some writers waiting
+>> for the lock, anf if so, release
+>> the lock, schedule and retry.
+>
+> Ah, if it can do that, then it can also use RCU, no? Only users who
+> really have to hold off new tasks need the read-task_lock. The rest can
+> use RCU.
 
-> Someone is asking me about the feasability of "scrubbing" system
-> memory by accessing each page and handling the ECC faults.
-> 
 
-Hi,
-
-I would suggest that you look at the "edac" subsystem, which tries to
-do exactly this....
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Really?
+That sounds a good news. Mandeep, what do you think?
