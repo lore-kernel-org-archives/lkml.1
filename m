@@ -1,196 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZAZRjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZAZRmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502AbZAZRjg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZAZRjZ
+	id S1753387AbZAZRmK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:42:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbZAZRlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:39:25 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:49967 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750775AbZAZRjY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:39:24 -0500
-Message-ID: <497DF54A.5040607@vlnb.net>
-Date: Mon, 26 Jan 2009 20:39:22 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Mon, 26 Jan 2009 12:41:53 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60119 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751644AbZAZRlw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 12:41:52 -0500
+Date: Mon, 26 Jan 2009 18:41:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
+Message-ID: <20090126174113.GF6238@elte.hu>
+References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <alpine.LFD.2.00.0901260807290.5284@localhost.localdomain> <200901261753.35416.rjw@sisk.pl>
 MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
-       Bart Van Assche <bart.vanassche@gmail.com>
-Subject: [PATCH][SCST]: Checkpatch and sparse fixes
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/VXwBOEbDsVcWEPFYy7FiQVDmcFwqX1oZCQpC
- otw40NhhmqgI3YLLXk6Qw7jWqQvraRkmWY2mTmChpJZyeC2z8i
- 9He3PfyUEKklSWJBjHwwA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901261753.35416.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch below fixes most checkpatch and sparse issues that are reported by
-the most recent versions (checkpatch 2.6.28 / latest sparse git version) and
-that were not reported by previous versions (checkpatch 2.6.27 / sparse 0.4.1).
-The patch below fixes the following issues:
-* Removed trailing space in iscsi-scst/README_in-tree.
-* Fixed sparse complaints about functions that were not declared static.
-* Fixed sparse complaints about casts between address spaces: such casts are
-   now either fixed or explicit (via the __force keyword).
 
-The patch below has been verified by checking the output produced by:
-scripts/run-regression-tests -k 2.6.28.1
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-Please review.
+> On Monday 26 January 2009, Linus Torvalds wrote:
+> > 
+> > On Sat, 17 Jan 2009, Maciej Rutecki wrote:
+> > >
+> > > During suspend to ram:
+> > > [  131.287012] BUG: using smp_processor_id() in preemptible [00000000]
+> > > code: suspend_to_ram./2958
+> > > [  131.287012] caller is retrigger_next_event+0x13/0xb0
+> > > [  131.287012] Pid: 2958, comm: suspend_to_ram. Not tainted 2.6.29-rc2 #1
+> > > [  131.287012] Call Trace:
+> > > [  131.287012]  [<c025b41f>] debug_smp_processor_id+0xbf/0xd0
+> > > [  131.287012]  [<c01473b3>] retrigger_next_event+0x13/0xb0
+> > > [  131.287012]  [<c01489b7>] raw_notifier_call_chain+0x17/0x20
+> > > [  131.287012]  [<c014b938>] timekeeping_resume+0xe8/0x110
+> > > [  131.287012]  [<c02cc651>] __sysdev_resume+0x11/0x50
+> > > [  131.287012]  [<c02cc6d7>] sysdev_resume+0x47/0x80
+> > > [  131.287012]  [<c02d2478>] device_power_up+0x8/0x10
+> > 
+> > Very scary.
+> > 
+> > device_power_up() calls sysdev_resume _before_ it enables interrupts so it 
+> > sounds like something else has - very incorrectly - enabled interrupts too 
+> > early in your resume sequence. 
+> > 
+> > The patch that Andrew sent out and that apparently fixed things for you 
+> > should absolutely not have made any difference. This is suspend_enter():
+> > 
+> > 	        arch_suspend_disable_irqs();
+> > 	        BUG_ON(!irqs_disabled());
+> > 
+> > 	        if ((error = device_power_down(PMSG_SUSPEND))) {
+> > 	                printk(KERN_ERR "PM: Some devices failed to power down\n");
+> > 	                goto Done;
+> > 	        }
+> > 	
+> > 	        if (!suspend_test(TEST_CORE))
+> > 	                error = suspend_ops->enter(state);
+> > 
+> > 	        device_power_up(PMSG_RESUME);
+> > 	 Done:
+> > 	        arch_suspend_enable_irqs();
+> > 
+> > and notice how the whole thing is surrounded by that 
+> > arch_suspend_disable/enable_irqs().
+> > 
+> > So it looks like some sysdev driver (device_power_up does the sysdev 
+> > drivers first, so it can't be the regular low-level PCI drivers) is 
+> > enabling interrupts in its resume function. Scary and very wrong.
+> > 
+> > It could easily be ACPI, of course. There was some other case where ACPI 
+> > did that, iirc.
+> 
+> There is a known bug in the USB controllers' suspend that enables interrupts
+> from within ->suspend_late().  It should be fixed by the next USB merge
+> AFAICS.
 
-Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
-Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+the patch from Andrew looks wrong, as it hides the only place in the 
+kernel that was able to report the resume bug. Nevertheless related to 
+that bug we've got a new debug check queued up in timers/urgent:
 
- iscsi-scst/README_in-tree         |    2 +-
- iscsi-scst/kernel/nthread.c       |    7 ++++---
- scst/src/dev_handlers/scst_user.c |    2 +-
- scst/src/scst_lib.c               |   14 +++++++-------
- scst/src/scst_targ.c              |    5 +++--
- 5 files changed, 16 insertions(+), 14 deletions(-)
+ void hres_timers_resume(void)
+ {
+-       /* Retrigger the CPU local events: */
++       WARN_ONCE(!irqs_disabled(),
++                 KERN_INFO "hres_timers_resume() called with IRQs enabled!");
++
+        retrigger_next_event(NULL);
+ }
 
-Index: iscsi-scst/kernel/nthread.c
-===================================================================
---- iscsi-scst/kernel/nthread.c	(revision 637)
-+++ iscsi-scst/kernel/nthread.c	(working copy)
-@@ -1040,7 +1040,9 @@ static int write_data(struct iscsi_conn 
-  retry:
- 			oldfs = get_fs();
- 			set_fs(KERNEL_DS);
--			res = vfs_writev(file, iop, count, &off);
-+			res = vfs_writev(file,
-+					 (struct iovec __force __user *)iop,
-+					 count, &off);
- 			set_fs(oldfs);
- 			TRACE_WRITE("%#Lx:%u: %d(%ld)",
- 				    (long long unsigned int)conn->session->sid,
-@@ -1272,8 +1274,7 @@ static int tx_ddigest(struct iscsi_cmnd 
- 
- 	TRACE_DBG("Sending data digest %x (cmd %p)", cmnd->ddigest, cmnd);
- 
--	iov.iov_base =
--		(char __force __user *) (&cmnd->ddigest) + (sizeof(u32) - rest);
-+	iov.iov_base = (char *)(&cmnd->ddigest) + (sizeof(u32) - rest);
- 	iov.iov_len = rest;
- 
- 	res = kernel_sendmsg(cmnd->conn->sock, &msg, &iov, 1, rest);
-Index: iscsi-scst/README_in-tree
-===================================================================
---- iscsi-scst/README_in-tree	(revision 637)
-+++ iscsi-scst/README_in-tree	(working copy)
-@@ -81,7 +81,7 @@ Work if target's backstorage or link is 
- In some cases you can experience I/O stalls or see in the kernel log
- abort or reset messages. It can happen under high I/O load, when your
- target's backstorage gets overloaded, or working over a slow link, when
--the link can't serve all the queued commands on time, 
-+the link can't serve all the queued commands on time,
- 
- To workaround it you can reduce QueuedCommands parameter in
- iscsi-scstd.conf file for the corresponding target to some lower value,
-Index: scst/src/scst_lib.c
-===================================================================
---- scst/src/scst_lib.c	(revision 637)
-+++ scst/src/scst_lib.c	(working copy)
-@@ -736,7 +736,7 @@ out_free:
-  * scst_mutex supposed to be held, there must not be parallel activity in this
-  * session.
-  */
--void scst_sess_free_tgt_devs(struct scst_session *sess)
-+static void scst_sess_free_tgt_devs(struct scst_session *sess)
- {
- 	int i;
- 	struct scst_tgt_dev *tgt_dev, *t;
-@@ -1711,7 +1711,7 @@ out_sg_free:
- 	goto out;
- }
- 
--void scst_release_space(struct scst_cmd *cmd)
-+static void scst_release_space(struct scst_cmd *cmd)
- {
- 	TRACE_ENTRY();
- 
-@@ -2844,7 +2844,7 @@ out_unlock:
- }
- 
- /* Called under tgt_dev_lock and BH off */
--void scst_alloc_set_UA(struct scst_tgt_dev *tgt_dev,
-+static void scst_alloc_set_UA(struct scst_tgt_dev *tgt_dev,
- 	const uint8_t *sense, int sense_len, int head)
- {
- 	struct scst_tgt_dev_UA *UA_entry = NULL;
-@@ -2950,7 +2950,7 @@ void __scst_dev_check_set_UA(struct scst
- }
- 
- /* Called under tgt_dev_lock or when tgt_dev is unused */
--void scst_free_all_UA(struct scst_tgt_dev *tgt_dev)
-+static void scst_free_all_UA(struct scst_tgt_dev *tgt_dev)
- {
- 	struct scst_tgt_dev_UA *UA_entry, *t;
- 
-@@ -3259,7 +3259,7 @@ out_unlock:
- }
- 
- /* Called under dev_lock */
--void scst_unblock_cmds(struct scst_device *dev)
-+static void scst_unblock_cmds(struct scst_device *dev)
- {
- #ifdef CONFIG_SCST_STRICT_SERIALIZING
- 	struct scst_cmd *cmd, *t;
-@@ -3515,7 +3515,7 @@ static wait_queue_head_t *tm_dbg_p_cmd_l
- 
- static const int tm_dbg_on_state_num_passes[] = { 5, 1, 0x7ffffff };
- 
--void tm_dbg_init_tgt_dev(struct scst_tgt_dev *tgt_dev,
-+static void tm_dbg_init_tgt_dev(struct scst_tgt_dev *tgt_dev,
- 	struct scst_acg_dev *acg_dev)
- {
- 	if ((acg_dev->acg == scst_default_acg) && (acg_dev->lun == 0)) {
-@@ -3534,7 +3534,7 @@ void tm_dbg_init_tgt_dev(struct scst_tgt
- 	}
- }
- 
--void tm_dbg_deinit_tgt_dev(struct scst_tgt_dev *tgt_dev)
-+static void tm_dbg_deinit_tgt_dev(struct scst_tgt_dev *tgt_dev)
- {
- 	if (test_bit(SCST_TGT_DEV_UNDER_TM_DBG, &tgt_dev->tgt_dev_flags)) {
- 		unsigned long flags;
-Index: scst/src/scst_targ.c
-===================================================================
---- scst/src/scst_targ.c	(revision 637)
-+++ scst/src/scst_targ.c	(working copy)
-@@ -1012,7 +1012,7 @@ out_dev_done:
- }
- 
- /* No locks, but might be in IRQ */
--void scst_proccess_redirect_cmd(struct scst_cmd *cmd,
-+static void scst_proccess_redirect_cmd(struct scst_cmd *cmd,
- 	enum scst_exec_context context, int check_retries)
- {
- 	unsigned long flags;
-@@ -5454,7 +5454,8 @@ int scst_mgmt_thread(void *arg)
- }
- 
- /* Called under sess->sess_list_lock */
--struct scst_cmd *__scst_find_cmd_by_tag(struct scst_session *sess, uint64_t tag)
-+static struct scst_cmd *__scst_find_cmd_by_tag(struct scst_session *sess,
-+	uint64_t tag)
- {
- 	struct scst_cmd *cmd = NULL;
- 
-Index: scst/src/dev_handlers/scst_user.c
-===================================================================
---- scst/src/dev_handlers/scst_user.c	(revision 637)
-+++ scst/src/dev_handlers/scst_user.c	(working copy)
-@@ -1690,7 +1690,7 @@ static int dev_user_reply_get_cmd(struct
- 
- 	/* get_user() can't be used with 64-bit values on x86_32 */
- 	res = copy_from_user(&ureply, (uint64_t __user *)
--		&((struct scst_user_get_cmd *)arg)->preply,
-+		&((struct scst_user_get_cmd __user *)arg)->preply,
- 		sizeof(ureply));
- 	if (unlikely(res < 0))
- 		goto out_up;
+as the buggy 'irqs are enabled' condition was not detected reliably. (it 
+was only detected with certain lockdep options turned on - and even then 
+it did not seem to be 100% triggerable)
 
+i sent it to Linus earlier today.
+
+	Ingo
