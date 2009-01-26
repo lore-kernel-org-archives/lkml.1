@@ -1,75 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753090AbZAZTNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZAZTOP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753090AbZAZTNv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:13:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZAZTN3
+	id S1754312AbZAZTOP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:14:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZAZTNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:13:29 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43314 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752914AbZAZTN1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:13:27 -0500
-Date: Mon, 26 Jan 2009 19:12:56 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Jeff Garzik <jgarzik@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc libata sff 32bit PIO regression
-Message-ID: <20090126191256.04dfb6d3@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.64.0901211322010.15945@blonde.anvils>
-References: <Pine.LNX.4.64.0901211322010.15945@blonde.anvils>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 26 Jan 2009 14:13:36 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34952 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753827AbZAZTNf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 14:13:35 -0500
+Message-ID: <497E0B55.4050408@linux.vnet.ibm.com>
+Date: Mon, 26 Jan 2009 11:13:25 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: eranian@gmail.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>,
+       "perfmon2-devel@lists.sourceforge.net" 
+	<perfmon2-devel@lists.sourceforge.net>,
+       Papi <ptools-perfapi@cs.utk.edu>
+Subject: Re: [announce] Performance Counters for Linux, v6
+References: <20090121185021.GA8852@elte.hu> <497D0C81.5040406@linux.vnet.ibm.com> <7c86c4470901260113r4db6b15cpa0fa88ab3f8a516c@mail.gmail.com> <20090126151746.GH9128@elte.hu>
+In-Reply-To: <20090126151746.GH9128@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And while we are at it fix the 32bit PIO handling for VLB for this case
-too
+Ingo Molnar wrote:
+> * stephane eranian <eranian@googlemail.com> wrote:
+> 
+>> Hi,
+>>
+>> Corey brings up an interesting problem which I wanted to comment on.
+>>
+>> The current proposal hinges on the idea that by interpreting a single 
+>> value the kernel can understand what the user wants to measure. For 
+>> instance, if I pass type=0, then the kernel understands I want to 
+>> measure CPU_CYCLES. Given that the number of events and their unit mask 
+>> combinations can be large, the proposal also provides a "raw" mode, 
+>> where the content of the type field is interpreted as the raw value to 
+>> put into a register.
+>>
+>> This is where there is an issue because with several PMU models, 
+>> including on X86, using the raw bit + 64 value is not enough to figure 
+>> out what the user wants to measure. This happens when the PMU has more 
+>> than counters. Thus, interpreting each raw value has the event code may 
+>> be wrong. To remain on familiar territory, the Nehalem uncore PMU has an 
+>> opcode matcher register, that uses a 64-bit value. On AMD64 Family 10h, 
+>> you have IBS. But I could give examples on Itanium with opcode matchers, 
+>> range restrictions. Corey provided other examples for Power. The API has 
+>> to provide a way to express what the raw value is meant for: counter, 
+>> matcher, filter...
+> 
+> this can be done in a number of ways (in order of increasing levels of 
+> abstraction):
+> 
+> - the raw type is kept wide enough. Paul already requested the raw type
+>   to be widened to 128 bits to express certain PowerPC features.
+> 
+> - or the PMU capability is expressed as a special counter type (if it's
+>   useful enough) - and then either the write() method or ioctl is extended
+>   to express attributes we want to set/change while a counter is running.
+> 
+> - or the highest level counter / hw event data type is extended with new
+>   attribute field(s).
+> 
+> My feeling is that we generally want such hw features to start small - 
+> i.e. at the raw type level initially. Then we can allow them to climb the 
+> ladder, if they prove their utility in practice. We've got space reserved 
+> in the ABI to allow for growth like this.
+> 
+> 	Ingo
 
-pata_legacy: For VLB 32bit PIO don't try tricks with slop
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Hi Ingo and Stephane,
 
-These devices are generally used with ATA anyway and it seems that some
-ATAPI will need us to issue the right number of words. Therefore as we
-can't switch mid burst on VLB devices we should only use 32bit I/O for
-suitable block sizes.
----
+Thanks for the replies.
 
- drivers/ata/pata_legacy.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+I think any one of those solutions would work for Power's Instruction 
+Matching Register.  If more than one register needs to be programmed, or 
+the values don't fit into the 128-bit raw event types, we could use the 
+"special counter" approach, I think.
+
+I will have another look at the Power PMU description and see if there 
+are other constraints that might cause us to want to go one way or the 
+other, or perhaps a different way.
+
+Regards,
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
 
 
-diff --git a/drivers/ata/pata_legacy.c b/drivers/ata/pata_legacy.c
-index 6c1d778..e3bc1b4 100644
---- a/drivers/ata/pata_legacy.c
-+++ b/drivers/ata/pata_legacy.c
-@@ -283,9 +283,10 @@ static void pdc20230_set_piomode(struct ata_port *ap, struct ata_device *adev)
- static unsigned int pdc_data_xfer_vlb(struct ata_device *dev,
- 			unsigned char *buf, unsigned int buflen, int rw)
- {
--	if (ata_id_has_dword_io(dev->id)) {
-+	int slop = buflen & 3;
-+	/* 32bit I/O capable *and* we need to write a whole number of dwords */
-+	if (ata_id_has_dword_io(dev->id) && (slop == 0 || slop == 3)) {
- 		struct ata_port *ap = dev->link->ap;
--		int slop = buflen & 3;
- 		unsigned long flags;
- 
- 		local_irq_save(flags);
-@@ -735,7 +736,7 @@ static unsigned int vlb32_data_xfer(struct ata_device *adev, unsigned char *buf,
- 	struct ata_port *ap = adev->link->ap;
- 	int slop = buflen & 3;
- 
--	if (ata_id_has_dword_io(adev->id)) {
-+	if (ata_id_has_dword_io(adev->id) && (slop == 0 || slop == 3)) {
- 		if (rw == WRITE)
- 			iowrite32_rep(ap->ioaddr.data_addr, buf, buflen >> 2);
- 		else
