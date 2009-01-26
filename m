@@ -1,55 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbZAZWjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZAZWji@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbZAZWjG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 17:39:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZAZWil
+	id S1755192AbZAZWji (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 17:39:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZAZWj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 17:38:41 -0500
-Received: from cmpxchg.org ([85.214.51.133]:39135 "EHLO cmpxchg.org"
+	Mon, 26 Jan 2009 17:39:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50754 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752354AbZAZWik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 17:38:40 -0500
-Date: Mon, 26 Jan 2009 23:38:13 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Dave Airlie <airlied@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [git pull] drm-fixes
-Message-ID: <20090126223812.GA17678@cmpxchg.org>
-References: <alpine.DEB.2.00.0901220432480.25266@skynet.skynet.ie> <alpine.LFD.2.00.0901261017380.5284@localhost.localdomain> <21d7e9970901261344v2909cc61m42f32f2a434df0c4@mail.gmail.com> <20090126215235.GA10484@uranus.ravnborg.org>
-Mime-Version: 1.0
+	id S1752000AbZAZWjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 17:39:25 -0500
+Date: Mon, 26 Jan 2009 23:37:03 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, a.p.zijlstra@chello.nl,
+       rusty@rustcorp.com.au, travis@sgi.com, mingo@redhat.com,
+       davej@redhat.com, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Message-ID: <20090126223703.GA5508@redhat.com>
+References: <20090126171618.GA32091@elte.hu> <20090126103529.cb124a58.akpm@linux-foundation.org> <20090126202022.GA8867@elte.hu> <20090126130046.37b8f34e.akpm@linux-foundation.org> <20090126212727.GA13670@elte.hu> <20090126133551.fab5e27a.akpm@linux-foundation.org> <20090126214516.GA22142@elte.hu> <20090126140116.35f9c173.akpm@linux-foundation.org> <20090126221502.GA4542@redhat.com> <20090126222405.GA15896@elte.hu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090126215235.GA10484@uranus.ravnborg.org>
+In-Reply-To: <20090126222405.GA15896@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 10:52:35PM +0100, Sam Ravnborg wrote:
-> > 
-> > Well I'm not 100% sure what happened for this patch, I suspect,
-> > jbarnes sent patch a week
-> > or two ago, it misapplied against the tree I had currently when
-> > applied with git-am, it didn't work so I hand
-> > applied the patch with patch and then did git commit
-> > --author="jbarnes" as he did write it, I just munged it.
-> > 
-> > Now I'm unsure how I should best handle this, in a world where I can
-> > devote a lot more time to
-> > maintaining this, I would sent Jesse a mail saying, rebase, he'd reply
-> > with a rebase and I'd apply it,
-> > however I generally find it easier to just fix this stuff up on the
-> > run as its synchronous. Should
-> > I be specifying a date somewhere in the commit message?
-> 
-> My simple way to deal with this is to:
-> 
-> 0) save the mail
+On 01/26, Ingo Molnar wrote:
+>
+> Andrew's suggestion does make sense though: for any not-in-progress
+> worklet we can dequeue that worklet and execute it in the flushing
+> context. [ And if that worklet cannot be dequeued because it's being
+> processed then that's fine and we can wait on that single worklet, without
+> waiting on any other 'unrelated' worklets. ]
 
-  1) git am --signoff --interactive mailfile
+Yes sure. This is easy, and I am not sure we need the special handler.
+If the caller wants this behaviour, it can do:
 
-HTH,
-	Hannes
+	if (cancel_work_sync(work))
+		work->func(work);
+
+But flush_work() was specially introduced for the case when we can't
+do the above,
+
+> That does not help work_on_cpu() though: that facility really uses the
+> fact that workqueues are implemented via per CPU threads - hence we cannot
+> remove the worklet from the queue and execute it in the flushing context.
+
+Yes.
+
+Oleg.
+
