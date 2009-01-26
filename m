@@ -1,60 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbZAZOgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751968AbZAZOiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751869AbZAZOgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 09:36:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZAZOgG
+	id S1751968AbZAZOiX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 09:38:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZAZOiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 09:36:06 -0500
-Received: from cpsmtpo-eml04.KPNXCHANGE.COM ([213.75.38.153]:6596 "EHLO
-	cpsmtpo-eml04.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750828AbZAZOgF (ORCPT
+	Mon, 26 Jan 2009 09:38:14 -0500
+Received: from cavan.codon.org.uk ([93.93.128.6]:51208 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751172AbZAZOiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 09:36:05 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] hp-wmi: set initial docking state
-Date: Mon, 26 Jan 2009 15:36:01 +0100
-User-Agent: KMail/1.9.9
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	Mon, 26 Jan 2009 09:38:13 -0500
+Date: Mon, 26 Jan 2009 14:38:08 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] hp-wmi: set initial docking state
+Message-ID: <20090126143808.GA15597@srcf.ucam.org>
+References: <200901261536.02809.elendil@planet.nl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901261536.02809.elendil@planet.nl>
-X-OriginalArrivalTime: 26 Jan 2009 14:36:04.0022 (UTC) FILETIME=[6A943D60:01C97FC3]
+In-Reply-To: <200901261536.02809.elendil@planet.nl>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If the initial state is not set when the input device is set up, the
-first docking event after the module is loaded will be lost.
-    
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>
----
-Patch is based on what is done for the LID switch in drivers/acpi/button.c 
-and has been tested on my HP 2510p.
+On Mon, Jan 26, 2009 at 03:36:01PM +0100, Frans Pop wrote:
+> If the initial state is not set when the input device is set up, the
+> first docking event after the module is loaded will be lost.
+>     
+> Signed-off-by: Frans Pop <elendil@planet.nl>
+> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+Acked-by: Matthew Garrett <mjg@redhat.com>
 
-As this is a (minor) bug fix, it would be nice to have it in 2.6.29.
-
-Cheers,
-FJP
-
-diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
-index 7c789f0..8aaff0c 100644
---- a/drivers/platform/x86/hp-wmi.c
-+++ b/drivers/platform/x86/hp-wmi.c
-@@ -382,6 +382,11 @@ static int __init hp_wmi_input_setup(void)
- 		case KE_SW:
- 			set_bit(EV_SW, hp_wmi_input_dev->evbit);
- 			set_bit(key->keycode, hp_wmi_input_dev->swbit);
-+
-+			/* Set initial dock state */
-+			input_report_switch(hp_wmi_input_dev, key->keycode,
-+					    hp_wmi_dock_state());
-+			input_sync(hp_wmi_input_dev);
- 			break;
- 		}
- 	}
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
