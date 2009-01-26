@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZAZP2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZAZPhd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752542AbZAZP2T (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 10:28:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZAZP2I
+	id S1752478AbZAZPhd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 10:37:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZAZPhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 10:28:08 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:44162 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZAZP2H (ORCPT
+	Mon, 26 Jan 2009 10:37:18 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:42616 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751546AbZAZPhR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 10:28:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=PfBLFxUhanK2Ln1bFuFQQ9RZZ69xq7k4hX4t2R6GRudLmVkvTvVepQR07g/7tXyS+j
-         Ewt62kZkpKc0WqFw7uW7VgkMZaiiKn8l3eTdOLAfCRfG4+euTJWD9Yt/U1L43fTe3CK3
-         eIECCY669qGA7y+r+1vrcw315Fo6ng3L7Pqrs=
-Date: Mon, 26 Jan 2009 18:28:02 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-Cc: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH -tip] x86: ftrace - simplify wait_for_nmi
-Message-ID: <20090126152802.GA12465@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 26 Jan 2009 10:37:17 -0500
+Subject: Re: Spamming linux-kernel and linux-scsi by out-of-tree patches
+	(LIO)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <497DB7D0.8000302@vlnb.net>
+References: <497DB7D0.8000302@vlnb.net>
+Content-Type: text/plain
+Date: Mon, 26 Jan 2009 09:37:14 -0600
+Message-Id: <1232984234.3248.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Get rid of 'waited' stack variable.
+On Mon, 2009-01-26 at 16:17 +0300, Vladislav Bolkhovitin wrote:
+> Nicholas,
+> 
+> Could you stop spamming linux-kernel and linux-scsi mailing lists by 
+> patches for your out-of-tree LIO project, please?
+> 
+> Those mailing lists are intended for patches for in-kernel components 
+> only, not for all out-of-tree projects, finding their ways into the 
+> mainline. I don't see any reason why your project should be an 
+> exception. Think, what a mess the kernel mailing lists would get, if all 
+> out-of-tree projects started sending their patches to them?
 
-Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
----
- arch/x86/kernel/ftrace.c |   11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
+Actually, out of tree projects trying to make their way upstream are
+welcome to use the various linux- mailing lists to solicit feedback and
+review.  This method was, for instance, how FCoE made it in.
 
-Index: linux-2.6.git/arch/x86/kernel/ftrace.c
-===================================================================
---- linux-2.6.git.orig/arch/x86/kernel/ftrace.c
-+++ linux-2.6.git/arch/x86/kernel/ftrace.c
-@@ -133,15 +133,14 @@ void ftrace_nmi_exit(void)
- 
- static void wait_for_nmi(void)
- {
--	int waited = 0;
-+	if (!atomic_read(&in_nmi))
-+		return;
- 
--	while (atomic_read(&in_nmi)) {
--		waited = 1;
-+	do {
- 		cpu_relax();
--	}
-+	} while(atomic_read(&in_nmi));
- 
--	if (waited)
--		nmi_wait_count++;
-+	nmi_wait_count++;
- }
- 
- static int
+> My personal practical concerns about your patches that they trigger my 
+> e-mail filters, so I have to spend on them much more time than I would want.
+
+I've found that spamassassin does a good job of marking patches as non
+spam.  Also, if you're using zmailer, vger seems to have some type of
+patch recognition system built in which might be worth co-opting.
+
+James
+
+
