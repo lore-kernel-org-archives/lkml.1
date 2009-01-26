@@ -1,122 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZAZQi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbZAZQjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbZAZQi5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZAZQiu
+	id S1753310AbZAZQjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:39:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZAZQj3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 11:38:50 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:22446 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751448AbZAZQit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 11:38:49 -0500
-Message-ID: <497DE701.5050005@oracle.com>
-Date: Mon, 26 Jan 2009 08:38:25 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 26 Jan 2009 11:39:29 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:53890 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751581AbZAZQj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 11:39:28 -0500
+Message-ID: <497DE73B.4050602@us.ibm.com>
+Date: Mon, 26 Jan 2009 08:39:23 -0800
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Teemu Likonen <tlikonen@iki.fi>
-CC: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Dan Carpenter <error27@gmail.com>
-Subject: Re: [PATCH] Documentation: update CodingStyle tips for Emacs users
-References: <1232299115-8130-1-git-send-email-tlikonen@iki.fi> <87priaumal.fsf@iki.fi>
-In-Reply-To: <87priaumal.fsf@iki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010205.497DE709.0056:SCFSTAT928724,ss=1,fgs=0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Theodore Tso <tytso@MIT.EDU>, Arjan van de Ven <arjan@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: kernel BUG at fs/ext/super.c:428
+References: <20090110003645.GA16107@linux-os.sc.intel.com> <20090113164842.c6aa7095.akpm@linux-foundation.org> <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com> <20090114044059.GA6222@mit.edu> <20090114191632.GA13114@linux-os.sc.intel.com> <1231961377.14825.51.camel@laptop>  <20090114212038.GJ6222@mit.edu> <1232568618.16682.20.camel@jamoon.sc.intel.com> <1232782595.4859.3.camel@laptop>
+In-Reply-To: <1232782595.4859.3.camel@laptop>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Teemu Likonen wrote:
-> Teemu Likonen (2009-01-18 19:18 +0200) wrote:
-> 
->> With the previous Emacs tips example the kernel style was made available
->> for files in the kernel-tree only. This patch updates the tip to add
->> separate cc-mode indent style; it makes the kernel style easily
->> available for any filetype mode that is managed by the Emacs cc-mode.
+Peter Zijlstra wrote:
+> On Wed, 2009-01-21 at 12:10 -0800, Pallipadi, Venkatesh wrote:
+>> On Wed, 2009-01-14 at 13:20 -0800, Theodore Tso wrote:
+>>> On Wed, Jan 14, 2009 at 08:29:37PM +0100, Peter Zijlstra wrote:
+>>>>> 38d47c1b7075bd7ec3881141bb3629da58f88dab is first bad commit
+>>>>> commit 38d47c1b7075bd7ec3881141bb3629da58f88dab
+>>>>> Author: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>>>> Date:   Fri Sep 26 19:32:20 2008 +0200
+>>>>>
+>>>>>     futex: rely on get_user_pages() for shared futexes
+>>>>>
+>>>>>     On the way of getting rid of the mmap_sem requirement for shared futexes,
+>>>>>     start by relying on get_user_pages().
+>>>>>
+>>>>>     Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+>>>>>     Acked-by: Nick Piggin <nickpiggin@yahoo.com.au>
+>>>>>     Signed-off-by: Ingo Molnar <mingo@elte.hu>
+>>>>>
+>>>> However does a futex change make ext3 crap its pants?
+>>> I agree, this doesn't make much sense.  I've looked at the patch, and
+>>> I don't see how this would cause an ext3 orphaned-inode list handling
+>>> problem
+>>>
+>>> Are you sure the bisect was done correctly?  Have you tried reverting
+>>> that one commit, or otherwise conclusively shown that a kernel with
+>>> this commit fails, and one without this commit works just fine?
+>>>
+>> Unfortunately, I cannot revert this patch alone from upstream git.
+>> But I consistently see
+>> upstream git: Always produces this oops on reboot
+>> checkout of ﻿38d47c1b: Always produces this oops on reboot
+>> checkout of ﻿﻿94aca1da (one patch before the above commit): Reboots fine
+>> without the oops.
 >>
->> We also fix the filename regexp in the example: Elisp function
->> buffer-file-name returns full pathname, not a path relative to user's
->> home directory. Hence a tilde (~) can't be used to refer to home
->> directory (as the previous code did).
->>
->> Signed-off-by: Teemu Likonen <tlikonen@iki.fi>
->> ---
->>  Documentation/CodingStyle |   19 +++++++++++++------
->>  1 files changed, 13 insertions(+), 6 deletions(-)
+>> This is petty specific to the particular userspace, looks like.
+>> I only see this on SLES10 installation. Also, I need a non-root user
+>> logged in at least once after boot through X to see this problem. I was
+>> always seeing this as I had autologin on local terminal and was remotely
+>> rebooting the system. If I just boot to init 3 or boot to init 5 with no
+>> user logged in or boot to init 5 with root logged in, I do not see this
+>> problem.
+> 
+> Ted, could this happen due an extra iput()?
+> 
+> In that case, Venki, does the below patch fix it?
+> 
+> Credit goes to Darren for spotting this.
+> 
+> ---
+>  kernel/futex.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index f89d373..f4132ab 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -929,7 +929,7 @@ out_unlock:
+> 
+>  	/* drop_futex_key_refs() must be called outside the spinlocks. */
+>  	while (--drop_count >= 0)
+> -		drop_futex_key_refs(&key1);
+> +		drop_futex_key_refs(&key2);
+
+Unfortunately, I realized later that this code was indeed correct and I 
+asked Ingo to pull my patch implementing the above change.  Quoting my 
+previous mail on the subject:
+
+"I believe what is happening here is that the requeue loop requeues each 
+waiter from one futex (key1) to another (key2).  It rightly takes a 
+reference to the futex at key2 and then decrements the references to 
+key1 by drop_count (since the waiters now reference key2, not key1). 
+The newly taken key2 references will be dropped in futex_wait() when 
+each waiter is woken up and takes the futex."
+
+However, there are still two patches in linux-tip/core/futexes that 
+addresses get|put symmetry of futex keys:
+
+90621c40cc4ab7b0a414311ce37e7cc7173403b6
+42d35d48ce7cefb9429880af19d1c329d1554e7a
+
+However, the first is an addition of a WARN_ON (which is unlikely to 
+catch this issue as it was geared toward catching puts on failed gets). 
+  The latter mostly adds puts where they were missing, so also unlikely 
+to help.
+
+--
+Darren
+
+
+
+> 
+>  out_put_keys:
+>  	put_futex_key(fshared, &key2);
 > 
 > 
-> Exactly what I expected: nobody pays any attention. :-) Well, it's not a
-> problem, I'm not even a kernel coder. I just happen to think that this
-> patch introduces the right way to configure Emacs for kernel coding
-> style. Adding a custom style like this ("linux-tabs-only") makes it much
-> easier to switch between different indent styles and also to use the
-> kernel style elsewhere.
-> 
-> So, I'll just ping the lists and maintainers this one more time to see
-> if someone is interested. Here's my original message:
-> 
->     http://article.gmane.org/gmane.linux.documentation/442
-> 
 
-OK, I see it.  I'm not an emacs user and I have no idea how correct
-the patch is.
 
-There is another emacs CodingStyle patch from Dan Carpenter that
-expands the "~" part of the filename to the user directory:
-see http://lkml.org/lkml/2009/1/21/62
-
-so I would be tempted to merge/apply both patches.
-
-Any other comments on these patches?
-
-> 
->> diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
->> index 1875e50..2cda242 100644
->> --- a/Documentation/CodingStyle
->> +++ b/Documentation/CodingStyle
->> @@ -483,20 +483,27 @@ values.  To do the latter, you can stick the following in your .emacs file:
->>      (* (max steps 1)
->>         c-basic-offset)))
->>  
->> +(add-hook 'c-mode-common-hook
->> +          (lambda ()
->> +            ;; Add kernel style
->> +            (c-add-style
->> +             "linux-tabs-only"
->> +             '("linux" (c-offsets-alist
->> +                        (arglist-cont-nonempty
->> +                         c-lineup-gcc-asm-reg
->> +                         c-lineup-arglist-tabs-only))))))
->> +
->>  (add-hook 'c-mode-hook
->>            (lambda ()
->>              (let ((filename (buffer-file-name)))
->>                ;; Enable kernel mode for the appropriate files
->>                (when (and filename
->> -                         (string-match "~/src/linux-trees" filename))
->> +                         (string-match "src/linux-trees" filename))
->>                  (setq indent-tabs-mode t)
->> -                (c-set-style "linux")
->> -                (c-set-offset 'arglist-cont-nonempty
->> -                              '(c-lineup-gcc-asm-reg
->> -                                c-lineup-arglist-tabs-only))))))
->> +                (c-set-style "linux-tabs-only")))))
->>  
->>  This will make emacs go better with the kernel coding style for C
->> -files below ~/src/linux-trees.
->> +files which pathname matches src/linux-trees.
->>  
->>  But even if you fail in getting emacs to do sane formatting, not
->>  everything is lost: use "indent".
->> -- 
-
-Thanks.
 -- 
-~Randy
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
