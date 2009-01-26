@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755202AbZAZVmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbZAZVov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755202AbZAZVmv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 16:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZAZVmk
+	id S1754588AbZAZVov (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:44:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZAZVon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 16:42:40 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43540 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752547AbZAZVmk (ORCPT
+	Mon, 26 Jan 2009 16:44:43 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:27690 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752252AbZAZVom (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 16:42:40 -0500
-Date: Mon, 26 Jan 2009 22:42:23 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Sandro Bonazzola <sandro.bonazzola@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Greg Kroah-Hartman <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w35und: fix usb_control_msg() error handling in
-	wb35_probe()
-Message-ID: <20090126214223.GD30819@elf.ucw.cz>
-References: <Pine.LNX.4.64.0901221205400.27341@melkki.cs.Helsinki.FI> <20090122114237.GA13845@atrey.karlin.mff.cuni.cz> <4978C812.90702@gmail.com> <20090122211052.GA1928@elf.ucw.cz> <4978F47C.6010909@gmail.com> <4978F3CF.2010301@cs.helsinki.fi> <497E0F94.8000003@gmail.com>
+	Mon, 26 Jan 2009 16:44:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Rz58NiCtY+1RV2WuOK5xgy3NJEJrbtFrgcX/wDGDfY1Cf/kCV2sDtLm4/VQ68UNniq
+         Y87xANwBW5DdiPLCGt3p4JPbUdLlPtol0Q0LXZzahf6A8IXfP7T8OVAPRmLJqvSSHMxf
+         3Otyk330Pbbg3w2Yb8b7FCLwDd6dv7Y1f4kY4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <497E0F94.8000003@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.0901261017380.5284@localhost.localdomain>
+References: <alpine.DEB.2.00.0901220432480.25266@skynet.skynet.ie>
+	 <alpine.LFD.2.00.0901261017380.5284@localhost.localdomain>
+Date: Tue, 27 Jan 2009 07:44:40 +1000
+Message-ID: <21d7e9970901261344v2909cc61m42f32f2a434df0c4@mail.gmail.com>
+Subject: Re: [git pull] drm-fixes
+From: Dave Airlie <airlied@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Tue, Jan 27, 2009 at 4:23 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> Dave,
+>  you have some odd and slightly git usage model, which shows up in various
+> commits. Lookie here as an example from comit 335041ed:
+>
+>        Author: Jesse Barnes <jbarnes@virtuousgeek.org>  2009-01-22 04:22:06
+>        Committer: Dave Airlie <airlied@redhat.com>  2009-01-22 04:22:06
+>
+>            drm/i915: hook up LVDS DPMS property
+>
+>            The LVDS output supports DPMS calls, but we never hooked up the property code,
+>            so set property calls didn't actually do anything.  Implement a set_property
+>            callback for the LVDS output so that the right thing happens.
+>
+>            Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+>
+> and this has a few issues that trigger my "Dave is doing something wrong"
+> reaction:
+>
+>  - The signed-off-chain is incomplete from the author to the committer.
+>
+>   A _good_ sign-off will always have the sign-offs from the author and
+>   the committer and everybody in between. This one does not. Clearly
+>   Jesse did sign off on his work, but he is not listed as the committer:
+>   you are. And that means that your sign-off is missing.
 
-> > Ok, test done with git current version of w35und over 2.6.28-gentoo-r1
-> > (2.6.28.1
-> > and some patches)
-> 
-> Adding Pekka's patch
+This one is my fault, I think I just cut-n-pasted the commit message
+in my sleep,
+and forgot to add my signoff.
 
-> # ping 10.0.4.1
-> PING 10.0.4.1 (10.0.4.1) 56(84) bytes of data.
-> 64 bytes from 10.0.4.1: icmp_seq=1 ttl=64 time=0.064 ms
-> 64 bytes from 10.0.4.1: icmp_seq=2 ttl=64 time=0.060 ms
-......
+>
+>  - You are clearly lying about dates and/or dropping them.
+>
+>   The dates for authorship and committing are the same, yet the author
+>   and committer are clearly _not_ the same. You can try to convince me
+>   that you committed Jesse's work the same second he sent it to you, but
+>   quite frankly, I don't buy it. End result: you've done something to
+>   drop the date information
 
-> Ok, with kernel 2.6.8.1, and your patch it seems to work with channel 1, no
-> encryption, opensystem authentication.
+Well I'm not 100% sure what happened for this patch, I suspect,
+jbarnes sent patch a week
+or two ago, it misapplied against the tree I had currently when
+applied with git-am, it didn't work so I hand
+applied the patch with patch and then did git commit
+--author="jbarnes" as he did write it, I just munged it.
 
+Now I'm unsure how I should best handle this, in a world where I can
+devote a lot more time to
+maintaining this, I would sent Jesse a mail saying, rebase, he'd reply
+with a rebase and I'd apply it,
+however I generally find it easier to just fix this stuff up on the
+run as its synchronous. Should
+I be specifying a date somewhere in the commit message?
 
-Congratulation, you have made it :-). Now, question is why it does not
-work on 2.6.29-rc1. And with your testing we know something in core
-kernel changed and broke it.
-
-Thanks!
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Dave.
