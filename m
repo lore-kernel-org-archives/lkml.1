@@ -1,104 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752438AbZAZN5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752050AbZAZOAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752438AbZAZN5g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 08:57:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751373AbZAZN50
+	id S1752050AbZAZOAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 09:00:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZAZOAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 08:57:26 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58375 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751304AbZAZN50 (ORCPT
+	Mon, 26 Jan 2009 09:00:31 -0500
+Received: from alpha.facton.com ([83.236.152.122]:37196 "EHLO alpha.facton.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751056AbZAZOAa convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 08:57:26 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christophe Saout <christophe@saout.de>
-Subject: Re: [patch 36/51] revert "mm: vmalloc use mutex for purge"
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-In-Reply-To: <1232123976.4946.18.camel@leto.intern.saout.de>
-References: <20090116081359.567a4dc9.akpm@linux-foundation.org> <1232123976.4946.18.camel@leto.intern.saout.de>
-Message-Id: <20090127163443.1BEC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 26 Jan 2009 09:00:30 -0500
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon, 26 Jan 2009 22:57:22 +0900 (JST)
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: Re: [Bug #12396] hwinfo problem since 2.6.28
+Date: Mon, 26 Jan 2009 15:00:03 +0100
+Message-ID: <3C59DB883F7B0B4D8096010D45ACCD13C73EE1@exch.facton.local>
+In-Reply-To: <cX2gZ6Cy9nC.A.6uC.5JRdJB@chimera>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: [Bug #12396] hwinfo problem since 2.6.28
+Thread-Index: Acl6ktpWefZ2cBT7SReXXq6wmCtlNwFKxySw
+References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.6uC.5JRdJB@chimera>
+From: "Beschorner Daniel" <Daniel.Beschorner@facton.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Cc: "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Suresh Siddha" <suresh.b.siddha@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc to Lee Schermerhorn)
-
-sorry for late reply.
-I returned from lca yesterday.
-
-> > > From: Dean Roe <roe@sgi.com>
-> > > Subject: Prevent NULL pointer deref in grab_swap_token
-> > > References: 159260
-> > > 
-> > > grab_swap_token() assumes that the current process has an mm struct,
-> > > which is not true for kernel threads invoking get_user_pages().  Since
-> > > this should be extremely rare, just return from grab_swap_token()
-> > > without doing anything.
-> > > 
-> > > Signed-off-by: Dean Roe <roe@sgi.com>
-> > > Acked-by: mason@suse.de
-> > > Acked-by: okir@suse.de
-> > > 
-> > > 
-> > >  mm/thrash.c |    3 +++
-> > >  1 file changed, 3 insertions(+)
-> > > 
-> > > --- a/mm/thrash.c
-> > > +++ b/mm/thrash.c
-> > > @@ -31,6 +31,9 @@ void grab_swap_token(void)
-> > >  	int current_interval;
-> > >  
-> > >  	global_faults++;
-> > > +	if (current->mm == NULL)
-> > > +		return;
-> > > +
-> > >  
-> > >  	current_interval = global_faults - current->mm->faultstamp;
-> > >  
-> > 
-> > Confused.  Why was there a random, seemingly-unrelated patch at the end
-> > of this email?
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it 
+> still should
+> be listed and let me know (either way).
 > 
-> This is a patch I also saw while trying to understand the problem with
-> Xen and UNEVICTABLE_LRU.  This patch is actually in the SuSE kernel and
-> claims to have something to do with kernel threads.
 > 
-> However for Xen, the problem is not a kernel threads, it's a regular
-> process thread (reiserfsck in to be specific, which mlockall's itself
-> into memory) and using this patch makes the null pointer deref Oops go
-> away, but still leaves scary messages in the log (a bunch of WARN_ON's).
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12396
+> Subject		: hwinfo problem since 2.6.28
+> Submitter	: Beschorner Daniel <Daniel.Beschorner@facton.com>
+> Date		: 2009-01-06 8:53 (14 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123123277800835&w=4
+> Handled-By	: Suresh Siddha <suresh.b.siddha@intel.com>
+> Patch		: http://marc.info/?l=linux-kernel&m=123154005127497&w=4
 
-hm, I guess you test both UNEVICTABLE_LRU on/off and this problem 
-happend only if CONFIG_UNEVICTABLE_LRU=y, right?
+The bug is still present in 2.6.28.2.
 
-if so, I really wonder this result.
-above mean the page have both following two condition.
-
- - vma of the page have VM_LOCKED flag.
- - pte of the page is NOT present
-
-I can't imazine how to reproduce it.
-Could you please tell me how to reproduce? (sorry, I don't know xen at all)
-
-and, Can you post your bunch of WARN_ON list and .config?
-
-
-
-> I fail to understand why __get_user_pages of mlock'ed pages wants to go
-> into swap code, but then I'm not an expert in Linux mm.  Maybe this
-> happens because current->mm is already down and some code gets confused.
-> While googling around I found a comment that during mm teardown, the
-> kernel shall better not try to access user pages, I can't remember what
-> exactly it was about.
-
-
-
-
-
+Daniel
