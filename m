@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbZAZSZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZAZS0j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654AbZAZSZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 13:25:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZAZSZU
+	id S1753933AbZAZS0j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 13:26:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZAZS00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 13:25:20 -0500
-Received: from comal.ext.ti.com ([198.47.26.152]:45683 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbZAZSZT convert rfc822-to-8bit (ORCPT
+	Mon, 26 Jan 2009 13:26:26 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:43513 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751548AbZAZS0Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 13:25:19 -0500
-From: "Hunter, Jon" <jon-hunter@ti.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 26 Jan 2009 12:23:37 -0600
-Subject: RE: [RFC] Dynamic Tick and Deferrable Timer Support
-Thread-Topic: [RFC] Dynamic Tick and Deferrable Timer Support
-Thread-Index: Acl22NMmPRfHmhnyTuem0+yaDRLXwwJCC58g
-Message-ID: <7B4574D56E4ADF438756313E9A172A872CB8232E@dlee01.ent.ti.com>
-References: <CF7665F795A4BE438425FE728CEACFA302F2436B52@dlee01.ent.ti.com>
- <20090114221624.76ee8aa4.akpm@linux-foundation.org>
-In-Reply-To: <20090114221624.76ee8aa4.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Mon, 26 Jan 2009 13:26:25 -0500
+Message-ID: <497E0047.5080307@hp.com>
+Date: Mon, 26 Jan 2009 10:26:15 -0800
+From: Rick Jones <rick.jones2@hp.com>
+User-Agent: Mozilla/5.0 (X11; U; HP-UX 9000/785; en-US; rv:1.7.13) Gecko/20060601
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       sfr@canb.auug.org.au, matthew.r.wilcox@intel.com, chinang.ma@intel.com,
+       linux-kernel@vger.kernel.org, sharad.c.tripathi@intel.com,
+       arjan@linux.intel.com, suresh.b.siddha@intel.com,
+       harita.chilukuri@intel.com, douglas.w.styner@intel.com,
+       peter.xihong.wang@intel.com, hubert.nueckel@intel.com,
+       chris.mason@oracle.com, srostedt@redhat.com, linux-scsi@vger.kernel.org,
+       andrew.vasquez@qlogic.com, anirban.chakraborty@qlogic.com
+Subject: Re: care and feeding of netperf (Re: Mainline kernel OLTP	performance
+ update)
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>	<1232617672.14549.25.camel@penberg-laptop>	<1232679773.11429.155.camel@ymzhang>	<200901231933.10101.nickpiggin@yahoo.com.au>	<1232701348.11429.170.camel@ymzhang>  <497A0F27.3030801@hp.com> <1232766180.11429.202.camel@ymzhang>
+In-Reply-To: <1232766180.11429.202.camel@ymzhang>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <mailto:akpm@linux-foundation.org> wrote on Thursday, January 15, 2009 12:16 AM:
+>>To get quick profiles, that form of aggregate netperf is OK - just the one 
+>>iteration with background processes using a moderatly long run time.  However, 
+>>for result reporting, it is best to (ab)use the confidence intervals 
+>>functionality to try to avoid skew errors.
+> 
+> Yes. My formal testing uses -i 50. I just wanted a quick testing. If I need
+> finer-tuning or investigation, I would turn on more options.
 
-> Venki, could you please take a look?
+Netperf will silently clip that to 30 as that is all the built-in tables know.
 
-Andrew, Venki, if it helps here are some more details.
+> Thanks again. I learned a lot.
 
-The function "__next_timer_interrupt()" (in file kernel/timer.c) consists of two main loops. The first loop (shown below) looks for timer events in tv1.
+Feel free to wander over to netperf-talk over at netperf.org if you want to talk 
+some more about the care and feeding of netperf.
 
-898         /* Look for timer events in tv1. */
-899         index = slot = timer_jiffies & TVR_MASK;
-900         do {
-901                 list_for_each_entry(nte, base->tv1.vec + slot, entry) {
-902                         if (tbase_get_deferrable(nte->base))
-903                                 continue;
-904
-905                         found = 1;
-906                         expires = nte->expires;
-907                         /* Look at the cascade bucket(s)? */
-908                         if (!index || slot < index)
-909                                 goto cascade;
-910                         return expires;
-911                 }
-912                 slot = (slot + 1) & TVR_MASK;
-913         } while (slot != index);
+happy benchmarking,
 
-
-You can see from the above code snippet, that if a timer event is found for tv1, then it performs a test to see if this timer event is deferrable (lines 902 and 903). If no timer events are found for tv1, then the code enters a second loop, a for-loop with a nested do-while loop, that looks for timer events in tv2-tv5.
-
-
-927         for (array = 0; array < 4; array++) {
-928                 struct tvec *varp = varray[array];
-929
-930                 index = slot = timer_jiffies & TVN_MASK;
-931                 do {
-932                         list_for_each_entry(nte, varp->vec + slot, entry) {
-933                                 found = 1;
-934                                 if (time_before(nte->expires, expires))
-935                                         expires = nte->expires;
-936                         }
-937                         /*
-938                          * Do we still search for the first timer or are
-939                          * we looking up the cascade buckets ?
-940                          */
-941                         if (found) {
-942                                 /* Look at the cascade bucket(s)? */
-943                                 if (!index || slot < index)
-944                                         break;
-945                                 return expires;
-946                         }
-947                         slot = (slot + 1) & TVN_MASK;
-948                 } while (slot != index);
-949
-950                 if (index)
-951                         timer_jiffies += TVN_SIZE - index;
-952                 timer_jiffies >>= TVN_BITS;
-953         }
-
-
-In the above code, you will see that if a timer event is found there is no test to see if this timer event is deferrable. The patch that I proposed simply adds two lines of code that performs the same test as seen in the tv1 loop to check if a timer is deferrable for tv2-tv5. In other words, add lines 902 and 903, in between lines 932 and 933 in the function __next_timer_interrupt().
-
-Cheers
-Jon
+rick jones
