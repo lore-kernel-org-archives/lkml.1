@@ -1,73 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZAZSYS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbZAZSZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbZAZSYS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 13:24:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZAZSYJ
+	id S1753654AbZAZSZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 13:25:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZAZSZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 13:24:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34021 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751548AbZAZSYI (ORCPT
+	Mon, 26 Jan 2009 13:25:20 -0500
+Received: from comal.ext.ti.com ([198.47.26.152]:45683 "EHLO comal.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751548AbZAZSZT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 13:24:08 -0500
-Date: Mon, 26 Jan 2009 10:23:39 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Dave Airlie <airlied@linux.ie>
-cc: dri-devel@lists.sf.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [git pull] drm-fixes
-In-Reply-To: <alpine.DEB.2.00.0901220432480.25266@skynet.skynet.ie>
-Message-ID: <alpine.LFD.2.00.0901261017380.5284@localhost.localdomain>
-References: <alpine.DEB.2.00.0901220432480.25266@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 26 Jan 2009 13:25:19 -0500
+From: "Hunter, Jon" <jon-hunter@ti.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 26 Jan 2009 12:23:37 -0600
+Subject: RE: [RFC] Dynamic Tick and Deferrable Timer Support
+Thread-Topic: [RFC] Dynamic Tick and Deferrable Timer Support
+Thread-Index: Acl22NMmPRfHmhnyTuem0+yaDRLXwwJCC58g
+Message-ID: <7B4574D56E4ADF438756313E9A172A872CB8232E@dlee01.ent.ti.com>
+References: <CF7665F795A4BE438425FE728CEACFA302F2436B52@dlee01.ent.ti.com>
+ <20090114221624.76ee8aa4.akpm@linux-foundation.org>
+In-Reply-To: <20090114221624.76ee8aa4.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrew Morton <mailto:akpm@linux-foundation.org> wrote on Thursday, January 15, 2009 12:16 AM:
+
+> Venki, could you please take a look?
+
+Andrew, Venki, if it helps here are some more details.
+
+The function "__next_timer_interrupt()" (in file kernel/timer.c) consists of two main loops. The first loop (shown below) looks for timer events in tv1.
+
+898         /* Look for timer events in tv1. */
+899         index = slot = timer_jiffies & TVR_MASK;
+900         do {
+901                 list_for_each_entry(nte, base->tv1.vec + slot, entry) {
+902                         if (tbase_get_deferrable(nte->base))
+903                                 continue;
+904
+905                         found = 1;
+906                         expires = nte->expires;
+907                         /* Look at the cascade bucket(s)? */
+908                         if (!index || slot < index)
+909                                 goto cascade;
+910                         return expires;
+911                 }
+912                 slot = (slot + 1) & TVR_MASK;
+913         } while (slot != index);
 
 
-Dave,
- you have some odd and slightly git usage model, which shows up in various 
-commits. Lookie here as an example from comit 335041ed:
+You can see from the above code snippet, that if a timer event is found for tv1, then it performs a test to see if this timer event is deferrable (lines 902 and 903). If no timer events are found for tv1, then the code enters a second loop, a for-loop with a nested do-while loop, that looks for timer events in tv2-tv5.
 
-	Author: Jesse Barnes <jbarnes@virtuousgeek.org>  2009-01-22 04:22:06
-	Committer: Dave Airlie <airlied@redhat.com>  2009-01-22 04:22:06
-	
-	    drm/i915: hook up LVDS DPMS property
-	    
-	    The LVDS output supports DPMS calls, but we never hooked up the property code,
-	    so set property calls didn't actually do anything.  Implement a set_property
-	    callback for the LVDS output so that the right thing happens.
-	    
-	    Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-and this has a few issues that trigger my "Dave is doing something wrong" 
-reaction:
+927         for (array = 0; array < 4; array++) {
+928                 struct tvec *varp = varray[array];
+929
+930                 index = slot = timer_jiffies & TVN_MASK;
+931                 do {
+932                         list_for_each_entry(nte, varp->vec + slot, entry) {
+933                                 found = 1;
+934                                 if (time_before(nte->expires, expires))
+935                                         expires = nte->expires;
+936                         }
+937                         /*
+938                          * Do we still search for the first timer or are
+939                          * we looking up the cascade buckets ?
+940                          */
+941                         if (found) {
+942                                 /* Look at the cascade bucket(s)? */
+943                                 if (!index || slot < index)
+944                                         break;
+945                                 return expires;
+946                         }
+947                         slot = (slot + 1) & TVN_MASK;
+948                 } while (slot != index);
+949
+950                 if (index)
+951                         timer_jiffies += TVN_SIZE - index;
+952                 timer_jiffies >>= TVN_BITS;
+953         }
 
- - The signed-off-chain is incomplete from the author to the committer.
 
-   A _good_ sign-off will always have the sign-offs from the author and 
-   the committer and everybody in between. This one does not. Clearly 
-   Jesse did sign off on his work, but he is not listed as the committer: 
-   you are. And that means that your sign-off is missing.
+In the above code, you will see that if a timer event is found there is no test to see if this timer event is deferrable. The patch that I proposed simply adds two lines of code that performs the same test as seen in the tv1 loop to check if a timer is deferrable for tv2-tv5. In other words, add lines 902 and 903, in between lines 932 and 933 in the function __next_timer_interrupt().
 
- - You are clearly lying about dates and/or dropping them.
-
-   The dates for authorship and committing are the same, yet the author 
-   and committer are clearly _not_ the same. You can try to convince me 
-   that you committed Jesse's work the same second he sent it to you, but 
-   quite frankly, I don't buy it. End result: you've done something to 
-   drop the date information.
-
-I don't know what tools you use, or what process the patches go through, 
-but I do know that whatever your process is, it's losing information. 
-Please fix it.
-
-I've pulled, but I hope I won't have to see these issues in future pull 
-requests.
-
-			Linus
+Cheers
+Jon
