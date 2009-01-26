@@ -1,50 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbZAZUag@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZAZUb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755088AbZAZUag (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 15:30:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753636AbZAZUaY
+	id S1754811AbZAZUb5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 15:31:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752067AbZAZUbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 15:30:24 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60258
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753507AbZAZUaX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 15:30:23 -0500
-Date: Mon, 26 Jan 2009 12:30:25 -0800 (PST)
-Message-Id: <20090126.123025.79139510.davem@davemloft.net>
-To: khc@pm.waw.pl
-Cc: jaswinder@kernel.org, shemminger@vyatta.com, sam@ravnborg.org,
-       jaswinderlinux@gmail.com, arnd@arndb.de, mingo@elte.hu,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: why usr/include/linux/if_frad.h is required
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <m3ljt0pvmg.fsf@intrepid.localdomain>
-References: <20090121.153712.84781438.davem@davemloft.net>
-	<1232803533.17900.4.camel@localhost.localdomain>
-	<m3ljt0pvmg.fsf@intrepid.localdomain>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+	Mon, 26 Jan 2009 15:31:49 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40330 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752019AbZAZUbt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 15:31:49 -0500
+Date: Mon, 26 Jan 2009 21:31:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/1] blktrace: the ftrace interface needs
+	CONFIG_TRACING
+Message-ID: <20090126203140.GC8867@elte.hu>
+References: <20090126202549.GC11038@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090126202549.GC11038@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n0QKUiwM013002
 
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sat, 24 Jan 2009 16:32:55 +0100
 
-> Jaswinder Singh Rajput <jaswinder@kernel.org> writes:
+* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+
+> Resend, the first time I forgot to add [PATCH tip 1/1].
 > 
-> > After killing CONFIG_DLCI and CONFIG_DLCI_MODULE, it is also killing the
-> > kernel:
-> >
-> >   CC      net/socket.o
-> > In file included from net/socket.c:75:
-> > include/linux/if_frad.h:170: error: â€˜CONFIG_DLCI_MAXâ€™ undeclared here (not in a function)
-> 
-> Perhaps this would do (untested).
-> Signed-off-by: Krzysztof HaÅ‚asa <khc@pm.waw.pl>
+> Ingo, this fix that problem you reported me, where a .config didn't had 
+> CONFIG_TRACING selected.
 
-This looks good, applied, thanks everyone.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+yep - i already applied the first version and it does the trick for the 
+build failure. (I changed the Impact line to "Impact: build fix" - as that 
+really is the goal and effect of the commit.)
+
+Thanks,
+
+	Ingo
