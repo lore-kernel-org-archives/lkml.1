@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753652AbZAZWit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbZAZWjG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753652AbZAZWit (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 17:38:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZAZWik
+	id S1754955AbZAZWjG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 17:39:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752518AbZAZWil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Mon, 26 Jan 2009 17:38:41 -0500
+Received: from cmpxchg.org ([85.214.51.133]:39135 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752354AbZAZWik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 26 Jan 2009 17:38:40 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:55971 "EHLO
-	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752000AbZAZWij (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 17:38:39 -0500
-Subject: Re: GTT full but LRU empty
-From: Eric Anholt <eric@anholt.net>
-To: Jacek Luczak <difrost.kernel@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <497DFC8B.9040405@gmail.com>
-References: <497DFC8B.9040405@gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lW6+6TWaxCGAl7B4hqkG"
-Date: Mon, 26 Jan 2009 14:38:32 -0800
-Message-Id: <1233009512.4876.3.camel@gaiman>
+Date: Mon, 26 Jan 2009 23:38:13 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Dave Airlie <airlied@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>, dri-devel@lists.sf.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [git pull] drm-fixes
+Message-ID: <20090126223812.GA17678@cmpxchg.org>
+References: <alpine.DEB.2.00.0901220432480.25266@skynet.skynet.ie> <alpine.LFD.2.00.0901261017380.5284@localhost.localdomain> <21d7e9970901261344v2909cc61m42f32f2a434df0c4@mail.gmail.com> <20090126215235.GA10484@uranus.ravnborg.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090126215235.GA10484@uranus.ravnborg.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Jan 26, 2009 at 10:52:35PM +0100, Sam Ravnborg wrote:
+> > 
+> > Well I'm not 100% sure what happened for this patch, I suspect,
+> > jbarnes sent patch a week
+> > or two ago, it misapplied against the tree I had currently when
+> > applied with git-am, it didn't work so I hand
+> > applied the patch with patch and then did git commit
+> > --author="jbarnes" as he did write it, I just munged it.
+> > 
+> > Now I'm unsure how I should best handle this, in a world where I can
+> > devote a lot more time to
+> > maintaining this, I would sent Jesse a mail saying, rebase, he'd reply
+> > with a rebase and I'd apply it,
+> > however I generally find it easier to just fix this stuff up on the
+> > run as its synchronous. Should
+> > I be specifying a date somewhere in the commit message?
+> 
+> My simple way to deal with this is to:
+> 
+> 0) save the mail
 
---=-lW6+6TWaxCGAl7B4hqkG
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+  1) git am --signoff --interactive mailfile
 
-On Mon, 2009-01-26 at 19:10 +0100, Jacek Luczak wrote:
-> Hi Eric,
->=20
-> Are those errors known?
->=20
-> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
-> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
-> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request emp=
-ty 1
-> flushing empty 1
-> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
-> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
-> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request emp=
-ty 1
-> flushing empty 1
-> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
-> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
-> -12<3>[drm:i915_gem_execbuffer] *ERROR* Failed to pin buffers -12
-> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
-> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
-> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request emp=
-ty 1
-> flushing empty 1
-> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
-> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
-> -12<3>[drm:i915_gem_execbuffer] *ERROR* Failed to pin buffers -12
->=20
-> They appeared once and no more, but I've changed my configuration in betw=
-een
-> (switched to UXA, removed IntelFB from kernel).
-
-Those messages occur when a client asks the kernel to exec a batchbuffer
-that the kernel can't fit into the unpinned aperture space.  Userland is
-supposed to be tracking how much space its stuff uses and flushing
-before that time, but certain bad things could break that by violating
-the assumption that the amount of pinned space doesn't change.  Our XV
-code today, for example.  I've been working on cleaning up the remaining
-bad userland bits, but it's painful work.  Luckily, other than dmesg
-spam warning that some rendering just go dropped on the floor, and some
-rendering not occurring, nothing else harmful should be happening.
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-lW6+6TWaxCGAl7B4hqkG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkl+O2YACgkQHUdvYGzw6vewegCfWPOOqV9Z2uuG1iBc6ERX+i5n
-+eMAoJP8CZmBbjJEguzKsupTWCB+rt4p
-=iGBJ
------END PGP SIGNATURE-----
-
---=-lW6+6TWaxCGAl7B4hqkG--
+HTH,
+	Hannes
