@@ -1,119 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZAZS5B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753414AbZAZTBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbZAZS5B (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 13:57:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbZAZS4x
+	id S1753414AbZAZTBz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:01:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZAZTBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 13:56:53 -0500
-Received: from ey-out-2122.google.com ([74.125.78.25]:37511 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbZAZS4w (ORCPT
+	Mon, 26 Jan 2009 14:01:43 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35792 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752811AbZAZTBl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 13:56:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TKs2ku5P6Gcssur5pLVhXCqVLIsjXgiPd+oWieLqnvdwX3a1Bpmi8Yg9l+iWqr+LDr
-         Ls1u4JWAlqD7B1i9D2xGDrxtOnk+TTCd+6gOcHIYeKixde5/DIw32yAOB8UJ+LU1Gm+D
-         dzZ30eFxduOhKPRlWBr5gz/hHKjraCOAT+jI0=
-Date: Mon, 26 Jan 2009 21:56:48 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC v2 -tip 3/3] x86: ia32_signal: use {get|put}_user_try and
-	catch
-Message-ID: <20090126185648.GD31918@localhost>
-References: <4962CAAE.6090300@ct.jp.nec.com> <496476D0.5040607@zytor.com> <497A5737.8030408@ct.jp.nec.com> <497A57CE.3080602@ct.jp.nec.com> <20090124073638.GA8752@localhost> <497E0167.10604@ct.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <497E0167.10604@ct.jp.nec.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 26 Jan 2009 14:01:41 -0500
+Date: Mon, 26 Jan 2009 11:00:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nick Piggin <npiggin@suse.de>
+Cc: mingo@elte.hu, linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
+       rusty@rustcorp.com.au, travis@sgi.com, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       arjan@infradead.org, hpa@zytor.com, tglx@linutronix.de
+Subject: Re: [git pull] cpus4096 tree, part 3
+Message-Id: <20090126110054.bdddbf38.akpm@linux-foundation.org>
+In-Reply-To: <20090105011630.GI32239@wotan.suse.de>
+References: <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain>
+	<20090102203839.GA26850@elte.hu>
+	<alpine.LFD.2.00.0901021531140.3179@localhost.localdomain>
+	<20090103193859.GB9805@elte.hu>
+	<alpine.LFD.2.00.0901031225020.3179@localhost.localdomain>
+	<20090103203621.GA2491@elte.hu>
+	<20090103213856.GA24138@elte.hu>
+	<alpine.LFD.2.00.0901031347570.3179@localhost.localdomain>
+	<20090103223723.GA17047@elte.hu>
+	<20090105011416.GG32239@wotan.suse.de>
+	<20090105011630.GI32239@wotan.suse.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Hiroshi Shimamoto - Mon, Jan 26, 2009 at 10:31:03AM -0800]
-| Cyrill Gorcunov wrote:
-| > [Hiroshi Shimamoto - Fri, Jan 23, 2009 at 03:50:38PM -0800]
-| > | From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-| > | 
-| > | Impact: use new framework
-| > | 
-| > | Use {get|put}_user_try, catch, and _ex in arch/x86/ia32/ia32_signal.c.
-| > | 
-| > | Note: this patch contains "WARNING: line over 80 characters", because when
-| > | introducing new block I insert an indent to avoid mistakes by edit.
-| > | 
-| > | Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-| > | ---
-| > |  arch/x86/ia32/ia32_signal.c |  365 +++++++++++++++++++++++--------------------
-| > |  1 files changed, 195 insertions(+), 170 deletions(-)
-| > | 
-| > | diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
-| > | index 9dabd00..dd77ac0 100644
-| > | --- a/arch/x86/ia32/ia32_signal.c
-| > | +++ b/arch/x86/ia32/ia32_signal.c
-| > | @@ -46,78 +46,83 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
-| > |
-| > ... 
-| > | +	put_user_try {
-| > | +		/* If you change siginfo_t structure, please make sure that
-| > | +		   this code is fixed accordingly.
-| > | +		   It should never copy any pad contained in the structure
-| > | +		   to avoid security leaks, but must copy the generic
-| > | +		   3 ints plus the relevant union member.  */
-| > | +		put_user_ex(from->si_signo, &to->si_signo);
-| > | +		put_user_ex(from->si_errno, &to->si_errno);
-| > | +		put_user_ex((short)from->si_code, &to->si_code);
-| > | +
-| > | +		if (from->si_code < 0) {
-| > | +			put_user_ex(from->si_pid, &to->si_pid);
-| > | +			put_user_ex(from->si_uid, &to->si_uid);
-| > | +			put_user_ex(ptr_to_compat(from->si_ptr), &to->si_ptr);
-| > | +		} else {
-| > | +			/*
-| > | +			 * First 32bits of unions are always present:
-| > | +			 * si_pid === si_band === si_tid === si_addr(LS half)
-| > | +			 */
-| > | +			put_user_ex(from->_sifields._pad[0],
-| > | +					  &to->_sifields._pad[0]);
-| > | +			switch (from->si_code >> 16) {
-| > | +			case __SI_FAULT >> 16:
-| > | +				break;
-| > | +			case __SI_CHLD >> 16:
-| > | +				put_user_ex(from->si_utime, &to->si_utime);
-| > | +				put_user_ex(from->si_stime, &to->si_stime);
-| > | +				put_user_ex(from->si_status, &to->si_status);
-| > | +				/* FALL THROUGH */
-| > | +			default:
-| > 
-| > Hi Hiroshi,
-| 
-| Hi Cyrill,
-| 
-| > 
-| > may I ask why we use default here?
-| 
-| I don't know:) Hm, it looks old code.
-| arch/i386/kernel/signal.c in 2.4 has similar code.
-| 
-| I guess this code didn't change when copy_siginfo_to_user() was moved
-| from arch/i386/kernel/signal.c to kernel/signal.c.
-| 
-| Should we change this like copy_siginfo_tu_user() in kernel/signal.c?
-| Copying si_pid was added in kernel/signal.c.
-| 
-| BTW, it seems same __ST_KILL and default.
+On Mon, 5 Jan 2009 02:16:30 +0100
+Nick Piggin <npiggin@suse.de> wrote:
 
-Hiroshi, to be fair -- I just don't know what the
-right solution would be ;-) I just noticed that
-default: here a bit useless since we do 'testing'
-the (from->si_code >> 16) after default: anyway.
+> Really cc linux-arch this time
+> 
+> On Mon, Jan 05, 2009 at 02:14:16AM +0100, Nick Piggin wrote:
+> > On Sat, Jan 03, 2009 at 11:37:23PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > > 
+> > > > What happened to Nick's cleanup patch to do_page_fault (a month or two 
+> > > > ago? I complained about some of the issues in his first version and 
+> > > > asked for some further cleanups, but I think that whole discussion ended 
+> > > > with him saying "I am going to add those changes that you suggested (in 
+> > > > fact, I already have)".
+> > > > 
+> > > > And then I didn't see anything further. Maybe I just missed the end 
+> > > > result. Or maybe we have it in some -mm branch or something?
+> > > 
+> > > they would have been in tip/x86/mm and would be upstream now had Nick 
+> > > re-sent a v2 series but that never happened. I think they might have 
+> > > fallen victim to a serious attention deficit caused by the SLQB patch ;-)
+> > 
+> > Well, I already added Linus's suggestions but didn't submit it because
+> > there was a bit of work going on in that file as far as I could see, both
+> > in the x86 tree and in -mm:
+> > 
+> > (http://www.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.28-rc2/2.6.28-rc2-mm1/broken-out/mm-invoke-oom-killer-from-page-fault.patch)
+> > 
+> > It isn't a big deal to resolve either way, but I don't want to make Andrew's
+> > life harder.
+> > 
+> > [Yes OK now I'm the guilty one of pushing in an x86 patch not via the
+> > x86 tree ;) This one is easy to break in pieces, but I didn't want
+> > to create a dependency between the trees]
+> > 
+> > I didn't really consider it to be urgent, so I was waiting for that patch
+> > to go in, but I was still hoping to get this into 2.6.29... This is what
+> > it looks like now with your suggestions, and just merged it to your current
+> > tree (untested).
+> > 
+> > I'll cc the linux-arch list here too, because it might be nice to keep these
+> > things as structurally similar as possible (and they'll all want to look at
+> > the -mm patch above, although I'll probably end up having to write the
+> > patches!).
+> 
+> ---
+> Optimise x86's do_page_fault (C entry point for the page fault path).
 
-So choose one /since I'm not really familiar with
-process management in kernel/ :)
+It took rather a lot of hunting to find this email.  Please do try to
+make the email subject match the final patch's title?
 
-		-- Cyrill --
+>   * This routine handles page faults.  It determines the address,
+>   * and the problem, and then passes it off to one of the appropriate
+> @@ -583,16 +796,12 @@ asmlinkage
+>  #endif
+>  void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
+>  {
+> +	unsigned long address;
+>  	struct task_struct *tsk;
+>  	struct mm_struct *mm;
+>  	struct vm_area_struct *vma;
+> -	unsigned long address;
+> -	int write, si_code;
+> +	int write;
+>  	int fault;
+> -#ifdef CONFIG_X86_64
+> -	unsigned long flags;
+> -	int sig;
+> -#endif
+>  
+>  	tsk = current;
+>  	mm = tsk->mm;
+> @@ -601,9 +810,7 @@ void __kprobes do_page_fault(struct pt_r
+>  	/* get the address */
+>  	address = read_cr2();
+>  
+> -	si_code = SEGV_MAPERR;
+> -
+> -	if (notify_page_fault(regs))
+> +	if (unlikely(notify_page_fault(regs)))
+>  		return;
+>  	if (unlikely(kmmio_fault(regs, address)))
+>  		return;
+> @@ -638,10 +845,10 @@ void __kprobes do_page_fault(struct pt_r
+>  		 * Don't take the mm semaphore here. If we fixup a prefetch
+>  		 * fault we could otherwise deadlock.
+>  		 */
+> -		goto bad_area_nosemaphore;
+> +		bad_area_nosemaphore(regs, error_code, address);
+> +		return;
+>  	}
+>  
+> -
+>  	/*
+>  	 * It's safe to allow irq's after cr2 has been saved and the
+>  	 * vmalloc fault has been handled.
+> @@ -657,17 +864,18 @@ void __kprobes do_page_fault(struct pt_r
+>  
+>  #ifdef CONFIG_X86_64
+>  	if (unlikely(error_code & PF_RSVD))
+> -		pgtable_bad(address, regs, error_code);
+> +		pgtable_bad(regs, error_code, address);
+>  #endif
+>  
+>  	/*
+>  	 * If we're in an interrupt, have no user context or are running in an
+>  	 * atomic region then we must not take the fault.
+>  	 */
+> -	if (unlikely(in_atomic() || !mm))
+> -		goto bad_area_nosemaphore;
+> +	if (unlikely(in_atomic() || !mm)) {
+> +		bad_area_nosemaphore(regs, error_code, address);
+> +		return;
+> +	}
+>  
+> -again:
+>  	/*
+>  	 * When running in the kernel we expect faults to occur only to
+>  	 * addresses in user space.  All other faults represent errors in the
+> @@ -684,20 +892,26 @@ again:
+>  	 * source.  If this is invalid we can skip the address space check,
+>  	 * thus avoiding the deadlock.
+>  	 */
+> -	if (!down_read_trylock(&mm->mmap_sem)) {
+> +	if (unlikely(!down_read_trylock(&mm->mmap_sem))) {
+>  		if ((error_code & PF_USER) == 0 &&
+> -		    !search_exception_tables(regs->ip))
+> -			goto bad_area_nosemaphore;
+> +		    !search_exception_tables(regs->ip)) {
+> +			bad_area_nosemaphore(regs, error_code, address);
+> +			return;
+> +		}
+>  		down_read(&mm->mmap_sem);
+>  	}
+>  
+>  	vma = find_vma(mm, address);
+> -	if (!vma)
+> -		goto bad_area;
+> -	if (vma->vm_start <= address)
+> +	if (unlikely(!vma)) {
+> +		bad_area(regs, error_code, address);
+> +		return;
+> +	}
+> +	if (likely(vma->vm_start <= address))
+>  		goto good_area;
+> -	if (!(vma->vm_flags & VM_GROWSDOWN))
+> -		goto bad_area;
+> +	if (unlikely(!(vma->vm_flags & VM_GROWSDOWN))) {
+> +		bad_area(regs, error_code, address);
+> +		return;
+> +	}
+>  	if (error_code & PF_USER) {
+>  		/*
+>  		 * Accessing the stack below %sp is always a bug.
+> @@ -705,31 +919,25 @@ again:
+>  		 * and pusha to work.  ("enter $65535,$31" pushes
+>  		 * 32 pointers and then decrements %sp by 65535.)
+>  		 */
+> -		if (address + 65536 + 32 * sizeof(unsigned long) < regs->sp)
+> -			goto bad_area;
+> +		if (unlikely(address + 65536 + 32 * sizeof(unsigned long) < regs->sp)) {
+> +			bad_area(regs, error_code, address);
+> +			return;
+> +		}
+>  	}
+> -	if (expand_stack(vma, address))
+> -		goto bad_area;
+> -/*
+> - * Ok, we have a good vm_area for this memory access, so
+> - * we can handle it..
+> - */
+> +	if (unlikely(expand_stack(vma, address))) {
+> +		bad_area(regs, error_code, address);
+> +		return;
+> +	}
+> +
+> +	/*
+> +	 * Ok, we have a good vm_area for this memory access, so
+> +	 * we can handle it..
+> +	 */
+>  good_area:
+> -	si_code = SEGV_ACCERR;
+> -	write = 0;
+> -	switch (error_code & (PF_PROT|PF_WRITE)) {
+> -	default:	/* 3: write, present */
+> -		/* fall through */
+> -	case PF_WRITE:		/* write, not present */
+> -		if (!(vma->vm_flags & VM_WRITE))
+> -			goto bad_area;
+> -		write++;
+> -		break;
+> -	case PF_PROT:		/* read, present */
+> -		goto bad_area;
+> -	case 0:			/* read, not present */
+> -		if (!(vma->vm_flags & (VM_READ | VM_EXEC | VM_WRITE)))
+> -			goto bad_area;
+> +	write = error_code & PF_WRITE;
+
+What's going on here?  We set `error_code' to PF_WRITE, which is some
+x86-specific thing.
+
+> +	if (unlikely(access_error(error_code, write, vma))) {
+> +		bad_area_access_error(regs, error_code, address);
+> +		return;
+>  	}
+>  
+>  	/*
+> @@ -739,11 +947,8 @@ good_area:
+>  	 */
+>  	fault = handle_mm_fault(mm, vma, address, write);
+
+and then pass it into handle_mm_fault(), which is expecting a bunch of
+flags in the FAULT_FLAG_foo domain.
+
+IOW, the code will accidentally set FAULT_FLAG_NONLINEAR!.
+
+
+Methinks we want something like this,
+
+--- a/arch/x86/mm/fault.c~fix-x86-optimise-x86s-do_page_fault-c-entry-point-for-the-page-fault-path
++++ a/arch/x86/mm/fault.c
+@@ -942,7 +942,7 @@ void __kprobes do_page_fault(struct pt_r
+ 	 * we can handle it..
+ 	 */
+ good_area:
+-	write = error_code & PF_WRITE;
++	write = (error_code & PF_WRITE) ? FAULT_FLAG_WRITE : 0;
+ 	if (unlikely(access_error(error_code, write, vma))) {
+ 		bad_area_access_error(regs, error_code, address);
+ 		return;
+_
+
+
+but why did the current code pass testing at all??
+
