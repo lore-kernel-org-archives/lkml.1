@@ -1,931 +1,1410 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754843AbZA0OTH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbZA0OUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754843AbZA0OTH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 09:19:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZA0OSz
+	id S1755278AbZA0OUX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 09:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbZA0OUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 09:18:55 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:34169 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751443AbZA0OSx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 09:18:53 -0500
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] block/splice bits for 2.6.29
-References: <20090127115709.GR30821@kernel.dk>
-From: Dmitri Monakhov <dmonakhov@openvz.org>
-Date: Tue, 27 Jan 2009 17:17:12 +0300
-In-Reply-To: <20090127115709.GR30821@kernel.dk> (Jens Axboe's message of "Tue\, 27 Jan 2009 12\:57\:10 +0100")
-Message-ID: <m3bptsygt3.fsf@dmon-lap.sw.ru>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Jan 2009 09:20:07 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:41965 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbZA0OUC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 09:20:02 -0500
+Date: Mon, 26 Jan 2009 15:41:28 +0200 (EET)
+Message-Id: <20090126.154128.263069993.Hiroshi.DOYU@nokia.com>
+To: linux@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 1/6] omap iommu: tlb and pagetable primitives
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+In-Reply-To: <20090117160608.GA12341@n2100.arm.linux.org.uk>
+References: <20090116083003.18344.38307.stgit@oreo.research.nokia.com>
+	<20090116083709.18344.74524.stgit@oreo.research.nokia.com>
+	<20090117160608.GA12341@n2100.arm.linux.org.uk>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+ boundary="--Next_Part(Mon_Jan_26_15_41_28_2009_063)--"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 27 Jan 2009 14:19:08.0767 (UTC) FILETIME=[37DA5EF0:01C9808A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe <jens.axboe@oracle.com> writes:
+----Next_Part(Mon_Jan_26_15_41_28_2009_063)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-> Hi,
->
-> Collection of fixes for 2.6.29, please pull.
->
->   git://git.kernel.dk/linux-2.6-block.git for-linus
->
-> Alberto Bertogli (1):
->       Fix small typo in bio.h's documentation
->
-> Bartlomiej Zolnierkiewicz (1):
->       block: export SSD/non-rotational queue flag through sysfs
->
-> Boaz Harrosh (1):
->       include/linux: Add bsg.h to the Kernel exported headers
->
-> Jens Axboe (5):
->       block: get rid of the manual directory counting in blktrace
->       block: seperate bio/request unplug and sync bits
->       block: add bio_rw_flagged() for testing bio->bi_rw
->       block: silently error an unsupported barrier bio
->       block: add sysfs file for controlling io stats accounting
->
-> Martin K. Petersen (3):
->       block: Don't verify integrity metadata on read error
->       block: Remove obsolete BUG_ON
->       block: Allow empty integrity profile
->
-> Nikanth Karthikesan (1):
->       Mark mandatory elevator functions in the biodoc.txt
->
-> Theodore Ts'o (1):
->       block: Fix documentation for blkdev_issue_flush()
->
-> Vegard Nossum (1):
->       splice: fix deadlock with pipe_wait() and inode locking
-This patch is wrong, in fact Vergard has noted this in patch log.
-We have two problems
-1) pure bug : After the patch __splice_from_pipe() looks like follows
- __splice_from_pipe( pipe, sd, actor) {
-..
-        pipe_wait(pipe, sd->u.file->f_mapping->host);
-..
-}
-   But only "actor" callback allowed to touch sd->u structure because it has
-   knowledge about it's type. For example:
-   ->vmsplice_to_user
-    sd.u.userptr = base;
-    ->__splice_from_pipe(pipe, &sd, pipe_to_user);
-     ->pipe_wait(pipe, sd->u.file->f_mapping->host);
-2) File systems which use generic_file_splice_write_nolock() (filesystems
-with external locking)
-This filesystems may not being happy if we internally drop file's mutex
-inside generic_file_splice_write_nolock(). At least this behaviour not
-well documented.
+Hi Russell, thank you for your reivew.
 
-Definitely patch must be redesigned.
-IMHO we have to choices:
-1) The simplest one:
-  Redesing splice locking ordering in following way
-   ->file->i_mutex ; so file always locked before pipe
-     ->pipe->inode->i_mutex
-  This allows us to preserve current pipe_wait() logic without touching
-  file's lock.
+I've attached the updated one.
 
-2) a good one:
- Redesing __splice_from_pipe(),  simular to do_tee()
- /* ipipe: lock(); pipe_wait() if necessary; unlock()
- ret = link_ipipe_prep(ipipe, flags); 
- if (!ret) { 
- /* opipe: lock(); pipe_wait() if necessary ;unlock() */
- ret = link_opipe_prep(opipe, flags);// 
- if (!ret)
-       /* inode_double_lock(ipipe->inode, opipe->inode); */
-       ret = link_pipe(ipipe, opipe, len, flags);
+From: "ext Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 1/6] omap iommu: tlb and pagetable primitives
+Date: Sat, 17 Jan 2009 16:06:08 +0000
 
->
->  Documentation/block/biodoc.txt |    6 +-
->  block/blk-barrier.c            |    2 +-
->  block/blk-core.c               |  100 +++++++++++++++++++++++++---------------
->  block/blk-integrity.c          |   25 ++++++----
->  block/blk-sysfs.c              |   58 +++++++++++++++++++++++-
->  block/blktrace.c               |   72 ++++++++--------------------
->  fs/bio-integrity.c             |   26 ++++++----
->  fs/fifo.c                      |    2 +-
->  fs/pipe.c                      |   20 +++++---
->  fs/splice.c                    |    8 ++--
->  include/linux/Kbuild           |    1 +
->  include/linux/bio.h            |   45 +++++++++++-------
->  include/linux/blkdev.h         |    8 +++
->  include/linux/pipe_fs_i.h      |    4 +-
->  14 files changed, 230 insertions(+), 147 deletions(-)
->
-> diff --git a/Documentation/block/biodoc.txt b/Documentation/block/biodoc.txt
-> index 3c5434c..5e51217 100644
-> --- a/Documentation/block/biodoc.txt
-> +++ b/Documentation/block/biodoc.txt
-> @@ -953,14 +953,14 @@ elevator_allow_merge_fn		called whenever the block layer determines
->  				results in some sort of conflict internally,
->  				this hook allows it to do that.
->  
-> -elevator_dispatch_fn		fills the dispatch queue with ready requests.
-> +elevator_dispatch_fn*		fills the dispatch queue with ready requests.
->  				I/O schedulers are free to postpone requests by
->  				not filling the dispatch queue unless @force
->  				is non-zero.  Once dispatched, I/O schedulers
->  				are not allowed to manipulate the requests -
->  				they belong to generic dispatch queue.
->  
-> -elevator_add_req_fn		called to add a new request into the scheduler
-> +elevator_add_req_fn*		called to add a new request into the scheduler
->  
->  elevator_queue_empty_fn		returns true if the merge queue is empty.
->  				Drivers shouldn't use this, but rather check
-> @@ -990,7 +990,7 @@ elevator_activate_req_fn	Called when device driver first sees a request.
->  elevator_deactivate_req_fn	Called when device driver decides to delay
->  				a request by requeueing it.
->  
-> -elevator_init_fn
-> +elevator_init_fn*
->  elevator_exit_fn		Allocate and free any elevator specific storage
->  				for a queue.
->  
-> diff --git a/block/blk-barrier.c b/block/blk-barrier.c
-> index 8eba4e4..f7dae57 100644
-> --- a/block/blk-barrier.c
-> +++ b/block/blk-barrier.c
-> @@ -302,7 +302,7 @@ static void bio_end_empty_barrier(struct bio *bio, int err)
->   * Description:
->   *    Issue a flush for the block device in question. Caller can supply
->   *    room for storing the error offset in case of a flush error, if they
-> - *    wish to.  Caller must run wait_for_completion() on its own.
-> + *    wish to.
->   */
->  int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
->  {
-> diff --git a/block/blk-core.c b/block/blk-core.c
-> index a824e49..ca69f3d 100644
-> --- a/block/blk-core.c
-> +++ b/block/blk-core.c
-> @@ -64,11 +64,12 @@ static struct workqueue_struct *kblockd_workqueue;
->  
->  static void drive_stat_acct(struct request *rq, int new_io)
->  {
-> +	struct gendisk *disk = rq->rq_disk;
->  	struct hd_struct *part;
->  	int rw = rq_data_dir(rq);
->  	int cpu;
->  
-> -	if (!blk_fs_request(rq) || !rq->rq_disk)
-> +	if (!blk_fs_request(rq) || !disk || !blk_queue_io_stat(disk->queue))
->  		return;
->  
->  	cpu = part_stat_lock();
-> @@ -599,8 +600,7 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
->  	q->request_fn		= rfn;
->  	q->prep_rq_fn		= NULL;
->  	q->unplug_fn		= generic_unplug_device;
-> -	q->queue_flags		= (1 << QUEUE_FLAG_CLUSTER |
-> -				   1 << QUEUE_FLAG_STACKABLE);
-> +	q->queue_flags		= QUEUE_FLAG_DEFAULT;
->  	q->queue_lock		= lock;
->  
->  	blk_queue_segment_boundary(q, BLK_SEG_BOUNDARY_MASK);
-> @@ -1125,6 +1125,8 @@ void init_request_from_bio(struct request *req, struct bio *bio)
->  
->  	if (bio_sync(bio))
->  		req->cmd_flags |= REQ_RW_SYNC;
-> +	if (bio_unplug(bio))
-> +		req->cmd_flags |= REQ_UNPLUG;
->  	if (bio_rw_meta(bio))
->  		req->cmd_flags |= REQ_RW_META;
->  
-> @@ -1141,6 +1143,7 @@ static int __make_request(struct request_queue *q, struct bio *bio)
->  	int el_ret, nr_sectors;
->  	const unsigned short prio = bio_prio(bio);
->  	const int sync = bio_sync(bio);
-> +	const int unplug = bio_unplug(bio);
->  	int rw_flags;
->  
->  	nr_sectors = bio_sectors(bio);
-> @@ -1244,7 +1247,7 @@ get_rq:
->  		blk_plug_device(q);
->  	add_request(q, req);
->  out:
-> -	if (sync || blk_queue_nonrot(q))
-> +	if (unplug || blk_queue_nonrot(q))
->  		__generic_unplug_device(q);
->  	spin_unlock_irq(q->queue_lock);
->  	return 0;
-> @@ -1448,6 +1451,11 @@ static inline void __generic_make_request(struct bio *bio)
->  			err = -EOPNOTSUPP;
->  			goto end_io;
->  		}
-> +		if (bio_barrier(bio) && bio_has_data(bio) &&
-> +		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> +			err = -EOPNOTSUPP;
-> +			goto end_io;
-> +		}
->  
->  		ret = q->make_request_fn(q, bio);
->  	} while (ret);
-> @@ -1655,6 +1663,55 @@ void blkdev_dequeue_request(struct request *req)
->  }
->  EXPORT_SYMBOL(blkdev_dequeue_request);
->  
-> +static void blk_account_io_completion(struct request *req, unsigned int bytes)
-> +{
-> +	struct gendisk *disk = req->rq_disk;
-> +
-> +	if (!disk || !blk_queue_io_stat(disk->queue))
-> +		return;
-> +
-> +	if (blk_fs_request(req)) {
-> +		const int rw = rq_data_dir(req);
-> +		struct hd_struct *part;
-> +		int cpu;
-> +
-> +		cpu = part_stat_lock();
-> +		part = disk_map_sector_rcu(req->rq_disk, req->sector);
-> +		part_stat_add(cpu, part, sectors[rw], bytes >> 9);
-> +		part_stat_unlock();
-> +	}
-> +}
-> +
-> +static void blk_account_io_done(struct request *req)
-> +{
-> +	struct gendisk *disk = req->rq_disk;
-> +
-> +	if (!disk || !blk_queue_io_stat(disk->queue))
-> +		return;
-> +
-> +	/*
-> +	 * Account IO completion.  bar_rq isn't accounted as a normal
-> +	 * IO on queueing nor completion.  Accounting the containing
-> +	 * request is enough.
-> +	 */
-> +	if (blk_fs_request(req) && req != &req->q->bar_rq) {
-> +		unsigned long duration = jiffies - req->start_time;
-> +		const int rw = rq_data_dir(req);
-> +		struct hd_struct *part;
-> +		int cpu;
-> +
-> +		cpu = part_stat_lock();
-> +		part = disk_map_sector_rcu(disk, req->sector);
-> +
-> +		part_stat_inc(cpu, part, ios[rw]);
-> +		part_stat_add(cpu, part, ticks[rw], duration);
-> +		part_round_stats(cpu, part);
-> +		part_dec_in_flight(part);
-> +
-> +		part_stat_unlock();
-> +	}
-> +}
-> +
->  /**
->   * __end_that_request_first - end I/O on a request
->   * @req:      the request being processed
-> @@ -1690,16 +1747,7 @@ static int __end_that_request_first(struct request *req, int error,
->  				(unsigned long long)req->sector);
->  	}
->  
-> -	if (blk_fs_request(req) && req->rq_disk) {
-> -		const int rw = rq_data_dir(req);
-> -		struct hd_struct *part;
-> -		int cpu;
-> -
-> -		cpu = part_stat_lock();
-> -		part = disk_map_sector_rcu(req->rq_disk, req->sector);
-> -		part_stat_add(cpu, part, sectors[rw], nr_bytes >> 9);
-> -		part_stat_unlock();
-> -	}
-> +	blk_account_io_completion(req, nr_bytes);
->  
->  	total_bytes = bio_nbytes = 0;
->  	while ((bio = req->bio) != NULL) {
-> @@ -1779,8 +1827,6 @@ static int __end_that_request_first(struct request *req, int error,
->   */
->  static void end_that_request_last(struct request *req, int error)
->  {
-> -	struct gendisk *disk = req->rq_disk;
-> -
->  	if (blk_rq_tagged(req))
->  		blk_queue_end_tag(req->q, req);
->  
-> @@ -1792,27 +1838,7 @@ static void end_that_request_last(struct request *req, int error)
->  
->  	blk_delete_timer(req);
->  
-> -	/*
-> -	 * Account IO completion.  bar_rq isn't accounted as a normal
-> -	 * IO on queueing nor completion.  Accounting the containing
-> -	 * request is enough.
-> -	 */
-> -	if (disk && blk_fs_request(req) && req != &req->q->bar_rq) {
-> -		unsigned long duration = jiffies - req->start_time;
-> -		const int rw = rq_data_dir(req);
-> -		struct hd_struct *part;
-> -		int cpu;
-> -
-> -		cpu = part_stat_lock();
-> -		part = disk_map_sector_rcu(disk, req->sector);
-> -
-> -		part_stat_inc(cpu, part, ios[rw]);
-> -		part_stat_add(cpu, part, ticks[rw], duration);
-> -		part_round_stats(cpu, part);
-> -		part_dec_in_flight(part);
-> -
-> -		part_stat_unlock();
-> -	}
-> +	blk_account_io_done(req);
->  
->  	if (req->end_io)
->  		req->end_io(req, error);
-> diff --git a/block/blk-integrity.c b/block/blk-integrity.c
-> index 61a8e2f..91fa8e0 100644
-> --- a/block/blk-integrity.c
-> +++ b/block/blk-integrity.c
-> @@ -309,24 +309,24 @@ static struct kobj_type integrity_ktype = {
->  /**
->   * blk_integrity_register - Register a gendisk as being integrity-capable
->   * @disk:	struct gendisk pointer to make integrity-aware
-> - * @template:	integrity profile
-> + * @template:	optional integrity profile to register
->   *
->   * Description: When a device needs to advertise itself as being able
->   * to send/receive integrity metadata it must use this function to
->   * register the capability with the block layer.  The template is a
->   * blk_integrity struct with values appropriate for the underlying
-> - * hardware.  See Documentation/block/data-integrity.txt.
-> + * hardware.  If template is NULL the new profile is allocated but
-> + * not filled out. See Documentation/block/data-integrity.txt.
->   */
->  int blk_integrity_register(struct gendisk *disk, struct blk_integrity *template)
->  {
->  	struct blk_integrity *bi;
->  
->  	BUG_ON(disk == NULL);
-> -	BUG_ON(template == NULL);
->  
->  	if (disk->integrity == NULL) {
->  		bi = kmem_cache_alloc(integrity_cachep,
-> -						GFP_KERNEL | __GFP_ZERO);
-> +				      GFP_KERNEL | __GFP_ZERO);
->  		if (!bi)
->  			return -1;
->  
-> @@ -346,13 +346,16 @@ int blk_integrity_register(struct gendisk *disk, struct blk_integrity *template)
->  		bi = disk->integrity;
->  
->  	/* Use the provided profile as template */
-> -	bi->name = template->name;
-> -	bi->generate_fn = template->generate_fn;
-> -	bi->verify_fn = template->verify_fn;
-> -	bi->tuple_size = template->tuple_size;
-> -	bi->set_tag_fn = template->set_tag_fn;
-> -	bi->get_tag_fn = template->get_tag_fn;
-> -	bi->tag_size = template->tag_size;
-> +	if (template != NULL) {
-> +		bi->name = template->name;
-> +		bi->generate_fn = template->generate_fn;
-> +		bi->verify_fn = template->verify_fn;
-> +		bi->tuple_size = template->tuple_size;
-> +		bi->set_tag_fn = template->set_tag_fn;
-> +		bi->get_tag_fn = template->get_tag_fn;
-> +		bi->tag_size = template->tag_size;
-> +	} else
-> +		bi->name = "unsupported";
->  
->  	return 0;
->  }
-> diff --git a/block/blk-sysfs.c b/block/blk-sysfs.c
-> index a29cb78..e29ddfc 100644
-> --- a/block/blk-sysfs.c
-> +++ b/block/blk-sysfs.c
-> @@ -130,6 +130,27 @@ static ssize_t queue_max_hw_sectors_show(struct request_queue *q, char *page)
->  	return queue_var_show(max_hw_sectors_kb, (page));
->  }
->  
-> +static ssize_t queue_nonrot_show(struct request_queue *q, char *page)
-> +{
-> +	return queue_var_show(!blk_queue_nonrot(q), page);
-> +}
-> +
-> +static ssize_t queue_nonrot_store(struct request_queue *q, const char *page,
-> +				  size_t count)
-> +{
-> +	unsigned long nm;
-> +	ssize_t ret = queue_var_store(&nm, page, count);
-> +
-> +	spin_lock_irq(q->queue_lock);
-> +	if (nm)
-> +		queue_flag_clear(QUEUE_FLAG_NONROT, q);
-> +	else
-> +		queue_flag_set(QUEUE_FLAG_NONROT, q);
-> +	spin_unlock_irq(q->queue_lock);
-> +
-> +	return ret;
-> +}
-> +
->  static ssize_t queue_nomerges_show(struct request_queue *q, char *page)
->  {
->  	return queue_var_show(blk_queue_nomerges(q), page);
-> @@ -146,8 +167,8 @@ static ssize_t queue_nomerges_store(struct request_queue *q, const char *page,
->  		queue_flag_set(QUEUE_FLAG_NOMERGES, q);
->  	else
->  		queue_flag_clear(QUEUE_FLAG_NOMERGES, q);
-> -
->  	spin_unlock_irq(q->queue_lock);
-> +
->  	return ret;
->  }
->  
-> @@ -176,6 +197,27 @@ queue_rq_affinity_store(struct request_queue *q, const char *page, size_t count)
->  	return ret;
->  }
->  
-> +static ssize_t queue_iostats_show(struct request_queue *q, char *page)
-> +{
-> +	return queue_var_show(blk_queue_io_stat(q), page);
-> +}
-> +
-> +static ssize_t queue_iostats_store(struct request_queue *q, const char *page,
-> +				   size_t count)
-> +{
-> +	unsigned long stats;
-> +	ssize_t ret = queue_var_store(&stats, page, count);
-> +
-> +	spin_lock_irq(q->queue_lock);
-> +	if (stats)
-> +		queue_flag_set(QUEUE_FLAG_IO_STAT, q);
-> +	else
-> +		queue_flag_clear(QUEUE_FLAG_IO_STAT, q);
-> +	spin_unlock_irq(q->queue_lock);
-> +
-> +	return ret;
-> +}
-> +
->  static struct queue_sysfs_entry queue_requests_entry = {
->  	.attr = {.name = "nr_requests", .mode = S_IRUGO | S_IWUSR },
->  	.show = queue_requests_show,
-> @@ -210,6 +252,12 @@ static struct queue_sysfs_entry queue_hw_sector_size_entry = {
->  	.show = queue_hw_sector_size_show,
->  };
->  
-> +static struct queue_sysfs_entry queue_nonrot_entry = {
-> +	.attr = {.name = "rotational", .mode = S_IRUGO | S_IWUSR },
-> +	.show = queue_nonrot_show,
-> +	.store = queue_nonrot_store,
-> +};
-> +
->  static struct queue_sysfs_entry queue_nomerges_entry = {
->  	.attr = {.name = "nomerges", .mode = S_IRUGO | S_IWUSR },
->  	.show = queue_nomerges_show,
-> @@ -222,6 +270,12 @@ static struct queue_sysfs_entry queue_rq_affinity_entry = {
->  	.store = queue_rq_affinity_store,
->  };
->  
-> +static struct queue_sysfs_entry queue_iostats_entry = {
-> +	.attr = {.name = "iostats", .mode = S_IRUGO | S_IWUSR },
-> +	.show = queue_iostats_show,
-> +	.store = queue_iostats_store,
-> +};
-> +
->  static struct attribute *default_attrs[] = {
->  	&queue_requests_entry.attr,
->  	&queue_ra_entry.attr,
-> @@ -229,8 +283,10 @@ static struct attribute *default_attrs[] = {
->  	&queue_max_sectors_entry.attr,
->  	&queue_iosched_entry.attr,
->  	&queue_hw_sector_size_entry.attr,
-> +	&queue_nonrot_entry.attr,
->  	&queue_nomerges_entry.attr,
->  	&queue_rq_affinity_entry.attr,
-> +	&queue_iostats_entry.attr,
->  	NULL,
->  };
->  
-> diff --git a/block/blktrace.c b/block/blktrace.c
-> index b0a2cae..39cc3bf 100644
-> --- a/block/blktrace.c
-> +++ b/block/blktrace.c
-> @@ -187,59 +187,12 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
->  
->  static struct dentry *blk_tree_root;
->  static DEFINE_MUTEX(blk_tree_mutex);
-> -static unsigned int root_users;
-> -
-> -static inline void blk_remove_root(void)
-> -{
-> -	if (blk_tree_root) {
-> -		debugfs_remove(blk_tree_root);
-> -		blk_tree_root = NULL;
-> -	}
-> -}
-> -
-> -static void blk_remove_tree(struct dentry *dir)
-> -{
-> -	mutex_lock(&blk_tree_mutex);
-> -	debugfs_remove(dir);
-> -	if (--root_users == 0)
-> -		blk_remove_root();
-> -	mutex_unlock(&blk_tree_mutex);
-> -}
-> -
-> -static struct dentry *blk_create_tree(const char *blk_name)
-> -{
-> -	struct dentry *dir = NULL;
-> -	int created = 0;
-> -
-> -	mutex_lock(&blk_tree_mutex);
-> -
-> -	if (!blk_tree_root) {
-> -		blk_tree_root = debugfs_create_dir("block", NULL);
-> -		if (!blk_tree_root)
-> -			goto err;
-> -		created = 1;
-> -	}
-> -
-> -	dir = debugfs_create_dir(blk_name, blk_tree_root);
-> -	if (dir)
-> -		root_users++;
-> -	else {
-> -		/* Delete root only if we created it */
-> -		if (created)
-> -			blk_remove_root();
-> -	}
-> -
-> -err:
-> -	mutex_unlock(&blk_tree_mutex);
-> -	return dir;
-> -}
->  
->  static void blk_trace_cleanup(struct blk_trace *bt)
->  {
-> -	relay_close(bt->rchan);
->  	debugfs_remove(bt->msg_file);
->  	debugfs_remove(bt->dropped_file);
-> -	blk_remove_tree(bt->dir);
-> +	relay_close(bt->rchan);
->  	free_percpu(bt->sequence);
->  	free_percpu(bt->msg_data);
->  	kfree(bt);
-> @@ -346,7 +299,18 @@ static int blk_subbuf_start_callback(struct rchan_buf *buf, void *subbuf,
->  
->  static int blk_remove_buf_file_callback(struct dentry *dentry)
->  {
-> +	struct dentry *parent = dentry->d_parent;
->  	debugfs_remove(dentry);
-> +
-> +	/*
-> +	* this will fail for all but the last file, but that is ok. what we
-> +	* care about is the top level buts->name directory going away, when
-> +	* the last trace file is gone. Then we don't have to rmdir() that
-> +	* manually on trace stop, so it nicely solves the issue with
-> +	* force killing of running traces.
-> +	*/
-> +
-> +	debugfs_remove(parent);
->  	return 0;
->  }
->  
-> @@ -404,7 +368,15 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
->  		goto err;
->  
->  	ret = -ENOENT;
-> -	dir = blk_create_tree(buts->name);
-> +
-> +	if (!blk_tree_root) {
-> +		blk_tree_root = debugfs_create_dir("block", NULL);
-> +		if (!blk_tree_root)
-> +			return -ENOMEM;
-> +	}
-> +
-> +	dir = debugfs_create_dir(buts->name, blk_tree_root);
-> +
->  	if (!dir)
->  		goto err;
->  
-> @@ -458,8 +430,6 @@ probe_err:
->  	atomic_dec(&blk_probes_ref);
->  	mutex_unlock(&blk_probe_mutex);
->  err:
-> -	if (dir)
-> -		blk_remove_tree(dir);
->  	if (bt) {
->  		if (bt->msg_file)
->  			debugfs_remove(bt->msg_file);
-> diff --git a/fs/bio-integrity.c b/fs/bio-integrity.c
-> index 77ebc3c..549b014 100644
-> --- a/fs/bio-integrity.c
-> +++ b/fs/bio-integrity.c
-> @@ -140,7 +140,6 @@ int bio_integrity_add_page(struct bio *bio, struct page *page,
->  
->  	iv = bip_vec_idx(bip, bip->bip_vcnt);
->  	BUG_ON(iv == NULL);
-> -	BUG_ON(iv->bv_page != NULL);
->  
->  	iv->bv_page = page;
->  	iv->bv_len = len;
-> @@ -465,7 +464,7 @@ static int bio_integrity_verify(struct bio *bio)
->  
->  		if (ret) {
->  			kunmap_atomic(kaddr, KM_USER0);
-> -			break;
-> +			return ret;
->  		}
->  
->  		sectors = bv->bv_len / bi->sector_size;
-> @@ -493,18 +492,13 @@ static void bio_integrity_verify_fn(struct work_struct *work)
->  	struct bio_integrity_payload *bip =
->  		container_of(work, struct bio_integrity_payload, bip_work);
->  	struct bio *bio = bip->bip_bio;
-> -	int error = bip->bip_error;
-> +	int error;
->  
-> -	if (bio_integrity_verify(bio)) {
-> -		clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> -		error = -EIO;
-> -	}
-> +	error = bio_integrity_verify(bio);
->  
->  	/* Restore original bio completion handler */
->  	bio->bi_end_io = bip->bip_end_io;
-> -
-> -	if (bio->bi_end_io)
-> -		bio->bi_end_io(bio, error);
-> +	bio_endio(bio, error);
->  }
->  
->  /**
-> @@ -525,7 +519,17 @@ void bio_integrity_endio(struct bio *bio, int error)
->  
->  	BUG_ON(bip->bip_bio != bio);
->  
-> -	bip->bip_error = error;
-> +	/* In case of an I/O error there is no point in verifying the
-> +	 * integrity metadata.  Restore original bio end_io handler
-> +	 * and run it.
-> +	 */
-> +	if (error) {
-> +		bio->bi_end_io = bip->bip_end_io;
-> +		bio_endio(bio, error);
-> +
-> +		return;
-> +	}
-> +
->  	INIT_WORK(&bip->bip_work, bio_integrity_verify_fn);
->  	queue_work(kintegrityd_wq, &bip->bip_work);
->  }
-> diff --git a/fs/fifo.c b/fs/fifo.c
-> index f8f97b8..bd2bfc6 100644
-> --- a/fs/fifo.c
-> +++ b/fs/fifo.c
-> @@ -20,7 +20,7 @@ static void wait_for_partner(struct inode* inode, unsigned int *cnt)
->  	int cur = *cnt;	
->  
->  	while (cur == *cnt) {
-> -		pipe_wait(inode->i_pipe);
-> +		pipe_wait(inode->i_pipe, NULL);
->  		if (signal_pending(current))
->  			break;
->  	}
-> diff --git a/fs/pipe.c b/fs/pipe.c
-> index 3a48ba5..7d3807c 100644
-> --- a/fs/pipe.c
-> +++ b/fs/pipe.c
-> @@ -37,8 +37,14 @@
->   * -- Manfred Spraul <manfred@colorfullife.com> 2002-05-09
->   */
->  
-> -/* Drop the inode semaphore and wait for a pipe event, atomically */
-> -void pipe_wait(struct pipe_inode_info *pipe)
-> +/*
-> + * Drop the inode semaphore and wait for a pipe event, atomically.
-> + *
-> + * inode2 specifies another inode lock to drop. May be NULL if no such other
-> + * inode exists. This is for use with splice, which sometimes need to lock
-> + * both source and destination inodes.
-> + */
-> +void pipe_wait(struct pipe_inode_info *pipe, struct inode *inode2)
->  {
->  	DEFINE_WAIT(wait);
->  
-> @@ -47,12 +53,10 @@ void pipe_wait(struct pipe_inode_info *pipe)
->  	 * is considered a noninteractive wait:
->  	 */
->  	prepare_to_wait(&pipe->wait, &wait, TASK_INTERRUPTIBLE);
-> -	if (pipe->inode)
-> -		mutex_unlock(&pipe->inode->i_mutex);
-> +	inode_double_unlock(pipe->inode, inode2);
->  	schedule();
->  	finish_wait(&pipe->wait, &wait);
-> -	if (pipe->inode)
-> -		mutex_lock(&pipe->inode->i_mutex);
-> +	inode_double_lock(pipe->inode, inode2);
->  }
->  
->  static int
-> @@ -377,7 +381,7 @@ redo:
->  			wake_up_interruptible_sync(&pipe->wait);
->   			kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
->  		}
-> -		pipe_wait(pipe);
-> +		pipe_wait(pipe, NULL);
->  	}
->  	mutex_unlock(&inode->i_mutex);
->  
-> @@ -550,7 +554,7 @@ redo2:
->  			do_wakeup = 0;
->  		}
->  		pipe->waiting_writers++;
-> -		pipe_wait(pipe);
-> +		pipe_wait(pipe, NULL);
->  		pipe->waiting_writers--;
->  	}
->  out:
-> diff --git a/fs/splice.c b/fs/splice.c
-> index 4ed0ba4..e79e906 100644
-> --- a/fs/splice.c
-> +++ b/fs/splice.c
-> @@ -240,7 +240,7 @@ ssize_t splice_to_pipe(struct pipe_inode_info *pipe,
->  		}
->  
->  		pipe->waiting_writers++;
-> -		pipe_wait(pipe);
-> +		pipe_wait(pipe, NULL);
->  		pipe->waiting_writers--;
->  	}
->  
-> @@ -690,7 +690,7 @@ ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
->  			do_wakeup = 0;
->  		}
->  
-> -		pipe_wait(pipe);
-> +		pipe_wait(pipe, sd->u.file->f_mapping->host);
->  	}
->  
->  	if (do_wakeup) {
-> @@ -1523,7 +1523,7 @@ static int link_ipipe_prep(struct pipe_inode_info *pipe, unsigned int flags)
->  				break;
->  			}
->  		}
-> -		pipe_wait(pipe);
-> +		pipe_wait(pipe, NULL);
->  	}
->  
->  	mutex_unlock(&pipe->inode->i_mutex);
-> @@ -1563,7 +1563,7 @@ static int link_opipe_prep(struct pipe_inode_info *pipe, unsigned int flags)
->  			break;
->  		}
->  		pipe->waiting_writers++;
-> -		pipe_wait(pipe);
-> +		pipe_wait(pipe, NULL);
->  		pipe->waiting_writers--;
->  	}
->  
-> diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-> index 12e9a29..2124c06 100644
-> --- a/include/linux/Kbuild
-> +++ b/include/linux/Kbuild
-> @@ -41,6 +41,7 @@ header-y += baycom.h
->  header-y += bfs_fs.h
->  header-y += blkpg.h
->  header-y += bpqether.h
-> +header-y += bsg.h
->  header-y += can.h
->  header-y += cdk.h
->  header-y += chio.h
-> diff --git a/include/linux/bio.h b/include/linux/bio.h
-> index 18462c5..0942765 100644
-> --- a/include/linux/bio.h
-> +++ b/include/linux/bio.h
-> @@ -144,7 +144,7 @@ struct bio {
->   * bit 1 -- rw-ahead when set
->   * bit 2 -- barrier
->   *	Insert a serialization point in the IO queue, forcing previously
-> - *	submitted IO to be completed before this oen is issued.
-> + *	submitted IO to be completed before this one is issued.
->   * bit 3 -- synchronous I/O hint: the block layer will unplug immediately
->   *	Note that this does NOT indicate that the IO itself is sync, just
->   *	that the block layer will not postpone issue of this IO by plugging.
-> @@ -163,12 +163,33 @@ struct bio {
->  #define BIO_RW		0	/* Must match RW in req flags (blkdev.h) */
->  #define BIO_RW_AHEAD	1	/* Must match FAILFAST in req flags */
->  #define BIO_RW_BARRIER	2
-> -#define BIO_RW_SYNC	3
-> -#define BIO_RW_META	4
-> -#define BIO_RW_DISCARD	5
-> -#define BIO_RW_FAILFAST_DEV		6
-> -#define BIO_RW_FAILFAST_TRANSPORT	7
-> -#define BIO_RW_FAILFAST_DRIVER		8
-> +#define BIO_RW_SYNCIO	3
-> +#define BIO_RW_UNPLUG	4
-> +#define BIO_RW_META	5
-> +#define BIO_RW_DISCARD	6
-> +#define BIO_RW_FAILFAST_DEV		7
-> +#define BIO_RW_FAILFAST_TRANSPORT	8
-> +#define BIO_RW_FAILFAST_DRIVER		9
-> +
-> +#define BIO_RW_SYNC	(BIO_RW_SYNCIO | BIO_RW_UNPLUG)
-> +
-> +#define bio_rw_flagged(bio, flag)	((bio)->bi_rw & (1 << (flag)))
-> +
-> +/*
-> + * Old defines, these should eventually be replaced by direct usage of
-> + * bio_rw_flagged()
-> + */
-> +#define bio_barrier(bio)	bio_rw_flagged(bio, BIO_RW_BARRIER)
-> +#define bio_sync(bio)		bio_rw_flagged(bio, BIO_RW_SYNCIO)
-> +#define bio_unplug(bio)		bio_rw_flagged(bio, BIO_RW_UNPLUG)
-> +#define bio_failfast_dev(bio)	bio_rw_flagged(bio, BIO_RW_FAILFAST_DEV)
-> +#define bio_failfast_transport(bio)	\
-> +		bio_rw_flagged(bio, BIO_RW_FAILFAST_TRANSPORT)
-> +#define bio_failfast_driver(bio) 	\
-> +		bio_rw_flagged(bio, BIO_RW_FAILFAST_DRIVER)
-> +#define bio_rw_ahead(bio)	bio_rw_flagged(bio, BIO_RW_AHEAD)
-> +#define bio_rw_meta(bio)	bio_rw_flagged(bio, BIO_RW_META)
-> +#define bio_discard(bio)	bio_rw_flagged(bio, BIO_RW_DISCARD)
->  
->  /*
->   * upper 16 bits of bi_rw define the io priority of this bio
-> @@ -193,15 +214,6 @@ struct bio {
->  #define bio_offset(bio)		bio_iovec((bio))->bv_offset
->  #define bio_segments(bio)	((bio)->bi_vcnt - (bio)->bi_idx)
->  #define bio_sectors(bio)	((bio)->bi_size >> 9)
-> -#define bio_barrier(bio)	((bio)->bi_rw & (1 << BIO_RW_BARRIER))
-> -#define bio_sync(bio)		((bio)->bi_rw & (1 << BIO_RW_SYNC))
-> -#define bio_failfast_dev(bio)	((bio)->bi_rw &	(1 << BIO_RW_FAILFAST_DEV))
-> -#define bio_failfast_transport(bio)	\
-> -	((bio)->bi_rw & (1 << BIO_RW_FAILFAST_TRANSPORT))
-> -#define bio_failfast_driver(bio) ((bio)->bi_rw & (1 << BIO_RW_FAILFAST_DRIVER))
-> -#define bio_rw_ahead(bio)	((bio)->bi_rw & (1 << BIO_RW_AHEAD))
-> -#define bio_rw_meta(bio)	((bio)->bi_rw & (1 << BIO_RW_META))
-> -#define bio_discard(bio)	((bio)->bi_rw & (1 << BIO_RW_DISCARD))
->  #define bio_empty_barrier(bio)	(bio_barrier(bio) && !bio_has_data(bio) && !bio_discard(bio))
->  
->  static inline unsigned int bio_cur_sectors(struct bio *bio)
-> @@ -312,7 +324,6 @@ struct bio_integrity_payload {
->  	void			*bip_buf;	/* generated integrity data */
->  	bio_end_io_t		*bip_end_io;	/* saved I/O completion fn */
->  
-> -	int			bip_error;	/* saved I/O error */
->  	unsigned int		bip_size;
->  
->  	unsigned short		bip_pool;	/* pool the ivec came from */
-> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> index 044467e..d08c4b8 100644
-> --- a/include/linux/blkdev.h
-> +++ b/include/linux/blkdev.h
-> @@ -108,6 +108,7 @@ enum rq_flag_bits {
->  	__REQ_RW_META,		/* metadata io request */
->  	__REQ_COPY_USER,	/* contains copies of user pages */
->  	__REQ_INTEGRITY,	/* integrity metadata has been remapped */
-> +	__REQ_UNPLUG,		/* unplug queue on submission */
->  	__REQ_NR_BITS,		/* stops here */
->  };
->  
-> @@ -134,6 +135,7 @@ enum rq_flag_bits {
->  #define REQ_RW_META	(1 << __REQ_RW_META)
->  #define REQ_COPY_USER	(1 << __REQ_COPY_USER)
->  #define REQ_INTEGRITY	(1 << __REQ_INTEGRITY)
-> +#define REQ_UNPLUG	(1 << __REQ_UNPLUG)
->  
->  #define BLK_MAX_CDB	16
->  
-> @@ -449,6 +451,11 @@ struct request_queue
->  #define QUEUE_FLAG_STACKABLE   13	/* supports request stacking */
->  #define QUEUE_FLAG_NONROT      14	/* non-rotational device (SSD) */
->  #define QUEUE_FLAG_VIRT        QUEUE_FLAG_NONROT /* paravirt device */
-> +#define QUEUE_FLAG_IO_STAT     15	/* do IO stats */
-> +
-> +#define QUEUE_FLAG_DEFAULT	((1 << QUEUE_FLAG_IO_STAT) |		\
-> +				 (1 << QUEUE_FLAG_CLUSTER) |		\
-> +				  1 << QUEUE_FLAG_STACKABLE)
->  
->  static inline int queue_is_locked(struct request_queue *q)
->  {
-> @@ -565,6 +572,7 @@ enum {
->  #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
->  #define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
->  #define blk_queue_nonrot(q)	test_bit(QUEUE_FLAG_NONROT, &(q)->queue_flags)
-> +#define blk_queue_io_stat(q)	test_bit(QUEUE_FLAG_IO_STAT, &(q)->queue_flags)
->  #define blk_queue_flushing(q)	((q)->ordseq)
->  #define blk_queue_stackable(q)	\
->  	test_bit(QUEUE_FLAG_STACKABLE, &(q)->queue_flags)
-> diff --git a/include/linux/pipe_fs_i.h b/include/linux/pipe_fs_i.h
-> index 8e41202..ba72941 100644
-> --- a/include/linux/pipe_fs_i.h
-> +++ b/include/linux/pipe_fs_i.h
-> @@ -134,8 +134,8 @@ struct pipe_buf_operations {
->     memory allocation, whereas PIPE_BUF makes atomicity guarantees.  */
->  #define PIPE_SIZE		PAGE_SIZE
->  
-> -/* Drop the inode semaphore and wait for a pipe event, atomically */
-> -void pipe_wait(struct pipe_inode_info *pipe);
-> +/* Drop the inode mutex(es) and wait for a pipe event, atomically */
-> +void pipe_wait(struct pipe_inode_info *pipe, struct inode *inode2);
->  
->  struct pipe_inode_info * alloc_pipe_info(struct inode * inode);
->  void free_pipe_info(struct inode * inode);
+> A few more simple comments...
+> 
+> On Fri, Jan 16, 2009 at 10:37:09AM +0200, Hiroshi DOYU wrote:
+> > +struct iommu_platform_data {
+> > +	char	*name;
+> 
+> const?
+> 
+> > +	char	*clk_name;
+> 
+> const?
+> 
+> > +	int	nr_tlb_entries;
+> > +};
+> 
+> ...
+> 
+> > +int install_iommu_arch(const struct iommu_functions *ops)
+> > +{
+> > +	if (arch_iommu)
+> > +		return -EBUSY;
+> > +
+> > +	arch_iommu = ops;
+> > +	return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(install_iommu_arch);
+> 
+> Exported functions should have some documentation in the standard kernel
+> documentation format.  See Documentation/kernel-doc-nano-HOWTO.txt
+> 
+> > +static int iommu_enable(struct iommu *obj)
+> > +{
+> > +	int err;
+> > +
+> > +	BUG_ON(!arch_iommu || !arch_iommu->enable);
+> 
+> Are these run-time BUG_ON checks really worth it?  BUG_ON is effectively:
+> 
+> 	if (condition_is_true)
+> 		cause_a_null_pointer_dereference;
+> 
+> So, if you're checking for pointers you're about dereference being NULL,
+> there's little point - dereferencing the when they're NULL will cause an
+> oops, and you won't have the overhead of the runtime tests checking them
+> for NULL.  Ditto elsewhere in this file.
+> 
+> > +static u32 *iopte_alloc(struct iommu *obj, u32 *iopgd, u32 da)
+> > +{
+> > +	u32 *iopte;
+> > +
+> > +	/* a table has already existed */
+> > +	if (*iopgd)
+> > +		goto pte_ready;
+> > +
+> > +	/*
+> > +	 * do the allocation outside the page table lock
+> > +	 */
+> > +	spin_unlock(&obj->page_table_lock);
+> > +	iopte = kmem_cache_zalloc(iopte_cachep, GFP_KERNEL);
+> > +	spin_lock(&obj->page_table_lock);
+> > +
+> > +	if (!*iopgd) {
+> > +		if (!iopte)
+> > +			return ERR_PTR(-ENOMEM);
+> > +
+> > +		*iopgd = virt_to_phys(iopte) | IOPGD_TABLE;
+> > +		flush_iopgd_range(iopgd, iopgd);
+> > +
+> > +#ifdef DEBUG_VERBOSE
+> > +		dev_dbg(obj->dev, "%s:\ta new pte:%p\n", __func__, iopte);
+> > +#endif
+> 
+> Not sure wrapping these in DEBUG_VERBOSE is necessary.  dev_dbg() is a
+> no-op unless DEBUG is defined.
+> 
+> > +#ifdef DEBUG
+> > +static void dump_tlb_entries(struct iommu *obj)
+> > +{
+> > +	int i;
+> > +	struct iotlb_lock l;
+> > +
+> > +	clk_enable(obj->clk);
+> > +
+> > +	pr_info("%8s %8s\n", "cam:", "ram:");
+> > +	pr_info("-----------------------------------------\n");
+> > +
+> > +	for (i = 0; i < obj->nr_tlb_entries; i++) {
+> > +		struct cr_regs cr;
+> > +		static char buf[4096];
+> > +
+> > +		iotlb_lock_get(obj, &l);
+> > +		l.vict = i;
+> > +		iotlb_lock_set(obj, &l);
+> > +		iotlb_read_cr(obj, &cr);
+> > +		if (!iotlb_cr_valid(&cr))
+> > +			continue;
+> > +
+> > +		memset(buf, 0, 4096);
+> > +		iotlb_dump_cr(obj, &cr, buf);
+> > +		pr_info("%s", buf);
+> 
+> Hmm.  You call this in relation to an error, but you print everything at
+> 'info' level.  Are you sure that's correct?
+> 
+> > +/*
+> > + *	OMAP Device MMU(IOMMU) detection
+> > + */
+> > +static int __devinit omap_iommu_probe(struct platform_device *pdev)
+> > +{
+> > +	int err = -ENODEV;
+> > +	void *p;
+> > +	int irq;
+> > +	struct iommu *obj;
+> > +	struct resource *res;
+> > +	struct iommu_platform_data *pdata = pdev->dev.platform_data;
+> > +
+> > +	if (pdev->num_resources != 2)
+> > +		return -EINVAL;
+> > +
+> > +	obj = kzalloc(sizeof(*obj) + MMU_REG_SIZE, GFP_KERNEL);
+> > +	if (!obj)
+> > +		return -ENOMEM;
+> > +
+> > +	obj->clk = clk_get(NULL, pdata->clk_name);
+> 
+> Avoid passing a NULL struct device except when you have absolutely no other
+> choice.  &pdev->dev looks sensible.  By doing this, it also provides us with
+> a path to fixing the OMAP clk API implementation without having to fix lots
+> of drivers.
 
->  LocalWords:  Redesing simular ipipe
+----Next_Part(Mon_Jan_26_15_41_28_2009_063)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-omap-iommu-tlb-and-pagetable-primitives.patch"
+
+>From 42aa6fc9c17e82a2252b8b726f5e90ffc192ab07 Mon Sep 17 00:00:00 2001
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Date: Mon, 26 Jan 2009 15:13:40 +0200
+Subject: [PATCH 1/6] omap iommu: tlb and pagetable primitives
+
+This patch provides:
+
+- iotlb_*()     : iommu tlb operations
+- iopgtable_*() : iommu pagetable(twl) operations
+- iommu_*()     : the other generic operations
+
+and the entry points to register and acquire iommu object.
+
+Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+---
+ arch/arm/plat-omap/include/mach/iommu.h |  157 +++++
+ arch/arm/plat-omap/iommu.c              |  953 +++++++++++++++++++++++++++++++
+ arch/arm/plat-omap/iopgtable.h          |   72 +++
+ 3 files changed, 1182 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/plat-omap/include/mach/iommu.h
+ create mode 100644 arch/arm/plat-omap/iommu.c
+ create mode 100644 arch/arm/plat-omap/iopgtable.h
+
+diff --git a/arch/arm/plat-omap/include/mach/iommu.h b/arch/arm/plat-omap/include/mach/iommu.h
+new file mode 100644
+index 0000000..ef04d7a
+--- /dev/null
++++ b/arch/arm/plat-omap/include/mach/iommu.h
+@@ -0,0 +1,157 @@
++/*
++ * omap iommu: main structures
++ *
++ * Copyright (C) 2008-2009 Nokia Corporation
++ *
++ * Written by Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __MACH_IOMMU_H
++#define __MACH_IOMMU_H
++
++struct iotlb_entry {
++	u32 da;
++	u32 pa;
++	u32 pgsz, prsvd, valid;
++	union {
++		u16 ap;
++		struct {
++			u32 endian, elsz, mixed;
++		};
++	};
++};
++
++struct iommu {
++	const char	*name;
++	struct module	*owner;
++	struct clk	*clk;
++	void __iomem	*regbase;
++	struct device	*dev;
++
++	unsigned int	refcount;
++	struct mutex	iommu_lock;	/* global for this whole object */
++
++	/*
++	 * We don't change iopgd for a situation like pgd for a task,
++	 * but share it globally for each iommu.
++	 */
++	u32		*iopgd;
++	spinlock_t	page_table_lock; /* protect iopgd */
++
++	int		nr_tlb_entries;
++
++	struct list_head	mmap;
++	struct mutex		mmap_lock; /* protect mmap */
++
++	int (*isr)(struct iommu *obj);
++
++	void *ctx; /* iommu context: registres saved area */
++};
++
++struct cr_regs {
++	union {
++		struct {
++			u16 cam_l;
++			u16 cam_h;
++		};
++		u32 cam;
++	};
++	union {
++		struct {
++			u16 ram_l;
++			u16 ram_h;
++		};
++		u32 ram;
++	};
++};
++
++struct iotlb_lock {
++	short base;
++	short vict;
++};
++
++/* architecture specific functions */
++struct iommu_functions {
++	unsigned long	version;
++
++	int (*enable)(struct iommu *obj);
++	void (*disable)(struct iommu *obj);
++	u32 (*fault_isr)(struct iommu *obj, u32 *ra);
++
++	void (*tlb_read_cr)(struct iommu *obj, struct cr_regs *cr);
++	void (*tlb_load_cr)(struct iommu *obj, struct cr_regs *cr);
++
++	struct cr_regs *(*alloc_cr)(struct iommu *obj, struct iotlb_entry *e);
++	int (*cr_valid)(struct cr_regs *cr);
++	u32 (*cr_to_virt)(struct cr_regs *cr);
++	void (*cr_to_e)(struct cr_regs *cr, struct iotlb_entry *e);
++	ssize_t (*dump_cr)(struct iommu *obj, struct cr_regs *cr, char *buf);
++
++	u32 (*get_pte_attr)(struct iotlb_entry *e);
++
++	void (*save_ctx)(struct iommu *obj);
++	void (*restore_ctx)(struct iommu *obj);
++	ssize_t (*dump_ctx)(struct iommu *obj, char *buf);
++};
++
++struct iommu_platform_data {
++	const char *name;
++	const char *clk_name;
++	const int nr_tlb_entries;
++};
++
++#include <mach/iommu2.h>
++
++/*
++ * utilities for super page(16MB, 1MB, 64KB and 4KB)
++ */
++
++#define iopgsz_max(bytes)			\
++	(((bytes) >= SZ_16M) ? SZ_16M :		\
++	 ((bytes) >= SZ_1M)  ? SZ_1M  :		\
++	 ((bytes) >= SZ_64K) ? SZ_64K :		\
++	 ((bytes) >= SZ_4K)  ? SZ_4K  :	0)
++
++#define bytes_to_iopgsz(bytes)				\
++	(((bytes) == SZ_16M) ? MMU_CAM_PGSZ_16M :	\
++	 ((bytes) == SZ_1M)  ? MMU_CAM_PGSZ_1M  :	\
++	 ((bytes) == SZ_64K) ? MMU_CAM_PGSZ_64K :	\
++	 ((bytes) == SZ_4K)  ? MMU_CAM_PGSZ_4K  : -1)
++
++#define iopgsz_to_bytes(iopgsz)				\
++	(((iopgsz) == MMU_CAM_PGSZ_16M)	? SZ_16M :	\
++	 ((iopgsz) == MMU_CAM_PGSZ_1M)	? SZ_1M  :	\
++	 ((iopgsz) == MMU_CAM_PGSZ_64K)	? SZ_64K :	\
++	 ((iopgsz) == MMU_CAM_PGSZ_4K)	? SZ_4K  : 0)
++
++#define iopgsz_ok(bytes) (bytes_to_iopgsz(bytes) >= 0)
++
++/*
++ * global functions
++ */
++extern u32 iommu_arch_version(void);
++
++extern int load_iotlb_entry(struct iommu *obj, struct iotlb_entry *e);
++extern void flush_iotlb_page(struct iommu *obj, u32 da);
++extern void flush_iotlb_range(struct iommu *obj, u32 start, u32 end);
++extern void flush_iotlb_all(struct iommu *obj);
++
++ssize_t iotlb_dump_cr(struct iommu *obj, struct cr_regs *cr, char *buf);
++
++extern int iopgtable_store_entry(struct iommu *obj, struct iotlb_entry *e);
++extern size_t iopgtable_clear_entry(struct iommu *obj, u32 iova);
++
++extern struct iommu *iommu_get(const char *name);
++extern void iommu_put(struct iommu *obj);
++
++extern void iommu_save_ctx(struct iommu *obj);
++extern void iommu_restore_ctx(struct iommu *obj);
++
++extern int install_iommu_arch(const struct iommu_functions *ops);
++extern void uninstall_iommu_arch(const struct iommu_functions *ops);
++
++#endif /* __MACH_IOMMU_H */
+diff --git a/arch/arm/plat-omap/iommu.c b/arch/arm/plat-omap/iommu.c
+new file mode 100644
+index 0000000..e638883
+--- /dev/null
++++ b/arch/arm/plat-omap/iommu.c
+@@ -0,0 +1,953 @@
++/*
++ * omap iommu: tlb and pagetable primitives
++ *
++ * Copyright (C) 2008-2009 Nokia Corporation
++ *
++ * Written by Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
++ *		Paul Mundt and Toshihiro Kobayashi
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/ioport.h>
++#include <linux/clk.h>
++#include <linux/platform_device.h>
++
++#include <asm/io.h>
++#include <asm/cacheflush.h>
++
++#include <mach/clock.h>
++#include <mach/iommu.h>
++
++#include "iopgtable.h"
++
++/* accommodate the difference between omap1 and omap2/3 */
++static const struct iommu_functions *arch_iommu;
++
++static struct platform_driver omap_iommu_driver;
++static struct kmem_cache *iopte_cachep;
++
++/**
++ * install_iommu_arch() - Install archtecure specific iommu functions
++ * @ops:	a pointer to architecture specific iommu functions
++ *
++ * There are several kind of iommu algorithm(tlb, pagetable) among
++ * omap series. This interface installs such an iommu algorighm.
++ **/
++int install_iommu_arch(const struct iommu_functions *ops)
++{
++	if (arch_iommu)
++		return -EBUSY;
++
++	arch_iommu = ops;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(install_iommu_arch);
++
++/**
++ * uninstall_iommu_arch() - Uninstall archtecure specific iommu functions
++ * @ops:	a pointer to architecture specific iommu functions
++ *
++ * This interface uninstalls the iommu algorighm installed previously.
++ **/
++void uninstall_iommu_arch(const struct iommu_functions *ops)
++{
++	if (arch_iommu != ops)
++		pr_err("%s: not your arch\n", __func__);
++
++	arch_iommu = NULL;
++}
++EXPORT_SYMBOL_GPL(uninstall_iommu_arch);
++
++/**
++ * iommu_save_ctx() - Save registers for pm off-mode support
++ * @obj:	target iommu
++ **/
++void iommu_save_ctx(struct iommu *obj)
++{
++	arch_iommu->save_ctx(obj);
++}
++EXPORT_SYMBOL_GPL(iommu_save_ctx);
++
++/**
++ * iommu_restore_ctx() - Restore registers for pm off-mode support
++ * @obj:	target iommu
++ **/
++void iommu_restore_ctx(struct iommu *obj)
++{
++	arch_iommu->restore_ctx(obj);
++}
++EXPORT_SYMBOL_GPL(iommu_restore_ctx);
++
++/**
++ * iommu_arch_version() - Return running iommu arch version
++ **/
++u32 iommu_arch_version(void)
++{
++	return arch_iommu->version;
++}
++EXPORT_SYMBOL_GPL(iommu_arch_version);
++
++static int iommu_enable(struct iommu *obj)
++{
++	int err;
++
++	if (!obj)
++		return -EINVAL;
++
++	clk_enable(obj->clk);
++
++	err = arch_iommu->enable(obj);
++
++	clk_disable(obj->clk);
++	return err;
++}
++
++static void iommu_disable(struct iommu *obj)
++{
++	if (!obj)
++		return;
++
++	clk_enable(obj->clk);
++
++	arch_iommu->disable(obj);
++
++	clk_disable(obj->clk);
++}
++
++#ifdef DEBUG
++static ssize_t iommu_dump_ctx(struct iommu *obj, char *buf)
++{
++	if (!obj || !buf)
++		return -EINVAL;
++
++	return arch_iommu->dump_ctx(obj, buf);
++}
++#endif
++
++/*
++ *	TLB operations
++ */
++static inline void iotlb_cr_to_e(struct cr_regs *cr, struct iotlb_entry *e)
++{
++	BUG_ON(!cr || !e);
++
++	arch_iommu->cr_to_e(cr, e);
++}
++
++static inline int iotlb_cr_valid(struct cr_regs *cr)
++{
++	if (!cr)
++		return -EINVAL;
++
++	return arch_iommu->cr_valid(cr);
++}
++
++static inline struct cr_regs *iotlb_alloc_cr(struct iommu *obj,
++					     struct iotlb_entry *e)
++{
++	if (!e)
++		return NULL;
++
++	return arch_iommu->alloc_cr(obj, e);
++}
++
++static inline u32 iotlb_cr_to_virt(struct cr_regs *cr)
++{
++	return arch_iommu->cr_to_virt(cr);
++}
++
++static u32 get_iopte_attr(struct iotlb_entry *e)
++{
++	return arch_iommu->get_pte_attr(e);
++}
++
++static u32 iommu_report_fault(struct iommu *obj, u32 *da)
++{
++	return arch_iommu->fault_isr(obj, da);
++}
++
++static void iotlb_lock_get(struct iommu *obj, struct iotlb_lock *l)
++{
++	u32 val;
++
++	val = iommu_read_reg(obj, MMU_LOCK);
++
++	l->base = MMU_LOCK_BASE(val);
++	l->vict = MMU_LOCK_VICT(val);
++
++	BUG_ON(l->base != 0); /* Currently no preservation is used */
++}
++
++static void iotlb_lock_set(struct iommu *obj, struct iotlb_lock *l)
++{
++	u32 val;
++
++	BUG_ON(l->base != 0); /* Currently no preservation is used */
++
++	val = (l->base << MMU_LOCK_BASE_SHIFT);
++	val |= (l->vict << MMU_LOCK_VICT_SHIFT);
++
++	iommu_write_reg(obj, val, MMU_LOCK);
++}
++
++static void iotlb_read_cr(struct iommu *obj, struct cr_regs *cr)
++{
++	arch_iommu->tlb_read_cr(obj, cr);
++}
++
++static void iotlb_load_cr(struct iommu *obj, struct cr_regs *cr)
++{
++	arch_iommu->tlb_load_cr(obj, cr);
++
++	iommu_write_reg(obj, 1, MMU_FLUSH_ENTRY);
++	iommu_write_reg(obj, 1, MMU_LD_TLB);
++}
++
++/**
++ * iotlb_dump_cr() - Dump an iommu tlb entry into buf
++ * @obj:	target iommu
++ * @cr:		contents of cam and ram register
++ * @buf:	output buffer
++ **/
++ssize_t iotlb_dump_cr(struct iommu *obj, struct cr_regs *cr, char *buf)
++{
++	BUG_ON(!cr || !buf);
++
++	return arch_iommu->dump_cr(obj, cr, buf);
++}
++EXPORT_SYMBOL_GPL(iotlb_dump_cr);
++
++/**
++ * load_iotlb_entry() - Set an iommu tlb entry
++ * @obj:	target iommu
++ * @e:		an iommu tlb entry info
++ **/
++int load_iotlb_entry(struct iommu *obj, struct iotlb_entry *e)
++{
++	int i;
++	int err = 0;
++	struct iotlb_lock l;
++	struct cr_regs *cr;
++
++	if (!obj || !obj->nr_tlb_entries || !e)
++		return -EINVAL;
++
++	clk_enable(obj->clk);
++
++	for (i = 0; i < obj->nr_tlb_entries; i++) {
++		struct cr_regs tmp;
++
++		iotlb_lock_get(obj, &l);
++		l.vict = i;
++		iotlb_lock_set(obj, &l);
++		iotlb_read_cr(obj, &tmp);
++		if (!iotlb_cr_valid(&tmp))
++			break;
++	}
++
++	if (i == obj->nr_tlb_entries) {
++		dev_dbg(obj->dev, "%s: full: no entry\n", __func__);
++		err = -EBUSY;
++		goto out;
++	}
++
++	cr = iotlb_alloc_cr(obj, e);
++	if (IS_ERR(cr)) {
++		clk_disable(obj->clk);
++		return PTR_ERR(cr);
++	}
++
++	iotlb_load_cr(obj, cr);
++	kfree(cr);
++
++	/* increment victim for next tlb load */
++	if (++l.vict == obj->nr_tlb_entries)
++		l.vict = 0;
++	iotlb_lock_set(obj, &l);
++out:
++	clk_disable(obj->clk);
++	return err;
++}
++EXPORT_SYMBOL_GPL(load_iotlb_entry);
++
++/**
++ * flush_iotlb_page() - Clear an iommu tlb entry
++ * @obj:	target iommu
++ * @da:		iommu device virtual address
++ *
++ * Clear an iommu tlb entry which includes 'da' address.
++ **/
++void flush_iotlb_page(struct iommu *obj, u32 da)
++{
++	struct iotlb_lock l;
++	int i;
++
++	clk_enable(obj->clk);
++
++	for (i = 0; i < obj->nr_tlb_entries; i++) {
++		struct cr_regs cr;
++		u32 start;
++		size_t bytes;
++
++		iotlb_lock_get(obj, &l);
++		l.vict = i;
++		iotlb_lock_set(obj, &l);
++		iotlb_read_cr(obj, &cr);
++		if (!iotlb_cr_valid(&cr))
++			continue;
++
++		start = iotlb_cr_to_virt(&cr);
++		bytes = iopgsz_to_bytes(cr.cam & 3);
++
++		if ((start <= da) && (da < start + bytes)) {
++			dev_dbg(obj->dev, "%s: %08x<=%08x(%x)\n",
++				__func__, start, da, bytes);
++
++			iommu_write_reg(obj, 1, MMU_FLUSH_ENTRY);
++		}
++	}
++	clk_disable(obj->clk);
++
++	if (i == obj->nr_tlb_entries)
++		dev_dbg(obj->dev, "%s: no page for %08x\n", __func__, da);
++}
++EXPORT_SYMBOL_GPL(flush_iotlb_page);
++
++/**
++ * flush_iotlb_range() - Clear an iommu tlb entries
++ * @obj:	target iommu
++ * @start:	iommu device virtual address(start)
++ * @end:	iommu device virtual address(end)
++ *
++ * Clear an iommu tlb entry which includes 'da' address.
++ **/
++void flush_iotlb_range(struct iommu *obj, u32 start, u32 end)
++{
++	u32 da = start;
++
++	while (da < end) {
++		flush_iotlb_page(obj, da);
++		/* FIXME: Optimize for multiple page size */
++		da += IOPTE_SIZE;
++	}
++}
++EXPORT_SYMBOL_GPL(flush_iotlb_range);
++
++/**
++ * flush_iotlb_all() - Clear all iommu tlb entries
++ * @obj:	target iommu
++ **/
++void flush_iotlb_all(struct iommu *obj)
++{
++	struct iotlb_lock l;
++
++	clk_enable(obj->clk);
++
++	l.base = 0;
++	l.vict = 0;
++	iotlb_lock_set(obj, &l);
++
++	iommu_write_reg(obj, 1, MMU_GFLUSH);
++
++	clk_disable(obj->clk);
++}
++EXPORT_SYMBOL_GPL(flush_iotlb_all);
++
++/*
++ *	H/W pagetable operations
++ */
++static void flush_iopgd_range(u32 *first, u32 *last)
++{
++	/* FIXME: L2 cache should be taken care of if it exists */
++	do {
++		asm("mcr	p15, 0, %0, c7, c10, 1 @ flush_pgd"
++		    : : "r" (first));
++		first += L1_CACHE_BYTES / sizeof(*first);
++	} while (first <= last);
++}
++
++static void flush_iopte_range(u32 *first, u32 *last)
++{
++	/* FIXME: L2 cache should be taken care of if it exists */
++	do {
++		asm("mcr	p15, 0, %0, c7, c10, 1 @ flush_pte"
++		    : : "r" (first));
++		first += L1_CACHE_BYTES / sizeof(*first);
++	} while (first <= last);
++}
++
++static void iopte_free(u32 *iopte)
++{
++	/* Note: freed iopte's must be clean ready for re-use */
++	kmem_cache_free(iopte_cachep, iopte);
++}
++
++static u32 *iopte_alloc(struct iommu *obj, u32 *iopgd, u32 da)
++{
++	u32 *iopte;
++
++	/* a table has already existed */
++	if (*iopgd)
++		goto pte_ready;
++
++	/*
++	 * do the allocation outside the page table lock
++	 */
++	spin_unlock(&obj->page_table_lock);
++	iopte = kmem_cache_zalloc(iopte_cachep, GFP_KERNEL);
++	spin_lock(&obj->page_table_lock);
++
++	if (!*iopgd) {
++		if (!iopte)
++			return ERR_PTR(-ENOMEM);
++
++		*iopgd = virt_to_phys(iopte) | IOPGD_TABLE;
++		flush_iopgd_range(iopgd, iopgd);
++
++		dev_vdbg(obj->dev, "%s: a new pte:%p\n", __func__, iopte);
++	} else {
++		/* We raced, free the reduniovant table */
++		iopte_free(iopte);
++	}
++
++pte_ready:
++	iopte = iopte_offset(iopgd, da);
++
++	dev_vdbg(obj->dev,
++		 "%s: da:%08x pgd:%p *pgd:%08x pte:%p *pte:%08x\n",
++		 __func__, da, iopgd, *iopgd, iopte, *iopte);
++
++	return iopte;
++}
++
++static int iopgd_alloc_section(struct iommu *obj, u32 da, u32 pa, u32 prot)
++{
++	u32 *iopgd = iopgd_offset(obj, da);
++
++	*iopgd = (pa & IOSECTION_MASK) | prot | IOPGD_SECTION;
++	flush_iopgd_range(iopgd, iopgd);
++	return 0;
++}
++
++static int iopgd_alloc_super(struct iommu *obj, u32 da, u32 pa, u32 prot)
++{
++	u32 *iopgd = iopgd_offset(obj, da);
++	int i;
++
++	for (i = 0; i < 16; i++)
++		*(iopgd + i) = (pa & IOSUPER_MASK) | prot | IOPGD_SUPER;
++	flush_iopgd_range(iopgd, iopgd + 15);
++	return 0;
++}
++
++static int iopte_alloc_page(struct iommu *obj, u32 da, u32 pa, u32 prot)
++{
++	u32 *iopgd = iopgd_offset(obj, da);
++	u32 *iopte = iopte_alloc(obj, iopgd, da);
++
++	if (IS_ERR(iopte))
++		return PTR_ERR(iopte);
++
++	*iopte = (pa & IOPAGE_MASK) | prot | IOPTE_SMALL;
++	flush_iopte_range(iopte, iopte);
++
++	dev_vdbg(obj->dev, "%s: da:%08x pa:%08x pte:%p *pte:%08x\n",
++		 __func__, da, pa, iopte, *iopte);
++
++	return 0;
++}
++
++static int iopte_alloc_large(struct iommu *obj, u32 da, u32 pa, u32 prot)
++{
++	u32 *iopgd = iopgd_offset(obj, da);
++	u32 *iopte = iopte_alloc(obj, iopgd, da);
++	int i;
++
++	if (IS_ERR(iopte))
++		return PTR_ERR(iopte);
++
++	for (i = 0; i < 16; i++)
++		*(iopte + i) = (pa & IOLARGE_MASK) | prot | IOPTE_LARGE;
++	flush_iopte_range(iopte, iopte + 15);
++	return 0;
++}
++
++static int iopgtable_store_entry_core(struct iommu *obj, struct iotlb_entry *e)
++{
++	int (*fn)(struct iommu *, u32, u32, u32);
++	u32 prot;
++	int err;
++
++	if (!obj || !e)
++		return -EINVAL;
++
++	switch (e->pgsz) {
++	case MMU_CAM_PGSZ_16M:
++		fn = iopgd_alloc_super;
++		break;
++	case MMU_CAM_PGSZ_1M:
++		fn = iopgd_alloc_section;
++		break;
++	case MMU_CAM_PGSZ_64K:
++		fn = iopte_alloc_large;
++		break;
++	case MMU_CAM_PGSZ_4K:
++		fn = iopte_alloc_page;
++		break;
++	default:
++		fn = NULL;
++		BUG();
++		break;
++	}
++
++	prot = get_iopte_attr(e);
++
++	spin_lock(&obj->page_table_lock);
++	err = fn(obj, e->da, e->pa, prot);
++	spin_unlock(&obj->page_table_lock);
++
++	return err;
++}
++
++#ifdef DEBUG
++static void dump_tlb_entries(struct iommu *obj)
++{
++	int i;
++	struct iotlb_lock l;
++
++	clk_enable(obj->clk);
++
++	pr_info("%8s %8s\n", "cam:", "ram:");
++	pr_info("-----------------------------------------\n");
++
++	for (i = 0; i < obj->nr_tlb_entries; i++) {
++		struct cr_regs cr;
++		static char buf[4096];
++
++		iotlb_lock_get(obj, &l);
++		l.vict = i;
++		iotlb_lock_set(obj, &l);
++		iotlb_read_cr(obj, &cr);
++		if (!iotlb_cr_valid(&cr))
++			continue;
++
++		memset(buf, 0, 4096);
++		iotlb_dump_cr(obj, &cr, buf);
++		pr_err("%s", buf);
++	}
++
++	clk_disable(obj->clk);
++}
++#else
++static inline void dump_tlb_entries(struct iommu *obj) {}
++#endif
++
++/**
++ * iopgtable_store_entry() - Make an iommu pte entry
++ * @obj:	target iommu
++ * @e:		an iommu tlb entry info
++ **/
++int iopgtable_store_entry(struct iommu *obj, struct iotlb_entry *e)
++{
++	int err;
++
++	flush_iotlb_page(obj, e->da);
++	err = iopgtable_store_entry_core(obj, e);
++#ifdef USE_IOTLB
++	if (!err)
++		load_iotlb_entry(obj, e);
++#endif
++	return err;
++}
++EXPORT_SYMBOL_GPL(iopgtable_store_entry);
++
++/**
++ * iopgtable_lookup_entry() - Lookup an iommu pte entry
++ * @obj:	target iommu
++ * @da:		iommu device virtual address
++ * @ppgd:	iommu pgd entry pointer to be returned
++ * @ppte:	iommu pte entry pointer to be returned
++ **/
++void iopgtable_lookup_entry(struct iommu *obj, u32 da, u32 **ppgd, u32 **ppte)
++{
++	u32 *iopgd, *iopte = NULL;
++
++	iopgd = iopgd_offset(obj, da);
++	if (!*iopgd)
++		goto out;
++
++	if (*iopgd & IOPGD_TABLE)
++		iopte = iopte_offset(iopgd, da);
++out:
++	*ppgd = iopgd;
++	*ppte = iopte;
++}
++EXPORT_SYMBOL_GPL(iopgtable_lookup_entry);
++
++static size_t iopgtable_clear_entry_core(struct iommu *obj, u32 da)
++{
++	size_t bytes;
++	u32 *iopgd = iopgd_offset(obj, da);
++	int nent = 1;
++
++	if (!*iopgd)
++		return 0;
++
++	if (*iopgd & IOPGD_TABLE) {
++		int i;
++		u32 *iopte = iopte_offset(iopgd, da);
++
++		bytes = IOPTE_SIZE;
++		if (*iopte & IOPTE_LARGE) {
++			nent *= 16;
++			/* rewind to the 1st entry */
++			iopte = (u32 *)((u32)iopte & IOLARGE_MASK);
++		}
++		bytes *= nent;
++		memset(iopte, 0, nent * sizeof(*iopte));
++		flush_iopte_range(iopte, iopte + (nent - 1) * sizeof(*iopte));
++
++		/*
++		 * do table walk to check if this table is necessary or not
++		 */
++		iopte = iopte_offset(iopgd, 0);
++		for (i = 0; i < PTRS_PER_IOPTE; i++)
++			if (iopte[i])
++				goto out;
++
++		iopte_free(iopte);
++		nent = 1; /* for the next L1 entry */
++	} else {
++		bytes = IOPGD_SIZE;
++		if (*iopgd & IOPGD_SUPER) {
++			nent *= 16;
++			/* rewind to the 1st entry */
++			iopgd = (u32 *)((u32)iopgd & IOSUPER_MASK);
++		}
++		bytes *= nent;
++	}
++	memset(iopgd, 0, nent * sizeof(*iopgd));
++	flush_iopgd_range(iopgd, iopgd + (nent - 1) * sizeof(*iopgd));
++out:
++	return bytes;
++}
++
++/**
++ * iopgtable_clear_entry() - Remove an iommu pte entry
++ * @obj:	target iommu
++ * @da:		iommu device virtual address
++ **/
++size_t iopgtable_clear_entry(struct iommu *obj, u32 da)
++{
++	size_t bytes;
++
++	spin_lock(&obj->page_table_lock);
++
++	bytes = iopgtable_clear_entry_core(obj, da);
++	flush_iotlb_page(obj, da);
++
++	spin_unlock(&obj->page_table_lock);
++
++	return bytes;
++}
++EXPORT_SYMBOL_GPL(iopgtable_clear_entry);
++
++static void iopgtable_clear_entry_all(struct iommu *obj)
++{
++	int i;
++
++	spin_lock(&obj->page_table_lock);
++
++	for (i = 0; i < PTRS_PER_IOPGD; i++) {
++		u32 da;
++		u32 *iopgd;
++
++		da = i << IOPGD_SHIFT;
++		iopgd = iopgd_offset(obj, da);
++
++		if (!*iopgd)
++			continue;
++
++		if (*iopgd & IOPGD_TABLE)
++			iopte_free(iopte_offset(iopgd, 0));
++
++		*iopgd = 0;
++		flush_iopgd_range(iopgd, iopgd);
++	}
++
++	flush_iotlb_all(obj);
++
++	spin_unlock(&obj->page_table_lock);
++}
++
++/*
++ *	Device IOMMU generic operations
++ */
++static irqreturn_t iommu_fault_handler(int irq, void *data)
++{
++	u32 stat, da;
++	u32 *iopgd, *iopte;
++	int err = -EIO;
++	struct iommu *obj = data;
++
++	/* Dynamic loading TLB or PTE */
++	if (obj->isr)
++		err = obj->isr(obj);
++
++	if (!err)
++		return IRQ_HANDLED;
++
++	stat = iommu_report_fault(obj, &da);
++	if (!stat)
++		return IRQ_HANDLED;
++
++	iopgd = iopgd_offset(obj, da);
++
++	if (!(*iopgd & IOPGD_TABLE)) {
++		dev_err(obj->dev, "%s: da:%08x pgd:%p *pgd:%08x\n", __func__,
++			da, iopgd, *iopgd);
++		return IRQ_NONE;
++	}
++
++	iopte = iopte_offset(iopgd, da);
++
++	dev_err(obj->dev, "%s: da:%08x pgd:%p *pgd:%08x pte:%p *pte:%08x\n",
++		__func__, da, iopgd, *iopgd, iopte, *iopte);
++
++	dump_tlb_entries(obj);
++
++	return IRQ_NONE;
++}
++
++static int device_match_by_alias(struct device *dev, void *data)
++{
++	struct iommu *obj = to_iommu(dev);
++	const char *name = data;
++
++	pr_debug("%s: %s %s\n", __func__, obj->name, name);
++
++	return strcmp(obj->name, name) == 0;
++}
++
++/**
++ * iommu_put() - Get iommu handler
++ * @name:	target iommu name
++ **/
++struct iommu *iommu_get(const char *name)
++{
++	int err = -ENOMEM;
++	struct device *dev;
++	struct iommu *obj;
++
++	dev = driver_find_device(&omap_iommu_driver.driver, NULL, (void *)name,
++				 device_match_by_alias);
++	if (!dev)
++		return ERR_PTR(-ENODEV);
++
++	obj = to_iommu(dev);
++
++	mutex_lock(&obj->iommu_lock);
++
++	if (obj->refcount++ == 0) {
++		err = iommu_enable(obj);
++		if (err)
++			goto err_enable;
++		flush_iotlb_all(obj);
++	}
++
++	if (!try_module_get(obj->owner))
++		goto err_module;
++
++	mutex_unlock(&obj->iommu_lock);
++
++	dev_dbg(obj->dev, "%s: %s\n", __func__, obj->name);
++	return obj;
++
++err_module:
++	if (obj->refcount == 1)
++		iommu_disable(obj);
++err_enable:
++	mutex_unlock(&obj->iommu_lock);
++	return ERR_PTR(err);
++}
++EXPORT_SYMBOL_GPL(iommu_get);
++
++/**
++ * iommu_put() - Put back iommu handler
++ * @obj:	target iommu
++ **/
++void iommu_put(struct iommu *obj)
++{
++	if (!obj && IS_ERR(obj))
++		return;
++
++	mutex_lock(&obj->iommu_lock);
++
++	if (--obj->refcount == 0)
++		iommu_disable(obj);
++
++	module_put(obj->owner);
++
++	mutex_unlock(&obj->iommu_lock);
++
++	dev_dbg(obj->dev, "%s: %s\n", __func__, obj->name);
++}
++EXPORT_SYMBOL_GPL(iommu_put);
++
++/*
++ *	OMAP Device MMU(IOMMU) detection
++ */
++static int __devinit omap_iommu_probe(struct platform_device *pdev)
++{
++	int err = -ENODEV;
++	void *p;
++	int irq;
++	struct iommu *obj;
++	struct resource *res;
++	struct iommu_platform_data *pdata = pdev->dev.platform_data;
++
++	if (pdev->num_resources != 2)
++		return -EINVAL;
++
++	obj = kzalloc(sizeof(*obj) + MMU_REG_SIZE, GFP_KERNEL);
++	if (!obj)
++		return -ENOMEM;
++
++	obj->clk = clk_get(&pdev->dev, pdata->clk_name);
++	if (IS_ERR(obj->clk))
++		goto err_clk;
++
++	obj->nr_tlb_entries = pdata->nr_tlb_entries;
++	obj->name = pdata->name;
++	obj->dev = &pdev->dev;
++	obj->ctx = (void *)obj + sizeof(*obj);
++
++	mutex_init(&obj->iommu_lock);
++	mutex_init(&obj->mmap_lock);
++	spin_lock_init(&obj->page_table_lock);
++	INIT_LIST_HEAD(&obj->mmap);
++
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		err = -ENODEV;
++		goto err_mem;
++	}
++	obj->regbase = ioremap(res->start, resource_size(res));
++	if (!obj->regbase) {
++		err = -ENOMEM;
++		goto err_mem;
++	}
++
++	res = request_mem_region(res->start, resource_size(res),
++				 dev_name(&pdev->dev));
++	if (!res) {
++		err = -EIO;
++		goto err_mem;
++	}
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0) {
++		err = -ENODEV;
++		goto err_irq;
++	}
++	err = request_irq(irq, iommu_fault_handler, IRQF_SHARED,
++			  dev_name(&pdev->dev), obj);
++	if (err < 0)
++		goto err_irq;
++	platform_set_drvdata(pdev, obj);
++
++	p = (void *)__get_free_pages(GFP_KERNEL, get_order(IOPGD_TABLE_SIZE));
++	if (!p) {
++		err = -ENOMEM;
++		goto err_pgd;
++	}
++	memset(p, 0, IOPGD_TABLE_SIZE);
++	clean_dcache_area(p, IOPGD_TABLE_SIZE);
++	obj->iopgd = p;
++
++	BUG_ON(!IS_ALIGNED((unsigned long)obj->iopgd, IOPGD_TABLE_SIZE));
++
++	dev_info(&pdev->dev, "%s registered\n", obj->name);
++	return 0;
++
++err_pgd:
++	free_irq(irq, obj);
++err_irq:
++	release_mem_region(res->start, resource_size(res));
++	iounmap(obj->regbase);
++err_mem:
++	clk_put(obj->clk);
++err_clk:
++	kfree(obj);
++	return err;
++}
++
++static int __devexit omap_iommu_remove(struct platform_device *pdev)
++{
++	int irq;
++	struct resource *res;
++	struct iommu *obj = platform_get_drvdata(pdev);
++
++	platform_set_drvdata(pdev, NULL);
++
++	iopgtable_clear_entry_all(obj);
++	free_pages((unsigned long)obj->iopgd, get_order(IOPGD_TABLE_SIZE));
++
++	irq = platform_get_irq(pdev, 0);
++	free_irq(irq, obj);
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	release_mem_region(res->start, resource_size(res));
++	iounmap(obj->regbase);
++
++	clk_put(obj->clk);
++	dev_info(&pdev->dev, "%s removed\n", obj->name);
++	kfree(obj);
++	return 0;
++}
++
++static struct platform_driver omap_iommu_driver = {
++	.probe	= omap_iommu_probe,
++	.remove	= __devexit_p(omap_iommu_remove),
++	.driver	= {
++		.name	= "omap-iommu",
++	},
++};
++
++static void iopte_cachep_ctor(void *iopte)
++{
++	clean_dcache_area(iopte, IOPTE_TABLE_SIZE);
++}
++
++static int __init omap_iommu_init(void)
++{
++	struct kmem_cache *p;
++	const unsigned long flags = SLAB_HWCACHE_ALIGN;
++
++	p = kmem_cache_create("iopte_cache", IOPTE_TABLE_SIZE, 0, flags,
++			      iopte_cachep_ctor);
++	if (!p)
++		return -ENOMEM;
++	iopte_cachep = p;
++
++	return platform_driver_register(&omap_iommu_driver);
++}
++module_init(omap_iommu_init);
++
++static void __exit omap_iommu_exit(void)
++{
++	kmem_cache_destroy(iopte_cachep);
++
++	platform_driver_unregister(&omap_iommu_driver);
++}
++module_exit(omap_iommu_exit);
++
++MODULE_DESCRIPTION("omap iommu: tlb and pagetable primitives");
++MODULE_ALIAS("platform:omap-iommu");
++MODULE_AUTHOR("Hiroshi DOYU, Paul Mundt and Toshihiro Kobayashi");
++MODULE_LICENSE("GPL v2");
+diff --git a/arch/arm/plat-omap/iopgtable.h b/arch/arm/plat-omap/iopgtable.h
+new file mode 100644
+index 0000000..37dac43
+--- /dev/null
++++ b/arch/arm/plat-omap/iopgtable.h
+@@ -0,0 +1,72 @@
++/*
++ * omap iommu: pagetable definitions
++ *
++ * Copyright (C) 2008-2009 Nokia Corporation
++ *
++ * Written by Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef __PLAT_OMAP_IOMMU_H
++#define __PLAT_OMAP_IOMMU_H
++
++#define IOPGD_SHIFT		20
++#define IOPGD_SIZE		(1 << IOPGD_SHIFT)
++#define IOPGD_MASK		(~(IOPGD_SIZE - 1))
++#define IOSECTION_MASK		IOPGD_MASK
++#define PTRS_PER_IOPGD		(1 << (32 - IOPGD_SHIFT))
++#define IOPGD_TABLE_SIZE	(PTRS_PER_IOPGD * sizeof(u32))
++
++#define IOSUPER_SIZE		(IOPGD_SIZE << 4)
++#define IOSUPER_MASK		(~(IOSUPER_SIZE - 1))
++
++#define IOPTE_SHIFT		12
++#define IOPTE_SIZE		(1 << IOPTE_SHIFT)
++#define IOPTE_MASK		(~(IOPTE_SIZE - 1))
++#define IOPAGE_MASK		IOPTE_MASK
++#define PTRS_PER_IOPTE		(1 << (IOPGD_SHIFT - IOPTE_SHIFT))
++#define IOPTE_TABLE_SIZE	(PTRS_PER_IOPTE * sizeof(u32))
++
++#define IOLARGE_SIZE		(IOPTE_SIZE << 4)
++#define IOLARGE_MASK		(~(IOLARGE_SIZE - 1))
++
++#define IOPGD_TABLE		(1 << 0)
++#define IOPGD_SECTION		(2 << 0)
++#define IOPGD_SUPER		(1 << 18 | 2 << 0)
++
++#define IOPTE_SMALL		(2 << 0)
++#define IOPTE_LARGE		(1 << 0)
++
++#define iopgd_index(da)		(((da) >> IOPGD_SHIFT) & (PTRS_PER_IOPGD - 1))
++#define iopgd_offset(obj, da)	((obj)->iopgd + iopgd_index(da))
++
++#define iopte_paddr(iopgd)	(*iopgd & ~((1 << 10) - 1))
++#define iopte_vaddr(iopgd)	((u32 *)phys_to_virt(iopte_paddr(iopgd)))
++
++#define iopte_index(da)		(((da) >> IOPTE_SHIFT) & (PTRS_PER_IOPTE - 1))
++#define iopte_offset(iopgd, da)	(iopte_vaddr(iopgd) + iopte_index(da))
++
++static inline u32 iotlb_init_entry(struct iotlb_entry *e, u32 da, u32 pa,
++				   u32 flags)
++{
++	memset(e, 0, sizeof(*e));
++
++	e->da		= da;
++	e->pa		= pa;
++	e->valid	= 1;
++	/* FIXME: add OMAP1 support */
++	e->pgsz		= flags & MMU_CAM_PGSZ_MASK;
++	e->endian	= flags & MMU_RAM_ENDIAN_MASK;
++	e->elsz		= flags & MMU_RAM_ELSZ_MASK;
++	e->mixed	= flags & MMU_RAM_MIXED_MASK;
++
++	return iopgsz_to_bytes(e->pgsz);
++}
++
++#define to_iommu(dev)							\
++	(struct iommu *)platform_get_drvdata(to_platform_device(dev))
++
++#endif /* __PLAT_OMAP_IOMMU_H */
+-- 
+1.6.1.rc4
+
+
+----Next_Part(Mon_Jan_26_15_41_28_2009_063)----
