@@ -1,176 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbZAZO1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751869AbZAZOgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751973AbZAZO1y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 09:27:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZAZO1q
+	id S1751869AbZAZOgS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 09:36:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZAZOgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 09:27:46 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:55216 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750862AbZAZO1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 09:27:45 -0500
-Date: Mon, 26 Jan 2009 12:27:19 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH tip][1/1] Fixup checkpatch reported problems in ftrace
-	plugin patch
-Message-ID: <20090126142719.GC1455@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Mon, 26 Jan 2009 09:36:06 -0500
+Received: from cpsmtpo-eml04.KPNXCHANGE.COM ([213.75.38.153]:6596 "EHLO
+	cpsmtpo-eml04.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750828AbZAZOgF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 09:36:05 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] hp-wmi: set initial docking state
+Date: Mon, 26 Jan 2009 15:36:01 +0100
+User-Agent: KMail/1.9.9
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901261536.02809.elendil@planet.nl>
+X-OriginalArrivalTime: 26 Jan 2009 14:36:04.0022 (UTC) FILETIME=[6A943D60:01C97FC3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit e972245c35be4a7a75b4d0953f3dcfe6d978edbe
-Author: Arnaldo Carvalho de Melo <acme@redhat.com>
-Date:   Mon Jan 26 12:23:24 2009 -0200
-
-    blktrace: Fixup checkpatch reported problems in ftrace plugin patch
+If the initial state is not set when the input device is set up, the
+first docking event after the module is loaded will be lost.
     
-    Also make sure sparse (make C=2 block/blktrace.o) is happy too.
-    
-    Reported-by: Ingo Molnar <mingo@elte.hu>
-    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+---
+Patch is based on what is done for the LID switch in drivers/acpi/button.c 
+and has been tested on my HP 2510p.
 
-diff --git a/block/blktrace.c b/block/blktrace.c
-index 630f167..1b2267c 100644
---- a/block/blktrace.c
-+++ b/block/blktrace.c
-@@ -37,7 +37,7 @@ static int __read_mostly  blk_tracer_enabled;
- 
- static struct tracer_opt blk_tracer_opts[] = {
- 	/* Default disable the minimalistic output */
--	{ TRACER_OPT(blk_classic, TRACE_BLK_OPT_CLASSIC ) },
-+	{ TRACER_OPT(blk_classic, TRACE_BLK_OPT_CLASSIC) },
- 	{ }
- };
- 
-@@ -169,7 +169,8 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
- 	pid_t pid;
- 	int cpu, pc = 0;
- 
--	if (unlikely(bt->trace_state != Blktrace_running || !blk_tracer_enabled))
-+	if (unlikely(bt->trace_state != Blktrace_running ||
-+		     !blk_tracer_enabled))
- 		return;
- 
- 	what |= ddir_act[rw & WRITE];
-@@ -192,7 +193,7 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
- 						 sizeof(*t) + pdu_len, &flags);
- 		if (!event)
- 			return;
--		
+As this is a (minor) bug fix, it would be nice to have it in 2.6.29.
+
+Cheers,
+FJP
+
+diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
+index 7c789f0..8aaff0c 100644
+--- a/drivers/platform/x86/hp-wmi.c
++++ b/drivers/platform/x86/hp-wmi.c
+@@ -382,6 +382,11 @@ static int __init hp_wmi_input_setup(void)
+ 		case KE_SW:
+ 			set_bit(EV_SW, hp_wmi_input_dev->evbit);
+ 			set_bit(key->keycode, hp_wmi_input_dev->swbit);
 +
- 		ent = ring_buffer_event_data(event);
- 		t = (struct blk_io_trace *)ent;
- 		pc = preempt_count();
-@@ -234,7 +235,7 @@ record_it:
- 		if (blk_tr) {
- 			ring_buffer_unlock_commit(blk_tr->buffer, event, flags);
- 			if (pid != 0 &&
--			    (blk_tracer_flags.val & TRACE_BLK_OPT_CLASSIC) == 0 &&
-+			    !(blk_tracer_flags.val & TRACE_BLK_OPT_CLASSIC) &&
- 			    (trace_flags & TRACE_ITER_STACKTRACE) != 0)
- 				__trace_stack(blk_tr, NULL, flags, 5, pc);
- 			trace_wake_up();
-@@ -955,19 +956,27 @@ static void blk_unregister_tracepoints(void)
- 
- static void fill_rwbs(char *rwbs, const struct blk_io_trace *t)
- {
--        int i = 0;
-+	int i = 0;
- 
--        if (t->action & BLK_TC_DISCARD)	   rwbs[i++] = 'D';
--        else if (t->action & BLK_TC_WRITE) rwbs[i++] = 'W';
--        else if (t->bytes)		   rwbs[i++] = 'R';
--        else				   rwbs[i++] = 'N';
-+	if (t->action & BLK_TC_DISCARD)
-+		rwbs[i++] = 'D';
-+	else if (t->action & BLK_TC_WRITE)
-+		rwbs[i++] = 'W';
-+	else if (t->bytes)
-+		rwbs[i++] = 'R';
-+	else
-+		rwbs[i++] = 'N';
- 
--        if (t->action & BLK_TC_AHEAD)	   rwbs[i++] = 'A';
--        if (t->action & BLK_TC_BARRIER)	   rwbs[i++] = 'B';
--        if (t->action & BLK_TC_SYNC)	   rwbs[i++] = 'S';
--        if (t->action & BLK_TC_META)	   rwbs[i++] = 'M';
-+	if (t->action & BLK_TC_AHEAD)
-+		rwbs[i++] = 'A';
-+	if (t->action & BLK_TC_BARRIER)
-+		rwbs[i++] = 'B';
-+	if (t->action & BLK_TC_SYNC)
-+		rwbs[i++] = 'S';
-+	if (t->action & BLK_TC_META)
-+		rwbs[i++] = 'M';
- 
--        rwbs[i] = '\0';
-+	rwbs[i] = '\0';
- }
- 
- static inline
-@@ -1049,7 +1058,8 @@ static int blk_log_generic(struct trace_seq *s, const struct trace_entry *ent)
- 	return trace_seq_printf(s, "[%s]\n", cmd);
- }
- 
--static int blk_log_with_error(struct trace_seq *s, const struct trace_entry *ent)
-+static int blk_log_with_error(struct trace_seq *s,
-+			      const struct trace_entry *ent)
- {
- 	if (t_sec(ent))
- 		return trace_seq_printf(s, "%llu + %u [%d]\n", t_sector(ent),
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 01714ef..8a17f7e 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -19,6 +19,7 @@
- #include <linux/kmod.h>
- #include <linux/ctype.h>
- #include <linux/genhd.h>
-+#include <linux/blktrace_api.h>
- 
- #include "check.h"
- 
-@@ -268,10 +269,6 @@ ssize_t part_fail_store(struct device *dev,
- }
- #endif
- 
--#ifdef CONFIG_BLK_DEV_IO_TRACE
--extern struct attribute_group blk_trace_attr_group;
--#endif
--
- static DEVICE_ATTR(partition, S_IRUGO, part_partition_show, NULL);
- static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
- static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
-diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
-index e9ef923..f231929 100644
---- a/include/linux/blktrace_api.h
-+++ b/include/linux/blktrace_api.h
-@@ -144,6 +144,9 @@ struct blk_user_trace_setup {
- 
- #ifdef __KERNEL__
- #if defined(CONFIG_BLK_DEV_IO_TRACE)
-+
-+#include <linux/sysfs.h>
-+
- struct blk_trace {
- 	int trace_state;
- 	struct rchan *rchan;
-@@ -194,6 +197,8 @@ extern int blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- extern int blk_trace_startstop(struct request_queue *q, int start);
- extern int blk_trace_remove(struct request_queue *q);
- 
-+extern struct attribute_group blk_trace_attr_group;
-+
- #else /* !CONFIG_BLK_DEV_IO_TRACE */
- #define blk_trace_ioctl(bdev, cmd, arg)		(-ENOTTY)
- #define blk_trace_shutdown(q)			do { } while (0)
++			/* Set initial dock state */
++			input_report_switch(hp_wmi_input_dev, key->keycode,
++					    hp_wmi_dock_state());
++			input_sync(hp_wmi_input_dev);
+ 			break;
+ 		}
+ 	}
