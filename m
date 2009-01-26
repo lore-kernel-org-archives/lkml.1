@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbZAZQEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752655AbZAZQGF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752179AbZAZQEp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:04:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZAZQEh
+	id S1752655AbZAZQGF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:06:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZAZQFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 11:04:37 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:32998 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbZAZQEg convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 11:04:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=oRj+1AXSLnFqxCEHQnjeL6ECSi2xSLTZdWAcoS4J6FtbyMoauuDcINbrQ6DOgAkdVe
-         4JrfQ5efIOMz7Xrp65ETGzKpVZ6g+0Fl1cVG1XfeIeP30uJyWQNyr/zAZDr9rcONH40q
-         ZqRwCi/r3LyYQSxQi7io+kgUH0mZDcF1+Hm6w=
+	Mon, 26 Jan 2009 11:05:54 -0500
+Received: from smtp2.u-psud.fr ([129.175.33.42]:60200 "EHLO smtp2.u-psud.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751331AbZAZQFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 11:05:53 -0500
+X-Greylist: delayed 466 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Jan 2009 11:05:53 EST
+From: =?utf-8?q?St=C3=A9phane_Cl=C3=A9rambault?= 
+	<stephane.clerambault@free.fr>
+To: linux-kernel@vger.kernel.org
+Subject: ftdi support
+Date: Mon, 26 Jan 2009 16:58:19 +0100
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-In-Reply-To: <1232984248.4863.106.camel@laptop>
-References: <497cd08f.0c11660a.33a7.ffffdf39@mx.google.com>
-	 <1232977715.4863.81.camel@laptop>
-	 <c62985530901260725s2f36c6d8u1572775d790e7888@mail.gmail.com>
-	 <1232984248.4863.106.camel@laptop>
-Date: Mon, 26 Jan 2009 17:04:34 +0100
-Message-ID: <c62985530901260804o4022e0c0t5acba3f7c32c48ac@mail.gmail.com>
-Subject: Re: [RFC][PATCH 2/2] add a counter for writers spinning on a rwlock
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mandeep Singh Baines <msb@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_b2dfJg2tzzmn1SG"
+Message-Id: <200901261658.19582.stephane.clerambault@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/26 Peter Zijlstra <peterz@infradead.org>:
-> On Mon, 2009-01-26 at 16:25 +0100, Frédéric Weisbecker wrote:
->> 2009/1/26 Peter Zijlstra <peterz@infradead.org>:
->> > On Sun, 2009-01-25 at 12:50 -0800, Frederic Weisbecker wrote:
->> >> This patch adds a counter for writers that enter a rwlock slow path.
->> >> For example it can be useful for slow background tasks which perform some jobs
->> >> on the tasklist, such as the hung_task detector (kernel/hung_task.c).
->> >>
->> >> It adds a inc/dec pair on the slow path and 4 bytes for each rwlocks, so the overhead
->> >> is not null.
->> >>
->> >> Only x86 is supported for now, writers_spinning_lock() will return 0 on other archs (which
->> >> is perhaps not a good idea).
->> >>
->> >> Comments?
->> >
->> > _why_ ?
->>
->> The hung task detector runs a periodic loop through the task_list, and
->> currently it doesn't run
->> over an arbitrary threshold of tasks to not hold the task_list lock
->> for too long.
->>
->> So we thought about a way to detect if there are some writers waiting
->> for the lock, anf if so, release
->> the lock, schedule and retry.
->
-> Ah, if it can do that, then it can also use RCU, no? Only users who
-> really have to hold off new tasks need the read-task_lock. The rest can
-> use RCU.
+--Boundary-00=_b2dfJg2tzzmn1SG
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Hi,
 
-Really?
-That sounds a good news. Mandeep, what do you think?
+Here is a patch to add support for the NDI Polaris system=20
+(http://www.ndigital.com/)
+
+Thanks,
+=2D-=20
+St=C3=A9phane Cl=C3=A9rambault
+
+--Boundary-00=_b2dfJg2tzzmn1SG
+Content-Type: text/x-diff;
+  charset="iso 8859-15";
+  name="ftdi_sio.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="ftdi_sio.diff"
+
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index c70a8f6..e879ce7 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -660,6 +660,7 @@ static struct usb_device_id id_table_combined [] = {
+ 	{ USB_DEVICE(PAPOUCH_VID, PAPOUCH_QUIDO4x4_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DGQG_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DUSB_PID) },
++	{ USB_DEVICE(FTDI_VID, FTDI_NDI_HUC_PID) },
+ 	{ },					/* Optional parameter entry */
+ 	{ }					/* Terminating entry */
+ };
+diff --git a/drivers/usb/serial/ftdi_sio.h b/drivers/usb/serial/ftdi_sio.h
+index 373ee09..b1f6d75 100644
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -844,6 +844,9 @@
+ #define TML_VID			0x1B91	/* Vendor ID */
+ #define TML_USB_SERIAL_PID	0x0064	/* USB - Serial Converter */
+ 
++/* NDI Polaris System */
++#define FTDI_NDI_HUC_PID        0xDA70
++
+ /* Propox devices */
+ #define FTDI_PROPOX_JTAGCABLEII_PID	0xD738
+ 
+
+--Boundary-00=_b2dfJg2tzzmn1SG--
