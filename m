@@ -1,83 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbZAZOja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752803AbZAZOj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbZAZOja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 09:39:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbZAZOjW
+	id S1752803AbZAZOj5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 09:39:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZAZOjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 09:39:22 -0500
-Received: from mail.netone.net.tr ([193.192.98.182]:44216 "EHLO
-	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbZAZOjV (ORCPT
+	Mon, 26 Jan 2009 09:39:47 -0500
+Received: from casper.infradead.org ([85.118.1.10]:54471 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751632AbZAZOjp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 09:39:21 -0500
-Message-ID: <497DCB15.7030404@turknet.net.tr>
-Date: Mon, 26 Jan 2009 16:39:17 +0200
-From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090125 Shredder/3.0b2pre
-MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Nick Andrew <nick@nick-andrew.net>,
-       Trivial Kernel Patches <trivial@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [TRIVIAL PATCH 00/20] Fix misspelling of "firmware"
-References: <20090126015921.15168.97302.stgit@marcab.local.tull.net> <alpine.LNX.1.10.0901261059560.5377@jikos.suse.cz>
-In-Reply-To: <alpine.LNX.1.10.0901261059560.5377@jikos.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 26 Jan 2009 09:39:45 -0500
+Subject: [RFC][PATCH] ftrace: function graph trace context switches
+From: Peter Zijlstra <peterz@infradead.org>
+To: Kevin Shanahan <kmshanah@ucwb.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>, Avi Kivity <avi@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mike Galbraith <efault@gmx.de>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       bugme-daemon@bugzilla.kernel.org
+In-Reply-To: <1232969705.4863.46.camel@laptop>
+References: <cX2gZ6Cy9nC.A.4dB.bJRdJB@chimera>
+	 <1232410363.4768.21.camel@kulgan.wumi.org.au>
+	 <20090120113546.GA26571@elte.hu>
+	 <1232455343.4895.4.camel@kulgan.wumi.org.au>
+	 <20090120125652.GA1457@elte.hu> <20090120130714.GA11048@elte.hu>
+	 <alpine.DEB.1.10.0901200957220.2681@gandalf.stny.rr.com>
+	 <49760E2D.2060109@redhat.com>
+	 <1232547932.4895.119.camel@kulgan.wumi.org.au>
+	 <49773275.3020203@redhat.com>  <20090121151820.GA23813@elte.hu>
+	 <1232963730.4921.12.camel@kulgan.wumi.org.au>
+	 <1232969705.4863.46.camel@laptop>
+Content-Type: text/plain
+Date: Mon, 26 Jan 2009 15:38:12 +0100
+Message-Id: <1232980692.4863.104.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Jan 2009 14:39:18.0057 (UTC) FILETIME=[DE3BA190:01C97FC3]
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/26/2009 12:00 PM, Jiri Kosina wrote:
-> On Mon, 26 Jan 2009, Nick Andrew wrote:
->
->    
->> Fix more misspellings of "firmware" which I noticed in v2.6.29-rc2. All are
->> comment changes.
->> Nick.
->> ---
->>
->> Nick Andrew (20):
->>        Fix misspelling of firmware in iwl-agn.c
->>        Fix misspelling of firmware in iwl3945-base.c
->>        Fix misspelling of firmware in hpmain.c
->>        Fix misspelling of firmware in head_64.S
->>        Fix misspelling of firmware in aica.c
->>        Fix misspelling of firmware in pss.c
->>        Fix misspelling of firmware in disk.c
->>        Fix misspelling of firmware in libata.h
->>        Fix misspelling of firmware in ChangeLog.history
->>        Fix misspelling of firmware in ueagle-atm.c
->>        Fix misspelling of firmware in pci.c
->>        Fix misspelling of firmware in cmd.c
->>        Fix misspelling of firmware in ipw2200.c
->>        Fix misspelling of firmware in ipw2100.c
->>        Fix misspelling of firmware in tg3.c
->>        Fix misspelling of firmware in sb1250-mac.c
->>        Fix misspelling of firmware in thinkpad_acpi.c
->>        Fix misspelling of "firmware" in ip27-smp.c
->>        Fix misspelling of "firmware" in firmware.txt
->>        Fix misspelling of "firmware" in ia64-kvm.txt
->>      
->
-> I will fold all this into single patch and apply.
->
-> Thanks,
->
->    
-"Fix misspelling of firmware in tg3.c" didn't help me to solve tg3 
-firmware issue which I submitted via "[BUG] tg3 module problem on 
-Linux-2.6.29-rc1-2" subjected email at 21st of Jan. I re-compiled 
-2.6.29-rc2 with this patch and still having the same error message :
+On Mon, 2009-01-26 at 12:35 +0100, Peter Zijlstra wrote:
+> 
+> Another something nice would be to have ctx switches like:
+> 
+> foo-1 => bar-2 ran: ${time foo spend on the cpu} since: ${time bar
+> spend away from the cpu}
 
-Using mkinitramfs-kpkg to build the ramdisk.
-W: Possible missing firmware 
-/lib/firmware/2.6.29-rc2-git1/tigon/tg3_tso5.bin for module tg3
-W: Possible missing firmware 
-/lib/firmware/2.6.29-rc2-git1/tigon/tg3_tso.bin for module tg3
-W: Possible missing firmware /lib/firmware/2.6.29-rc2-git1/tigon/tg3.bin 
-for module tg3
+Steve, Frederic, how's this?
+
+(compile tested only)
+
+---
+ include/linux/ftrace.h               |    5 ++
+ kernel/sched_fair.c                  |    1 -
+ kernel/trace/Kconfig                 |    1 +
+ kernel/trace/trace.c                 |   51 +++++++++++++++++++
+ kernel/trace/trace.h                 |   10 ++++
+ kernel/trace/trace_functions_graph.c |   88 ++++++++++++++-------------------
+ 6 files changed, 104 insertions(+), 52 deletions(-)
+
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 9f7880d..411b027 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -381,6 +381,11 @@ struct ftrace_graph_ret {
+ 	int depth;
+ };
+ 
++struct ftrace_graph_switch {
++	pid_t prev, next;
++	u64 ran, since;
++};
++
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ 
+ /*
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index f34cf42..fa477ac 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -530,7 +530,6 @@ update_stats_wait_end(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 	schedstat_set(se->wait_count, se->wait_count + 1);
+ 	schedstat_set(se->wait_sum, se->wait_sum +
+ 			rq_of(cfs_rq)->clock - se->wait_start);
+-	schedstat_set(se->wait_start, 0);
+ }
+ 
+ static inline void
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index dde1d46..7aa1c13 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -67,6 +67,7 @@ config FUNCTION_GRAPH_TRACER
+ 	bool "Kernel Function Graph Tracer"
+ 	depends on HAVE_FUNCTION_GRAPH_TRACER
+ 	depends on FUNCTION_TRACER
++	select SCHEDSTATS
+ 	default y
+ 	help
+ 	  Enable the kernel to trace a function at both its return
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 2129ab9..380a334 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -31,6 +31,7 @@
+ #include <linux/fs.h>
+ #include <linux/kprobes.h>
+ #include <linux/writeback.h>
++#include <linux/sched.h>
+ 
+ #include <linux/stacktrace.h>
+ #include <linux/ring_buffer.h>
+@@ -820,6 +821,35 @@ static void __trace_graph_return(struct trace_array *tr,
+ 	entry->ret				= *trace;
+ 	ring_buffer_unlock_commit(global_trace.buffer, event, irq_flags);
+ }
++
++static void __trace_graph_switch(struct trace_array *tr,
++				 struct trace_array_cpu *data,
++				 unsigned long flags, int pc,
++				 struct task_struct *prev,
++				 struct task_struct *next)
++{
++	struct ring_buffer_event *event;
++	struct ftrace_graph_switch_entry *entry;
++	unsigned long irq_flags;
++
++	if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
++		return;
++
++	event = ring_buffer_lock_reserve(global_trace.buffer, sizeof(*entry),
++					 &irq_flags);
++	if (!event)
++		return;
++	entry	= ring_buffer_event_data(event);
++	tracing_generic_entry_update(&entry->ent, flags, pc);
++	entry->ent.type			= TRACE_GRAPH_SWITCH;
++	entry->ctx.prev = prev->pid;
++	entry->ctx.next = next->pid;
++	entry->ctx.ran = prev->se.sum_exec_runtime -
++		    prev->se.prev_sum_exec_runtime;
++	entry->ctx.since = next->se.exec_start - next->se.wait_start;
++
++	ring_buffer_unlock_commit(global_trace.buffer, event, irq_flags);
++}
+ #endif
+ 
+ void
+@@ -1097,6 +1127,27 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
+ 	atomic_dec(&data->disabled);
+ 	local_irq_restore(flags);
+ }
++
++void trace_graph_switch(struct task_struct *prev, struct task_struct *next)
++{
++	struct trace_array *tr = &global_trace;
++	struct trace_array_cpu *data;
++	unsigned long flags;
++	long disabled;
++	int cpu;
++	int pc;
++
++	local_irq_save(flags);
++	cpu = raw_smp_processor_id();
++	data = tr->data[cpu];
++	disabled = atomic_inc_return(&data->disabled);
++	if (likely(disabled == 1)) {
++		pc = preempt_count();
++		__trace_graph_switch(tr, data, flags, pc, prev, next);
++	}
++	atomic_dec(&data->disabled);
++	local_irq_restore(flags);
++}
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 
+ enum trace_file_type {
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index b96037d..781fbce 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -27,6 +27,7 @@ enum trace_type {
+ 	TRACE_BOOT_RET,
+ 	TRACE_GRAPH_RET,
+ 	TRACE_GRAPH_ENT,
++	TRACE_GRAPH_SWITCH,
+ 	TRACE_USER_STACK,
+ 	TRACE_HW_BRANCHES,
+ 	TRACE_KMEM_ALLOC,
+@@ -71,6 +72,12 @@ struct ftrace_graph_ret_entry {
+ 	struct trace_entry			ent;
+ 	struct ftrace_graph_ret		ret;
+ };
++
++struct ftrace_graph_switch_entry {
++	struct trace_entry		ent;
++	struct ftrace_graph_switch	ctx;
++};
++
+ extern struct tracer boot_tracer;
+ 
+ /*
+@@ -295,6 +302,8 @@ extern void __ftrace_bad_type(void);
+ 			  TRACE_GRAPH_ENT);		\
+ 		IF_ASSIGN(var, ent, struct ftrace_graph_ret_entry,	\
+ 			  TRACE_GRAPH_RET);		\
++		IF_ASSIGN(var, ent, struct ftrace_graph_switch_entry,	\
++			  TRACE_GRAPH_SWITCH);		\
+ 		IF_ASSIGN(var, ent, struct hw_branch_entry, TRACE_HW_BRANCHES);\
+  		IF_ASSIGN(var, ent, struct trace_power, TRACE_POWER); \
+ 		IF_ASSIGN(var, ent, struct kmemtrace_alloc_entry,	\
+@@ -438,6 +447,7 @@ void trace_function(struct trace_array *tr,
+ 
+ void trace_graph_return(struct ftrace_graph_ret *trace);
+ int trace_graph_entry(struct ftrace_graph_ent *trace);
++void trace_graph_switch(struct task_struct *prev, struct task_struct *next);
+ 
+ void tracing_start_cmdline_record(void);
+ void tracing_stop_cmdline_record(void);
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index 66fc7b8..cf6494b 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -10,6 +10,7 @@
+ #include <linux/uaccess.h>
+ #include <linux/ftrace.h>
+ #include <linux/fs.h>
++#include <trace/sched.h>
+ 
+ #include "trace.h"
+ #include "trace_output.h"
+@@ -158,28 +159,13 @@ print_graph_proc(struct trace_seq *s, pid_t pid)
+ 	return TRACE_TYPE_HANDLED;
+ }
+ 
+-
+-/* If the pid changed since the last trace, output this event */
+ static enum print_line_t
+-verif_pid(struct trace_seq *s, pid_t pid, int cpu, pid_t *last_pids_cpu)
++print_graph_switch(struct ftrace_graph_switch_entry *field, struct trace_seq *s,
++			struct trace_iterator *iter)
+ {
+-	pid_t prev_pid;
+-	pid_t *last_pid;
++	int cpu = iter->cpu;
+ 	int ret;
+ 
+-	if (!last_pids_cpu)
+-		return TRACE_TYPE_HANDLED;
+-
+-	last_pid = per_cpu_ptr(last_pids_cpu, cpu);
+-
+-	if (*last_pid == pid)
+-		return TRACE_TYPE_HANDLED;
+-
+-	prev_pid = *last_pid;
+-	*last_pid = pid;
+-
+-	if (prev_pid == -1)
+-		return TRACE_TYPE_HANDLED;
+ /*
+  * Context-switch trace line:
+ 
+@@ -197,7 +183,7 @@ verif_pid(struct trace_seq *s, pid_t pid, int cpu, pid_t *last_pids_cpu)
+ 	if (ret == TRACE_TYPE_PARTIAL_LINE)
+ 		TRACE_TYPE_PARTIAL_LINE;
+ 
+-	ret = print_graph_proc(s, prev_pid);
++	ret = print_graph_proc(s, field->ctx.prev);
+ 	if (ret == TRACE_TYPE_PARTIAL_LINE)
+ 		TRACE_TYPE_PARTIAL_LINE;
+ 
+@@ -205,16 +191,21 @@ verif_pid(struct trace_seq *s, pid_t pid, int cpu, pid_t *last_pids_cpu)
+ 	if (!ret)
+ 		TRACE_TYPE_PARTIAL_LINE;
+ 
+-	ret = print_graph_proc(s, pid);
++	ret = print_graph_proc(s, field->ctx.next);
+ 	if (ret == TRACE_TYPE_PARTIAL_LINE)
+ 		TRACE_TYPE_PARTIAL_LINE;
+ 
++	ret = trace_seq_printf(s, "  ran: %Lu, since: %Lu",
++			field->ctx.ran, field->ctx.since);
++	if (!ret)
++		TRACE_TYPE_PARTIAL_LINE;
++
+ 	ret = trace_seq_printf(s,
+ 		"\n ------------------------------------------\n\n");
+ 	if (!ret)
+ 		TRACE_TYPE_PARTIAL_LINE;
+ 
+-	return ret;
++	return TRACE_TYPE_HANDLED;
+ }
+ 
+ static bool
+@@ -471,14 +462,9 @@ print_graph_entry(struct ftrace_graph_ent_entry *field, struct trace_seq *s,
+ {
+ 	int ret;
+ 	int cpu = iter->cpu;
+-	pid_t *last_entry = iter->private;
+ 	struct trace_entry *ent = iter->ent;
+ 	struct ftrace_graph_ent *call = &field->graph_ent;
+ 
+-	/* Pid */
+-	if (verif_pid(s, ent->pid, cpu, last_entry) == TRACE_TYPE_PARTIAL_LINE)
+-		return TRACE_TYPE_PARTIAL_LINE;
+-
+ 	/* Interrupt */
+ 	ret = print_graph_irq(s, call->func, TRACE_GRAPH_ENT, cpu, ent->pid);
+ 	if (ret == TRACE_TYPE_PARTIAL_LINE)
+@@ -523,12 +509,8 @@ print_graph_return(struct ftrace_graph_ret *trace, struct trace_seq *s,
+ 	int i;
+ 	int ret;
+ 	int cpu = iter->cpu;
+-	pid_t *last_pid = iter->private;
+ 	unsigned long long duration = trace->rettime - trace->calltime;
+ 
+-	/* Pid */
+-	if (verif_pid(s, ent->pid, cpu, last_pid) == TRACE_TYPE_PARTIAL_LINE)
+-		return TRACE_TYPE_PARTIAL_LINE;
+ 
+ 	/* Absolute time */
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME) {
+@@ -600,7 +582,6 @@ print_graph_comment(struct print_entry *trace, struct trace_seq *s,
+ 	int i;
+ 	int ret;
+ 	int cpu = iter->cpu;
+-	pid_t *last_pid = iter->private;
+ 
+ 	/* Absolute time */
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME) {
+@@ -609,10 +590,6 @@ print_graph_comment(struct print_entry *trace, struct trace_seq *s,
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
+ 
+-	/* Pid */
+-	if (verif_pid(s, ent->pid, cpu, last_pid) == TRACE_TYPE_PARTIAL_LINE)
+-		return TRACE_TYPE_PARTIAL_LINE;
+-
+ 	/* Cpu */
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU) {
+ 		ret = print_graph_cpu(s, cpu);
+@@ -677,6 +654,11 @@ print_graph_function(struct trace_iterator *iter)
+ 	struct trace_entry *entry = iter->ent;
+ 
+ 	switch (entry->type) {
++	case TRACE_GRAPH_SWITCH: {
++		struct ftrace_graph_switch_entry *field;
++		trace_assign_type(field, entry);
++		return print_graph_switch(field, s, iter);
++	}
+ 	case TRACE_GRAPH_ENT: {
+ 		struct ftrace_graph_ent_entry *field;
+ 		trace_assign_type(field, entry);
+@@ -724,34 +706,38 @@ static void print_graph_headers(struct seq_file *s)
+ 	seq_printf(s, "               |   |   |   |\n");
+ }
+ 
+-static void graph_trace_open(struct trace_iterator *iter)
++static void probe_sched_switch(struct rq *rq,
++			       struct task_struct *prev,
++			       struct task_struct *next)
+ {
+-	/* pid on the last trace processed */
+-	pid_t *last_pid = alloc_percpu(pid_t);
+-	int cpu;
++	trace_graph_switch(prev, next);
++}
+ 
+-	if (!last_pid)
+-		pr_warning("function graph tracer: not enough memory\n");
+-	else
+-		for_each_possible_cpu(cpu) {
+-			pid_t *pid = per_cpu_ptr(last_pid, cpu);
+-			*pid = -1;
+-		}
++static DEFINE_MUTEX(graph_trace_mutex);
++static int graph_trace_ref;
+ 
+-	iter->private = last_pid;
++static void graph_trace_start(struct trace_array *tr)
++{
++	mutex_lock(&graph_trace_mutex);
++	if (!(graph_trace_ref++))
++		register_trace_sched_switch(probe_sched_switch);
++	mutex_unlock(&graph_trace_mutex);
+ }
+ 
+-static void graph_trace_close(struct trace_iterator *iter)
++static void graph_trace_stop(struct trace_array *tr)
+ {
+-	percpu_free(iter->private);
++	mutex_lock(&graph_trace_mutex);
++	if (!(--graph_trace_ref))
++		unregister_trace_sched_switch(probe_sched_switch);
++	mutex_unlock(&graph_trace_mutex);
+ }
+ 
+ static struct tracer graph_trace __read_mostly = {
+ 	.name	     	= "function_graph",
+-	.open		= graph_trace_open,
+-	.close		= graph_trace_close,
+ 	.init	     	= graph_trace_init,
+ 	.reset	     	= graph_trace_reset,
++	.start		= graph_trace_start,
++	.stop		= graph_trace_stop,
+ 	.print_line	= print_graph_function,
+ 	.print_header	= print_graph_headers,
+ 	.flags		= &tracer_flags,
 
 
-Tarkan ERIMER
