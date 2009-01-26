@@ -1,117 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZAZSg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZAZS5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753351AbZAZSg4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 13:36:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZAZSgr
+	id S1752483AbZAZS5B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 13:57:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751692AbZAZS4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 13:36:47 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35930 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751641AbZAZSgq (ORCPT
+	Mon, 26 Jan 2009 13:56:53 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:37511 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751648AbZAZS4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 13:36:46 -0500
-Date: Mon, 26 Jan 2009 10:35:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: rusty@rustcorp.com.au, travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090126103529.cb124a58.akpm@linux-foundation.org>
-In-Reply-To: <20090126171618.GA32091@elte.hu>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<20090116191108.533053000@polaris-admin.engr.sgi.com>
-	<20090124001537.7cfde78e.akpm@linux-foundation.org>
-	<200901261711.43943.rusty@rustcorp.com.au>
-	<20090125230130.bcdab2e5.akpm@linux-foundation.org>
-	<20090126171618.GA32091@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Jan 2009 13:56:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TKs2ku5P6Gcssur5pLVhXCqVLIsjXgiPd+oWieLqnvdwX3a1Bpmi8Yg9l+iWqr+LDr
+         Ls1u4JWAlqD7B1i9D2xGDrxtOnk+TTCd+6gOcHIYeKixde5/DIw32yAOB8UJ+LU1Gm+D
+         dzZ30eFxduOhKPRlWBr5gz/hHKjraCOAT+jI0=
+Date: Mon, 26 Jan 2009 21:56:48 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC v2 -tip 3/3] x86: ia32_signal: use {get|put}_user_try and
+	catch
+Message-ID: <20090126185648.GD31918@localhost>
+References: <4962CAAE.6090300@ct.jp.nec.com> <496476D0.5040607@zytor.com> <497A5737.8030408@ct.jp.nec.com> <497A57CE.3080602@ct.jp.nec.com> <20090124073638.GA8752@localhost> <497E0167.10604@ct.jp.nec.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <497E0167.10604@ct.jp.nec.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 18:16:18 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+[Hiroshi Shimamoto - Mon, Jan 26, 2009 at 10:31:03AM -0800]
+| Cyrill Gorcunov wrote:
+| > [Hiroshi Shimamoto - Fri, Jan 23, 2009 at 03:50:38PM -0800]
+| > | From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+| > | 
+| > | Impact: use new framework
+| > | 
+| > | Use {get|put}_user_try, catch, and _ex in arch/x86/ia32/ia32_signal.c.
+| > | 
+| > | Note: this patch contains "WARNING: line over 80 characters", because when
+| > | introducing new block I insert an indent to avoid mistakes by edit.
+| > | 
+| > | Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+| > | ---
+| > |  arch/x86/ia32/ia32_signal.c |  365 +++++++++++++++++++++++--------------------
+| > |  1 files changed, 195 insertions(+), 170 deletions(-)
+| > | 
+| > | diff --git a/arch/x86/ia32/ia32_signal.c b/arch/x86/ia32/ia32_signal.c
+| > | index 9dabd00..dd77ac0 100644
+| > | --- a/arch/x86/ia32/ia32_signal.c
+| > | +++ b/arch/x86/ia32/ia32_signal.c
+| > | @@ -46,78 +46,83 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where);
+| > |
+| > ... 
+| > | +	put_user_try {
+| > | +		/* If you change siginfo_t structure, please make sure that
+| > | +		   this code is fixed accordingly.
+| > | +		   It should never copy any pad contained in the structure
+| > | +		   to avoid security leaks, but must copy the generic
+| > | +		   3 ints plus the relevant union member.  */
+| > | +		put_user_ex(from->si_signo, &to->si_signo);
+| > | +		put_user_ex(from->si_errno, &to->si_errno);
+| > | +		put_user_ex((short)from->si_code, &to->si_code);
+| > | +
+| > | +		if (from->si_code < 0) {
+| > | +			put_user_ex(from->si_pid, &to->si_pid);
+| > | +			put_user_ex(from->si_uid, &to->si_uid);
+| > | +			put_user_ex(ptr_to_compat(from->si_ptr), &to->si_ptr);
+| > | +		} else {
+| > | +			/*
+| > | +			 * First 32bits of unions are always present:
+| > | +			 * si_pid === si_band === si_tid === si_addr(LS half)
+| > | +			 */
+| > | +			put_user_ex(from->_sifields._pad[0],
+| > | +					  &to->_sifields._pad[0]);
+| > | +			switch (from->si_code >> 16) {
+| > | +			case __SI_FAULT >> 16:
+| > | +				break;
+| > | +			case __SI_CHLD >> 16:
+| > | +				put_user_ex(from->si_utime, &to->si_utime);
+| > | +				put_user_ex(from->si_stime, &to->si_stime);
+| > | +				put_user_ex(from->si_status, &to->si_status);
+| > | +				/* FALL THROUGH */
+| > | +			default:
+| > 
+| > Hi Hiroshi,
+| 
+| Hi Cyrill,
+| 
+| > 
+| > may I ask why we use default here?
+| 
+| I don't know:) Hm, it looks old code.
+| arch/i386/kernel/signal.c in 2.4 has similar code.
+| 
+| I guess this code didn't change when copy_siginfo_to_user() was moved
+| from arch/i386/kernel/signal.c to kernel/signal.c.
+| 
+| Should we change this like copy_siginfo_tu_user() in kernel/signal.c?
+| Copying si_pid was added in kernel/signal.c.
+| 
+| BTW, it seems same __ST_KILL and default.
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > > > Yet another kernel thread for each CPU.  All because of some dung 
-> > > > way down in arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c.
-> > > > 
-> > > > Is there no other way?
-> > > 
-> > > Perhaps, but this works.  Trying to be clever got me into this mess in 
-> > > the first place.
-> > > 
-> > > We could stop using workqueues and change work_on_cpu to create a 
-> > > thread every time, which would give it a new failure mode so I don't 
-> > > know that everyone could use it any more.  Or we could keep a single 
-> > > thread around to do all the cpus, and duplicate much of the workqueue 
-> > > code.
-> > > 
-> > > None of these options are appealing...
-> > 
-> > Can we try harder please?  10 screenfuls of kernel threads in the ps 
-> > output is just irritating.
-> > 
-> > How about banning the use of work_on_cpu() from schedule_work() handlers 
-> > and then fixing that driver somehow?
-> 
-> Yes, but that's fundamentally fragile: anyone who happens to stick the 
-> wrong thing into keventd (and it's dead easy because schedule_work() is 
-> easy to use) will lock up work_on_cpu() users.
-> 
+Hiroshi, to be fair -- I just don't know what the
+right solution would be ;-) I just noticed that
+default: here a bit useless since we do 'testing'
+the (from->si_code >> 16) after default: anyway.
 
---- a/kernel/workqueue.c~a
-+++ a/kernel/workqueue.c
-@@ -998,6 +998,8 @@ long work_on_cpu(unsigned int cpu, long 
- {
- 	struct work_for_cpu wfc;
- 
-+	BUG_ON(current_is_keventd());
-+
- 	INIT_WORK(&wfc.work, do_work_for_cpu);
- 	wfc.fn = fn;
- 	wfc.arg = arg;
-_
+So choose one /since I'm not really familiar with
+process management in kernel/ :)
 
-
-That wasn't so hard.
-
-> work_on_cpu() is an important (and lowlevel enough) facility to be 
-> isolated from casual interaction like that.
-
-We have one single (known) caller in the whole kernel.  This is not
-worth adding another great pile of kernel threads for!
-
-> > What _is_ the bug anyway?  The only description we were given was
-> > 
-> >   Impact: remove potential clashes with generic kevent workqueue
-> > 
-> >   Annoyingly, some places we want to use work_on_cpu are already in
-> >   workqueues.  As per Ingo's suggestion, we create a different
-> >   workqueue for work_on_cpu.
-> > 
-> > which didn't bother telling anyone squat.
-> > 
-> > When was this bug added?  Was it added into that driver or was it due to 
-> > infrastructural changes?
-> 
-> This fixes lockups during bootup caused by the cpumask changes/cleanups 
-> which changed set_cpus_allowed()+on-kernel-stack-cpumask_t to 
-> work_on_cpu().
-> 
-> Which was fine except it didnt take into account the interaction with the 
-> kevents workqueue and the very wide cross section for worklet dependencies 
-> that this brings with itself. work_on_cpu() was rarely used before so this 
-> didnt show up.
-
-Am still awaiting an understandable description of this alleged bug :(
-
-If someone can be persuaded to cough up this information (which should
-have been in the changelog from day #1) then perhaps someone will be
-able to think of a more pleasing fix.  That's one of the reasons for
-writing changelogs.
+		-- Cyrill --
