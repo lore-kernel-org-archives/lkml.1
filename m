@@ -1,154 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751582AbZAZN22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZAZN3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751582AbZAZN22 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 08:28:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZAZN0r
+	id S1753254AbZAZN3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 08:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751496AbZAZN3B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 08:26:47 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48344 "EHLO mx2.redhat.com"
+	Mon, 26 Jan 2009 08:29:01 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45789 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751460AbZAZN0k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 08:26:40 -0500
-From: Gerd Hoffmann <kraxel@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       linux-api@vger.kernel.org
-Cc: aarcange@redhat.com, Ralf Baechle <ralf@linux-mips.org>,
-       Gerd Hoffmann <kraxel@redhat.com>
-Subject: [PATCH v7 4/5] MIPS: Add preadv(2) and pwritev(2) syscalls.
-Date: Mon, 26 Jan 2009 14:26:28 +0100
-Message-Id: <1232976389-13021-5-git-send-email-kraxel@redhat.com>
-In-Reply-To: <1232976389-13021-1-git-send-email-kraxel@redhat.com>
-References: <1232976389-13021-1-git-send-email-kraxel@redhat.com>
+	id S1751417AbZAZN3A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 08:29:00 -0500
+Date: Mon, 26 Jan 2009 14:28:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86: Fix setion mismatch warning.
+Message-ID: <20090126132849.GA13567@elte.hu>
+References: <b9df5fa10901231146k89cd1adoee590b6743bb349f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b9df5fa10901231146k89cd1adoee590b6743bb349f@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ralf Baechle <ralf@linux-mips.org>
 
-From: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
----
- arch/mips/include/asm/unistd.h |   18 ++++++++++++------
- arch/mips/kernel/scall32-o32.S |    2 ++
- arch/mips/kernel/scall64-64.S  |    2 ++
- arch/mips/kernel/scall64-n32.S |    2 ++
- arch/mips/kernel/scall64-o32.S |    2 ++
- 5 files changed, 20 insertions(+), 6 deletions(-)
+* Rakib Mullick <rakib.mullick@gmail.com> wrote:
 
-diff --git a/arch/mips/include/asm/unistd.h b/arch/mips/include/asm/unistd.h
-index a73e153..4000501 100644
---- a/arch/mips/include/asm/unistd.h
-+++ b/arch/mips/include/asm/unistd.h
-@@ -350,16 +350,18 @@
- #define __NR_dup3			(__NR_Linux + 327)
- #define __NR_pipe2			(__NR_Linux + 328)
- #define __NR_inotify_init1		(__NR_Linux + 329)
-+#define __NR_preadv			(__NR_Linux + 330)
-+#define __NR_pwritev			(__NR_Linux + 331)
- 
- /*
-  * Offset of the last Linux o32 flavoured syscall
-  */
--#define __NR_Linux_syscalls		329
-+#define __NR_Linux_syscalls		331
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_ABI32 */
- 
- #define __NR_O32_Linux			4000
--#define __NR_O32_Linux_syscalls		329
-+#define __NR_O32_Linux_syscalls		331
- 
- #if _MIPS_SIM == _MIPS_SIM_ABI64
- 
-@@ -656,16 +658,18 @@
- #define __NR_dup3			(__NR_Linux + 286)
- #define __NR_pipe2			(__NR_Linux + 287)
- #define __NR_inotify_init1		(__NR_Linux + 288)
-+#define __NR_preadv			(__NR_Linux + 289)
-+#define __NR_pwritev			(__NR_Linux + 290)
- 
- /*
-  * Offset of the last Linux 64-bit flavoured syscall
-  */
--#define __NR_Linux_syscalls		288
-+#define __NR_Linux_syscalls		290
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_ABI64 */
- 
- #define __NR_64_Linux			5000
--#define __NR_64_Linux_syscalls		288
-+#define __NR_64_Linux_syscalls		290
- 
- #if _MIPS_SIM == _MIPS_SIM_NABI32
- 
-@@ -966,16 +970,18 @@
- #define __NR_dup3			(__NR_Linux + 290)
- #define __NR_pipe2			(__NR_Linux + 291)
- #define __NR_inotify_init1		(__NR_Linux + 292)
-+#define __NR_preadv			(__NR_Linux + 293)
-+#define __NR_pwritev			(__NR_Linux + 294)
- 
- /*
-  * Offset of the last N32 flavoured syscall
-  */
--#define __NR_Linux_syscalls		292
-+#define __NR_Linux_syscalls		294
- 
- #endif /* _MIPS_SIM == _MIPS_SIM_NABI32 */
- 
- #define __NR_N32_Linux			6000
--#define __NR_N32_Linux_syscalls		292
-+#define __NR_N32_Linux_syscalls		294
- 
- #ifdef __KERNEL__
- 
-diff --git a/arch/mips/kernel/scall32-o32.S b/arch/mips/kernel/scall32-o32.S
-index 51d1ba4..0198a9c 100644
---- a/arch/mips/kernel/scall32-o32.S
-+++ b/arch/mips/kernel/scall32-o32.S
-@@ -650,6 +650,8 @@ einval:	li	v0, -ENOSYS
- 	sys	sys_dup3		3
- 	sys	sys_pipe2		2
- 	sys	sys_inotify_init1	1
-+	sys	sys_preadv		6	/* 4330 */
-+	sys	sys_pwritev		6
- 	.endm
- 
- 	/* We pre-compute the number of _instruction_ bytes needed to
-diff --git a/arch/mips/kernel/scall64-64.S b/arch/mips/kernel/scall64-64.S
-index a9e1716..217e3ce 100644
---- a/arch/mips/kernel/scall64-64.S
-+++ b/arch/mips/kernel/scall64-64.S
-@@ -487,4 +487,6 @@ sys_call_table:
- 	PTR	sys_dup3
- 	PTR	sys_pipe2
- 	PTR	sys_inotify_init1
-+	PTR	sys_preadv
-+	PTR	sys_pwritev			/* 5390 */
- 	.size	sys_call_table,.-sys_call_table
-diff --git a/arch/mips/kernel/scall64-n32.S b/arch/mips/kernel/scall64-n32.S
-index 30f3b63..f340963 100644
---- a/arch/mips/kernel/scall64-n32.S
-+++ b/arch/mips/kernel/scall64-n32.S
-@@ -413,4 +413,6 @@ EXPORT(sysn32_call_table)
- 	PTR	sys_dup3			/* 5290 */
- 	PTR	sys_pipe2
- 	PTR	sys_inotify_init1
-+	PTR	sys_preadv
-+	PTR	sys_pwritev
- 	.size	sysn32_call_table,.-sysn32_call_table
-diff --git a/arch/mips/kernel/scall64-o32.S b/arch/mips/kernel/scall64-o32.S
-index fefef4a..b1d281a 100644
---- a/arch/mips/kernel/scall64-o32.S
-+++ b/arch/mips/kernel/scall64-o32.S
-@@ -533,4 +533,6 @@ sys_call_table:
- 	PTR	sys_dup3
- 	PTR	sys_pipe2
- 	PTR	sys_inotify_init1
-+	PTR	compat_sys_preadv		/* 4330 */
-+	PTR	compat_sys_pwritev
- 	.size	sys_call_table,.-sys_call_table
--- 
-1.6.1
+> Impact: Fix section mismatch warning.
+> 
+> Here function vmi_activate calls a init function activate_vmi , which
+> causes the following section mismatch warnings. This patch fixes it.
+> 
+>   LD      arch/x86/kernel/built-in.o
+> WARNING: arch/x86/kernel/built-in.o(.text+0x13ba9): Section mismatch
+> in reference from the function vmi_activate() to the function
+> .init.text:vmi_time_init()
+> The function vmi_activate() references
+> the function __init vmi_time_init().
+> This is often because vmi_activate lacks a __init
+> annotation or the annotation of vmi_time_init is wrong.
+> 
+> WARNING: arch/x86/kernel/built-in.o(.text+0x13bd1): Section mismatch
+> in reference from the function vmi_activate() to the function
+> .devinit.text:vmi_time_bsp_init()
+> The function vmi_activate() references
+> the function __devinit vmi_time_bsp_init().
+> This is often because vmi_activate lacks a __devinit
+> annotation or the annotation of vmi_time_bsp_init is wrong.
+> 
+> WARNING: arch/x86/kernel/built-in.o(.text+0x13bdb): Section mismatch
+> in reference from the function vmi_activate() to the function
+> .devinit.text:vmi_time_ap_init()
+> The function vmi_activate() references
+> the function __devinit vmi_time_ap_init().
+> This is often because vmi_activate lacks a __devinit
+> annotation or the annotation of vmi_time_ap_init is wrong.
+> 
+> 
+> Thanks.
+> 
+> Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
 
+applied to tip/x86/urgent, thanks Rakib.
+
+Note, the patch was corrupted here:
+
+> +void __init vmi_activate(void)
+>  {
+>  	unsigned long flags;
+> --
+
+that's too short - context diffs have 3 closing lines. I fixed this up 
+manually.
+
+I also fixed the typo in the subject line.
+
+Thanks,
+
+	Ingo
