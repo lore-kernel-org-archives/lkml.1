@@ -1,84 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754166AbZAZWfG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753652AbZAZWit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754166AbZAZWfG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 17:35:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbZAZWez
+	id S1753652AbZAZWit (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 17:38:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZAZWik
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 17:34:55 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52072 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751497AbZAZWey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 17:34:54 -0500
-Date: Mon, 26 Jan 2009 23:31:45 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
-       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-ID: <20090126223145.GA4982@redhat.com>
-References: <20090126171618.GA32091@elte.hu> <20090126103529.cb124a58.akpm@linux-foundation.org> <20090126202022.GA8867@elte.hu> <20090126130046.37b8f34e.akpm@linux-foundation.org> <20090126212727.GA13670@elte.hu> <20090126133551.fab5e27a.akpm@linux-foundation.org> <20090126214516.GA22142@elte.hu> <20090126140116.35f9c173.akpm@linux-foundation.org> <20090126220537.GA6755@elte.hu> <20090126141605.707877bb.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090126141605.707877bb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 26 Jan 2009 17:38:40 -0500
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:55971 "EHLO
+	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752000AbZAZWij (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 17:38:39 -0500
+Subject: Re: GTT full but LRU empty
+From: Eric Anholt <eric@anholt.net>
+To: Jacek Luczak <difrost.kernel@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <497DFC8B.9040405@gmail.com>
+References: <497DFC8B.9040405@gmail.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-lW6+6TWaxCGAl7B4hqkG"
+Date: Mon, 26 Jan 2009 14:38:32 -0800
+Message-Id: <1233009512.4876.3.camel@gaiman>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/26, Andrew Morton wrote:
->
-> On Mon, 26 Jan 2009 23:05:37 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
->
-> >
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > > Well it turns out that I was having a less-than-usually-senile moment:
-> > >
-> > > :     implement flush_work()
-> >
-> > > Why isn't that working in this case??
-> >
-> > how would that work in this case? We defer processing into the workqueue 
-> > exactly because we want its per-CPU properties.
->
-> It detaches the work item, moves it to head-of-queue, reinserts it then
-> waits on it.  I think.
 
-No, no helper works this way.
+--=-lW6+6TWaxCGAl7B4hqkG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The reinsert doesn't make sense for cancel_work.
+On Mon, 2009-01-26 at 19:10 +0100, Jacek Luczak wrote:
+> Hi Eric,
+>=20
+> Are those errors known?
+>=20
+> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
+> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
+> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request emp=
+ty 1
+> flushing empty 1
+> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
+> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
+> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request emp=
+ty 1
+> flushing empty 1
+> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
+> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
+> -12<3>[drm:i915_gem_execbuffer] *ERROR* Failed to pin buffers -12
+> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
+> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
+> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request emp=
+ty 1
+> flushing empty 1
+> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
+> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
+> -12<3>[drm:i915_gem_execbuffer] *ERROR* Failed to pin buffers -12
+>=20
+> They appeared once and no more, but I've changed my configuration in betw=
+een
+> (switched to UXA, removed IntelFB from kernel).
 
-As for flush_work(), I think it is possible to do, but can't help to
-avoid the deadlocks. Because we still have to wait for ->current_work.
+Those messages occur when a client asks the kernel to exec a batchbuffer
+that the kernel can't fit into the unpinned aperture space.  Userland is
+supposed to be tracking how much space its stuff uses and flushing
+before that time, but certain bad things could break that by violating
+the assumption that the amount of pinned space doesn't change.  Our XV
+code today, for example.  I've been working on cleaning up the remaining
+bad userland bits, but it's painful work.  Luckily, other than dmesg
+spam warning that some rendering just go dropped on the floor, and some
+rendering not occurring, nothing else harmful should be happening.
 
-> This might have a race+hole.  If a currently-running "unrelated"
-> work item tries to take the lock which the flush_work() caller is holding
-> then there's no way in which keventd will come back to execute
-> the work item which we just put on the head of queue.
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
-Yes.
 
-> > We want work_on_cpu() to
-> > be done in the workqueue context on the CPUs that were specified, not in
-> > the local CPU context.
->
-> flush_work() is supposed to work in the way which you describe.
 
-Yes,
+--=-lW6+6TWaxCGAl7B4hqkG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> But Oleg's "we may be running on a different CPU" comment has me all
-> confused.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-I meant, that
+iEYEABECAAYFAkl+O2YACgkQHUdvYGzw6vewegCfWPOOqV9Z2uuG1iBc6ERX+i5n
++eMAoJP8CZmBbjJEguzKsupTWCB+rt4p
+=iGBJ
+-----END PGP SIGNATURE-----
 
-	> the caller of flush_work() can detach the work item
-	> and run it directly.
-
-this is not possible in work_on_cpu() case, we can't run it directly,
-we want it to run on the target CPU.
-
-Oleg.
-
+--=-lW6+6TWaxCGAl7B4hqkG--
