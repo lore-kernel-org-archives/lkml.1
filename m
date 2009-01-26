@@ -1,25 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbZAZT4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZAZT55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbZAZT4c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZAZT4W
+	id S1754549AbZAZT55 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:57:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbZAZT5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:56:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46967 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752981AbZAZT4V (ORCPT
+	Mon, 26 Jan 2009 14:57:49 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46190 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751500AbZAZT5s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:56:21 -0500
-Date: Mon, 26 Jan 2009 11:55:40 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Bernd Schubert <bs@q-leap.de>
-Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: cache flush timeouts by blk_queue_ordered()
-Message-Id: <20090126115540.694ea262.akpm@linux-foundation.org>
-In-Reply-To: <20081120181919.GA3818@lanczos.q-leap.de>
-References: <20081120181919.GA3818@lanczos.q-leap.de>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 26 Jan 2009 14:57:48 -0500
+Date: Mon, 26 Jan 2009 19:56:22 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: balbir@linux.vnet.ibm.com
+Cc: Nikanth Karthikesan <knikanth@suse.de>, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org,
+       Arve Hj?nnev?g <arve@android.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Paul Menage <menage@google.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Message-ID: <20090126195622.1d5bf488@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090126195431.GC504@balbir.in.ibm.com>
+References: <200901211638.23101.knikanth@suse.de>
+	<20090126195431.GC504@balbir.in.ibm.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -27,59 +36,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 20 Nov 2008 19:19:19 +0100
-Bernd Schubert <bs@q-leap.de> wrote:
+On Tue, 27 Jan 2009 01:24:31 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> Hello,
+> * Nikanth Karthikesan <knikanth@suse.de> [2009-01-21 16:38:21]:
 > 
-> with some FC hardware-raid units we have the problem that the 
-> SYNCHRONIZE_CACHE command reproducibly fails. 
+> > As Alan Cox suggested/wondered in this thread, 
+> > http://lkml.org/lkml/2009/1/12/235 , this is a container group based approach 
+> > to override the oom killer selection without losing all the benefits of the 
+> > current oom killer heuristics and oom_adj interface.
+> > 
+> > It adds a tunable oom.victim to the oom cgroup. The oom killer will kill the 
+> > process using the usual badness value but only within the cgroup with the 
+> > maximum value for oom.victim before killing any process from a cgroup with a 
+> > lesser oom.victim number. Oom killing could be disabled by setting 
+> > oom.victim=0.
 > 
-> [658715.827428] sd 6:0:2:2: last recovery: 4311805647, now: 4459793681
-> [658715.833980] sd 6:0:2:2: [sdk] Result: hostbyte=DID_OK driverbyte=DRIVER_OK,SUGGEST_OK
-> [658715.842288] sd 6:0:2:2: [sdk] CDB: Synchronize Cache(10): 35 00 00 00 00 00 00 00 00 00
-> [658715.850954] sd 6:0:2:2: Activating scsi error recovery (1)
-> [658715.856793] sd 6:0:2:2: trying to abort command
-> [658715.861820] qla2xxx 0000:07:02.0: scsi(6:2:2): Abort command issued -- 1 36e2df2 2002.
-> [658746.004124] sd 6:0:2:2: last recovery: 4459793692, now: 4459801236
-> [658746.010686] sd 6:0:2:2: [sdk] Result: hostbyte=DID_OK driverbyte=DRIVER_OK,SUGGEST_OK
-> [658746.019004] sd 6:0:2:2: [sdk] CDB: Synchronize Cache(10): 35 00 00 00 00 00 00 00 00 00
-> [658746.027680] sd 6:0:2:2: Activating scsi error recovery (2)
-> [658746.033526] sd 6:0:2:2: trying to abort command
-> [658746.038543] qla2xxx 0000:07:02.0: scsi(6:2:2): Abort command issued -- 1 36e2df4 2002.
+> Looking at the patch, I wonder if it is time for user space OOM
+> notifications that were discussed during the containers mini-summit.
+> The idea is to inform user space about OOM's and let user space take
+> action, if no action is taken, the default handler kicks in.
 
-Does this result in a dead machine, or does the system still struggle
-along somehow?
-
-> My guess is that these units flush their cache when this command is send
-> even though they have a battery backup unit and flushing 2GB cache may
-> take some time... Since I can only reproduce it on systems in production
-> I can't do any experiments, but I guess the default timeout of 30s is not
-> sufficient.
-> 
-> Problem is now that this timeout cannot be adjusted by the sysfs scsi device 
-> timeout, since sd_prepare_flush() doesn't have the required device 
-> structure. The reason for that is blk_queue_ordered(). It neither
-> gets a timeout argument, nor any pointer to the device.
-> 
-> I already tried to use container_of() in sd_prepare_flush, but somehow
-> that doesn't seem work if the structure member is a pointer.
-> 
-> The next solution that comes into my my mind is to add the timeout argument
-> to blk_queue_ordered() and subsequentely to modifiy all callers.
-> Would such a patch be accepted? Or is there any better solution?
-> 
-> Any help is appreciated.
-
-Is this problem still open?
-
-> 
-> Thanks,
-> Bernd
-> 
-> PS: (I'm also discussing the cache flush issue with one of our 
-> hardware vendors, but fixing their firmware might take ages). 
-
-Making the timeout tunable sounds like a suitable (if minimal)
-approach.  It appears to presently be a qlogic-specific thing? 
-Command_Entry.time_out?
+The OLPC folks (Marcelo I believe) posted code for this and I believe
+OLPC is using this functionality internally so that under memory pressure
+(before we actually hit OOM) programs can respond by doing stuff like
+evicting caches.
