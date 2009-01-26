@@ -1,97 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbZAZUp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZAZUtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbZAZUp7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 15:45:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752094AbZAZUpq
+	id S1754153AbZAZUtT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 15:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZAZUtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 15:45:46 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56142 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751973AbZAZUpp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 15:45:45 -0500
-Date: Mon, 26 Jan 2009 12:44:27 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
+	Mon, 26 Jan 2009 15:49:10 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54460 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752179AbZAZUtJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 15:49:09 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: npiggin@suse.de, linux-arch@vger.kernel.org, torvalds@linux-foundation.org,
-       rusty@rustcorp.com.au, travis@sgi.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
-       arjan@infradead.org, hpa@zytor.com, tglx@linutronix.de,
-       Ying Han <yinghan@google.com>, Mike Waychison <mikew@google.com>
-Subject: Re: [git pull] cpus4096 tree, part 3
-Message-Id: <20090126124427.6d13f341.akpm@linux-foundation.org>
-In-Reply-To: <20090126200957.GB13471@elte.hu>
-References: <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain>
-	<20090103193859.GB9805@elte.hu>
-	<alpine.LFD.2.00.0901031225020.3179@localhost.localdomain>
-	<20090103203621.GA2491@elte.hu>
-	<20090103213856.GA24138@elte.hu>
-	<alpine.LFD.2.00.0901031347570.3179@localhost.localdomain>
-	<20090103223723.GA17047@elte.hu>
-	<20090105011416.GG32239@wotan.suse.de>
-	<20090105011630.GI32239@wotan.suse.de>
-	<20090126110054.bdddbf38.akpm@linux-foundation.org>
-	<20090126200957.GB13471@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
+Date: Mon, 26 Jan 2009 21:48:48 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: =?iso-8859-1?q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <200901262021.23763.rjw@sisk.pl> <20090126203559.GD8867@elte.hu>
+In-Reply-To: <20090126203559.GD8867@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901262148.49717.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 21:09:57 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Monday 26 January 2009, Ingo Molnar wrote:
+> 
+> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> 
+> > On Monday 26 January 2009, Ingo Molnar wrote:
+> > > 
+> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > 
+> > > > On Monday 26 January 2009, Linus Torvalds wrote:
+> > > > > 
+> > > > > On Sat, 17 Jan 2009, Maciej Rutecki wrote:
+> > > > > >
+> > > > > > During suspend to ram:
+> > > > > > [  131.287012] BUG: using smp_processor_id() in preemptible [00000000]
+> > > > > > code: suspend_to_ram./2958
+> > > > > > [  131.287012] caller is retrigger_next_event+0x13/0xb0
+> > > > > > [  131.287012] Pid: 2958, comm: suspend_to_ram. Not tainted 2.6.29-rc2 #1
+> > > > > > [  131.287012] Call Trace:
+> > > > > > [  131.287012]  [<c025b41f>] debug_smp_processor_id+0xbf/0xd0
+> > > > > > [  131.287012]  [<c01473b3>] retrigger_next_event+0x13/0xb0
+> > > > > > [  131.287012]  [<c01489b7>] raw_notifier_call_chain+0x17/0x20
+> > > > > > [  131.287012]  [<c014b938>] timekeeping_resume+0xe8/0x110
+> > > > > > [  131.287012]  [<c02cc651>] __sysdev_resume+0x11/0x50
+> > > > > > [  131.287012]  [<c02cc6d7>] sysdev_resume+0x47/0x80
+> > > > > > [  131.287012]  [<c02d2478>] device_power_up+0x8/0x10
+> > > > > 
+> > > > > Very scary.
+> > > > > 
+> > > > > device_power_up() calls sysdev_resume _before_ it enables interrupts so it 
+> > > > > sounds like something else has - very incorrectly - enabled interrupts too 
+> > > > > early in your resume sequence. 
+> > > > > 
+> > > > > The patch that Andrew sent out and that apparently fixed things for you 
+> > > > > should absolutely not have made any difference. This is suspend_enter():
+> > > > > 
+> > > > > 	        arch_suspend_disable_irqs();
+> > > > > 	        BUG_ON(!irqs_disabled());
+> > > > > 
+> > > > > 	        if ((error = device_power_down(PMSG_SUSPEND))) {
+> > > > > 	                printk(KERN_ERR "PM: Some devices failed to power down\n");
+> > > > > 	                goto Done;
+> > > > > 	        }
+> > > > > 	
+> > > > > 	        if (!suspend_test(TEST_CORE))
+> > > > > 	                error = suspend_ops->enter(state);
+> > > > > 
+> > > > > 	        device_power_up(PMSG_RESUME);
+> > > > > 	 Done:
+> > > > > 	        arch_suspend_enable_irqs();
+> > > > > 
+> > > > > and notice how the whole thing is surrounded by that 
+> > > > > arch_suspend_disable/enable_irqs().
+> > > > > 
+> > > > > So it looks like some sysdev driver (device_power_up does the sysdev 
+> > > > > drivers first, so it can't be the regular low-level PCI drivers) is 
+> > > > > enabling interrupts in its resume function. Scary and very wrong.
+> > > > > 
+> > > > > It could easily be ACPI, of course. There was some other case where ACPI 
+> > > > > did that, iirc.
+> > > > 
+> > > > There is a known bug in the USB controllers' suspend that enables interrupts
+> > > > from within ->suspend_late().  It should be fixed by the next USB merge
+> > > > AFAICS.
+> > > 
+> > > the patch from Andrew looks wrong, as it hides the only place in the 
+> > > kernel that was able to report the resume bug. Nevertheless related to 
+> > > that bug we've got a new debug check queued up in timers/urgent:
+> > > 
+> > >  void hres_timers_resume(void)
+> > >  {
+> > > -       /* Retrigger the CPU local events: */
+> > > +       WARN_ONCE(!irqs_disabled(),
+> > > +                 KERN_INFO "hres_timers_resume() called with IRQs enabled!");
+> > > +
+> > >         retrigger_next_event(NULL);
+> > >  }
+> > > 
+> > > as the buggy 'irqs are enabled' condition was not detected reliably. (it 
+> > > was only detected with certain lockdep options turned on - and even then 
+> > > it did not seem to be 100% triggerable)
+> > 
+> > Yeah.
+> > 
+> > > i sent it to Linus earlier today.
+> > 
+> > OK, thanks.
+> > 
+> > I'll write a debug patch covering that more generally when I recover from the
+> > flu a bit.
+> > 
+> > Rafael
+> 
+> note, we could reuse the ftrace/irqtrace callbacks as well to create an: 
+> "enforce IRQs off and debug violations of that" facility.
 
-> ...
->
-> Btw., regarding pagefault retry. The bits that are in -mm currently i 
-> find a bit ugly:
-> 
-> > +++ a/arch/x86/mm/fault.c
-> > @@ -799,7 +799,7 @@ void __kprobes do_page_fault(struct pt_r
-> >  	struct vm_area_struct *vma;
-> >  	int write;
-> >  	int fault;
-> > -	unsigned int retry_flag = FAULT_FLAG_RETRY;
-> > +	int retry_flag = 1;
-> >  
-> >  	tsk = current;
-> >  	mm = tsk->mm;
-> > @@ -951,6 +951,7 @@ good_area:
-> >  	}
-> >  
-> >  	write |= retry_flag;
-> > +
-> >  	/*
-> >  	 * If for any reason at all we couldn't handle the fault,
-> >  	 * make sure we exit gracefully rather than endlessly redo
-> > @@ -969,8 +970,8 @@ good_area:
-> >  	 * be removed or changed after the retry.
-> >  	 */
-> >  	if (fault & VM_FAULT_RETRY) {
-> > -		if (write & FAULT_FLAG_RETRY) {
-> > -			retry_flag &= ~FAULT_FLAG_RETRY;
-> > +		if (retry_flag) {
-> > +			retry_flag = 0;
-> >  			goto retry;
-> >  		}
-> >  		BUG();
-> 
-> as this complicates every architecture with a 'can the fault be retried' 
-> logic and open-coded retry loop.
-> 
-> But that logic is rather repetitive and once an architecture filters out 
-> all its special in-kernel sources of faults and the hw quirks it has, the 
-> handling of pte faults is rather generic and largely offloaded into 
-> handle_pte_fault() already.
-> 
-> So when this patch was submitted a few weeks ago i suggested that retry 
-> should be done purely in mm/memory.c instead, and the low level code 
-> should at most be refactored to suit this method, but not complicated any 
-> further.
-> 
-> Any deep reasons for why such a more generic approach is not desirable?
-> 
+Well, do we have to? ;-)
 
-Let's cc the people who wrote it.
+> It would work like this, you could mark IRQs as disabled 'permanently':
+> 
+>    force_irqs_off_start();
+>    ...
+>    force_irqs_off_end();
+> 
+> you could mark an arbitrarily complex code sequence that way, and ftrace 
+> would emit a WARN_ONCE() if irqs are enable anytime during that sequence - 
+> by using the irq-tracking facilities we have for the irqsoff tracer (and 
+> which we also have for lockdep).
+> 
+> Would that be useful?
+
+Not sure, I only know a little about ftrace, I really can't judge.
+
+Anyway, I think that putting the checks directly into the code path in question
+would be more reliable and would still work without ftrace.
+
+Thanks,
+Rafael
