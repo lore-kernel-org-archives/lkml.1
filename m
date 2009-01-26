@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbZAZEKS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbZAZFEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752179AbZAZEKS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 23:10:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbZAZEKF
+	id S1751731AbZAZFEx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 00:04:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbZAZFEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 23:10:05 -0500
-Received: from main.gmane.org ([80.91.229.2]:38850 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbZAZEKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 23:10:04 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Matt LaPlante <kernel1@cyberdogtech.com>
-Subject: Re: [PATCH 2/2] Kconfig cleanup - new.
-Date: Mon, 26 Jan 2009 03:09:07 +0000 (UTC)
-Message-ID: <loom.20090126T030440-921@post.gmane.org>
-References: <1232569236-11926-1-git-send-email-kernel1@cyberdogtech.com> <49791C06.6010805@oracle.com> <20090125000214.55608957.kernel@cyberdogtech.com> <alpine.LNX.1.10.0901251804000.5377@jikos.suse.cz>
+	Mon, 26 Jan 2009 00:04:41 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45293
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750728AbZAZFEk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 00:04:40 -0500
+Date: Sun, 25 Jan 2009 21:04:42 -0800 (PST)
+Message-Id: <20090125.210442.129666692.davem@davemloft.net>
+To: patrick.ohly@intel.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-api@vger.kernel.org
+Subject: Re: hardware time stamping with optional structs in data area
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1232532457.7829.19.camel@ecld0pohly>
+References: <1232102164.18762.72.camel@pohly-MOBL>
+	<20090116.110033.163815590.davem@davemloft.net>
+	<1232532457.7829.19.camel@ecld0pohly>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: main.gmane.org
-User-Agent: Loom/3.14 (http://gmane.org/)
-X-Loom-IP: 76.29.218.130 (Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/525.19 (KHTML, like Gecko) Chrome/1.0.154.43 Safari/525.19)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina <jkosina <at> suse.cz> writes:
+From: Patrick Ohly <patrick.ohly@intel.com>
+Date: Wed, 21 Jan 2009 11:07:37 +0100
 
-> 
-> On Sun, 25 Jan 2009, Matt LaPlante wrote:
-> 
-> > Thanks - spacing fixed; patch below.
-> 
-> Hi Matt,
-> 
-> thanks for the fixes. Is there any specific reason why you splitted the 
-> patches in two? I'd just fold them together if you don't mind.
-> 
+> I tested them with the modified PTPd with and without hardware support
+> on x86. With 64 bit kernel and user space both works. With 32 bit user
+> space on a 64 bit kernel software-only time stamping works (thanks to
+> the socket's compatibility layer), hardware support doesn't: the ifreq
+> is passed to the right device driver, but the data pointer from a 32 bit
+> process is not interpreted correctly by a 64 bit driver. If there is a
+> way to handle this then please let me know - I didn't see how a device
+> driver could distinguish between a 32 and 64 bit user process.
 
-Simply for expedience of review.  I realize that trivial patches such as these 
-are pretty low priority, and I didn't want to waste the reviewers time re-
-checking the entire first batch which had been already been validated but never 
-merged.  I have no problem folding them into one for inclusion.
+See fs/compat_ioctl.c:dev_ifsioc() for how to handle the
+"32-bit process under 64-bit kernel" issue wrt. struct ifreq
 
+Next, I don't like that loop in the SKB allocator to deal with the
+variable size.  You're computing what amounts to a constant
+calculation.
 
+Just consolidate the array into a direct conversion table.  You only
+have 2 bits defined so you only need an array of 4 entries.  Pass the
+optional flag bits directly in as the index of that table.
