@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZAZRan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZAZRbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753067AbZAZRan (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:30:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZAZRaf
+	id S1753432AbZAZRbk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZAZRbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:30:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39113 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751760AbZAZRaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:30:35 -0500
-Date: Mon, 26 Jan 2009 18:30:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip][1/1] Fixup checkpatch reported problems in ftrace
-	plugin patch
-Message-ID: <20090126173018.GA6238@elte.hu>
-References: <20090126170056.GH1455@ghostprotocols.net>
+	Mon, 26 Jan 2009 12:31:32 -0500
+Received: from smtp.ultrahosting.com ([74.213.174.254]:45622 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbZAZRbb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 12:31:31 -0500
+Date: Mon, 26 Jan 2009 12:28:03 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+In-Reply-To: <20090123155307.GB14517@wotan.suse.de>
+Message-ID: <alpine.DEB.1.10.0901261225240.1908@qirst.com>
+References: <20090114155923.GC1616@wotan.suse.de> <Pine.LNX.4.64.0901141219140.26507@quilx.com> <20090115061931.GC17810@wotan.suse.de> <Pine.LNX.4.64.0901151434150.28387@quilx.com> <20090116034356.GM17810@wotan.suse.de> <Pine.LNX.4.64.0901161509160.27283@quilx.com>
+ <20090119061856.GB22584@wotan.suse.de> <alpine.DEB.1.10.0901211903540.18367@qirst.com> <20090123040913.GG20098@wotan.suse.de> <alpine.DEB.1.10.0901231033210.32253@qirst.com> <20090123155307.GB14517@wotan.suse.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090126170056.GH1455@ghostprotocols.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+n Fri, 23 Jan 2009, Nick Piggin wrote:
 
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+> According to memory policies, a task's memory policy is supposed to
+> apply to its slab allocations too.
 
-> blktrace: Fixup checkpatch reported problems in ftrace plugin patch
->     
-> Also make sure sparse (make C=2 block/blktrace.o) is happy too.
+It does apply to slab allocations. The question is whether it has to apply
+to every object allocation or to every page allocation of the slab
+allocators.
 
-applied to tip/tracing/blktrace, thanks Arnaldo!
+> > Memory policies are applied in a fuzzy way anyways. A context switch can
+> > result in page allocation action that changes the expected interleave
+> > pattern. Page populations in an address space depend on the task policy.
+> > So the exact policy applied to a page depends on the task. This isnt an
+> > exact thing.
+>
+> There are other memory policies than just interleave though.
 
-	Ingo
+Which have similar issues since memory policy application is depending on
+a task policy and on memory migration that has been applied to an address
+range.
+
+> > >  "the first cpu will consume more and more memory from the page allocator
+> > >   whereas the second will build up huge per cpu lists"
+> > >
+> > > And this is wrong. There is another possible issue where every single
+> > > object on the freelist might come from a different (and otherwise free)
+> > > page, and thus eg 100 8 byte objects might consume 400K.
+> > >
+> > > That's not an invalid concern, but I think it will be quite rare, and
+> > > the periodic queue trimming should naturally help this because it will
+> > > cycle out those objects and if new allocations are needed, they will
+> > > come from new pages which can be packed more densely.
+> >
+> > Well but you said that you would defer the trimming (due to latency
+> > concerns). The longer you defer the larger the lists will get.
+>
+> But that is wrong. The lists obviously have high water marks that
+> get trimmed down. Periodic trimming as I keep saying basically is
+> alrady so infrequent that it is irrelevant (millions of objects
+> per cpu can be allocated anyway between existing trimming interval)
+
+Trimming through water marks and allocating memory from the page allocator
+is going to be very frequent if you continually allocate on one processor
+and free on another.
