@@ -1,67 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZAZTzH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbZAZT4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbZAZTzH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:55:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZAZTyy
+	id S1754414AbZAZT4c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:56:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752989AbZAZT4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:54:54 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:40228 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576AbZAZTyv (ORCPT
+	Mon, 26 Jan 2009 14:56:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46967 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752981AbZAZT4V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:54:51 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 26 Jan 2009 11:54:35 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Unexpected cascaded epoll behavior - my mistake or kernel bug
-In-Reply-To: <200901260228.54098.pisa@cmp.felk.cvut.cz>
-Message-ID: <alpine.DEB.1.10.0901261152160.26576@alien.or.mcafeemobile.com>
-References: <200901230109.55706.pisa@cmp.felk.cvut.cz> <alpine.DEB.1.10.0901241355120.9071@alien.or.mcafeemobile.com> <200901260228.54098.pisa@cmp.felk.cvut.cz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 26 Jan 2009 14:56:21 -0500
+Date: Mon, 26 Jan 2009 11:55:40 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Bernd Schubert <bs@q-leap.de>
+Cc: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: cache flush timeouts by blk_queue_ordered()
+Message-Id: <20090126115540.694ea262.akpm@linux-foundation.org>
+In-Reply-To: <20081120181919.GA3818@lanczos.q-leap.de>
+References: <20081120181919.GA3818@lanczos.q-leap.de>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009, Pavel Pisa wrote:
+On Thu, 20 Nov 2008 19:19:19 +0100
+Bernd Schubert <bs@q-leap.de> wrote:
 
-> Hello Davide,
+> Hello,
 > 
-> thanks for fast reply and effort.
+> with some FC hardware-raid units we have the problem that the 
+> SYNCHRONIZE_CACHE command reproducibly fails. 
 > 
-> I have tested your patch with patched and unpatched 2.6.28.2 kernel.
-> The outputs are attached. The patched kernel passes all your tests.
+> [658715.827428] sd 6:0:2:2: last recovery: 4311805647, now: 4459793681
+> [658715.833980] sd 6:0:2:2: [sdk] Result: hostbyte=DID_OK driverbyte=DRIVER_OK,SUGGEST_OK
+> [658715.842288] sd 6:0:2:2: [sdk] CDB: Synchronize Cache(10): 35 00 00 00 00 00 00 00 00 00
+> [658715.850954] sd 6:0:2:2: Activating scsi error recovery (1)
+> [658715.856793] sd 6:0:2:2: trying to abort command
+> [658715.861820] qla2xxx 0000:07:02.0: scsi(6:2:2): Abort command issued -- 1 36e2df2 2002.
+> [658746.004124] sd 6:0:2:2: last recovery: 4459793692, now: 4459801236
+> [658746.010686] sd 6:0:2:2: [sdk] Result: hostbyte=DID_OK driverbyte=DRIVER_OK,SUGGEST_OK
+> [658746.019004] sd 6:0:2:2: [sdk] CDB: Synchronize Cache(10): 35 00 00 00 00 00 00 00 00 00
+> [658746.027680] sd 6:0:2:2: Activating scsi error recovery (2)
+> [658746.033526] sd 6:0:2:2: trying to abort command
+> [658746.038543] qla2xxx 0000:07:02.0: scsi(6:2:2): Abort command issued -- 1 36e2df4 2002.
+
+Does this result in a dead machine, or does the system still struggle
+along somehow?
+
+> My guess is that these units flush their cache when this command is send
+> even though they have a battery backup unit and flushing 2GB cache may
+> take some time... Since I can only reproduce it on systems in production
+> I can't do any experiments, but I guess the default timeout of 30s is not
+> sufficient.
 > 
-> But I have bad news. My library code does not fall into busy loop
-> after your patching but my FIFO tests do not work even in
-> single level epoll scenario. The strace output is attached as well.
-> I try to do more testing tomorrow. I have returned from weekend trip
-> at the evening today and I have not much time for deeper analysis.
+> Problem is now that this timeout cannot be adjusted by the sysfs scsi device 
+> timeout, since sd_prepare_flush() doesn't have the required device 
+> structure. The reason for that is blk_queue_ordered(). It neither
+> gets a timeout argument, nor any pointer to the device.
 > 
-> But it looks like write level sensitive events are not triggering
-> for epoll at all. The pipe is not fill by any character and specified
-> timeout is triggered with next message as fail results.
->   @ pipe #X evptrig wr timeout
->   @ pipe #X evptrig rd timeout
->  
-> If you want to test the code on your box, download library
+> I already tried to use container_of() in sd_prepare_flush, but somehow
+> that doesn't seem work if the structure member is a pointer.
 > 
-> http://cmp.felk.cvut.cz/~pisa/ulan/ul_evpoll-090123.tar.gz
+> The next solution that comes into my my mind is to add the timeout argument
+> to blk_queue_ordered() and subsequentely to modifiy all callers.
+> Would such a patch be accepted? Or is there any better solution?
 > 
-> The simple "make" in the top directory should work.
+> Any help is appreciated.
 
-It'd be really great if you could spare me having to dig into few 
-thousands lines of userspace library code, and you could isolate a little 
-bit better what is the expected result, and the error result.
+Is this problem still open?
 
+> 
+> Thanks,
+> Bernd
+> 
+> PS: (I'm also discussing the cache flush issue with one of our 
+> hardware vendors, but fixing their firmware might take ages). 
 
-
-- Davide
-
-
+Making the timeout tunable sounds like a suitable (if minimal)
+approach.  It appears to presently be a qlogic-specific thing? 
+Command_Entry.time_out?
