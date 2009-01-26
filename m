@@ -1,86 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752127AbZAZJHW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZAZJHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752127AbZAZJHW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 04:07:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZAZJG7
+	id S1752663AbZAZJHw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 04:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751138AbZAZJHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 04:06:59 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:37319 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750937AbZAZJG5 (ORCPT
+	Mon, 26 Jan 2009 04:07:32 -0500
+Received: from casper.infradead.org ([85.118.1.10]:46551 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751224AbZAZJHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 04:06:57 -0500
-X-YMail-OSG: ca33aTEVM1kbMDAIgzQJnYnrEgU3t6JsCMbxRy.lMGHVHTF_nRoRzTSXjmlgHDu2vIoH_4qPdPcCrGs_SjH1jFFDiEpegVG82hoah40fuM2mTSjU6ZIFX2AF0V8p3.oZIkqzJTp0DqVQwNbzV5N6NR5yG433yF_jh31LLtegStoJFLeOCeH97efRLmbzFtfRLAgPwmkdZns5LbgUJomit8igUek5YjQ-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 0/7 Target_Core_Mod]: Add running PRIO SA RESERVE and PRIN
-	SA READ_KEYS and SA READ_RESERVATION support
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Rafiu Fakunle <rafiu@openfiler.com>,
-       Ming Zhang <blackmagic02881@gmail.com>,
-       "Ross S. W. Walker" <rswwalker@gmail.com>,
-       Arne Redlich <agr@powerkom-dd.de>
+	Mon, 26 Jan 2009 04:07:30 -0500
+Subject: Re: [patch] SLQB slab allocator (try 2)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+In-Reply-To: <1232959706.21504.7.camel@penberg-laptop>
+References: <20090123154653.GA14517@wotan.suse.de>
+	 <1232959706.21504.7.camel@penberg-laptop>
 Content-Type: text/plain
-Date: Mon, 26 Jan 2009 01:06:34 -0800
-Message-Id: <1232960794.24642.120.camel@haakon2.linux-iscsi.org>
+Date: Mon, 26 Jan 2009 10:07:20 +0100
+Message-Id: <1232960840.4863.7.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grettings all,
+On Mon, 2009-01-26 at 10:48 +0200, Pekka Enberg wrote:
+> Christoph has expressed concerns over latency issues of SLQB, I suppose
+> it would be interesting to hear if it makes any difference to the
+> real-time folks.
 
-This patch series adds the first running BITS of SPC-3 compatible
-Persistent Reservation Service Action REGISTER, READ_KEYS and
-READ_RESERVATION support to Target_Core_Mod/ConfigFS.  It has been
-tested with sg3_utils with Open/iSCSI using x86 32-bit HVMs.
+I'll 'soon' take a stab at converting SLQB for -rt. Currently -rt is
+SLAB only.
 
-This patch is made against lio-core-2.6.git/master
-and tested on v2.6.28 x86 32-bit HVM.  The lio-core-2.6.git tree can be
-found at:
-
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
-
-Subject: [PATCH 1/7] [Target_Core_Mod]: Add SPC-3 PERSISTENT_RESERVE_* Infrastrcture
-Subject: [PATCH 2/7] [LIO-Target]: Convert iscsi_send_check_condition_and_sense -> transport_send_check_condition_and_sense()
-Subject: [PATCH 3/7] [Target_Core_Mod/RAMDISK]: Convert to use Linux/SCSI SCSI_2 define
-Subject: [PATCH 4/7] [Target_Core_Mod/FILEIO]: Convert to use Linux/SCSI SCSI_2 define
-Subject: [PATCH 5/7] [Target_Core_Mod/IBLOCK]: Convert to use Linux/SCSI SCSI_3 define
-Subject: [PATCH 6/7] [Target_Core_Mod/PERSISTENT_RESERVATION]: Add Service Action REGISTER logic
-Subject: [PATCH 7/7] [Target_Core_Mod/ConfigFS]: Add res_pr_all_tgt_pts, res_pr_generation and res_pr_registered_i_pts
-
-remote: Counting objects: 64, done.
-remote: Compressing objects: 100% (47/47), done.
-remote: Total 47 (delta 42), reused 0 (delta 0)
-Unpacking objects: 100% (47/47), done.
->From /pub/scm/linux/kernel/git/nab/lio-core-2.6
- * branch            master     -> FETCH_HEAD
-Updating a50c8a5..45345eb
-Fast forward
- drivers/lio-core/iscsi_target.c          |    2 +-
- drivers/lio-core/iscsi_target_erl0.c     |    6 +-
- drivers/lio-core/iscsi_target_erl1.c     |    2 +-
- drivers/lio-core/iscsi_target_util.c     |    6 +-
- drivers/lio-core/target_core_base.h      |   89 ++++--
- drivers/lio-core/target_core_configfs.c  |  107 ++++++-
- drivers/lio-core/target_core_device.c    |    5 +-
- drivers/lio-core/target_core_file.c      |    4 +-
- drivers/lio-core/target_core_iblock.c    |    4 +-
- drivers/lio-core/target_core_pr.c        |  495 +++++++++++++++++++++++++++++-
- drivers/lio-core/target_core_pr.h        |   18 +
- drivers/lio-core/target_core_rd.c        |    4 +-
- drivers/lio-core/target_core_transport.c |   75 ++++-
- drivers/lio-core/target_core_transport.h |   14 +-
- 14 files changed, 742 insertions(+), 89 deletions(-)
-
---nab
+Then again, anything that does allocation is per definition not bounded
+and not something we can have on latency critical paths -- so on that
+respect its not interesting.
 
