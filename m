@@ -1,229 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbZAZVA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZAZVCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753516AbZAZVA1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 16:00:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZAZVAQ
+	id S1753979AbZAZVCB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbZAZVBt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 16:00:16 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36598 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750988AbZAZVAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 16:00:14 -0500
-Message-ID: <497E2408.7050609@kernel.org>
-Date: Mon, 26 Jan 2009 12:58:48 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
+	Mon, 26 Jan 2009 16:01:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60657 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751732AbZAZVBs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 16:01:48 -0500
+Date: Mon, 26 Jan 2009 13:00:46 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: make irqinit_32.c more like irqoinit_64.c
-References: <497C4111.8030904@kernel.org> <20090126124140.GA5812@elte.hu> <20090126141646.GA30919@elte.hu>
-In-Reply-To: <20090126141646.GA30919@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: rusty@rustcorp.com.au, travis@sgi.com, mingo@redhat.com, davej@redhat.com,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Message-Id: <20090126130046.37b8f34e.akpm@linux-foundation.org>
+In-Reply-To: <20090126202022.GA8867@elte.hu>
+References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
+	<20090116191108.533053000@polaris-admin.engr.sgi.com>
+	<20090124001537.7cfde78e.akpm@linux-foundation.org>
+	<200901261711.43943.rusty@rustcorp.com.au>
+	<20090125230130.bcdab2e5.akpm@linux-foundation.org>
+	<20090126171618.GA32091@elte.hu>
+	<20090126103529.cb124a58.akpm@linux-foundation.org>
+	<20090126202022.GA8867@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
+On Mon, 26 Jan 2009 21:20:22 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
->>> Impact: cleanup
->>>
->>> 1. add smp_intr_init and apic_intr_init for 32bit the same as 64bit
->>> 2. move apic_intr_init() calling before set gate with interrupt[i]
->>> 3. for 64bit, if ia32_emulation is not used, will make per_cpu to use 0x80 vector.
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> this change caused crashes/hangs on a 32-bit testsystem:
+> > On Mon, 26 Jan 2009 18:16:18 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > > > Yet another kernel thread for each CPU.  All because of some dung 
+> > > > > > way down in arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c.
+> > > > > > 
+> > > > > > Is there no other way?
+> > > > > 
+> > > > > Perhaps, but this works.  Trying to be clever got me into this mess in 
+> > > > > the first place.
+> > > > > 
+> > > > > We could stop using workqueues and change work_on_cpu to create a 
+> > > > > thread every time, which would give it a new failure mode so I don't 
+> > > > > know that everyone could use it any more.  Or we could keep a single 
+> > > > > thread around to do all the cpus, and duplicate much of the workqueue 
+> > > > > code.
+> > > > > 
+> > > > > None of these options are appealing...
+> > > > 
+> > > > Can we try harder please?  10 screenfuls of kernel threads in the ps 
+> > > > output is just irritating.
+> > > > 
+> > > > How about banning the use of work_on_cpu() from schedule_work() handlers 
+> > > > and then fixing that driver somehow?
+> > > 
+> > > Yes, but that's fundamentally fragile: anyone who happens to stick the 
+> > > wrong thing into keventd (and it's dead easy because schedule_work() is 
+> > > easy to use) will lock up work_on_cpu() users.
+> > > 
+> > 
+> > --- a/kernel/workqueue.c~a
+> > +++ a/kernel/workqueue.c
+> > @@ -998,6 +998,8 @@ long work_on_cpu(unsigned int cpu, long 
+> >  {
+> >  	struct work_for_cpu wfc;
+> >  
+> > +	BUG_ON(current_is_keventd());
+> > +
+> >  	INIT_WORK(&wfc.work, do_work_for_cpu);
+> >  	wfc.fn = fn;
+> >  	wfc.arg = arg;
+> > _
+> > 
+> > 
+> > That wasn't so hard.
 > 
-> Checking if this processor honours the WP bit even in supervisor mode...Ok.
-> SLUB: Genslabs=12, HWalign=64, Order=0-3, MinObjects=0, CPUs=2, Nodes=1
-> Unknown interrupt or fault at EIP 00000286 00000060 c0117e1c
-> Calibrating delay loop (skipped), value calculated using timer frequency.. 4020.82 BogoMIPS (lpj=8041640)
-> Security Framework initialized
-> Mount-cache hash table entries: 512
-> CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
-> CPU: L2 Cache: 512K (64 bytes/line)
-> CPU: Physical Processor ID: 0
-> CPU: Processor Core ID: 0
-> Checking 'hlt' instruction... [hard hang]
+> What is the purpose of your change? I'm not sure you understood the 
+> problem.
+
+Well.  That's because I was forced to resort to guesswork.
+
+> The problem is not with work_on_cpu() usage. The problem is:
 > 
-> See the 'Unknown interrupt' entry (it is new) - which happens right after 
-> irqs are enabled. Reverting your patch makes it boot fine. Config 
-> attached.
+>  1) holding locks while calling work_on_cpu()
 > 
-please check
+>  2) same locks being taken by a worklet used by some other code
+> 
+> work_on_cpu() really wants to serialize on its own workload only, not on 
+> the other stuff that might be sometimes be queued up in the keventd 
+> workqueue.
 
-[PATCH] x86: make irqinit_32.c more like irqinit_64.c -v2
+but but but, we fixed that ages ago, I think.  But I don't see the code
+there.
 
-Impact: cleanup
+If we want to wait on a *particular* keventd work item then we
+shouldn't wait on all the other queued ones.
 
-1. add smp_intr_init and apic_intr_init for 32bit the same as 64bit
-2. move apic_intr_init() calling before set gate with interrupt[i]
-3. for 64bit, if ia32_emulation is not used, will make per_cpu to use 0x80 vector.
+- If it's currently running, wait on it
 
-v2: should use !test_bit() instead of test_bit() with 32bit
+- If it isn't yet running, detach it from the queue and run it directly.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Maybe I'm thinking of a different subsystem, but I don't think so. 
+Maybe Oleg recalls what happened to that?
 
----
- arch/x86/kernel/irqinit_32.c |   56 +++++++++++++++++++++++++------------------
- arch/x86/kernel/irqinit_64.c |    7 +++--
- arch/x86/kernel/traps.c      |   15 ++++-------
- 3 files changed, 43 insertions(+), 35 deletions(-)
+> > > work_on_cpu() is an important (and lowlevel enough) facility to be 
+> > > isolated from casual interaction like that.
+> > 
+> > We have one single (known) caller in the whole kernel.  This is not 
+> > worth adding another great pile of kernel threads for!
+> 
+> i'd expect there to be more as part of the cpumask stack reduction 
+> patches that Rusty and Mike are working on.
+> 
+> in any case it's a correctness issue: work_on_cpu() is a just as generic 
+> facility as on_each_cpu() - with the difference that it can handle 
+> blocking contexts too.
 
-Index: linux-2.6/arch/x86/kernel/irqinit_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/irqinit_32.c
-+++ linux-2.6/arch/x86/kernel/irqinit_32.c
-@@ -120,28 +120,8 @@ int vector_used_by_percpu_irq(unsigned i
- 	return 0;
- }
- 
--/* Overridden in paravirt.c */
--void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
--
--void __init native_init_IRQ(void)
-+static void __init smp_intr_init(void)
- {
--	int i;
--
--	/* all the set up before the call gates are initialised */
--	pre_intr_init_hook();
--
--	/*
--	 * Cover the whole vector space, no vector can escape
--	 * us. (some of these will be overridden and become
--	 * 'special' SMP interrupts)
--	 */
--	for (i =  FIRST_EXTERNAL_VECTOR; i < NR_VECTORS; i++) {
--		/* SYSCALL_VECTOR was reserved in trap_init. */
--		if (i != SYSCALL_VECTOR)
--			set_intr_gate(i, interrupt[i-FIRST_EXTERNAL_VECTOR]);
--	}
--
--
- #if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_SMP)
- 	/*
- 	 * The reschedule interrupt is a CPU-to-CPU reschedule-helper
-@@ -170,8 +150,13 @@ void __init native_init_IRQ(void)
- 	set_intr_gate(IRQ_MOVE_CLEANUP_VECTOR, irq_move_cleanup_interrupt);
- 	set_bit(IRQ_MOVE_CLEANUP_VECTOR, used_vectors);
- #endif
-+}
- 
-+static void __init apic_intr_init(void)
-+{
- #ifdef CONFIG_X86_LOCAL_APIC
-+	smp_intr_init();
-+
- 	/* self generated IPI for local APIC timer */
- 	alloc_intr_gate(LOCAL_TIMER_VECTOR, apic_timer_interrupt);
- 
-@@ -181,12 +166,37 @@ void __init native_init_IRQ(void)
- # ifdef CONFIG_PERF_COUNTERS
- 	alloc_intr_gate(LOCAL_PERF_VECTOR, perf_counter_interrupt);
- # endif
--#endif
- 
--#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_X86_MCE_P4THERMAL)
-+# ifdef CONFIG_X86_MCE_P4THERMAL
- 	/* thermal monitor LVT interrupt */
- 	alloc_intr_gate(THERMAL_APIC_VECTOR, thermal_interrupt);
-+# endif
- #endif
-+}
-+
-+/* Overridden in paravirt.c */
-+void init_IRQ(void) __attribute__((weak, alias("native_init_IRQ")));
-+
-+void __init native_init_IRQ(void)
-+{
-+	int i;
-+
-+	/* all the set up before the call gates are initialised */
-+	pre_intr_init_hook();
-+
-+	apic_intr_init();
-+
-+	/*
-+	 * Cover the whole vector space, no vector can escape
-+	 * us. (some of these will be overridden and become
-+	 * 'special' SMP interrupts)
-+	 */
-+	for (i = 0; i < (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
-+		int vector = FIRST_EXTERNAL_VECTOR + i;
-+		/* SYSCALL_VECTOR was reserved in trap_init. */
-+		if (!test_bit(vector, used_vectors))
-+			set_intr_gate(vector, interrupt[i]);
-+	}
- 
- 	if (!acpi_ioapic)
- 		setup_irq(2, &irq2);
-Index: linux-2.6/arch/x86/kernel/irqinit_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/irqinit_64.c
-+++ linux-2.6/arch/x86/kernel/irqinit_64.c
-@@ -162,6 +162,9 @@ void __init native_init_IRQ(void)
- 	int i;
- 
- 	init_ISA_irqs();
-+
-+	apic_intr_init();
-+
- 	/*
- 	 * Cover the whole vector space, no vector can escape
- 	 * us. (some of these will be overridden and become
-@@ -169,12 +172,10 @@ void __init native_init_IRQ(void)
- 	 */
- 	for (i = 0; i < (NR_VECTORS - FIRST_EXTERNAL_VECTOR); i++) {
- 		int vector = FIRST_EXTERNAL_VECTOR + i;
--		if (vector != IA32_SYSCALL_VECTOR)
-+		if (!test_bit(vector, used_vectors))
- 			set_intr_gate(vector, interrupt[i]);
- 	}
- 
--	apic_intr_init();
--
- 	if (!acpi_ioapic)
- 		setup_irq(2, &irq2);
- }
-Index: linux-2.6/arch/x86/kernel/traps.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/traps.c
-+++ linux-2.6/arch/x86/kernel/traps.c
-@@ -984,8 +984,13 @@ void __init trap_init(void)
- #endif
- 	set_intr_gate(19, &simd_coprocessor_error);
- 
-+	/* Reserve all the builtin and the syscall vector: */
-+	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
-+		set_bit(i, used_vectors);
-+
- #ifdef CONFIG_IA32_EMULATION
- 	set_system_intr_gate(IA32_SYSCALL_VECTOR, ia32_syscall);
-+	set_bit(IA32_SYSCALL_VECTOR, used_vectors);
- #endif
- 
- #ifdef CONFIG_X86_32
-@@ -1002,17 +1007,9 @@ void __init trap_init(void)
- 	}
- 
- 	set_system_trap_gate(SYSCALL_VECTOR, &system_call);
--#endif
--
--	/* Reserve all the builtin and the syscall vector: */
--	for (i = 0; i < FIRST_EXTERNAL_VECTOR; i++)
--		set_bit(i, used_vectors);
--
--#ifdef CONFIG_X86_64
--	set_bit(IA32_SYSCALL_VECTOR, used_vectors);
--#else
- 	set_bit(SYSCALL_VECTOR, used_vectors);
- #endif
-+
- 	/*
- 	 * Should be a barrier for any external CPU state:
- 	 */
+Well on_each_cpu() has restrictions.  Can't all it with local
+interrupts disabled.  Can't call it (synchronously) while holding locks
+which the callback takes.
+
+> So if it's generic it ought to be implemented in a generic way - not a 
+> "dont use from any codepath that has a lock held that might occasionally 
+> also be held in a keventd worklet". (which is a totally unmaintainable 
+> proposition and which would just cause repeat bugs again and again.)
+
+That's different.  The core fault here lies in the keventd workqueue
+handling code.  If we're flushing work A then we shouldn't go and block
+behind unrelated work B.
+
