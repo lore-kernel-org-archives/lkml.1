@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbZAZVDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZAZVEB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbZAZVDA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 16:03:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZAZVCw
+	id S1754596AbZAZVEB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:04:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZAZVDt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 16:02:52 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39093 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751768AbZAZVCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 16:02:51 -0500
-Subject: tty: tty_open can return to userspace holding tty_mutex
-From: Eric Paris <eparis@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: sgrubb@redhat.com, esandeen@redhat.com, sukadev@us.ibm.com,
-       alan@lxorguk.ukuu.org.uk
-Content-Type: text/plain
-Date: Mon, 26 Jan 2009 16:02:40 -0500
-Message-Id: <1233003761.9850.14.camel@localhost.localdomain>
+	Mon, 26 Jan 2009 16:03:49 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:47266 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbZAZVDt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 16:03:49 -0500
+Date: Mon, 26 Jan 2009 13:03:32 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: Dan Carpenter <error27@gmail.com>
+Subject: [PATCH 3/3 for mainline] docs: fix emacs indenting howto filename
+ expansion
+Message-Id: <20090126130332.1dd2a967.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.497E252F.0320:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__tty_open could return (to userspace) holding the tty_mutex thanks to a
-regression introduced by 4a2b5fddd53b80efcb3266ee36e23b8de28e761a.  This was
-found by bisecting an fsfuzzer problem.  Admittedly I have no idea how it
-managed to tickle this 100% reliably, but it is clearly a regression and
-when hit leaves the box in a completely unusable state.  This patch lets
-the fsfuzzer test complete every time.
-    
-Signed-off-by: Eric Paris <eparis@redhat.com>
+From: Dan Carpenter <error27@gmail.com>
+Subject: fix emacs indenting howto filename expansion
+
+I don't think emacs understands tilde expansion, so use
+"expand-file-name" to do that.
+
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
 
 ---
- drivers/char/tty_io.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ Documentation/CodingStyle |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index d33e5ab..bc84e12 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1817,8 +1817,10 @@ got_driver:
- 		/* check whether we're reopening an existing tty */
- 		tty = tty_driver_lookup_tty(driver, inode, index);
+--- linux-next-20090126.orig/Documentation/CodingStyle
++++ linux-next-20090126/Documentation/CodingStyle
+@@ -498,7 +498,8 @@ values.  To do the latter, you can stick
+             (let ((filename (buffer-file-name)))
+               ;; Enable kernel mode for the appropriate files
+               (when (and filename
+-                         (string-match "~/src/linux-trees" filename))
++                         (string-match (expand-file-name "~/src/linux-trees")
++                                       filename))
+                 (setq indent-tabs-mode t)
+                 (c-set-style "linux-tabs-only")))))
  
--		if (IS_ERR(tty))
-+		if (IS_ERR(tty)) {
-+			mutex_unlock(&tty_mutex);
- 			return PTR_ERR(tty);
-+		}
- 	}
- 
- 	if (tty) {
-
-
