@@ -1,74 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbZAZTTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754160AbZAZTUo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752488AbZAZTTo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:19:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751962AbZAZTTg
+	id S1754160AbZAZTUo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:20:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZAZTUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:19:36 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54062 "EHLO ogre.sisk.pl"
+	Mon, 26 Jan 2009 14:20:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43883 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751870AbZAZTTg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:19:36 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 1/2] consolidate driver_probe_done() loops into one place
-Date: Mon, 26 Jan 2009 20:18:40 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-References: <20090109211346.3ccc36e3@infradead.org> <200901261748.06465.rjw@sisk.pl> <20090126085907.743d6346.akpm@linux-foundation.org>
-In-Reply-To: <20090126085907.743d6346.akpm@linux-foundation.org>
+	id S1752168AbZAZTUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 14:20:33 -0500
+Date: Mon, 26 Jan 2009 20:20:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20090126192016.GA1211@elte.hu>
+References: <20090126171723.GA32030@elte.hu> <20090126110539.2000cd30.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901262018.41028.rjw@sisk.pl>
+In-Reply-To: <20090126110539.2000cd30.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 26 January 2009, Andrew Morton wrote:
-> On Mon, 26 Jan 2009 17:48:05 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Sunday 25 January 2009, Greg KH wrote:
-> > > On Fri, Jan 09, 2009 at 09:13:46PM -0800, Arjan van de Ven wrote:
-> > > > From 11b47973023398ecdb933c442bab120906946762 Mon Sep 17 00:00:00 2001
-> > > > From: Arjan van de Ven <arjan@linux.intel.com>
-> > > > Date: Fri, 9 Jan 2009 21:04:53 -0800
-> > > > Subject: [PATCH] consolidate driver_probe_done() loops into one place
-> > > > 
-> > > > there's a few places that currently loop over driver_probe_done(), and
-> > > > I'm about to add another one. This patch abstracts it into a helper
-> > > > to reduce duplication.
-> > > > 
-> > > > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> > > 
-> > > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > > 
-> > > Do you need me to take this through my tree?  Or is it going through the
-> > > acpi tree?
-> > 
-> > I've lost the track.
-> > 
-> > Anyway, it's a part of a two-patch series and I think both are in -mm.
-> > 
-> > Andrew, do you have them?
-> > 
-> 
-> I have these:
-> 
-> early-platform-drivers-v2.patch
-> drivers-consolidate-driver_probe_done-loops-into-one-place.patch
-> drivers-consolidate-driver_probe_done-loops-into-one-place-fix.patch
-> drivers-consolidate-driver_probe_done-loops-into-one-place-checkpatch-fixes.patch
-> resume-wait-for-device-probing-to-finish.patch
-> sysfs-use-standard-magich-for-sysfs.patch
-> 
-> queued up for sending into Greg for his "driver core" tree.
 
-Thanks!
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Greg, I assume you're going to get them from Andrew shortly.  2-4 definitely
-are .29 material (they fix a regression), the others two I don't know.
+> On Mon, 26 Jan 2009 18:17:23 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > Rusty Russell (2):
+> >       ...
+> >       work_on_cpu: Use our own workqueue.
+> 
+> wtf?
 
-Rafael
+an x86 fix depends on it:
+
+7285908: cpufreq: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+
+	Ingo
