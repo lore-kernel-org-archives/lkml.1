@@ -1,84 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751498AbZAZAOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751394AbZAZAUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751498AbZAZAOS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 19:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbZAZAOD
+	id S1751394AbZAZAUj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 19:20:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750807AbZAZAUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 19:14:03 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:56118 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750834AbZAZAOB (ORCPT
+	Sun, 25 Jan 2009 19:20:31 -0500
+Received: from mailservice.tudelft.nl ([130.161.131.5]:11439 "EHLO
+	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750786AbZAZAUb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 19:14:01 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aBHq8W8vWTwwX4ZlVhmz0GjrtF0LAKQ2TbwQAhjJz9wbJQWvinxzoLMjlpuaRGjs1L
-         R1FlHtDHXqnaP4/FQGR93/3X59Zi49TcycwSFtP/xaJfEuEc7/XkFiVQJw73gSMt9y5c
-         9aK9sDfQF+GJSNob9eO6Tuo+rAj2GVda3SVxQ=
-Date: Mon, 26 Jan 2009 03:13:54 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: Re: [RFC] power: add optional OTG transceiver and voltage
-	regulator support to pda_power
-Message-ID: <20090126001354.GA18543@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <1232296827-16471-1-git-send-email-philipp.zabel@gmail.com>
+	Sun, 25 Jan 2009 19:20:31 -0500
+X-Spam-Flag: NO
+X-Spam-Score: -12.589
+Message-ID: <497D01CA.9040601@tremplin-utc.net>
+Date: Mon, 26 Jan 2009 01:20:26 +0100
+From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.19) Gecko/20081231 Mandriva/2.0.0.19-1mdv2009.1 (2009.1) Thunderbird/2.0.0.19 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <1232296827-16471-1-git-send-email-philipp.zabel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@suse.cz>
+Subject: [PATCH 0/4] lis3lv02d: add support for various laptop models
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 18, 2009 at 05:40:27PM +0100, Philipp Zabel wrote:
-> This patch allows machines to use an OTG transceiver driver instead of
-> supplying a custom is_usb_online callback to check USB power.
-> Also, in the case that the OTG transceiver handles charger control when
-> connected to USB, a regulator named "ac_draw" can be supplied instead of
-> the custom set_charge callback to control the charger when connected to AC.
-> 
-> The check for (transceiver->state == OTG_STATE_B_PERIPHERAL) in
-> otg_is_usb_online is probably too simple, I'm just using this with a peripheral
-> only device and gpio_vbus + bq24022. I'm not sure which other OTG states
-> can supply power.
-> 
-> Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
-> ---
+Hello,
 
-I'm not USB OTG expert, but from the power supply point of view the
-patch looks OK. If there are no objections, I'll queue it for 2.6.30.
+Here is a series of patches to add knowledge about the axes of various
+HP laptops supported by lis3lv02d/hp_accel, received from owners of
+those laptops. The laptops are already detected, but these patches allow
+to standardize the reported data with the physical movement of the laptop.
 
-Thanks Philipp. ;-)
+These are safe patches, allowing better hardware support, so it would be
+great if they were accepted for 2.6.29 :-)
 
-[...]
-> +#ifdef CONFIG_USB_OTG_UTILS
-> +	transceiver = otg_get_transceiver();
-> +	if (transceiver && !pdata->is_usb_online) {
-> +		pdata->is_usb_online = otg_is_usb_online;
-> +	}
-> +#endif
-
-On a general note, I'd prefer linux/usb/otg.h provide stubs for
-!USB_OTG_UTILS case.. I.e.
-
-#ifdef CONFIG_USB_OTG_UTILS
-extern struct otg_transceiver *otg_get_transceiver(void);
-extern void otg_put_transceiver(struct otg_transceiver *);
-#else
-static inline struct otg_transceiver *otg_get_transceiver(void)
-{ return NULL; }
-static inline void otg_put_transceiver(struct otg_transceiver *) {}
-#endif
-
-That way we could avoid #ifdefs in drivers.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+See you,
+Eric
