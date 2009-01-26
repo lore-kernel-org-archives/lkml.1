@@ -1,28 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753698AbZAZV2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZAZVgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753698AbZAZV2X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 16:28:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752003AbZAZV2G
+	id S1753548AbZAZVgA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:36:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752134AbZAZVfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 16:28:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50390 "EHLO mx3.mail.elte.hu"
+	Mon, 26 Jan 2009 16:35:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46659 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751962AbZAZV2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 16:28:05 -0500
-Date: Mon, 26 Jan 2009 22:27:27 +0100
+	id S1752019AbZAZVfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 16:35:50 -0500
+Date: Mon, 26 Jan 2009 22:35:19 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: rusty@rustcorp.com.au, travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-ID: <20090126212727.GA13670@elte.hu>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com> <20090116191108.533053000@polaris-admin.engr.sgi.com> <20090124001537.7cfde78e.akpm@linux-foundation.org> <200901261711.43943.rusty@rustcorp.com.au> <20090125230130.bcdab2e5.akpm@linux-foundation.org> <20090126171618.GA32091@elte.hu> <20090126103529.cb124a58.akpm@linux-foundation.org> <20090126202022.GA8867@elte.hu> <20090126130046.37b8f34e.akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
+Message-ID: <20090126213519.GB13670@elte.hu>
+References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <200901262021.23763.rjw@sisk.pl> <20090126203559.GD8867@elte.hu> <200901262148.49717.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090126130046.37b8f34e.akpm@linux-foundation.org>
+In-Reply-To: <200901262148.49717.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,27 +40,55 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> > So if it's generic it ought to be implemented in a generic way - not a 
-> > "dont use from any codepath that has a lock held that might 
-> > occasionally also be held in a keventd worklet". (which is a totally 
-> > unmaintainable proposition and which would just cause repeat bugs 
-> > again and again.)
+> On Monday 26 January 2009, Ingo Molnar wrote:
+[...]
+> > It would work like this, you could mark IRQs as disabled 'permanently':
+> > 
+> >    force_irqs_off_start();
+> >    ...
+> >    force_irqs_off_end();
+> > 
+> > you could mark an arbitrarily complex code sequence that way, and ftrace 
+> > would emit a WARN_ONCE() if irqs are enable anytime during that sequence - 
+> > by using the irq-tracking facilities we have for the irqsoff tracer (and 
+> > which we also have for lockdep).
+> > 
+> > Would that be useful?
 > 
-> That's different.  The core fault here lies in the keventd workqueue 
-> handling code.  If we're flushing work A then we shouldn't go and block 
-> behind unrelated work B.
+> Not sure, I only know a little about ftrace, I really can't judge.
 
-the blocking is inherent in the concept of "a queue of worklets handled by 
-a single thread".
+The instrumentation is really simple, see kernel/tracing/trace_irqsoff.c:
 
-If a worklet is blocked then all other work performed by that thread is 
-blocked as well. So by waiting on a piece of work in the queue, we wait 
-for all prior work queued up there as well.
+we call this function if hardirqs are disabled anywhere in the kernel:
 
-The only way to decouple that and to make them independent (and hence 
-independently flushable) is to create more parallel flows of execution: 
-i.e. by creating another thread (another workqueue).
+ static inline void
+ start_critical_timing(unsigned long ip, unsigned long parent_ip)
+
+and we call this function if hardirqs are enabled anywhere in the kernel:
+
+ static inline void
+ stop_critical_timing(unsigned long ip, unsigned long parent_ip)
+
+that's all. You need a single line check in stop_critical_timing(), 
+something like this:
+
+   WARN_ON_ONCE(per_cpu(hardirqs_forced_off, this_cpu));
+
+> Anyway, I think that putting the checks directly into the code path in 
+> question would be more reliable and would still work without ftrace.
+
+More reliable than a WARN() triggering right at the buggy place that 
+erroneously enables IRQs? Regardless of how obscurely it's done - whether 
+it's a side effect of something, etc. etc.?
+
+With such a generic facility you'd not have to put in any explicit checks 
+anywhere _at all_.
+
+In fact whatever check you put in it's _always_ going to be fundamentally 
+more fragile than direct instrumentation: you cannot possibly check all 
+possible places that enable interrupts. (they could be disabling 
+interrupts as a _restore_irqs() sequence for example)
 
 	Ingo
