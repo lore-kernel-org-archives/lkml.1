@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZAZTLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbZAZTLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753979AbZAZTLE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:11:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZAZTKv
+	id S1754482AbZAZTLZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:11:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754063AbZAZTLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:10:51 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:34762 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751884AbZAZTKv (ORCPT
+	Mon, 26 Jan 2009 14:11:07 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35832 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753998AbZAZTLF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:10:51 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Folkert van Heusden <folkert@vanheusden.com>, linux-usb@vger.kernel.org
-Subject: Re: 2.6.29rc1 brakes usb
-Date: Mon, 26 Jan 2009 20:11:19 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
-References: <20090126170130.GG6158@vanheusden.com>
-In-Reply-To: <20090126170130.GG6158@vanheusden.com>
+	Mon, 26 Jan 2009 14:11:05 -0500
+Date: Mon, 26 Jan 2009 11:09:59 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Nick Piggin <npiggin@suse.de>, mingo@elte.hu, linux-arch@vger.kernel.org,
+       rusty@rustcorp.com.au, travis@sgi.com, linux-kernel@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, suresh.b.siddha@intel.com,
+       arjan@infradead.org, hpa@zytor.com, tglx@linutronix.de
+Subject: Re: [git pull] cpus4096 tree, part 3
+In-Reply-To: <20090126110054.bdddbf38.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0901261107280.5284@localhost.localdomain>
+References: <alpine.LFD.2.00.0901021149020.5086@localhost.localdomain> <20090102203839.GA26850@elte.hu> <alpine.LFD.2.00.0901021531140.3179@localhost.localdomain> <20090103193859.GB9805@elte.hu> <alpine.LFD.2.00.0901031225020.3179@localhost.localdomain>
+ <20090103203621.GA2491@elte.hu> <20090103213856.GA24138@elte.hu> <alpine.LFD.2.00.0901031347570.3179@localhost.localdomain> <20090103223723.GA17047@elte.hu> <20090105011416.GG32239@wotan.suse.de> <20090105011630.GI32239@wotan.suse.de>
+ <20090126110054.bdddbf38.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901262011.20545.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Monday 26 January 2009 18:01:30 schrieb Folkert van Heusden:
-> Hi,
+
+
+On Mon, 26 Jan 2009, Andrew Morton wrote:
+> > +	write = error_code & PF_WRITE;
 > 
-> Since version 2.6.29rc1 querying cleware USb devices no longer works.
-> 2.6.28 works fine. 2.6.29-rc2 also no longer works.
+> What's going on here?  We set `error_code' to PF_WRITE, which is some
+> x86-specific thing.
 
-What kind of device is this? What happens if you try to use the device?
-Isn't it detected, do you get an error?
+No. We set "write" to non-zero if it was a write fault.
 
-	Regards
-		Oliver
+> >  	fault = handle_mm_fault(mm, vma, address, write);
+> 
+> and then pass it into handle_mm_fault(), which is expecting a bunch of
+> flags in the FAULT_FLAG_foo domain.
+
+No. "handle_mm_fault()" takes an integer that is non-zero if it's a write, 
+zero if it's a read. That's how it has _always_ worked.
+
+I don't see where you find that FAULT_FLAG_foo thing. That's much deeper 
+down, when people do things like
+
+        unsigned int flags = FAULT_FLAG_NONLINEAR |
+                                (write_access ? FAULT_FLAG_WRITE : 0);
+
+based on that whole "write_access" flag.
+
+		Linus
