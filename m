@@ -1,102 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbZAZUX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbZAZUYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754347AbZAZUX5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 15:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZAZUXt
+	id S1754611AbZAZUYq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 15:24:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZAZUYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 15:23:49 -0500
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:48633 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752794AbZAZUXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 15:23:48 -0500
-X-Greylist: delayed 1331 seconds by postgrey-1.27 at vger.kernel.org; Mon, 26 Jan 2009 15:23:47 EST
-Message-ID: <497E16A0.50607@krogh.cc>
-Date: Mon, 26 Jan 2009 21:01:36 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Greg KH <gregkh@suse.de>
-Subject: Re: Linux 2.6.27.13
-References: <20090125004823.GA6711@kroah.com>
-In-Reply-To: <20090125004823.GA6711@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 26 Jan 2009 15:24:33 -0500
+Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:48192 "HELO
+	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752391AbZAZUYb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 15:24:31 -0500
+X-Yahoo-Newman-Property: ymail-3
+Subject: [ANNOUNCE]: lio-core-2.6.git updated to v2.6.29-rc2
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       Linux-netdev <netdev@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Douglas Gilbert <dgilbert@interlog.com>, Andrew Morton <akpm@osdl.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Ming Zhang <blackmagic02881@gmail.com>,
+       "Ross S. W. Walker" <rswwalker@gmail.com>,
+       Arne Redlich <agr@powerkom-dd.de>, Rafiu Fakunle <rafiu@openfiler.com>,
+       Hannes Reinecke <hare@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <greg@kroah.com>, Joel Becker <joel.becker@oracle.com>
+Content-Type: text/plain
+Date: Mon, 26 Jan 2009 12:23:18 -0800
+Message-Id: <1233001398.6442.48.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> We (the -stable team) are announcing the release of the 2.6.27.13
-> kernel.
-> 
-> It contains a wide range of bugfixes, and all users of the 2.6.27 kernel
-> series are strongly encouraged to upgrade.
-> 
-> I'll also be replying to this message with a copy of the patch between
-> 2.6.27.12 and 2.6.27.13
+Greetings all,
 
-Hi.
+The lio-core-2.6.git tree for Target_Core_Mod/ConfigFS (generic storage
+engine) and LIO-Target/ConfigFS v3.0 (Linux-iSCSI target stack) have
+been updated to v2.6.29-rc2 and tested on 32-bit x86 HVM using
+Open/iSCSI for Linux/TCP and Core-iSCSI using Linux/SCTP as iSCSI
+Initiators.
 
-I'm getting some e1000 noise on a 2.6.27.6, I search the log up to .13 
-but couldn't find any log messsage that looked like it fixed it.
+The git tree is located on kernel.org at:
+
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+
+You can find more information about the projects at:
+
+http://linux-iscsi.org/index.php/LIO-Target
+http://linux-iscsi.org/index.php/LIO-Target/ConfigFS
+http://linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
+
+Recent work for Target_Core_Mod includes a WIP SPC-3 compliant
+PERSISTENT RESERVE implementation that is ConfigFS aware for all
+Subsystems plugins (PSCSI, IBLOCK, FILEIO, RAMDISK) and all potential
+$FABRIC_MODs has the infrastructure, legacy SPC-2 reservations is up and
+running, and very first logic up for PERSISTENT RESERVE running+tested
+against Doug Gilbert's sg3_utils package.  Also, T10 EVPD emulation has
+been included in the recent work to allow for user defined EVPD Unit
+Serial emualation when no Unit Serial information is available via the
+device server firmware.
+
+Here is what it looks like running on v2.6.29-rc2 doing various SPC-3
+PERSISTENT_RESERVE+SA:REGISTER across LIO-Target v3.0 iSCSI/SCTP fabric
+(Stream Control Transmission Protocol):
+
+<SNIP>
+
+TARGET_CORE[0]: Loading Generic Kernel Storage Engine: v3.0.0 on Linux/i686 on 2.6.29-rc2
+TARGET_CORE[0]: Initialized ConfigFS Fabric Infrastructure: v1.0.0 on Linux/i686 on 2.6.29-rc2
+
+<SNIP>
+
+Target_Core_ConfigFS: REGISTER -> group: d1f29400 name: iscsi
+Linux-iSCSI.org iSCSI Target Core Stack v3.0.0 on Linux/i686 on 2.6.29-rc2
+SE: fp_auto_assign: 0
+<<<<<<<<<<<<<<<<<<<<<< BEGIN FABRIC API >>>>>>>>>>>>>>>>>>>>>>
+Initialized struct target_fabric_configfs: c8d5aa00 for iscsi
+<<<<<<<<<<<<<<<<<<<<<< END FABRIC API >>>>>>>>>>>>>>>>>>>>>>
+LIO_TARGET[0] - Set fabric -> lio_target_fabric_configfs
+
+<SNIP>
+
+Received iSCSI login request from 172.16.201.129 on SCTP Network Portal 172.16.201.128:3260
+Located Storage Object: iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
+TARGET_CORE[iSCSI]: Registered fabric_sess_ptr: cc55c000
+iSCSI Login successful on CID: 0 from 172.16.201.129 to 172.16.201.128:3260,1
+Incremented iSCSI Connection count to 1 from node: iqn.1993-08.org.debian:01:2dadf92d0ef
+Established iSCSI session from node: iqn.1993-08.org.debian:01:2dadf92d0ef
+Incremented number of active iSCSI sessions to 1 on iSCSI Target Portal Group: 1
+
+<SNIP>
+
+SPC-3 PR [iSCSI] Service Action: REGISTER Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
+SPC-3 PR [iSCSI] for SINGLE TCM Subsystem iblock Object Port(s)
+SPC-3 PR [iSCSI] SA Res Key: 0x000000005678efff PRgeneration: 0x00000000
+SPC-3 PR [iSCSI] REGISTER: Changed Reservation Key for iqn.1993-08.org.debian:01:2dadf92d0ef to: 0x000000001234abcd PRgeneration: 0x00000001
+SPC-3 PR [iSCSI] Service Action: UNREGISTER Initiator Node: iqn.1993-08.org.debian:01:2dadf92d0ef
+SPC-3 PR [iSCSI] for SINGLE TCM Subsystem iblock Object Port(s)
+SPC-3 PR [iSCSI] SA Res Key: 0x000000001234abcd PRgeneration: 0x00000001
+
+<SNIP>
+
+target:~# cat /proc/net/sctp/snmp 
+SctpCurrEstab                   	1
+SctpActiveEstabs                	0
+SctpPassiveEstabs               	2
+SctpAborteds                    	0
+SctpShutdowns                   	1
+SctpOutOfBlues                  	1
+SctpChecksumErrors              	0
+SctpOutCtrlChunks               	196
+SctpOutOrderChunks              	461
+SctpOutUnorderChunks            	0
+SctpInCtrlChunks                	375
+SctpInOrderChunks               	216
+SctpInUnorderChunks             	0
+SctpFragUsrMsgs                 	82
+SctpReasmUsrMsgs                	0
+SctpOutSCTPPacks                	611
+SctpInSCTPPacks                 	539
+SctpT1InitExpireds              	0
+SctpT1CookieExpireds            	0
+SctpT2ShutdownExpireds          	0
+SctpT3RtxExpireds               	0
+SctpT4RtoExpireds               	0
+SctpT5ShutdownGuardExpireds     	0
+SctpDelaySackExpireds           	173
+SctpAutocloseExpireds           	0
+SctpT3Retransmits               	0
+SctpPmtudRetransmits            	0
+SctpFastRetransmits             	0
+SctpInPktSoftirq                	486
+SctpInPktBacklog                	52
+SctpInPktDiscards               	1
+SctpInDataChunkDiscards         	0
+
+There are many more patches coming, so please keep watching the
+LIO-devel list, here are the recent series of patches for those
+interested:
+
+For the T10 EVPD Unit Serial Emulation and firmware EVPD ConfigFS
+infrastructure:
+
+[PATCH 0/2] [Target_Core_Mod]: Add EVPD information to ConfigFS
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/87a5e53d8e03361d#
+[PATCH 1/2] [Target_Core_Mod]: Move 10_wwn_t to se_subsystem_dev_t->t10_wwn
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/9ea13ba51c8c06d2#
+[PATCH 2/2] [Target_Core_Mod/ConfigFS]: Add T10 EVPD / WWN storage object attributes
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/8b00d47f0c182b00#
+
+[PATCH 0/6} [Target_Core_Mod]: Add T10 EVPD Unit Serial Number Emulation
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/a200761da608df7c#
+[PATCH 1/6] [Target_Core_Mod]: Add support for configurable EVPD Unit Serial Numbers
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/9b864c6f1ab27b9f#
+[PATCH 2/6] [Target_Core_Mod/RAMDISK]: Update transport_generic_emulate_inquiry() usage
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/d2151ac814c58ce1#
+[PATCH 3/6] [Target_Core_Mod/FILEIO): Update for EVPD and remove legacy parameter code
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/978c30be60f59553#
+[PATCH 4/6] [Target_Core_Mod/IBLOCK): Update for EVPD and remove legacy parameter code
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/61f580bddf2841ab#
+[PATCH 5/6] [Target_Core_Mod/pSCSI]: Update EVPD post processing logic
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/be7dbad6b1c4c1e9#
+[PATCH 6/6] [Target_Core_Mod/ConfigFS]: Add support for $STORAGE_OBJECT EVPD Unit Serial Number emulation
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/84883354416151f5#
+
+For the SPC-3 compliant PERSISTENT_RESERVATION emulation WIP: 
+
+[PATCH 0/4] [Target_Core_Mod]: Add SPC-3 reserverations infrastructure
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/766ec7a3fbaccc62#
+[PATCH 1/4] [Linux/SCSI] Add support for SPC-4 CDBs referenced in Persisent Reservations Allowed/Confict Table
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/6cb6b346fdf5c6c6#
+[PATCH 2/4] [Target_Core_Mod]: Update core code for new reservations infrastructure
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/1381750ca3e07a9f#
+[PATCH 3/4] [Target_Core_Mod] Add generic >= SPC-3 and legacy SPC-2 infrastructure
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/aa952eb7130b340b#
+[PATCH 4/4] [Target_Core_Mod/ConfigFS] Add target/core/$HBA/$STORAGE_OBJECT/pr for T10 reservations
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/b1f6dc50f771b8a1#
+
+[PATCH 0/7] [Target_Core_Mod]: Add running PRIO SA RESERVE and PRIN SA READ_KEYS and SA READ_RESERVATION support
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/ad2b8943f433ca0c#
+[PATCH 1/7] [Target_Core_Mod]: Add SPC-3 PERSISTENT_RESERVE_* Infrastrcture
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/b1468d8f0419d351#
+[PATCH 2/7] [LIO-Target]: Convert iscsi_send_check_condition_and_sense -> transport_send_check_condition_and_sense(
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/f05711bc97b63469#
+[PATCH 3/7] [Target_Core_Mod/RAMDISK]: Convert to use Linux/SCSI SCSI_2 define
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/7c38dda0e58c96a3#
+[PATCH 4/7] [Target_Core_Mod/FILEIO]: Convert to use Linux/SCSI SCSI_2 define
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/9fd1bb623eb2c14a#
+[PATCH 5/7] [Target_Core_Mod/IBLOCK]: Convert to use Linux/SCSI SCSI_3 define
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/b6112acbc33f56cb#
+[PATCH 6/7] [Target_Core_Mod/PERSISTENT_RESERVATION]: Add Service Action REGISTER logic
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/fb5fd76efb7cc883#
+[PATCH 7/7] [Target_Core_Mod/ConfigFS]: Add res_pr_all_tgt_pts, res_pr_generation and res_pr_registered_i_pts
+http://groups.google.com/group/linux-iscsi-target-dev/browse_thread/thread/26d2298eebc45c71#
+
+--nab
 
 
-[862734.501786] ------------[ cut here ]------------
-[862734.501793] WARNING: at net/sched/sch_generic.c:219 
-dev_watchdog+0x1f8/0x210()
-[862734.501795] NETDEV WATCHDOG: eth0 (e1000): transmit timed out
-[862734.501796] Modules linked in: af_packet nfsd auth_rpcgss exportfs 
-autofs4 nfs lockd sunrpc ipv6 bonding iptable_filter ip_tables x_tables 
-lm87 adm1026 hwmon_vid ipmi_devintf ipmi_si ipmi_msghandler parport_pc 
-lp parport loop cfi_cmdset_0001 cfi_util jedec_probe cfi_probe psmouse 
-gen_probe serio_raw ck804xrom i2c_nforce2 mtd pcspkr chipreg shpchp 
-pci_hotplug i2c_core k8temp map_funcs joydev button evdev ext3 jbd 
-mbcache ide_cd_mod sr_mod cdrom sg usb_storage libusual ata_generic 
-libata sd_mod dock usbhid hid mptsas mptscsih qla2xxx mptbase 
-scsi_transport_fc amd74xx scsi_transport_sas ehci_hcd e1000 ohci_hcd 
-scsi_mod ide_core usbcore thermal processor fan thermal_sys fuse
-[862734.501837] Pid: 0, comm: swapper Not tainted 2.6.27.6 #2
-[862734.501839]
-[862734.501840] Call Trace:
-[862734.501842]  <IRQ>  [<ffffffff80237a7d>] warn_slowpath+0xcd/0x110
-[862734.501853]  [<ffffffff8022cc3d>] enqueue_task_fair+0x10d/0x110
-[862734.501857]  [<ffffffff8033b6fe>] rb_insert_color+0xde/0x110
-[862734.501859]  [<ffffffff8022ab83>] enqueue_task+0x13/0x30
-[862734.501861]  [<ffffffff8022adf7>] source_load+0x37/0x70
-[862734.501866]  [<ffffffff803370aa>] __next_cpu+0x1a/0x30
-[862734.501868]  [<ffffffff8022e093>] find_busiest_group+0x193/0x810
-[862734.501871]  [<ffffffff8033c76e>] strlcpy+0x4e/0x80
-[862734.501873]  [<ffffffff803e7340>] dev_watchdog+0x0/0x210
-[862734.501875]  [<ffffffff803e7538>] dev_watchdog+0x1f8/0x210
-[862734.501878]  [<ffffffff8024165b>] run_timer_softirq+0x1bb/0x230
-[862734.501881]  [<ffffffff8023cf46>] __do_softirq+0x76/0xf0
-[862734.501885]  [<ffffffff8020f17b>] profile_pc+0x3b/0x80
-[862734.501888]  [<ffffffff8020d51c>] call_softirq+0x1c/0x30
-[862734.501890]  [<ffffffff8020ee45>] do_softirq+0x35/0x70
-[862734.501894]  [<ffffffff8021ce80>] smp_apic_timer_interrupt+0x80/0xc0
-[862734.501897]  [<ffffffff8020cf66>] apic_timer_interrupt+0x66/0x70
-[862734.501898]  <EOI>  [<ffffffff802133e7>] default_idle+0x27/0x40
-[862734.501904]  [<ffffffff8021360a>] c1e_idle+0xba/0x100
-[862734.501906]  [<ffffffff8020adf4>] cpu_idle+0x44/0xb0
-[862734.501907]
-[862734.501909] ---[ end trace 8fad5965106e3cc6 ]---
 
-Complete dmesg here:
-http://krogh.cc/~jesper/dmesg-2.6.27.6.txt
 
-The system is running with bonded interfaces with  (lspi out put)
-06:01.0 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
-Controller (Copper) (rev 03)
-06:01.1 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
-Controller (Copper) (rev 03)
-06:02.0 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
-Controller (Copper) (rev 03)
-06:02.1 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
-Controller (Copper) (rev 03)
-
-The system is still "fully functional", and I havent notiched anything 
-wrong, but there sure is a lot of link ups and downs on that bond.
-
--- 
-Jesper
