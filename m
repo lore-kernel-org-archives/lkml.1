@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZAZQqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752790AbZAZQse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753001AbZAZQqp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:46:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZAZQqg
+	id S1752790AbZAZQse (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:48:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZAZQs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 11:46:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42931 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751611AbZAZQqf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 11:46:35 -0500
-Subject: Re: kernel BUG at fs/ext/super.c:428
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Darren Hart <dvhltc@us.ibm.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Theodore Tso <tytso@MIT.EDU>, Arjan van de Ven <arjan@linux.intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <497DE73B.4050602@us.ibm.com>
-References: <20090110003645.GA16107@linux-os.sc.intel.com>
-	 <20090113164842.c6aa7095.akpm@linux-foundation.org>
-	 <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com>
-	 <20090114044059.GA6222@mit.edu>
-	 <20090114191632.GA13114@linux-os.sc.intel.com>
-	 <1231961377.14825.51.camel@laptop>  <20090114212038.GJ6222@mit.edu>
-	 <1232568618.16682.20.camel@jamoon.sc.intel.com>
-	 <1232782595.4859.3.camel@laptop>  <497DE73B.4050602@us.ibm.com>
-Content-Type: text/plain
-Date: Mon, 26 Jan 2009 17:46:11 +0100
-Message-Id: <1232988371.4863.162.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Mon, 26 Jan 2009 11:48:26 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53330 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750775AbZAZQs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 11:48:26 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 1/2] consolidate driver_probe_done() loops into one place
+Date: Mon, 26 Jan 2009 17:48:05 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <20090109211346.3ccc36e3@infradead.org> <20090125221857.GA18543@kroah.com>
+In-Reply-To: <20090125221857.GA18543@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901261748.06465.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-26 at 08:39 -0800, Darren Hart wrote:
-
-> > diff --git a/kernel/futex.c b/kernel/futex.c
-> > index f89d373..f4132ab 100644
-> > --- a/kernel/futex.c
-> > +++ b/kernel/futex.c
-> > @@ -929,7 +929,7 @@ out_unlock:
+On Sunday 25 January 2009, Greg KH wrote:
+> On Fri, Jan 09, 2009 at 09:13:46PM -0800, Arjan van de Ven wrote:
+> > From 11b47973023398ecdb933c442bab120906946762 Mon Sep 17 00:00:00 2001
+> > From: Arjan van de Ven <arjan@linux.intel.com>
+> > Date: Fri, 9 Jan 2009 21:04:53 -0800
+> > Subject: [PATCH] consolidate driver_probe_done() loops into one place
 > > 
-> >  	/* drop_futex_key_refs() must be called outside the spinlocks. */
-> >  	while (--drop_count >= 0)
-> > -		drop_futex_key_refs(&key1);
-> > +		drop_futex_key_refs(&key2);
+> > there's a few places that currently loop over driver_probe_done(), and
+> > I'm about to add another one. This patch abstracts it into a helper
+> > to reduce duplication.
+> > 
+> > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 > 
-> Unfortunately, I realized later that this code was indeed correct and I 
-> asked Ingo to pull my patch implementing the above change.  Quoting my 
-> previous mail on the subject:
+> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> "I believe what is happening here is that the requeue loop requeues each 
-> waiter from one futex (key1) to another (key2).  It rightly takes a 
-> reference to the futex at key2 and then decrements the references to 
-> key1 by drop_count (since the waiters now reference key2, not key1). 
-> The newly taken key2 references will be dropped in futex_wait() when 
-> each waiter is woken up and takes the futex."
+> Do you need me to take this through my tree?  Or is it going through the
+> acpi tree?
 
-Argh, that wants a comment..
+I've lost the track.
 
+Anyway, it's a part of a two-patch series and I think both are in -mm.
+
+Andrew, do you have them?
+
+Rafael
