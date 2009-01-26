@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZAZCKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZAZCL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754595AbZAZCKW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 21:10:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751479AbZAZCKE
+	id S1753575AbZAZCL6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 21:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZAZCLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 21:10:04 -0500
-Received: from vps1.tull.net ([66.180.172.116]:50224 "HELO vps1.tull.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751401AbZAZCKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 21:10:01 -0500
-From: Nick Andrew <nick@nick-andrew.net>
-Subject: [TRIVIAL PATCH 20/20] Fix misspelling of firmware in iwl-agn.c
-To: Trivial Kernel Patches <trivial@kernel.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Mon, 26 Jan 2009 13:09:54 +1100
-Message-ID: <20090126020953.15168.62395.stgit@marcab.local.tull.net>
-In-Reply-To: <20090126015921.15168.97302.stgit@marcab.local.tull.net>
-References: <20090126015921.15168.97302.stgit@marcab.local.tull.net>
-User-Agent: StGIT/0.14.2
+	Sun, 25 Jan 2009 21:11:50 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48973 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751224AbZAZCLt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 25 Jan 2009 21:11:49 -0500
+Message-ID: <497D1BD7.9000609@jp.fujitsu.com>
+Date: Mon, 26 Jan 2009 11:11:35 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       "Barnes, Jesse" <jesse.barnes@intel.com>, shaohua.li@intel.com
+Subject: Re: ACPI hotplug panic with current git head
+References: <1231604250.3642.33.camel@localhost.localdomain>	 <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>	 <1231807693.27151.21.camel@localhost.localdomain>	 <1232046108.5966.57.camel@localhost.localdomain>	 <alpine.LFD.2.00.0901151421110.4737@localhost.localdomain>	 <1232049269.5966.64.camel@localhost.localdomain>	 <1232050347.5966.66.camel@localhost.localdomain>	 <4970242C.4010404@jp.fujitsu.com>	 <1232115546.3224.5.camel@localhost.localdomain>	 <4973D2EE.3060203@jp.fujitsu.com>	 <1232328216.3247.68.camel@localhost.localdomain>	 <4973EF64.2050404@jp.fujitsu.com> <1232558780.736.24.camel@localhost.localdomain>
+In-Reply-To: <1232558780.736.24.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix misspelling of firmware in iwl-agn.c
+James Bottomley wrote:
+> On Mon, 2009-01-19 at 12:11 +0900, Kenji Kaneshige wrote:
+>> I'm sending the debug patch against 2.6.29-rc1 below. I'm also
+>> sending it as an attachment. It also contains the code to prevent
+>> the kernel panic from you. Please note that you will see two
+>> WARN_ON(1) messages with the patch. Those are shown by my debug
+>> patch.
+>>
+>> Could you try it and send me the whole dmsg output?
+> 
+> Actually, the machine is now running -rc2, so the patch doesn't quite
+> apply: 
+> 
+> jejb@sparkweed> patch -p1 < ~/tmp.diff
+> patching file include/linux/pci-acpi.h
+> patching file drivers/pci/hotplug/acpiphp_glue.c
+> Hunk #1 FAILED at 266.
+> Hunk #2 succeeded at 467 (offset 2 lines).
+> Hunk #3 succeeded at 489 (offset 2 lines).
+> Hunk #4 succeeded at 518 (offset 2 lines).
+> Hunk #5 succeeded at 556 (offset 2 lines).
+> 
+> Looks like the rejection is in the NULL check piece, so I've already
+> actually sent you the information it would produce.
+> 
+> The dmesg output is pretty big, below.
+> 
 
-Signed-off-by: Nick Andrew <nick@nick-andrew.net>
----
+Thank you very much, James.
 
- drivers/net/wireless/iwlwifi/iwl-agn.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Thanks to you, I found the root cause of the
+problem. The acpi_pci_get_bridge_handle() function assumes
+pci_bus->self is NULL on the root bus. But it is not true
+and pci_bus->self can have a non-NULL value on some
+platfroms (like yours). So it must check pci_bus->parent
+instead.
 
+I found some other code that has the same wrong assumption.
+I'll make a fix for them and send it soon.
 
-diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
-index 5da6b35..9740b6d 100644
---- a/drivers/net/wireless/iwlwifi/iwl-agn.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -1623,7 +1623,7 @@ static int iwl_read_ucode(struct iwl_priv *priv)
- 
- 	/* api_ver should match the api version forming part of the
- 	 * firmware filename ... but we don't check for that and only rely
--	 * on the API version read from firware header from here on forward */
-+	 * on the API version read from firmware header from here on forward */
- 
- 	if (api_ver < api_min || api_ver > api_max) {
- 		IWL_ERROR("Driver unable to support your firmware API. "
+Thanks,
+Kenji Kaneshige
+
 
