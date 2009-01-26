@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753447AbZAZQ4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752883AbZAZQ74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753447AbZAZQ4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZAZQ40
+	id S1752883AbZAZQ74 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:59:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZAZQ7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 11:56:26 -0500
-Received: from mta-out.inet.fi ([195.156.147.13]:34147 "EHLO jenni2.inet.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753090AbZAZQ4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 11:56:25 -0500
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Michael Kerrisk <mtk.manpages@gmail.com>,
-       Johannes Weiner <hannes@saeurebad.de>,
-       Dan Carpenter <error27@gmail.com>
-Subject: Re: [PATCH] Documentation: update CodingStyle tips for Emacs users
-In-Reply-To: <497DE701.5050005@oracle.com> (Randy Dunlap's message of "Mon\, 26 Jan 2009 08\:38\:25 -0800")
-References: <1232299115-8130-1-git-send-email-tlikonen@iki.fi>
-	<87priaumal.fsf@iki.fi> <497DE701.5050005@oracle.com>
-From: Teemu Likonen <tlikonen@iki.fi>
-Date: Mon, 26 Jan 2009 18:56:19 +0200
-Message-ID: <87skn6t39o.fsf@iki.fi>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 26 Jan 2009 11:59:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35082 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751448AbZAZQ7s (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 11:59:48 -0500
+Date: Mon, 26 Jan 2009 08:59:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Greg KH <greg@kroah.com>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] consolidate driver_probe_done() loops into one
+ place
+Message-Id: <20090126085907.743d6346.akpm@linux-foundation.org>
+In-Reply-To: <200901261748.06465.rjw@sisk.pl>
+References: <20090109211346.3ccc36e3@infradead.org>
+	<20090125221857.GA18543@kroah.com>
+	<200901261748.06465.rjw@sisk.pl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap (2009-01-26 08:38 -0800) wrote:
+On Mon, 26 Jan 2009 17:48:05 +0100 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> Teemu Likonen wrote:
->>     http://article.gmane.org/gmane.linux.documentation/442
+> On Sunday 25 January 2009, Greg KH wrote:
+> > On Fri, Jan 09, 2009 at 09:13:46PM -0800, Arjan van de Ven wrote:
+> > > From 11b47973023398ecdb933c442bab120906946762 Mon Sep 17 00:00:00 2001
+> > > From: Arjan van de Ven <arjan@linux.intel.com>
+> > > Date: Fri, 9 Jan 2009 21:04:53 -0800
+> > > Subject: [PATCH] consolidate driver_probe_done() loops into one place
+> > > 
+> > > there's a few places that currently loop over driver_probe_done(), and
+> > > I'm about to add another one. This patch abstracts it into a helper
+> > > to reduce duplication.
+> > > 
+> > > Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> > 
+> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > 
+> > Do you need me to take this through my tree?  Or is it going through the
+> > acpi tree?
+> 
+> I've lost the track.
+> 
+> Anyway, it's a part of a two-patch series and I think both are in -mm.
+> 
+> Andrew, do you have them?
+> 
 
-> OK, I see it.  I'm not an emacs user and I have no idea how correct
-> the patch is.
->
-> There is another emacs CodingStyle patch from Dan Carpenter that
-> expands the "~" part of the filename to the user directory:
-> see http://lkml.org/lkml/2009/1/21/62
->
-> so I would be tempted to merge/apply both patches.
->
-> Any other comments on these patches?
+I have these:
 
-Ah, I definitely agree with Dan's change, so
+early-platform-drivers-v2.patch
+drivers-consolidate-driver_probe_done-loops-into-one-place.patch
+drivers-consolidate-driver_probe_done-loops-into-one-place-fix.patch
+drivers-consolidate-driver_probe_done-loops-into-one-place-checkpatch-fixes.patch
+resume-wait-for-device-probing-to-finish.patch
+sysfs-use-standard-magich-for-sysfs.patch
 
-    Acked-by: Teemu Likonen <tlikonen@iki.fi>
-
-for that.
-
-When it's applied my patch will be simpler. I'll resubmit to make your
-life easier.
+queued up for sending into Greg for his "driver core" tree.
