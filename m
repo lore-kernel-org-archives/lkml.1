@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752538AbZAZOn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751884AbZAZOzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752538AbZAZOn3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 09:43:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZAZOnU
+	id S1751884AbZAZOzc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 09:55:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZAZOzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 09:43:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45205 "EHLO mx3.mail.elte.hu"
+	Mon, 26 Jan 2009 09:55:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60983 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751499AbZAZOnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 09:43:19 -0500
-Date: Mon, 26 Jan 2009 15:43:13 +0100
+	id S1751394AbZAZOzW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 09:55:22 -0500
+Date: Mon, 26 Jan 2009 15:55:13 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Laurent Riffard <laurent.riffard@free.fr>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: next-20090107: WARNING: at kernel/sched.c:4435
-	sub_preempt_count
-Message-ID: <20090126144313.GC4445@elte.hu>
-References: <4966897E.5020302@free.fr> <f19298770901090209m7076f3afyd1e01e0fc9bbca59@mail.gmail.com> <20090111024945.GC7077@elte.hu> <20090114020040.GA19806@wotan.suse.de> <f19298770901241633l736801f6r760ef54883ca9c87@mail.gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2 v2] tracing/function-graph-tracer: various fixes
+	and features
+Message-ID: <20090126145513.GA9128@elte.hu>
+References: <497917b5.09cc660a.5f4c.ffffc568@mx.google.com> <20090123101949.GD15188@elte.hu> <c62985530901230236v4a8f5d6od80924cb6542d994@mail.gmail.com> <20090123110037.GI15188@elte.hu> <20090124160244.GB5773@nowhere>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <f19298770901241633l736801f6r760ef54883ca9c87@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090124160244.GB5773@nowhere>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,50 +37,83 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> On Wed, Jan 14, 2009 at 05:00, Nick Piggin <npiggin@suse.de> wrote:
-> > On Sun, Jan 11, 2009 at 03:49:45AM +0100, Ingo Molnar wrote:
-> >>
-> >> * Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
-> >>
-> >> > One more instance of http://marc.info/?l=linux-kernel&m=123134586202636&w=2
-> >> > Added Ingo Molnar to CC.
-> >>
-> >> added Nick on Cc:. Nick, it's about:
-> >>
-> >> > commit 7317d7b87edb41a9135e30be1ec3f7ef817c53dd
-> >> > Author: Nick Piggin <nickpiggin@yahoo.com.au>
-> >> > Date:   Tue Sep 30 20:50:27 2008 +1000
-> >> >
-> >> >    sched: improve preempt debugging
-> >>
-> >> causing a seemingly spurious warning.
-> >
-> > I don't know how it is spurious... Presumably the sequence _would_ have
-> > caused preempt count to go negative if the bkl were not held...
-> >
-> > __do_softirq does a __local_bh_disable on entry, and it seems like the
-> > _local_bh_enable on exit is what causes this warning. So something is
-> > unbalanced somehow. Or is it some weird thing we do in early boot that
-> > I am missing?
-> >
-> > Can you put in some printks around these functions in early boot to
-> > get an idea of what preempt_count is doing?
-> >
+> On Fri, Jan 23, 2009 at 12:00:37PM +0100, Ingo Molnar wrote:
+> > 
+> > * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > > Still needs a solution - if we do cross-CPU traces we want to have a 
+> > > > global trace clock with 'seemless' transition between CPUs.
+> > > 
+> > > So it doesn't only need a monotonic clock. It needs a global consistent 
+> > > clock like ktime for example? Unfortunately this one uses seq_locks and 
+> > > would add some drawbacks like verifying if the traced function doesn't 
+> > > hold the write seq_lock and it will bring some more ftrace recursion...
+> > 
+> > using ktime_get() is indeed out of question - GTOD callpaths are too 
+> > complex (and also too slow).
+> > 
+> > I'd not change anything in the current logic, but i was thinking of a new 
+> > trace_option, which can be set optionally. If that trace option is set 
+> > then this bit of ring_buffer_time_stamp():
+> > 
+> >         time = sched_clock() << DEBUG_SHIFT;
+> > 
+> > gets turned into:
+> > 
+> >         time = cpu_clock(cpu) << DEBUG_SHIFT;
+> > 
+> > This way we default to sched_clock(), but also gain some 'global' 
+> > properties if the trace_option is set.
 > 
-> Hi again.
 > 
-> Finally got to debug this. The preempt count on the first __do_softirq entry
-> ever is 0, as it is set in irq_ctx_init(). The interrupted swapper
-> thread happens
-> to be in the kernel_locked() state at the moment, so the warning.
+> Ok, yeah that's a good idea.
 > 
-> I don't understand why the softirq preempt count is initialized to 0. 
-> Should not it be SOFTIRQ_OFFSET instead?
+>  
+> > Furthermore, another trace_option could introduce a third 'strongly 
+> > ordered' trace-clock variant, which would use cmpxchg and per cpu 
+> > timestamps, something like this:
+> > 
+> > atomic64_t curr_time;
+> > 
+> > DEFINE_PER_CPU(u64, prev_cpu_time);
+> > ...
+> > 
+> > retry:
+> > 	prev_cpu_time = per_cpu(prev_cpu_time, cpu);
+> > 	cpu_time = sched_clock();
+> > 	old_time = atomic64_read(&curr_time);
+> > 
+> > 	delta = cpu_time - prev_cpu_time;
+> > 	if (unlikely((s64)delta <= 0))
+> > 		delta = 1;
+> > 
+> > 	new_time = old_time + delta;
+> > 
+> > 	if (atomic64_cmpxchg(&curr_time, old_time, new_time) != new_time)
+> > 		goto repeat;
+> > 
+> >         time = new_time << DEBUG_SHIFT;
+> > 
+> > This would be a monotonic, global clock wrapped around sched_clock(). It 
+> > uses a cmpxchg to achieve it, but we have to use global ordering anyway. 
+> > 
+> > It would still be _much_ faster than any GTOD clocksource we have.
+> > 
+> > Hm?
+> > 
+> 
+> And that would be even more faster that cpu_clock().
+> 
+> But why implement both? Wouldn't the above be more faster while playing 
+> the same thing than cpu_clock()
 
-hm, indeed. So this triggers on irqstacks, if an irq happens to hit the 
-first time a softirq executes (ever)? After that point the preempt_count 
-in the irq-stack ought to stay elevated.
+cpu_clock() can be faster than a cmpxchg on a global variable - as 
+cpu_clock() does not serialize globally at all as long as each CPU 
+observes its own time only.
+
+in any case, these are nuances - we need _some_ trace clock before we 
+worry about details like that ;-)
 
 	Ingo
