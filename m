@@ -1,54 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZAZTyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZAZTzH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbZAZTyt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZAZTyj
+	id S1753463AbZAZTzH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:55:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZAZTyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:54:39 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:51240 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026AbZAZTyi (ORCPT
+	Mon, 26 Jan 2009 14:54:54 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:40228 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754576AbZAZTyv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:54:38 -0500
-Date: Tue, 27 Jan 2009 01:24:31 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       Arve Hj?nnev?g <arve@android.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Menage <menage@google.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-Message-ID: <20090126195431.GC504@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <200901211638.23101.knikanth@suse.de>
+	Mon, 26 Jan 2009 14:54:51 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 26 Jan 2009 11:54:35 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Unexpected cascaded epoll behavior - my mistake or kernel bug
+In-Reply-To: <200901260228.54098.pisa@cmp.felk.cvut.cz>
+Message-ID: <alpine.DEB.1.10.0901261152160.26576@alien.or.mcafeemobile.com>
+References: <200901230109.55706.pisa@cmp.felk.cvut.cz> <alpine.DEB.1.10.0901241355120.9071@alien.or.mcafeemobile.com> <200901260228.54098.pisa@cmp.felk.cvut.cz>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <200901211638.23101.knikanth@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Nikanth Karthikesan <knikanth@suse.de> [2009-01-21 16:38:21]:
+On Mon, 26 Jan 2009, Pavel Pisa wrote:
 
-> As Alan Cox suggested/wondered in this thread, 
-> http://lkml.org/lkml/2009/1/12/235 , this is a container group based approach 
-> to override the oom killer selection without losing all the benefits of the 
-> current oom killer heuristics and oom_adj interface.
+> Hello Davide,
 > 
-> It adds a tunable oom.victim to the oom cgroup. The oom killer will kill the 
-> process using the usual badness value but only within the cgroup with the 
-> maximum value for oom.victim before killing any process from a cgroup with a 
-> lesser oom.victim number. Oom killing could be disabled by setting 
-> oom.victim=0.
+> thanks for fast reply and effort.
+> 
+> I have tested your patch with patched and unpatched 2.6.28.2 kernel.
+> The outputs are attached. The patched kernel passes all your tests.
+> 
+> But I have bad news. My library code does not fall into busy loop
+> after your patching but my FIFO tests do not work even in
+> single level epoll scenario. The strace output is attached as well.
+> I try to do more testing tomorrow. I have returned from weekend trip
+> at the evening today and I have not much time for deeper analysis.
+> 
+> But it looks like write level sensitive events are not triggering
+> for epoll at all. The pipe is not fill by any character and specified
+> timeout is triggered with next message as fail results.
+>   @ pipe #X evptrig wr timeout
+>   @ pipe #X evptrig rd timeout
+>  
+> If you want to test the code on your box, download library
+> 
+> http://cmp.felk.cvut.cz/~pisa/ulan/ul_evpoll-090123.tar.gz
+> 
+> The simple "make" in the top directory should work.
 
-Looking at the patch, I wonder if it is time for user space OOM
-notifications that were discussed during the containers mini-summit.
-The idea is to inform user space about OOM's and let user space take
-action, if no action is taken, the default handler kicks in.
+It'd be really great if you could spare me having to dig into few 
+thousands lines of userspace library code, and you could isolate a little 
+bit better what is the expected result, and the error result.
 
--- 
-	Balbir
+
+
+- Davide
+
+
