@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbZAZMQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZAZMTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753140AbZAZMQa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 07:16:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZAZMQV
+	id S1752829AbZAZMTU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 07:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZAZMTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 07:16:21 -0500
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:36323 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768AbZAZMQU (ORCPT
+	Mon, 26 Jan 2009 07:19:10 -0500
+Received: from ns1.wincor-nixdorf.com ([80.154.98.129]:51080 "EHLO
+	mxpdbe1.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750768AbZAZMTJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 07:16:20 -0500
-Date: Mon, 26 Jan 2009 13:16:14 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Mike Travis <travis@sgi.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH] sysrq: include interrupt.h instead of irq.h
-Message-ID: <20090126131614.4ad29c15@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <4977523B.6000507@sgi.com>
-References: <20090121150249.a87aca09.sfr@canb.auug.org.au>
-	<1232545758.31303.2.camel@osiris.boeblingen.de.ibm.com>
-	<4977523B.6000507@sgi.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Jan 2009 07:19:09 -0500
+Message-ID: <497DA8E3.5070006@wincor-nixdorf.com>
+Date: Mon, 26 Jan 2009 13:13:23 +0100
+From: Niels de Vos <niels.devos@wincor-nixdorf.com>
+Organization: Wincor Nixdorf International
+User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
+MIME-Version: 1.0
+To: Max Weninger <max.weninger@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: support of touchscreen reported as eGalax but is not working
+References: <20090125234902.7605fd16@zork.foo.com> 	<497D9469.3030908@wincor-nixdorf.com> <20090126124941.4f67aaf5@shire2>
+In-Reply-To: <20090126124941.4f67aaf5@shire2>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig3C75E243F7A9782569CB6BE7"
+X-OriginalArrivalTime: 26 Jan 2009 12:16:24.0545 (UTC) FILETIME=[E8058510:01C97FAF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 21 Jan 2009 08:50:03 -0800
-Mike Travis <travis@sgi.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig3C75E243F7A9782569CB6BE7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Thanks for catching this Heiko!
-> Mike
+Max Weninger wrote:
+> Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
+>> You can obviously download the drivers from
+>> <http://home.eeti.com.tw/web20/TouchKitDriver/linuxDriver.htm>.
+>>
+>> It would be great if eGalax could be convinced to get these drivers
+>> included in main-line ;)
+>=20
+> Thanks for your quick reply
+> BUT: I have tried those driver also
+>=20
+> I tried this "brandnew" one (but also older ones)
+> http://home.eeti.com.tw/web20/drivers/touch_driver/Linux/2.06.2416/Touc=
+hKit-2.06.2410-32b-k26.tar.gz
+> after making it compile for 2.6.28.2 :)
+> since there is source code delivered
 
-Erm... it still breaks. Are you going to add the patch to your tree?
+For what it's worth; the version we use from eGalax is 1.0.3.1701. I
+don't have the hardware here atm, so I can't test an other driver
+now.
 
-> Heiko Carstens wrote:
-> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > 
-> > With "cpumask: update irq_desc to use cpumask_var_t" in linux-next
-> > we get this compile bug on s390:
-> > 
-> >   CC      drivers/char/sysrq.o
-> > In file included from drivers/char/sysrq.c:38:
-> > include/linux/irq.h: In function 'init_alloc_desc_masks':
-> > include/linux/irq.h:442: error: dereferencing pointer to incomplete type
-> > 
-> > drivers/char/sysrq.c should include interrupt.h instead of irq.h.
-> > 
-> > Cc: Mike Travis <travis@sgi.com>
-> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > ---
-> >  drivers/char/sysrq.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-next/drivers/char/sysrq.c
-> > ===================================================================
-> > --- linux-next.orig/drivers/char/sysrq.c
-> > +++ linux-next/drivers/char/sysrq.c
-> > @@ -35,7 +35,7 @@
-> >  #include <linux/vt_kern.h>
-> >  #include <linux/workqueue.h>
-> >  #include <linux/kexec.h>
-> > -#include <linux/irq.h>
-> > +#include <linux/interrupt.h>
-> >  #include <linux/hrtimer.h>
-> >  #include <linux/oom.h>
+Cheers,
+Niels
+
+
+--------------enig3C75E243F7A9782569CB6BE7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFJfajj5KAkGQPO/QoRAvSPAJ4vLNRPRxPR3L59m2LtzBf3FjVEmACgkGjN
+2L4LTXk2In3vkj1bK96Yfxs=
+=o4lH
+-----END PGP SIGNATURE-----
+
+--------------enig3C75E243F7A9782569CB6BE7--
