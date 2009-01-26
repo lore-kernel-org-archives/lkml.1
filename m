@@ -1,28 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753841AbZAZR5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZAZR56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753841AbZAZR5o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751857AbZAZR53
+	id S1754293AbZAZR56 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:57:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZAZR5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:57:29 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:48064 "EHLO
+	Mon, 26 Jan 2009 12:57:37 -0500
+Received: from smtp.ultrahosting.com ([74.213.174.254]:42023 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751785AbZAZR53 (ORCPT
+	with ESMTP id S1753459AbZAZR5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:57:29 -0500
-Date: Mon, 26 Jan 2009 12:46:49 -0500 (EST)
+	Mon, 26 Jan 2009 12:57:34 -0500
+Date: Mon, 26 Jan 2009 12:36:05 -0500 (EST)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@qirst.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <200901240409.27449.nickpiggin@yahoo.com.au>
-Message-ID: <alpine.DEB.1.10.0901261241070.22291@qirst.com>
-References: <20090114150900.GC25401@wotan.suse.de> <alpine.DEB.1.10.0901231042380.32253@qirst.com> <20090123161017.GC14517@wotan.suse.de> <200901240409.27449.nickpiggin@yahoo.com.au>
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>, matthew.r.wilcox@intel.com,
+       chinang.ma@intel.com, linux-kernel@vger.kernel.org,
+       sharad.c.tripathi@intel.com, arjan@linux.intel.com,
+       suresh.b.siddha@intel.com, harita.chilukuri@intel.com,
+       douglas.w.styner@intel.com, peter.xihong.wang@intel.com,
+       hubert.nueckel@intel.com, chris.mason@oracle.com, srostedt@redhat.com,
+       linux-scsi@vger.kernel.org, andrew.vasquez@qlogic.com,
+       anirban.chakraborty@qlogic.com, Ingo Molnar <mingo@elte.hu>
+Subject: Re: Mainline kernel OLTP performance update
+In-Reply-To: <1232765728.11429.193.camel@ymzhang>
+Message-ID: <alpine.DEB.1.10.0901261235270.1908@qirst.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>  <200901161503.13730.nickpiggin@yahoo.com.au>  <20090115201210.ca1a9542.akpm@linux-foundation.org>  <200901161746.25205.nickpiggin@yahoo.com.au>  <20090116065546.GJ31013@parisc-linux.org>
+  <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>  <1232428583.11429.83.camel@ymzhang>  <alpine.DEB.1.10.0901211852060.18367@qirst.com>  <1232613395.11429.122.camel@ymzhang>  <1232615707.14549.6.camel@penberg-laptop> 
+ <1232616517.11429.129.camel@ymzhang>  <1232617672.14549.25.camel@penberg-laptop>  <1232679773.11429.155.camel@ymzhang>  <4979692B.3050703@cs.helsinki.fi>  <1232697998.6094.17.camel@penberg-laptop>  <1232699401.11429.163.camel@ymzhang> 
+ <1232703989.6094.29.camel@penberg-laptop>  <alpine.DEB.1.10.0901231020030.21692@qirst.com> <1232765728.11429.193.camel@ymzhang>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -30,33 +39,16 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 24 Jan 2009, Nick Piggin wrote:
+On Sat, 24 Jan 2009, Zhang, Yanmin wrote:
 
-> > > SLUB can directly free an object to any slab page. "Queuing" on free via
-> > > the per cpu slab is only possible if the object came from that per cpu
-> > > slab. This is typically only the case for objects that were recently
-> > > allocated.
-> >
-> > Ah yes ok that's right. But then you don't get LIFO allocation
-> > behaviour for those cases.
->
-> And actually really this all just stems from conceptually in fact you
-> _do_ switch to a different queue (from the one being allocated from)
-> to free the object if it is on a different page. Because you have a
-> set of queues (a queue per-page). So freeing to a different queue is
-> where you lose LIFO property.
+> But when trying to increased it to 4, I got:
+> [root@lkp-st02-x8664 slab]# echo "3">kmalloc-8192/order
+> [root@lkp-st02-x8664 slab]# echo "4">kmalloc-8192/order
+> -bash: echo: write error: Invalid argument
 
-Yes you basically go for locality instead of LIFO if the free does not hit
-the per cpu slab. If the object is not in the per cpu slab then it is
-likely that it had a long lifetime and thus LIFOness does not matter
-too much. It is likely that many objects from that slab are going to be
-freed at the same time. So the first free warms up the "queue" of the page
-you are freeing to.
+This is because 4 is more than the maximum allowed order. You can
+reconfigure that by setting
 
-This is an increasingly important feature since memory chips prefer
-allocations next to each other. Same page accesses are faster
-in recent memory subsystems than random accesses across memory. LIFO used
-to be better but we are increasingly getting into locality of access being
-very important for access. Especially with the NUMA characteristics of the
-existing AMD and upcoming Nehalem processors this will become much more
-important.
+slub_max_order=5
+
+or so on boot.
