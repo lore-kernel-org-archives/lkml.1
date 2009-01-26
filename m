@@ -1,44 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZAZRnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZAZRqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbZAZRnU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:43:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbZAZRm7
+	id S1753866AbZAZRqq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:46:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZAZRqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:42:59 -0500
-Received: from stargate.chelsio.com ([12.22.49.110]:5778 "EHLO
+	Mon, 26 Jan 2009 12:46:31 -0500
+Received: from stargate.chelsio.com ([12.22.49.110]:6738 "EHLO
 	stargate.asicdesigners.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752000AbZAZRm6 (ORCPT
+	by vger.kernel.org with ESMTP id S1751845AbZAZRqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:42:58 -0500
-Message-ID: <497DF609.9000600@chelsio.com>
-Date: Mon, 26 Jan 2009 09:42:33 -0800
+	Mon, 26 Jan 2009 12:46:30 -0500
 From: Divy Le Ray <divy@chelsio.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+Subject: [PATCH 2.6.30 1/2] cxgb3 - Notify fatal errors
+To: davem@davemloft.net, rdreier@cisco.com
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       swise@opengridcomputing.com, wenxiong@us.ibm.com
+Date: Mon, 26 Jan 2009 09:46:05 -0800
+Message-ID: <20090126174605.29703.40342.stgit@speedy5>
+User-Agent: StGIT/0.13
 MIME-Version: 1.0
-To: "David S. Miller" <davem@davemloft.net>, Roland Dreier <rdreier@cisco.com>,
-       Steve Wise <swise@opengridcomputing.com>
-CC: Linux Network Development list <netdev@vger.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 0/2 2.6.30] cxgb3 - notify iWARP of chip resets
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Jan 2009 17:43:08.0328 (UTC) FILETIME=[8CC96A80:01C97FDD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dave, Roland,
+From: Divy Le Ray <divy@chelsio.com>
 
-I'm submitting 2 patches against cxgb3 and iw_cxgb3 respectively.
-They are built against net-next-2.6.
-The first patch adds a notification mechanism to cxgb3 to alert
-the upper layer drivers (iWARP and iSCSI) of a chip reset.
+Set up a notification mechanism to inform upper layer modules
+(iWARP, iSCSI) of a chip reset due to an EEH event or a fatal error.
 
-The second patch adds the handler for such an event in the iWARP driver.
+Signed-off-by: Divy Le Ray <divy@chelsio.com>
+---
 
-Since the second patch depends on the first one, I submit them together,
-even though the second patch should be submitted against Roland's tree.
+ drivers/net/cxgb3/cxgb3_main.c    |   13 +++++++++----
+ drivers/net/cxgb3/cxgb3_offload.c |   12 ++++++++++++
+ drivers/net/cxgb3/cxgb3_offload.h |    7 +++++++
+ 3 files changed, 28 insertions(+), 4 deletions(-)
 
-Cheers,
-Divy
+diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
+index 7381f37..f2c7cc3 100644
+--- a/drivers/net/cxgb3/cxgb3_main.c
++++ b/drivers/net/cxgb3/cxgb3_main.c
+@@ -2542,6 +2542,12 @@ static int t3_adapter_error(struct adapter *adapter, int reset)
+ {
+ 	int i, ret = 0;
+ 
++	if (is_offload(adapter) &&
++	    test_bit(OFFLOAD_DEVMAP_BIT, &adapter->open_device_map)) {
++		cxgb3_err_notify(&adapter->tdev, OFFLOAD_STATUS_DOWN, 0);
++		offload_close(&adapter->tdev);
++	}
++
+ 	/* Stop all ports */
+ 	for_each_port(adapter, i) {
+ 		struct net_device *netdev = adapter->port[i];
+@@ -2550,10 +2556,6 @@ static int t3_adapter_error(struct adapter *adapter, int reset)
+ 			cxgb_close(netdev);
+ 	}
+ 
+-	if (is_offload(adapter) &&
+-	    test_bit(OFFLOAD_DEVMAP_BIT, &adapter->open_device_map))
+-		offload_close(&adapter->tdev);
+-
+ 	/* Stop SGE timers */
+ 	t3_stop_sge_timers(adapter);
+ 
+@@ -2605,6 +2607,9 @@ static void t3_resume_ports(struct adapter *adapter)
+ 			}
+ 		}
+ 	}
++
++	if (is_offload(adapter) && !ofld_disable)
++		cxgb3_err_notify(&adapter->tdev, OFFLOAD_STATUS_UP, 0);
+ }
+ 
+ /*
+diff --git a/drivers/net/cxgb3/cxgb3_offload.c b/drivers/net/cxgb3/cxgb3_offload.c
+index 2d7f69a..620d80b 100644
+--- a/drivers/net/cxgb3/cxgb3_offload.c
++++ b/drivers/net/cxgb3/cxgb3_offload.c
+@@ -153,6 +153,18 @@ void cxgb3_remove_clients(struct t3cdev *tdev)
+ 	mutex_unlock(&cxgb3_db_lock);
+ }
+ 
++void cxgb3_err_notify(struct t3cdev *tdev, u32 status, u32 error)
++{
++	struct cxgb3_client *client;
++
++	mutex_lock(&cxgb3_db_lock);
++	list_for_each_entry(client, &client_list, client_list) {
++		if (client->err_handler)
++			client->err_handler(tdev, status, error);
++	}
++	mutex_unlock(&cxgb3_db_lock);
++}
++
+ static struct net_device *get_iff_from_mac(struct adapter *adapter,
+ 					   const unsigned char *mac,
+ 					   unsigned int vlan)
+diff --git a/drivers/net/cxgb3/cxgb3_offload.h b/drivers/net/cxgb3/cxgb3_offload.h
+index d514e50..a8e8e5f 100644
+--- a/drivers/net/cxgb3/cxgb3_offload.h
++++ b/drivers/net/cxgb3/cxgb3_offload.h
+@@ -64,10 +64,16 @@ void cxgb3_register_client(struct cxgb3_client *client);
+ void cxgb3_unregister_client(struct cxgb3_client *client);
+ void cxgb3_add_clients(struct t3cdev *tdev);
+ void cxgb3_remove_clients(struct t3cdev *tdev);
++void cxgb3_err_notify(struct t3cdev *tdev, u32 status, u32 error);
+ 
+ typedef int (*cxgb3_cpl_handler_func)(struct t3cdev *dev,
+ 				      struct sk_buff *skb, void *ctx);
+ 
++enum {
++	OFFLOAD_STATUS_UP,
++	OFFLOAD_STATUS_DOWN
++};
++
+ struct cxgb3_client {
+ 	char *name;
+ 	void (*add) (struct t3cdev *);
+@@ -76,6 +82,7 @@ struct cxgb3_client {
+ 	int (*redirect)(void *ctx, struct dst_entry *old,
+ 			struct dst_entry *new, struct l2t_entry *l2t);
+ 	struct list_head client_list;
++	void (*err_handler)(struct t3cdev *tdev, u32 status, u32 error);
+ };
+ 
+ /*
 
