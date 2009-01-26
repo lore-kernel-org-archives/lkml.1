@@ -1,99 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbZAZPUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZAZPWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752547AbZAZPUU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 10:20:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZAZPUH
+	id S1752241AbZAZPWe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 10:22:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZAZPW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 10:20:07 -0500
-Received: from mta-out.inet.fi ([195.156.147.13]:47785 "EHLO jenni1.inet.fi"
+	Mon, 26 Jan 2009 10:22:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40953 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbZAZPUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 10:20:06 -0500
-To: linux-doc@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Michael Kerrisk <mtk.manpages@gmail.com>,
-       Randy Dunlap <rdunlap@xenotime.net>,
-       Johannes Weiner <hannes@saeurebad.de>
-Subject: Re: [PATCH] Documentation: update CodingStyle tips for Emacs users
-In-Reply-To: <1232299115-8130-1-git-send-email-tlikonen@iki.fi> (Teemu Likonen's message of "Sun\, 18 Jan 2009 19\:18\:35 +0200")
-References: <1232299115-8130-1-git-send-email-tlikonen@iki.fi>
-From: Teemu Likonen <tlikonen@iki.fi>
-Date: Mon, 26 Jan 2009 17:20:02 +0200
-Message-ID: <87priaumal.fsf@iki.fi>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	id S1751212AbZAZPWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 10:22:25 -0500
+Date: Mon, 26 Jan 2009 16:22:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Laurent Riffard <laurent.riffard@free.fr>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: improve preempt debugging
+Message-ID: <20090126152213.GI9128@elte.hu>
+References: <0090126150909.GG9128@elte.hu> <20090126151521.8534.46503.stgit@nx>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090126151521.8534.46503.stgit@nx>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Teemu Likonen (2009-01-18 19:18 +0200) wrote:
 
-> With the previous Emacs tips example the kernel style was made available
-> for files in the kernel-tree only. This patch updates the tip to add
-> separate cc-mode indent style; it makes the kernel style easily
-> available for any filetype mode that is managed by the Emacs cc-mode.
->
-> We also fix the filename regexp in the example: Elisp function
-> buffer-file-name returns full pathname, not a path relative to user's
-> home directory. Hence a tilde (~) can't be used to refer to home
-> directory (as the previous code did).
->
-> Signed-off-by: Teemu Likonen <tlikonen@iki.fi>
-> ---
->  Documentation/CodingStyle |   19 +++++++++++++------
->  1 files changed, 13 insertions(+), 6 deletions(-)
+* Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
 
+> From: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+> Subject: [PATCH] Set the initial softirq preempt count to SOFTIRQ_OFFSET
+> 
+> Does not changes the preemption semantics, as the
+> softirq's obviously can't be preempted, but fixes
+> a spurious warning in sub_preempt_count, which
+> happens when the preempt count is returned to
+> zero, and the interrupted thread is holding the
+> BKL.
+> 
+> Signed-off-by: Alexey Zaytsev <alexey.zaytsev@gmail.com>
 
-Exactly what I expected: nobody pays any attention. :-) Well, it's not a
-problem, I'm not even a kernel coder. I just happen to think that this
-patch introduces the right way to configure Emacs for kernel coding
-style. Adding a custom style like this ("linux-tabs-only") makes it much
-easier to switch between different indent styles and also to use the
-kernel style elsewhere.
+applied to tip/sched/urgent, thanks Alexey.
 
-So, I'll just ping the lists and maintainers this one more time to see
-if someone is interested. Here's my original message:
+I also re-added Nick's original patch on top of that (see it below) - this 
+way we'll see whether it's all sorted out for good.
 
-    http://article.gmane.org/gmane.linux.documentation/442
+Thanks,
 
+	Ingo
 
-> diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-> index 1875e50..2cda242 100644
-> --- a/Documentation/CodingStyle
-> +++ b/Documentation/CodingStyle
-> @@ -483,20 +483,27 @@ values.  To do the latter, you can stick the following in your .emacs file:
->      (* (max steps 1)
->         c-basic-offset)))
->  
-> +(add-hook 'c-mode-common-hook
-> +          (lambda ()
-> +            ;; Add kernel style
-> +            (c-add-style
-> +             "linux-tabs-only"
-> +             '("linux" (c-offsets-alist
-> +                        (arglist-cont-nonempty
-> +                         c-lineup-gcc-asm-reg
-> +                         c-lineup-arglist-tabs-only))))))
-> +
->  (add-hook 'c-mode-hook
->            (lambda ()
->              (let ((filename (buffer-file-name)))
->                ;; Enable kernel mode for the appropriate files
->                (when (and filename
-> -                         (string-match "~/src/linux-trees" filename))
-> +                         (string-match "src/linux-trees" filename))
->                  (setq indent-tabs-mode t)
-> -                (c-set-style "linux")
-> -                (c-set-offset 'arglist-cont-nonempty
-> -                              '(c-lineup-gcc-asm-reg
-> -                                c-lineup-arglist-tabs-only))))))
-> +                (c-set-style "linux-tabs-only")))))
->  
->  This will make emacs go better with the kernel coding style for C
-> -files below ~/src/linux-trees.
-> +files which pathname matches src/linux-trees.
->  
->  But even if you fail in getting emacs to do sane formatting, not
->  everything is lost: use "indent".
-> -- 
-> 1.6.1.156.gb648d
+------------------>
+>From ed094285f3495ad5393fc424011c926f1b6138c1 Mon Sep 17 00:00:00 2001
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+Date: Tue, 30 Sep 2008 20:50:27 +1000
+Subject: [PATCH] sched: improve preempt debugging
+
+This patch helped me out with a problem I recently had....
+
+Basically, when the kernel lock is held, then preempt_count underflow does not
+get detected until it is released which may be a long time (and arbitrarily,
+eg at different points it may be rescheduled). If the bkl is released at
+schedule, the resulting output is actually fairly cryptic...
+
+With any other lock that elevates preempt_count, it is illegal to schedule
+under it (which would get found pretty quickly). bkl allows scheduling with
+preempt_count elevated, which makes underflows hard to debug.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+[ This is a re-try of this commit:
+
+    7317d7b: sched: improve preempt debugging
+
+  which was reverted in:
+
+    01e3eb8: Revert "sched: improve preempt debugging"
+
+  because this commit:
+
+    d04d99d: x86: set the initial softirq preempt count to SOFTIRQ_OFFSET
+
+  Fixes the real cause of the spurious warning. ]
+---
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 52bbf1c..8c2be1e 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -4440,7 +4440,7 @@ void __kprobes sub_preempt_count(int val)
+ 	/*
+ 	 * Underflow?
+ 	 */
+-	if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
++       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
+ 		return;
+ 	/*
+ 	 * Is the spinlock portion underflowing?
