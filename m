@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZAZQ1e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbZAZQaN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752786AbZAZQ1e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:27:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZAZQ1Z
+	id S1752847AbZAZQaN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:30:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZAZQaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 11:27:25 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44099 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751644AbZAZQ1Y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 11:27:24 -0500
-Date: Mon, 26 Jan 2009 17:27:11 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>, Eric Sesterhenn <snakebyte@gmx.de>,
-       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Subject: Re: Warning and BUG with btrfs and corrupted image
-Message-ID: <20090126162711.GA2083@elf.ucw.cz>
-References: <1231857643.29164.28.camel@think.oraclecorp.com> <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice> <20090120101119.GB10158@disturbed> <20090120101503.GC17377@alice> <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org> <20090120222019.GB2320@elf.ucw.cz> <20090121040042.GI10158@disturbed>
+	Mon, 26 Jan 2009 11:30:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58647 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751497AbZAZQ37 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 11:29:59 -0500
+Date: Mon, 26 Jan 2009 17:29:54 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: davem@davemloft.net, herbert@gondor.apana.org.au, nhorman@redhat.com
+Subject: [PATCH] net: fix xfrm reverse flow lookup for icmp6
+Message-ID: <20090126162953.GA17952@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090121040042.GI10158@disturbed>
-X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-01-21 15:00:42, Dave Chinner wrote:
-> On Tue, Jan 20, 2009 at 11:20:19PM +0100, Pavel Machek wrote:
-> > On Tue 2009-01-20 08:28:29, Christoph Hellwig wrote:
-> > > On Tue, Jan 20, 2009 at 11:59:44PM +1100, Dave Chinner wrote:
-> > > > > So far the responses from xfs folks have been disappointing, if you are
-> > > > > interested in bugreports i can send you some.
-> > > > 
-> > > > Sure I am.  It would be good if you could start testing XFS along
-> > > > with all the other filesystems and report anything you find.
-> > > 
-> > > I think that was the issue with the debug builds.  If you do this
-> > > testing always do it without CONFIG_XFS_DEBUG set as with that option
-> > > we intentionally panic on detected disk corruptions.
-> > 
-> > Uhuh, *_DEBUG options are not supposed to make kernel less
-> > stable/robust. Should that crashing functionality be guarded with
-> > command line option or something? ext2 has errors=panic mount
-> > option...
-> 
-> No, it's a debugging option that is described as:
-> 
-> 	"Say N unless you are an XFS developer, or you play one on TV."
-> 
-> Seriously, if you aren't trying to develop XFS stuff then *don't turn it
-> on*.
+This patch fixes the xfrm reverse flow lookup for icmp6 so that icmp6 packets
+don't get lost over ipsec tunnels. Similar patch is in RHEL5 kernel for a quite
+long time and I do not see why it isn't in mainline.
 
-What about this, then?
-									Pavel
+Please correct me if I'm missing something.
 
+Jirka
+
+
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 ---
-Warn in documentation that XFS_DEBUG panics machines.
+ net/ipv6/icmp.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/fs/xfs/Kconfig b/fs/xfs/Kconfig
-index 3f53dd1..55c98eb 100644
---- a/fs/xfs/Kconfig
-+++ b/fs/xfs/Kconfig
-@@ -76,4 +76,7 @@ config XFS_DEBUG
- 	  Note that the resulting code will be HUGE and SLOW, and probably
- 	  not useful unless you are debugging a particular problem.
+diff --git a/net/ipv6/icmp.c b/net/ipv6/icmp.c
+index 4f43384..36dff88 100644
+--- a/net/ipv6/icmp.c
++++ b/net/ipv6/icmp.c
+@@ -443,10 +443,10 @@ void icmpv6_send(struct sk_buff *skb, int type, int code, __u32 info,
+ 	if (xfrm_decode_session_reverse(skb, &fl2, AF_INET6))
+ 		goto relookup_failed;
  
-+	  Turning this option on will result in kernel panicking any time
-+	  it detects on-disk corruption.
-+
- 	  Say N unless you are an XFS developer, or you play one on TV.
-
-
+-	if (ip6_dst_lookup(sk, &dst2, &fl))
++	if (ip6_dst_lookup(sk, &dst2, &fl2))
+ 		goto relookup_failed;
+ 
+-	err = xfrm_lookup(net, &dst2, &fl, sk, XFRM_LOOKUP_ICMP);
++	err = xfrm_lookup(net, &dst2, &fl2, sk, XFRM_LOOKUP_ICMP);
+ 	switch (err) {
+ 	case 0:
+ 		dst_release(dst);
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.0.6
+
+
