@@ -1,57 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbZAZJLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZAZJMX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbZAZJLb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 04:11:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752766AbZAZJLG
+	id S1752984AbZAZJMX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 04:12:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZAZJMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 04:11:06 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:42694 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752609AbZAZJLF (ORCPT
+	Mon, 26 Jan 2009 04:12:09 -0500
+Received: from smtp118.sbc.mail.sp1.yahoo.com ([69.147.64.91]:28222 "HELO
+	smtp118.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750943AbZAZJMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 04:11:05 -0500
-Subject: Re: [patch] SLQB slab allocator (try 2)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <1232960840.4863.7.camel@laptop>
-References: <20090123154653.GA14517@wotan.suse.de>
-	 <1232959706.21504.7.camel@penberg-laptop>  <1232960840.4863.7.camel@laptop>
+	Mon, 26 Jan 2009 04:12:08 -0500
+X-YMail-OSG: l5tgiuUVM1lYYnVqtvcMXl9gwyTi6dzyWtqC7FKxQyvGh8GRsay3AWLdvw9uSJabxxy4_Z1xgo3stXNJ9mnXLoHajn.3GF5RTcaKxc1q9EOZBYe4lHj8fs77uHF1Nz2nXOJRGcreEQtDEXuYgKGec0SjL6hHWYqDZxW.ImDc735VK9aTVE6wT9an4aHLBIppzf22uE.eoF6eQffssfPCbOkdjkXexFaisYQxR.PHZ0H1mP9.Sm4-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH 7/7] [Target_Core_Mod/ConfigFS]: Add res_pr_all_tgt_pts,
+	res_pr_generation and res_pr_registered_i_pts
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Douglas Gilbert <dgilbert@interlog.com>, Andrew Morton <akpm@osdl.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Ming Zhang <blackmagic02881@gmail.com>,
+       "Ross S. W. Walker" <rswwalker@gmail.com>,
+       Arne Redlich <agr@powerkom-dd.de>, Rafiu Fakunle <rafiu@openfiler.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain
-Date: Mon, 26 Jan 2009 10:10:51 +0100
-Message-Id: <1232961051.4863.10.camel@laptop>
+Date: Mon, 26 Jan 2009 01:11:43 -0800
+Message-Id: <1232961103.24642.135.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-26 at 10:07 +0100, Peter Zijlstra wrote:
-> On Mon, 2009-01-26 at 10:48 +0200, Pekka Enberg wrote:
-> > Christoph has expressed concerns over latency issues of SLQB, I suppose
-> > it would be interesting to hear if it makes any difference to the
-> > real-time folks.
-> 
-> I'll 'soon' take a stab at converting SLQB for -rt. Currently -rt is
-> SLAB only.
-> 
-> Then again, anything that does allocation is per definition not bounded
-> and not something we can have on latency critical paths -- so on that
-> respect its not interesting.
+>From 45345eb366caa5f823cc3177e36fc80a356e0ab8 Mon Sep 17 00:00:00 2001
+From: Nicholas Bellinger <nab@linux-iscsi.org>
+Date: Mon, 26 Jan 2009 00:49:29 -0800
+Subject: [PATCH 7/7] [Target_Core_Mod/ConfigFS]: Add res_pr_all_tgt_pts, res_pr_generation and res_pr_registered_i_pts
 
-Before someone pipes up, _yes_ I do know about RT allocators and such.
+This patch adds support for the following Target_Core_Mod/ConfigFS attributes on a *PER*
+/sys/kernel/config/target/core/$HBA/$STORAGE_OBJECT basis:
 
-No we don't do that in-kernel, other than through reservation mechanisms
-like mempool -- and I'd rather extend that than try and get page reclaim
-bounded.
+|-- pscsi_0
+|   |-- hba_info
+|   `-- sdd
+|       |-- attrib
+|       |   |-- hw_max_sectors
+|       |   |-- hw_queue_depth
+|       |   |-- max_sectors
+|       |   |-- queue_depth
+|       |   |-- status_thread
+|       |   |-- status_thread_tur
+|       |   `-- task_timeout
+<SNIP>
+|       |-- pr
+|       |   |-- res_holder
+|       |   |-- res_pr_all_tgt_pts
+|       |   |-- res_pr_generation
+|       |   |-- res_pr_registered_i_pts
+|       |   `-- res_type
+|       `-- wwn
+|           |-- evpd_assoc_logical_unit
+|           |-- evpd_assoc_scsi_target_device
+|           |-- evpd_assoc_target_port
+|           |-- evpd_protocol_identifier
+|           `-- evpd_unit_serial
 
-Yes, I also know about folks doing RT paging, and no, I'm not wanting to
-hear about that either ;-)
+This patch also renames PR ConfigFS attribute res_active -> res_holder to better
+reflect language in >= SPC-3 NCITS T10 Standards Documents.
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+---
+ drivers/lio-core/target_core_configfs.c |  107 +++++++++++++++++++++++++++++--
+ 1 files changed, 102 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
+index 1788fbb..1a3f754 100644
+--- a/drivers/lio-core/target_core_configfs.c
++++ b/drivers/lio-core/target_core_configfs.c
+@@ -779,7 +779,7 @@ static struct target_core_dev_pr_attribute target_core_dev_pr_##_name =		\
+ 	target_core_dev_pr_show_attr_##_name);					\
+ 
+ /*
+- * res_active
++ * res_holder
+  */
+ static ssize_t target_core_dev_pr_show_spc3_res (
+ 	struct se_device_s *dev,
+@@ -811,12 +811,15 @@ static ssize_t target_core_dev_pr_show_spc2_res (
+ 	return(*len);
+ }
+ 
+-static ssize_t target_core_dev_pr_show_attr_res_active (
++static ssize_t target_core_dev_pr_show_attr_res_holder (
+ 	struct se_subsystem_dev_s *su_dev,
+ 	char *page)
+ {
+ 	ssize_t len = 0;
+ 
++	if (!(su_dev->se_dev_ptr))
++		return(-ENODEV);
++
+ 	switch (T10_RES(su_dev)->res_type) {
+ 	case SPC3_PERSISTENT_RESERVATIONS:
+ 		target_core_dev_pr_show_spc3_res(su_dev->se_dev_ptr,
+@@ -827,7 +830,7 @@ static ssize_t target_core_dev_pr_show_attr_res_active (
+ 				page, &len);
+ 		break;
+ 	case SPC_PASSTHROUGH:
+-		len += sprintf(page+len, "None\n");
++		len += sprintf(page+len, "Passthrough\n");
+ 		break;
+ 	default:
+ 		len += sprintf(page+len, "Unknown\n");
+@@ -837,7 +840,93 @@ static ssize_t target_core_dev_pr_show_attr_res_active (
+ 	return(len);
+ }
+ 
+-SE_DEV_PR_ATTR_RO(res_active);
++SE_DEV_PR_ATTR_RO(res_holder);
++
++/*
++ * res_pr_all_tgt_pts
++ */
++static ssize_t target_core_dev_pr_show_attr_res_pr_all_tgt_pts (
++	struct se_subsystem_dev_s *su_dev,
++	char *page)
++{
++	ssize_t len = 0;
++
++	if (!(su_dev->se_dev_ptr))
++		return(-ENODEV);
++
++	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS) {
++		return(sprintf(page, "res_pr_generation only valid for"
++			" SPC3_PERSISTENT_RESERVATIONS\n"));
++	}
++
++	len = sprintf(page, "Not Implemented yet\n");
++	return(len);
++}
++
++SE_DEV_PR_ATTR_RO(res_pr_all_tgt_pts);
++
++/*
++ * res_pr_generation
++ */
++static ssize_t target_core_dev_pr_show_attr_res_pr_generation (
++	struct se_subsystem_dev_s *su_dev,
++	char *page)
++{
++	if (!(su_dev->se_dev_ptr))
++		return(-ENODEV);
++
++	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS) {
++		return(sprintf(page, "res_pr_generation only valid for"
++			" SPC3_PERSISTENT_RESERVATIONS\n"));
++	}
++
++	return(sprintf(page, "0x%08x\n", T10_RES(su_dev)->pr_generation));
++}
++
++SE_DEV_PR_ATTR_RO(res_pr_generation);
++
++/*
++ * res_pr_registered_i_pts
++ */
++static ssize_t target_core_dev_pr_show_attr_res_pr_registered_i_pts (
++	struct se_subsystem_dev_s *su_dev,
++	char *page)
++{
++	struct target_core_fabric_ops *tfo;
++	t10_pr_registration_t *pr_reg;
++	unsigned char buf[384];
++	ssize_t len = 0;
++
++	if (!(su_dev->se_dev_ptr))
++		return(-ENODEV);
++
++	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS) {
++		len = sprintf(page, "res_pr_registered_i_pts only valid for"
++			" SPC3_PERSISTENT_RESERVATIONS\n");
++		return(len);
++	}
++	spin_lock(&T10_RES(su_dev)->registration_lock);
++	list_for_each_entry(pr_reg, &T10_RES(su_dev)->registration_list,
++			pr_reg_list) {
++
++		memset(buf, 0, 384);
++		tfo = pr_reg->pr_reg_nacl->se_tpg->se_tpg_tfo;
++		sprintf(buf, "%s Node: %s Key: 0x%016Lx PRgen: 0x%08x\n",
++			tfo->get_fabric_name(),
++			pr_reg->pr_reg_nacl->initiatorname,
++			pr_reg->pr_res_key, pr_reg->pr_res_generation);
++
++		if ((len + strlen(buf) > PAGE_SIZE))
++			break;
++
++		len += sprintf(page+len, "%s", buf);	
++	}
++	spin_unlock(&T10_RES(su_dev)->registration_lock);
++
++	return(len);
++}
++
++SE_DEV_PR_ATTR_RO(res_pr_registered_i_pts);
+ 
+ /*
+  * res_type
+@@ -847,6 +936,9 @@ static ssize_t target_core_dev_pr_show_attr_res_type (
+ 	char *page)
+ {
+ 	ssize_t len = 0;
++
++	if (!(su_dev->se_dev_ptr))
++		return(-ENODEV);
+ 	
+ 	switch (T10_RES(su_dev)->res_type) {
+ 	case SPC3_PERSISTENT_RESERVATIONS:
+@@ -871,7 +963,10 @@ SE_DEV_PR_ATTR_RO(res_type);
+ CONFIGFS_EATTR_OPS(target_core_dev_pr, se_subsystem_dev_s, se_dev_pr_group);
+ 
+ static struct configfs_attribute *target_core_dev_pr_attrs[] = {
+-	&target_core_dev_pr_res_active.attr,
++	&target_core_dev_pr_res_holder.attr,
++	&target_core_dev_pr_res_pr_all_tgt_pts.attr,
++	&target_core_dev_pr_res_pr_generation.attr,
++	&target_core_dev_pr_res_pr_registered_i_pts.attr,
+ 	&target_core_dev_pr_res_type.attr,
+ 	NULL,
+ };
+@@ -1128,6 +1223,8 @@ static struct config_group *target_core_call_createdev (
+ 	}
+ 	INIT_LIST_HEAD(&se_dev->t10_wwn.t10_evpd_list);
+ 	spin_lock_init(&se_dev->t10_wwn.t10_evpd_lock);
++	INIT_LIST_HEAD(&se_dev->t10_reservation.registration_list);
++	spin_lock_init(&se_dev->t10_reservation.registration_lock);
+ 	spin_lock_init(&se_dev->se_dev_lock);
+ 
+ 	se_dev->t10_wwn.t10_sub_dev = se_dev;
+-- 
+1.5.4.1
+
+
 
