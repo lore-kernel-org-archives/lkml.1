@@ -1,35 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbZAZVhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZAZVj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754242AbZAZVhE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 16:37:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZAZVgy
+	id S1754042AbZAZVj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:39:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752252AbZAZVjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 16:36:54 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42854 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752019AbZAZVgx (ORCPT
+	Mon, 26 Jan 2009 16:39:48 -0500
+Received: from milhouse.binasys.co.uk ([216.12.200.91]:58657 "EHLO
+	milhouse.binasys.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751879AbZAZVjr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 16:36:53 -0500
-Date: Mon, 26 Jan 2009 13:35:51 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: oleg@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
-       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090126133551.fab5e27a.akpm@linux-foundation.org>
-In-Reply-To: <20090126212727.GA13670@elte.hu>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<20090116191108.533053000@polaris-admin.engr.sgi.com>
-	<20090124001537.7cfde78e.akpm@linux-foundation.org>
-	<200901261711.43943.rusty@rustcorp.com.au>
-	<20090125230130.bcdab2e5.akpm@linux-foundation.org>
-	<20090126171618.GA32091@elte.hu>
-	<20090126103529.cb124a58.akpm@linux-foundation.org>
-	<20090126202022.GA8867@elte.hu>
-	<20090126130046.37b8f34e.akpm@linux-foundation.org>
-	<20090126212727.GA13670@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 26 Jan 2009 16:39:47 -0500
+Date: Mon, 26 Jan 2009 21:39:31 +0000
+From: Steve Brokenshire <sbrokenshire@xestia.co.uk>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       linux-kbuild@vger.kernel.org
+Subject: Re: [PATCH] Compress kernel modules on installation.
+Message-Id: <20090126213931.66aa94f9.sbrokenshire@xestia.co.uk>
+In-Reply-To: <alpine.LSU.2.00.0901251900490.7363@fbirervta.pbzchgretzou.qr>
+References: <20080225214209.a3f79327.sbrokenshire@xestia.co.uk>
+	<20080226112840.GA29465@uranus.ravnborg.org>
+	<alpine.LSU.2.00.0812262026320.11203@fbirervta.pbzchgretzou.qr>
+	<20081226194833.GA8306@uranus.ravnborg.org>
+	<20090120033047.7412d93e.sbrokenshire@xestia.co.uk>
+	<20090125165118.dfdd3978.sbrokenshire@xestia.co.uk>
+	<alpine.LSU.2.00.0901251900490.7363@fbirervta.pbzchgretzou.qr>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.4; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -37,33 +33,159 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 22:27:27 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Sun, 25 Jan 2009 19:02:21 +0100 (CET)
+Jan Engelhardt <jengelh@medozas.de> wrote:
 
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sunday 2009-01-25 17:51, Steve Brokenshire wrote:
+> >+
+> >+quiet_cmd_modules_install = INSTALL  $@
+> >+      cmd_modules_install = mkdir -p $(2); \
+> >+				cp $@ $(2) ; \
+> >+				$(mod_strip_cmd) $(2)/$(notdir $@)
+> >+
+> >+quiet_cmd_modules_compress_gzip = COMPRESS $@
+> >+      cmd_modules_compress_gzip = gzip $(MODCOMPOPT) -c \
+> >+				 $(2)/`basename $@` \
+> >+				 > $(2)/`basename $@`.gz; \
+> >+				 rm $(2)/`basename $@`
 > 
-> > > So if it's generic it ought to be implemented in a generic way - not a 
-> > > "dont use from any codepath that has a lock held that might 
-> > > occasionally also be held in a keventd worklet". (which is a totally 
-> > > unmaintainable proposition and which would just cause repeat bugs 
-> > > again and again.)
-> > 
-> > That's different.  The core fault here lies in the keventd workqueue 
-> > handling code.  If we're flushing work A then we shouldn't go and block 
-> > behind unrelated work B.
-> 
-> the blocking is inherent in the concept of "a queue of worklets handled by 
-> a single thread".
-> 
-> If a worklet is blocked then all other work performed by that thread is 
-> blocked as well. So by waiting on a piece of work in the queue, we wait 
-> for all prior work queued up there as well.
-> 
-> The only way to decouple that and to make them independent (and hence 
-> independently flushable) is to create more parallel flows of execution: 
-> i.e. by creating another thread (another workqueue).
-> 
+> That is *three* extra shell invocations you got there
+> for something make can compute itself using $(@F) iirc.
 
-Nope.  As I said, the caller of flush_work() can detach the work item
-and run it directly.
+Ahhh. Didn't know that. Thanks. :)
+
+Steve
+
+Full patch (with modifications) follows...
+
+================================
+Signed-off-by: Steve Brokenshire <sbrokenshire@xestia.co.uk>
+
+--- a/scripts/Makefile.modinst	2009-01-18 18:45:37.000000000 +0000
++++ b/scripts/Makefile.modinst	2009-01-25 18:39:50.000000000 +0000
+@@ -5,6 +5,7 @@
+ PHONY := __modinst
+ __modinst:
+ 
++include include/config/auto.conf
+ include scripts/Kbuild.include
+ 
+ #
+@@ -16,8 +17,21 @@ PHONY += $(modules)
+ __modinst: $(modules)
+ 	@:
+ 
+-quiet_cmd_modules_install = INSTALL $@
+-      cmd_modules_install = mkdir -p $(2); cp $@ $(2) ; $(mod_strip_cmd) $(2)/$(notdir $@)
++ifeq ($(CONFIG_MODULE_COMPRESS_OPTIONS), "")
++else
++ MODCOMPOPT = $(shell echo -n $(CONFIG_MODULE_COMPRESS_OPTIONS))
++endif
++
++quiet_cmd_modules_install = INSTALL  $@
++      cmd_modules_install = mkdir -p $(2); \
++				cp $@ $(2) ; \
++				$(mod_strip_cmd) $(2)/$(notdir $@)
++
++quiet_cmd_modules_compress_gzip = COMPRESS $@
++      cmd_modules_compress_gzip = gzip $(MODCOMPOPT) -c \
++				 $(2)/$(@F) \
++				 > $(2)/$(@F).gz; \
++				 rm $(2)/$(@F)
+ 
+ # Modules built outside the kernel source tree go into extra by default
+ INSTALL_MOD_DIR ?= extra
+@@ -26,8 +40,11 @@ ext-mod-dir = $(INSTALL_MOD_DIR)$(subst 
+ modinst_dir = $(if $(KBUILD_EXTMOD),$(ext-mod-dir),kernel/$(@D))
+ 
+ $(modules):
++
+ 	$(call cmd,modules_install,$(MODLIB)/$(modinst_dir))
+ 
++	$(if $(CONFIG_MODULE_COMPRESS_GZIP), \
++		$(call cmd,modules_compress_gzip,$(MODLIB)/$(modinst_dir)))
+ 
+ # Declare the contents of the .PHONY variable as phony.  We keep that
+ # information in a variable se we can use it in if_changed and friends.
+--- a/init/Kconfig	2009-01-18 18:45:37.000000000 +0000
++++ b/init/Kconfig	2009-01-25 16:07:47.000000000 +0000
+@@ -887,6 +887,62 @@ config MODULE_FORCE_UNLOAD
+ 	  rmmod).  This is mainly for kernel developers and desperate users.
+ 	  If unsure, say N.
+ 
++config MODULE_COMPRESS
++	bool "Compress kernel modules on installation"
++	depends on MODULES
++	help
++	  This option compresses the kernel modules when 'make
++	  modules_install' is run.
++
++	  The modules will be compressed into the selected compression 
++	  format with gzip being the default compression format.
++
++	  When a kernel module is installed from outside of the main kernel
++	  source and uses the Kbuild system for installing modules then that
++	  kernel module will also be compressed when it is installed.
++
++	  When running mkinitrd you will find that an error message
++	  appears saying that it cannot find a certain kernel module.
++	  As a workaround, unset CONFIG_MODULE_COMPRESS, build the modules
++	  and install them, run mkinitrd and create the initrd image, place
++	  the initrd image in the correct place for booting, set
++	  CONFIG_MODULE_COMPRESS and then install the modules again.
++
++	  This option requires the module-init-tools package to be 
++	  configured with --enable-zlib (if using gzip which is the
++	  default compression format).
++
++	  If unsure, say N.
++
++config MODULE_COMPRESS_OPTIONS
++	string "Compression format command line options"
++	depends on MODULE_COMPRESS
++	help
++	  This option specifies the command line options to be used for
++	  the selected compression format.
++
++	  Please refer to the selected compression format's documentation
++	  on which options should be used.
++
++	  If unsure, leave this option blank.
++
++choice
++	prompt "Kernel module compression format"
++	depends on MODULE_COMPRESS
++	default MODULE_COMPRESS_GZIP
++
++config MODULE_COMPRESS_GZIP
++	bool "gzip compression"
++	help
++	  Compresses the kernel modules using the gzip (GNU zip) 
++	  compression format.
++
++	  This option requires gzip to be installed.
++
++	  If unsure, leave this option selected.
++	  
++endchoice
++
+ config MODVERSIONS
+ 	bool "Module versioning support"
+ 	help
+--- a/Documentation/kbuild/modules.txt	2009-01-18 18:45:37.000000000 +0000
++++ b/Documentation/kbuild/modules.txt	2009-01-25 16:07:47.000000000 +0000
+@@ -96,6 +96,13 @@ when building an external module.
+ 		Installation default is in /lib/modules/<kernel-version>/extra,
+ 		but may be prefixed with INSTALL_MOD_PATH - see separate
+ 		chapter.
++		If MODULES_COMPRESS is set when the modules_install target is 
++		run then the module is compressed after it has been 
++		copied to /lib/modules/<kernel-version>. Compressed modules 
++		using the default gzip compression format will require 
++		module-init-tools installed with --zlib-enabled.
++		Any options set in MODULE_COMPRESS_OPTIONS will be 
++		passed to the selected compression format.
+ 
+ 	make -C $KDIR M=`pwd` clean
+ 		Remove all generated files for the module - the kernel
