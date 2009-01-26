@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752004AbZAZRgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbZAZRhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752004AbZAZRgl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZAZRgb
+	id S1753742AbZAZRhw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZAZRho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:36:31 -0500
-Received: from kroah.org ([198.145.64.141]:33411 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751856AbZAZRgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:36:31 -0500
-Date: Mon, 26 Jan 2009 09:30:19 -0800
-From: Greg KH <greg@kroah.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
-Subject: PS3: replace bus_id usage
-Message-ID: <20090126173019.GA12010@kroah.com>
+	Mon, 26 Jan 2009 12:37:44 -0500
+Received: from smtp.ultrahosting.com ([74.213.174.254]:60336 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751656AbZAZRho (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 12:37:44 -0500
+Date: Mon, 26 Jan 2009 12:34:21 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+In-Reply-To: <20090123161017.GC14517@wotan.suse.de>
+Message-ID: <alpine.DEB.1.10.0901261230540.1908@qirst.com>
+References: <20090114150900.GC25401@wotan.suse.de> <Pine.LNX.4.64.0901141158090.26507@quilx.com> <20090115060330.GB17810@wotan.suse.de> <Pine.LNX.4.64.0901151320250.26467@quilx.com> <20090116031940.GL17810@wotan.suse.de> <Pine.LNX.4.64.0901161500080.27283@quilx.com>
+ <20090119054730.GA22584@wotan.suse.de> <alpine.DEB.1.10.0901211914140.18367@qirst.com> <20090123041756.GH20098@wotan.suse.de> <alpine.DEB.1.10.0901231042380.32253@qirst.com> <20090123161017.GC14517@wotan.suse.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 23 Jan 2009, Nick Piggin wrote:
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+> > SLUB can directly free an object to any slab page. "Queuing" on free via
+> > the per cpu slab is only possible if the object came from that per cpu
+> > slab. This is typically only the case for objects that were recently
+> > allocated.
+>
+> Ah yes ok that's right. But then you don't get LIFO allocation
+> behaviour for those cases.
 
-These simple debug statments should be using dev_dbg() instead of
-accessing bus_id directly (or they should use device_name).
+But you get more TLB local allocations.
 
-As bus_id is going away, this patch is necessary.
+> > > hot objects when you switch to different "fast" pages. I don't consider
+> > > this to be "queueing done right".
+> >
+> > Yes you can loose track of caching hot objects. That is one of the
+> > concerns with the SLUB approach. On the other hand: Caching architectures
+> > get more and more complex these days (especially in a NUMA system). The
+>
+> Because it is more important to get good cache behaviour.
 
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Its going to be quite difficult to realize algorithm that guestimate what
+information the processor keeps in its caches. The situation is quite
+complex in NUMA systems.
 
----
+> So I think it is wrong to say it requires more metadata handling. SLUB
+> will have to switch pages more often or free objects to pages other than
+> the "fast" page (what do you call it?), so quite often I think you'll
+> find SLUB has just as much if not more metadata handling.
 
-This fixes a built-breakage in linux-next.  I'll be glad to keep this in
-my tree if you don't want to take it in yours, just let me know.
+Its the per cpu slab. SLUB does not switch pages often but frees objects
+not from the per cpu slab directly with minimal overhead compared to a per
+cpu slab free. The overhead is much less than the SLAB slowpath which has
+to be taken for alien caches etc.
 
- arch/powerpc/platforms/ps3/system-bus.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -376,7 +376,7 @@ static int ps3_system_bus_probe(struct d
- 	struct ps3_system_bus_driver *drv;
- 
- 	BUG_ON(!dev);
--	pr_debug(" -> %s:%d: %s\n", __func__, __LINE__, _dev->bus_id);
-+	dev_dbg(_dev, "%s:%d\n", __func__, __LINE__);
- 
- 	drv = ps3_system_bus_dev_to_system_bus_drv(dev);
- 	BUG_ON(!drv);
-@@ -398,7 +398,7 @@ static int ps3_system_bus_remove(struct 
- 	struct ps3_system_bus_driver *drv;
- 
- 	BUG_ON(!dev);
--	pr_debug(" -> %s:%d: %s\n", __func__, __LINE__, _dev->bus_id);
-+	dev_dbg(_dev, "%s:%d\n", __func__, __LINE__);
- 
- 	drv = ps3_system_bus_dev_to_system_bus_drv(dev);
- 	BUG_ON(!drv);
