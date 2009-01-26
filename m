@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752535AbZAZLoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752466AbZAZLtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752535AbZAZLoO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 06:44:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZAZLn6
+	id S1752466AbZAZLtU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 06:49:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751363AbZAZLtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 06:43:58 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:26441 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751363AbZAZLn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 06:43:57 -0500
-Date: Mon, 26 Jan 2009 12:42:15 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-btrace@vger.kernel.org
-Subject: Re: [PATCH tip][0/2] ftrace interface for blktrace
-Message-ID: <20090126114214.GH30821@kernel.dk>
-References: <20090123140617.GB21737@ghostprotocols.net>
+	Mon, 26 Jan 2009 06:49:10 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:53854 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbZAZLtJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 06:49:09 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Ed W <lists@wildgooses.com>, linux-usb@vger.kernel.org
+Subject: Re: How to add new CDC-ACM usb modem device to supported list?
+Date: Mon, 26 Jan 2009 12:49:37 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <497D94C0.3070308@wildgooses.com>
+In-Reply-To: <497D94C0.3070308@wildgooses.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090123140617.GB21737@ghostprotocols.net>
+Message-Id: <200901261249.37711.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23 2009, Arnaldo Carvalho de Melo wrote:
-> Hi Jens,
-> 
-> 	Here is a third version, that also implements blk_add_trace_msg,
-> using ftrace_vprintk.
-> 
-> 	As soon as the TRACE_ITER_CONTEXT_INFO option is implemented
-> I'll provide the struct trace_event->bin() callback to synthesize the
-> old blktrace record format so that we can test the output of trace_pipe
-> with blkparse -i -.
-> 
-> 	Please let me know if this is acceptable for inclusion on
-> linux-tip.
+Am Monday 26 January 2009 11:47:28 schrieb Ed W:
+> Hi, I have a wireless modem device which I believe to be a normal usb
+> ACM modem type device (works this way in windows where there is just a
+> .inf file supplied which connects the device with usbser.sys).  I'm not
+> quite sure how to get the 2.6 kernel to notice and connect the acm
+> driver to this device though?  I have poked through the code in
 
-Sure, go ahead and add it!
+It should be detected as is. Please provide dmesg.
 
--- 
-Jens Axboe
-
+	Regards
+		Oliver
