@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZAZMTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752077AbZAZM17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752829AbZAZMTU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 07:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751305AbZAZMTK
+	id S1752077AbZAZM17 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 07:27:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751210AbZAZM1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 07:19:10 -0500
-Received: from ns1.wincor-nixdorf.com ([80.154.98.129]:51080 "EHLO
-	mxpdbe1.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750768AbZAZMTJ (ORCPT
+	Mon, 26 Jan 2009 07:27:51 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56512 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbZAZM1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 07:19:09 -0500
-Message-ID: <497DA8E3.5070006@wincor-nixdorf.com>
-Date: Mon, 26 Jan 2009 13:13:23 +0100
-From: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Organization: Wincor Nixdorf International
-User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
+	Mon, 26 Jan 2009 07:27:49 -0500
+Message-ID: <497DAC37.5030002@jp.fujitsu.com>
+Date: Mon, 26 Jan 2009 21:27:35 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Max Weninger <max.weninger@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: support of touchscreen reported as eGalax but is not working
-References: <20090125234902.7605fd16@zork.foo.com> 	<497D9469.3030908@wincor-nixdorf.com> <20090126124941.4f67aaf5@shire2>
-In-Reply-To: <20090126124941.4f67aaf5@shire2>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig3C75E243F7A9782569CB6BE7"
-X-OriginalArrivalTime: 26 Jan 2009 12:16:24.0545 (UTC) FILETIME=[E8058510:01C97FAF]
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       "Barnes, Jesse" <jesse.barnes@intel.com>, shaohua.li@intel.com
+Subject: Re: ACPI hotplug panic with current git head
+References: <alpine.LFD.2.00.0901151421110.4737@localhost.localdomain> <1232049269.5966.64.camel@localhost.localdomain> <1232050347.5966.66.camel@localhost.localdomain> <4970242C.4010404@jp.fujitsu.com> <1232115546.3224.5.camel@localhost.localdomain> <4973D2EE.3060203@jp.fujitsu.com> <1232328216.3247.68.camel@localhost.localdomain> <4973EF64.2050404@jp.fujitsu.com> <1232558780.736.24.camel@localhost.localdomain> <497D1BD7.9000609@jp.fujitsu.com> <20090126062132.GC4376@colo.lackof.org>
+In-Reply-To: <20090126062132.GC4376@colo.lackof.org>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig3C75E243F7A9782569CB6BE7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Grant Grundler wrote:
+> On Mon, Jan 26, 2009 at 11:11:35AM +0900, Kenji Kaneshige wrote:
+> ...
+>> Thanks to you, I found the root cause of the
+>> problem. The acpi_pci_get_bridge_handle() function assumes
+>> pci_bus->self is NULL on the root bus.
+> 
+> Mea culpa: I contributed this mess too. This worked for PA-RISC
+> and lacking better guidance, is what I used in 1/2 the places.
+> 
+>> But it is not true
+>> and pci_bus->self can have a non-NULL value on some
+>> platfroms (like yours). So it must check pci_bus->parent
+>> instead.
+> 
+> It is true for PA-RISC and some other architectures.
+> These architectures don't provide fake PCI devices
+> (emulated PCI config space) for Host-PCI Bus controllers.
+> 
+>> I found some other code that has the same wrong assumption.
+>> I'll make a fix for them and send it soon.
+> 
+> I would like to keep the code consistent. Attached is a patch
+> for drivers/parisc. Please include with my
+>     Signed-off-by: Grant Grundler <grundler@parisc-linux.org>
+> 
+> Or if you prefer, I can repost as a separate patch.
+> 
+> I've compiled the iosapic/lba changes and will test those shortly.
+> I have no HW (by choice) to test the dino code change.
+> 
 
-Max Weninger wrote:
-> Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
->> You can obviously download the drivers from
->> <http://home.eeti.com.tw/web20/TouchKitDriver/linuxDriver.htm>.
->>
->> It would be great if eGalax could be convinced to get these drivers
->> included in main-line ;)
->=20
-> Thanks for your quick reply
-> BUT: I have tried those driver also
->=20
-> I tried this "brandnew" one (but also older ones)
-> http://home.eeti.com.tw/web20/drivers/touch_driver/Linux/2.06.2416/Touc=
-hKit-2.06.2410-32b-k26.tar.gz
-> after making it compile for 2.6.28.2 :)
-> since there is source code delivered
+Thank you for the patch for drivers/parisc.
 
-For what it's worth; the version we use from eGalax is 1.0.3.1701. I
-don't have the hardware here atm, so I can't test an other driver
-now.
+I cannot change platform dependent code or driver for each hardware
+because I don't have enough knowledge. Maybe all I can do is only
+for generic pci code. So I'd like you to post it as a separate patch.
 
-Cheers,
-Niels
+BTW, I'm wondering if a function something like below is useful
+to keep the code consistent. What do you think about it?
+
+/*
+ * Returns true if the pci bus is root (behind host-pci brdige),
+ * false otherwise
+ */
+static inline bool pci_is_root_bus(struct pci_bus *pbus)
+{
+       return !(pbus->parent);
+}
+
+Thanks,
+Kenji Kaneshige
 
 
---------------enig3C75E243F7A9782569CB6BE7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFJfajj5KAkGQPO/QoRAvSPAJ4vLNRPRxPR3L59m2LtzBf3FjVEmACgkGjN
-2L4LTXk2In3vkj1bK96Yfxs=
-=o4lH
------END PGP SIGNATURE-----
-
---------------enig3C75E243F7A9782569CB6BE7--
