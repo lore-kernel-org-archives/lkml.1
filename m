@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZAZV4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754118AbZAZV6n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZAZV4W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 16:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbZAZVz6
+	id S1754118AbZAZV6n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:58:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbZAZV6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 16:55:58 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36541 "EHLO
+	Mon, 26 Jan 2009 16:58:35 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34741 "EHLO
 	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753581AbZAZVz5 (ORCPT
+	with ESMTP id S1751500AbZAZV6e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 16:55:57 -0500
-Date: Mon, 26 Jan 2009 21:55:38 +0000
+	Mon, 26 Jan 2009 16:58:34 -0500
+Date: Mon, 26 Jan 2009 21:58:53 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, mingo@elte.hu,
+To: Christoph Hellwig <hch@lst.de>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@lst.de>, "H. Peter Anvin" <hpa@zytor.com>,
        linux-kernel@vger.kernel.org
-Subject: Re: [tty bug] kernel BUG at drivers/char/tty_ldisc.c:359!
-Message-ID: <20090126215538.120be258@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090126134047.11ad6134.akpm@linux-foundation.org>
-References: <20090113121039.GA22155@elte.hu>
-	<20090113122338.13a155a0@lxorguk.ukuu.org.uk>
-	<200901191727.48812.rjw@sisk.pl>
-	<20090126134047.11ad6134.akpm@linux-foundation.org>
+Subject: Re: devpts multiple instances feedback
+Message-ID: <20090126215853.5cb30d29@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090126215542.GA20760@lst.de>
+References: <20090103155209.GA17988@lst.de>
+	<20090105210940.GA31629@us.ibm.com>
+	<20090126215542.GA20760@lst.de>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
 Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
  Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
@@ -33,10 +33,11 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Did this change go to Linus by chance?
-> > 
+> > That was also one of the reasons for the default 000 mode on the pts/ptmx
+> > device node
 > 
-> I cannot locate any such fix.
+> So just make it 000 but always created it.
 
+That still allows it to be subverted with some security rulesets -
+remember root can open a 000 file by default.
 
-Humm where did that go.. will investigate when I get some time.
