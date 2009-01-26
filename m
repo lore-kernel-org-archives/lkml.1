@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751731AbZAZFEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751742AbZAZFQG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751731AbZAZFEx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 00:04:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750729AbZAZFEl
+	id S1751742AbZAZFQG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 00:16:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbZAZFPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 00:04:41 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45293
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750728AbZAZFEk (ORCPT
+	Mon, 26 Jan 2009 00:15:55 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:43223 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbZAZFPy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 00:04:40 -0500
-Date: Sun, 25 Jan 2009 21:04:42 -0800 (PST)
-Message-Id: <20090125.210442.129666692.davem@davemloft.net>
-To: patrick.ohly@intel.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: hardware time stamping with optional structs in data area
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1232532457.7829.19.camel@ecld0pohly>
-References: <1232102164.18762.72.camel@pohly-MOBL>
-	<20090116.110033.163815590.davem@davemloft.net>
-	<1232532457.7829.19.camel@ecld0pohly>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 26 Jan 2009 00:15:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=s8sJ5/Jse/djw/RgxmfCRTHapYTp7/C0wFry3QBqfAcTj1FZw+YbQKTfxqF7RXaHga
+         mDHh9GgcANLDLq6w5ICHsw318VrOw2yjv0HRyJ9LFIIQkkL3vQWCT1/n51npSKv98Im4
+         RgXNYdpHxGWqCcZ6Rv+sZtDKKgnrZVb29NsI8=
+MIME-Version: 1.0
+Date: Mon, 26 Jan 2009 10:45:52 +0530
+Message-ID: <37dc0f330901252115j646ebd30pc5194d11f973827b@mail.gmail.com>
+Subject: [SCSI related] a thank you note
+From: kish <realmailer@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick Ohly <patrick.ohly@intel.com>
-Date: Wed, 21 Jan 2009 11:07:37 +0100
+Compiled the latest kernel with  patch-2.6.29-rc1-git4
+applied along with an mm patch
 
-> I tested them with the modified PTPd with and without hardware support
-> on x86. With 64 bit kernel and user space both works. With 32 bit user
-> space on a 64 bit kernel software-only time stamping works (thanks to
-> the socket's compatibility layer), hardware support doesn't: the ifreq
-> is passed to the right device driver, but the data pointer from a 32 bit
-> process is not interpreted correctly by a 64 bit driver. If there is a
-> way to handle this then please let me know - I didn't see how a device
-> driver could distinguish between a 32 and 64 bit user process.
+Included support for the DVD drives with the NEW experimental
+drivers for SCSI and a few others specific for SiS boards.
 
-See fs/compat_ioctl.c:dev_ifsioc() for how to handle the
-"32-bit process under 64-bit kernel" issue wrt. struct ifreq
+After a few recompiles it solved my long time problem of the SATA DVD
+drive not working in the 2.6 series.
+Now it works faster than it did in the other OS
 
-Next, I don't like that loop in the SKB allocator to deal with the
-variable size.  You're computing what amounts to a constant
-calculation.
 
-Just consolidate the array into a direct conversion table.  You only
-have 2 bits defined so you only need an array of 4 entries.  Pass the
-optional flag bits directly in as the index of that table.
+A big thanks due to the dev team.
+
+--kish
+---------------
+Esse Quam Videri
+krisk.wordpress.com
