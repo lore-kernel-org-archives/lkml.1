@@ -1,142 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755430AbZAZXlT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755565AbZAZXnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755430AbZAZXlT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 18:41:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752842AbZAZXlL
+	id S1755565AbZAZXnH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 18:43:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZAZXmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 18:41:11 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:38925 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbZAZXlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 18:41:10 -0500
-Message-ID: <497E4A14.1090605@linux.vnet.ibm.com>
-Date: Mon, 26 Jan 2009 15:41:08 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
+	Mon, 26 Jan 2009 18:42:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55828 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752648AbZAZXmu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 18:42:50 -0500
+Date: Mon, 26 Jan 2009 15:42:17 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: eranian@gmail.com, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>,
-       "perfmon2-devel@lists.sourceforge.net" 
-	<perfmon2-devel@lists.sourceforge.net>,
-       Papi <ptools-perfapi@cs.utk.edu>
-Subject: Re: [announce] Performance Counters for Linux, v6
-References: <20090121185021.GA8852@elte.hu> <497D0C81.5040406@linux.vnet.ibm.com> <7c86c4470901260113r4db6b15cpa0fa88ab3f8a516c@mail.gmail.com> <20090126151746.GH9128@elte.hu> <497E0B55.4050408@linux.vnet.ibm.com> <20090126221553.GB7440@elte.hu>
-In-Reply-To: <20090126221553.GB7440@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: oleg@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
+       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Message-Id: <20090126154217.b312e278.akpm@linux-foundation.org>
+In-Reply-To: <20090126225957.GA3999@elte.hu>
+References: <20090126202022.GA8867@elte.hu>
+	<20090126130046.37b8f34e.akpm@linux-foundation.org>
+	<20090126212727.GA13670@elte.hu>
+	<20090126133551.fab5e27a.akpm@linux-foundation.org>
+	<20090126214516.GA22142@elte.hu>
+	<20090126140116.35f9c173.akpm@linux-foundation.org>
+	<20090126220537.GA6755@elte.hu>
+	<20090126141605.707877bb.akpm@linux-foundation.org>
+	<20090126222002.GB10215@elte.hu>
+	<20090126145003.b29b81d7.akpm@linux-foundation.org>
+	<20090126225957.GA3999@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
+On Mon, 26 Jan 2009 23:59:57 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
->> Ingo Molnar wrote:
->>> * stephane eranian <eranian@googlemail.com> wrote:
->>>
->>>> Hi,
->>>>
->>>> Corey brings up an interesting problem which I wanted to comment on.
->>>>
->>>> The current proposal hinges on the idea that by interpreting a single 
->>>> value the kernel can understand what the user wants to measure. For  
->>>> instance, if I pass type=0, then the kernel understands I want to  
->>>> measure CPU_CYCLES. Given that the number of events and their unit 
->>>> mask combinations can be large, the proposal also provides a "raw" 
->>>> mode, where the content of the type field is interpreted as the raw 
->>>> value to put into a register.
->>>>
->>>> This is where there is an issue because with several PMU models,  
->>>> including on X86, using the raw bit + 64 value is not enough to 
->>>> figure out what the user wants to measure. This happens when the PMU 
->>>> has more than counters. Thus, interpreting each raw value has the 
->>>> event code may be wrong. To remain on familiar territory, the Nehalem 
->>>> uncore PMU has an opcode matcher register, that uses a 64-bit value. 
->>>> On AMD64 Family 10h, you have IBS. But I could give examples on 
->>>> Itanium with opcode matchers, range restrictions. Corey provided 
->>>> other examples for Power. The API has to provide a way to express 
->>>> what the raw value is meant for: counter, matcher, filter...
->>> this can be done in a number of ways (in order of increasing levels of  
->>> abstraction):
->>>
->>> - the raw type is kept wide enough. Paul already requested the raw type
->>>   to be widened to 128 bits to express certain PowerPC features.
->>>
->>> - or the PMU capability is expressed as a special counter type (if it's
->>>   useful enough) - and then either the write() method or ioctl is extended
->>>   to express attributes we want to set/change while a counter is running.
->>>
->>> - or the highest level counter / hw event data type is extended with new
->>>   attribute field(s).
->>>
->>> My feeling is that we generally want such hw features to start small -  
->>> i.e. at the raw type level initially. Then we can allow them to climb 
->>> the ladder, if they prove their utility in practice. We've got space 
->>> reserved in the ABI to allow for growth like this.
->>>
->>> 	Ingo
->>
->> Hi Ingo and Stephane,
->>
->> Thanks for the replies.
->>
->> I think any one of those solutions would work for Power's Instruction 
->> Matching Register.  If more than one register needs to be programmed, or 
->> the values don't fit into the 128-bit raw event types, we could use the 
->> "special counter" approach, I think.
->>
->> I will have another look at the Power PMU description and see if there 
->> are other constraints that might cause us to want to go one way or the 
->> other, or perhaps a different way.
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> thanks, that's really appreciated!
+> > On Mon, 26 Jan 2009 23:20:02 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > On Mon, 26 Jan 2009 23:05:37 +0100
+> > > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > > 
+> > > > > 
+> > > > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > > > 
+> > > > > > Well it turns out that I was having a less-than-usually-senile moment:
+> > > > > > 
+> > > > > > :     implement flush_work()
+> > > > > 
+> > > > > > Why isn't that working in this case??
+> > > > > 
+> > > > > how would that work in this case? We defer processing into the workqueue 
+> > > > > exactly because we want its per-CPU properties.
+> > > > 
+> > > > It detaches the work item, moves it to head-of-queue, reinserts it then 
+> > > > waits on it.  I think.
+> > > > 
+> > > > This might have a race+hole.  If a currently-running "unrelated" work 
+> > > > item tries to take the lock which the flush_work() caller is holding 
+> > > > then there's no way in which keventd will come back to execute the work 
+> > > > item which we just put on the head of queue.
+> > > 
+> > > Correct - or the unrelated worklet might also be blocked on something - so 
+> > > the window is rather large.
+> > > 
+> > 
+> > hm, OK, that sucks.
+> > 
+> > But the deadlock still exists with Rusty's patches, doesn't it?  We 
+> > still have a single kernel thread per CPU processing all the unrelated 
+> > work_on_cpu() callers.  All we've done is to decouple work_on_cpu() from 
+> > the keventd queue.
 > 
-> One useful approach would be to come up with a bitcount that you think 
-> would fit considering even (currently) fringe/odd features - and we'd make 
-> sure there's enough space for that in the ABI - should there be a 
-> need/desire to expose that in the future.
+> This particular deadlock does not exist - but you are indeed right that 
+> similar types of 'unrelated' interactions might exist in the future, as 
+> the usage of this facility is extended.
+
+So... can we call the new kernel threads [kbandaidd]?
+
+> > If correct, we'd need to create a gaggle of kernel threads on each call 
+> > to work_on_cpu(), which doesn't sound nice.
+> > 
+> > A more efficient but trickier approach would be to create kernel threads 
+> > within flush_work(), with which to run the CPU-specific worklet.  We 
+> > only need to do that in the case where the CPU's keventd thread was off 
+> > doing something and might deadlock, which will be rare. If the keventd 
+> > was just parked waiting for something to do then we can safely feed it 
+> > the to-be-flushed work item for immediate processing.
 > 
-> 	Ingo
+> i think what you describe is a variant of the syslet thread pool ;-)
 
-Looking at the Instruction Matching CAM on Power6, it's comprised of two 
-64-bit values, but there are quite a few reserved bits, and bits that 
-must be programmed in a fixed way.  If we were to squeeze out the 
-reserved and fixed bits from the ABI, that leaves 74 real bits of data 
-that a user would like to be able to set.
+It's fairly simple.  The slightly tricky bit will be ensuring that
+keventd will reliably swallow the work item which we just fed it,
+before anything else.  But I guess the spinlock will be sufficient there.
+But I don't think we should do any of this.
 
-In addition to that, there is an instruction marking mechanism that 
-requires 2 bits to set the sampling mode.
+> > It'd be saner to just say "don't call work_on_cpu() while holding locks"
+> > :( I bet there's some lockdep infrastructre which we could peek into to
+> > add the assertion check...
+> 
+> The problem isnt doing the assertions - lockdep already covers workqueue 
+> dependencies very efficiently.
+> 
+> The problem is the intrinsic utility of work_on_cpu(): we _really_ want 
+> such a generic facility to be usable from any (blockable) context, just 
+> like on_each_cpu(func, info) does for atomic functions, without 
+> restrictions on locking context.
 
-Lastly, there is a thresholding mechanism that has 6 bits of count, two 
-3-bit start/end event fields, and a 2-bit granularity field.
+Do we?  work_on_cpu() is some last-gasp oh-i-screwed-my-code-up thing. 
+We _really_ want people to use on_each_cpu()!
 
-In total, that's 90 bits in addition to the event code (9 bits?).  There 
-may be a few stragglers that I have missed, and some room should be left 
-for future processors.  128 could be a bit tight for future processor 
-generations.
+We should bust a gut to keep the number of callers to the
+resource-intensive (deadlocky!) work_on_cpu() to a minimum.
 
-While reading the Power6 PMU manual, I also had a look at Power5+ PMU 
-manual, and it has five more accessible instruction matching registers 
-(32-bits each).  These five are somewhat more special-purpose (they 
-match fewer bits in the instruction), and they probably could be left 
-out, but it would be nice if the ABI had the room for them.
+(And to think that adding add_timer_on() creeped me out).
 
-Regards,
 
-- Corey
+hm.  None of that was very helpful.  How to move forward?
 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+I think I disagree that work_on_cpu() should be made into some robust,
+smiled-upon core kernel facility.  It _is_ slow, it _is_ deadlockable. 
+It should be positioned as something which is only used as a last
+resort.  And if you _have_ to use it, sort out your locking!
 
+Plus the number of code sites which want to fiddle with other CPUs in
+this manner will always be small.  cpufreq, MCE, irq-affinity, things
+like that.
+
+What is the deadlock in acpi-cpufreq?  Which lock, and who is the
+"other" holder of that lock?
