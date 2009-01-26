@@ -1,76 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbZAZVxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZAZVxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755130AbZAZVxf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 16:53:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZAZVxZ
+	id S1755381AbZAZVxs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:53:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbZAZVxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 16:53:25 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37241 "EHLO mx2.redhat.com"
+	Mon, 26 Jan 2009 16:53:30 -0500
+Received: from verein.lst.de ([213.95.11.210]:55061 "EHLO verein.lst.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752471AbZAZVxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 16:53:24 -0500
-Date: Mon, 26 Jan 2009 22:50:49 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
-       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-ID: <20090126215049.GA3493@redhat.com>
-References: <20090116191108.533053000@polaris-admin.engr.sgi.com> <20090124001537.7cfde78e.akpm@linux-foundation.org> <200901261711.43943.rusty@rustcorp.com.au> <20090125230130.bcdab2e5.akpm@linux-foundation.org> <20090126171618.GA32091@elte.hu> <20090126103529.cb124a58.akpm@linux-foundation.org> <20090126202022.GA8867@elte.hu> <20090126130046.37b8f34e.akpm@linux-foundation.org> <20090126212727.GA13670@elte.hu> <20090126133551.fab5e27a.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	id S1752905AbZAZVx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 16:53:28 -0500
+Date: Mon, 26 Jan 2009 22:53:21 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: devpts multiple instances feedback
+Message-ID: <20090126215321.GA20726@lst.de>
+References: <20090103155209.GA17988@lst.de> <20090103161544.GA18976@lst.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090126133551.fab5e27a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090103161544.GA18976@lst.de>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/26, Andrew Morton wrote:
->
-> On Mon, 26 Jan 2009 22:27:27 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
+On Sat, Jan 03, 2009 at 05:15:44PM +0100, Christoph Hellwig wrote:
+> This is a little untested patch to massage the mount code into about
+> how it should look like:
+
+ping?
+
 > 
-> > 
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > 
-> > > > So if it's generic it ought to be implemented in a generic way - not a 
-> > > > "dont use from any codepath that has a lock held that might 
-> > > > occasionally also be held in a keventd worklet". (which is a totally 
-> > > > unmaintainable proposition and which would just cause repeat bugs 
-> > > > again and again.)
-> > > 
-> > > That's different.  The core fault here lies in the keventd workqueue 
-> > > handling code.  If we're flushing work A then we shouldn't go and block 
-> > > behind unrelated work B.
-> > 
-> > the blocking is inherent in the concept of "a queue of worklets handled by 
-> > a single thread".
-> > 
-> > If a worklet is blocked then all other work performed by that thread is 
-> > blocked as well. So by waiting on a piece of work in the queue, we wait 
-> > for all prior work queued up there as well.
-> > 
-> > The only way to decouple that and to make them independent (and hence 
-> > independently flushable) is to create more parallel flows of execution: 
-> > i.e. by creating another thread (another workqueue).
-> > 
-> 
-> Nope.  As I said, the caller of flush_work() can detach the work item
-> and run it directly.
-
-I am totally confused, just can't understand this thread...
-
-I guess, we can't detach and execute because we can run on the
-different CPU.
-
-But "[PATCH 1/3] work_on_cpu: dont try to get_online_cpus() in work_on_cpu."
-removes get_online_cpus/put_online_cpus, this means the work can run on
-the wrong CPU anyway. Or work_on_cpu() can hang forever if CPU has already
-gone away before queue_work_on().
-
-Confused.
-
-Oleg.
-
+> Index: linux-2.6/fs/devpts/inode.c
+> ===================================================================
+> --- linux-2.6.orig/fs/devpts/inode.c	2009-01-03 16:52:22.823672077 +0100
+> +++ linux-2.6/fs/devpts/inode.c	2009-01-03 17:14:24.153711598 +0100
+> @@ -329,106 +329,6 @@ static int compare_init_pts_sb(struct su
+>  }
+>  
+>  /*
+> - * Safely parse the mount options in @data and update @opts.
+> - *
+> - * devpts ends up parsing options two times during mount, due to the
+> - * two modes of operation it supports. The first parse occurs in
+> - * devpts_get_sb() when determining the mode (single-instance or
+> - * multi-instance mode). The second parse happens in devpts_remount()
+> - * or new_pts_mount() depending on the mode.
+> - *
+> - * Parsing of options modifies the @data making subsequent parsing
+> - * incorrect. So make a local copy of @data and parse it.
+> - *
+> - * Return: 0 On success, -errno on error
+> - */
+> -static int safe_parse_mount_options(void *data, struct pts_mount_opts *opts)
+> -{
+> -	int rc;
+> -	void *datacp;
+> -
+> -	if (!data)
+> -		return 0;
+> -
+> -	/* Use kstrdup() ?  */
+> -	datacp = kmalloc(PAGE_SIZE, GFP_KERNEL);
+> -	if (!datacp)
+> -		return -ENOMEM;
+> -
+> -	memcpy(datacp, data, PAGE_SIZE);
+> -	rc = parse_mount_options((char *)datacp, PARSE_MOUNT, opts);
+> -	kfree(datacp);
+> -
+> -	return rc;
+> -}
+> -
+> -/*
+> - * Mount a new (private) instance of devpts.  PTYs created in this
+> - * instance are independent of the PTYs in other devpts instances.
+> - */
+> -static int new_pts_mount(struct file_system_type *fs_type, int flags,
+> -		void *data, struct vfsmount *mnt)
+> -{
+> -	int err;
+> -	struct pts_fs_info *fsi;
+> -	struct pts_mount_opts *opts;
+> -
+> -	printk(KERN_NOTICE "devpts: newinstance mount\n");
+> -
+> -	err = get_sb_nodev(fs_type, flags, data, devpts_fill_super, mnt);
+> -	if (err)
+> -		return err;
+> -
+> -	fsi = DEVPTS_SB(mnt->mnt_sb);
+> -	opts = &fsi->mount_opts;
+> -
+> -	err = parse_mount_options(data, PARSE_MOUNT, opts);
+> -	if (err)
+> -		goto fail;
+> -
+> -	err = mknod_ptmx(mnt->mnt_sb);
+> -	if (err)
+> -		goto fail;
+> -
+> -	return 0;
+> -
+> -fail:
+> -	dput(mnt->mnt_sb->s_root);
+> -	deactivate_super(mnt->mnt_sb);
+> -	return err;
+> -}
+> -
+> -/*
+> - * Check if 'newinstance' mount option was specified in @data.
+> - *
+> - * Return: -errno  	on error (eg: invalid mount options specified)
+> - * 	 : 1 		if 'newinstance' mount option was specified
+> - * 	 : 0 		if 'newinstance' mount option was NOT specified
+> - */
+> -static int is_new_instance_mount(void *data)
+> -{
+> -	int rc;
+> -	struct pts_mount_opts opts;
+> -
+> -	if (!data)
+> -		return 0;
+> -
+> -	rc = safe_parse_mount_options(data, &opts);
+> -	if (!rc)
+> -		rc = opts.newinstance;
+> -
+> -	return rc;
+> -}
+> -
+> -/*
+> - * get_init_pts_sb()
+> - *
+> - *     This interface is needed to support multiple namespace semantics in
+> - *     devpts while preserving backward compatibility of the current 'single-
+> - *     namespace' semantics. i.e all mounts of devpts without the 'newinstance'
+> - *     mount option should bind to the initial kernel mount, like
+> - *     get_sb_single().
+> - *
+>   *     Mounts with 'newinstance' option create a new private namespace.
+>   *
+>   *     But for single-mount semantics, devpts cannot use get_sb_single(),
+> @@ -436,20 +336,43 @@ static int is_new_instance_mount(void *d
+>   *     the most recent mount of devpts. But that recent mount may be a
+>   *     'newinstance' mount and get_sb_single() would pick the newinstance
+>   *     super-block instead of the initial super-block.
+> - *
+> - *     This interface is identical to get_sb_single() except that it
+> - *     consistently selects the 'single-namespace' superblock even in the
+> - *     presence of the private namespace (i.e 'newinstance') super-blocks.
+>   */
+> -static int get_init_pts_sb(struct file_system_type *fs_type, int flags,
+> -		void *data, struct vfsmount *mnt)
+> +static int devpts_get_sb(struct file_system_type *fs_type, int flags,
+> +		const char *dev_name, void *data, struct vfsmount *mnt)
+>  {
+> +	struct pts_mount_opts opts = { 0, };
+>  	struct super_block *s;
+>  	int error;
+>  
+> -	s = sget(fs_type, compare_init_pts_sb, set_anon_super, NULL);
+> -	if (IS_ERR(s))
+> -		return PTR_ERR(s);
+> +	if (data) {
+> +		error = parse_mount_options(data, PARSE_MOUNT, &opts);
+> +		if (error)
+> +			return error;
+> +	}
+> +
+> +	if (opts.newinstance) {
+> +		/*
+> +		 * Mount a new (private) instance of devpts.  PTYs created
+> +		 * in this instance are independent of the PTYs in other devpts
+> +		 * instances.
+> +		 */
+> +
+> +		printk(KERN_NOTICE "devpts: creating new instance\n");
+> +
+> +		s = sget(fs_type, NULL, set_anon_super, NULL);
+> +		if (IS_ERR(s))
+> +			return PTR_ERR(s);
+> +	} else {
+> +		/*
+> +		 * Mount or remount the initial kernel mount of devpts.
+> +		 *
+> +		 * This type of mount maintains the legacy, single-instance
+> +		 * semantics, while the kernel still allows multiple-instances.
+> +		 */
+> +		s = sget(fs_type, compare_init_pts_sb, set_anon_super, NULL);
+> +		if (IS_ERR(s))
+> +			return PTR_ERR(s);
+> +	}
+>  
+>  	if (!s->s_root) {
+>  		s->s_flags = flags;
+> @@ -461,46 +384,26 @@ static int get_init_pts_sb(struct file_s
+>  		}
+>  		s->s_flags |= MS_ACTIVE;
+>  	}
+> -	do_remount_sb(s, flags, data, 0);
+> -	return simple_set_mnt(mnt, s);
+> -}
+> -
+> -/*
+> - * Mount or remount the initial kernel mount of devpts. This type of
+> - * mount maintains the legacy, single-instance semantics, while the
+> - * kernel still allows multiple-instances.
+> - */
+> -static int init_pts_mount(struct file_system_type *fs_type, int flags,
+> -		void *data, struct vfsmount *mnt)
+> -{
+> -	int err;
+> -
+> -	err = get_init_pts_sb(fs_type, flags, data, mnt);
+> -	if (err)
+> -		return err;
+> -
+> -	err = mknod_ptmx(mnt->mnt_sb);
+> -	if (err) {
+> -		dput(mnt->mnt_sb->s_root);
+> -		deactivate_super(mnt->mnt_sb);
+> -	}
+> -
+> -	return err;
+> -}
+> -
+> -static int devpts_get_sb(struct file_system_type *fs_type,
+> -	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
+> -{
+> -	int new;
+>  
+> -	new = is_new_instance_mount(data);
+> -	if (new < 0)
+> -		return new;
+> +	/*
+> +	 * Copy over mount options structure into the superblock.
+> +	 */
+> +	memcpy(&DEVPTS_SB(mnt->mnt_sb)->mount_opts, &opts, sizeof(opts));
+> +
+> +	error = simple_set_mnt(mnt, s);
+> +	if (error)
+> +		return error;
+> +
+> +	error = mknod_ptmx(mnt->mnt_sb);
+> +	if (error)
+> +		goto out_dput;
+>  
+> -	if (new)
+> -		return new_pts_mount(fs_type, flags, data, mnt);
+> +	return 0;
+>  
+> -	return init_pts_mount(fs_type, flags, data, mnt);
+> + out_dput:
+> +	dput(mnt->mnt_sb->s_root);
+> +	deactivate_super(mnt->mnt_sb);
+> +	return error;
+>  }
+>  #else
+>  /*
+---end quoted text---
