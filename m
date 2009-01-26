@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZAZRCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbZAZRIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687AbZAZRCY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:02:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZAZRBk
+	id S1752712AbZAZRIA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:08:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751590AbZAZRHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:01:40 -0500
-Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:3809 "EHLO
-	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752921AbZAZRBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:01:37 -0500
-Date: Mon, 26 Jan 2009 18:01:30 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.29rc1 brakes usb
-Message-ID: <20090126170130.GG6158@vanheusden.com>
+	Mon, 26 Jan 2009 12:07:52 -0500
+Received: from styx.suse.cz ([82.119.242.94]:44076 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751550AbZAZRHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 12:07:51 -0500
+Date: Mon, 26 Jan 2009 18:07:49 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+cc: Nick Andrew <nick@nick-andrew.net>,
+       Trivial Kernel Patches <trivial@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [TRIVIAL PATCH 00/20] Fix misspelling of "firmware"
+In-Reply-To: <497DCB15.7030404@turknet.net.tr>
+Message-ID: <alpine.LNX.1.10.0901261806290.5377@jikos.suse.cz>
+References: <20090126015921.15168.97302.stgit@marcab.local.tull.net> <alpine.LNX.1.10.0901261059560.5377@jikos.suse.cz> <497DCB15.7030404@turknet.net.tr>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Read-Receipt-To: <folkert@vanheusden.com>
-Reply-By: Sat Jan 24 21:33:23 CET 2009
-X-Message-Flag: www.unixexpert.nl
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 26 Jan 2009, Tarkan Erimer wrote:
 
-Since version 2.6.29rc1 querying cleware USb devices no longer works.
-2.6.28 works fine. 2.6.29-rc2 also no longer works.
+> "Fix misspelling of firmware in tg3.c" didn't help me to solve tg3 
+> firmware issue which I submitted via "[BUG] tg3 module problem on 
+> Linux-2.6.29-rc1-2" subjected email at 21st of Jan. I re-compiled 
+> 2.6.29-rc2 with this patch and still having the same error message :
+> Using mkinitramfs-kpkg to build the ramdisk.
+> W: Possible missing firmware /lib/firmware/2.6.29-rc2-git1/tigon/tg3_tso5.bin
+> for module tg3
+> W: Possible missing firmware /lib/firmware/2.6.29-rc2-git1/tigon/tg3_tso.bin
+> for module tg3
+> W: Possible missing firmware /lib/firmware/2.6.29-rc2-git1/tigon/tg3.bin for
+> module tg3
 
-I googled for git bisect but it seems that will take a looong time
-(building kernel takes aprox 4 hours) so maybe there's a shortcut I can
-take?
+Yes, Nick's patch is not supposed to fix this, it's just a fix of a 
+comment in the source code, that has no effect on the behavior of the 
+driver. So this is completely separate issue, that you should report to 
+the proper place, which is
 
-
-Folkert van Heusden
+	BROADCOM TG3 GIGABIT ETHERNET DRIVER
+	P:      Michael Chan
+	M:      mchan@broadcom.com
+	L:      netdev@vger.kernel.org
+	S:      Supported
 
 -- 
-www.vanheusden.com/multitail - win een vlaai van multivlaai! zorg
-ervoor dat multitail opgenomen wordt in Fedora Core, AIX, Solaris of
-HP/UX en win een vlaai naar keuze
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+Jiri Kosina
+SUSE Labs
