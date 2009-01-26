@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZAZXyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZAZX5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753363AbZAZXyM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 18:54:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbZAZXxy
+	id S1754840AbZAZX5r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 18:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZAZX5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 18:53:54 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53075 "EHLO mx2.mail.elte.hu"
+	Mon, 26 Jan 2009 18:57:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45462 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754755AbZAZXxw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 18:53:52 -0500
-Date: Tue, 27 Jan 2009 00:53:31 +0100
+	id S1751854AbZAZX5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 18:57:38 -0500
+Date: Tue, 27 Jan 2009 00:57:15 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: oleg@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
-       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-ID: <20090126235331.GA8726@elte.hu>
-References: <20090126212727.GA13670@elte.hu> <20090126133551.fab5e27a.akpm@linux-foundation.org> <20090126214516.GA22142@elte.hu> <20090126140116.35f9c173.akpm@linux-foundation.org> <20090126220537.GA6755@elte.hu> <20090126141605.707877bb.akpm@linux-foundation.org> <20090126222002.GB10215@elte.hu> <20090126145003.b29b81d7.akpm@linux-foundation.org> <20090126225957.GA3999@elte.hu> <20090126154217.b312e278.akpm@linux-foundation.org>
+Cc: Ying Han <yinghan@google.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, mikew@google.com, rientjes@google.com,
+       rohitseth@google.com, hugh@veritas.com, a.p.zijlstra@chello.nl,
+       hpa@zytor.com, edwintorok@gmail.com, lee.schermerhorn@hp.com,
+       npiggin@suse.de
+Subject: Re: [RFC v2][PATCH]page_fault retry with NOPAGE_RETRY
+Message-ID: <20090126235715.GB8726@elte.hu>
+References: <604427e00812051140s67b2a89dm35806c3ee3b6ed7a@mail.gmail.com> <20090126113728.58212a30.akpm@linux-foundation.org> <604427e00901261508n7967ea74m3deacd3213c86065@mail.gmail.com> <20090126155246.2d7df309.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090126154217.b312e278.akpm@linux-foundation.org>
+In-Reply-To: <20090126155246.2d7df309.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,43 +40,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > The problem is the intrinsic utility of work_on_cpu(): we _really_ 
-> > want such a generic facility to be usable from any (blockable) 
-> > context, just like on_each_cpu(func, info) does for atomic functions, 
-> > without restrictions on locking context.
-> 
-> Do we?  work_on_cpu() is some last-gasp oh-i-screwed-my-code-up thing. 
-> We _really_ want people to use on_each_cpu()!
+> I think that a good way to present this is as a preparatory patch: 
+> "convert the fourth argument to handle_mm_fault() from a boolean to a 
+> flags word".  That would be a simple do-nothing patch which affects all 
+> architectures and which ideally would break the build at any unconverted 
+> code sites.  (Change the argument order?)
 
-why? on_each_cpu() is limited and runs in IRQ context. Is there a 
-requirement that worklets need to be atomic?
+why not do what i suggested: refactor do_page_fault() into a platform 
+specific / kernel-internal faults and into a generic-user-pte function. 
+That alone would increase readability i suspect.
 
-> We should bust a gut to keep the number of callers to the 
-> resource-intensive (deadlocky!) work_on_cpu() to a minimum.
+Then the 'retry' is multiple calls from handle_pte_fault().
 
-i wouldnt call +10K 'resource intensive'.
+Or something like that.
 
-> (And to think that adding add_timer_on() creeped me out).
-> 
-> hm.  None of that was very helpful.  How to move forward?
-> 
-> I think I disagree that work_on_cpu() should be made into some robust, 
-> smiled-upon core kernel facility.  It _is_ slow, it _is_ deadlockable. 
-
-uhm, why is it slow? It could be faster in fact in some cases: the main 
-overhead in on_each_cpu() is having to wait for the IPIs - with a thread 
-based approach if the other CPUs are idle we can get an IPI-less wakeup.
-
-> It should be positioned as something which is only used as a last 
-> resort.  And if you _have_ to use it, sort out your locking!
-> 
-> Plus the number of code sites which want to fiddle with other CPUs in 
-> this manner will always be small.  cpufreq, MCE, irq-affinity, things 
-> like that.
-> 
-> What is the deadlock in acpi-cpufreq?  Which lock, and who is the 
-> "other" holder of that lock?
-
-a quick look suggests that it's dbs_mutex.
+It looks wrong to me to pass another flag through this hot codepath, just 
+to express a property that the _highlevel_ code is interested in.
 
 	Ingo
