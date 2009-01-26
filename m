@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbZAZRP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753350AbZAZRQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989AbZAZRP5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751611AbZAZRPt
+	id S1753350AbZAZRQw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:16:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751691AbZAZRQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:15:49 -0500
-Received: from smtp122.sbc.mail.sp1.yahoo.com ([69.147.64.95]:24364 "HELO
-	smtp122.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751448AbZAZRPs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:15:48 -0500
-X-YMail-OSG: CLTEOvsVM1k6IUyzN5PZxmWpMxVTfg0yiY2PdT7Q1MF0l129tEgQx3Y5dnMRz6rHbeVF_1eN98co_ukoPWucrCYYuNH5Q1py_Bfc20fbjaYd1fVqGw_7mM7shM4FmxvGTNyKAxoA56LIF2UeI2818qc18SK.2LPkiE1kkzf0movwoiK5ga8xP8kBfzS.SCJYkPjrwnAm3NFQMyzXUj0wmS_L7nc-
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: Spamming linux-kernel and linux-scsi by out-of-tree patches
-	(LIO)
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Vladislav Bolkhovitin <vst@vlnb.net>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20090126081905.7c112170@infradead.org>
-References: <497DB7D0.8000302@vlnb.net>
-	 <1232984234.3248.18.camel@localhost.localdomain>
-	 <497DDFF8.8070707@vlnb.net>  <20090126081905.7c112170@infradead.org>
-Content-Type: text/plain
-Date: Mon, 26 Jan 2009 09:15:24 -0800
-Message-Id: <1232990124.24642.156.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Jan 2009 12:16:44 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39673 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751595AbZAZRQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 12:16:43 -0500
+Date: Mon, 26 Jan 2009 18:16:18 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>,
+       Ingo Molnar <mingo@redhat.com>, Dave Jones <davej@redhat.com>,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Message-ID: <20090126171618.GA32091@elte.hu>
+References: <20090116191108.135927000@polaris-admin.engr.sgi.com> <20090116191108.533053000@polaris-admin.engr.sgi.com> <20090124001537.7cfde78e.akpm@linux-foundation.org> <200901261711.43943.rusty@rustcorp.com.au> <20090125230130.bcdab2e5.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090125230130.bcdab2e5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-26 at 08:19 -0800, Arjan van de Ven wrote:
-> On Mon, 26 Jan 2009 19:08:24 +0300
-> Vladislav Bolkhovitin <vst@vlnb.net> wrote:
-> 
-> > I wouldn't object if Nicholas des the same and send in linux-scsi
-> > and linux-kernel a complete patchset, which we will review and
-> > discuss. But he sends *intermediate* patches and this looks for me
-> > like a violation of fundamental rules/intention of Linux kernel
-> > mailing lists, hence I complain.
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > > Yet another kernel thread for each CPU.  All because of some dung 
+> > > way down in arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c.
+> > > 
+> > > Is there no other way?
 > > 
-> > So, should I understand your words that you agree if I also start 
-> > sending intermediate patches for SCST to linux-scsi/linux-kernel?
+> > Perhaps, but this works.  Trying to be clever got me into this mess in 
+> > the first place.
 > > 
+> > We could stop using workqueues and change work_on_cpu to create a 
+> > thread every time, which would give it a new failure mode so I don't 
+> > know that everyone could use it any more.  Or we could keep a single 
+> > thread around to do all the cpus, and duplicate much of the workqueue 
+> > code.
+> > 
+> > None of these options are appealing...
 > 
+> Can we try harder please?  10 screenfuls of kernel threads in the ps 
+> output is just irritating.
 > 
-> <looking in as an outsider>
+> How about banning the use of work_on_cpu() from schedule_work() handlers 
+> and then fixing that driver somehow?
+
+Yes, but that's fundamentally fragile: anyone who happens to stick the 
+wrong thing into keventd (and it's dead easy because schedule_work() is 
+easy to use) will lock up work_on_cpu() users.
+
+work_on_cpu() is an important (and lowlevel enough) facility to be 
+isolated from casual interaction like that.
+
+> What _is_ the bug anyway?  The only description we were given was
 > 
-> I am thoroughly surprised by this email exchange.
-> From where I sit, there is almost no such thing as posting patches too
-> early. Really. Transparency and early review/feedaback is by far
-> more important than ignoring a few more patches in an area you
-> don't careabout.
+>   Impact: remove potential clashes with generic kevent workqueue
 > 
+>   Annoyingly, some places we want to use work_on_cpu are already in
+>   workqueues.  As per Ingo's suggestion, we create a different
+>   workqueue for work_on_cpu.
+> 
+> which didn't bother telling anyone squat.
+> 
+> When was this bug added?  Was it added into that driver or was it due to 
+> infrastructural changes?
 
-For those wanting to know more about "Release Early, Release Often":
+This fixes lockups during bootup caused by the cpumask changes/cleanups 
+which changed set_cpus_allowed()+on-kernel-stack-cpumask_t to 
+work_on_cpu().
 
-http://www.catb.org/~esr/writings/cathedral-bazaar/cathedral-bazaar/ar01s04.html
+Which was fine except it didnt take into account the interaction with the 
+kevents workqueue and the very wide cross section for worklet dependencies 
+that this brings with itself. work_on_cpu() was rarely used before so this 
+didnt show up.
 
-<SNIP>
-
-Linus's open development policy was the very opposite of
-cathedral-building. Linux's Internet archives were burgeoning, multiple
-distributions were being floated. And all of this was driven by an
-unheard-of frequency of core system releases.
-
-Linus was treating his users as co-developers in the most effective
-possible way:
-
-        7. Release early. Release often. And listen to your customers.
-        
-
-Linus's innovation wasn't so much in doing quick-turnaround releases
-incorporating lots of user feedback (something like this had been
-Unix-world tradition for a long time), but in scaling it up to a level
-of intensity that matched the complexity of what he was developing. In
-those early times (around 1991) it wasn't unknown for him to release a
-new kernel more than once a day! Because he cultivated his base of
-co-developers and leveraged the Internet for collaboration harder than
-anyone else, this worked.
-
-<SNIP>
-
---nab
-
+	Ingo
