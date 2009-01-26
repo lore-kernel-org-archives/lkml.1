@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZAZTn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZAZTrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbZAZTn6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZAZTnq
+	id S1754042AbZAZTrQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:47:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZAZTq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:43:46 -0500
-Received: from ug-out-1314.google.com ([66.249.92.174]:24620 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751470AbZAZTnp (ORCPT
+	Mon, 26 Jan 2009 14:46:59 -0500
+Received: from mga11.intel.com ([192.55.52.93]:10163 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751881AbZAZTq7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:43:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=qrlw5Ckpv0D7TXQr812KeoAGbR2+1D3ggOC46Po+s2dZGFRnMlx0CvVo4eP3+N23Nd
-         UrBRZbs17ha/qtgSBbAkFcKdffDMAAajBpwOrUkgJLhR3iQ0WUeo6kEVKMbTRbTdIVFF
-         1pAVgfj+VI8n+wiDMcRQGnjIFZJUxBZz1AI8Q=
+	Mon, 26 Jan 2009 14:46:59 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,327,1231142400"; 
+   d="scan'208";a="425609869"
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Hunter, Jon" <jon-hunter@ti.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Mon, 26 Jan 2009 11:48:09 -0800
+Subject: RE: [RFC] Dynamic Tick and Deferrable Timer Support
+Thread-Topic: [RFC] Dynamic Tick and Deferrable Timer Support
+Thread-Index: Acl22NMmPRfHmhnyTuem0+yaDRLXwwJCC58gAAMph9A=
+Message-ID: <7E82351C108FA840AB1866AC776AEC46471B9452@orsmsx505.amr.corp.intel.com>
+References: <CF7665F795A4BE438425FE728CEACFA302F2436B52@dlee01.ent.ti.com>
+ <20090114221624.76ee8aa4.akpm@linux-foundation.org>
+ <7B4574D56E4ADF438756313E9A172A872CB8232E@dlee01.ent.ti.com>
+In-Reply-To: <7B4574D56E4ADF438756313E9A172A872CB8232E@dlee01.ent.ti.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-In-Reply-To: <84144f020901261140j242bb31cg1b2a59a5ae71ae29@mail.gmail.com>
-References: <Pine.LNX.4.64.0901221205400.27341@melkki.cs.Helsinki.FI>
-	 <20090122114237.GA13845@atrey.karlin.mff.cuni.cz>
-	 <4978C812.90702@gmail.com> <20090122211052.GA1928@elf.ucw.cz>
-	 <4978F47C.6010909@gmail.com> <4978F3CF.2010301@cs.helsinki.fi>
-	 <497E0F94.8000003@gmail.com>
-	 <84144f020901261140j242bb31cg1b2a59a5ae71ae29@mail.gmail.com>
-Date: Mon, 26 Jan 2009 21:43:41 +0200
-X-Google-Sender-Auth: fa4db6035afae7c7
-Message-ID: <84144f020901261143o1bb41b76o680c8616a81dc2db@mail.gmail.com>
-Subject: Re: [PATCH] w35und: fix usb_control_msg() error handling in 
-	wb35_probe()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Sandro Bonazzola <sandro.bonazzola@gmail.com>
-Cc: Pavel Machek <pavel@suse.cz>, Greg Kroah-Hartman <greg@kroah.com>,
-       linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 9:40 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> Hi Sandro,
->
-> Pekka Enberg ha scritto:
->>> Ok, test done with git current version of w35und over 2.6.28-gentoo-r1
->>> (2.6.28.1 and some patches)
->>
->> Adding Pekka's patch
->
-> On Mon, Jan 26, 2009 at 9:31 PM, Sandro Bonazzola
-> <sandro.bonazzola@gmail.com> wrote:
->>> # uname -a
->>> Linux arilinn 2.6.28-gentoo-r1 #1 Wed Jan 21 19:37:07 CET 2009 x86_64 AMD
->>> Athlon(tm) 64 Processor 3500+ AuthenticAMD GNU/Linux
->
-> [snip]
->
->> Ok, with kernel 2.6.8.1, and your patch it seems to work with channel 1, no
->> encryption, opensystem authentication.
->
-> So the driver doesn't work in 2.6.29-rc1 but does in 2.6.28.1? I
-> wonder what changed in the networking/wireless stack that broke the
-> winbond driver.... I'm cc'ing netdev even though this is a driver in
-> staging.
 
-Actually, it's probably me who broke the driver. I think Greg merged
-most of my patches after 2.6.28 came out. Sandro, if you have some
-time, please consider doing git bisect to find out which changeset
-causes the problem.
+>-----Original Message-----
+>From: Hunter, Jon [mailto:jon-hunter@ti.com] 
+>Sent: Monday, January 26, 2009 10:24 AM
+>To: Andrew Morton; Pallipadi, Venkatesh
+>Cc: linux-kernel@vger.kernel.org
+>Subject: RE: [RFC] Dynamic Tick and Deferrable Timer Support
+>
+>Andrew Morton <mailto:akpm@linux-foundation.org> wrote on 
+>Thursday, January 15, 2009 12:16 AM:
+>
+>> Venki, could you please take a look?
+>
+>Andrew, Venki, if it helps here are some more details.
+>
 
-                            Pekka
+Jon,
+
+I looked at your patch earlier, but I was concerned about few things and wanted to spend some more time on it. So, I did not reply earlier. The potential issues I see:
+- May be a bit theoritcal, as this may not happen in reality. But, with your change, if all the timers happen to be defrrable, timer wheel never advances and none of the timers expire. Not sure whether we need to handle this cleanly somehow or assume that not all the timers will be deferrable.
+- Another similar case is when we have more of deferrable timers in the system, if we do not cascade timers from the timer wheel, we may end up spending more time in the higher order timer wheel looking through all the timers, as they are at a higher timer granularity, instead of on the lower order timer wheel which will have timers sorted at a lower granularity.
+
+I am not sure whether any of these issues will be a problem in real world or not. But, I think they are something we should be careful about.
+
+Thanks,
+Venki 
