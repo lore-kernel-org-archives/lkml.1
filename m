@@ -1,77 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZAZWNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbZAZWQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbZAZWNp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 17:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbZAZWNg
+	id S1754697AbZAZWQf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 17:16:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZAZWQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 17:13:36 -0500
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:28607 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751962AbZAZWNf (ORCPT
+	Mon, 26 Jan 2009 17:16:26 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59310 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751497AbZAZWQ0 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 17:13:35 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Krzysztof Helt" <krzysztof.h1@wp.pl>, Adam Belay <abelay@mit.edu>
-Subject: Re: How should I handle device with two PNP-BIOS ids?
-Date: Mon, 26 Jan 2009 15:13:31 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-References: <497d80991ef709.35340258@wp.pl>
-In-Reply-To: <497d80991ef709.35340258@wp.pl>
+	Mon, 26 Jan 2009 17:16:26 -0500
+Date: Mon, 26 Jan 2009 23:15:53 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: eranian@gmail.com, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>,
+       "perfmon2-devel@lists.sourceforge.net" 
+	<perfmon2-devel@lists.sourceforge.net>,
+       Papi <ptools-perfapi@cs.utk.edu>
+Subject: Re: [announce] Performance Counters for Linux, v6
+Message-ID: <20090126221553.GB7440@elte.hu>
+References: <20090121185021.GA8852@elte.hu> <497D0C81.5040406@linux.vnet.ibm.com> <7c86c4470901260113r4db6b15cpa0fa88ab3f8a516c@mail.gmail.com> <20090126151746.GH9128@elte.hu> <497E0B55.4050408@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901261513.32348.bjorn.helgaas@hp.com>
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <497E0B55.4050408@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Added Adam and linux-acpi]
 
-On Monday 26 January 2009 02:21:29 am Krzysztof Helt wrote:
-> There is brain-damaged sound chip which is identified by two separate 
-> PNP ids. This was done probably to keep backward compatibility (the 
-> first id is for the old type of chip, the second id gives only one 
-> additional io range required for newer chips).
-> 
-> How to does properly detect such a device using the PNP framework?
-> Is there any way to specify two PNP ids as one device?
-> 
-> Is it better to iterate over a pnpbios protocol of the first device to 
-> find out if there is the second id? This way has an advantage that I can 
-> distinguish between old chip (no the second id found) and newer chips 
-> (the second id found).
+* Corey Ashford <cjashfor@linux.vnet.ibm.com> wrote:
 
-Hi Krzysztof,
+> Ingo Molnar wrote:
+>> * stephane eranian <eranian@googlemail.com> wrote:
+>>
+>>> Hi,
+>>>
+>>> Corey brings up an interesting problem which I wanted to comment on.
+>>>
+>>> The current proposal hinges on the idea that by interpreting a single 
+>>> value the kernel can understand what the user wants to measure. For  
+>>> instance, if I pass type=0, then the kernel understands I want to  
+>>> measure CPU_CYCLES. Given that the number of events and their unit 
+>>> mask combinations can be large, the proposal also provides a "raw" 
+>>> mode, where the content of the type field is interpreted as the raw 
+>>> value to put into a register.
+>>>
+>>> This is where there is an issue because with several PMU models,  
+>>> including on X86, using the raw bit + 64 value is not enough to 
+>>> figure out what the user wants to measure. This happens when the PMU 
+>>> has more than counters. Thus, interpreting each raw value has the 
+>>> event code may be wrong. To remain on familiar territory, the Nehalem 
+>>> uncore PMU has an opcode matcher register, that uses a 64-bit value. 
+>>> On AMD64 Family 10h, you have IBS. But I could give examples on 
+>>> Itanium with opcode matchers, range restrictions. Corey provided 
+>>> other examples for Power. The API has to provide a way to express 
+>>> what the raw value is meant for: counter, matcher, filter...
+>>
+>> this can be done in a number of ways (in order of increasing levels of  
+>> abstraction):
+>>
+>> - the raw type is kept wide enough. Paul already requested the raw type
+>>   to be widened to 128 bits to express certain PowerPC features.
+>>
+>> - or the PMU capability is expressed as a special counter type (if it's
+>>   useful enough) - and then either the write() method or ioctl is extended
+>>   to express attributes we want to set/change while a counter is running.
+>>
+>> - or the highest level counter / hw event data type is extended with new
+>>   attribute field(s).
+>>
+>> My feeling is that we generally want such hw features to start small -  
+>> i.e. at the raw type level initially. Then we can allow them to climb 
+>> the ladder, if they prove their utility in practice. We've got space 
+>> reserved in the ABI to allow for growth like this.
+>>
+>> 	Ingo
+>
+>
+> Hi Ingo and Stephane,
+>
+> Thanks for the replies.
+>
+> I think any one of those solutions would work for Power's Instruction 
+> Matching Register.  If more than one register needs to be programmed, or 
+> the values don't fit into the 128-bit raw event types, we could use the 
+> "special counter" approach, I think.
+>
+> I will have another look at the Power PMU description and see if there 
+> are other constraints that might cause us to want to go one way or the 
+> other, or perhaps a different way.
 
-Systems with the old chip probably report the device with a single
-PNP ID.  For PNPBIOS, that would be the "device product identifier."
-For ACPI, it would be the _HID.
+thanks, that's really appreciated!
 
-Systems with the new chip should report both PNP IDs.  The PNPBIOS
-device product identifier or the ACPI _HID should be the new ID, and
-the older ID for backward compatibility should be reported in the
-PNPBIOS "compatible device identifiers" list or the ACPI _CID.
+One useful approach would be to come up with a bitcount that you think 
+would fit considering even (currently) fringe/odd features - and we'd make 
+sure there's enough space for that in the ABI - should there be a 
+need/desire to expose that in the future.
 
-The driver would list both IDs in the pnp_device_id table, and it
-looks like the driver probe routine gets called with the ID that
-matched.
-
-I don't see any drivers that actually do this, but I think the
-probe routine should be able to look at the ID that matched and
-determine whether the additional I/O range is present.
-
-Oops, looking at match_device() in drivers/pnp/driver.c, I think
-we look at all the device IDs supported by the driver, but we only
-look at the first ID associated with the device.  That means an old
-driver that only knows about the old device ID would fail to claim
-a new device (the new device will have the new ID first and old IDs
-in the compatibility list).  That looks like a bug in the PNP core --
-the old driver should be able to claim any new compatible devices.
-
-Let me know if you think you're seeing this bug, and I'll look into
-it some more.
-
-Bjorn
+	Ingo
