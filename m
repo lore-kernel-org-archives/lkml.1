@@ -1,77 +1,305 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZAZRbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753949AbZAZRb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZAZRbk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZAZRbc
+	id S1753949AbZAZRb7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZAZRbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:31:32 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:45622 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751760AbZAZRbb (ORCPT
+	Mon, 26 Jan 2009 12:31:47 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36381 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752417AbZAZRbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:31:31 -0500
-Date: Mon, 26 Jan 2009 12:28:03 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <20090123155307.GB14517@wotan.suse.de>
-Message-ID: <alpine.DEB.1.10.0901261225240.1908@qirst.com>
-References: <20090114155923.GC1616@wotan.suse.de> <Pine.LNX.4.64.0901141219140.26507@quilx.com> <20090115061931.GC17810@wotan.suse.de> <Pine.LNX.4.64.0901151434150.28387@quilx.com> <20090116034356.GM17810@wotan.suse.de> <Pine.LNX.4.64.0901161509160.27283@quilx.com>
- <20090119061856.GB22584@wotan.suse.de> <alpine.DEB.1.10.0901211903540.18367@qirst.com> <20090123040913.GG20098@wotan.suse.de> <alpine.DEB.1.10.0901231033210.32253@qirst.com> <20090123155307.GB14517@wotan.suse.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 26 Jan 2009 12:31:45 -0500
+Date: Mon, 26 Jan 2009 18:31:33 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: linux-kernel@vger.kernel.org, akpm@osdl.org, Paul.Clements@steeleye.com
+Subject: nbd: add locking to nbd_ioctl
+Message-ID: <20090126173132.GA2605@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-n Fri, 23 Jan 2009, Nick Piggin wrote:
 
-> According to memory policies, a task's memory policy is supposed to
-> apply to its slab allocations too.
+The code was written to rely on big kernel lock to protect it from
+races. It mostly works when interface is not abused.
 
-It does apply to slab allocations. The question is whether it has to apply
-to every object allocation or to every page allocation of the slab
-allocators.
+So this uses tx_lock to protect data structures from concurrent use
+between ioctl and worker threads.
 
-> > Memory policies are applied in a fuzzy way anyways. A context switch can
-> > result in page allocation action that changes the expected interleave
-> > pattern. Page populations in an address space depend on the task policy.
-> > So the exact policy applied to a page depends on the task. This isnt an
-> > exact thing.
->
-> There are other memory policies than just interleave though.
+Next step will be moving from ioctl to unlocked_ioctl. 
 
-Which have similar issues since memory policy application is depending on
-a task policy and on memory migration that has been applied to an address
-range.
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+Acked-by: Paul Clements <paul.clements@steeleye.com>
 
-> > >  "the first cpu will consume more and more memory from the page allocator
-> > >   whereas the second will build up huge per cpu lists"
-> > >
-> > > And this is wrong. There is another possible issue where every single
-> > > object on the freelist might come from a different (and otherwise free)
-> > > page, and thus eg 100 8 byte objects might consume 400K.
-> > >
-> > > That's not an invalid concern, but I think it will be quite rare, and
-> > > the periodic queue trimming should naturally help this because it will
-> > > cycle out those objects and if new allocations are needed, they will
-> > > come from new pages which can be packed more densely.
-> >
-> > Well but you said that you would defer the trimming (due to latency
-> > concerns). The longer you defer the larger the lists will get.
->
-> But that is wrong. The lists obviously have high water marks that
-> get trimmed down. Periodic trimming as I keep saying basically is
-> alrady so infrequent that it is irrelevant (millions of objects
-> per cpu can be allocated anyway between existing trimming interval)
+diff --git a/drivers/block/nbd.c b/drivers/block/nbd.c
+index 34f80fa..81c94a4 100644
+--- a/drivers/block/nbd.c
++++ b/drivers/block/nbd.c
+@@ -559,74 +557,68 @@ static void do_nbd_request(struct reques
+ 	}
+ }
+ 
+-static int nbd_ioctl(struct block_device *bdev, fmode_t mode,
+-		     unsigned int cmd, unsigned long arg)
+-{
+-	struct nbd_device *lo = bdev->bd_disk->private_data;
+-	struct file *file;
+-	int error;
+-	struct request sreq ;
+-	struct task_struct *thread;
+-
+-	if (!capable(CAP_SYS_ADMIN))
+-		return -EPERM;
+-
+-	BUG_ON(lo->magic != LO_MAGIC);
+-
+-	/* Anyone capable of this syscall can do *real bad* things */
+-	dprintk(DBG_IOCTL, "%s: nbd_ioctl cmd=%s(0x%x) arg=%lu\n",
+-			lo->disk->disk_name, ioctl_cmd_to_ascii(cmd), cmd, arg);
++/* Must be called with tx_lock held */
+ 
++static int __nbd_ioctl(struct block_device *bdev, struct nbd_device *lo, 
++		       unsigned int cmd, unsigned long arg)
++{
+ 	switch (cmd) {
+ 	case NBD_DISCONNECT:
+ 	        printk(KERN_INFO "%s: NBD_DISCONNECT\n", lo->disk->disk_name);
+-		blk_rq_init(NULL, &sreq);
+-		sreq.cmd_type = REQ_TYPE_SPECIAL;
+-		nbd_cmd(&sreq) = NBD_CMD_DISC;
+-		/*
+-		 * Set these to sane values in case server implementation
+-		 * fails to check the request type first and also to keep
+-		 * debugging output cleaner.
+-		 */
+-		sreq.sector = 0;
+-		sreq.nr_sectors = 0;
+-                if (!lo->sock)
+-			return -EINVAL;
+-		mutex_lock(&lo->tx_lock);
+-                nbd_send_req(lo, &sreq);
+-		mutex_unlock(&lo->tx_lock);
++		{
++			struct request sreq;
++
++			blk_rq_init(NULL, &sreq);
++			sreq.cmd_type = REQ_TYPE_SPECIAL;
++			nbd_cmd(&sreq) = NBD_CMD_DISC;
++			/*
++			 * Set these to sane values in case server implementation
++			 * fails to check the request type first and also to keep
++			 * debugging output cleaner.
++			 */
++			sreq.sector = 0;
++			sreq.nr_sectors = 0;
++			if (!lo->sock)
++				return -EINVAL;
++			nbd_send_req(lo, &sreq);
++		}
+                 return 0;
+  
+ 	case NBD_CLEAR_SOCK:
+-		error = 0;
+-		mutex_lock(&lo->tx_lock);
+-		lo->sock = NULL;
+-		mutex_unlock(&lo->tx_lock);
+-		file = lo->file;
+-		lo->file = NULL;
+-		nbd_clear_que(lo);
+-		BUG_ON(!list_empty(&lo->queue_head));
+-		if (file)
+-			fput(file);
+-		return error;
+-	case NBD_SET_SOCK:
+-		if (lo->file)
+-			return -EBUSY;
+-		error = -EINVAL;
+-		file = fget(arg);
+-		if (file) {
+-			struct inode *inode = file->f_path.dentry->d_inode;
+-			if (S_ISSOCK(inode->i_mode)) {
+-				lo->file = file;
+-				lo->sock = SOCKET_I(inode);
+-				if (max_part > 0)
+-					bdev->bd_invalidated = 1;
+-				error = 0;
+-			} else {
++		{
++			struct file *file;
++
++			lo->sock = NULL;
++			file = lo->file;
++			lo->file = NULL;
++			nbd_clear_que(lo);
++			BUG_ON(!list_empty(&lo->queue_head));
++			if (file)
+ 				fput(file);
++		}
++	return 0;
++
++	case NBD_SET_SOCK:
++		{
++			struct file *file;
++			if (lo->file)
++				return -EBUSY;
++			file = fget(arg);
++			if (file) {
++				struct inode *inode = file->f_path.dentry->d_inode;
++				if (S_ISSOCK(inode->i_mode)) {
++					lo->file = file;
++					lo->sock = SOCKET_I(inode);
++					if (max_part > 0)
++						bdev->bd_invalidated = 1;
++					return 0;
++				} else {
++					fput(file);
++				}
+ 			}
+ 		}
+-		return error;
++		return -EINVAL;
++
+ 	case NBD_SET_BLKSIZE:
+ 		lo->blksize = arg;
+ 		lo->bytesize &= ~(lo->blksize-1);
+@@ -634,47 +626,65 @@ static int nbd_ioctl(struct block_device
+ 		set_blocksize(bdev, lo->blksize);
+ 		set_capacity(lo->disk, lo->bytesize >> 9);
+ 		return 0;
++
+ 	case NBD_SET_SIZE:
+ 		lo->bytesize = arg & ~(lo->blksize-1);
+ 		bdev->bd_inode->i_size = lo->bytesize;
+ 		set_blocksize(bdev, lo->blksize);
+ 		set_capacity(lo->disk, lo->bytesize >> 9);
+ 		return 0;
++
+ 	case NBD_SET_TIMEOUT:
+ 		lo->xmit_timeout = arg * HZ;
+ 		return 0;
++
+ 	case NBD_SET_SIZE_BLOCKS:
+ 		lo->bytesize = ((u64) arg) * lo->blksize;
+ 		bdev->bd_inode->i_size = lo->bytesize;
+ 		set_blocksize(bdev, lo->blksize);
+ 		set_capacity(lo->disk, lo->bytesize >> 9);
+ 		return 0;
++
+ 	case NBD_DO_IT:
+-		if (lo->pid)
+-			return -EBUSY;
+-		if (!lo->file)
+-			return -EINVAL;
+-		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
+-		if (IS_ERR(thread))
+-			return PTR_ERR(thread);
+-		wake_up_process(thread);
+-		error = nbd_do_it(lo);
+-		kthread_stop(thread);
+-		if (error)
+-			return error;
+-		sock_shutdown(lo, 1);
+-		file = lo->file;
+-		lo->file = NULL;
+-		nbd_clear_que(lo);
+-		printk(KERN_WARNING "%s: queue cleared\n", lo->disk->disk_name);
+-		if (file)
+-			fput(file);
+-		lo->bytesize = 0;
+-		bdev->bd_inode->i_size = 0;
+-		set_capacity(lo->disk, 0);
+-		if (max_part > 0)
+-			ioctl_by_bdev(bdev, BLKRRPART, 0);
+-		return lo->harderror;
++		{
++			struct task_struct *thread;
++			struct file *file;
++			int error;
++
++			if (lo->pid)
++				return -EBUSY;
++			if (!lo->file)
++				return -EINVAL;
++
++			mutex_unlock(&lo->tx_lock);
++
++			thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
++			if (IS_ERR(thread)) {
++				mutex_lock(&lo->tx_lock);
++				return PTR_ERR(thread);
++			}
++			wake_up_process(thread);
++			error = nbd_do_it(lo);
++			kthread_stop(thread);
++
++			mutex_lock(&lo->tx_lock);
++			if (error)
++				return error;
++			sock_shutdown(lo, 0);
++			file = lo->file;
++			lo->file = NULL;
++			nbd_clear_que(lo);
++			printk(KERN_WARNING "%s: queue cleared\n", lo->disk->disk_name);
++			if (file)
++				fput(file);
++			lo->bytesize = 0;
++			bdev->bd_inode->i_size = 0;
++			set_capacity(lo->disk, 0);
++			if (max_part > 0)
++				ioctl_by_bdev(bdev, BLKRRPART, 0);
++			return lo->harderror;
++		}
++
+ 	case NBD_CLEAR_QUE:
+ 		/*
+ 		 * This is for compatibility only.  The queue is always cleared
+@@ -682,6 +692,7 @@ static int nbd_ioctl(struct block_device
+ 		 */
+ 		BUG_ON(!lo->sock && !list_empty(&lo->queue_head));
+ 		return 0;
++
+ 	case NBD_PRINT_DEBUG:
+ 		printk(KERN_INFO "%s: next = %p, prev = %p, head = %p\n",
+ 			bdev->bd_disk->disk_name,
+@@ -689,7 +700,29 @@ static int nbd_ioctl(struct block_device
+ 			&lo->queue_head);
+ 		return 0;
+ 	}
+-	return -EINVAL;
++}
++
++
++static int nbd_ioctl(struct block_device *bdev, fmode_t mode,
++		     unsigned int cmd, unsigned long arg)
++{
++	struct nbd_device *lo = bdev->bd_disk->private_data;
++	int error;
++
++	if (!capable(CAP_SYS_ADMIN))
++		return -EPERM;
++
++	BUG_ON(lo->magic != LO_MAGIC);
++
++	/* Anyone capable of this syscall can do *real bad* things */
++	dprintk(DBG_IOCTL, "%s: nbd_ioctl cmd=%s(0x%x) arg=%lu\n",
++			lo->disk->disk_name, ioctl_cmd_to_ascii(cmd), cmd, arg);
++
++	mutex_lock(&lo->tx_lock);
++	error = __nbd_ioctl(bdev, lo, cmd, arg);
++	mutex_unlock(&lo->tx_lock);
++
++	return error;
+ }
+ 
+ static struct block_device_operations nbd_fops =
 
-Trimming through water marks and allocating memory from the page allocator
-is going to be very frequent if you continually allocate on one processor
-and free on another.
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
