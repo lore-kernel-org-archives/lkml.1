@@ -1,52 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754130AbZAZWGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZAZWI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754130AbZAZWGV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 17:06:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752289AbZAZWGM
+	id S1754560AbZAZWI5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 17:08:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752538AbZAZWIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 17:06:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60554 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752000AbZAZWGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 17:06:11 -0500
-Date: Mon, 26 Jan 2009 23:05:37 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: oleg@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
-       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-ID: <20090126220537.GA6755@elte.hu>
-References: <200901261711.43943.rusty@rustcorp.com.au> <20090125230130.bcdab2e5.akpm@linux-foundation.org> <20090126171618.GA32091@elte.hu> <20090126103529.cb124a58.akpm@linux-foundation.org> <20090126202022.GA8867@elte.hu> <20090126130046.37b8f34e.akpm@linux-foundation.org> <20090126212727.GA13670@elte.hu> <20090126133551.fab5e27a.akpm@linux-foundation.org> <20090126214516.GA22142@elte.hu> <20090126140116.35f9c173.akpm@linux-foundation.org>
+	Mon, 26 Jan 2009 17:08:47 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51649 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752364AbZAZWIq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 17:08:46 -0500
+Date: Mon, 26 Jan 2009 14:08:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Sam Ravnborg <sam@ravnborg.org>
+cc: Dave Airlie <airlied@gmail.com>, Dave Airlie <airlied@linux.ie>,
+       dri-devel@lists.sf.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [git pull] drm-fixes
+In-Reply-To: <20090126215235.GA10484@uranus.ravnborg.org>
+Message-ID: <alpine.LFD.2.00.0901261356150.3465@localhost.localdomain>
+References: <alpine.DEB.2.00.0901220432480.25266@skynet.skynet.ie> <alpine.LFD.2.00.0901261017380.5284@localhost.localdomain> <21d7e9970901261344v2909cc61m42f32f2a434df0c4@mail.gmail.com> <20090126215235.GA10484@uranus.ravnborg.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090126140116.35f9c173.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Well it turns out that I was having a less-than-usually-senile moment:
+On Mon, 26 Jan 2009, Sam Ravnborg wrote:
+
+> > 
+> > Well I'm not 100% sure what happened for this patch, I suspect,
+> > jbarnes sent patch a week
+> > or two ago, it misapplied against the tree I had currently when
+> > applied with git-am, it didn't work so I hand
+> > applied the patch with patch and then did git commit
+> > --author="jbarnes" as he did write it, I just munged it.
+> > 
+> > Now I'm unsure how I should best handle this, in a world where I can
+> > devote a lot more time to
+> > maintaining this, I would sent Jesse a mail saying, rebase, he'd reply
+> > with a rebase and I'd apply it,
+> > however I generally find it easier to just fix this stuff up on the
+> > run as its synchronous. Should
+> > I be specifying a date somewhere in the commit message?
 > 
-> :     implement flush_work()
+> My simple way to deal with this is to:
+> 
+> 0) save the mail
+> 1) fix subject and changelog and add my Signed-off-by:
+> 2) apply the patch somehow
+> 3) replace the origianl patch in the (saved) mail
+> 4) git reset --hard (or patch -p1 -R < saved-mail)
+> 5) git am <saved mail>
+> 
+> There must be easier ways to do so I think.
 
-> Why isn't that working in this case??
+Um. Yes. Something like
 
-how would that work in this case? We defer processing into the workqueue 
-exactly because we want its per-CPU properties. We want work_on_cpu() to 
-be done in the workqueue context on the CPUs that were specified, not in 
-the local CPU context.
+	git am -s -C1
 
-	Ingo
+which ends up requiring just a single line of context for the patch to 
+apply, exactly like the GNU 'patch' program.
+
+The difference being that GNU patch does that incredibly broken thing by 
+default, and makes it easy to apply a patch that was already applied quite 
+by mistake, because it still works. Git will require you to say explicitly 
+that it's ok to have just a single line of context.
+
+Anyway, on its own I wouldn't have reacted - sure, you can just do the 
+whole "use patch and then commit as another user" and the times will be 
+odd, but the *big* issue with Dave's pull-request was that there were 
+multiple cases of just clearly lost information.
+
+In other words, I don't care about the dates. I don't care _how_ you do 
+your git commits. And I don't even care if you use the broken "patch" 
+command that accepts random line noise as a patch, as long as you check it 
+later.
+
+But I _do_ care when it looks like somebody is using a bad process that 
+clearly isn't working, and that clearly is dropping things on the floor. 
+If it's a "odd things happens very occasionally because I had to use a 
+special sequence for it", that's fine.
+
+So when 3 out of 8 patches were somehow missing information (two without 
+sign-offs, and the third that had a sign-off but was obviously also done 
+by the odd sequence that dropped the timestamp), that's no longer just 
+some occasional issue and is a more endemic process problem.
+
+			Linus
