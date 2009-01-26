@@ -1,240 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751961AbZAZNSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751854AbZAZNZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751961AbZAZNSe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 08:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZAZNS0
+	id S1751854AbZAZNZJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 08:25:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZAZNY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 08:18:26 -0500
-Received: from mx1.auerswald.de ([212.185.163.234]:2407 "EHLO
-	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750738AbZAZNSZ convert rfc822-to-8bit (ORCPT
+	Mon, 26 Jan 2009 08:24:57 -0500
+Received: from bohort.kerlabs.com ([62.160.40.57]:51661 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751210AbZAZNY4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 08:18:25 -0500
-From: Wolfgang =?iso-8859-1?q?M=FCes?= <wolfgang.mues@auerswald.de>
-Organization: Auerswald GmbH & Co. KG
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH] Fixes and enhancements for the MMC SPI driver - revised
-Date: Mon, 26 Jan 2009 14:18:19 +0100
-User-Agent: KMail/1.9.10
-References: <20090113015904.606e3548.akpm@linux-foundation.org>
-In-Reply-To: <20090113015904.606e3548.akpm@linux-foundation.org>
-MIME-Version: 1.0
+	Mon, 26 Jan 2009 08:24:56 -0500
+Date: Mon, 26 Jan 2009 14:24:53 +0100
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Joel Becker <Joel.Becker@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       cluster-devel@redhat.com, swhiteho <swhiteho@redhat.com>
+Subject: Re: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and
+	configfs_depend_item()
+Message-ID: <20090126132453.GD7532@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
+	Joel Becker <Joel.Becker@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
+	swhiteho <swhiteho@redhat.com>
+References: <20081212100615.GD19128@hawkmoon.kerlabs.com> <1229095751-23984-1-git-send-email-louis.rilling@kerlabs.com> <20081217134020.42da55fc.akpm@linux-foundation.org> <1229585208.9487.112.camel@twins> <20081218092744.GB30789@mail.oracle.com> <1229601399.9487.218.camel@twins> <1229603308.9487.227.camel@twins> <20081218225837.GB21870@mail.oracle.com> <1232973009.4863.76.camel@laptop>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-8514-1232976132-0001-2"
 Content-Disposition: inline
-Message-Id: <200901261418.19681.wolfgang.mues@auerswald.de>
-Cc: Pierre Ossman <drzeus@drzeus.cx>, "Matt Fleming" <matt@console-pimps.org>,
-       "David Brownell" <dbrownell@users.sourceforge.net>,
-       linux-kernel@vger.kernel.org, "Mike Frysinger" <vapier.adi@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <1232973009.4863.76.camel@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-thanks to all contributors who have reviewed my patch, especial to 
-Andrew Morton for pointing out some problems.
+--=_bohort-8514-1232976132-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Here is a revised patch incl. changelog. I have though about putting
-some warnings in the message log with printk, Pierre. But this is low-level
-stuff and will likely flood the logfile.
+Hi Peter,
 
-This patch will change the status of the MMC SPI driver from "works NOT 
-for the majority of SD cards" to "works for the majority of SD cards".
+Thank you for continuing this discussion :)
 
-changelog:
+On 26/01/09 13:30 +0100, Peter Zijlstra wrote:
+> On Thu, 2008-12-18 at 14:58 -0800, Joel Becker wrote:
+> > On Thu, Dec 18, 2008 at 01:28:28PM +0100, Peter Zijlstra wrote:
+> > > In fact, both (configfs) mkdir and rmdir seem to synchronize on
+> > > su_mutex..
+> > >=20
+> > >  mkdir B/C/bar
+> > >=20
+> > >    C.i_mutex
+> > >      su_mutex
+> > >=20
+> > > vs
+> > >=20
+> > >  rmdir foo
+> > >=20
+> > >    parent(foo).i_mutex
+> > >      foo.i_mutex
+> > >        su_mutex
+> > >=20
+> > >=20
+> > > once holding the rmdir su_mutex you can check foo's user-content, sin=
+ce
+> > > any mkdir will be blocked. All you have to do is then re-validate in
+> > > mkdir's su_mutex that !IS_DEADDIR(C).
+> >=20
+> > 	We explicitly do not take any i_mutex locks after taking
+> > su_mutex.  That's an ABBA risk.  su_mutex protects the hierarchy of
+> > config_items.  i_mutex protects the vfs view thereof.
+>=20
+> I don't think I was suggesting that. All you need is to serialize any
+> mkdir/creat against the rmdir of the youngest non-default group, and you
+> can do that by holding su_mutex.
+>=20
+> In rmdir, you already own all the i_mutex instances you need to uncouple
+> the whole tree, all you need to do is validate that its indeed empty --
+> you don't need i_mutex's for that, because you're holding su_mutex, and
+> any concurrent mkdir/creat will be blocking on that.
+>=20
+> If you find it empty, just mark everybody DEAD, drop su_mutex and
+> decouple. All concurrent mkdir/creat thingies that were blocking will
+> now bail because their parent is found DEAD.
+>=20
+> > 	If you look in mkdir, we take su_mutex, get a new item from the
+> > client subsystem, then drop su_mutex.=20
+>=20
+> All you need to do before dropping su_mutex again is checking
+> IS_DEADDIR(), if so, you just fail the whole mkdir() no extra i_mutex's
+> needed.
+>=20
+> >  After that, we go about building
+> > our filesystem structure, using i_mutex where appropriate.=20
+>=20
+> Sure, but its ok to grow the default groups non-atomically, right? mkdir
+> will only need to check that everything is empty in as far as it has
+> been linked, and ensure the not yet linked entries won't be.
+>=20
+> >  More
+> > importantly is rmdir(2), where we use i_mutex in
+> > configfs_detach_group(), but are not holding su_sem.  Only when
+> > configfs_detach_group() has successfully returned and we have torn down
+> > the filesystem structure do we take su_mutex and tear down the
+> > config_item structure.
+>=20
+> The only thing that matters is that you can hold su_mutex inside
+> i_mutex.
+>=20
+>=20
+> configfs_rmdir( "foo" )
+> {
+>  /* we hold i_mutex for foo and its parent */
+>=20
+>  mutex_lock(&subsys->su_mutex);
+>  if (default_tree_empty())
+>   mark_default_tree_dead();
+>  else
+>   ret =3D -EBUSY;
+>  mutex_unlock(&subsys->su_mutex);
+>=20
+>  if (ret)
+>   return ret;
+>=20
+>  /* do actual unlink foo */
+> }
+>=20
+>=20
+> configfs_mkdir( "B/A/bar" )
+> {
+>  /* we hold i_mutex for A */
+>=20
+>  mutex_lock(&subsys->su_mutex);
+>  if (IS_DEADDIR(A))
+>   ret =3D -EINVAL; /* or whatever */
+>=20
+>  /* increase A's use count, so default_tree_empty() will fail. *
+>  inc_A_or_subsys_use_count();
+>  mutex_unlock(&subsys->su_mutex);
+>  if (ret)
+>   return ret;
+>=20
+>  /* do actual mkdir */
+> }
+>=20
+>=20
+> Surely something along these lines ought to work?
 
-o  Release CPU time to other tasks in mmc_spi_skip() if busy waiting is longer
-   than a scheduling period. Otherwise the whole userspace will lock until the
-   SD card is not busy any more (maybe 900ms). ktime converted to jiffies to
-   match the scheduling periods.
+I may have missed something important here, but how does your suggestion re=
+move
+the need for recursively locking inodes?
 
-o  Wait a little bit longer (16 Bytes instead of 8) in mmc_spi_response_get()
-   to read the response code from the SD card. Some SD cards are slower than
-   the standard allows; especially if the card is internally writing data to
-   flash.
+In configfs_rmdir(), we do not need to lock default groups inodes to prevent
+racing mkdir() under them. This race is already dealt with earlier in
+configfs_detach_prep(), which tries to set the CONFIGS_USET_DROPPING flag o=
+n the
+group to remove and on all its hierarchy of default groups, protected by
+configfs_dirent_lock. The matching logic in configfs_mkdir() may look a bit
+burried but is simple: configfs_attach_item()/configfs_attach_group() event=
+ually
+calls configfs_new_dirent(), which fails whenever the parent is tagged with
+CONFIGFS_USET_DROPPING. Again, no inode locking is required for this logic.
 
-o  Rise the write block timeout to a minimum of 1s in mmc_spi_writeblock().
-   Some cards - even SDHC! - need longer timeouts if they are pushed to the
-   limit (back-to-back write transfers, blocksize < than internal flash block
-   size). This may be enforced by the small cluster size of FAT32 volumes.
+However configfs_rmdir() and configfs_mkdir() (recursively) lock inodes bec=
+ause
+this is how the VFS works when removing/adding entries under a directory wh=
+ich
+has already lived in the dcache.
 
-o  Some SD cards are not able to send the response code after a write data
-   block in time if they are internal busy flushing data to NAND. Allow for
-   max. 27 bit offset in mmc_spi_writeblock(). (The highest observed delay
-   was 12 bits).
+Thanks,
 
-o  Omit the CRC check for all non-data-reads (CID and CSD) in 
-   mmc_spi_readblock(). Some cards send wrong CRC if len != MMC_SPI_BLOCKSIZE.
+Louis
 
-o  Allow the platform data to specify SPI_MODE_3, overriding the default
-   SPI_MODE_0. This is for SPI hardware which is not able to drive Chip Select
-   correctly in SPI mode 0 (Blackfin).
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
 
-Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+--=_bohort-8514-1232976132-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
 
-This patch is against linux 2.6.28.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-=========================snip =======================
---- drivers/mmc/host/mmc_spi.c.trunk	2008-11-24 10:26:06.000000000 +0100
-+++ drivers/mmc/host/mmc_spi.c	2009-01-13 17:08:40.000000000 +0100
-@@ -25,6 +25,8 @@
-  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-  */
- #include <linux/hrtimer.h>
-+#include <linux/sched.h>
-+#include <linux/jiffies.h>
- #include <linux/delay.h>
- #include <linux/bio.h>
- #include <linux/dma-mapping.h>
-@@ -186,9 +188,10 @@ mmc_spi_readbytes(struct mmc_spi_host *h
- static int
- mmc_spi_skip(struct mmc_spi_host *host, ktime_t timeout, unsigned n, u8 byte)
- {
--	u8		*cp = host->data->status;
--
--	timeout = ktime_add(timeout, ktime_get());
-+	u8 *cp = host->data->status;
-+	struct timeval tv = ktime_to_timeval(timeout);
-+	unsigned long timeout_jiffies = timeval_to_jiffies(&tv);
-+	unsigned long starttime = jiffies;
- 
- 	while (1) {
- 		int		status;
-@@ -203,11 +206,13 @@ mmc_spi_skip(struct mmc_spi_host *host, 
- 				return cp[i];
- 		}
- 
--		/* REVISIT investigate msleep() to avoid busy-wait I/O
--		 * in at least some cases.
--		 */
--		if (ktime_to_ns(ktime_sub(ktime_get(), timeout)) > 0)
-+		if (time_is_before_jiffies(starttime+timeout_jiffies))
- 			break;
-+		/* If we need long timeouts, we may release the CPU. */
-+		/* We use jiffies here because we want to have a relation
-+		   between elapsed time and the blocking of the scheduler. */
-+		if (time_is_before_jiffies(starttime+1))
-+			schedule();
- 	}
- 	return -ETIMEDOUT;
- }
-@@ -280,7 +285,9 @@ static int mmc_spi_response_get(struct m
- 		 * It'd probably be better to memcpy() the first chunk and
- 		 * avoid extra i/o calls...
- 		 */
--		for (i = 2; i < 9; i++) {
-+		/* Note we check for more than 8 bytes, because in practice,
-+		   some SD cards are slow... */
-+		for (i = 2; i < 16; i++) {
- 			value = mmc_spi_readbytes(host, 1);
- 			if (value < 0)
- 				goto done;
-@@ -609,6 +616,18 @@ mmc_spi_writeblock(struct mmc_spi_host *
- 	struct spi_device	*spi = host->spi;
- 	int			status, i;
- 	struct scratch		*scratch = host->data;
-+	u32			pattern;
-+	struct timeval 		tv;
-+
-+	/*
-+	 * The MMC framework does a good job of computing timeouts
-+	 * according to the mmc/sd standard. However, we found that in
-+	 * SPI mode, there are many cards which need a longer timeout
-+	 * of 1s after receiving a long stream of write data.
-+	 */
-+	tv = ktime_to_timeval(timeout);
-+	if (tv.tv_sec == 0)
-+		timeout = ktime_set(1, 0);
- 
- 	if (host->mmc->use_spi_crc)
- 		scratch->crc_val = cpu_to_be16(
-@@ -636,8 +655,23 @@ mmc_spi_writeblock(struct mmc_spi_host *
- 	 * doesn't necessarily tell whether the write operation succeeded;
- 	 * it just says if the transmission was ok and whether *earlier*
- 	 * writes succeeded; see the standard.
--	 */
--	switch (SPI_MMC_RESPONSE_CODE(scratch->status[0])) {
-+	 *
-+	 * In practice, there are (even modern SDHC-)Cards which need
-+	 * some bits to send the response, so we have to cope with this
-+	 * situation and check the response bit-by-bit. Arggh!!!
-+	 */
-+	pattern  = scratch->status[0] << 24;
-+	pattern |= scratch->status[1] << 16;
-+	pattern |= scratch->status[2] << 8;
-+	pattern |= scratch->status[3];
-+
-+	/* left-adjust to leading 0 bit */
-+	while (pattern & 0x80000000)
-+		pattern <<= 1;
-+	/* right-adjust for pattern matching. Code is in bit 4..0 now. */
-+	pattern >>= 27;
-+
-+	switch (pattern) {
- 	case SPI_RESPONSE_ACCEPTED:
- 		status = 0;
- 		break;
-@@ -668,8 +702,8 @@ mmc_spi_writeblock(struct mmc_spi_host *
- 	/* Return when not busy.  If we didn't collect that status yet,
- 	 * we'll need some more I/O.
- 	 */
--	for (i = 1; i < sizeof(scratch->status); i++) {
--		if (scratch->status[i] != 0)
-+	for (i = 4; i < sizeof(scratch->status); i++) {
-+		if (scratch->status[i] & 0x01)
- 			return 0;
- 	}
- 	return mmc_spi_wait_unbusy(host, timeout);
-@@ -743,7 +777,12 @@ mmc_spi_readblock(struct mmc_spi_host *h
- 		return -EIO;
- 	}
- 
--	if (host->mmc->use_spi_crc) {
-+	/*
-+	 * Omit the CRC check for CID and CSD reads. There are some SDHC
-+	 * cards which don't supply a valid CRC after CID reads.
-+	 * Note that the CID has it's own CRC7 value inside the data block.
-+	 */
-+	if (host->mmc->use_spi_crc && (t->len == MMC_SPI_BLOCKSIZE)) {
- 		u16 crc = crc_itu_t(0, t->rx_buf, t->len);
- 
- 		be16_to_cpus(&scratch->crc_val);
-@@ -1206,8 +1245,15 @@ static int mmc_spi_probe(struct spi_devi
- 	 * rising edge ... meaning SPI modes 0 or 3.  So either SPI mode
- 	 * should be legit.  We'll use mode 0 since it seems to be a
- 	 * bit less troublesome on some hardware ... unclear why.
--	 */
--	spi->mode = SPI_MODE_0;
-+	 *
-+	 * If the platform_data specifies mode 3, trust the platform_data
-+	 * and use this one. This allows for platforms which do not support
-+	 * mode 0.
-+	 */
-+	if (spi->mode != SPI_MODE_3)
-+		/* set our default */
-+		spi->mode = SPI_MODE_0;
-+
- 	spi->bits_per_word = 8;
- 
- 	status = spi_setup(spi);
-=========================snip =======================
+iD8DBQFJfbmlVKcRuvQ9Q1QRAqBmAKCQvwHNb1W8vz2hZL4n/8Lnt/YSNgCgw4cm
+vLfbMxgo7NV9nhXy7znHGzg=
+=SjH1
+-----END PGP SIGNATURE-----
 
-regards
-
-i. A. Wolfgang Mües
--- 
-Auerswald GmbH & Co. KG
-Hardware Development
-Telefon: +49 (0)5306 9219 0
-Telefax: +49 (0)5306 9219 94 
-E-Mail: Wolfgang.Mues@Auerswald.de
-Web: http://www.auerswald.de
- 
---------------------------------------------------------------
-Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
-Registriert beim AG Braunschweig HRA 13289
-p.h.G Auerswald Geschäftsführungsges. mbH
-Registriert beim AG Braunschweig HRB 7463
-Geschäftsführer: Dipl-Ing. Gerhard Auerswald
+--=_bohort-8514-1232976132-0001-2--
