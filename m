@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZAZT55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754293AbZAZT7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754549AbZAZT55 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbZAZT5t
+	id S1754293AbZAZT7c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:59:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZAZT7X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:57:49 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46190 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751500AbZAZT5s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:57:48 -0500
-Date: Mon, 26 Jan 2009 19:56:22 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: balbir@linux.vnet.ibm.com
-Cc: Nikanth Karthikesan <knikanth@suse.de>, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org,
-       Arve Hj?nnev?g <arve@android.com>, Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Paul Menage <menage@google.com>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-Message-ID: <20090126195622.1d5bf488@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090126195431.GC504@balbir.in.ibm.com>
-References: <200901211638.23101.knikanth@suse.de>
-	<20090126195431.GC504@balbir.in.ibm.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Jan 2009 14:59:23 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41047 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752004AbZAZT7W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 14:59:22 -0500
+Date: Mon, 26 Jan 2009 20:59:10 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, hpa@zytor.com
+Subject: Re: [git pull] x86 fixes
+Message-ID: <20090126195910.GA13471@elte.hu>
+References: <20090126171723.GA32030@elte.hu> <20090126110539.2000cd30.akpm@linux-foundation.org> <20090126192016.GA1211@elte.hu> <20090126114038.a2f6606f.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090126114038.a2f6606f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009 01:24:31 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> * Nikanth Karthikesan <knikanth@suse.de> [2009-01-21 16:38:21]:
+> On Mon, 26 Jan 2009 20:20:16 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> > As Alan Cox suggested/wondered in this thread, 
-> > http://lkml.org/lkml/2009/1/12/235 , this is a container group based approach 
-> > to override the oom killer selection without losing all the benefits of the 
-> > current oom killer heuristics and oom_adj interface.
 > > 
-> > It adds a tunable oom.victim to the oom cgroup. The oom killer will kill the 
-> > process using the usual badness value but only within the cgroup with the 
-> > maximum value for oom.victim before killing any process from a cgroup with a 
-> > lesser oom.victim number. Oom killing could be disabled by setting 
-> > oom.victim=0.
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Mon, 26 Jan 2009 18:17:23 +0100
+> > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > Rusty Russell (2):
+> > > >       ...
+> > > >       work_on_cpu: Use our own workqueue.
+> > > 
+> > > wtf?
+> > 
+> > an x86 fix depends on it:
+> > 
+> > 7285908: cpufreq: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+> > 
 > 
-> Looking at the patch, I wonder if it is time for user space OOM
-> notifications that were discussed during the containers mini-summit.
-> The idea is to inform user space about OOM's and let user space take
-> action, if no action is taken, the default handler kicks in.
+> Right.  And these are currently under active (albeit rather slow) 
+> discussion.
+> 
+> The changelogs suck, nobody can be assed actually telling us what the 
+> bug is and the patches just casually toss yet another gaggle of kernel 
+> threads into there.
 
-The OLPC folks (Marcelo I believe) posted code for this and I believe
-OLPC is using this functionality internally so that under memory pressure
-(before we actually hit OOM) programs can respond by doing stuff like
-evicting caches.
+One problem is that for example do_dbs_timer() [used both in the 
+cpufreq_ondemand and cpufreq_conservative cpufreq drivers] gets queued 
+into the generic kevent workqueue via schedule_work(). But work_on_cpu() 
+needs to serialize on the worklet - i.e. it needs to do a flush_work() - 
+and does this with the cpufreq lock held.
+
+So we have a 'worklet inversion' bug here - and this got reported as a 
+hard to debug boot hang on some systems.
+The root cause is that kevents is not that do_dbs_timer() uses 
+schedule_work() - the root cause is that kevents workqueue is a too 
+generic workqueue that is the union of all casual workqueue users in the 
+kernel. That is fine (and it is its purpose) but it should not be used for 
+core kernel facilities such as work_on_cpu() - precisely because doing so 
+would limit that facility's genericity.
+
+This bug was always there but dormant until work_on_cpu() was used from a 
+deep enough codepath.
+
+So the solution here is to isolate work_on_cpu()s mechanisms from the 
+'misc' workqueue that schedule_work() deals with - this is what Rusty's 
+patch does.
+
+Your observation about there being too many workqueue threads is correct 
+but this commit is IMO a valid use of the workqueue facility. This 
+workqueue it only gets created on CONFIG_SMP so there cost is about ~10K 
+RAM per CPU.
+
+I also agree that the commit should have included this description.
+
+	Ingo
