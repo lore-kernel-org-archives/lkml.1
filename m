@@ -1,84 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751403AbZAZOTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751973AbZAZO1y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751403AbZAZOTm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 09:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZAZOTf
+	id S1751973AbZAZO1y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 09:27:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751381AbZAZO1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 09:19:35 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37882 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbZAZOTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 09:19:34 -0500
-Subject: Re: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and
- configfs_depend_item()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Louis.Rilling@kerlabs.com
-Cc: Joel Becker <Joel.Becker@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       cluster-devel@redhat.com, swhiteho <swhiteho@redhat.com>
-In-Reply-To: <20090126140032.GE7532@hawkmoon.kerlabs.com>
-References: <1229095751-23984-1-git-send-email-louis.rilling@kerlabs.com>
-	 <20081217134020.42da55fc.akpm@linux-foundation.org>
-	 <1229585208.9487.112.camel@twins> <20081218092744.GB30789@mail.oracle.com>
-	 <1229601399.9487.218.camel@twins> <1229603308.9487.227.camel@twins>
-	 <20081218225837.GB21870@mail.oracle.com> <1232973009.4863.76.camel@laptop>
-	 <20090126132453.GD7532@hawkmoon.kerlabs.com>
-	 <1232977283.4863.79.camel@laptop>
-	 <20090126140032.GE7532@hawkmoon.kerlabs.com>
-Content-Type: text/plain
-Date: Mon, 26 Jan 2009 15:19:22 +0100
-Message-Id: <1232979562.4863.101.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Jan 2009 09:27:46 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55216 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750862AbZAZO1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 09:27:45 -0500
+Date: Mon, 26 Jan 2009 12:27:19 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH tip][1/1] Fixup checkpatch reported problems in ftrace
+	plugin patch
+Message-ID: <20090126142719.GC1455@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Ingo Molnar <mingo@elte.hu>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-26 at 15:00 +0100, Louis Rilling wrote:
+commit e972245c35be4a7a75b4d0953f3dcfe6d978edbe
+Author: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date:   Mon Jan 26 12:23:24 2009 -0200
 
-> > Its not a locking correctness thing, but simply not being able to do it
-> > from the vfs calls because those assume locks held?
-> > 
-> > Can't you simply punt the work to a worklet once you've created/removed
-> > the non-default group, which can be done from within the vfs callback ?
-> 
-> I'm not sure to understand your suggestion. Is this:
-> 1) for mkdir(), create the non-default group, but without its default groups,
-> and defer their creation to a worker which won't have constraints on locks held
-> by any caller;
-> 2) for rmdir(), unlink the non-default group, but without unlinking its default
-> groups, and defer the recursive work to a lock-free context?
-> 
-> For mkdir(), this may work. Maybe a bit confusing for userspace, since mkdir(A)
-> returns as soon as A is created, but A may be populated later and userspace may
-> rely on A being populated as soon as it is created (current behavior). As a
-> configfs user, this makes my life harder...
+    blktrace: Fixup checkpatch reported problems in ftrace plugin patch
+    
+    Also make sure sparse (make C=2 block/blktrace.o) is happy too.
+    
+    Reported-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 
-Right, so that is the whole crux of the matter?
-
-Initially I understood the whole recursive locking issue to be about
-having to serialize mkdir vs rmdir so that you would know the default
-groups to be empty etc.
-
-You could create the subtree before you link it in. i_op->mkdir() only
-has the parent i_mutex held, so you should be able to create your inode,
-and all default groups (some of who will have the non-default group as
-parent, but that's ok, as we don't have that locked yet).
-
-Once you've constructed this, you could connect the non-default group to
-its parent.
-
-Also, you don't _need_ to have any i_mutex's locked here, because non of
-these inodes are reachable.
-
-> For rmdir(), is this safe to unlink a non-empty directory, and to empty it
-> afterwards? This looks like going back to the unmount problem.
-
-Dunno :-), I think it should be safe. The only guarantee you need is
-that there are no refs to inodes in the decoupled sub-tree (other than
-your own of course.)
-
-So you'd only need to punt the rmdir cleanup to eventd or something.
-
+diff --git a/block/blktrace.c b/block/blktrace.c
+index 630f167..1b2267c 100644
+--- a/block/blktrace.c
++++ b/block/blktrace.c
+@@ -37,7 +37,7 @@ static int __read_mostly  blk_tracer_enabled;
+ 
+ static struct tracer_opt blk_tracer_opts[] = {
+ 	/* Default disable the minimalistic output */
+-	{ TRACER_OPT(blk_classic, TRACE_BLK_OPT_CLASSIC ) },
++	{ TRACER_OPT(blk_classic, TRACE_BLK_OPT_CLASSIC) },
+ 	{ }
+ };
+ 
+@@ -169,7 +169,8 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 	pid_t pid;
+ 	int cpu, pc = 0;
+ 
+-	if (unlikely(bt->trace_state != Blktrace_running || !blk_tracer_enabled))
++	if (unlikely(bt->trace_state != Blktrace_running ||
++		     !blk_tracer_enabled))
+ 		return;
+ 
+ 	what |= ddir_act[rw & WRITE];
+@@ -192,7 +193,7 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
+ 						 sizeof(*t) + pdu_len, &flags);
+ 		if (!event)
+ 			return;
+-		
++
+ 		ent = ring_buffer_event_data(event);
+ 		t = (struct blk_io_trace *)ent;
+ 		pc = preempt_count();
+@@ -234,7 +235,7 @@ record_it:
+ 		if (blk_tr) {
+ 			ring_buffer_unlock_commit(blk_tr->buffer, event, flags);
+ 			if (pid != 0 &&
+-			    (blk_tracer_flags.val & TRACE_BLK_OPT_CLASSIC) == 0 &&
++			    !(blk_tracer_flags.val & TRACE_BLK_OPT_CLASSIC) &&
+ 			    (trace_flags & TRACE_ITER_STACKTRACE) != 0)
+ 				__trace_stack(blk_tr, NULL, flags, 5, pc);
+ 			trace_wake_up();
+@@ -955,19 +956,27 @@ static void blk_unregister_tracepoints(void)
+ 
+ static void fill_rwbs(char *rwbs, const struct blk_io_trace *t)
+ {
+-        int i = 0;
++	int i = 0;
+ 
+-        if (t->action & BLK_TC_DISCARD)	   rwbs[i++] = 'D';
+-        else if (t->action & BLK_TC_WRITE) rwbs[i++] = 'W';
+-        else if (t->bytes)		   rwbs[i++] = 'R';
+-        else				   rwbs[i++] = 'N';
++	if (t->action & BLK_TC_DISCARD)
++		rwbs[i++] = 'D';
++	else if (t->action & BLK_TC_WRITE)
++		rwbs[i++] = 'W';
++	else if (t->bytes)
++		rwbs[i++] = 'R';
++	else
++		rwbs[i++] = 'N';
+ 
+-        if (t->action & BLK_TC_AHEAD)	   rwbs[i++] = 'A';
+-        if (t->action & BLK_TC_BARRIER)	   rwbs[i++] = 'B';
+-        if (t->action & BLK_TC_SYNC)	   rwbs[i++] = 'S';
+-        if (t->action & BLK_TC_META)	   rwbs[i++] = 'M';
++	if (t->action & BLK_TC_AHEAD)
++		rwbs[i++] = 'A';
++	if (t->action & BLK_TC_BARRIER)
++		rwbs[i++] = 'B';
++	if (t->action & BLK_TC_SYNC)
++		rwbs[i++] = 'S';
++	if (t->action & BLK_TC_META)
++		rwbs[i++] = 'M';
+ 
+-        rwbs[i] = '\0';
++	rwbs[i] = '\0';
+ }
+ 
+ static inline
+@@ -1049,7 +1058,8 @@ static int blk_log_generic(struct trace_seq *s, const struct trace_entry *ent)
+ 	return trace_seq_printf(s, "[%s]\n", cmd);
+ }
+ 
+-static int blk_log_with_error(struct trace_seq *s, const struct trace_entry *ent)
++static int blk_log_with_error(struct trace_seq *s,
++			      const struct trace_entry *ent)
+ {
+ 	if (t_sec(ent))
+ 		return trace_seq_printf(s, "%llu + %u [%d]\n", t_sector(ent),
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 01714ef..8a17f7e 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -19,6 +19,7 @@
+ #include <linux/kmod.h>
+ #include <linux/ctype.h>
+ #include <linux/genhd.h>
++#include <linux/blktrace_api.h>
+ 
+ #include "check.h"
+ 
+@@ -268,10 +269,6 @@ ssize_t part_fail_store(struct device *dev,
+ }
+ #endif
+ 
+-#ifdef CONFIG_BLK_DEV_IO_TRACE
+-extern struct attribute_group blk_trace_attr_group;
+-#endif
+-
+ static DEVICE_ATTR(partition, S_IRUGO, part_partition_show, NULL);
+ static DEVICE_ATTR(start, S_IRUGO, part_start_show, NULL);
+ static DEVICE_ATTR(size, S_IRUGO, part_size_show, NULL);
+diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
+index e9ef923..f231929 100644
+--- a/include/linux/blktrace_api.h
++++ b/include/linux/blktrace_api.h
+@@ -144,6 +144,9 @@ struct blk_user_trace_setup {
+ 
+ #ifdef __KERNEL__
+ #if defined(CONFIG_BLK_DEV_IO_TRACE)
++
++#include <linux/sysfs.h>
++
+ struct blk_trace {
+ 	int trace_state;
+ 	struct rchan *rchan;
+@@ -194,6 +197,8 @@ extern int blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ extern int blk_trace_startstop(struct request_queue *q, int start);
+ extern int blk_trace_remove(struct request_queue *q);
+ 
++extern struct attribute_group blk_trace_attr_group;
++
+ #else /* !CONFIG_BLK_DEV_IO_TRACE */
+ #define blk_trace_ioctl(bdev, cmd, arg)		(-ENOTTY)
+ #define blk_trace_shutdown(q)			do { } while (0)
