@@ -1,83 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbZAZQhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZAZQi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766AbZAZQhs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:37:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbZAZQhi
+	id S1753186AbZAZQi5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZAZQiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 11:37:38 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:50916 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751470AbZAZQhh (ORCPT
+	Mon, 26 Jan 2009 11:38:50 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:22446 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751448AbZAZQit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 11:37:37 -0500
-Subject: Re: Spamming linux-kernel and linux-scsi by out-of-tree
-	patches	(LIO)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Vladislav Bolkhovitin <vst@vlnb.net>
-Cc: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <497DDFF8.8070707@vlnb.net>
-References: <497DB7D0.8000302@vlnb.net>
-	 <1232984234.3248.18.camel@localhost.localdomain>
-	 <497DDFF8.8070707@vlnb.net>
-Content-Type: text/plain
-Date: Mon, 26 Jan 2009 16:37:31 +0000
-Message-Id: <1232987851.3248.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 26 Jan 2009 11:38:49 -0500
+Message-ID: <497DE701.5050005@oracle.com>
+Date: Mon, 26 Jan 2009 08:38:25 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Teemu Likonen <tlikonen@iki.fi>
+CC: linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Johannes Weiner <hannes@saeurebad.de>,
+       Dan Carpenter <error27@gmail.com>
+Subject: Re: [PATCH] Documentation: update CodingStyle tips for Emacs users
+References: <1232299115-8130-1-git-send-email-tlikonen@iki.fi> <87priaumal.fsf@iki.fi>
+In-Reply-To: <87priaumal.fsf@iki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.497DE709.0056:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-26 at 19:08 +0300, Vladislav Bolkhovitin wrote:
-> James Bottomley, on 01/26/2009 06:37 PM wrote:
-> > On Mon, 2009-01-26 at 16:17 +0300, Vladislav Bolkhovitin wrote:
-> >> Nicholas,
-> >>
-> >> Could you stop spamming linux-kernel and linux-scsi mailing lists by 
-> >> patches for your out-of-tree LIO project, please?
-> >>
-> >> Those mailing lists are intended for patches for in-kernel components 
-> >> only, not for all out-of-tree projects, finding their ways into the 
-> >> mainline. I don't see any reason why your project should be an 
-> >> exception. Think, what a mess the kernel mailing lists would get, if all 
-> >> out-of-tree projects started sending their patches to them?
-> > 
-> > Actually, out of tree projects trying to make their way upstream are
-> > welcome to use the various linux- mailing lists to solicit feedback and
-> > review.  This method was, for instance, how FCoE made it in.
+Teemu Likonen wrote:
+> Teemu Likonen (2009-01-18 19:18 +0200) wrote:
 > 
-> Hmm, I might be wrong, but what I've seen that FCoE only at the 
-> beginning used linux-scsi for its intermediate patches, then such 
-> patches quickly went into FCoE internal development mailing list only. 
-> Then only resulting patches intended for wide review and mainline 
-> inclusion were sent to linux-scsi. This is how I thought it's usually 
-> considered should be done and how all the projects I've seen so far did.
+>> With the previous Emacs tips example the kernel style was made available
+>> for files in the kernel-tree only. This patch updates the tip to add
+>> separate cc-mode indent style; it makes the kernel style easily
+>> available for any filetype mode that is managed by the Emacs cc-mode.
+>>
+>> We also fix the filename regexp in the example: Elisp function
+>> buffer-file-name returns full pathname, not a path relative to user's
+>> home directory. Hence a tilde (~) can't be used to refer to home
+>> directory (as the previous code did).
+>>
+>> Signed-off-by: Teemu Likonen <tlikonen@iki.fi>
+>> ---
+>>  Documentation/CodingStyle |   19 +++++++++++++------
+>>  1 files changed, 13 insertions(+), 6 deletions(-)
+> 
+> 
+> Exactly what I expected: nobody pays any attention. :-) Well, it's not a
+> problem, I'm not even a kernel coder. I just happen to think that this
+> patch introduces the right way to configure Emacs for kernel coding
+> style. Adding a custom style like this ("linux-tabs-only") makes it much
+> easier to switch between different indent styles and also to use the
+> kernel style elsewhere.
+> 
+> So, I'll just ping the lists and maintainers this one more time to see
+> if someone is interested. Here's my original message:
+> 
+>     http://article.gmane.org/gmane.linux.documentation/442
+> 
 
-The only piece I think they didn't bother with was the target, mainly
-because the only wanted the initator upstream.  But the principle is
-still the same: projects trying to make their way upstream are welcome
-to send patches.
+OK, I see it.  I'm not an emacs user and I have no idea how correct
+the patch is.
 
-> I wouldn't object if Nicholas does the same and send in linux-scsi and 
-> linux-kernel a complete patchset, which we will review and discuss. But 
-> he sends *intermediate* patches and this looks for me like a violation 
-> of fundamental rules/intention of Linux kernel mailing lists, hence I 
-> complain.
+There is another emacs CodingStyle patch from Dan Carpenter that
+expands the "~" part of the filename to the user directory:
+see http://lkml.org/lkml/2009/1/21/62
 
-FCoE did the same thing.  Incremental patches are useful in showing
-motion towards coding standards and kernel norms ... at least they gave
-me the warm feeling that FCoE was heading in the right direction.
+so I would be tempted to merge/apply both patches.
 
-As long as the full code is in a repository somewhere anyone whose
-curiosity is piqued by the patches can go and look there as well.
+Any other comments on these patches?
 
-> So, should I understand your words that you agree if I also start 
-> sending intermediate patches for SCST to linux-scsi/linux-kernel?
+> 
+>> diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
+>> index 1875e50..2cda242 100644
+>> --- a/Documentation/CodingStyle
+>> +++ b/Documentation/CodingStyle
+>> @@ -483,20 +483,27 @@ values.  To do the latter, you can stick the following in your .emacs file:
+>>      (* (max steps 1)
+>>         c-basic-offset)))
+>>  
+>> +(add-hook 'c-mode-common-hook
+>> +          (lambda ()
+>> +            ;; Add kernel style
+>> +            (c-add-style
+>> +             "linux-tabs-only"
+>> +             '("linux" (c-offsets-alist
+>> +                        (arglist-cont-nonempty
+>> +                         c-lineup-gcc-asm-reg
+>> +                         c-lineup-arglist-tabs-only))))))
+>> +
+>>  (add-hook 'c-mode-hook
+>>            (lambda ()
+>>              (let ((filename (buffer-file-name)))
+>>                ;; Enable kernel mode for the appropriate files
+>>                (when (and filename
+>> -                         (string-match "~/src/linux-trees" filename))
+>> +                         (string-match "src/linux-trees" filename))
+>>                  (setq indent-tabs-mode t)
+>> -                (c-set-style "linux")
+>> -                (c-set-offset 'arglist-cont-nonempty
+>> -                              '(c-lineup-gcc-asm-reg
+>> -                                c-lineup-arglist-tabs-only))))))
+>> +                (c-set-style "linux-tabs-only")))))
+>>  
+>>  This will make emacs go better with the kernel coding style for C
+>> -files below ~/src/linux-trees.
+>> +files which pathname matches src/linux-trees.
+>>  
+>>  But even if you fail in getting emacs to do sane formatting, not
+>>  everything is lost: use "indent".
+>> -- 
 
-Certainly.
-
-James
-
-
+Thanks.
+-- 
+~Randy
