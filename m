@@ -1,68 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbZAZRhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZAZRjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753742AbZAZRhw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 12:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZAZRho
+	id S1753502AbZAZRjg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 12:39:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZAZRjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 12:37:44 -0500
-Received: from smtp.ultrahosting.com ([74.213.174.254]:60336 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751656AbZAZRho (ORCPT
+	Mon, 26 Jan 2009 12:39:25 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:49967 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750775AbZAZRjY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 12:37:44 -0500
-Date: Mon, 26 Jan 2009 12:34:21 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Nick Piggin <npiggin@suse.de>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <20090123161017.GC14517@wotan.suse.de>
-Message-ID: <alpine.DEB.1.10.0901261230540.1908@qirst.com>
-References: <20090114150900.GC25401@wotan.suse.de> <Pine.LNX.4.64.0901141158090.26507@quilx.com> <20090115060330.GB17810@wotan.suse.de> <Pine.LNX.4.64.0901151320250.26467@quilx.com> <20090116031940.GL17810@wotan.suse.de> <Pine.LNX.4.64.0901161500080.27283@quilx.com>
- <20090119054730.GA22584@wotan.suse.de> <alpine.DEB.1.10.0901211914140.18367@qirst.com> <20090123041756.GH20098@wotan.suse.de> <alpine.DEB.1.10.0901231042380.32253@qirst.com> <20090123161017.GC14517@wotan.suse.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 26 Jan 2009 12:39:24 -0500
+Message-ID: <497DF54A.5040607@vlnb.net>
+Date: Mon, 26 Jan 2009 20:39:22 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux-scsi@vger.kernel.org
+CC: linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net,
+       Bart Van Assche <bart.vanassche@gmail.com>
+Subject: [PATCH][SCST]: Checkpatch and sparse fixes
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/VXwBOEbDsVcWEPFYy7FiQVDmcFwqX1oZCQpC
+ otw40NhhmqgI3YLLXk6Qw7jWqQvraRkmWY2mTmChpJZyeC2z8i
+ 9He3PfyUEKklSWJBjHwwA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 23 Jan 2009, Nick Piggin wrote:
+The patch below fixes most checkpatch and sparse issues that are reported by
+the most recent versions (checkpatch 2.6.28 / latest sparse git version) and
+that were not reported by previous versions (checkpatch 2.6.27 / sparse 0.4.1).
+The patch below fixes the following issues:
+* Removed trailing space in iscsi-scst/README_in-tree.
+* Fixed sparse complaints about functions that were not declared static.
+* Fixed sparse complaints about casts between address spaces: such casts are
+   now either fixed or explicit (via the __force keyword).
 
-> > SLUB can directly free an object to any slab page. "Queuing" on free via
-> > the per cpu slab is only possible if the object came from that per cpu
-> > slab. This is typically only the case for objects that were recently
-> > allocated.
->
-> Ah yes ok that's right. But then you don't get LIFO allocation
-> behaviour for those cases.
+The patch below has been verified by checking the output produced by:
+scripts/run-regression-tests -k 2.6.28.1
 
-But you get more TLB local allocations.
+Please review.
 
-> > > hot objects when you switch to different "fast" pages. I don't consider
-> > > this to be "queueing done right".
-> >
-> > Yes you can loose track of caching hot objects. That is one of the
-> > concerns with the SLUB approach. On the other hand: Caching architectures
-> > get more and more complex these days (especially in a NUMA system). The
->
-> Because it is more important to get good cache behaviour.
+Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
+Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
 
-Its going to be quite difficult to realize algorithm that guestimate what
-information the processor keeps in its caches. The situation is quite
-complex in NUMA systems.
+ iscsi-scst/README_in-tree         |    2 +-
+ iscsi-scst/kernel/nthread.c       |    7 ++++---
+ scst/src/dev_handlers/scst_user.c |    2 +-
+ scst/src/scst_lib.c               |   14 +++++++-------
+ scst/src/scst_targ.c              |    5 +++--
+ 5 files changed, 16 insertions(+), 14 deletions(-)
 
-> So I think it is wrong to say it requires more metadata handling. SLUB
-> will have to switch pages more often or free objects to pages other than
-> the "fast" page (what do you call it?), so quite often I think you'll
-> find SLUB has just as much if not more metadata handling.
-
-Its the per cpu slab. SLUB does not switch pages often but frees objects
-not from the per cpu slab directly with minimal overhead compared to a per
-cpu slab free. The overhead is much less than the SLAB slowpath which has
-to be taken for alien caches etc.
+Index: iscsi-scst/kernel/nthread.c
+===================================================================
+--- iscsi-scst/kernel/nthread.c	(revision 637)
++++ iscsi-scst/kernel/nthread.c	(working copy)
+@@ -1040,7 +1040,9 @@ static int write_data(struct iscsi_conn 
+  retry:
+ 			oldfs = get_fs();
+ 			set_fs(KERNEL_DS);
+-			res = vfs_writev(file, iop, count, &off);
++			res = vfs_writev(file,
++					 (struct iovec __force __user *)iop,
++					 count, &off);
+ 			set_fs(oldfs);
+ 			TRACE_WRITE("%#Lx:%u: %d(%ld)",
+ 				    (long long unsigned int)conn->session->sid,
+@@ -1272,8 +1274,7 @@ static int tx_ddigest(struct iscsi_cmnd 
+ 
+ 	TRACE_DBG("Sending data digest %x (cmd %p)", cmnd->ddigest, cmnd);
+ 
+-	iov.iov_base =
+-		(char __force __user *) (&cmnd->ddigest) + (sizeof(u32) - rest);
++	iov.iov_base = (char *)(&cmnd->ddigest) + (sizeof(u32) - rest);
+ 	iov.iov_len = rest;
+ 
+ 	res = kernel_sendmsg(cmnd->conn->sock, &msg, &iov, 1, rest);
+Index: iscsi-scst/README_in-tree
+===================================================================
+--- iscsi-scst/README_in-tree	(revision 637)
++++ iscsi-scst/README_in-tree	(working copy)
+@@ -81,7 +81,7 @@ Work if target's backstorage or link is 
+ In some cases you can experience I/O stalls or see in the kernel log
+ abort or reset messages. It can happen under high I/O load, when your
+ target's backstorage gets overloaded, or working over a slow link, when
+-the link can't serve all the queued commands on time, 
++the link can't serve all the queued commands on time,
+ 
+ To workaround it you can reduce QueuedCommands parameter in
+ iscsi-scstd.conf file for the corresponding target to some lower value,
+Index: scst/src/scst_lib.c
+===================================================================
+--- scst/src/scst_lib.c	(revision 637)
++++ scst/src/scst_lib.c	(working copy)
+@@ -736,7 +736,7 @@ out_free:
+  * scst_mutex supposed to be held, there must not be parallel activity in this
+  * session.
+  */
+-void scst_sess_free_tgt_devs(struct scst_session *sess)
++static void scst_sess_free_tgt_devs(struct scst_session *sess)
+ {
+ 	int i;
+ 	struct scst_tgt_dev *tgt_dev, *t;
+@@ -1711,7 +1711,7 @@ out_sg_free:
+ 	goto out;
+ }
+ 
+-void scst_release_space(struct scst_cmd *cmd)
++static void scst_release_space(struct scst_cmd *cmd)
+ {
+ 	TRACE_ENTRY();
+ 
+@@ -2844,7 +2844,7 @@ out_unlock:
+ }
+ 
+ /* Called under tgt_dev_lock and BH off */
+-void scst_alloc_set_UA(struct scst_tgt_dev *tgt_dev,
++static void scst_alloc_set_UA(struct scst_tgt_dev *tgt_dev,
+ 	const uint8_t *sense, int sense_len, int head)
+ {
+ 	struct scst_tgt_dev_UA *UA_entry = NULL;
+@@ -2950,7 +2950,7 @@ void __scst_dev_check_set_UA(struct scst
+ }
+ 
+ /* Called under tgt_dev_lock or when tgt_dev is unused */
+-void scst_free_all_UA(struct scst_tgt_dev *tgt_dev)
++static void scst_free_all_UA(struct scst_tgt_dev *tgt_dev)
+ {
+ 	struct scst_tgt_dev_UA *UA_entry, *t;
+ 
+@@ -3259,7 +3259,7 @@ out_unlock:
+ }
+ 
+ /* Called under dev_lock */
+-void scst_unblock_cmds(struct scst_device *dev)
++static void scst_unblock_cmds(struct scst_device *dev)
+ {
+ #ifdef CONFIG_SCST_STRICT_SERIALIZING
+ 	struct scst_cmd *cmd, *t;
+@@ -3515,7 +3515,7 @@ static wait_queue_head_t *tm_dbg_p_cmd_l
+ 
+ static const int tm_dbg_on_state_num_passes[] = { 5, 1, 0x7ffffff };
+ 
+-void tm_dbg_init_tgt_dev(struct scst_tgt_dev *tgt_dev,
++static void tm_dbg_init_tgt_dev(struct scst_tgt_dev *tgt_dev,
+ 	struct scst_acg_dev *acg_dev)
+ {
+ 	if ((acg_dev->acg == scst_default_acg) && (acg_dev->lun == 0)) {
+@@ -3534,7 +3534,7 @@ void tm_dbg_init_tgt_dev(struct scst_tgt
+ 	}
+ }
+ 
+-void tm_dbg_deinit_tgt_dev(struct scst_tgt_dev *tgt_dev)
++static void tm_dbg_deinit_tgt_dev(struct scst_tgt_dev *tgt_dev)
+ {
+ 	if (test_bit(SCST_TGT_DEV_UNDER_TM_DBG, &tgt_dev->tgt_dev_flags)) {
+ 		unsigned long flags;
+Index: scst/src/scst_targ.c
+===================================================================
+--- scst/src/scst_targ.c	(revision 637)
++++ scst/src/scst_targ.c	(working copy)
+@@ -1012,7 +1012,7 @@ out_dev_done:
+ }
+ 
+ /* No locks, but might be in IRQ */
+-void scst_proccess_redirect_cmd(struct scst_cmd *cmd,
++static void scst_proccess_redirect_cmd(struct scst_cmd *cmd,
+ 	enum scst_exec_context context, int check_retries)
+ {
+ 	unsigned long flags;
+@@ -5454,7 +5454,8 @@ int scst_mgmt_thread(void *arg)
+ }
+ 
+ /* Called under sess->sess_list_lock */
+-struct scst_cmd *__scst_find_cmd_by_tag(struct scst_session *sess, uint64_t tag)
++static struct scst_cmd *__scst_find_cmd_by_tag(struct scst_session *sess,
++	uint64_t tag)
+ {
+ 	struct scst_cmd *cmd = NULL;
+ 
+Index: scst/src/dev_handlers/scst_user.c
+===================================================================
+--- scst/src/dev_handlers/scst_user.c	(revision 637)
++++ scst/src/dev_handlers/scst_user.c	(working copy)
+@@ -1690,7 +1690,7 @@ static int dev_user_reply_get_cmd(struct
+ 
+ 	/* get_user() can't be used with 64-bit values on x86_32 */
+ 	res = copy_from_user(&ureply, (uint64_t __user *)
+-		&((struct scst_user_get_cmd *)arg)->preply,
++		&((struct scst_user_get_cmd __user *)arg)->preply,
+ 		sizeof(ureply));
+ 	if (unlikely(res < 0))
+ 		goto out_up;
 
