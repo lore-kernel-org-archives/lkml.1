@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZAZQo5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZAZQqp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbZAZQo5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZAZQos
+	id S1753001AbZAZQqp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:46:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751658AbZAZQqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 11:44:48 -0500
-Received: from moutng.kundenserver.de ([212.227.17.9]:57884 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751531AbZAZQor (ORCPT
+	Mon, 26 Jan 2009 11:46:36 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:42931 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751611AbZAZQqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 11:44:47 -0500
-Message-ID: <497DE880.1060301@vlnb.net>
-Date: Mon, 26 Jan 2009 19:44:48 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: Spamming linux-kernel and linux-scsi by out-of-tree patches (LIO)
-References: <497DB7D0.8000302@vlnb.net>	<1232984234.3248.18.camel@localhost.localdomain>	<497DDFF8.8070707@vlnb.net> <20090126081905.7c112170@infradead.org>
-In-Reply-To: <20090126081905.7c112170@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 26 Jan 2009 11:46:35 -0500
+Subject: Re: kernel BUG at fs/ext/super.c:428
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Theodore Tso <tytso@MIT.EDU>, Arjan van de Ven <arjan@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Nick Piggin <nickpiggin@yahoo.com.au>
+In-Reply-To: <497DE73B.4050602@us.ibm.com>
+References: <20090110003645.GA16107@linux-os.sc.intel.com>
+	 <20090113164842.c6aa7095.akpm@linux-foundation.org>
+	 <20090114014434.GE14730@mit.edu> <496D526D.1010402@linux.intel.com>
+	 <20090114044059.GA6222@mit.edu>
+	 <20090114191632.GA13114@linux-os.sc.intel.com>
+	 <1231961377.14825.51.camel@laptop>  <20090114212038.GJ6222@mit.edu>
+	 <1232568618.16682.20.camel@jamoon.sc.intel.com>
+	 <1232782595.4859.3.camel@laptop>  <497DE73B.4050602@us.ibm.com>
+Content-Type: text/plain
+Date: Mon, 26 Jan 2009 17:46:11 +0100
+Message-Id: <1232988371.4863.162.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18z7q2n0AsqCcVDTY4i8K0Csx1EOScEbAoJTlM
- BcJ+/poeKb9BCfpkKIdERbHpq83NryrlYb2qGT1VuLHd293Q0d
- 8u7gmb30Y0M8NaA8QXuQA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven, on 01/26/2009 07:19 PM wrote:
-> On Mon, 26 Jan 2009 19:08:24 +0300
-> Vladislav Bolkhovitin <vst@vlnb.net> wrote:
+On Mon, 2009-01-26 at 08:39 -0800, Darren Hart wrote:
+
+> > diff --git a/kernel/futex.c b/kernel/futex.c
+> > index f89d373..f4132ab 100644
+> > --- a/kernel/futex.c
+> > +++ b/kernel/futex.c
+> > @@ -929,7 +929,7 @@ out_unlock:
+> > 
+> >  	/* drop_futex_key_refs() must be called outside the spinlocks. */
+> >  	while (--drop_count >= 0)
+> > -		drop_futex_key_refs(&key1);
+> > +		drop_futex_key_refs(&key2);
 > 
->> I wouldn't object if Nicholas des the same and send in linux-scsi
->> and linux-kernel a complete patchset, which we will review and
->> discuss. But he sends *intermediate* patches and this looks for me
->> like a violation of fundamental rules/intention of Linux kernel
->> mailing lists, hence I complain.
->>
->> So, should I understand your words that you agree if I also start 
->> sending intermediate patches for SCST to linux-scsi/linux-kernel?
->>
+> Unfortunately, I realized later that this code was indeed correct and I 
+> asked Ingo to pull my patch implementing the above change.  Quoting my 
+> previous mail on the subject:
 > 
-> 
-> <looking in as an outsider>
-> 
-> I am thoroughly surprised by this email exchange.
-> From where I sit, there is almost no such thing as posting patches too
-> early. Really. Transparency and early review/feedaback is by far
-> more important than ignoring a few more patches in an area you
-> don't careabout.
+> "I believe what is happening here is that the requeue loop requeues each 
+> waiter from one futex (key1) to another (key2).  It rightly takes a 
+> reference to the futex at key2 and then decrements the references to 
+> key1 by drop_count (since the waiters now reference key2, not key1). 
+> The newly taken key2 references will be dropped in futex_wait() when 
+> each waiter is woken up and takes the futex."
 
-Sure. All projects (including LIO) have own mailing list(s) for such 
-review/feedback, but at the moment LIO and Linux kernel are completely 
-separated projects.
+Argh, that wants a comment..
 
-Anyway, I could just misunderstand the intention and policy of Linux 
-kernel mailing lists. I apologize, if so.
-
-> Your second paragraph makes me wonder if your email is more political
-> than technical in nature. But either way, you should feel encouraged
-> to release early, release often.
-
-There's not much politic in it. Simply what Nicholas Bellinger does 
-violated my understanding of what allowed in Linux kernel mailing lists, 
-so I wondered, if what allowed for Nicholas Bellinger allowed for me as 
-well.
-
-Vlad
