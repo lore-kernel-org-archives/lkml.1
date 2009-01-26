@@ -1,107 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751473AbZAZBGb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751569AbZAZBTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751473AbZAZBGb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 20:06:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZAZBGX
+	id S1751569AbZAZBTi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 20:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750919AbZAZBT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 20:06:23 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:35206 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750868AbZAZBGW (ORCPT
+	Sun, 25 Jan 2009 20:19:26 -0500
+Received: from a-sasl-fastnet.sasl.smtp.pobox.com ([207.106.133.19]:50138 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750855AbZAZBT0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 20:06:22 -0500
-Message-ID: <497D0C81.5040406@linux.vnet.ibm.com>
-Date: Sun, 25 Jan 2009 17:06:09 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 25 Jan 2009 20:19:26 -0500
+From: Junio C Hamano <gitster@pobox.com>
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.1.1
+cc: linux-kernel@vger.kernel.org
+Date: Sun, 25 Jan 2009 17:19:16 -0800
+Message-ID: <7vfxj6dfu3.fsf@gitster.siamese.dyndns.org>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] Performance Counters for Linux, v6
-References: <20090121185021.GA8852@elte.hu>
-In-Reply-To: <20090121185021.GA8852@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: 5E317BD8-EB47-11DD-9F20-5720C92D7133-77302942!a-sasl-fastnet.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> We are pleased to announce version 6 of our performance counters subsystem 
-> implementation. The shortlog, diffstat and the combo patch can be found 
-> below. The combo patch against latest -git (2.6.29-rc2) can be also found 
-> at:
-> 
->    http://people.redhat.com/mingo/perfcounters/perfcounters-v6-v2.6.29-rc2.patch
-> 
-> It's also available in tip/master at:
-> 
->    http://people.redhat.com/mingo/tip.git/README
-> 
-> There are many changes in the v6 release:
-> 
->  - PowerPC performance counters support from Paul Mackerras, for POWER6
->    and for the PPC970 family.
-> 
->  - ioctl API to disable/enable individual counters and groups without
->    closing their fd. This can be useful for libraries, ad-hoc 
->    instrumentation and PAPI support.
-> 
->  - 'pinned' and 'exclusive' counter attributes - for those
->    applications that want to influence counter scheduling explicitly.
-> 
->  - The 'perfstat' utility (ex 'timec') has been updated:
-> 
->       http://people.redhat.com/mingo/perfcounters/perfstat.c
-> 
->  - 'kerneltop' (easy-to-use text mode NMI profiler) has been updated:
->    
->       http://people.redhat.com/mingo/perfcounters/kerneltop.c
-> 
->  - Merged to latest mainline
-> 
->  - Various fixes and other updates
-> 
-> 	Ingo
+The latest maintenance release GIT 1.6.1.1 is available at the
+usual places:
 
-Hi Ingo,
+  http://www.kernel.org/pub/software/scm/git/
 
-Looking over the latest capabilities of this proposal, I am wondering 
-how it can accommodate performance monitor units which have extra 
-registers which require user-defined data to be loaded into them.
+  git-1.6.1.1.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.1.1.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.1.1.tar.{gz,bz2}		(preformatted docs)
 
-For example, on the Power architecture, there is an Instruction Matching 
-Register which allows the counting of particular instructions. 
-Currently, this is unsupported in perfmon2/3, but we have plans to add 
-it, and it's pretty straight-forward to imagine how this would be done 
-in perfmon.
+The RPM binary packages for a few architectures are also provided
+as courtesy.
 
-But I don't see an obvious way to do it with your proposal.  Do you have 
-any ideas how Performance Counters for Linux could accommodate this sort 
-of PMU functionality?
+  RPMS/$arch/git-*-1.6.1.1-1.fc9.$arch.rpm	(RPM)
 
-One thought would be to change the event code to an event descriptor 
-structure, which has room for lots of bits, including arch-defined bits 
-(in the case of Power, an IMR value, and others).  This might also be a 
-way to accommodate unit masks (and enums) as well, which Andi Kleen 
-pointed out as an issue in an earlier LKML posting.
+----------------------------------------------------------------
+GIT v1.6.1.1 Release Notes
+==========================
 
-Regards,
+Fixes since v1.6.1
+------------------
 
-- Corey
+* "git add frotz/nitfol" when "frotz" is a submodule should have errored
+  out, but it didn't.
 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+* "git apply" took file modes from the patch text and updated the mode
+  bits of the target tree even when the patch was not about mode changes.
+
+* "git bisect view" on Cygwin did not launch gitk
+
+* "git checkout $tree" did not trigger an error.
+
+* "git commit" tried to remove COMMIT_EDITMSG from the work tree by mistake.
+
+* "git describe --all" complained when a commit is described with a tag,
+  which was nonsense.
+
+* "git diff --no-index --" did not trigger no-index (aka "use git-diff as
+  a replacement of diff on untracked files") behaviour.
+
+* "git format-patch -1 HEAD" on a root commit failed to produce patch
+  text.
+
+* "git fsck branch" did not work as advertised; instead it behaved the same
+  way as "git fsck".
+
+* "git log --pretty=format:%s" did not handle a multi-line subject the
+  same way as built-in log listers (i.e. shortlog, --pretty=oneline, etc.)
+
+* "git daemon", and "git merge-file" are more careful when freopen fails
+  and barf, instead of going on and writing to unopened filehandle.
+
+* "git http-push" did not like some RFC 4918 compliant DAV server
+  responses.
+
+* "git merge -s recursive" mistakenly overwritten an untracked file in the
+  work tree upon delete/modify conflict.
+
+* "git merge -s recursive" didn't leave the index unmerged for entries with
+  rename/delete conflictd.
+
+* "git merge -s recursive" clobbered untracked files in the work tree.
+
+* "git mv -k" with more than one errorneous paths misbehaved.
+
+* "git read-tree -m -u" hence branch switching incorrectly lost a
+  subdirectory in rare cases.
+
+* "git rebase -i" issued an unnecessary error message upon a user error of
+  marking the first commit to be "squash"ed.
+
+* "git shortlog" did not format a commit message with multi-line
+  subject correctly.
+
+Comes with many documentation updates.
 
