@@ -1,186 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbZAZTEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754239AbZAZTFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753951AbZAZTEt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 14:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbZAZTEb
+	id S1754239AbZAZTFX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 14:05:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbZAZTEj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 14:04:31 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:61127 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753258AbZAZTE3 (ORCPT
+	Mon, 26 Jan 2009 14:04:39 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:47990 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753584AbZAZTEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 14:04:29 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: narendramind@spikesource.com
-Subject: Re: [PATCH 1/1] x86: syscalls: sys_setrlimit64/sys_getrlimit64 calls to provide FSIZE  limits > 2^32-1
-Date: Mon, 26 Jan 2009 20:04:15 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       torvalds@osdl.org, linux-abi@vger.kernel.org,
-       linux-arch@vger.kernel.org
-References: <200901231759.n0NHxKA3009104@eng-pool-55.spikesource.com>
-In-Reply-To: <200901231759.n0NHxKA3009104@eng-pool-55.spikesource.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 26 Jan 2009 14:04:38 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Folkert van Heusden <folkert@vanheusden.com>, linux-input@vger.kernel.org
+Subject: Re: 2.6.29rc1 breakes usb: hiddev device no longer available
+Date: Mon, 26 Jan 2009 20:05:07 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
+References: <20090126170130.GG6158@vanheusden.com> <20090126182707.GI6158@vanheusden.com>
+In-Reply-To: <20090126182707.GI6158@vanheusden.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901262004.16364.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1846UA5q5AUT/zM52DK1ABCgKNAfAAzNztqnzj
- rXga5k3KsuxiQvb4Hk0coFOPCYnMm5CWWTFL1UGHSqJsPSYDRX
- Dde28Ui2jum0YsKgwzguA==
+Message-Id: <200901262005.08168.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 23 January 2009, narendramind@spikesource.com wrote:
+Am Monday 26 January 2009 19:27:07 schrieb Folkert van Heusden:
+> > Since version 2.6.29rc1 querying cleware USb devices no longer works.
+> > 2.6.28 works fine. 2.6.29-rc2 also no longer works.
 > 
->   The solution to this problem would require new setrlimit64() and 
->   getrlimit64() system calls on x86, and the existing 32-bit system calls 
->   would need to be retained so that existing binaries would still run.
 
-When adding new syscalls, please Cc: linux-abi@vger.kernel.org and
-linux-arch@vger.kernel.org to get attention from all parties that are
-involved.
+> the is the FAILURE situation (2.6.29-rc*):
+> open("/dev/usb/hiddev0", O_RDWR)        = 3
+> ioctl(3, HIDIOCGDEVINFO, 0xbf90c0d8)    = 0
+> ioctl(3, HIDIOCAPPLICATION, 0)          = -6291455
+> ioctl(3, HIDIOCGSTRING, 0x804e2c0)      = -1 ENODEV (No such device)
 
-> diff -uNrp -X linux-2.6.29-rc2/Documentation/dontdiff linux-2.6.29-rc2/arch/x86/kernel/syscall_table_32.S linux-2.6.29-rc2-rlim64/arch/x86/kernel/syscall_table_32.S
-> --- linux-2.6.29-rc2/arch/x86/kernel/syscall_table_32.S	2009-01-17 09:54:06.000000000 +0530
-> +++ linux-2.6.29-rc2-rlim64/arch/x86/kernel/syscall_table_32.S	2009-01-17 19:15:52.000000000 +0530
-> @@ -332,3 +332,5 @@ ENTRY(sys_call_table)
->  	.long sys_dup3			/* 330 */
->  	.long sys_pipe2
->  	.long sys_inotify_init1
-> +	.long sys_setrlimit64
-> +	.long sys_getrlimit64
+Please try this patch.
 
-This only adds the calls to the native 32 bit build, but not to
-the 32-on-64 compat code in arch/x86/ia32/ia32entry.S (or any of the
-other architectures.
+	Regards
+		Oliver
 
-> --- linux-2.6.29-rc2/kernel/ChangeLog	1970-01-01 05:30:00.000000000 +0530
-> +++ linux-2.6.29-rc2-rlim64/kernel/ChangeLog	2009-01-17 19:15:50.000000000 +0530
-> @@ -0,0 +1,10 @@
-> +2008-01-17  Narendra Prasad <narendramind@gmail.com>
-> +    Problem Description:
-> +        The following issue affects the setrlimit() and getrlimit() system calls on Linux 2.6.13 (and earlier) on x86.
-> +        The Problem is filed at kernel.org bug 5042 (http://bugzilla.kernel.org/show_bug.cgi?id=5042)
-> +    Design Approach:
-> +        Add two system calls sys_setrlimit64()/sys_getrlimit64().
-> +        And a type 'struct rlimit64' to accomodate more no. of limits <= 2^64-1
-> +    Implementation Details:
-> +        Inclusions: struct rlimit64, struct rlimit64
-> +        rlim64[RLIM64_NRLIMITS] to task_struct
+--
 
-The changelog is the git history, please don't add other files for this.
-
-> +SYSCALL_DEFINE2(setrlimit64, unsigned int, resource,
-> +				struct rlimit64 __user *, rlim)
-> +{
-> +	struct rlimit64  new_rlim;
-> +	struct rlimit    *old_rlim, new_value;
-> +	unsigned long    it_prof_secs;
-> +	int              retval;
-> +
-> +	if (resource >= RLIM_NLIMITS)
-> +		return -EINVAL;
-> +	if (copy_from_user(&new_rlim, rlim, sizeof(*rlim)))
-> +		return -EFAULT;
-> +
-> +	if (resource == RLIMIT_FSIZE) {
-> +		struct rlimit64  *old_rlim;
-> +		struct rlimit    *old_value;
-> +
-> +		old_rlim = current->signal->rlim64 + resource;
-> +		if (((new_rlim.rlim64_cur > old_rlim->rlim64_max) ||
-> +			(new_rlim.rlim64_max > old_rlim->rlim64_max)) &&
-> +			!capable(CAP_SYS_RESOURCE))
-> +			return -EPERM;
-> +		*old_rlim = new_rlim;
-> +		if (new_rlim.rlim64_cur > RLIM_INFINITY)
-> +			new_rlim.rlim64_cur = RLIM_INFINITY;
-> +		if (new_rlim.rlim64_max > RLIM_INFINITY)
-> +			new_rlim.rlim64_max = RLIM_INFINITY;
-> +
-> +		task_lock(current->group_leader);
-> +		old_value = (current->signal->rlim + resource);
-> +		old_value->rlim_max = new_rlim.rlim64_max;
-> +		old_value->rlim_cur = new_rlim.rlim64_cur;
-> +		task_unlock(current->group_leader);
-> +
-> +		return 0;
-> +	}
-> +
-> +	old_rlim = current->signal->rlim + resource;
-> +	if (new_rlim.rlim64_cur > RLIM_INFINITY)
-> +		new_rlim.rlim64_cur = RLIM_INFINITY;
-> +	if (new_rlim.rlim64_max > RLIM_INFINITY)
-> +		new_rlim.rlim64_max = RLIM_INFINITY;
-> +	if (((new_rlim.rlim64_cur > old_rlim->rlim_max) ||
-> +		(new_rlim.rlim64_max > old_rlim->rlim_max)) &&
-> +		!capable(CAP_SYS_RESOURCE))
-> +		return -EPERM;
-> +	if (resource == RLIMIT_NOFILE) {
-> +		if (new_rlim.rlim64_cur > INR_OPEN ||
-> +			new_rlim.rlim64_max > INR_OPEN)
-> +			return -EPERM;
-> +	}
-> +	new_value.rlim_max = new_rlim.rlim64_max;
-> +	new_value.rlim_cur = new_rlim.rlim64_cur;
-> +	retval = security_task_setrlimit(resource, &new_value);
-> +	if (retval)
-> +		return retval;
-> +
-> +	if (resource == RLIMIT_CPU && new_value.rlim_cur == 0) {
-> +		/*
-> +		 * The caller is asking for an immediate RLIMIT_CPU
-> +		 * expiry.  But we use the zero value to mean "it was
-> +		 * never set".  So let's cheat and make it one second
-> +		 * instead
-> +		 */
-> +		new_value.rlim_cur = 1;
-> +	}
-> +
-> +	task_lock(current->group_leader);
-> +	*old_rlim = new_value;
-> +	task_unlock(current->group_leader);
-> +
-> +	if (resource != RLIMIT_CPU)
-> +		goto out;
-> +
-> +	/*
-> +	 * RLIMIT_CPU handling.   Note that the kernel fails to return an error
-> +	 * code if it rejected the user's attempt to set RLIMIT_CPU.  This is a
-> +	 * very long-standing error, and fixing it now risks breakage of
-> +	 * applications, so we live with it
-> +	 */
-> +	if (new_value.rlim_cur == RLIM_INFINITY)
-> +		goto out;
-> +
-> +	it_prof_secs = cputime_to_secs(current->signal->it_prof_expires);
-> +	if (it_prof_secs == 0 || new_value.rlim_cur <= it_prof_secs) {
-> +		unsigned long  rlim_cur = new_value.rlim_cur;
-> +		cputime_t      cputime;
-> +
-> +		cputime = secs_to_cputime(rlim_cur);
-> +		read_lock(&tasklist_lock);
-> +		spin_lock_irq(&current->sighand->siglock);
-> +		set_process_cpu_timer(current, CPUCLOCK_PROF, &cputime, NULL);
-> +		spin_unlock_irq(&current->sighand->siglock);
-> +		read_unlock(&tasklist_lock);
-> +	}
-> +out:
-> +	return 0;
-> +}
-
-This function is rather long, and duplicates most of the existing
-set_rlimit syscall. You should consolidate the two so you get no
-duplication. You can probably add a
-static do_setrlimit(unsigned int resource, struct rlimit64 *rlim);
-helper function that gets called by both setrlimit and setrlimit64
-(also compat_sys_setrlimit) after the copy_from_user().
-
-	Arnd <><
+--- linux-2.6/drivers/hid/usbhid/hiddev.c.alt	2009-01-26 20:03:10.000000000 +0100
++++ linux-2.6/drivers/hid/usbhid/hiddev.c	2009-01-26 20:03:17.000000000 +0100
+@@ -656,7 +656,7 @@ static long hiddev_ioctl(struct file *fi
+ 
+ 	case HIDIOCGSTRING:
+ 		mutex_lock(&hiddev->existancelock);
+-		if (!hiddev->exist)
++		if (hiddev->exist)
+ 			r = hiddev_ioctl_string(hiddev, cmd, user_arg);
+ 		else
+ 			r = -ENODEV;
