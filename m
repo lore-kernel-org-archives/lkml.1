@@ -1,102 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbZAZUOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbZAZUPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbZAZUOP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 15:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZAZUN5
+	id S1754416AbZAZUPg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 15:15:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753053AbZAZUP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 15:13:57 -0500
-Received: from nf-out-0910.google.com ([64.233.182.191]:13650 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751968AbZAZUN4 (ORCPT
+	Mon, 26 Jan 2009 15:15:28 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45635 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752516AbZAZUP1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 15:13:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=erNy3U8z5/6AFY/5+l2aVM2z7vT9IPuPzW2TI5tknsIHY+EIx2Wd8SKJUFEBhtdHlI
-         Difgd6Rox/Gz3gFzcN+3kKfF2BBHUzTJNh//FI5RcNvziAQYqq2X7voXM/9h7DC/FKag
-         jwa07RaejikMcOHuIFMYlSNge+m5KnS6ClaWg=
-Message-ID: <497E1962.6000804@gmail.com>
-Date: Mon, 26 Jan 2009 21:13:22 +0100
-From: Sandro Bonazzola <sandro.bonazzola@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Pavel Machek <pavel@suse.cz>, Greg Kroah-Hartman <greg@kroah.com>,
-       linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: [PATCH] w35und: fix usb_control_msg() error handling in 	wb35_probe()
-References: <Pine.LNX.4.64.0901221205400.27341@melkki.cs.Helsinki.FI>	 <20090122114237.GA13845@atrey.karlin.mff.cuni.cz>	 <4978C812.90702@gmail.com> <20090122211052.GA1928@elf.ucw.cz>	 <4978F47C.6010909@gmail.com> <4978F3CF.2010301@cs.helsinki.fi>	 <497E0F94.8000003@gmail.com>	 <84144f020901261140j242bb31cg1b2a59a5ae71ae29@mail.gmail.com> <84144f020901261143o1bb41b76o680c8616a81dc2db@mail.gmail.com>
-In-Reply-To: <84144f020901261143o1bb41b76o680c8616a81dc2db@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Mon, 26 Jan 2009 15:15:27 -0500
+Date: Mon, 26 Jan 2009 12:14:26 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [git pull] x86 fixes
+Message-Id: <20090126121426.32f391a9.akpm@linux-foundation.org>
+In-Reply-To: <20090126195910.GA13471@elte.hu>
+References: <20090126171723.GA32030@elte.hu>
+	<20090126110539.2000cd30.akpm@linux-foundation.org>
+	<20090126192016.GA1211@elte.hu>
+	<20090126114038.a2f6606f.akpm@linux-foundation.org>
+	<20090126195910.GA13471@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, 26 Jan 2009 20:59:10 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Pekka Enberg ha scritto:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Mon, 26 Jan 2009 20:20:16 +0100
+> > Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > On Mon, 26 Jan 2009 18:17:23 +0100
+> > > > Ingo Molnar <mingo@elte.hu> wrote:
+> > > > 
+> > > > > Rusty Russell (2):
+> > > > >       ...
+> > > > >       work_on_cpu: Use our own workqueue.
+> > > > 
+> > > > wtf?
+> > > 
+> > > an x86 fix depends on it:
+> > > 
+> > > 7285908: cpufreq: use work_on_cpu in acpi-cpufreq.c for drv_read and drv_write
+> > > 
+> > 
+> > Right.  And these are currently under active (albeit rather slow) 
+> > discussion.
+> > 
+> > The changelogs suck, nobody can be assed actually telling us what the 
+> > bug is and the patches just casually toss yet another gaggle of kernel 
+> > threads into there.
+> 
+> One problem is that for example do_dbs_timer() [used both in the 
+> cpufreq_ondemand and cpufreq_conservative cpufreq drivers] gets queued 
+> into the generic kevent workqueue via schedule_work(). But work_on_cpu() 
+> needs to serialize on the worklet - i.e. it needs to do a flush_work() - 
+> and does this with the cpufreq lock held.
 
->>> Ok, with kernel 2.6.8.1, and your patch it seems to work with channel 1, no
->>> encryption, opensystem authentication.
->> So the driver doesn't work in 2.6.29-rc1 but does in 2.6.28.1? I
->> wonder what changed in the networking/wireless stack that broke the
->> winbond driver.... I'm cc'ing netdev even though this is a driver in
->> staging.
+We've discovered many times that doing a workqueue flush with a lock
+held is a bad idea.  If any callback takes that lock, or takes some
+other lock which someone else takes while holding the original lock,
+etc, we deadlock.
 
-Well, I don't know if this can be somehow related to a bug in the driver, but on
-my system, after I've unplugged the USB trasnsitter, ksoftirqd/0 begin to use
-89% of my CPU time (top). I suspect that there are some issue that should be
-fixed somewhere.
+> So we have a 'worklet inversion' bug here - and this got reported as a 
+> hard to debug boot hang on some systems.
+> The root cause is that kevents is not that do_dbs_timer() uses 
+> schedule_work() - the root cause is that kevents workqueue is a too 
+> generic workqueue that is the union of all casual workqueue users in the 
+> kernel. That is fine (and it is its purpose) but it should not be used for 
+> core kernel facilities such as work_on_cpu() - precisely because doing so 
+> would limit that facility's genericity.
 
+Yes, that's a point.
 
-> Actually, it's probably me who broke the driver. I think Greg merged
-> most of my patches after 2.6.28 came out. Sandro, if you have some
-> time, please consider doing git bisect to find out which changeset
-> causes the problem.
+> This bug was always there but dormant until work_on_cpu() was used from a 
+> deep enough codepath.
+> 
+> So the solution here is to isolate work_on_cpu()s mechanisms from the 
+> 'misc' workqueue that schedule_work() deals with - this is what Rusty's 
+> patch does.
 
-Well, actually my 2.6.29 copy seems to be broken:
-arch/x86/kernel/amd_iommu.o: In function `debugfs_create_size_t':
-amd_iommu.c:(.text+0x0): multiple definition of `debugfs_create_size_t'
-arch/x86/kernel/kdebugfs.o:kdebugfs.c:(.text+0x0): first defined here
-make[1]: *** [arch/x86/kernel/built-in.o] Error 1
-make: *** [arch/x86/kernel] Error 2
+But it's still deadlockable, isn't it?  If you do a work_on_cpu() while
+holding a lock, and the callback function takes that lock, deadlock? 
+If so, things didn't get much better?
 
-# git pull
-Already up-to-date.
+> Your observation about there being too many workqueue threads is correct 
+> but this commit is IMO a valid use of the workqueue facility. This 
+> workqueue it only gets created on CONFIG_SMP so there cost is about ~10K 
+> RAM per CPU.
 
-# git status
-# On branch master
-# Changed but not updated:
-#   (use "git add <file>..." to update what will be committed)
-#   (use "git checkout -- <file>..." to discard changes in working directory)
-#
-#       modified:   drivers/staging/winbond/wbusb.c
-#
-no changes added to commit (use "git add" and/or "git commit -a")
+mm..  This is why I'd like to expend a little more effort trying to
+avoid having to make this change.
 
-
-I don't know too much how to use git to do what you're asking. I've some years
-of experience with svn and cvs but git is quite a new tool for me.
-I'll wait a git kernel that compile while I'll try to find out how to do what
-you're asking.
-I have not so much free time to spend in a checkout / build / test if the test
-phase need a kernel reinstall / system reboot. If it's only the driver module I
-think I can try to test it for each changeset in a couple of weeks /starting
-from the day I know how to bisect :-) ).
-
-- --
-Sandro
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkl+GWIACgkQV871CybFezlRXACfQTBrMm2hL9b+o5oU1/6/xZ+f
-gaYAnjyyawOFPBPIe/scq5pYupNrRLa3
-=d1SV
------END PGP SIGNATURE-----
