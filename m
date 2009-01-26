@@ -1,93 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753998AbZAZWwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753539AbZAZW4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753998AbZAZWwX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 17:52:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZAZWwN
+	id S1753539AbZAZW4S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 17:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZAZW4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 17:52:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51502 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751621AbZAZWwM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 17:52:12 -0500
-Date: Mon, 26 Jan 2009 14:50:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: oleg@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
-       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090126145003.b29b81d7.akpm@linux-foundation.org>
-In-Reply-To: <20090126222002.GB10215@elte.hu>
-References: <20090126171618.GA32091@elte.hu>
-	<20090126103529.cb124a58.akpm@linux-foundation.org>
-	<20090126202022.GA8867@elte.hu>
-	<20090126130046.37b8f34e.akpm@linux-foundation.org>
-	<20090126212727.GA13670@elte.hu>
-	<20090126133551.fab5e27a.akpm@linux-foundation.org>
-	<20090126214516.GA22142@elte.hu>
-	<20090126140116.35f9c173.akpm@linux-foundation.org>
-	<20090126220537.GA6755@elte.hu>
-	<20090126141605.707877bb.akpm@linux-foundation.org>
-	<20090126222002.GB10215@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 26 Jan 2009 17:56:06 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56464 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752210AbZAZW4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 17:56:05 -0500
+Date: Mon, 26 Jan 2009 23:55:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pawel Dziekonski <dzieko@gmail.com>, Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: CPU scheduler question/problem
+Message-ID: <20090126225545.GA1330@elte.hu>
+References: <2cd4df870901221334n7e242e79ka961f899c03c70cb@mail.gmail.com> <1232725219.4826.131.camel@laptop> <2cd4df870901260548s2376a01anae0db9707dcfa14@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2cd4df870901260548s2376a01anae0db9707dcfa14@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 23:20:02 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
 
+* Pawel Dziekonski <dzieko@gmail.com> wrote:
+
+> 2009/1/23 Peter Zijlstra <peterz@infradead.org>:
 > 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > The pipe workload you mentioned has would behave that way because pipes
+> > 'assume' a produces/consumer behaviour, and thus are more likely to
+> > place both tasks on the same cpu -- but will eventually pull them apart
+> > if they want to run concurrently.
+> >
+> > You might enable SCHED_DEBUG=y and try
+> >  echo NO_SYNC_WAKEUPS > /debug/sched_features
 > 
-> > On Mon, 26 Jan 2009 23:05:37 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > > 
-> > > > Well it turns out that I was having a less-than-usually-senile moment:
-> > > > 
-> > > > :     implement flush_work()
-> > > 
-> > > > Why isn't that working in this case??
-> > > 
-> > > how would that work in this case? We defer processing into the workqueue 
-> > > exactly because we want its per-CPU properties.
-> > 
-> > It detaches the work item, moves it to head-of-queue, reinserts it then 
-> > waits on it.  I think.
-> > 
-> > This might have a race+hole.  If a currently-running "unrelated" work 
-> > item tries to take the lock which the flush_work() caller is holding 
-> > then there's no way in which keventd will come back to execute the work 
-> > item which we just put on the head of queue.
+> Hello,
 > 
-> Correct - or the unrelated worklet might also be blocked on something - so 
-> the window is rather large.
+> that did the trick. Openssl now gets a whole core exclusively and gives 
+> full performance.
 > 
+> Regarding quantum chemistry application -- it is also using pipes for 
+> communication between worker processes. Now this app works OK.
 
-hm, OK, that sucks.
+Could you please try the fuller fix below too please, does it still do the 
+trick and does the scheduler still maximize openssl and your quantum 
+chemistry app's throughput?
 
-But the deadlock still exists with Rusty's patches, doesn't it?  We
-still have a single kernel thread per CPU processing all the unrelated
-work_on_cpu() callers.  All we've done is to decouple work_on_cpu()
-from the keventd queue.
+There should be no need for you to tune anything - the scheduler must get 
+such workloads right out of the box.
 
-If correct, we'd need to create a gaggle of kernel threads on each call
-to work_on_cpu(), which doesn't sound nice.
+	Ingo
 
-A more efficient but trickier approach would be to create kernel
-threads within flush_work(), with which to run the CPU-specific
-worklet.  We only need to do that in the case where the CPU's keventd
-thread was off doing something and might deadlock, which will be rare. 
-If the keventd was just parked waiting for something to do then we can
-safely feed it the to-be-flushed work item for immediate processing.
+--------------------------->
+>From 08a1c2658637045d207b6fa0c328055e589a4009 Mon Sep 17 00:00:00 2001
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Mon, 26 Jan 2009 17:56:17 +0100
+Subject: [PATCH] sched: disable sync wakeups
 
-It'd be saner to just say "don't call work_on_cpu() while holding locks" :(
-I bet there's some lockdep infrastructre which we could peek into to
-add the assertion check...
+Pawel Dziekonski reported that the openssl benchmark and his
+quantum chemistry application both show slowdowns due to the
+scheduler under-parallelizing execution.
+
+The reason are pipe wakeups still doing 'sync' wakeups which
+overrides the normal buddy wakeup logic - even if waker and
+wakee are loosely coupled.
+
+So disable sync wakeups and also fix an inversion of logic
+in the buddy wakeup code.
+
+Reported-by: Pawel Dziekonski <dzieko@gmail.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ kernel/sched.c          |    4 ++++
+ kernel/sched_fair.c     |    8 +-------
+ kernel/sched_features.h |    2 +-
+ 3 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 8c2be1e..ce1cfc6 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2266,6 +2266,10 @@ static int try_to_wake_up(struct task_struct *p, unsigned int state, int sync)
+ 	if (!sched_feat(SYNC_WAKEUPS))
+ 		sync = 0;
+ 
++	if (!sync && (current->se.avg_overlap < sysctl_sched_migration_cost &&
++			    p->se.avg_overlap < sysctl_sched_migration_cost))
++		sync = 1;
++
+ #ifdef CONFIG_SMP
+ 	if (sched_feat(LB_WAKEUP_UPDATE)) {
+ 		struct sched_domain *sd;
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 5cc1c16..fd789a2 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1189,10 +1189,6 @@ wake_affine(struct sched_domain *this_sd, struct rq *this_rq,
+ 	if (!(this_sd->flags & SD_WAKE_AFFINE) || !sched_feat(AFFINE_WAKEUPS))
+ 		return 0;
+ 
+-	if (sync && (curr->se.avg_overlap > sysctl_sched_migration_cost ||
+-			p->se.avg_overlap > sysctl_sched_migration_cost))
+-		sync = 0;
+-
+ 	/*
+ 	 * If sync wakeup then subtract the (maximum possible)
+ 	 * effect of the currently running task from the load
+@@ -1419,9 +1415,7 @@ static void check_preempt_wakeup(struct rq *rq, struct task_struct *p, int sync)
+ 	if (!sched_feat(WAKEUP_PREEMPT))
+ 		return;
+ 
+-	if (sched_feat(WAKEUP_OVERLAP) && (sync ||
+-			(se->avg_overlap < sysctl_sched_migration_cost &&
+-			 pse->avg_overlap < sysctl_sched_migration_cost))) {
++	if (sched_feat(WAKEUP_OVERLAP) && sync) {
+ 		resched_task(curr);
+ 		return;
+ 	}
+diff --git a/kernel/sched_features.h b/kernel/sched_features.h
+index da5d93b..8134e65 100644
+--- a/kernel/sched_features.h
++++ b/kernel/sched_features.h
+@@ -4,7 +4,7 @@ SCHED_FEAT(WAKEUP_PREEMPT, 1)
+ SCHED_FEAT(START_DEBIT, 1)
+ SCHED_FEAT(AFFINE_WAKEUPS, 1)
+ SCHED_FEAT(CACHE_HOT_BUDDY, 1)
+-SCHED_FEAT(SYNC_WAKEUPS, 1)
++SCHED_FEAT(SYNC_WAKEUPS, 0)
+ SCHED_FEAT(HRTICK, 0)
+ SCHED_FEAT(DOUBLE_TICK, 0)
+ SCHED_FEAT(ASYM_GRAN, 1)
