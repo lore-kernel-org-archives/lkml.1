@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbZAZQIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbZAZQIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753209AbZAZQIg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 11:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZAZQIN
+	id S1753408AbZAZQIv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 11:08:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZAZQIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 11:08:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34199 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751511AbZAZQIM (ORCPT
+	Mon, 26 Jan 2009 11:08:25 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:51314 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752760AbZAZQIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 11:08:12 -0500
-Date: Mon, 26 Jan 2009 08:07:59 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in
- preemptible
-In-Reply-To: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0901260807290.5284@localhost.localdomain>
-References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 26 Jan 2009 11:08:22 -0500
+Message-ID: <497DDFF8.8070707@vlnb.net>
+Date: Mon, 26 Jan 2009 19:08:24 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Spamming linux-kernel and linux-scsi by out-of-tree patches	(LIO)
+References: <497DB7D0.8000302@vlnb.net> <1232984234.3248.18.camel@localhost.localdomain>
+In-Reply-To: <1232984234.3248.18.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX193jQ9vvzpzoS9O3K2QLlCZ1ggA8trvhVOgYrr
+ 4Hz8hgoxKwS/YD5+j/8uQlWxjwIhsV0nDf/3QCMP/PSXDoTJGh
+ 9+asmynDdv8sK32qMvd/A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+James Bottomley, on 01/26/2009 06:37 PM wrote:
+> On Mon, 2009-01-26 at 16:17 +0300, Vladislav Bolkhovitin wrote:
+>> Nicholas,
+>>
+>> Could you stop spamming linux-kernel and linux-scsi mailing lists by 
+>> patches for your out-of-tree LIO project, please?
+>>
+>> Those mailing lists are intended for patches for in-kernel components 
+>> only, not for all out-of-tree projects, finding their ways into the 
+>> mainline. I don't see any reason why your project should be an 
+>> exception. Think, what a mess the kernel mailing lists would get, if all 
+>> out-of-tree projects started sending their patches to them?
+> 
+> Actually, out of tree projects trying to make their way upstream are
+> welcome to use the various linux- mailing lists to solicit feedback and
+> review.  This method was, for instance, how FCoE made it in.
 
-On Sat, 17 Jan 2009, Maciej Rutecki wrote:
->
-> During suspend to ram:
-> [  131.287012] BUG: using smp_processor_id() in preemptible [00000000]
-> code: suspend_to_ram./2958
-> [  131.287012] caller is retrigger_next_event+0x13/0xb0
-> [  131.287012] Pid: 2958, comm: suspend_to_ram. Not tainted 2.6.29-rc2 #1
-> [  131.287012] Call Trace:
-> [  131.287012]  [<c025b41f>] debug_smp_processor_id+0xbf/0xd0
-> [  131.287012]  [<c01473b3>] retrigger_next_event+0x13/0xb0
-> [  131.287012]  [<c01489b7>] raw_notifier_call_chain+0x17/0x20
-> [  131.287012]  [<c014b938>] timekeeping_resume+0xe8/0x110
-> [  131.287012]  [<c02cc651>] __sysdev_resume+0x11/0x50
-> [  131.287012]  [<c02cc6d7>] sysdev_resume+0x47/0x80
-> [  131.287012]  [<c02d2478>] device_power_up+0x8/0x10
+Hmm, I might be wrong, but what I've seen that FCoE only at the 
+beginning used linux-scsi for its intermediate patches, then such 
+patches quickly went into FCoE internal development mailing list only. 
+Then only resulting patches intended for wide review and mainline 
+inclusion were sent to linux-scsi. This is how I thought it's usually 
+considered should be done and how all the projects I've seen so far did.
 
-Very scary.
+I wouldn't object if Nicholas does the same and send in linux-scsi and 
+linux-kernel a complete patchset, which we will review and discuss. But 
+he sends *intermediate* patches and this looks for me like a violation 
+of fundamental rules/intention of Linux kernel mailing lists, hence I 
+complain.
 
-device_power_up() calls sysdev_resume _before_ it enables interrupts so it 
-sounds like something else has - very incorrectly - enabled interrupts too 
-early in your resume sequence. 
+So, should I understand your words that you agree if I also start 
+sending intermediate patches for SCST to linux-scsi/linux-kernel?
 
-The patch that Andrew sent out and that apparently fixed things for you 
-should absolutely not have made any difference. This is suspend_enter():
+>> My personal practical concerns about your patches that they trigger my 
+>> e-mail filters, so I have to spend on them much more time than I would want.
+> 
+> I've found that spamassassin does a good job of marking patches as non
+> spam.  Also, if you're using zmailer, vger seems to have some type of
+> patch recognition system built in which might be worth co-opting.
 
-	        arch_suspend_disable_irqs();
-	        BUG_ON(!irqs_disabled());
+Thanks for the suggestions, but, unfortunately, none of those filters 
+can distinguish e-mails/patches sent by Nicholas Bellinger in some 
+important SCSI target related discussion from his unsolicited 
+intermediate patches, which I should ignore.
 
-	        if ((error = device_power_down(PMSG_SUSPEND))) {
-	                printk(KERN_ERR "PM: Some devices failed to power down\n");
-	                goto Done;
-	        }
-	
-	        if (!suspend_test(TEST_CORE))
-	                error = suspend_ops->enter(state);
-
-	        device_power_up(PMSG_RESUME);
-	 Done:
-	        arch_suspend_enable_irqs();
-
-and notice how the whole thing is surrounded by that 
-arch_suspend_disable/enable_irqs().
-
-So it looks like some sysdev driver (device_power_up does the sysdev 
-drivers first, so it can't be the regular low-level PCI drivers) is 
-enabling interrupts in its resume function. Scary and very wrong.
-
-It could easily be ACPI, of course. There was some other case where ACPI 
-did that, iirc.
-
-		Linus
+Vlad
