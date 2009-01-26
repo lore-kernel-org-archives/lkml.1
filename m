@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751891AbZAZDAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbZAZDJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751891AbZAZDAd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 25 Jan 2009 22:00:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZAZDAX
+	id S1751965AbZAZDJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 25 Jan 2009 22:09:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZAZDJS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 25 Jan 2009 22:00:23 -0500
-Received: from mail-gx0-f21.google.com ([209.85.217.21]:49815 "EHLO
-	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751068AbZAZDAW (ORCPT
+	Sun, 25 Jan 2009 22:09:18 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55022 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbZAZDJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 25 Jan 2009 22:00:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=JSo2By2OsHvw5JkovfRH7ctZ3FmcKs0oYHCL98eDUOm6PzXmy54hAsfvWaIkirASXk
-         52ppLOniIXnm1GBB7F7vAXePphipRRh8eaaA9LQ0B7wOD2dcn969hMTDRknpkFWMrEYC
-         Yg2qtqllvxwBay8rH5MULNXluAdyyZ2k6AcsY=
-Date: Sun, 25 Jan 2009 21:00:17 -0600
-From: Jay Cliburn <jcliburn@gmail.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: linux-kernel@vger.kernel.org, Chris Snook <csnook@redhat.com>,
-       jie.yang@atheros.com, atl1-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org
-Subject: Re: [atl2] warn_slowpath in dev_watchdog
-Message-ID: <20090125210017.04e38348@osprey.hogchain.net>
-In-Reply-To: <884897.63360.qm@web110608.mail.gq1.yahoo.com>
-References: <gkt97e$ti0$1@ger.gmane.org>
-	<20090117194045.649f55a0@osprey.hogchain.net>
-	<767752.95325.qm@web110601.mail.gq1.yahoo.com>
-	<20090118095231.2c73c448@osprey.hogchain.net>
-	<879024.62535.qm@web110609.mail.gq1.yahoo.com>
-	<20090118115858.1b636b2d@osprey.hogchain.net>
-	<884897.63360.qm@web110608.mail.gq1.yahoo.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 25 Jan 2009 22:09:18 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86,mm: fix pte_free()
+Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Hugh Dickins <hugh@veritas.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       L-K <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       David Howells <dhowells@redhat.com>
+In-Reply-To: <20090123174543.GA16348@elte.hu>
+References: <1232732387.4850.1.camel@laptop> <20090123174543.GA16348@elte.hu>
+Message-Id: <20090127120636.1BDF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Mon, 26 Jan 2009 12:09:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 25 Jan 2009 08:17:25 -0800 (PST)
-Sitsofe Wheeler <sitsofe@yahoo.com> wrote:
+> 
+> * Peter Zijlstra <peterz@infradead.org> wrote:
+> 
+> > On Fri, 2009-01-23 at 18:34 +0100, Ingo Molnar wrote:
+> > 
+> > > So i agree with the fix, but the patch does not look right: shouldnt that 
+> > > be pgtable_page_dtor(pte), so that we get ->mapping cleared via 
+> > > pte_lock_deinit()? (which i guess your intention was here - this probably 
+> > > wont even build)
+> > 
+> > Yeah, I somehow fudged it, already send out a better one. -- One of them
+> > days I guess :-(
+> 
+> no problem - applied to tip/x86/urgent, thanks Peter!
 
-> OK the circumstances took a lllllong time to occur again but the result is that
-> the patch does not prevent the warning. 
+please fix typo. s/nm10300/MN10300/ :)
+at first look, I don't understand his intention.
 
-Can you trigger the warning by performing these steps while the interface is up?
 
-unplug cable
-ifdown eth0
-ifup eth0
-replug cable       
-wait about 5 seconds...
 
-If it doesn't happen the first time, try 3 or 4 more times.
-
-Let me know what happens.
-
-Thanks,
-Jay
