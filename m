@@ -1,68 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZAZW1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbZAZWdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbZAZW1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 17:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZAZW1f
+	id S1753723AbZAZWdU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 17:33:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZAZWdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 17:27:35 -0500
-Received: from bsdimp.com ([199.45.160.85]:56474 "EHLO harmony.bsdimp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751497AbZAZW1e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 17:27:34 -0500
-Date: Mon, 26 Jan 2009 15:26:20 -0700 (MST)
-Message-Id: <20090126.152620.1498421823.imp@bsdimp.com>
-To: matt@genesi-usa.com
-Cc: avorontsov@ru.mvista.com, ben-linux@fluff.org, arnd@arndb.de,
-       DaveLiu@freescale.com, linux-kernel@vger.kernel.org,
-       Joe.D'abbraccio@freescale.com, linuxppc-dev@ozlabs.org,
-       X.Xie@freescale.com, sdhci-devel@list.drzeus.cx, drzeus-sdhci@drzeus.cx,
-       Konjin.Lai@freescale.com
-Subject: Re: [PATCH 10/10] mmc: Add OpenFirmware bindings for SDHCI driver
-From: "M. Warner Losh" <imp@bsdimp.com>
-In-Reply-To: <497C09D9.50004@genesi-usa.com>
-References: <20090122015649.GA6835@oksana.dev.rtsoft.ru>
-	<20090122020041.GJ11492@oksana.dev.rtsoft.ru>
-	<497C09D9.50004@genesi-usa.com>
-X-Mailer: Mew version 5.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+	Mon, 26 Jan 2009 17:33:07 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52921 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752518AbZAZWdF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 17:33:05 -0500
+Date: Mon, 26 Jan 2009 14:32:10 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: dmitry.torokhov@gmail.com, dtor@mail.ru, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, linux-input@vger.kernel.org
+Subject: Re: [PATCH] psmouse: run kpsmoused only while needed
+Message-Id: <20090126143210.ce6a4503.akpm@linux-foundation.org>
+In-Reply-To: <496fd1d3.0d135e0a.171b.43ea@mx.google.com>
+References: <496fd1d3.0d135e0a.171b.43ea@mx.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In message: <497C09D9.50004@genesi-usa.com>
-            Matt Sealey <matt@genesi-usa.com> writes:
-: Anton Vorontsov wrote:
-: >  
-: >  	  If unsure, say Y.
-: >  
-: > +config MMC_SDHCI_OF
-: > +	tristate "SDHCI support on OpenFirmware platforms"
-: > +	depends on MMC_SDHCI && PPC_OF
-: > +	help
-: > +	  This selects the OF Secure Digital Host Controller Interface.
-: > +	  So far there is only Freescale eSDHC controller known to exists
-: > +	  on OF platforms.
-: 
-: Nit; would probably be better English as
-: 
-: 	This selects the OF support for Secure Digital Host Controller
-: 	Interfaces. So far, only the Freescale eSDHC controller is known
-: 	to exist on OF platforms.
+On Thu, 15 Jan 2009 16:16:19 -0800 (PST)
+Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-Is this the SD Association standard host controller interface, or a
-custom one by Freescale?  If the former, then I'd suggest:
+> While looking at the workqueue tracer, I noticed that kpsmoused receives
+> rarely (if not never) events.
+> 
+> Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
+> workqueue. But recync are rare. While reading an old discussion, it seems
+> that usual workqueue events can't be used for that purpose because resync
+> can take too much time and could delay the other works in queue.
+> 
+> But if you have built psmouse driver, this workqueue will always be present
+> whether you have a ps/2 port or not. And its events are rare.
+> 
+> To avoid this pointless task, this patch makes the kpsmoused a kernel
+> thread only created on the fly when a recync is needed. Once the recync is done,
+> this thread will die. So you will almost never see it, and it will not be
+> an inactive task anymore.
+> 
+> This thread is created through a usual workqueue event (because we can't create
+> it from interrupt).
+> 
 
-	This selects OF support for the SD Association standard Secure
-	Digital Host Controller Interface (version x.xx).  So far,
-	only the Freescale eSDHC controller is the only example on OF
-	platforms.
+Seems like a reasonable objective.
 
-if the latter:
+>
+> ...
+>
+>  /*
+>   * __psmouse_set_state() sets new psmouse state and resets all flags.
+> @@ -313,7 +307,8 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
+>  		       psmouse->name, psmouse->phys, psmouse->pktcnt);
+>  		psmouse->badbyte = psmouse->packet[0];
+>  		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
+> -		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
+> +		atomic_inc(&psmouse->nb_recync_pending);
 
-	This selects OF support for Freescale's custom Secure Digital
-	Host Controller Interface.  So far, only the Freescale eSDHC
-	controller is the only example on OF platforms.
+The patch and the changelog consistently misspell "sync".
 
-Warner
+A code comment (in psmouse.h) which clearly spells out the role of
+nb_recync_pending would be useful.
+
+> +		schedule_work(&psmouse->resync_work);
+>  		goto out;
+>  	}
+>  
+>
+> ...
+>
+> @@ -1131,7 +1155,13 @@ static void psmouse_disconnect(struct serio *serio)
+>  
+>  	/* make sure we don't have a resync in progress */
+>  	mutex_unlock(&psmouse_mutex);
+> -	flush_workqueue(kpsmoused_wq);
+> +
+> +	prepare_to_wait(&psmouse->recync_pending_queue, &wait,
+> +				TASK_UNINTERRUPTIBLE);
+> +	if (atomic_read(&psmouse->nb_recync_pending))
+> +		schedule();
+> +	finish_wait(&psmouse->recync_pending_queue, &wait);
+
+So... we're requiring that nb_recync_pending is zero at this stage?
+
+I wonder if the code manages to do that.  A little WARN_ON(), maybe?
+
+>  	mutex_lock(&psmouse_mutex);
+>  
+
