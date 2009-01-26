@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752214AbZAZH2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752005AbZAZHvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752214AbZAZH2R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 02:28:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZAZH2A
+	id S1752005AbZAZHvB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 02:51:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751301AbZAZHuw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 02:28:00 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49125 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751296AbZAZH17 (ORCPT
+	Mon, 26 Jan 2009 02:50:52 -0500
+Received: from vpn.id2.novell.com ([195.33.99.129]:10168 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751263AbZAZHuw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 02:27:59 -0500
-Date: Sun, 25 Jan 2009 23:27:53 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Thomas Tuttle" <linux-kernel@ttuttle.net>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: System hang (and other problems) with cdc_acm
-Message-Id: <20090125232753.db40c160.akpm@linux-foundation.org>
-In-Reply-To: <e4cb19870901191220y622e0120m512596656c72bbf3@mail.gmail.com>
-References: <e4cb19870901191220y622e0120m512596656c72bbf3@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 26 Jan 2009 02:50:52 -0500
+Message-Id: <497D798C.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Mon, 26 Jan 2009 07:51:24 +0000
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Jeremy Fitzhardinge" <jeremy@goop.org>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Xen-devel" <xen-devel@lists.xensource.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: [Xen-devel] [PATCH 2/2] x86: add
+	 pte_set_flags/clear_flags	 forpteflag manipulation
+References: <4978F216.5040803@goop.org> <49798A5E.76E4.0078.0@novell.com>
+ <497A3117.2070809@goop.org>
+In-Reply-To: <497A3117.2070809@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc linux-usb)
+>>> Jeremy Fitzhardinge <jeremy@goop.org> 23.01.09 22:05 >>>
+>Jan Beulich wrote:
+>> I think a comment (or event a BUG_ON()) should be added here to make
+>> clear that this absolutely must not be used to toggle the present bit. I
+>> even view toggling _PAGE_PSE as dangerous this way.
+>>
+>> And alternative would be to make these macros and #undef them (or keep
+>> them inline functions but add destructive #define-s) after all their users.
+>>   
+>
+>I don't see any particular problem with changing PSE or even Present 
+>with these functions; they don't operate on live in-memory ptes, so its 
+>not like they could ever be used to modify a pte unless followed with 
+>some kind of set_pte operation.  It is unwise to change any pte flag 
+>without knowing what you're doing (though P or PSE would probably have 
+>less subtle effects than some of the others).
 
-On Mon, 19 Jan 2009 15:20:13 -0500 "Thomas Tuttle" <linux-kernel@ttuttle.net> wrote:
+Whether a pte is live doesn't matter here: If you change P on Xen, the
+frame number representation *must* change from/to PFN to/from MFN.
+In no case (other than iomem pages) is it allowed to flip just this bit.
 
-> Hi.
-> 
-> I've got a Lenovo X200 with an Ericsson F3507g Mobile Broadband Module
-> (a 3G cellular data card with built-in GPS), which uses the cdc_acm
-> driver.  I've experienced a couple of problems with it.  First, it
-> tends to hang the system after I've been using it for a while.  This
-> occurs whenever it's sending a lot of data to/from the computer,
-> whether it's a PPP connection or a GPS data stream.  I'm not sure how
-> to debug this; the Caps Lock light isn't flashing, so I'm not sure if
-> it's a panic or just a hang.  Second, if I read one of the TTYs using
-> "cat", I get a ton of blank lines.  To make any sense of the data
-> stream, I have to do cat /dev/ttyACM0 | grep -v "^$".
-> 
-> If anyone could help me debug this, I'd be greatly appreciative.
-> 
-> Thanks,
-> 
-> Thomas Tuttle
+Jan
+
