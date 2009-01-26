@@ -1,113 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZAZVJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZAZVQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbZAZVJa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 16:09:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754417AbZAZVJP
+	id S1753827AbZAZVQx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 16:16:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751999AbZAZVQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 16:09:15 -0500
-Received: from ns1.suse.de ([195.135.220.2]:36135 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbZAZVJO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 16:09:14 -0500
-Date: Mon, 26 Jan 2009 13:07:30 -0800
-From: Greg KH <gregkh@suse.de>
-To: Jesper Krogh <jesper@krogh.cc>, netdev@vger.kernel.org
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.27.13
-Message-ID: <20090126210730.GB24164@suse.de>
-References: <20090125004823.GA6711@kroah.com> <497E16A0.50607@krogh.cc>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <497E16A0.50607@krogh.cc>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 26 Jan 2009 16:16:44 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35184 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752003AbZAZVQo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 16:16:44 -0500
+Date: Mon, 26 Jan 2009 21:16:49 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, sgrubb@redhat.com, esandeen@redhat.com,
+       sukadev@us.ibm.com
+Subject: Re: tty: tty_open can return to userspace holding tty_mutex
+Message-ID: <20090126211649.0c572376@lxorguk.ukuu.org.uk>
+In-Reply-To: <1233003761.9850.14.camel@localhost.localdomain>
+References: <1233003761.9850.14.camel@localhost.localdomain>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 09:01:36PM +0100, Jesper Krogh wrote:
-> Greg KH wrote:
->> We (the -stable team) are announcing the release of the 2.6.27.13
->> kernel.
->> It contains a wide range of bugfixes, and all users of the 2.6.27 kernel
->> series are strongly encouraged to upgrade.
->> I'll also be replying to this message with a copy of the patch between
->> 2.6.27.12 and 2.6.27.13
->
-> Hi.
->
-> I'm getting some e1000 noise on a 2.6.27.6, I search the log up to .13 but 
-> couldn't find any log messsage that looked like it fixed it.
->
->
-> [862734.501786] ------------[ cut here ]------------
-> [862734.501793] WARNING: at net/sched/sch_generic.c:219 
-> dev_watchdog+0x1f8/0x210()
-> [862734.501795] NETDEV WATCHDOG: eth0 (e1000): transmit timed out
+On Mon, 26 Jan 2009 16:02:40 -0500
+Eric Paris <eparis@redhat.com> wrote:
 
-I've been getting a lot of reports about this as well.  Did it show up
-in 2.6.27.6?
+> __tty_open could return (to userspace) holding the tty_mutex thanks to a
+> regression introduced by 4a2b5fddd53b80efcb3266ee36e23b8de28e761a.  This was
+> found by bisecting an fsfuzzer problem.  Admittedly I have no idea how it
+> managed to tickle this 100% reliably, but it is clearly a regression and
+> when hit leaves the box in a completely unusable state.  This patch lets
+> the fsfuzzer test complete every time.
 
-Netdev developers, any ideas of what would be causing this?
-
-thanks,
-
-greg k-h
-
-(rest of the oops message below...)
-
-
-> [862734.501796] Modules linked in: af_packet nfsd auth_rpcgss exportfs 
-> autofs4 nfs lockd sunrpc ipv6 bonding iptable_filter ip_tables x_tables 
-> lm87 adm1026 hwmon_vid ipmi_devintf ipmi_si ipmi_msghandler parport_pc lp 
-> parport loop cfi_cmdset_0001 cfi_util jedec_probe cfi_probe psmouse 
-> gen_probe serio_raw ck804xrom i2c_nforce2 mtd pcspkr chipreg shpchp 
-> pci_hotplug i2c_core k8temp map_funcs joydev button evdev ext3 jbd mbcache 
-> ide_cd_mod sr_mod cdrom sg usb_storage libusual ata_generic libata sd_mod 
-> dock usbhid hid mptsas mptscsih qla2xxx mptbase scsi_transport_fc amd74xx 
-> scsi_transport_sas ehci_hcd e1000 ohci_hcd scsi_mod ide_core usbcore 
-> thermal processor fan thermal_sys fuse
-> [862734.501837] Pid: 0, comm: swapper Not tainted 2.6.27.6 #2
-> [862734.501839]
-> [862734.501840] Call Trace:
-> [862734.501842]  <IRQ>  [<ffffffff80237a7d>] warn_slowpath+0xcd/0x110
-> [862734.501853]  [<ffffffff8022cc3d>] enqueue_task_fair+0x10d/0x110
-> [862734.501857]  [<ffffffff8033b6fe>] rb_insert_color+0xde/0x110
-> [862734.501859]  [<ffffffff8022ab83>] enqueue_task+0x13/0x30
-> [862734.501861]  [<ffffffff8022adf7>] source_load+0x37/0x70
-> [862734.501866]  [<ffffffff803370aa>] __next_cpu+0x1a/0x30
-> [862734.501868]  [<ffffffff8022e093>] find_busiest_group+0x193/0x810
-> [862734.501871]  [<ffffffff8033c76e>] strlcpy+0x4e/0x80
-> [862734.501873]  [<ffffffff803e7340>] dev_watchdog+0x0/0x210
-> [862734.501875]  [<ffffffff803e7538>] dev_watchdog+0x1f8/0x210
-> [862734.501878]  [<ffffffff8024165b>] run_timer_softirq+0x1bb/0x230
-> [862734.501881]  [<ffffffff8023cf46>] __do_softirq+0x76/0xf0
-> [862734.501885]  [<ffffffff8020f17b>] profile_pc+0x3b/0x80
-> [862734.501888]  [<ffffffff8020d51c>] call_softirq+0x1c/0x30
-> [862734.501890]  [<ffffffff8020ee45>] do_softirq+0x35/0x70
-> [862734.501894]  [<ffffffff8021ce80>] smp_apic_timer_interrupt+0x80/0xc0
-> [862734.501897]  [<ffffffff8020cf66>] apic_timer_interrupt+0x66/0x70
-> [862734.501898]  <EOI>  [<ffffffff802133e7>] default_idle+0x27/0x40
-> [862734.501904]  [<ffffffff8021360a>] c1e_idle+0xba/0x100
-> [862734.501906]  [<ffffffff8020adf4>] cpu_idle+0x44/0xb0
-> [862734.501907]
-> [862734.501909] ---[ end trace 8fad5965106e3cc6 ]---
->
-> Complete dmesg here:
-> http://krogh.cc/~jesper/dmesg-2.6.27.6.txt
->
-> The system is running with bonded interfaces with  (lspi out put)
-> 06:01.0 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
-> Controller (Copper) (rev 03)
-> 06:01.1 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
-> Controller (Copper) (rev 03)
-> 06:02.0 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
-> Controller (Copper) (rev 03)
-> 06:02.1 Ethernet controller: Intel Corporation 82546EB Gigabit Ethernet 
-> Controller (Copper) (rev 03)
->
-> The system is still "fully functional", and I havent notiched anything 
-> wrong, but there sure is a lot of link ups and downs on that bond.
->
-> -- 
-> Jesper
+Well spotted, and will go fix now. I think your fsfuzzer created a device
+node for an out of range tty subdevice
