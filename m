@@ -1,232 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbZA0Tgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZA0ThE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756734AbZA0Tgm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 14:36:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZA0Tgd
+	id S1756039AbZA0ThE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 14:37:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbZA0Tgv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 14:36:33 -0500
-Received: from cmpxchg.org ([85.214.51.133]:49349 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755851AbZA0Tgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 14:36:32 -0500
-Date: Tue, 27 Jan 2009 20:34:34 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-Subject: [RFC v6] wait: prevent exclusive waiter starvation
-Message-ID: <20090127193434.GA19673@cmpxchg.org>
-References: <20090118023211.GA14539@redhat.com> <20090120203131.GA20985@cmpxchg.org> <20090121143602.GA16584@redhat.com> <20090121213813.GB23270@cmpxchg.org> <20090122202550.GA5726@redhat.com> <20090123095904.GA22890@cmpxchg.org> <20090123113541.GB12684@redhat.com> <20090123133050.GA19226@redhat.com> <20090126215957.GA3889@cmpxchg.org> <20090127032359.GA17359@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090127032359.GA17359@redhat.com>
+	Tue, 27 Jan 2009 14:36:51 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:33275 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756762AbZA0Tgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 14:36:50 -0500
+Message-ID: <497F6257.4070101@krogh.cc>
+Date: Tue, 27 Jan 2009 20:36:55 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+CC: Greg KH <gregkh@suse.de>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "e1000-devel@lists.sourceforge.net" 
+	<e1000-devel@lists.sourceforge.net>
+Subject: Re: Linux 2.6.27.13
+References: <20090125004823.GA6711@kroah.com> <497E16A0.50607@krogh.cc> <20090126210730.GB24164@suse.de> <F169D4F5E1F1974DBFAFABF47F60C10A1C2250D0@orsmsx507.amr.corp.intel.com>
+In-Reply-To: <F169D4F5E1F1974DBFAFABF47F60C10A1C2250D0@orsmsx507.amr.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 04:23:59AM +0100, Oleg Nesterov wrote:
-> On 01/26, Johannes Weiner wrote:
-> >
-> > Another iteration.  I didn't use a general finish_wait_exclusive() but
-> > a version of this function that just returns whether we were woken
-> > through the queue or not.
+Brandeburg, Jesse wrote:
+> Greg KH wrote:
+>> On Mon, Jan 26, 2009 at 09:01:36PM +0100, Jesper Krogh wrote:
+>>> Greg KH wrote:
+>>>> We (the -stable team) are announcing the release of the 2.6.27.13
+>>>> kernel. It contains a wide range of bugfixes, and all users of the
+>>>> 2.6.27 kernel series are strongly encouraged to upgrade.
+>>>> I'll also be replying to this message with a copy of the patch
+>>>> between 
+>>>> 2.6.27.12 and 2.6.27.13
+>>> Hi.
+>>>
+>>> I'm getting some e1000 noise on a 2.6.27.6, I search the log up to
+>>> .13 but couldn't find any log messsage that looked like it fixed it.
+>>>
+>>>
+>>> [862734.501786] ------------[ cut here ]------------
+>>> [862734.501793] WARNING: at net/sched/sch_generic.c:219
+>>> dev_watchdog+0x1f8/0x210() [862734.501795] NETDEV WATCHDOG: eth0
+>>> (e1000): transmit timed out 
+>> I've been getting a lot of reports about this as well.  Did it show up
+>> in 2.6.27.6?
+>>
+>> Netdev developers, any ideas of what would be causing this?
 > 
-> But if your helper (finish_wait_woken) returns true, we always need
-> to wakeup the next waiter, or we don't need to use it. So why not
-> place the wakeup in the helper itself?
-
-Good point.
-
-> > --- a/include/linux/wait.h
-> > +++ b/include/linux/wait.h
-> > @@ -333,16 +333,20 @@ do {									\
-> >  	for (;;) {							\
-> >  		prepare_to_wait_exclusive(&wq, &__wait,			\
-> >  					TASK_INTERRUPTIBLE);		\
-> > -		if (condition)						\
-> > +		if (condition) {					\
-> > +			finish_wait(&wq, &__wait);			\
-> >  			break;						\
-> > +		}							\
-> >  		if (!signal_pending(current)) {				\
-> >  			schedule();					\
-> >  			continue;					\
-> >  		}							\
-> >  		ret = -ERESTARTSYS;					\
-> > +		if (finish_wait_woken(&wq, &__wait))			\
-> > +			__wake_up_common(&wq, TASK_INTERRUPTIBLE,	\
+> no immediate idea, but a quick test to help isolate which functionality
+> could be causing problems is to disable TSO on all four interfaces using
+> ethtool.
 > 
-> No, we can't use __wake_up_common() without wq->lock.
+> It could be that GSO is somehow playing into this as well, but I don't
+> know why (you could disable it with ethtool too).
+> 
+> It could be unrelated but I've noticed that TCP window size can grow much
+> larger now than it used to (especially talking to LRO enabled clients) 
+> and this might cause some kind of an overflow in the TCP transmit
+> offloading hardware in the e1000 parts.
+> 
+> 
+>>> Complete dmesg here:
+>>> http://krogh.cc/~jesper/dmesg-2.6.27.6.txt
+>>>
+>>> The system is running with bonded interfaces with  (lspci output)
+>>> 06:01.0 Ethernet controller: Intel Corporation 82546EB Gigabit
+>>> Ethernet Controller (Copper) (rev 03) 06:01.1 Ethernet controller:
+>>> Intel Corporation 82546EB Gigabit Ethernet Controller (Copper) (rev
+>>> 03) 06:02.0 Ethernet controller: Intel Corporation 82546EB Gigabit
+>>> Ethernet Controller (Copper) (rev 03) 06:02.1 Ethernet controller:
+>>> Intel Corporation 82546EB Gigabit Ethernet Controller (Copper) (rev
+>>> 03)   
+>>>
+>>> The system is still "fully functional", and I havent notiched
+>>> anything wrong, but there sure is a lot of link ups and downs on
+>>> that bond. 
+> 
+> in your log I saw one tx timeout for each interface, one first one by itself
+> and then several more all within a few minutes, but then no more for
+> a really long time.
+> 
+> My first reaction is to ask you what test you're running, and ask you to
+> run the e1000_dump code (see google) to dump the tx descriptor rings at 
+> the time of failure.
+> 
+> I can get you that code with updates if you're willing to test, but 
+> it might take a couple of days.
 
-Whoops.  Should have noticed that, sorry.
+I would love to have it at hand, but it is a production system, so it'll 
+be upgraded to 2.6.27.latest at next reboot. So It should be working 
+with that one.
 
-Okay, number six.  I renamed the helper to abort_exclusive_wait().
-It does the wake up with __wake_up_locked() under the waitqueue lock.
+Jesper
 
-I also hope that the changelog is now, unlike the previous one,
-intelligible.
-
-	Hannes
-
----
-With exclusive waiters, every process woken up through the wait queue
-must ensure that the next waiter down the line is woken when it has
-finished.
-
-Interruptible waiters don't do that when aborting due to a signal.
-And if an aborting waiter is concurrently woken up through the
-waitqueue, noone will ever wake up the next waiter.
-
-This has been observed with __wait_on_bit_lock() used by
-lock_page_killable(): the first contender on the queue was aborting
-when the actual lock holder woke it up concurrently.  The aborted
-contender didn't acquire the lock and therefor never did an unlock
-followed by waking up the next waiter.
-
-Add abort_exclusive_wait() which removes the process' wait descriptor
-from the waitqueue, iff still queued, or wakes up the next waiter
-otherwise.  It does so under the waitqueue lock.  Racing with a wake
-up means the aborting process is either already woken (removed from
-the queue) and will wake up the next waiter, or it will remove itself
-from the queue and the concurrent wake up will apply to the next
-waiter after it.
-
-Use abort_exclusive_wait() in __wait_event_interruptible_exclusive()
-and __wait_on_bit_lock() when they were interrupted by other means
-than a wake up through the queue.
-
-Reported-by: Chris Mason <chris.mason@oracle.com>
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Mentored-by: Oleg Nesterov <oleg@redhat.com>
----
- include/linux/wait.h |    7 ++++-
- kernel/wait.c        |   57 +++++++++++++++++++++++++++++++++++++++++++------
- 2 files changed, 55 insertions(+), 9 deletions(-)
-
-diff --git a/include/linux/wait.h b/include/linux/wait.h
-index ef609f8..57bfced 100644
---- a/include/linux/wait.h
-+++ b/include/linux/wait.h
-@@ -333,16 +333,18 @@ do {									\
- 	for (;;) {							\
- 		prepare_to_wait_exclusive(&wq, &__wait,			\
- 					TASK_INTERRUPTIBLE);		\
--		if (condition)						\
-+		if (condition) {					\
-+			finish_wait(&wq, &__wait);			\
- 			break;						\
-+		}							\
- 		if (!signal_pending(current)) {				\
- 			schedule();					\
- 			continue;					\
- 		}							\
- 		ret = -ERESTARTSYS;					\
-+		abort_exclusive_wait(&wq, &__wait);			\
- 		break;							\
- 	}								\
--	finish_wait(&wq, &__wait);					\
- } while (0)
- 
- #define wait_event_interruptible_exclusive(wq, condition)		\
-@@ -431,6 +433,7 @@ extern long interruptible_sleep_on_timeout(wait_queue_head_t *q,
- void prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state);
- void prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state);
- void finish_wait(wait_queue_head_t *q, wait_queue_t *wait);
-+void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait);
- int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
- int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
- 
-diff --git a/kernel/wait.c b/kernel/wait.c
-index cd87131..21f88c4 100644
---- a/kernel/wait.c
-+++ b/kernel/wait.c
-@@ -91,6 +91,15 @@ prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
- }
- EXPORT_SYMBOL(prepare_to_wait_exclusive);
- 
-+/*
-+ * finish_wait - clean up after waiting in a queue
-+ * @q: waitqueue waited on
-+ * @wait: wait descriptor
-+ *
-+ * Sets current thread back to running state and removes
-+ * the wait descriptor from the given waitqueue if still
-+ * queued.
-+ */
- void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
- {
- 	unsigned long flags;
-@@ -117,6 +126,38 @@ void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
- }
- EXPORT_SYMBOL(finish_wait);
- 
-+/*
-+ * abort_exclusive_wait - abort exclusive waiting in a queue
-+ * @q: waitqueue waited on
-+ * @wait: wait descriptor
-+ *
-+ * Sets current thread back to running state and removes
-+ * the wait descriptor from the given waitqueue if still
-+ * queued.
-+ *
-+ * Wakes up the next waiter if the caller is concurrently
-+ * woken up through the queue.
-+ */
-+void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait)
-+{
-+	unsigned long flags;
-+
-+	__set_current_state(TASK_RUNNING);
-+	spin_lock_irqsave(&q->lock, flags);
-+	if (list_empty(&wait->task_list))
-+		list_del_init(&wait->task_list);
-+	/*
-+	 * If we were woken through the waitqueue (waker removed
-+	 * us from the list) we must ensure the next waiter down
-+	 * the line is woken up.  The callsite will not do it as
-+	 * it didn't finish waiting successfully.
-+	 */
-+	else if (waitqueue_active(q))
-+		__wake_up_locked(q, TASK_INTERRUPTIBLE);
-+	spin_unlock_irqrestore(&q->lock, flags);
-+}
-+EXPORT_SYMBOL(finish_wait_woken);
-+
- int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
- {
- 	int ret = default_wake_function(wait, mode, sync, key);
-@@ -177,17 +218,19 @@ int __sched
- __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
- 			int (*action)(void *), unsigned mode)
- {
--	int ret = 0;
--
- 	do {
-+		int ret;
-+
- 		prepare_to_wait_exclusive(wq, &q->wait, mode);
--		if (test_bit(q->key.bit_nr, q->key.flags)) {
--			if ((ret = (*action)(q->key.flags)))
--				break;
--		}
-+		if (!test_bit(q->key.bit_nr, q->key.flags))
-+			continue;
-+		if (!(ret = action(q->key.flags)))
-+			continue;
-+		abort_exclusive_wait(wq, &q->wait);
-+		return ret;
- 	} while (test_and_set_bit(q->key.bit_nr, q->key.flags));
- 	finish_wait(wq, &q->wait);
--	return ret;
-+	return 0;
- }
- EXPORT_SYMBOL(__wait_on_bit_lock);
- 
 -- 
-1.6.0.3
-
+Jesper
