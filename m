@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbZA0N0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZA0N0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbZA0N0V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 08:26:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZA0N0N
+	id S1755793AbZA0N0v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 08:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753306AbZA0N0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 08:26:13 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:49731 "EHLO e1.ny.us.ibm.com"
+	Tue, 27 Jan 2009 08:26:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57148 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753255AbZA0N0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 08:26:12 -0500
-Subject: Re: [PATCH 11/20] fs/jfs: return f_fsid for statfs(2), v3
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, coly.li@suse.de
-In-Reply-To: <4975F653.2000109@suse.de>
-References: <4975F653.2000109@suse.de>
-Content-Type: text/plain
-Date: Tue, 27 Jan 2009 07:26:06 -0600
-Message-Id: <1233062766.3779.3.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	id S1753234AbZA0N0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 08:26:42 -0500
+Date: Tue, 27 Jan 2009 14:26:26 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mandeep Singh Baines <msb@google.com>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       rientjes@google.com, mbligh@google.com, thockin@google.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v4] softlockup: remove hung_task_check_count
+Message-ID: <20090127132626.GH23121@elte.hu>
+References: <1232991701.4863.222.camel@laptop> <20090127003055.GA21269@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090127003055.GA21269@google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
-Please take this version of the jfs patch, rather than the one you
-currently have in the -mm tree (fs-jfs-return-f_fsid-for-statfs2.patch).
 
-Thanks,
-Shaggy
+* Mandeep Singh Baines <msb@google.com> wrote:
 
-On Wed, 2009-01-21 at 00:05 +0800, Coly Li wrote:
-> This patch makes jfs return f_fsid info for statfs(2). By Andreas' suggestion, this patch populates
-> a persistent f_fsid between boots/mounts with help of on-disk uuid record.
-> 
-> Signed-off-by: Coly Li <coly.li@suse.de>
-> Acked-By: Dave Kleikamp <shaggy@austin.ibm.com>
-> ---
->  fs/jfs/super.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/jfs/super.c b/fs/jfs/super.c
-> index b37d1f7..6ce1aac 100644
-> --- a/fs/jfs/super.c
-> +++ b/fs/jfs/super.c
-> @@ -29,6 +29,7 @@
->  #include <linux/posix_acl.h>
->  #include <linux/buffer_head.h>
->  #include <linux/exportfs.h>
-> +#include <linux/crc32.h>
->  #include <asm/uaccess.h>
->  #include <linux/seq_file.h>
-> 
-> @@ -168,7 +169,10 @@ static int jfs_statfs(struct dentry *dentry, struct kstatfs *buf)
->  	buf->f_files = maxinodes;
->  	buf->f_ffree = maxinodes - (atomic_read(&imap->im_numinos) -
->  				    atomic_read(&imap->im_numfree));
-> -
-> +	buf->f_fsid.val[0] = (u32)crc32_le(0, sbi->uuid, sizeof(sbi->uuid)/2);
-> +	buf->f_fsid.val[1] = (u32)crc32_le(0, sbi->uuid + sizeof(sbi->uuid)/2,
-> +					sizeof(sbi->uuid)/2);
-> +
->  	buf->f_namelen = JFS_NAME_MAX;
->  	return 0;
->  }
-> 
--- 
-David Kleikamp
-IBM Linux Technology Center
+> The design was proposed by Frédéric Weisbecker. Peter Zijlstra suggested 
+> the use of RCU.
 
+ok, this looks _much_ cleaner.
+
+One question:
+
+> -	read_lock(&tasklist_lock);
+> +	rcu_read_lock();
+>  	do_each_thread(g, t) {
+> -		if (!--max_count)
+> +		if (need_resched())
+>  			goto unlock;
+
+Isnt it dangerous to skip a check just because we got marked for 
+reschedule? Since it runs so rarely it could by accident be preempted and 
+we'd not get any checking done for a long time.
+
+	Ingo
