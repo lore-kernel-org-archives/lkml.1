@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbZA0Jix@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZA0JtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641AbZA0Jix (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 04:38:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZA0Jio
+	id S1753305AbZA0JtS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 04:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZA0JtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 04:38:44 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:59481 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbZA0Jin (ORCPT
+	Tue, 27 Jan 2009 04:49:07 -0500
+Received: from mail-ausfall.charite.de ([193.175.70.131]:52529 "EHLO
+	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751124AbZA0JtG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 04:38:43 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=SV9JfgsI3KszQi+SFpeQKTHRSSUy7FFB4TygN/iJVLQ0dcjFf5UGNAelXSWVL18z7
-	IMQHx+MnePQ3twOE4o9Iw==
-Date: Tue, 27 Jan 2009 01:37:55 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, balbir@linux.vnet.ibm.com,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Torvalds <torvalds@linux-foundation.org>,
-       Arve Hj?nnev?g <arve@android.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>, Paul Menage <menage@google.com>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-In-Reply-To: <20090127093105.GB2646@ioremap.net>
-Message-ID: <alpine.DEB.2.00.0901270134360.20070@chino.kir.corp.google.com>
-References: <20090127155825.D476.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.2.00.0901262325320.13157@chino.kir.corp.google.com> <20090127164238.D479.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.2.00.0901262350110.14525@chino.kir.corp.google.com>
- <20090127093105.GB2646@ioremap.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 27 Jan 2009 04:49:06 -0500
+X-Greylist: delayed 805 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Jan 2009 04:49:06 EST
+Date: Tue, 27 Jan 2009 10:35:33 +0100
+From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+To: linux-kernel@vger.kernel.org
+Cc: Udo Wolter <Udo.Wolter@charite.de>, cf@charite.de
+Subject: sync-Regression in 2.6.28.2?
+Message-ID: <20090127093533.GB7037@charite.de>
+Mail-Followup-To: linux-kernel@vger.kernel.org,
+	Udo Wolter <Udo.Wolter@charite.de>, cf@charite.de
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.25.146.75
-X-GMailtapped: rientjes
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009, Evgeniy Polyakov wrote:
+I recently installed 2.6.28.2 on our postfix/dovecot-based
+mailboxserver. Previously, 2.6.28 and 2.6.28.1 have been running there
+without a hitch.
 
-> /dev/mem_notify is a great idea, but please do not limit existing
-> oom-killer in its ability to do the job and do not rely on application's
-> ability to send a SIGKILL which will not kill tasks in unkillable state
-> contrary to oom-killer.
-> 
+Now with 2.6.28.2 I had two major lockups: All writes to the users'
+Maildirs (on ext4) would stall, the load would rise, "sync" would never
+return.
 
-You're missing the point, /dev/mem_notify would notify userspace of lowmem 
-situations and allow it to respond appropriately in any number of ways 
-before an oom condition exists.
+I had to "reboot -f -n" to get the machine back. All hanging processes
+were unkillable, even with kill -9.
 
-When the system (or cpuset, memory controller, etc) is oom, userspace can 
-choose to defer to the oom killer so that it may kill a task that would 
-most likely lead to future memory freeing with access to memory reserves.
+There was NOTHING in dmesg, nothing in the log either. No indication
+of filesystem errors or anything.
 
-There is no additional oom killer limitation imposed here, nor can the oom 
-killer kill a task hung in D state any better than userspace.
+Lookin at the
+http://www.eu.kernel.org/pub/linux/kernel/v2.6/ChangeLog-2.6.28.2
+I see changes to 
 
-Thanks.
+fs: sys_sync fix
+fs: sync_sb_inodes fix
+fs: remove WB_SYNC_HOLD
+
+Since the mailserver uses sync() extensively (both dovecot and
+postfix), maybe that's the culprit?
+
+Note: I'm really just guessing here!
+Back to 2.6.28.1 for now.
+
+-- 
+Ralf Hildebrandt                                Ralf.Hildebrandt@charite.de
+Charite - Universitätsmedizin Berlin            Tel.  +49 (0)30-450 570-155
+Geschäftsbereich IT | Abt. Netzwerk             Fax.  +49 (0)30-450 570-962
+Hindenburgdamm 30 | 12200 Berlin
