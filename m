@@ -1,97 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbZA0HZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753889AbZA0H0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754037AbZA0HZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 02:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZA0HZm
+	id S1753889AbZA0H0X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 02:26:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZA0H0O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 02:25:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50291 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751213AbZA0HZl (ORCPT
+	Tue, 27 Jan 2009 02:26:14 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:40023 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752145AbZA0H0O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 02:25:41 -0500
-Date: Mon, 26 Jan 2009 23:25:19 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
-       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090126232519.44f2943c.akpm@linux-foundation.org>
-In-Reply-To: <200901271735.12034.rusty@rustcorp.com.au>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<200901261711.43943.rusty@rustcorp.com.au>
-	<20090125230130.bcdab2e5.akpm@linux-foundation.org>
-	<200901271735.12034.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Jan 2009 02:26:14 -0500
+Date: Tue, 27 Jan 2009 12:56:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Torvalds <torvalds@linux-foundation.org>,
+       Arve Hj?nnev?g <arve@android.com>, Evgeniy Polyakov <zbr@ioremap.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Linus@smtp1.linux-foundation.org,
+       Paul Menage <menage@google.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Message-ID: <20090127072607.GM504@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090126195431.GC504@balbir.in.ibm.com> <20090126195622.1d5bf488@lxorguk.ukuu.org.uk> <20090127155825.D476.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090127155825.D476.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009 17:35:11 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-01-27 16:02:34]:
 
-> On Monday 26 January 2009 17:31:30 Andrew Morton wrote:
-> > On Mon, 26 Jan 2009 17:11:43 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > 
-> > > On Saturday 24 January 2009 18:45:37 Andrew Morton wrote:
-> > > > Pity the poor reader who comes along trying to work out why this exists.
-> > 
-> > (chirp, chirp)
+> Hi
 > 
-> I disagree.  It's simple; we create a workqueue and we use it.  There's no
-> confusion here.
-
-Reader's first and most important question is "why does this exist".
-
-> > > None of these options are appealing...
+> > > > As Alan Cox suggested/wondered in this thread, 
+> > > > http://lkml.org/lkml/2009/1/12/235 , this is a container group based approach 
+> > > > to override the oom killer selection without losing all the benefits of the 
+> > > > current oom killer heuristics and oom_adj interface.
+> > > > 
+> > > > It adds a tunable oom.victim to the oom cgroup. The oom killer will kill the 
+> > > > process using the usual badness value but only within the cgroup with the 
+> > > > maximum value for oom.victim before killing any process from a cgroup with a 
+> > > > lesser oom.victim number. Oom killing could be disabled by setting 
+> > > > oom.victim=0.
+> > > 
+> > > Looking at the patch, I wonder if it is time for user space OOM
+> > > notifications that were discussed during the containers mini-summit.
+> > > The idea is to inform user space about OOM's and let user space take
+> > > action, if no action is taken, the default handler kicks in.
 > > 
-> > Can we try harder please?  10 screenfuls of kernel threads in the ps
-> > output is just irritating.
-> > 
-> > How about banning the use of work_on_cpu() from schedule_work()
-> > handlers and then fixing that driver somehow?
+> > The OLPC folks (Marcelo I believe) posted code for this and I believe
+> > OLPC is using this functionality internally so that under memory pressure
+> > (before we actually hit OOM) programs can respond by doing stuff like
+> > evicting caches.
 > 
-> Again, that's how we got here in the first place.  I didn't realize the
-> twisty path by which the acpi cpufreq code could be called.  And there
-> may well be others.  So I want work_on_cpu to be completely generic.
 
-But it isn't generic.  The patch just moved the deadlock from one queue
-to another.  Making work_on_cu() truly generic is quite hard!
+I did see the patches on linux-mm, but a more generic cgroup patch
+would help both cases, in the absence of cgroups, the default cgroup
+will contain all tasks and can carry out the handling.
 
-> But it's a general comment about fixing a general issue.  The currently
-> known case is not directly relevent; that it can happen and it's restricting
-> the use of this otherwise-general API is.
+> Confused.
+> 
+> As far as I know, people want the method of flexible cache treating.
+> but oom seems less flexible than userland notification.
+> 
+> Why do you think notification is bad?
 
-I think we should switch acpi-cpufreq to smp_call_function(), revert
-this stuff and ban the calling of work_on_cpu() under locks.
+I did not find Alan's message confusing or stating that notification
+was bad, but I might be misreading it.
 
-> A little confused at all this vitriol,
-
-Well let's see.
-
-- it was badly changelogged
-
-- it was badly commented
-
-- it's slow.  In many ways, including the unnecessary serialisation
-  of each cross-cpu call in acpi-cpufreq.
-
-- it consumes a tremendous amount of resources just to fix some
-  acpi locking snafu
-
-- it adds yet another zillion kernel threads
-
-- it's still deadlockable
-
-- it got sent to Linus while still under active discussion
-
-- and it got merged
-
-- Oleg is the usual workqueue developer and wasn't even cc'ed.
-
-- I am the usual workqueue reviewer/merger (and would prefer to remain
-  thus, please) and I wasn't cc'ed either.
-
+-- 
+	Balbir
