@@ -1,117 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZA0Btk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZA0B70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754596AbZA0Btk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 20:49:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZA0Btc
+	id S1754296AbZA0B70 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 20:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZA0B7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 20:49:32 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33219 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751959AbZA0Btb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 20:49:31 -0500
-Date: Tue, 27 Jan 2009 02:46:51 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: [RFC][PATCH] create workqueue threads only when needed
-Message-ID: <20090127014651.GA13861@redhat.com>
-References: <20090127001708.GA4815@nowhere> <20090126162807.1131c777.akpm@linux-foundation.org>
+	Mon, 26 Jan 2009 20:59:19 -0500
+Received: from rv-out-0506.google.com ([209.85.198.229]:19302 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954AbZA0B7S convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 20:59:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=S5oZhHIYMjLOlkND4OQbWifDogTEpxku2099h737kHMrDwOIFaCgVp5eH1AH4MifE2
+         wdV5HbRODsWwjcv56s4VBlsYU6sv2ViL3ftCIBeuYZcPcqq39M33zotFDNIUQh/zqaep
+         0WSaWzZZ57cJs5Y15BcoGRzuG7XMVh3LDi5W0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090126162807.1131c777.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Tue, 27 Jan 2009 09:59:17 +0800
+Message-ID: <b6a2187b0901261759q67b09a95v530127254b807042@mail.gmail.com>
+Subject: multiple definition of `debugfs_create_size_t' - please revert 
+	8adb711f3668b034e7b956fac951ed08b53e0d55
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker <fweisbec@gmail.com> wrote:
->
->  static void insert_work(struct cpu_workqueue_struct *cwq,
->  			struct work_struct *work, struct list_head *head)
->  {
-> -	trace_workqueue_insertion(cwq->thread, work);
-> +	trace_workqueue_insertion(cwq->thread, work, cwq->wq->singlethread);
->
->  	set_wq_data(work, cwq);
->  	/*
-> @@ -148,6 +176,9 @@ static void __queue_work(struct cpu_workqueue_struct *cwq,
->  {
->  	unsigned long flags;
->
-> +	if (!cwq->thread)
-> +		create_wq_thread_late(cwq);
-> +
+Linus,
 
-[...snip...]
+The below commit cause this problem. Reverting it solved the problem.
 
-> +static void create_wq_thread_late_work(struct work_struct *work)
-> +{
-> +	struct late_workqueue_creation_data *l;
-> +	struct cpu_workqueue_struct *cwq;
-> +	int cpu = smp_processor_id();
-> +	int err = 0;
-> +
-> +	l = container_of(work, struct late_workqueue_creation_data, work);
-> +	cwq = l->cwq;
-> +
-> +	if (is_wq_single_threaded(cwq->wq)) {
-> +		err = create_workqueue_thread(cwq, singlethread_cpu);
-> +		start_workqueue_thread(cwq, -1);
-> +	} else {
-> +		err = create_workqueue_thread(cwq, cpu);
-> +		start_workqueue_thread(cwq, cpu);
-> +	}
-> +	WARN_ON_ONCE(err);
-> +	kfree(l);
-> +}
+arch/x86/mm/pat.o: In function `debugfs_create_size_t':
+pat.c:(.text+0x0): multiple definition of `debugfs_create_size_t'
+arch/x86/mm/pageattr.o:(.text+0x0): first defined here
+make[1]: *** [arch/x86/mm/built-in.o] Error 1
+make: *** [arch/x86/mm] Error 2
 
-Let's suppose the workqueue was just created, and cwq->thared == NULL
-on (say) CPU 0.
 
-Then CPU 0 does
+Thanks,
+Jeff.
 
-	queue_work(wq, work1);
-	queue_work(wq, work2);
 
-Both these calls will notice cwq->thread == NULL, both will schedule
-the work wilth ->func = create_wq_thread_late_work.
+commit 8adb711f3668b034e7b956fac951ed08b53e0d55
+Author: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Date:   Tue Jan 20 12:17:28 2009 -0800
 
-The first work correctly creates cwq->thread, the second one creates
-the new thread too and replaces cwq->thread? Now we have two threads
-which run in parallel doing the same work, but the first thread is
-"stealth", no?
+    debugfs: introduce stub for debugfs_create_size_t() when DEBUG_FS=n
 
-> @@ -904,9 +967,12 @@ static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq)
->  	 * checks list_empty(), and a "normal" queue_work() can't use
->  	 * a dead CPU.
->  	 */
-> -	trace_workqueue_destruction(cwq->thread);
-> -	kthread_stop(cwq->thread);
-> -	cwq->thread = NULL;
-> +
-> +	if (cwq->thread) {
-> +		trace_workqueue_destruction(cwq->thread, cwq->wq->singlethread);
-> +		kthread_stop(cwq->thread);
-> +		cwq->thread = NULL;
-> +	}
+    Toralf Förster <toralf.foerster@gmx.de> reported a build failure in
+    the WiMAX stack when CONFIG_DEBUG_FS=n
 
-cleanup_workqueue_thread() has already checked cwq->thread != NULL,
-how can it become NULL ?
+    http://linuxwimax.org/pipermail/wimax/2009-January/000449.html
 
-And let's suppose a user does:
+    This is due to debugfs_create_size_t() missing an stub that returns
+    -ENODEV when the DEBUGFS subsystem is not configured in (like the rest
+    of the debugfs API).
 
-	wq = create_workqueue(...., when_needed => 1);
-	queue_work(wq, some_work);
-	destroy_workqueue(wq);
+    This patch adds said stub.
 
-This can return before create_wq_thread_late() populates the necessary
-cwq->thread. We can destroy/free workqueue with the pending work_structs,
-no?
-
-Oleg.
-
+    Reported-by: Toralf Förster <toralf.foerster@gmx.de>
+    Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
