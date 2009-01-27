@@ -1,76 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZA0QGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZA0QKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbZA0QGn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 11:06:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZA0QGe
+	id S1755704AbZA0QKW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 11:10:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZA0QKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 11:06:34 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46297 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbZA0QGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 11:06:33 -0500
-Subject: Re: [PATCH 11/20] fs/jfs: return f_fsid for statfs(2), v3
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, coly.li@suse.de
-In-Reply-To: <1233062766.3779.3.camel@norville.austin.ibm.com>
-References: <4975F653.2000109@suse.de>
-	 <1233062766.3779.3.camel@norville.austin.ibm.com>
-Content-Type: text/plain
-Date: Tue, 27 Jan 2009 10:06:29 -0600
-Message-Id: <1233072389.3779.82.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Jan 2009 11:10:09 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:49376 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752309AbZA0QKI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 11:10:08 -0500
+Date: Tue, 27 Jan 2009 11:10:07 -0500
+From: Kyle McMartin <kyle@redhat.com>
+To: stable@kernel.org
+Cc: linux-kernel@vger.kernel.org, arjan@linux.intel.com
+Subject: [PATCH stable] resources: skip sanity check of busy resources
+Message-ID: <20090127161007.GG5034@bombadil.infradead.org>
+Reply-To: kyle@infradead.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-27 at 07:26 -0600, Dave Kleikamp wrote:
-> Andrew,
-> Please take this version of the jfs patch, rather than the one you
-> currently have in the -mm tree (fs-jfs-return-f_fsid-for-statfs2.patch).
+From: Arjan van de Ven <arjan@linux.intel.com>
 
-... or would you rather I handle it though the jfs tree and you drop it?
+Impact: reduce false positives in iomem_map_sanity_check()
 
-Shaggy
+Some drivers (vesafb) only map/reserve a portion of a resource.
+If then some other driver comes in and maps the whole resource,
+the current code WARN_ON's. This is not the intent of the checks
+in iomem_map_sanity_check(); rather these checks want to
+warn when crossing *hardware* resources only.
 
-> On Wed, 2009-01-21 at 00:05 +0800, Coly Li wrote:
-> > This patch makes jfs return f_fsid info for statfs(2). By Andreas' suggestion, this patch populates
-> > a persistent f_fsid between boots/mounts with help of on-disk uuid record.
-> > 
-> > Signed-off-by: Coly Li <coly.li@suse.de>
-> > Acked-By: Dave Kleikamp <shaggy@austin.ibm.com>
-> > ---
-> >  fs/jfs/super.c |    6 +++++-
-> >  1 files changed, 5 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/fs/jfs/super.c b/fs/jfs/super.c
-> > index b37d1f7..6ce1aac 100644
-> > --- a/fs/jfs/super.c
-> > +++ b/fs/jfs/super.c
-> > @@ -29,6 +29,7 @@
-> >  #include <linux/posix_acl.h>
-> >  #include <linux/buffer_head.h>
-> >  #include <linux/exportfs.h>
-> > +#include <linux/crc32.h>
-> >  #include <asm/uaccess.h>
-> >  #include <linux/seq_file.h>
-> > 
-> > @@ -168,7 +169,10 @@ static int jfs_statfs(struct dentry *dentry, struct kstatfs *buf)
-> >  	buf->f_files = maxinodes;
-> >  	buf->f_ffree = maxinodes - (atomic_read(&imap->im_numinos) -
-> >  				    atomic_read(&imap->im_numfree));
-> > -
-> > +	buf->f_fsid.val[0] = (u32)crc32_le(0, sbi->uuid, sizeof(sbi->uuid)/2);
-> > +	buf->f_fsid.val[1] = (u32)crc32_le(0, sbi->uuid + sizeof(sbi->uuid)/2,
-> > +					sizeof(sbi->uuid)/2);
-> > +
-> >  	buf->f_namelen = JFS_NAME_MAX;
-> >  	return 0;
-> >  }
-> > 
+This patch skips BUSY resources as suggested by Linus.
+
+Note: having two drivers talk to the same hardware at the same
+time is obviously not optimal behavior, but that's a separate story.
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Kyle McMartin <kyle@redhat.com>
+---
+
+Bug fix for 2.6.28-stable only (relevant iomem_map_sanity_check hadn't
+been added to 2.6.27.) This resolves a fairly nasty boot time WARN
+in acpi ec seen on a number of systems. (RH #480700)
+
+ kernel/resource.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/resource.c b/kernel/resource.c
+index 4337063..e633106 100644
+--- a/kernel/resource.c
++++ b/kernel/resource.c
+@@ -853,6 +853,15 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
+ 		if (PFN_DOWN(p->start) <= PFN_DOWN(addr) &&
+ 		    PFN_DOWN(p->end) >= PFN_DOWN(addr + size - 1))
+ 			continue;
++		/*
++		 * if a resource is "BUSY", it's not a hardware resource
++		 * but a driver mapping of such a resource; we don't want
++		 * to warn for those; some drivers legitimately map only
++		 * partial hardware resources. (example: vesafb)
++		 */
++		if (p->flags & IORESOURCE_BUSY)
++			continue;
++
+ 		printk(KERN_WARNING "resource map sanity check conflict: "
+ 		       "0x%llx 0x%llx 0x%llx 0x%llx %s\n",
+ 		       (unsigned long long)addr,
 -- 
-David Kleikamp
-IBM Linux Technology Center
+1.6.0.6
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
 
