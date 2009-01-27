@@ -1,74 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbZA0Iod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbZA0IpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755213AbZA0Iod (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 03:44:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZA0IoV
+	id S1755222AbZA0IpM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 03:45:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZA0Io4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 03:44:21 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:2278 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754830AbZA0IoU (ORCPT
+	Tue, 27 Jan 2009 03:44:56 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:10825 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752930AbZA0Io4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 03:44:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Nyfwo9+duTVrHePeJNON2Wrowwn+h/2gUPcxjnD7t2gkFrYw/eGul8peyMBKTO8tAm
-         wgKcNTFfpJsHSHOrEYrsLXQ/KkOm4hlmcSNOoWat5Aufzn5msFGLBEJFyQ7awfoyEFZA
-         Levna1iztBzmNtwleePS/9M/ezhMMeD342wfU=
-Date: Tue, 27 Jan 2009 11:49:56 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kyle McMartin <kyle@infradead.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Bartelmus <lirc@bartelmus.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] export get_task_comm()
-Message-ID: <20090127084956.GA8416@x200.localdomain>
-References: <20090120071641.B0A3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <AuEeLWHZjFB@christoph> <20090128140615.D464.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090126211655.c7287768.akpm@linux-foundation.org> <20090127051919.GA5034@bombadil.infradead.org> <20090126212615.2658b29e.akpm@linux-foundation.org> <20090126212918.d4770115.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090126212918.d4770115.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 27 Jan 2009 03:44:56 -0500
+Date: Tue, 27 Jan 2009 09:44:45 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Rufus & Azrael <rufus-azrael@numericable.fr>
+Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Takashi Iwai <tiwai@suse.de>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Subject: Re: [2.6.29-rc2-git2] compilation warnings
+Message-ID: <20090127094445.010c4305@hyperion.delvare>
+In-Reply-To: <497EB491.6080904@numericable.fr>
+References: <497EB491.6080904@numericable.fr>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 09:29:18PM -0800, Andrew Morton wrote:
-> On Mon, 26 Jan 2009 21:26:15 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Tue, 27 Jan 2009 00:19:19 -0500 Kyle McMartin <kyle@infradead.org> wrote:
-> > 
-> > > On Mon, Jan 26, 2009 at 09:16:55PM -0800, Andrew Morton wrote:
-> > > > Ho hum, I suppose so.  I redid the changelog a bit:
-> > > > 
-> > > >    task_struct.comm[] is useful for debugging and driver developers
-> > > >    want to use this information easily.  Direct access to
-> > > >    task_struct.comm[] is a bit racy, so export the official accessor.
-> > > > 
-> > > 
-> > > Maybe lirc should be submitted to staging/ before we go exporting
-> > > symbols for out of tree things... ;-)
-> > 
-> > y:/usr/src/linux-2.6.29-rc2> grep -r 'current->comm' drivers | wc -l
-> > 77
-> > 
-> > :(
-> 
-> It's worth a checkpatch rule, I guess: "direct access to
-> task_struct.comm is racy - use get_task_comm()".
+On Tue, 27 Jan 2009 08:15:29 +0100, Rufus & Azrael wrote:
+> Hi all,
 
-And majority of usages is some debugging printk where nobody cares if ->comm
-corrupted.
+First of all: you really DO NOT WANT to send a message to 4000 people
+asking for an acknowledgment of receipt.
 
-Changelog says is useful for debugging. That's right, tsk->comm is useful
-for debugging, not allocating temporary buffer + get_task_comm().
+> Here are my compilation warnings for fresh 2.6.29-rc2-git2 kernel :
 
-Some ->comm usages are for kernel threads which never change it, for starters.
+Sending 33k of warning messages at once to a generic mailing list is
+unlikely to get you anywhere. If you really want these warnings to get
+fixed, you better find the right person to report each warning.
+Otherwise your report has very little value.
 
-current->comm is always safe, because, current is not executing prctl(2)! 
+> > drivers/i2c/i2c-core.c: In function ‘i2c_new_device’:
+> > drivers/i2c/i2c-core.c:283: attention : ‘i2c_attach_client’ is 
+> > deprecated (declared at include/linux/i2c.h:434)
+> > drivers/i2c/i2c-core.c: In function ‘i2c_del_adapter’:
+> > drivers/i2c/i2c-core.c:646: attention : ‘detach_client’ is deprecated 
+> > (declared at include/linux/i2c.h:154)
+> > drivers/i2c/i2c-core.c: In function ‘i2c_register_driver’:
+> > drivers/i2c/i2c-core.c:713: attention : ‘detach_client’ is deprecated 
+> > (declared at include/linux/i2c.h:154)
+> > drivers/i2c/i2c-core.c: In function ‘__detach_adapter’:
+> > drivers/i2c/i2c-core.c:780: attention : ‘detach_client’ is deprecated 
+> > (declared at include/linux/i2c.h:154)
+> > drivers/i2c/i2c-core.c: Hors de toute fonction :
+> > drivers/i2c/i2c-core.c:876: attention : ‘i2c_attach_client’ is 
+> > deprecated (declared at drivers/i2c/i2c-core.c:827)
+> > drivers/i2c/i2c-core.c:876: attention : ‘i2c_attach_client’ is 
+> > deprecated (declared at drivers/i2c/i2c-core.c:827)
+> > drivers/i2c/i2c-core.c:904: attention : ‘i2c_detach_client’ is 
+> > deprecated (declared at drivers/i2c/i2c-core.c:879)
+> > drivers/i2c/i2c-core.c:904: attention : ‘i2c_detach_client’ is 
+> > deprecated (declared at drivers/i2c/i2c-core.c:879)
 
-I'd say nothing should be done and, heavens forbid, adding this to checkpatch.pl.
+Deprecation warnings are aimed at other developers, users can ignore
+them safely. They will go away as soon as the deprecated symbols are no
+longer used.
+
+-- 
+Jean Delvare
