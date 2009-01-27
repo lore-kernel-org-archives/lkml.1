@@ -1,202 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZA0Xw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbZA0Xz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753514AbZA0Xw0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 18:52:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZA0Xv6
+	id S1753172AbZA0Xz6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 18:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZA0Xzt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 18:51:58 -0500
-Received: from kroah.org ([198.145.64.141]:48567 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752700AbZA0Xv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 18:51:57 -0500
-Date: Tue, 27 Jan 2009 15:49:56 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB patches for 2.6-git
-Message-ID: <20090127234956.GA10673@kroah.com>
+	Tue, 27 Jan 2009 18:55:49 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:62143 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751281AbZA0Xzs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 18:55:48 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=G1ucLxptuIaKIrr/Re5bHQ3yl8JA4jCD8GpeVGsLAaQen9kRCC72wX0kDOTpuOtCD
+	dDd+vGmDIZ/Ji7gqxa9IQ==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090122132133.GA17524@ioremap.net>
+References: <200901211638.23101.knikanth@suse.de>
+	 <200901212054.34929.knikanth@suse.de>
+	 <alpine.DEB.2.00.0901211241040.21080@chino.kir.corp.google.com>
+	 <200901221042.30957.knikanth@suse.de>
+	 <alpine.DEB.2.00.0901220036440.28850@chino.kir.corp.google.com>
+	 <20090122095026.GA10579@ioremap.net>
+	 <alpine.DEB.2.00.0901220156310.1738@chino.kir.corp.google.com>
+	 <20090122101424.GA12317@ioremap.net>
+	 <alpine.DEB.2.00.0901220218120.2851@chino.kir.corp.google.com>
+	 <20090122132133.GA17524@ioremap.net>
+Date: Tue, 27 Jan 2009 15:55:38 -0800
+Message-ID: <6599ad830901271555m7ba2ec0ercb0f0d046d71a48a@mail.gmail.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+From: Paul Menage <menage@google.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: David Rientjes <rientjes@google.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>,
+       =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
+       containers@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.142
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are some USB patches for your 2.6-git tree.
+On Thu, Jan 22, 2009 at 5:21 AM, Evgeniy Polyakov <zbr@ioremap.net> wrote:
+> Having userspace to decide which task to kill may not work in some cases
+> at all (when task is swapped and we need to kill someone to get the mem
+> to swap out the task, which will make that decision).
 
-The largest thing here is a new driver, that was held up on the -rc1
-merge due to a dependancy on some code that had to go into the ARM tree
-first.  That code is now in mainline, so the driver is now being added.
-It's stand-alone, so there should not be any issues.
+That's true in the case of a global OOM. In the case of a local OOM
+(caused by memory limits applied via the cgroup memory controller, or
+NUMA affinity enforcement applied by cpusets) the userspace handler
+can be in a different domain which isn't OOM, and be quite capable of
+figuring out who to kill. In our particular use case, it can happen
+that a high-priority job hits its memory limits and triggers an OOM,
+which causes the system controller daemon to kill some lower-priority
+job and reassign some memory from that now-dead low-priority job (and
+thus prevent the OOM from killing any process in the original cgroup).
+This is something that would be very hard to express via kernel
+policy.
 
-Other than that, the series includes:
-	- lots of new quirks and device ids for various USB devices.
-	- USB suspend/resume bugfixes, resolving some reported
-	  regressions
-	- USB gadget driver bugfixes, especially some long-standing musb
-	  build issues.
-
-Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
-
-All of these patches have been in the -next and -mm releases for a while.
-
-The full patches will be sent to the linux-usb mailing list, if anyone
-wants to see them.
-
-thanks,
-
-greg k-h
-
-------------
-
- arch/arm/mach-davinci/usb.c           |   23 -
- drivers/usb/Makefile                  |    1 +
- drivers/usb/class/cdc-acm.c           |    9 +
- drivers/usb/class/usblp.c             |    1 +
- drivers/usb/core/devio.c              |   20 +-
- drivers/usb/core/driver.c             |    2 +-
- drivers/usb/core/hcd-pci.c            |  117 +----
- drivers/usb/core/hcd.h                |    1 -
- drivers/usb/core/hub.c                |    4 +-
- drivers/usb/core/inode.c              |    1 -
- drivers/usb/core/message.c            |   40 +-
- drivers/usb/core/usb.h                |    6 +-
- drivers/usb/gadget/composite.c        |    9 +-
- drivers/usb/gadget/imx_udc.c          |    2 +-
- drivers/usb/host/Kconfig              |   18 +
- drivers/usb/host/Makefile             |    6 +
- drivers/usb/host/ehci-pci.c           |    3 +-
- drivers/usb/host/fhci-dbg.c           |  139 +++++
- drivers/usb/host/fhci-hcd.c           |  836 +++++++++++++++++++++++++++++++
- drivers/usb/host/fhci-hub.c           |  345 +++++++++++++
- drivers/usb/host/fhci-mem.c           |  113 +++++
- drivers/usb/host/fhci-q.c             |  284 +++++++++++
- drivers/usb/host/fhci-sched.c         |  888 +++++++++++++++++++++++++++++++++
- drivers/usb/host/fhci-tds.c           |  626 +++++++++++++++++++++++
- drivers/usb/host/fhci.h               |  607 ++++++++++++++++++++++
- drivers/usb/host/ohci-hcd.c           |    8 +-
- drivers/usb/host/ohci-pci.c           |    1 -
- drivers/usb/host/uhci-hcd.c           |    1 -
- drivers/usb/misc/ldusb.c              |    2 -
- drivers/usb/mon/mon_bin.c             |  105 +++--
- drivers/usb/musb/Kconfig              |    3 +-
- drivers/usb/musb/cppi_dma.c           |   10 +-
- drivers/usb/musb/davinci.c            |   13 +-
- drivers/usb/musb/musb_core.c          |    5 +-
- drivers/usb/musb/musb_gadget.c        |    6 +-
- drivers/usb/musb/musb_host.c          |    4 +-
- drivers/usb/musb/tusb6010_omap.c      |    4 +-
- drivers/usb/otg/Kconfig               |    4 +-
- drivers/usb/serial/cp2101.c           |    2 +
- drivers/usb/serial/ftdi_sio.c         |    2 +
- drivers/usb/serial/ftdi_sio.h         |    9 +
- drivers/usb/serial/option.c           |   14 +-
- drivers/usb/serial/ti_usb_3410_5052.c |    3 +
- drivers/usb/serial/ti_usb_3410_5052.h |    2 +
- drivers/usb/storage/unusual_devs.h    |   36 +-
- include/linux/usb.h                   |    2 +
- 46 files changed, 4105 insertions(+), 232 deletions(-)
- create mode 100644 drivers/usb/host/fhci-dbg.c
- create mode 100644 drivers/usb/host/fhci-hcd.c
- create mode 100644 drivers/usb/host/fhci-hub.c
- create mode 100644 drivers/usb/host/fhci-mem.c
- create mode 100644 drivers/usb/host/fhci-q.c
- create mode 100644 drivers/usb/host/fhci-sched.c
- create mode 100644 drivers/usb/host/fhci-tds.c
- create mode 100644 drivers/usb/host/fhci.h
-
----------------
-
-Ajay Kumar Gupta (1):
-      USB: musb free_irq bugfix
-
-Alan Cox (1):
-      USB: cdc-acm: Add another conexant modem to the quirks
-
-Alan Stern (3):
-      USB: fix toggle mismatch in disable_endpoint paths
-      USB: don't enable wakeup by default for PCI host controllers
-      USB: fix char-device disconnect handling
-
-Alex.Cheng@quantatw.com (1):
-      USB: option: add QUANTA HSDPA Data Card device ids
-
-Andrew Lunn (1):
-      USB: CDC-ACM quirk for MTK GPS
-
-Anton Vorontsov (1):
-      USB: Driver for Freescale QUICC Engine USB Host Controller
-
-Brandon Philips (1):
-      USB: usblp.c: add USBLP_QUIRK_BIDIR to Brother HL-1440
-
-Bryan Wu (2):
-      USB: composite: Fix bug: should test set_alt function pointer before use it
-      USB: composite: Fix bug: low byte of w_index is the usb interface number not the whole 2 bytes of w_index
-
-David Brownell (4):
-      USB: omap1 ohci buildfix (otg related)
-      USB: musb davinci buildfix
-      USB: musb_hdrc: another davinci buildfix (otg related)
-      USB: musb: Kconfig fix
-
-Hugo Villeneuve (1):
-      USB: musb cppi bugfixes
-
-Inaky Perez-Gonzalez (1):
-      USB: add kernel-doc for wusb_dev in struct usb_device
-
-James A. Treacy (1):
-      USB: cdc-acm: support some gps data loggers
-
-Jean-Baptiste Onofre (1):
-      USB: storage: support of Dane-Elec MediaTouch USB device
-
-Julia Lawall (1):
-      USB: musb uses endpoint functions
-
-Kalle Valo (1):
-      USB: musb: tusb6010 buildfix
-
-Marcel Sebek (1):
-      USB: 'option' driver - onda device MT503HS has wrong id
-
-Mhayk Whandson (1):
-      USB: ftdi_sio driver support of bar code scanner from Diebold
-
-Oliver Neukum (2):
-      USB: storage: add unusual devs entry
-      USB: new id for ti_usb_3410_5052 driver
-
-Pete Zaitcev (1):
-      USB: usbmon: Implement compat_ioctl
-
-Phil Dibowitz (3):
-      USB: Remove ZTE modem from unusual_devices
-      USB: unusual_dev: usb-storage needs to ignore a device
-      USB: storage: Add another unusual_dev for off-by-one bug
-
-Rafael J. Wysocki (1):
-      USB: Fix suspend-resume of PCI USB controllers
-
-Robie Basak (1):
-      USB: ftdi_sio: added Alti-2 VID and Neptune 3 PID
-
-Roel Kluin (1):
-      USB: GADGET: fix !x & y
-
-Swaminathan S (1):
-      USB: musb cppi dma fix
-
-Tomasz K (1):
-      USB: cp2101 device
-
-Wolfgang Glas (1):
-      USB: cp2101: add fasttrax GPS evaluation kit vendor/product ID
-
-sware (1):
-      USB: remove vernier labpro from ldusb
-
+Paul
