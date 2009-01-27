@@ -1,155 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZA0PYV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZA0PZf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755547AbZA0PYV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 10:24:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752309AbZA0PYG
+	id S1755812AbZA0PZf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 10:25:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZA0PZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 10:24:06 -0500
-Received: from mga02.intel.com ([134.134.136.20]:56152 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752271AbZA0PYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 10:24:04 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,332,1231142400"; 
-   d="scan'208";a="381779989"
-Subject: Re: hardware time stamping with optional structs in data area
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
-In-Reply-To: <20090126.172202.261408793.davem@davemloft.net>
-References: <1232532457.7829.19.camel@ecld0pohly>
-	 <20090125.210442.129666692.davem@davemloft.net>
-	 <1233002392.23161.6.camel@pohly-MOBL>
-	 <20090126.172202.261408793.davem@davemloft.net>
-Content-Type: text/plain
-Date: Tue, 27 Jan 2009 16:23:57 +0100
-Message-Id: <1233069837.24438.54.camel@pohly-MOBL>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 27 Jan 2009 10:25:17 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:61406 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969AbZA0PZP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 10:25:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=DxyHY6s7r4WWl5I7KbQgh6fIC/wYzuU9RMpH6Eepgs6CfnuBblZ3TLQRZ/PE3401jy
+         jDPbbFEPme9Rw8XTW46vy4/hrYKDZT4Edyg/3TxNO7jY5RJH/t39fWe/t1oAQUFe4Hx5
+         Jyjt7qjnkBjx7QGFXLRk+PBJvcro/xHvlhls8=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCH 3/3] ide-cd: fix DMA for non bio-backed requests
+Date: Tue, 27 Jan 2009 16:06:03 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-next-20090126; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+References: <1233002440-4325-1-git-send-email-petkovbb@gmail.com> <1233002440-4325-3-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1233002440-4325-3-git-send-email-petkovbb@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901271606.04097.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-27 at 03:22 +0200, David Miller wrote:
-> From: Patrick Ohly <patrick.ohly@intel.com>
-> Date: Mon, 26 Jan 2009 21:39:52 +0100
+On Monday 26 January 2009, Borislav Petkov wrote:
+> This one fixes http://bugzilla.kernel.org/show_bug.cgi?id=12320.
 > 
-> > On Mon, 2009-01-26 at 07:04 +0200, David Miller wrote:
-> > > Just consolidate the array into a direct conversion table.  You only
-> > > have 2 bits defined so you only need an array of 4 entries.  Pass the
-> > > optional flag bits directly in as the index of that table.
-> > 
-> > How can I get some code executed during the initialization of the IP
-> > stack which initializes the table, before any sk_buff gets allocated?
-> > 
-> > The content is constant, but writing it down as static initializers
-> > using just preprocessor macros would be difficult and/or ugly - that's
-> > why I haven't done it already.
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> ---
+>  drivers/ide/ide-cd.c |    3 +++
+>  drivers/ide/ide-io.c |    9 ++++++---
+>  2 files changed, 9 insertions(+), 3 deletions(-)
 > 
-> It's 4 entries... really.
+> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> index 94981f9..84bc370 100644
+> --- a/drivers/ide/ide-cd.c
+> +++ b/drivers/ide/ide-cd.c
+> @@ -784,6 +784,9 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+>  		if (blk_fs_request(rq)) {
+>  			ide_end_request(drive, 1, rq->nr_sectors);
+>  			return ide_stopped;
+> +		} else if (rq->cmd_type == REQ_TYPE_ATA_PC && !rq->bio) {
+> +			ide_end_request(drive, 1, 1);
+> +			return ide_stopped;
+>  		}
+>  		goto end_request;
+>  	}
+> diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
+> index 9927b03..615b6e7 100644
+> --- a/drivers/ide/ide-io.c
+> +++ b/drivers/ide/ide-io.c
+> @@ -291,11 +291,14 @@ void ide_map_sg(ide_drive_t *drive, struct request *rq)
+>  	ide_hwif_t *hwif = drive->hwif;
+>  	struct scatterlist *sg = hwif->sg_table;
+>  
+> -	if (rq->cmd_type != REQ_TYPE_ATA_TASKFILE) {
+> -		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
+> -	} else {
+> +	if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE) {
+>  		sg_init_one(sg, rq->buffer, rq->nr_sectors * SECTOR_SIZE);
+>  		hwif->sg_nents = 1;
+> +	} else if (!rq->bio) {
+> +		sg_init_one(sg, rq->data, rq->data_len);
+> +		hwif->sg_nents = 1;
+> +	} else {
+> +		hwif->sg_nents = blk_rq_map_sg(drive->queue, rq, sg);
+>  	}
+>  }
 
-True - at this time. But what if this extension mechanism turns out to
-be useful and we end up with more optional structures? I was hoping that
-this might be the case and thus tried to make it easy to add more
-structures.
+applied
 
-> You can initialize them simply, perhaps
-> with some fancy macro used by the initializers.
-
-Unfortunately recursion in macros is not possible. One needs duplicated
-macro definitions, one for each additional structure. But perhaps my
-preprocessor code fu is lacking today and there is a simpler
-solution :-/
-
-Anyway, below is example code with three structures which initializes a
-size array indexed by a bit mask. I find it truly ugly and hard to
-understand - and I wrote it. gcc -S shows that the size arrays contain
-the expected values.
-
-Please let me know what approach is preferred and I'll revise the patch
-accordingly:
-     1. array with four hard-coded values
-     2. init code (where?)
-     3. macro initialization of array
-     4. simpler initialization solution
-
----------------------------------------------------------------
-struct A {
-    int a;
-};
-
-struct B {
-    char b;
-};
-
-struct C {
-    long long c;
-};
-
-enum {
-    BIT_A,
-    BIT_B,
-    BIT_C
-};
-
-#define MIN(_a, _b) ((_a) < (_b) ? (_a) : (_b))
-
-/* round up _previous number of bytes so that a struct of_structsize
-   bytes is properly aligned at an 8 byte boundary or the structure size,
-   whatever is smaller */
-#define ALIGN(_previous, _structsize) \
-    (((_previous) + MIN(_structsize, 8) - 1) & ~(MIN(_structsize, 8) - 1))
-
-/* number of bytes for struct X alone
- * @_flags: bit mask of BIT_ values
- * @_bitname: name of bit enum for X
- * @_structname: structure name of X, without struct
- */
-#define SIZE_X(_flags, _bitname, _structname) \
-    (((_flags) & (1<<_bitname)) ? sizeof(struct _structname) : 0)
-
-/* number of bytes needed for B (if present) with or without A in
- * front of it
- * @_flags: bit mask of BIT_A and BIT_B
- */
-#define SIZE_B(_flags) \
-    (((_flags) & (1<<BIT_B)) ? \
-     (ALIGN(SIZE_X(_flags, BIT_A, A), SIZE_X(_flags, BIT_B, B)) + sizeof(struct B)) : \
-     SIZE_X(_flags, BIT_A, A))
-
-/* number of bytes needed for C (if present) with combinations of
- * struct A, B in front
- * @_flags: bit mask of BIT_A, BIT_B, BIT_C
- */
-#define SIZE_C(_flags) \
-    (((_flags) & (1<<BIT_C)) ? \
-     (ALIGN(SIZE_B(_flags), SIZE_X(_flags, BIT_C, C)) + sizeof(struct C)) : \
-     SIZE_B(_flags))
-
-/* number of bytes needed to store combinations of A, B, C, in this
-   order */
-int size[] = { 0,
-
-               SIZE_X((1<<BIT_A), BIT_A, A),
-
-               SIZE_B((1<<BIT_B)),
-               SIZE_B((1<<BIT_B)|(1<<BIT_A)),
-
-               SIZE_C((1<<BIT_C)),
-               SIZE_C((1<<BIT_C)|(1<<BIT_A)),
-               SIZE_C((1<<BIT_C)|(1<<BIT_B)),
-               SIZE_C((1<<BIT_C)|(1<<BIT_B)|(1<<BIT_A)) };
-
-#define LIST_A(_flags) SIZE_C(_flags), SIZE_C((_flags)|(1<<BIT_A))
-#define LIST_B(_flags) LIST_A(_flags), LIST_A((_flags)|(1<<BIT_B))
-#define LIST_C(_flags) LIST_B(_flags), LIST_B((_flags)|(1<<BIT_C))
-
-/* same as size */
-int size2[] = { LIST_C(0) };
----------------------------------------------------------------
-
-Bye, Patrick
-
+Thanks for fixing this.
