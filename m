@@ -1,77 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbZA0IFs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZA0IG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752625AbZA0IFs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 03:05:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZA0IFh
+	id S1754340AbZA0IG1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 03:06:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZA0IGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 03:05:37 -0500
-Received: from mu-out-0910.google.com ([209.85.134.191]:18638 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbZA0IFg (ORCPT
+	Tue, 27 Jan 2009 03:06:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57096 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752138AbZA0IGP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 03:05:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=T4EmaoovJdoCi3qJpeKJvNNSy7T+utR5xKToOIjymWZGIgHama+dxmwEWNW2C6R6oe
-         7d0ZnCpqlNwwgNtuKyzwV+ihvptpcyeUI6TRaAo2oI4PoKaKu4CbOfOFhqldEjQz2TdS
-         VOYamPuc+Vy9xip0zfYNB+OzZwbF5tpO+t3jQ=
-Message-ID: <497EC0A6.8020802@gmail.com>
-Date: Tue, 27 Jan 2009 09:07:02 +0100
-From: Jacek Luczak <difrost.kernel@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
-MIME-Version: 1.0
-To: Eric Anholt <eric@anholt.net>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: GTT full but LRU empty
-References: <497DFC8B.9040405@gmail.com> <1233009512.4876.3.camel@gaiman>
-In-Reply-To: <1233009512.4876.3.camel@gaiman>
-Content-Type: text/plain; charset=ISO-8859-2
+	Tue, 27 Jan 2009 03:06:15 -0500
+Date: Tue, 27 Jan 2009 00:04:32 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Tomas Carnecky <tom@dbservice.com>, bugme-daemon@bugzilla.kernel.org
+Subject: [Bug 12492] Re: [patch 1/2] stop_machine: introduce
+ stop_machine_create/destroy.
+Message-Id: <20090127000432.65042e85.akpm@linux-foundation.org>
+In-Reply-To: <20081222114529.601526881@de.ibm.com>
+References: <20081222113629.080104676@de.ibm.com>
+	<20081222114529.601526881@de.ibm.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Anholt pisze:
-> On Mon, 2009-01-26 at 19:10 +0100, Jacek Luczak wrote:
->> Hi Eric,
->>
->> Are those errors known?
->>
->> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
->> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
->> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request empty 1
->> flushing empty 1
->> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
->> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
->> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request empty 1
->> flushing empty 1
->> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
->> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
->> -12<3>[drm:i915_gem_execbuffer] *ERROR* Failed to pin buffers -12
->> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
->> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
->> -12<3>[drm:i915_gem_evict_something] *ERROR* inactive empty 1 request empty 1
->> flushing empty 1
->> [drm:i915_gem_object_bind_to_gtt] *ERROR* GTT full, but LRU list empty
->> [drm:i915_gem_object_pin] *ERROR* Failure to bind:
->> -12<3>[drm:i915_gem_execbuffer] *ERROR* Failed to pin buffers -12
->>
->> They appeared once and no more, but I've changed my configuration in between
->> (switched to UXA, removed IntelFB from kernel).
+On Mon, 22 Dec 2008 12:36:30 +0100 Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+
+> Introduce stop_machine_create/destroy. With this interface subsystems
+> that need a non-failing stop_machine environment can create the
+> stop_machine machine threads before actually calling stop_machine.
+> When the threads aren't needed anymore they can be killed with
+> stop_machine_destroy again.
 > 
-> Those messages occur when a client asks the kernel to exec a batchbuffer
-> that the kernel can't fit into the unpinned aperture space.  Userland is
-> supposed to be tracking how much space its stuff uses and flushing
-> before that time, but certain bad things could break that by violating
-> the assumption that the amount of pinned space doesn't change.  Our XV
-> code today, for example.  I've been working on cleaning up the remaining
-> bad userland bits, but it's painful work.  Luckily, other than dmesg
-> spam warning that some rendering just go dropped on the floor, and some
-> rendering not occurring, nothing else harmful should be happening.
+> When stop_machine gets called and the threads aren't present they
+> will be created and destroyed automatically. This restores the old
+> behaviour of stop_machine.
+> 
+> This patch also converts cpu hotplug to the new interface since it
+> is special: cpu_down calls __stop_machine instead of stop_machine.
+> However the kstop threads will only be created when stop_machine
+> gets called.
+> 
+> Changing the code so that the threads would be created automatically
+> on __stop_machine is currently not possible: when __stop_machine gets
+> called we hold cpu_add_remove_lock, which is the same lock that
+> create_rt_workqueue would take. So the workqueue needs to be created
+> before the cpu hotplug code locks cpu_add_remove_lock.
 
-Thanks Eric. So it's mostly broken userspace. Pity that I don't remember what I
-was running while this error occurred.
+In http://bugzilla.kernel.org/show_bug.cgi?id=12492, Thomas (cc'ed
+here) reports
 
--Jacek
+  Commit 9ea09af3bd3090e8349ca2899ca2011bd94cda85 introduced a
+  regression that caused the kernel to fail to suspend.  The 'sleeping'
+  LED on the laptop just keeps blinking and the laptop never shuts
+  down.  I think this was eventually fixed because with 2.6.29-rc1 and
+  -rc2 the laptop suspends fine, but fails to resume.  When I try to
+  resume, all I see is a blinking cursor in the top left corner of the
+  screen.
+
+  I'm using acpi_sleep=s3_bios,s3_mode, suspending using a script
+  that does: echo mem > /sys/power/state.
+
+
