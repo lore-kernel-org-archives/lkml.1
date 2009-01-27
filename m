@@ -1,57 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZA0Kfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbZA0Kga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754294AbZA0Kfd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 05:35:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZA0KfU
+	id S1754727AbZA0Kga (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 05:36:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZA0KgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 05:35:20 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:35703 "EHLO
+	Tue, 27 Jan 2009 05:36:22 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:59675 "EHLO
 	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752202AbZA0KfT (ORCPT
+	with ESMTP id S1752930AbZA0KgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 05:35:19 -0500
+	Tue, 27 Jan 2009 05:36:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oNT1CtYOGwLkP4NHUZ9EPJ3E386kEgr9KpWwr40Chq3jVKMJQgUCDQg5pi2RE0OgWs
-         3qhQdKJHg7Wq7HsgYJ1esk6Bom3O4UPZeAj2l7qMpBgFRD2Pn1T3aGKiA41VfkYaKFkl
-         pFpQW3Zdcffal7sjwIbRaUtOybdWta65seW24=
-Date: Tue, 27 Jan 2009 10:35:11 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v3] tcp: splice as many packets as possible at once
-Message-ID: <20090127103511.GE4197@ff.dom.local>
-References: <20090125.212203.15909648.davem@davemloft.net> <20090127071130.GA29125@gondor.apana.org.au> <20090127075418.GB4197@ff.dom.local> <20090127100958.GA30239@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090127100958.GA30239@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=SR/Dow9JooZn7gy1wCl9/AGuAANP3aTtFTyFNim7LPB3qzi89lO637GzOMO/RCjlxS
+         l7CgOuFw7rxG9nja3EdI5uryZ2Fj1i40xuIkW3/Dy4pwWGKq9a6YHi27M3jhk+03/dji
+         3iW49i5KMSr8ao3xlWwsMM5ZN+p7WZ3XoDSr0=
+From: Grazvydas Ignotas <notasas@gmail.com>
+To: tony@atomide.com
+Cc: drzeus-mmc@drzeus.cx, ext-adrian.hunter@nokia.com,
+       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Grazvydas Ignotas <notasas@gmail.com>
+Subject: [PATCH] OMAP HSMMC: fix MMC3 dma
+Date: Tue, 27 Jan 2009 12:36:13 +0200
+Message-Id: <1233052573-6223-1-git-send-email-notasas@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 09:09:58PM +1100, Herbert Xu wrote:
-> On Tue, Jan 27, 2009 at 07:54:18AM +0000, Jarek Poplawski wrote:
-> > 
-> > Yes, but ip_append_data() (and skb_append_datato_frags() for
-> > NETIF_F_UFO only, so currently not a problem), uses this differently,
-> > and these pages in sk->sk_sndmsg_page could leak or be used after
-> > kfree. (I didn't track locking in these other places).
-> 
-> It'll be freed when the socket is freed so that should be fine.
-> 
+Data transfers on third OMAP3 MMC controller don't work
+because DMA line numbers are only defined for MMC1 and MMC2.
+Fix that and store line numbers in mmc_omap_host structure
+to reduce code size.
+Tested on OMAP3 pandora board.
 
-I don't think so: these places can overwrite sk->sk_sndmsg_page left
-after tcp_sendmsg(), or skb_splice_bits() now, with NULL or a new
-pointer without put_page() (they only reference copied chunks and
-expect auto freeing). On the other hand, if tcp_sendmsg() reads after
-them it could use a pointer after the page is freed, I guess.
+Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
+---
+ drivers/mmc/host/omap_hsmmc.c |   31 +++++++++++++++++++++++--------
+ 1 files changed, 23 insertions(+), 8 deletions(-)
 
-Cheers,
-Jarek P.
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index 70d8d78..a2c4aee 100644
+--- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -97,6 +97,7 @@
+  */
+ #define OMAP_MMC1_DEVID		0
+ #define OMAP_MMC2_DEVID		1
++#define OMAP_MMC3_DEVID		2
+ 
+ #define OMAP_MMC_DATADIR_NONE	0
+ #define OMAP_MMC_DATADIR_READ	1
+@@ -148,6 +149,7 @@ struct mmc_omap_host {
+ 	int			irq;
+ 	int			carddetect;
+ 	int			use_dma, dma_ch;
++	int			dma_line_tx, dma_line_rx;
+ 	int			initstr;
+ 	int			slot_id;
+ 	int			dbclk_enabled;
+@@ -672,16 +674,10 @@ mmc_omap_start_dma_transfer(struct mmc_omap_host *host, struct mmc_request *req)
+ 
+ 	if (!(data->flags & MMC_DATA_WRITE)) {
+ 		host->dma_dir = DMA_FROM_DEVICE;
+-		if (host->id == OMAP_MMC1_DEVID)
+-			sync_dev = OMAP24XX_DMA_MMC1_RX;
+-		else
+-			sync_dev = OMAP24XX_DMA_MMC2_RX;
++		sync_dev = host->dma_line_rx;
+ 	} else {
+ 		host->dma_dir = DMA_TO_DEVICE;
+-		if (host->id == OMAP_MMC1_DEVID)
+-			sync_dev = OMAP24XX_DMA_MMC1_TX;
+-		else
+-			sync_dev = OMAP24XX_DMA_MMC2_TX;
++		sync_dev = host->dma_line_tx;
+ 	}
+ 
+ 	ret = omap_request_dma(sync_dev, "MMC/SD", mmc_omap_dma_cb,
+@@ -1058,6 +1054,25 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
+ 	OMAP_HSMMC_WRITE(host->base, HCTL,
+ 			OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
+ 
++	/* Select DMA lines */
++	switch (host->id) {
++	case OMAP_MMC1_DEVID:
++		host->dma_line_tx = OMAP24XX_DMA_MMC1_TX;
++		host->dma_line_rx = OMAP24XX_DMA_MMC1_RX;
++		break;
++	case OMAP_MMC2_DEVID:
++		host->dma_line_tx = OMAP24XX_DMA_MMC2_TX;
++		host->dma_line_rx = OMAP24XX_DMA_MMC2_RX;
++		break;
++	case OMAP_MMC3_DEVID:
++		host->dma_line_tx = OMAP34XX_DMA_MMC3_TX;
++		host->dma_line_rx = OMAP34XX_DMA_MMC3_RX;
++		break;
++	default:
++		dev_err(mmc_dev(host->mmc), "Invalid MMC id\n");
++		goto err_irq;
++	}
++
+ 	/* Request IRQ for MMC operations */
+ 	ret = request_irq(host->irq, mmc_omap_irq, IRQF_DISABLED,
+ 			mmc_hostname(mmc), host);
+-- 
+1.5.4.3
+
