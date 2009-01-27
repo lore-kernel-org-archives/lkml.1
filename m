@@ -1,91 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZA0MMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZA0MNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbZA0MMT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 07:12:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZA0MMK
+	id S1755203AbZA0MNX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 07:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZA0MNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 07:12:10 -0500
-Received: from adelie.canonical.com ([91.189.90.139]:42807 "EHLO
-	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752748AbZA0MMJ (ORCPT
+	Tue, 27 Jan 2009 07:13:15 -0500
+Received: from smarthost03.mail.zen.net.uk ([212.23.3.142]:35656 "EHLO
+	smarthost03.mail.zen.net.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753039AbZA0MNO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 07:12:09 -0500
-From: Andy Whitcroft <apw@canonical.com>
-To: Kay Sievers <kay.sievers@vrfy.org>, Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org, Andy Whitcroft <apw@canonical.com>
-Subject: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
-Date: Tue, 27 Jan 2009 12:12:05 +0000
-Message-Id: <1233058325-12719-1-git-send-email-apw@canonical.com>
-X-Mailer: git-send-email 1.6.1.258.g7ff14.dirty
-In-Reply-To: <20090126093549.GC17399@shadowen.org>
-References: <20090126093549.GC17399@shadowen.org>
+	Tue, 27 Jan 2009 07:13:14 -0500
+Subject: Re: [PATCH] sfc: modify allocation error message
+From: Ben Hutchings <bhutchings@solarflare.com>
+To: Mike Travis <travis@sgi.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jack Steiner <steiner@sgi.com>, linux-kernel@vger.kernel.org,
+       linux-net-drivers@solarflare.com
+In-Reply-To: <497DD107.5050909@sgi.com>
+References: <20090107195832.265117000@polaris-admin.engr.sgi.com>
+	 <20090107195832.871689000@polaris-admin.engr.sgi.com>
+	 <1232384910.31644.13.camel@achroite>
+	 <200901201209.34854.rusty@rustcorp.com.au>  <497DD107.5050909@sgi.com>
+Content-Type: text/plain; charset=utf-8
+Organization: Solarflare Communications
+Date: Tue, 27 Jan 2009 12:13:01 +0000
+Message-Id: <1233058381.3402.1.camel@achroite>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
+X-Originating-Smarthost03-IP: [82.69.137.158]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Here is an updated patch which only uses information already exported in
-the ABI.]
+On Mon, 2009-01-26 at 07:04 -0800, Mike Travis wrote:
+[...]
+> Subject: sfc: modify allocation error message
+> 
+> Impact: change error message when alloc_cpumask_var fails.
+> 
+> Signed-off-by: Mike Travis <travis@sgi.com>
+> Cc: Ben Hutchings <bhutchings@solarflare.com>
+Acked-by: Ben Hutchings <bhutchings@solarflare.com>
 
-Currently we are using an explicit udev rule to trigger loading of the
-mmc-block module when an MMC or SD card is detected:
+> ﻿--
+>  drivers/net/sfc/efx.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-2.6-for-ingo.orig/drivers/net/sfc/efx.c
+> +++ linux-2.6-for-ingo/drivers/net/sfc/efx.c
+> @@ -858,9 +858,9 @@ static int efx_wanted_rx_queues(void)
+>         int count;
+>         int cpu;
+>  
+> -       if (!alloc_cpumask_var(&core_mask, GFP_KERNEL)) {
+> +       if (unlikely(!alloc_cpumask_var(&core_mask, GFP_KERNEL))) {
+>                 printk(KERN_WARNING
+> -                      "efx.c: allocation failure, irq balancing hobbled\n");
+> +                      "sfc: RSS disabled due to allocation failure\n");
+>                 return 1;
+>         }
+>  
 
-    SUBSYSTEM=="mmc", RUN+="/sbin/modprobe -Qba mmc-block"
-
-It makes much more sense for the mmc bus driver and the mmc-block module to
-share MODALIAS information so that they are linked automatically.
-
-Add MODALIAS attributes to the uevents as generated, and add the
-corresponding MODULE_ALIAS marks to the mmc-block module so that it is
-automatically loaded by udev.  Following discussion it was decided to
-expose the textual types, and so I have followed the example set by
-the dmi: aliases for handling text.  The aliases are of the following
-form:
-
-    mmc:t<type>:
-
-For example:
-
-    mmc:tMMC:
-
-The entry ends with a separator (:) in order to allow simple differentiation
-between common prefixes such as SD and SDIO in MODULE_ALIAS declarations.
-
-Signed-off-by: Andy Whitcroft <apw@canonical.com>
----
- drivers/mmc/card/block.c |    3 +++
- drivers/mmc/core/bus.c   |    5 +++++
- 2 files changed, 8 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index 3d067c3..9799273 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -41,6 +41,9 @@
- 
- #include "queue.h"
- 
-+MODULE_ALIAS("mmc:tMMC:*");
-+MODULE_ALIAS("mmc:tSD:*");
-+
- /*
-  * max 8 partitions per card
-  */
-diff --git a/drivers/mmc/core/bus.c b/drivers/mmc/core/bus.c
-index f210a8e..7b34c00 100644
---- a/drivers/mmc/core/bus.c
-+++ b/drivers/mmc/core/bus.c
-@@ -84,6 +84,11 @@ mmc_bus_uevent(struct device *dev, struct kobj_uevent_env *env)
- 	}
- 
- 	retval = add_uevent_var(env, "MMC_NAME=%s", mmc_card_name(card));
-+	if (retval)
-+		return retval;
-+
-+	retval = add_uevent_var(env, "MODALIAS=mmc:t%s:",
-+						(type) ? type : "UNKNOWN");
- 
- 	return retval;
- }
 -- 
-1.6.1.258.g7ff14.dirty
+Ben Hutchings, Senior Software Engineer, Solarflare Communications
+Not speaking for my employer; that's the marketing department's job.
+They asked us to note that Solarflare product names are trademarked.
 
