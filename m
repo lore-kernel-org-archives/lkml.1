@@ -1,50 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZA0NiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZA0Nk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755781AbZA0NiW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 08:38:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZA0NiO
+	id S1755184AbZA0Nk4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 08:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZA0Nks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 08:38:14 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49871 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753039AbZA0NiN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 08:38:13 -0500
-Date: Tue, 27 Jan 2009 13:37:32 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Thierry Vignaud <tvignaud@mandriva.com>
-Cc: Rob Landley <rob@landley.net>, Theodore Tso <tytso@mit.edu>,
-       Pavel Machek <pavel@suse.cz>, Sitsofe Wheeler <sitsofe@yahoo.com>,
-       Duane Griffin <duaneg@dghda.com>, Valdis.Kletnieks@vt.edu,
-       Martin =?us-ascii?B?TU9LUkVK?= =?us-ascii?B?X18=?= 
-	<mmokrejs@ribosome.natur.cuni.cz>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org
-Subject: Re: document ext3 requirements
-Message-ID: <20090127133732.0d54f430@lxorguk.ukuu.org.uk>
-In-Reply-To: <m2vds0vq44.fsf@vador.mandriva.com>
-References: <fa.pmCH9X+XujDl6RH6/TpkNtsTnbk@ifi.uio.no>
-	<20090104224052.GE1913@elf.ucw.cz>
-	<20090104233052.GG22958@mit.edu>
-	<200901042149.27655.rob@landley.net>
-	<20090105111913.47a8d1a5@lxorguk.ukuu.org.uk>
-	<m2vds0vq44.fsf@vador.mandriva.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Jan 2009 08:40:48 -0500
+Received: from kandzendo.ru ([195.178.208.66]:34897 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753061AbZA0Nks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 08:40:48 -0500
+Date: Tue, 27 Jan 2009 16:40:38 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: David Rientjes <rientjes@google.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, balbir@linux.vnet.ibm.com,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Torvalds <torvalds@linux-foundation.org>,
+       Arve Hj?nnev?g <arve@android.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Paul Menage <menage@google.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Message-ID: <20090127134038.GA18119@ioremap.net>
+References: <20090127155825.D476.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.2.00.0901262325320.13157@chino.kir.corp.google.com> <20090127164238.D479.KOSAKI.MOTOHIRO@jp.fujitsu.com> <alpine.DEB.2.00.0901262350110.14525@chino.kir.corp.google.com> <20090127093105.GB2646@ioremap.net> <alpine.DEB.2.00.0901270134360.20070@chino.kir.corp.google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0901270134360.20070@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I remember seeing I/O error on CDs resulting in zillions of retries on
-> errors on USB discs resulting in resetting the USB port again & again
-> for hours... (CD case is years ago, but I usually see the USB layer
-> trying reseting for quite a long time at least once per month)
+Hi David.
 
-Most of the CD ones are caused by tools like hal continuing to probe the
-device regularly and causing new avalanches of errors.
+On Tue, Jan 27, 2009 at 01:37:55AM -0800, David Rientjes (rientjes@google.com) wrote:
+> > /dev/mem_notify is a great idea, but please do not limit existing
+> > oom-killer in its ability to do the job and do not rely on application's
+> > ability to send a SIGKILL which will not kill tasks in unkillable state
+> > contrary to oom-killer.
+> > 
+> 
+> You're missing the point, /dev/mem_notify would notify userspace of lowmem 
+> situations and allow it to respond appropriately in any number of ways 
+> before an oom condition exists.
+
+Yes, I know.
+
+> When the system (or cpuset, memory controller, etc) is oom, userspace can 
+> choose to defer to the oom killer so that it may kill a task that would 
+> most likely lead to future memory freeing with access to memory reserves.
+> 
+> There is no additional oom killer limitation imposed here, nor can the oom 
+> killer kill a task hung in D state any better than userspace.
+
+Well, oom-killer can, since it drops unkillable state from the process
+mask, that may be not enough though, but it tries more than userspace.
+
+My main point was to haev a way to monitor memory usage and that any
+process could tune own behaviour according to that information. Which is
+not realated to the system oom-killer at all. Thus /dev/mem_notify is
+interested first (and only the first) as a memory usage notification
+interface and not a way to invoke any kind of 'soft' oom-killer.
+Application can do whatever it wants of course including killing itself
+or the neighbours, but this should not be forced as a usage policy.
+
+-- 
+	Evgeniy Polyakov
