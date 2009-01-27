@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZA0HPb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbZA0HYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbZA0HPb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 02:15:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZA0HPX
+	id S1753589AbZA0HYW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 02:24:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZA0HYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 02:15:23 -0500
-Received: from ozlabs.org ([203.10.76.45]:41472 "EHLO ozlabs.org"
+	Tue, 27 Jan 2009 02:24:13 -0500
+Received: from gw.goop.org ([64.81.55.164]:49036 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbZA0HPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 02:15:22 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Date: Tue, 27 Jan 2009 17:45:18 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       a.p.zijlstra@chello.nl, travis@sgi.com, mingo@redhat.com,
-       davej@redhat.com, cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090124001537.7cfde78e.akpm@linux-foundation.org> <20090126215049.GA3493@redhat.com> <20090126221729.GA10215@elte.hu>
-In-Reply-To: <20090126221729.GA10215@elte.hu>
+	id S1751968AbZA0HYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 02:24:13 -0500
+Message-ID: <497EB698.30509@goop.org>
+Date: Mon, 26 Jan 2009 23:24:08 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Brian Gerst <brgerst@gmail.com>
+CC: Tejun Heo <htejun@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: unified percpu stuff
+References: <497E5F76.10301@goop.org> <73c1f2160901262157g3d281e62nb3ebafe01ab1dfe4@mail.gmail.com>
+In-Reply-To: <73c1f2160901262157g3d281e62nb3ebafe01ab1dfe4@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901271745.19574.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009 08:47:29 Ingo Molnar wrote:
-> 
-> * Oleg Nesterov <oleg@redhat.com> wrote:
-> 
-> > But "[PATCH 1/3] work_on_cpu: dont try to get_online_cpus() in 
-> > work_on_cpu." removes get_online_cpus/put_online_cpus, this means the 
-> > work can run on the wrong CPU anyway. Or work_on_cpu() can hang forever 
-> > if CPU has already gone away before queue_work_on().
-> > 
-> > Confused.
-> 
-> The idea was to require work_on_cpu() users to be CPU hotplug-safe. But 
-> ... Rusty pointed it out in the past that this might be fragile, and we 
-> could put back the get_online_cpus()/put_online_cpus() calls.
+Brian Gerst wrote:
+> On Mon, Jan 26, 2009 at 8:12 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>   
+>> I'm really pleased to see the unified percpu stuff in the kernel, but
+>> unfortunately its breaking Xen at the moment.
+>> It looks like this is just a matter of initializing %gs properly in
+>> xen_start_kernel.  Is there any problem with me doing a load_gs_base(0)
+>> somewhere early in xen_start_kernel (arch/x86/xen/enlighten.c)?
+>>     
+>
+> Some of the changes I did made the assumption that the percpu state is
+> set up early in head_xx.S, which apparently is skipped for xen.  Is
+> there documentation anywhere for the xen bootstrap process?
+>   
 
-Old code used to do:
+Not really.  Its quite different from native because the guest kernel 
+starts up in protected/long mode with paging enabled, using a 
+Xen-provided pagetable.  It means that most of the normal head.S stuff 
+is redundant; the kernel starts executing more or less exactly at 
+xen_start_kernel (there's a 2 instruction asm part which stashes away 
+the Xen info pointer from %[re]si, then jumps to xen_start_kernel).
 
-	tmp = current->cpus_allowed;
-	set_cpus_allowed(current, cpumask_of_cpu(cpu));
-	function(arg);
-	set_cpus_allowed(current, tmp);
+> Try this patch (untested):
+>
+> diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+> index bef941f..b90d061 100644
+> --- a/arch/x86/xen/enlighten.c
+> +++ b/arch/x86/xen/enlighten.c
+> @@ -1647,6 +1647,8 @@ asmlinkage void __init xen_start_kernel(void)
+>  	have_vcpu_info_placement = 0;
+>  #endif
+>
+> +	switch_to_new_gdt();
+> +
+>  	xen_smp_init();
+>
+>  	/* Get mfn list */
+> diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+> index 7735e3d..00d9265 100644
+> --- a/arch/x86/xen/smp.c
+> +++ b/arch/x86/xen/smp.c
+> @@ -235,6 +235,8 @@ cpu_initialize_context(unsigned int cpu, struct
+> task_struct *idle)
+>  	ctxt->user_regs.ss = __KERNEL_DS;
+>  #ifdef CONFIG_X86_32
+>  	ctxt->user_regs.fs = __KERNEL_PERCPU;
+> +#else
+> +	ctxt->gs_base_kernel = per_cpu_offset(cpu);
+>  #endif
+>  	ctxt->user_regs.eip = (unsigned long)cpu_bringup_and_idle;
+>  	ctxt->user_regs.eflags = 0x1000; /* IOPL_RING1 */
+>   
 
-We replaced it with:
+Thanks, I'll try this out.
 
-	work_on_cpu(cpu, function, arg);
+BTW, does the initial cpu0 percpu area get reallocated and moved during 
+boot, or does cpu0 keep using the same memory forever?
 
-I thought I'd be clever and reliably check that the cpu they asked for
-was online inside work_on_cpu.  Leading to locking problems.  But if they
-didn't previously ensure cpu hotplug didn't happen, they were buggy already,
-so I took out the check and hence the hotplug lock.
-
-So we're no *worse* than we were before, but yes, an audit would probably
-lead to fixes.
-
-Hope that clarifies?
-Rusty.
+Thanks,
+    J
