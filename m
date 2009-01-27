@@ -1,112 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbZA0BEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755974AbZA0BFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756142AbZA0BEx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 20:04:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZA0BEa
+	id S1755974AbZA0BFs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 20:05:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZA0BFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 20:04:30 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:56993 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017AbZA0BE3 (ORCPT
+	Mon, 26 Jan 2009 20:05:39 -0500
+Received: from mail-fx0-f26.google.com ([209.85.220.26]:36405 "EHLO
+	mail-fx0-f26.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbZA0BFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 20:04:29 -0500
-Subject: [PATCH] x86: i2c rtc instead of cmos rtc
-From: Ed Swierk <eswierk@aristanetworks.com>
-To: a.zummo@towertech.it, rtc-linux@googlegroups.com, tglx@linutronix.de,
-       mingo@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Mon, 26 Jan 2009 17:04:23 -0800
-Message-Id: <1233018263.14510.112.camel@localhost.localdomain>
+	Mon, 26 Jan 2009 20:05:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type;
+        b=qcvLsSiPyU8orqrfu90AAmYV2xdhBlXQPKxiOpLcTmqDhQ986shntmTD6SlsMf2Uk6
+         fVpJtDDupV62wzNo1Vw5UmGS3wYCGBtcKpxF9ruWqFSYUamTdWmCcWh550jbFIgnVP4i
+         DDLt3+YTgwVi56ZdvdcFy8A4pw5+1CqbE8sQs=
+Date: Tue, 27 Jan 2009 02:05:29 +0100
+From: Max Weninger <max.weninger@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: SOLVED support of touchscreen reported as eGalax but is not
+ working
+Message-ID: <20090127020529.4070840b@zork.foo.com>
+In-Reply-To: <20090127014822.780ecb90@zork.foo.com>
+References: <20090125234902.7605fd16@zork.foo.com>
+	<497D9469.3030908@wincor-nixdorf.com>
+	<20090126124941.4f67aaf5@shire2>
+	<497DA8E3.5070006@wincor-nixdorf.com>
+	<20090127013806.5e31199f@zork.foo.com>
+	<20090127014822.780ecb90@zork.foo.com>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; boundary="Sig_/5+y1wKorQ11+tCgArIpZS2N";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allows the user to ignore the cmos real-time clock normally found on x86
-boards, and to use an i2c rtc in its place.  This is intended to be used
-with with CONFIG_RTC_HCTOSYS=y to set the system clock from the rtc
-automatically during boot, and with CONFIG_RTC_SYSTOHC=y to have ntpd
-update the rtc (see separate patch).
+--Sig_/5+y1wKorQ11+tCgArIpZS2N
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Passing rtc.cmos=0 on the kernel command line ignores the cmos rtc, and
-passing a parameter like rtc.i2c=ds1339,1,0x68 enables the i2c rtc named
-ds1339 on i2c bus 1, device address 0x68.  The appropriate driver must
-be compiled into the kernel to be available when the initcall is
-triggered (device_initcall_sync to ensure the i2c device has already
-been added).
+Hi again
 
-Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
+On Tue, 27 Jan 2009 01:48:22 +0100
+Max Weninger <max.weninger@gmail.com> wrote:
 
----
-Index: linux-2.6.28.2/arch/x86/kernel/rtc.c
-===================================================================
---- linux-2.6.28.2.orig/arch/x86/kernel/rtc.c
-+++ linux-2.6.28.2/arch/x86/kernel/rtc.c
-@@ -220,6 +220,9 @@ static struct platform_device rtc_device
- 	.num_resources	= ARRAY_SIZE(rtc_resources),
- };
- 
-+static int cmos = 1;
-+module_param(cmos, bool, 0);
-+
- static __init int add_rtc_cmos(void)
- {
- #ifdef CONFIG_PNP
-@@ -228,7 +231,11 @@ static __init int add_rtc_cmos(void)
- 	struct pnp_dev *dev;
- 	struct pnp_id *id;
- 	int i;
-+#endif
- 
-+	if (!cmos)
-+		return 0;
-+#ifdef CONFIG_PNP
- 	pnp_for_each_dev(dev) {
- 		for (id = dev->id; id; id = id->next) {
- 			for (i = 0; i < ARRAY_SIZE(ids); i++) {
-@@ -245,3 +252,41 @@ static __init int add_rtc_cmos(void)
- 	return 0;
- }
- device_initcall(add_rtc_cmos);
-+
-+#include <linux/i2c.h>
-+
-+static char *i2c[3] = { NULL, NULL, NULL };
-+module_param_array(i2c, charp, NULL, 0);
-+
-+static int setup_rtc_i2c(void)
-+{
-+	struct i2c_adapter *adapter;
-+	struct i2c_board_info info = {};
-+	int adapter_id;
-+	unsigned short addrs[] = { 0, I2C_CLIENT_END };
-+	struct i2c_client *c;
-+	unsigned long num;
-+
-+	if (!i2c[0] || !i2c[1] || !i2c[2])
-+		return 0;
-+
-+	strlcpy(info.type, i2c[0], I2C_NAME_SIZE);
-+	if (strict_strtoul(i2c[1], 0, &num))
-+		return 0;
-+	adapter_id = num;
-+	if (strict_strtoul(i2c[2], 0, &num))
-+		return 0;
-+	addrs[0] = num;
-+
-+	adapter = i2c_get_adapter(adapter_id);
-+	if (!adapter)
-+		return 0;
-+
-+	c = i2c_new_probed_device(adapter, &info, addrs);
-+	if (c && c->driver == NULL) {
-+		i2c_unregister_device(c);
-+	}
-+	i2c_put_adapter(adapter);
-+	return 0;
-+}
-+device_initcall_sync(setup_rtc_i2c);
+> On Tue, 27 Jan 2009 01:38:06 +0100
+> Max Weninger <max.weninger@gmail.com> wrote:
+>=20
+> > Hi
+> >=20
+> > On Mon, 26 Jan 2009 13:13:23 +0100
+> > Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
+> >=20
+> > > Max Weninger wrote:
+> > > > Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
+> > > >> You can obviously download the drivers from
+> > > >> <http://home.eeti.com.tw/web20/TouchKitDriver/linuxDriver.htm>.
+> > > >>
+> > > >> It would be great if eGalax could be convinced to get these
+> > > >> drivers included in main-line ;)
+> > > >=20
+> > > > Thanks for your quick reply
+> > > > BUT: I have tried those driver also
+> > > >=20
+> > > > I tried this "brandnew" one (but also older ones)
+> > > > http://home.eeti.com.tw/web20/drivers/touch_driver/Linux/2.06.2416/=
+TouchKit-2.06.2410-32b-k26.tar.gz
+> > > > after making it compile for 2.6.28.2 :)
+> > > > since there is source code delivered
+> > >=20
+> > > For what it's worth; the version we use from eGalax is
+> > > 1.0.3.1701. I don't have the hardware here atm, so I can't test
+> > > an other driver now.
+> >=20
+> > I tried kernel 2.6.23.17 and there the touchscreen is recognized
+> > using the builtin usbtouchscreen driver
+>=20
+> It also works with 2.6.26.8
 
+After comparing the usbtouchscreen.c sources between the different
+versions I got it working by commenting the follwoing lines
 
+...
+#ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
+        /* ignore the HID capable devices, handled by usbhid */
+        {USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info =3D DEVTYPE_IGN=
+ORE},
+        {USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info =3D DEVTYPE_IGN=
+ORE},
+...
+
+Now the entry in /proc/bus/input/devices is created as in the
+older versions.
+
+So it seems that usbhid is not correctly handling my type
+of touchscreen if I understand the comment there correctly
+
+Regards
+
+Max
+
+--Sig_/5+y1wKorQ11+tCgArIpZS2N
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEARECAAYFAkl+Xd0ACgkQWFKBZOdSyBV7/ACeNM8FC+ZLy/0wMX+mPxbx/t7c
+dQkAn2sc9CJRNxsPkGt+Ko2LLdbnbthJ
+=pQuj
+-----END PGP SIGNATURE-----
+
+--Sig_/5+y1wKorQ11+tCgArIpZS2N--
