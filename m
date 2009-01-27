@@ -1,44 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZA0AeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZA0Aea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbZA0AeA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 19:34:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZA0Adw
+	id S1755872AbZA0Aea (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 19:34:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZA0AeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 19:33:52 -0500
+	Mon, 26 Jan 2009 19:34:20 -0500
 Received: from fg-out-1718.google.com ([72.14.220.157]:33682 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752842AbZA0Adv (ORCPT
+	with ESMTP id S1753790AbZA0AeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 19:33:51 -0500
+	Mon, 26 Jan 2009 19:34:19 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=SNgLecoMC+8oKlNcscqwnZh0dqaWtrQM9iAT7Bwo1FNGsOuu1WNp02h6rDFRdo62VK
-         ujudJ2A5hSi6Z0exoOfToeLv9hKlLuvegIhk/o4ZZaWuYcPffuOu65oeCiL+YJORdjWz
-         VXgRtovYJUXv2CBTDjbky7mhgiep+8h8aa5bk=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=n7oANxlytTTKrGdCWUYH3S+DbY8EPgcSychCG0RlRlei6By9w4cT/3gYErA3RJSNPY
+         fTdmo5nOpcjbd/4dh3bdJoMetBGP+iy0xfGt4loNF5nNNI5iGObAi0MV9KQ/5+ZsLU1z
+         uiWdSpX5k0+L8ey3v/FnSPuIWbzGhIGYiyK1w=
+Date: Tue, 27 Jan 2009 01:34:15 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dmitry.torokhov@gmail.com, dtor@mail.ru, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, linux-input@vger.kernel.org
+Subject: Re: [PATCH] psmouse: run kpsmoused only while needed
+Message-ID: <20090127003412.GC4815@nowhere>
+References: <496fd1d3.0d135e0a.171b.43ea@mx.google.com> <20090126143210.ce6a4503.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Date: Tue, 27 Jan 2009 01:33:50 +0100
-Message-ID: <36d886900901261633r3b3018b4led0bd980816f4d88@mail.gmail.com>
-Subject: SYS_rename for FAT32
-From: Nicklas Widlund Bjurman <lordmetroid@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090126143210.ce6a4503.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I'm a new Linux kernel developer.
+On Mon, Jan 26, 2009 at 02:32:10PM -0800, Andrew Morton wrote:
+> On Thu, 15 Jan 2009 16:16:19 -0800 (PST)
+> Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> 
+> > While looking at the workqueue tracer, I noticed that kpsmoused receives
+> > rarely (if not never) events.
+> > 
+> > Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
+> > workqueue. But recync are rare. While reading an old discussion, it seems
+> > that usual workqueue events can't be used for that purpose because resync
+> > can take too much time and could delay the other works in queue.
+> > 
+> > But if you have built psmouse driver, this workqueue will always be present
+> > whether you have a ps/2 port or not. And its events are rare.
+> > 
+> > To avoid this pointless task, this patch makes the kpsmoused a kernel
+> > thread only created on the fly when a recync is needed. Once the recync is done,
+> > this thread will die. So you will almost never see it, and it will not be
+> > an inactive task anymore.
+> > 
+> > This thread is created through a usual workqueue event (because we can't create
+> > it from interrupt).
+> > 
+> 
+> Seems like a reasonable objective.
+> 
+> >
+> > ...
+> >
+> >  /*
+> >   * __psmouse_set_state() sets new psmouse state and resets all flags.
+> > @@ -313,7 +307,8 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
+> >  		       psmouse->name, psmouse->phys, psmouse->pktcnt);
+> >  		psmouse->badbyte = psmouse->packet[0];
+> >  		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
+> > -		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
+> > +		atomic_inc(&psmouse->nb_recync_pending);
+> 
+> The patch and the changelog consistently misspell "sync".
+> 
+> A code comment (in psmouse.h) which clearly spells out the role of
+> nb_recync_pending would be useful.
 
-I filed a bug two weeks ago( https://bugs.launchpad.net/bugs/315782 )
-and now after some further research to determine the bug's location, I
-am now determined to patch it.
 
-I searched http://lxr.linux.no/linux+v2.6.28.2/+search after
-SYS_rename to see what the process is for renaming a file however I
-can't find anything. Could anyone knowledgeable of the kernel point me
-to where I should start digging?
+Ok.
 
-Best regards
-Nicklas W Bjurman
+ 
+> > +		schedule_work(&psmouse->resync_work);
+> >  		goto out;
+> >  	}
+> >  
+> >
+> > ...
+> >
+> > @@ -1131,7 +1155,13 @@ static void psmouse_disconnect(struct serio *serio)
+> >  
+> >  	/* make sure we don't have a resync in progress */
+> >  	mutex_unlock(&psmouse_mutex);
+> > -	flush_workqueue(kpsmoused_wq);
+> > +
+> > +	prepare_to_wait(&psmouse->recync_pending_queue, &wait,
+> > +				TASK_UNINTERRUPTIBLE);
+> > +	if (atomic_read(&psmouse->nb_recync_pending))
+> > +		schedule();
+> > +	finish_wait(&psmouse->recync_pending_queue, &wait);
+> 
+> So... we're requiring that nb_recync_pending is zero at this stage?
+> 
+> I wonder if the code manages to do that.  A little WARN_ON(), maybe?
+
+
+Yes it is supposed to be zero since no new recync can be performed at this time.
+But a workqueue (one that creates the kpsmoused thread) or the thread itself can
+be still running, so we want to ensure all is completed.
+
+Perhaps a schedule_timeout with a warn_on would be better to detect soft-lockups?
+
+Thanks!
+
+ 
+> >  	mutex_lock(&psmouse_mutex);
+> >  
+> 
+
