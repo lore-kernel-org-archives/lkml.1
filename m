@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZA0DaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753385AbZA0DgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbZA0DaS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 22:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751760AbZA0DaE
+	id S1753385AbZA0DgT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 22:36:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZA0DgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 22:30:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49809 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751798AbZA0DaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 22:30:02 -0500
-Date: Tue, 27 Jan 2009 04:23:59 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC v5] wait: prevent exclusive waiter starvation
-Message-ID: <20090127032359.GA17359@redhat.com>
-References: <20090118013802.GA12214@cmpxchg.org> <20090118023211.GA14539@redhat.com> <20090120203131.GA20985@cmpxchg.org> <20090121143602.GA16584@redhat.com> <20090121213813.GB23270@cmpxchg.org> <20090122202550.GA5726@redhat.com> <20090123095904.GA22890@cmpxchg.org> <20090123113541.GB12684@redhat.com> <20090123133050.GA19226@redhat.com> <20090126215957.GA3889@cmpxchg.org>
+	Mon, 26 Jan 2009 22:36:09 -0500
+Received: from e32.co.us.ibm.com ([32.97.110.150]:44107 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751954AbZA0DgI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 22:36:08 -0500
+Date: Mon, 26 Jan 2009 19:32:11 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: devpts multiple instances feedback
+Message-ID: <20090127033211.GA13552@us.ibm.com>
+References: <20090103155209.GA17988@lst.de> <20090103161544.GA18976@lst.de> <20090126215321.GA20726@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090126215957.GA3889@cmpxchg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090126215321.GA20726@lst.de>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/26, Johannes Weiner wrote:
->
-> Another iteration.  I didn't use a general finish_wait_exclusive() but
-> a version of this function that just returns whether we were woken
-> through the queue or not.
+Christoph Hellwig [hch@lst.de] wrote:
+| On Sat, Jan 03, 2009 at 05:15:44PM +0100, Christoph Hellwig wrote:
+| > This is a little untested patch to massage the mount code into about
+| > how it should look like:
+| 
+| ping?
 
-But if your helper (finish_wait_woken) returns true, we always need
-to wakeup the next waiter, or we don't need to use it. So why not
-place the wakeup in the helper itself?
+I was waiting for discussion on the other thread. But yes, this does
+simplify the code by copying in the common code in get_sb_single() and
+get_sb_nodev() into devpts, and eliminating the do_remount() stuff in
+'single-mount' mode.
 
-> --- a/include/linux/wait.h
-> +++ b/include/linux/wait.h
-> @@ -333,16 +333,20 @@ do {									\
->  	for (;;) {							\
->  		prepare_to_wait_exclusive(&wq, &__wait,			\
->  					TASK_INTERRUPTIBLE);		\
-> -		if (condition)						\
-> +		if (condition) {					\
-> +			finish_wait(&wq, &__wait);			\
->  			break;						\
-> +		}							\
->  		if (!signal_pending(current)) {				\
->  			schedule();					\
->  			continue;					\
->  		}							\
->  		ret = -ERESTARTSYS;					\
-> +		if (finish_wait_woken(&wq, &__wait))			\
-> +			__wake_up_common(&wq, TASK_INTERRUPTIBLE,	\
+We may also be able to define an "empty" mknod_ptmx() when
+CONFIG_DEVPTS_MULTIPLE_INSTANCES=n and share a bit more code, but will
+defer that to a separate patch.
 
-No, we can't use __wake_up_common() without wq->lock.
+Will test this out some more and resend the modified patch.
 
-Oleg.
-
+Sukadev
