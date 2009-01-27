@@ -1,80 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbZA0Sd4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZA0SgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756430AbZA0Sd4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 13:33:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZA0Sds
+	id S1756605AbZA0SgK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 13:36:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZA0Sfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 13:33:48 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:53261 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755156AbZA0Sdr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 13:33:47 -0500
-Subject: Re: [PATCH v2] timer: implement lockdep deadlock detection
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1233081027.10992.21.camel@laptop>
-References: <1233010786.4344.1.camel@johannes.local>
-	 <20090126230721.GA6556@elte.hu> <1233046009.4012.3.camel@johannes.local>
-	 <20090127132759.GI23121@elte.hu>  <20090127134128.GA24965@elte.hu>
-	 <1233079597.4755.2.camel@johannes.local> <1233081027.10992.21.camel@laptop>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-b1YBuETGJ1NPi6u+YBjQ"
-Date: Tue, 27 Jan 2009 19:33:07 +0100
-Message-Id: <1233081187.4455.0.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 27 Jan 2009 13:35:53 -0500
+Received: from mms2.broadcom.com ([216.31.210.18]:2271 "EHLO mms2.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754237AbZA0Sfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 13:35:53 -0500
+X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
+Date: Tue, 27 Jan 2009 10:35:33 -0800
+From: "Matt Carlson" <mcarlson@broadcom.com>
+To: "Tarkan Erimer" <tarkan.erimer@turknet.net.tr>
+cc: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>,
+       "Alexey Dobriyan" <adobriyan@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "David Woodhouse" <dwmw2@infradead.org>,
+       "David Miller" <davem@davemloft.net>, netdev <netdev@vger.kernel.org>
+Subject: Re: [BUG] tg3 module problem on Linux-2.6.29-rc1-2
+Message-ID: <20090127183533.GA10466@xw6200.broadcom.net>
+References: <49771D65.3090205@turknet.net.tr>
+ <20090121152818.GA3438@x200.localdomain>
+ <497870A3.4070200@turknet.net.tr>
+ <3f9a31f40901262230s3efb9242jcd4a02ee84944daa@mail.gmail.com>
+ <497EBBB1.5020609@turknet.net.tr> <497F2CDC.6050106@turknet.net.tr>
+MIME-Version: 1.0
+In-Reply-To: <497F2CDC.6050106@turknet.net.tr>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-WSS-ID: 65618C733FC42433269-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Jan 27, 2009 at 07:48:44AM -0800, Tarkan Erimer wrote:
+> Tarkan Erimer wrote:
+> > Jaswinder Singh Rajput wrote:
+> >> Is this ubuntu's specific problem or you also getting these
+> >> warnings/errors on another releases.
+> >>
+> >>   
+> > Yes,it's specific to Ubuntu's kernel build process (make-kpkg). I had 
+> > no time to try with regular kernel build process. But; if it's 
+> > necessary, I can try it out. BTW, my box is Kubuntu 8.10 with latest 
+> > updates.
+> >
+> Now, I tried with 2.6.29-rc2-git2 and the result is same. No difference. 
+> When I have time, I'll try via regular kernel compile process to see 
+> what will be happen.
 
---=-b1YBuETGJ1NPi6u+YBjQ
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Like I outlined in my previous email, this is a scripting / tools problem.
+Updating your kernel will not help.  Either the script or modinfo needs to
+be modified to somehow recognize that while the driver does make
+request_firmware() calls, the firmware resides in the kernel itself.
 
-On Tue, 2009-01-27 at 19:30 +0100, Peter Zijlstra wrote:
-> On Tue, 2009-01-27 at 19:06 +0100, Johannes Berg wrote:
-> > On Tue, 2009-01-27 at 14:41 +0100, Ingo Molnar wrote:
-> > > -tip testing found this build failure with your patch:
-> > >=20
-> > >  arch/x86/kernel/hpet.c:631: error: too few arguments to function =E2=
-=80=98init_timer_on_stack_key=E2=80=99
-> >=20
-> > Odd, I'll look into this.
-> >=20
-> > Meanwhile, I'd appreciate comments on
-> > http://bugzilla.kernel.org/show_bug.cgi?id=3D12552
->=20
-> Seems valid to me, the workaround in run_workqueue() seems applicable
-> here as well.
-
-Alright, will fix.
-
-johannes
-
---=-b1YBuETGJ1NPi6u+YBjQ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJf1NhAAoJEKVg1VMiehFYUPgP/RjrmOMlN/PuYSft62z4QwFq
-HUqcKl+V5qXK+r/2ToAzAQXmtvc+qwn46y26KCa5NRve4G3sy7KJ7fQYFiUpeQ6w
-D5xXYz6qAZ2eGwXScodu+c/9sIh1F/KBAZJbMgMBYdfgH3TqIhGaEyzVemDA0/wq
-zTWnlG6eeLNWQh934qPbR0deVbcAuGVGS8IDyrHfdre2WhQll929ZG9vb26D+LN4
-zSlopneDyv0vz5aAiMKqCNGqyHDqfmNF70cN6p2neDJM+5vdmpeLdO78osZUh0+J
-u7ghxEe438tMgrtgHmuBi5IZ9q+fq1/bgKyFqOV8nFVbTReWV2CWlaVpPKls0AJI
-/h2MVasYwx44ysI3ag0dU8cwSddHohtdUVnl8Mt4ThufiOmLhv4EYFEwMoYexx3p
-ZsXQTGhi2hZNBF16XG4QyO8VL3y60bkazr6iCU0EiDT+wjugvy0Np/gCIxaBzEW3
-yeWRqhwJBlu9+NfnK0nANG4QUCqhbR2hnu4MbN7qQM/n46WuhrROjJ2RQbj3Dx8P
-MoX5lb6R8RqrBvdTDagutrJxHPUjJ/GubqYQujMpqpEHEagUA/w1Zflo5iKl91c5
-guSFboRJFJ7yioWp/+YREaLirsTPi7OADl4noH1vyVlRU/Hrq+l4IqOYKrLb83VU
-U07NRevcwL16rMURABkB
-=P3zz
------END PGP SIGNATURE-----
-
---=-b1YBuETGJ1NPi6u+YBjQ--
+> PS: If you write a reply to "netdev@vger.kernel.org", it will not reach 
+> to me. Because, I'm not subscribed to this mailing-list. So, please CC 
+> it to me.
+> 
+> Tarkan ERIMER
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
