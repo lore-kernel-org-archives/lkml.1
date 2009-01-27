@@ -1,94 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZA0XKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZA0XOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752746AbZA0XKv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 18:10:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZA0XKn
+	id S1752483AbZA0XOm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 18:14:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZA0XOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 18:10:43 -0500
-Received: from ns.skekraft.net ([213.199.96.131]:54875 "EHLO mail.skekraft.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbZA0XKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 18:10:42 -0500
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Robert Love <rml@tech9.net>
-Subject: PROBLEM: in_atomic() misuse all over the place
-Cc: Pavel Machek <pavel@ucw.cz>
-Content-Disposition: inline
-From: Roger Larsson <roger.larsson@e-gatan.se>
-Date: Wed, 28 Jan 2009 00:10:37 +0100
+	Tue, 27 Jan 2009 18:14:34 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:34180 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020AbZA0XOd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 18:14:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Gm5OLN0EeL0yZD3zyZ2BaKoJMhaQe1m8s2mYfZaNA+93x8rk582GKS7OCVKInb6X23
+         cxet3txgW8YVOr3Ye0Alf5OdYCarnAzuVmyX+jd/Dp466NoPWC/kXVhBO+0eMhnQT6pt
+         pccW6JaPwwAAgXhqhatcwrB3GDFma1cupXhzk=
+Date: Tue, 27 Jan 2009 17:13:51 -0600
+From: Shawn Bohrer <shawn.bohrer@gmail.com>
+To: rusty@rustcorp.com.au
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Modversions and long symbol names
+Message-ID: <20090127231351.GA19513@mediacenter>
+References: <20090120173636.GB24529@mediacenter>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901280010.37633.roger.larsson@e-gatan.se>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120173636.GB24529@mediacenter>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resent, non html)
+On Tue, Jan 20, 2009 at 11:36:36AM -0600, Shawn Bohrer wrote:
+> Currently when modversions is enabled the kernel will not load any
+> modules that depend on exported symbols with names longer than
+> 64 - sizeof(unsigned long) characters.
+> 
+> This is because the struct modversion_info has the name member set to a
+> size of MODULE_NAME_LEN.  This is not the module name this is the symbol
+> name so I'm guessing this is a mistake or at least a misused constant.
+> 
+> Is it possible to increase this size to something more reasonable like
+> 512 characters?
 
-[1.] One line summary of the problem:    
-in_atomic() is used to select path of execution, most likely to suppress 
-warning logs when running a preemptive kernel.
+Hopefully everyone is back from linux.conf.au and is caught up on email
+now.  Is there a reason modversions imposes this small symbol name
+length?  Unfortunately I have modules that have longer exported symbol
+names and this prevents them from loading on kernels that have
+modversions enabled.  Of course they load just fine when modversions is
+disabled.  I can't just shorten my symbol names because they are
+exported and other modules are using them.
 
-[2.] Full description of the problem/report:
-
-The problem is that in_atomic() only works on preemptive kernels...
-
-Result: preemptive kernel warns about a potential deadlock in all kernels,
-developer silence with the help of in_atomic()
-bug remains in SMP/UP kernels...
-
-[3.] Keywords (i.e., modules, networking, kernel):
-in_atomic(), preemptive, sleeping
-
-[4.] Kernel version (from /proc/version):
-	2.6.28.2 (review)
-
-[5.] Output of Oops..
-
-"sleeping function called from invalid context"
-
-[6.] A small shell script or example program which triggers the
-     problem (if possible)
-
-Small example of the strange code I found is this
-
-file:  include/net/sock.h
-
-   static inline gfp_t gfp_any(void)
-   {
-     return in_atomic() ? GFP_ATOMIC : GFP_KERNEL;
-   }
-
-	//  I can find no comment on why this strange code would be OK.
-	//  An it is in its turn used in several drivers...
-
-If the processor can get to this function while atomic in a preemptive kernel 
-it will likely be able to get there in other kernels as well, especially SMP.
-
-It returns GFP_ATOMIC when being atomic in a preemptive kernel, allocating 
-with that flag will not sleep. But calling this with another kernel will 
-ALWAYS return GFP_KERNEL, and it may cause a sleeping allocate...
-
-Other places that I think misuse of in_atomic is Arch code, USB code, ...
-
-There are 77 uses of in_atomic directly (grep | wc)
-36 in ./arch
-23 in ./drivers
-2 in ./sound/core/seq/seq_virmidi.c
-1 in ./include/net/sock.h
-The remaining 15 are probably OK (kernel, mm/filemap)
-
-But the sock.h gfp_any() spreads further...
-1 in ./Documentation
-2 in ./drivers
-9 in ./net
-
-
-Suggestion: should in_atomic() that by default return the safer 1 instead of 
-the unsafe 0. And add an in_atomic_warn() with default of 0 to use where it is
-OK - like when deciding to log a warning.
-
-/RogerL
-
+--
+Shawn
