@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZA0NLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755334AbZA0NN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755133AbZA0NLY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 08:11:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZA0NLQ
+	id S1755334AbZA0NN7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 08:13:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZA0NNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 08:11:16 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50421 "EHLO mx3.mail.elte.hu"
+	Tue, 27 Jan 2009 08:13:51 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38470 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753275AbZA0NLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 08:11:15 -0500
-Date: Tue, 27 Jan 2009 14:11:08 +0100
+	id S1753248AbZA0NNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 08:13:50 -0500
+Date: Tue, 27 Jan 2009 14:13:17 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <htejun@gmail.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2 #tj-percpu] x86: fix build breakage on voyage
-Message-ID: <20090127131108.GE23121@elte.hu>
-References: <20090126103243.GA31307@elte.hu> <1232977445-11815-1-git-send-email-brgerst@gmail.com> <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org> <497E8778.9060503@gmail.com> <1233032609.3248.78.camel@localhost.localdomain> <497E9B9D.4010102@gmail.com> <20090127113734.GA28249@elte.hu> <497EF43D.9010303@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Herbert Xu <herbert@gondor.apana.org.au>, akpm@linux-foundation.org,
+       hpa@zytor.com, brgerst@gmail.com, ebiederm@xmission.com,
+       cl@linux-foundation.org, travis@sgi.com, linux-kernel@vger.kernel.org,
+       steiner@sgi.com, hugh@veritas.com,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+Message-ID: <20090127131317.GF23121@elte.hu>
+References: <20090115183942.GA6325@elte.hu> <200901201328.24605.rusty@rustcorp.com.au> <49756E6E.2060409@kernel.org> <200901271213.18605.rusty@rustcorp.com.au> <497E705B.5000302@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <497EF43D.9010303@gmail.com>
+In-Reply-To: <497E705B.5000302@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,44 +40,16 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Tejun Heo <htejun@gmail.com> wrote:
+* Tejun Heo <tj@kernel.org> wrote:
 
-> Hello, Ingo.
+> > Tejun, any chance of you updating the tj-percpu tree? My current 
+> > patches are against Linus's tree, and rebasing them on yours involves 
+> > some icky merging.
 > 
-> Ingo Molnar wrote:
-> >> +#ifdef CONFIG_X86_LOCAL_APIC
-> >>  	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
-> >>  	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
-> >> +#endif
-> > 
-> > That patch is not acceptable - it is ugly and it adds another set of
-> > #ifdefs to an already complex piece of code.
-> 
-> Well, although the patch itself does add #ifdef, if you look over the 
-> whole series, voyager is now a much more conforming citizen in the x86 
-> world.  There are several solutions to this particular one.
-> 
-> 1. Just let apic stuff defined and not use it in voyager if the ifdef
->    is disturbing.  IIUC, apic isn't used in voyager at all, right?
-> 
-> 2. Clean up early percpu stuff so that it each early percpu variable
->    doesn't need to be explicitly copied and cleared, which is the
->    actual problem here.
-> 
-> 3. But, then again, the current interim and ugly way of doing it isn't
->    too bad considering the small number of early per cpu users.
-> 
-> To me the current form doesn't look too bad but if it's too ugly, maybe 
-> doing #2 is not such a bad idea such that early percpu can be 
-> transferred to percpu in more systematic way.  It still feels a bit like 
-> overdoing it tho.
-> 
-> What do you think?
+> If Ingo is okay with it, I'm fine with it too.  Unless Ingo objects, 
+> I'll do it tomorrow-ish (still big holiday here).
 
-This issue might be minor, but it's the death of a thousand cuts. It 
-should switch to the generic x86 code, use smp_ops to wrap/express its own 
-SMP weirdnesses [and extend it where needed - because _that_ is a step 
-forward for the whole code - fixing build bugs isnt] and then such 
-problems simply wont occur.
+Sure - but please do it as a clean rebase ontop of latest, not as a 
+conflict-merge, as i'd expect there to be quite many clashes.
 
 	Ingo
