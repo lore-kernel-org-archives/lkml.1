@@ -1,82 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756806AbZA0StT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZA0Sw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756806AbZA0StT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 13:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbZA0StH
+	id S1756717AbZA0Sw2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 13:52:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbZA0SwU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 13:49:07 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:43451 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755463AbZA0StG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 13:49:06 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:
-	content-transfer-encoding:in-reply-to:x-operating-system:user-agent:
-	x-gmailtapped-by:x-gmailtapped;
-	b=ayV9xVrUXPDOyOLMYdwZzvTRLAAbVd1wT/O2huvepPqirm9Mu9gSK0L8wVih0Sw4i
-	DoK1IA9MvjcAfgvVXSbMA==
-Date: Tue, 27 Jan 2009 10:48:51 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       rientjes@google.com, mbligh@google.com, thockin@google.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4] softlockup: remove hung_task_check_count
-Message-ID: <20090127184851.GD22298@google.com>
-References: <1232991701.4863.222.camel@laptop> <20090127003055.GA21269@google.com> <20090127132626.GH23121@elte.hu>
+	Tue, 27 Jan 2009 13:52:20 -0500
+Received: from mail.work.de ([212.12.32.20]:45264 "EHLO mail.work.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753534AbZA0SwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 13:52:19 -0500
+X-Greylist: delayed 680 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Jan 2009 13:52:19 EST
+Message-ID: <497F552B.8090201@gmail.com>
+Date: Tue, 27 Jan 2009 22:40:43 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090127132626.GH23121@elte.hu>
-X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
-User-Agent: Mutt/1.5.11
-X-GMailtapped-By: 172.28.16.75
-X-GMailtapped: msb
+To: akpm@linux-foundation.org
+CC: roel.kluin@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] DVB: negative internal->sub_range won't get noticed
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Mandeep Singh Baines <msb@google.com> wrote:
-> 
-> > The design was proposed by Frédéric Weisbecker. Peter Zijlstra suggested 
-> > the use of RCU.
-> 
-> ok, this looks _much_ cleaner.
-> 
-> One question:
-> 
-> > -	read_lock(&tasklist_lock);
-> > +	rcu_read_lock();
-> >  	do_each_thread(g, t) {
-> > -		if (!--max_count)
-> > +		if (need_resched())
-> >  			goto unlock;
-> 
-> Isnt it dangerous to skip a check just because we got marked for 
-> reschedule? Since it runs so rarely it could by accident be preempted and 
-> we'd not get any checking done for a long time.
-> 
+On Mon, 19 Jan 2009 00:35:47 +0100 Roel Kluin <roel.kluin@gmail.com>
+wrote:
 
-Yeah, the checking could be deferred indefinitely. So you could have a system
-where tasks are hung but it takes a really long time to detect this and
-finally panic the system. Not so good for high-availability.
+> internal->sub_range is unsigned, a negative won't get noticed.
+>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> ---
+> diff --git a/drivers/media/dvb/frontends/stb0899_algo.c
+b/drivers/media/dvb/frontends/stb0899_algo.c
+> index 83dc7e1..2ea32da 100644
+> --- a/drivers/media/dvb/frontends/stb0899_algo.c
+> +++ b/drivers/media/dvb/frontends/stb0899_algo.c
+> @@ -464,13 +464,14 @@ static void next_sub_range(struct
+stb0899_state *state)
+>
+>  	if (internal->sub_dir > 0) {
+>  		old_sub_range = internal->sub_range;
+> -		internal->sub_range = MIN((internal->srch_range / 2) -
+> +		if (internal->tuner_offst + internal->sub_range / 2 >=
+> +				internal->srch_range / 2)
+> +			internal->sub_range = 0;
+> +		else
+> +			internal->sub_range = MIN((internal->srch_range / 2) -
+>  					  (internal->tuner_offst + internal->sub_range / 2),
+>  					   internal->sub_range);
+>
+> -		if (internal->sub_range < 0)
+> -			internal->sub_range = 0;
+> -
+>  		internal->tuner_offst += (old_sub_range + internal->sub_range) / 2;
+>  	}
 
-What if a check_count sysctl was added? But instead of being a max_check_count,
-it would be a min_check_count. This would guarantee that a minimum amount of
-checking is done.
+> I hope someone understands that function :(
 
-Alternatively, the code for trying to continue the iteration after a
-reschedule could be re-inserted. That code is a little tricky and
-potentially fragile since continuation of a tasklist iteration is not
-really supported by the sched.h APIs. But it is does have the nice properties
-of getting through the entire list almost all the time and still playing nice
-with the scheduler.
+
+I guess the relevant people might. Sending it to wrong people and to
+a wrong mailing list, doesn't help much i guess.
+
+
+That function does a step through a "next slice" of the RF carrier
+based on a RF center frequency, which is used for carrier acquisition.
+
+
+> Do we actually need that test at all?  Perhaps it has never
+triggered?
+
+
+Ranges can go negative, from the current offset to the left anything
+is negative, to the right it is positive. There of course is a bug
+that the variable is not signed.
+
+I have pushed out a fix out here at
+http://jusst.de/hg/v4l-dvb/rev/368dc6078295
+
+including your comment on the macros. Thanks for pointing the bug.
 
 Regards,
-Mandeep
+Manu
+
+
+
+
