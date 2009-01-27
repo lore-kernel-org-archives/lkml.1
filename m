@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbZA0FIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZA0FIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753066AbZA0FIV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 00:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZA0FIE
+	id S1753665AbZA0FIu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 00:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZA0FIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 00:08:04 -0500
-Received: from omr3.networksolutionsemail.com ([205.178.146.53]:48228 "EHLO
-	omr3.networksolutionsemail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751132AbZA0FID (ORCPT
+	Tue, 27 Jan 2009 00:08:39 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48769
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751170AbZA0FIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 00:08:03 -0500
-Message-ID: <497E968F.3020708@nerdgrounds.com>
-Date: Mon, 26 Jan 2009 21:07:27 -0800
-From: Jonathan Campbell <jon@nerdgrounds.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
-MIME-Version: 1.0
-To: Mark Knecht <markknecht@gmail.com>
-CC: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
-References: <497E4531.20800@nerdgrounds.com> <5bdc1c8b0901261859g58a413e1x52208a6f2c1f9ccd@mail.gmail.com>
-In-Reply-To: <5bdc1c8b0901261859g58a413e1x52208a6f2c1f9ccd@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 27 Jan 2009 00:08:38 -0500
+Date: Mon, 26 Jan 2009 21:08:35 -0800 (PST)
+Message-Id: <20090126.210835.181389836.davem@davemloft.net>
+To: sam@ravnborg.org
+Cc: andrew@walrond.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.28 headers break kbd and net-tools userspace builds
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090122191239.GA16347@uranus.ravnborg.org>
+References: <20090122175645.GA14178@uranus.ravnborg.org>
+	<4978C301.1040705@walrond.org>
+	<20090122191239.GA16347@uranus.ravnborg.org>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Thu, 22 Jan 2009 20:12:39 +0100
 
-> Can the GPU use the data placed in your file system? 
-Assuming the GPU can access any part of VRAM, yes. Files created in 
-vramfs will always have content that exists somewhere in video ram. A 
-file you create never moves, and is always contiguous in memory. All 
-your program needs to direct the GPU to it is the block offset from the 
-start of VRAM, which can be obtained by an ioctl() or bmap().
+> On Thu, Jan 22, 2009 at 07:03:29PM +0000, Andrew Walrond wrote:
+> > $ grep -r iphdr /usr/include/
+> > 
+> > /usr/include/netinet/ip.h:struct iphdr
+> > /usr/include/netinet/tcp.h: * This should be defined as MIN(512, IP_MSS 
+> > - sizeof (struct tcpiphdr)).
+> > /usr/include/linux/if_tunnel.h:    struct iphdr        iph;
+> > /usr/include/linux/ip.h:struct iphdr {
+> > 
+> > $ grep netinet/ip.h iptunnel.c
+> > 
+> > #include <netinet/ip.h>
+> > 
+> > So linux/ip.h is clashing with glibc(2.8)'s netinet/ip.h
+> 
+> I took a look at my netinet/ip.h and this is obviously
+> the same structure.
+> But I do not know what the right answer is here.
+> 
+> Added netdev..
+> 
+> This may be a general thing. Because iphdr is
+> no a kernel thing, it is an IP thing. So one could argue
+> that the kernel should not export it in the first place.
 
-I thought the best possible design would be for any process to create a 
-file in vramfs, and then direct the attention of whoever's managing the 
-GPU to that file (perhaps a user-space daemon), who could open the file 
-and use bmap or an ioctl to locate it and direct the GPU to operate on it.
+The fly in the ointment is linux/if_tunnel.h
 
-I'd also like to point out the filesystem structures themselves are 
-never placed in VRAM on purpose. I'd hate for files to suddenly 
-disappear from the filesystem because of an errant GPU bug or pixel 
-shader gone amok; the worst that can happen by doing it that way is that 
-a bunch of files go blank or get filled with garbage and no harm done.
-> Do you have strong control as to exactly how the data is mapped into VRAM? 
-Not exactly. When you create a file you get whatever free space is 
-available. However, vramfs does guarantee that your file is never 
-fragmented, never sparse, and will always exist for the life of the file 
-from it's offset in video ram to the offset plus the file size. I 
-believe I've written the code to be flexible enough however to allow 
-stronger control if needed.
-> I'm thinking about parallel processing  - Linux puts data there and then
-> the GPU works on it to produce a result which Linux can eventually
-> fetch.
->   
-Or multimedia uses too. I'd like to see this used by MPlayer or Xine 
-someday for example to make use of the MPEG-2 or H.264 hardware GPU 
-decoding that today's graphics cards support: Just feed in the H.264 in 
-one file and direct the GPU to spit out decoded video to another file, 
-which MPlayer would have memory-mapped and could directly do something 
-with it, -vf filters and all.
-> - Mark
->
->
->   
+We export a structure there for a userland interface which
+uses "struct iphdr".
 
+Because of that, we are faced with the difficult choice between
+defining the structure (as we do) in linux/ip.h or using some ugly
+__KERNEL__ ifdefs in linux/if_tunnel.h to conditionally include
+netinet/ip.h instead. :-/
+
+Really, I have no idea what to do about this as the problem has
+existed for so long.
