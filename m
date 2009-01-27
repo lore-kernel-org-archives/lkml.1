@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZA0Pue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZA0PvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756029AbZA0Pue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 10:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZA0PuZ
+	id S1756178AbZA0PvL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 10:51:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbZA0Puz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 10:50:25 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44869 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbZA0PuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 10:50:25 -0500
-Date: Tue, 27 Jan 2009 16:49:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
-Message-ID: <20090127154946.GA28209@elte.hu>
-References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <200901262148.49717.rjw@sisk.pl> <20090126213519.GB13670@elte.hu> <200901271628.54037.rjw@sisk.pl>
+	Tue, 27 Jan 2009 10:50:55 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45345 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752084AbZA0Puy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 10:50:54 -0500
+Date: Tue, 27 Jan 2009 07:50:23 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeff Garzik <jeff@garzik.org>, Tejun Heo <tj@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+In-Reply-To: <20090127073055.GA30360@havoc.gtf.org>
+Message-ID: <alpine.LFD.2.00.0901270748290.3123@localhost.localdomain>
+References: <20090127073055.GA30360@havoc.gtf.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901271628.54037.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> > In fact whatever check you put in it's _always_ going to be 
-> > fundamentally more fragile than direct instrumentation: you cannot 
-> > possibly check all possible places that enable interrupts. (they could 
-> > be disabling interrupts as a _restore_irqs() sequence for example)
+On Tue, 27 Jan 2009, Jeff Garzik wrote:
 > 
-> In this particular case, I'm not really interested in that.  What I'm 
-> interested in is which driver's ->suspend_late() or ->resume_early() (or 
-> the equivalents for sysdevs) has enabled interrupts, which is quite easy 
-> to check directly.
+> Please pull from 'upstream-linus' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+> 
+> to receive the following updates:
+> 
+>  drivers/ata/Kconfig              |    6 ++--
+>  drivers/ata/libata-sff.c         |   12 ++++++-
+>  drivers/ata/pata_rb532_cf.c      |    2 -
+>  drivers/ata/pata_via.c           |   22 +++++++++---
+>  drivers/ata/sata_mv.c            |   56 ++++++++++++++----------------
+>  drivers/ata/sata_nv.c            |   70 +++++++++++++++++++++++--------------
+>  include/linux/pci_ids.h          |    4 ++
+>  7 files changed, 104 insertions(+), 68 deletions(-)
+>  delete mode 100644 arch/arm/mach-integrator/clock.h
 
-But this is exactly what it does - without any need for debug checks 
-spread around!
+Hmm. That delete of the empty file is "correct" (and probably came as a 
+result of somebody doing "make distclean" which deletes empty files), but 
+should not have been committed as part of "libata-sff: fix incorrect EH 
+message".
 
-You'll get a _full stack dump_ from the very driver that is enabling 
-interrupts! You dont get a trace - you get a stack dump of the very place 
-that is buggy. It does not get any better than that.
+Seems to be a mistake, and a small one, but still.. Be more careful.
 
-	Ingo
+			Linus
