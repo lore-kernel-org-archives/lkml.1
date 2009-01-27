@@ -1,60 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZA0XbF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZA0Xbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbZA0XbF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 18:31:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbZA0Xav
+	id S1753478AbZA0Xbj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 18:31:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbZA0Xb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 18:30:51 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37068 "EHLO mx2.redhat.com"
+	Tue, 27 Jan 2009 18:31:29 -0500
+Received: from sh.osrg.net ([192.16.179.4]:46365 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750994AbZA0Xau (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 18:30:50 -0500
-Date: Tue, 27 Jan 2009 18:30:45 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, cluster-devel@redhat.com,
-       teigland@redhat.com
-Subject: Re: [PATCH 1/2] dlm: initialize file_lock struct in GETLK before
- copying conflicting lock
-Message-ID: <20090127183045.58582d21@tleilax.poochiereds.net>
-In-Reply-To: <20090127223401.GL9151@fieldses.org>
-References: <1232651764-10799-1-git-send-email-jlayton@redhat.com>
-	<1232651764-10799-2-git-send-email-jlayton@redhat.com>
-	<20090127223401.GL9151@fieldses.org>
+	id S1751020AbZA0Xb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 18:31:28 -0500
+Date: Wed, 28 Jan 2009 08:31:07 +0900
+To: stefanr@s5r6.in-berlin.de
+Cc: fujita.tomonori@lab.ntt.co.jp, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: swiotlb default size (64 MB) too small?
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <tkrat.9e61b4a2f7087aca@s5r6.in-berlin.de>
+References: <20090127165508L.fujita.tomonori@lab.ntt.co.jp>
+	<20090127183723W.fujita.tomonori@lab.ntt.co.jp>
+	<tkrat.9e61b4a2f7087aca@s5r6.in-berlin.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090128083135Y.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009 17:34:01 -0500
-"J. Bruce Fields" <bfields@fieldses.org> wrote:
+On Tue, 27 Jan 2009 18:03:40 +0100 (CET)
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> On Thu, Jan 22, 2009 at 02:16:03PM -0500, Jeff Layton wrote:
-> > dlm_posix_get fills out the relevant fields in the file_lock before
-> > returning when there is a lock conflict, but doesn't clean out any of
-> > the other fields in the file_lock.
-> > 
-> > When nfsd does a NFSv4 lockt call, it sets the fl_lmops to
-> > nfsd_posix_mng_ops before calling the lower fs. When the lock comes back
-> > after testing a lock on GFS2, it still has that field set. This confuses
-> > nfsd into thinking that the file_lock is a nfsd4 lock.
-> > 
-> > Fix this by making DLM reinitialize the file_lock before copying the
-> > fields from the conflicting lock.
-> > 
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> On 27 Jan, FUJITA Tomonori wrote at LSML and LKML:
+> [I wrote]
+> >> > *) The report does not sound like there was a DMA mappig leak caused by
+> >> > copying between usb-storage and firewire-sbp2.  Else he would have hit
+> >> > the problem again even with increased swiotlb default size.
 > 
-> I'll leave this one to gfs2 people to apply unless I'm told otherwise.
+> > Hmm, we don't have leak here?
+> > 
+> > =
+> > From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > Subject: [PATCH] fw-sbp2: fix dma mapping leak on the failure path
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> >  drivers/firewire/fw-sbp2.c |   12 +++++++++++-
+> >  1 files changed, 11 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
+> > index e88d506..d40910d 100644
+> > --- a/drivers/firewire/fw-sbp2.c
+> > +++ b/drivers/firewire/fw-sbp2.c
+> > @@ -1491,8 +1491,18 @@ static int sbp2_scsi_queuecommand(struct scsi_cmnd *cmd, scsi_done_fn_t done)
+> >  	orb->base.request_bus =
+> >  		dma_map_single(device->card->device, &orb->request,
+> >  			       sizeof(orb->request), DMA_TO_DEVICE);
+> > -	if (dma_mapping_error(device->card->device, orb->base.request_bus))
+> > +	if (dma_mapping_error(device->card->device, orb->base.request_bus)) {
+> > +		if (scsi_sg_count(cmd)) {
+> > +			dma_unmap_sg(device->card->device, scsi_sglist(cmd),
+> > +				     scsi_sg_count(cmd),
+> > +				     cmd->sc_data_direction);
+> > +			dma_unmap_single(device->card->device,
+> > +					 orb->page_table_bus,
+> > +					 sizeof(orb->page_table),
+> > +					 DMA_TO_DEVICE);
+> > +		}
+> >  		goto out;
+> > +	}
+> >  
+> >  	sbp2_send_orb(&orb->base, lu, lu->tgt->node_id, generation,
+> >  		      lu->command_block_agent_address + SBP2_ORB_POINTER);
 > 
-> --b.
+> Yes, we do have a leak there.  Thanks a lot for checking the code.
 > 
+> There is one thing missing in the fix:  Even with scsi_sg_count(cmd) !=
+> 0, there is sometimes no orb->page_table to unmap.  It's when the
+> scatterlist was mapped into a single physical segment.
+> 
+> 
+> From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> Subject: firewire: sbp2: fix DMA mapping leak on the failure path
+> 
+> Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> who also provided a first version of the fix.
+> 
+> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+> ---
+>  drivers/firewire/fw-sbp2.c |   27 +++++++++++++++++----------
+>  1 file changed, 17 insertions(+), 10 deletions(-)
+> 
+> Index: linux/drivers/firewire/fw-sbp2.c
+> ===================================================================
+> --- linux.orig/drivers/firewire/fw-sbp2.c
+> +++ linux/drivers/firewire/fw-sbp2.c
+> @@ -1323,6 +1323,19 @@ static unsigned int sbp2_status_to_sense
+>  	}
+>  }
+>  
+> +static void sbp2_unmap_scatterlist(struct device *card_device,
+> +				   struct sbp2_command_orb *orb)
+> +{
+> +	if (scsi_sg_count(orb->cmd))
+> +		dma_unmap_sg(card_device, scsi_sglist(orb->cmd),
+> +			     scsi_sg_count(orb->cmd),
+> +			     orb->cmd->sc_data_direction);
+> +
+> +	if (orb->page_table_bus)
+> +		dma_unmap_single(card_device, orb->page_table_bus,
+> +				 sizeof(orb->page_table), DMA_TO_DEVICE);
 
-That should be fine. Dave T. has taken this into his tree and is
-pushing it to Linus.
+Well, this does not look correct since zero can be a valid dma
+address.
 
-Thanks,
--- 
-Jeff Layton <jlayton@redhat.com>
+static void sbp2_unmap_scatterlist(struct device *card_device,
+				   struct sbp2_command_orb *orb)
+{
+	if (scsi_sg_count(orb->cmd))
+		dma_unmap_sg(card_device, scsi_sglist(orb->cmd),
+			     scsi_sg_count(orb->cmd),
+			     orb->cmd->sc_data_direction);
+
+	if (scsi_sg_count(orb->cmd) > 1)
+		dma_unmap_single(card_device, orb->page_table_bus,
+				 sizeof(orb->page_table), DMA_TO_DEVICE);
+
+
+Well, looks cranky a bit but firewire is cranky for me :)
