@@ -1,75 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZA0T0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZA0Ta6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbZA0T0h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 14:26:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZA0T03
+	id S1756663AbZA0Ta6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 14:30:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZA0Tat
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 14:26:29 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:46877 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753866AbZA0T03 (ORCPT
+	Tue, 27 Jan 2009 14:30:49 -0500
+Received: from mx40.brocade.com ([144.49.195.4]:55246 "EHLO mx40.brocade.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755278AbZA0Tas convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 14:26:29 -0500
+	Tue, 27 Jan 2009 14:30:48 -0500
+X-IronPort-AV: E=Sophos;i="4.37,334,1231142400"; 
+   d="scan'208";a="52016173"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <20090127201406.27c8592f@mjolnir.drzeus.cx>
-References: <1231268198-12556-1-git-send-email-apw@canonical.com>
-	 <20090112160519.3ba21848@mjolnir.drzeus.cx>
-	 <20090115150003.GB6896@shadowen.org>
-	 <20090124185612.5afddbb0@mjolnir.drzeus.cx>
-	 <ac3eb2510901241545l4eb9f77dvebd5861340b3447e@mail.gmail.com>
-	 <20090125164858.6b281c6c@mjolnir.drzeus.cx>
-	 <ac3eb2510901250800g40dd31d8q35e626413f2853a1@mail.gmail.com>
-	 <20090127201406.27c8592f@mjolnir.drzeus.cx>
-Date: Tue, 27 Jan 2009 20:26:26 +0100
-Message-ID: <ac3eb2510901271126o52eeb867q402d919c3ae6fa56@mail.gmail.com>
-Subject: Re: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-Cc: Andy Whitcroft <apw@canonical.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver submission
+Date: Tue, 27 Jan 2009 11:30:46 -0800
+Message-ID: <4C94DE2070B172459E4F1EE14BD2364E027533D9@HQ-EXCH-5.corp.brocade.com>
+In-Reply-To: <1233084043.3231.91.camel@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver submission
+Thread-Index: AcmAtF4IXLI/YHzDR5e+Y0cvnuMCTgAARO7g
+References: <200901271855.n0RItOUA026905@swe37.brocade.com> <1233084043.3231.91.camel@localhost.localdomain>
+From: "Jing Huang" <huangj@Brocade.COM>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: "Krishna Gudipati" <kgudipat@Brocade.COM>, <linux-kernel@vger.kernel.org>,
+       <linux-scsi@vger.kernel.org>,
+       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
+       "Vinodh Ravindran" <vravindr@Brocade.COM>
+X-OriginalArrivalTime: 27 Jan 2009 19:30:47.0054 (UTC) FILETIME=[C0E68AE0:01C980B5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 20:14, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
-> On Sun, 25 Jan 2009 17:00:11 +0100
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
->
->> On Sun, Jan 25, 2009 at 16:48, Pierre Ossman <drzeus-mmc@drzeus.cx> wrote:
->> >
->> > My point was to have the kernel explicitly ask for the module it wants
->> > as there is no decent device to driver mapping scheme.
->>
->> Yep, which is what we do not want. Aliases are "aliases", and not
->> "module names". We need to add a matching alias to the module then.
->> Direct module names can not properly defined/blacklisted in userspace,
->> and we would need to work around that.
->> Every modalias should be
->> "<subsystem>:<whatever-name-fits-for-the-subsystem>" to plug properly
->> into the autoloading infrastructure. We rather have no modalias at
->> all, then a kernel module name there.
->>
->
-> The thing is that asking for a module is the only thing we can do here.
-> We can dress it up and give it some special coding to not cause
-> problems, but the code will always be "ask userspace to load
-> mmc_block", even if we replace "mmc_block" with "mmc:foobargazonk".
->
-> Given that, do you have any preferences for a solution? If we cannot
-> simply have "mmc_block", then I'm leaning to "mmc:block" for now. The
-> contents of the aliases is just an opaque string as far as userspace is
-> concerned, right?
+Thanks James,
 
-Right, it does not matter, we just need to be able to fnmatch()
-modalias and the string in the module.
+I agree with you. bfa driver does support all Brocade PCIe FC adapters
+(we don't have PCI HBA). I will fix this in next submission.
 
-We prefer every modalias to be prefixed with the subsystem, to be able
-to hook userspace configs into the alias processing. The string itself
-is completely up to the subsystem to decide whatever fits. If there
-could ever be several types of strings per susbsystem, it is usual to
-prefix the string with some character, but some subsystems know that
-this is not needed, and just put a plain single string there.
+Jing
 
-Thanks,
-Kay
+-----Original Message-----
+From: James Bottomley [mailto:James.Bottomley@HansenPartnership.com] 
+Sent: Tuesday, January 27, 2009 11:21 AM
+To: Jing Huang
+Cc: Krishna Gudipati; linux-kernel@vger.kernel.org;
+linux-scsi@vger.kernel.org; Ramkumar Vadivelu; Vinodh Ravindran
+Subject: Re: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver submission
+
+On Tue, 2009-01-27 at 10:55 -0800, Jing Huang wrote:
+> From: Jing Huang <huangj@brocade.com>
+> 
+> This patch contains Makefile and Kconfig file for scsi and bfa. It is
+created
+> using 2.6.29-rc2 kernel.
+> 
+> Signed-off-by: Jing Huang <huangj@brocade.com>
+> ---
+>  drivers/scsi/Kconfig      |    6 ++++++
+>  drivers/scsi/Makefile     |    1 +
+>  drivers/scsi/bfa/Kconfig  |    6 ++++++
+>  drivers/scsi/bfa/Makefile |   25 +++++++++++++++++++++++++
+>  4 files changed, 38 insertions(+)
+> 
+> diff -urpN orig/drivers/scsi/bfa/Kconfig
+patch/drivers/scsi/bfa/Kconfig
+> --- orig/drivers/scsi/bfa/Kconfig	1969-12-31 16:00:00.000000000
+-0800
+> +++ patch/drivers/scsi/bfa/Kconfig	2009-01-26 17:28:26.000000000
+-0800
+> @@ -0,0 +1,6 @@
+> +config SCSI_BFA_FC
+> +	tristate "Brocade BFA Fibre Channel Support"
+> +	depends on PCI && SCSI
+> +	---help---
+> +	Select M for building module
+> +
+
+You don't actually need this file: your Kconfig addition to scsi/Kconfig
+does this.
+
+> diff -urpN orig/drivers/scsi/bfa/Makefile
+patch/drivers/scsi/bfa/Makefile
+> --- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000
+-0800
+> +++ patch/drivers/scsi/bfa/Makefile	2009-01-26 17:28:26.000000000
+-0800
+> @@ -0,0 +1,25 @@
+> +#
+> +# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
+> +# All rights reserved
+> +# www.brocade.com
+> +# 
+> +# Linux driver for Brocade Fibre Channel Host Bus Adapter.
+> +#
+> +# This program is free software; you can redistribute it and/or
+modify it
+> +# under the terms of the GNU General Public License (GPL) Version 2
+as
+> +# published by the Free Software Foundation
+> +#
+> +# This program is distributed in the hope that it will be useful, but
+> +# WITHOUT ANY WARRANTY; without even the implied warranty of
+> +# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+> +# General Public License for more details.
+> +#
+> +obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
+> +
+> +bfa-objs := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o
+\
+> +	bfad_fwimg.o bfa_fcs.o bfa_core.o bfa_ioc.o bfa_iocfc.o
+bfa_hw_cb.o	\
+> +	bfa_hw_ct.o bfa_fcxp.o bfa_intr.o bfa_timer.o bfa_rport.o
+bfa_port.o	\
+> +	bfa_uf.o bfa_sgpg.o bfa_module.o bfa_ioim.o bfa_itnim.o
+bfa_fcpim.o	\
+> +	bfa_tskim.o bfa_log.o bfa_log_module.o bfa_csdebug.o bfa_sm.o
+plog.o
+> +
+> +EXTRA_CFLAGS += -I$(obj) -I$(obj)/include
+> diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
+> --- orig/drivers/scsi/Kconfig	2009-01-26 17:28:26.000000000 -0800
+> +++ patch/drivers/scsi/Kconfig	2009-01-26 17:28:21.000000000
+-0800
+> @@ -1797,6 +1797,12 @@ config SCSI_SRP
+>  	  To compile this driver as a module, choose M here: the
+>  	  module will be called libsrp.
+>  
+> +config SCSI_BFA_FC
+> +	tristate "Brocade BFA Fibre Channel Support"
+> +	depends on PCI && SCSI
+
+You need also
+
+	select SCSI_FC_ATTRS
+
+> +	---help---
+> +	  To compile this driver as a module, choose M here. The module
+will be called bfa
+
+The help isn't really very helpful.  What usually goes here is something
+like
+
+This bfa driver supports all Brocade PCI and PCIe fibre channel adapters
+
+(and if that's not true, give a list of the supported ones or the family
+name).
+
+James
+
+
