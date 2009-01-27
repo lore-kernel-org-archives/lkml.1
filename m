@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbZA0SDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756585AbZA0SHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbZA0SDo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 13:03:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbZA0SDg
+	id S1756585AbZA0SHa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 13:07:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZA0SHW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 13:03:36 -0500
-Received: from mga14.intel.com ([143.182.124.37]:59607 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755879AbZA0SDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 13:03:35 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,333,1231142400"; 
-   d="scan'208";a="104299934"
-Subject: Re: [mmotm] Backtrace __change_page_attr_set_clr
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090127083705.56e210e6.akpm@linux-foundation.org>
-References: <20090127110823.GO504@balbir.in.ibm.com>
-	 <20090127083705.56e210e6.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Tue, 27 Jan 2009 10:02:54 -0800
-Message-Id: <1233079374.15801.46.camel@vayu>
+	Tue, 27 Jan 2009 13:07:22 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:46318 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755232AbZA0SHV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 13:07:21 -0500
+Subject: Re: [PATCH v2] timer: implement lockdep deadlock detection
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+In-Reply-To: <20090127134128.GA24965@elte.hu>
+References: <1233010786.4344.1.camel@johannes.local>
+	 <20090126230721.GA6556@elte.hu> <1233046009.4012.3.camel@johannes.local>
+	 <20090127132759.GI23121@elte.hu>  <20090127134128.GA24965@elte.hu>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-7feMW6ARJe40uwoTEtbx"
+Date: Tue, 27 Jan 2009 19:06:37 +0100
+Message-Id: <1233079597.4755.2.camel@johannes.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-27 at 08:37 -0800, Andrew Morton wrote:
-> On Tue, 27 Jan 2009 16:38:23 +0530 Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > Hi, Andrew,
-> > 
-> > I see the following backtrace with 2009-01-16-16-18
-> > 
-> > ------------[ cut here ]------------
-> > WARNING: at arch/x86/mm/pageattr.c:560
-> > __change_page_attr_set_clr+0xdc/0x891()
-> > ...
-> > CPA: called for zero pte. vaddr = ffff8800cfee2000 cpa->vaddr =
-> > ffff8800cfee2000
-> OK, thanks.  It looks like you cc'ed the right person ;)
-> 
-> The code in current linux-next has changed a bit since 16 Jan. 
-> Hopefully this warning from dmidecode got fixed.
 
-This is fixed recently. In linus's git, commit
-a1e46212a410793d575718818e81ddc442a65283
+--=-7feMW6ARJe40uwoTEtbx
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
-suresh
+On Tue, 2009-01-27 at 14:41 +0100, Ingo Molnar wrote:
+> -tip testing found this build failure with your patch:
+>=20
+>  arch/x86/kernel/hpet.c:631: error: too few arguments to function =E2=80=
+=98init_timer_on_stack_key=E2=80=99
+
+Odd, I'll look into this.
+
+Meanwhile, I'd appreciate comments on
+http://bugzilla.kernel.org/show_bug.cgi?id=3D12552
+
+johannes
+
+--=-7feMW6ARJe40uwoTEtbx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJf00qAAoJEKVg1VMiehFY21sP+gMgWrmV9Ysy6C1BdJ8e5NhF
+trpkckwrG40gyKyEGN4XJWz4VOolmkiXYNqogKfDMxb8nvhTIKDfVAEOu76LIfet
+AI1rwjSAZKv/8qT11N3bbv+ZmeqNXdwE14+LXg58CqdkR4v2FKV9HtLU8CpGXVXx
+cLsyD50JUP1npLn1bZOkHk7FKoUo56hinW4rFiv9TVuGi2CKpnbRcx2SmB9Ha2lF
+mwuIPTvk6wVgpoHayVwnpxgrCgQtFdI1eNHJEI8ZjeXG9Z2FCY5Cu3uegIS9YsqP
+LvjL3928Xi7tkp2cOSKnAPhT3xs+HhesG3/FRWl0Z6SWUxR7zCQkF7ZIwlUVuLHO
+h51ngpHlPS0Tgp86HdoN88BfFfalvK5vqnsNlkCGhMlWiOjIqgoXiaUXWyHKERhG
+YNzP3qCHGhk78vETcYm/ZF/MtXmXsbhCbSqdAGv/2QQzEmuBp/uw9BCKKzRCgmrs
+QJi3qtKYKIP1id/Ab1CpdnuX9x/8OqFZqTWs1dcrJWD0Nn9n/5p3cg9mhpRXV7uA
+dZpF8LfhJkPuRonq6GFVyhV/fyrZ6SLK7sHSL1xH8N2Ml8bsnOFW4FUoimUOPBW/
+8La2i3qk2iFnVJf8H+k+wcyFRfSLjZpic+WWFDfRn1GTpTicEDgF4AoSCPhLJxNM
+x/CHOxHIBUq7fvUlYrDj
+=wcIE
+-----END PGP SIGNATURE-----
+
+--=-7feMW6ARJe40uwoTEtbx--
 
