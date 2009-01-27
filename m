@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZA0Iak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbZA0Ibs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbZA0Iak (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 03:30:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZA0IaS
+	id S1754588AbZA0Ibs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 03:31:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZA0Ibl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 03:30:18 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33567 "EHLO
+	Tue, 27 Jan 2009 03:31:41 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33626 "EHLO
 	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754319AbZA0IaQ (ORCPT
+	with ESMTP id S1750899AbZA0Ibk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 03:30:16 -0500
-Message-ID: <497EC456.4010109@jp.fujitsu.com>
-Date: Tue, 27 Jan 2009 17:22:46 +0900
+	Tue, 27 Jan 2009 03:31:40 -0500
+Message-ID: <497EC4AB.7030703@jp.fujitsu.com>
+Date: Tue, 27 Jan 2009 17:24:11 +0900
 From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
 To: linux-kernel@vger.kernel.org
 CC: mingo@redhat.com
-Subject: [PATCH 2/3] unify PM-Timer messages
+Subject: [PATCH 3/3] fix typo "ACPI_PM_OVRRUN" -> "ACPI_PM_OVERRUN"
 References: <497EC23A.7050408@jp.fujitsu.com>
 In-Reply-To: <497EC23A.7050408@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-2022-JP
@@ -26,57 +26,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When LOCAL APIC was calibrated, the debug message is displayed as follows.
-
-	CPU0: Intel(R) Xeon(R) CPU            5110  @ 1.60GHz stepping 06
-	Using local APIC timer interrupts.
-	calibrating APIC timer ...
-	... lapic delta = 3773131
-	... PM timer delta = 812434
-	APIC calibration not consistent with PM Timer: 226ms instead of 100ms
-	APIC delta adjusted to PM-Timer: 1662420 (3773131)
-	TSC delta adjusted to PM-Timer: 159592409 (362220564)
-	..... delta 1662420
-	..... mult: 71411249
-	..... calibration result: 265987
-	..... CPU clock speed is 1595.0924 MHz.
-	..... host bus clock speed is 265.0987 MHz.
-
-The PM-timer is written in several ways (PM-Timer, PM Timer, and PM timer)
-in this message. This patch unifies those messages.
+This patch fixes typo.
 
 Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
 ---
- arch/x86/kernel/apic.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ arch/x86/kernel/apic.c     |    2 +-
+ arch/x86/kernel/tsc.c      |    2 +-
+ include/linux/acpi_pmtmr.h |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
 Index: linux-2.6.29-rc2/arch/x86/kernel/apic.c
 ===================================================================
---- linux-2.6.29-rc2.orig/arch/x86/kernel/apic.c	2009-01-27 12:21:24.000000000 +0900
-+++ linux-2.6.29-rc2/arch/x86/kernel/apic.c	2009-01-27 12:24:04.000000000 +0900
-@@ -547,7 +547,7 @@ static int __init calibrate_by_pmtimer(l
- 	return -1;
- #endif
+--- linux-2.6.29-rc2.orig/arch/x86/kernel/apic.c	2009-01-27 12:24:04.000000000 +0900
++++ linux-2.6.29-rc2/arch/x86/kernel/apic.c	2009-01-27 12:24:18.000000000 +0900
+@@ -528,7 +528,7 @@ static void __init lapic_cal_handler(str
+ 		lapic_cal_t2 = tapic;
+ 		lapic_cal_tsc2 = tsc;
+ 		if (pm < lapic_cal_pm1)
+-			pm += ACPI_PM_OVRRUN;
++			pm += ACPI_PM_OVERRUN;
+ 		lapic_cal_pm2 = pm;
+ 		lapic_cal_j2 = jiffies;
+ 		break;
+Index: linux-2.6.29-rc2/arch/x86/kernel/tsc.c
+===================================================================
+--- linux-2.6.29-rc2.orig/arch/x86/kernel/tsc.c	2009-01-27 12:21:20.000000000 +0900
++++ linux-2.6.29-rc2/arch/x86/kernel/tsc.c	2009-01-27 12:24:18.000000000 +0900
+@@ -161,7 +161,7 @@ static unsigned long calc_pmtimer_ref(u6
+ 		return ULONG_MAX;
 
--	apic_printk(APIC_VERBOSE, "... PM timer delta = %ld\n", deltapm);
-+	apic_printk(APIC_VERBOSE, "... PM-Timer delta = %ld\n", deltapm);
+ 	if (pm2 < pm1)
+-		pm2 += (u64)ACPI_PM_OVRRUN;
++		pm2 += (u64)ACPI_PM_OVERRUN;
+ 	pm2 -= pm1;
+ 	tmp = pm2 * 1000000000LL;
+ 	do_div(tmp, PMTMR_TICKS_PER_SEC);
+Index: linux-2.6.29-rc2/include/linux/acpi_pmtmr.h
+===================================================================
+--- linux-2.6.29-rc2.orig/include/linux/acpi_pmtmr.h	2009-01-27 12:21:20.000000000 +0900
++++ linux-2.6.29-rc2/include/linux/acpi_pmtmr.h	2009-01-27 12:24:18.000000000 +0900
+@@ -10,7 +10,7 @@
+ #define ACPI_PM_MASK CLOCKSOURCE_MASK(24)
 
- 	/* Check, if the PM timer is available */
- 	if (!deltapm)
-@@ -557,12 +557,12 @@ static int __init calibrate_by_pmtimer(l
+ /* Overrun value */
+-#define ACPI_PM_OVRRUN	(1<<24)
++#define ACPI_PM_OVERRUN	(1<<24)
 
- 	if (deltapm > (pm_100ms - pm_thresh) &&
- 	    deltapm < (pm_100ms + pm_thresh)) {
--		apic_printk(APIC_VERBOSE, "... PM timer result ok\n");
-+		apic_printk(APIC_VERBOSE, "... PM-Timer result ok\n");
- 	} else {
- 		res = (((u64)deltapm) *  mult) >> 22;
- 		do_div(res, 1000000);
- 		pr_warning("APIC calibration not consistent "
--			"with PM Timer: %ldms instead of 100ms\n",
-+			"with PM-Timer: %ldms instead of 100ms\n",
- 			(long)res);
- 		/* Correct the lapic counter value */
- 		res = (((u64)(*delta)) * pm_100ms);
+ #ifdef CONFIG_X86_PM_TIMER
 
