@@ -1,81 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbZA0Pdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbZA0PjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbZA0Pdt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 10:33:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZA0Pdk
+	id S1755413AbZA0PjF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 10:39:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZA0Piy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 10:33:40 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:51671 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752466AbZA0Pdk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 10:33:40 -0500
-Subject: Re: [PATCH 1/2 #tj-percpu] x86: fix build breakage on voyage
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Brian Gerst <brgerst@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <497EF43D.9010303@gmail.com>
-References: <20090126103243.GA31307@elte.hu>
-	 <1232977445-11815-1-git-send-email-brgerst@gmail.com>
-	 <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org>
-	 <497E8778.9060503@gmail.com>
-	 <1233032609.3248.78.camel@localhost.localdomain>
-	 <497E9B9D.4010102@gmail.com> <20090127113734.GA28249@elte.hu>
-	 <497EF43D.9010303@gmail.com>
-Content-Type: text/plain
-Date: Tue, 27 Jan 2009 09:33:37 -0600
-Message-Id: <1233070417.3231.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Jan 2009 10:38:54 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58097 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752309AbZA0Piy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 10:38:54 -0500
+Date: Tue, 27 Jan 2009 10:37:32 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Neil Horman <nhorman@tuxdriver.com>, linux-kernel@vger.kernel.org,
+       hbabu@us.ibm.com, kexec@lists.infradead.org, horms@verge.net.au
+Subject: Re: [PATCH]: add dmesg log symbols to /proc/vmcoreinfo lists
+Message-ID: <20090127153732.GB4191@redhat.com>
+References: <20090119212127.GA13157@hmsreliant.think-freely.org> <20090120141551.GA5125@redhat.com> <20090120150958.GB18207@hmsreliant.think-freely.org> <20090120152255.GB5125@redhat.com> <20090127001211.f847ea5a.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090127001211.f847ea5a.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-27 at 20:47 +0900, Tejun Heo wrote:
-> Hello, Ingo.
+On Tue, Jan 27, 2009 at 12:12:11AM -0800, Andrew Morton wrote:
+> On Tue, 20 Jan 2009 10:22:56 -0500 Vivek Goyal <vgoyal@redhat.com> wrote:
 > 
-> Ingo Molnar wrote:
-> >> +#ifdef CONFIG_X86_LOCAL_APIC
-> >>  	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
-> >>  	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
-> >> +#endif
+> > On Tue, Jan 20, 2009 at 10:09:58AM -0500, Neil Horman wrote:
+> > > On Tue, Jan 20, 2009 at 09:15:51AM -0500, Vivek Goyal wrote:
+> > > > On Mon, Jan 19, 2009 at 04:21:27PM -0500, Neil Horman wrote:
+> > > > > Hey all-
+> > > > > 	It would be nice to be able to extract the dmesg log from a vmcore file
+> > > > > without needing to keep the debug symbols for the running kernel handy all the
+> > > > > time.  We have a facility to do this in /proc/vmcore.  This patch adds the
+> > > > > log_buf and log_end symbols to the vmcoreinfo area so that tools (like
+> > > > > makedumpfile) can easily extract the dmesg logs from a vmcore image.
+> > > > > 
+> > > > 
+> > > > It would be nice to get dmesg log if debug symbols are not around. Can't
+> > > > we use System.map for getting symbol addresses? vmcoreinfo had started
+> > > > small and seems to be growing now. I am thinking down the line will making
+> > > > use of System.map for such cases make sense?
+> > > > 
+> > > 
+> > > System.map only include exported and public symbols.  log_buf and log_end are
+> > > static, and not reported in the System.map.  Its a nice idea, but not
+> > > comprehensive for everything in the kernel.
+> > > 
+> > > ><snip>
+> > > > 
+> > > > Will it be an issue if we make log_buf and log_end non static and directly
+> > > > access these in kexec.c?
+> > > > 
+> > > I had considered that, but was a bit hesitant to do so, since it exposes the
+> > > internal implementation of the dmesg buffer.  In the event someone disables
+> > > CONFIG_PRINTK, thats just more code we need to ifdef.  With this implementation
+> > > we just stub out the log_buf_setup function, and let that be that.  It seems
+> > > more consice to me this way.
+> > > 
 > > 
-> > That patch is not acceptable - it is ugly and it adds another set of
-> > #ifdefs to an already complex piece of code.
+> > Makes sense to me.
+> > 
+> > Acked-by: Vivek Goyal <vgoyal@redhat.com>
+> > 
 > 
-> Well, although the patch itself does add #ifdef, if you look over the
-> whole series, voyager is now a much more conforming citizen in the x86
-> world.  There are several solutions to this particular one.
+> I rewrote the title to
 > 
-> 1. Just let apic stuff defined and not use it in voyager if the ifdef
->    is disturbing.  IIUC, apic isn't used in voyager at all, right?
+> 	kexec: add dmesg log symbols to /proc/vmcoreinfo lists
 > 
-> 2. Clean up early percpu stuff so that it each early percpu variable
->    doesn't need to be explicitly copied and cleared, which is the
->    actual problem here.
-
-Right ... there's a variant of this where the copying and clearing is
-done within the actual file that defines the variable (i.e. a hook
-approach).
-
-> 3. But, then again, the current interim and ugly way of doing it isn't
->    too bad considering the small number of early per cpu users.
+> it's nice to identify which subsystem is responsible for a patch.
 > 
-> To me the current form doesn't look too bad but if it's too ugly,
-> maybe doing #2 is not such a bad idea such that early percpu can be
-> transferred to percpu in more systematic way.  It still feels a bit
-> like overdoing it tho.
+> I also did all the below.  Please check it.  (Is anyone else reading all
+> this stuff??)
 > 
-> What do you think?
+> 
+> From: Andrew Morton <akpm@linux-foundation.org>
+> 
+> - switch didnt-need-to-be-a-macro to inline
+> 
+> - Remove unneeded ifdefs (we already did that in the header)
+> 
+> - repair bouncy enter key
+> 
+> Cc: Neil Horman <nhorman@tuxdriver.com>
+> Cc: Simon Horman <horms@verge.net.au>
+> Cc: Vivek Goyal <vgoyal@redhat.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
+> 
+Hi Andrew,
 
-What's the actual goal of setup_percpu.c?  To have a single location for
-all the per_cpu initialisation?  If so then it's hard to get away from
-all the ifdefs.  If there are alternative ways of arranging the file
-then I think splitting some of the conditional pieces into other files
-would work.
+This looks good. I should have altleast caught unnecessary #ifdefs.:-(
 
-James
-
-
+Thanks
+Vivek
+ 
+>  include/linux/kernel.h |    5 ++++-
+>  kernel/kexec.c         |    2 --
+>  kernel/printk.c        |    1 -
+>  3 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff -puN include/linux/kernel.h~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix include/linux/kernel.h
+> --- a/include/linux/kernel.h~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix
+> +++ a/include/linux/kernel.h
+> @@ -254,7 +254,10 @@ static inline int printk_ratelimit(void)
+>  static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
+>  					  unsigned int interval_msec)	\
+>  		{ return false; }
+> -#define log_buf_kexec_setup() do {} while(0)
+> +
+> +static inline void log_buf_kexec_setup(void)
+> +{
+> +}
+>  #endif
+>  
+>  extern int printk_needs_cpu(int cpu);
+> diff -puN kernel/kexec.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix kernel/kexec.c
+> --- a/kernel/kexec.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix
+> +++ a/kernel/kexec.c
+> @@ -1409,9 +1409,7 @@ static int __init crash_save_vmcoreinfo_
+>  	VMCOREINFO_OFFSET(list_head, prev);
+>  	VMCOREINFO_OFFSET(vm_struct, addr);
+>  	VMCOREINFO_LENGTH(zone.free_area, MAX_ORDER);
+> -#ifdef CONFIG_PRINTK
+>  	log_buf_kexec_setup();
+> -#endif
+>  	VMCOREINFO_LENGTH(free_area.free_list, MIGRATE_TYPES);
+>  	VMCOREINFO_NUMBER(NR_FREE_PAGES);
+>  	VMCOREINFO_NUMBER(PG_lru);
+> diff -puN kernel/printk.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix kernel/printk.c
+> --- a/kernel/printk.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix
+> +++ a/kernel/printk.c
+> @@ -143,7 +143,6 @@ void log_buf_kexec_setup(void)
+>  	VMCOREINFO_SYMBOL(log_end);
+>  }
+>  
+> -
+>  static int __init log_buf_len_setup(char *str)
+>  {
+>  	unsigned size = memparse(str, &str);
+> _
