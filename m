@@ -1,91 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752416AbZA0Xvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZA0Xw0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752416AbZA0Xvq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 18:51:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZA0Xvi
+	id S1753514AbZA0Xw0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 18:52:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752802AbZA0Xv6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 18:51:38 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:8431 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751394AbZA0Xvh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 18:51:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uObWaj4S3q2AmNHjmT34IHYdvk49+BLvolIQ1ePdikLabGQaBXCArpZ4D7wI1J1rJx
-         kV6OiNKXiLgMPQQmIED+wIQz8wa7UiWETcQlhgymLtfk9V58jZEs4yFi4vDmolSY7z2I
-         T9deFAkut29isrt06BVjdpvCRsfQX/8wPxilM=
+	Tue, 27 Jan 2009 18:51:58 -0500
+Received: from kroah.org ([198.145.64.141]:48567 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752700AbZA0Xv5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 18:51:57 -0500
+Date: Tue, 27 Jan 2009 15:49:56 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB patches for 2.6-git
+Message-ID: <20090127234956.GA10673@kroah.com>
 MIME-Version: 1.0
-In-Reply-To: <20090127233159.GA26403@elte.hu>
-References: <20090127222825.GA27097@elte.hu>
-	 <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain>
-	 <20090127233159.GA26403@elte.hu>
-Date: Wed, 28 Jan 2009 00:51:36 +0100
-Message-ID: <19f34abd0901271551h482b3337k8097849d2ddb26b4@mail.gmail.com>
-Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 12:31 AM, Ingo Molnar <mingo@elte.hu> wrote:
-> It would be much better if we exported _much_ less and reduced our
-> cross-section to user-space. Also, the include/linux/Kbuild rules are all
-> but transparent: it would also be nice if whatever we exported was be
-> visible straight in the header itself, to make it obvious to people who
-> modify/extend those files that those definitions are going to be exported
-> to user-space.
->
-> Some __user_export tag on structures perhaps? I have no good ideas here -
-> #ifdefs are ugly and tags obscure the purity of the code.
+Here are some USB patches for your 2.6-git tree.
 
-Something that might or might not be doable in practice, but at least
-it's a suggestion that I haven't seen elsewhere:
+The largest thing here is a new driver, that was held up on the -rc1
+merge due to a dependancy on some code that had to go into the ARM tree
+first.  That code is now in mainline, so the driver is now being added.
+It's stand-alone, so there should not be any issues.
 
-Create an include/user/ directory that contains a "mirror" of the
-include/ directory _structure_, so that random exported header
-include/linux/foo.h now has two parts -- include/linux/foo.h and
-include/user/linux/foo.h.
+Other than that, the series includes:
+	- lots of new quirks and device ids for various USB devices.
+	- USB suspend/resume bugfixes, resolving some reported
+	  regressions
+	- USB gadget driver bugfixes, especially some long-standing musb
+	  build issues.
 
-- include/user/linux/foo.h contains the definitions that are needed by
-both kernel and userspace
-- include/linux/foo.h contains the definitions that are needed only by
-the kernel
-- include/linux/foo.h can simply #include <user/linux/foo.h> and no
-other change (to source files which _use_ this header) is necessary
-- no dependency on a kernel header will exist in a "user" header --
-that's how it is now, but this way is more explicit
-- the whole include/user/ can be shipped verbatim to /usr/include (or
-wherever it is needed)
-- no #ifdef __KERNEL__ or #ifdef CONFIG_ stuff in the "user" headers;
-no stripping or unifdefing is needed
-- it's easier to see exactly what is being exported
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-Of course, obvious disadvantages are:
+All of these patches have been in the -next and -mm releases for a while.
 
-- less readable in the sense that what used to be in one file is now
-spread across two
-- the split itself would probably require a tremendous effort
-- other things?
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
 
-It's just an idea...
+thanks,
 
+greg k-h
 
-Vegard
+------------
 
--- 
-"The animistic metaphor of the bug that maliciously sneaked in while
-the programmer was not looking is intellectually dishonest as it
-disguises that the error is the programmer's own creation."
-	-- E. W. Dijkstra, EWD1036
+ arch/arm/mach-davinci/usb.c           |   23 -
+ drivers/usb/Makefile                  |    1 +
+ drivers/usb/class/cdc-acm.c           |    9 +
+ drivers/usb/class/usblp.c             |    1 +
+ drivers/usb/core/devio.c              |   20 +-
+ drivers/usb/core/driver.c             |    2 +-
+ drivers/usb/core/hcd-pci.c            |  117 +----
+ drivers/usb/core/hcd.h                |    1 -
+ drivers/usb/core/hub.c                |    4 +-
+ drivers/usb/core/inode.c              |    1 -
+ drivers/usb/core/message.c            |   40 +-
+ drivers/usb/core/usb.h                |    6 +-
+ drivers/usb/gadget/composite.c        |    9 +-
+ drivers/usb/gadget/imx_udc.c          |    2 +-
+ drivers/usb/host/Kconfig              |   18 +
+ drivers/usb/host/Makefile             |    6 +
+ drivers/usb/host/ehci-pci.c           |    3 +-
+ drivers/usb/host/fhci-dbg.c           |  139 +++++
+ drivers/usb/host/fhci-hcd.c           |  836 +++++++++++++++++++++++++++++++
+ drivers/usb/host/fhci-hub.c           |  345 +++++++++++++
+ drivers/usb/host/fhci-mem.c           |  113 +++++
+ drivers/usb/host/fhci-q.c             |  284 +++++++++++
+ drivers/usb/host/fhci-sched.c         |  888 +++++++++++++++++++++++++++++++++
+ drivers/usb/host/fhci-tds.c           |  626 +++++++++++++++++++++++
+ drivers/usb/host/fhci.h               |  607 ++++++++++++++++++++++
+ drivers/usb/host/ohci-hcd.c           |    8 +-
+ drivers/usb/host/ohci-pci.c           |    1 -
+ drivers/usb/host/uhci-hcd.c           |    1 -
+ drivers/usb/misc/ldusb.c              |    2 -
+ drivers/usb/mon/mon_bin.c             |  105 +++--
+ drivers/usb/musb/Kconfig              |    3 +-
+ drivers/usb/musb/cppi_dma.c           |   10 +-
+ drivers/usb/musb/davinci.c            |   13 +-
+ drivers/usb/musb/musb_core.c          |    5 +-
+ drivers/usb/musb/musb_gadget.c        |    6 +-
+ drivers/usb/musb/musb_host.c          |    4 +-
+ drivers/usb/musb/tusb6010_omap.c      |    4 +-
+ drivers/usb/otg/Kconfig               |    4 +-
+ drivers/usb/serial/cp2101.c           |    2 +
+ drivers/usb/serial/ftdi_sio.c         |    2 +
+ drivers/usb/serial/ftdi_sio.h         |    9 +
+ drivers/usb/serial/option.c           |   14 +-
+ drivers/usb/serial/ti_usb_3410_5052.c |    3 +
+ drivers/usb/serial/ti_usb_3410_5052.h |    2 +
+ drivers/usb/storage/unusual_devs.h    |   36 +-
+ include/linux/usb.h                   |    2 +
+ 46 files changed, 4105 insertions(+), 232 deletions(-)
+ create mode 100644 drivers/usb/host/fhci-dbg.c
+ create mode 100644 drivers/usb/host/fhci-hcd.c
+ create mode 100644 drivers/usb/host/fhci-hub.c
+ create mode 100644 drivers/usb/host/fhci-mem.c
+ create mode 100644 drivers/usb/host/fhci-q.c
+ create mode 100644 drivers/usb/host/fhci-sched.c
+ create mode 100644 drivers/usb/host/fhci-tds.c
+ create mode 100644 drivers/usb/host/fhci.h
+
+---------------
+
+Ajay Kumar Gupta (1):
+      USB: musb free_irq bugfix
+
+Alan Cox (1):
+      USB: cdc-acm: Add another conexant modem to the quirks
+
+Alan Stern (3):
+      USB: fix toggle mismatch in disable_endpoint paths
+      USB: don't enable wakeup by default for PCI host controllers
+      USB: fix char-device disconnect handling
+
+Alex.Cheng@quantatw.com (1):
+      USB: option: add QUANTA HSDPA Data Card device ids
+
+Andrew Lunn (1):
+      USB: CDC-ACM quirk for MTK GPS
+
+Anton Vorontsov (1):
+      USB: Driver for Freescale QUICC Engine USB Host Controller
+
+Brandon Philips (1):
+      USB: usblp.c: add USBLP_QUIRK_BIDIR to Brother HL-1440
+
+Bryan Wu (2):
+      USB: composite: Fix bug: should test set_alt function pointer before use it
+      USB: composite: Fix bug: low byte of w_index is the usb interface number not the whole 2 bytes of w_index
+
+David Brownell (4):
+      USB: omap1 ohci buildfix (otg related)
+      USB: musb davinci buildfix
+      USB: musb_hdrc: another davinci buildfix (otg related)
+      USB: musb: Kconfig fix
+
+Hugo Villeneuve (1):
+      USB: musb cppi bugfixes
+
+Inaky Perez-Gonzalez (1):
+      USB: add kernel-doc for wusb_dev in struct usb_device
+
+James A. Treacy (1):
+      USB: cdc-acm: support some gps data loggers
+
+Jean-Baptiste Onofre (1):
+      USB: storage: support of Dane-Elec MediaTouch USB device
+
+Julia Lawall (1):
+      USB: musb uses endpoint functions
+
+Kalle Valo (1):
+      USB: musb: tusb6010 buildfix
+
+Marcel Sebek (1):
+      USB: 'option' driver - onda device MT503HS has wrong id
+
+Mhayk Whandson (1):
+      USB: ftdi_sio driver support of bar code scanner from Diebold
+
+Oliver Neukum (2):
+      USB: storage: add unusual devs entry
+      USB: new id for ti_usb_3410_5052 driver
+
+Pete Zaitcev (1):
+      USB: usbmon: Implement compat_ioctl
+
+Phil Dibowitz (3):
+      USB: Remove ZTE modem from unusual_devices
+      USB: unusual_dev: usb-storage needs to ignore a device
+      USB: storage: Add another unusual_dev for off-by-one bug
+
+Rafael J. Wysocki (1):
+      USB: Fix suspend-resume of PCI USB controllers
+
+Robie Basak (1):
+      USB: ftdi_sio: added Alti-2 VID and Neptune 3 PID
+
+Roel Kluin (1):
+      USB: GADGET: fix !x & y
+
+Swaminathan S (1):
+      USB: musb cppi dma fix
+
+Tomasz K (1):
+      USB: cp2101 device
+
+Wolfgang Glas (1):
+      USB: cp2101: add fasttrax GPS evaluation kit vendor/product ID
+
+sware (1):
+      USB: remove vernier labpro from ldusb
+
