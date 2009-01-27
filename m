@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZA0Lh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZA0Lkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbZA0Lh6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 06:37:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752847AbZA0Lht
+	id S1754791AbZA0Lkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 06:40:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZA0LkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 06:37:49 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46159 "EHLO mx3.mail.elte.hu"
+	Tue, 27 Jan 2009 06:40:22 -0500
+Received: from mail.suse.de ([195.135.220.2]:56854 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752741AbZA0Lhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 06:37:48 -0500
-Date: Tue, 27 Jan 2009 12:37:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <htejun@gmail.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2 #tj-percpu] x86: fix build breakage on voyage
-Message-ID: <20090127113734.GA28249@elte.hu>
-References: <20090126103243.GA31307@elte.hu> <1232977445-11815-1-git-send-email-brgerst@gmail.com> <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org> <497E8778.9060503@gmail.com> <1233032609.3248.78.camel@localhost.localdomain> <497E9B9D.4010102@gmail.com>
+	id S1752741AbZA0LkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 06:40:22 -0500
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Date: Tue, 27 Jan 2009 17:07:47 +0530
+User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
+Cc: Evgeniy Polyakov <zbr@ioremap.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>,
+       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+References: <200901211638.23101.knikanth@suse.de> <200901271638.21720.knikanth@suse.de> <alpine.DEB.2.00.0901270316040.25608@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0901270316040.25608@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <497E9B9D.4010102@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901271707.48770.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 27 January 2009 16:51:26 David Rientjes wrote:
+> On Tue, 27 Jan 2009, Nikanth Karthikesan wrote:
+> > > I don't understand what you're arguing for here.  Are you suggesting
+> > > that we should not prefer tasks that intersect the set of allowable
+> > > nodes? That makes no sense if the goal is to allow for future memory
+> > > freeing.
+> >
+> > No. Actually I am just wondering, will it be possible to check whether a
+> > particular task has memory allocated or mmaped from this node to avoid
+> > killing an innocent task.
+>
+> That's certainly idealistic, but cannot be done in an inexpensive way that
+> would scale with the large systems that clients of cpusets typically use.
 
-* Tejun Heo <htejun@gmail.com> wrote:
+If we kill only the tasks for which cpuset_mems_allowed_intersects() is true 
+on the first pass and even then if we do not get out of oom, we could go over 
+again with this expensive check. Using this scheme, could kill more no of 
+tasks than required, if a task with lots of memory has moved to a different 
+cpuset. But it should be rare and not that severe compared to killing a 
+totally innocent task like the current scheme does?!
 
-> From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> 
-> Impact: build fix
-> 
-> x86_cpu_to_apicid and x86_bios_cpu_apicid aren't defined for voyage. 
-> Earlier patch forgot to conditionalize early percpu clearing.  Fix it.
-
-> +#ifdef CONFIG_X86_LOCAL_APIC
->  	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
->  	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
-> +#endif
-
-That patch is not acceptable - it is ugly and it adds another set of
-#ifdefs to an already complex piece of code.
-
-As i explained it to James in recent threads, the clean and acceptable 
-solution to this class of problems is to switch Voyager away from that 
-fragile subarch code to proper generic x86 code. (just like we did it for 
-other subarchitectures)
-
-There is nothing in Voyager that justifies special treatment in the area 
-of x86 percpu code.
-
-This is one of the mails that explains the principles:
-
-  http://lkml.indiana.edu/hypermail/linux/kernel/0901.2/00954.html
-
-Or - if there's no time/interest in doing that, we can mark Voyager as 
-CONFIG_BROKEN.
-
-	Ingo
+Thanks
+Nikanth
