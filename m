@@ -1,71 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756106AbZA0RAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbZA0REO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756106AbZA0RAp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 12:00:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZA0RAg
+	id S1756090AbZA0REO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 12:04:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZA0RD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 12:00:36 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:36837 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751666AbZA0RAf (ORCPT
+	Tue, 27 Jan 2009 12:03:57 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:49583 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753548AbZA0RD4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 12:00:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=w0FWpOjvQUuroxQyLW2GIDdj4zHOFoV79/vgcrTkH5/zi3iLSblTssTT/k4bLWalVO
-         0GO4NPhCA3YMA91QKGYwJCGuesIl+YPgxB9jHBCpPeNU4sHKs2rza/843YNo8eJh5eoK
-         4qw8zHSpQV1Trxgeu6x8TBWDq1D/29mXR3tfA=
+	Tue, 27 Jan 2009 12:03:56 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Tue, 27 Jan 2009 18:03:40 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: swiotlb default size (64 MB) too small?
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20090127183723W.fujita.tomonori@lab.ntt.co.jp>
+Message-ID: <tkrat.9e61b4a2f7087aca@s5r6.in-berlin.de>
+References: <20090121074339N.fujita.tomonori@lab.ntt.co.jp>
+ <4976D52F.5090109@s5r6.in-berlin.de>
+ <20090127165508L.fujita.tomonori@lab.ntt.co.jp>
+ <20090127183723W.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-In-Reply-To: <497EF7E2.7010906@nokia.com>
-References: <1233052573-6223-1-git-send-email-notasas@gmail.com>
-	 <497EF7E2.7010906@nokia.com>
-Date: Tue, 27 Jan 2009 19:00:33 +0200
-Message-ID: <6ed0b2680901270900t24838c73l3aa8edca62c91710@mail.gmail.com>
-Subject: Re: [PATCH] OMAP HSMMC: fix MMC3 dma
-From: Grazvydas Ignotas <notasas@gmail.com>
-To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: "tony@atomide.com" <tony@atomide.com>,
-       "drzeus-mmc@drzeus.cx" <drzeus-mmc@drzeus.cx>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 2:02 PM, Adrian Hunter
-<ext-adrian.hunter@nokia.com> wrote:
-> Grazvydas Ignotas wrote:
->>
->> Data transfers on third OMAP3 MMC controller don't work
->> because DMA line numbers are only defined for MMC1 and MMC2.
->> Fix that and store line numbers in mmc_omap_host structure
->> to reduce code size.
->> Tested on OMAP3 pandora board.
->>
->> Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
->> ---
->>  drivers/mmc/host/omap_hsmmc.c |   31 +++++++++++++++++++++++--------
->>  1 files changed, 23 insertions(+), 8 deletions(-)
->>
->
-> Have you considered using the scatter-gather emulation patch:
->
->        http://marc.info/?l=linux-omap&m=122726069922195&w=2
->
-> It was reverted:
->
->        http://marc.info/?l=linux-omap&m=122904725322787&w=2
->
-> because of a hardware problem with OMAP3430 before ES3.0, but applying:
->
->
->  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6a79e391df295bd7c2aa1309ea5031f361c197fd
->
-> seems to overcome even that.
+On 27 Jan, FUJITA Tomonori wrote at LSML and LKML:
+[I wrote]
+>> > *) The report does not sound like there was a DMA mappig leak caused by
+>> > copying between usb-storage and firewire-sbp2.  Else he would have hit
+>> > the problem again even with increased swiotlb default size.
 
-Hmm, but it still doesn't know about MMC3. But in case that SG patch
-goes first, I can resend.
+> Hmm, we don't have leak here?
+> 
+> =
+> From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> Subject: [PATCH] fw-sbp2: fix dma mapping leak on the failure path
+> 
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  drivers/firewire/fw-sbp2.c |   12 +++++++++++-
+>  1 files changed, 11 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
+> index e88d506..d40910d 100644
+> --- a/drivers/firewire/fw-sbp2.c
+> +++ b/drivers/firewire/fw-sbp2.c
+> @@ -1491,8 +1491,18 @@ static int sbp2_scsi_queuecommand(struct scsi_cmnd *cmd, scsi_done_fn_t done)
+>  	orb->base.request_bus =
+>  		dma_map_single(device->card->device, &orb->request,
+>  			       sizeof(orb->request), DMA_TO_DEVICE);
+> -	if (dma_mapping_error(device->card->device, orb->base.request_bus))
+> +	if (dma_mapping_error(device->card->device, orb->base.request_bus)) {
+> +		if (scsi_sg_count(cmd)) {
+> +			dma_unmap_sg(device->card->device, scsi_sglist(cmd),
+> +				     scsi_sg_count(cmd),
+> +				     cmd->sc_data_direction);
+> +			dma_unmap_single(device->card->device,
+> +					 orb->page_table_bus,
+> +					 sizeof(orb->page_table),
+> +					 DMA_TO_DEVICE);
+> +		}
+>  		goto out;
+> +	}
+>  
+>  	sbp2_send_orb(&orb->base, lu, lu->tgt->node_id, generation,
+>  		      lu->command_block_agent_address + SBP2_ORB_POINTER);
+
+Yes, we do have a leak there.  Thanks a lot for checking the code.
+
+There is one thing missing in the fix:  Even with scsi_sg_count(cmd) !=
+0, there is sometimes no orb->page_table to unmap.  It's when the
+scatterlist was mapped into a single physical segment.
+
+
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: firewire: sbp2: fix DMA mapping leak on the failure path
+
+Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+who also provided a first version of the fix.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-sbp2.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
+
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -1323,6 +1323,19 @@ static unsigned int sbp2_status_to_sense
+ 	}
+ }
+ 
++static void sbp2_unmap_scatterlist(struct device *card_device,
++				   struct sbp2_command_orb *orb)
++{
++	if (scsi_sg_count(orb->cmd))
++		dma_unmap_sg(card_device, scsi_sglist(orb->cmd),
++			     scsi_sg_count(orb->cmd),
++			     orb->cmd->sc_data_direction);
++
++	if (orb->page_table_bus)
++		dma_unmap_single(card_device, orb->page_table_bus,
++				 sizeof(orb->page_table), DMA_TO_DEVICE);
++}
++
+ static void complete_command_orb(struct sbp2_orb *base_orb,
+ 				 struct sbp2_status *status)
+ {
+@@ -1364,15 +1377,7 @@ static void complete_command_orb(struct 
+ 
+ 	dma_unmap_single(device->card->device, orb->base.request_bus,
+ 			 sizeof(orb->request), DMA_TO_DEVICE);
+-
+-	if (scsi_sg_count(orb->cmd) > 0)
+-		dma_unmap_sg(device->card->device, scsi_sglist(orb->cmd),
+-			     scsi_sg_count(orb->cmd),
+-			     orb->cmd->sc_data_direction);
+-
+-	if (orb->page_table_bus != 0)
+-		dma_unmap_single(device->card->device, orb->page_table_bus,
+-				 sizeof(orb->page_table), DMA_TO_DEVICE);
++	sbp2_unmap_scatterlist(device->card->device, orb);
+ 
+ 	orb->cmd->result = result;
+ 	orb->done(orb->cmd);
+@@ -1493,8 +1498,10 @@ static int sbp2_scsi_queuecommand(struct
+ 	orb->base.request_bus =
+ 		dma_map_single(device->card->device, &orb->request,
+ 			       sizeof(orb->request), DMA_TO_DEVICE);
+-	if (dma_mapping_error(device->card->device, orb->base.request_bus))
++	if (dma_mapping_error(device->card->device, orb->base.request_bus)) {
++		sbp2_unmap_scatterlist(device->card->device, orb);
+ 		goto out;
++	}
+ 
+ 	sbp2_send_orb(&orb->base, lu, lu->tgt->node_id, generation,
+ 		      lu->command_block_agent_address + SBP2_ORB_POINTER);
+
+
+-- 
+Stefan Richter
+-=====-==--= ---= ==-==
+http://arcgraph.de/sr/
+
