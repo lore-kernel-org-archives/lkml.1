@@ -1,74 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754952AbZA0Vct@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbZA0Viq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754952AbZA0Vct (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 16:32:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbZA0Vcj
+	id S1753819AbZA0Viq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 16:38:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZA0Vih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 16:32:39 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:38972 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751565AbZA0Vci (ORCPT
+	Tue, 27 Jan 2009 16:38:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33655 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751716AbZA0Vih (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 16:32:38 -0500
-Date: Tue, 27 Jan 2009 23:31:39 +0200 (EET)
-Message-Id: <20090127.233139.58420377.Hiroshi.DOYU@nokia.com>
-To: linux@arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 1/6] omap iommu: tlb and pagetable primitives
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-In-Reply-To: <20090117160608.GA12341@n2100.arm.linux.org.uk>
-References: <20090116083709.18344.74524.stgit@oreo.research.nokia.com>
-	<20090117160608.GA12341@n2100.arm.linux.org.uk>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+	Tue, 27 Jan 2009 16:38:37 -0500
+Date: Tue, 27 Jan 2009 13:37:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH] kmalloc: Return NULL instead of link failure
+Message-Id: <20090127133723.46eb7035.akpm@linux-foundation.org>
+In-Reply-To: <4975F376.4010506@suse.com>
+References: <4975F376.4010506@suse.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Jan 2009 21:31:40.0727 (UTC) FILETIME=[A46D3470:01C980C6]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell, Thank you for your reivew.
+On Tue, 20 Jan 2009 10:53:26 -0500
+Jeff Mahoney <jeffm@suse.com> wrote:
 
-Just for your convenience, the updated patchset is available as below.
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
+> 
+>  The SLAB kmalloc with a constant value isn't consistent with the other
+>  implementations because it bails out with __you_cannot_kmalloc_that_much
+>  rather than returning NULL and properly allowing the caller to fall back
+>  to vmalloc or take other action. This doesn't happen with a non-constant
+>  value or with SLOB or SLUB.
+> 
+>  Starting with 2.6.28, I've been seeing build failures on s390x. This is
+>  due to init_section_page_cgroup trying to allocate 2.5MB when the max
+>  size for a kmalloc on s390x is 2MB.
+> 
+>  It's failing because the value is constant. The workarounds at the call
+>  size are ugly and the caller shouldn't have to change behavior depending
+>  on what the backend of the API is.
+> 
+>  So, this patch eliminates the link failure and returns NULL like the
+>  other implementations.
+> 
 
-The following changes since commit 1de9e8e70f5acc441550ca75433563d91b269bbe:
-  Linus Torvalds (1):
-        Linux 2.6.29-rc2
+OK by me, is that's what the other sl[abcd...xyz]b.c implementations
+do.
 
-are available in the git repository at:
+That __you_cannot_kmalloc_that_much() thing has frequently been a PITA
+anyway - some gcc versions flub the constant_p() test and end up
+referencing __you_cannot_kmalloc_that_much() when the callsite was
+passing a variable `size' arg.
 
-  http://git.gitorious.org/lk/mainline.git iommu
+> - ---
+>  include/linux/slab_def.h |   10 ++--------
+>  1 file changed, 2 insertions(+), 8 deletions(-)
+> 
+> - --- a/include/linux/slab_def.h
+> +++ b/include/linux/slab_def.h
+> @@ -43,10 +43,7 @@ static inline void *kmalloc(size_t size,
+>  			i++;
+>  #include <linux/kmalloc_sizes.h>
+>  #undef CACHE
+> - -		{
+> - -			extern void __you_cannot_kmalloc_that_much(void);
+> - -			__you_cannot_kmalloc_that_much();
+> - -		}
+> +		return NULL;
+>  found:
+>  #ifdef CONFIG_ZONE_DMA
+>  		if (flags & GFP_DMA)
+> @@ -77,10 +74,7 @@ static inline void *kmalloc_node(size_t
+>  			i++;
+>  #include <linux/kmalloc_sizes.h>
+>  #undef CACHE
+> - -		{
+> - -			extern void __you_cannot_kmalloc_that_much(void);
+> - -			__you_cannot_kmalloc_that_much();
+> - -		}
+> +		return NULL;
+>  found:
+>  #ifdef CONFIG_ZONE_DMA
+>  		if (flags & GFP_DMA)
+> 
 
-Hiroshi DOYU (6):
-      omap iommu: tlb and pagetable primitives
-      omap iommu: omap2 architecture specific functions
-      omap iommu: omap3 iommu device registration
-      omap iommu: simple virtual address space management
-      omap iommu: entries for Kconfig and Makefile
-      omap2 iommu: entries for Kconfig and Makefile
+Strange patch format, but it applied.
 
- arch/arm/include/asm/io.h                |    6 +
- arch/arm/mach-omap2/Makefile             |    5 +
- arch/arm/mach-omap2/iommu2.c             |  326 ++++++++++
- arch/arm/mach-omap2/omap3-iommu.c        |  103 ++++
- arch/arm/mm/ioremap.c                    |   11 +
- arch/arm/plat-omap/Kconfig               |    8 +
- arch/arm/plat-omap/Makefile              |    1 +
- arch/arm/plat-omap/include/mach/iommu.h  |  157 +++++
- arch/arm/plat-omap/include/mach/iommu2.h |   94 +++
- arch/arm/plat-omap/include/mach/iovmm.h  |   94 +++
- arch/arm/plat-omap/iommu.c               |  953 ++++++++++++++++++++++++++++++
- arch/arm/plat-omap/iopgtable.h           |   72 +++
- arch/arm/plat-omap/iovmm.c               |  891 ++++++++++++++++++++++++++++
- 13 files changed, 2721 insertions(+), 0 deletions(-)
- create mode 100644 arch/arm/mach-omap2/iommu2.c
- create mode 100644 arch/arm/mach-omap2/omap3-iommu.c
- create mode 100644 arch/arm/plat-omap/include/mach/iommu.h
- create mode 100644 arch/arm/plat-omap/include/mach/iommu2.h
- create mode 100644 arch/arm/plat-omap/include/mach/iovmm.h
- create mode 100644 arch/arm/plat-omap/iommu.c
- create mode 100644 arch/arm/plat-omap/iopgtable.h
- create mode 100644 arch/arm/plat-omap/iovmm.c
+I'll punt this patch in the Pekka direction.
+
+Do you think we should include it in 2.6.28.x?
