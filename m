@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757114AbZA0RLl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZA0RMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757114AbZA0RLl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 12:11:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756383AbZA0RJb
+	id S1757304AbZA0RMa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 12:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756541AbZA0RJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 12:09:31 -0500
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:57676 "EHLO
+	Tue, 27 Jan 2009 12:09:36 -0500
+Received: from serrano.cc.columbia.edu ([128.59.29.6]:57686 "EHLO
 	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755939AbZA0RJX (ORCPT
+	with ESMTP id S1756057AbZA0RJZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 12:09:23 -0500
+	Tue, 27 Jan 2009 12:09:25 -0500
 From: Oren Laadan <orenl@cs.columbia.edu>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
@@ -19,698 +19,189 @@ Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
        Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
        Alexander Viro <viro@zeniv.linux.org.uk>,
        Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v13][PATCH 02/14] Checkpoint/restart: initial documentation
-Date: Tue, 27 Jan 2009 12:08:00 -0500
-Message-Id: <1233076092-8660-3-git-send-email-orenl@cs.columbia.edu>
+Subject: [RFC v13][PATCH 00/14] Kernel based checkpoint/restart
+Date: Tue, 27 Jan 2009 12:07:58 -0500
+Message-Id: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
 X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
 X-No-Spam-Score: Local
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Covers application checkpoint/restart, overall design, interfaces,
-usage, shared objects, and and checkpoint image format.
+Checkpoint-restart (c/r): a couple of fixes in preparation for 64bit
+architectures, and a couple of fixes for bugss (comments from Serge
+Hallyn, Sudakvev Bhattiprolu and Nathan Lynch). Updated and tested
+against v2.6.28.
 
-Changelog[v8]:
-  - Split into multiple files in Documentation/checkpoint/...
-  - Extend documentation, fix typos and comments from feedback
+Aiming for -mm.
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
----
- Documentation/checkpoint/ckpt.c        |   32 ++++++
- Documentation/checkpoint/internals.txt |  133 +++++++++++++++++++++++++
- Documentation/checkpoint/readme.txt    |  105 +++++++++++++++++++
- Documentation/checkpoint/rstr.c        |   20 ++++
- Documentation/checkpoint/security.txt  |   38 +++++++
- Documentation/checkpoint/self.c        |   57 +++++++++++
- Documentation/checkpoint/test.c        |   48 +++++++++
- Documentation/checkpoint/usage.txt     |  171 ++++++++++++++++++++++++++++++++
- 8 files changed, 604 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/checkpoint/ckpt.c
- create mode 100644 Documentation/checkpoint/internals.txt
- create mode 100644 Documentation/checkpoint/readme.txt
- create mode 100644 Documentation/checkpoint/rstr.c
- create mode 100644 Documentation/checkpoint/security.txt
- create mode 100644 Documentation/checkpoint/self.c
- create mode 100644 Documentation/checkpoint/test.c
- create mode 100644 Documentation/checkpoint/usage.txt
+The git tree tracking v13, branch 'ckpt-v13' (and older versions):
+	git://git.ncl.cs.columbia.edu/pub/git/linux-cr.git
 
-diff --git a/Documentation/checkpoint/ckpt.c b/Documentation/checkpoint/ckpt.c
-new file mode 100644
-index 0000000..094408c
---- /dev/null
-+++ b/Documentation/checkpoint/ckpt.c
-@@ -0,0 +1,32 @@
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <errno.h>
-+#include <unistd.h>
-+#include <sys/syscall.h>
-+
-+int main(int argc, char *argv[])
-+{
-+	pid_t pid;
-+	int ret;
-+
-+	if (argc != 2) {
-+		printf("usage: ckpt PID\n");
-+		exit(1);
-+	}
-+
-+	pid = atoi(argv[1]);
-+	if (pid <= 0) {
-+		printf("invalid pid\n");
-+		exit(1);
-+	}
-+
-+	ret = syscall(__NR_checkpoint, pid, STDOUT_FILENO, 0);
-+
-+	if (ret < 0)
-+		perror("checkpoint");
-+	else
-+		printf("checkpoint id %d\n", ret);
-+
-+	return (ret > 0 ? 0 : 1);
-+}
-+
-diff --git a/Documentation/checkpoint/internals.txt b/Documentation/checkpoint/internals.txt
-new file mode 100644
-index 0000000..b363e83
---- /dev/null
-+++ b/Documentation/checkpoint/internals.txt
-@@ -0,0 +1,133 @@
-+
-+	===== Internals of Checkpoint-Restart =====
-+
-+
-+(1) Order of state dump
-+
-+The order of operations, both save and restore, is as follows:
-+
-+* Header section: header, container information, etc.
-+
-+* Global section: [TBD] global resources such as IPC, UTS, etc.
-+
-+* Process forest: [TBD] tasks and their relationships
-+
-+* Per task data (for each task):
-+  -> task state: elements of task_struct
-+  -> thread state: elements of thread_struct and thread_info
-+  -> CPU state: registers etc, including FPU
-+  -> memory state: memory address space layout and contents
-+  -> filesystem state: [TBD] filesystem namespace state, chroot, cwd, etc
-+  -> files state: open file descriptors and their state
-+  -> signals state: [TBD] pending signals and signal handling state
-+  -> credentials state: [TBD] user and group state, statistics
-+
-+
-+(2) Checkpoint image format
-+
-+The checkpoint image format is composed of records consisting of a
-+pre-header that identifies its contents, followed by a payload. (The
-+idea here is to enable parallel checkpointing in the future in which
-+multiple threads interleave data from multiple processes into a single
-+stream).
-+
-+The pre-header is defined by "struct cr_hdr" as follows:
-+
-+struct cr_hdr {
-+	__s16 type;
-+	__s16 len;
-+	__u32 parent;
-+};
-+
-+'type' identifies the type of the payload, 'len' tells its length in
-+bytes, and 'parent' identifies the owner object instance. The meaning
-+of 'parent' varies depending on the type. For example, for CR_HDR_MM,
-+'parent' identifies the task to which this MM belongs. The payload
-+also varies depending on the type, for instance, the data describing a
-+task_struct is given by a 'struct cr_hdr_task' (type CR_HDR_TASK) and
-+so on.
-+
-+The format of the memory dump is as follows: for each VMA, there is a
-+'struct cr_vma'; if the VMA is file-mapped, it is followed by the file
-+name. Following comes the actual contents, in one or more chunks: each
-+chunk begins with a header that specifies how many pages it holds,
-+then the virtual addresses of all the dumped pages in that chunk,
-+followed by the actual contents of all the dumped pages. A header with
-+zero number of pages marks the end of the contents for a particular
-+VMA. Then comes the next VMA and so on.
-+
-+To illustrate this, consider a single simple task with two VMAs: one
-+is file mapped with two dumped pages, and the other is anonymous with
-+three dumped pages. The checkpoint image will look like this:
-+
-+cr_hdr + cr_hdr_head
-+cr_hdr + cr_hdr_task
-+	cr_hdr + cr_hdr_mm
-+		cr_hdr + cr_hdr_vma + cr_hdr + string
-+			cr_hdr_pgarr (nr_pages = 2)
-+			addr1, addr2
-+			page1, page2
-+			cr_hdr_pgarr (nr_pages = 0)
-+		cr_hdr + cr_hdr_vma
-+			cr_hdr_pgarr (nr_pages = 3)
-+			addr3, addr4, addr5
-+			page3, page4, page5
-+			cr_hdr_pgarr (nr_pages = 0)
-+		cr_hdr + cr_mm_context
-+	cr_hdr + cr_hdr_thread
-+	cr_hdr + cr_hdr_cpu
-+cr_hdr + cr_hdr_tail
-+
-+
-+(3) Shared resources (objects)
-+
-+Many resources used by tasks may be shared by more than one task (e.g.
-+file descriptors, memory address space, etc), or even have multiple
-+references from other resources (e.g. a single inode that represents
-+two ends of a pipe).
-+
-+Clearly, the state of shared objects need only be saved once, even if
-+they occur multiple times. We use a hash table (ctx->objhash) to keep
-+track of shared objects and whether they were already saved.  Shared
-+objects are stored in a hash table as they appear, indexed by their
-+kernel address. (The hash table itself is not saved as part of the
-+checkpoint image: it is constructed dynamically during both checkpoint
-+and restart, and discarded at the end of the operation).
-+
-+Each shared object that is found is first looked up in the hash table.
-+On the first encounter, the object will not be found, so its state is
-+dumped, and the object is assigned a unique identifier and also stored
-+in the hash table. Subsequent lookups of that object in the hash table
-+will yield that entry, and then only the unique identifier is saved,
-+as opposed the entire state of the object.
-+
-+During restart, shared objects are seen by their unique identifiers as
-+assigned during the checkpoint. Each shared object that it read in is
-+first looked up in the hash table. On the first encounter it will not
-+be found, meaning that the object needs to be created and its state
-+read in and restored. Then the object is added to the hash table, this
-+time indexed by its unique identifier. Subsequent lookups of the same
-+unique identifier in the hash table will yield that entry, and then
-+the existing object instance is reused instead of creating another one.
-+
-+The hash grabs a reference to each object that is inserted, and
-+maintains this reference for the entire lifetime of the hash. Thus,
-+it is always safe to reference an object that is stored in the hash.
-+The hash is "one-way" in the sense that objects that are added are
-+never deleted from the hash until the hash is discarded. This, in
-+turn, happens only when the checkpoint (or restart) terminates.
-+
-+The interface for the hash table is the following:
-+
-+cr_obj_get_by_ptr() - find the unique object reference (objref)
-+  of the object that is pointer to by ptr [checkpoint]
-+
-+cr_obj_add_ptr() - add the object pointed to by ptr to the hash table
-+  if not already there, and fill its unique object reference (objref)
-+
-+cr_obj_get_by_ref() - return the pointer to the object whose unique
-+  object reference is equal to objref [restart]
-+
-+cr_obj_add_ref() - add the object with given unique object reference
-+  (objref), pointed to by ptr to the hash table. [restart]
-+
-diff --git a/Documentation/checkpoint/readme.txt b/Documentation/checkpoint/readme.txt
-new file mode 100644
-index 0000000..344a551
---- /dev/null
-+++ b/Documentation/checkpoint/readme.txt
-@@ -0,0 +1,105 @@
-+
-+	===== Checkpoint-Restart support in the Linux kernel =====
-+
-+Copyright (C) 2008 Oren Laadan
-+
-+Author:		Oren Laadan <orenl@cs.columbia.edu>
-+
-+License:	The GNU Free Documentation License, Version 1.2
-+		(dual licensed under the GPL v2)
-+
-+Reviewers:	Serge Hallyn <serue@us.ibm.com>
-+		Dave Hansen <dave@linux.vnet.ibm.com>
-+
-+Application checkpoint/restart [C/R] is the ability to save the state
-+of a running application so that it can later resume its execution
-+from the time at which it was checkpointed. An application can be
-+migrated by checkpointing it on one machine and restarting it on
-+another. C/R can provide many potential benefits:
-+
-+* Failure recovery: by rolling back to a previous checkpoint
-+
-+* Improved response time: by restarting applications from checkpoints
-+  instead of from scratch.
-+
-+* Improved system utilization: by suspending long running CPU
-+  intensive jobs and resuming them when load decreases.
-+
-+* Fault resilience: by migrating applications off faulty hosts.
-+
-+* Dynamic load balancing: by migrating applications to less loaded
-+  hosts.
-+
-+* Improved service availability and administration: by migrating
-+  applications before host maintenance so that they continue to run
-+  with minimal downtime
-+
-+* Time-travel: by taking periodic checkpoints and restarting from
-+  any previous checkpoint.
-+
-+
-+=== Overall design
-+
-+Checkpoint and restart is done in the kernel as much as possible. The
-+kernel exports a relatively opaque 'blob' of data to userspace which can
-+then be handed to the new kernel at restore time.  The 'blob' contains
-+data and state of select portions of kernel structures such as VMAs
-+and mm_structs, as well as copies of the actual memory that the tasks
-+use. Any changes in this blob's format between kernel revisions can be
-+handled by an in-userspace conversion program. The approach is similar
-+to virtually all of the commercial C/R products out there, as well as
-+the research project Zap.
-+
-+Two new system calls are introduced to provide C/R: sys_checkpoint()
-+and sys_restart(). The checkpoint code basically serializes internal
-+kernel state and writes it out to a file descriptor, and the resulting
-+image is stream-able. More specifically, it consists of 5 steps:
-+
-+1. Pre-dump
-+2. Freeze the container
-+3. Dump
-+4. Thaw (or kill) the container
-+5. Post-dump
-+
-+Steps 1 and 5 are an optimization to reduce application downtime. In
-+particular, "pre-dump" works before freezing the container, e.g. the
-+pre-copy for live migration, and "post-dump" works after the container
-+resumes execution, e.g. write-back the data to secondary storage.
-+
-+The restart code basically reads the saved kernel state from a file
-+descriptor, and re-creates the tasks and the resources they need to
-+resume execution. The restart code is executed by each task that is
-+restored in a new container to reconstruct its own state.
-+
-+
-+=== Current Implementation
-+
-+* How useful is this code as it stands in real-world usage?
-+
-+Right now, the application must be a single process that does not
-+share any resources with other processes. The only file descriptors
-+that may be open are simple files and directories, they may not
-+include devices, sockets or pipes.
-+
-+For an "external" checkpoint, the caller must first freeze (or stop)
-+the target process. For "self" checkpoint, the application must be
-+specifically written to use the new system calls. The restart does not
-+yet preserve the pid of the original process, but will use whatever
-+pid it was given by the kernel.
-+
-+What this means in practice is that it is useful for a simple
-+application doing computational work and input/output from/to files.
-+
-+Currently, namespaces are not saved or restored. They will be treated
-+as a class of a shared object. In particular, it is assumed that the
-+task's file system namespace is the "root" for the entire container.
-+It is also assumed that the same file system view is available for the
-+restart task(s). Otherwise, a file system snapshot is required.
-+
-+* What additional work needs to be done to it?
-+
-+We know this design can work.  We have two commercial products and a
-+horde of academic projects doing it today using this basic design.
-+We're early in this particular implementation because we're trying to
-+release early and often.
-+
-diff --git a/Documentation/checkpoint/rstr.c b/Documentation/checkpoint/rstr.c
-new file mode 100644
-index 0000000..288209d
---- /dev/null
-+++ b/Documentation/checkpoint/rstr.c
-@@ -0,0 +1,20 @@
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <sys/syscall.h>
-+
-+int main(int argc, char *argv[])
-+{
-+	pid_t pid = getpid();
-+	int ret;
-+
-+	ret = syscall(__NR_restart, pid, STDIN_FILENO, 0);
-+	if (ret < 0)
-+		perror("restart");
-+
-+	printf("should not reach here !\n");
-+
-+	return 0;
-+}
-+
-diff --git a/Documentation/checkpoint/security.txt b/Documentation/checkpoint/security.txt
-new file mode 100644
-index 0000000..e5b4107
---- /dev/null
-+++ b/Documentation/checkpoint/security.txt
-@@ -0,0 +1,38 @@
-+
-+	===== Security consideration for Checkpoint-Restart =====
-+
-+The main question is whether sys_checkpoint() and sys_restart()
-+require privileged or unprivileged operation.
-+
-+Early versions checked capable(CAP_SYS_ADMIN) assuming that we would
-+attempt to remove the need for privilege, so that all users could
-+safely use it. Arnd Bergmann pointed out that it'd make more sense to
-+let unprivileged users use them now, so that we'll be more careful
-+about the security as patches roll in.
-+
-+Checkpoint: the main concern is whether a task that performs the
-+checkpoint of another task has sufficient privileges to access its
-+state. We address this by requiring that the checkpointer task will be
-+able to ptrace the target task, by means of ptrace_may_access() with
-+read mode.
-+
-+Restart: the main concern is that we may allow an unprivileged user to
-+feed the kernel with random data. To this end, the restart works in a
-+way that does not skip the usual security checks. Task credentials,
-+i.e. euid, reuid, and LSM security contexts currently come from the
-+caller, not the checkpoint image.  When restoration of credentials
-+becomes supported, then definitely the ability of the task that calls
-+sys_restore() to setresuid/setresgid to those values must be checked.
-+
-+Keeping the restart procedure to operate within the limits of the
-+caller's credentials means that there various scenarios that cannot
-+be supported. For instance, a setuid program that opened a protected
-+log file and then dropped privileges will fail the restart, because
-+the user won't have enough credentials to reopen the file. In these
-+cases, we should probably treat restarting like inserting a kernel
-+module: surely the user can cause havoc by providing incorrect data,
-+but then again we must trust the root account.
-+
-+So that's why we don't want CAP_SYS_ADMIN required up-front. That way
-+we will be forced to more carefully review each of those features.
-+
-diff --git a/Documentation/checkpoint/self.c b/Documentation/checkpoint/self.c
-new file mode 100644
-index 0000000..febb888
---- /dev/null
-+++ b/Documentation/checkpoint/self.c
-@@ -0,0 +1,57 @@
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <string.h>
-+#include <errno.h>
-+#include <math.h>
-+#include <sys/syscall.h>
-+
-+#define OUTFILE  "/tmp/cr-test.out"
-+
-+int main(int argc, char *argv[])
-+{
-+	pid_t pid = getpid();
-+	FILE *file;
-+	int i, ret;
-+	float a;
-+
-+	close(0);
-+	close(2);
-+
-+	unlink(OUTFILE);
-+	file = fopen(OUTFILE, "w+");
-+	if (!file) {
-+		perror("open");
-+		exit(1);
-+	}
-+	if (dup2(0, 2) < 0) {
-+		perror("dup2");
-+		exit(1);
-+	}
-+
-+	a = sqrt(2.53 * (getpid() / 1.21));
-+
-+	fprintf(file, "hello, world (%.2f)!\n", a);
-+	fflush(file);
-+
-+	for (i = 0; i < 1000; i++) {
-+		sleep(1);
-+		/* make the fpu work ->  a = a + i/10  */
-+		a = sqrt(a*a + 2*a*(i/10.0) + i*i/100.0);
-+		fprintf(file, "count %d (%.2f)!\n", i, a);
-+		fflush(file);
-+
-+		if (i == 2) {
-+			ret = syscall(__NR_checkpoint, pid, STDOUT_FILENO, 0);
-+			if (ret < 0) {
-+				fprintf(file, "ckpt: %s\n", strerror(errno));
-+				exit(2);
-+			}
-+			fprintf(file, "checkpoint ret: %d\n", ret);
-+			fflush(file);
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-diff --git a/Documentation/checkpoint/test.c b/Documentation/checkpoint/test.c
-new file mode 100644
-index 0000000..1183655
---- /dev/null
-+++ b/Documentation/checkpoint/test.c
-@@ -0,0 +1,48 @@
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <unistd.h>
-+#include <errno.h>
-+#include <math.h>
-+
-+#define OUTFILE  "/tmp/cr-test.out"
-+
-+int main(int argc, char *argv[])
-+{
-+	FILE *file;
-+	float a;
-+	int i;
-+
-+	close(0);
-+	close(1);
-+	close(2);
-+
-+	unlink(OUTFILE);
-+	file = fopen(OUTFILE, "w+");
-+	if (!file) {
-+		perror("open");
-+		exit(1);
-+	}
-+	if (dup2(0, 2) < 0) {
-+		perror("dup2");
-+		exit(1);
-+	}
-+
-+	a = sqrt(2.53 * (getpid() / 1.21));
-+
-+	fprintf(file, "hello, world (%.2f)!\n", a);
-+	fflush(file);
-+
-+	for (i = 0; i < 1000; i++) {
-+		sleep(1);
-+		/* make the fpu work ->  a = a + i/10  */
-+		a = sqrt(a*a + 2*a*(i/10.0) + i*i/100.0);
-+		fprintf(file, "count %d (%.2f)!\n", i, a);
-+		fflush(file);
-+	}
-+
-+	fprintf(file, "world, hello (%.2f) !\n", a);
-+	fflush(file);
-+
-+	return 0;
-+}
-+
-diff --git a/Documentation/checkpoint/usage.txt b/Documentation/checkpoint/usage.txt
-new file mode 100644
-index 0000000..1b42d6b
---- /dev/null
-+++ b/Documentation/checkpoint/usage.txt
-@@ -0,0 +1,171 @@
-+
-+	===== How to use Checkpoint-Restart =====
-+
-+The API consists of two new system calls:
-+
-+* int sys_checkpoint(pid_t pid, int fd, unsigned long flag);
-+
-+    Checkpoint a container whose init task is identified by pid, to
-+    the file designated by fd. 'flags' will have future meaning (must
-+    be 0 for now).
-+
-+    Returns: a positive checkpoint identifier (crid) upon success, 0
-+    if it returns from a restart, and -1 if an error occurs.
-+
-+    'crid' uniquely identifies a checkpoint image. For each checkpoint
-+    the kernel allocates a unique 'crid', that remains valid for as
-+    long as the checkpoint is kept in the kernel (for instance, when a
-+    checkpoint, or a partial checkpoint, may reside in kernel memory).
-+
-+* int sys_restart(int crid, int fd, unsigned long flags);
-+
-+    Restart a container from a checkpoint image that is read from the
-+    blob stored in the file designated by fd. 'crid' will have future
-+    meaning (must be 0 for now). 'flags' will have future meaning
-+    (must be 0 for now).
-+
-+    The role of 'crid' is to identify the checkpoint image in the case
-+    that it remains in kernel memory. This will be useful to restart
-+    from a checkpoint image that remains in kernel memory.
-+
-+    Returns: -1 if an error occurs, 0 on success when restarting from
-+    a "self" checkpoint, and return value of system call at the time
-+    of the checkpoint when restarting from an "external" checkpoint.
-+
-+    If restarting from an "external" checkpoint, tasks that were
-+    executing a system call will observe the return value of that
-+    system call (as it was when interrupted for the act of taking the
-+    checkpoint), and tasks that were executing in user space will be
-+    ready to return there.
-+
-+    Upon successful "external" restart, the container will end up in a
-+    frozen state.
-+
-+The granularity of a checkpoint usually is a whole container. The
-+'pid' argument is interpreted in the caller's pid namespace. So to
-+checkpoint a container whose init task (pid 1 in that pidns) appears
-+as pid 3497 the caller's pidns, the caller must use pid 3497. Passing
-+pid 1 will attempt to checkpoint the caller's container, and if the
-+caller isn't privileged and init is owned by root, it will fail.
-+
-+If the caller passes a pid which does not refer to a container's init
-+task, then sys_checkpoint() would return -EINVAL. (This is because
-+with nested containers a task may belong to more than one container).
-+
-+We assume that during checkpoint and restart the container state is
-+quiescent. During checkpoint, this means that all affected tasks are
-+frozen (or otherwise stopped). During restart, this means that all
-+affected tasks are executing the sys_restart() call. In both cases,
-+if there are other tasks possible sharing state with the container,
-+they must not modify it during the operation. It is the reponsibility
-+of the caller to follow this requirement.
-+
-+If the assumption that all tasks are frozen and that there is no other
-+sharing doesn't hold - then the results of the operation are undefined
-+(just as, e.g. not calling execve() immediately after vfork() produces
-+undefined results). In particular, either checkpoint will fail, or it
-+may produce a checkpoint image that can't be restarted, or (unlikely)
-+the restart may produce a container whose state does not match that of
-+the original container.
-+
-+
-+Here is a code snippet that illustrates how a checkpoint is initiated
-+by a process in a container - the logic is similar to fork():
-+	...
-+	crid = checkpoint(1, ...);
-+	switch (crid) {
-+	case -1:
-+		perror("checkpoint failed");
-+		break;
-+	default:
-+		fprintf(stderr, "checkpoint succeeded, CRID=%d\n", ret);
-+		/* proceed with execution after checkpoint */
-+		...
-+		break;
-+	case 0:
-+		fprintf(stderr, "returned after restart\n");
-+		/* proceed with action required following a restart */
-+		...
-+		break;
-+	}
-+	...
-+
-+And to initiate a restart, the process in an empty container can use
-+logic similar to execve():
-+	...
-+	if (restart(crid, ...) < 0)
-+		perror("restart failed");
-+	/* only get here if restart failed */
-+	...
-+
-+Note, that the code also supports "self" checkpoint, where a process
-+can checkpoint itself. This mode does not capture the relationships
-+of the task with other tasks, or any shared resources. It is useful
-+for application that wish to be able to save and restore their state.
-+They will either not use (or care about) shared resources, or they
-+will be aware of the operations and adapt suitably after a restart.
-+The code above can also be used for "self" checkpoint.
-+
-+To illustrate how the API works, refer to these sample programs:
-+
-+* ckpt.c: accepts a 'pid' argument and checkpoint that task to stdout
-+* rstr.c: restarts a checkpoint image from stdin
-+* self.c: a simple test program doing self-checkpoint
-+* test.c: a simple test program to checkpoint
-+
-+"External" checkpoint:
-+---------------------
-+To do "external" checkpoint, you need to first freeze that other task
-+either using the freezer cgroup, or by sending SIGSTOP.
-+
-+Restart does not preserve the original PID yet, (because we haven't
-+solved yet the fork-with-specific-pid issue). In a real scenario, you
-+probably want to first create a new names space, and have the init
-+task there call 'sys_restart()'.
-+
-+I tested it this way:
-+	$ ./test &
-+	[1] 3493
-+
-+	$ kill -STOP 3493
-+	$ ./ckpt 3493 > ckpt.image
-+
-+	$ mv /tmp/cr-test.out /tmp/cr-test.out.orig
-+	$ cp /tmp/cr-test.out.orig /tmp/cr-test.out
-+
-+	$ kill -CONT 3493
-+
-+	$ ./rstr < ckpt.image
-+Now compare the output of the two output files.
-+
-+"Self checkpoint:
-+----------------
-+To do "self" checkpoint, you can incorporate the code from ckpt.c into
-+your application.
-+
-+Here is how to test the "self" checkpoint:
-+	$ ./self > self.image &
-+	[1] 3512
-+
-+	$ sleep 3
-+	$ mv /tmp/cr-test.out /tmp/cr-test.out.orig
-+	$ cp /tmp/cr-test.out.orig /tmp/cr-test.out
-+
-+	$ cat /tmp/cr-rest.out
-+	hello, world (85.46)!
-+	count 0 (85.46)!
-+	count 1 (85.56)!
-+	count 2 (85.76)!
-+	count 3 (86.46)!
-+
-+	$ sed -i 's/count/xxxx/g' /tmp/cr-rest.out
-+
-+	$ ./rstr < self.image &
-+Now compare the output of the two output files.
-+
-+Note how in test.c we close stdin, stdout, stderr - that's because
-+currently we only support regular files (not ttys/ptys).
-+
-+If you check the output of ps, you'll see that "rstr" changed its name
-+to "test" or "self", as expected.
-+
--- 
-1.5.4.3
+Restarting multiple processes requires 'mktree' userspace tool:
+	git://git.ncl.cs.columbia.edu/pub/git/user-cr.git
+
+Oren.
+
+
+--
+Why do we want it?  It allows containers to be moved between physical
+machines' kernels in the same way that VMWare can move VMs between
+physical machines' hypervisors.  There are currently at least two
+out-of-tree implementations of this in the commercial world (IBM's
+Metacluster and Parallels' OpenVZ/Virtuozzo) and several in the academic
+world like Zap.
+
+Why do we need it in mainline now?  Because we already have plenty of
+out-of-tree ones, and  want to know what an in-tree one will be like.   :)  
+What *I* want right now is the extra review and scrutiny that comes with
+a mainline submission to make sure we're not going in a direction
+contrary to the community.
+
+This only supports pretty simple apps.  But, I trust Ingo when he says:
+>> > > Generally, if something works for simple apps already (in a robust, 
+>> > > compatible and supportable way) and users find it "very cool", then 
+>> > > support for more complex apps is not far in the future.  but if you
+>> > > want to support more complex apps straight away, it takes forever and
+>> > > gets ugly.
+
+We're *certainly* going to be changing the ABI (which is the format of
+the checkpoint).  I'd like to follow the model that we used for
+ext4-dev, which is to make it very clear that this is a development-only
+feature for now.  Perhaps we do that by making the interface only
+available through debugfs or something similar for now.  Or, reserving
+the syscall numbers but require some runtime switch to be thrown before
+they can be used.  I'm open to suggestions here.
+--
+
+--
+Todo:
+- Add support for x86-64 and improve ABI
+- Refine or change syscall interface
+- Handle multiple namespaces in a container (e.g. save the filesystem
+  namespaces state with the file descriptors)
+- Security (without CAPS_SYS_ADMIN files restore may fail)
+
+Changelog:
+
+[2008-Dec-17] v12:
+  - Fix re-alloc/reset of pgarr chain to correctly reuse buffers
+    (empty pgarr are saves in a separate pool chain)
+  - Add a couple of missed calls to cr_hbuf_put()
+  - cr_kwrite/cr_kread() again use vfs_read(), vfs_write() (safer)
+  - Split cr_write/cr_read() to two parts: _cr_write/read() helper
+  - Befriend with sparse: explicit conversion to 'void __user *'
+  - Redrefine 'pr_fmt' ind replace cr_debug() with pr_debug()
+
+[2008-Dec-05] v11:
+  - Use contents of 'init->fs->root' instead of pointing to it
+  - Ignore symlinks (there is no such thing as an open symlink)
+  - cr_scan_fds() retries from scratch if it hits size limits
+  - Add missing test for VM_MAYSHARE when dumping memory
+  - Improve documentation about: behavior when tasks aren't fronen,
+    life span of the object hash, references to objects in the hash
+ 
+[2008-Nov-26] v10:
+  - Grab vfs root of container init, rather than current process
+  - Acquire dcache_lock around call to __d_path() in cr_fill_name()
+  - Force end-of-string in cr_read_string() (fix possible DoS)
+  - Introduce cr_write_buffer(), cr_read_buffer() and cr_read_buf_type()
+
+[2008-Nov-10] v9:
+  - Support multiple processes c/r
+  - Extend checkpoint header with archtiecture dependent header 
+  - Misc bug fixes (see individual changelogs)
+  - Rebase to v2.6.28-rc3.
+
+[2008-Oct-29] v8:
+  - Support "external" checkpoint
+  - Include Dave Hansen's 'deny-checkpoint' patch
+  - Split docs in Documentation/checkpoint/..., and improve contents
+
+[2008-Oct-17] v7:
+  - Fix save/restore state of FPU
+  - Fix argument given to kunmap_atomic() in memory dump/restore
+
+[2008-Oct-07] v6:
+  - Balance all calls to cr_hbuf_get() with matching cr_hbuf_put()
+    (even though it's not really needed)
+  - Add assumptions and what's-missing to documentation
+  - Misc fixes and cleanups
+
+[2008-Sep-11] v5:
+  - Config is now 'def_bool n' by default
+  - Improve memory dump/restore code (following Dave Hansen's comments)
+  - Change dump format (and code) to allow chunks of <vaddrs, pages>
+    instead of one long list of each
+  - Fix use of follow_page() to avoid faulting in non-present pages
+  - Memory restore now maps user pages explicitly to copy data into them,
+    instead of reading directly to user space; got rid of mprotect_fixup()
+  - Remove preempt_disable() when restoring debug registers
+  - Rename headers files s/ckpt/checkpoint/
+  - Fix misc bugs in files dump/restore
+  - Fixes and cleanups on some error paths
+  - Fix misc coding style
+
+[2008-Sep-09] v4:
+  - Various fixes and clean-ups
+  - Fix calculation of hash table size
+  - Fix header structure alignment
+  - Use stand list_... for cr_pgarr
+
+[2008-Aug-29] v3:
+  - Various fixes and clean-ups
+  - Use standard hlist_... for hash table
+  - Better use of standard kmalloc/kfree
+
+[2008-Aug-20] v2:
+  - Added Dump and restore of open files (regular and directories)
+  - Added basic handling of shared objects, and improve handling of
+    'parent tag' concept
+  - Added documentation
+  - Improved ABI, 64bit padding for image data
+  - Improved locking when saving/restoring memory
+  - Added UTS information to header (release, version, machine)
+  - Cleanup extraction of filename from a file pointer
+  - Refactor to allow easier reviewing
+  - Remove requirement for CAPS_SYS_ADMIN until we come up with a
+    security policy (this means that file restore may fail)
+  - Other cleanup and response to comments for v1
+
+[2008-Jul-29] v1:
+  - Initial version: support a single task with address space of only
+    private anonymous or file-mapped VMAs; syscalls ignore pid/crid
+    argument and act on current process.
+
+--
+At the containers mini-conference before OLS, the consensus among
+all the stakeholders was that doing checkpoint/restart in the kernel
+as much as possible was the best approach.  With this approach, the
+kernel will export a relatively opaque 'blob' of data to userspace
+which can then be handed to the new kernel at restore time.
+
+This is different than what had been proposed before, which was
+that a userspace application would be responsible for collecting
+all of this data.  We were also planning on adding lots of new,
+little kernel interfaces for all of the things that needed
+checkpointing.  This unites those into a single, grand interface.
+
+The 'blob' will contain copies of select portions of kernel
+structures such as vmas and mm_structs.  It will also contain
+copies of the actual memory that the process uses.  Any changes
+in this blob's format between kernel revisions can be handled by
+an in-userspace conversion program.
+
+This is a similar approach to virtually all of the commercial
+checkpoint/restart products out there, as well as the research
+project Zap.
+
+These patches basically serialize internel kernel state and write
+it out to a file descriptor.  The checkpoint and restore are done
+with two new system calls: sys_checkpoint and sys_restart.
+
+In this incarnation, they can only work checkpoint and restore a
+single task. The task's address space may consist of only private,
+simple vma's - anonymous or file-mapped. The open files may consist
+of only simple files and directories.
+--
 
