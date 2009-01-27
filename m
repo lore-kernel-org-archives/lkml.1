@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZA0KK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753516AbZA0KQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754184AbZA0KK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 05:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbZA0KKo
+	id S1753516AbZA0KQL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 05:16:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZA0KP5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 05:10:44 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:45207 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752220AbZA0KKn (ORCPT
+	Tue, 27 Jan 2009 05:15:57 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48571 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751625AbZA0KP4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 05:10:43 -0500
-Date: Tue, 27 Jan 2009 21:09:58 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jarek Poplawski <jarkao2@gmail.com>
-Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v3] tcp: splice as many packets as possible at once
-Message-ID: <20090127100958.GA30239@gondor.apana.org.au>
-References: <20090125.212203.15909648.davem@davemloft.net> <20090127071130.GA29125@gondor.apana.org.au> <20090127075418.GB4197@ff.dom.local>
+	Tue, 27 Jan 2009 05:15:56 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] export get_task_comm()
+Cc: kosaki.motohiro@jp.fujitsu.com, Alexey Dobriyan <adobriyan@gmail.com>,
+       Kyle McMartin <kyle@infradead.org>,
+       Christoph Bartelmus <lirc@bartelmus.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <20090127010035.18521a3b.akpm@linux-foundation.org>
+References: <20090127084956.GA8416@x200.localdomain> <20090127010035.18521a3b.akpm@linux-foundation.org>
+Message-Id: <20090127191413.D488.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090127075418.GB4197@ff.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 27 Jan 2009 19:15:52 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 07:54:18AM +0000, Jarek Poplawski wrote:
+> > > It's worth a checkpatch rule, I guess: "direct access to
+> > > task_struct.comm is racy - use get_task_comm()".
+> > 
+> > And majority of usages is some debugging printk where nobody cares if ->comm
+> > corrupted.
+> > 
+> > Changelog says is useful for debugging. That's right, tsk->comm is useful
+> > for debugging, not allocating temporary buffer + get_task_comm().
+> > 
+> > Some ->comm usages are for kernel threads which never change it, for starters.
+> > 
+> > current->comm is always safe, because, current is not executing prctl(2)! 
 > 
-> Yes, but ip_append_data() (and skb_append_datato_frags() for
-> NETIF_F_UFO only, so currently not a problem), uses this differently,
-> and these pages in sk->sk_sndmsg_page could leak or be used after
-> kfree. (I didn't track locking in these other places).
+> That's a good point.
+> 
+> > I'd say nothing should be done and, heavens forbid, adding this to checkpatch.pl.
+> 
+> hm, yeah, OK, I'll drop it.
 
-It'll be freed when the socket is freed so that should be fine.
+Oh, I have to agree Alexey because he is always right ;)
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+
+
+
