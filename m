@@ -1,68 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbZA0B70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZA0CAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754296AbZA0B70 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 20:59:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZA0B7T
+	id S1754830AbZA0CAh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 21:00:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZA0CA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 20:59:19 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:19302 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbZA0B7S convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 20:59:18 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=S5oZhHIYMjLOlkND4OQbWifDogTEpxku2099h737kHMrDwOIFaCgVp5eH1AH4MifE2
-         wdV5HbRODsWwjcv56s4VBlsYU6sv2ViL3ftCIBeuYZcPcqq39M33zotFDNIUQh/zqaep
-         0WSaWzZZ57cJs5Y15BcoGRzuG7XMVh3LDi5W0=
+	Mon, 26 Jan 2009 21:00:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36112 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751959AbZA0CA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 21:00:28 -0500
+Message-ID: <497E6A4C.8050605@kernel.org>
+Date: Tue, 27 Jan 2009 10:58:36 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Date: Tue, 27 Jan 2009 09:59:17 +0800
-Message-ID: <b6a2187b0901261759q67b09a95v530127254b807042@mail.gmail.com>
-Subject: multiple definition of `debugfs_create_size_t' - please revert 
-	8adb711f3668b034e7b956fac951ed08b53e0d55
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@redhat.com>,
+       Kyle McMartin <kyle@infradead.org>, linux-kernel@vger.kernel.org,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH] module: kzalloc mod->ref
+References: <20090114033533.GL25103@bombadil.infradead.org> <200901151521.47326.rusty@rustcorp.com.au> <200901261751.21817.rusty@rustcorp.com.au> <200901271206.51248.rusty@rustcorp.com.au>
+In-Reply-To: <200901271206.51248.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 27 Jan 2009 01:58:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+Rusty Russell wrote:
+> On Monday 26 January 2009 17:51:21 Rusty Russell wrote:
+>> On Thursday 15 January 2009 15:21:46 Rusty Russell wrote:
+>>> In fact, I've decided to go back and add Eric's patch.  Since
+>>> alloc_percpu isn't going to be fixed this merge window, we'll do this
+>>> now, then simply use alloc_percpu once that is merged.
+>> And with the following fixes, it's in linux-next for tomorrow.
+> 
+> Ingo, can I push this via your tree?  I don't expect any problems, but I
+> hate breaking modules and it'd be nice to have indep testing and get this in
+> soon; linux-next is off this week.
+> 
+> (The percpu alloc patchset I promised Tejun also depends trivially on this
+> so getting it upstream will forward that handoff).
 
-The below commit cause this problem. Reverting it solved the problem.
+FWIW, the patch looks good to me and I'll be happy to forward it
+through core/percpu.
 
-arch/x86/mm/pat.o: In function `debugfs_create_size_t':
-pat.c:(.text+0x0): multiple definition of `debugfs_create_size_t'
-arch/x86/mm/pageattr.o:(.text+0x0): first defined here
-make[1]: *** [arch/x86/mm/built-in.o] Error 1
-make: *** [arch/x86/mm] Error 2
+Thanks.
 
-
-Thanks,
-Jeff.
-
-
-commit 8adb711f3668b034e7b956fac951ed08b53e0d55
-Author: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Date:   Tue Jan 20 12:17:28 2009 -0800
-
-    debugfs: introduce stub for debugfs_create_size_t() when DEBUG_FS=n
-
-    Toralf Förster <toralf.foerster@gmx.de> reported a build failure in
-    the WiMAX stack when CONFIG_DEBUG_FS=n
-
-    http://linuxwimax.org/pipermail/wimax/2009-January/000449.html
-
-    This is due to debugfs_create_size_t() missing an stub that returns
-    -ENODEV when the DEBUGFS subsystem is not configured in (like the rest
-    of the debugfs API).
-
-    This patch adds said stub.
-
-    Reported-by: Toralf Förster <toralf.foerster@gmx.de>
-    Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+-- 
+tejun
