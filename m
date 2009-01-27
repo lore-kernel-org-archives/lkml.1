@@ -1,58 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754686AbZA0Jfe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbZA0JhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754686AbZA0Jfe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 04:35:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752202AbZA0Jf0
+	id S1754494AbZA0JhY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 04:37:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZA0JhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 04:35:26 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40677 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752056AbZA0JfZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 04:35:25 -0500
-Date: Tue, 27 Jan 2009 09:35:16 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: linux-kernel@vger.kernel.org
-Subject: New build regressions: 2.6.27-rc2-git2
-Message-ID: <20090127093516.GA27545@flint.arm.linux.org.uk>
+	Tue, 27 Jan 2009 04:37:09 -0500
+Received: from sh.osrg.net ([192.16.179.4]:41327 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751124AbZA0JhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 04:37:08 -0500
+Date: Tue, 27 Jan 2009 18:36:47 +0900
+To: stefanr@s5r6.in-berlin.de
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: swiotlb default size (64 MB) too small?
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090127165508L.fujita.tomonori@lab.ntt.co.jp>
+References: <20090121074339N.fujita.tomonori@lab.ntt.co.jp>
+	<4976D52F.5090109@s5r6.in-berlin.de>
+	<20090127165508L.fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090127183723W.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From this morning's ARM kautobuild:
+On Tue, 27 Jan 2009 16:54:30 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-magician defconfig:
+> > *) The report does not sound like there was a DMA mappig leak caused by
+> > copying between usb-storage and firewire-sbp2.  Else he would have hit
+> > the problem again even with increased swiotlb default size.
+> 
+> Maybe the reporter doesn't copy enough to hit the deadlock.
 
-drivers/built-in.o: In function `debugfs_create_size_t':
-led-core.c:(.text+0x0): multiple definition of `debugfs_create_size_t'
-kernel/built-in.o:dma-coherent.c:(.text+0x0): first defined here
+Hmm, we don't have leak here?
 
-s3c6400 defconfig:
+=
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH] fw-sbp2: fix dma mapping leak on the failure path
 
-fs/built-in.o: In function `debugfs_create_size_t':
-include/linux/debugfs.h:168: multiple definition of `debugfs_create_size_t'
-kernel/built-in.o:include/linux/debugfs.h:168: first defined here
-drivers/built-in.o: In function `debugfs_create_size_t':
-include/linux/debugfs.h:168: multiple definition of `debugfs_create_size_t'
-kernel/built-in.o:include/linux/debugfs.h:168: first defined here
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ drivers/firewire/fw-sbp2.c |   12 +++++++++++-
+ 1 files changed, 11 insertions(+), 1 deletions(-)
 
-IXP4xx defconfig:
-
-drivers/usb/host/ohci-hcd.o: In function `debugfs_create_size_t':
-ohci-hcd.c:(.text+0x0): multiple definition of `debugfs_create_size_t'
-drivers/usb/host/ehci-hcd.o:ehci-hcd.c:(.text+0x0): first defined here
-drivers/usb/host/uhci-hcd.o: In function `debugfs_create_size_t':
-uhci-hcd.c:(.text+0x0): multiple definition of `debugfs_create_size_t'
-drivers/usb/host/ehci-hcd.o:ehci-hcd.c:(.text+0x0): first defined here
-
-... repeat for about 80 other ARM defconfigs.  Haven't had time to
-investigate.
-
+diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
+index e88d506..d40910d 100644
+--- a/drivers/firewire/fw-sbp2.c
++++ b/drivers/firewire/fw-sbp2.c
+@@ -1491,8 +1491,18 @@ static int sbp2_scsi_queuecommand(struct scsi_cmnd *cmd, scsi_done_fn_t done)
+ 	orb->base.request_bus =
+ 		dma_map_single(device->card->device, &orb->request,
+ 			       sizeof(orb->request), DMA_TO_DEVICE);
+-	if (dma_mapping_error(device->card->device, orb->base.request_bus))
++	if (dma_mapping_error(device->card->device, orb->base.request_bus)) {
++		if (scsi_sg_count(cmd)) {
++			dma_unmap_sg(device->card->device, scsi_sglist(cmd),
++				     scsi_sg_count(cmd),
++				     cmd->sc_data_direction);
++			dma_unmap_single(device->card->device,
++					 orb->page_table_bus,
++					 sizeof(orb->page_table),
++					 DMA_TO_DEVICE);
++		}
+ 		goto out;
++	}
+ 
+ 	sbp2_send_orb(&orb->base, lu, lu->tgt->node_id, generation,
+ 		      lu->command_block_agent_address + SBP2_ORB_POINTER);
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+1.6.0.6
+
+
