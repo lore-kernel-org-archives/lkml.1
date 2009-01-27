@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753939AbZA0J4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753398AbZA0KJb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753939AbZA0J4u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 04:56:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbZA0J4l
+	id S1753398AbZA0KJb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 05:09:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZA0KJX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 04:56:41 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38286 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbZA0J4k (ORCPT
+	Tue, 27 Jan 2009 05:09:23 -0500
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:50351 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752156AbZA0KJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 04:56:40 -0500
-Date: Tue, 27 Jan 2009 10:56:26 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: kernel list <linux-kernel@vger.kernel.org>, tytso@mit.edu, jack@suse.cz,
-       sct@redhat.com, akpm@linux-foundation.org, adilger@sun.com,
-       linux-ext4@vger.kernel.org
-Subject: Re: ext3 read only handling
-Message-ID: <20090127095626.GB18449@elf.ucw.cz>
-References: <20080925150319.GA4344@elf.ucw.cz> <48DBAB0E.3090608@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <48DBAB0E.3090608@redhat.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 27 Jan 2009 05:09:22 -0500
+Date: Tue, 27 Jan 2009 11:09:16 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
+       Tomas Carnecky <tom@dbservice.com>, bugme-daemon@bugzilla.kernel.org
+Subject: Re: [Bug 12492] Re: [patch 1/2] stop_machine: introduce
+ stop_machine_create/destroy.
+Message-ID: <20090127110916.4a7dbec4@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090127015202.486dd1af.akpm@linux-foundation.org>
+References: <20081222113629.080104676@de.ibm.com>
+	<20081222114529.601526881@de.ibm.com>
+	<20090127000432.65042e85.akpm@linux-foundation.org>
+	<20090127015202.486dd1af.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2008-09-25 10:15:26, Eric Sandeen wrote:
-> Pavel Machek wrote:
-> > Inserting read-only ext3 SD card into a machine and trying to mount
-> > ext3 volume on it is very unnice :-(.
+On Tue, 27 Jan 2009 01:52:02 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 27 Jan 2009 00:04:32 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> >   Commit 9ea09af3bd3090e8349ca2899ca2011bd94cda85 introduced a
+> >   regression that caused the kernel to fail to suspend.  The 'sleeping'
+> >   LED on the laptop just keeps blinking and the laptop never shuts
+> >   down.  I think this was eventually fixed because with 2.6.29-rc1 and
+> >   -rc2 the laptop suspends fine, but fails to resume.  When I try to
+> >   resume, all I see is a blinking cursor in the top left corner of the
+> >   screen.
 > > 
-> > Is there easy way to "fix" -oro so that it does not write to the
-> > media?
-> > 
-> > (Machine died after I played with that SD card a bit more, but I can't
-> > easily reproduce that...)
+> >   I'm using acpi_sleep=s3_bios,s3_mode, suspending using a script
+> >   that does: echo mem > /sys/power/state.
 > 
-> Is the block device recognized as readonly?
-> 
-> ext3_load_journal() does things like:
-> 
->         really_read_only = bdev_read_only(sb->s_bdev);
-> ...
->                         printk(KERN_INFO "EXT3-fs: INFO: recovery "
->                                         "required on readonly
-> filesystem.\n");
->                         if (really_read_only) {
->                                 printk(KERN_ERR "EXT3-fs: write access "
->                                         "unavailable, cannot proceed.\n");
->                                 return -EROFS;
->                         }
-> 
-> so it shouldn't have tried to replay the log ...
-> 
-> (replaying the log & writing to the device on a read-only mount is
-> another issue, but the behavior today is *supposed* to be such that if
-> you cannot write to the device, then even a read-only mount with a dirty
-> journal should fail gracefully, not explode ....)
+> hm.  Re-reading this, it seems to be saying that
+> 9ea09af3bd3090e8349ca2899ca2011bd94cda85 might be innocent, and that
+> some other patch might have caused the resume regression?
 
-Well, that card is so broken I'm afraid to insert it into machine any
-more. I had hard time removing it on last attempt. But these days at
-least "ro,noload" is documented, so... 
+Yes, I already updated the bugzilla entry at kernel.org:
 
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The bug introduced with the introduction of stop_machine_create/destroy
+was fixed with a0e280e0f33f6c859a235fb69a875ed8f3420388
+"stop_machine/cpu hotplug: fix disable_nonboot_cpus".
+Must be something else.
