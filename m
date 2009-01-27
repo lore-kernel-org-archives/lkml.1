@@ -1,49 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755747AbZA0VsJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbZA0Vs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755747AbZA0VsJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 16:48:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbZA0Vrv
+	id S1755847AbZA0Vs6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 16:48:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZA0Vst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 16:47:51 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50540
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754920AbZA0Vru (ORCPT
+	Tue, 27 Jan 2009 16:48:49 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:41163 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbZA0Vss (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 16:47:50 -0500
-Date: Tue, 27 Jan 2009 13:47:47 -0800 (PST)
-Message-Id: <20090127.134747.153565246.davem@davemloft.net>
-To: cl@linux-foundation.org
-Cc: tj@kernel.org, rusty@rustcorp.com.au, mingo@elte.hu,
-       herbert@gondor.apana.org.au, akpm@linux-foundation.org, hpa@zytor.com,
-       brgerst@gmail.com, ebiederm@xmission.com, travis@sgi.com,
-       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com,
-       netdev@vger.kernel.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.1.10.0901271506580.3114@qirst.com>
-References: <200901271213.18605.rusty@rustcorp.com.au>
-	<497E705B.5000302@kernel.org>
-	<alpine.DEB.1.10.0901271506580.3114@qirst.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Jan 2009 16:48:48 -0500
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Turner <pjt@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] seq_file: Move traverse so it can be used from seq_read
+References: <Pine.LNX.4.64.0901162229420.12858@kitami.corp.google.com>
+	<20090124181924.d633523c.akpm@linux-foundation.org>
+	<20090125120818.GA4454@x200.localdomain>
+	<m1r62obev3.fsf@fess.ebiederm.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 27 Jan 2009 13:48:56 -0800
+In-Reply-To: <m1r62obev3.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Tue\, 27 Jan 2009 13\:47\:44 -0800")
+Message-ID: <m1mydcbet3.fsf_-_@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: adobriyan@gmail.com, linux-kernel@vger.kernel.org, pjt@google.com, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christoph Lameter <cl@linux-foundation.org>
-Date: Tue, 27 Jan 2009 15:08:57 -0500 (EST)
 
-> On Tue, 27 Jan 2009, Tejun Heo wrote:
-> 
-> > > later). That's because they use TLB tricks for a static 64k per-cpu
-> > > area, but this doesn't scale.  That might not be vital: abandoning
-> > > that trick will mean they can't optimise read_percpu/read_percpu_var
-> > > etc as much.
-> 
-> Why wont it scale? this is a separate TLB entry for each processor.
+To handle pread correctly we can't assume that f_pos is
+where we left it in seq_read.  So modify traverse
+so we can use it in seq_read.
 
-The IA64 per-cpu TLB entry only covers 64k which makes use of it for
-dynamic per-cpu stuff out of the question.  That's why it "doesn't
-scale"
+Signed-off-by: Eric Biederman <ebiederm@xmission.com>
+---
+ fs/seq_file.c |  114 ++++++++++++++++++++++++++++----------------------------
+ 1 files changed, 57 insertions(+), 57 deletions(-)
+
+diff --git a/fs/seq_file.c b/fs/seq_file.c
+index b569ff1..2716c12 100644
+--- a/fs/seq_file.c
++++ b/fs/seq_file.c
+@@ -54,6 +54,63 @@ int seq_open(struct file *file, const struct seq_operations *op)
+ }
+ EXPORT_SYMBOL(seq_open);
+ 
++static int traverse(struct seq_file *m, loff_t offset)
++{
++	loff_t pos = 0, index;
++	int error = 0;
++	void *p;
++
++	m->version = 0;
++	index = 0;
++	m->count = m->from = 0;
++	if (!offset) {
++		m->index = index;
++		return 0;
++	}
++	if (!m->buf) {
++		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
++		if (!m->buf)
++			return -ENOMEM;
++	}
++	p = m->op->start(m, &index);
++	while (p) {
++		error = PTR_ERR(p);
++		if (IS_ERR(p))
++			break;
++		error = m->op->show(m, p);
++		if (error < 0)
++			break;
++		if (unlikely(error)) {
++			error = 0;
++			m->count = 0;
++		}
++		if (m->count == m->size)
++			goto Eoverflow;
++		if (pos + m->count > offset) {
++			m->from = offset - pos;
++			m->count -= m->from;
++			m->index = index;
++			break;
++		}
++		pos += m->count;
++		m->count = 0;
++		if (pos == offset) {
++			index++;
++			m->index = index;
++			break;
++		}
++		p = m->op->next(m, p, &index);
++	}
++	m->op->stop(m, p);
++	return error;
++
++Eoverflow:
++	m->op->stop(m, p);
++	kfree(m->buf);
++	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
++	return !m->buf ? -ENOMEM : -EAGAIN;
++}
++
+ /**
+  *	seq_read -	->read() method for sequential files.
+  *	@file: the file to read from
+@@ -186,63 +243,6 @@ Efault:
+ }
+ EXPORT_SYMBOL(seq_read);
+ 
+-static int traverse(struct seq_file *m, loff_t offset)
+-{
+-	loff_t pos = 0, index;
+-	int error = 0;
+-	void *p;
+-
+-	m->version = 0;
+-	index = 0;
+-	m->count = m->from = 0;
+-	if (!offset) {
+-		m->index = index;
+-		return 0;
+-	}
+-	if (!m->buf) {
+-		m->buf = kmalloc(m->size = PAGE_SIZE, GFP_KERNEL);
+-		if (!m->buf)
+-			return -ENOMEM;
+-	}
+-	p = m->op->start(m, &index);
+-	while (p) {
+-		error = PTR_ERR(p);
+-		if (IS_ERR(p))
+-			break;
+-		error = m->op->show(m, p);
+-		if (error < 0)
+-			break;
+-		if (unlikely(error)) {
+-			error = 0;
+-			m->count = 0;
+-		}
+-		if (m->count == m->size)
+-			goto Eoverflow;
+-		if (pos + m->count > offset) {
+-			m->from = offset - pos;
+-			m->count -= m->from;
+-			m->index = index;
+-			break;
+-		}
+-		pos += m->count;
+-		m->count = 0;
+-		if (pos == offset) {
+-			index++;
+-			m->index = index;
+-			break;
+-		}
+-		p = m->op->next(m, p, &index);
+-	}
+-	m->op->stop(m, p);
+-	return error;
+-
+-Eoverflow:
+-	m->op->stop(m, p);
+-	kfree(m->buf);
+-	m->buf = kmalloc(m->size <<= 1, GFP_KERNEL);
+-	return !m->buf ? -ENOMEM : -EAGAIN;
+-}
+-
+ /**
+  *	seq_lseek -	->llseek() method for sequential files.
+  *	@file: the file in question
+-- 
+1.5.6.3
+
