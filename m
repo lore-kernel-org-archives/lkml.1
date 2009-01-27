@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757012AbZA0Tzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbZA0UDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757012AbZA0Tzo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 14:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbZA0Tzf
+	id S1756729AbZA0UDG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 15:03:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZA0UCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 14:55:35 -0500
-Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:1678 "EHLO
-	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755838AbZA0Tze (ORCPT
+	Tue, 27 Jan 2009 15:02:54 -0500
+Received: from mathups.math.u-psud.fr ([129.175.52.4]:39161 "EHLO
+	matups.math.u-psud.fr" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755728AbZA0UCx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 14:55:34 -0500
-Date: Tue, 27 Jan 2009 20:55:20 +0100
-From: Folkert van Heusden <folkert@vanheusden.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29rc1 brakes usb
-Message-ID: <20090127195519.GB6158@vanheusden.com>
-References: <20090126170130.GG6158@vanheusden.com> <200901262011.20545.oliver@neukum.org>
+	Tue, 27 Jan 2009 15:02:53 -0500
+X-Greylist: delayed 1155 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Jan 2009 15:02:53 EST
+From: Duncan Sands <baldrick@free.fr>
+To: llvmdev@cs.uiuc.edu
+Subject: Re: [LLVMdev] inline asm semantics: output constraint width smaller 
+ =?iso-8859-1?q?than=09input?=
+Date: Tue, 27 Jan 2009 20:42:56 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; x86_64; ; )
+Cc: Ingo Molnar <mingo@elte.hu>,
+       =?iso-8859-1?q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+References: <497A0500.3080706@gmail.com> <497B408C.20802@gmail.com> <20090124172758.GA31699@elte.hu>
+In-Reply-To: <20090124172758.GA31699@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200901262011.20545.oliver@neukum.org>
-Organization: www.unixexpert.nl
-X-Chameleon-Return-To: folkert@vanheusden.com
-X-Xfmail-Return-To: folkert@vanheusden.com
-X-Phonenumber: +31-6-41278122
-X-URL: http://www.vanheusden.com/
-X-PGP-KeyID: 1F28D8AE
-X-GPG-fingerprint: AC89 09CE 41F2 00B4 FCF2  B174 3019 0E8C 1F28 D8AE
-X-Key: http://pgp.surfnet.nl:11371/pks/lookup?op=get&search=0x1F28D8AE
-Reply-By: Sat Jan 24 21:33:23 CET 2009
-X-Message-Flag: Want to extend your PGP web-of-trust? Coordinate a
-	key-signing at www.biglumber.com
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901272042.57272.baldrick@free.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 08:11:19PM +0100, Oliver Neukum wrote:
-> > Since version 2.6.29rc1 querying cleware USb devices no longer works.
-> > 2.6.28 works fine. 2.6.29-rc2 also no longer works.
-> 
-> What kind of device is this? What happens if you try to use the device?
-> Isn't it detected, do you get an error?
+Hi,
 
-It is a powerswitch that can be toggled via USB. Cleware also has
-sensors (temperature, humidity, etc.) that all can be handled via a
-commandline utility I wrote.
-It has been a while but if i remember correctly the failing ioctl is for
-determing the serial number of the device. That is required to talk to
-the right device. http://www.vanheusden.com/clewarecontrol/
+> If yes then this doesnt look all that bad or invasive at first sight (if 
+> the put_user() workaround can be expressed in a cleaner way), but in any 
+> case it would be nice to hear an LLVM person's opinion about roughly when 
+> this is going to be solved in LLVM itself.
 
+one thing that seems to be clear to everyone except me is... what are the
+semantics supposed to be?  [My understanding is that what is being discussed
+is when you have an asm with a register as input and output, but with integer
+types of different width for the input and output, but I saw some mention of
+struct types in this thread...].  Presumably this is something obvious, but
+it would be good to have someone spell it out in small words that even someone
+like me can understand :)
 
-Folkert van Heusden
+Thanks,
 
--- 
-MultiTail is een flexibele tool voor het volgen van logfiles en
-uitvoer van commando's. Filteren, van kleur voorzien, mergen,
-'diff-view', etc. http://www.vanheusden.com/multitail/
-----------------------------------------------------------------------
-Phone: +31-6-41278122, PGP-key: 1F28D8AE, www.vanheusden.com
+Duncan.
