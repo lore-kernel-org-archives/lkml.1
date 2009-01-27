@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756071AbZA0VCU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZA0VES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756071AbZA0VCU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 16:02:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZA0VCJ
+	id S1754632AbZA0VES (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 16:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751844AbZA0VEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 16:02:09 -0500
-Received: from tomts5.bellnexxia.net ([209.226.175.25]:47685 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752032AbZA0VCH (ORCPT
+	Tue, 27 Jan 2009 16:04:05 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:39662 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbZA0VEE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 16:02:07 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AssFABgFf0lMQWt2/2dsb2JhbACBbsk8hUw
-Date: Tue, 27 Jan 2009 16:02:03 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Subject: LTTng 0.87 improved page fault tracing
-Message-ID: <20090127210203.GA13478@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 27 Jan 2009 16:04:04 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Folkert van Heusden <folkert@vanheusden.com>
+Subject: Re: 2.6.29rc1 brakes usb
+Date: Tue, 27 Jan 2009 22:04:21 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090126170130.GG6158@vanheusden.com> <200901262011.20545.oliver@neukum.org> <20090127195519.GB6158@vanheusden.com>
+In-Reply-To: <20090127195519.GB6158@vanheusden.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 15:54:52 up 26 days, 20:53,  4 users,  load average: 1.61, 1.22,
-	0.99
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200901272204.22702.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Am Tuesday 27 January 2009 20:55:20 schrieb Folkert van Heusden:
+> On Mon, Jan 26, 2009 at 08:11:19PM +0100, Oliver Neukum wrote:
+> > > Since version 2.6.29rc1 querying cleware USb devices no longer works.
+> > > 2.6.28 works fine. 2.6.29-rc2 also no longer works.
+> > 
+> > What kind of device is this? What happens if you try to use the device?
+> > Isn't it detected, do you get an error?
+> 
+> It is a powerswitch that can be toggled via USB. Cleware also has
+> sensors (temperature, humidity, etc.) that all can be handled via a
+> commandline utility I wrote.
+> It has been a while but if i remember correctly the failing ioctl is for
+> determing the serial number of the device. That is required to talk to
+> the right device. http://www.vanheusden.com/clewarecontrol/
 
-I just combined the 4 page fault handler events that were in the tracing
-hot path of LTTng into 2 :
+There's a known bug in hiddev. Please test the included patch.
 
-kernel page_fault_entry
-kernel page_fault_exit
+	Regards
+		Oliver
 
-They take as parameter the combination of what was available in the
-trap_entry/exit events and handle_mm_fault entry/exit events. This
-should lessen the performance impact of the tracer when it's active.
-I did the related modifications in LTTV 0.12.8.
+---
 
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--- linux-2.6/drivers/hid/usbhid/hiddev.c.alt	2009-01-26 20:03:10.000000000 +0100
++++ linux-2.6/drivers/hid/usbhid/hiddev.c	2009-01-26 20:03:17.000000000 +0100
+@@ -656,7 +656,7 @@ static long hiddev_ioctl(struct file *fi
+ 
+ 	case HIDIOCGSTRING:
+ 		mutex_lock(&hiddev->existancelock);
+-		if (!hiddev->exist)
++		if (hiddev->exist)
+ 			r = hiddev_ioctl_string(hiddev, cmd, user_arg);
+ 		else
+ 			r = -ENODEV;
