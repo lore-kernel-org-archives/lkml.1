@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZA0Nlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZA0NqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755860AbZA0Nlu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 08:41:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZA0Nll
+	id S1755167AbZA0NqS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 08:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZA0NqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 08:41:41 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56151 "EHLO mx2.mail.elte.hu"
+	Tue, 27 Jan 2009 08:46:06 -0500
+Received: from corega.com.ru ([195.178.208.66]:51426 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753061AbZA0Nll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 08:41:41 -0500
-Date: Tue, 27 Jan 2009 14:41:28 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH v2] timer: implement lockdep deadlock detection
-Message-ID: <20090127134128.GA24965@elte.hu>
-References: <1233010786.4344.1.camel@johannes.local> <20090126230721.GA6556@elte.hu> <1233046009.4012.3.camel@johannes.local> <20090127132759.GI23121@elte.hu>
+	id S1751328AbZA0NqE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 08:46:04 -0500
+Date: Tue, 27 Jan 2009 16:45:59 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: David Rientjes <rientjes@google.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       balbir@linux.vnet.ibm.com, Nikanth Karthikesan <knikanth@suse.de>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Torvalds <torvalds@linux-foundation.org>,
+       Arve Hj?nnev?g <arve@android.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Paul Menage <menage@google.com>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Message-ID: <20090127134559.GB18119@ioremap.net>
+References: <alpine.DEB.2.00.0901262350110.14525@chino.kir.corp.google.com> <20090127093105.GB2646@ioremap.net> <20090127193058.D48B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090127132759.GI23121@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090127193058.D48B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi.
 
--tip testing found this build failure with your patch:
+On Tue, Jan 27, 2009 at 07:40:58PM +0900, KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
+> I'd like to respect your requiremnt. but I also would like to know
+> why you like deterministic hierarchy oom than notification.
+> 
+> I think one of problem is, current patch description is a bit poor
+> and don't describe from administrator view.
 
- arch/x86/kernel/hpet.c:631: error: too few arguments to function ‘init_timer_on_stack_key’
+Notification of the memory state is by no means a great idea.
+Any process which cares about the system state can register and make
+some decisions based on the memory state. But if it fails to update to
+the current situation, the main oom-killer has to enter the scene and
+make a progress on the system behaviour.
 
-you can pick up latest -tip via:
+As I wrote multiple times there may be a quite trivial situation, when
+process will not be able to make progress (it will not be able to free
+some data even if its memory notification callback is invoked in some
+cases), so we just can not rely on that. After all there may be no
+processes with given notifications registered, so we should be able to
+tune main oom-killer, which is another story compared to the
+/dev/mem_notify discussion.
 
- http://people.redhat.com/mingo/tip.git/README
+Having some special application which will monitor /dev/mem_notify and
+kill processes based on its own hueristics is a good idea, but when it
+fails to do its work (or does not exist) system has to have ability to
+make a progress and invoke a main oom-killer.
 
-	Ingo
+-- 
+	Evgeniy Polyakov
