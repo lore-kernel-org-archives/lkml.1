@@ -1,104 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZA0ThE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZA0TiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZA0ThE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 14:37:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbZA0Tgv
+	id S1756940AbZA0TiP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 14:38:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755278AbZA0Th7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 14:36:51 -0500
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:33275 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756762AbZA0Tgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 14:36:50 -0500
-Message-ID: <497F6257.4070101@krogh.cc>
-Date: Tue, 27 Jan 2009 20:36:55 +0100
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-CC: Greg KH <gregkh@suse.de>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	Tue, 27 Jan 2009 14:37:59 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:34567 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbZA0Th6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 14:37:58 -0500
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Dave Anderson <anderson@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Bernhard Walle <bwalle@suse.de>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "e1000-devel@lists.sourceforge.net" 
-	<e1000-devel@lists.sourceforge.net>
-Subject: Re: Linux 2.6.27.13
-References: <20090125004823.GA6711@kroah.com> <497E16A0.50607@krogh.cc> <20090126210730.GB24164@suse.de> <F169D4F5E1F1974DBFAFABF47F60C10A1C2250D0@orsmsx507.amr.corp.intel.com>
-In-Reply-To: <F169D4F5E1F1974DBFAFABF47F60C10A1C2250D0@orsmsx507.amr.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       crash-utility@redhat.com
+Subject: Re: BISECTED: Re: source line numbers with x86_64 modules?
+References: <170fa0d20901270909v45bec3bao38944a9aca6347d9@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 27 Jan 2009 11:38:00 -0800
+In-Reply-To: <170fa0d20901270909v45bec3bao38944a9aca6347d9@mail.gmail.com> (Mike Snitzer's message of "Tue\, 27 Jan 2009 12\:09\:19 -0500")
+Message-ID: <m18wowczfr.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 128 bytes)
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Brandeburg, Jesse wrote:
-> Greg KH wrote:
->> On Mon, Jan 26, 2009 at 09:01:36PM +0100, Jesper Krogh wrote:
->>> Greg KH wrote:
->>>> We (the -stable team) are announcing the release of the 2.6.27.13
->>>> kernel. It contains a wide range of bugfixes, and all users of the
->>>> 2.6.27 kernel series are strongly encouraged to upgrade.
->>>> I'll also be replying to this message with a copy of the patch
->>>> between 
->>>> 2.6.27.12 and 2.6.27.13
->>> Hi.
+Mike Snitzer <snitzer@gmail.com> writes:
+
+> [I've trimmed the wide cc distribution that was inherited when I
+> forked a different thread]
+>
+> On Mon, Jan 12, 2009 at 10:19 PM, Eric W. Biederman
+> <ebiederm@xmission.com> wrote:
+>> "Mike Snitzer" <snitzer@gmail.com> writes:
 >>>
->>> I'm getting some e1000 noise on a 2.6.27.6, I search the log up to
->>> .13 but couldn't find any log messsage that looked like it fixed it.
->>>
->>>
->>> [862734.501786] ------------[ cut here ]------------
->>> [862734.501793] WARNING: at net/sched/sch_generic.c:219
->>> dev_watchdog+0x1f8/0x210() [862734.501795] NETDEV WATCHDOG: eth0
->>> (e1000): transmit timed out 
->> I've been getting a lot of reports about this as well.  Did it show up
->> in 2.6.27.6?
+>>> Now if only I could fix line numbers when debugging crashes in x86_64
+>>> modules with the crash utility! :)
 >>
->> Netdev developers, any ideas of what would be causing this?
-> 
-> no immediate idea, but a quick test to help isolate which functionality
-> could be causing problems is to disable TSO on all four interfaces using
-> ethtool.
-> 
-> It could be that GSO is somehow playing into this as well, but I don't
-> know why (you could disable it with ethtool too).
-> 
-> It could be unrelated but I've noticed that TCP window size can grow much
-> larger now than it used to (especially talking to LRO enabled clients) 
-> and this might cause some kind of an overflow in the TCP transmit
-> offloading hardware in the e1000 parts.
-> 
-> 
->>> Complete dmesg here:
->>> http://krogh.cc/~jesper/dmesg-2.6.27.6.txt
->>>
->>> The system is running with bonded interfaces with  (lspci output)
->>> 06:01.0 Ethernet controller: Intel Corporation 82546EB Gigabit
->>> Ethernet Controller (Copper) (rev 03) 06:01.1 Ethernet controller:
->>> Intel Corporation 82546EB Gigabit Ethernet Controller (Copper) (rev
->>> 03) 06:02.0 Ethernet controller: Intel Corporation 82546EB Gigabit
->>> Ethernet Controller (Copper) (rev 03) 06:02.1 Ethernet controller:
->>> Intel Corporation 82546EB Gigabit Ethernet Controller (Copper) (rev
->>> 03)   
->>>
->>> The system is still "fully functional", and I havent notiched
->>> anything wrong, but there sure is a lot of link ups and downs on
->>> that bond. 
-> 
-> in your log I saw one tx timeout for each interface, one first one by itself
-> and then several more all within a few minutes, but then no more for
-> a really long time.
-> 
-> My first reaction is to ask you what test you're running, and ask you to
-> run the e1000_dump code (see google) to dump the tx descriptor rings at 
-> the time of failure.
-> 
-> I can get you that code with updates if you're willing to test, but 
-> it might take a couple of days.
+>> It's a userspace problem...
+>>
+>> All of the little usability things are userspace problems.
+>>
+>> I won't claim that it is trivial because it is a userspace problem, at the
+> same
+>> time there is no reason to wait for any kernel features to merge etc.  Someone
+>> just has to scratch an itch and go fix it.
+>
+> Yes, the crash utility (userspace) is clearly having problems getting
+> line number for symbols in x86_64 modules.  But I finally took some
+> time to bisect the point in the kernel where the crash utility first
+> started to fail, it appears to be:
+>
+> commit 7460ed2844ffad7141e30271c0c3da8336e66014
+> Author: john stultz <johnstul@us.ibm.com>
+> Date:   Fri Feb 16 01:28:21 2007 -0800
+>
+> I used version 4.0-7.6 of the crash utility to test if each commit was
+> good or bad.  I simply checked if ext3's module had correct line
+> number info for the ext3_get_blocks_handle symbol with: sym
+> ext3_get_blocks_handle
 
-I would love to have it at hand, but it is a production system, so it'll 
-be upgraded to 2.6.27.latest at next reboot. So It should be working 
-with that one.
+Weird.  That patch doesn't appear to affect anything in that area.
+So my stab in the dark is that there is something in vmlinux that
+crash doesn't know how to cope with.
 
-Jesper
+> I tried to revert 7460ed2844ffad7141e30271c0c3da8336e66014 from
+> v2.6.21 but it had conflicts that I've not yet been able to put
+> adequate time to resolving.
+>
+> That aside, I'd be very interested to know how/where this commit is
+> impacting the crash utility.  Has alignment of some module metadata
+> structure been altered and that is the problem?  This isn't my area of
+> expertise but I have to believe others may have useful insight.
 
--- 
-Jesper
+Eric
