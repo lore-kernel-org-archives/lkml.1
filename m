@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbZA0IoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbZA0Iod@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754271AbZA0IoR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 03:44:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751596AbZA0IoG
+	id S1755213AbZA0Iod (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 03:44:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZA0IoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 03:44:06 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:6401 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751287AbZA0IoD (ORCPT
+	Tue, 27 Jan 2009 03:44:21 -0500
+Received: from fg-out-1718.google.com ([72.14.220.152]:2278 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754830AbZA0IoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 03:44:03 -0500
+	Tue, 27 Jan 2009 03:44:20 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Sf3GfSIirVK1ziKu+n4HztRr4D9gWV0PZzPPMs5Fy+5VVq/4jLtA+U3e/WrNRQWnE4
-         KWRbhOiBADt2bwJ7s71FZc21QTinhtcYixgom0554Ssbc/Ak8pxpb9V/XQeaKWeUpZcv
-         Z0NVOyL2iPVuaouDp+Rrafsj+eFCY3da+7Qww=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Nyfwo9+duTVrHePeJNON2Wrowwn+h/2gUPcxjnD7t2gkFrYw/eGul8peyMBKTO8tAm
+         wgKcNTFfpJsHSHOrEYrsLXQ/KkOm4hlmcSNOoWat5Aufzn5msFGLBEJFyQ7awfoyEFZA
+         Levna1iztBzmNtwleePS/9M/ezhMMeD342wfU=
+Date: Tue, 27 Jan 2009 11:49:56 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kyle McMartin <kyle@infradead.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Bartelmus <lirc@bartelmus.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>
+Subject: Re: [PATCH] export get_task_comm()
+Message-ID: <20090127084956.GA8416@x200.localdomain>
+References: <20090120071641.B0A3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <AuEeLWHZjFB@christoph> <20090128140615.D464.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090126211655.c7287768.akpm@linux-foundation.org> <20090127051919.GA5034@bombadil.infradead.org> <20090126212615.2658b29e.akpm@linux-foundation.org> <20090126212918.d4770115.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <497EB491.6080904@numericable.fr>
-References: <497EB491.6080904@numericable.fr>
-Date: Tue, 27 Jan 2009 14:14:02 +0530
-Message-ID: <3f9a31f40901270044x61db5104tf14fac4a59a99bdb@mail.gmail.com>
-Subject: Re: [2.6.29-rc2-git2] compilation warnings
-From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-To: "Rufus & Azrael" <rufus-azrael@numericable.fr>
-Cc: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Jean Delvare <khali@linux-fr.org>,
-       Takashi Iwai <tiwai@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090126212918.d4770115.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 12:45 PM, Rufus & Azrael
-<rufus-azrael@numericable.fr> wrote:
->
-> Here are my compilation warnings for fresh 2.6.29-rc2-git2 kernel :
+On Mon, Jan 26, 2009 at 09:29:18PM -0800, Andrew Morton wrote:
+> On Mon, 26 Jan 2009 21:26:15 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > On Tue, 27 Jan 2009 00:19:19 -0500 Kyle McMartin <kyle@infradead.org> wrote:
+> > 
+> > > On Mon, Jan 26, 2009 at 09:16:55PM -0800, Andrew Morton wrote:
+> > > > Ho hum, I suppose so.  I redid the changelog a bit:
+> > > > 
+> > > >    task_struct.comm[] is useful for debugging and driver developers
+> > > >    want to use this information easily.  Direct access to
+> > > >    task_struct.comm[] is a bit racy, so export the official accessor.
+> > > > 
+> > > 
+> > > Maybe lirc should be submitted to staging/ before we go exporting
+> > > symbols for out of tree things... ;-)
+> > 
+> > y:/usr/src/linux-2.6.29-rc2> grep -r 'current->comm' drivers | wc -l
+> > 77
+> > 
+> > :(
+> 
+> It's worth a checkpatch rule, I guess: "direct access to
+> task_struct.comm is racy - use get_task_comm()".
 
-My patches are not yet merged in linus 2.6.29-rc2-git2.
+And majority of usages is some debugging printk where nobody cares if ->comm
+corrupted.
 
-If you want you can check Ingo's -tip
+Changelog says is useful for debugging. That's right, tsk->comm is useful
+for debugging, not allocating temporary buffer + get_task_comm().
 
---
-JSR
+Some ->comm usages are for kernel threads which never change it, for starters.
+
+current->comm is always safe, because, current is not executing prctl(2)! 
+
+I'd say nothing should be done and, heavens forbid, adding this to checkpatch.pl.
