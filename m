@@ -1,321 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757177AbZA0S7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZA0S7h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757177AbZA0S7J (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 13:59:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbZA0S6a
+	id S1757273AbZA0S7h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 13:59:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756942AbZA0S6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 13:58:30 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:47785 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbZA0S60 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 13:58:26 -0500
-Subject: [PATCH v3] timer: implement lockdep deadlock detection
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <1233081027.10992.21.camel@laptop>
-References: <1233010786.4344.1.camel@johannes.local>
-	 <20090126230721.GA6556@elte.hu> <1233046009.4012.3.camel@johannes.local>
-	 <20090127132759.GI23121@elte.hu>  <20090127134128.GA24965@elte.hu>
-	 <1233079597.4755.2.camel@johannes.local> <1233081027.10992.21.camel@laptop>
-Content-Type: text/plain
-Date: Tue, 27 Jan 2009 19:57:30 +0100
-Message-Id: <1233082650.4455.9.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Jan 2009 13:58:42 -0500
+Received: from mx40.brocade.com ([144.49.195.4]:42834 "EHLO mx40.brocade.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756897AbZA0S6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 13:58:41 -0500
+X-Greylist: delayed 321 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Jan 2009 13:58:40 EST
+X-IronPort-AV: E=Sophos;i="4.37,333,1231142400"; 
+   d="scan'208";a="52013478"
+Date: Tue, 27 Jan 2009 10:55:24 -0800
+From: Jing Huang <huangj@brocade.com>
+Message-Id: <200901271855.n0RItOUA026905@swe37.brocade.com>
+To: James.Bottomley@HansenPartnership.com
+Subject: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver submission
+Cc: kgudipat@brocade.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rvadivel@brocade.com, vravindr@brocade.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies the timer code in a way to allow lockdep to detect
-deadlocks resulting from a lock being taken in the timer function
-as well as around the del_timer_sync() call.
+From: Jing Huang <huangj@brocade.com>
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+This patch contains Makefile and Kconfig file for scsi and bfa. It is created
+using 2.6.29-rc2 kernel.
+
+Signed-off-by: Jing Huang <huangj@brocade.com>
 ---
-Ingo, do you want an incremental patch instead?
+ drivers/scsi/Kconfig      |    6 ++++++
+ drivers/scsi/Makefile     |    1 +
+ drivers/scsi/bfa/Kconfig  |    6 ++++++
+ drivers/scsi/bfa/Makefile |   25 +++++++++++++++++++++++++
+ 4 files changed, 38 insertions(+)
 
-v2: fix coding/comment style
-v3: accept freeing timer from timer function, fix init_timer_on_stack
-    in no-lockdep case
-
- include/linux/timer.h |  103 ++++++++++++++++++++++++++++++++++++++++++--------
- kernel/timer.c        |   70 ++++++++++++++++++++++++++++-----
- 2 files changed, 146 insertions(+), 27 deletions(-)
-
---- wireless-testing.orig/include/linux/timer.h	2009-01-27 10:12:22.000000000 +0100
-+++ wireless-testing/include/linux/timer.h	2009-01-27 19:52:33.000000000 +0100
-@@ -21,52 +21,125 @@ struct timer_list {
- 	char start_comm[16];
- 	int start_pid;
- #endif
-+#ifdef CONFIG_LOCKDEP
-+	struct lockdep_map lockdep_map;
-+#endif
- };
- 
- extern struct tvec_base boot_tvec_bases;
- 
--#define TIMER_INITIALIZER(_function, _expires, _data) {		\
--		.entry = { .prev = TIMER_ENTRY_STATIC },	\
--		.function = (_function),			\
--		.expires = (_expires),				\
--		.data = (_data),				\
--		.base = &boot_tvec_bases,			\
-+#ifdef CONFIG_LOCKDEP
-+/*
-+ * NB: because we have to copy the lockdep_map, setting _key
-+ * here is required, otherwise it could get initialised to the
-+ * copy of the lockdep_map! We use the function pointer as the
-+ * lockdep key here.
-+ */
-+#define __TIMER_LOCKDEP_MAP_INITIALIZER(fn, name)		\
-+	.lockdep_map = STATIC_LOCKDEP_MAP_INIT(name, fn),
-+#else
-+#define __TIMER_LOCKDEP_MAP_INITIALIZER(fn, name)
-+#endif
+diff -urpN orig/drivers/scsi/bfa/Kconfig patch/drivers/scsi/bfa/Kconfig
+--- orig/drivers/scsi/bfa/Kconfig	1969-12-31 16:00:00.000000000 -0800
++++ patch/drivers/scsi/bfa/Kconfig	2009-01-26 17:28:26.000000000 -0800
+@@ -0,0 +1,6 @@
++config SCSI_BFA_FC
++	tristate "Brocade BFA Fibre Channel Support"
++	depends on PCI && SCSI
++	---help---
++	Select M for building module
 +
-+#define TIMER_INITIALIZER(_function, _expires, _data) {			\
-+		.entry = { .prev = TIMER_ENTRY_STATIC },		\
-+		.function = (_function),				\
-+		.expires = (_expires),					\
-+		.data = (_data),					\
-+		.base = &boot_tvec_bases,				\
-+		__TIMER_LOCKDEP_MAP_INITIALIZER((_function), #_function)\
- 	}
- 
- #define DEFINE_TIMER(_name, _function, _expires, _data)		\
- 	struct timer_list _name =				\
- 		TIMER_INITIALIZER(_function, _expires, _data)
- 
--void init_timer(struct timer_list *timer);
--void init_timer_deferrable(struct timer_list *timer);
-+void init_timer_key(struct timer_list *timer,
-+		    const char *name,
-+		    struct lock_class_key *key);
-+void init_timer_deferrable_key(struct timer_list *timer,
-+			       const char *name,
-+			       struct lock_class_key *key);
+diff -urpN orig/drivers/scsi/bfa/Makefile patch/drivers/scsi/bfa/Makefile
+--- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000 -0800
++++ patch/drivers/scsi/bfa/Makefile	2009-01-26 17:28:26.000000000 -0800
+@@ -0,0 +1,25 @@
++#
++# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
++# All rights reserved
++# www.brocade.com
++# 
++# Linux driver for Brocade Fibre Channel Host Bus Adapter.
++#
++# This program is free software; you can redistribute it and/or modify it
++# under the terms of the GNU General Public License (GPL) Version 2 as
++# published by the Free Software Foundation
++#
++# This program is distributed in the hope that it will be useful, but
++# WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++# General Public License for more details.
++#
++obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
 +
-+#ifdef CONFIG_LOCKDEP
-+#define init_timer(timer)						\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_key((timer), #timer, &__key);		\
-+	} while (0)
++bfa-objs := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o	\
++	bfad_fwimg.o bfa_fcs.o bfa_core.o bfa_ioc.o bfa_iocfc.o bfa_hw_cb.o	\
++	bfa_hw_ct.o bfa_fcxp.o bfa_intr.o bfa_timer.o bfa_rport.o bfa_port.o	\
++	bfa_uf.o bfa_sgpg.o bfa_module.o bfa_ioim.o bfa_itnim.o bfa_fcpim.o	\
++	bfa_tskim.o bfa_log.o bfa_log_module.o bfa_csdebug.o bfa_sm.o plog.o
 +
-+#define init_timer_deferrable(timer)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_deferrable_key((timer), #timer, &__key);	\
-+	} while (0)
-+
-+#define init_timer_on_stack(timer)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_on_stack_key((timer), #timer, &__key);	\
-+	} while (0)
-+
-+#define setup_timer(timer, fn, data)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		setup_timer_key((timer), #timer, &__key, (fn), (data));\
-+	} while (0)
-+
-+#define setup_timer_on_stack(timer, fn, data)				\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		setup_timer_on_stack_key((timer), #timer, &__key,	\
-+					 (fn), (data));			\
-+	} while (0)
-+#else
-+#define init_timer(timer)\
-+	init_timer_key((timer), NULL, NULL)
-+#define init_timer_deferrable(timer)\
-+	init_timer_deferrable_key((timer), NULL, NULL)
-+#define init_timer_on_stack(timer)\
-+	init_timer_on_stack_key((timer), NULL, NULL)
-+#define setup_timer(timer, fn, data)\
-+	setup_timer_key((timer), NULL, NULL, (fn), (data))
-+#define setup_timer_on_stack(timer, fn, data)\
-+	setup_timer_on_stack_key((timer), NULL, NULL, (fn), (data))
-+#endif
++EXTRA_CFLAGS += -I$(obj) -I$(obj)/include
+diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
+--- orig/drivers/scsi/Kconfig	2009-01-26 17:28:26.000000000 -0800
++++ patch/drivers/scsi/Kconfig	2009-01-26 17:28:21.000000000 -0800
+@@ -1797,6 +1797,12 @@ config SCSI_SRP
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called libsrp.
  
- #ifdef CONFIG_DEBUG_OBJECTS_TIMERS
--extern void init_timer_on_stack(struct timer_list *timer);
-+extern void init_timer_on_stack_key(struct timer_list *timer,
-+				    const char *name,
-+				    struct lock_class_key *key);
- extern void destroy_timer_on_stack(struct timer_list *timer);
- #else
- static inline void destroy_timer_on_stack(struct timer_list *timer) { }
--static inline void init_timer_on_stack(struct timer_list *timer)
-+static inline void init_timer_on_stack_key(struct timer_list *timer,
-+					   const char *name,
-+					   struct lock_class_key *key)
- {
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- }
- #endif
- 
--static inline void setup_timer(struct timer_list * timer,
-+static inline void setup_timer_key(struct timer_list * timer,
-+				const char *name,
-+				struct lock_class_key *key,
- 				void (*function)(unsigned long),
- 				unsigned long data)
- {
- 	timer->function = function;
- 	timer->data = data;
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- }
- 
--static inline void setup_timer_on_stack(struct timer_list *timer,
-+static inline void setup_timer_on_stack_key(struct timer_list *timer,
-+					const char *name,
-+					struct lock_class_key *key,
- 					void (*function)(unsigned long),
- 					unsigned long data)
- {
- 	timer->function = function;
- 	timer->data = data;
--	init_timer_on_stack(timer);
-+	init_timer_on_stack_key(timer, name, key);
- }
- 
- /**
---- wireless-testing.orig/kernel/timer.c	2009-01-27 10:12:22.000000000 +0100
-+++ wireless-testing/kernel/timer.c	2009-01-27 19:50:36.000000000 +0100
-@@ -491,14 +491,18 @@ static inline void debug_timer_free(stru
- 	debug_object_free(timer, &timer_debug_descr);
- }
- 
--static void __init_timer(struct timer_list *timer);
--
--void init_timer_on_stack(struct timer_list *timer)
-+static void __init_timer(struct timer_list *timer,
-+			 const char *name,
-+			 struct lock_class_key *key);
++config SCSI_BFA_FC
++	tristate "Brocade BFA Fibre Channel Support"
++	depends on PCI && SCSI
++	---help---
++	  To compile this driver as a module, choose M here. The module will be called bfa
 +
-+void init_timer_on_stack_key(struct timer_list *timer,
-+			     const char *name,
-+			     struct lock_class_key *key)
- {
- 	debug_object_init_on_stack(timer, &timer_debug_descr);
--	__init_timer(timer);
-+	__init_timer(timer, name, key);
- }
--EXPORT_SYMBOL_GPL(init_timer_on_stack);
-+EXPORT_SYMBOL_GPL(init_timer_on_stack_key);
+ endif # SCSI_LOWLEVEL
  
- void destroy_timer_on_stack(struct timer_list *timer)
- {
-@@ -512,7 +516,9 @@ static inline void debug_timer_activate(
- static inline void debug_timer_deactivate(struct timer_list *timer) { }
- #endif
- 
--static void __init_timer(struct timer_list *timer)
-+static void __init_timer(struct timer_list *timer,
-+			 const char *name,
-+			 struct lock_class_key *key)
- {
- 	timer->entry.next = NULL;
- 	timer->base = __raw_get_cpu_var(tvec_bases);
-@@ -521,6 +527,7 @@ static void __init_timer(struct timer_li
- 	timer->start_pid = -1;
- 	memset(timer->start_comm, 0, TASK_COMM_LEN);
- #endif
-+	lockdep_init_map(&timer->lockdep_map, name, key, 0);
- }
- 
- /**
-@@ -530,19 +537,23 @@ static void __init_timer(struct timer_li
-  * init_timer() must be done to a timer prior calling *any* of the
-  * other timer functions.
-  */
--void init_timer(struct timer_list *timer)
-+void init_timer_key(struct timer_list *timer,
-+		    const char *name,
-+		    struct lock_class_key *key)
- {
- 	debug_timer_init(timer);
--	__init_timer(timer);
-+	__init_timer(timer, name, key);
- }
--EXPORT_SYMBOL(init_timer);
-+EXPORT_SYMBOL(init_timer_key);
- 
--void init_timer_deferrable(struct timer_list *timer)
-+void init_timer_deferrable_key(struct timer_list *timer,
-+			       const char *name,
-+			       struct lock_class_key *key)
- {
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- 	timer_set_deferrable(timer);
- }
--EXPORT_SYMBOL(init_timer_deferrable);
-+EXPORT_SYMBOL(init_timer_deferrable_key);
- 
- static inline void detach_timer(struct timer_list *timer,
- 				int clear_pending)
-@@ -789,6 +800,15 @@ EXPORT_SYMBOL(try_to_del_timer_sync);
-  */
- int del_timer_sync(struct timer_list *timer)
- {
-+#ifdef CONFIG_LOCKDEP
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	lock_map_acquire(&timer->lockdep_map);
-+	lock_map_release(&timer->lockdep_map);
-+	local_irq_restore(flags);
-+#endif
-+
- 	for (;;) {
- 		int ret = try_to_del_timer_sync(timer);
- 		if (ret >= 0)
-@@ -861,10 +881,36 @@ static inline void __run_timers(struct t
- 
- 			set_running_timer(base, timer);
- 			detach_timer(timer, 1);
-+
- 			spin_unlock_irq(&base->lock);
- 			{
- 				int preempt_count = preempt_count();
-+
-+#ifdef CONFIG_LOCKDEP
-+				/*
-+				 * It is permissible to free the timer from
-+				 * inside the function that is called from
-+				 * it, this we need to take into account for
-+				 * lockdep too. To avoid bogus "held lock
-+				 * freed" warnings as well as problems when
-+				 * looking into timer->lockdep_map, make a
-+				 * copy and use that here.
-+				 */
-+				struct lockdep_map lockdep_map =
-+					timer->lockdep_map;
-+#endif
-+				/*
-+				 * Couple the lock chain with the lock chain at
-+				 * del_timer_sync() by acquiring the lock_map
-+				 * around the fn() call here and in
-+				 * del_timer_sync().
-+				 */
-+				lock_map_acquire(&lockdep_map);
-+
- 				fn(data);
-+
-+				lock_map_release(&lockdep_map);
-+
- 				if (preempt_count != preempt_count()) {
- 					printk(KERN_ERR "huh, entered %p "
- 					       "with preempt_count %08x, exited"
-
-
+ source "drivers/scsi/pcmcia/Kconfig"
+diff -urpN orig/drivers/scsi/Makefile patch/drivers/scsi/Makefile
+--- orig/drivers/scsi/Makefile	2009-01-26 17:28:26.000000000 -0800
++++ patch/drivers/scsi/Makefile	2009-01-26 17:28:21.000000000 -0800
+@@ -84,6 +84,7 @@ obj-$(CONFIG_SCSI_QLOGIC_1280)	+= qla128
+ obj-$(CONFIG_SCSI_QLA_FC)	+= qla2xxx/
+ obj-$(CONFIG_SCSI_QLA_ISCSI)	+= qla4xxx/
+ obj-$(CONFIG_SCSI_LPFC)		+= lpfc/
++obj-$(CONFIG_SCSI_BFA_FC)	+= bfa/
+ obj-$(CONFIG_SCSI_PAS16)	+= pas16.o
+ obj-$(CONFIG_SCSI_T128)		+= t128.o
+ obj-$(CONFIG_SCSI_DMX3191D)	+= dmx3191d.o
