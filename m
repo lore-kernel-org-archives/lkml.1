@@ -1,70 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbZA0WV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZA0WdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbZA0WV3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 17:21:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZA0WVV
+	id S1753320AbZA0WdY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 17:33:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZA0WdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 17:21:21 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52877 "EHLO mx2.redhat.com"
+	Tue, 27 Jan 2009 17:33:15 -0500
+Received: from cmpxchg.org ([85.214.51.133]:44530 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751020AbZA0WVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 17:21:20 -0500
-Date: Tue, 27 Jan 2009 17:20:45 -0500 (EST)
-From: Dave Anderson <anderson@redhat.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Bernhard Walle <bwalle@suse.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       crash-utility@redhat.com, Mike Snitzer <snitzer@gmail.com>
-Message-ID: <837239885.847621233094845645.JavaMail.root@zmail02.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <1298337055.846811233094677227.JavaMail.root@zmail02.collab.prod.int.phx2.redhat.com>
-Subject: Re: BISECTED: Re: source line numbers with x86_64 modules?
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.16.19.41]
+	id S1751885AbZA0WdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 17:33:15 -0500
+Date: Tue, 27 Jan 2009 23:31:16 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC v6] wait: prevent exclusive waiter starvation
+Message-ID: <20090127223116.GA21484@cmpxchg.org>
+References: <20090121143602.GA16584@redhat.com> <20090121213813.GB23270@cmpxchg.org> <20090122202550.GA5726@redhat.com> <20090123095904.GA22890@cmpxchg.org> <20090123113541.GB12684@redhat.com> <20090123133050.GA19226@redhat.com> <20090126215957.GA3889@cmpxchg.org> <20090127032359.GA17359@redhat.com> <20090127193434.GA19673@cmpxchg.org> <20090127200544.GA28843@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090127200544.GA28843@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
------ "Eric W. Biederman" <ebiederm@xmission.com> wrote:
-
-> Dave Anderson <anderson@redhat.com> writes:
-> 
-> > Actually it's not a problem with the vmlinux file, but rather with kernel
-> > module object files.  The crash utility has an embedded gdb module which
-> > is invoked as "gdb vmlinux", and to get line numbers, the crash utility
-> > simply uses the relevant built-in gdb function to get them.  And line
-> > numbers work fine with the base kernel code from the vmlinux file.
+On Tue, Jan 27, 2009 at 09:05:44PM +0100, Oleg Nesterov wrote:
+> On 01/27, Johannes Weiner wrote:
 > >
-> > The debuginfo data of kernel modules can be subsequently added to the
-> > crash session by doing a gdb "add-symbol-file" command for any or all
-> > kernel modules.  But getting correct line number information for kernel
-> > modules has been a crap-shoot in the past, depending upon architecture
-> > and/or kernel version.  For example, they don't work with 2.6.9-based
-> > RHEL4 x86_64 kernel modules, but work fine with 2.6.18-based RHEL5 x86_64
-> > kernels.
-> >
-> > Looking at Mike's suspect kernel patch list, I don't see anything that
-> > would have any relationship to the issue.  Perhaps there was a build tool
-> > change during the same timeframe? 
+> > +void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait)
+> > +{
+> > +	unsigned long flags;
+> > +
+> > +	__set_current_state(TASK_RUNNING);
+> > +	spin_lock_irqsave(&q->lock, flags);
+> > +	if (list_empty(&wait->task_list))
 > 
-> It look like Mike just built a series of kernels and had a problem,
-> which should preclude a tool change.
+> Hmm... it should be !list_empty() ?
+
+Yes.
+
 > 
-> That said.  Does this feature of crash work in 2.6.29?  If not is
-> there enough interest to track this down, and fix it if it is a
-> kernel bug?
+> > +		list_del_init(&wait->task_list);
+> > +	/*
+> > +	 * If we were woken through the waitqueue (waker removed
+> > +	 * us from the list) we must ensure the next waiter down
+> > +	 * the line is woken up.  The callsite will not do it as
+> > +	 * it didn't finish waiting successfully.
+> > +	 */
+> > +	else if (waitqueue_active(q))
+> > +		__wake_up_locked(q, TASK_INTERRUPTIBLE);
+> > +	spin_unlock_irqrestore(&q->lock, flags);
+> > +}
 > 
-> If we are going to be using these tools we need them working on the
-> latest and greatest kernels, not some weird enterprise branch, for
-> fuddy duddies.
+> Well, personally I don't care, but this is against CodingStyle rules ;)
 
-Personally I don't know -- I am a fuddy duddy.  
+I removed it from there and added a note to the kerneldoc.
 
-I have tinkered with at least 2.6.28-era vmlinux/vmcore pairs, but never
-with any kernel modules thereof.
+> >  int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
+> >  {
+> >  	int ret = default_wake_function(wait, mode, sync, key);
+> > @@ -177,17 +218,19 @@ int __sched
+> >  __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
+> >  			int (*action)(void *), unsigned mode)
+> >  {
+> > -	int ret = 0;
+> > -
+> >  	do {
+> > +		int ret;
+> > +
+> >  		prepare_to_wait_exclusive(wq, &q->wait, mode);
+> > -		if (test_bit(q->key.bit_nr, q->key.flags)) {
+> > -			if ((ret = (*action)(q->key.flags)))
+> > -				break;
+> > -		}
+> > +		if (!test_bit(q->key.bit_nr, q->key.flags))
+> > +			continue;
+> > +		if (!(ret = action(q->key.flags)))
+> > +			continue;
+> > +		abort_exclusive_wait(wq, &q->wait);
+> 
+> No, no. We should use the same key in abort_exclusive_wait().
+> Otherwise, how can we wakeup the next waiter which needs this
+> bit in the same page->flags?
+> 
+> That is why I suggested finish_wait_exclusive(..., void *key)
+> which should we passed to __wake_up_common().
 
-Dave
+Okay, I am obviously wasting our time now.  And I definitely stared so
+long at the same three lines that I send randomly broken patches, so
+v7 coming after some delay including sleep.
 
+Thanks for your patience,
+
+	hannes
