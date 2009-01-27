@@ -1,281 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbZA0UIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbZA0ULf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757004AbZA0UIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 15:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZA0UIJ
+	id S1756892AbZA0ULf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 15:11:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751625AbZA0UL1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 15:08:09 -0500
-Received: from mga11.intel.com ([192.55.52.93]:26878 "EHLO mga11.intel.com"
+	Tue, 27 Jan 2009 15:11:27 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44869 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753991AbZA0UII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 15:08:08 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,334,1231142400"; 
-   d="scan'208";a="660573439"
-Message-ID: <497F69A4.2070007@intel.com>
-Date: Tue, 27 Jan 2009 12:08:04 -0800
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081103)
+	id S1751304AbZA0UL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 15:11:26 -0500
+Date: Tue, 27 Jan 2009 21:05:44 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RFC v6] wait: prevent exclusive waiter starvation
+Message-ID: <20090127200544.GA28843@redhat.com>
+References: <20090120203131.GA20985@cmpxchg.org> <20090121143602.GA16584@redhat.com> <20090121213813.GB23270@cmpxchg.org> <20090122202550.GA5726@redhat.com> <20090123095904.GA22890@cmpxchg.org> <20090123113541.GB12684@redhat.com> <20090123133050.GA19226@redhat.com> <20090126215957.GA3889@cmpxchg.org> <20090127032359.GA17359@redhat.com> <20090127193434.GA19673@cmpxchg.org>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: powertop ml <power@bughost.org>, Arjan van de Ven <arjan@linux.intel.com>,
-       Ingo Molnar <mingo@elte.hu>, srostedt@redhat.com
-Subject: [PATCH] tracer for sys_open() - sreadahead
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Jan 2009 20:08:04.0919 (UTC) FILETIME=[F6C5A470:01C980BA]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090127193434.GA19673@cmpxchg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 01/27, Johannes Weiner wrote:
+>
+> +void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait)
+> +{
+> +	unsigned long flags;
+> +
+> +	__set_current_state(TASK_RUNNING);
+> +	spin_lock_irqsave(&q->lock, flags);
+> +	if (list_empty(&wait->task_list))
 
-This tracer monitors regular file open() syscalls. This is a fast
-and low-overhead alternative to strace, and does not allow or
-require to be attached to every process.
+Hmm... it should be !list_empty() ?
 
-The tracer only logs succesfull calls, as those are the only ones we
-are currently interested in, and we can determine the absolute path
-of these files as we log.
+> +		list_del_init(&wait->task_list);
+> +	/*
+> +	 * If we were woken through the waitqueue (waker removed
+> +	 * us from the list) we must ensure the next waiter down
+> +	 * the line is woken up.  The callsite will not do it as
+> +	 * it didn't finish waiting successfully.
+> +	 */
+> +	else if (waitqueue_active(q))
+> +		__wake_up_locked(q, TASK_INTERRUPTIBLE);
+> +	spin_unlock_irqrestore(&q->lock, flags);
+> +}
 
-Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+Well, personally I don't care, but this is against CodingStyle rules ;)
 
+>  int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
+>  {
+>  	int ret = default_wake_function(wait, mode, sync, key);
+> @@ -177,17 +218,19 @@ int __sched
+>  __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
+>  			int (*action)(void *), unsigned mode)
+>  {
+> -	int ret = 0;
+> -
+>  	do {
+> +		int ret;
+> +
+>  		prepare_to_wait_exclusive(wq, &q->wait, mode);
+> -		if (test_bit(q->key.bit_nr, q->key.flags)) {
+> -			if ((ret = (*action)(q->key.flags)))
+> -				break;
+> -		}
+> +		if (!test_bit(q->key.bit_nr, q->key.flags))
+> +			continue;
+> +		if (!(ret = action(q->key.flags)))
+> +			continue;
+> +		abort_exclusive_wait(wq, &q->wait);
 
-diff --git a/fs/open.c b/fs/open.c
-index a3a78ce..8cf2a6b 100644
---- a/fs/open.c
-+++ b/fs/open.c
-@@ -30,6 +30,10 @@
- #include <linux/audit.h>
- #include <linux/falloc.h>
+No, no. We should use the same key in abort_exclusive_wait().
+Otherwise, how can we wakeup the next waiter which needs this
+bit in the same page->flags?
 
-+#include <trace/fs.h>
-+
-+DEFINE_TRACE(do_sys_open);
-+
- int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
- {
-        int retval = -ENODEV;
-@@ -1040,6 +1044,7 @@ long do_sys_open(int dfd, const char __user *filename, int
-flags, int mode)
-                                fsnotify_open(f->f_path.dentry);
-                                fd_install(fd, f);
-                        }
-+                       trace_do_sys_open(f, flags, mode, fd);
-                }
-                putname(tmp);
-        }
-diff --git a/include/trace/fs.h b/include/trace/fs.h
-new file mode 100644
-index 0000000..870eec2
---- /dev/null
-+++ b/include/trace/fs.h
-@@ -0,0 +1,11 @@
-+#ifndef _TRACE_FS_H
-+#define _TRACE_FS_H
-+
-+#include <linux/fs.h>
-+#include <linux/tracepoint.h>
-+
-+DECLARE_TRACE(do_sys_open,
-+       TPPROTO(struct file *filp, int flags, int mode, long fd),
-+               TPARGS(filp, flags, mode, fd));
-+
-+#endif
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index e2a4ff6..0400815 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -149,6 +149,15 @@ config CONTEXT_SWITCH_TRACER
-          This tracer gets called from the context switch and records
-          all switching of tasks.
+That is why I suggested finish_wait_exclusive(..., void *key)
+which should we passed to __wake_up_common().
 
-+config OPEN_CLOSE_TRACER
-+       bool "Trace open() calls"
-+       depends on DEBUG_KERNEL
-+       select TRACING
-+       select MARKERS
-+       help
-+         This tracer records open() syscalls. These calls are made when
-+         files are accessed on disk.
-+
- config BOOT_TRACER
-        bool "Trace boot initcalls"
-        depends on DEBUG_KERNEL
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 349d5a9..25cec6c 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -20,6 +20,7 @@ obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
+Oleg.
 
- obj-$(CONFIG_TRACING) += trace.o
- obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
-+obj-$(CONFIG_OPEN_CLOSE_TRACER) += trace_open_close.o
- obj-$(CONFIG_SYSPROF_TRACER) += trace_sysprof.o
- obj-$(CONFIG_FUNCTION_TRACER) += trace_functions.o
- obj-$(CONFIG_IRQSOFF_TRACER) += trace_irqsoff.o
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 4d3d381..24c17d2 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -30,6 +30,7 @@ enum trace_type {
-        TRACE_USER_STACK,
-        TRACE_HW_BRANCHES,
-        TRACE_POWER,
-+       TRACE_OPEN,
-
-        __TRACE_LAST_TYPE
- };
-diff --git a/kernel/trace/trace_open_close.c b/kernel/trace/trace_open_close.c
-new file mode 100644
-index 0000000..4250efc
---- /dev/null
-+++ b/kernel/trace/trace_open_close.c
-@@ -0,0 +1,148 @@
-+/*
-+ * trace open calls
-+ * Copyright (C) 2009 Intel Corporation
-+ *
-+ * Based extensively on trace_sched_switch.c
-+ * Copyright (C) 2007 Steven Rostedt <srostedt@redhat.com>
-+ *
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/fs.h>
-+#include <linux/debugfs.h>
-+#include <linux/kallsyms.h>
-+#include <linux/uaccess.h>
-+#include <linux/ftrace.h>
-+#include <trace/fs.h>
-+
-+#include "trace.h"
-+
-+
-+static struct trace_array      *ctx_trace;
-+static int __read_mostly       open_trace_enabled;
-+static atomic_t                        open_ref;
-+
-+static void probe_do_sys_open(struct file *filp, int flags, int mode, long fd)
-+{
-+       char *buf;
-+       char *fname;
-+
-+       if (!atomic_read(&open_ref))
-+               return;
-+
-+       if (!open_trace_enabled)
-+               return;
-+
-+       buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
-+       if (!buf)
-+               return;
-+       fname = d_path(&filp->f_path, buf, PAGE_SIZE);
-+
-+       if (IS_ERR(fname))
-+               goto out;
-+
-+       ftrace_printk("%s: open(\"%s\", %d, %d) = %ld\n",
-+               current->comm, fname, flags, mode, fd);
-+out:
-+       kfree(buf);
-+}
-+
-+static void open_trace_reset(struct trace_array *tr)
-+{
-+       tr->time_start = ftrace_now(tr->cpu);
-+       tracing_reset_online_cpus(tr);
-+}
-+
-+static int open_trace_register(void)
-+{
-+       int ret;
-+
-+       ret = register_trace_do_sys_open(probe_do_sys_open);
-+       if (ret) {
-+               pr_info("open trace: Could not activate tracepoint"
-+                       " probe to do_open\n");
-+       }
-+
-+       return ret;
-+}
-+
-+static void open_trace_unregister(void)
-+{
-+       unregister_trace_do_sys_open(probe_do_sys_open);
-+}
-+
-+static void open_trace_start(void)
-+{
-+       long ref;
-+
-+       ref = atomic_inc_return(&open_ref);
-+       if (ref == 1)
-+               open_trace_register();
-+}
-+
-+static void open_trace_stop(void)
-+{
-+       long ref;
-+
-+       ref = atomic_dec_and_test(&open_ref);
-+       if (ref)
-+               open_trace_unregister();
-+}
-+
-+void open_trace_start_cmdline_record(void)
-+{
-+       open_trace_start();
-+}
-+
-+void open_trace_stop_cmdline_record(void)
-+{
-+       open_trace_stop();
-+}
-+
-+static void open_start_trace(struct trace_array *tr)
-+{
-+       open_trace_reset(tr);
-+       open_trace_start_cmdline_record();
-+       open_trace_enabled = 1;
-+}
-+
-+static void open_stop_trace(struct trace_array *tr)
-+{
-+       open_trace_enabled = 0;
-+       open_trace_stop_cmdline_record();
-+}
-+
-+static int open_trace_init(struct trace_array *tr)
-+{
-+       ctx_trace = tr;
-+
-+       open_start_trace(tr);
-+       return 0;
-+}
-+
-+static void reset_open_trace(struct trace_array *tr)
-+{
-+       open_stop_trace(tr);
-+}
-+
-+static struct tracer open_trace __read_mostly =
-+{
-+       .name           = "open",
-+       .init           = open_trace_init,
-+       .reset          = reset_open_trace,
-+};
-+
-+__init static int init_open_trace(void)
-+{
-+       int ret = 0;
-+
-+       if (atomic_read(&open_ref))
-+               ret = open_trace_register();
-+       if (ret) {
-+               pr_info("error registering open trace\n");
-+               return ret;
-+       }
-+       return register_tracer(&open_trace);
-+}
-+device_initcall(init_open_trace);
-+
