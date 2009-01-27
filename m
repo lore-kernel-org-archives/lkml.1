@@ -1,74 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbZA0EDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbZA0EEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbZA0EDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 23:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZA0EDH
+	id S1753199AbZA0EEu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 23:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZA0EEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 23:03:07 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:60948 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751389AbZA0EDF (ORCPT
+	Mon, 26 Jan 2009 23:04:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53655 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751389AbZA0EEl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 23:03:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=G+fd+Oq0ENiByxkcgY+eSjcCD7Q8fX4BDX6v+BhbT5oVVXswdWyr2UDznHyAGJNXIh
-         C+NZzQLCFhJ0sohTOZ21QgtolpCESdxq65AvPQQM+JrQQojWn1bXf5K28anyH58alHng
-         wYYMPcukzegG3I2wus7OqMWt1LNFHKyY/nHFM=
-Message-ID: <497E8778.9060503@gmail.com>
-Date: Tue, 27 Jan 2009 13:03:04 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: [PATCH] x86-32: Fix __per_cpu_load relocation
-References: <20090126103243.GA31307@elte.hu> <1232977445-11815-1-git-send-email-brgerst@gmail.com> <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org>
-In-Reply-To: <497E6B34.1020508@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 26 Jan 2009 23:04:41 -0500
+Date: Mon, 26 Jan 2009 20:03:07 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: miaox@cn.fujitsu.com
+Cc: Paul Menage <menage@google.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Max Krasnyansky <maxk@qualcomm.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [RESEND][PATCH] cpuset: fix possible deadlock in
+ async_rebuild_sched_domains
+Message-Id: <20090126200307.833b087a.akpm@linux-foundation.org>
+In-Reply-To: <497540BE.4070408@cn.fujitsu.com>
+References: <497540BE.4070408@cn.fujitsu.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc'ing James Bottomley.)
+On Tue, 20 Jan 2009 11:10:54 +0800 Miao Xie <miaox@cn.fujitsu.com> wrote:
 
-Tejun Heo wrote:
-> Ingo Molnar wrote:
->> * Brian Gerst <brgerst@gmail.com> wrote:
->>
->>> This patch fixes this error:
->>> WARNING: Absolute relocations present
->>> Offset     Info     Type     Sym.Value Sym.Name
->>> c0a4e07d 00e78001   R_386_32 c0ab0000  __per_cpu_load
->>>
->>> Now, __per_cpu_load is a section-relative symbol:
->>> c0aa4000 D __per_cpu_load
->>> c0aa4000 A __per_cpu_load_abs
->>>
->>> Signed-off-by: Brian Gerst <brgerst@gmail.com>
->> Applied to tip/core/percpu, thanks Brian!
+> Lockdep reported some possible circular locking info when we tested cpuset on
+> NUMA/fake NUMA box.
 > 
-> Heh.. Thanks.  Sorry about lack of response.  It's lunar new year's
-> day here and I'm off till tomorrow.  I'll start reviewing and
-> integrating posted patches from tomorrow.
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.29-rc1-00224-ga652504 #111
+> -------------------------------------------------------
+> bash/2968 is trying to acquire lock:
+>  (events){--..}, at: [<ffffffff8024c8cd>] flush_work+0x24/0xd8
+> 
+> but task is already holding lock:
+>  (cgroup_mutex){--..}, at: [<ffffffff8026ad1e>] cgroup_lock_live_group+0x12/0x29
+> 
+> which lock already depends on the new lock.
+> ......
+> -------------------------------------------------------
+> 
+> Steps to reproduce:
+> # mkdir /dev/cpuset
+> # mount -t cpuset xxx /dev/cpuset
+> # mkdir /dev/cpuset/0
+> # echo 0 > /dev/cpuset/0/cpus
+> # echo 0 > /dev/cpuset/0/mems
+> # echo 1 > /dev/cpuset/0/memory_migrate
+> # cat /dev/zero > /dev/null &
+> # echo $! > /dev/cpuset/0/tasks
+> 
+> This is because async_rebuild_sched_domains has the following lock sequence:
+> run_workqueue(async_rebuild_sched_domains)
+> 	-> do_rebuild_sched_domains -> cgroup_lock
+> 
+> But, attaching tasks when memory_migrate is set has following:
+> cgroup_lock_live_group(cgroup_tasks_write)
+> 	-> do_migrate_pages -> flush_work
 
-Well, I just had time to do it.  All the patches look fine to me.
-Very nice cleanup.  The git tree is at the following URL.
+Where is this flush_work() call?  lru_add_drain_all()->schedule_on_each_cpu()?
 
-  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=tj-percpu
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+If so, and if that is the only such callsite then we could/should
+rework this code to use work_on_cpu(), if we manage to fix that thing.
 
-The head commit is 2697fbd5faf19c84c17441b1752bdcbdcfd1248c.  James,
-this patchset converts voyager to share generic x86 percpu code.  Can
-you please review whether the change looks good for voyager?
+It would be somewhat inefficient.  It would be better if work_on_cpu()
+were to take a cpumask argument, and avoid blocking behind each CPU one
+at a time.  But first things first.
 
-Thanks.
+> This patch fixes it by using a separate workqueue thread.
 
--- 
-tejun
+<wonders when RESERVED_PIDS became a logarithm>
+
