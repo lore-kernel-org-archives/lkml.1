@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbZA0Xn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753391AbZA0XpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753206AbZA0Xn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 18:43:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZA0Xnu
+	id S1753391AbZA0XpU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 18:45:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZA0XpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 18:43:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41354 "EHLO
+	Tue, 27 Jan 2009 18:45:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54283 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751095AbZA0Xnt (ORCPT
+	by vger.kernel.org with ESMTP id S1751483AbZA0XpF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 18:43:49 -0500
-Date: Tue, 27 Jan 2009 15:43:29 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
-In-Reply-To: <20090127233159.GA26403@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901271539090.3123@localhost.localdomain>
-References: <20090127222825.GA27097@elte.hu> <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain> <20090127233159.GA26403@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 27 Jan 2009 18:45:05 -0500
+Date: Tue, 27 Jan 2009 15:44:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: ebiederm@xmission.com, gregkh@suse.de, linux-kernel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, cornelia.huck@de.ibm.com
+Subject: Re: [PATCH] sysfs: Reference sysfs_dirent from sysfs inodes.
+Message-Id: <20090127154437.9e7118f7.akpm@linux-foundation.org>
+In-Reply-To: <497964CC.8070004@kernel.org>
+References: <m13afch1sw.fsf@fess.ebiederm.org>
+	<m1k58nffqm.fsf@fess.ebiederm.org>
+	<497964CC.8070004@kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 23 Jan 2009 15:33:48 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-
-On Wed, 28 Jan 2009, Ingo Molnar wrote:
+> Eric W. Biederman wrote:
+> > The sysfs_dirent serves as both an inode and a directory entry
+> > for sysfs.  To prevent the sysfs inode numbers from being freed
+> > prematurely hold a reference to sysfs_dirent from the sysfs inode.
+> > 
+> > Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
 > 
-> It would be much better if we exported _much_ less and reduced our 
-> cross-section to user-space. Also, the include/linux/Kbuild rules are all 
-> but transparent: it would also be nice if whatever we exported was be 
-> visible straight in the header itself, to make it obvious to people who 
-> modify/extend those files that those definitions are going to be exported 
-> to user-space.
-> 
-> Some __user_export tag on structures perhaps? I have no good ideas here - 
-> #ifdefs are ugly and tags obscure the purity of the code.
+> Thanks for working on this.  Can you please add a comment explaining
+> it on top of sysfs_delete_inode()?
 
-I agree, and we probably could do so with some sparse extension (just make 
-the rule be that in order to make a __user pointer, the base type needs to 
-have been tagged with __user_visible). So we _could_ do something like 
-that, and have a sane checking model where sparse would warn if it sees a 
-user pointer of something that wasn't marked as being a user-visible type.
+Like this?
 
-But I doubt it's really worth it. A lot of the usage cases for users end 
-up being about constants etc that we really can't check sanely and 
-automatically. And some historical user-space usage is literally just 
-about user space finding the kernel headers really helpful (ie using the 
-list.h headers for user-space lists, or the inline asms for atomic stuff 
-for threaded apps that don't rely on ptrace locking).
+--- a/fs/sysfs/inode.c~sysfs-reference-sysfs_dirent-from-sysfs-inodes-fix
++++ a/fs/sysfs/inode.c
+@@ -215,6 +215,13 @@ struct inode * sysfs_get_inode(struct sy
+ 	return inode;
+ }
+ 
++/*
++ * The sysfs_dirent serves as both an inode and a directory entry for sysfs.
++ * To prevent the sysfs inode numbers from being freed prematurely we take a
++ * reference to sysfs_dirent from the sysfs inode.  A
++ * super_operations.delete_inode() implementation is needed to drop that
++ * reference upon inode destruction.
++ */
+ void sysfs_delete_inode(struct inode *inode)
+ {
+ 	struct sysfs_dirent *sd  = inode->i_private;
+_
 
-		Linus
