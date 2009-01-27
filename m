@@ -1,116 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756176AbZA0Aim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755323AbZA0AnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756176AbZA0Aim (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 19:38:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754781AbZA0AiT
+	id S1755323AbZA0AnZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 19:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZA0AnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 19:38:19 -0500
-Received: from mail-fx0-f26.google.com ([209.85.220.26]:42217 "EHLO
-	mail-fx0-f26.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752614AbZA0AiR (ORCPT
+	Mon, 26 Jan 2009 19:43:17 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52639 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752648AbZA0AnQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 19:38:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type;
-        b=KVAae+B70GiZq1BgNzcJKxzLk20ZXIZdE4qcJC60DGWHJMNMijbu09pXrlyjmt6uPh
-         Oz8QRW7pJYcHvQtVNO2ip6JhMmfma4oixlH3ZV0CFWtCouWjfjEj6PD/D8Z0cnhox1WB
-         iplwiymeo+kOByEPJN28G+4aquhlJurXUfVko=
-Date: Tue, 27 Jan 2009 01:38:06 +0100
-From: Max Weninger <max.weninger@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Re: support of touchscreen reported as eGalax but is not working
-Message-ID: <20090127013806.5e31199f@zork.foo.com>
-In-Reply-To: <497DA8E3.5070006@wincor-nixdorf.com>
-References: <20090125234902.7605fd16@zork.foo.com>
-	<497D9469.3030908@wincor-nixdorf.com>
-	<20090126124941.4f67aaf5@shire2>
-	<497DA8E3.5070006@wincor-nixdorf.com>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Mon, 26 Jan 2009 19:43:16 -0500
+Date: Mon, 26 Jan 2009 16:42:37 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: oleg@redhat.com, a.p.zijlstra@chello.nl, rusty@rustcorp.com.au,
+       travis@sgi.com, mingo@redhat.com, davej@redhat.com,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Message-Id: <20090126164237.1dc45156.akpm@linux-foundation.org>
+In-Reply-To: <20090126235331.GA8726@elte.hu>
+References: <20090126212727.GA13670@elte.hu>
+	<20090126133551.fab5e27a.akpm@linux-foundation.org>
+	<20090126214516.GA22142@elte.hu>
+	<20090126140116.35f9c173.akpm@linux-foundation.org>
+	<20090126220537.GA6755@elte.hu>
+	<20090126141605.707877bb.akpm@linux-foundation.org>
+	<20090126222002.GB10215@elte.hu>
+	<20090126145003.b29b81d7.akpm@linux-foundation.org>
+	<20090126225957.GA3999@elte.hu>
+	<20090126154217.b312e278.akpm@linux-foundation.org>
+	<20090126235331.GA8726@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/gdpyW2Qg7zJRQv5nqd9fyHC";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/gdpyW2Qg7zJRQv5nqd9fyHC
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tue, 27 Jan 2009 00:53:31 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Hi
+> 
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > > The problem is the intrinsic utility of work_on_cpu(): we _really_ 
+> > > want such a generic facility to be usable from any (blockable) 
+> > > context, just like on_each_cpu(func, info) does for atomic functions, 
+> > > without restrictions on locking context.
+> > 
+> > Do we?  work_on_cpu() is some last-gasp oh-i-screwed-my-code-up thing. 
+> > We _really_ want people to use on_each_cpu()!
+> 
+> why? on_each_cpu() is limited and runs in IRQ context.
 
-On Mon, 26 Jan 2009 13:13:23 +0100
-Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
+It's worked OK for the great majority of callers.
 
-> Max Weninger wrote:
-> > Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
-> >> You can obviously download the drivers from
-> >> <http://home.eeti.com.tw/web20/TouchKitDriver/linuxDriver.htm>.
-> >>
-> >> It would be great if eGalax could be convinced to get these drivers
-> >> included in main-line ;)
-> >=20
-> > Thanks for your quick reply
-> > BUT: I have tried those driver also
-> >=20
-> > I tried this "brandnew" one (but also older ones)
-> > http://home.eeti.com.tw/web20/drivers/touch_driver/Linux/2.06.2416/Touc=
-hKit-2.06.2410-32b-k26.tar.gz
-> > after making it compile for 2.6.28.2 :)
-> > since there is source code delivered
->=20
-> For what it's worth; the version we use from eGalax is 1.0.3.1701. I
-> don't have the hardware here atm, so I can't test an other driver
-> now.
+> Is there a 
+> requirement that worklets need to be atomic?
 
-I tried kernel 2.6.23.17 and there the touchscreen is recognized
-using the builtin usbtouchscreen driver
+Blocking leads to deadlocks.
 
-/proc/bus/usb/devices delivers
-T:  Bus=3D02 Lev=3D01 Prnt=3D01 Port=3D01 Cnt=3D01 Dev#=3D  2 Spd=3D1.5 MxC=
-h=3D 0
-D:  Ver=3D 1.10 Cls=3D00(>ifc ) Sub=3D00 Prot=3D00 MxPS=3D 8 #Cfgs=3D  1
-P:  Vendor=3D0eef ProdID=3D0001 Rev=3D 1.00
-C:* #Ifs=3D 1 Cfg#=3D 1 Atr=3Da0 MxPwr=3D 44mA
-I:* If#=3D 0 Alt=3D 0 #EPs=3D 1 Cls=3D03(HID  ) Sub=3D00 Prot=3D00 Driver=
-=3Dusbtouchscreen
-E:  Ad=3D81(I) Atr=3D03(Int.) MxPS=3D   8 Ivl=3D5ms
+> > We should bust a gut to keep the number of callers to the 
+> > resource-intensive (deadlocky!) work_on_cpu() to a minimum.
+> 
+> i wouldnt call +10K 'resource intensive'.
 
-and
+per CPU.  Plus there's the `ps aux | wth?' effect.
 
-/proc/bus/input/devices
-I: Bus=3D0003 Vendor=3D0eef Product=3D0001 Version=3D0100
-N: Name=3D"USB Touchscreen 0eef:0001"
-P: Phys=3Dusb-0000:00:1d.0-2/input0
-S: Sysfs=3D/class/input/input3
-U: Uniq=3D
-H: Handlers=3Dmouse2 event3=20
-B: EV=3Db
-B: KEY=3D400 0 0 0 0 0 0 0 0 0 0
-B: ABS=3D3
+We've busted a gut over far, far less.
 
-I also tried to blacklist the usbhid with 2.6.28.2
-then it display Driver=3Dusbtouchscreen in /proc/bus/usb/devices
-but still no entry in /proc/bus/input/devices
+Plus the bugfixed, undeadlockable version will be more expensive still.
 
-Any ideas?
+> > (And to think that adding add_timer_on() creeped me out).
+> > 
+> > hm.  None of that was very helpful.  How to move forward?
+> > 
+> > I think I disagree that work_on_cpu() should be made into some robust, 
+> > smiled-upon core kernel facility.  It _is_ slow, it _is_ deadlockable. 
+> 
+> uhm, why is it slow? It could be faster in fact in some cases: the main 
+> overhead in on_each_cpu() is having to wait for the IPIs - with a thread 
+> based approach if the other CPUs are idle we can get an IPI-less wakeup.
 
-Regards
+spose so, if the CPU can do mwait?  If the CPU was idle, etc.  If a CPU
+was busy then the call could take a long time.
 
-max
+> > It should be positioned as something which is only used as a last 
+> > resort.  And if you _have_ to use it, sort out your locking!
+> > 
+> > Plus the number of code sites which want to fiddle with other CPUs in 
+> > this manner will always be small.  cpufreq, MCE, irq-affinity, things 
+> > like that.
+> > 
+> > What is the deadlock in acpi-cpufreq?  Which lock, and who is the 
+> > "other" holder of that lock?
+> 
+> a quick look suggests that it's dbs_mutex.
+> 
 
---Sig_/gdpyW2Qg7zJRQv5nqd9fyHC
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+Can't see it.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+In fact all work_on_cpu() handlers in
+arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c appear to be atomic. 
+Couldn't the whole thing be converted to use smp_call_function_many()?
 
-iEYEARECAAYFAkl+V3EACgkQWFKBZOdSyBVzVgCgj0vUvPoDfhQf1HfT88fn8DTC
-QtgAoLil8JKcNAA9630bAB5x0HxNV4X4
-=rxFj
------END PGP SIGNATURE-----
-
---Sig_/gdpyW2Qg7zJRQv5nqd9fyHC--
