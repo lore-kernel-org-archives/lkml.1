@@ -1,133 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbZA0Aaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbZA0AbX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755710AbZA0Aaf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 19:30:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753039AbZA0AaU
+	id S1755817AbZA0AbX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 19:31:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753179AbZA0AbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 19:30:20 -0500
-Received: from casper.infradead.org ([85.118.1.10]:44356 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752887AbZA0AaT (ORCPT
+	Mon, 26 Jan 2009 19:31:15 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:37085 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753253AbZA0AbO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 19:30:19 -0500
-Date: Mon, 26 Jan 2009 16:30:15 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>, fweisbec@gmail.com
-Subject: Re: [RFC][PATCH] create workqueue threads only when needed
-Message-ID: <20090126163015.7f879b18@infradead.org>
-In-Reply-To: <20090127001708.GA4815@nowhere>
-References: <20090127001708.GA4815@nowhere>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 26 Jan 2009 19:31:14 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:mime-version:
+	content-type:content-disposition:content-transfer-encoding:in-reply-to:
+	x-operating-system:user-agent:x-gmailtapped-by:x-gmailtapped;
+	b=FLx+1a49G4UIM2aPZtwuMpl29CBI0ZhLIzTUVGCGLo0ta06Zo1+mKkz/WM2bkUNb6
+	dgo9mKw7gQ28WAnSCeoKQ==
+Date: Mon, 26 Jan 2009 16:30:55 -0800
+From: Mandeep Singh Baines <msb@google.com>
+To: linux-kernel@vger.kernel.org, Peter Zijlstra <peterz@infradead.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Cc: rientjes@google.com, mbligh@google.com, thockin@google.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v4] softlockup: remove hung_task_check_count
+Message-ID: <20090127003055.GA21269@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1232991701.4863.222.camel@laptop>
+X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
+User-Agent: Mutt/1.5.11
+X-GMailtapped-By: 172.28.16.145
+X-GMailtapped: msb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009 01:17:11 +0100
-Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> While looking at the statistics from the workqueue tracer, I've been
-> suprised by the number of useless workqueues I had:
+Peter Zijlstra (peterz@infradead.org) wrote:
+> On Mon, 2009-01-26 at 09:36 -0800, Mandeep Baines wrote:
 > 
->  CPU  INSERTED  EXECUTED   NAME
->  |      |         |          |
+> > Unfortunately, this can't be done for hung_task. It writes to the
+> > task_struct here:
 > 
->   *      0          0       kpsmoused
->   *      0          0       ata_aux
->   *      0          0       cqueue
->   *      0          0       kacpi_notify
->   *      0          0       kacpid
->   *    998        998       khelper
->   *      0          0       cpuset
+> Don't top post!
 > 
->   1      0          0       hda0/1
->   1     42         42       reiserfs/1
->   1      0          0       scsi_tgtd/1
->   1      0          0       aio/1
->   1      0          0       ata/1
->   1    193        193       kblockd/1
->   1      0          0       kintegrityd/1
->   1      4          4       work_on_cpu/1
->   1   1244       1244       events/1
+> > static void check_hung_task(struct task_struct *t, unsigned long now,
+> >                             unsigned long timeout)
+> > {
+> >         unsigned long switch_count = t->nvcsw + t->nivcsw;
+> > 
+> >         if (t->flags & PF_FROZEN)
+> >                 return;
+> > 
+> >         if (switch_count != t->last_switch_count || !t->last_switch_timestamp) {
+> >                 t->last_switch_count = switch_count;
+> >                 t->last_switch_timestamp = now;
+> >                 return;
+> >         }
+> > 
+> > It is able to get away with using only a read_lock because no one else
+> > reads or writes to these fields.
 > 
->   0      0          0       hda0/0
->   0     63         63       reiserfs/0
->   0      0          0       scsi_tgtd/0
->   0      0          0       aio/0
->   0      0          0       ata/0
->   0    188        188       kblockd/0
->   0      0          0       kintegrityd/0
->   0     16         16       work_on_cpu/0
->   0   1360       1360       events/0
-> 
-> 
-> All of the workqueues with 0 work inserted do nothing. 
-> For several reasons:
-> 
-> _ Unneeded built drivers for my system that create workqueue(s) when
-> they init _ Services which need their own workqueue, for several
-> reasons, but who receive very rare jobs (often never)
-> _ ...?
-> 
-> And the result of git-grep create_singlethread_workqueue is even more
-> surprising.
-> 
-> So I've started a patch which creates the workqueues by default
-> without thread except the kevents one.
-> They will have their thread created and started only when these
-> workqueues will receive a first work to do. This is performed by
-> submitting a task's creation work to the kevent workqueues which are
-> always there, and are the only one which have their thread started on
-> creation.
-> 
-> The result after this patch:
-> 
-> # CPU  INSERTED  EXECUTED   NAME
-> # |      |         |          |
-> 
->   *    999       1000       khelper
-> 
->   1      5          6       reiserfs/1
->   1      0          2       work_on_cpu/1
->   1     86         87       kblockd/1
->   1     14         16       work_on_cpu/1
->   1    149        149       events/1
-> 
->   0     15         16       reiserfs/0
->   0     85         86       kblockd/0
->   0    146        146       events/0
-> 
-> 
-> Dropping 16 useless kernel threads in my system.
-> (Yes the inserted values are not synced with the executed one because
-> the tracers looses the first events. I just rewrote some parts to
-> make it work with this patch) .
-> I guess I will update this tracer to display the "shadow workqueues"
-> which have no threads too.
-> 
-> I hadn't any problems until now with this patch but I think it needs
-> more testing, like with cpu hotplug, and some renaming for its
-> functions and structures... And I would like to receive some comments
-> and feelings before continuing. So this is just an RFC :-)
+> How would RCU be different here?
 > 
 
-one thing to look at for work queues that never get work is to see if
-they are appropriate for the async function call interface
-(the only requirement for that is that they need to cope with calling
-inline in exceptional cases)
+My bad, RCU wouldn't be any different. I misunderstood how RCU works. Just
+spent the morning reading the LWN 3-part series on RCU and I think I'm able to
+grok it now;)
 
+Below is a patch to hung_task which removes the hung_task_check_count and
+converts the read_locks to RCU.
 
+Thanks Frédéric and Peter!
+
+---
+To avoid holding the tasklist lock too long, hung_task_check_count was used
+as an upper bound on the number of tasks that are checked by hung_task.
+This patch removes the hung_task_check_count sysctl.
+
+Instead of checking a limited number of tasks, all tasks are checked. To
+avoid holding the CPU for too long, need_resched() is checked often. To
+avoid blocking out writers, the read_lock has been converted to an
+rcu_read_lock().
+
+It is safe convert to an rcu_read_lock() because the tasks and thread_group
+lists are both protected by list_*_rcu() operations. The worst that can
+happen is that hung_task will update last_switch_timestamp field of a DEAD
+task.
+
+The design was proposed by Frédéric Weisbecker. Peter Zijlstra suggested
+the use of RCU.
+
+Signed-off-by: Mandeep Singh Baines <msb@google.com>
+---
+ include/linux/sched.h |    1 -
+ kernel/hung_task.c    |   12 +++---------
+ kernel/sysctl.c       |    9 ---------
+ 3 files changed, 3 insertions(+), 19 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index f2f94d5..278121c 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -315,7 +315,6 @@ static inline void touch_all_softlockup_watchdogs(void)
+ 
+ #ifdef CONFIG_DETECT_HUNG_TASK
+ extern unsigned int  sysctl_hung_task_panic;
+-extern unsigned long sysctl_hung_task_check_count;
+ extern unsigned long sysctl_hung_task_timeout_secs;
+ extern unsigned long sysctl_hung_task_warnings;
+ extern int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
+diff --git a/kernel/hung_task.c b/kernel/hung_task.c
+index ba8ccd4..7d67350 100644
+--- a/kernel/hung_task.c
++++ b/kernel/hung_task.c
+@@ -17,11 +17,6 @@
+ #include <linux/sysctl.h>
+ 
+ /*
+- * Have a reasonable limit on the number of tasks checked:
+- */
+-unsigned long __read_mostly sysctl_hung_task_check_count = 1024;
+-
+-/*
+  * Zero means infinite timeout - no checking done:
+  */
+ unsigned long __read_mostly sysctl_hung_task_timeout_secs = 120;
+@@ -116,7 +111,6 @@ static void check_hung_task(struct task_struct *t, unsigned long now,
+  */
+ static void check_hung_uninterruptible_tasks(unsigned long timeout)
+ {
+-	int max_count = sysctl_hung_task_check_count;
+ 	unsigned long now = get_timestamp();
+ 	struct task_struct *g, *t;
+ 
+@@ -127,16 +121,16 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
+ 	if (test_taint(TAINT_DIE) || did_panic)
+ 		return;
+ 
+-	read_lock(&tasklist_lock);
++	rcu_read_lock();
+ 	do_each_thread(g, t) {
+-		if (!--max_count)
++		if (need_resched())
+ 			goto unlock;
+ 		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
+ 		if (t->state == TASK_UNINTERRUPTIBLE)
+ 			check_hung_task(t, now, timeout);
+ 	} while_each_thread(g, t);
+  unlock:
+-	read_unlock(&tasklist_lock);
++	rcu_read_unlock();
+ }
+ 
+ static void update_poll_jiffies(void)
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 2481ed3..16526a2 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -820,15 +820,6 @@ static struct ctl_table kern_table[] = {
+ 	},
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+-		.procname	= "hung_task_check_count",
+-		.data		= &sysctl_hung_task_check_count,
+-		.maxlen		= sizeof(unsigned long),
+-		.mode		= 0644,
+-		.proc_handler	= &proc_doulongvec_minmax,
+-		.strategy	= &sysctl_intvec,
+-	},
+-	{
+-		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "hung_task_timeout_secs",
+ 		.data		= &sysctl_hung_task_timeout_secs,
+ 		.maxlen		= sizeof(unsigned long),
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.5.4.5
+
