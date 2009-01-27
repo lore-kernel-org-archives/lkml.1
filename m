@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZA0NGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZA0NLY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbZA0NGd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 08:06:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZA0NGY
+	id S1755133AbZA0NLY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 08:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZA0NLQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 08:06:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40823 "EHLO mx3.mail.elte.hu"
+	Tue, 27 Jan 2009 08:11:16 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50421 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753291AbZA0NGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 08:06:24 -0500
-Date: Tue, 27 Jan 2009 14:06:08 +0100
+	id S1753275AbZA0NLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 08:11:15 -0500
+Date: Tue, 27 Jan 2009 14:11:08 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Takashi Iwai <tiwai@suse.de>, Rufus & Azrael <rufus-azrael@numericable.fr>,
-       Linux-kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
-Subject: Re: [2.6.29-rc2-git2] compilation warnings
-Message-ID: <20090127130608.GD23121@elte.hu>
-References: <497EB491.6080904@numericable.fr> <s5hbpttcigu.wl%tiwai@suse.de> <20090127094628.670eca16@hyperion.delvare> <s5h1vupcctf.wl%tiwai@suse.de> <20090127134854.1a9992fd@hyperion.delvare>
+To: Tejun Heo <htejun@gmail.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2 #tj-percpu] x86: fix build breakage on voyage
+Message-ID: <20090127131108.GE23121@elte.hu>
+References: <20090126103243.GA31307@elte.hu> <1232977445-11815-1-git-send-email-brgerst@gmail.com> <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org> <497E8778.9060503@gmail.com> <1233032609.3248.78.camel@localhost.localdomain> <497E9B9D.4010102@gmail.com> <20090127113734.GA28249@elte.hu> <497EF43D.9010303@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090127134854.1a9992fd@hyperion.delvare>
+In-Reply-To: <497EF43D.9010303@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,58 +35,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jean Delvare <khali@linux-fr.org> wrote:
+* Tejun Heo <htejun@gmail.com> wrote:
 
-> Hi Takashi,
+> Hello, Ingo.
 > 
-> On Tue, 27 Jan 2009 10:34:20 +0100, Takashi Iwai wrote:
-> > At Tue, 27 Jan 2009 09:46:28 +0100,
-> > > On Tue, 27 Jan 2009 08:32:17 +0100, Takashi Iwai wrote:
-> > > > A bogus warning.  Ignore this.
-> > > 
-> > > No matter how bogus it is, it should be fixed. Otherwise this is
-> > > wasting the time of users and developers over and over again.
+> Ingo Molnar wrote:
+> >> +#ifdef CONFIG_X86_LOCAL_APIC
+> >>  	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
+> >>  	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
+> >> +#endif
 > > 
-> > Well, it's a bug of gcc appearing only in a certain version, so most
-> > people won't see it.
-> > 
-> > Of course, we can put uninitialized_var().  But, I don't basically
-> > like adding it unconditionally... 
+> > That patch is not acceptable - it is ugly and it adds another set of
+> > #ifdefs to an already complex piece of code.
 > 
-> I didn't know about uninitialized_var(), thanks for the hint.
+> Well, although the patch itself does add #ifdef, if you look over the 
+> whole series, voyager is now a much more conforming citizen in the x86 
+> world.  There are several solutions to this particular one.
 > 
-> My experience with these warnings is that, in many cases, it is possible 
-> to write the code differently so that it is clear to the compiler that 
-> the variable is never used uninitialized. In some cases, doing so also 
-> makes the code easier to read for humans and less likely to break in the 
-> future.
+> 1. Just let apic stuff defined and not use it in voyager if the ifdef
+>    is disturbing.  IIUC, apic isn't used in voyager at all, right?
 > 
-> Of course, in some cases the problem is simply that the compiler is too 
-> stupid to understand even simple things, but in other cases these 
-> warnings might be a good opportunity to rewrite the code in a way that 
-> is easier to understand.
+> 2. Clean up early percpu stuff so that it each early percpu variable
+>    doesn't need to be explicitly copied and cleared, which is the
+>    actual problem here.
+> 
+> 3. But, then again, the current interim and ugly way of doing it isn't
+>    too bad considering the small number of early per cpu users.
+> 
+> To me the current form doesn't look too bad but if it's too ugly, maybe 
+> doing #2 is not such a bad idea such that early percpu can be 
+> transferred to percpu in more systematic way.  It still feels a bit like 
+> overdoing it tho.
+> 
+> What do you think?
 
-And even in the cases where the compiler is stupid, leaving a warning 
-around:
-
-   1) Does not get compiler bugs fixed any faster [only true competition 
-      between compilers gets compiler bugs fixed any faster]
-
-   2) Has ongoing and irreversible maintenance costs for _all of us in the 
-      kernel_
-
-   3) for every bogus compiler warning there's a dozen warnings where the 
-      compiler told us that _we_ were doing something stupid. All things 
-      considered the false positive ratio is still a fair deal.
-
-So leaving them around is a bit like making a political point by burning 
-yourself in front of the cameras - leaves the political opponent largely 
-unimpressed and unscathed while being self-destructive in 99% of the 
-cases.
-
-gcc_is_utterly_stupid(var) type of annotations (that initialize to zero 
-instead of the current 'turn off the warning' dangerous construct) would 
-be far better. Albeit even that would in all likelyhood be a rather 
-pointless (but admittedly satisfying) gesture.
+This issue might be minor, but it's the death of a thousand cuts. It 
+should switch to the generic x86 code, use smp_ops to wrap/express its own 
+SMP weirdnesses [and extend it where needed - because _that_ is a step 
+forward for the whole code - fixing build bugs isnt] and then such 
+problems simply wont occur.
 
 	Ingo
