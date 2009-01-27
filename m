@@ -1,110 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754727AbZA0Kga@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZA0KlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754727AbZA0Kga (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 05:36:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752942AbZA0KgW
+	id S1754614AbZA0KlU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 05:41:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZA0KlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 05:36:22 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:59675 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752930AbZA0KgV (ORCPT
+	Tue, 27 Jan 2009 05:41:05 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49353 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753124AbZA0KlC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 05:36:21 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=SR/Dow9JooZn7gy1wCl9/AGuAANP3aTtFTyFNim7LPB3qzi89lO637GzOMO/RCjlxS
-         l7CgOuFw7rxG9nja3EdI5uryZ2Fj1i40xuIkW3/Dy4pwWGKq9a6YHi27M3jhk+03/dji
-         3iW49i5KMSr8ao3xlWwsMM5ZN+p7WZ3XoDSr0=
-From: Grazvydas Ignotas <notasas@gmail.com>
-To: tony@atomide.com
-Cc: drzeus-mmc@drzeus.cx, ext-adrian.hunter@nokia.com,
-       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Grazvydas Ignotas <notasas@gmail.com>
-Subject: [PATCH] OMAP HSMMC: fix MMC3 dma
-Date: Tue, 27 Jan 2009 12:36:13 +0200
-Message-Id: <1233052573-6223-1-git-send-email-notasas@gmail.com>
-X-Mailer: git-send-email 1.5.6.3
+	Tue, 27 Jan 2009 05:41:02 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
+Cc: kosaki.motohiro@jp.fujitsu.com, David Rientjes <rientjes@google.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, balbir@linux.vnet.ibm.com,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Torvalds <torvalds@linux-foundation.org>,
+       Arve Hj?nnev?g <arve@android.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Snook <csnook@redhat.com>, Paul Menage <menage@google.com>
+In-Reply-To: <20090127093105.GB2646@ioremap.net>
+References: <alpine.DEB.2.00.0901262350110.14525@chino.kir.corp.google.com> <20090127093105.GB2646@ioremap.net>
+Message-Id: <20090127193058.D48B.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 27 Jan 2009 19:40:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Data transfers on third OMAP3 MMC controller don't work
-because DMA line numbers are only defined for MMC1 and MMC2.
-Fix that and store line numbers in mmc_omap_host structure
-to reduce code size.
-Tested on OMAP3 pandora board.
+Hi Evgeniy,
 
-Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
----
- drivers/mmc/host/omap_hsmmc.c |   31 +++++++++++++++++++++++--------
- 1 files changed, 23 insertions(+), 8 deletions(-)
+> On Mon, Jan 26, 2009 at 11:51:27PM -0800, David Rientjes (rientjes@google.com) wrote:
+> > Yeah, I proposed /dev/mem_notify being made as a client of cgroups there 
+> > in http://marc.info/?l=linux-kernel&m=123200623628685
+> > 
+> > How do you replace the oom killer's capability of giving a killed task 
+> > access to memory reserves with TIF_MEMDIE in userspace?
+> 
+> /dev/mem_notify is a great idea, but please do not limit existing
+> oom-killer in its ability to do the job and do not rely on application's
+> ability to send a SIGKILL which will not kill tasks in unkillable state
+> contrary to oom-killer.
 
-diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
-index 70d8d78..a2c4aee 100644
---- a/drivers/mmc/host/omap_hsmmc.c
-+++ b/drivers/mmc/host/omap_hsmmc.c
-@@ -97,6 +97,7 @@
-  */
- #define OMAP_MMC1_DEVID		0
- #define OMAP_MMC2_DEVID		1
-+#define OMAP_MMC3_DEVID		2
- 
- #define OMAP_MMC_DATADIR_NONE	0
- #define OMAP_MMC_DATADIR_READ	1
-@@ -148,6 +149,7 @@ struct mmc_omap_host {
- 	int			irq;
- 	int			carddetect;
- 	int			use_dma, dma_ch;
-+	int			dma_line_tx, dma_line_rx;
- 	int			initstr;
- 	int			slot_id;
- 	int			dbclk_enabled;
-@@ -672,16 +674,10 @@ mmc_omap_start_dma_transfer(struct mmc_omap_host *host, struct mmc_request *req)
- 
- 	if (!(data->flags & MMC_DATA_WRITE)) {
- 		host->dma_dir = DMA_FROM_DEVICE;
--		if (host->id == OMAP_MMC1_DEVID)
--			sync_dev = OMAP24XX_DMA_MMC1_RX;
--		else
--			sync_dev = OMAP24XX_DMA_MMC2_RX;
-+		sync_dev = host->dma_line_rx;
- 	} else {
- 		host->dma_dir = DMA_TO_DEVICE;
--		if (host->id == OMAP_MMC1_DEVID)
--			sync_dev = OMAP24XX_DMA_MMC1_TX;
--		else
--			sync_dev = OMAP24XX_DMA_MMC2_TX;
-+		sync_dev = host->dma_line_tx;
- 	}
- 
- 	ret = omap_request_dma(sync_dev, "MMC/SD", mmc_omap_dma_cb,
-@@ -1058,6 +1054,25 @@ static int __init omap_mmc_probe(struct platform_device *pdev)
- 	OMAP_HSMMC_WRITE(host->base, HCTL,
- 			OMAP_HSMMC_READ(host->base, HCTL) | SDBP);
- 
-+	/* Select DMA lines */
-+	switch (host->id) {
-+	case OMAP_MMC1_DEVID:
-+		host->dma_line_tx = OMAP24XX_DMA_MMC1_TX;
-+		host->dma_line_rx = OMAP24XX_DMA_MMC1_RX;
-+		break;
-+	case OMAP_MMC2_DEVID:
-+		host->dma_line_tx = OMAP24XX_DMA_MMC2_TX;
-+		host->dma_line_rx = OMAP24XX_DMA_MMC2_RX;
-+		break;
-+	case OMAP_MMC3_DEVID:
-+		host->dma_line_tx = OMAP34XX_DMA_MMC3_TX;
-+		host->dma_line_rx = OMAP34XX_DMA_MMC3_RX;
-+		break;
-+	default:
-+		dev_err(mmc_dev(host->mmc), "Invalid MMC id\n");
-+		goto err_irq;
-+	}
-+
- 	/* Request IRQ for MMC operations */
- 	ret = request_irq(host->irq, mmc_omap_irq, IRQF_DISABLED,
- 			mmc_hostname(mmc), host);
--- 
-1.5.4.3
+I'd like to respect your requiremnt. but I also would like to know
+why you like deterministic hierarchy oom than notification.
+
+I think one of problem is, current patch description is a bit poor
+and don't describe from administrator view.
+
+Could you please sort the discssion out and explain your requirement detail?
+otherwise (I guess) this discussion don't reach people agreement.
+
+I don't like the implementation idea vs another idea discussion.
+it often don't make productive discussion.
+I'd like to sort out people requrement.
+otherwise I can't review the patch fill requirement or not.
+
+
 
