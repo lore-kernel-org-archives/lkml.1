@@ -1,100 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZA0WdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752156AbZA0Wdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbZA0WdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 17:33:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbZA0WdP
+	id S1752156AbZA0Wdm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 17:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753459AbZA0Wd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 17:33:15 -0500
-Received: from cmpxchg.org ([85.214.51.133]:44530 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751885AbZA0WdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 17:33:15 -0500
-Date: Tue, 27 Jan 2009 23:31:16 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC v6] wait: prevent exclusive waiter starvation
-Message-ID: <20090127223116.GA21484@cmpxchg.org>
-References: <20090121143602.GA16584@redhat.com> <20090121213813.GB23270@cmpxchg.org> <20090122202550.GA5726@redhat.com> <20090123095904.GA22890@cmpxchg.org> <20090123113541.GB12684@redhat.com> <20090123133050.GA19226@redhat.com> <20090126215957.GA3889@cmpxchg.org> <20090127032359.GA17359@redhat.com> <20090127193434.GA19673@cmpxchg.org> <20090127200544.GA28843@redhat.com>
-Mime-Version: 1.0
+	Tue, 27 Jan 2009 17:33:27 -0500
+Received: from mail.fieldses.org ([141.211.133.115]:48945 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753360AbZA0WdZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 17:33:25 -0500
+Date: Tue, 27 Jan 2009 17:33:25 -0500
+To: Jeff Layton <jlayton@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, cluster-devel@redhat.com,
+       teigland@redhat.com
+Subject: Re: [PATCH 2/2] nfsd: only set file_lock.fl_lmops in nfsd4_lockt
+	if a stateowner is found
+Message-ID: <20090127223325.GK9151@fieldses.org>
+References: <1232651764-10799-1-git-send-email-jlayton@redhat.com> <1232651764-10799-3-git-send-email-jlayton@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090127200544.GA28843@redhat.com>
+In-Reply-To: <1232651764-10799-3-git-send-email-jlayton@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 09:05:44PM +0100, Oleg Nesterov wrote:
-> On 01/27, Johannes Weiner wrote:
-> >
-> > +void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait)
-> > +{
-> > +	unsigned long flags;
-> > +
-> > +	__set_current_state(TASK_RUNNING);
-> > +	spin_lock_irqsave(&q->lock, flags);
-> > +	if (list_empty(&wait->task_list))
+On Thu, Jan 22, 2009 at 02:16:04PM -0500, Jeff Layton wrote:
+> nfsd4_lockt does a search for a lockstateowner when building the lock
+> struct to test. If one is found, it'll set fl_owner to it. Regardless of
+> whether that happens, it'll also set fl_lmops. Given that this lock is
+> basically a "lightweight" lock that's just used for checking conflicts,
+> setting fl_lmops is probably not appropriate for it.
 > 
-> Hmm... it should be !list_empty() ?
-
-Yes.
-
+> This behavior exposed a bug in DLM's GETLK implementation where it
+> wasn't clearing out the fields in the file_lock before filling in
+> conflicting lock info. While we were able to fix this in DLM, it
+> still seems pointless and dangerous to set the fl_lmops this way
+> when we may have a NULL lockstateowner.
 > 
-> > +		list_del_init(&wait->task_list);
-> > +	/*
-> > +	 * If we were woken through the waitqueue (waker removed
-> > +	 * us from the list) we must ensure the next waiter down
-> > +	 * the line is woken up.  The callsite will not do it as
-> > +	 * it didn't finish waiting successfully.
-> > +	 */
-> > +	else if (waitqueue_active(q))
-> > +		__wake_up_locked(q, TASK_INTERRUPTIBLE);
-> > +	spin_unlock_irqrestore(&q->lock, flags);
-> > +}
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+
+Thanks, applied.--b.
+
+> ---
+>  fs/nfsd/nfs4state.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 > 
-> Well, personally I don't care, but this is against CodingStyle rules ;)
-
-I removed it from there and added a note to the kerneldoc.
-
-> >  int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
-> >  {
-> >  	int ret = default_wake_function(wait, mode, sync, key);
-> > @@ -177,17 +218,19 @@ int __sched
-> >  __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
-> >  			int (*action)(void *), unsigned mode)
-> >  {
-> > -	int ret = 0;
-> > -
-> >  	do {
-> > +		int ret;
-> > +
-> >  		prepare_to_wait_exclusive(wq, &q->wait, mode);
-> > -		if (test_bit(q->key.bit_nr, q->key.flags)) {
-> > -			if ((ret = (*action)(q->key.flags)))
-> > -				break;
-> > -		}
-> > +		if (!test_bit(q->key.bit_nr, q->key.flags))
-> > +			continue;
-> > +		if (!(ret = action(q->key.flags)))
-> > +			continue;
-> > +		abort_exclusive_wait(wq, &q->wait);
+> diff --git a/fs/nfsd/nfs4state.c b/fs/nfsd/nfs4state.c
+> index 88db7d3..b6f60f4 100644
+> --- a/fs/nfsd/nfs4state.c
+> +++ b/fs/nfsd/nfs4state.c
+> @@ -2871,7 +2871,6 @@ nfsd4_lockt(struct svc_rqst *rqstp, struct nfsd4_compound_state *cstate,
+>  		file_lock.fl_owner = (fl_owner_t)lockt->lt_stateowner;
+>  	file_lock.fl_pid = current->tgid;
+>  	file_lock.fl_flags = FL_POSIX;
+> -	file_lock.fl_lmops = &nfsd_posix_mng_ops;
+>  
+>  	file_lock.fl_start = lockt->lt_offset;
+>  	file_lock.fl_end = last_byte_offset(lockt->lt_offset, lockt->lt_length);
+> -- 
+> 1.5.5.6
 > 
-> No, no. We should use the same key in abort_exclusive_wait().
-> Otherwise, how can we wakeup the next waiter which needs this
-> bit in the same page->flags?
-> 
-> That is why I suggested finish_wait_exclusive(..., void *key)
-> which should we passed to __wake_up_common().
-
-Okay, I am obviously wasting our time now.  And I definitely stared so
-long at the same three lines that I send randomly broken patches, so
-v7 coming after some delay including sleep.
-
-Thanks for your patience,
-
-	hannes
