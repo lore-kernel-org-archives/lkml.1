@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZA0CI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZA0CSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbZA0CI6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 21:08:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZA0CIt
+	id S1755319AbZA0CSq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 21:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZA0CSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 21:08:49 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:50631 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbZA0CIt (ORCPT
+	Mon, 26 Jan 2009 21:18:18 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:43533 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752365AbZA0CSR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 21:08:49 -0500
-Message-ID: <497E6CAF.9030707@ct.jp.nec.com>
-Date: Mon, 26 Jan 2009 18:08:47 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Mon, 26 Jan 2009 21:18:17 -0500
+Message-ID: <497E6EDA.2050700@oracle.com>
+Date: Mon, 26 Jan 2009 18:18:02 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: intel_cacheinfo: fix compiler warning
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+CC: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       kristen.c.accardi@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] pcie hotplug: Change link order of pciehp
+References: <20090127003743.GA27711@srcf.ucam.org> <497E5904.9030407@oracle.com> <20090127010335.GA29035@srcf.ucam.org>
+In-Reply-To: <20090127010335.GA29035@srcf.ucam.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.497E6EDF.01C1:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Matthew Garrett wrote:
+> commit bf53d46d80486fa613dc345aba5d42a29368056d
+> Author: Matthew Garrett <mjg@redhat.com>
+> Date:   Tue Jan 27 11:29:02 2009 +1100
+> 
+> pcie hotplug: Change link order of pciehp
+> 
+> Some hardware exposes PCIE slots in such a way that they can be claimed by
+> either the acpiphp or pciehp driver. pciehp is the preferred driver if the
+> firmware allows the OS to claim control via the _OSC method so should be
+> loaded first - if it fails to bind (either due to a missing _OSC method or
+> the firmware refusing to hand off control) then we can fall back to acpiphp or
+> a vendor-specific driver.
+> 
+> This patch simply changes the link order to ensure that pciehp will be
+> initialised before acpiphp if both are statically built into the kernel.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-Impact: fix compiler warning
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-fix the following warning;
-  CC      arch/x86/kernel/cpu/intel_cacheinfo.o
-arch/x86/kernel/cpu/intel_cacheinfo.c:314: warning: 'cpuid4_cache_lookup' defined but not used
+Thanks.
 
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/kernel/cpu/intel_cacheinfo.c |   18 +++++++++---------
- 1 files changed, 9 insertions(+), 9 deletions(-)
+> --- 
+> 
+> diff --git a/drivers/pci/hotplug/Makefile b/drivers/pci/hotplug/Makefile
+> index e31fb91..2aa117c 100644
+> --- a/drivers/pci/hotplug/Makefile
+> +++ b/drivers/pci/hotplug/Makefile
+> @@ -5,11 +5,15 @@
+>  obj-$(CONFIG_HOTPLUG_PCI)		+= pci_hotplug.o
+>  obj-$(CONFIG_HOTPLUG_PCI_COMPAQ)	+= cpqphp.o
+>  obj-$(CONFIG_HOTPLUG_PCI_IBM)		+= ibmphp.o
+> +
+> +# pciehp should be linked before acpiphp in order to allow the native driver
+> +# to attempt to bind first. We can then fall back to generic support.
+> +
+> +obj-$(CONFIG_HOTPLUG_PCI_PCIE)		+= pciehp.o
+>  obj-$(CONFIG_HOTPLUG_PCI_ACPI)		+= acpiphp.o
+>  obj-$(CONFIG_HOTPLUG_PCI_ACPI_IBM)	+= acpiphp_ibm.o
+>  obj-$(CONFIG_HOTPLUG_PCI_CPCI_ZT5550)	+= cpcihp_zt5550.o
+>  obj-$(CONFIG_HOTPLUG_PCI_CPCI_GENERIC)	+= cpcihp_generic.o
+> -obj-$(CONFIG_HOTPLUG_PCI_PCIE)		+= pciehp.o
+>  obj-$(CONFIG_HOTPLUG_PCI_SHPC)		+= shpchp.o
+>  obj-$(CONFIG_HOTPLUG_PCI_RPA)		+= rpaphp.o
+>  obj-$(CONFIG_HOTPLUG_PCI_RPA_DLPAR)	+= rpadlpar_io.o
+> 
 
-diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
-index d5c4605..03f93c5 100644
---- a/arch/x86/kernel/cpu/intel_cacheinfo.c
-+++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
-@@ -309,15 +309,6 @@ __cpuinit cpuid4_cache_lookup_regs(int index,
- 	return 0;
- }
- 
--static int
--__cpuinit cpuid4_cache_lookup(int index, struct _cpuid4_info *this_leaf)
--{
--	struct _cpuid4_info_regs *leaf_regs =
--		(struct _cpuid4_info_regs *)this_leaf;
--
--	return cpuid4_cache_lookup_regs(index, leaf_regs);
--}
--
- static int __cpuinit find_num_cache_leaves(void)
- {
- 	unsigned int		eax, ebx, ecx, edx;
-@@ -558,6 +549,15 @@ static void __cpuinit free_cache_attributes(unsigned int cpu)
- 	per_cpu(cpuid4_info, cpu) = NULL;
- }
- 
-+static int
-+__cpuinit cpuid4_cache_lookup(int index, struct _cpuid4_info *this_leaf)
-+{
-+	struct _cpuid4_info_regs *leaf_regs =
-+		(struct _cpuid4_info_regs *)this_leaf;
-+
-+	return cpuid4_cache_lookup_regs(index, leaf_regs);
-+}
-+
- static void __cpuinit get_cpu_leaves(void *_retval)
- {
- 	int j, *retval = _retval, cpu = smp_processor_id();
+
 -- 
-1.6.0.4
-
+~Randy
