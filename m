@@ -1,89 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZA0Sw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756321AbZA0S5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbZA0Sw2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 13:52:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbZA0SwU
+	id S1756321AbZA0S5k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 13:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZA0S5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 13:52:20 -0500
-Received: from mail.work.de ([212.12.32.20]:45264 "EHLO mail.work.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753534AbZA0SwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 13:52:19 -0500
-X-Greylist: delayed 680 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Jan 2009 13:52:19 EST
-Message-ID: <497F552B.8090201@gmail.com>
-Date: Tue, 27 Jan 2009 22:40:43 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.14ubu (X11/20080306)
+	Tue, 27 Jan 2009 13:57:32 -0500
+Received: from outbound-mail-320.bluehost.com ([67.222.54.252]:36652 "HELO
+	outbound-mail-320.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753844AbZA0S5b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 13:57:31 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=I4/EGOcDw+7ZvBkmMIrM2UGL855T5OTSBpYu31rjggf6cm1HdUkD/H6AoL2YjdmDxMu5nOM4ZFJmlqJvgwZS0hUn2WetCWYPy76F5zQUmnqfA6i94atx4N5GeU9IegSJ;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 1/2] PCI/MSI: Introduce pci_msix_table_size()
+Date: Tue, 27 Jan 2009 10:57:29 -0800
+User-Agent: KMail/1.9.10
+Cc: LKML <linux-kernel@vger.kernel.org>, Linux PCI <linux-pci@vger.kernel.org>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+References: <200901240019.36794.rjw@sisk.pl> <200901240021.14940.rjw@sisk.pl>
+In-Reply-To: <200901240021.14940.rjw@sisk.pl>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: roel.kluin@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] DVB: negative internal->sub_range won't get noticed
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901271057.29348.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Jan 2009 00:35:47 +0100 Roel Kluin <roel.kluin@gmail.com>
-wrote:
-
-> internal->sub_range is unsigned, a negative won't get noticed.
+On Friday, January 23, 2009 3:21 pm Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 >
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> Introduce new function pci_msix_table_size() returning the size of
+> the MSI-X table of given PCI device or 0 if the device doesn't
+> support MSI-X.
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> Reviewed-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 > ---
-> diff --git a/drivers/media/dvb/frontends/stb0899_algo.c
-b/drivers/media/dvb/frontends/stb0899_algo.c
-> index 83dc7e1..2ea32da 100644
-> --- a/drivers/media/dvb/frontends/stb0899_algo.c
-> +++ b/drivers/media/dvb/frontends/stb0899_algo.c
-> @@ -464,13 +464,14 @@ static void next_sub_range(struct
-stb0899_state *state)
->
->  	if (internal->sub_dir > 0) {
->  		old_sub_range = internal->sub_range;
-> -		internal->sub_range = MIN((internal->srch_range / 2) -
-> +		if (internal->tuner_offst + internal->sub_range / 2 >=
-> +				internal->srch_range / 2)
-> +			internal->sub_range = 0;
-> +		else
-> +			internal->sub_range = MIN((internal->srch_range / 2) -
->  					  (internal->tuner_offst + internal->sub_range / 2),
->  					   internal->sub_range);
->
-> -		if (internal->sub_range < 0)
-> -			internal->sub_range = 0;
-> -
->  		internal->tuner_offst += (old_sub_range + internal->sub_range) / 2;
->  	}
+>  drivers/pci/msi.c   |   24 +++++++++++++++++++-----
+>  include/linux/pci.h |    5 +++++
+>  2 files changed, 24 insertions(+), 5 deletions(-)
 
-> I hope someone understands that function :(
+Ok, applied these two to my linux-next branch.  Thanks guys.
 
-
-I guess the relevant people might. Sending it to wrong people and to
-a wrong mailing list, doesn't help much i guess.
-
-
-That function does a step through a "next slice" of the RF carrier
-based on a RF center frequency, which is used for carrier acquisition.
-
-
-> Do we actually need that test at all?  Perhaps it has never
-triggered?
-
-
-Ranges can go negative, from the current offset to the left anything
-is negative, to the right it is positive. There of course is a bug
-that the variable is not signed.
-
-I have pushed out a fix out here at
-http://jusst.de/hg/v4l-dvb/rev/368dc6078295
-
-including your comment on the macros. Thanks for pointing the bug.
-
-Regards,
-Manu
-
-
-
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
