@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754971AbZA0BWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754416AbZA0BeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754971AbZA0BWV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 20:22:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752850AbZA0BWI
+	id S1754416AbZA0BeS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 20:34:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZA0BeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 20:22:08 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45474
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752703AbZA0BWH (ORCPT
+	Mon, 26 Jan 2009 20:34:06 -0500
+Received: from rv-out-0506.google.com ([209.85.198.239]:13968 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751328AbZA0BeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 20:22:07 -0500
-Date: Mon, 26 Jan 2009 17:22:02 -0800 (PST)
-Message-Id: <20090126.172202.261408793.davem@davemloft.net>
-To: patrick.ohly@intel.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: hardware time stamping with optional structs in data area
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1233002392.23161.6.camel@pohly-MOBL>
-References: <1232532457.7829.19.camel@ecld0pohly>
-	<20090125.210442.129666692.davem@davemloft.net>
-	<1233002392.23161.6.camel@pohly-MOBL>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 26 Jan 2009 20:34:04 -0500
+Subject: Re: [PATCH] Fix BUG: using smp_processor_id() in preemptible code
+ in print_fatal_signal()
+From: Ed Swierk <eswierk@aristanetworks.com>
+To: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       rml@tech9.net, linux-kernel@vger.kernel.org
+In-Reply-To: <20090127004124.GA10632@redhat.com>
+References: <1233010818.14510.11.camel@localhost.localdomain>
+	 <20090126231555.GB6556@elte.hu>
+	 <1233012811.14510.18.camel@localhost.localdomain>
+	 <20090126233732.GA23128@elte.hu>  <20090127004124.GA10632@redhat.com>
+Content-Type: text/plain
+Date: Mon, 26 Jan 2009 17:34:00 -0800
+Message-Id: <1233020040.14510.121.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Patrick Ohly <patrick.ohly@intel.com>
-Date: Mon, 26 Jan 2009 21:39:52 +0100
+On Tue, 2009-01-27 at 01:41 +0100, Oleg Nesterov wrote:
+> Ed, Ingo, but isn't it better to just use raw_smp_processor_id() in
+> __show_regs() ? This is only debug info, the printed CPU doesn't
+> have the "exact" meaning.
 
-> On Mon, 2009-01-26 at 07:04 +0200, David Miller wrote:
-> > Just consolidate the array into a direct conversion table.  You only
-> > have 2 bits defined so you only need an array of 4 entries.  Pass the
-> > optional flag bits directly in as the index of that table.
-> 
-> How can I get some code executed during the initialization of the IP
-> stack which initializes the table, before any sk_buff gets allocated?
-> 
-> The content is constant, but writing it down as static initializers
-> using just preprocessor macros would be difficult and/or ugly - that's
-> why I haven't done it already.
+I guess it doesn't really matter which CPU the signal handling thread
+happened to be running on, but are there other situations where
+show_regs() is always expected to print the correct CPU (and if not, why
+bother printing the CPU at all)?  Disabling preemption here seems the
+safest approach and doesn't add much overhead. 
 
-It's 4 entries... really.  You can initialize them simply, perhaps
-with some fancy macro used by the initializers.
+> And, without the comment, it is not easy to see why print_fatal_signal()
+> disables preeemption before show_regs().
+
+Agreed; here's an updated patch.
+
+Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
+
+---
+Index: linux-2.6.27.4/kernel/signal.c
+===================================================================
+--- linux-2.6.27.4.orig/kernel/signal.c
++++ linux-2.6.27.4/kernel/signal.c
+@@ -890,7 +890,9 @@ static void print_fatal_signal(struct pt
+ 	}
+ #endif
+ 	printk("\n");
+-	show_regs(regs);
++	preempt_disable();
++	show_regs(regs); /* calls smp_processor_id(), preemption not allowed */
++	preempt_enable();
+ }
+ 
+ static int __init setup_print_fatal_signals(char *str)
+
+
