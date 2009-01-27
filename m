@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbZA0F6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752905AbZA0F7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbZA0F6P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 00:58:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbZA0F57
+	id S1752905AbZA0F7N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 00:59:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZA0F65
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 00:57:59 -0500
-Received: from rv-out-0506.google.com ([209.85.198.224]:38024 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751666AbZA0F56 (ORCPT
+	Tue, 27 Jan 2009 00:58:57 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:57118 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751596AbZA0F65 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 00:57:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JoYlM3VnEVSkGyl+kky7n0RaOvoI7Es87Iddd39voJMDN3wPNxoKICnd6qO2Av1pXx
-         Uc/VRxva1Fwfi3olbzcrAgqTb6SAcSgTJ6+G0OWm4UklD1lGdc+uYcstlHyiPO0EbJCt
-         2joWofrFWUUoE3ZkdkMSRO10UI4i8xbSxXRys=
+	Tue, 27 Jan 2009 00:58:57 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Kyle McMartin <kyle@infradead.org>
+Subject: Re: [PATCH] make checkpatch warn about access to current->comm
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Bartelmus <lirc@bartelmus.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andy Whitcroft <apw@shadowen.org>
+In-Reply-To: <20090127055205.GC5034@bombadil.infradead.org>
+References: <20090128144316.D467.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090127055205.GC5034@bombadil.infradead.org>
+Message-Id: <20090128145534.D46A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <497E5F76.10301@goop.org>
-References: <497E5F76.10301@goop.org>
-Date: Tue, 27 Jan 2009 00:57:57 -0500
-Message-ID: <73c1f2160901262157g3d281e62nb3ebafe01ab1dfe4@mail.gmail.com>
-Subject: Re: unified percpu stuff
-From: Brian Gerst <brgerst@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Tejun Heo <htejun@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 27 Jan 2009 14:58:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 8:12 PM, Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> I'm really pleased to see the unified percpu stuff in the kernel, but
-> unfortunately its breaking Xen at the moment.
-> It looks like this is just a matter of initializing %gs properly in
-> xen_start_kernel.  Is there any problem with me doing a load_gs_base(0)
-> somewhere early in xen_start_kernel (arch/x86/xen/enlighten.c)?
+> On Tue, Jan 27, 2009 at 02:50:18PM +0900, KOSAKI Motohiro wrote:
+> > I think "char tcomm[sizeof(current->comm)];" is valid code.
+> > if checkpatch.pl don't warn "sizeof(current->comm)", I'm glad.
+> 
+> Awfully interesting way of writing TASK_COMM_LEN :)
 
-Some of the changes I did made the assumption that the percpu state is
-set up early in head_xx.S, which apparently is skipped for xen.  Is
-there documentation anywhere for the xen bootstrap process?
+I don't think so awfully.
+I think "sizeof(array_val)" is typical code in kernel.
 
-Try this patch (untested):
+I agree that we can rewrite s/tcomm[sizeof(current->comm)]/char tcomm[TASK_COMM_LEN]/.
+but it's annoyed.
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index bef941f..b90d061 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1647,6 +1647,8 @@ asmlinkage void __init xen_start_kernel(void)
- 	have_vcpu_info_placement = 0;
- #endif
 
-+	switch_to_new_gdt();
-+
- 	xen_smp_init();
 
- 	/* Get mfn list */
-diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
-index 7735e3d..00d9265 100644
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -235,6 +235,8 @@ cpu_initialize_context(unsigned int cpu, struct
-task_struct *idle)
- 	ctxt->user_regs.ss = __KERNEL_DS;
- #ifdef CONFIG_X86_32
- 	ctxt->user_regs.fs = __KERNEL_PERCPU;
-+#else
-+	ctxt->gs_base_kernel = per_cpu_offset(cpu);
- #endif
- 	ctxt->user_regs.eip = (unsigned long)cpu_bringup_and_idle;
- 	ctxt->user_regs.eflags = 0x1000; /* IOPL_RING1 */
-
---
-Brian Gerst
