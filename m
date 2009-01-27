@@ -1,50 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753133AbZA0GJ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZA0GLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753133AbZA0GJ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 01:09:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750717AbZA0GJu
+	id S1753582AbZA0GLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 01:11:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZA0GLA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 01:09:50 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:57616 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbZA0GJu (ORCPT
+	Tue, 27 Jan 2009 01:11:00 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43714
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1750717AbZA0GK7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 01:09:50 -0500
-Date: Tue, 27 Jan 2009 01:09:43 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Kyle McMartin <kyle@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Bartelmus <lirc@bartelmus.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>
-Subject: Re: [PATCH] make checkpatch warn about access to current->comm
-Message-ID: <20090127060943.GD5034@bombadil.infradead.org>
-References: <20090128144316.D467.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090127055205.GC5034@bombadil.infradead.org> <20090128145534.D46A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090128145534.D46A.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 27 Jan 2009 01:10:59 -0500
+Date: Mon, 26 Jan 2009 22:10:56 -0800 (PST)
+Message-Id: <20090126.221056.174077798.davem@davemloft.net>
+To: zbr@ioremap.net
+Cc: jarkao2@gmail.com, herbert@gondor.apana.org.au, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090126212130.GA4338@ioremap.net>
+References: <20090120103122.GC9167@ioremap.net>
+	<20090126082036.GB4183@ff.dom.local>
+	<20090126212130.GA4338@ioremap.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 02:58:51PM +0900, KOSAKI Motohiro wrote:
-> > On Tue, Jan 27, 2009 at 02:50:18PM +0900, KOSAKI Motohiro wrote:
-> > > I think "char tcomm[sizeof(current->comm)];" is valid code.
-> > > if checkpatch.pl don't warn "sizeof(current->comm)", I'm glad.
+From: Evgeniy Polyakov <zbr@ioremap.net>
+Date: Tue, 27 Jan 2009 00:21:30 +0300
+
+> Hi Jarek.
+> 
+> On Mon, Jan 26, 2009 at 08:20:36AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
+> > > 1. Network (tree) allocator
+> > > http://www.ioremap.net/projects/nta
 > > 
-> > Awfully interesting way of writing TASK_COMM_LEN :)
+> > I looked at this a bit, but alas I didn't find much for this Herbert's
+> > idea of payload in fragments/pages. Maybe some kind of API RFC is
+> > needed before this resurrection?
 > 
-> I don't think so awfully.
-> I think "sizeof(array_val)" is typical code in kernel.
-> 
-> I agree that we can rewrite s/tcomm[sizeof(current->comm)]/char tcomm[TASK_COMM_LEN]/.
-> but it's annoyed.
-> 
+> Basic idea is to steal some (probably a lot) pages from the slab
+> allocator and put network buffers there without strict need for
+> power-of-two alignment and possible wraps when we add skb_shared_info at
+> the end, so that old e1000 driver required order-4 allocations for the
+> jumbo frames. We can do that in alloc_skb() and friends and put returned
+> buffers into skb's fraglist and updated reference counters for those
+> pages; and with additional copy of the network headers into skb->head.
 
-If current->comm was changed to be kmalloc'd this would need to be
-changed anyway, so why not just do it now?
+We are going back and forth saying the same thing, I think :-)
+(BTW, I think NTA is cool and we might do something like that
+eventually)
 
-regards, Kyle
+The basic thing we have to do is make the drivers receive into
+pages, and then slide the network headers (only) into the linear
+SKB data area.
+
+Even for drivers like NIU and myri10ge that do this, they only
+use heuristics or some fixed minimum to decide how much to
+move to the linear area.
+
+Result?  Some data payload bits end up there because it overshoots.
+
+Since we have pskb_may_pull() calls everywhere necessary, which
+means not in eth_type_trans(), we could just make these drivers
+(and future drivers converted to operate in this way) only
+put the ethernet headers there initially.
+
+Then the rest of the stack will take care of moving the network
+and transport payloads there, as necessary.
+
+I bet it won't even hurt latency or routing/firewall performance.
+
+I did test this with the NIU driver at one point, and it did not
+change TCP latency nor throughput at all even at 10g speeds.
