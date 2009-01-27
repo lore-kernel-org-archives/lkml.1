@@ -1,352 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756875AbZA0RK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZA0RKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756875AbZA0RK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 12:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZA0RJ0
+	id S1756564AbZA0RKm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 12:10:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbZA0RJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 12:09:26 -0500
-Received: from serrano.cc.columbia.edu ([128.59.29.6]:57667 "EHLO
-	serrano.cc.columbia.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755898AbZA0RJV (ORCPT
+	Tue, 27 Jan 2009 12:09:24 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:38992 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755887AbZA0RJV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 27 Jan 2009 12:09:21 -0500
-From: Oren Laadan <orenl@cs.columbia.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-api@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Serge Hallyn <serue@us.ibm.com>, Dave Hansen <dave@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       Oren Laadan <orenl@cs.columbia.edu>
-Subject: [RFC v13][PATCH 10/14] Restore open file descriprtors
-Date: Tue, 27 Jan 2009 12:08:08 -0500
-Message-Id: <1233076092-8660-11-git-send-email-orenl@cs.columbia.edu>
-X-Mailer: git-send-email 1.6.0.1
-In-Reply-To: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
-References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu>
-X-No-Spam-Score: Local
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=eOpBKnvDPqq4Yzl0FBp0AsjHrk4MrMuKGWghOlqX6YpjiyMgwbIS9NH919JzytYhoU
+         shiHHJ9jyvcKRtkGeRAaIOb5C0tZsaWNv7cu1s9qTcy8Lq4wfT0TVVp1LMomcZQD8NX7
+         lig7RKJmVYNgBbjz8qHDPjuvw9OtHe7+OpNAg=
+MIME-Version: 1.0
+Date: Tue, 27 Jan 2009 12:09:19 -0500
+Message-ID: <170fa0d20901270909v45bec3bao38944a9aca6347d9@mail.gmail.com>
+Subject: BISECTED: Re: source line numbers with x86_64 modules?
+From: Mike Snitzer <snitzer@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Dave Anderson <anderson@redhat.com>, Andi Kleen <andi@firstfloor.org>,
+       Bernhard Walle <bwalle@suse.de>, Ingo Molnar <mingo@elte.hu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       crash-utility@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Restore open file descriptors: for each FD read 'struct cr_hdr_fd_ent'
-and lookup objref in the hash table; if not found (first occurence), read
-in 'struct cr_hdr_fd_data', create a new FD and register in the hash.
-Otherwise attach the file pointer from the hash as an FD.
+[I've trimmed the wide cc distribution that was inherited when I
+forked a different thread]
 
-This patch only handles basic FDs - regular files, directories and also
-symbolic links.
+On Mon, Jan 12, 2009 at 10:19 PM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+> "Mike Snitzer" <snitzer@gmail.com> writes:
+>>
+>> Now if only I could fix line numbers when debugging crashes in x86_64
+>> modules with the crash utility! :)
+>
+> It's a userspace problem...
+>
+> All of the little usability things are userspace problems.
+>
+> I won't claim that it is trivial because it is a userspace problem, at the same
+> time there is no reason to wait for any kernel features to merge etc.  Someone
+> just has to scratch an itch and go fix it.
 
-Changelog[v12]:
-  - Replace obsolete cr_debug() with pr_debug()
+Yes, the crash utility (userspace) is clearly having problems getting
+line number for symbols in x86_64 modules.  But I finally took some
+time to bisect the point in the kernel where the crash utility first
+started to fail, it appears to be:
 
-Changelog[v6]:
-  - Balance all calls to cr_hbuf_get() with matching cr_hbuf_put()
-    (even though it's not really needed)
+commit 7460ed2844ffad7141e30271c0c3da8336e66014
+Author: john stultz <johnstul@us.ibm.com>
+Date:   Fri Feb 16 01:28:21 2007 -0800
 
-Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
----
- checkpoint/Makefile        |    2 +-
- checkpoint/restart.c       |    4 +
- checkpoint/rstr_file.c     |  248 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/checkpoint.h |    1 +
- 4 files changed, 254 insertions(+), 1 deletions(-)
- create mode 100644 checkpoint/rstr_file.c
+    [PATCH] time: x86_64: re-enable vsyscall support for x86_64
 
-diff --git a/checkpoint/Makefile b/checkpoint/Makefile
-index 7496695..88bbc10 100644
---- a/checkpoint/Makefile
-+++ b/checkpoint/Makefile
-@@ -3,4 +3,4 @@
- #
- 
- obj-$(CONFIG_CHECKPOINT_RESTART) += sys.o checkpoint.o restart.o objhash.o \
--		ckpt_mem.o rstr_mem.o ckpt_file.o
-+		ckpt_mem.o rstr_mem.o ckpt_file.o rstr_file.o
-diff --git a/checkpoint/restart.c b/checkpoint/restart.c
-index 536d017..ece05b7 100644
---- a/checkpoint/restart.c
-+++ b/checkpoint/restart.c
-@@ -261,6 +261,10 @@ static int cr_read_task(struct cr_ctx *ctx)
- 	pr_debug("memory: ret %d\n", ret);
- 	if (ret < 0)
- 		goto out;
-+	ret = cr_read_files(ctx);
-+	pr_debug("files: ret %d\n", ret);
-+	if (ret < 0)
-+		goto out;
- 	ret = cr_read_thread(ctx);
- 	pr_debug("thread: ret %d\n", ret);
- 	if (ret < 0)
-diff --git a/checkpoint/rstr_file.c b/checkpoint/rstr_file.c
-new file mode 100644
-index 0000000..f44b081
---- /dev/null
-+++ b/checkpoint/rstr_file.c
-@@ -0,0 +1,248 @@
-+/*
-+ *  Checkpoint file descriptors
-+ *
-+ *  Copyright (C) 2008 Oren Laadan
-+ *
-+ *  This file is subject to the terms and conditions of the GNU General Public
-+ *  License.  See the file COPYING in the main directory of the Linux
-+ *  distribution for more details.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/fs.h>
-+#include <linux/file.h>
-+#include <linux/fdtable.h>
-+#include <linux/fsnotify.h>
-+#include <linux/syscalls.h>
-+#include <linux/checkpoint.h>
-+#include <linux/checkpoint_hdr.h>
-+
-+#include "checkpoint_file.h"
-+
-+static int cr_close_all_fds(struct files_struct *files)
-+{
-+	int *fdtable;
-+	int nfds;
-+
-+	nfds = cr_scan_fds(files, &fdtable);
-+	if (nfds < 0)
-+		return nfds;
-+	while (nfds--)
-+		sys_close(fdtable[nfds]);
-+	kfree(fdtable);
-+	return 0;
-+}
-+
-+/**
-+ * cr_attach_file - attach a lonely file ptr to a file descriptor
-+ * @file: lonely file pointer
-+ */
-+static int cr_attach_file(struct file *file)
-+{
-+	int fd = get_unused_fd_flags(0);
-+
-+	if (fd >= 0) {
-+		fsnotify_open(file->f_path.dentry);
-+		fd_install(fd, file);
-+	}
-+	return fd;
-+}
-+
-+/**
-+ * cr_attach_get_file - attach (and get) lonely file ptr to a file descriptor
-+ * @file: lonely file pointer
-+ */
-+static int cr_attach_get_file(struct file *file)
-+{
-+	int fd = get_unused_fd_flags(0);
-+
-+	if (fd >= 0) {
-+		fsnotify_open(file->f_path.dentry);
-+		get_file(file);
-+		fd_install(fd, file);
-+	}
-+	return fd;
-+}
-+
-+#define CR_SETFL_MASK (O_APPEND|O_NONBLOCK|O_NDELAY|FASYNC|O_DIRECT|O_NOATIME)
-+
-+/* cr_read_fd_data - restore the state of a given file pointer */
-+static int
-+cr_read_fd_data(struct cr_ctx *ctx, struct files_struct *files, int rparent)
-+{
-+	struct cr_hdr_fd_data *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct file *file;
-+	int parent, ret;
-+	int fd = 0;	/* pacify gcc warning */
-+
-+	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_DATA);
-+	pr_debug("rparent %d parent %d flags %#x mode %#x how %d\n",
-+		 rparent, parent, hh->f_flags, hh->f_mode, hh->fd_type);
-+	if (parent < 0) {
-+		ret = parent;
-+		goto out;
-+	}
-+
-+	ret = -EINVAL;
-+
-+	if (parent != rparent)
-+		goto out;
-+
-+	/* FIX: more sanity checks on f_flags, f_mode etc */
-+
-+	switch (hh->fd_type) {
-+	case CR_FD_FILE:
-+	case CR_FD_DIR:
-+		file = cr_read_open_fname(ctx, hh->f_flags, hh->f_mode);
-+		break;
-+	default:
-+		goto out;
-+	}
-+
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		goto out;
-+	}
-+
-+	/* FIX: need to restore uid, gid, owner etc */
-+
-+	/* adding <objref,file> to the hash will keep a reference to it */
-+	ret = cr_obj_add_ref(ctx, file, parent, CR_OBJ_FILE, 0);
-+	if (ret < 0) {
-+		filp_close(file, NULL);
-+		goto out;
-+	}
-+
-+	fd = cr_attach_file(file);	/* no need to cleanup 'file' below */
-+	if (fd < 0) {
-+		ret = fd;
-+		filp_close(file, NULL);
-+		goto out;
-+	}
-+
-+	ret = sys_fcntl(fd, F_SETFL, hh->f_flags & CR_SETFL_MASK);
-+	if (ret < 0)
-+		goto out;
-+	ret = vfs_llseek(file, hh->f_pos, SEEK_SET);
-+	if (ret == -ESPIPE)	/* ignore error on non-seekable files */
-+		ret = 0;
-+
-+	ret = 0;
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret < 0 ? ret : fd;
-+}
-+
-+/**
-+ * cr_read_fd_ent - restore the state of a given file descriptor
-+ * @ctx: checkpoint context
-+ * @files: files_struct pointer
-+ * @parent: parent objref
-+ *
-+ * Restores the state of a file descriptor; looks up the objref (in the
-+ * header) in the hash table, and if found picks the matching file and
-+ * use it; otherwise calls cr_read_fd_data to restore the file too.
-+ */
-+static int
-+cr_read_fd_ent(struct cr_ctx *ctx, struct files_struct *files, int rparent)
-+{
-+	struct cr_hdr_fd_ent *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct file *file;
-+	int newfd, parent, ret;
-+
-+	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FD_ENT);
-+	pr_debug("rparent %d parent %d ref %d fd %d c.o.e %d\n",
-+		 rparent, parent, hh->objref, hh->fd, hh->close_on_exec);
-+	if (parent < 0) {
-+		ret = parent;
-+		goto out;
-+	}
-+
-+	ret = -EINVAL;
-+
-+	if (parent != rparent)
-+		goto out;
-+	if (hh->objref <= 0)
-+		goto out;
-+
-+	file = cr_obj_get_by_ref(ctx, hh->objref, CR_OBJ_FILE);
-+	if (IS_ERR(file)) {
-+		ret = PTR_ERR(file);
-+		goto out;
-+	}
-+
-+	if (file) {
-+		/* reuse file descriptor found in the hash table */
-+		newfd = cr_attach_get_file(file);
-+	} else {
-+		/* create new file pointer (and register in hash table) */
-+		newfd = cr_read_fd_data(ctx, files, hh->objref);
-+	}
-+
-+	if (newfd < 0) {
-+		ret = newfd;
-+		goto out;
-+	}
-+
-+	pr_debug("newfd got %d wanted %d\n", newfd, hh->fd);
-+
-+	/* if newfd isn't desired fd then reposition it */
-+	if (newfd != hh->fd) {
-+		ret = sys_dup2(newfd, hh->fd);
-+		if (ret < 0)
-+			goto out;
-+		sys_close(newfd);
-+	}
-+
-+	if (hh->close_on_exec)
-+		set_close_on_exec(hh->fd, 1);
-+
-+	ret = 0;
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret;
-+}
-+
-+int cr_read_files(struct cr_ctx *ctx)
-+{
-+	struct cr_hdr_files *hh = cr_hbuf_get(ctx, sizeof(*hh));
-+	struct files_struct *files = current->files;
-+	int i, parent, ret;
-+
-+	parent = cr_read_obj_type(ctx, hh, sizeof(*hh), CR_HDR_FILES);
-+	if (parent < 0) {
-+		ret = parent;
-+		goto out;
-+	}
-+
-+	ret = -EINVAL;
-+#if 0	/* activate when containers are used */
-+	if (parent != task_pid_vnr(current))
-+		goto out;
-+#endif
-+	pr_debug("objref %d nfds %d\n", hh->objref, hh->nfds);
-+	if (hh->objref < 0 || hh->nfds < 0)
-+		goto out;
-+
-+	if (hh->nfds > sysctl_nr_open) {
-+		ret = -EMFILE;
-+		goto out;
-+	}
-+
-+	/* point of no return -- close all file descriptors */
-+	ret = cr_close_all_fds(files);
-+	if (ret < 0)
-+		goto out;
-+
-+	for (i = 0; i < hh->nfds; i++) {
-+		ret = cr_read_fd_ent(ctx, files, hh->objref);
-+		if (ret < 0)
-+			break;
-+	}
-+
-+	ret = 0;
-+ out:
-+	cr_hbuf_put(ctx, sizeof(*hh));
-+	return ret;
-+}
-diff --git a/include/linux/checkpoint.h b/include/linux/checkpoint.h
-index 59cc515..ea9ab4c 100644
---- a/include/linux/checkpoint.h
-+++ b/include/linux/checkpoint.h
-@@ -89,6 +89,7 @@ extern int cr_write_files(struct cr_ctx *ctx, struct task_struct *t);
- 
- extern int do_restart(struct cr_ctx *ctx, pid_t pid);
- extern int cr_read_mm(struct cr_ctx *ctx);
-+extern int cr_read_files(struct cr_ctx *ctx);
- 
- #ifdef pr_fmt
- #undef pr_fmt
--- 
-1.5.4.3
+    Cleanup and re-enable vsyscall gettimeofday using the generic clocksource
+    infrastructure.
 
+    [akpm@osdl.org: cleanup]
+    Signed-off-by: John Stultz <johnstul@us.ibm.com>
+    Cc: Ingo Molnar <mingo@elte.hu>
+    Cc: Thomas Gleixner <tglx@linutronix.de>
+    Cc: Andi Kleen <ak@muc.de>
+    Cc: Roman Zippel <zippel@linux-m68k.org>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+
+ arch/x86_64/Kconfig              |    4 +
+ arch/x86_64/kernel/hpet.c        |    6 ++
+ arch/x86_64/kernel/time.c        |    6 --
+ arch/x86_64/kernel/tsc.c         |    7 ++
+ arch/x86_64/kernel/vmlinux.lds.S |   28 ++++------
+ arch/x86_64/kernel/vsyscall.c    |  119 ++++++++++++++++++++++---------------
+ include/asm-x86_64/proto.h       |    2 -
+ include/asm-x86_64/timex.h       |    1 -
+ include/asm-x86_64/vsyscall.h    |   29 ++--------
+ 9 files changed, 104 insertions(+), 98 deletions(-)
+
+Here is the full bisect log:
+
+git-bisect start
+# good: [62d0cfcb27cf755cebdc93ca95dabc83608007cd] Linux 2.6.20
+git-bisect good 62d0cfcb27cf755cebdc93ca95dabc83608007cd
+# bad: [c8f71b01a50597e298dc3214a2f2be7b8d31170c] Linux 2.6.21-rc1
+git-bisect bad c8f71b01a50597e298dc3214a2f2be7b8d31170c
+# good: [574009c1a895aeeb85eaab29c235d75852b09eb8] Merge branch
+'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
+git-bisect good 574009c1a895aeeb85eaab29c235d75852b09eb8
+# good: [087d7ecd5273b480d13f4309a159842700afe276] [POWERPC] mpic: set
+IPIs to be per-CPU
+git-bisect good 087d7ecd5273b480d13f4309a159842700afe276
+# bad: [920841d8d1d61bc12b43f95a579a5374f6d98f81] Merge branch
+'for-linus' of ssh://master.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6
+git-bisect bad 920841d8d1d61bc12b43f95a579a5374f6d98f81
+# bad: [892705a1e1b4d0f9f6c5ac57f777b8055525bf68] USB: kernel-doc fixes
+git-bisect bad 892705a1e1b4d0f9f6c5ac57f777b8055525bf68
+# good: [741673473a5b26497d5390f38d478362e27e22ad] i386 prepare for dyntick
+git-bisect good 741673473a5b26497d5390f38d478362e27e22ad
+# bad: [ef29498655b18d2bfd69048e20835d19333981ab] Merge
+master.kernel.org:/pub/scm/linux/kernel/git/davej/cpufreq
+git-bisect bad ef29498655b18d2bfd69048e20835d19333981ab
+# bad: [bec50c47aaf6f1f9247f1860547ab394a0802a4c] knfsd: nfsd4: acls:
+avoid unnecessary denies
+git-bisect bad bec50c47aaf6f1f9247f1860547ab394a0802a4c
+# bad: [7460ed2844ffad7141e30271c0c3da8336e66014] time: x86_64:
+re-enable vsyscall support for x86_64
+git-bisect bad 7460ed2844ffad7141e30271c0c3da8336e66014
+# good: [289f480af87e45f7a6de6ba9b4c061c2e259fe98] Add debugging
+feature /proc/timer_list
+git-bisect good 289f480af87e45f7a6de6ba9b4c061c2e259fe98
+# good: [2d0c87c3bc49c60ab5bbac401fb1ef37ff10bbe2] time: x86_64:
+hpet_address cleanup
+git-bisect good 2d0c87c3bc49c60ab5bbac401fb1ef37ff10bbe2
+# good: [1489939f0ab64b96998e04068c516c39afe29654] time: x86_64:
+convert x86_64 to use GENERIC_TIME
+git-bisect good 1489939f0ab64b96998e04068c516c39afe29654
+
+I used version 4.0-7.6 of the crash utility to test if each commit was
+good or bad.  I simply checked if ext3's module had correct line
+number info for the ext3_get_blocks_handle symbol with: sym
+ext3_get_blocks_handle
+
+I tried to revert 7460ed2844ffad7141e30271c0c3da8336e66014 from
+v2.6.21 but it had conflicts that I've not yet been able to put
+adequate time to resolving.
+
+That aside, I'd be very interested to know how/where this commit is
+impacting the crash utility.  Has alignment of some module metadata
+structure been altered and that is the problem?  This isn't my area of
+expertise but I have to believe others may have useful insight.
+
+Thanks,
+Mike
