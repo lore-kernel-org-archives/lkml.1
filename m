@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZA0PZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbZA0P0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbZA0PZv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 10:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZA0PZT
+	id S1756098AbZA0P0Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 10:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753527AbZA0PZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 10:25:19 -0500
-Received: from nf-out-0910.google.com ([64.233.182.184]:29507 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752807AbZA0PZQ (ORCPT
+	Tue, 27 Jan 2009 10:25:21 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:39919 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752803AbZA0PZQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 27 Jan 2009 10:25:16 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
@@ -15,42 +15,46 @@ DomainKey-Signature: a=rsa-sha1; c=nofws;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-type:content-transfer-encoding
          :content-disposition:message-id;
-        b=SKV5aKyOOlEz3l292Cc+J4xOqDC2ylpLKhANXrxcpLI5sO/gPLgq/LJmgQoc8GjFfY
-         SHog56/ahXKAjeB/jJl6TN3GOZnjacewf0uifO1A7AF/0oseByJlib+D7GFR69zd/jr1
-         He57OKR3HLzbiHYBofMEqS2MxrDCZLm1RiY5U=
+        b=pPdEIKYLal7qhaEqWizWlUzs7ZPHmZ7HXOXB+miPs9pda2owt9UmBzt1jufHORcP6R
+         Vj3bV1MzangSi1lqDXesutAUWTJ+KYtQKK7whseIcNaiwLkbS7orE5yOTOsjPGFm+TJI
+         F7OMm8ui/cXPwdSnMcHShsSM61HKXK2F6e4P4=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH 2/3] ide: improve debugging scheme
-Date: Tue, 27 Jan 2009 16:22:47 +0100
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCH 1/3] ide-cd: use ide_drive_t's rq in cdrom_queue_request_sense
+Date: Tue, 27 Jan 2009 16:07:08 +0100
 User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-next-20090126; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1233002440-4325-1-git-send-email-petkovbb@gmail.com> <1233002440-4325-2-git-send-email-petkovbb@gmail.com> <20090127061906.GA22179@gollum.tnic>
-In-Reply-To: <20090127061906.GA22179@gollum.tnic>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Borislav Petkov <petkovbb@gmail.com>
+References: <1233002440-4325-1-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1233002440-4325-1-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901271622.47400.bzolnier@gmail.com>
+Message-Id: <200901271607.10869.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009, Borislav Petkov wrote:
-> On Mon, Jan 26, 2009 at 09:40:39PM +0100, Borislav Petkov wrote:
-> > and more specifically, push __func__ into debug
-> > macro thus making ide_debug_log() calls shorter and more readable.
+On Monday 26 January 2009, Borislav Petkov wrote:
+> There should be no functionality change resulting from this patch.
 > 
-> Ups, sorry, I left the debug on :). Take better that one instead.
-> 
-> ---
-> From: Borislav Petkov <petkovbb@gmail.com>
-> Date: Fri, 2 Jan 2009 13:34:47 +0100
-> Subject: [PATCH 2/3] ide: improve debugging scheme
-> 
-> and more specifically, push __func__ into debug
-> macro thus making ide_debug_log() calls shorter and more readable.
-> 
+> Suggested-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> ---
+>  drivers/ide/ide-cd.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> index d3d5fb6..3907466 100644
+> --- a/drivers/ide/ide-cd.c
+> +++ b/drivers/ide/ide-cd.c
+> @@ -207,7 +207,7 @@ static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
+>  				      struct request *failed_command)
+>  {
+>  	struct cdrom_info *info		= drive->driver_data;
+> -	struct request *rq		= &info->request_sense_request;
+> +	struct request *rq		= &drive->request_sense_rq;
 
-applied
+Don't we want to also remove now unused ->request_sense_request?
