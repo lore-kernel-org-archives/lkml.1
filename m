@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbZA0NQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZA0NSf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755529AbZA0NQR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 08:16:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZA0NQK
+	id S1754957AbZA0NSf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 08:18:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZA0NS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 08:16:10 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50046 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753360AbZA0NQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 08:16:08 -0500
-Date: Tue, 27 Jan 2009 14:15:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Takashi Iwai <tiwai@suse.de>, Ingo Molnar <mingo@redhat.com>,
-       Tejun Heo <tj@kernel.org>, Kyle McMartin <kyle@infradead.org>,
-       linux-kernel@vger.kernel.org, Eric Dumazet <dada1@cosmosbay.com>
-Subject: Re: [PATCH] module: kzalloc mod->ref
-Message-ID: <20090127131534.GG23121@elte.hu>
-References: <20090114033533.GL25103@bombadil.infradead.org> <200901151521.47326.rusty@rustcorp.com.au> <200901261751.21817.rusty@rustcorp.com.au> <200901271206.51248.rusty@rustcorp.com.au>
+	Tue, 27 Jan 2009 08:18:26 -0500
+Received: from styx.suse.cz ([82.119.242.94]:37068 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753061AbZA0NSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 08:18:25 -0500
+Date: Tue, 27 Jan 2009 14:18:24 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg@redhat.com>, Samuel Ortiz <sameo@openedhand.com>
+Subject: Re: since 2.6.29-rc: apple infrared keeps system awake?
+In-Reply-To: <1232969733.20525.4.camel@johannes.local>
+Message-ID: <alpine.LNX.1.10.0901271417070.5377@jikos.suse.cz>
+References: <1232635779.4224.12.camel@johannes.local>  <alpine.LRH.1.10.0901261151320.26411@twin.jikos.cz>  <1232968513.20525.1.camel@johannes.local>  <alpine.LNX.1.10.0901261220150.5377@jikos.suse.cz> <1232969733.20525.4.camel@johannes.local>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901271206.51248.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 26 Jan 2009, Johannes Berg wrote:
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+> Is it possible that I was just in an environment where there was lots of 
+> random infrared traffic that the device picked up? Is it possible to 
+> disable it completely?
 
-> @@ -344,8 +339,11 @@ struct module
->  	/* Destruction function. */
->  	void (*exit)(void);
->  
-> -	/* Reference counts */
-> -	struct module_ref ref[NR_CPUS];
-> +#ifdef CONFIG_SMP
-> +	char *refptr;
-> +#else
-> +	local_t ref;
-> +#endif
+Well, you can always unbind the driver from the device, I guess that 
+should shut it up.
 
-hm, that construct looks rather ugly. Is there no way to provide a clean 
-data type and APIs for this that just work symmetrically on both SMP and 
-UP?
+But I'd like to understand why this started happening all of a sudden. Are 
+you able to reproduce this easily?
 
-	Ingo
+-- 
+Jiri Kosina
+SUSE Labs
