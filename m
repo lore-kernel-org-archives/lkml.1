@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZA0DIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZA0DM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbZA0DIa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 22:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752365AbZA0DIV
+	id S1755184AbZA0DM4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 22:12:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752883AbZA0DMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 22:08:21 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59963 "EHLO mx2.redhat.com"
+	Mon, 26 Jan 2009 22:12:48 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46030 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751865AbZA0DIU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 22:08:20 -0500
-Date: Tue, 27 Jan 2009 04:02:37 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ed Swierk <eswierk@aristanetworks.com>
-Cc: Ingo Molnar <mingo@elte.hu>, rml@tech9.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix BUG: using smp_processor_id() in preemptible code
-	in print_fatal_signal()
-Message-ID: <20090127030237.GA14108@redhat.com>
-References: <1233010818.14510.11.camel@localhost.localdomain> <20090126231555.GB6556@elte.hu> <1233012811.14510.18.camel@localhost.localdomain> <20090126233732.GA23128@elte.hu> <20090127004124.GA10632@redhat.com> <1233020040.14510.121.camel@localhost.localdomain>
+	id S1752365AbZA0DMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 22:12:47 -0500
+Message-ID: <497E7B3C.1040606@kernel.org>
+Date: Tue, 27 Jan 2009 12:10:52 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233020040.14510.121.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [Fwd: kernel panic when using disable_mtrr_trim [was: Re: memory
+ 	beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y]]
+References: <49763718.7010501@kernel.org> <86802c440901201249v3c877a88ie8e5f3bbf6abb871@mail.gmail.com> <49794422.2080109@kernel.org> <49797634.7040500@kernel.org> <4979771E.5050001@kernel.org> <49797949.7090906@kernel.org> <497979C1.3030103@kernel.org>
+In-Reply-To: <497979C1.3030103@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 27 Jan 2009 03:10:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/26, Ed Swierk wrote:
->
-> On Tue, 2009-01-27 at 01:41 +0100, Oleg Nesterov wrote:
-> > Ed, Ingo, but isn't it better to just use raw_smp_processor_id() in
-> > __show_regs() ? This is only debug info, the printed CPU doesn't
-> > have the "exact" meaning.
->
-> I guess it doesn't really matter which CPU the signal handling thread
-> happened to be running on, but are there other situations where
-> show_regs() is always expected to print the correct CPU (and if not, why
-> bother printing the CPU at all)?  Disabling preemption here seems the
-> safest approach and doesn't add much overhead.
+Yinghai Lu wrote:
+>>>> WARNING: Absolute relocations present
+>>>> Offset     Info     Type     Sym.Value Sym.Name
+>>>> c14d21ef 00921101   R_386_32 c1514000  __per_cpu_load
+>>> Hmm... weird.  Can you please attach the .config file you used and the
+>>> commit ID and the version of toolchain?  I'll try to reproduce it
+>>> here.
+>>>
+>> my own config full, got that too
+>> WARNING: Absolute relocations present
+>> Offset     Info     Type     Sym.Value Sym.Name
+>> 40c22260 00d94801   R_386_32 40c7a000  __per_cpu_load
 
-OK.
+Brian just committed a patch to fix the relocation bug.  Can you
+please test the current core/percpu[1]?
 
-> > And, without the comment, it is not easy to see why print_fatal_signal()
-> > disables preeemption before show_regs().
->
-> Agreed; here's an updated patch.
+[1] 5a611268b69f05262936dd177205acbce4471358
 
-Actually, now I think show_regs() has other reasons to run with the
-preemption disabled, __show_regs() does read_crX()/etc, I guess it is
-better to stay on the same CPU throughout.
-
-So, Ed, I am sorry for noise.
-
-Oleg.
-
+-- 
+tejun
