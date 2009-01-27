@@ -1,30 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZA0FPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbZA0FRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753305AbZA0FPL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 00:15:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZA0FO5
+	id S1753372AbZA0FRy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 00:17:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZA0FRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 00:14:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38510 "EHLO
+	Tue, 27 Jan 2009 00:17:46 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41999 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751557AbZA0FO4 (ORCPT
+	by vger.kernel.org with ESMTP id S1751213AbZA0FRp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 00:14:56 -0500
-Date: Mon, 26 Jan 2009 21:13:54 -0800
+	Tue, 27 Jan 2009 00:17:45 -0500
+Date: Mon, 26 Jan 2009 21:16:55 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Cedric Le Goater <clg@fr.ibm.com>, Dave Hansen <haveblue@us.ibm.com>,
-       Eric Biederman <ebiederm@xmission.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Serge Hallyn <serue@us.ibm.com>,
-       Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Alan Cox <number6@the-village.bc.nu>,
-       Ian Kent <raven@themaw.net>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] pids: kill now unused signal_struct-> __pgrp/__session
- and friends
-Message-Id: <20090126211354.a4f38be2.akpm@linux-foundation.org>
-In-Reply-To: <20090119220554.GA4219@redhat.com>
-References: <20090118143354.GA8159@redhat.com>
-	<20090119220554.GA4219@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: lirc@bartelmus.de (Christoph Bartelmus), linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] export get_task_comm()
+Message-Id: <20090126211655.c7287768.akpm@linux-foundation.org>
+In-Reply-To: <20090128140615.D464.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090120071641.B0A3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	<AuEeLWHZjFB@christoph>
+	<20090128140615.D464.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -33,37 +29,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 19 Jan 2009 23:05:54 +0100 Oleg Nesterov <oleg@redhat.com> wrote:
+On Tue, 27 Jan 2009 14:09:05 +0900 (JST) KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> [PATCH -mm] pids: kill signal_struct-> __pgrp/__session and friends
+> > Hi,
+> > 
+> > on 19 Jan 09 at 07:36, KOSAKI Motohiro wrote:
+> > >> is there any reason why get_task_comm() is not exported in fs/exec.c?
+> > 
+> > > In general, the only function of anybody necessarity explained is exported.
+> > > if you want to export get_task_comm(), you need to explain reasonable
+> > > reason.
+> > 
+> > It's nothing that important: just want to print the executable name to the  
+> > logs during error handling. get_task_comm() is the required accessor  
+> > function.
+> > 
+> > http://lirc.cvs.sourceforge.net/viewvc/lirc/lirc/drivers/lirc_dev/lirc_dev.c?revision=1.70&view=markup
 > 
-> (depends on pids-refactor-vnr-nr_ns-helpers-to-make-them-safe.patch)
+> To be honest, I don't use get_task_comm(). but I don't oppose your request.
 > 
-> We are wasting 2 words in signal_struct without any reason to implement
-> task_pgrp_nr() and task_session_nr().
+> ==
+> Subject: [PATCH] export get_task_comm()
 > 
-> task_session_nr() has no callers since 2e2ba22ea4fd4bb85f0fa37c521066db6775cbef,
-> we can remove it.
+> task::comm is good debugging information and driver developer want to
+> use this information easily.
 > 
-> task_pgrp_nr() is still (I believe wrongly) used in fs/autofsX and fs/coda.
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  fs/exec.c |    1 +
+>  1 file changed, 1 insertion(+)
 > 
-> This patch reimplements task_pgrp_nr() via task_pgrp_nr_ns(), and kills
-> __pgrp/__session and the related helpers.
-> 
-> The change in drivers/char/tty_io.c is cosmetic, but hopefully makes sense
-> anyway.
+> Index: b/fs/exec.c
+> ===================================================================
+> --- a/fs/exec.c
+> +++ b/fs/exec.c
+> @@ -936,6 +936,7 @@ char *get_task_comm(char *buf, struct ta
+>  	task_unlock(tsk);
+>  	return buf;
+>  }
+> +EXPORT_SYMBOL_GPL(get_task_comm);
+>  
+>  void set_task_comm(struct task_struct *tsk, char *buf)
+>  {
 
-hm, that's a fairly deep-looking patch.
+Ho hum, I suppose so.  I redid the changelog a bit:
 
-You missed the fun bit:
+   task_struct.comm[] is useful for debugging and driver developers
+   want to use this information easily.  Direct access to
+   task_struct.comm[] is a bit racy, so export the official accessor.
 
- drivers/char/tty_io.c |    4 +--
- include/linux/sched.h |   43 +++++-----------------------------------
- kernel/exit.c         |   10 ++-------
- kernel/fork.c         |    2 -
- kernel/sys.c          |    4 ---
- 5 files changed, 12 insertions(+), 51 deletions(-)
-
-> TTY-parts-Acked-by: Alan Cox <number6@the-village.bc.nu>
-
-who is that masked man?
