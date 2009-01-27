@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZA0Hyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbZA0HzE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753594AbZA0Hyf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 02:54:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZA0Hy0
+	id S1754725AbZA0HzE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 02:55:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZA0Hyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 02:54:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.155]:6096 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751857AbZA0HyZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 02:54:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WX+/KEOmH/VliY/wJ77l6xZ2nB0evknvSDfWyxzlhat3SbswqXyG89bmpKAlKgqG00
-         38f0PKfdy4B+W61dGf6UqpsMS6exmFRud/fxL2hUuynZ8J9SGL12hUA4rqhMPp2Ngndt
-         NY9lviMRZdFyDNngrf6a+J1O/3OydjKfAb/AU=
-Date: Tue, 27 Jan 2009 07:54:18 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v3] tcp: splice as many packets as possible at once
-Message-ID: <20090127075418.GB4197@ff.dom.local>
-References: <20090125.212203.15909648.davem@davemloft.net> <20090127071130.GA29125@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090127071130.GA29125@gondor.apana.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 27 Jan 2009 02:54:50 -0500
+Received: from sh.osrg.net ([192.16.179.4]:49678 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753313AbZA0Hyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 02:54:49 -0500
+Date: Tue, 27 Jan 2009 16:54:30 +0900
+To: stefanr@s5r6.in-berlin.de
+Cc: fujita.tomonori@lab.ntt.co.jp, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: swiotlb default size (64 MB) too small?
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4976D52F.5090109@s5r6.in-berlin.de>
+References: <49762FC8.7000208@s5r6.in-berlin.de>
+	<20090121074339N.fujita.tomonori@lab.ntt.co.jp>
+	<4976D52F.5090109@s5r6.in-berlin.de>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090127165508L.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 06:11:30PM +1100, Herbert Xu wrote:
-> David Miller <davem@davemloft.net> wrote:
-> > From: Jarek Poplawski <jarkao2@gmail.com>
-> > Date: Thu, 22 Jan 2009 09:04:42 +0000
-> > 
-> >> It seems this sk_sndmsg_page usage (refcounting) isn't consistent.
-> >> I used here tcp_sndmsg() way, but I think I'll go back to this question
-> >> soon.
-> > 
-> > Indeed, it is something to look into, as well as locking.
-> > 
-> > I'll try to find some time for this, thanks Jarek.
+On Wed, 21 Jan 2009 08:56:31 +0100
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+
+> FUJITA Tomonori wrote:
+> > The bug reporter said that copying stooped but it should not
+> > happen. It doesn't happen with SCSI (copying can continue a bit
+> > slowly). dma mapping errors are transient so SCSI retries.
+> ...
+> > If the bug report is true, then the FireWire stack or the driver (or
+> > both) has problems. Make sure that FireWire can work even with dma
+> > mapping failures.
 > 
-> After a quick look it seems to be OK to me.  The code in the patch
-> is called from tcp_splice_read, which holds the socket lock.  So as
-> long as the patch uses the usual TCP convention it should work.
+> sbp2_scsi_queuecommand returns SCSI_MLQUEUE_HOST_BUSY if DMA mapping
+> failed.  Isn't this what should happen?
 
-Yes, but ip_append_data() (and skb_append_datato_frags() for
-NETIF_F_UFO only, so currently not a problem), uses this differently,
-and these pages in sk->sk_sndmsg_page could leak or be used after
-kfree. (I didn't track locking in these other places).
+Returning SCSI_MLQUEUE_HOST_BUSY is the right thing and such problem
+should not happen.
 
-Thanks,
-Jarek P.
+
+> However, both usb-storage and firewire-sbp2 currently have a queudepth
+> of only 1; if there are no DMA resources to map just this one SCSI
+> request, how should the system be able to recover?
+
+Handling one outstanding command is must. If you can't, the system
+can deadlock in OOM.
+
+If you put the deadlock issue aside, the above host->can_queue issue
+is irrelevant. Even if you set host->can_queue to 1, scsi-ml sends one
+command to the LLD again and again until it succeeds, I think. As long
+as the LLD can send a command occasionally, the system works.
+
+
+> It can wait, but it
+> can't lower the part of the workload which is related to this particular
+> copying operation (which, as  the reporter wrote, ultimately stopped). I
+> suppose there is something else* on the reporter's system which tied up
+> too much swiotlb resources the whole time; and then just waiting a bit
+
+Tying swiotlb resource the whole time is unlikely. Everyone uses it
+temporarily.
+
+
+> until the next queucommand won't get things going.
+> 
+> *) The report does not sound like there was a DMA mappig leak caused by
+> copying between usb-storage and firewire-sbp2.  Else he would have hit
+> the problem again even with increased swiotlb default size.
+
+Maybe the reporter doesn't copy enough to hit the deadlock.
+
+If you need 512MB swiotlb buffer, surely it's something wrong. The
+kernel should work smoothly with much less (even if it works slowly).
