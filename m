@@ -1,157 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZA0Ta6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756734AbZA0Tgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbZA0Ta6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 14:30:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZA0Tat
+	id S1756734AbZA0Tgm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 14:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755879AbZA0Tgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 14:30:49 -0500
-Received: from mx40.brocade.com ([144.49.195.4]:55246 "EHLO mx40.brocade.com"
+	Tue, 27 Jan 2009 14:36:33 -0500
+Received: from cmpxchg.org ([85.214.51.133]:49349 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755278AbZA0Tas convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 14:30:48 -0500
-X-IronPort-AV: E=Sophos;i="4.37,334,1231142400"; 
-   d="scan'208";a="52016173"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver submission
-Date: Tue, 27 Jan 2009 11:30:46 -0800
-Message-ID: <4C94DE2070B172459E4F1EE14BD2364E027533D9@HQ-EXCH-5.corp.brocade.com>
-In-Reply-To: <1233084043.3231.91.camel@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver submission
-Thread-Index: AcmAtF4IXLI/YHzDR5e+Y0cvnuMCTgAARO7g
-References: <200901271855.n0RItOUA026905@swe37.brocade.com> <1233084043.3231.91.camel@localhost.localdomain>
-From: "Jing Huang" <huangj@Brocade.COM>
-To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: "Krishna Gudipati" <kgudipat@Brocade.COM>, <linux-kernel@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>,
-       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
-       "Vinodh Ravindran" <vravindr@Brocade.COM>
-X-OriginalArrivalTime: 27 Jan 2009 19:30:47.0054 (UTC) FILETIME=[C0E68AE0:01C980B5]
+	id S1755851AbZA0Tgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 14:36:32 -0500
+Date: Tue, 27 Jan 2009 20:34:34 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>
+Subject: [RFC v6] wait: prevent exclusive waiter starvation
+Message-ID: <20090127193434.GA19673@cmpxchg.org>
+References: <20090118023211.GA14539@redhat.com> <20090120203131.GA20985@cmpxchg.org> <20090121143602.GA16584@redhat.com> <20090121213813.GB23270@cmpxchg.org> <20090122202550.GA5726@redhat.com> <20090123095904.GA22890@cmpxchg.org> <20090123113541.GB12684@redhat.com> <20090123133050.GA19226@redhat.com> <20090126215957.GA3889@cmpxchg.org> <20090127032359.GA17359@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090127032359.GA17359@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks James,
-
-I agree with you. bfa driver does support all Brocade PCIe FC adapters
-(we don't have PCI HBA). I will fix this in next submission.
-
-Jing
-
------Original Message-----
-From: James Bottomley [mailto:James.Bottomley@HansenPartnership.com] 
-Sent: Tuesday, January 27, 2009 11:21 AM
-To: Jing Huang
-Cc: Krishna Gudipati; linux-kernel@vger.kernel.org;
-linux-scsi@vger.kernel.org; Ramkumar Vadivelu; Vinodh Ravindran
-Subject: Re: [PATCH 4/5] bfa: Brocade BFA FC SCSI driver submission
-
-On Tue, 2009-01-27 at 10:55 -0800, Jing Huang wrote:
-> From: Jing Huang <huangj@brocade.com>
+On Tue, Jan 27, 2009 at 04:23:59AM +0100, Oleg Nesterov wrote:
+> On 01/26, Johannes Weiner wrote:
+> >
+> > Another iteration.  I didn't use a general finish_wait_exclusive() but
+> > a version of this function that just returns whether we were woken
+> > through the queue or not.
 > 
-> This patch contains Makefile and Kconfig file for scsi and bfa. It is
-created
-> using 2.6.29-rc2 kernel.
+> But if your helper (finish_wait_woken) returns true, we always need
+> to wakeup the next waiter, or we don't need to use it. So why not
+> place the wakeup in the helper itself?
+
+Good point.
+
+> > --- a/include/linux/wait.h
+> > +++ b/include/linux/wait.h
+> > @@ -333,16 +333,20 @@ do {									\
+> >  	for (;;) {							\
+> >  		prepare_to_wait_exclusive(&wq, &__wait,			\
+> >  					TASK_INTERRUPTIBLE);		\
+> > -		if (condition)						\
+> > +		if (condition) {					\
+> > +			finish_wait(&wq, &__wait);			\
+> >  			break;						\
+> > +		}							\
+> >  		if (!signal_pending(current)) {				\
+> >  			schedule();					\
+> >  			continue;					\
+> >  		}							\
+> >  		ret = -ERESTARTSYS;					\
+> > +		if (finish_wait_woken(&wq, &__wait))			\
+> > +			__wake_up_common(&wq, TASK_INTERRUPTIBLE,	\
 > 
-> Signed-off-by: Jing Huang <huangj@brocade.com>
-> ---
->  drivers/scsi/Kconfig      |    6 ++++++
->  drivers/scsi/Makefile     |    1 +
->  drivers/scsi/bfa/Kconfig  |    6 ++++++
->  drivers/scsi/bfa/Makefile |   25 +++++++++++++++++++++++++
->  4 files changed, 38 insertions(+)
-> 
-> diff -urpN orig/drivers/scsi/bfa/Kconfig
-patch/drivers/scsi/bfa/Kconfig
-> --- orig/drivers/scsi/bfa/Kconfig	1969-12-31 16:00:00.000000000
--0800
-> +++ patch/drivers/scsi/bfa/Kconfig	2009-01-26 17:28:26.000000000
--0800
-> @@ -0,0 +1,6 @@
-> +config SCSI_BFA_FC
-> +	tristate "Brocade BFA Fibre Channel Support"
-> +	depends on PCI && SCSI
-> +	---help---
-> +	Select M for building module
-> +
+> No, we can't use __wake_up_common() without wq->lock.
 
-You don't actually need this file: your Kconfig addition to scsi/Kconfig
-does this.
+Whoops.  Should have noticed that, sorry.
 
-> diff -urpN orig/drivers/scsi/bfa/Makefile
-patch/drivers/scsi/bfa/Makefile
-> --- orig/drivers/scsi/bfa/Makefile	1969-12-31 16:00:00.000000000
--0800
-> +++ patch/drivers/scsi/bfa/Makefile	2009-01-26 17:28:26.000000000
--0800
-> @@ -0,0 +1,25 @@
-> +#
-> +# Copyright (c) 2005-2008 Brocade Communications Systems, Inc.
-> +# All rights reserved
-> +# www.brocade.com
-> +# 
-> +# Linux driver for Brocade Fibre Channel Host Bus Adapter.
-> +#
-> +# This program is free software; you can redistribute it and/or
-modify it
-> +# under the terms of the GNU General Public License (GPL) Version 2
-as
-> +# published by the Free Software Foundation
-> +#
-> +# This program is distributed in the hope that it will be useful, but
-> +# WITHOUT ANY WARRANTY; without even the implied warranty of
-> +# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-> +# General Public License for more details.
-> +#
-> +obj-$(CONFIG_SCSI_BFA_FC) := bfa.o
-> +
-> +bfa-objs := bfad.o bfad_intr.o bfad_os.o bfad_im.o bfad_attr.o
-\
-> +	bfad_fwimg.o bfa_fcs.o bfa_core.o bfa_ioc.o bfa_iocfc.o
-bfa_hw_cb.o	\
-> +	bfa_hw_ct.o bfa_fcxp.o bfa_intr.o bfa_timer.o bfa_rport.o
-bfa_port.o	\
-> +	bfa_uf.o bfa_sgpg.o bfa_module.o bfa_ioim.o bfa_itnim.o
-bfa_fcpim.o	\
-> +	bfa_tskim.o bfa_log.o bfa_log_module.o bfa_csdebug.o bfa_sm.o
-plog.o
-> +
-> +EXTRA_CFLAGS += -I$(obj) -I$(obj)/include
-> diff -urpN orig/drivers/scsi/Kconfig patch/drivers/scsi/Kconfig
-> --- orig/drivers/scsi/Kconfig	2009-01-26 17:28:26.000000000 -0800
-> +++ patch/drivers/scsi/Kconfig	2009-01-26 17:28:21.000000000
--0800
-> @@ -1797,6 +1797,12 @@ config SCSI_SRP
->  	  To compile this driver as a module, choose M here: the
->  	  module will be called libsrp.
->  
-> +config SCSI_BFA_FC
-> +	tristate "Brocade BFA Fibre Channel Support"
-> +	depends on PCI && SCSI
+Okay, number six.  I renamed the helper to abort_exclusive_wait().
+It does the wake up with __wake_up_locked() under the waitqueue lock.
 
-You need also
+I also hope that the changelog is now, unlike the previous one,
+intelligible.
 
-	select SCSI_FC_ATTRS
+	Hannes
 
-> +	---help---
-> +	  To compile this driver as a module, choose M here. The module
-will be called bfa
+---
+With exclusive waiters, every process woken up through the wait queue
+must ensure that the next waiter down the line is woken when it has
+finished.
 
-The help isn't really very helpful.  What usually goes here is something
-like
+Interruptible waiters don't do that when aborting due to a signal.
+And if an aborting waiter is concurrently woken up through the
+waitqueue, noone will ever wake up the next waiter.
 
-This bfa driver supports all Brocade PCI and PCIe fibre channel adapters
+This has been observed with __wait_on_bit_lock() used by
+lock_page_killable(): the first contender on the queue was aborting
+when the actual lock holder woke it up concurrently.  The aborted
+contender didn't acquire the lock and therefor never did an unlock
+followed by waking up the next waiter.
 
-(and if that's not true, give a list of the supported ones or the family
-name).
+Add abort_exclusive_wait() which removes the process' wait descriptor
+from the waitqueue, iff still queued, or wakes up the next waiter
+otherwise.  It does so under the waitqueue lock.  Racing with a wake
+up means the aborting process is either already woken (removed from
+the queue) and will wake up the next waiter, or it will remove itself
+from the queue and the concurrent wake up will apply to the next
+waiter after it.
 
-James
+Use abort_exclusive_wait() in __wait_event_interruptible_exclusive()
+and __wait_on_bit_lock() when they were interrupted by other means
+than a wake up through the queue.
 
+Reported-by: Chris Mason <chris.mason@oracle.com>
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Mentored-by: Oleg Nesterov <oleg@redhat.com>
+---
+ include/linux/wait.h |    7 ++++-
+ kernel/wait.c        |   57 +++++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 55 insertions(+), 9 deletions(-)
+
+diff --git a/include/linux/wait.h b/include/linux/wait.h
+index ef609f8..57bfced 100644
+--- a/include/linux/wait.h
++++ b/include/linux/wait.h
+@@ -333,16 +333,18 @@ do {									\
+ 	for (;;) {							\
+ 		prepare_to_wait_exclusive(&wq, &__wait,			\
+ 					TASK_INTERRUPTIBLE);		\
+-		if (condition)						\
++		if (condition) {					\
++			finish_wait(&wq, &__wait);			\
+ 			break;						\
++		}							\
+ 		if (!signal_pending(current)) {				\
+ 			schedule();					\
+ 			continue;					\
+ 		}							\
+ 		ret = -ERESTARTSYS;					\
++		abort_exclusive_wait(&wq, &__wait);			\
+ 		break;							\
+ 	}								\
+-	finish_wait(&wq, &__wait);					\
+ } while (0)
+ 
+ #define wait_event_interruptible_exclusive(wq, condition)		\
+@@ -431,6 +433,7 @@ extern long interruptible_sleep_on_timeout(wait_queue_head_t *q,
+ void prepare_to_wait(wait_queue_head_t *q, wait_queue_t *wait, int state);
+ void prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state);
+ void finish_wait(wait_queue_head_t *q, wait_queue_t *wait);
++void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait);
+ int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
+ int wake_bit_function(wait_queue_t *wait, unsigned mode, int sync, void *key);
+ 
+diff --git a/kernel/wait.c b/kernel/wait.c
+index cd87131..21f88c4 100644
+--- a/kernel/wait.c
++++ b/kernel/wait.c
+@@ -91,6 +91,15 @@ prepare_to_wait_exclusive(wait_queue_head_t *q, wait_queue_t *wait, int state)
+ }
+ EXPORT_SYMBOL(prepare_to_wait_exclusive);
+ 
++/*
++ * finish_wait - clean up after waiting in a queue
++ * @q: waitqueue waited on
++ * @wait: wait descriptor
++ *
++ * Sets current thread back to running state and removes
++ * the wait descriptor from the given waitqueue if still
++ * queued.
++ */
+ void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
+ {
+ 	unsigned long flags;
+@@ -117,6 +126,38 @@ void finish_wait(wait_queue_head_t *q, wait_queue_t *wait)
+ }
+ EXPORT_SYMBOL(finish_wait);
+ 
++/*
++ * abort_exclusive_wait - abort exclusive waiting in a queue
++ * @q: waitqueue waited on
++ * @wait: wait descriptor
++ *
++ * Sets current thread back to running state and removes
++ * the wait descriptor from the given waitqueue if still
++ * queued.
++ *
++ * Wakes up the next waiter if the caller is concurrently
++ * woken up through the queue.
++ */
++void abort_exclusive_wait(wait_queue_head_t *q, wait_queue_t *wait)
++{
++	unsigned long flags;
++
++	__set_current_state(TASK_RUNNING);
++	spin_lock_irqsave(&q->lock, flags);
++	if (list_empty(&wait->task_list))
++		list_del_init(&wait->task_list);
++	/*
++	 * If we were woken through the waitqueue (waker removed
++	 * us from the list) we must ensure the next waiter down
++	 * the line is woken up.  The callsite will not do it as
++	 * it didn't finish waiting successfully.
++	 */
++	else if (waitqueue_active(q))
++		__wake_up_locked(q, TASK_INTERRUPTIBLE);
++	spin_unlock_irqrestore(&q->lock, flags);
++}
++EXPORT_SYMBOL(finish_wait_woken);
++
+ int autoremove_wake_function(wait_queue_t *wait, unsigned mode, int sync, void *key)
+ {
+ 	int ret = default_wake_function(wait, mode, sync, key);
+@@ -177,17 +218,19 @@ int __sched
+ __wait_on_bit_lock(wait_queue_head_t *wq, struct wait_bit_queue *q,
+ 			int (*action)(void *), unsigned mode)
+ {
+-	int ret = 0;
+-
+ 	do {
++		int ret;
++
+ 		prepare_to_wait_exclusive(wq, &q->wait, mode);
+-		if (test_bit(q->key.bit_nr, q->key.flags)) {
+-			if ((ret = (*action)(q->key.flags)))
+-				break;
+-		}
++		if (!test_bit(q->key.bit_nr, q->key.flags))
++			continue;
++		if (!(ret = action(q->key.flags)))
++			continue;
++		abort_exclusive_wait(wq, &q->wait);
++		return ret;
+ 	} while (test_and_set_bit(q->key.bit_nr, q->key.flags));
+ 	finish_wait(wq, &q->wait);
+-	return ret;
++	return 0;
+ }
+ EXPORT_SYMBOL(__wait_on_bit_lock);
+ 
+-- 
+1.6.0.3
 
