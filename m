@@ -1,77 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZA0Pv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756072AbZA0PxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756352AbZA0Pv1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 10:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZA0Pu6
+	id S1756072AbZA0PxT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 10:53:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753253AbZA0PxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 10:50:58 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34657 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754154AbZA0Pu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 10:50:57 -0500
-Date: Tue, 27 Jan 2009 16:50:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Tejun Heo <htejun@gmail.com>, Brian Gerst <brgerst@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2 #tj-percpu] x86: fix build breakage on voyage
-Message-ID: <20090127155044.GB28209@elte.hu>
-References: <20090126103243.GA31307@elte.hu> <1232977445-11815-1-git-send-email-brgerst@gmail.com> <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org> <497E8778.9060503@gmail.com> <1233032609.3248.78.camel@localhost.localdomain> <497E9B9D.4010102@gmail.com> <20090127113734.GA28249@elte.hu> <1233070302.3231.34.camel@localhost.localdomain>
+	Tue, 27 Jan 2009 10:53:05 -0500
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:3850 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752550AbZA0PxB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 10:53:01 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Krzysztof Helt <krzysztof.h1@wp.pl>
+Subject: Re: How should I handle device with two PNP-BIOS ids?
+Date: Tue, 27 Jan 2009 08:52:51 -0700
+User-Agent: KMail/1.9.10
+Cc: Adam Belay <abelay@mit.edu>, linux-kernel@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+References: <497d80991ef709.35340258@wp.pl> <200901261513.32348.bjorn.helgaas@hp.com> <20090127094255.fc038987.krzysztof.h1@wp.pl>
+In-Reply-To: <20090127094255.fc038987.krzysztof.h1@wp.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1233070302.3231.34.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200901270852.52153.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-
-> On Tue, 2009-01-27 at 12:37 +0100, Ingo Molnar wrote:
-> > * Tejun Heo <htejun@gmail.com> wrote:
+On Tuesday 27 January 2009 01:42:55 am Krzysztof Helt wrote:
+> On Mon, 26 Jan 2009 15:13:31 -0700
+> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+> > Systems with the old chip probably report the device with a single
+> > PNP ID.  For PNPBIOS, that would be the "device product identifier."
+> > For ACPI, it would be the _HID.
 > > 
-> > > From: James Bottomley <James.Bottomley@HansenPartnership.com>
-> > > 
-> > > Impact: build fix
-> > > 
-> > > x86_cpu_to_apicid and x86_bios_cpu_apicid aren't defined for voyage. 
-> > > Earlier patch forgot to conditionalize early percpu clearing.  Fix it.
+> > Systems with the new chip should report both PNP IDs.  The PNPBIOS
+> > device product identifier or the ACPI _HID should be the new ID, and
+> > the older ID for backward compatibility should be reported in the
+> > PNPBIOS "compatible device identifiers" list or the ACPI _CID.
 > > 
-> > > +#ifdef CONFIG_X86_LOCAL_APIC
-> > >  	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
-> > >  	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
-> > > +#endif
+> > The driver would list both IDs in the pnp_device_id table, and it
+> > looks like the driver probe routine gets called with the ID that
+> > matched.
 > > 
-> > That patch is not acceptable - it is ugly and it adds another set of
-> > #ifdefs to an already complex piece of code.
-> > 
-> > As i explained it to James in recent threads, the clean and acceptable 
-> > solution to this class of problems is to switch Voyager away from that 
-> > fragile subarch code to proper generic x86 code. (just like we did it for 
-> > other subarchitectures)
-> > 
-> > There is nothing in Voyager that justifies special treatment in the area 
-> > of x86 percpu code.
-> > 
-> > This is one of the mails that explains the principles:
-> > 
-> >   http://lkml.indiana.edu/hypermail/linux/kernel/0901.2/00954.html
-> > 
-> > Or - if there's no time/interest in doing that, we can mark Voyager as 
-> > CONFIG_BROKEN.
+> > I don't see any drivers that actually do this, but I think the
+> > probe routine should be able to look at the ID that matched and
+> > determine whether the additional I/O range is present.
 > 
-> Have you quite finished?
+> The laptop in question is the Dell Latitude CPi and it does not
+> have ACPI only the PnP BIOS. 
+> The both ids are reported as unrelated (two separate nodes in 
+> the /sys/bus/pnp/).
 
-What is that supposed to mean?
+Oh.  That sounds like a BIOS bug.  If there's only one actual
+chip, the BIOS should not report it as two separate devices.
+I guess it might report two devices if only one of them is
+enabled at a time.  In that case, there might be a BIOS setup
+switch to toggle between them.
 
-	Ingo
+Can you turn on CONFIG_PNP_DEBUG_MESSAGES and boot with the
+pnp.debug kernel parameter?  Then collect the dmesg log and
+the output of "grep . /sys/devices/pnp*/*/*".
+
+> I don't know how to set up the "compatible device  
+> identifiers" list. It is not defined in the include/linux/pnp.h.
+> If I know that I will test this.
+
+The compatible device identifiers list is built by the kernel
+based on the information from the BIOS.  Drivers don't have to
+worry about it.
+
+> > Oops, looking at match_device() in drivers/pnp/driver.c, I think
+> > we look at all the device IDs supported by the driver, but we only
+> > look at the first ID associated with the device.  That means an old
+> > driver that only knows about the old device ID would fail to claim
+> > a new device (the new device will have the new ID first and old IDs
+> > in the compatibility list).  That looks like a bug in the PNP core --
+> > the old driver should be able to claim any new compatible devices.
+> > 
+> > Let me know if you think you're seeing this bug, and I'll look into
+> > it some more.
+> 
+> Currently, I iterate over pnpbios_protocol to find out if the second 
+> id exists. It is not elegant but works.
+
+Can you point me to the driver?
+
+If this is a BIOS defect, we might be able to write a quirk to work
+around it so the driver doesn't have to get messy.
+
+Bjorn
