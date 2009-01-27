@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755289AbZA0Awo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbZA0Ayy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755289AbZA0Awo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 19:52:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752526AbZA0Awg
+	id S1754966AbZA0Ayy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 19:54:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbZA0Ayp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 19:52:36 -0500
-Received: from mail.gmx.net ([213.165.64.20]:52365 "HELO mail.gmx.net"
+	Mon, 26 Jan 2009 19:54:45 -0500
+Received: from mail.gmx.net ([213.165.64.20]:48971 "HELO mail.gmx.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752648AbZA0Awf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 19:52:35 -0500
+	id S1752755AbZA0Ayo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 19:54:44 -0500
 X-Authenticated: #14842415
-X-Provags-ID: V01U2FsdGVkX1+frrY8haOfvteJoER73Aky73RER9eyQzGx3fCccm
-	RGJO7sKUrohFM4
+X-Provags-ID: V01U2FsdGVkX1959vAnb3d5/u7HZauWPvPQHch8rB+bsY5WvND7WD
+	lyLqoIAZut3nq9
 From: Alessandro Di Marco <dmr@gmx.it>
 To: Vojtech Pavlik <vojtech@suse.cz>
 Cc: Pavel Machek <pavel@ucw.cz>, linux-kernel@vger.kernel.org
@@ -22,13 +22,13 @@ References: <87lkjthdmd.fsf@gmx.it> <20070123184432.GE18662@elf.ucw.cz>
 	<20070127192034.GA17652@suse.cz> <874pqanddd.fsf@gmx.it>
 	<20070129222833.GB17330@elf.ucw.cz> <87odoho3pb.fsf@gmx.it>
 	<20070130094205.GA2888@suse.cz>
-Date: Tue, 27 Jan 2009 01:52:23 +0100
-Message-ID: <87bpttzi2g.fsf@gmx.it>
 User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+Date: Tue, 27 Jan 2009 01:54:34 +0100
+Message-ID: <873af5zhyt.fsf@gmx.it>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.4
+X-FuHaFi: 0.39
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
