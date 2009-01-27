@@ -1,66 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754329AbZA0IaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZA0Iak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754329AbZA0IaQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 03:30:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752533AbZA0I37
+	id S1754755AbZA0Iak (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 03:30:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZA0IaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 03:29:59 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:16105 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750899AbZA0I36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 03:29:58 -0500
-Date: Tue, 27 Jan 2009 09:28:14 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Chilukuri, Harita" <harita.chilukuri@intel.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Wilcox, Matthew R" <matthew.r.wilcox@intel.com>,
-       "Ma, Chinang" <chinang.ma@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Tripathi, Sharad C" <sharad.c.tripathi@intel.com>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Styner, Douglas W" <douglas.w.styner@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       "Nueckel, Hubert" <hubert.nueckel@intel.com>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "srostedt@redhat.com" <srostedt@redhat.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Anirban Chakraborty <anirban.chakraborty@qlogic.com>
-Subject: Re: Mainline kernel OLTP performance update
-Message-ID: <20090127082814.GN30821@kernel.dk>
-References: <CAC4B8726E86A142B27A9E9A2F2F12479D3E945F@rrsmsx505.amr.corp.intel.com> <20090114163557.11e097f2.akpm@linux-foundation.org> <20090115012147.GW29283@parisc-linux.org> <20090114180431.f4a96543.akpm@linux-foundation.org> <874p01fg3a.fsf@basil.nowhere.org> <20090115024740.GX29283@parisc-linux.org> <20090120132703.GJ30821@kernel.dk> <588992150B702C48B3312184F1B810AD03A497632C@azsmsx501.amr.corp.intel.com> <20090122112955.GH30821@kernel.dk> <588992150B702C48B3312184F1B810AD03A4F59632@azsmsx501.amr.corp.intel.com>
+	Tue, 27 Jan 2009 03:30:18 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33567 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754319AbZA0IaQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 03:30:16 -0500
+Message-ID: <497EC456.4010109@jp.fujitsu.com>
+Date: Tue, 27 Jan 2009 17:22:46 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <588992150B702C48B3312184F1B810AD03A4F59632@azsmsx501.amr.corp.intel.com>
+To: linux-kernel@vger.kernel.org
+CC: mingo@redhat.com
+Subject: [PATCH 2/3] unify PM-Timer messages
+References: <497EC23A.7050408@jp.fujitsu.com>
+In-Reply-To: <497EC23A.7050408@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26 2009, Chilukuri, Harita wrote:
-> Jens, we did test the patch that disables the whole stats. We get 0.5% gain with this patch on 2.6.29-rc2 comparing to 2.6.29-rc2-disbale_part_stats
-> 
-> Below is the description of the result:
-> 
-> Linux OLTP Performance summary
-> Kernel#                               Speedup(x) Intr/s  CtxSw/s  us%    sys%    idle% iowait%
-> 2.6.29-rc2-disbale_partition_stats     1.000    30413   42582    74      25      0       0
-> 2.6.29-rc2-disable_all                 1.005    30401   42656    74      25      0       0
-> 
-> Server configurations:
-> Intel Xeon Quad-core 2.0GHz  2 cpus/8 cores/8 threads
-> 64GB memory, 3 qle2462 FC HBA, 450 spindles (30 logical units)
+When LOCAL APIC was calibrated, the debug message is displayed as follows.
 
-OK, so about the same, which means the lookup is likely the expensive
-bit. I have merged this patch:
+	CPU0: Intel(R) Xeon(R) CPU            5110  @ 1.60GHz stepping 06
+	Using local APIC timer interrupts.
+	calibrating APIC timer ...
+	... lapic delta = 3773131
+	... PM timer delta = 812434
+	APIC calibration not consistent with PM Timer: 226ms instead of 100ms
+	APIC delta adjusted to PM-Timer: 1662420 (3773131)
+	TSC delta adjusted to PM-Timer: 159592409 (362220564)
+	..... delta 1662420
+	..... mult: 71411249
+	..... calibration result: 265987
+	..... CPU clock speed is 1595.0924 MHz.
+	..... host bus clock speed is 265.0987 MHz.
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=e5b74b703da41fab060adc335a0b98fa5a5ea61d
+The PM-timer is written in several ways (PM-Timer, PM Timer, and PM timer)
+in this message. This patch unifies those messages.
 
-which exposes an 'iostats' toggle that allows users to disable disk
-statistics completely.
+Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
--- 
-Jens Axboe
+---
+ arch/x86/kernel/apic.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.29-rc2/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.29-rc2.orig/arch/x86/kernel/apic.c	2009-01-27 12:21:24.000000000 +0900
++++ linux-2.6.29-rc2/arch/x86/kernel/apic.c	2009-01-27 12:24:04.000000000 +0900
+@@ -547,7 +547,7 @@ static int __init calibrate_by_pmtimer(l
+ 	return -1;
+ #endif
+
+-	apic_printk(APIC_VERBOSE, "... PM timer delta = %ld\n", deltapm);
++	apic_printk(APIC_VERBOSE, "... PM-Timer delta = %ld\n", deltapm);
+
+ 	/* Check, if the PM timer is available */
+ 	if (!deltapm)
+@@ -557,12 +557,12 @@ static int __init calibrate_by_pmtimer(l
+
+ 	if (deltapm > (pm_100ms - pm_thresh) &&
+ 	    deltapm < (pm_100ms + pm_thresh)) {
+-		apic_printk(APIC_VERBOSE, "... PM timer result ok\n");
++		apic_printk(APIC_VERBOSE, "... PM-Timer result ok\n");
+ 	} else {
+ 		res = (((u64)deltapm) *  mult) >> 22;
+ 		do_div(res, 1000000);
+ 		pr_warning("APIC calibration not consistent "
+-			"with PM Timer: %ldms instead of 100ms\n",
++			"with PM-Timer: %ldms instead of 100ms\n",
+ 			(long)res);
+ 		/* Correct the lapic counter value */
+ 		res = (((u64)(*delta)) * pm_100ms);
 
