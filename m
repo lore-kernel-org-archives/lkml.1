@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756605AbZA0SgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbZA0She@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756605AbZA0SgK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 13:36:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZA0Sfx
+	id S1756666AbZA0She (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 13:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZA0ShY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 13:35:53 -0500
-Received: from mms2.broadcom.com ([216.31.210.18]:2271 "EHLO mms2.broadcom.com"
+	Tue, 27 Jan 2009 13:37:24 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:40936 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754237AbZA0Sfx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 13:35:53 -0500
-X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
-Date: Tue, 27 Jan 2009 10:35:33 -0800
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: "Tarkan Erimer" <tarkan.erimer@turknet.net.tr>
-cc: "Jaswinder Singh Rajput" <jaswinderlinux@gmail.com>,
-       "Alexey Dobriyan" <adobriyan@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "David Woodhouse" <dwmw2@infradead.org>,
-       "David Miller" <davem@davemloft.net>, netdev <netdev@vger.kernel.org>
-Subject: Re: [BUG] tg3 module problem on Linux-2.6.29-rc1-2
-Message-ID: <20090127183533.GA10466@xw6200.broadcom.net>
-References: <49771D65.3090205@turknet.net.tr>
- <20090121152818.GA3438@x200.localdomain>
- <497870A3.4070200@turknet.net.tr>
- <3f9a31f40901262230s3efb9242jcd4a02ee84944daa@mail.gmail.com>
- <497EBBB1.5020609@turknet.net.tr> <497F2CDC.6050106@turknet.net.tr>
+	id S1753812AbZA0ShY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 13:37:24 -0500
+Message-ID: <497F545B.6000104@garzik.org>
+Date: Tue, 27 Jan 2009 13:37:15 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <497F2CDC.6050106@turknet.net.tr>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-WSS-ID: 65618C733FC42433269-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Tejun Heo <tj@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git patches] libata fixes
+References: <20090127073055.GA30360@havoc.gtf.org> <alpine.LFD.2.00.0901270748290.3123@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901270748290.3123@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 07:48:44AM -0800, Tarkan Erimer wrote:
-> Tarkan Erimer wrote:
-> > Jaswinder Singh Rajput wrote:
-> >> Is this ubuntu's specific problem or you also getting these
-> >> warnings/errors on another releases.
-> >>
-> >>   
-> > Yes,it's specific to Ubuntu's kernel build process (make-kpkg). I had 
-> > no time to try with regular kernel build process. But; if it's 
-> > necessary, I can try it out. BTW, my box is Kubuntu 8.10 with latest 
-> > updates.
-> >
-> Now, I tried with 2.6.29-rc2-git2 and the result is same. No difference. 
-> When I have time, I'll try via regular kernel compile process to see 
-> what will be happen.
+Linus Torvalds wrote:
+> 
+> On Tue, 27 Jan 2009, Jeff Garzik wrote:
+>> Please pull from 'upstream-linus' branch of
+>> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
+>>
+>> to receive the following updates:
+>>
+>>  drivers/ata/Kconfig              |    6 ++--
+>>  drivers/ata/libata-sff.c         |   12 ++++++-
+>>  drivers/ata/pata_rb532_cf.c      |    2 -
+>>  drivers/ata/pata_via.c           |   22 +++++++++---
+>>  drivers/ata/sata_mv.c            |   56 ++++++++++++++----------------
+>>  drivers/ata/sata_nv.c            |   70 +++++++++++++++++++++++--------------
+>>  include/linux/pci_ids.h          |    4 ++
+>>  7 files changed, 104 insertions(+), 68 deletions(-)
+>>  delete mode 100644 arch/arm/mach-integrator/clock.h
+> 
+> Hmm. That delete of the empty file is "correct" (and probably came as a 
+> result of somebody doing "make distclean" which deletes empty files), but 
+> should not have been committed as part of "libata-sff: fix incorrect EH 
+> message".
+> 
+> Seems to be a mistake, and a small one, but still.. Be more careful.
 
-Like I outlined in my previous email, this is a scripting / tools problem.
-Updating your kernel will not help.  Either the script or modinfo needs to
-be modified to somehow recognize that while the driver does make
-request_firmware() calls, the firmware resides in the kernel itself.
+Er, oops.  Sorry about that.  Yeah, I habitually do 'make distclean' as 
+part of my kclean and kbuild standard workflow scripts.
 
-> PS: If you write a reply to "netdev@vger.kernel.org", it will not reach 
-> to me. Because, I'm not subscribed to this mailing-list. So, please CC 
-> it to me.
-> 
-> Tarkan ERIMER
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+I also habitually _avoid_ "git commit -a", so I am surprised that I 
+actually made this mistake.  I am 100% certain that I issued neither 
+"git rm" nor "git update-index" commands on that file.
+
+Granted, I should have been more careful, but I am also surprised this 
+happened at all.
+
+	Jeff
+
+
 
