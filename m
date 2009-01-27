@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756669AbZA0SNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZA0SRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756669AbZA0SNl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 13:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754872AbZA0SNc
+	id S1756133AbZA0SRG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 13:17:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbZA0SQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 13:13:32 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:55782 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754069AbZA0SNc (ORCPT
+	Tue, 27 Jan 2009 13:16:55 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:55465 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753459AbZA0SQy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 13:13:32 -0500
-Subject: Re: [PATCH v2] timer: implement lockdep deadlock detection
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <20090127134128.GA24965@elte.hu>
-References: <1233010786.4344.1.camel@johannes.local>
-	 <20090126230721.GA6556@elte.hu> <1233046009.4012.3.camel@johannes.local>
-	 <20090127132759.GI23121@elte.hu>  <20090127134128.GA24965@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-izPwRgHpAwjVa4NfiddF"
-Date: Tue, 27 Jan 2009 19:12:47 +0100
-Message-Id: <1233079967.4755.4.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 27 Jan 2009 13:16:54 -0500
+Date: 27 Jan 2009 19:15:00 +0100
+From: lirc@bartelmus.de (Christoph Bartelmus)
+To: torvalds@linux-foundation.org
+Cc: akpm@linux-foundation.org
+Cc: apw@shadowen.org
+Cc: kosaki.motohiro@jp.fujitsu.com
+Cc: kyle@infradead.org
+Cc: linux-kernel@vger.kernel.org
+Message-ID: <Aufg85sZjFB@christoph>
+In-Reply-To: <alpine.LFD.2.00.0901270741490.3123@localhost.localdomain>
+Subject: Re: [PATCH] make checkpatch warn about access to current->comm
+User-Agent: OpenXP/4.10.7369 (Linux) (i386)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+X-Provags-ID: V01U2FsdGVkX1+YJqdBwDsE7OcwvB1soW2Dok7v9sF2Vs9D5kL
+ 9imCZYl6A1nRxNVWWyGQRQ+0ZbryrTDzPpWHVTWfoU5IM5P5Mk
+ LWntlD3PTSiVWTa8wrFbrYXF4paoSaVD1i4xUzXqdc=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 27 Jan 09 at 07:45, Linus Torvalds wrote:
+> On Tue, 27 Jan 2009, Kyle McMartin wrote:
+>>
+>> Suggest using the get_task_comm accessor versus direct access to
+>> current->comm.
 
---=-izPwRgHpAwjVa4NfiddF
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> I think "current->comm" is fine, and not racy.
+>
+> It only gets racy when you ask for the name of _another_ task.
+>
+> And quite frankly, I don't think anybody but /proc does that anyway. I
+> think this whole "get_task_comm()" thing is overrated. Most people are
+> better off doing just "current->comm".
 
-On Tue, 2009-01-27 at 14:41 +0100, Ingo Molnar wrote:
-> -tip testing found this build failure with your patch:
->=20
->  arch/x86/kernel/hpet.c:631: error: too few arguments to function =E2=80=
-=98init_timer_on_stack_key=E2=80=99
+This issue only came up because for someone like me it's not obvious at  
+all that using "current->comm" is safe and the comment in sched.h  
+explicitly points out that task_struct.comm should be accessed with  
+[gs]et_task_comm.
 
-#define init_timer_on_stack(timer)\
-        init_timer_on_stack_key((timer)), NULL, NULL)
-
-needs to be
-
-#define init_timer_on_stack(timer)\
-        init_timer_on_stack_key((timer), NULL, NULL)
-
-johannes
-
---=-izPwRgHpAwjVa4NfiddF
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJf06bAAoJEKVg1VMiehFYxF0QAKjkNWR/2ib3GPwrZ+cSpxD7
-MzJ+5Cu2H/SdvCKybTWDpIA/tPFRNirP5jAfb6sijdqu0Zz88O+Lv+psa7Z/hgas
-Lk7QPH0xPY1csJ8DzEIC5BUC8cUxMDhu6d8EIZ9dgakYMLW5E6PyyYErQ/oepXza
-xH385fEJHsc9huT7VTW0cGUDe2Mi7AVME72/4CFXA9xtuuEK/kX4NJYZhO7EV+Dk
-ozVSLhHePotNUO3TxEzI+P4QwU77sy2kJbnFK6YF0HwFpBKnoJ9KcBat0kgOhX78
-eMDSn2HWFKNKOK65LQo7pmUj4vQanqJzuAIrWn81ekUb8/YzkfWillNRcu2jUkuW
-Y7Wdj7acRkkh1lo7V2AiCUDt1vmDLSpognoef4YDDEqUeBJn+BcEWFRdhtUi5P93
-0lUGTle+hvxWXeWVELpdoP21hcC53toWKO5nw0cmucZ+uXvRXPCaS7msBIDqgawt
-LfrZxnpSBG3Zf/OEwsGdNI6MSk3TgWKBgNk6P5UdFFULEjdf1HMfMhk9DJXobF53
-rAKN9ugHHvQGx0jmEgZrCxBAI8hUyAzyz4q6x0Sq6wZuxDdAau4DKHyIzt0ChU2Q
-olxSLwxA8FlVubZDEOOkg1yq4Dun6RolOv2/nGgFBGst7emRUA5i01+qfr1O0/98
-7NJ4iH5G4NUtIgj6whYa
-=qRvi
------END PGP SIGNATURE-----
-
---=-izPwRgHpAwjVa4NfiddF--
-
+Christoph
