@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbZA0LrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbZA0Lsx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641AbZA0LrU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 06:47:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZA0LrL
+	id S1755114AbZA0Lsx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 06:48:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZA0Lsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 06:47:11 -0500
-Received: from rv-out-0506.google.com ([209.85.198.237]:61861 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752703AbZA0LrK (ORCPT
+	Tue, 27 Jan 2009 06:48:42 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:52839 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752703AbZA0Lsl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 06:47:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=EZQq7r+9YUSmOA28Sucuhg9gZ4BaXCc/W8FSVPn9aszBAONeFAtT8F162R4iLKpYuS
-         x9Q9eo5F1zfMqYEJPSzg+rgjMdkTAau5E0elUe5mGYwR1E6GTxxulZeHaPoUeL5CxzXN
-         UezuPHMmLjr4Ef0xVm4MoBxofawuao/tHpEiw=
-Message-ID: <497EF43D.9010303@gmail.com>
-Date: Tue, 27 Jan 2009 20:47:09 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 27 Jan 2009 06:48:41 -0500
+Date: Tue, 27 Jan 2009 22:48:05 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v3] tcp: splice as many packets as possible at once
+Message-ID: <20090127114805.GA30982@gondor.apana.org.au>
+References: <20090125.212203.15909648.davem@davemloft.net> <20090127071130.GA29125@gondor.apana.org.au> <20090127075418.GB4197@ff.dom.local> <20090127100958.GA30239@gondor.apana.org.au> <20090127103511.GE4197@ff.dom.local>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2 #tj-percpu] x86: fix build breakage on voyage
-References: <20090126103243.GA31307@elte.hu> <1232977445-11815-1-git-send-email-brgerst@gmail.com> <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org> <497E8778.9060503@gmail.com> <1233032609.3248.78.camel@localhost.localdomain> <497E9B9D.4010102@gmail.com> <20090127113734.GA28249@elte.hu>
-In-Reply-To: <20090127113734.GA28249@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090127103511.GE4197@ff.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Ingo.
-
-Ingo Molnar wrote:
->> +#ifdef CONFIG_X86_LOCAL_APIC
->>  	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
->>  	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
->> +#endif
+On Tue, Jan 27, 2009 at 10:35:11AM +0000, Jarek Poplawski wrote:
+>
+> > > Yes, but ip_append_data() (and skb_append_datato_frags() for
+> > > NETIF_F_UFO only, so currently not a problem), uses this differently,
+> > > and these pages in sk->sk_sndmsg_page could leak or be used after
+> > > kfree. (I didn't track locking in these other places).
+> > 
+> > It'll be freed when the socket is freed so that should be fine.
 > 
-> That patch is not acceptable - it is ugly and it adds another set of
-> #ifdefs to an already complex piece of code.
+> I don't think so: these places can overwrite sk->sk_sndmsg_page left
+> after tcp_sendmsg(), or skb_splice_bits() now, with NULL or a new
+> pointer without put_page() (they only reference copied chunks and
+> expect auto freeing). On the other hand, if tcp_sendmsg() reads after
+> them it could use a pointer after the page is freed, I guess.
 
-Well, although the patch itself does add #ifdef, if you look over the
-whole series, voyager is now a much more conforming citizen in the x86
-world.  There are several solutions to this particular one.
+I wasn't referring to the first part of your sentence.  That can't
+happen because they're only used for UDP sockets, this is a TCP
+socket.
 
-1. Just let apic stuff defined and not use it in voyager if the ifdef
-   is disturbing.  IIUC, apic isn't used in voyager at all, right?
-
-2. Clean up early percpu stuff so that it each early percpu variable
-   doesn't need to be explicitly copied and cleared, which is the
-   actual problem here.
-
-3. But, then again, the current interim and ugly way of doing it isn't
-   too bad considering the small number of early per cpu users.
-
-To me the current form doesn't look too bad but if it's too ugly,
-maybe doing #2 is not such a bad idea such that early percpu can be
-transferred to percpu in more systematic way.  It still feels a bit
-like overdoing it tho.
-
-What do you think?
-
-Thanks.
-
+Cheers,
 -- 
-tejun
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
