@@ -1,445 +1,760 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZA0Hbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbZA0Hbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754651AbZA0Hbf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 02:31:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753398AbZA0HbR
+	id S1755112AbZA0Hbu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 02:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbZA0HbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 02:31:17 -0500
-Received: from havoc.gtf.org ([69.61.125.42]:43923 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753096AbZA0HbP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 02:31:15 -0500
-Date: Tue, 27 Jan 2009 02:31:14 -0500
-From: Jeff Garzik <jeff@garzik.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: [git patches] libata hibernation fixes
-Message-ID: <20090127073114.GA30407@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Tue, 27 Jan 2009 02:31:24 -0500
+Received: from fb1.tech.numericable.fr ([82.216.111.51]:53054 "EHLO
+	fb1.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753756AbZA0HbT convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 02:31:19 -0500
+X-Greylist: delayed 943 seconds by postgrey-1.27 at vger.kernel.org; Tue, 27 Jan 2009 02:31:18 EST
+Message-ID: <497EB491.6080904@numericable.fr>
+Date: Tue, 27 Jan 2009 08:15:29 +0100
+From: Rufus & Azrael <rufus-azrael@numericable.fr>
+User-Agent: Thunderbird/3.0a2 (X11; 2008113017)
+MIME-Version: 1.0
+To: Linux-kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Jean Delvare <khali@linux-fr.org>,
+       Takashi Iwai <tiwai@suse.de>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+Subject: [2.6.29-rc2-git2] compilation warnings
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi all,
 
-Please pull from 'hibern_fixes' branch of
-master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git hibern_fixes
 
-to receive the following updates:
+Here are my compilation warnings for fresh 2.6.29-rc2-git2 kernel :
 
- drivers/ata/ahci.c          |   32 ++++++++++++++++++
- drivers/ata/ata_piix.c      |   34 +++++++++++++++++++
- drivers/ata/libata-scsi.c   |   20 ++++++++++--
- drivers/ata/sata_sil.c      |   36 ++++++++++++++++++++-
- drivers/firmware/dmi_scan.c |   74 ++++++++++++++++++++++++++++++++-----------
- include/linux/dmi.h         |    1 +
- include/linux/libata.h      |    2 +
- include/linux/suspend.h     |    2 +
- kernel/power/disk.c         |   10 ++++++
- 9 files changed, 188 insertions(+), 23 deletions(-)
+> sound/pci/hda/hda_codec.c: In function ‘get_empty_pcm_device’:
+> sound/pci/hda/hda_codec.c:2544: attention : ‘dev’ may be used 
+> uninitialized in this function
 
-Rafael J. Wysocki (6):
-      Hibernation: Introduce system_entering_hibernation
-      DMI: Introduce dmi_first_match to make the interface more flexible
-      SATA: Blacklisting of systems that spin off disks during ACPI power off
-      SATA AHCI: Blacklist system that spins off disks during ACPI power off
-      SATA Sil: Blacklist system that spins off disks during ACPI power off
-      SATA PIIX: Blacklist system that spins off disks during ACPI power off
+> drivers/i2c/i2c-core.c: In function ‘i2c_new_device’:
+> drivers/i2c/i2c-core.c:283: attention : ‘i2c_attach_client’ is 
+> deprecated (declared at include/linux/i2c.h:434)
+> drivers/i2c/i2c-core.c: In function ‘i2c_del_adapter’:
+> drivers/i2c/i2c-core.c:646: attention : ‘detach_client’ is deprecated 
+> (declared at include/linux/i2c.h:154)
+> drivers/i2c/i2c-core.c: In function ‘i2c_register_driver’:
+> drivers/i2c/i2c-core.c:713: attention : ‘detach_client’ is deprecated 
+> (declared at include/linux/i2c.h:154)
+> drivers/i2c/i2c-core.c: In function ‘__detach_adapter’:
+> drivers/i2c/i2c-core.c:780: attention : ‘detach_client’ is deprecated 
+> (declared at include/linux/i2c.h:154)
+> drivers/i2c/i2c-core.c: Hors de toute fonction :
+> drivers/i2c/i2c-core.c:876: attention : ‘i2c_attach_client’ is 
+> deprecated (declared at drivers/i2c/i2c-core.c:827)
+> drivers/i2c/i2c-core.c:876: attention : ‘i2c_attach_client’ is 
+> deprecated (declared at drivers/i2c/i2c-core.c:827)
+> drivers/i2c/i2c-core.c:904: attention : ‘i2c_detach_client’ is 
+> deprecated (declared at drivers/i2c/i2c-core.c:879)
+> drivers/i2c/i2c-core.c:904: attention : ‘i2c_detach_client’ is 
+> deprecated (declared at drivers/i2c/i2c-core.c:879)
 
-diff --git a/drivers/ata/ahci.c b/drivers/ata/ahci.c
-index 9603967..77bba4c 100644
---- a/drivers/ata/ahci.c
-+++ b/drivers/ata/ahci.c
-@@ -2548,6 +2548,32 @@ static void ahci_p5wdh_workaround(struct ata_host *host)
- 	}
- }
- 
-+static bool ahci_broken_system_poweroff(struct pci_dev *pdev)
-+{
-+	static const struct dmi_system_id broken_systems[] = {
-+		{
-+			.ident = "HP Compaq nx6310",
-+			.matches = {
-+				DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+				DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6310"),
-+			},
-+			/* PCI slot number of the controller */
-+			.driver_data = (void *)0x1FUL,
-+		},
-+
-+		{ }	/* terminate list */
-+	};
-+	const struct dmi_system_id *dmi = dmi_first_match(broken_systems);
-+
-+	if (dmi) {
-+		unsigned long slot = (unsigned long)dmi->driver_data;
-+		/* apply the quirk only to on-board controllers */
-+		return slot == PCI_SLOT(pdev->devfn);
-+	}
-+
-+	return false;
-+}
-+
- static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
- 	static int printed_version;
-@@ -2647,6 +2673,12 @@ static int ahci_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 		}
- 	}
- 
-+	if (ahci_broken_system_poweroff(pdev)) {
-+		pi.flags |= ATA_FLAG_NO_POWEROFF_SPINDOWN;
-+		dev_info(&pdev->dev,
-+			"quirky BIOS, skipping spindown on poweroff\n");
-+	}
-+
- 	/* CAP.NP sometimes indicate the index of the last enabled
- 	 * port, at other times, that of the last possible port, so
- 	 * determining the maximum port number requires looking at
-diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index 887d8f4..54961c0 100644
---- a/drivers/ata/ata_piix.c
-+++ b/drivers/ata/ata_piix.c
-@@ -1387,6 +1387,32 @@ static void piix_iocfg_bit18_quirk(struct ata_host *host)
- 	}
- }
- 
-+static bool piix_broken_system_poweroff(struct pci_dev *pdev)
-+{
-+	static const struct dmi_system_id broken_systems[] = {
-+		{
-+			.ident = "HP Compaq 2510p",
-+			.matches = {
-+				DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+				DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq 2510p"),
-+			},
-+			/* PCI slot number of the controller */
-+			.driver_data = (void *)0x1FUL,
-+		},
-+
-+		{ }	/* terminate list */
-+	};
-+	const struct dmi_system_id *dmi = dmi_first_match(broken_systems);
-+
-+	if (dmi) {
-+		unsigned long slot = (unsigned long)dmi->driver_data;
-+		/* apply the quirk only to on-board controllers */
-+		return slot == PCI_SLOT(pdev->devfn);
-+	}
-+
-+	return false;
-+}
-+
- /**
-  *	piix_init_one - Register PIIX ATA PCI device with kernel services
-  *	@pdev: PCI device to register
-@@ -1422,6 +1448,14 @@ static int __devinit piix_init_one(struct pci_dev *pdev,
- 	if (!in_module_init)
- 		return -ENODEV;
- 
-+	if (piix_broken_system_poweroff(pdev)) {
-+		piix_port_info[ent->driver_data].flags |=
-+				ATA_FLAG_NO_POWEROFF_SPINDOWN |
-+					ATA_FLAG_NO_HIBERNATE_SPINDOWN;
-+		dev_info(&pdev->dev, "quirky BIOS, skipping spindown "
-+				"on poweroff and hibernation\n");
-+	}
-+
- 	port_info[0] = piix_port_info[ent->driver_data];
- 	port_info[1] = piix_port_info[ent->driver_data];
- 
-diff --git a/drivers/ata/libata-scsi.c b/drivers/ata/libata-scsi.c
-index a1a6e62..3c4c5ae 100644
---- a/drivers/ata/libata-scsi.c
-+++ b/drivers/ata/libata-scsi.c
-@@ -46,6 +46,7 @@
- #include <linux/libata.h>
- #include <linux/hdreg.h>
- #include <linux/uaccess.h>
-+#include <linux/suspend.h>
- 
- #include "libata.h"
- 
-@@ -1303,6 +1304,17 @@ static unsigned int ata_scsi_start_stop_xlat(struct ata_queued_cmd *qc)
- 
- 		tf->command = ATA_CMD_VERIFY;	/* READ VERIFY */
- 	} else {
-+		/* Some odd clown BIOSen issue spindown on power off (ACPI S4
-+		 * or S5) causing some drives to spin up and down again.
-+		 */
-+		if ((qc->ap->flags & ATA_FLAG_NO_POWEROFF_SPINDOWN) &&
-+		    system_state == SYSTEM_POWER_OFF)
-+			goto skip;
-+
-+		if ((qc->ap->flags & ATA_FLAG_NO_HIBERNATE_SPINDOWN) &&
-+		     system_entering_hibernation())
-+			goto skip;
-+
- 		/* XXX: This is for backward compatibility, will be
- 		 * removed.  Read Documentation/feature-removal-schedule.txt
- 		 * for more info.
-@@ -1326,8 +1338,7 @@ static unsigned int ata_scsi_start_stop_xlat(struct ata_queued_cmd *qc)
- 				scmd->scsi_done = qc->scsidone;
- 				qc->scsidone = ata_delayed_done;
- 			}
--			scmd->result = SAM_STAT_GOOD;
--			return 1;
-+			goto skip;
- 		}
- 
- 		/* Issue ATA STANDBY IMMEDIATE command */
-@@ -1343,10 +1354,13 @@ static unsigned int ata_scsi_start_stop_xlat(struct ata_queued_cmd *qc)
- 
- 	return 0;
- 
--invalid_fld:
-+ invalid_fld:
- 	ata_scsi_set_sense(scmd, ILLEGAL_REQUEST, 0x24, 0x0);
- 	/* "Invalid field in cbd" */
- 	return 1;
-+ skip:
-+	scmd->result = SAM_STAT_GOOD;
-+	return 1;
- }
- 
- 
-diff --git a/drivers/ata/sata_sil.c b/drivers/ata/sata_sil.c
-index 564c142..bfd55b0 100644
---- a/drivers/ata/sata_sil.c
-+++ b/drivers/ata/sata_sil.c
-@@ -695,11 +695,38 @@ static void sil_init_controller(struct ata_host *host)
- 	}
- }
- 
-+static bool sil_broken_system_poweroff(struct pci_dev *pdev)
-+{
-+	static const struct dmi_system_id broken_systems[] = {
-+		{
-+			.ident = "HP Compaq nx6325",
-+			.matches = {
-+				DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-+				DMI_MATCH(DMI_PRODUCT_NAME, "HP Compaq nx6325"),
-+			},
-+			/* PCI slot number of the controller */
-+			.driver_data = (void *)0x12UL,
-+		},
-+
-+		{ }	/* terminate list */
-+	};
-+	const struct dmi_system_id *dmi = dmi_first_match(broken_systems);
-+
-+	if (dmi) {
-+		unsigned long slot = (unsigned long)dmi->driver_data;
-+		/* apply the quirk only to on-board controllers */
-+		return slot == PCI_SLOT(pdev->devfn);
-+	}
-+
-+	return false;
-+}
-+
- static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
- 	static int printed_version;
- 	int board_id = ent->driver_data;
--	const struct ata_port_info *ppi[] = { &sil_port_info[board_id], NULL };
-+	struct ata_port_info pi = sil_port_info[board_id];
-+	const struct ata_port_info *ppi[] = { &pi, NULL };
- 	struct ata_host *host;
- 	void __iomem *mmio_base;
- 	int n_ports, rc;
-@@ -713,6 +740,13 @@ static int sil_init_one(struct pci_dev *pdev, const struct pci_device_id *ent)
- 	if (board_id == sil_3114)
- 		n_ports = 4;
- 
-+	if (sil_broken_system_poweroff(pdev)) {
-+		pi.flags |= ATA_FLAG_NO_POWEROFF_SPINDOWN |
-+					ATA_FLAG_NO_HIBERNATE_SPINDOWN;
-+		dev_info(&pdev->dev, "quirky BIOS, skipping spindown "
-+				"on poweroff and hibernation\n");
-+	}
-+
- 	host = ata_host_alloc_pinfo(&pdev->dev, ppi, n_ports);
- 	if (!host)
- 		return -ENOMEM;
-diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
-index d76adfe..8f0f7c4 100644
---- a/drivers/firmware/dmi_scan.c
-+++ b/drivers/firmware/dmi_scan.c
-@@ -415,6 +415,29 @@ void __init dmi_scan_machine(void)
- }
- 
- /**
-+ *	dmi_matches - check if dmi_system_id structure matches system DMI data
-+ *	@dmi: pointer to the dmi_system_id structure to check
-+ */
-+static bool dmi_matches(const struct dmi_system_id *dmi)
-+{
-+	int i;
-+
-+	WARN(!dmi_initialized, KERN_ERR "dmi check: not initialized yet.\n");
-+
-+	for (i = 0; i < ARRAY_SIZE(dmi->matches); i++) {
-+		int s = dmi->matches[i].slot;
-+		if (s == DMI_NONE)
-+			continue;
-+		if (dmi_ident[s]
-+		    && strstr(dmi_ident[s], dmi->matches[i].substr))
-+			continue;
-+		/* No match */
-+		return false;
-+	}
-+	return true;
-+}
-+
-+/**
-  *	dmi_check_system - check system DMI data
-  *	@list: array of dmi_system_id structures to match against
-  *		All non-null elements of the list must match
-@@ -429,32 +452,45 @@ void __init dmi_scan_machine(void)
-  */
- int dmi_check_system(const struct dmi_system_id *list)
- {
--	int i, count = 0;
--	const struct dmi_system_id *d = list;
--
--	WARN(!dmi_initialized, KERN_ERR "dmi check: not initialized yet.\n");
--
--	while (d->ident) {
--		for (i = 0; i < ARRAY_SIZE(d->matches); i++) {
--			int s = d->matches[i].slot;
--			if (s == DMI_NONE)
--				continue;
--			if (dmi_ident[s] && strstr(dmi_ident[s], d->matches[i].substr))
--				continue;
--			/* No match */
--			goto fail;
-+	int count = 0;
-+	const struct dmi_system_id *d;
-+
-+	for (d = list; d->ident; d++)
-+		if (dmi_matches(d)) {
-+			count++;
-+			if (d->callback && d->callback(d))
-+				break;
- 		}
--		count++;
--		if (d->callback && d->callback(d))
--			break;
--fail:		d++;
--	}
- 
- 	return count;
- }
- EXPORT_SYMBOL(dmi_check_system);
- 
- /**
-+ *	dmi_first_match - find dmi_system_id structure matching system DMI data
-+ *	@list: array of dmi_system_id structures to match against
-+ *		All non-null elements of the list must match
-+ *		their slot's (field index's) data (i.e., each
-+ *		list string must be a substring of the specified
-+ *		DMI slot's string data) to be considered a
-+ *		successful match.
-+ *
-+ *	Walk the blacklist table until the first match is found.  Return the
-+ *	pointer to the matching entry or NULL if there's no match.
-+ */
-+const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list)
-+{
-+	const struct dmi_system_id *d;
-+
-+	for (d = list; d->ident; d++)
-+		if (dmi_matches(d))
-+			return d;
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL(dmi_first_match);
-+
-+/**
-  *	dmi_get_system_info - return DMI data value
-  *	@field: data index (see enum dmi_field)
-  *
-diff --git a/include/linux/dmi.h b/include/linux/dmi.h
-index 3416190..aea2310 100644
---- a/include/linux/dmi.h
-+++ b/include/linux/dmi.h
-@@ -38,6 +38,7 @@ struct dmi_device {
- #ifdef CONFIG_DMI
- 
- extern int dmi_check_system(const struct dmi_system_id *list);
-+const struct dmi_system_id *dmi_first_match(const struct dmi_system_id *list);
- extern const char * dmi_get_system_info(int field);
- extern const struct dmi_device * dmi_find_device(int type, const char *name,
- 	const struct dmi_device *from);
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index 2c6bd66..bca3ba2 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -187,6 +187,8 @@ enum {
- 	ATA_FLAG_PIO_POLLING	= (1 << 9), /* use polling PIO if LLD
- 					     * doesn't handle PIO interrupts */
- 	ATA_FLAG_NCQ		= (1 << 10), /* host supports NCQ */
-+	ATA_FLAG_NO_POWEROFF_SPINDOWN = (1 << 11), /* don't spindown before poweroff */
-+	ATA_FLAG_NO_HIBERNATE_SPINDOWN = (1 << 12), /* don't spindown before hibernation */
- 	ATA_FLAG_DEBUGMSG	= (1 << 13),
- 	ATA_FLAG_IGN_SIMPLEX	= (1 << 15), /* ignore SIMPLEX */
- 	ATA_FLAG_NO_IORDY	= (1 << 16), /* controller lacks iordy */
-diff --git a/include/linux/suspend.h b/include/linux/suspend.h
-index 2b409c4..c7d9bb1 100644
---- a/include/linux/suspend.h
-+++ b/include/linux/suspend.h
-@@ -237,6 +237,7 @@ extern int hibernate_nvs_alloc(void);
- extern void hibernate_nvs_free(void);
- extern void hibernate_nvs_save(void);
- extern void hibernate_nvs_restore(void);
-+extern bool system_entering_hibernation(void);
- #else /* CONFIG_HIBERNATION */
- static inline int swsusp_page_is_forbidden(struct page *p) { return 0; }
- static inline void swsusp_set_page_free(struct page *p) {}
-@@ -252,6 +253,7 @@ static inline int hibernate_nvs_alloc(void) { return 0; }
- static inline void hibernate_nvs_free(void) {}
- static inline void hibernate_nvs_save(void) {}
- static inline void hibernate_nvs_restore(void) {}
-+static inline bool system_entering_hibernation(void) { return false; }
- #endif /* CONFIG_HIBERNATION */
- 
- #ifdef CONFIG_PM_SLEEP
-diff --git a/kernel/power/disk.c b/kernel/power/disk.c
-index 45e8541..432ee57 100644
---- a/kernel/power/disk.c
-+++ b/kernel/power/disk.c
-@@ -71,6 +71,14 @@ void hibernation_set_ops(struct platform_hibernation_ops *ops)
- 	mutex_unlock(&pm_mutex);
- }
- 
-+static bool entering_platform_hibernation;
-+
-+bool system_entering_hibernation(void)
-+{
-+	return entering_platform_hibernation;
-+}
-+EXPORT_SYMBOL(system_entering_hibernation);
-+
- #ifdef CONFIG_PM_DEBUG
- static void hibernation_debug_sleep(void)
- {
-@@ -411,6 +419,7 @@ int hibernation_platform_enter(void)
- 	if (error)
- 		goto Close;
- 
-+	entering_platform_hibernation = true;
- 	suspend_console();
- 	error = device_suspend(PMSG_HIBERNATE);
- 	if (error) {
-@@ -445,6 +454,7 @@ int hibernation_platform_enter(void)
-  Finish:
- 	hibernation_ops->finish();
-  Resume_devices:
-+	entering_platform_hibernation = false;
- 	device_resume(PMSG_RESTORE);
- 	resume_console();
-  Close:
+> drivers/media/video/v4l2-common.c: In function ‘v4l2_i2c_attach’:
+> drivers/media/video/v4l2-common.c:875: attention : ‘i2c_attach_client’ 
+> is deprecated (declared at include/linux/i2c.h:434)
+
+> drivers/uwb/i1480/i1480-est.c:94: attention : ‘i1480_est_id_table’ 
+> defined but not used
+
+> drivers/uwb/wlp/messages.c: In function ‘wlp_parse_f0’:
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[15]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[14]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[13]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[12]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[11]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[10]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[9]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[8]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[7]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[6]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[5]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[4]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[3]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘enonce.data[2]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[15]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[14]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[13]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[12]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[11]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[10]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[9]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[8]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[7]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[6]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[5]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[4]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[3]’ may be 
+> used uninitialized in this function
+> drivers/uwb/wlp/messages.c:906: attention : ‘rnonce.data[2]’ may be 
+> used uninitialized in this function
+
+> drivers/uwb/whc-rc.c:451: attention : ‘whcrc_id_table’ defined but not 
+> used
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/mtd/inftl-user.h:61: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/mtd/jffs2-user.h:20: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm-generic/fcntl.h:127: 
+> leaks CONFIG_64BIT to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm-generic/fcntl.h:149: 
+> leaks CONFIG_64BIT to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/can/bcm.h:29: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/audio.h:133: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/dmx.h:27: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/dmx.h:90: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/video/edid.h:4: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/sound/hdsp.h:33: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/video/sisfb.h:25: include 
+> of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/video/sisfb.h:78: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/video/uvesafb.h:5: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/frontend.h:29: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/frontend.h:76: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/net.h:27: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/net.h:31: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/video.h:29: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dvb/video.h:102: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/netfilter/xt_conntrack.h:40: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nfsd/export.h:13: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nfsd/nfsfh.h:17: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nfsd/nfsfh.h:28: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nfsd/stats.h:32: 
+> leaks CONFIG_NFSD to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nfsd/syscall.h:12: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/raid/md_p.h:85: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nfsd/syscall.h:104: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/spi/spidev.h:83: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/tc_act/tc_gact.h:19: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/tc_act/tc_mirred.h:16: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/tc_act/tc_pedit.h:19: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/tc_ematch/tc_em_cmp.h:8: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/tc_ematch/tc_em_meta.h:18: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/tc_ematch/tc_em_nbyte.h:8: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/tc_ematch/tc_em_text.h:11: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/usb/cdc.h:50: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/acct.h:62: leaks 
+> CONFIG_M68K to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/aio_abi.h:58: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/atalk.h:15: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/atmbr2684.h:88: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/usb/gadgetfs.h:21: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/atmdev.h:103: leaks 
+> CONFIG_COMPAT to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/auto_fs4.h:132: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/bfs_fs.h:24: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/blktrace_api.h:96: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/capability.h:72: 
+> leaks CONFIG_SECURITY to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/capability.h:73: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/cdrom.h:155: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/cgroupstats.h:31: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/cm4000_cs.h:22: 
+> leaks CONFIG_COMPAT to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/coda_psdev.h:90: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dlm_plock.h:25: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/dn.h:75: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/edd.h:70: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/efs_fs_sb.h:49: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/elf-fdpic.h:61: 
+> leaks CONFIG_MMU to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/elf-fdpic.h:62: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/elf.h:379: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/elf.h:387: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/elf.h:401: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/elf.h:402: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/elfcore.h:59: leaks 
+> CONFIG_BINFMT to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/errqueue.h:6: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/fb.h:381: leaks 
+> CONFIG_FB to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/flat.h:16: leaks 
+> CONFIG_BINFMT to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/genetlink.h:12: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/gfs2_ondisk.h:109: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/hid.h:66: leaks 
+> CONFIG_HID to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/hid.h:69: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/hid.h:76: extern's 
+> make no sense in userspace
+
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/hiddev.h:40: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/icmpv6.h:8: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/if_addr.h:8: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/if_addrlabel.h:15: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/if_fc.h:37: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/if_hippi.h:82: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/if_link.h:9: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/if_ppp.h:96: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/if_strip.h:22: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/if_tr.h:37: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/igmp.h:31: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/in6.h:47: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/in6.h:49: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/inet_diag.h:16: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/ip6_tunnel.h:21: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/ipv6.h:26: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/ipv6_route.h:42: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/ipx.h:13: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/irda.h:127: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kernel.h:39: leaks 
+> CONFIG_NUMA to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kernel.h:40: leaks 
+> CONFIG_NUMA to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kernel.h:46: leaks 
+> CONFIG_FTRACE to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kernel.h:47: leaks 
+> CONFIG_FTRACE to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kvm.h:61: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kvm.h:64: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kvm.h:387: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kvm.h:391: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/kvm.h:396: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/minix_fs.h:34: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/msdos_fs.h:100: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/neighbour.h:8: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nfs_idmap.h:55: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nubus.h:232: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nubus.h:296: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nubus.h:298: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/nubus.h:302: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/phonet.h:50: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/pkt_cls.h:122: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/pkt_cls.h:306: 
+> leaks CONFIG_NET to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/pkt_cls.h:307: 
+> leaks CONFIG_NET to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/pkt_sched.h:32: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/pktcdvd.h:36: leaks 
+> CONFIG_CDROM to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/ppp_defs.h:50: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/random.h:39: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/raw.h:16: leaks 
+> CONFIG_MAX to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:64: 
+> leaks CONFIG_REISERFS to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:81: 
+> leaks CONFIG_REISERFS to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:687: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:995: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:997: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1467: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1587: 
+> leaks CONFIG_QUOTA to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1760: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1764: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1766: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1769: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1771: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1805: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1908: 
+> leaks CONFIG_PROC to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1948: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1949: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1950: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1951: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1962: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1963: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/reiserfs_fs.h:1964: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/rtnetlink.h:328: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/signalfd.h:19: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/socket.h:27: leaks 
+> CONFIG_PROC to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/socket.h:29: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/socket.h:262: leaks 
+> CONFIG_COMPAT to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:33: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:34: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:35: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:36: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:37: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:39: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:40: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:41: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/sound.h:42: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1047: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1048: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1049: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1050: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1051: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1053: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1055: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1056: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1061: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1062: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1078: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/soundcard.h:1079: 
+> extern's make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/synclink.h:209: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/taskstats.h:44: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/types.h:114: leaks 
+> CONFIG_LBD to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/video_decoder.h:7: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/video_encoder.h:5: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/videodev.h:18: 
+> leaks CONFIG_VIDEO to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/videodev.h:53: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/videodev.h:313: 
+> leaks CONFIG_VIDEO to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/videodev2.h:1477: 
+> leaks CONFIG_VIDEO to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/virtio_blk.h:21: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/virtio_console.h:15: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/linux/virtio_net.h:28: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/boot.h:14: leaks 
+> CONFIG_PHYSICAL to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/boot.h:15: leaks 
+> CONFIG_PHYSICAL to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/boot.h:16: leaks 
+> CONFIG_PHYSICAL to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/boot.h:18: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/e820.h:13: leaks 
+> CONFIG_NODES to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/e820.h:27: leaks 
+> CONFIG_EFI to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/e820.h:44: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/kvm.h:9: include of 
+> <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/kvm.h:16: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/mce.h:7: include of 
+> <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/mce.h:29: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/mtrr.h:61: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/prctl.h:9: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/prctl.h:10: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/prctl.h:11: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/ptrace-abi.h:83: 
+> leaks CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/ptrace-abi.h:86: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/ptrace-abi.h:93: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/ptrace-abi.h:143: 
+> leaks CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/setup.h:15: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/setup.h:16: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/setup.h:17: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/setup.h:23: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/setup.h:24: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/setup.h:51: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/setup.h:52: extern's 
+> make no sense in userspace
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/setup.h:54: leaks 
+> CONFIG_PARAVIRT to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/sigcontext.h:5: 
+> include of <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/sigcontext.h:24: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/sigcontext32.h:20: 
+> found __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/swab.h:4: include of 
+> <linux/types.h> is preferred over <asm/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/swab.h:7: found 
+> __[us]{8,16,32,64} type without #include <linux/types.h>
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/swab.h:10: leaks 
+> CONFIG_X86 to userspace where it is not valid
+
+> /var/tmp/kernel/linux-2.6.29-rc2/usr/include/asm/swab.h:40: leaks 
+> CONFIG_X86 to userspace where it is not valid
+I found this patches series in LKML for some of these warnings :
+http://lkml.org/lkml/2008/11/28/206
+
+but they seem not ready to be pulled in mainline.
+
+
+
+Regards.
+
