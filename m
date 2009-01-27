@@ -1,57 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbZA0CX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZA0CZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753789AbZA0CX5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 21:23:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZA0CXr
+	id S1755612AbZA0CZV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 21:25:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZA0CZE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 21:23:47 -0500
-Received: from rv-out-0506.google.com ([209.85.198.234]:16692 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751977AbZA0CXq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 21:23:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=SGAGcLQR3wUMt6tvaO3qT9uaOLGVOle9/ZkoM1K8r3eO1sjKTExuMiy22UK6uFdWUW
-         E5hxLf20VW+2GjM+iwqAUWsxF/zsg5f00e/70e5cqfaK0735QkNh4j939T1n5SwF9g7Z
-         yDMXlsjiXEy/MUpc1eIslXpkMHp+rQ1ZUGh5E=
+	Mon, 26 Jan 2009 21:25:04 -0500
+Received: from hera.kernel.org ([140.211.167.34]:47595 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751977AbZA0CZC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 21:25:02 -0500
+Message-ID: <497E705B.5000302@kernel.org>
+Date: Tue, 27 Jan 2009 11:24:27 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <1232992272.19862.3.camel@londonpacket.bos.redhat.com>
-References: <1232751312.3990.59.camel@perihelion.bos.jonmasters.org>
-	 <20090125225205.GA3783@monkey.beaverton.ibm.com>
-	 <1232992272.19862.3.camel@londonpacket.bos.redhat.com>
-Date: Mon, 26 Jan 2009 21:23:45 -0500
-X-Google-Sender-Auth: fc53f2d314709d6d
-Message-ID: <75b66ecd0901261823o72339347kfa70d6e54f61af00@mail.gmail.com>
-Subject: Re: [RT] [RFC] simple SMI detector
-From: Lee Revell <rlrevell@joe-job.com>
-To: Jon Masters <jcm@redhat.com>
-Cc: Mike Kravetz <kravetz@us.ibm.com>, linux-rt-users@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, williams <williams@redhat.com>,
-       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
+       akpm@linux-foundation.org, hpa@zytor.com, brgerst@gmail.com,
+       ebiederm@xmission.com, cl@linux-foundation.org, travis@sgi.com,
+       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+References: <20090115183942.GA6325@elte.hu> <200901201328.24605.rusty@rustcorp.com.au> <49756E6E.2060409@kernel.org> <200901271213.18605.rusty@rustcorp.com.au>
+In-Reply-To: <200901271213.18605.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 27 Jan 2009 02:24:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 12:51 PM, Jon Masters <jcm@redhat.com> wrote:
-> On Sun, 2009-01-25 at 14:52 -0800, Mike Kravetz wrote:
->
->> Any reason why you could not do SMI detection in user level code running
->> at the highest RT priority?
->
-> Yeah. I had some suggestions about that already...the problem with that
-> is that you can't know whether measured latencies are due to SMIs /or/
-> other kernel latencies - maybe there's a bug or other problem? I really
-> want to be able to say to vendors "nope, it's definitely your problem".
+Hello, Rusty.
 
-Can't you do this with a known good version of the -rt kernel and the
-latency tracer in full RT preempt mode?  SMI induced latency will show
-up in the trace as long delays in random code paths where kernel
-induced latency can be ruled out.
+Rusty Russell wrote:
 
-Lee
+>> No, they're not. They're preempt safe as mentioned in the comment
+>> and is basically just generalization of the original x86 versions
+>> used by x86_64 on SMP before pda and percpu areas were merged. I
+>> agree that it's something very close to local_t and it would be
+>> nice to see those somehow unified (and I have patches which make
+>> use of local_t in my queue waiting for dynamic percpu allocation).
+> 
+> Yes, which is one reason I dislike Ingo's patch:
+> 1) Mine did just read because that covers the most common fast-path use
+> and is easily atomic for word-sizes on all archs,
+> 2) Didn't replace x86, just #defined generic one, so much less churn,
+> 3) read_percpu_var and read_percpu_ptr variants following the convention
+> reinforced by my other patches.
+>
+> Linus' tree had read/write/add/or counts at 22/13/0/0. Yours has
+> more write usage, so I'm happy there, but still only one add and one
+> or. If we assume that generic code will look a bit like that when
+> converted, I'm not convinced that generic and/or/etc ops are worth
+> it.
+
+There actually were quite some places where atomic add ops would be
+useful, especially the places where statistics are collected.  For
+logical bitops, I don't think we'll have too many of them.
+
+> If they are worth doing generically, should the ops be atomic? To
+> extrapolate from x86 usages again, it seems to be happy with
+> non-atomic (tho of course it is atomic on x86).
+
+If atomic rw/add/sub are implementible on most archs (and judging from
+local_t, I suppose it is), I think it should.  So that it can replace
+local_t and we won't need something else again in the future.
+
+>> Another question to ask is whether to keep using separate
+>> interfaces for static and dynamic percpu variables or migrate to
+>> something which can take both.
+>
+> Well, IA64 can do stuff with static percpus that it can't do with
+> dynamic (assuming we get expanding dynamic percpu areas
+> later). That's because they use TLB tricks for a static 64k per-cpu
+> area, but this doesn't scale.  That might not be vital: abandoning
+> that trick will mean they can't optimise read_percpu/read_percpu_var
+> etc as much.
+
+Isn't something like the following possible?
+
+#define pcpu_read(ptr)						\
+({								\
+	if (__builtin_constant_p(ptr) &&			\
+	    ptr >= PCPU_STATIC_START && ptr < PCPU_STATIC_END)	\
+		do 64k TLB trick for static pcpu;		\
+	else							\
+		do generic stuff;				\
+})
+
+> Tejun, any chance of you updating the tj-percpu tree? My current
+> patches are against Linus's tree, and rebasing them on yours
+> involves some icky merging.
+
+If Ingo is okay with it, I'm fine with it too.  Unless Ingo objects,
+I'll do it tomorrow-ish (still big holiday here).
+
+Thanks.
+
+-- 
+tejun
