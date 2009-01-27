@@ -1,86 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbZA0UHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757004AbZA0UIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbZA0UHQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 15:07:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZA0UHE
+	id S1757004AbZA0UIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 15:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755784AbZA0UIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 15:07:04 -0500
-Received: from mga02.intel.com ([134.134.136.20]:31173 "EHLO mga02.intel.com"
+	Tue, 27 Jan 2009 15:08:09 -0500
+Received: from mga11.intel.com ([192.55.52.93]:26878 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753991AbZA0UHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 15:07:03 -0500
+	id S1753991AbZA0UII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 15:08:08 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.37,334,1231142400"; 
-   d="scan'208";a="381866253"
-Message-ID: <497F6963.6060701@intel.com>
-Date: Tue, 27 Jan 2009 12:06:59 -0800
+   d="scan'208";a="660573439"
+Message-ID: <497F69A4.2070007@intel.com>
+Date: Tue, 27 Jan 2009 12:08:04 -0800
 From: "Kok, Auke" <auke-jan.h.kok@intel.com>
 User-Agent: Thunderbird 2.0.0.17 (X11/20081103)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 CC: powertop ml <power@bughost.org>, Arjan van de Ven <arjan@linux.intel.com>,
        Ingo Molnar <mingo@elte.hu>, srostedt@redhat.com
-Subject: [ANNOUNCE] sreadahead-1.0
+Subject: [PATCH] tracer for sys_open() - sreadahead
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 27 Jan 2009 20:07:00.0097 (UTC) FILETIME=[D0229710:01C980BA]
+X-OriginalArrivalTime: 27 Jan 2009 20:08:04.0919 (UTC) FILETIME=[F6C5A470:01C980BA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-All,
+This tracer monitors regular file open() syscalls. This is a fast
+and low-overhead alternative to strace, and does not allow or
+require to be attached to every process.
 
-we're happy to announce a major rewrite of sreadahead, and the release of version
-1.0. This is a significant improvement in the way sreadahead works:
+The tracer only logs succesfull calls, as those are the only ones we
+are currently interested in, and we can determine the absolute path
+of these files as we log.
 
-* sreadahead now will work on any filesystem;
-
-  Sreadahead used to use an ioctl to retreive inserted timestamps from ext3
-  inodes. This patch is now replaced with a generic open() syscall tracer,
-  which will work on all filesystems.
-
-* pack file generation is now integrated entirely in a single binary, and
-  automatically done if the pack file is missing;
-
-  Sreadahead is now a single-binary two-purpose program that either reads in
-  the content needed, or generates this content. This reduces the chance that
-  sreadahead is called incorrectly, but also makes installation a lot easier.
-  Sreadahead can now be added to the boot system by inserting a single line
-  in a startup script.
-
-* pack file generation is now significantly faster than the old method;
-
-  Sreadahead now uses a kernel tracer which provides with a sort-by-use list of
-  all files opened. This removes the need for a special script to discover
-  which files were opened at boot. This list is sorted and filtered in C
-  code inside sreadahead which proves much faster. The old method took
-  multiple seconds. New method sorts/filters 10k+ open trace calls in 0.16s
-  on a regular desktop.
-
-* sreadahead now accounts for kernel read_ahead_kb, reducing data read
-  at boot time;
-
-  While sreadahead reads "used" data into memory, the kernel reports more
-  memory in use than actually used due to the in-kernel readahead function.
-  In order to read significantly less data, sreadahead temporarily reduces
-  this amount, saving significant amount of total IO time. This saves as
-  much as 8 out of 64Mb on a regular fedora core installation.
+Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
 
 
-Sreadahead still depends on a kernel patch (posted in a followup). This patch
-implements a global kernel tracer for sys_open() syscalls. The choice was made to
-use this method since userland tracing is slow, cumbersome (have to attach to
-every process running), and hard to implement for system-wide tracing (we don't
-care about which process is doing something). A kernel tracer is extremely
-efficient and added bonus is that we can leave the trace in memory until we
-actually need to process it.
+diff --git a/fs/open.c b/fs/open.c
+index a3a78ce..8cf2a6b 100644
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -30,6 +30,10 @@
+ #include <linux/audit.h>
+ #include <linux/falloc.h>
 
-sreadahead-1.0 can be downloaded from it's google code project page here:
++#include <trace/fs.h>
++
++DEFINE_TRACE(do_sys_open);
++
+ int vfs_statfs(struct dentry *dentry, struct kstatfs *buf)
+ {
+        int retval = -ENODEV;
+@@ -1040,6 +1044,7 @@ long do_sys_open(int dfd, const char __user *filename, int
+flags, int mode)
+                                fsnotify_open(f->f_path.dentry);
+                                fd_install(fd, f);
+                        }
++                       trace_do_sys_open(f, flags, mode, fd);
+                }
+                putname(tmp);
+        }
+diff --git a/include/trace/fs.h b/include/trace/fs.h
+new file mode 100644
+index 0000000..870eec2
+--- /dev/null
++++ b/include/trace/fs.h
+@@ -0,0 +1,11 @@
++#ifndef _TRACE_FS_H
++#define _TRACE_FS_H
++
++#include <linux/fs.h>
++#include <linux/tracepoint.h>
++
++DECLARE_TRACE(do_sys_open,
++       TPPROTO(struct file *filp, int flags, int mode, long fd),
++               TPARGS(filp, flags, mode, fd));
++
++#endif
+diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
+index e2a4ff6..0400815 100644
+--- a/kernel/trace/Kconfig
++++ b/kernel/trace/Kconfig
+@@ -149,6 +149,15 @@ config CONTEXT_SWITCH_TRACER
+          This tracer gets called from the context switch and records
+          all switching of tasks.
 
-  http://sreadahead.googlecode.com/
++config OPEN_CLOSE_TRACER
++       bool "Trace open() calls"
++       depends on DEBUG_KERNEL
++       select TRACING
++       select MARKERS
++       help
++         This tracer records open() syscalls. These calls are made when
++         files are accessed on disk.
++
+ config BOOT_TRACER
+        bool "Trace boot initcalls"
+        depends on DEBUG_KERNEL
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index 349d5a9..25cec6c 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
 
+ obj-$(CONFIG_TRACING) += trace.o
+ obj-$(CONFIG_CONTEXT_SWITCH_TRACER) += trace_sched_switch.o
++obj-$(CONFIG_OPEN_CLOSE_TRACER) += trace_open_close.o
+ obj-$(CONFIG_SYSPROF_TRACER) += trace_sysprof.o
+ obj-$(CONFIG_FUNCTION_TRACER) += trace_functions.o
+ obj-$(CONFIG_IRQSOFF_TRACER) += trace_irqsoff.o
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 4d3d381..24c17d2 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -30,6 +30,7 @@ enum trace_type {
+        TRACE_USER_STACK,
+        TRACE_HW_BRANCHES,
+        TRACE_POWER,
++       TRACE_OPEN,
 
-Regards,
-
-Auke
+        __TRACE_LAST_TYPE
+ };
+diff --git a/kernel/trace/trace_open_close.c b/kernel/trace/trace_open_close.c
+new file mode 100644
+index 0000000..4250efc
+--- /dev/null
++++ b/kernel/trace/trace_open_close.c
+@@ -0,0 +1,148 @@
++/*
++ * trace open calls
++ * Copyright (C) 2009 Intel Corporation
++ *
++ * Based extensively on trace_sched_switch.c
++ * Copyright (C) 2007 Steven Rostedt <srostedt@redhat.com>
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/fs.h>
++#include <linux/debugfs.h>
++#include <linux/kallsyms.h>
++#include <linux/uaccess.h>
++#include <linux/ftrace.h>
++#include <trace/fs.h>
++
++#include "trace.h"
++
++
++static struct trace_array      *ctx_trace;
++static int __read_mostly       open_trace_enabled;
++static atomic_t                        open_ref;
++
++static void probe_do_sys_open(struct file *filp, int flags, int mode, long fd)
++{
++       char *buf;
++       char *fname;
++
++       if (!atomic_read(&open_ref))
++               return;
++
++       if (!open_trace_enabled)
++               return;
++
++       buf = kzalloc(PAGE_SIZE, GFP_KERNEL);
++       if (!buf)
++               return;
++       fname = d_path(&filp->f_path, buf, PAGE_SIZE);
++
++       if (IS_ERR(fname))
++               goto out;
++
++       ftrace_printk("%s: open(\"%s\", %d, %d) = %ld\n",
++               current->comm, fname, flags, mode, fd);
++out:
++       kfree(buf);
++}
++
++static void open_trace_reset(struct trace_array *tr)
++{
++       tr->time_start = ftrace_now(tr->cpu);
++       tracing_reset_online_cpus(tr);
++}
++
++static int open_trace_register(void)
++{
++       int ret;
++
++       ret = register_trace_do_sys_open(probe_do_sys_open);
++       if (ret) {
++               pr_info("open trace: Could not activate tracepoint"
++                       " probe to do_open\n");
++       }
++
++       return ret;
++}
++
++static void open_trace_unregister(void)
++{
++       unregister_trace_do_sys_open(probe_do_sys_open);
++}
++
++static void open_trace_start(void)
++{
++       long ref;
++
++       ref = atomic_inc_return(&open_ref);
++       if (ref == 1)
++               open_trace_register();
++}
++
++static void open_trace_stop(void)
++{
++       long ref;
++
++       ref = atomic_dec_and_test(&open_ref);
++       if (ref)
++               open_trace_unregister();
++}
++
++void open_trace_start_cmdline_record(void)
++{
++       open_trace_start();
++}
++
++void open_trace_stop_cmdline_record(void)
++{
++       open_trace_stop();
++}
++
++static void open_start_trace(struct trace_array *tr)
++{
++       open_trace_reset(tr);
++       open_trace_start_cmdline_record();
++       open_trace_enabled = 1;
++}
++
++static void open_stop_trace(struct trace_array *tr)
++{
++       open_trace_enabled = 0;
++       open_trace_stop_cmdline_record();
++}
++
++static int open_trace_init(struct trace_array *tr)
++{
++       ctx_trace = tr;
++
++       open_start_trace(tr);
++       return 0;
++}
++
++static void reset_open_trace(struct trace_array *tr)
++{
++       open_stop_trace(tr);
++}
++
++static struct tracer open_trace __read_mostly =
++{
++       .name           = "open",
++       .init           = open_trace_init,
++       .reset          = reset_open_trace,
++};
++
++__init static int init_open_trace(void)
++{
++       int ret = 0;
++
++       if (atomic_read(&open_ref))
++               ret = open_trace_register();
++       if (ret) {
++               pr_info("error registering open trace\n");
++               return ret;
++       }
++       return register_tracer(&open_trace);
++}
++device_initcall(init_open_trace);
++
