@@ -1,212 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbZA0Uzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZA0U7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755759AbZA0Uzd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 15:55:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZA0UzD
+	id S1754820AbZA0U7Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 15:59:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZA0U7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 15:55:03 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:44229 "EHLO
+	Tue, 27 Jan 2009 15:59:17 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:40468 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755501AbZA0UzA (ORCPT
+	with ESMTP id S1751492AbZA0U7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 15:55:00 -0500
+	Tue, 27 Jan 2009 15:59:16 -0500
 X-AuthUser: davidel@xmailserver.org
-Date: Tue, 27 Jan 2009 12:54:58 -0800 (PST)
+Date: Tue, 27 Jan 2009 12:59:14 -0800 (PST)
 From: Davide Libenzi <davidel@xmailserver.org>
 X-X-Sender: davide@alien.or.mcafeemobile.com
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2/2] epoll remove debugging code
-Message-ID: <alpine.DEB.1.10.0901271253010.20262@alien.or.mcafeemobile.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Pavel Pisa <pisa@cmp.felk.cvut.cz>
+Subject: Re: [patch 1/2] epoll fix own poll()
+In-Reply-To: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com>
+Message-ID: <alpine.DEB.1.10.0901271257240.20262@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
 X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: MULTIPART/MIXED; BOUNDARY="1795850513-728520103-1233089955=:20262"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-This patch remove debugging code from epoll. There's no need for it to be
-included into mainline code.
+--1795850513-728520103-1233089955=:20262
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 
+On Tue, 27 Jan 2009, Davide Libenzi wrote:
 
+> 
+> The follwing patch fixes a bug inside the epoll's f_op->poll() code, that
+> returns POLLIN even though there are no actual ready monitored fds.
+> The bug shows up if you add an epoll fd inside another fd container (poll,
+> select, epoll).
+> The problem is that callback-based wake ups used by epoll, does not carry
+> (patches will follow, to fix this) any information about the events
+> that actually happened. So the callback code, since it can't call the file*
+> ->poll() inside the callback, chains the file* into a ready-list. So, suppose
+> you added an fd with EPOLLOUT only, and some data shows up on the fd, the
+> file* mapped by the fd will be added into the ready-list (via wakeup
+> callback). During normal epoll_wait() use, this condition is sorted out
+> at the time we're actually able to call the file*'s f_op->poll().
+> Inside the old epoll's f_op->poll() though, only a quick check
+> !list_empty(ready-list) was performed, and this could have led to reporting
+> POLLIN even though no ready fds would show up at a following epoll_wait().
+> In order to correctly report the ready status for an epoll fd, the ready-list
+> must be checked to see if any really available fd+event would be ready in
+> a following epoll_wait().
+> Operation (calling f_op->poll() from inside f_op->poll()) that, like wake ups,
+> must be handled with care because of the fact that epoll fds can be added
+> to other epoll fds.
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+Forgot to include the test program that can be used to check for correct 
+event reporting, and long-chains/loop trimming code.
+
 
 
 - Davide
 
 
----
- fs/eventpoll.c |   60 +++------------------------------------------------------
- 1 file changed, 4 insertions(+), 56 deletions(-)
+--1795850513-728520103-1233089955=:20262
+Content-Type: TEXT/x-csrc; name=epoll_test.c
+Content-Transfer-Encoding: BASE64
+Content-Description: 
+Content-Disposition: attachment; filename=epoll_test.c
 
-Index: linux-2.6.mod/fs/eventpoll.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventpoll.c	2009-01-26 23:13:28.000000000 -0800
-+++ linux-2.6.mod/fs/eventpoll.c	2009-01-26 23:13:31.000000000 -0800
-@@ -71,24 +71,6 @@
-  * a better scalability.
-  */
- 
--#define DEBUG_EPOLL 0
--
--#if DEBUG_EPOLL > 0
--#define DPRINTK(x) printk x
--#define DNPRINTK(n, x) do { if ((n) <= DEBUG_EPOLL) printk x; } while (0)
--#else /* #if DEBUG_EPOLL > 0 */
--#define DPRINTK(x) (void) 0
--#define DNPRINTK(n, x) (void) 0
--#endif /* #if DEBUG_EPOLL > 0 */
--
--#define DEBUG_EPI 0
--
--#if DEBUG_EPI != 0
--#define EPI_SLAB_DEBUG (SLAB_DEBUG_FREE | SLAB_RED_ZONE /* | SLAB_POISON */)
--#else /* #if DEBUG_EPI != 0 */
--#define EPI_SLAB_DEBUG 0
--#endif /* #if DEBUG_EPI != 0 */
--
- /* Epoll private bits inside the event mask */
- #define EP_PRIVATE_BITS (EPOLLONESHOT | EPOLLET)
- 
-@@ -580,9 +562,6 @@
- 
- 	atomic_dec(&ep->user->epoll_watches);
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_remove(%p, %p)\n",
--		     current, ep, file));
--
- 	return 0;
- }
- 
-@@ -634,12 +613,9 @@
- 
- static int ep_eventpoll_release(struct inode *inode, struct file *file)
- {
--	struct eventpoll *ep = file->private_data;
--
--	if (ep)
--		ep_free(ep);
-+	if (file->private_data)
-+		ep_free((struct eventpoll *) file->private_data);
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: close() ep=%p\n", current, ep));
- 	return 0;
- }
- 
-@@ -764,8 +740,6 @@
- 
- 	*pep = ep;
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_alloc() ep=%p\n",
--		     current, ep));
- 	return 0;
- 
- free_uid:
-@@ -799,9 +773,6 @@
- 		}
- 	}
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_find(%p) -> %p\n",
--		     current, file, epir));
--
- 	return epir;
- }
- 
-@@ -817,9 +788,6 @@
- 	struct epitem *epi = ep_item_from_wait(wait);
- 	struct eventpoll *ep = epi->ep;
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: poll_callback(%p) epi=%p ep=%p\n",
--		     current, epi->ffd.file, epi, ep));
--
- 	spin_lock_irqsave(&ep->lock, flags);
- 
- 	/*
-@@ -991,9 +959,6 @@
- 	if (pwake)
- 		ep_poll_safewake(&ep->poll_wait);
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: ep_insert(%p, %p, %d)\n",
--		     current, ep, tfile, fd));
--
- 	return 0;
- 
- error_unregister:
-@@ -1213,9 +1178,6 @@
- 	/* Check the EPOLL_* constant for consistency.  */
- 	BUILD_BUG_ON(EPOLL_CLOEXEC != O_CLOEXEC);
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d)\n",
--		     current, flags));
--
- 	error = -EINVAL;
- 	if (flags & ~EPOLL_CLOEXEC)
- 		goto error_return;
-@@ -1239,8 +1201,6 @@
- 		atomic_inc(&ep->user->epoll_devs);
- 
- error_return:
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d) = %d\n",
--		     current, flags, error));
- 
- 	return error;
- }
-@@ -1267,9 +1227,6 @@
- 	struct epitem *epi;
- 	struct epoll_event epds;
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_ctl(%d, %d, %d, %p)\n",
--		     current, epfd, op, fd, event));
--
- 	error = -EFAULT;
- 	if (ep_op_has_event(op) &&
- 	    copy_from_user(&epds, event, sizeof(struct epoll_event)))
-@@ -1346,8 +1303,6 @@
- error_fput:
- 	fput(file);
- error_return:
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_ctl(%d, %d, %d, %p) = %d\n",
--		     current, epfd, op, fd, event, error));
- 
- 	return error;
- }
-@@ -1363,9 +1318,6 @@
- 	struct file *file;
- 	struct eventpoll *ep;
- 
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_wait(%d, %p, %d, %d)\n",
--		     current, epfd, events, maxevents, timeout));
--
- 	/* The maximum number of event must be greater than zero */
- 	if (maxevents <= 0 || maxevents > EP_MAX_EVENTS)
- 		return -EINVAL;
-@@ -1402,8 +1354,6 @@
- error_fput:
- 	fput(file);
- error_return:
--	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_wait(%d, %p, %d, %d) = %d\n",
--		     current, epfd, events, maxevents, timeout, error));
- 
- 	return error;
- }
-@@ -1473,13 +1423,11 @@
- 
- 	/* Allocates slab cache used to allocate "struct epitem" items */
- 	epi_cache = kmem_cache_create("eventpoll_epi", sizeof(struct epitem),
--			0, SLAB_HWCACHE_ALIGN|EPI_SLAB_DEBUG|SLAB_PANIC,
--			NULL);
-+			0, SLAB_HWCACHE_ALIGN | SLAB_PANIC, NULL);
- 
- 	/* Allocates slab cache used to allocate "struct eppoll_entry" */
- 	pwq_cache = kmem_cache_create("eventpoll_pwq",
--			sizeof(struct eppoll_entry), 0,
--			EPI_SLAB_DEBUG|SLAB_PANIC, NULL);
-+			sizeof(struct eppoll_entry), 0, SLAB_PANIC, NULL);
- 
- 	return 0;
- }
+LyoNCiAqICBlcG9sbF90ZXN0IGJ5IERhdmlkZSBMaWJlbnppIChTaW1wbGUg
+Y29kZSB0byB0ZXN0IGVwb2xsIGludGVybmFscykNCiAqICBDb3B5cmlnaHQg
+KEMpIDIwMDggIERhdmlkZSBMaWJlbnppDQogKg0KICogIFRoaXMgcHJvZ3Jh
+bSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBh
+bmQvb3IgbW9kaWZ5DQogKiAgaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBH
+TlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhcyBwdWJsaXNoZWQgYnkNCiAq
+ICB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyBlaXRoZXIgdmVyc2lv
+biAyIG9mIHRoZSBMaWNlbnNlLCBvcg0KICogIChhdCB5b3VyIG9wdGlvbikg
+YW55IGxhdGVyIHZlcnNpb24uDQogKg0KICogIFRoaXMgcHJvZ3JhbSBpcyBk
+aXN0cmlidXRlZCBpbiB0aGUgaG9wZSB0aGF0IGl0IHdpbGwgYmUgdXNlZnVs
+LA0KICogIGJ1dCBXSVRIT1VUIEFOWSBXQVJSQU5UWTsgd2l0aG91dCBldmVu
+IHRoZSBpbXBsaWVkIHdhcnJhbnR5IG9mDQogKiAgTUVSQ0hBTlRBQklMSVRZ
+IG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgU2VlIHRo
+ZQ0KICogIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGZvciBtb3JlIGRl
+dGFpbHMuDQogKg0KICogIFlvdSBzaG91bGQgaGF2ZSByZWNlaXZlZCBhIGNv
+cHkgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlDQogKiAgYWxv
+bmcgd2l0aCB0aGlzIHByb2dyYW07IGlmIG5vdCwgd3JpdGUgdG8gdGhlIEZy
+ZWUgU29mdHdhcmUNCiAqICBGb3VuZGF0aW9uLCBJbmMuLCA1OSBUZW1wbGUg
+UGxhY2UsIFN1aXRlIDMzMCwgQm9zdG9uLCBNQSAgMDIxMTEtMTMwNyAgVVNB
+DQogKg0KICogIERhdmlkZSBMaWJlbnppIDxkYXZpZGVsQHhtYWlsc2VydmVy
+Lm9yZz4NCiAqDQogKi8NCg0KI2luY2x1ZGUgPHN5cy90eXBlcy5oPg0KI2lu
+Y2x1ZGUgPHVuaXN0ZC5oPg0KI2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5jbHVk
+ZSA8c3RkbGliLmg+DQojaW5jbHVkZSA8c3RyaW5nLmg+DQojaW5jbHVkZSA8
+ZXJybm8uaD4NCiNpbmNsdWRlIDxzaWduYWwuaD4NCiNpbmNsdWRlIDxsaW1p
+dHMuaD4NCiNpbmNsdWRlIDxwb2xsLmg+DQojaW5jbHVkZSA8c3lzL2Vwb2xs
+Lmg+DQojaW5jbHVkZSA8c3lzL3dhaXQuaD4NCg0KI2RlZmluZSBFUFdBSVRf
+VElNRU8JKDEgKiAxMDAwKQ0KI2lmbmRlZiBQT0xMUkRIVVANCiNkZWZpbmUg
+UE9MTFJESFVQIDB4MjAwMA0KI2VuZGlmDQoNCiNkZWZpbmUgRVBPTExfTUFY
+X0NIQUlOCTEwMEwNCg0KI2RlZmluZSBFUE9MTF9URl9MT09QICgxIDw8IDAp
+DQoNCnN0cnVjdCBlcG9sbF90ZXN0X2NmZyB7DQoJbG9uZyBzaXplOw0KCWxv
+bmcgZmxhZ3M7DQp9Ow0KDQpzdGF0aWMgaW50IHhlcG9sbF9jcmVhdGUoaW50
+IG4pIHsNCglpbnQgZXBmZDsNCg0KCWlmICgoZXBmZCA9IGVwb2xsX2NyZWF0
+ZShuKSkgPT0gLTEpIHsNCgkJcGVycm9yKCJlcG9sbF9jcmVhdGUiKTsNCgkJ
+ZXhpdCgyKTsNCgl9DQoNCglyZXR1cm4gZXBmZDsNCn0NCg0Kc3RhdGljIHZv
+aWQgeGVwb2xsX2N0bChpbnQgZXBmZCwgaW50IGNtZCwgaW50IGZkLCBzdHJ1
+Y3QgZXBvbGxfZXZlbnQgKmV2dCkgew0KCWlmIChlcG9sbF9jdGwoZXBmZCwg
+Y21kLCBmZCwgZXZ0KSA8IDApIHsNCgkJcGVycm9yKCJlcG9sbF9jdGwiKTsN
+CgkJZXhpdCgzKTsNCgl9DQp9DQoNCnN0YXRpYyB2b2lkIHhwaXBlKGludCAq
+ZmRzKSB7DQoJaWYgKHBpcGUoZmRzKSkgew0KCQlwZXJyb3IoInBpcGUiKTsN
+CgkJZXhpdCg0KTsNCgl9DQp9DQoNCnN0YXRpYyBwaWRfdCB4Zm9yayh2b2lk
+KSB7DQoJcGlkX3QgcGlkOw0KDQoJaWYgKChwaWQgPSBmb3JrKCkpID09IChw
+aWRfdCkgLTEpIHsNCgkJcGVycm9yKCJwaXBlIik7DQoJCWV4aXQoNSk7DQoJ
+fQ0KDQoJcmV0dXJuIHBpZDsNCn0NCg0Kc3RhdGljIGludCBydW5fZm9ya2Vk
+X3Byb2MoaW50ICgqcHJvYykodm9pZCAqKSwgdm9pZCAqZGF0YSkgew0KCWlu
+dCBzdGF0dXM7DQoJcGlkX3QgcGlkOw0KDQoJaWYgKChwaWQgPSB4Zm9yaygp
+KSA9PSAwKQ0KCQlleGl0KCgqcHJvYykoZGF0YSkpOw0KCWlmICh3YWl0cGlk
+KHBpZCwgJnN0YXR1cywgMCkgIT0gcGlkKSB7DQoJCXBlcnJvcigid2FpdHBp
+ZCIpOw0KCQlyZXR1cm4gLTE7DQoJfQ0KDQoJcmV0dXJuIFdJRkVYSVRFRChz
+dGF0dXMpID8gV0VYSVRTVEFUVVMoc3RhdHVzKTogLTI7DQp9DQoNCnN0YXRp
+YyBpbnQgY2hlY2tfZXZlbnRzKGludCBmZCwgaW50IHRpbWVvKSB7DQoJc3Ry
+dWN0IHBvbGxmZCBwZmQ7DQoNCglmcHJpbnRmKHN0ZG91dCwgIkNoZWNraW5n
+IGV2ZW50cyBmb3IgZmQgJWRcbiIsIGZkKTsNCgltZW1zZXQoJnBmZCwgMCwg
+c2l6ZW9mKHBmZCkpOw0KCXBmZC5mZCA9IGZkOw0KCXBmZC5ldmVudHMgPSBQ
+T0xMSU4gfCBQT0xMT1VUOw0KCWlmIChwb2xsKCZwZmQsIDEsIHRpbWVvKSA8
+IDApIHsNCgkJcGVycm9yKCJwb2xsKCkiKTsNCgkJcmV0dXJuIDA7DQoJfQ0K
+CWlmIChwZmQucmV2ZW50cyAmIFBPTExJTikNCgkJZnByaW50ZihzdGRvdXQs
+ICJcdFBPTExJTlxuIik7DQoJaWYgKHBmZC5yZXZlbnRzICYgUE9MTE9VVCkN
+CgkJZnByaW50ZihzdGRvdXQsICJcdFBPTExPVVRcbiIpOw0KCWlmIChwZmQu
+cmV2ZW50cyAmIFBPTExFUlIpDQoJCWZwcmludGYoc3Rkb3V0LCAiXHRQT0xM
+RVJSXG4iKTsNCglpZiAocGZkLnJldmVudHMgJiBQT0xMSFVQKQ0KCQlmcHJp
+bnRmKHN0ZG91dCwgIlx0UE9MTEhVUFxuIik7DQoJaWYgKHBmZC5yZXZlbnRz
+ICYgUE9MTFJESFVQKQ0KCQlmcHJpbnRmKHN0ZG91dCwgIlx0UE9MTFJESFVQ
+XG4iKTsNCg0KCXJldHVybiBwZmQucmV2ZW50czsNCn0NCg0Kc3RhdGljIGlu
+dCBlcG9sbF90ZXN0X3R0eSh2b2lkICpkYXRhKSB7DQoJaW50IGVwZmQsIGlm
+ZCA9IGZpbGVubyhzdGRpbiksIHJlczsNCglzdHJ1Y3QgZXBvbGxfZXZlbnQg
+ZXZ0Ow0KDQoJaWYgKGNoZWNrX2V2ZW50cyhpZmQsIDApICE9IFBPTExPVVQp
+IHsNCgkJZnByaW50ZihzdGRlcnIsICJTb21ldGhpbmcgaXMgY29va2luZyBv
+biBTVERJTiAoJWQpXG4iLCBpZmQpOw0KCQlyZXR1cm4gMTsNCgl9DQoJZXBm
+ZCA9IHhlcG9sbF9jcmVhdGUoMSk7DQoJZnByaW50ZihzdGRvdXQsICJDcmVh
+dGVkIGVwb2xsIGZkICglZClcbiIsIGVwZmQpOw0KCW1lbXNldCgmZXZ0LCAw
+LCBzaXplb2YoZXZ0KSk7DQoJZXZ0LmV2ZW50cyA9IEVQT0xMSU47DQoJeGVw
+b2xsX2N0bChlcGZkLCBFUE9MTF9DVExfQURELCBpZmQsICZldnQpOw0KCWlm
+IChjaGVja19ldmVudHMoZXBmZCwgMCkgJiBQT0xMSU4pIHsNCgkJcmVzID0g
+ZXBvbGxfd2FpdChlcGZkLCAmZXZ0LCAxLCAwKTsNCgkJaWYgKHJlcyA9PSAw
+KSB7DQoJCQlmcHJpbnRmKHN0ZGVyciwgIkVwb2xsIGZkICglZCkgaXMgcmVh
+ZHkgd2hlbiBpdCBzaG91bGRuJ3QhXG4iLA0KCQkJCWVwZmQpOw0KCQkJcmV0
+dXJuIDI7DQoJCX0NCgl9DQoNCglyZXR1cm4gMDsNCn0NCg0Kc3RhdGljIGlu
+dCBlcG9sbF93YWtldXBfY2hhaW4odm9pZCAqZGF0YSkgew0KCXN0cnVjdCBl
+cG9sbF90ZXN0X2NmZyAqdGNmZyA9IGRhdGE7DQoJaW50IGksIHJlcywgZXBm
+ZCwgYmZkLCBuZmQsIHBmZHNbMl07DQoJcGlkX3QgcGlkOw0KCXN0cnVjdCBl
+cG9sbF9ldmVudCBldnQ7DQoNCgltZW1zZXQoJmV2dCwgMCwgc2l6ZW9mKGV2
+dCkpOw0KCWV2dC5ldmVudHMgPSBFUE9MTElOOw0KDQoJZXBmZCA9IGJmZCA9
+IHhlcG9sbF9jcmVhdGUoMSk7DQoNCglmb3IgKGkgPSAwOyBpIDwgdGNmZy0+
+c2l6ZTsgaSsrKSB7DQoJCW5mZCA9IHhlcG9sbF9jcmVhdGUoMSk7DQoJCXhl
+cG9sbF9jdGwoYmZkLCBFUE9MTF9DVExfQURELCBuZmQsICZldnQpOw0KCQli
+ZmQgPSBuZmQ7DQoJfQ0KCXhwaXBlKHBmZHMpOw0KCWlmICh0Y2ZnLT5mbGFn
+cyAmIEVQT0xMX1RGX0xPT1ApDQoJew0KCQl4ZXBvbGxfY3RsKGJmZCwgRVBP
+TExfQ1RMX0FERCwgZXBmZCwgJmV2dCk7DQoJCS8qDQoJCSAqIElmIHdlJ3Jl
+IHRlc3RpbmcgZm9yIGxvb3AsIHdlIHdhbnQgdGhhdCB0aGUgd2FrZXVwDQoJ
+CSAqIHRyaWdnZXJlZCBieSB0aGUgd3JpdGUgdG8gdGhlIHBpcGUgZG9uZSBp
+biB0aGUgY2hpbGQNCgkJICogcHJvY2VzcywgdHJpZ2dlcnMgYSBmYWtlIGV2
+ZW50LiBTbyB3ZSBhZGQgdGhlIHBpcGUNCgkJICogcmVhZCBzaXplIHdpdGgg
+RVBPTExPVVQgZXZlbnRzLiBUaGlzIHdpbGwgdHJpZ2dlcg0KCQkgKiBhbiBh
+ZGRpdGlvbiB0byB0aGUgcmVhZHktbGlzdCwgYnV0IG5vIHJlYWwgZXZlbnRz
+DQoJCSAqIHdpbGwgYmUgdGhlcmUuIFRoZSB0aGUgZXBvbGwga2VybmVsIGNv
+ZGUgd2lsbCBwcm9jZWVkDQoJCSAqIGluIGNhbGxpbmcgZl9vcC0+cG9sbCgp
+IG9mIHRoZSBlcGZkLCB0cmlnZ2VyaW5nIHRoZQ0KCQkgKiBsb29wIHdlIHdh
+bnQgdG8gdGVzdC4NCgkJICovDQoJCWV2dC5ldmVudHMgPSBFUE9MTE9VVDsN
+Cgl9DQoJeGVwb2xsX2N0bChiZmQsIEVQT0xMX0NUTF9BREQsIHBmZHNbMF0s
+ICZldnQpOw0KDQoJLyoNCgkgKiBUaGUgcGlwZSB3cml0ZSBtdXN0IGNvbWUg
+YWZ0ZXIgdGhlIHBvbGwoMikgY2FsbCBpbnNpZGUNCgkgKiBjaGVja19ldmVu
+dHMoKS4gVGhpcyB0ZXN0cyB0aGUgbmVzdGVkIHdha2V1cCBjb2RlIGluDQoJ
+ICogZnMvZXZlbnRwb2xsLmM6ZXBfcG9sbF9zYWZld2FrZSgpDQoJICogQnkg
+aGF2aW5nIHRoZSBjaGVja19ldmVudHMoKSAoaGVuY2UgcG9sbCgyKSkgaGFw
+cGVucyBmaXJzdCwNCgkgKiB3ZSBoYXZlIHBvbGwgd2FpdCBxdWV1ZSBmaWxs
+ZWQgdXAsIGFuZCB0aGUgd3JpdGUoMikgaW4gdGhlDQoJICogY2hpbGQgd2ls
+bCB0cmlnZ2VyIHRoZSB3YWtldXAgY2hhaW4uDQoJICovDQoJaWYgKChwaWQg
+PSB4Zm9yaygpKSA9PSAwKSB7DQoJCXNsZWVwKDEpOw0KCQl3cml0ZShwZmRz
+WzFdLCAidyIsIDEpOw0KCQlleGl0KDApOw0KCX0NCg0KCXJlcyA9IGNoZWNr
+X2V2ZW50cyhlcGZkLCAyMDAwKSAmIFBPTExJTjsNCg0KCWlmICh3YWl0cGlk
+KHBpZCwgTlVMTCwgMCkgIT0gcGlkKSB7DQoJCXBlcnJvcigid2FpdHBpZCIp
+Ow0KCQlyZXR1cm4gLTE7DQoJfQ0KDQoJcmV0dXJuIHJlczsNCn0NCg0Kc3Rh
+dGljIGludCBlcG9sbF9wb2xsX2NoYWluKHZvaWQgKmRhdGEpIHsNCglzdHJ1
+Y3QgZXBvbGxfdGVzdF9jZmcgKnRjZmcgPSBkYXRhOw0KCWludCBpLCByZXMs
+IGVwZmQsIGJmZCwgbmZkLCBwZmRzWzJdOw0KCXBpZF90IHBpZDsNCglzdHJ1
+Y3QgZXBvbGxfZXZlbnQgZXZ0Ow0KDQoJbWVtc2V0KCZldnQsIDAsIHNpemVv
+ZihldnQpKTsNCglldnQuZXZlbnRzID0gRVBPTExJTjsNCg0KCWVwZmQgPSBi
+ZmQgPSB4ZXBvbGxfY3JlYXRlKDEpOw0KDQoJZm9yIChpID0gMDsgaSA8IHRj
+ZmctPnNpemU7IGkrKykgew0KCQluZmQgPSB4ZXBvbGxfY3JlYXRlKDEpOw0K
+CQl4ZXBvbGxfY3RsKGJmZCwgRVBPTExfQ1RMX0FERCwgbmZkLCAmZXZ0KTsN
+CgkJYmZkID0gbmZkOw0KCX0NCgl4cGlwZShwZmRzKTsNCglpZiAodGNmZy0+
+ZmxhZ3MgJiBFUE9MTF9URl9MT09QKQ0KCXsNCgkJeGVwb2xsX2N0bChiZmQs
+IEVQT0xMX0NUTF9BREQsIGVwZmQsICZldnQpOw0KCQkvKg0KCQkgKiBJZiB3
+ZSdyZSB0ZXN0aW5nIGZvciBsb29wLCB3ZSB3YW50IHRoYXQgdGhlIHdha2V1
+cA0KCQkgKiB0cmlnZ2VyZWQgYnkgdGhlIHdyaXRlIHRvIHRoZSBwaXBlIGRv
+bmUgaW4gdGhlIGNoaWxkDQoJCSAqIHByb2Nlc3MsIHRyaWdnZXJzIGEgZmFr
+ZSBldmVudC4gU28gd2UgYWRkIHRoZSBwaXBlDQoJCSAqIHJlYWQgc2l6ZSB3
+aXRoIEVQT0xMT1VUIGV2ZW50cy4gVGhpcyB3aWxsIHRyaWdnZXINCgkJICog
+YW4gYWRkaXRpb24gdG8gdGhlIHJlYWR5LWxpc3QsIGJ1dCBubyByZWFsIGV2
+ZW50cw0KCQkgKiB3aWxsIGJlIHRoZXJlLiBUaGUgdGhlIGVwb2xsIGtlcm5l
+bCBjb2RlIHdpbGwgcHJvY2VlZA0KCQkgKiBpbiBjYWxsaW5nIGZfb3AtPnBv
+bGwoKSBvZiB0aGUgZXBmZCwgdHJpZ2dlcmluZyB0aGUNCgkJICogbG9vcCB3
+ZSB3YW50IHRvIHRlc3QuDQoJCSAqLw0KCQlldnQuZXZlbnRzID0gRVBPTExP
+VVQ7DQoJfQ0KCXhlcG9sbF9jdGwoYmZkLCBFUE9MTF9DVExfQURELCBwZmRz
+WzBdLCAmZXZ0KTsNCg0KCS8qDQoJICogVGhlIHBpcGUgd3JpdGUgbXVzaCBj
+b21lIGJlZm9yZSB0aGUgcG9sbCgyKSBjYWxsIGluc2lkZQ0KCSAqIGNoZWNr
+X2V2ZW50cygpLiBUaGlzIHRlc3RzIHRoZSBuZXN0ZWQgZl9vcC0+cG9sbCBj
+YWxscyBjb2RlIGluDQoJICogZnMvZXZlbnRwb2xsLmM6ZXBfZXZlbnRwb2xs
+X3BvbGwoKQ0KCSAqIEJ5IGhhdmluZyB0aGUgcGlwZSB3cml0ZSgyKSBoYXBw
+ZW4gZmlyc3QsIHdlIG1ha2UgdGhlIGtlcm5lbA0KCSAqIGVwb2xsIGNvZGUg
+dG8gbG9hZCB0aGUgcmVhZHkgbGlzdHMsIGFuZCB0aGUgZm9sbG93aW5nIHBv
+bGwoMikNCgkgKiBkb25lIGluc2lkZSBjaGVja19ldmVudHMoKSB3aWxsIHRl
+c3QgbmVzdGVkIHBvbGwgY29kZSBpbg0KCSAqIGVwX2V2ZW50cG9sbF9wb2xs
+KCkuDQoJICovDQoJaWYgKChwaWQgPSB4Zm9yaygpKSA9PSAwKSB7DQoJCXdy
+aXRlKHBmZHNbMV0sICJ3IiwgMSk7DQoJCWV4aXQoMCk7DQoJfQ0KCXNsZWVw
+KDEpOw0KCXJlcyA9IGNoZWNrX2V2ZW50cyhlcGZkLCAxMDAwKSAmIFBPTExJ
+TjsNCg0KCWlmICh3YWl0cGlkKHBpZCwgTlVMTCwgMCkgIT0gcGlkKSB7DQoJ
+CXBlcnJvcigid2FpdHBpZCIpOw0KCQlyZXR1cm4gLTE7DQoJfQ0KDQoJcmV0
+dXJuIHJlczsNCn0NCg0KaW50IG1haW4oaW50IGFjLCBjaGFyICoqYXYpIHsN
+CglpbnQgZXJyb3I7DQoJc3RydWN0IGVwb2xsX3Rlc3RfY2ZnIHRjZmc7DQoN
+CglmcHJpbnRmKHN0ZG91dCwgIlxuKioqKioqKioqKiBUZXN0aW5nIFRUWSBl
+dmVudHNcbiIpOw0KCWVycm9yID0gcnVuX2ZvcmtlZF9wcm9jKGVwb2xsX3Rl
+c3RfdHR5LCBOVUxMKTsNCglmcHJpbnRmKHN0ZG91dCwgZXJyb3IgPT0gMCA/
+DQoJCSIqKioqKioqKioqIE9LXG4iOiAiKioqKioqKioqKiBGQUlMICglZClc
+biIsIGVycm9yKTsNCg0KCXRjZmcuc2l6ZSA9IDM7DQoJdGNmZy5mbGFncyA9
+IDA7DQoJZnByaW50ZihzdGRvdXQsICJcbioqKioqKioqKiogVGVzdGluZyBz
+aG9ydCB3YWtldXAgY2hhaW5cbiIpOw0KCWVycm9yID0gcnVuX2ZvcmtlZF9w
+cm9jKGVwb2xsX3dha2V1cF9jaGFpbiwgJnRjZmcpOw0KCWZwcmludGYoc3Rk
+b3V0LCBlcnJvciA9PSBQT0xMSU4gPw0KCQkiKioqKioqKioqKiBPS1xuIjog
+IioqKioqKioqKiogRkFJTCAoJWQpXG4iLCBlcnJvcik7DQoNCgl0Y2ZnLnNp
+emUgPSBFUE9MTF9NQVhfQ0hBSU47DQoJdGNmZy5mbGFncyA9IDA7DQoJZnBy
+aW50ZihzdGRvdXQsICJcbioqKioqKioqKiogVGVzdGluZyBsb25nIHdha2V1
+cCBjaGFpbiAoSE9MRCBPTilcbiIpOw0KCWVycm9yID0gcnVuX2ZvcmtlZF9w
+cm9jKGVwb2xsX3dha2V1cF9jaGFpbiwgJnRjZmcpOw0KCWZwcmludGYoc3Rk
+b3V0LCBlcnJvciA9PSAwID8NCgkJIioqKioqKioqKiogT0tcbiI6ICIqKioq
+KioqKioqIEZBSUwgKCVkKVxuIiwgZXJyb3IpOw0KDQoJdGNmZy5zaXplID0g
+MzsNCgl0Y2ZnLmZsYWdzID0gMDsNCglmcHJpbnRmKHN0ZG91dCwgIlxuKioq
+KioqKioqKiBUZXN0aW5nIHNob3J0IHBvbGwgY2hhaW5cbiIpOw0KCWVycm9y
+ID0gcnVuX2ZvcmtlZF9wcm9jKGVwb2xsX3BvbGxfY2hhaW4sICZ0Y2ZnKTsN
+CglmcHJpbnRmKHN0ZG91dCwgZXJyb3IgPT0gUE9MTElOID8NCgkJIioqKioq
+KioqKiogT0tcbiI6ICIqKioqKioqKioqIEZBSUwgKCVkKVxuIiwgZXJyb3Ip
+Ow0KDQoJdGNmZy5zaXplID0gRVBPTExfTUFYX0NIQUlOOw0KCXRjZmcuZmxh
+Z3MgPSAwOw0KCWZwcmludGYoc3Rkb3V0LCAiXG4qKioqKioqKioqIFRlc3Rp
+bmcgbG9uZyBwb2xsIGNoYWluIChIT0xEIE9OKVxuIik7DQoJZXJyb3IgPSBy
+dW5fZm9ya2VkX3Byb2MoZXBvbGxfcG9sbF9jaGFpbiwgJnRjZmcpOw0KCWZw
+cmludGYoc3Rkb3V0LCBlcnJvciA9PSAwID8NCgkJIioqKioqKioqKiogT0tc
+biI6ICIqKioqKioqKioqIEZBSUwgKCVkKVxuIiwgZXJyb3IpOw0KDQoJdGNm
+Zy5zaXplID0gMzsNCgl0Y2ZnLmZsYWdzID0gRVBPTExfVEZfTE9PUDsNCglm
+cHJpbnRmKHN0ZG91dCwgIlxuKioqKioqKioqKiBUZXN0aW5nIGxvb3B5IHdh
+a2V1cCBjaGFpbiAoSE9MRCBPTilcbiIpOw0KCWVycm9yID0gcnVuX2Zvcmtl
+ZF9wcm9jKGVwb2xsX3dha2V1cF9jaGFpbiwgJnRjZmcpOw0KCWZwcmludGYo
+c3Rkb3V0LCBlcnJvciA9PSAwID8NCgkJIioqKioqKioqKiogT0tcbiI6ICIq
+KioqKioqKioqIEZBSUwgKCVkKVxuIiwgZXJyb3IpOw0KDQoJdGNmZy5zaXpl
+ID0gMzsNCgl0Y2ZnLmZsYWdzID0gRVBPTExfVEZfTE9PUDsNCglmcHJpbnRm
+KHN0ZG91dCwgIlxuKioqKioqKioqKiBUZXN0aW5nIGxvb3B5IHBvbGwgY2hh
+aW4gKEhPTEQgT04pXG4iKTsNCgllcnJvciA9IHJ1bl9mb3JrZWRfcHJvYyhl
+cG9sbF9wb2xsX2NoYWluLCAmdGNmZyk7DQoJZnByaW50ZihzdGRvdXQsIGVy
+cm9yID09IDAgPw0KCQkiKioqKioqKioqKiBPS1xuIjogIioqKioqKioqKiog
+RkFJTCAoJWQpXG4iLCBlcnJvcik7DQoNCg0KCXJldHVybiAwOw0KfQ0KDQo=
 
+--1795850513-728520103-1233089955=:20262--
