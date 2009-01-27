@@ -1,53 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZA0XIA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZA0XKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753036AbZA0XIA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 18:08:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751442AbZA0XHp
+	id S1752746AbZA0XKv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 18:10:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751332AbZA0XKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 18:07:45 -0500
-Received: from hera.kernel.org ([140.211.167.34]:39671 "EHLO hera.kernel.org"
+	Tue, 27 Jan 2009 18:10:43 -0500
+Received: from ns.skekraft.net ([213.199.96.131]:54875 "EHLO mail.skekraft.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751346AbZA0XHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 18:07:43 -0500
-Message-ID: <497F93A2.404@kernel.org>
-Date: Wed, 28 Jan 2009 08:07:14 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751317AbZA0XKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 18:10:42 -0500
+To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Robert Love <rml@tech9.net>
+Subject: PROBLEM: in_atomic() misuse all over the place
+Cc: Pavel Machek <pavel@ucw.cz>
+Content-Disposition: inline
+From: Roger Larsson <roger.larsson@e-gatan.se>
+Date: Wed, 28 Jan 2009 00:10:37 +0100
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>, akpm@linux-foundation.org,
-       hpa@zytor.com, brgerst@gmail.com, ebiederm@xmission.com,
-       cl@linux-foundation.org, travis@sgi.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com, hugh@veritas.com,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-References: <20090115183942.GA6325@elte.hu> <200901201328.24605.rusty@rustcorp.com.au> <49756E6E.2060409@kernel.org> <200901271213.18605.rusty@rustcorp.com.au> <497E705B.5000302@kernel.org> <20090127131317.GF23121@elte.hu>
-In-Reply-To: <20090127131317.GF23121@elte.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 27 Jan 2009 23:07:09 +0000 (UTC)
+Message-Id: <200901280010.37633.roger.larsson@e-gatan.se>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Tejun Heo <tj@kernel.org> wrote:
-> 
->>> Tejun, any chance of you updating the tj-percpu tree? My current 
->>> patches are against Linus's tree, and rebasing them on yours involves 
->>> some icky merging.
->> If Ingo is okay with it, I'm fine with it too.  Unless Ingo objects, 
->> I'll do it tomorrow-ish (still big holiday here).
-> 
-> Sure - but please do it as a clean rebase ontop of latest, not as a 
-> conflict-merge, as i'd expect there to be quite many clashes.
+(resent, non html)
 
-Alrighty, re-basing.
+[1.] One line summary of the problem:    
+in_atomic() is used to select path of execution, most likely to suppress 
+warning logs when running a preemptive kernel.
 
-Thanks.
+[2.] Full description of the problem/report:
 
--- 
-tejun
+The problem is that in_atomic() only works on preemptive kernels...
+
+Result: preemptive kernel warns about a potential deadlock in all kernels,
+developer silence with the help of in_atomic()
+bug remains in SMP/UP kernels...
+
+[3.] Keywords (i.e., modules, networking, kernel):
+in_atomic(), preemptive, sleeping
+
+[4.] Kernel version (from /proc/version):
+	2.6.28.2 (review)
+
+[5.] Output of Oops..
+
+"sleeping function called from invalid context"
+
+[6.] A small shell script or example program which triggers the
+     problem (if possible)
+
+Small example of the strange code I found is this
+
+file:  include/net/sock.h
+
+   static inline gfp_t gfp_any(void)
+   {
+     return in_atomic() ? GFP_ATOMIC : GFP_KERNEL;
+   }
+
+	//  I can find no comment on why this strange code would be OK.
+	//  An it is in its turn used in several drivers...
+
+If the processor can get to this function while atomic in a preemptive kernel 
+it will likely be able to get there in other kernels as well, especially SMP.
+
+It returns GFP_ATOMIC when being atomic in a preemptive kernel, allocating 
+with that flag will not sleep. But calling this with another kernel will 
+ALWAYS return GFP_KERNEL, and it may cause a sleeping allocate...
+
+Other places that I think misuse of in_atomic is Arch code, USB code, ...
+
+There are 77 uses of in_atomic directly (grep | wc)
+36 in ./arch
+23 in ./drivers
+2 in ./sound/core/seq/seq_virmidi.c
+1 in ./include/net/sock.h
+The remaining 15 are probably OK (kernel, mm/filemap)
+
+But the sock.h gfp_any() spreads further...
+1 in ./Documentation
+2 in ./drivers
+9 in ./net
+
+
+Suggestion: should in_atomic() that by default return the safer 1 instead of 
+the unsafe 0. And add an in_atomic_warn() with default of 0 to use where it is
+OK - like when deciding to log a warning.
+
+/RogerL
+
