@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753582AbZA0GLS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753313AbZA0GQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753582AbZA0GLS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 01:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZA0GLA
+	id S1753313AbZA0GQI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 01:16:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751865AbZA0GPy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 01:11:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43714
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750717AbZA0GK7 (ORCPT
+	Tue, 27 Jan 2009 01:15:54 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:52682 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751481AbZA0GPx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 01:10:59 -0500
-Date: Mon, 26 Jan 2009 22:10:56 -0800 (PST)
-Message-Id: <20090126.221056.174077798.davem@davemloft.net>
-To: zbr@ioremap.net
-Cc: jarkao2@gmail.com, herbert@gondor.apana.org.au, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090126212130.GA4338@ioremap.net>
-References: <20090120103122.GC9167@ioremap.net>
-	<20090126082036.GB4183@ff.dom.local>
-	<20090126212130.GA4338@ioremap.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Jan 2009 01:15:53 -0500
+Date: Tue, 27 Jan 2009 17:15:46 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Crypto Fixes for 2.6.29
+Message-ID: <20090127061546.GA27962@gondor.apana.org.au>
+References: <20080501102812.GA7151@gondor.apana.org.au> <20080727063659.GA936@gondor.apana.org.au> <20090115044020.GA29891@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090115044020.GA29891@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Evgeniy Polyakov <zbr@ioremap.net>
-Date: Tue, 27 Jan 2009 00:21:30 +0300
+Hi Linus:
 
-> Hi Jarek.
-> 
-> On Mon, Jan 26, 2009 at 08:20:36AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
-> > > 1. Network (tree) allocator
-> > > http://www.ioremap.net/projects/nta
-> > 
-> > I looked at this a bit, but alas I didn't find much for this Herbert's
-> > idea of payload in fragments/pages. Maybe some kind of API RFC is
-> > needed before this resurrection?
-> 
-> Basic idea is to steal some (probably a lot) pages from the slab
-> allocator and put network buffers there without strict need for
-> power-of-two alignment and possible wraps when we add skb_shared_info at
-> the end, so that old e1000 driver required order-4 allocations for the
-> jumbo frames. We can do that in alloc_skb() and friends and put returned
-> buffers into skb's fraglist and updated reference counters for those
-> pages; and with additional copy of the network headers into skb->head.
+This push fixes a number of minor bugs:
 
-We are going back and forth saying the same thing, I think :-)
-(BTW, I think NTA is cool and we might do something like that
-eventually)
+* A crash in authenc that may occur if null encryption is used
+  (a rare configuration).
+* Error handling in blkcipher_walk_done (though this error should
+  never occur unless underlying algorithm is buggy).
+* Crash in CCM with no association data (only occurs for certification
+  testing).
 
-The basic thing we have to do is make the drivers receive into
-pages, and then slide the network headers (only) into the linear
-SKB data area.
+Please pull from
 
-Even for drivers like NIU and myri10ge that do this, they only
-use heuristics or some fixed minimum to decide how much to
-move to the linear area.
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
-Result?  Some data payload bits end up there because it overshoots.
+or
 
-Since we have pskb_may_pull() calls everywhere necessary, which
-means not in eth_type_trans(), we could just make these drivers
-(and future drivers converted to operate in this way) only
-put the ethernet headers there initially.
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
-Then the rest of the stack will take care of moving the network
-and transport payloads there, as necessary.
 
-I bet it won't even hurt latency or routing/firewall performance.
+Herbert Xu (2):
+      crypto: authenc - Fix zero-length IV crash
+      crypto: blkcipher - Fix WARN_ON handling in walk_done
 
-I did test this with the NIU driver at one point, and it did not
-change TCP latency nor throughput at all even at 10g speeds.
+Jarod Wilson (1):
+      crypto: ccm - Fix handling of null assoc data
+
+ crypto/authenc.c   |   24 +++++++++++++++---------
+ crypto/blkcipher.c |    2 +-
+ crypto/ccm.c       |    2 ++
+ 3 files changed, 18 insertions(+), 10 deletions(-)
+ 
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
