@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbZA0RyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbZA0Rye@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756444AbZA0RyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 12:54:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbZA0RyI
+	id S1755742AbZA0Rye (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 12:54:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754986AbZA0RyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 12:54:08 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:62766 "EHLO
+	Tue, 27 Jan 2009 12:54:09 -0500
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:62767 "EHLO
 	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753370AbZA0RyG (ORCPT
+	with ESMTP id S1753934AbZA0RyH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 12:54:06 -0500
+	Tue, 27 Jan 2009 12:54:07 -0500
 From: David Daney <ddaney@caviumnetworks.com>
 To: torvalds@linux-foundation.org, akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, linux-mips@linux-mips.org, travis@sgi.com,
        David Daney <ddaney@caviumnetworks.com>
-Subject: [PATCH 2/2] cpumask fallout: Initialize irq_default_affinity earlier (v3).
-Date: Tue, 27 Jan 2009 09:53:22 -0800
-Message-Id: <1233078802-24111-2-git-send-email-ddaney@caviumnetworks.com>
+Subject: [PATCH 1/2] Make irq_*_affinity depend on CONFIG_GENERIC_HARDIRQS too.
+Date: Tue, 27 Jan 2009 09:53:21 -0800
+Message-Id: <1233078802-24111-1-git-send-email-ddaney@caviumnetworks.com>
 X-Mailer: git-send-email 1.5.6.6
 In-Reply-To: <497F48F2.90309@caviumnetworks.com>
 References: <497F48F2.90309@caviumnetworks.com>
@@ -25,81 +25,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the initialization of irq_default_affinity to early_irq_init as
-core_initcall is too late.
-
-irq_default_affinity can be used in init_IRQ and potentially timer and
-SMP init as well.  All of these happen before core_initcall.  Moving
-the initialization to early_irq_init ensures that it is initialized
-before it is used.
+In interrupt.h these functions are declared only if
+CONFIG_GENERIC_HARDIRQS is set.  We should define them under identical
+conditions.
 
 Signed-off-by: David Daney <ddaney@caviumnetworks.com>
-Acked-by: Mike Travis <travis@sgi.com>
 ---
- kernel/irq/handle.c |   16 ++++++++++++++++
- kernel/irq/manage.c |    8 --------
- 2 files changed, 16 insertions(+), 8 deletions(-)
+ kernel/irq/manage.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index c20db0b..3aba8d1 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -39,6 +39,18 @@ void handle_bad_irq(unsigned int irq, struct irq_desc *desc)
- 	ack_bad_irq(irq);
- }
- 
-+#if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
-+static void __init init_irq_default_affinity(void)
-+{
-+	alloc_bootmem_cpumask_var(&irq_default_affinity);
-+	cpumask_setall(irq_default_affinity);
-+}
-+#else
-+static void __init init_irq_default_affinity(void)
-+{
-+}
-+#endif
-+
- /*
-  * Linux has a controller-independent interrupt architecture.
-  * Every controller has a 'controller-template', that is used
-@@ -134,6 +146,8 @@ int __init early_irq_init(void)
- 	int legacy_count;
- 	int i;
- 
-+	init_irq_default_affinity();
-+
- 	desc = irq_desc_legacy;
- 	legacy_count = ARRAY_SIZE(irq_desc_legacy);
- 
-@@ -219,6 +233,8 @@ int __init early_irq_init(void)
- 	int count;
- 	int i;
- 
-+	init_irq_default_affinity();
-+
- 	desc = irq_desc;
- 	count = ARRAY_SIZE(irq_desc);
- 
 diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 618a64f..291f036 100644
+index cd0cd8d..618a64f 100644
 --- a/kernel/irq/manage.c
 +++ b/kernel/irq/manage.c
-@@ -18,14 +18,6 @@
- #if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
+@@ -15,7 +15,7 @@
+ 
+ #include "internals.h"
+ 
+-#ifdef CONFIG_SMP
++#if defined(CONFIG_SMP) && defined(CONFIG_GENERIC_HARDIRQS)
  cpumask_var_t irq_default_affinity;
  
--static int init_irq_default_affinity(void)
--{
--	alloc_cpumask_var(&irq_default_affinity, GFP_KERNEL);
--	cpumask_setall(irq_default_affinity);
--	return 0;
--}
--core_initcall(init_irq_default_affinity);
--
- /**
-  *	synchronize_irq - wait for pending IRQ handlers (on other CPUs)
-  *	@irq: interrupt number to wait for
+ static int init_irq_default_affinity(void)
 -- 
 1.5.6.6
 
