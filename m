@@ -1,268 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZA0U7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZA0VA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbZA0U7Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 15:59:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZA0U7R
+	id S1755959AbZA0VA2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 16:00:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbZA0VAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 15:59:17 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:40468 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751492AbZA0U7Q (ORCPT
+	Tue, 27 Jan 2009 16:00:19 -0500
+Received: from rv-out-0506.google.com ([209.85.198.236]:49936 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbZA0VAS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 15:59:16 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 27 Jan 2009 12:59:14 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Pavel Pisa <pisa@cmp.felk.cvut.cz>
-Subject: Re: [patch 1/2] epoll fix own poll()
-In-Reply-To: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com>
-Message-ID: <alpine.DEB.1.10.0901271257240.20262@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 27 Jan 2009 16:00:18 -0500
+Date: Tue, 27 Jan 2009 13:00:04 -0800
+From: Brandon Philips <brandon@ifup.org>
+To: "Hans J. Koch" <hjk@linutronix.de>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: [PATCHv2] uio: add the uio_aec driver
+Message-ID: <20090127210004.GE22420@jenkins.ifup.org>
+References: <20090120204729.GA26477@jenkins.ifup.org> <20090120214832.GE3027@local>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1795850513-728520103-1233089955=:20262"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090120214832.GE3027@local>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+UIO driver for the Adrienne Electronics Corporation PCI time code
+device.
 
---1795850513-728520103-1233089955=:20262
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+This device differs from other UIO devices since it uses I/O ports instead of
+memory mapped I/O. In order to make it possible for UIO to work with this
+device a utility, uioport, can be used to read and write the ports.
 
-On Tue, 27 Jan 2009, Davide Libenzi wrote:
+uioport is designed to be a setuid program and checks the permissions of
+the /dev/uio* node and if the user has write permissions it will use
+iopl and out*/in* to access the device.
 
-> 
-> The follwing patch fixes a bug inside the epoll's f_op->poll() code, that
-> returns POLLIN even though there are no actual ready monitored fds.
-> The bug shows up if you add an epoll fd inside another fd container (poll,
-> select, epoll).
-> The problem is that callback-based wake ups used by epoll, does not carry
-> (patches will follow, to fix this) any information about the events
-> that actually happened. So the callback code, since it can't call the file*
-> ->poll() inside the callback, chains the file* into a ready-list. So, suppose
-> you added an fd with EPOLLOUT only, and some data shows up on the fd, the
-> file* mapped by the fd will be added into the ready-list (via wakeup
-> callback). During normal epoll_wait() use, this condition is sorted out
-> at the time we're actually able to call the file*'s f_op->poll().
-> Inside the old epoll's f_op->poll() though, only a quick check
-> !list_empty(ready-list) was performed, and this could have led to reporting
-> POLLIN even though no ready fds would show up at a following epoll_wait().
-> In order to correctly report the ready status for an epoll fd, the ready-list
-> must be checked to see if any really available fd+event would be ready in
-> a following epoll_wait().
-> Operation (calling f_op->poll() from inside f_op->poll()) that, like wake ups,
-> must be handled with care because of the fact that epoll fds can be added
-> to other epoll fds.
+[1] git clone git://ifup.org/philips/uioport.git
 
-Forgot to include the test program that can be used to check for correct 
-event reporting, and long-chains/loop trimming code.
+Signed-off-by: Brandon Philips <brandon@ifup.org>
 
+---
+ drivers/uio/Kconfig   |   18 +++++
+ drivers/uio/Makefile  |    1 
+ drivers/uio/uio_aec.c |  175 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 194 insertions(+)
 
-
-- Davide
-
-
---1795850513-728520103-1233089955=:20262
-Content-Type: TEXT/x-csrc; name=epoll_test.c
-Content-Transfer-Encoding: BASE64
-Content-Description: 
-Content-Disposition: attachment; filename=epoll_test.c
-
-LyoNCiAqICBlcG9sbF90ZXN0IGJ5IERhdmlkZSBMaWJlbnppIChTaW1wbGUg
-Y29kZSB0byB0ZXN0IGVwb2xsIGludGVybmFscykNCiAqICBDb3B5cmlnaHQg
-KEMpIDIwMDggIERhdmlkZSBMaWJlbnppDQogKg0KICogIFRoaXMgcHJvZ3Jh
-bSBpcyBmcmVlIHNvZnR3YXJlOyB5b3UgY2FuIHJlZGlzdHJpYnV0ZSBpdCBh
-bmQvb3IgbW9kaWZ5DQogKiAgaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBH
-TlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhcyBwdWJsaXNoZWQgYnkNCiAq
-ICB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uOyBlaXRoZXIgdmVyc2lv
-biAyIG9mIHRoZSBMaWNlbnNlLCBvcg0KICogIChhdCB5b3VyIG9wdGlvbikg
-YW55IGxhdGVyIHZlcnNpb24uDQogKg0KICogIFRoaXMgcHJvZ3JhbSBpcyBk
-aXN0cmlidXRlZCBpbiB0aGUgaG9wZSB0aGF0IGl0IHdpbGwgYmUgdXNlZnVs
-LA0KICogIGJ1dCBXSVRIT1VUIEFOWSBXQVJSQU5UWTsgd2l0aG91dCBldmVu
-IHRoZSBpbXBsaWVkIHdhcnJhbnR5IG9mDQogKiAgTUVSQ0hBTlRBQklMSVRZ
-IG9yIEZJVE5FU1MgRk9SIEEgUEFSVElDVUxBUiBQVVJQT1NFLiAgU2VlIHRo
-ZQ0KICogIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlIGZvciBtb3JlIGRl
-dGFpbHMuDQogKg0KICogIFlvdSBzaG91bGQgaGF2ZSByZWNlaXZlZCBhIGNv
-cHkgb2YgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlDQogKiAgYWxv
-bmcgd2l0aCB0aGlzIHByb2dyYW07IGlmIG5vdCwgd3JpdGUgdG8gdGhlIEZy
-ZWUgU29mdHdhcmUNCiAqICBGb3VuZGF0aW9uLCBJbmMuLCA1OSBUZW1wbGUg
-UGxhY2UsIFN1aXRlIDMzMCwgQm9zdG9uLCBNQSAgMDIxMTEtMTMwNyAgVVNB
-DQogKg0KICogIERhdmlkZSBMaWJlbnppIDxkYXZpZGVsQHhtYWlsc2VydmVy
-Lm9yZz4NCiAqDQogKi8NCg0KI2luY2x1ZGUgPHN5cy90eXBlcy5oPg0KI2lu
-Y2x1ZGUgPHVuaXN0ZC5oPg0KI2luY2x1ZGUgPHN0ZGlvLmg+DQojaW5jbHVk
-ZSA8c3RkbGliLmg+DQojaW5jbHVkZSA8c3RyaW5nLmg+DQojaW5jbHVkZSA8
-ZXJybm8uaD4NCiNpbmNsdWRlIDxzaWduYWwuaD4NCiNpbmNsdWRlIDxsaW1p
-dHMuaD4NCiNpbmNsdWRlIDxwb2xsLmg+DQojaW5jbHVkZSA8c3lzL2Vwb2xs
-Lmg+DQojaW5jbHVkZSA8c3lzL3dhaXQuaD4NCg0KI2RlZmluZSBFUFdBSVRf
-VElNRU8JKDEgKiAxMDAwKQ0KI2lmbmRlZiBQT0xMUkRIVVANCiNkZWZpbmUg
-UE9MTFJESFVQIDB4MjAwMA0KI2VuZGlmDQoNCiNkZWZpbmUgRVBPTExfTUFY
-X0NIQUlOCTEwMEwNCg0KI2RlZmluZSBFUE9MTF9URl9MT09QICgxIDw8IDAp
-DQoNCnN0cnVjdCBlcG9sbF90ZXN0X2NmZyB7DQoJbG9uZyBzaXplOw0KCWxv
-bmcgZmxhZ3M7DQp9Ow0KDQpzdGF0aWMgaW50IHhlcG9sbF9jcmVhdGUoaW50
-IG4pIHsNCglpbnQgZXBmZDsNCg0KCWlmICgoZXBmZCA9IGVwb2xsX2NyZWF0
-ZShuKSkgPT0gLTEpIHsNCgkJcGVycm9yKCJlcG9sbF9jcmVhdGUiKTsNCgkJ
-ZXhpdCgyKTsNCgl9DQoNCglyZXR1cm4gZXBmZDsNCn0NCg0Kc3RhdGljIHZv
-aWQgeGVwb2xsX2N0bChpbnQgZXBmZCwgaW50IGNtZCwgaW50IGZkLCBzdHJ1
-Y3QgZXBvbGxfZXZlbnQgKmV2dCkgew0KCWlmIChlcG9sbF9jdGwoZXBmZCwg
-Y21kLCBmZCwgZXZ0KSA8IDApIHsNCgkJcGVycm9yKCJlcG9sbF9jdGwiKTsN
-CgkJZXhpdCgzKTsNCgl9DQp9DQoNCnN0YXRpYyB2b2lkIHhwaXBlKGludCAq
-ZmRzKSB7DQoJaWYgKHBpcGUoZmRzKSkgew0KCQlwZXJyb3IoInBpcGUiKTsN
-CgkJZXhpdCg0KTsNCgl9DQp9DQoNCnN0YXRpYyBwaWRfdCB4Zm9yayh2b2lk
-KSB7DQoJcGlkX3QgcGlkOw0KDQoJaWYgKChwaWQgPSBmb3JrKCkpID09IChw
-aWRfdCkgLTEpIHsNCgkJcGVycm9yKCJwaXBlIik7DQoJCWV4aXQoNSk7DQoJ
-fQ0KDQoJcmV0dXJuIHBpZDsNCn0NCg0Kc3RhdGljIGludCBydW5fZm9ya2Vk
-X3Byb2MoaW50ICgqcHJvYykodm9pZCAqKSwgdm9pZCAqZGF0YSkgew0KCWlu
-dCBzdGF0dXM7DQoJcGlkX3QgcGlkOw0KDQoJaWYgKChwaWQgPSB4Zm9yaygp
-KSA9PSAwKQ0KCQlleGl0KCgqcHJvYykoZGF0YSkpOw0KCWlmICh3YWl0cGlk
-KHBpZCwgJnN0YXR1cywgMCkgIT0gcGlkKSB7DQoJCXBlcnJvcigid2FpdHBp
-ZCIpOw0KCQlyZXR1cm4gLTE7DQoJfQ0KDQoJcmV0dXJuIFdJRkVYSVRFRChz
-dGF0dXMpID8gV0VYSVRTVEFUVVMoc3RhdHVzKTogLTI7DQp9DQoNCnN0YXRp
-YyBpbnQgY2hlY2tfZXZlbnRzKGludCBmZCwgaW50IHRpbWVvKSB7DQoJc3Ry
-dWN0IHBvbGxmZCBwZmQ7DQoNCglmcHJpbnRmKHN0ZG91dCwgIkNoZWNraW5n
-IGV2ZW50cyBmb3IgZmQgJWRcbiIsIGZkKTsNCgltZW1zZXQoJnBmZCwgMCwg
-c2l6ZW9mKHBmZCkpOw0KCXBmZC5mZCA9IGZkOw0KCXBmZC5ldmVudHMgPSBQ
-T0xMSU4gfCBQT0xMT1VUOw0KCWlmIChwb2xsKCZwZmQsIDEsIHRpbWVvKSA8
-IDApIHsNCgkJcGVycm9yKCJwb2xsKCkiKTsNCgkJcmV0dXJuIDA7DQoJfQ0K
-CWlmIChwZmQucmV2ZW50cyAmIFBPTExJTikNCgkJZnByaW50ZihzdGRvdXQs
-ICJcdFBPTExJTlxuIik7DQoJaWYgKHBmZC5yZXZlbnRzICYgUE9MTE9VVCkN
-CgkJZnByaW50ZihzdGRvdXQsICJcdFBPTExPVVRcbiIpOw0KCWlmIChwZmQu
-cmV2ZW50cyAmIFBPTExFUlIpDQoJCWZwcmludGYoc3Rkb3V0LCAiXHRQT0xM
-RVJSXG4iKTsNCglpZiAocGZkLnJldmVudHMgJiBQT0xMSFVQKQ0KCQlmcHJp
-bnRmKHN0ZG91dCwgIlx0UE9MTEhVUFxuIik7DQoJaWYgKHBmZC5yZXZlbnRz
-ICYgUE9MTFJESFVQKQ0KCQlmcHJpbnRmKHN0ZG91dCwgIlx0UE9MTFJESFVQ
-XG4iKTsNCg0KCXJldHVybiBwZmQucmV2ZW50czsNCn0NCg0Kc3RhdGljIGlu
-dCBlcG9sbF90ZXN0X3R0eSh2b2lkICpkYXRhKSB7DQoJaW50IGVwZmQsIGlm
-ZCA9IGZpbGVubyhzdGRpbiksIHJlczsNCglzdHJ1Y3QgZXBvbGxfZXZlbnQg
-ZXZ0Ow0KDQoJaWYgKGNoZWNrX2V2ZW50cyhpZmQsIDApICE9IFBPTExPVVQp
-IHsNCgkJZnByaW50ZihzdGRlcnIsICJTb21ldGhpbmcgaXMgY29va2luZyBv
-biBTVERJTiAoJWQpXG4iLCBpZmQpOw0KCQlyZXR1cm4gMTsNCgl9DQoJZXBm
-ZCA9IHhlcG9sbF9jcmVhdGUoMSk7DQoJZnByaW50ZihzdGRvdXQsICJDcmVh
-dGVkIGVwb2xsIGZkICglZClcbiIsIGVwZmQpOw0KCW1lbXNldCgmZXZ0LCAw
-LCBzaXplb2YoZXZ0KSk7DQoJZXZ0LmV2ZW50cyA9IEVQT0xMSU47DQoJeGVw
-b2xsX2N0bChlcGZkLCBFUE9MTF9DVExfQURELCBpZmQsICZldnQpOw0KCWlm
-IChjaGVja19ldmVudHMoZXBmZCwgMCkgJiBQT0xMSU4pIHsNCgkJcmVzID0g
-ZXBvbGxfd2FpdChlcGZkLCAmZXZ0LCAxLCAwKTsNCgkJaWYgKHJlcyA9PSAw
-KSB7DQoJCQlmcHJpbnRmKHN0ZGVyciwgIkVwb2xsIGZkICglZCkgaXMgcmVh
-ZHkgd2hlbiBpdCBzaG91bGRuJ3QhXG4iLA0KCQkJCWVwZmQpOw0KCQkJcmV0
-dXJuIDI7DQoJCX0NCgl9DQoNCglyZXR1cm4gMDsNCn0NCg0Kc3RhdGljIGlu
-dCBlcG9sbF93YWtldXBfY2hhaW4odm9pZCAqZGF0YSkgew0KCXN0cnVjdCBl
-cG9sbF90ZXN0X2NmZyAqdGNmZyA9IGRhdGE7DQoJaW50IGksIHJlcywgZXBm
-ZCwgYmZkLCBuZmQsIHBmZHNbMl07DQoJcGlkX3QgcGlkOw0KCXN0cnVjdCBl
-cG9sbF9ldmVudCBldnQ7DQoNCgltZW1zZXQoJmV2dCwgMCwgc2l6ZW9mKGV2
-dCkpOw0KCWV2dC5ldmVudHMgPSBFUE9MTElOOw0KDQoJZXBmZCA9IGJmZCA9
-IHhlcG9sbF9jcmVhdGUoMSk7DQoNCglmb3IgKGkgPSAwOyBpIDwgdGNmZy0+
-c2l6ZTsgaSsrKSB7DQoJCW5mZCA9IHhlcG9sbF9jcmVhdGUoMSk7DQoJCXhl
-cG9sbF9jdGwoYmZkLCBFUE9MTF9DVExfQURELCBuZmQsICZldnQpOw0KCQli
-ZmQgPSBuZmQ7DQoJfQ0KCXhwaXBlKHBmZHMpOw0KCWlmICh0Y2ZnLT5mbGFn
-cyAmIEVQT0xMX1RGX0xPT1ApDQoJew0KCQl4ZXBvbGxfY3RsKGJmZCwgRVBP
-TExfQ1RMX0FERCwgZXBmZCwgJmV2dCk7DQoJCS8qDQoJCSAqIElmIHdlJ3Jl
-IHRlc3RpbmcgZm9yIGxvb3AsIHdlIHdhbnQgdGhhdCB0aGUgd2FrZXVwDQoJ
-CSAqIHRyaWdnZXJlZCBieSB0aGUgd3JpdGUgdG8gdGhlIHBpcGUgZG9uZSBp
-biB0aGUgY2hpbGQNCgkJICogcHJvY2VzcywgdHJpZ2dlcnMgYSBmYWtlIGV2
-ZW50LiBTbyB3ZSBhZGQgdGhlIHBpcGUNCgkJICogcmVhZCBzaXplIHdpdGgg
-RVBPTExPVVQgZXZlbnRzLiBUaGlzIHdpbGwgdHJpZ2dlcg0KCQkgKiBhbiBh
-ZGRpdGlvbiB0byB0aGUgcmVhZHktbGlzdCwgYnV0IG5vIHJlYWwgZXZlbnRz
-DQoJCSAqIHdpbGwgYmUgdGhlcmUuIFRoZSB0aGUgZXBvbGwga2VybmVsIGNv
-ZGUgd2lsbCBwcm9jZWVkDQoJCSAqIGluIGNhbGxpbmcgZl9vcC0+cG9sbCgp
-IG9mIHRoZSBlcGZkLCB0cmlnZ2VyaW5nIHRoZQ0KCQkgKiBsb29wIHdlIHdh
-bnQgdG8gdGVzdC4NCgkJICovDQoJCWV2dC5ldmVudHMgPSBFUE9MTE9VVDsN
-Cgl9DQoJeGVwb2xsX2N0bChiZmQsIEVQT0xMX0NUTF9BREQsIHBmZHNbMF0s
-ICZldnQpOw0KDQoJLyoNCgkgKiBUaGUgcGlwZSB3cml0ZSBtdXN0IGNvbWUg
-YWZ0ZXIgdGhlIHBvbGwoMikgY2FsbCBpbnNpZGUNCgkgKiBjaGVja19ldmVu
-dHMoKS4gVGhpcyB0ZXN0cyB0aGUgbmVzdGVkIHdha2V1cCBjb2RlIGluDQoJ
-ICogZnMvZXZlbnRwb2xsLmM6ZXBfcG9sbF9zYWZld2FrZSgpDQoJICogQnkg
-aGF2aW5nIHRoZSBjaGVja19ldmVudHMoKSAoaGVuY2UgcG9sbCgyKSkgaGFw
-cGVucyBmaXJzdCwNCgkgKiB3ZSBoYXZlIHBvbGwgd2FpdCBxdWV1ZSBmaWxs
-ZWQgdXAsIGFuZCB0aGUgd3JpdGUoMikgaW4gdGhlDQoJICogY2hpbGQgd2ls
-bCB0cmlnZ2VyIHRoZSB3YWtldXAgY2hhaW4uDQoJICovDQoJaWYgKChwaWQg
-PSB4Zm9yaygpKSA9PSAwKSB7DQoJCXNsZWVwKDEpOw0KCQl3cml0ZShwZmRz
-WzFdLCAidyIsIDEpOw0KCQlleGl0KDApOw0KCX0NCg0KCXJlcyA9IGNoZWNr
-X2V2ZW50cyhlcGZkLCAyMDAwKSAmIFBPTExJTjsNCg0KCWlmICh3YWl0cGlk
-KHBpZCwgTlVMTCwgMCkgIT0gcGlkKSB7DQoJCXBlcnJvcigid2FpdHBpZCIp
-Ow0KCQlyZXR1cm4gLTE7DQoJfQ0KDQoJcmV0dXJuIHJlczsNCn0NCg0Kc3Rh
-dGljIGludCBlcG9sbF9wb2xsX2NoYWluKHZvaWQgKmRhdGEpIHsNCglzdHJ1
-Y3QgZXBvbGxfdGVzdF9jZmcgKnRjZmcgPSBkYXRhOw0KCWludCBpLCByZXMs
-IGVwZmQsIGJmZCwgbmZkLCBwZmRzWzJdOw0KCXBpZF90IHBpZDsNCglzdHJ1
-Y3QgZXBvbGxfZXZlbnQgZXZ0Ow0KDQoJbWVtc2V0KCZldnQsIDAsIHNpemVv
-ZihldnQpKTsNCglldnQuZXZlbnRzID0gRVBPTExJTjsNCg0KCWVwZmQgPSBi
-ZmQgPSB4ZXBvbGxfY3JlYXRlKDEpOw0KDQoJZm9yIChpID0gMDsgaSA8IHRj
-ZmctPnNpemU7IGkrKykgew0KCQluZmQgPSB4ZXBvbGxfY3JlYXRlKDEpOw0K
-CQl4ZXBvbGxfY3RsKGJmZCwgRVBPTExfQ1RMX0FERCwgbmZkLCAmZXZ0KTsN
-CgkJYmZkID0gbmZkOw0KCX0NCgl4cGlwZShwZmRzKTsNCglpZiAodGNmZy0+
-ZmxhZ3MgJiBFUE9MTF9URl9MT09QKQ0KCXsNCgkJeGVwb2xsX2N0bChiZmQs
-IEVQT0xMX0NUTF9BREQsIGVwZmQsICZldnQpOw0KCQkvKg0KCQkgKiBJZiB3
-ZSdyZSB0ZXN0aW5nIGZvciBsb29wLCB3ZSB3YW50IHRoYXQgdGhlIHdha2V1
-cA0KCQkgKiB0cmlnZ2VyZWQgYnkgdGhlIHdyaXRlIHRvIHRoZSBwaXBlIGRv
-bmUgaW4gdGhlIGNoaWxkDQoJCSAqIHByb2Nlc3MsIHRyaWdnZXJzIGEgZmFr
-ZSBldmVudC4gU28gd2UgYWRkIHRoZSBwaXBlDQoJCSAqIHJlYWQgc2l6ZSB3
-aXRoIEVQT0xMT1VUIGV2ZW50cy4gVGhpcyB3aWxsIHRyaWdnZXINCgkJICog
-YW4gYWRkaXRpb24gdG8gdGhlIHJlYWR5LWxpc3QsIGJ1dCBubyByZWFsIGV2
-ZW50cw0KCQkgKiB3aWxsIGJlIHRoZXJlLiBUaGUgdGhlIGVwb2xsIGtlcm5l
-bCBjb2RlIHdpbGwgcHJvY2VlZA0KCQkgKiBpbiBjYWxsaW5nIGZfb3AtPnBv
-bGwoKSBvZiB0aGUgZXBmZCwgdHJpZ2dlcmluZyB0aGUNCgkJICogbG9vcCB3
-ZSB3YW50IHRvIHRlc3QuDQoJCSAqLw0KCQlldnQuZXZlbnRzID0gRVBPTExP
-VVQ7DQoJfQ0KCXhlcG9sbF9jdGwoYmZkLCBFUE9MTF9DVExfQURELCBwZmRz
-WzBdLCAmZXZ0KTsNCg0KCS8qDQoJICogVGhlIHBpcGUgd3JpdGUgbXVzaCBj
-b21lIGJlZm9yZSB0aGUgcG9sbCgyKSBjYWxsIGluc2lkZQ0KCSAqIGNoZWNr
-X2V2ZW50cygpLiBUaGlzIHRlc3RzIHRoZSBuZXN0ZWQgZl9vcC0+cG9sbCBj
-YWxscyBjb2RlIGluDQoJICogZnMvZXZlbnRwb2xsLmM6ZXBfZXZlbnRwb2xs
-X3BvbGwoKQ0KCSAqIEJ5IGhhdmluZyB0aGUgcGlwZSB3cml0ZSgyKSBoYXBw
-ZW4gZmlyc3QsIHdlIG1ha2UgdGhlIGtlcm5lbA0KCSAqIGVwb2xsIGNvZGUg
-dG8gbG9hZCB0aGUgcmVhZHkgbGlzdHMsIGFuZCB0aGUgZm9sbG93aW5nIHBv
-bGwoMikNCgkgKiBkb25lIGluc2lkZSBjaGVja19ldmVudHMoKSB3aWxsIHRl
-c3QgbmVzdGVkIHBvbGwgY29kZSBpbg0KCSAqIGVwX2V2ZW50cG9sbF9wb2xs
-KCkuDQoJICovDQoJaWYgKChwaWQgPSB4Zm9yaygpKSA9PSAwKSB7DQoJCXdy
-aXRlKHBmZHNbMV0sICJ3IiwgMSk7DQoJCWV4aXQoMCk7DQoJfQ0KCXNsZWVw
-KDEpOw0KCXJlcyA9IGNoZWNrX2V2ZW50cyhlcGZkLCAxMDAwKSAmIFBPTExJ
-TjsNCg0KCWlmICh3YWl0cGlkKHBpZCwgTlVMTCwgMCkgIT0gcGlkKSB7DQoJ
-CXBlcnJvcigid2FpdHBpZCIpOw0KCQlyZXR1cm4gLTE7DQoJfQ0KDQoJcmV0
-dXJuIHJlczsNCn0NCg0KaW50IG1haW4oaW50IGFjLCBjaGFyICoqYXYpIHsN
-CglpbnQgZXJyb3I7DQoJc3RydWN0IGVwb2xsX3Rlc3RfY2ZnIHRjZmc7DQoN
-CglmcHJpbnRmKHN0ZG91dCwgIlxuKioqKioqKioqKiBUZXN0aW5nIFRUWSBl
-dmVudHNcbiIpOw0KCWVycm9yID0gcnVuX2ZvcmtlZF9wcm9jKGVwb2xsX3Rl
-c3RfdHR5LCBOVUxMKTsNCglmcHJpbnRmKHN0ZG91dCwgZXJyb3IgPT0gMCA/
-DQoJCSIqKioqKioqKioqIE9LXG4iOiAiKioqKioqKioqKiBGQUlMICglZClc
-biIsIGVycm9yKTsNCg0KCXRjZmcuc2l6ZSA9IDM7DQoJdGNmZy5mbGFncyA9
-IDA7DQoJZnByaW50ZihzdGRvdXQsICJcbioqKioqKioqKiogVGVzdGluZyBz
-aG9ydCB3YWtldXAgY2hhaW5cbiIpOw0KCWVycm9yID0gcnVuX2ZvcmtlZF9w
-cm9jKGVwb2xsX3dha2V1cF9jaGFpbiwgJnRjZmcpOw0KCWZwcmludGYoc3Rk
-b3V0LCBlcnJvciA9PSBQT0xMSU4gPw0KCQkiKioqKioqKioqKiBPS1xuIjog
-IioqKioqKioqKiogRkFJTCAoJWQpXG4iLCBlcnJvcik7DQoNCgl0Y2ZnLnNp
-emUgPSBFUE9MTF9NQVhfQ0hBSU47DQoJdGNmZy5mbGFncyA9IDA7DQoJZnBy
-aW50ZihzdGRvdXQsICJcbioqKioqKioqKiogVGVzdGluZyBsb25nIHdha2V1
-cCBjaGFpbiAoSE9MRCBPTilcbiIpOw0KCWVycm9yID0gcnVuX2ZvcmtlZF9w
-cm9jKGVwb2xsX3dha2V1cF9jaGFpbiwgJnRjZmcpOw0KCWZwcmludGYoc3Rk
-b3V0LCBlcnJvciA9PSAwID8NCgkJIioqKioqKioqKiogT0tcbiI6ICIqKioq
-KioqKioqIEZBSUwgKCVkKVxuIiwgZXJyb3IpOw0KDQoJdGNmZy5zaXplID0g
-MzsNCgl0Y2ZnLmZsYWdzID0gMDsNCglmcHJpbnRmKHN0ZG91dCwgIlxuKioq
-KioqKioqKiBUZXN0aW5nIHNob3J0IHBvbGwgY2hhaW5cbiIpOw0KCWVycm9y
-ID0gcnVuX2ZvcmtlZF9wcm9jKGVwb2xsX3BvbGxfY2hhaW4sICZ0Y2ZnKTsN
-CglmcHJpbnRmKHN0ZG91dCwgZXJyb3IgPT0gUE9MTElOID8NCgkJIioqKioq
-KioqKiogT0tcbiI6ICIqKioqKioqKioqIEZBSUwgKCVkKVxuIiwgZXJyb3Ip
-Ow0KDQoJdGNmZy5zaXplID0gRVBPTExfTUFYX0NIQUlOOw0KCXRjZmcuZmxh
-Z3MgPSAwOw0KCWZwcmludGYoc3Rkb3V0LCAiXG4qKioqKioqKioqIFRlc3Rp
-bmcgbG9uZyBwb2xsIGNoYWluIChIT0xEIE9OKVxuIik7DQoJZXJyb3IgPSBy
-dW5fZm9ya2VkX3Byb2MoZXBvbGxfcG9sbF9jaGFpbiwgJnRjZmcpOw0KCWZw
-cmludGYoc3Rkb3V0LCBlcnJvciA9PSAwID8NCgkJIioqKioqKioqKiogT0tc
-biI6ICIqKioqKioqKioqIEZBSUwgKCVkKVxuIiwgZXJyb3IpOw0KDQoJdGNm
-Zy5zaXplID0gMzsNCgl0Y2ZnLmZsYWdzID0gRVBPTExfVEZfTE9PUDsNCglm
-cHJpbnRmKHN0ZG91dCwgIlxuKioqKioqKioqKiBUZXN0aW5nIGxvb3B5IHdh
-a2V1cCBjaGFpbiAoSE9MRCBPTilcbiIpOw0KCWVycm9yID0gcnVuX2Zvcmtl
-ZF9wcm9jKGVwb2xsX3dha2V1cF9jaGFpbiwgJnRjZmcpOw0KCWZwcmludGYo
-c3Rkb3V0LCBlcnJvciA9PSAwID8NCgkJIioqKioqKioqKiogT0tcbiI6ICIq
-KioqKioqKioqIEZBSUwgKCVkKVxuIiwgZXJyb3IpOw0KDQoJdGNmZy5zaXpl
-ID0gMzsNCgl0Y2ZnLmZsYWdzID0gRVBPTExfVEZfTE9PUDsNCglmcHJpbnRm
-KHN0ZG91dCwgIlxuKioqKioqKioqKiBUZXN0aW5nIGxvb3B5IHBvbGwgY2hh
-aW4gKEhPTEQgT04pXG4iKTsNCgllcnJvciA9IHJ1bl9mb3JrZWRfcHJvYyhl
-cG9sbF9wb2xsX2NoYWluLCAmdGNmZyk7DQoJZnByaW50ZihzdGRvdXQsIGVy
-cm9yID09IDAgPw0KCQkiKioqKioqKioqKiBPS1xuIjogIioqKioqKioqKiog
-RkFJTCAoJWQpXG4iLCBlcnJvcik7DQoNCg0KCXJldHVybiAwOw0KfQ0KDQo=
-
---1795850513-728520103-1233089955=:20262--
+Index: linux-2.6/drivers/uio/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/uio/Makefile
++++ linux-2.6/drivers/uio/Makefile
+@@ -3,4 +3,5 @@ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+ obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
+ obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+ obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
++obj-$(CONFIG_UIO_AEC)	+= uio_aec.o
+ obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
+Index: linux-2.6/drivers/uio/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/uio/Kconfig
++++ linux-2.6/drivers/uio/Kconfig
+@@ -58,6 +58,24 @@ config UIO_SMX
+ 
+ 	  If you compile this as a module, it will be called uio_smx.
+ 
++config UIO_AEC
++	tristate "AEC video timestamp device"
++	depends on PCI
++	default n
++	help
++
++	  UIO driver for the Adrienne Electronics Corporation PCI time
++	  code device.
++
++	  This device differs from other UIO devices since it uses I/O
++	  ports instead of memory mapped I/O. In order to make it
++	  possible for UIO to work with this device a utility, uioport,
++	  can be used to read and write the ports:
++
++	    git clone git://ifup.org/philips/uioport.git
++
++	  If you compile this as a module, it will be called uio_aec.
++
+ config UIO_SERCOS3
+ 	tristate "Automata Sercos III PCI card driver"
+ 	default n
+Index: linux-2.6/drivers/uio/uio_aec.c
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/uio/uio_aec.c
+@@ -0,0 +1,175 @@
++/*
++ * uio_aec.c -- simple driver for Adrienne Electronics Corp time code PCI device
++ *
++ * Copyright (C) 2008 Brandon Philips <brandon@ifup.org>
++ *
++ *   This program is free software; you can redistribute it and/or modify it
++ *   under the terms of the GNU General Public License version 2 as published
++ *   by the Free Software Foundation.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License along
++ *   with this program; if not, write to the Free Software Foundation, Inc., 59
++ *   Temple Place, Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/cdev.h>
++#include <linux/fs.h>
++#include <linux/io.h>
++#include <linux/uaccess.h>
++#include <linux/uio_driver.h>
++
++#define PCI_VENDOR_ID_AEC 0xaecb
++#define PCI_DEVICE_ID_AEC_VITCLTC 0x6250
++
++#define INT_ENABLE_ADDR		0xFC
++#define INT_ENABLE		0x10
++#define INT_DISABLE		0x0
++
++#define INT_MASK_ADDR		0x2E
++#define INT_MASK_ALL		0x3F
++
++#define INTA_DRVR_ADDR		0xFE
++#define INTA_ENABLED_FLAG	0x08
++#define INTA_FLAG		0x01
++
++#define MAILBOX			0x0F
++
++static struct pci_device_id ids[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_AEC, PCI_DEVICE_ID_AEC_VITCLTC), },
++	{ 0, }
++};
++MODULE_DEVICE_TABLE(pci, ids);
++
++static irqreturn_t aectc_irq(int irq, struct uio_info *dev_info)
++{
++	void __iomem *int_flag = dev_info->priv + INTA_DRVR_ADDR;
++	unsigned char status = ioread8(int_flag);
++
++
++	if ((status & INTA_ENABLED_FLAG) && (status & INTA_FLAG)) {
++		/* application writes 0x00 to 0x2F to get next interrupt */
++		status = ioread8(dev_info->priv + MAILBOX);
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_NONE;
++}
++
++static void print_board_data(struct pci_dev *pdev, struct uio_info *i)
++{
++	dev_info(&pdev->dev, "PCI-TC board vendor: %x%x number: %x%x"
++		" revision: %c%c\n",
++		ioread8(i->priv + 0x01),
++		ioread8(i->priv + 0x00),
++		ioread8(i->priv + 0x03),
++		ioread8(i->priv + 0x02),
++		ioread8(i->priv + 0x06),
++		ioread8(i->priv + 0x07));
++}
++
++static int __devinit probe(struct pci_dev *pdev, const struct pci_device_id *id)
++{
++	struct uio_info *info;
++	int ret;
++
++	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	if (pci_enable_device(pdev))
++		goto out_free;
++
++	if (pci_request_regions(pdev, "aectc"))
++		goto out_disable;
++
++	info->name = "aectc";
++	info->port[0].start = pci_resource_start(pdev, 0);
++	if (!info->port[0].start)
++		goto out_release;
++	info->priv = pci_iomap(pdev, 0, 0);
++	if (!info->priv)
++		goto out_release;
++	info->port[0].size = pci_resource_len(pdev, 0);
++	info->port[0].porttype = UIO_PORT_GPIO;
++
++	info->version = "0.0.1";
++	info->irq = pdev->irq;
++	info->irq_flags = IRQF_SHARED;
++	info->handler = aectc_irq;
++
++	print_board_data(pdev, info);
++	ret = uio_register_device(&pdev->dev, info);
++	if (ret)
++		goto out_unmap;
++
++	iowrite32(INT_ENABLE, info->priv + INT_ENABLE_ADDR);
++	iowrite8(INT_MASK_ALL, info->priv + INT_MASK_ADDR);
++	if (!(ioread8(info->priv + INTA_DRVR_ADDR)
++			& INTA_ENABLED_FLAG))
++		dev_err(&pdev->dev, "aectc: interrupts not enabled\n");
++
++	pci_set_drvdata(pdev, info);
++
++	return 0;
++
++out_unmap:
++	pci_iounmap(pdev, info->priv);
++out_release:
++	pci_release_regions(pdev);
++out_disable:
++	pci_disable_device(pdev);
++out_free:
++	kfree(info);
++	return -ENODEV;
++}
++
++static void remove(struct pci_dev *pdev)
++{
++	struct uio_info *info = pci_get_drvdata(pdev);
++
++	/* disable interrupts */
++	iowrite8(INT_DISABLE, info->priv + INT_MASK_ADDR);
++	iowrite32(INT_DISABLE, info->priv + INT_ENABLE_ADDR);
++	/* read mailbox to ensure board drops irq */
++	ioread8(info->priv + MAILBOX);
++
++	uio_unregister_device(info);
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++	pci_set_drvdata(pdev, NULL);
++	iounmap(info->priv);
++
++	kfree(info);
++}
++
++static struct pci_driver pci_driver = {
++	.name = "aectc",
++	.id_table = ids,
++	.probe = probe,
++	.remove = remove,
++};
++
++static int __init aectc_init(void)
++{
++	return pci_register_driver(&pci_driver);
++}
++
++static void __exit aectc_exit(void)
++{
++	pci_unregister_driver(&pci_driver);
++}
++
++MODULE_LICENSE("GPL");
++
++module_init(aectc_init);
++module_exit(aectc_exit);
