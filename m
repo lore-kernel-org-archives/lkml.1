@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZA0Lkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbZA0LrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754791AbZA0Lkb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 06:40:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZA0LkW
+	id S1754641AbZA0LrU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 06:47:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZA0LrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 06:40:22 -0500
-Received: from mail.suse.de ([195.135.220.2]:56854 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752741AbZA0LkW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 06:40:22 -0500
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [RFC] [PATCH] Cgroup based OOM killer controller
-Date: Tue, 27 Jan 2009 17:07:47 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.7-9-default; KDE/4.1.3; x86_64; ; )
-Cc: Evgeniy Polyakov <zbr@ioremap.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Chris Snook <csnook@redhat.com>,
-       Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Paul Menage <menage@google.com>, containers@lists.linux-foundation.org,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-References: <200901211638.23101.knikanth@suse.de> <200901271638.21720.knikanth@suse.de> <alpine.DEB.2.00.0901270316040.25608@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0901270316040.25608@chino.kir.corp.google.com>
+	Tue, 27 Jan 2009 06:47:11 -0500
+Received: from rv-out-0506.google.com ([209.85.198.237]:61861 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752703AbZA0LrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 06:47:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=EZQq7r+9YUSmOA28Sucuhg9gZ4BaXCc/W8FSVPn9aszBAONeFAtT8F162R4iLKpYuS
+         x9Q9eo5F1zfMqYEJPSzg+rgjMdkTAau5E0elUe5mGYwR1E6GTxxulZeHaPoUeL5CxzXN
+         UezuPHMmLjr4Ef0xVm4MoBxofawuao/tHpEiw=
+Message-ID: <497EF43D.9010303@gmail.com>
+Date: Tue, 27 Jan 2009 20:47:09 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Brian Gerst <brgerst@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2 #tj-percpu] x86: fix build breakage on voyage
+References: <20090126103243.GA31307@elte.hu> <1232977445-11815-1-git-send-email-brgerst@gmail.com> <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org> <497E8778.9060503@gmail.com> <1233032609.3248.78.camel@localhost.localdomain> <497E9B9D.4010102@gmail.com> <20090127113734.GA28249@elte.hu>
+In-Reply-To: <20090127113734.GA28249@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901271707.48770.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009 16:51:26 David Rientjes wrote:
-> On Tue, 27 Jan 2009, Nikanth Karthikesan wrote:
-> > > I don't understand what you're arguing for here.  Are you suggesting
-> > > that we should not prefer tasks that intersect the set of allowable
-> > > nodes? That makes no sense if the goal is to allow for future memory
-> > > freeing.
-> >
-> > No. Actually I am just wondering, will it be possible to check whether a
-> > particular task has memory allocated or mmaped from this node to avoid
-> > killing an innocent task.
->
-> That's certainly idealistic, but cannot be done in an inexpensive way that
-> would scale with the large systems that clients of cpusets typically use.
+Hello, Ingo.
 
-If we kill only the tasks for which cpuset_mems_allowed_intersects() is true 
-on the first pass and even then if we do not get out of oom, we could go over 
-again with this expensive check. Using this scheme, could kill more no of 
-tasks than required, if a task with lots of memory has moved to a different 
-cpuset. But it should be rare and not that severe compared to killing a 
-totally innocent task like the current scheme does?!
+Ingo Molnar wrote:
+>> +#ifdef CONFIG_X86_LOCAL_APIC
+>>  	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
+>>  	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
+>> +#endif
+> 
+> That patch is not acceptable - it is ugly and it adds another set of
+> #ifdefs to an already complex piece of code.
 
-Thanks
-Nikanth
+Well, although the patch itself does add #ifdef, if you look over the
+whole series, voyager is now a much more conforming citizen in the x86
+world.  There are several solutions to this particular one.
+
+1. Just let apic stuff defined and not use it in voyager if the ifdef
+   is disturbing.  IIUC, apic isn't used in voyager at all, right?
+
+2. Clean up early percpu stuff so that it each early percpu variable
+   doesn't need to be explicitly copied and cleared, which is the
+   actual problem here.
+
+3. But, then again, the current interim and ugly way of doing it isn't
+   too bad considering the small number of early per cpu users.
+
+To me the current form doesn't look too bad but if it's too ugly,
+maybe doing #2 is not such a bad idea such that early percpu can be
+transferred to percpu in more systematic way.  It still feels a bit
+like overdoing it tho.
+
+What do you think?
+
+Thanks.
+
+-- 
+tejun
