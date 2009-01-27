@@ -1,124 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753071AbZA0EoX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753255AbZA0Evk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753071AbZA0EoX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 23:44:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbZA0EoO
+	id S1753255AbZA0Evk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 23:51:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751759AbZA0Ev1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 23:44:14 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:60814 "EHLO
-	camus.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbZA0EoO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 23:44:14 -0500
-Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
-From: Eric Anholt <eric@anholt.net>
-To: Mark Knecht <markknecht@gmail.com>
-Cc: Jonathan Campbell <jon@nerdgrounds.com>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-In-Reply-To: <5bdc1c8b0901261859g58a413e1x52208a6f2c1f9ccd@mail.gmail.com>
-References: <497E4531.20800@nerdgrounds.com>
-	 <5bdc1c8b0901261859g58a413e1x52208a6f2c1f9ccd@mail.gmail.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-EFomZrJEaHp/A+7vKlnu"
-Date: Mon, 26 Jan 2009 20:44:11 -0800
-Message-Id: <1233031451.4851.31.camel@gaiman>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 26 Jan 2009 23:51:27 -0500
+Received: from ozlabs.org ([203.10.76.45]:59281 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751372AbZA0Ev1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 26 Jan 2009 23:51:27 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ira Snyder <iws@ovro.caltech.edu>
+Subject: Re: [PATCH] virtio_net: use correct accessors for scatterlists
+Date: Tue, 27 Jan 2009 15:21:19 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Mark McLoughlin <markmc@redhat.com>,
+       netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
+References: <20090124001053.GA20156@ovro.caltech.edu>
+In-Reply-To: <20090124001053.GA20156@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901271521.19616.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 24 January 2009 10:40:53 Ira Snyder wrote:
+> Without this fix, virtio_net makes incorrect usage of scatterlists. It sets
+> the end of the scatterlist chain after the first element, despite the fact
+> that more entries come after it.
+> 
+> If you try to run dma_map_sg() on one of the scatterlists given to you by
+> add_buf(), you will get a null pointer oops.
+> 
+> Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
 
---=-EFomZrJEaHp/A+7vKlnu
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Thanks, this should go in 2.6.29.  Dave?
 
-On Mon, 2009-01-26 at 18:59 -0800, Mark Knecht wrote:
-> On Mon, Jan 26, 2009 at 3:20 PM, Jonathan Campbell <jon@nerdgrounds.com> =
-wrote:
-> > Hey guys.
-> > About a month ago while covered in the Seattle snowstorm I hacked toget=
-her
-> > this pseudofilesystem that might be of interest.
-> >
-> > I thought that this driver could solve two issues that I have:
-> >
-> > one, that today's graphics cards have relatively obscene amounts of RAM=
- on
-> > them even if you're not using it. If you're running it as a server and =
-not
-> > using it for 3D graphics, why not mount the VRAM on the graphics card a=
-s a
-> > filesystem and store things there to get some extra space?
-> >
-> > two, if 3D hardware acceleration and access to GPU or texture memory co=
-uld
-> > be provided to user-space, one way to do it would be to provide section=
-s of
-> > VRAM as a filesystem that most languages (yes---even Perl!) could use t=
-o
-> > work with todays graphics cards. They could treat the texture memory th=
-e way
-> > they treat files in /dev/shm: read/write it for general access or mmap =
-it
-> > for direct manipulation. At least, it makes far more sense to me from a
-> > programming point of view than to abstract it using specialized ioctls
-> > through the DRI. It might make writing an OpenGL driver for this kind o=
-f
-> > arrangement cleaner, too.
-> >
-> > http://www.nerdgrounds.com/vramfs-20090126-1458.tar.gz
-> >
-> > So far I've tested it against 2.6.25.17 and 2.6.28 on both x86 and x86_=
-64
-> > with reads, writes, directory creation, symlink creation, and mmap() an=
-d it
-> > seems to work fine.
-> > Just give it a range of memory on the bus, or the domain:bus:device:fun=
-ction
-> > numbers of a VGA PCI device, and it will mount the VGA video RAM and al=
-low
-> > files to exist there.
-> > As a special hack: you can also specify the size of the active framebuf=
-fer
-> > console so that fbcon doesn't collide with this driver (unless you want=
- to
-> > see what your files look like splattered across your screen, ha). The a=
-ctive
-> > VRAM area becomes a "sentinel" file named "framebuffer".
-> >
-> > What do you guys think?
-> >
-> > Jonathan Campbell
-> > Impact Studio Pro
-> >
->=20
-> Can the GPU use the data placed in your file system? Do you have
-> strong control as to exactly how the data is mapped into VRAM? I'm
-> thinking about parallel processing  - Linux puts data there and then
-> the GPU works on it to produce a result which Linux can eventually
-> fetch.
+Cheers,
+Rusty.
 
-For that you want something like GEM, which is aware of the graphics
-pipeline and the cache management necessary.  Wrapping a filesystem
-around it shouldn't be hard, and would be of some use for debugging.
+Subject: virtio_net: use correct accessors for scatterlists
+Date: Fri, 23 Jan 2009 16:10:53 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+Without this fix, virtio_net makes incorrect usage of scatterlists. It sets
+the end of the scatterlist chain after the first element, despite the fact
+that more entries come after it.
 
+If you try to run dma_map_sg() on one of the scatterlists given to you by
+add_buf(), you will get a null pointer oops.
 
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/net/virtio_net.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---=-EFomZrJEaHp/A+7vKlnu
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkl+kRsACgkQHUdvYGzw6vfgjQCbBUz9rax095Q79tfhPljC51oW
-JNwAn1b8hUKsyNkDCbxKoQAlu3losxOo
-=q+JR
------END PGP SIGNATURE-----
-
---=-EFomZrJEaHp/A+7vKlnu--
-
+diff --git a/drivers/net/virtio_net.c b/drivers/net/virtio_net.c
+index 43f6523..67ea2cf 100644
+--- a/drivers/net/virtio_net.c
++++ b/drivers/net/virtio_net.c
+@@ -286,7 +286,7 @@ static void try_fill_recv_maxbufs(struct virtnet_info *vi)
+ 		skb_put(skb, MAX_PACKET_LEN);
+ 
+ 		hdr = skb_vnet_hdr(skb);
+-		sg_init_one(sg, hdr, sizeof(*hdr));
++		sg_set_buf(sg, hdr, sizeof(*hdr));
+ 
+ 		if (vi->big_packets) {
+ 			for (i = 0; i < MAX_SKB_FRAGS; i++) {
+@@ -487,9 +487,9 @@ static int xmit_skb(struct virtnet_info *vi, struct sk_buff *skb)
+ 
+ 	/* Encode metadata header at front. */
+ 	if (vi->mergeable_rx_bufs)
+-		sg_init_one(sg, mhdr, sizeof(*mhdr));
++		sg_set_buf(sg, mhdr, sizeof(*mhdr));
+ 	else
+-		sg_init_one(sg, hdr, sizeof(*hdr));
++		sg_set_buf(sg, hdr, sizeof(*hdr));
+ 
+ 	num = skb_to_sgvec(skb, sg+1, 0, skb->len) + 1;
+ 
