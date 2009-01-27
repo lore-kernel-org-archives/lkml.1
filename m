@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZA0K1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754294AbZA0Kfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754132AbZA0K1i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 05:27:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZA0K1a
+	id S1754294AbZA0Kfd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 05:35:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZA0KfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 05:27:30 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33537 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752648AbZA0K13 (ORCPT
+	Tue, 27 Jan 2009 05:35:20 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:35703 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752202AbZA0KfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 05:27:29 -0500
-Date: Tue, 27 Jan 2009 11:27:15 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Gergely Imreh <imrehg@gmail.com>
-Subject: Re: [Bug #12391] Processor does not go below C2 state until
-	usb.autosuspend is enabled
-Message-ID: <20090127102715.GB20854@elf.ucw.cz>
-References: <KTnguC9mFUC.A.VNB.TJRdJB@chimera> <cX2gZ6Cy9nC.A.p8C._JRdJB@chimera>
+	Tue, 27 Jan 2009 05:35:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=oNT1CtYOGwLkP4NHUZ9EPJ3E386kEgr9KpWwr40Chq3jVKMJQgUCDQg5pi2RE0OgWs
+         3qhQdKJHg7Wq7HsgYJ1esk6Bom3O4UPZeAj2l7qMpBgFRD2Pn1T3aGKiA41VfkYaKFkl
+         pFpQW3Zdcffal7sjwIbRaUtOybdWta65seW24=
+Date: Tue, 27 Jan 2009 10:35:11 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v3] tcp: splice as many packets as possible at once
+Message-ID: <20090127103511.GE4197@ff.dom.local>
+References: <20090125.212203.15909648.davem@davemloft.net> <20090127071130.GA29125@gondor.apana.org.au> <20090127075418.GB4197@ff.dom.local> <20090127100958.GA30239@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <cX2gZ6Cy9nC.A.p8C._JRdJB@chimera>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <20090127100958.GA30239@gondor.apana.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 2009-01-19 22:45:39, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
+On Tue, Jan 27, 2009 at 09:09:58PM +1100, Herbert Xu wrote:
+> On Tue, Jan 27, 2009 at 07:54:18AM +0000, Jarek Poplawski wrote:
+> > 
+> > Yes, but ip_append_data() (and skb_append_datato_frags() for
+> > NETIF_F_UFO only, so currently not a problem), uses this differently,
+> > and these pages in sk->sk_sndmsg_page could leak or be used after
+> > kfree. (I didn't track locking in these other places).
 > 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
+> It'll be freed when the socket is freed so that should be fine.
 > 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12391
-> Subject		: Processor does not go below C2 state until usb.autosuspend is enabled
-> Submitter	: Gergely Imreh <imrehg@gmail.com>
-> Date		: 2009-01-09 02:35 (11 days old)
 
-Hmm? That would be quite expected behaviour. USB autosuspend is needed
-for C3... (as soon as any USB device is plugged in, at least). Can you
-doublecheck that 2.6.27 could run with C3 with active USB? That would
-be small miracle...
+I don't think so: these places can overwrite sk->sk_sndmsg_page left
+after tcp_sendmsg(), or skb_splice_bits() now, with NULL or a new
+pointer without put_page() (they only reference copied chunks and
+expect auto freeing). On the other hand, if tcp_sendmsg() reads after
+them it could use a pointer after the page is freed, I guess.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Cheers,
+Jarek P.
