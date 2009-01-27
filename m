@@ -1,120 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZA0Aea@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZA0Aep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZA0Aea (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 19:34:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZA0AeU
+	id S1755998AbZA0Aep (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 19:34:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbZA0Aea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 19:34:20 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:33682 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753790AbZA0AeT (ORCPT
+	Mon, 26 Jan 2009 19:34:30 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:18459 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755850AbZA0Ae3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 19:34:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=n7oANxlytTTKrGdCWUYH3S+DbY8EPgcSychCG0RlRlei6By9w4cT/3gYErA3RJSNPY
-         fTdmo5nOpcjbd/4dh3bdJoMetBGP+iy0xfGt4loNF5nNNI5iGObAi0MV9KQ/5+ZsLU1z
-         uiWdSpX5k0+L8ey3v/FnSPuIWbzGhIGYiyK1w=
-Date: Tue, 27 Jan 2009 01:34:15 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dmitry.torokhov@gmail.com, dtor@mail.ru, linux-kernel@vger.kernel.org,
-       mingo@elte.hu, linux-input@vger.kernel.org
-Subject: Re: [PATCH] psmouse: run kpsmoused only while needed
-Message-ID: <20090127003412.GC4815@nowhere>
-References: <496fd1d3.0d135e0a.171b.43ea@mx.google.com> <20090126143210.ce6a4503.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090126143210.ce6a4503.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 26 Jan 2009 19:34:29 -0500
+Date: Mon, 26 Jan 2009 16:34:11 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: general@lists.openfabrics.org, rolandd@cisco.com,
+       akpm <akpm@linux-foundation.org>
+Subject: [PATCH resend/lost] maintainers: moderated mailing list
+Message-Id: <20090126163411.7aeaff7f.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.497E5686.0218:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 02:32:10PM -0800, Andrew Morton wrote:
-> On Thu, 15 Jan 2009 16:16:19 -0800 (PST)
-> Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > While looking at the workqueue tracer, I noticed that kpsmoused receives
-> > rarely (if not never) events.
-> > 
-> > Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
-> > workqueue. But recync are rare. While reading an old discussion, it seems
-> > that usual workqueue events can't be used for that purpose because resync
-> > can take too much time and could delay the other works in queue.
-> > 
-> > But if you have built psmouse driver, this workqueue will always be present
-> > whether you have a ps/2 port or not. And its events are rare.
-> > 
-> > To avoid this pointless task, this patch makes the kpsmoused a kernel
-> > thread only created on the fly when a recync is needed. Once the recync is done,
-> > this thread will die. So you will almost never see it, and it will not be
-> > an inactive task anymore.
-> > 
-> > This thread is created through a usual workqueue event (because we can't create
-> > it from interrupt).
-> > 
-> 
-> Seems like a reasonable objective.
-> 
-> >
-> > ...
-> >
-> >  /*
-> >   * __psmouse_set_state() sets new psmouse state and resets all flags.
-> > @@ -313,7 +307,8 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
-> >  		       psmouse->name, psmouse->phys, psmouse->pktcnt);
-> >  		psmouse->badbyte = psmouse->packet[0];
-> >  		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
-> > -		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
-> > +		atomic_inc(&psmouse->nb_recync_pending);
-> 
-> The patch and the changelog consistently misspell "sync".
-> 
-> A code comment (in psmouse.h) which clearly spells out the role of
-> nb_recync_pending would be useful.
+Date: Thu, 23 Oct 2008 18:38:05 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: general@lists.openfabrics.org, rolandd@cisco.com, akpm <akpm@linux-foundation.org>
+Subject: [PATCH] maintainers: moderated mailing list
 
 
-Ok.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
- 
-> > +		schedule_work(&psmouse->resync_work);
-> >  		goto out;
-> >  	}
-> >  
-> >
-> > ...
-> >
-> > @@ -1131,7 +1155,13 @@ static void psmouse_disconnect(struct serio *serio)
-> >  
-> >  	/* make sure we don't have a resync in progress */
-> >  	mutex_unlock(&psmouse_mutex);
-> > -	flush_workqueue(kpsmoused_wq);
-> > +
-> > +	prepare_to_wait(&psmouse->recync_pending_queue, &wait,
-> > +				TASK_UNINTERRUPTIBLE);
-> > +	if (atomic_read(&psmouse->nb_recync_pending))
-> > +		schedule();
-> > +	finish_wait(&psmouse->recync_pending_queue, &wait);
-> 
-> So... we're requiring that nb_recync_pending is zero at this stage?
-> 
-> I wonder if the code manages to do that.  A little WARN_ON(), maybe?
+I got the "list is moderated message," so add it here.
 
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ MAINTAINERS |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Yes it is supposed to be zero since no new recync can be performed at this time.
-But a workqueue (one that creates the kpsmoused thread) or the thread itself can
-be still running, so we want to ensure all is completed.
-
-Perhaps a schedule_timeout with a warn_on would be better to detect soft-lockups?
-
-Thanks!
-
- 
-> >  	mutex_lock(&psmouse_mutex);
-> >  
-> 
-
+--- linux-next-20081023.orig/MAINTAINERS
++++ linux-next-20081023/MAINTAINERS
+@@ -2144,7 +2144,7 @@ P:	Sean Hefty
+ M:	sean.hefty@intel.com
+ P:	Hal Rosenstock
+ M:	hal.rosenstock@gmail.com
+-L:	general@lists.openfabrics.org
++L:	general@lists.openfabrics.org (moderated for non-subscribers)
+ W:	http://www.openib.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git
+ S:	Supported
+--
