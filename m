@@ -1,56 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZA0PvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZA0Pv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbZA0PvL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 10:51:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbZA0Puz
+	id S1756352AbZA0Pv1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 10:51:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754388AbZA0Pu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 10:50:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45345 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752084AbZA0Puy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 10:50:54 -0500
-Date: Tue, 27 Jan 2009 07:50:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>, Tejun Heo <tj@kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-ide@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata fixes
-In-Reply-To: <20090127073055.GA30360@havoc.gtf.org>
-Message-ID: <alpine.LFD.2.00.0901270748290.3123@localhost.localdomain>
-References: <20090127073055.GA30360@havoc.gtf.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 27 Jan 2009 10:50:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34657 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754154AbZA0Pu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 10:50:57 -0500
+Date: Tue, 27 Jan 2009 16:50:44 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Tejun Heo <htejun@gmail.com>, Brian Gerst <brgerst@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2 #tj-percpu] x86: fix build breakage on voyage
+Message-ID: <20090127155044.GB28209@elte.hu>
+References: <20090126103243.GA31307@elte.hu> <1232977445-11815-1-git-send-email-brgerst@gmail.com> <20090126141832.GA31442@elte.hu> <497E6B34.1020508@kernel.org> <497E8778.9060503@gmail.com> <1233032609.3248.78.camel@localhost.localdomain> <497E9B9D.4010102@gmail.com> <20090127113734.GA28249@elte.hu> <1233070302.3231.34.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233070302.3231.34.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
 
-On Tue, 27 Jan 2009, Jeff Garzik wrote:
+> On Tue, 2009-01-27 at 12:37 +0100, Ingo Molnar wrote:
+> > * Tejun Heo <htejun@gmail.com> wrote:
+> > 
+> > > From: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > > 
+> > > Impact: build fix
+> > > 
+> > > x86_cpu_to_apicid and x86_bios_cpu_apicid aren't defined for voyage. 
+> > > Earlier patch forgot to conditionalize early percpu clearing.  Fix it.
+> > 
+> > > +#ifdef CONFIG_X86_LOCAL_APIC
+> > >  	early_per_cpu_ptr(x86_cpu_to_apicid) = NULL;
+> > >  	early_per_cpu_ptr(x86_bios_cpu_apicid) = NULL;
+> > > +#endif
+> > 
+> > That patch is not acceptable - it is ugly and it adds another set of
+> > #ifdefs to an already complex piece of code.
+> > 
+> > As i explained it to James in recent threads, the clean and acceptable 
+> > solution to this class of problems is to switch Voyager away from that 
+> > fragile subarch code to proper generic x86 code. (just like we did it for 
+> > other subarchitectures)
+> > 
+> > There is nothing in Voyager that justifies special treatment in the area 
+> > of x86 percpu code.
+> > 
+> > This is one of the mails that explains the principles:
+> > 
+> >   http://lkml.indiana.edu/hypermail/linux/kernel/0901.2/00954.html
+> > 
+> > Or - if there's no time/interest in doing that, we can mark Voyager as 
+> > CONFIG_BROKEN.
 > 
-> Please pull from 'upstream-linus' branch of
-> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
-> 
-> to receive the following updates:
-> 
->  drivers/ata/Kconfig              |    6 ++--
->  drivers/ata/libata-sff.c         |   12 ++++++-
->  drivers/ata/pata_rb532_cf.c      |    2 -
->  drivers/ata/pata_via.c           |   22 +++++++++---
->  drivers/ata/sata_mv.c            |   56 ++++++++++++++----------------
->  drivers/ata/sata_nv.c            |   70 +++++++++++++++++++++++--------------
->  include/linux/pci_ids.h          |    4 ++
->  7 files changed, 104 insertions(+), 68 deletions(-)
->  delete mode 100644 arch/arm/mach-integrator/clock.h
+> Have you quite finished?
 
-Hmm. That delete of the empty file is "correct" (and probably came as a 
-result of somebody doing "make distclean" which deletes empty files), but 
-should not have been committed as part of "libata-sff: fix incorrect EH 
-message".
+What is that supposed to mean?
 
-Seems to be a mistake, and a small one, but still.. Be more careful.
-
-			Linus
+	Ingo
