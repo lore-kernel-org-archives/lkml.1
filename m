@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZA0CSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753789AbZA0CX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbZA0CSq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 26 Jan 2009 21:18:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZA0CSS
+	id S1753789AbZA0CX5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 26 Jan 2009 21:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZA0CXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 26 Jan 2009 21:18:18 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:43533 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752365AbZA0CSR (ORCPT
+	Mon, 26 Jan 2009 21:23:47 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:16692 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbZA0CXq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 26 Jan 2009 21:18:17 -0500
-Message-ID: <497E6EDA.2050700@oracle.com>
-Date: Mon, 26 Jan 2009 18:18:02 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 26 Jan 2009 21:23:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=SGAGcLQR3wUMt6tvaO3qT9uaOLGVOle9/ZkoM1K8r3eO1sjKTExuMiy22UK6uFdWUW
+         E5hxLf20VW+2GjM+iwqAUWsxF/zsg5f00e/70e5cqfaK0735QkNh4j939T1n5SwF9g7Z
+         yDMXlsjiXEy/MUpc1eIslXpkMHp+rQ1ZUGh5E=
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
-       kristen.c.accardi@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] pcie hotplug: Change link order of pciehp
-References: <20090127003743.GA27711@srcf.ucam.org> <497E5904.9030407@oracle.com> <20090127010335.GA29035@srcf.ucam.org>
-In-Reply-To: <20090127010335.GA29035@srcf.ucam.org>
+In-Reply-To: <1232992272.19862.3.camel@londonpacket.bos.redhat.com>
+References: <1232751312.3990.59.camel@perihelion.bos.jonmasters.org>
+	 <20090125225205.GA3783@monkey.beaverton.ibm.com>
+	 <1232992272.19862.3.camel@londonpacket.bos.redhat.com>
+Date: Mon, 26 Jan 2009 21:23:45 -0500
+X-Google-Sender-Auth: fc53f2d314709d6d
+Message-ID: <75b66ecd0901261823o72339347kfa70d6e54f61af00@mail.gmail.com>
+Subject: Re: [RT] [RFC] simple SMI detector
+From: Lee Revell <rlrevell@joe-job.com>
+To: Jon Masters <jcm@redhat.com>
+Cc: Mike Kravetz <kravetz@us.ibm.com>, linux-rt-users@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, williams <williams@redhat.com>,
+       "Luis Claudio R. Goncalves" <lgoncalv@redhat.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.497E6EDF.01C1:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> commit bf53d46d80486fa613dc345aba5d42a29368056d
-> Author: Matthew Garrett <mjg@redhat.com>
-> Date:   Tue Jan 27 11:29:02 2009 +1100
-> 
-> pcie hotplug: Change link order of pciehp
-> 
-> Some hardware exposes PCIE slots in such a way that they can be claimed by
-> either the acpiphp or pciehp driver. pciehp is the preferred driver if the
-> firmware allows the OS to claim control via the _OSC method so should be
-> loaded first - if it fails to bind (either due to a missing _OSC method or
-> the firmware refusing to hand off control) then we can fall back to acpiphp or
-> a vendor-specific driver.
-> 
-> This patch simply changes the link order to ensure that pciehp will be
-> initialised before acpiphp if both are statically built into the kernel.
-> 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+On Mon, Jan 26, 2009 at 12:51 PM, Jon Masters <jcm@redhat.com> wrote:
+> On Sun, 2009-01-25 at 14:52 -0800, Mike Kravetz wrote:
+>
+>> Any reason why you could not do SMI detection in user level code running
+>> at the highest RT priority?
+>
+> Yeah. I had some suggestions about that already...the problem with that
+> is that you can't know whether measured latencies are due to SMIs /or/
+> other kernel latencies - maybe there's a bug or other problem? I really
+> want to be able to say to vendors "nope, it's definitely your problem".
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Can't you do this with a known good version of the -rt kernel and the
+latency tracer in full RT preempt mode?  SMI induced latency will show
+up in the trace as long delays in random code paths where kernel
+induced latency can be ruled out.
 
-Thanks.
-
-> --- 
-> 
-> diff --git a/drivers/pci/hotplug/Makefile b/drivers/pci/hotplug/Makefile
-> index e31fb91..2aa117c 100644
-> --- a/drivers/pci/hotplug/Makefile
-> +++ b/drivers/pci/hotplug/Makefile
-> @@ -5,11 +5,15 @@
->  obj-$(CONFIG_HOTPLUG_PCI)		+= pci_hotplug.o
->  obj-$(CONFIG_HOTPLUG_PCI_COMPAQ)	+= cpqphp.o
->  obj-$(CONFIG_HOTPLUG_PCI_IBM)		+= ibmphp.o
-> +
-> +# pciehp should be linked before acpiphp in order to allow the native driver
-> +# to attempt to bind first. We can then fall back to generic support.
-> +
-> +obj-$(CONFIG_HOTPLUG_PCI_PCIE)		+= pciehp.o
->  obj-$(CONFIG_HOTPLUG_PCI_ACPI)		+= acpiphp.o
->  obj-$(CONFIG_HOTPLUG_PCI_ACPI_IBM)	+= acpiphp_ibm.o
->  obj-$(CONFIG_HOTPLUG_PCI_CPCI_ZT5550)	+= cpcihp_zt5550.o
->  obj-$(CONFIG_HOTPLUG_PCI_CPCI_GENERIC)	+= cpcihp_generic.o
-> -obj-$(CONFIG_HOTPLUG_PCI_PCIE)		+= pciehp.o
->  obj-$(CONFIG_HOTPLUG_PCI_SHPC)		+= shpchp.o
->  obj-$(CONFIG_HOTPLUG_PCI_RPA)		+= rpaphp.o
->  obj-$(CONFIG_HOTPLUG_PCI_RPA_DLPAR)	+= rpadlpar_io.o
-> 
-
-
--- 
-~Randy
+Lee
