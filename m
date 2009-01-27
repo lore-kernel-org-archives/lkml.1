@@ -1,59 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755133AbZA0RSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbZA0RWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755133AbZA0RSd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 12:18:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756995AbZA0RSR
+	id S1756416AbZA0RWS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 12:22:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755187AbZA0RWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 12:18:17 -0500
-Received: from mga02.intel.com ([134.134.136.20]:29751 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756865AbZA0RSP convert rfc822-to-8bit (ORCPT
+	Tue, 27 Jan 2009 12:22:00 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:18129 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755056AbZA0RV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 12:18:15 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,332,1231142400"; 
-   d="scan'208";a="485015704"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Date: Tue, 27 Jan 2009 09:17:58 -0800
-Subject: RE: [PATCH -tip] IA64: fix the compile error on IA64_DIG_VTD
-Thread-Topic: [PATCH -tip] IA64: fix the compile error on IA64_DIG_VTD
-Thread-Index: AcmAjhwcNWA4XVc0TLasEqIj/UP2XwAE7I2g
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA35F1F9A94@orsmsx505.amr.corp.intel.com>
-References: <20090127233530U.fujita.tomonori@lab.ntt.co.jp>
- <20090127144602.GA12183@elte.hu> <20090127144637.GA14728@elte.hu>
-In-Reply-To: <20090127144637.GA14728@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 Jan 2009 12:21:59 -0500
+Message-ID: <497F424A.7060202@oracle.com>
+Date: Tue, 27 Jan 2009 09:20:10 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
+To: Oren Laadan <orenl@cs.columbia.edu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@osdl.org>,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-api@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Serge Hallyn <serue@us.ibm.com>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Alexander Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC v13][PATCH 01/14] Create syscalls: sys_checkpoint, sys_restart
+References: <1233076092-8660-1-git-send-email-orenl@cs.columbia.edu> <1233076092-8660-2-git-send-email-orenl@cs.columbia.edu>
+In-Reply-To: <1233076092-8660-2-git-send-email-orenl@cs.columbia.edu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.497F4251.001C:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > ---
-> > >  arch/ia64/kernel/dma-mapping.c |    3 +++
-> > >  arch/ia64/kernel/pci-swiotlb.c |    3 ---
-> > >  2 files changed, 3 insertions(+), 3 deletions(-)
-> >
-> > Applied to tip/core/iommu, thanks!
->
-> Tony, is this fix fine with you too?
+Oren Laadan wrote:
+> Changelog[v5]:
+>   - Config is 'def_bool n' by default
 
-It works ... and dma-mapping.c is OK as a location for the
-definition.  But there seemes to be some small scope for a
-related cleanup:
+That's true by default; it doesn't have to be written/typed.
 
-There are "extern" declarations for "iommu_detected" in both
-<asm/iommu.h> (x86 and ia64) and also in <linux/dmar.h>
 
-Does having both of these avoid some #include hell?
+> Signed-off-by: Oren Laadan <orenl@cs.columbia.edu>
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+> Signed-off-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> ---
+>  arch/x86/include/asm/unistd_32.h   |    2 +
+>  arch/x86/kernel/syscall_table_32.S |    2 +
+>  checkpoint/Kconfig                 |   11 +++++++++
+>  checkpoint/Makefile                |    5 ++++
+>  checkpoint/sys.c                   |   41 ++++++++++++++++++++++++++++++++++++
+>  include/linux/syscalls.h           |    2 +
+>  init/Kconfig                       |    2 +
+>  kernel/sys_ni.c                    |    4 +++
+>  8 files changed, 69 insertions(+), 0 deletions(-)
+>  create mode 100644 checkpoint/Kconfig
+>  create mode 100644 checkpoint/Makefile
+>  create mode 100644 checkpoint/sys.c
+> 
+> diff --git a/arch/x86/include/asm/unistd_32.h b/arch/x86/include/asm/unistd_32.h
+> index f2bba78..a5f9e09 100644
+> --- a/arch/x86/include/asm/unistd_32.h
+> +++ b/arch/x86/include/asm/unistd_32.h
+> @@ -338,6 +338,8 @@
+>  #define __NR_dup3		330
+>  #define __NR_pipe2		331
+>  #define __NR_inotify_init1	332
+> +#define __NR_checkpoint		333
+> +#define __NR_restart		334
+>  
+>  #ifdef __KERNEL__
+>  
+> diff --git a/arch/x86/kernel/syscall_table_32.S b/arch/x86/kernel/syscall_table_32.S
+> index d44395f..5543136 100644
+> --- a/arch/x86/kernel/syscall_table_32.S
+> +++ b/arch/x86/kernel/syscall_table_32.S
+> @@ -332,3 +332,5 @@ ENTRY(sys_call_table)
+>  	.long sys_dup3			/* 330 */
+>  	.long sys_pipe2
+>  	.long sys_inotify_init1
+> +	.long sys_checkpoint
+> +	.long sys_restart
 
--Tony
+> diff --git a/checkpoint/sys.c b/checkpoint/sys.c
+> new file mode 100644
+> index 0000000..375129c
+> --- /dev/null
+> +++ b/checkpoint/sys.c
+> @@ -0,0 +1,41 @@
+> +/*
+> + *  Generic container checkpoint-restart
+> + *
+> + *  Copyright (C) 2008 Oren Laadan
+> + *
+> + *  This file is subject to the terms and conditions of the GNU General Public
+> + *  License.  See the file COPYING in the main directory of the Linux
+> + *  distribution for more details.
+> + */
+> +
+
+#include <linux/syscalls.h>
+
+and then use the new syscall definition macros.
+See SYSCALL_DEFINE* in kernel/*.c (current git tree) for examples.
+
+> +#include <linux/sched.h>
+> +#include <linux/kernel.h>
+> +
+> +/**
+> + * sys_checkpoint - checkpoint a container
+> + * @pid: pid of the container init(1) process
+> + * @fd: file to which dump the checkpoint image
+> + * @flags: checkpoint operation flags
+> + *
+> + * Returns positive identifier on success, 0 when returning from restart
+> + * or negative value on error
+> + */
+> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags)
+> +{
+> +	pr_debug("sys_checkpoint not implemented yet\n");
+> +	return -ENOSYS;
+> +}
+> +/**
+> + * sys_restart - restart a container
+> + * @crid: checkpoint image identifier
+> + * @fd: file from which read the checkpoint image
+> + * @flags: restart operation flags
+> + *
+> + * Returns negative value on error, or otherwise returns in the realm
+> + * of the original checkpoint
+> + */
+> +asmlinkage long sys_restart(int crid, int fd, unsigned long flags)
+> +{
+> +	pr_debug("sys_restart not implemented yet\n");
+> +	return -ENOSYS;
+> +}
+> diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+> index 04fb47b..9750393 100644
+> --- a/include/linux/syscalls.h
+> +++ b/include/linux/syscalls.h
+> @@ -621,6 +621,8 @@ asmlinkage long sys_timerfd_gettime(int ufd, struct itimerspec __user *otmr);
+>  asmlinkage long sys_eventfd(unsigned int count);
+>  asmlinkage long sys_eventfd2(unsigned int count, int flags);
+>  asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len);
+> +asmlinkage long sys_checkpoint(pid_t pid, int fd, unsigned long flags);
+> +asmlinkage long sys_restart(int crid, int fd, unsigned long flags);
+>  
+>  int kernel_execve(const char *filename, char *const argv[], char *const envp[]);
+>  
+> diff --git a/init/Kconfig b/init/Kconfig
+> index f763762..57364fe 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -814,6 +814,8 @@ config MARKERS
+>  
+>  source "arch/Kconfig"
+>  
+> +source "checkpoint/Kconfig"
+> +
+>  endmenu		# General setup
+>  
+>  config HAVE_GENERIC_DMA_COHERENT
+> diff --git a/kernel/sys_ni.c b/kernel/sys_ni.c
+> index e14a232..fcd65cc 100644
+> --- a/kernel/sys_ni.c
+> +++ b/kernel/sys_ni.c
+> @@ -174,3 +174,7 @@ cond_syscall(compat_sys_timerfd_settime);
+>  cond_syscall(compat_sys_timerfd_gettime);
+>  cond_syscall(sys_eventfd);
+>  cond_syscall(sys_eventfd2);
+> +
+> +/* checkpoint/restart */
+> +cond_syscall(sys_checkpoint);
+> +cond_syscall(sys_restart);
+
+
+-- 
+~Randy
