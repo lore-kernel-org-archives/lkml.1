@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZA0FIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753942AbZA0FJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbZA0FIu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 00:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZA0FIj
+	id S1753942AbZA0FJX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 00:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZA0FJK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 00:08:39 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48769
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751170AbZA0FIi (ORCPT
+	Tue, 27 Jan 2009 00:09:10 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35865 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbZA0FJJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 00:08:38 -0500
-Date: Mon, 26 Jan 2009 21:08:35 -0800 (PST)
-Message-Id: <20090126.210835.181389836.davem@davemloft.net>
-To: sam@ravnborg.org
-Cc: andrew@walrond.org, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.28 headers break kbd and net-tools userspace builds
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090122191239.GA16347@uranus.ravnborg.org>
-References: <20090122175645.GA14178@uranus.ravnborg.org>
-	<4978C301.1040705@walrond.org>
-	<20090122191239.GA16347@uranus.ravnborg.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 27 Jan 2009 00:09:09 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: lirc@bartelmus.de (Christoph Bartelmus)
+Subject: [PATCH] export get_task_comm()
+Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <AuEeLWHZjFB@christoph>
+References: <20090120071641.B0A3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <AuEeLWHZjFB@christoph>
+Message-Id: <20090128140615.D464.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue, 27 Jan 2009 14:09:05 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Thu, 22 Jan 2009 20:12:39 +0100
-
-> On Thu, Jan 22, 2009 at 07:03:29PM +0000, Andrew Walrond wrote:
-> > $ grep -r iphdr /usr/include/
-> > 
-> > /usr/include/netinet/ip.h:struct iphdr
-> > /usr/include/netinet/tcp.h: * This should be defined as MIN(512, IP_MSS 
-> > - sizeof (struct tcpiphdr)).
-> > /usr/include/linux/if_tunnel.h:    struct iphdr        iph;
-> > /usr/include/linux/ip.h:struct iphdr {
-> > 
-> > $ grep netinet/ip.h iptunnel.c
-> > 
-> > #include <netinet/ip.h>
-> > 
-> > So linux/ip.h is clashing with glibc(2.8)'s netinet/ip.h
+> Hi,
 > 
-> I took a look at my netinet/ip.h and this is obviously
-> the same structure.
-> But I do not know what the right answer is here.
+> on 19 Jan 09 at 07:36, KOSAKI Motohiro wrote:
+> >> is there any reason why get_task_comm() is not exported in fs/exec.c?
 > 
-> Added netdev..
+> > In general, the only function of anybody necessarity explained is exported.
+> > if you want to export get_task_comm(), you need to explain reasonable
+> > reason.
 > 
-> This may be a general thing. Because iphdr is
-> no a kernel thing, it is an IP thing. So one could argue
-> that the kernel should not export it in the first place.
+> It's nothing that important: just want to print the executable name to the  
+> logs during error handling. get_task_comm() is the required accessor  
+> function.
+> 
+> http://lirc.cvs.sourceforge.net/viewvc/lirc/lirc/drivers/lirc_dev/lirc_dev.c?revision=1.70&view=markup
 
-The fly in the ointment is linux/if_tunnel.h
+To be honest, I don't use get_task_comm(). but I don't oppose your request.
 
-We export a structure there for a userland interface which
-uses "struct iphdr".
+==
+Subject: [PATCH] export get_task_comm()
 
-Because of that, we are faced with the difficult choice between
-defining the structure (as we do) in linux/ip.h or using some ugly
-__KERNEL__ ifdefs in linux/if_tunnel.h to conditionally include
-netinet/ip.h instead. :-/
+task::comm is good debugging information and driver developer want to
+use this information easily.
 
-Really, I have no idea what to do about this as the problem has
-existed for so long.
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ fs/exec.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: b/fs/exec.c
+===================================================================
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -936,6 +936,7 @@ char *get_task_comm(char *buf, struct ta
+ 	task_unlock(tsk);
+ 	return buf;
+ }
++EXPORT_SYMBOL_GPL(get_task_comm);
+ 
+ void set_task_comm(struct task_struct *tsk, char *buf)
+ {
+
+
+
+
+
