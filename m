@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756344AbZA0QEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZA0QGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756344AbZA0QEv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 11:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755894AbZA0QEX
+	id S1755955AbZA0QGQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 11:06:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752286AbZA0QGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 11:04:23 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:51580 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755857AbZA0QEW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 11:04:22 -0500
-Date: Tue, 27 Jan 2009 11:04:21 -0500
-From: Kyle McMartin <kyle@redhat.com>
-To: stable@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, arjan@linux.intel.com
-Subject: [PATCH stable] resources: skip sanity check of busy resources
-Message-ID: <20090127160421.GF5034@bombadil.infradead.org>
-Reply-To: kyle@infradead.org
+	Tue, 27 Jan 2009 11:06:00 -0500
+Received: from smtp5.welho.com ([213.243.153.39]:53829 "EHLO smtp5.welho.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751865AbZA0QGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 11:06:00 -0500
+Date: Tue, 27 Jan 2009 18:06:01 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Jan Kara <jack@suse.cz>
+Cc: apw@canonical.com, linux-kernel@vger.kernel.org
+Subject: Re: Checkpatch false positive?
+Message-ID: <20090127160601.GA20342@localhost.pp.htv.fi>
+References: <20090127154904.GC8289@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <20090127154904.GC8289@duck.suse.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
+On Tue, Jan 27, 2009 at 04:49:05PM +0100, Jan Kara wrote:
+>   Hi,
+> 
+>   I've used checkpatch.pl to verify one of my patches. It complains:
+> 
+> ERROR: trailing statements should be on next line
+> #167: FILE: fs/quota/quota_tree.c:249:
+> +       for (i = 0, ddquot = buf + sizeof(struct qt_disk_dqdbheader);
+> [...]
+>              i++, ddquot += info->dqi_entry_size);
+> 
+>   But the code looks like:
+>         for (i = 0, ddquot = buf + sizeof(struct qt_disk_dqdbheader);
+>              i < qtree_dqstr_in_blk(info) && !qtree_entry_unused(info, ddquot);
+>              i++, ddquot += info->dqi_entry_size);
+> 
+>   Which is IMHO correct. Maybe it's because the for has actually empty body
+> and the ; is at the end of the line with for. But I didn't find anything in
+> CodingStyle that would forbid
+> 	for (...);
+> and
+> 	for (...)
+> 		;
+> Looks a bit strange.
 
-Impact: reduce false positives in iomem_map_sanity_check()
+for (...); is a common C programming error, usually it's some kind of:
 
-Some drivers (vesafb) only map/reserve a portion of a resource.
-If then some other driver comes in and maps the whole resource,
-the current code WARN_ON's. This is not the intent of the checks
-in iomem_map_sanity_check(); rather these checks want to
-warn when crossing *hardware* resources only.
+	for(........);
+		do_something();
 
-This patch skips BUSY resources as suggested by Linus.
+This code does something different than intended.
+And yes, we had such bugs in the kernel.
 
-Note: having two drivers talk to the same hardware at the same
-time is obviously not optimal behavior, but that's a separate story.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Kyle McMartin <kyle@redhat.com>
----
+	for(........)
+		;
 
-Bug fix for 2.6.28-stable only (relevant iomem_map_sanity_check hadn't
-been added to 2.6.27.) This resolves a fairly nasty boot time WARN
-in acpi ec seen on a number of systems. (RH #480700)
+is correct. The "looks a bit strange" is what actually tells readers 
+what the code is doing (and that the author did it intentionally).
 
- kernel/resource.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/resource.c b/kernel/resource.c
-index 4337063..e633106 100644
---- a/kernel/resource.c
-+++ b/kernel/resource.c
-@@ -853,6 +853,15 @@ int iomem_map_sanity_check(resource_size_t addr, unsigned long size)
- 		if (PFN_DOWN(p->start) <= PFN_DOWN(addr) &&
- 		    PFN_DOWN(p->end) >= PFN_DOWN(addr + size - 1))
- 			continue;
-+		/*
-+		 * if a resource is "BUSY", it's not a hardware resource
-+		 * but a driver mapping of such a resource; we don't want
-+		 * to warn for those; some drivers legitimately map only
-+		 * partial hardware resources. (example: vesafb)
-+		 */
-+		if (p->flags & IORESOURCE_BUSY)
-+			continue;
-+
- 		printk(KERN_WARNING "resource map sanity check conflict: "
- 		       "0x%llx 0x%llx 0x%llx 0x%llx %s\n",
- 		       (unsigned long long)addr,
+> 									Honza
+
+cu
+Adrian
+
 -- 
-1.6.0.6
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
