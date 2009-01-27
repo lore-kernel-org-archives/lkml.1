@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbZA0Vpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754615AbZA0Vrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558AbZA0Vpy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 16:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZA0Vpp
+	id S1754615AbZA0Vrr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 16:47:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750898AbZA0Vri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 16:45:45 -0500
-Received: from mx1.suse.de ([195.135.220.2]:51126 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751759AbZA0Vpo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 16:45:44 -0500
-Message-ID: <497F8027.2060809@suse.com>
-Date: Tue, 27 Jan 2009 16:44:07 -0500
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 27 Jan 2009 16:47:38 -0500
+Received: from out01.mta.xmission.com ([166.70.13.231]:40979 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751656AbZA0Vrh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 16:47:37 -0500
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Turner <pjt@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Migration of kernel interfaces to seq_files breaks pread() consumers
+References: <Pine.LNX.4.64.0901162229420.12858@kitami.corp.google.com>
+	<20090124181924.d633523c.akpm@linux-foundation.org>
+	<20090125120818.GA4454@x200.localdomain>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 27 Jan 2009 13:47:44 -0800
+In-Reply-To: <20090125120818.GA4454@x200.localdomain> (Alexey Dobriyan's message of "Sun\, 25 Jan 2009 15\:08\:18 +0300")
+Message-ID: <m1r62obev3.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH] kmalloc: Return NULL instead of link failure
-References: <4975F376.4010506@suse.com> <20090127133723.46eb7035.akpm@linux-foundation.org>
-In-Reply-To: <20090127133723.46eb7035.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=24.130.11.59;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 24.130.11.59
+X-SA-Exim-Rcpt-To: adobriyan@gmail.com, linux-kernel@vger.kernel.org, pjt@google.com, akpm@linux-foundation.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: No (on mx04.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Alexey Dobriyan <adobriyan@gmail.com> writes:
 
-Andrew Morton wrote:
-> Strange patch format, but it applied.
+> On Sat, Jan 24, 2009 at 06:19:24PM -0800, Andrew Morton wrote:
+>> On Fri, 16 Jan 2009 23:51:35 -0800 (PST) Paul Turner <pjt@google.com> wrote:
+>> 
+>> > 
+>> > (Specifically) Several interfaces under /proc have been migrated to use 
+>> > seq_files.  This was previously observed to be a problem with VMware's 
+>> > reading of /proc/uptime.  We're now running into the same problem on  
+>> > /proc/<pid>/stat; we have many consumers performing preads on this 
+>> > interface which break under new kernels.
+>> > 
+>> > Reverting these migrations presents other problems and doesn't scale with 
+>> > everyones' pet dependencies over an abi that's been
+>> > broken :(
+>> 
+>> We changed userspace-visible behaviour and broke real applications. 
+>> This is a serious matter.  So serious in fact that your report has
+>> languished without reply for a week.
+>> 
+>> Reverting those changes until we have a suitable reimplementation which
+>> doesn't bust userspace is 100% justifiable.
+>> 
+>> In which kernel versions is this regression present?
+>> 
+>> What would a revert look like?  Big and ugly or small and simple?  Do
+>> the original commits (which were they?) still revert OK?
+>
+> This is bug http://bugzilla.kernel.org/show_bug.cgi?id=11856
+> Some of us think what to do here.
+>
+> Original patch not revertable as is.
 
-Ugh, sorry about that. I forgot to disable the GPG signing. It escapes
-- -'s like that.
+Interesting.  This seems like a bug in seq_file plain and simple.
+Userspace appears to be acting very reasonable in this case.
 
-> I'll punt this patch in the Pekka direction.
-> 
-> Do you think we should include it in 2.6.28.x?
+Why is there a notion that we have to differentiate between read
+and pread in seq_file to fix this.  That doesn't make much sense.
 
-I think so. It's a corner case, but does fix a build failure.
+Anyway here is an untested but logically correct patch which should fix
+this issue, without nasty special casing of pread.
 
-- -Jeff
-
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkl/gCcACgkQLPWxlyuTD7IdcwCgkdOmH3P8a9q1RQYsOcCkG8C0
-TYsAn3rEJMROguhVqbWuFlzg58t+vVEL
-=RM/e
------END PGP SIGNATURE-----
+Eric
