@@ -1,268 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZA0VA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbZA0VAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755959AbZA0VA2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 16:00:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751492AbZA0VAT
+	id S1756698AbZA0VAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 16:00:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbZA0VAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 16:00:19 -0500
-Received: from rv-out-0506.google.com ([209.85.198.236]:49936 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbZA0VAS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 16:00:18 -0500
-Date: Tue, 27 Jan 2009 13:00:04 -0800
-From: Brandon Philips <brandon@ifup.org>
-To: "Hans J. Koch" <hjk@linutronix.de>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
-Subject: [PATCHv2] uio: add the uio_aec driver
-Message-ID: <20090127210004.GE22420@jenkins.ifup.org>
-References: <20090120204729.GA26477@jenkins.ifup.org> <20090120214832.GE3027@local>
+	Tue, 27 Jan 2009 16:00:37 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48105 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751492AbZA0VAh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 16:00:37 -0500
+Date: Tue, 27 Jan 2009 16:00:19 -0500 (EST)
+From: Dave Anderson <anderson@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Bernhard Walle <bwalle@suse.de>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       crash-utility@redhat.com, Mike Snitzer <snitzer@gmail.com>
+Message-ID: <1457226967.823651233090019084.JavaMail.root@zmail02.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <952123357.823421233089955989.JavaMail.root@zmail02.collab.prod.int.phx2.redhat.com>
+Subject: Re: BISECTED: Re: source line numbers with x86_64 modules?
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090120214832.GE3027@local>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.16.19.41]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-UIO driver for the Adrienne Electronics Corporation PCI time code
-device.
 
-This device differs from other UIO devices since it uses I/O ports instead of
-memory mapped I/O. In order to make it possible for UIO to work with this
-device a utility, uioport, can be used to read and write the ports.
+----- "Eric W. Biederman" <ebiederm@xmission.com> wrote:
 
-uioport is designed to be a setuid program and checks the permissions of
-the /dev/uio* node and if the user has write permissions it will use
-iopl and out*/in* to access the device.
+> Mike Snitzer <snitzer@gmail.com> writes:
+> 
+> > [I've trimmed the wide cc distribution that was inherited when I
+> > forked a different thread]
+> >
+> > On Mon, Jan 12, 2009 at 10:19 PM, Eric W. Biederman
+> > <ebiederm@xmission.com> wrote:
+> >> "Mike Snitzer" <snitzer@gmail.com> writes:
+> >>>
+> >>> Now if only I could fix line numbers when debugging crashes in x86_64
+> >>> modules with the crash utility! :)
+> >>
+> >> It's a userspace problem...
+> >>
+> >> All of the little usability things are userspace problems.
+> >>
+> >> I won't claim that it is trivial because it is a userspace problem, at the same
+> >> time there is no reason to wait for any kernel features to merge etc.  Someone
+> >> just has to scratch an itch and go fix it.
+> >
+> > Yes, the crash utility (userspace) is clearly having problems getting
+> > line number for symbols in x86_64 modules.  But I finally took some
+> > time to bisect the point in the kernel where the crash utility first
+> > started to fail, it appears to be:
+> >
+> > commit 7460ed2844ffad7141e30271c0c3da8336e66014
+> > Author: john stultz <johnstul@us.ibm.com>
+> > Date:   Fri Feb 16 01:28:21 2007 -0800
+> >
+> > I used version 4.0-7.6 of the crash utility to test if each commit was
+> > good or bad.  I simply checked if ext3's module had correct line
+> > number info for the ext3_get_blocks_handle symbol with: sym
+> > ext3_get_blocks_handle
+> 
+> Weird.  That patch doesn't appear to affect anything in that area.
+> So my stab in the dark is that there is something in vmlinux that
+> crash doesn't know how to cope with.
 
-[1] git clone git://ifup.org/philips/uioport.git
+Actually it's not a problem with the vmlinux file, but rather with kernel
+module object files.  The crash utility has an embedded gdb module which
+is invoked as "gdb vmlinux", and to get line numbers, the crash utility
+simply uses the relevant built-in gdb function to get them.  And line
+numbers work fine with the base kernel code from the vmlinux file.
 
-Signed-off-by: Brandon Philips <brandon@ifup.org>
+The debuginfo data of kernel modules can be subsequently added to the
+crash session by doing a gdb "add-symbol-file" command for any or all
+kernel modules.  But getting correct line number information for kernel
+modules has been a crap-shoot in the past, depending upon architecture
+and/or kernel version.  For example, they don't work with 2.6.9-based
+RHEL4 x86_64 kernel modules, but work fine with 2.6.18-based RHEL5 x86_64
+kernels.
 
----
- drivers/uio/Kconfig   |   18 +++++
- drivers/uio/Makefile  |    1 
- drivers/uio/uio_aec.c |  175 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 194 insertions(+)
-
-Index: linux-2.6/drivers/uio/Makefile
-===================================================================
---- linux-2.6.orig/drivers/uio/Makefile
-+++ linux-2.6/drivers/uio/Makefile
-@@ -3,4 +3,5 @@ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
- obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
- obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
- obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
-+obj-$(CONFIG_UIO_AEC)	+= uio_aec.o
- obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
-Index: linux-2.6/drivers/uio/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/uio/Kconfig
-+++ linux-2.6/drivers/uio/Kconfig
-@@ -58,6 +58,24 @@ config UIO_SMX
+Looking at Mike's suspect kernel patch list, I don't see anything that
+would have any relationship to the issue.  Perhaps there was a build tool
+change during the same timeframe? 
  
- 	  If you compile this as a module, it will be called uio_smx.
- 
-+config UIO_AEC
-+	tristate "AEC video timestamp device"
-+	depends on PCI
-+	default n
-+	help
-+
-+	  UIO driver for the Adrienne Electronics Corporation PCI time
-+	  code device.
-+
-+	  This device differs from other UIO devices since it uses I/O
-+	  ports instead of memory mapped I/O. In order to make it
-+	  possible for UIO to work with this device a utility, uioport,
-+	  can be used to read and write the ports:
-+
-+	    git clone git://ifup.org/philips/uioport.git
-+
-+	  If you compile this as a module, it will be called uio_aec.
-+
- config UIO_SERCOS3
- 	tristate "Automata Sercos III PCI card driver"
- 	default n
-Index: linux-2.6/drivers/uio/uio_aec.c
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/uio/uio_aec.c
-@@ -0,0 +1,175 @@
-+/*
-+ * uio_aec.c -- simple driver for Adrienne Electronics Corp time code PCI device
-+ *
-+ * Copyright (C) 2008 Brandon Philips <brandon@ifup.org>
-+ *
-+ *   This program is free software; you can redistribute it and/or modify it
-+ *   under the terms of the GNU General Public License version 2 as published
-+ *   by the Free Software Foundation.
-+ *
-+ *   This program is distributed in the hope that it will be useful,
-+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *   GNU General Public License for more details.
-+ *
-+ *   You should have received a copy of the GNU General Public License along
-+ *   with this program; if not, write to the Free Software Foundation, Inc., 59
-+ *   Temple Place, Suite 330, Boston, MA 02111-1307, USA.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/cdev.h>
-+#include <linux/fs.h>
-+#include <linux/io.h>
-+#include <linux/uaccess.h>
-+#include <linux/uio_driver.h>
-+
-+#define PCI_VENDOR_ID_AEC 0xaecb
-+#define PCI_DEVICE_ID_AEC_VITCLTC 0x6250
-+
-+#define INT_ENABLE_ADDR		0xFC
-+#define INT_ENABLE		0x10
-+#define INT_DISABLE		0x0
-+
-+#define INT_MASK_ADDR		0x2E
-+#define INT_MASK_ALL		0x3F
-+
-+#define INTA_DRVR_ADDR		0xFE
-+#define INTA_ENABLED_FLAG	0x08
-+#define INTA_FLAG		0x01
-+
-+#define MAILBOX			0x0F
-+
-+static struct pci_device_id ids[] = {
-+	{ PCI_DEVICE(PCI_VENDOR_ID_AEC, PCI_DEVICE_ID_AEC_VITCLTC), },
-+	{ 0, }
-+};
-+MODULE_DEVICE_TABLE(pci, ids);
-+
-+static irqreturn_t aectc_irq(int irq, struct uio_info *dev_info)
-+{
-+	void __iomem *int_flag = dev_info->priv + INTA_DRVR_ADDR;
-+	unsigned char status = ioread8(int_flag);
-+
-+
-+	if ((status & INTA_ENABLED_FLAG) && (status & INTA_FLAG)) {
-+		/* application writes 0x00 to 0x2F to get next interrupt */
-+		status = ioread8(dev_info->priv + MAILBOX);
-+		return IRQ_HANDLED;
-+	}
-+
-+	return IRQ_NONE;
-+}
-+
-+static void print_board_data(struct pci_dev *pdev, struct uio_info *i)
-+{
-+	dev_info(&pdev->dev, "PCI-TC board vendor: %x%x number: %x%x"
-+		" revision: %c%c\n",
-+		ioread8(i->priv + 0x01),
-+		ioread8(i->priv + 0x00),
-+		ioread8(i->priv + 0x03),
-+		ioread8(i->priv + 0x02),
-+		ioread8(i->priv + 0x06),
-+		ioread8(i->priv + 0x07));
-+}
-+
-+static int __devinit probe(struct pci_dev *pdev, const struct pci_device_id *id)
-+{
-+	struct uio_info *info;
-+	int ret;
-+
-+	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
-+	if (!info)
-+		return -ENOMEM;
-+
-+	if (pci_enable_device(pdev))
-+		goto out_free;
-+
-+	if (pci_request_regions(pdev, "aectc"))
-+		goto out_disable;
-+
-+	info->name = "aectc";
-+	info->port[0].start = pci_resource_start(pdev, 0);
-+	if (!info->port[0].start)
-+		goto out_release;
-+	info->priv = pci_iomap(pdev, 0, 0);
-+	if (!info->priv)
-+		goto out_release;
-+	info->port[0].size = pci_resource_len(pdev, 0);
-+	info->port[0].porttype = UIO_PORT_GPIO;
-+
-+	info->version = "0.0.1";
-+	info->irq = pdev->irq;
-+	info->irq_flags = IRQF_SHARED;
-+	info->handler = aectc_irq;
-+
-+	print_board_data(pdev, info);
-+	ret = uio_register_device(&pdev->dev, info);
-+	if (ret)
-+		goto out_unmap;
-+
-+	iowrite32(INT_ENABLE, info->priv + INT_ENABLE_ADDR);
-+	iowrite8(INT_MASK_ALL, info->priv + INT_MASK_ADDR);
-+	if (!(ioread8(info->priv + INTA_DRVR_ADDR)
-+			& INTA_ENABLED_FLAG))
-+		dev_err(&pdev->dev, "aectc: interrupts not enabled\n");
-+
-+	pci_set_drvdata(pdev, info);
-+
-+	return 0;
-+
-+out_unmap:
-+	pci_iounmap(pdev, info->priv);
-+out_release:
-+	pci_release_regions(pdev);
-+out_disable:
-+	pci_disable_device(pdev);
-+out_free:
-+	kfree(info);
-+	return -ENODEV;
-+}
-+
-+static void remove(struct pci_dev *pdev)
-+{
-+	struct uio_info *info = pci_get_drvdata(pdev);
-+
-+	/* disable interrupts */
-+	iowrite8(INT_DISABLE, info->priv + INT_MASK_ADDR);
-+	iowrite32(INT_DISABLE, info->priv + INT_ENABLE_ADDR);
-+	/* read mailbox to ensure board drops irq */
-+	ioread8(info->priv + MAILBOX);
-+
-+	uio_unregister_device(info);
-+	pci_release_regions(pdev);
-+	pci_disable_device(pdev);
-+	pci_set_drvdata(pdev, NULL);
-+	iounmap(info->priv);
-+
-+	kfree(info);
-+}
-+
-+static struct pci_driver pci_driver = {
-+	.name = "aectc",
-+	.id_table = ids,
-+	.probe = probe,
-+	.remove = remove,
-+};
-+
-+static int __init aectc_init(void)
-+{
-+	return pci_register_driver(&pci_driver);
-+}
-+
-+static void __exit aectc_exit(void)
-+{
-+	pci_unregister_driver(&pci_driver);
-+}
-+
-+MODULE_LICENSE("GPL");
-+
-+module_init(aectc_init);
-+module_exit(aectc_exit);
+Dave
+
+
