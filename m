@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZA0PtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZA0Pue@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756109AbZA0PtX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 10:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbZA0PtI
+	id S1756029AbZA0Pue (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 10:50:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZA0PuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 10:49:08 -0500
-Received: from styx.suse.cz ([82.119.242.94]:40457 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752219AbZA0PtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 10:49:06 -0500
-Date: Tue, 27 Jan 2009 16:49:05 +0100
-From: Jan Kara <jack@suse.cz>
-To: apw@canonical.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Checkpatch false positive?
-Message-ID: <20090127154904.GC8289@duck.suse.cz>
+	Tue, 27 Jan 2009 10:50:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44869 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751865AbZA0PuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 10:50:25 -0500
+Date: Tue, 27 Jan 2009 16:49:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Maciej Rutecki <maciej.rutecki@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
+Message-ID: <20090127154946.GA28209@elte.hu>
+References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <200901262148.49717.rjw@sisk.pl> <20090126213519.GB13670@elte.hu> <200901271628.54037.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200901271628.54037.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
 
-  I've used checkpatch.pl to verify one of my patches. It complains:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-ERROR: trailing statements should be on next line
-#167: FILE: fs/quota/quota_tree.c:249:
-+       for (i = 0, ddquot = buf + sizeof(struct qt_disk_dqdbheader);
-[...]
-             i++, ddquot += info->dqi_entry_size);
+> > In fact whatever check you put in it's _always_ going to be 
+> > fundamentally more fragile than direct instrumentation: you cannot 
+> > possibly check all possible places that enable interrupts. (they could 
+> > be disabling interrupts as a _restore_irqs() sequence for example)
+> 
+> In this particular case, I'm not really interested in that.  What I'm 
+> interested in is which driver's ->suspend_late() or ->resume_early() (or 
+> the equivalents for sysdevs) has enabled interrupts, which is quite easy 
+> to check directly.
 
-  But the code looks like:
-        for (i = 0, ddquot = buf + sizeof(struct qt_disk_dqdbheader);
-             i < qtree_dqstr_in_blk(info) && !qtree_entry_unused(info, ddquot);
-             i++, ddquot += info->dqi_entry_size);
+But this is exactly what it does - without any need for debug checks 
+spread around!
 
-  Which is IMHO correct. Maybe it's because the for has actually empty body
-and the ; is at the end of the line with for. But I didn't find anything in
-CodingStyle that would forbid
-	for (...);
-and
-	for (...)
-		;
-Looks a bit strange.
+You'll get a _full stack dump_ from the very driver that is enabling 
+interrupts! You dont get a trace - you get a stack dump of the very place 
+that is buggy. It does not get any better than that.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+	Ingo
