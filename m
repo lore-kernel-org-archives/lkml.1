@@ -1,45 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbZA0Hk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZA0HlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbZA0Hk2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 02:40:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZA0HkS
+	id S1754590AbZA0HlQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 02:41:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751885AbZA0Hk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 02:40:18 -0500
-Received: from vps1.tull.net ([66.180.172.116]:43883 "HELO vps1.tull.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751670AbZA0HkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 02:40:17 -0500
-Date: Tue, 27 Jan 2009 18:40:09 +1100
-From: Nick Andrew <nick@nick-andrew.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Trivial Kernel Patches <trivial@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [TRIVIAL PATCH 00/20] Fix misspelling of "firmware"
-Message-ID: <20090127074009.GC12465@mail.local.tull.net>
-References: <20090126015921.15168.97302.stgit@marcab.local.tull.net> <alpine.LNX.1.10.0901261059560.5377@jikos.suse.cz>
+	Tue, 27 Jan 2009 02:40:57 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:54442 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751213AbZA0Hkz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 02:40:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=aqmrTgLYEUk67kivoOm7KbWhcz7tttWg8qSFTi3EJIeItV5yHDIu9J/PXm99TH93fA
+         lUk1SVo/mem2j6kGEJKF26aUUfVrjxDUbLY38AFDMlDtEsvEr9fwriQ2J5wUBF0eYWbl
+         yPBghm6hUUJX9qzLcSUiNQkSYHpNDTxwFDTZw=
+Date: Tue, 27 Jan 2009 07:40:48 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090127074048.GA4197@ff.dom.local>
+References: <20090120103122.GC9167@ioremap.net> <20090126082036.GB4183@ff.dom.local> <20090126212130.GA4338@ioremap.net> <20090126.221056.174077798.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LNX.1.10.0901261059560.5377@jikos.suse.cz>
+In-Reply-To: <20090126.221056.174077798.davem@davemloft.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SMTPD: qpsmtpd/0.26, http://develooper.com/code/qpsmtpd/
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 11:00:32AM +0100, Jiri Kosina wrote:
-> I will fold all this into single patch and apply.
+On Mon, Jan 26, 2009 at 10:10:56PM -0800, David Miller wrote:
+> From: Evgeniy Polyakov <zbr@ioremap.net>
+> Date: Tue, 27 Jan 2009 00:21:30 +0300
+> 
+> > Hi Jarek.
+> > 
+> > On Mon, Jan 26, 2009 at 08:20:36AM +0000, Jarek Poplawski (jarkao2@gmail.com) wrote:
+> > > > 1. Network (tree) allocator
+> > > > http://www.ioremap.net/projects/nta
+> > > 
+> > > I looked at this a bit, but alas I didn't find much for this Herbert's
+> > > idea of payload in fragments/pages. Maybe some kind of API RFC is
+> > > needed before this resurrection?
+> > 
+> > Basic idea is to steal some (probably a lot) pages from the slab
+> > allocator and put network buffers there without strict need for
+> > power-of-two alignment and possible wraps when we add skb_shared_info at
+> > the end, so that old e1000 driver required order-4 allocations for the
+> > jumbo frames. We can do that in alloc_skb() and friends and put returned
+> > buffers into skb's fraglist and updated reference counters for those
+> > pages; and with additional copy of the network headers into skb->head.
 
-Ok Jiri. Just to note - last time I submitted a single patch like this
-("fix use of loose" in April 2008) to trivial@, the patch frequently
-failed to merge due to some of the files being modified, renamed
-etc in the meantime, and the patch got dropped. When I split it into
-one patch per file and sent them to subsystem maintainers, about 90%
-of the patches were merged.
+I think the main problem is to respect put_page() more, and maybe you
+mean to add this to your allocator too, but using slab pages for this
+looks a bit complex to me, but I can miss something.
 
-So my impression is that multiple single file patches are more
-successful. It should be easier for you to drop any patches which
-fail to merge due to other work. But if you think a single patch
-is best, I'll submit a single patch.
+> We are going back and forth saying the same thing, I think :-)
+> (BTW, I think NTA is cool and we might do something like that
+> eventually)
+> 
+> The basic thing we have to do is make the drivers receive into
+> pages, and then slide the network headers (only) into the linear
+> SKB data area.
 
-Nick.
+As a matter of fact, I wonder if these headers should be always
+separated. Their "chunk" could be refcounted as well, I guess.
+
+Jarek P.
