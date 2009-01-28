@@ -1,131 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbZA1Mzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZA1Mz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbZA1Mzo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 07:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZA1MzL
+	id S1754876AbZA1Mz6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 07:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZA1MzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 07:55:11 -0500
-Received: from sh.osrg.net ([192.16.179.4]:59184 "EHLO sh.osrg.net"
+	Wed, 28 Jan 2009 07:55:13 -0500
+Received: from sh.osrg.net ([192.16.179.4]:59185 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751812AbZA1MzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751866AbZA1MzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Jan 2009 07:55:09 -0500
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: mingo@elte.hu, tony.luck@intel.com
 Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
        FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        David Woodhouse <David.Woodhouse@intel.com>
-Subject: [PATCH -tip 3/3] intel-iommu: make dma mapping functions static
-Date: Wed, 28 Jan 2009 21:53:18 +0900
-Message-Id: <1233147198-30299-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH -tip 2/3] IA64: fix VT-d dma_mapping_error
+Date: Wed, 28 Jan 2009 21:53:17 +0900
+Message-Id: <1233147198-30299-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1233147198-30299-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1233147198-30299-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1233147198-30299-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
- <1233147198-30299-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The dma ops unification enables X86 and IA64 to share intel_dma_ops so
-we can make dma mapping functions static. This also remove unused
-intel_map_single().
+dma_mapping_error is used to see if dma_map_single and dma_map_page
+succeed. IA64 VT-d dma_mapping_error always says that dma_map_single
+is successful even though it could fail. Note that X86 VT-d works
+properly in this regard.
+
+This patch fixes IA64 VT-d dma_mapping_error by adding VT-d's own
+dma_mapping_error() that works for both X86_64 and IA64. VT-d uses
+zero as an error dma address so VT-d's dma_mapping_error returns 1 if
+a passed dma address is zero (as x86's VT-d dma_mapping_error does
+now).
 
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Cc: David Woodhouse <David.Woodhouse@intel.com>
 ---
- drivers/pci/intel-iommu.c   |   29 +++++++++++------------------
- include/linux/intel-iommu.h |    9 ---------
- 2 files changed, 11 insertions(+), 27 deletions(-)
+ arch/ia64/kernel/pci-dma.c |    6 ------
+ drivers/pci/intel-iommu.c  |    6 ++++++
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 59de563..628f8b7 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -2283,13 +2283,6 @@ static dma_addr_t intel_map_page(struct device *dev, struct page *page,
- 				  dir, to_pci_dev(dev)->dma_mask);
+diff --git a/arch/ia64/kernel/pci-dma.c b/arch/ia64/kernel/pci-dma.c
+index a647f11..e4cb443 100644
+--- a/arch/ia64/kernel/pci-dma.c
++++ b/arch/ia64/kernel/pci-dma.c
+@@ -99,11 +99,6 @@ int iommu_dma_supported(struct device *dev, u64 mask)
  }
+ EXPORT_SYMBOL(iommu_dma_supported);
  
--dma_addr_t intel_map_single(struct device *hwdev, phys_addr_t paddr,
--			    size_t size, int dir)
+-static int vtd_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
 -{
--	return __intel_map_single(hwdev, paddr, size, dir,
--				  to_pci_dev(hwdev)->dma_mask);
+-	return 0;
 -}
 -
- static void flush_unmaps(void)
+ void __init pci_iommu_alloc(void)
  {
- 	int i, j;
-@@ -2397,14 +2390,14 @@ static void intel_unmap_page(struct device *dev, dma_addr_t dev_addr,
- 	}
- }
+ 	dma_ops = &intel_dma_ops;
+@@ -113,7 +108,6 @@ void __init pci_iommu_alloc(void)
+ 	dma_ops->sync_single_for_device = machvec_dma_sync_single;
+ 	dma_ops->sync_sg_for_device = machvec_dma_sync_sg;
+ 	dma_ops->dma_supported = iommu_dma_supported;
+-	dma_ops->mapping_error = vtd_dma_mapping_error;
  
--void intel_unmap_single(struct device *dev, dma_addr_t dev_addr, size_t size,
--			int dir)
-+static void intel_unmap_single(struct device *dev, dma_addr_t dev_addr, size_t size,
-+			       int dir)
- {
- 	intel_unmap_page(dev, dev_addr, size, dir, NULL);
- }
- 
--void *intel_alloc_coherent(struct device *hwdev, size_t size,
--			   dma_addr_t *dma_handle, gfp_t flags)
-+static void *intel_alloc_coherent(struct device *hwdev, size_t size,
-+				  dma_addr_t *dma_handle, gfp_t flags)
- {
- 	void *vaddr;
- 	int order;
-@@ -2427,8 +2420,8 @@ void *intel_alloc_coherent(struct device *hwdev, size_t size,
- 	return NULL;
- }
- 
--void intel_free_coherent(struct device *hwdev, size_t size, void *vaddr,
--			 dma_addr_t dma_handle)
-+static void intel_free_coherent(struct device *hwdev, size_t size, void *vaddr,
-+				dma_addr_t dma_handle)
- {
- 	int order;
- 
-@@ -2441,9 +2434,9 @@ void intel_free_coherent(struct device *hwdev, size_t size, void *vaddr,
- 
- #define SG_ENT_VIRT_ADDRESS(sg)	(sg_virt((sg)))
- 
--void intel_unmap_sg(struct device *hwdev, struct scatterlist *sglist,
--		    int nelems, enum dma_data_direction dir,
--		    struct dma_attrs *attrs)
-+static void intel_unmap_sg(struct device *hwdev, struct scatterlist *sglist,
-+			   int nelems, enum dma_data_direction dir,
-+			   struct dma_attrs *attrs)
- {
- 	int i;
- 	struct pci_dev *pdev = to_pci_dev(hwdev);
-@@ -2500,8 +2493,8 @@ static int intel_nontranslate_map_sg(struct device *hddev,
+ 	/*
+ 	 * The order of these functions is important for
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index c933980..59de563 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -2581,6 +2581,11 @@ int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int nelems,
  	return nelems;
  }
  
--int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int nelems,
--		 enum dma_data_direction dir, struct dma_attrs *attrs)
-+static int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int nelems,
-+			enum dma_data_direction dir, struct dma_attrs *attrs)
- {
- 	void *addr;
- 	int i;
-diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
-index a254db1..43412ae 100644
---- a/include/linux/intel-iommu.h
-+++ b/include/linux/intel-iommu.h
-@@ -330,13 +330,4 @@ extern int qi_flush_iotlb(struct intel_iommu *iommu, u16 did, u64 addr,
++static int intel_mapping_error(struct device *dev, dma_addr_t dma_addr)
++{
++	return !dma_addr;
++}
++
+ struct dma_map_ops intel_dma_ops = {
+ 	.alloc_coherent = intel_alloc_coherent,
+ 	.free_coherent = intel_free_coherent,
+@@ -2588,6 +2593,7 @@ struct dma_map_ops intel_dma_ops = {
+ 	.unmap_sg = intel_unmap_sg,
+ 	.map_page = intel_map_page,
+ 	.unmap_page = intel_unmap_page,
++	.mapping_error = intel_mapping_error,
+ };
  
- extern void qi_submit_sync(struct qi_desc *desc, struct intel_iommu *iommu);
- 
--extern void *intel_alloc_coherent(struct device *, size_t, dma_addr_t *, gfp_t);
--extern void intel_free_coherent(struct device *, size_t, void *, dma_addr_t);
--extern dma_addr_t intel_map_single(struct device *, phys_addr_t, size_t, int);
--extern void intel_unmap_single(struct device *, dma_addr_t, size_t, int);
--extern int intel_map_sg(struct device *, struct scatterlist *, int,
--			enum dma_data_direction, struct dma_attrs *);
--extern void intel_unmap_sg(struct device *, struct scatterlist *, int,
--			   enum dma_data_direction, struct dma_attrs *);
--
- #endif
+ static inline int iommu_domain_cache_init(void)
 -- 
 1.6.0.6
 
