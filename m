@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZA1WAE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZA1WAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZA1WAE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 17:00:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZA1V7P
+	id S1756220AbZA1WAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 17:00:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755028AbZA1V7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 16:59:15 -0500
-Received: from g1t0026.austin.hp.com ([15.216.28.33]:17657 "EHLO
-	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754184AbZA1V7N (ORCPT
+	Wed, 28 Jan 2009 16:59:20 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:6753 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754891AbZA1V7T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 16:59:13 -0500
+	Wed, 28 Jan 2009 16:59:19 -0500
 From: Alex Chiang <achiang@hp.com>
-Subject: [RFC PATCH 02/10] PCI: always scan child buses
+Subject: [RFC PATCH 03/10] PCI: properly clean up ASPM link state on device
+	remove
 To: jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alex Chiang <achiang@hp.com>
-Date: Wed, 28 Jan 2009 14:59:13 -0700
-Message-ID: <20090128215912.28003.5514.stgit@bob.kio>
+       Shaohua Li <shaohua.li@intel.com>, Alex Chiang <achiang@hp.com>
+Date: Wed, 28 Jan 2009 14:59:18 -0700
+Message-ID: <20090128215918.28003.58805.stgit@bob.kio>
 In-Reply-To: <20090128213814.28003.34634.stgit@bob.kio>
 References: <20090128213814.28003.34634.stgit@bob.kio>
 User-Agent: StGIT/0.14.3.215.gff3d
@@ -27,80 +28,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While scanning bridges, we stop our scan if we encounter a bus
-that we've seen before, to work around some buggy chipsets. This
-is a good idea, but prevents us from fully scanning the PCI bus
-at a future time (to find newly hot-added devices, for example).
+We only want to disable ASPM when the last function is removed from
+the parent's device list. We determine this by checking to see if
+the parent's device list is completely empty.
 
-Change the logic so that we skip _re-adding_ an existing bus
-that we've seen before, but also allow the scan to descend to
-all child buses.
+Unfortunately, we never hit that code because the parent is considered
+an upstream port, and never had an ASPM link_state associated with it.
 
-Now that we're potentially scanning our child buses again, we
-also need to be sure not to attempt re-initializing their BARs
-so we avoid that.
+The early check for !link_state causes us to return early, we never
+discover that our device list is empty, and thus we never remove the
+downstream ports' link_state nodes.
 
-This patch lays the groundwork to allow the user to issue a
-rescan of the PCI bus at any time.
+Instead of checking to see if the parent's device list is empty, we can
+check to see if we are the last device on the list, and if so, then we
+know that we can clean up properly.
 
+Cc: Shaohua Li <shaohua.li@intel.com>
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/probe.c |   33 +++++++++++++++++++--------------
- 1 files changed, 19 insertions(+), 14 deletions(-)
+ drivers/pci/pcie/aspm.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index a9e17e2..9cf810e 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -511,21 +511,21 @@ int __devinit pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
+index 586b6f7..b0367f1 100644
+--- a/drivers/pci/pcie/aspm.c
++++ b/drivers/pci/pcie/aspm.c
+@@ -718,9 +718,9 @@ void pcie_aspm_exit_link_state(struct pci_dev *pdev)
  
- 		/*
- 		 * If we already got to this bus through a different bridge,
--		 * ignore it.  This can happen with the i450NX chipset.
-+		 * don't re-add it. This can happen with the i450NX chipset.
-+		 *
-+		 * However, we continue to descend down the hierarchy and
-+		 * scan remaining child buses.
- 		 */
--		if (pci_find_bus(pci_domain_nr(bus), busnr)) {
--			dev_info(&dev->dev, "bus %04x:%02x already known\n",
--				 pci_domain_nr(bus), busnr);
--			goto out;
-+		child = pci_find_bus(pci_domain_nr(bus), busnr);
-+		if (!child) {
-+			child = pci_add_new_bus(bus, dev, busnr);
-+			if (!child)
-+				goto out;
-+			child->primary = buses & 0xFF;
-+			child->subordinate = (buses >> 16) & 0xFF;
-+			child->bridge_ctl = bctl;
- 		}
- 
--		child = pci_add_new_bus(bus, dev, busnr);
--		if (!child)
--			goto out;
--		child->primary = buses & 0xFF;
--		child->subordinate = (buses >> 16) & 0xFF;
--		child->bridge_ctl = bctl;
--
- 		cmax = pci_scan_child_bus(child);
- 		if (cmax > max)
- 			max = cmax;
-@@ -1089,8 +1089,13 @@ unsigned int __devinit pci_scan_child_bus(struct pci_bus *bus)
- 	 * After performing arch-dependent fixup of the bus, look behind
- 	 * all PCI-to-PCI bridges on this bus.
+ 	/*
+ 	 * All PCIe functions are in one slot, remove one function will remove
+-	 * the the whole slot, so just wait
++	 * the whole slot, so just wait until we are the last function left.
  	 */
--	pr_debug("PCI: Fixups for bus %04x:%02x\n", pci_domain_nr(bus), bus->number);
--	pcibios_fixup_bus(bus);
-+	if (!bus->is_added) {
-+		pr_debug("PCI: Fixups for bus %04x:%02x\n", pci_domain_nr(bus), bus->number);
-+		pcibios_fixup_bus(bus);
-+		if (bus->parent == NULL)
-+			bus->is_added = 1;
-+	}
-+
- 	for (pass=0; pass < 2; pass++)
- 		list_for_each_entry(dev, &bus->devices, bus_list) {
- 			if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
+-	if (!list_empty(&parent->subordinate->devices))
++	if (!list_is_last(&pdev->bus_list, &parent->subordinate->devices))
+ 		goto out;
+ 
+ 	/* All functions are removed, so just disable ASPM for the link */
 
