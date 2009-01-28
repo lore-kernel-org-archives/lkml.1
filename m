@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZA1UfQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757410AbZA1Uew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbZA1UfQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:35:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755392AbZA1U32
+	id S1757410AbZA1Uew (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:34:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755382AbZA1U30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:29:28 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:32899 "EHLO
+	Wed, 28 Jan 2009 15:29:26 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:32891 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754454AbZA1U3X (ORCPT
+	with ESMTP id S1754037AbZA1U3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 15:29:23 -0500
-MBOX-Line: From nobody Wed Jan 28 12:27:51 2009
+	Wed, 28 Jan 2009 15:29:22 -0500
+MBOX-Line: From nobody Wed Jan 28 12:27:42 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH E 08/14] OMAP clock: move rate recalc,
-	propagation code up to plat-omap/clock.c
+Subject: [PATCH E 05/14] OMAP3 clock: add omap3_core_dpll_m2_set_rate()
 To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
 Cc: linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>,
        Tony Lindgren <tony@atomide.com>
-Date: Wed, 28 Jan 2009 12:27:51 -0700
-Message-ID: <20090128192748.29333.5856.stgit@localhost.localdomain>
+Date: Wed, 28 Jan 2009 12:27:42 -0700
+Message-ID: <20090128192739.29333.84278.stgit@localhost.localdomain>
 In-Reply-To: <20090128192551.29333.82943.stgit@localhost.localdomain>
 References: <20090128192551.29333.82943.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
@@ -29,280 +28,135 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Previously the individual clock recalculation functions handled their
-own rate recalculation.  This can be handled in the clk_set_rate(),
-clk_set_parent(), and recalculate_root_clocks() functions in
-plat-omap/clock.c.  Removes duplicate code and clarifies the role of the
-recalc functions.
+Add the omap3_core_dpll_m2_set_rate() function to the OMAP3 clock code,
+which calls into the SRAM function omap3_sram_configure_core_dpll() to
+change the CORE DPLL M2 divider.  (SRAM code is necessary since rate changes
+on clocks upstream from the SDRC can glitch SDRAM accesses.)
 
-linux-omap source commit is b66c1baa9f8e60213457414976575e6265217a70.
+Use this function for the set_rate function pointer in the dpll3_m2_ck
+struct clk.  With this function in place, PM/OPP code should be able to
+alter SDRAM speed via code similar to:
+
+      clk_set_rate(&dpll3_m2_ck, target_rate).
+
+linux-omap source commit is 7f8b2b0f4fe52238c67d79dedcd2794dcef4dddd.
 
 Signed-off-by: Paul Walmsley <paul@pwsan.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap1/clock.c     |   14 --------------
- arch/arm/mach-omap2/clock.c     |   12 ------------
- arch/arm/mach-omap2/clock24xx.c |    6 ------
- arch/arm/mach-omap2/clock34xx.c |    9 ---------
- arch/arm/plat-omap/clock.c      |   34 +++++++++++++++++++++++++++-------
- 5 files changed, 27 insertions(+), 48 deletions(-)
+ arch/arm/mach-omap2/clock34xx.c |   65 +++++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-omap2/clock34xx.h |    9 ++---
+ 2 files changed, 69 insertions(+), 5 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/clock.c b/arch/arm/mach-omap1/clock.c
-index 4d0c444..ae2b304 100644
---- a/arch/arm/mach-omap1/clock.c
-+++ b/arch/arm/mach-omap1/clock.c
-@@ -225,9 +225,6 @@ static void omap1_ckctl_recalc(struct clk * clk)
- 	if (unlikely(clk->rate == clk->parent->rate / dsor))
- 		return; /* No change, quick exit */
- 	clk->rate = clk->parent->rate / dsor;
--
--	if (unlikely(clk->flags & RATE_PROPAGATES))
--		propagate_rate(clk);
- }
- 
- static void omap1_ckctl_recalc_dsp_domain(struct clk * clk)
-@@ -248,9 +245,6 @@ static void omap1_ckctl_recalc_dsp_domain(struct clk * clk)
- 	if (unlikely(clk->rate == clk->parent->rate / dsor))
- 		return; /* No change, quick exit */
- 	clk->rate = clk->parent->rate / dsor;
--
--	if (unlikely(clk->flags & RATE_PROPAGATES))
--		propagate_rate(clk);
- }
- 
- /* MPU virtual clock functions */
-@@ -314,9 +308,6 @@ static int omap1_clk_set_rate_dsp_domain(struct clk *clk, unsigned long rate)
- 		ret = 0;
- 	}
- 
--	if (unlikely(ret == 0 && (clk->flags & RATE_PROPAGATES)))
--		propagate_rate(clk);
--
- 	return ret;
- }
- 
-@@ -423,8 +414,6 @@ static int omap1_set_sossi_rate(struct clk *clk, unsigned long rate)
- 	omap_writel(l, MOD_CONF_CTRL_1);
- 
- 	clk->rate = p_rate / (div + 1);
--	if (unlikely(clk->flags & RATE_PROPAGATES))
--		propagate_rate(clk);
- 
- 	return 0;
- }
-@@ -583,9 +572,6 @@ static int omap1_clk_set_rate(struct clk *clk, unsigned long rate)
- 		ret = 0;
- 	}
- 
--	if (unlikely(ret == 0 && (clk->flags & RATE_PROPAGATES)))
--		propagate_rate(clk);
--
- 	return ret;
- }
- 
-diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-index d4d2e7b..4a72535 100644
---- a/arch/arm/mach-omap2/clock.c
-+++ b/arch/arm/mach-omap2/clock.c
-@@ -300,9 +300,6 @@ void omap2_fixed_divisor_recalc(struct clk *clk)
- 	WARN_ON(!clk->fixed_div);
- 
- 	clk->rate = clk->parent->rate / clk->fixed_div;
--
--	if (clk->flags & RATE_PROPAGATES)
--		propagate_rate(clk);
- }
- 
- /**
-@@ -504,9 +501,6 @@ void omap2_clksel_recalc(struct clk *clk)
- 	clk->rate = clk->parent->rate / div;
- 
- 	pr_debug("clock: new clock rate is %ld (div %d)\n", clk->rate, div);
--
--	if (clk->flags & RATE_PROPAGATES)
--		propagate_rate(clk);
- }
- 
- /**
-@@ -777,9 +771,6 @@ int omap2_clk_set_rate(struct clk *clk, unsigned long rate)
- 	if (clk->set_rate)
- 		ret = clk->set_rate(clk, rate);
- 
--	if (ret == 0 && (clk->flags & RATE_PROPAGATES))
--		propagate_rate(clk);
--
- 	return ret;
- }
- 
-@@ -861,9 +852,6 @@ int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
- 	pr_debug("clock: set parent of %s to %s (new rate %ld)\n",
- 		 clk->name, clk->parent->name, clk->rate);
- 
--	if (clk->flags & RATE_PROPAGATES)
--		propagate_rate(clk);
--
- 	return 0;
- }
- 
-diff --git a/arch/arm/mach-omap2/clock24xx.c b/arch/arm/mach-omap2/clock24xx.c
-index 3727a73..57cd85b 100644
---- a/arch/arm/mach-omap2/clock24xx.c
-+++ b/arch/arm/mach-omap2/clock24xx.c
-@@ -179,8 +179,6 @@ static long omap2_dpllcore_round_rate(unsigned long target_rate)
- static void omap2_dpllcore_recalc(struct clk *clk)
- {
- 	clk->rate = omap2xxx_clk_get_core_rate(clk);
--
--	propagate_rate(clk);
- }
- 
- static int omap2_reprogram_dpllcore(struct clk *clk, unsigned long rate)
-@@ -251,7 +249,6 @@ static int omap2_reprogram_dpllcore(struct clk *clk, unsigned long rate)
- 		omap2xxx_sdrc_init_params(omap2xxx_sdrc_dll_is_unlocked());
- 		omap2xxx_sdrc_reprogram(done_rate, 0);
- 	}
--	omap2_dpllcore_recalc(&dpll_ck);
- 	ret = 0;
- 
- dpll_exit:
-@@ -380,7 +377,6 @@ static int omap2_select_table_rate(struct clk *clk, unsigned long rate)
- 
- 		local_irq_restore(flags);
- 	}
--	omap2_dpllcore_recalc(&dpll_ck);
- 
- 	return 0;
- }
-@@ -470,13 +466,11 @@ static u32 omap2_get_sysclkdiv(void)
- static void omap2_osc_clk_recalc(struct clk *clk)
- {
- 	clk->rate = omap2_get_apll_clkin() * omap2_get_sysclkdiv();
--	propagate_rate(clk);
- }
- 
- static void omap2_sys_clk_recalc(struct clk *clk)
- {
- 	clk->rate = clk->parent->rate / omap2_get_sysclkdiv();
--	propagate_rate(clk);
- }
- 
- /*
 diff --git a/arch/arm/mach-omap2/clock34xx.c b/arch/arm/mach-omap2/clock34xx.c
-index 738a029..22cbcce 100644
+index 3dba9ca..2c655be 100644
 --- a/arch/arm/mach-omap2/clock34xx.c
 +++ b/arch/arm/mach-omap2/clock34xx.c
-@@ -54,8 +54,6 @@
- static void omap3_dpll_recalc(struct clk *clk)
- {
- 	clk->rate = omap2_get_dpll_rate(clk);
--
--	propagate_rate(clk);
- }
- 
- /* _omap3_dpll_write_clken - write clken_bits arg to a DPLL's enable bits */
-@@ -429,8 +427,6 @@ static int omap3_noncore_dpll_set_rate(struct clk *clk, unsigned long rate)
- 
- 	}
- 
--	omap3_dpll_recalc(clk);
--
+@@ -434,6 +434,71 @@ static int omap3_noncore_dpll_set_rate(struct clk *clk, unsigned long rate)
  	return 0;
  }
  
-@@ -493,8 +489,6 @@ static int omap3_core_dpll_m2_set_rate(struct clk *clk, unsigned long rate)
- 				  sp->actim_ctrlb, new_div);
- 	local_irq_enable();
- 
--	omap2_clksel_recalc(clk);
--
- 	return 0;
- }
- 
-@@ -612,9 +606,6 @@ static void omap3_clkoutx2_recalc(struct clk *clk)
- 		clk->rate = clk->parent->rate;
- 	else
- 		clk->rate = clk->parent->rate * 2;
--
--	if (clk->flags & RATE_PROPAGATES)
--		propagate_rate(clk);
- }
- 
- /* Common clock code */
-diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
-index be6aab9..c60548a 100644
---- a/arch/arm/plat-omap/clock.c
-+++ b/arch/arm/plat-omap/clock.c
-@@ -183,8 +183,16 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
- 		return ret;
- 
- 	spin_lock_irqsave(&clockfw_lock, flags);
--	if (arch_clock->clk_set_rate)
 +
-+	if (arch_clock->clk_set_rate) {
- 		ret = arch_clock->clk_set_rate(clk, rate);
-+		if (ret == 0) {
-+			(*clk->recalc)(clk);
-+			if (clk->flags & RATE_PROPAGATES)
-+				propagate_rate(clk);
-+		}
-+	}
++/*
++ * CORE DPLL (DPLL3) rate programming functions
++ *
++ * These call into SRAM code to do the actual CM writes, since the SDRAM
++ * is clocked from DPLL3.
++ */
 +
- 	spin_unlock_irqrestore(&clockfw_lock, flags);
- 
- 	return ret;
-@@ -200,8 +208,16 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
- 		return ret;
- 
- 	spin_lock_irqsave(&clockfw_lock, flags);
--	if (arch_clock->clk_set_parent)
--		ret =  arch_clock->clk_set_parent(clk, parent);
++/**
++ * omap3_core_dpll_m2_set_rate - set CORE DPLL M2 divider
++ * @clk: struct clk * of DPLL to set
++ * @rate: rounded target rate
++ *
++ * Program the DPLL M2 divider with the rounded target rate.  Returns
++ * -EINVAL upon error, or 0 upon success.
++ */
++static int omap3_core_dpll_m2_set_rate(struct clk *clk, unsigned long rate)
++{
++	u32 new_div = 0;
++	unsigned long validrate, sdrcrate;
++	struct omap_sdrc_params *sp;
 +
-+	if (arch_clock->clk_set_parent) {
-+		ret = arch_clock->clk_set_parent(clk, parent);
-+		if (ret == 0) {
-+			(*clk->recalc)(clk);
-+			if (clk->flags & RATE_PROPAGATES)
-+				propagate_rate(clk);
-+		}
-+	}
++	if (!clk || !rate)
++		return -EINVAL;
 +
- 	spin_unlock_irqrestore(&clockfw_lock, flags);
++	if (clk != &dpll3_m2_ck)
++		return -EINVAL;
++
++	if (rate == clk->rate)
++		return 0;
++
++	validrate = omap2_clksel_round_rate_div(clk, rate, &new_div);
++	if (validrate != rate)
++		return -EINVAL;
++
++	sdrcrate = sdrc_ick.rate;
++	if (rate > clk->rate)
++		sdrcrate <<= ((rate / clk->rate) - 1);
++	else
++		sdrcrate >>= ((clk->rate / rate) - 1);
++
++	sp = omap2_sdrc_get_params(sdrcrate);
++	if (!sp)
++		return -EINVAL;
++
++	pr_info("clock: changing CORE DPLL rate from %lu to %lu\n", clk->rate,
++		validrate);
++	pr_info("clock: SDRC timing params used: %08x %08x %08x\n",
++		sp->rfr_ctrl, sp->actim_ctrla, sp->actim_ctrlb);
++
++	/* REVISIT: SRAM code doesn't support other M2 divisors yet */
++	WARN_ON(new_div != 1 && new_div != 2);
++
++	/* REVISIT: Add SDRC_MR changing to this code also */
++	local_irq_disable();
++	omap3_configure_core_dpll(sp->rfr_ctrl, sp->actim_ctrla,
++				  sp->actim_ctrlb, new_div);
++	local_irq_enable();
++
++	omap2_clksel_recalc(clk);
++
++	return 0;
++}
++
++
+ /* DPLL autoidle read/set code */
  
- 	return ret;
-@@ -256,8 +272,6 @@ void followparent_recalc(struct clk *clk)
- 		return;
  
- 	clk->rate = clk->parent->rate;
--	if (unlikely(clk->flags & RATE_PROPAGATES))
--		propagate_rate(clk);
- }
+diff --git a/arch/arm/mach-omap2/clock34xx.h b/arch/arm/mach-omap2/clock34xx.h
+index 70a1532..5357507 100644
+--- a/arch/arm/mach-omap2/clock34xx.h
++++ b/arch/arm/mach-omap2/clock34xx.h
+@@ -35,6 +35,7 @@ static u32 omap3_dpll_autoidle_read(struct clk *clk);
+ static int omap3_noncore_dpll_enable(struct clk *clk);
+ static void omap3_noncore_dpll_disable(struct clk *clk);
+ static int omap3_noncore_dpll_set_rate(struct clk *clk, unsigned long rate);
++static int omap3_core_dpll_m2_set_rate(struct clk *clk, unsigned long rate);
  
- /* Propagate rate to children */
-@@ -271,8 +285,11 @@ void propagate_rate(struct clk * tclk)
- 	list_for_each_entry(clkp, &clocks, node) {
- 		if (likely(clkp->parent != tclk))
- 			continue;
--		if (likely((u32)clkp->recalc))
-+		if (likely((u32)clkp->recalc)) {
- 			clkp->recalc(clkp);
-+			if (clkp->flags & RATE_PROPAGATES)
-+				propagate_rate(clkp);
-+		}
- 	}
- }
+ /* Maximum DPLL multiplier, divider values for OMAP3 */
+ #define OMAP3_MAX_DPLL_MULT		2048
+@@ -499,11 +500,7 @@ static const struct clksel div31_dpll3m2_clksel[] = {
+ 	{ .parent = NULL }
+ };
  
-@@ -288,8 +305,11 @@ void recalculate_root_clocks(void)
- 	struct clk *clkp;
- 
- 	list_for_each_entry(clkp, &clocks, node) {
--		if (unlikely(!clkp->parent) && likely((u32)clkp->recalc))
-+		if (unlikely(!clkp->parent) && likely((u32)clkp->recalc)) {
- 			clkp->recalc(clkp);
-+			if (clkp->flags & RATE_PROPAGATES)
-+				propagate_rate(clkp);
-+		}
- 	}
- }
+-/*
+- * DPLL3 output M2
+- * REVISIT: This DPLL output divider must be changed in SRAM, so until
+- * that code is ready, this should remain a 'read-only' clksel clock.
+- */
++/* DPLL3 output M2 - primary control point for CORE speed */
+ static struct clk dpll3_m2_ck = {
+ 	.name		= "dpll3_m2_ck",
+ 	.parent		= &dpll3_ck,
+@@ -515,6 +512,8 @@ static struct clk dpll3_m2_ck = {
+ 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES |
+ 				PARENT_CONTROLS_CLOCK,
+ 	.clkdm		= { .name = "dpll3_clkdm" },
++	.round_rate	= &omap2_clksel_round_rate,
++	.set_rate	= &omap3_core_dpll_m2_set_rate,
+ 	.recalc		= &omap2_clksel_recalc,
+ };
  
 
 
