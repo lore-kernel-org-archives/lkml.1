@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZA1Oxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZA1OyB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753067AbZA1Oxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 09:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZA1OxW
+	id S1754176AbZA1OyB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 09:54:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZA1Oxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 09:53:22 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43505 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751136AbZA1OxV (ORCPT
+	Wed, 28 Jan 2009 09:53:51 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:11724 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbZA1Oxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 09:53:21 -0500
-Date: Wed, 28 Jan 2009 06:52:31 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Shawn Bohrer <shawn.bohrer@gmail.com>
-Subject: Re: [PATCH 5/6] module: make modversion_info contain a pointer, not
- an array.
-Message-ID: <20090128065231.64d12ffd@infradead.org>
-In-Reply-To: <200901290005.52819.rusty@rustcorp.com.au>
-References: <200901290005.52819.rusty@rustcorp.com.au>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Jan 2009 09:53:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=jDws+Lqb/8zWW2Vd+WiUfZWzQG8GxGL8WcZVy23c+PbbETKBZGFeq14P6Z3nefbgPa
+         IBuXgfELnFwmMCWWFQ5WUyI1GdYSn7o5mBx+Fro2PuijB3gGEAF50BQrtteJLuPMpZg7
+         UxsK4A+JksBRDFE2J5C1mtzZvQUW1VaeCILxE=
+MIME-Version: 1.0
+In-Reply-To: <20090128143356.GG15877@ghostprotocols.net>
+References: <20090128143356.GG15877@ghostprotocols.net>
+Date: Wed, 28 Jan 2009 15:53:48 +0100
+Message-ID: <c62985530901280653p3febe22cu7897999dce8777e@mail.gmail.com>
+Subject: Re: [PATCH tip 1/1] blktrace: Use tracing_reset_online_cpus
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 00:05:52 +1030
-Rusty Russell <rusty@rustcorp.com.au> wrote:
+2009/1/28 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
+> Impact: cleanup
+>
+> Use tracing_reset_online_cpus instead of open coding it.
+>
+> Cc: Jens Axboe <jens.axboe@oracle.com>
+> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+>
+> diff --git a/block/blktrace.c b/block/blktrace.c
+> index 1b2267c..04d81d3 100644
+> --- a/block/blktrace.c
+> +++ b/block/blktrace.c
+> @@ -1109,12 +1109,7 @@ static void blk_tracer_print_header(struct seq_file *m)
+>
+>  static void blk_tracer_start(struct trace_array *tr)
+>  {
+> -       int cpu;
+> -
+> -       tr->time_start = ftrace_now(tr->cpu);
+> -
+> -       for_each_online_cpu(cpu)
+> -               tracing_reset(tr, cpu);
+> +       tracing_reset_online_cpus(tr);
+>
+>        mutex_lock(&blk_probe_mutex);
+>        if (atomic_add_return(1, &blk_probes_ref) == 1)
+>
 
-> 
-> With allmodconfig (minus non-building modules) on 32-bit x86:
-> Total size of modules before: 60009790 bytes
-> Total size of modules after: 55927866 bytes
-> 
-> Saving 7% of module size for CONFIG_MODVERSIONS=y; and these sections
-> are kept resident as well.
-> 
-
-that reminds me.. can we just simplify MODVERSIONS to be a md5sum (or
-sha1 whatver) of the .config file in the VERMAGIC ?
-it's a lot more reliable in detecting incompatibilities, and a lot
-less space consumed.
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Adding Steven in Cc, he uses to relay tracing patches as patchsets
+pull request to Ingo.
