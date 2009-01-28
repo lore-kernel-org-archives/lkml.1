@@ -1,130 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753370AbZA1SNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754473AbZA1SN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753370AbZA1SNG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 13:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZA1SMy
+	id S1754473AbZA1SN1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 13:13:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753222AbZA1SNH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 13:12:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:34392 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbZA1SMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 13:12:54 -0500
-Message-ID: <4980A03A.2030400@redhat.com>
-Date: Wed, 28 Jan 2009 13:13:14 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [BUG][kprobes][vunmap?]: kprobes may cause memory corruption
-References: <497FC3B1.7050805@redhat.com> <497FE895.1080708@redhat.com> <20090128154824.GA6025@Krystal> <49808EEF.1020700@redhat.com> <20090128171331.GA9006@Krystal> <49809CCE.40409@redhat.com>
-In-Reply-To: <49809CCE.40409@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 28 Jan 2009 13:13:07 -0500
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:65532 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753152AbZA1SNF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 13:13:05 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuwEAL8ugElMQWt2/2dsb2JhbACBbss6hUcG
+Date: Wed, 28 Jan 2009 13:07:57 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
+       akpm@linux-foundation.org, hpa@zytor.com, brgerst@gmail.com,
+       ebiederm@xmission.com, travis@sgi.com, linux-kernel@vger.kernel.org,
+       steiner@sgi.com, hugh@veritas.com,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+Message-ID: <20090128180757.GA9908@Krystal>
+References: <20090115183942.GA6325@elte.hu> <200901271213.18605.rusty@rustcorp.com.au> <497E705B.5000302@kernel.org> <200901282108.51864.rusty@rustcorp.com.au> <alpine.DEB.1.10.0901281148540.13825@qirst.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901281148540.13825@qirst.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 12:42:35 up 27 days, 17:40,  3 users,  load average: 2.86, 1.74,
+	1.30
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Masami Hiramatsu wrote:
-> Mathieu Desnoyers wrote:
->> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->>> Mathieu Desnoyers wrote:
-> [...]
->>>> All this called in a loop. This would help isolating the "vmap" part of
->>>> the issue. If this test is not enough, then we should maybe try
->>>> something like this in a kernel module (which does what text_poke does
->>>> with vmalloc, more or less) in a loop :
->>>>
->>>> char somedata[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
->>>> char copydata[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
->>> Should both of them have PAGE_SIZE*2?
->>>
->> Yes.
->>
->>>> void test_vmap(void)
->>>> }
->>>>   struct page *pages[2];
->>>>   char *vaddr;
->>>>   int i;
->>>>
->>>>   for (i = 0; i < 2 * PAGE_SIZE; i++)
->>>>     copydata[i] = somedata[i];
->>>>   page[0] = virt_to_page(&somedata);
->>>>   BUG_ON(!page[0]);
->>>>   page[1] = virt_to_page(&somedata + PAGE_SIZE);
->>>>   BUG_ON(!page[1]);
+* Christoph Lameter (cl@linux-foundation.org) wrote:
+> On Wed, 28 Jan 2009, Rusty Russell wrote:
 > 
-> Oops, these should be vmalloc_to_page(), shouldn't it?
+> > AFAICT we'll need a hybrid: HAVE_NMISAFE_CPUOPS, and if not, use atomic_t
+> > in ftrace (which isn't NMI safe on parisc or sparc/32 anyway, but I don't think we care).
 > 
->>>>   vaddr = vmap(pages, 2, VM_MAP, PAGE_KERNEL);
->>>>   BUG_ON(!vaddr);
->>>>
->>>>   for (i = 0; i < 2 * PAGE_SIZE; i++)
->>>>     vaddr[i] = copydata[i] + 1;
->>>>   
->>>>   vunmap(vaddr);
->>>>   
->>>>   for (i = 0; i < 2 * PAGE_SIZE; i++)
->>>>     BUG_ON(somedata[i] != copydata[i] + 1);
->>>> }
->>> Hmm, when I ran above code, it hit the last BUG_ON().
->>> I checked that somedata[i] didn't updated.
->>>
->> Do you hit the BUG_ON after the first loop ?
+> Right.
 > 
-> At the first loop, it hit the BUG_ON.
-> 
->>>> Given you don't seem to have hit the
->>>>         for (i = 0; i < len; i++)
->>>>                 BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
->>>> test at the end of text_poke,
->>> However, when I ran kprobe-based test, it doesn't hit the BUG_ON()
->>> in text_poke().
->>>
->> The variable declarations should have been 2*PAGE_SIZE, hopefully you
->> fixed them.
-> 
-> Sure,
-> 
->> There is also a sync_core() in text_poke. It should not matter, but
->> maybe that could help ?
-> 
-> Adding sync_core() could not help me... anyway, I'll try again
-> with using vmalloc_to_page().
 
-Hmm, using vmalloc_to_page() works fine... the test didn't hit any BUG_ON.
+Ideally this should be done transparently so we don't have to #ifdef
+code around HAVE_NMISAFE_CPUOPS everywhere in the tracer. We might
+consider declaring an intermediate type with this kind of #ifdef in the
+tracer code if we are the only one user though.
 
 > 
->>>> I suspect the write through the vmapped
->>>> area is correctly done, but that the problem may lay in the mm layer.
->>>> Maybe it's running out of pre-allocated vmap areas or something like
->>>> this ?
->>> I haven't seen vmalloc failure message on 2.6.29-rc2.
->>>
->> It could be because the available vmalloc space is slightly higher.
->> Looking into the lazy vunmap threshold would be useful.
->>
->> You could also try with loop values higher than 400.
-
-I also tested with 1000 loops, but nothing happened.
-
-Thank you,
-
+> > Other than the shouting, I liked Christoph's system:
+> > - CPU_INC = always safe (eg. local_irq_save/per_cpu(i)++/local_irq_restore)
+> > - _CPU_INC = not safe against interrupts (eg. get_cpu/per_cpu(i)++/put_cpu)
+> > - __CPU_INC = not safe against anything (eg. per_cpu(i)++)
+> >
+> > I prefer the name 'local' to the name 'cpu', but I'm not hugely fussed.
 > 
-> OK, Thanks,
+> The term cpu is meaning multiple things at this point. So yes it may be
+> better to go with glibc naming of thread local space.
 > 
+
+However using "local" for "per-cpu" could be confusing with the glibc
+naming of thread local space, because "per-thread" and "per-cpu"
+variables are different from a synchronization POV and we can end up
+needing both (e.g. a thread local variable can never be accessed by
+another thread, but a cpu local variable could be accessed by a
+different CPU due to scheduling).
+
+I'm currently thinking about implementing user-space per-cpu tracing buffers,
+and the last thing I'd like is to have a "local" semantic clash between
+the kernel and glibc. Ideally, we could have something like :
+
+Atomic safe primitives (emulated with irq disable if the architecture
+does not have atomic primitives) :
+- atomic_thread_inc()
+  * current mainline local_t local_inc().
+- atomic_cpu_inc()
+  * Your proposed CPU_INC.
+
+Non-safe against interrupts, but safe against preemption :
+- thread_inc()
+  * no preempt_disable involved, because this deals with per-thread
+    variables :
+    * Simple var++
+- cpu_inc()
+  * disables preemption, per_cpu(i)++, enables preemption
+
+Not safe against preemption nor interrupts :
+- _thread_inc()
+  * maps to thread_inc()
+- _cpu_inc()
+  * simple per_cpu(i)++
+
+So maybe we don't really need thread_inc(), _thread_inc() and _cpu_inc,
+because they map to standard C operations, but we may find that in some
+architectures that the atomic_cpu_inc() is faster than the per_cpu(i)++,
+and in those cases it would make sense to map e.g. _cpu_inc() to
+atomic_cpu_inc().
+
+Also note that don't think adding _ and __ prefixes to the operations
+makes it clear for the programmer and reviewer what is safe against
+what. OMHO, it will just make the code more obscure. One level of
+underscore is about the limit I think people can "know" what this
+"unsafe" version of the primitive does.
+
+Mathieu
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
