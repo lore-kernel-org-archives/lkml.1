@@ -1,138 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755749AbZA1WFv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZA1WG2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755749AbZA1WFv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 17:05:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZA1WFl
+	id S1756383AbZA1WG2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 17:06:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbZA1WGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 17:05:41 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50762 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751783AbZA1WFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 17:05:40 -0500
-Date: Wed, 28 Jan 2009 17:05:06 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: steven@ngls.net
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       bugme-daemon@bugzilla.kernel.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 12564] New: poor performance while
- preprocessing source code
-Message-ID: <20090128170506.37161fb6@tleilax.poochiereds.net>
-In-Reply-To: <20090128132942.c957a199.akpm@linux-foundation.org>
-References: <bug-12564-10286@http.bugzilla.kernel.org/>
-	<20090128132942.c957a199.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Jan 2009 17:06:03 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:57851 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753658AbZA1WGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 17:06:00 -0500
+X-Greylist: delayed 782 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Jan 2009 17:06:00 EST
+Message-Id: <1233179577.19086.1297291037@webmail.messagingengine.com>
+X-Sasl-Enc: JLSvWQRmQMM+9A4DO8Bvc3PnVzYsM971f7UDklSsfRHn 1233179577
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "Cyrill Gorcunov" <gorcunov@gmail.com>, "Ingo Molnar" <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "Thomas Gleixner" <tglx@linutronix.de>
+Cc: "LKML" <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20090128202125.GA32555@localhost>
+Subject: Re: [PATCH -tip] x86: trampoline_64.S - use predefined constants with  
+ simplification
+In-Reply-To: <20090128202125.GA32555@localhost>
+Date: Wed, 28 Jan 2009 22:52:57 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009 13:29:42 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Wed, 28 Jan 2009 23:21:25 +0300, "Cyrill Gorcunov"
+<gorcunov@gmail.com> said:
+> Impact: cleanup
+> 
+> We may use macros from processor-flags.h instead
+> of hardcoding bits. Actually it's not direct mapping
+> of old instructions with new ones -- BTS does change
+> CF flag while MOV does not. But i didn't find any
+> dependency on CF in this code.
+> 
+> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> ---
+>
+> Please review
 
+Looks good.
+
+Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
+
+>  arch/x86/kernel/trampoline_64.S |   19 +++++++++----------
+>  1 file changed, 9 insertions(+), 10 deletions(-)
 > 
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
-> 
-> On Wed, 28 Jan 2009 11:29:52 -0800 (PST)
-> bugme-daemon@bugzilla.kernel.org wrote:
-> 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=12564
-> > 
-> >            Summary: poor performance while preprocessing source code
-> >            Product: IO/Storage
-> 
-> Thanks for the report.
-> 
-> >            Version: 2.5
-> >      KernelVersion: 2.6.28.2
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: normal
-> >           Priority: P1
-> >          Component: Other
-> >         AssignedTo: io_other@kernel-bugs.osdl.org
-> >         ReportedBy: steven@ngls.net
-> > 
-> > 
-> > Latest working kernel version: 2.6.26-rc3
-> > Earliest failing kernel version: 2.6.26-rc4 (or 2.6.26-rc3 + patch)
-> 
-> (huge performance regression in NFS)
+> Index: linux-2.6.git/arch/x86/kernel/trampoline_64.S
+> ===================================================================
+> --- linux-2.6.git.orig/arch/x86/kernel/trampoline_64.S
+> +++ linux-2.6.git/arch/x86/kernel/trampoline_64.S
+> @@ -29,6 +29,7 @@
+>  #include <asm/page.h>
+>  #include <asm/msr.h>
+>  #include <asm/segment.h>
+> +#include <asm/processor-flags.h>
 >  
-> > Distribution: gentoo
-> > 
-> > Hardware Environment:
-> >   Various 32 and 64 bit Intel and AMD machines with various
-> > PATA and SATA disks and various network interfaces.
-> > 
-> > Problem Description:
-> >   Here's my situation.  I've recently upgraded the kernels
-> > on ~30 computers at work (from 2.6.21 to 2.6.27).  These 
-> > computers are used to build and test software we develop.  
-> > We speed up the building process using distcc.  However,
-> > after the kernel upgrade, the builds are much much slower.
-> > The preprocessing stage seems to be at least 10 times
-> > slower.
-> >   As evidence of this slowdown I am attaching two images created
-> > using distccmon-gnome.  Both snapshots were taken shortly 
-> > after starting builds in a clean sandbox.  The only difference
-> > is the kernel.  "fast.png" was generated while running
-> > kernel 2.6.25.20.  "slow.png" was generated with 2.6.26.
-> > The light purple sections indicate the preprocessing times
-> > for each file.  
-> >   This slowdown is observed on both 32 and 64 bit computers
-> > and using either gcc or the intel compiler. (The intel compiler
-> > builds do not use distcc, but that are also slower.)  Strangely 
-> > enough, it's still faster to use an NFS mounted sandbox on a
-> > machine with an older kernel than the same sandbox on the local
-> > machine with a newer kernel.  (This suggests to me that it
-> > is neither a disk or network IO problem.)
-> >   I've used git bisect to narrow it down to a single commit:
-> > # bad: [b0b539739fe9b7d75002412a787cfdf4efddbc33] NFS: Ensure that 'noac'
-> > and/or 'actimeo=0' turn off attribute caching
-> 
-> And thanks for bisecting it.
-> 
-
-It's a pretty small patch. The obvious question is: "What mount options
-are you using on your NFS mounts?"
-
-
-> > This is the first commit after v2.6.26-rc3.  I'm not an
-> > experienced git user, so I don't know how to narrow it down
-> > further.  Distccmon-gnome snapshots from the bisection
-> > process are similar to the ones noted above.
-> >   Naturally, I would like the newer kernels to have similar
-> > performance to the older kernels.
-> >   I will be attaching various items.  Let me know what other 
-> > information might be helpful.
-> > 
-> > Steps to reproduce:
-> > distccmon-gnome &
-> > # using a makefile setup to use distcc:
-> > make -j 5 all
-> > # note preprocessing times in distccmon
-> > 
-> 
-> Something I don't understand from this:
-> 
-> If your normal setup is using distcc then what role does NFS have to
-> play?  I mean, distcc kind-of replaces NFS in this workload.
-> 
-> Perhaps you could briefly describe the topology/data-flow/etc so that
-> we can see how NFS could be a bottleneck here?
-> 
-> Thanks.
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-nfs" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-
+>  .section .rodata, "a", @progbits
+>  
+> @@ -37,7 +38,7 @@
+>  ENTRY(trampoline_data)
+>  r_base = .
+>  	cli			# We should be safe anyway
+> -	wbinvd	
+> +	wbinvd
+>  	mov	%cs, %ax	# Code and data in the same place
+>  	mov	%ax, %ds
+>  	mov	%ax, %es
+> @@ -73,9 +74,8 @@ r_base = .
+>  	lidtl	tidt - r_base	# load idt with 0, 0
+>  	lgdtl	tgdt - r_base	# load gdt with whatever is appropriate
+>  
+> -	xor	%ax, %ax
+> -	inc	%ax		# protected mode (PE) bit
+> -	lmsw	%ax		# into protected mode
+> +	mov	$X86_CR0_PE, %ax	# protected mode (PE) bit
+> +	lmsw	%ax			# into protected mode
+>  
+>  	# flush prefetch and jump to startup_32
+>  	ljmpl	*(startup_32_vector - r_base)
+> @@ -86,9 +86,8 @@ startup_32:
+>  	movl	$__KERNEL_DS, %eax	# Initialize the %ds segment register
+>  	movl	%eax, %ds
+>  
+> -	xorl	%eax, %eax
+> -	btsl	$5, %eax		# Enable PAE mode
+> -	movl	%eax, %cr4
+> +	movl	$X86_CR4_PAE, %eax
+> +	movl	%eax, %cr4		# Enable PAE mode
+>  
+>  					# Setup trampoline 4 level pagetables
+>  	leal	(trampoline_level4_pgt - r_base)(%esi), %eax
+> @@ -99,9 +98,9 @@ startup_32:
+>  	xorl	%edx, %edx
+>  	wrmsr
+>  
+> -	xorl	%eax, %eax
+> -	btsl	$31, %eax		# Enable paging and in turn activate Long Mode
+> -	btsl	$0, %eax		# Enable protected mode
+> +	# Enable paging and in turn activate Long Mode
+> +	# Enable protected mode
+> +	movl	$(X86_CR0_PG | X86_CR0_PE), %eax
+>  	movl	%eax, %cr0
+>  
+>  	/*
+-- 
+  Alexander van Heukelum
+  heukelum@fastmail.fm
 
 -- 
-Jeff Layton <jlayton@redhat.com>
+http://www.fastmail.fm - Faster than the air-speed velocity of an
+                          unladen european swallow
+
