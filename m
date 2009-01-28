@@ -1,156 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZA1Jmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753422AbZA1Jp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbZA1Jmp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 04:42:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750994AbZA1Jmg
+	id S1753422AbZA1Jp1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 04:45:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750937AbZA1JpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 04:42:36 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:45823 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbZA1Jmf (ORCPT
+	Wed, 28 Jan 2009 04:45:17 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:60913 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750839AbZA1JpP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 04:42:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fUF+PJ0GaE/i1vpPBFKhVMaiRhf/UEJFcGwyOUTM9lkmFXcD0NI7ioDP+Z3+UPva8N
-         o3+NL22pKfllBi1k6dMxbrCwh92P2pm4LVUZdvIhnUsRv8GdW1UZn2BpMM18TQjcIKP2
-         /FyrqkZyzKCZi+lyyGYlJYKQ4EMjNvZfQBWzc=
-MIME-Version: 1.0
-In-Reply-To: <49801F57.3050202@nerdgrounds.com>
-References: <497E4531.20800@nerdgrounds.com>
-	 <5bdc1c8b0901261859g58a413e1x52208a6f2c1f9ccd@mail.gmail.com>
-	 <1233031451.4851.31.camel@gaiman>
-	 <5bdc1c8b0901270937h27c48290p4fb5233f06593e44@mail.gmail.com>
-	 <1233091414.25539.8.camel@gaiman> <497FFD06.8010001@nerdgrounds.com>
-	 <21d7e9970901272305n6ec9506bodaaae29915f7914b@mail.gmail.com>
-	 <49801F57.3050202@nerdgrounds.com>
-Date: Wed, 28 Jan 2009 19:42:33 +1000
-Message-ID: <21d7e9970901280142w50d081b2wfd6cac800c980f37@mail.gmail.com>
-Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
-From: Dave Airlie <airlied@gmail.com>
-To: Jonathan Campbell <jon@nerdgrounds.com>
-Cc: Eric Anholt <eric@anholt.net>, Mark Knecht <markknecht@gmail.com>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Jan 2009 04:45:15 -0500
+Subject: Re: ext3: call blkdev_issue_flush on fsync
+From: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@MIT.EDU>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Pavel Machek <pavel@suse.cz>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, sandeen@redhat.com,
+       fernando@kic.ac.jp
+In-Reply-To: <20090119120349.GA10193@duck.suse.cz>
+References: <20090114141204.GD6222@mit.edu>
+	 <20090114143756.GF19950@duck.suse.cz> <20090114165952.GH6222@mit.edu>
+	 <1232021211.14626.19.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090115234544.GA7579@duck.suse.cz>
+	 <1232109069.13775.35.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1232114101.13775.63.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090116163039.GE10617@duck.suse.cz>
+	 <1232185639.4831.18.camel@sebastian.kern.oss.ntt.co.jp>
+	 <1232186449.4831.29.camel@sebastian.kern.oss.ntt.co.jp>
+	 <20090119120349.GA10193@duck.suse.cz>
+Content-Type: text/plain; charset=UTF-8
+Organization: NTT Open Source Software Center
+Date: Wed, 28 Jan 2009 18:45:13 +0900
+Message-Id: <1233135913.5399.57.camel@sebastian.kern.oss.ntt.co.jp>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 7:03 PM, Jonathan Campbell <jon@nerdgrounds.com> wrote:
-> I can't think of a nice way to say this, but this idea is crack.
->
-> Hey, thanks :)
->>
->> I can see one use for vramfs which is to use VRAM as a file backing
->> store, we won't mention that VRAM is slow. Some caveats being
->> the PCI aperture only exposes 1/2 the VRAM on some cards, there is
->> more hidden away where the CPU can't find it.
->>  and that some cards have made up VRAM (read IGPs).
->>
->
-> I actually have in my possession PCI devices that do just that. The second
-> half of VRAM can always be found as the "Display controller", function #1,
-> where the main VGA device is function #0. A PCI Radeon card I have does
-> that, the Intel graphics chipset in my laptop does that... vramfs is able to
-> mount that VRAM and use it just fine.
+On Mon, 2009-01-19 at 13:03 +0100, Jan Kara wrote:
+> On Sat 17-01-09 19:00:49, Fernando Luis Vázquez Cao wrote:
+> > On Sat, 2009-01-17 at 18:47 +0900, Fernando Luis Vázquez Cao wrote:
+> > > On Fri, 2009-01-16 at 17:30 +0100, Jan Kara wrote:
+> > > > On Fri 16-01-09 22:55:01, Fernando Luis Vázquez Cao wrote:
+> > > > > To ensure that bits are truly on-disk after an fsync or fdatasync, we
+> > > > > should force a disk flush explicitly when there is dirty data/metadata
+> > > > > and the journal didn't emit a write barrier (either because metadata is
+> > > > > not being synched or barriers are disabled).
+> > > > > 
+> > > > > Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> > > > > ---
+> > > >   Only two minor nits:
+> > > > 
+> > > > > --- linux-2.6.29-rc1-orig/fs/ext3/fsync.c	2008-12-25 08:26:37.000000000 +0900
+> > > > > +++ linux-2.6.29-rc1/fs/ext3/fsync.c	2009-01-16 22:18:53.000000000 +0900
+> > > > > @@ -27,6 +27,7 @@
+> > > > >  #include <linux/sched.h>
+> > > > >  #include <linux/writeback.h>
+> > > > >  #include <linux/jbd.h>
+> > > > > +#include <linux/blkdev.h>
+> > > > >  #include <linux/ext3_fs.h>
+> > > > >  #include <linux/ext3_jbd.h>
+> > > > >  
+> > > > > @@ -45,6 +46,8 @@
+> > > > >  int ext3_sync_file(struct file * file, struct dentry *dentry, int datasync)
+> > > > >  {
+> > > > >  	struct inode *inode = dentry->d_inode;
+> > > > > +	journal_t *journal = EXT3_SB(inode->i_sb)->s_journal;
+> > > > > +	unsigned long i_state = inode->i_state;
+> > > > >  	int ret = 0;
+> > > > >  
+> > > > >  	J_ASSERT(ext3_journal_current_handle() == NULL);
+> > > > > @@ -69,23 +72,33 @@ int ext3_sync_file(struct file * file, s
+> > > > >  	 */
+> > > > >  	if (ext3_should_journal_data(inode)) {
+> > > > >  		ret = ext3_force_commit(inode->i_sb);
+> > > > > +		if (!(journal->j_flags & JFS_BARRIER))
+> > > > > +			goto no_journal_barrier;
+> > > > >  		goto out;
+> > > > >  	}
+> > > > >  
+> > > > > -	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+> > > > > -		goto out;
+> > > > > +	if (datasync && !(i_state & I_DIRTY_DATASYNC))
+> > > > > +		goto flush_blkdev;
+> > > > >  
+> > > > >  	/*
+> > > > >  	 * The VFS has written the file data.  If the inode is unaltered
+> > > > >  	 * then we need not start a commit.
+> > > > >  	 */
+> > > > > -	if (inode->i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+> > > > > +	if (i_state & (I_DIRTY_SYNC|I_DIRTY_DATASYNC)) {
+> > > > >  		struct writeback_control wbc = {
+> > > > >  			.sync_mode = WB_SYNC_ALL,
+> > > > >  			.nr_to_write = 0, /* sys_fsync did this */
+> > > > >  		};
+> > > > >  		ret = sync_inode(inode, &wbc);
+> > > > > +		if (journal && !(journal->j_flags & JFS_BARRIER))
+> > > > > +			goto no_journal_barrier;
+> > > >   I cannot imagine "journal" will be NULL here.
+> > > 
+> > > I'll try to check whether that is always so just in case.
+> > > 
+> > > >   And we can also optimize here a bit and do "goto out" because here
+> > > > we know the barrier has been issued.
+> > > 
+> > > Yep, I was considering the same optimization. By the way, I was
+> > > wondering if we should honor ext3 and ext4's "barrier" mount option for
+> > > sys_fsync()/sys_fdatasync() and do not force a flush when "barrier=1".
+> > 
+> > The last phrase should read " do not force a flush when "barrier=0" ".
+>   I was hesitating about this a bit. But I don't think so. The reason is
+> that POSIX (or any other reasonable specification) mandates that fsync()
+> should return only after the data is safely on storage. So if we don't
+> flush blockdevice caches, we effectively violate POSIX and we should never
+> do that. With barriers the matter is a bit different - that is just a
+> filesystem specific thing, no standard guarantees anything.
 
-one swallow does not a summer make.
+Hi Jan,
 
-I have lots of other gpus that don't do this sitting on my desk. some GPUs
-don't expose a second head. Intel GPU in laptops don't actually have any real
-VRAM behind them, they just have some small amount allocated by the BIOS.
+Sorry it's taken me so long to get back to you.
 
->
-> Use lspci -v and look for your VGA card, then at the "Display controller"
-> part (PCI class 0x038000), you'll see where that other half is.
->
-> And VRAM isn't always slow. It usually is slower than host memory, yes, but
-> not slow enough to be useless.
->>
->> It doesn't in any way serve as a basis for talking to the GPU behind
->> said VRAM or as a basis for any
->> sort of backend to talk to the GPU.
->>
->
-> It's not supposed to. By design. Someone else runs the GPU. A root-level
-> userspace daemon controlling the MMIO registers directly through /dev/mem if
-> you like. This might be useful for the XFree86 or X.org guys for example.
+Thinking a lit bit more about this issue, it occurred to me that adding
+a new mount option à la existing "barrier" is likely to be preferable.
+As an example where such an option could make sense, let's consider a
+system with battery-backup cache devices. Since the battery-backup
+guarantees the data still not committed to the platter will not vanish
+in the event of a power down, it should be possible to obtain a
+performance gain by optimizing out the device flush on every
+fsync()/fdatasync() call.
 
-I am along with Eric one of the X.org people, hence my crack comment. We are
-also trying to kill userspace drivers that control the MMIO regs.
+If there is consensus on the propriety of this approach, I will send
+updated patches.
 
-TBH if you wanted to make this faster, you really would need some sort
-of CPU offload
-using the GPU blit engine which is a lot faster than doing CPU access
-to the uncached
-VRAM.
+Regards,
 
+Fernando
 
-Dave.
-
->>
->> Dave.
->>
->>
->>>
->>> My other concern is that GEM with a filesystem might be the best option
->>> for
->>> 3D gaming, but that it wouldn't work if the driver doesn't know the card.
->>> The DRI drivers, as far as I know, are tied to the GPU and chipset of the
->>> device (because they have to manage it, after all!). How exactly would
->>> GEM
->>> work for cards that it doesn't recognize, like one machine of mine with a
->>> weird ATI chipset nobody knows how to talk to? If GEM doesn't recognize
->>> it,
->>> it won't provide VRAM resources to use it, right?
->>>
->>> This is where vramfs has it's advantage: it's not the absolute best
->>> solution
->>> for 3D graphics, but it's simple, it can serve as a starting point for
->>> GPU
->>> experiments from userspace, or if nothing else allows the use of the
->>> onboard
->>> video RAM on an otherwise unused and unrecognized video device. It's
->>> device-agnostic by design.
->>>
->>>>
->>>> The way you want do that is using OpenGL to put your data in textures
->>>> and framebuffer objects, and render them.  With KMS, we'll be able to
->>>> support EGL even on the console so you can do the work without having an
->>>> X environment set up.
->>>>
->>>> The problem with vramfs as a basis for GPU offload is that most GPU
->>>> tasks end up at some point exceeding the size of available
->>>> aperture/VRAM.  So you need code that manages loading buffer objects in
->>>> and out on demand, managing the execution pipeline and GPU and CPU
->>>> caches as required.  We have that with GEM already.
->>>>
->>>> Remember, writing data to an aperture isn't the hard part of offloading
->>>> to the GPU, programming the GPU is.  That's why you use OpenGL or
->>>> another abstraction to do it.
->>>>
->>>>
->>>>
->>>
->>> --
->>> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
->>> in
->>> the body of a message to majordomo@vger.kernel.org
->>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>> Please read the FAQ at  http://www.tux.org/lkml/
->>>
->>>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->>
->>
->
->
