@@ -1,66 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbZA1OF4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752176AbZA1OOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758047AbZA1OF4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 09:05:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbZA1N6c
+	id S1752176AbZA1OOJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 09:14:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZA1ONz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 08:58:32 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:60404 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755945AbZA1N6b (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 08:58:31 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xeRTfcE9tj2o7eDmz1SbIwrDbQEwCXQyfNwtmZq7tNa3eoiLKoqoFsxwFreWCVj4yc
-         +7JOYgJsCO9wcBZImHewLxzC6VurdTpUem1rMtzFryTJC2uWL+nevvcPAFtc5fQ8zrYg
-         KhNLWlcDObc56p0ohDj80dTXcX8AU1g2vDL8M=
-MIME-Version: 1.0
-In-Reply-To: <y0mtz7ks1jf.fsf@ton.toronto.redhat.com>
-References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere>
-	 <y0mtz7ks1jf.fsf@ton.toronto.redhat.com>
-Date: Wed, 28 Jan 2009 14:58:28 +0100
-Message-ID: <c62985530901280558o7b7572efl8afeebb33b463e2b@mail.gmail.com>
-Subject: Re: [PATCH] tracer for sys_open() - sreadahead
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       powertop ml <power@bughost.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       srostedt@redhat.com, Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Neil Horman <nhorman@tuxdriver.com>, utrace-devel@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Jan 2009 09:13:55 -0500
+Received: from vena.lwn.net ([206.168.112.25]:34009 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750888AbZA1ONy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 09:13:54 -0500
+Date: Wed, 28 Jan 2009 07:13:51 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, hch@infradead.org,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
+       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
+Message-ID: <20090128071351.3643800e@bike.lwn.net>
+In-Reply-To: <20090128042337.GA15060@redhat.com>
+References: <20090115153211.663df310@bike.lwn.net>
+	<20090122065104.2787df2d.akpm@linux-foundation.org>
+	<20090122203248.GA20159@infradead.org>
+	<20090123045646.GK15750@one.firstfloor.org>
+	<20090127165504.53ed7a2d.akpm@linux-foundation.org>
+	<20090128031439.GA11025@redhat.com>
+	<20090127205739.1384343f@bike.lwn.net>
+	<20090128042337.GA15060@redhat.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/28 Frank Ch. Eigler <fche@redhat.com>:
-> Frederic Weisbecker <fweisbec@gmail.com> writes:
->
->> [...]
->> Speaking about a global syscall tracer, I made a patch to trace only the syscalls
->> with the function-graph-tracer.
->> http://lkml.org/lkml/2008/12/30/267 This low-level part can easily
->> be used by all tracers that would like to inspect syscalls.
->> [...]
->> Just a change is needed: Steven requested that the part inside
->> syscall_trace_enter become a tracepoint, making it totally shareable
->> between tracers and easy to turn on and off.
->
-> Alternately, you could just rely on utrace's hooks.  They were thought
-> out more fully with respect to parameter access, manipulation, and
-> programmatic control befitting even a debugger.
->
->
-> - FChE
->
+On Wed, 28 Jan 2009 05:23:37 +0100
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-I don't know much it. But I will soon have some time to look at your
-patch which uses ftrace from utrace.
-Anyway, are there some plans about utrace to be merged? Unless I
-couldn't be able to use
-it...
+> But please don't forget it is not strictly necessary f_op->fasync()
+> must use fasync_helper(). And we have users (pipe_rdwr_fasync) which
+> call fasync_helper() twice.
+
+Understood.  Any such change will certainly require an audit of all
+in-tree fasync() implementations; that's part of why it's taking a
+little while.  But it also cleans things up and solves the atomicity
+problems nicely, so I think it's worth trying.
+
+jon
