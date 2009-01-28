@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbZA1Scz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbZA1SeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752981AbZA1Scz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 13:32:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZA1Scq
+	id S1753145AbZA1SeZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 13:34:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbZA1SeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 13:32:46 -0500
-Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:53262 "EHLO
-	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751052AbZA1Scp (ORCPT
+	Wed, 28 Jan 2009 13:34:17 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57293 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZA1SeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 13:32:45 -0500
-Date: Wed, 28 Jan 2009 18:02:51 +0000
-From: Darren Salt <linux@youmustbejoking.demon.co.uk>
-To: corentincj@iksaif.net, stable@kernel.org
-Cc: acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Message-ID: <502A4547BC%linux@youmustbejoking.demon.co.uk>
-Mail-Followup-To: corentincj@iksaif.net, acpi4asus-user@lists.sourceforge.net,
- stable@kernel.org, linux-kernel@vger.kernel.org,
- linux@youmustbejoking.demon.co.uk
-User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
-X-SDate: Wed, 5629 Sep 1993 18:02:51 +0000
+	Wed, 28 Jan 2009 13:34:16 -0500
+Date: Wed, 28 Jan 2009 13:34:13 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Arjan van de Ven <arjan@infradead.org>
+cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, jens.axboe@oracle.com
+Subject: Re: Buggy IPI and MTRR code on low memory
+In-Reply-To: <20090128102208.68a900cc@infradead.org>
+Message-ID: <alpine.DEB.1.10.0901281331130.25359@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com> <1233161182.10992.52.camel@laptop> <alpine.DEB.1.10.0901281221450.25359@gandalf.stny.rr.com> <20090128102208.68a900cc@infradead.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Connect-IP: 192.168.0.5
-X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
-Subject: [PATCH] Oops when changing backlight brightness during eeepc-laptop init
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on pentagram.youmustbejoking.demon.co.uk)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got the following oops while changing the backlight brightness during
-startup. When it happens, it prevents use of the hotkeys, Fn-Fx, and the lid
-button.
 
-It's a clear use-before-init, as I verified by testing with an
-appropriately-placed "else printk".
+On Wed, 28 Jan 2009, Arjan van de Ven wrote:
 
-BUG: unable to handle kernel NULL pointer dereference at 00000000
-*pde = 00000000 
-Oops: 0002 [#1] PREEMPT SMP 
-Pid: 160, comm: kacpi_notify Not tainted (2.6.28.1-eee901 #4) 901
-EIP: 0060:[<c0264e68>]  [<c0264e68>] eeepc_hotk_notify+26/da
-EFLAGS: 00010246 CPU: 1
-Using defaults from ksymoops -t elf32-i386 -a i386
-EAX: 00000009 EBX: 00000000 ECX: 00000009 EDX: f70dbf64
-ESI: 00000029 EDI: f7335188 EBP: c02112c9 ESP: f70dbf80
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
- f70731e0 f73acd50 c02164ac f7335180 f70aa040 c02112e6 f733518c c012b62f
- f70aa044 f70aa040 c012bdba f70aa04c 00000000 c012be6e 00000000 f70bdf80
- c012e198 f70dbfc4 f70dbfc4 f70aa040 c012bdba 00000000 c012e0c9 c012e091
-Call Trace:
- [<c02164ac>] ? acpi_ev_notify_dispatch+4c/55
- [<c02112e6>] ? acpi_os_execute_deferred+1d/25
- [<c012b62f>] ? run_workqueue+71/f1
- [<c012bdba>] ? worker_thread+0/bf
- [<c012be6e>] ? worker_thread+b4/bf
- [<c012e198>] ? autoremove_wake_function+0/2b
- [<c012bdba>] ? worker_thread+0/bf
- [<c012e0c9>] ? kthread+38/5f
- [<c012e091>] ? kthread+0/5f
- [<c0103abf>] ? kernel_thread_helper+7/10
-Code: 00 00 00 00 c3 83 3d 60 5c 50 c0 00 56 89 d6 53 0f 84 c4 00 00 00 8d 42
-e0 83 f8 0f 77 0f 8b 1d 68 5c 50 c0 89 d8 e8 a9 fa ff ff <89> 03 8b 1d 60 5c
-50 c0 89 f2 83 e2 7f 0f b7 4c 53 10 8d 41 01 
+> On Wed, 28 Jan 2009 12:24:48 -0500 (EST)
+> Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > > ---
+> > I'll have skip the NMI test and see if it locks up any place else.
+> 
+> if you get an NMI during MTRR changing you are more or less screwed.
+> Really. (the cpu is uncachable etc)
 
-Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+Heh, the NMI is just another place that has the IPI problem. A different
+issue to the MTRR. Well, same bug, different place.
 
-(The patch is against 2.6.28.1. It's also needed for 2.6.29, in which I see
-that the driver is now in drivers/platform/x86. Hardware is a 901 with BIOS
-1808.)
+> 
+> the MTRR code should disable NMIs as much as possible.
+> 
+> and for sure in -RT, the MTRR change section should not be preemptable
+> at all.
 
---- a/drivers/misc/eeepc-laptop.c
-+++ b/drivers/misc/eeepc-laptop.c
-@@ -510,7 +510,8 @@
- static void notify_brn(void)
- {
- 	struct backlight_device *bd = eeepc_backlight_device;
--	bd->props.brightness = read_brightness(bd);
-+	if (bd)
-+		bd->props.brightness = read_brightness(bd);
- }
- 
- static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
+Yeah, that is why I found this. The current code calls kfree and such from 
+the IPI if it is allocated (not to mention the kmalloc in 
+smp_call_function. Both of which can sleep in RT. I was forcing the 
+data=NULL case in RT to keep it from entering the allocation code paths. 
+But this is where I found the deadlock with MTRR (and NMI).
 
--- 
-| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
-| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
-| + Buy less and make it last longer.         INDUSTRY CAUSES GLOBAL WARMING.
+-- Steve
 
-Never be first. Never be last. Never volunteer for anything.
