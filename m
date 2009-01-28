@@ -1,280 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbZA1X6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760717AbZA1X63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760658AbZA1X6H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:58:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758429AbZA1Xoi
+	id S1760717AbZA1X63 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:58:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758491AbZA1Xon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:44:38 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37599 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:44:43 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37609 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758375AbZA1Xoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:44:37 -0500
+	id S1758474AbZA1Xol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:44:41 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 034/114] x86, apic: rename genapic::apic_destination_logical to genapic::dest_logical
-Date: Wed, 28 Jan 2009 23:41:40 +0000
-Message-Id: <1233186180-29883-35-git-send-email-mingo@elte.hu>
+Subject: [PATCH 038/114] x86, apic: clean up ->init_apic_ldr()
+Date: Wed, 28 Jan 2009 23:41:44 +0000
+Message-Id: <1233186180-29883-39-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
 References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:44:17 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:44:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This field name was unreasonably long - shorten it.
+- separate the namespace
+
+ - remove macros
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/genapic.h      |    2 +-
- arch/x86/kernel/genapic_flat_64.c   |   10 +++++-----
- arch/x86/kernel/genx2apic_cluster.c |    8 ++++----
- arch/x86/kernel/genx2apic_phys.c    |    2 +-
- arch/x86/kernel/genx2apic_uv_x.c    |    2 +-
- arch/x86/kernel/io_apic.c           |    2 +-
- arch/x86/kernel/ipi.c               |    2 +-
- arch/x86/kernel/smpboot.c           |    2 +-
- arch/x86/mach-generic/bigsmp.c      |    2 +-
- arch/x86/mach-generic/default.c     |    2 +-
- arch/x86/mach-generic/es7000.c      |    2 +-
- arch/x86/mach-generic/numaq.c       |    2 +-
- arch/x86/mach-generic/summit.c      |    2 +-
- 13 files changed, 20 insertions(+), 20 deletions(-)
+ arch/x86/include/asm/bigsmp/apic.h            |    2 +-
+ arch/x86/include/asm/es7000/apic.h            |    4 ++--
+ arch/x86/include/asm/mach-default/mach_apic.h |    3 +--
+ arch/x86/include/asm/mach-generic/mach_apic.h |    1 -
+ arch/x86/include/asm/numaq/apic.h             |    2 +-
+ arch/x86/include/asm/summit/apic.h            |    2 +-
+ arch/x86/kernel/apic.c                        |    2 +-
+ arch/x86/mach-generic/bigsmp.c                |    2 +-
+ arch/x86/mach-generic/default.c               |    2 +-
+ arch/x86/mach-generic/es7000.c                |    4 ++--
+ arch/x86/mach-generic/numaq.c                 |    2 +-
+ arch/x86/mach-generic/summit.c                |    2 +-
+ 12 files changed, 13 insertions(+), 15 deletions(-)
 
-diff --git a/arch/x86/include/asm/genapic.h b/arch/x86/include/asm/genapic.h
-index 7aee4a4..f9d1ec0 100644
---- a/arch/x86/include/asm/genapic.h
-+++ b/arch/x86/include/asm/genapic.h
-@@ -30,7 +30,7 @@ struct genapic {
- 
- 	int disable_esr;
- 
--	int apic_destination_logical;
-+	int dest_logical;
- 	unsigned long (*check_apicid_used)(physid_mask_t bitmap, int apicid);
- 	unsigned long (*check_apicid_present)(int apicid);
- 
-diff --git a/arch/x86/kernel/genapic_flat_64.c b/arch/x86/kernel/genapic_flat_64.c
-index fd242c6..d22cbda 100644
---- a/arch/x86/kernel/genapic_flat_64.c
-+++ b/arch/x86/kernel/genapic_flat_64.c
-@@ -74,7 +74,7 @@ static inline void _flat_send_IPI_mask(unsigned long mask, int vector)
- 	unsigned long flags;
- 
- 	local_irq_save(flags);
--	__send_IPI_dest_field(mask, vector, apic->apic_destination_logical);
-+	__send_IPI_dest_field(mask, vector, apic->dest_logical);
- 	local_irq_restore(flags);
- }
- 
-@@ -114,7 +114,7 @@ static void flat_send_IPI_allbutself(int vector)
- 			_flat_send_IPI_mask(mask, vector);
- 		}
- 	} else if (num_online_cpus() > 1) {
--		__send_IPI_shortcut(APIC_DEST_ALLBUT, vector, apic->apic_destination_logical);
-+		__send_IPI_shortcut(APIC_DEST_ALLBUT, vector, apic->dest_logical);
- 	}
- }
- 
-@@ -123,7 +123,7 @@ static void flat_send_IPI_all(int vector)
- 	if (vector == NMI_VECTOR)
- 		flat_send_IPI_mask(cpu_online_mask, vector);
- 	else
--		__send_IPI_shortcut(APIC_DEST_ALLINC, vector, apic->apic_destination_logical);
-+		__send_IPI_shortcut(APIC_DEST_ALLINC, vector, apic->dest_logical);
- }
- 
- static unsigned int get_apic_id(unsigned long x)
-@@ -185,7 +185,7 @@ struct genapic apic_flat =  {
- 
- 	.target_cpus			= flat_target_cpus,
- 	.disable_esr			= 0,
--	.apic_destination_logical	= APIC_DEST_LOGICAL,
-+	.dest_logical			= APIC_DEST_LOGICAL,
- 	.check_apicid_used		= NULL,
- 	.check_apicid_present		= NULL,
- 
-@@ -331,7 +331,7 @@ struct genapic apic_physflat =  {
- 
- 	.target_cpus			= physflat_target_cpus,
- 	.disable_esr			= 0,
--	.apic_destination_logical	= 0,
-+	.dest_logical			= 0,
- 	.check_apicid_used		= NULL,
- 	.check_apicid_present		= NULL,
- 
-diff --git a/arch/x86/kernel/genx2apic_cluster.c b/arch/x86/kernel/genx2apic_cluster.c
-index a76e75e..b91a48e 100644
---- a/arch/x86/kernel/genx2apic_cluster.c
-+++ b/arch/x86/kernel/genx2apic_cluster.c
-@@ -64,7 +64,7 @@ static void x2apic_send_IPI_mask(const struct cpumask *mask, int vector)
- 	for_each_cpu(query_cpu, mask)
- 		__x2apic_send_IPI_dest(
- 			per_cpu(x86_cpu_to_logical_apicid, query_cpu),
--			vector, apic->apic_destination_logical);
-+			vector, apic->dest_logical);
- 	local_irq_restore(flags);
- }
- 
-@@ -80,7 +80,7 @@ static void x2apic_send_IPI_mask_allbutself(const struct cpumask *mask,
- 		if (query_cpu != this_cpu)
- 			__x2apic_send_IPI_dest(
- 				per_cpu(x86_cpu_to_logical_apicid, query_cpu),
--				vector, apic->apic_destination_logical);
-+				vector, apic->dest_logical);
- 	local_irq_restore(flags);
- }
- 
-@@ -95,7 +95,7 @@ static void x2apic_send_IPI_allbutself(int vector)
- 		if (query_cpu != this_cpu)
- 			__x2apic_send_IPI_dest(
- 				per_cpu(x86_cpu_to_logical_apicid, query_cpu),
--				vector, apic->apic_destination_logical);
-+				vector, apic->dest_logical);
- 	local_irq_restore(flags);
- }
- 
-@@ -187,7 +187,7 @@ struct genapic apic_x2apic_cluster = {
- 
- 	.target_cpus			= x2apic_target_cpus,
- 	.disable_esr			= 0,
--	.apic_destination_logical	= APIC_DEST_LOGICAL,
-+	.dest_logical			= APIC_DEST_LOGICAL,
- 	.check_apicid_used		= NULL,
- 	.check_apicid_present		= NULL,
- 
-diff --git a/arch/x86/kernel/genx2apic_phys.c b/arch/x86/kernel/genx2apic_phys.c
-index 9b6d68d..f070e86 100644
---- a/arch/x86/kernel/genx2apic_phys.c
-+++ b/arch/x86/kernel/genx2apic_phys.c
-@@ -183,7 +183,7 @@ struct genapic apic_x2apic_phys = {
- 
- 	.target_cpus			= x2apic_target_cpus,
- 	.disable_esr			= 0,
--	.apic_destination_logical	= 0,
-+	.dest_logical			= 0,
- 	.check_apicid_used		= NULL,
- 	.check_apicid_present		= NULL,
- 
-diff --git a/arch/x86/kernel/genx2apic_uv_x.c b/arch/x86/kernel/genx2apic_uv_x.c
-index 0a75680..c8a8915 100644
---- a/arch/x86/kernel/genx2apic_uv_x.c
-+++ b/arch/x86/kernel/genx2apic_uv_x.c
-@@ -248,7 +248,7 @@ struct genapic apic_x2apic_uv_x = {
- 
- 	.target_cpus			= uv_target_cpus,
- 	.disable_esr			= 0,
--	.apic_destination_logical	= APIC_DEST_LOGICAL,
-+	.dest_logical			= APIC_DEST_LOGICAL,
- 	.check_apicid_used		= NULL,
- 	.check_apicid_present		= NULL,
- 
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index 17526d7..7f8b32b 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -806,7 +806,7 @@ void send_IPI_self(int vector)
- 	 * Wait for idle.
- 	 */
- 	apic_wait_icr_idle();
--	cfg = APIC_DM_FIXED | APIC_DEST_SELF | vector | apic->apic_destination_logical;
-+	cfg = APIC_DM_FIXED | APIC_DEST_SELF | vector | apic->dest_logical;
- 	/*
- 	 * Send the IPI. The write to APIC_ICR fires this off.
- 	 */
-diff --git a/arch/x86/kernel/ipi.c b/arch/x86/kernel/ipi.c
-index 400b7bd..e2e4895 100644
---- a/arch/x86/kernel/ipi.c
-+++ b/arch/x86/kernel/ipi.c
-@@ -30,7 +30,7 @@
- 
- static inline int __prepare_ICR(unsigned int shortcut, int vector)
+diff --git a/arch/x86/include/asm/bigsmp/apic.h b/arch/x86/include/asm/bigsmp/apic.h
+index 9164512..8194130 100644
+--- a/arch/x86/include/asm/bigsmp/apic.h
++++ b/arch/x86/include/asm/bigsmp/apic.h
+@@ -46,7 +46,7 @@ static inline unsigned long calculate_ldr(int cpu)
+  * an APIC.  See e.g. "AP-388 82489DX User's Manual" (Intel
+  * document number 292116).  So here it goes...
+  */
+-static inline void init_apic_ldr(void)
++static inline void bigsmp_init_apic_ldr(void)
  {
--	unsigned int icr = shortcut | apic->apic_destination_logical;
-+	unsigned int icr = shortcut | apic->dest_logical;
+ 	unsigned long val;
+ 	int cpu = smp_processor_id();
+diff --git a/arch/x86/include/asm/es7000/apic.h b/arch/x86/include/asm/es7000/apic.h
+index 847008a..06f5757 100644
+--- a/arch/x86/include/asm/es7000/apic.h
++++ b/arch/x86/include/asm/es7000/apic.h
+@@ -52,7 +52,7 @@ static inline unsigned long calculate_ldr(int cpu)
+  * an APIC.  See e.g. "AP-388 82489DX User's Manual" (Intel
+  * document number 292116).  So here it goes...
+  */
+-static inline void init_apic_ldr_cluster(void)
++static inline void es7000_init_apic_ldr_cluster(void)
+ {
+ 	unsigned long val;
+ 	int cpu = smp_processor_id();
+@@ -62,7 +62,7 @@ static inline void init_apic_ldr_cluster(void)
+ 	apic_write(APIC_LDR, val);
+ }
  
- 	switch (vector) {
- 	default:
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index f0a1737..45c096f 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -583,7 +583,7 @@ wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
- 	/* Target chip */
- 	/* Boot on the stack */
- 	/* Kick the second */
--	apic_icr_write(APIC_DM_NMI |  apic->apic_destination_logical, logical_apicid);
-+	apic_icr_write(APIC_DM_NMI | apic->dest_logical, logical_apicid);
+-static inline void init_apic_ldr(void)
++static inline void es7000_init_apic_ldr(void)
+ {
+ 	unsigned long val;
+ 	int cpu = smp_processor_id();
+diff --git a/arch/x86/include/asm/mach-default/mach_apic.h b/arch/x86/include/asm/mach-default/mach_apic.h
+index 9c56542..23e0a2d 100644
+--- a/arch/x86/include/asm/mach-default/mach_apic.h
++++ b/arch/x86/include/asm/mach-default/mach_apic.h
+@@ -19,7 +19,6 @@ static inline const struct cpumask *default_target_cpus(void)
  
- 	pr_debug("Waiting for send to finish...\n");
- 	send_status = safe_apic_wait_icr_idle();
+ #ifdef CONFIG_X86_64
+ #include <asm/genapic.h>
+-#define init_apic_ldr (apic->init_apic_ldr)
+ #define cpu_mask_to_apicid (apic->cpu_mask_to_apicid)
+ #define cpu_mask_to_apicid_and (apic->cpu_mask_to_apicid_and)
+ #define phys_pkg_id	(apic->phys_pkg_id)
+@@ -36,7 +35,7 @@ extern void setup_apic_routing(void);
+  * an APIC.  See e.g. "AP-388 82489DX User's Manual" (Intel
+  * document number 292116).  So here it goes...
+  */
+-static inline void init_apic_ldr(void)
++static inline void default_init_apic_ldr(void)
+ {
+ 	unsigned long val;
+ 
+diff --git a/arch/x86/include/asm/mach-generic/mach_apic.h b/arch/x86/include/asm/mach-generic/mach_apic.h
+index e94881a..8e51f41 100644
+--- a/arch/x86/include/asm/mach-generic/mach_apic.h
++++ b/arch/x86/include/asm/mach-generic/mach_apic.h
+@@ -3,7 +3,6 @@
+ 
+ #include <asm/genapic.h>
+ 
+-#define init_apic_ldr (apic->init_apic_ldr)
+ #define ioapic_phys_id_map (apic->ioapic_phys_id_map)
+ #define setup_apic_routing (apic->setup_apic_routing)
+ #define multi_timer_check (apic->multi_timer_check)
+diff --git a/arch/x86/include/asm/numaq/apic.h b/arch/x86/include/asm/numaq/apic.h
+index defee34..8022974 100644
+--- a/arch/x86/include/asm/numaq/apic.h
++++ b/arch/x86/include/asm/numaq/apic.h
+@@ -28,7 +28,7 @@ static inline int numaq_apic_id_registered(void)
+ 	return 1;
+ }
+ 
+-static inline void init_apic_ldr(void)
++static inline void numaq_init_apic_ldr(void)
+ {
+ 	/* Already done in NUMA-Q firmware */
+ }
+diff --git a/arch/x86/include/asm/summit/apic.h b/arch/x86/include/asm/summit/apic.h
+index 51df002..9108c89 100644
+--- a/arch/x86/include/asm/summit/apic.h
++++ b/arch/x86/include/asm/summit/apic.h
+@@ -37,7 +37,7 @@ static inline unsigned long summit_check_apicid_present(int bit)
+ 
+ extern u8 cpu_2_logical_apicid[];
+ 
+-static inline void init_apic_ldr(void)
++static inline void summit_init_apic_ldr(void)
+ {
+ 	unsigned long val, id;
+ 	int count = 0;
+diff --git a/arch/x86/kernel/apic.c b/arch/x86/kernel/apic.c
+index 3853ed7..b707793 100644
+--- a/arch/x86/kernel/apic.c
++++ b/arch/x86/kernel/apic.c
+@@ -1179,7 +1179,7 @@ void __cpuinit setup_local_APIC(void)
+ 	 * an APIC.  See e.g. "AP-388 82489DX User's Manual" (Intel
+ 	 * document number 292116).  So here it goes...
+ 	 */
+-	init_apic_ldr();
++	apic->init_apic_ldr();
+ 
+ 	/*
+ 	 * Set Task Priority to 'accept all'. We never change this
 diff --git a/arch/x86/mach-generic/bigsmp.c b/arch/x86/mach-generic/bigsmp.c
-index 13ee7dc..7c52840 100644
+index 391cc99..7b7fc47 100644
 --- a/arch/x86/mach-generic/bigsmp.c
 +++ b/arch/x86/mach-generic/bigsmp.c
-@@ -70,7 +70,7 @@ struct genapic apic_bigsmp = {
+@@ -75,7 +75,7 @@ struct genapic apic_bigsmp = {
+ 	.check_apicid_present		= bigsmp_check_apicid_present,
  
- 	.target_cpus			= bigsmp_target_cpus,
- 	.disable_esr			= 1,
--	.apic_destination_logical	= 0,
-+	.dest_logical			= 0,
- 	.check_apicid_used		= check_apicid_used,
- 	.check_apicid_present		= check_apicid_present,
+ 	.vector_allocation_domain	= bigsmp_vector_allocation_domain,
+-	.init_apic_ldr			= init_apic_ldr,
++	.init_apic_ldr			= bigsmp_init_apic_ldr,
  
+ 	.ioapic_phys_id_map		= ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
 diff --git a/arch/x86/mach-generic/default.c b/arch/x86/mach-generic/default.c
-index d3fe801..53fa1ad 100644
+index 6adc3c6..633e848 100644
 --- a/arch/x86/mach-generic/default.c
 +++ b/arch/x86/mach-generic/default.c
-@@ -37,7 +37,7 @@ struct genapic apic_default = {
+@@ -56,7 +56,7 @@ struct genapic apic_default = {
+ 	.check_apicid_present		= default_check_apicid_present,
  
- 	.target_cpus			= default_target_cpus,
- 	.disable_esr			= 0,
--	.apic_destination_logical	= APIC_DEST_LOGICAL,
-+	.dest_logical			= APIC_DEST_LOGICAL,
- 	.check_apicid_used		= check_apicid_used,
- 	.check_apicid_present		= check_apicid_present,
+ 	.vector_allocation_domain	= default_vector_allocation_domain,
+-	.init_apic_ldr			= init_apic_ldr,
++	.init_apic_ldr			= default_init_apic_ldr,
  
+ 	.ioapic_phys_id_map		= ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
 diff --git a/arch/x86/mach-generic/es7000.c b/arch/x86/mach-generic/es7000.c
-index 61b5da2..50fed02 100644
+index bc1f21c..b70833e 100644
 --- a/arch/x86/mach-generic/es7000.c
 +++ b/arch/x86/mach-generic/es7000.c
-@@ -113,7 +113,7 @@ struct genapic apic_es7000 = {
+@@ -24,7 +24,7 @@ void __init es7000_update_genapic_to_cluster(void)
+ 	apic->irq_delivery_mode = INT_DELIVERY_MODE_CLUSTER;
+ 	apic->irq_dest_mode = INT_DEST_MODE_CLUSTER;
  
- 	.target_cpus			= es7000_target_cpus,
- 	.disable_esr			= 1,
--	.apic_destination_logical	= 0,
-+	.dest_logical			= 0,
- 	.check_apicid_used		= check_apicid_used,
- 	.check_apicid_present		= check_apicid_present,
+-	apic->init_apic_ldr = init_apic_ldr_cluster;
++	apic->init_apic_ldr = es7000_init_apic_ldr_cluster;
  
+ 	apic->cpu_mask_to_apicid = cpu_mask_to_apicid_cluster;
+ }
+@@ -117,7 +117,7 @@ struct genapic apic_es7000 = {
+ 	.check_apicid_present		= es7000_check_apicid_present,
+ 
+ 	.vector_allocation_domain	= es7000_vector_allocation_domain,
+-	.init_apic_ldr			= init_apic_ldr,
++	.init_apic_ldr			= es7000_init_apic_ldr,
+ 
+ 	.ioapic_phys_id_map		= ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
 diff --git a/arch/x86/mach-generic/numaq.c b/arch/x86/mach-generic/numaq.c
-index f3b7840..1fb1b1a 100644
+index 712882f..a06fda5 100644
 --- a/arch/x86/mach-generic/numaq.c
 +++ b/arch/x86/mach-generic/numaq.c
-@@ -57,7 +57,7 @@ struct genapic apic_numaq = {
+@@ -62,7 +62,7 @@ struct genapic apic_numaq = {
+ 	.check_apicid_present		= numaq_check_apicid_present,
  
- 	.target_cpus			= numaq_target_cpus,
- 	.disable_esr			= 1,
--	.apic_destination_logical	= APIC_DEST_LOGICAL,
-+	.dest_logical			= APIC_DEST_LOGICAL,
- 	.check_apicid_used		= check_apicid_used,
- 	.check_apicid_present		= check_apicid_present,
+ 	.vector_allocation_domain	= numaq_vector_allocation_domain,
+-	.init_apic_ldr			= init_apic_ldr,
++	.init_apic_ldr			= numaq_init_apic_ldr,
  
+ 	.ioapic_phys_id_map		= ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
 diff --git a/arch/x86/mach-generic/summit.c b/arch/x86/mach-generic/summit.c
-index 95e075b..5c27d4d 100644
+index 1834887..36c552f 100644
 --- a/arch/x86/mach-generic/summit.c
 +++ b/arch/x86/mach-generic/summit.c
-@@ -50,7 +50,7 @@ struct genapic apic_summit = {
+@@ -55,7 +55,7 @@ struct genapic apic_summit = {
+ 	.check_apicid_present		= summit_check_apicid_present,
  
- 	.target_cpus			= summit_target_cpus,
- 	.disable_esr			= 1,
--	.apic_destination_logical	= APIC_DEST_LOGICAL,
-+	.dest_logical			= APIC_DEST_LOGICAL,
- 	.check_apicid_used		= check_apicid_used,
- 	.check_apicid_present		= check_apicid_present,
+ 	.vector_allocation_domain	= summit_vector_allocation_domain,
+-	.init_apic_ldr			= init_apic_ldr,
++	.init_apic_ldr			= summit_init_apic_ldr,
  
+ 	.ioapic_phys_id_map		= ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
 -- 
 1.6.0.2
 
