@@ -1,26 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760195AbZA1Url@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756520AbZA1Ur5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760195AbZA1Url (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbZA1Ubz
+	id S1756520AbZA1Ur5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:47:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZA1UcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:31:55 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:47766 "EHLO
+	Wed, 28 Jan 2009 15:32:10 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:47768 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756271AbZA1Uby (ORCPT
+	with ESMTP id S1756417AbZA1UcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 15:31:54 -0500
-MBOX-Line: From nobody Wed Jan 28 12:08:20 2009
+	Wed, 28 Jan 2009 15:32:08 -0500
+MBOX-Line: From nobody Wed Jan 28 12:34:56 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH C 04/13] OMAP3 clock: note the bypass source clock for DPLLs
+Subject: [PATCH F 00/12] OMAP clock, F of F: more clock cleanup
 To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Tony Lindgren <tony@atomide.com>
-Date: Wed, 28 Jan 2009 12:08:20 -0700
-Message-ID: <20090128190817.12092.97549.stgit@localhost.localdomain>
-In-Reply-To: <20090128190724.12092.22239.stgit@localhost.localdomain>
-References: <20090128190724.12092.22239.stgit@localhost.localdomain>
+Cc: linux-omap@vger.kernel.org
+Date: Wed, 28 Jan 2009 12:34:56 -0700
+Message-ID: <20090128193326.2396.9437.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -29,89 +25,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most DPLLs use sys_clk as their bypass rate source.  But DPLL1 and DPLL2
-use high-frequency bypass clocks dpll1_fclk and dpll2_fclk as their parents
-during bypass.  Add a new struct dpll_data field to track the DPLL's bypass
-source clock.
+This series is the sixth of six to bring the mainline kernel OMAP
+clock code up-to-date with the linux-omap tree.  This series fixes
+several bugs and cleans up some of the clock code.
 
-Kevin Hilman <khilman@deeprootsystems.com> helped catch this - thanks Kevin.
+Some patches have been "compressed" together, as requested by rmk.
+Original commit IDs are in the patch descriptions.
 
-linux-omap source commit is 7d06c48dd63545c6d5ea71c80b9049b55c6dab6e.
+Compile-tested on OSK5912 (OMAP1), H4 and 2430SDP (OMAP2), and
+BeagleBoard (OMAP3).  Boot-tested on 2430SDP and BeagleBoard.
 
-Signed-off-by: Paul Walmsley <paul@pwsan.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>
-Signed-off-by: Tony Lindgren <tony@atomide.com>
+Applies on top of series E, posted earlier.
+
+
+- Paul
+
 ---
- arch/arm/mach-omap2/clock34xx.h         |    9 +++++++++
- arch/arm/plat-omap/include/mach/clock.h |    1 +
- 2 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/clock34xx.h b/arch/arm/mach-omap2/clock34xx.h
-index 277b221..5d20075 100644
---- a/arch/arm/mach-omap2/clock34xx.h
-+++ b/arch/arm/mach-omap2/clock34xx.h
-@@ -48,6 +48,10 @@ static int omap3_noncore_dpll_set_rate(struct clk *clk, unsigned long rate);
-  * DPLL5 supplies other peripheral clocks (USBHOST, USIM).
-  */
- 
-+/* Forward declarations for DPLL bypass clocks */
-+static struct clk dpll1_fck;
-+static struct clk dpll2_fck;
-+
- /* CM_CLKEN_PLL*.EN* bit values - not all are available for every DPLL */
- #define DPLL_LOW_POWER_STOP		0x1
- #define DPLL_LOW_POWER_BYPASS		0x5
-@@ -304,6 +308,7 @@ static struct dpll_data dpll1_dd = {
- 	.autoidle_mask	= OMAP3430_AUTO_MPU_DPLL_MASK,
- 	.idlest_reg	= _OMAP34XX_CM_REGADDR(MPU_MOD, OMAP3430_CM_IDLEST_PLL),
- 	.idlest_mask	= OMAP3430_ST_MPU_CLK_MASK,
-+	.bypass_clk	= &dpll1_fck,
- 	.max_multiplier = OMAP3_MAX_DPLL_MULT,
- 	.max_divider	= OMAP3_MAX_DPLL_DIV,
- 	.rate_tolerance = DEFAULT_DPLL_RATE_TOLERANCE
-@@ -376,6 +381,7 @@ static struct dpll_data dpll2_dd = {
- 	.autoidle_mask	= OMAP3430_AUTO_IVA2_DPLL_MASK,
- 	.idlest_reg	= _OMAP34XX_CM_REGADDR(OMAP3430_IVA2_MOD, OMAP3430_CM_IDLEST_PLL),
- 	.idlest_mask	= OMAP3430_ST_IVA2_CLK_MASK,
-+	.bypass_clk	= &dpll2_fck,
- 	.max_multiplier = OMAP3_MAX_DPLL_MULT,
- 	.max_divider	= OMAP3_MAX_DPLL_DIV,
- 	.rate_tolerance = DEFAULT_DPLL_RATE_TOLERANCE
-@@ -436,6 +442,7 @@ static struct dpll_data dpll3_dd = {
- 	.autoidle_mask	= OMAP3430_AUTO_CORE_DPLL_MASK,
- 	.idlest_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
- 	.idlest_mask	= OMAP3430_ST_CORE_CLK_MASK,
-+	.bypass_clk	= &sys_ck,
- 	.max_multiplier = OMAP3_MAX_DPLL_MULT,
- 	.max_divider	= OMAP3_MAX_DPLL_DIV,
- 	.rate_tolerance = DEFAULT_DPLL_RATE_TOLERANCE
-@@ -626,6 +633,7 @@ static struct dpll_data dpll4_dd = {
- 	.autoidle_mask	= OMAP3430_AUTO_PERIPH_DPLL_MASK,
- 	.idlest_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
- 	.idlest_mask	= OMAP3430_ST_PERIPH_CLK_MASK,
-+	.bypass_clk	= &sys_ck,
- 	.max_multiplier = OMAP3_MAX_DPLL_MULT,
- 	.max_divider	= OMAP3_MAX_DPLL_DIV,
- 	.rate_tolerance = DEFAULT_DPLL_RATE_TOLERANCE
-@@ -968,6 +976,7 @@ static struct dpll_data dpll5_dd = {
- 	.autoidle_mask	= OMAP3430ES2_AUTO_PERIPH2_DPLL_MASK,
- 	.idlest_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST2),
- 	.idlest_mask	= OMAP3430ES2_ST_PERIPH2_CLK_MASK,
-+	.bypass_clk	= &sys_ck,
- 	.max_multiplier = OMAP3_MAX_DPLL_MULT,
- 	.max_divider	= OMAP3_MAX_DPLL_DIV,
- 	.rate_tolerance = DEFAULT_DPLL_RATE_TOLERANCE
-diff --git a/arch/arm/plat-omap/include/mach/clock.h b/arch/arm/plat-omap/include/mach/clock.h
-index 666f52b..0fb4271 100644
---- a/arch/arm/plat-omap/include/mach/clock.h
-+++ b/arch/arm/plat-omap/include/mach/clock.h
-@@ -43,6 +43,7 @@ struct dpll_data {
- 	u32			max_tolerance;
- 	void __iomem		*idlest_reg;
- 	u32			idlest_mask;
-+	struct clk		*bypass_clk;
- #  if defined(CONFIG_ARCH_OMAP3)
- 	u32			freqsel_mask;
- 	u8			modes;
+Paul Walmsley (12):
+      OMAP2/3 McBSP: add temporary clockdomain fix for McBSP virtual clocks
+      OMAP2/3 clock: don't tinker with hardirqs when they are supposed to be disabled
+      OMAP2/3 clock: omap2_clk_enable(): fix logic
+      OMAP2/3 clock: omap2_clk_enable(): fix usecount decrement bug
+      OMAP2/3 clock: omap2_clk_enable(): fix bugs in clockdomain handling
+      OMAP2/3 clock: omap2_clk_enable(): refactor usecount check
+      OMAP2/3 clock: every clock must have a clkdm
+      OMAP clock: add OMAP chip family-specific clk_register() option
+      OMAP clock: drop clk_get_usecount()
+      OMAP2/3 clock: convert remaining MPU barriers into OCP barriers
+      OMAP2xxx clock: consolidate DELAYED_APP clock commits; fix barrier
+      OMAP2/3 clock: don't use a barrier after clk_disable()
 
+
+ arch/arm/mach-omap2/clock.c             |  102 +++++++++++++++++++------------
+ arch/arm/mach-omap2/clock.h             |    1 
+ arch/arm/mach-omap2/clock24xx.c         |   15 +----
+ arch/arm/mach-omap2/clock34xx.c         |    7 +-
+ arch/arm/mach-omap2/clockdomains.h      |    2 -
+ arch/arm/mach-omap2/mcbsp.c             |    5 ++
+ arch/arm/plat-omap/clock.c              |   27 +++-----
+ arch/arm/plat-omap/include/mach/clock.h |    2 -
+ 8 files changed, 85 insertions(+), 76 deletions(-)
+
+   text    data     bss     dec     hex filename
+3241435  165504  100880 3507819  35866b vmlinux.beagle.orig
+3241418  165504  100880 3507802  35865a vmlinux.beagle
 
