@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbZA1SDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZA1SE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753246AbZA1SDS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 13:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZA1SC7
+	id S1753864AbZA1SE5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 13:04:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZA1SEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 13:02:59 -0500
-Received: from mx40.brocade.com ([144.49.195.4]:27635 "EHLO mx40.brocade.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750954AbZA1SC6 convert rfc822-to-8bit (ORCPT
+	Wed, 28 Jan 2009 13:04:49 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:43211 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751282AbZA1SEr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 13:02:58 -0500
-X-IronPort-AV: E=Sophos;i="4.37,339,1231142400"; 
-   d="scan'208";a="52125962"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Wed, 28 Jan 2009 13:04:47 -0500
+Date: Wed, 28 Jan 2009 10:04:46 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] firmware: speed up request_firmware()
+Message-ID: <20090128180446.GB31107@ovro.caltech.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 2/5] bfa: Brocade BFA FC SCSI driver submission
-Date: Wed, 28 Jan 2009 10:02:43 -0800
-Message-ID: <4C94DE2070B172459E4F1EE14BD2364E02753674@HQ-EXCH-5.corp.brocade.com>
-In-Reply-To: <1233164662.3236.93.camel@localhost.localdomain>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 2/5] bfa: Brocade BFA FC SCSI driver submission
-Thread-Index: AcmBcBKR0K0VTFNjRYS09FdpHlP9lwAAajiQ
-References: <200901271854.n0RIs73a026759@swe37.brocade.com> <20090127221618.GA26480@infradead.org> <4C94DE2070B172459E4F1EE14BD2364E027534DA@HQ-EXCH-5.corp.brocade.com> <1233164662.3236.93.camel@localhost.localdomain>
-From: "Jing Huang" <huangj@Brocade.COM>
-To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: "Christoph Hellwig" <hch@infradead.org>,
-       "Krishna Gudipati" <kgudipat@Brocade.COM>,
-       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
-       "Vinodh Ravindran" <vravindr@Brocade.COM>
-X-OriginalArrivalTime: 28 Jan 2009 18:02:56.0798 (UTC) FILETIME=[A5FF0BE0:01C98172]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 28 Jan 2009 10:04:47 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley Wrote:
-> > > > + * Generic HAL callback element.
-> > > > + */
-> > > > +struct bfa_cb_qe_s {
-> > > > +	struct bfa_q_s         qe;
-> > > > +	bfa_cb_cbfn_t  cbfn;
-> > > > +	bfa_boolean_t   once;
-> > > > +	u32		rsvd;
-> > > > +	void           *cbarg;
-> > > > +};
-> > > > +
-> > > > +#define bfa_cb_queue(__bfa, __hcb_qe, __cbfn, __cbarg) do {
-> > \
-> > > > +	(__hcb_qe)->cbfn  = (__cbfn);
-> > \
-> > > > +	(__hcb_qe)->cbarg = (__cbarg);
-> > \
-> > > > +	bfa_q_enq(&(__bfa)->comp_q, (__hcb_qe));
-> > \
-> > > > +} while (0)
-> > >
-> > > Please stop here, weird HALs and own list management routines are
-not
-> > > things we put into the tree.  (except for gregs junk
-subdirectory..)
-> > >
-> > > Please rewrite this into a proper Linux driver.
-> >
-> >
-> > Thanks Christoph for the code review,
-> >
-> > I will clean up all the HAL references and also replace our own list
-> > management code with standard linux implementation.
-> 
-> This might take a while.  I can offer to put this driver in the
-staging
-> tree while you work on it if that would be helpful?
-> 
-> The way the staging tree works is that drivers are held in a separate
-> area (drivers/staging) in the linux kernel while they're being worked
-> on.  The driver can be installed by users while it's in the staging
-tree
-> (so made use of) but it will taint the kernel with a warning that it's
-> not of linux kernel quality yet.  Once we get an acceptable driver in
-> drivers/staging, I'll move it across to drivers/scsi and remove the
-> taint.
-> 
-> James
-> 
-> 
+Trying to load a large file with request_firmware() is currently very slow,
+due to calling vmalloc() for each write. This patch makes the allocations
+double in size each time.
 
-This is definitely helpful, thanks James!
+Without this patch, loading a 12MB firmware image (FPGA bitfiles) called
+vmalloc() approximately 3000 times. With the patch, vmalloc() is only
+called 13 times, however, some memory is wasted until firmware_release() is
+called. Usually, this happens very quickly, so it shouldn't be a problem.
 
-Jing
+Without this patch, it took about 2 1/2 minutes to load the 12MB firmware
+image. With the patch, it now takes about 1/2 second.
+
+Signed-off-by: Ira W. Snyder <iws@ovro.caltech.edu>
+---
+ drivers/base/firmware_class.c |    7 ++++++-
+ 1 files changed, 6 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
+index b7e5710..a947a88 100644
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -207,7 +207,12 @@ fw_realloc_buffer(struct firmware_priv *fw_priv, int min_size)
+ 	if (min_size <= fw_priv->alloc_size)
+ 		return 0;
+ 
+-	new_size = ALIGN(min_size, PAGE_SIZE);
++	/* Allocate double the current size. If that is not enough, allocate
++	 * the minimum amount needed instead (aligned to PAGE_SIZE). */
++	new_size = fw_priv->alloc_size * 2;
++	if (new_size < min_size)
++		new_size = ALIGN(min_size, PAGE_SIZE);
++
+ 	new_data = vmalloc(new_size);
+ 	if (!new_data) {
+ 		printk(KERN_ERR "%s: unable to alloc buffer\n", __func__);
+-- 
+1.5.4.3
 
