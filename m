@@ -1,86 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbZA1EQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754098AbZA1ESo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754722AbZA1EQA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 23:16:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZA1EPv
+	id S1754098AbZA1ESo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 23:18:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZA1ESe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 23:15:51 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:35582 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751372AbZA1EPu (ORCPT
+	Tue, 27 Jan 2009 23:18:34 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:32806 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752320AbZA1ESd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 23:15:50 -0500
-Date: Tue, 27 Jan 2009 20:13:53 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Louis Rilling <louis.rilling@kerlabs.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-Subject: Re: [PATCH 2/2] configfs: Rework configfs_depend_item() locking
-	and make lockdep happy
-Message-ID: <20090128041353.GF7244@mail.oracle.com>
-Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-References: <20081218111536.GR19128@hawkmoon.kerlabs.com> <1229623218-8056-3-git-send-email-louis.rilling@kerlabs.com>
+	Tue, 27 Jan 2009 23:18:33 -0500
+Date: Wed, 28 Jan 2009 15:18:28 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: Force panic on continuous CPRNG test failure
+	when in FIPS mode
+Message-ID: <20090128041828.GB13157@gondor.apana.org.au>
+References: <20090123155817.GA29548@hmsreliant.think-freely.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1229623218-8056-3-git-send-email-louis.rilling@kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
+In-Reply-To: <20090123155817.GA29548@hmsreliant.think-freely.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Source-IP: acsmt357.oracle.com [141.146.40.157]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.497FDBD3.00B8:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Dec 18, 2008 at 07:00:18PM +0100, Louis Rilling wrote:
-> configfs_depend_item() recursively locks all inodes mutex from configfs root to
-> the target item, which makes lockdep unhappy. The purpose of this recursive
-> locking is to ensure that the item tree can be safely parsed and that the target
-> item, if found, is not about to leave.
+On Fri, Jan 23, 2009 at 10:58:17AM -0500, Neil Horman wrote:
 > 
-> This patch reworks configfs_depend_item() locking using configfs_dirent_lock.
-> Since configfs_dirent_lock protects all changes to the configfs_dirent tree, and
-> protects tagging of items to be removed, this lock can be used instead of the
-> inodes mutex lock chain.
-> This needs that the check for dependents be done atomically with
-> CONFIGFS_USET_DROPPING tagging.
-> 
-> Now lockdep looks happy with configfs.
+> diff --git a/crypto/ansi_cprng.c b/crypto/ansi_cprng.c
+> index 0fac8ff..7eef5be 100644
+> --- a/crypto/ansi_cprng.c
+> +++ b/crypto/ansi_cprng.c
+> @@ -132,10 +132,20 @@ static int _get_more_prng_bytes(struct prng_context *ctx)
+>  			 */
+>  			if (!memcmp(ctx->rand_data, ctx->last_rand_data,
+>  					DEFAULT_BLK_SZ)) {
+> -				printk(KERN_ERR
+> -					"ctx %p Failed repetition check!\n",
+> -					ctx);
+> -				ctx->flags |= PRNG_NEED_RESET;
+> +				if (fips_enabled) {
+> +					/* FIPS 140-2 requires that we disable
+> +					 * further use of crypto code if we fail
+> +					 * this test,  easiest way to do that
+> +					 * is panic the box
+> +					 */
+> +					panic("cprng %p failed continuity test",
+> +						ctx);  
+> +				} else {
+> +					printk(KERN_ERR
+> +						"ctx %p Failed repetition check!\n",
+> +						ctx);
+> +					ctx->flags |= PRNG_NEED_RESET;
+> +				}
 
-	This looks almost, but not quite right.
-	In the create path, we do configfs_new_dirent() before we set
-sd->s_type.  But configfs_new_dirent() attaches sd->s_sibling.  So, in
-aonther thread, configfs_depend_prep() can traverse this s_sibling
-without CONFIGFS_USET_CREATING being set.  This turns out to be safe
-because CONFIGFS_DIR is also not set - but boy I'd like a comment about
-that.
-	What if we're in mkdir(2) in one thread and another thread is  
-trying to pin the parent directory?  That is, we are inside
-configfs_mkdir(parent, new_dentry, mode).  The other thread is doing
-configfs_depend_item(subsys, parent).  With this patch, the other thread
-will not take parent->i_mutex.  It will happily determine that
-parent is part of the tree and bump its s_dependent with no locking.  Is
-this OK?
-	If it is - isn't this patch good without any other reason?  That
-is, aside from the issues of lockdep, isn't it better for
-configfs_depend_item() to never have to worry about the VFS locks other
-than the configfs root?
+I'm OK with this change but I'd like it to look like:
 
-Joel
+	if (fips_enabled) {
+		panic(...)
+	}
 
+	blah blah blah
 
+This way the FIPS crap doesn't get in the way of everyday use.
+
+Thanks,
 -- 
-
- The zen have a saying:
- "When you learn how to listen, ANYONE can be your teacher."
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
