@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZA1Izu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbZA1I6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbZA1Izu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 03:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZA1Izm
+	id S1754464AbZA1I6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 03:58:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752273AbZA1I6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 03:55:42 -0500
-Received: from norkia.v3.sk ([92.240.234.41]:56863 "EHLO norkia.v3.sk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751562AbZA1Izl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 03:55:41 -0500
-X-Greylist: delayed 1508 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Jan 2009 03:55:41 EST
-Subject: [PATCH] Fix a panic with 1M of shared memory, no GTT entries
-From: Lubomir Rintel <lkundrak@v3.sk>
-To: Dave Airlie <airlied@linux.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Content-Type: text/plain
-Date: Wed, 28 Jan 2009 09:30:43 +0100
-Message-Id: <1233131443.5389.12.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Wed, 28 Jan 2009 03:58:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:1469 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751453AbZA1I6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 03:58:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=ZddScWTt/BdV4VQjetyQn/Z5Y0Wm7VzS7NoI8AvcC6zqlU2xjj1FWA4Ph5qC3TR6/9
+         KE+sBNXkdAvJftfmEw71qZRXDeZlVCq/QcMzUN6K3u4gBUoN2BXdKxbxGEPbaNyllpSR
+         HxpgIxqG4LWARjfgBq5IowLQef2hJL6cqSkr0=
+MIME-Version: 1.0
+In-Reply-To: <1233132733.16201.0.camel@penberg-laptop>
+References: <alpine.DEB.2.00.0901271859010.17612@chino.kir.corp.google.com>
+	 <1233132733.16201.0.camel@penberg-laptop>
+Date: Wed, 28 Jan 2009 10:58:03 +0200
+X-Google-Sender-Auth: 298dfac111fe5112
+Message-ID: <84144f020901280058h36fedf37j600185c255db5e2a@mail.gmail.com>
+Subject: Re: [patch] slub: fix per cpu kmem_cache_cpu array memory leak
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When GTT size is equal to amount of video memory, the amount of GTT
-entries is computed lower than zero, which is invalid and leads to
-off-by-one error in intel_i915_configure()
+On Tue, 2009-01-27 at 18:59 -0800, David Rientjes wrote:
+>> The per cpu array of kmem_cache_cpu structures accomodates
+>> NR_KMEM_CACHE_CPU such structs.
+>>
+>> When this array overflows and a struct is allocated by kmalloc(), it may
+>> have an address at the upper bound of this array.  If this happens, it
+>> does not get freed and the per cpu kmem_cache_cpu_free pointer will be out
+>> of bounds after kmem_cache_destroy() or cpu offlining.
+>>
+>> Cc: Christoph Lameter <cl@linux-foundation.org>
+>> Signed-off-by: David Rientjes <rientjes@google.com>
 
-Originally posted here:
-http://bugzilla.kernel.org/show_bug.cgi?id=12539
-http://bugzilla.redhat.com/show_bug.cgi?id=445592
+On Wed, Jan 28, 2009 at 10:52 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> Applied, thanks!
 
-Signed-Off-By: Lubomir Rintel <lkundrak@v3.sk>
----
- drivers/char/agp/intel-agp.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index c771418..4373adb 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -633,13 +633,15 @@ static void intel_i830_init_gtt_entries(void)
- 			break;
- 		}
- 	}
--	if (gtt_entries > 0)
-+	if (gtt_entries > 0) {
- 		dev_info(&agp_bridge->dev->dev, "detected %dK %s memory\n",
- 		       gtt_entries / KB(1), local ? "local" : "stolen");
--	else
-+		gtt_entries /= KB(4);
-+	} else {
- 		dev_info(&agp_bridge->dev->dev,
- 		       "no pre-allocated video memory detected\n");
--	gtt_entries /= KB(4);
-+		gtt_entries = 0;
-+	}
- 
- 	intel_private.gtt_entries = gtt_entries;
- }
--- 
-1.5.5.6
-
+Btw, did you hit this bug during testing or did you just spot it
+during review? That is, do we need to get this to -stable?
