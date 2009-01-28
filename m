@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759387AbZA1XtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbZA1Xtk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759387AbZA1XtX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:49:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757681AbZA1Xnt
+	id S1759470AbZA1Xtk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:49:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757713AbZA1Xnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:43:49 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37419 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:43:52 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37427 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751890AbZA1Xnq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:43:46 -0500
+	id S1758199AbZA1Xnt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:43:49 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 013/114] x86, genapic: cleanup 32-bit apic_default template
-Date: Wed, 28 Jan 2009 23:41:19 +0000
-Message-Id: <1233186180-29883-14-git-send-email-mingo@elte.hu>
+Subject: [PATCH 014/114] x86, genapic: cleanup 32-bit apic_bigsmp template
+Date: Wed, 28 Jan 2009 23:41:20 +0000
+Message-Id: <1233186180-29883-15-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
 References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:43:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:43:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -32,22 +32,22 @@ Clean up the APIC driver template:
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/mach-generic/default.c |   58 ++++++++++++++++++++++++++++++++++++++-
+ arch/x86/mach-generic/bigsmp.c |   58 +++++++++++++++++++++++++++++++++++++++-
  1 files changed, 57 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/mach-generic/default.c b/arch/x86/mach-generic/default.c
-index e63a4a7..d5fec76 100644
---- a/arch/x86/mach-generic/default.c
-+++ b/arch/x86/mach-generic/default.c
-@@ -24,4 +24,60 @@ static int probe_default(void)
- 	return 1;
+diff --git a/arch/x86/mach-generic/bigsmp.c b/arch/x86/mach-generic/bigsmp.c
+index bc4c784..13e82bc 100644
+--- a/arch/x86/mach-generic/bigsmp.c
++++ b/arch/x86/mach-generic/bigsmp.c
+@@ -57,4 +57,60 @@ static int probe_bigsmp(void)
+ 	return dmi_bigsmp;
  }
  
--struct genapic apic_default = APIC_INIT("default", probe_default);
-+struct genapic apic_default = {
+-struct genapic apic_bigsmp = APIC_INIT("bigsmp", probe_bigsmp);
++struct genapic apic_bigsmp = {
 +
-+	.name				= "default",
-+	.probe				= probe_default,
++	.name				= "bigsmp",
++	.probe				= probe_bigsmp,
 +	.acpi_madt_oem_check		= acpi_madt_oem_check,
 +	.apic_id_registered		= apic_id_registered,
 +
