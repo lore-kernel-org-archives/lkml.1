@@ -1,88 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZA1R7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbZA1SDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbZA1R7x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 12:59:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZA1R7l
+	id S1753246AbZA1SDS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 13:03:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZA1SC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 12:59:41 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:46847 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbZA1R7k (ORCPT
+	Wed, 28 Jan 2009 13:02:59 -0500
+Received: from mx40.brocade.com ([144.49.195.4]:27635 "EHLO mx40.brocade.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750954AbZA1SC6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 12:59:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gRwxvHPPMQ3fr8hL/7+t1+TgjzniA0GOE6zbSE0IpByx35nega5+4PD3wUK0II7Xxk
-         Fi3m/0ABI4W4TVnkd2iTmXLHDsLhEwp1RPz3VNRmVKSRJ8kDw4kKyJ8DP5FuPV4Ss877
-         32hX1W2i+2axkSJwDw2wcZtYmwsi6J3Dd0hpg=
+	Wed, 28 Jan 2009 13:02:58 -0500
+X-IronPort-AV: E=Sophos;i="4.37,339,1231142400"; 
+   d="scan'208";a="52125962"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <20090127174158.519e5abd.akpm@linux-foundation.org>
-References: <1232919337-21434-1-git-send-email-righi.andrea@gmail.com>
-	 <20090127174158.519e5abd.akpm@linux-foundation.org>
-Date: Wed, 28 Jan 2009 18:59:37 +0100
-Message-ID: <a2776ec50901280959l6f96d2e0g72ce5eed665894a7@mail.gmail.com>
-Subject: Re: [PATCH -mmotm] mm: unify some pmd_*() functions
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>,
-       Hirokazu Takata <takata@linux-m32r.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/5] bfa: Brocade BFA FC SCSI driver submission
+Date: Wed, 28 Jan 2009 10:02:43 -0800
+Message-ID: <4C94DE2070B172459E4F1EE14BD2364E02753674@HQ-EXCH-5.corp.brocade.com>
+In-Reply-To: <1233164662.3236.93.camel@localhost.localdomain>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/5] bfa: Brocade BFA FC SCSI driver submission
+Thread-Index: AcmBcBKR0K0VTFNjRYS09FdpHlP9lwAAajiQ
+References: <200901271854.n0RIs73a026759@swe37.brocade.com> <20090127221618.GA26480@infradead.org> <4C94DE2070B172459E4F1EE14BD2364E027534DA@HQ-EXCH-5.corp.brocade.com> <1233164662.3236.93.camel@localhost.localdomain>
+From: "Jing Huang" <huangj@Brocade.COM>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: "Christoph Hellwig" <hch@infradead.org>,
+       "Krishna Gudipati" <kgudipat@Brocade.COM>,
+       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       "Ramkumar Vadivelu" <rvadivel@Brocade.COM>,
+       "Vinodh Ravindran" <vravindr@Brocade.COM>
+X-OriginalArrivalTime: 28 Jan 2009 18:02:56.0798 (UTC) FILETIME=[A5FF0BE0:01C98172]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 2:41 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Sun, 25 Jan 2009 22:35:37 +0100
-> Andrea Righi <righi.andrea@gmail.com> wrote:
->
->> diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
->> index a7cdc48..b132d69 100644
->> --- a/include/asm-generic/pgtable-nopmd.h
->> +++ b/include/asm-generic/pgtable-nopmd.h
->> @@ -4,6 +4,7 @@
->>  #ifndef __ASSEMBLY__
->>
->>  #include <asm-generic/pgtable-nopud.h>
->> +#include <asm/bug.h>
->>
->>  struct mm_struct;
->>
->
-> Why not include the preferred <linux/bug.h>?
+James Bottomley Wrote:
+> > > > + * Generic HAL callback element.
+> > > > + */
+> > > > +struct bfa_cb_qe_s {
+> > > > +	struct bfa_q_s         qe;
+> > > > +	bfa_cb_cbfn_t  cbfn;
+> > > > +	bfa_boolean_t   once;
+> > > > +	u32		rsvd;
+> > > > +	void           *cbarg;
+> > > > +};
+> > > > +
+> > > > +#define bfa_cb_queue(__bfa, __hcb_qe, __cbfn, __cbarg) do {
+> > \
+> > > > +	(__hcb_qe)->cbfn  = (__cbfn);
+> > \
+> > > > +	(__hcb_qe)->cbarg = (__cbarg);
+> > \
+> > > > +	bfa_q_enq(&(__bfa)->comp_q, (__hcb_qe));
+> > \
+> > > > +} while (0)
+> > >
+> > > Please stop here, weird HALs and own list management routines are
+not
+> > > things we put into the tree.  (except for gregs junk
+subdirectory..)
+> > >
+> > > Please rewrite this into a proper Linux driver.
+> >
+> >
+> > Thanks Christoph for the code review,
+> >
+> > I will clean up all the HAL references and also replace our own list
+> > management code with standard linux implementation.
+> 
+> This might take a while.  I can offer to put this driver in the
+staging
+> tree while you work on it if that would be helpful?
+> 
+> The way the staging tree works is that drivers are held in a separate
+> area (drivers/staging) in the linux kernel while they're being worked
+> on.  The driver can be installed by users while it's in the staging
+tree
+> (so made use of) but it will taint the kernel with a warning that it's
+> not of linux kernel quality yet.  Once we get an acceptable driver in
+> drivers/staging, I'll move it across to drivers/scsi and remove the
+> taint.
+> 
+> James
+> 
+> 
 
-Using linux/bug.h leads to include hell (i.e. on x86 with
-CONFIG_X86_PAE not set):
-...
-  CC      arch/x86/kernel/asm-offsets.s
-In file included from include/linux/thread_info.h:55,
-                 from include/linux/preempt.h:9,
-                 from include/linux/spinlock.h:50,
-                 from include/linux/seqlock.h:29,
-                 from include/linux/time.h:8,
-                 from include/linux/stat.h:60,
-                 from include/linux/module.h:10,
-                 from include/linux/bug.h:4,
-                 from include/asm-generic/pgtable-nopmd.h:7,
-                 from
-/home/arighi/Software/linux/mmotm/arch/x86/include/asm/page.h:132,
-                 from
-/home/arighi/Software/linux/mmotm/arch/x86/include/asm/processor.h:18,
-                 from
-/home/arighi/Software/linux/mmotm/arch/x86/include/asm/atomic_32.h:6,
-                 from
-/home/arighi/Software/linux/mmotm/arch/x86/include/asm/atomic.h:2,
-                 from include/linux/crypto.h:20,
-                 from arch/x86/kernel/asm-offsets_32.c:7,
-                 from arch/x86/kernel/asm-offsets.c:2:
-/home/arighi/Software/linux/mmotm/arch/x86/include/asm/thread_info.h:34:
-error: expected specifier-qualifier-list before 'mm_segment_t'
-...
+This is definitely helpful, thanks James!
 
--Andrea
+Jing
+
