@@ -1,124 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZA1KdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZA1Kff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZA1KdA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 05:33:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbZA1Kcv
+	id S1754176AbZA1Kff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 05:35:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbZA1Kf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 05:32:51 -0500
-Received: from bohort.kerlabs.com ([62.160.40.57]:45398 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbZA1Kcu (ORCPT
+	Wed, 28 Jan 2009 05:35:27 -0500
+Received: from liberdade.minaslivre.org ([72.232.18.203]:41984 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbZA1Kf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 05:32:50 -0500
-Date: Wed, 28 Jan 2009 11:32:47 +0100
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-Subject: Re: [PATCH 2/2] configfs: Rework configfs_depend_item() locking
-	and make lockdep happy
-Message-ID: <20090128103247.GK7532@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-Mail-Followup-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-References: <20081218111536.GR19128@hawkmoon.kerlabs.com> <1229623218-8056-3-git-send-email-louis.rilling@kerlabs.com> <20090128041353.GF7244@mail.oracle.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-20437-1233138605-0001-2"
-Content-Disposition: inline
-In-Reply-To: <20090128041353.GF7244@mail.oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 28 Jan 2009 05:35:26 -0500
+X-Greylist: delayed 1991 seconds by postgrey-1.27 at vger.kernel.org; Wed, 28 Jan 2009 05:35:26 EST
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: tiwai@suse.de
+Cc: linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH] ALSA: Don't cold reset AC97 codecs in some ICH chipsets
+Date: Wed, 28 Jan 2009 08:02:36 -0200
+Message-Id: <1233136956-16830-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Check in a quirk list if it should do cold reset when AC97 power saving
+is enabled. Some devices do not resume properly when cold reset,
+although power saving works OK.
 
---=_bohort-20437-1233138605-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ sound/pci/intel8x0.c |   60 ++++++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 44 insertions(+), 16 deletions(-)
 
-On 27/01/09 20:13 -0800, Joel Becker wrote:
-> On Thu, Dec 18, 2008 at 07:00:18PM +0100, Louis Rilling wrote:
-> > configfs_depend_item() recursively locks all inodes mutex from configfs=
- root to
-> > the target item, which makes lockdep unhappy. The purpose of this recur=
-sive
-> > locking is to ensure that the item tree can be safely parsed and that t=
-he target
-> > item, if found, is not about to leave.
-> >=20
-> > This patch reworks configfs_depend_item() locking using configfs_dirent=
-_lock.
-> > Since configfs_dirent_lock protects all changes to the configfs_dirent =
-tree, and
-> > protects tagging of items to be removed, this lock can be used instead =
-of the
-> > inodes mutex lock chain.
-> > This needs that the check for dependents be done atomically with
-> > CONFIGFS_USET_DROPPING tagging.
-> >=20
-> > Now lockdep looks happy with configfs.
->=20
-> 	This looks almost, but not quite right.
-> 	In the create path, we do configfs_new_dirent() before we set
-> sd->s_type.  But configfs_new_dirent() attaches sd->s_sibling.  So, in
-> aonther thread, configfs_depend_prep() can traverse this s_sibling
-> without CONFIGFS_USET_CREATING being set.  This turns out to be safe
-> because CONFIGFS_DIR is also not set - but boy I'd like a comment about
-> that.
+diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
+index 19d3391..69b3ed8 100644
+--- a/sound/pci/intel8x0.c
++++ b/sound/pci/intel8x0.c
+@@ -2287,23 +2287,23 @@ static void do_ali_reset(struct intel8x0 *chip)
+ 	iputdword(chip, ICHREG(ALI_INTERRUPTSR), 0x00000000);
+ }
+ 
+-static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
+-{
+-	unsigned long end_time;
+-	unsigned int cnt, status, nstatus;
+-	
+-	/* put logic to right state */
+-	/* first clear status bits */
+-	status = ICH_RCS | ICH_MCINT | ICH_POINT | ICH_PIINT;
+-	if (chip->device_type == DEVICE_NFORCE)
+-		status |= ICH_NVSPINT;
+-	cnt = igetdword(chip, ICHREG(GLOB_STA));
+-	iputdword(chip, ICHREG(GLOB_STA), cnt & status);
++#ifdef CONFIG_SND_AC97_POWER_SAVE
++static struct snd_pci_quirk ich_chip_reset_mode[] = {
++	SND_PCI_QUIRK(0x1014, 0x051f, "Thinkpad R32", 1),
++	{ } /* end */
++};
+ 
++static int snd_intel8x0_ich_chip_cold_reset(struct intel8x0 *chip)
++{
++	unsigned int cnt;
+ 	/* ACLink on, 2 channels */
++
++	if (snd_pci_quirk_lookup(chip->pci, ich_chip_reset_mode))
++		return -EIO;
++
+ 	cnt = igetdword(chip, ICHREG(GLOB_CNT));
+ 	cnt &= ~(ICH_ACLINK | ICH_PCM_246_MASK);
+-#ifdef CONFIG_SND_AC97_POWER_SAVE
++
+ 	/* do cold reset - the full ac97 powerdown may leave the controller
+ 	 * in a warm state but actually it cannot communicate with the codec.
+ 	 */
+@@ -2312,22 +2312,50 @@ static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
+ 	udelay(10);
+ 	iputdword(chip, ICHREG(GLOB_CNT), cnt | ICH_AC97COLD);
+ 	msleep(1);
++	return 0;
++}
+ #else
++#define snd_intel8x0_ich_chip_cold_reset(x) 0
++#endif
++
++static int snd_intel8x0_ich_chip_reset(struct intel8x0 *chip)
++{
++	unsigned int cnt;
++	/* ACLink on, 2 channels */
++	cnt = igetdword(chip, ICHREG(GLOB_CNT));
++	cnt &= ~(ICH_ACLINK | ICH_PCM_246_MASK);
+ 	/* finish cold or do warm reset */
+ 	cnt |= (cnt & ICH_AC97COLD) == 0 ? ICH_AC97COLD : ICH_AC97WARM;
+ 	iputdword(chip, ICHREG(GLOB_CNT), cnt);
+ 	end_time = (jiffies + (HZ / 4)) + 1;
+ 	do {
+ 		if ((igetdword(chip, ICHREG(GLOB_CNT)) & ICH_AC97WARM) == 0)
+-			goto __ok;
++			return 0;
+ 		schedule_timeout_uninterruptible(1);
+ 	} while (time_after_eq(end_time, jiffies));
+ 	snd_printk(KERN_ERR "AC'97 warm reset still in progress? [0x%x]\n",
+ 		   igetdword(chip, ICHREG(GLOB_CNT)));
+ 	return -EIO;
++}
++
++static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
++{
++	unsigned long end_time;
++	unsigned int status, nstatus;
++	int err;
++
++	/* put logic to right state */
++	/* first clear status bits */
++	status = ICH_RCS | ICH_MCINT | ICH_POINT | ICH_PIINT;
++	if (chip->device_type == DEVICE_NFORCE)
++		status |= ICH_NVSPINT;
++	cnt = igetdword(chip, ICHREG(GLOB_STA));
++	iputdword(chip, ICHREG(GLOB_STA), cnt & status);
++
++	if (snd_intel8x0_ich_chip_cold_reset(chip) < 0)
++		if ((err = snd_intel8x0_ich_chip_reset(chip)) < 0)
++			return err;
+ 
+-      __ok:
+-#endif
+ 	if (probing) {
+ 		/* wait for any codec ready status.
+ 		 * Once it becomes ready it should remain ready
+-- 
+1.6.0.6
 
-Definitely agreed. I should have written this comment instead of letting you
-notice this.
-
-> 	What if we're in mkdir(2) in one thread and another thread is =20
-> trying to pin the parent directory?  That is, we are inside
-> configfs_mkdir(parent, new_dentry, mode).  The other thread is doing
-> configfs_depend_item(subsys, parent).  With this patch, the other thread
-> will not take parent->i_mutex.  It will happily determine that
-> parent is part of the tree and bump its s_dependent with no locking.  Is
-> this OK?
-
-Yes this is the expected impact. It is OK because
-1) under a same critical section of configfs_dirent_lock, depend_item()
-checks that CONFIGFS_USET_DROPPING is not set and bumps s_dependent;
-2) under a same critical section of configfs_dirent_lock, configfs_rmdir()
-checks the s_dependent count and tries to set CONFIGFS_USET_DROPPING.
-
-> 	If it is - isn't this patch good without any other reason?  That
-> is, aside from the issues of lockdep, isn't it better for
-> configfs_depend_item() to never have to worry about the VFS locks other
-> than the configfs root?
-
-Yes, this patch may look like an improvement, independently from lockdep. I
-think that locking is simpler this way, and this also removes the need for
-configfs_depend_rollback(). Moreover this moves towards the management of
-configfs_dirents protected by configfs_dirent_lock only. In the end, it's u=
-p to
-you to judge if this is a good direction ;)
-
-Thanks,
-
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-20437-1233138605-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFJgDRPVKcRuvQ9Q1QRAvcIAJ41AjxIGhZZGlrEAxwoINP7gayuUwCeNyii
-HDBdvohmRZKe2eLCCSOdkQk=
-=O/Jz
------END PGP SIGNATURE-----
-
---=_bohort-20437-1233138605-0001-2--
