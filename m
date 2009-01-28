@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbZA1Xmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbZA1XnZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753025AbZA1Xmv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:42:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbZA1Xma
+	id S1757677AbZA1XnZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:43:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbZA1Xme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:42:30 -0500
-Received: from gw.goop.org ([64.81.55.164]:57246 "EHLO mail.goop.org"
+	Wed, 28 Jan 2009 18:42:34 -0500
+Received: from gw.goop.org ([64.81.55.164]:57250 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754879AbZA1Xm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:42:29 -0500
-Message-ID: <4980ED63.6030604@goop.org>
-Date: Wed, 28 Jan 2009 15:42:27 -0800
+	id S1756227AbZA1Xmd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:42:33 -0500
+Message-ID: <4980ED67.3090207@goop.org>
+Date: Wed, 28 Jan 2009 15:42:31 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/3] x86: asm/io.h: unify virt_to_phys/phys_to_virt
+Subject: [PATCH 3/3] x86: asm/io.h: unify virt_to_phys/phys_to_virt
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
