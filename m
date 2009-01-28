@@ -1,43 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZA1R4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZA1R5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752937AbZA1R4Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 12:56:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZA1R4Q
+	id S1753804AbZA1R5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 12:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZA1R5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 12:56:16 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:33893 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbZA1R4P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 12:56:15 -0500
-Date: Wed, 28 Jan 2009 12:55:41 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Christoph Hellwig <hch@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       viro@ZenIV.linux.org.uk, linux-api@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
-Message-ID: <20090128175541.GA7074@infradead.org>
-References: <20090115153211.663df310@bike.lwn.net> <20090122065104.2787df2d.akpm@linux-foundation.org> <20090122203248.GA20159@infradead.org> <20090123045646.GK15750@one.firstfloor.org> <20090127165504.53ed7a2d.akpm@linux-foundation.org> <20090128031439.GA11025@redhat.com> <20090128173618.GA3174@infradead.org> <20090128104414.09aee3f9@bike.lwn.net>
+	Wed, 28 Jan 2009 12:57:31 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48919 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751069AbZA1R5b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 12:57:31 -0500
+Message-ID: <49809C2E.3000005@redhat.com>
+Date: Wed, 28 Jan 2009 12:55:58 -0500
+From: Chris Snook <csnook@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090128104414.09aee3f9@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: if (unlikely(...)) == unnecessary?
+References: <alpine.DEB.1.10.0901272346480.20262@alien.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0901272346480.20262@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 10:44:14AM -0700, Jonathan Corbet wrote:
-> If others disagree, and using bitops is not an idea which will fly, I'd
-> sure like to know sooner rather than later.
+Davide Libenzi wrote:
+> I noticed that GCC >= 3.3 (not tried the ones before) automatically 
+> branches out the "if" code (and follow-through the "else" code, if there). 
+> Is that a coincidence or a rule we can rely on going forward?
 
-There are more than enough use cases that have large numbers of open
-files (e.g. various high-end network servers).  While it might not be
-as sewer as for inodes I think it's really bad idea to do it for no
-reason. 
+That's the default behavior, but there are lots of things that can cause it to 
+behave differently.  Also, not all branch predictors behave the same way, and 
+some architectures use things like conditional instructions to fill their 
+pipeline bubbles, so it's still generally useful to have a real compiler hint in 
+fast-path code, even if it ends up being a no-op most of the time.
 
+Most kernel code isn't so clock-cycle-critical that it needs these annotations. 
+  If you're working on code that already has them, that's a good indication you 
+should probably use them too, but otherwise you don't need to worry about it 
+unless your code starts chewing up a lot of CPU time.
+
+-- Chris
