@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZA1HJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbZA1He0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZA1HJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 02:09:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751666AbZA1HJU
+	id S1753211AbZA1He0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 02:34:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZA1HeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 02:09:20 -0500
-Received: from gate.crashing.org ([63.228.1.57]:46020 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751155AbZA1HJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 02:09:19 -0500
-Cc: jeff@garzik.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, rjw@sisk.pl
-Message-Id: <C9402502-28EB-4D08-ABEE-12E17B031E31@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1233118922-15350-2-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v929.2)
-Subject: Re: [PATCH] ata_piix: Fix build breakage
-Date: Wed, 28 Jan 2009 00:08:39 -0600
-References: <1233118922-15350-1-git-send-email-galak@kernel.crashing.org> <1233118922-15350-2-git-send-email-galak@kernel.crashing.org>
-X-Mailer: Apple Mail (2.929.2)
+	Wed, 28 Jan 2009 02:34:17 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:57859 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751988AbZA1HeR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 02:34:17 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 27 Jan 2009 23:34:14 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Bron Gondwana <brong@fastmail.fm>
+cc: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
+Subject: Re: [patch 016/104] epoll: introduce resource usage limits
+In-Reply-To: <1233125523.19204.1297144311@webmail.messagingengine.com>
+Message-ID: <alpine.DEB.1.10.0901272323240.20262@alien.or.mcafeemobile.com>
+References: <1232704065.25510.1296328851@webmail.messagingengine.com> <20090123170631.GB11566@suse.de> <20090124130334.GA8031@brong.net> <20090125110126.GA11598@brong.net> <20090125122039.GA16603@brong.net> <20090128003519.GA11395@suse.de><20090128033824.GA1662@brong.net>
+ <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com> <20090128035746.GA3351@brong.net> <alpine.DEB.1.10.0901272002180.20262@alien.or.mcafeemobile.com> <20090128052630.GA9512@suse.de> <alpine.DEB.1.10.0901272135400.20262@alien.or.mcafeemobile.com>
+ <1233125523.19204.1297144311@webmail.messagingengine.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 28 Jan 2009, Bron Gondwana wrote:
 
-On Jan 27, 2009, at 11:02 PM, Kumar Gala wrote:
+> On Tue, 27 Jan 2009 22:38 -0800, "Davide Libenzi" <davidel@xmailserver.org> wrote:
+> > So today we have three groups of users:
+> >
+> > - Users that have been hit by the limit
+> >   * Those have probably bumped the value up to the wazzoo.
+> 
+> Yeah, pretty much.  But we've bumped things up to the wazzoo before
+> only to discover that our usage crept up there (file-max of 300,000
+> being a case on one machine recently.  Appears you can hit that
+> pretty easily when you change from smaller machines to 32Gb memory
+> 
+> That's why the first time we hit file-max, we added a check into
+> our monitoring system so we get warned before we hit it.  Any
+> fixed limit, I'd want one of these.  Makes me sleep much better
+> (literally, the bloody things SMS me if checks start failing)
 
-> The following commit introduces:
->
-> commit 5f451fe1ab5d73b987051f0d23c85216c552e163
-> Author: Rafael J. Wysocki <rjw@sisk.pl>
-> Date:   Mon Jan 19 20:59:22 2009 +0100
->
->    SATA PIIX: Blacklist system that spins off disks during ACPI  
-> power off
->
-> the following build errors on non-x86 systems:
->
-> drivers/ata/ata_piix.c: In function 'piix_broken_system_poweroff':
-> drivers/ata/ata_piix.c:1405: error: implicit declaration of function  
-> 'dmi_first_match'
-> drivers/ata/ata_piix.c:1405: warning: initialization makes pointer  
-> from integer without a cast
->
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> drivers/ata/ata_piix.c |    2 ++
-> 1 files changed, 2 insertions(+), 0 deletions(-)
+Why are you wasting your time in tail-chasing a value? If your load is so 
+unpredictable that you can't find a proper upper bound (and it almost 
+never is), make it unlimited (or redicoulously high enough).
+Warned, by which assumption? That the value rises just as much to hit the 
+warn, but not to pass the current limit? How about *fail*, if the burst is 
+high enough to hit your inexplicably constrained value?
+All this in oder to keep as-close-as-the-peak a value that costs no 
+resources in pre-allocation terms.
 
 
-it was pointed out that fixing include/linux/dmi.h was the better way  
-to fix this.  I've posted a patch for fixing dmi.h that supersedes  
-this patch.
 
-- k
+
+> > - Unaware users with machines having potential of hitting the current
+> > limit
+> >   * Those, monitor or not, being unaware, they won't notice it until
+> >   hits. 
+> >     And since rising it costs zero, they'd likely prefer to bump it to
+> >     the 
+> >     stars instead of monitoring an incrementing by small steps.
+> 
+> True.  After they spend a day and a half figuring out what's causing
+> them out-of-files errors.  They swear a lot and do the wazzoo thing.
+
+And, since they didn't know about the new limit, an even less known 
+"monitor" would have help in ...?
+
+
+
+- Davide
+
