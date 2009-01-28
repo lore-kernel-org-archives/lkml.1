@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756865AbZA1Xmf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753025AbZA1Xmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756865AbZA1Xmf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:42:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZA1Xm0
+	id S1753025AbZA1Xmv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:42:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbZA1Xma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:42:26 -0500
-Received: from gw.goop.org ([64.81.55.164]:57241 "EHLO mail.goop.org"
+	Wed, 28 Jan 2009 18:42:30 -0500
+Received: from gw.goop.org ([64.81.55.164]:57246 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbZA1XmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:42:25 -0500
-Message-ID: <4980ED5F.30904@goop.org>
-Date: Wed, 28 Jan 2009 15:42:23 -0800
+	id S1754879AbZA1Xm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:42:29 -0500
+Message-ID: <4980ED63.6030604@goop.org>
+Date: Wed, 28 Jan 2009 15:42:27 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
 CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] x86: unify asm/io.h: IO_SPACE_LIMIT
+Subject: [PATCH 2/3] x86: asm/io.h: unify virt_to_phys/phys_to_virt
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -26,43 +26,214 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/io.h    |    1 +
- arch/x86/include/asm/io_32.h |    2 --
- arch/x86/include/asm/io_64.h |    2 --
- 3 files changed, 1 insertion(+), 4 deletions(-)
+ arch/x86/include/asm/io.h    |   59 ++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/include/asm/io_32.h |   57 ----------------------------------------
+ arch/x86/include/asm/io_64.h |   37 --------------------------
+ 3 files changed, 59 insertions(+), 94 deletions(-)
 
 ===================================================================
 --- a/arch/x86/include/asm/io.h
 +++ b/arch/x86/include/asm/io.h
-@@ -105,5 +105,6 @@
- extern void early_iounmap(void __iomem *addr, unsigned long size);
- extern void __iomem *fix_ioremap(unsigned idx, unsigned long phys);
+@@ -5,6 +5,7 @@
  
-+#define IO_SPACE_LIMIT 0xffff
+ #include <linux/compiler.h>
+ #include <asm-generic/int-ll64.h>
++#include <asm/page.h>
  
- #endif /* _ASM_X86_IO_H */
+ #define build_mmio_read(name, size, type, reg, barrier) \
+ static inline type name(const volatile void __iomem *addr) \
+@@ -80,6 +81,64 @@
+ #define readq			readq
+ #define writeq			writeq
+ 
++/**
++ *	virt_to_phys	-	map virtual addresses to physical
++ *	@address: address to remap
++ *
++ *	The returned physical address is the physical (CPU) mapping for
++ *	the memory address given. It is only valid to use this function on
++ *	addresses directly mapped or allocated via kmalloc.
++ *
++ *	This function does not give bus mappings for DMA transfers. In
++ *	almost all conceivable cases a device driver should not be using
++ *	this function
++ */
++
++static inline phys_addr_t virt_to_phys(volatile void *address)
++{
++	return __pa(address);
++}
++
++/**
++ *	phys_to_virt	-	map physical address to virtual
++ *	@address: address to remap
++ *
++ *	The returned virtual address is a current CPU mapping for
++ *	the memory address given. It is only valid to use this function on
++ *	addresses that have a kernel mapping
++ *
++ *	This function does not handle bus mappings for DMA transfers. In
++ *	almost all conceivable cases a device driver should not be using
++ *	this function
++ */
++
++static inline void *phys_to_virt(phys_addr_t address)
++{
++	return __va(address);
++}
++
++/*
++ * Change "struct page" to physical address.
++ */
++#define page_to_phys(page)    ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
++
++/*
++ * ISA I/O bus memory addresses are 1:1 with the physical address.
++ */
++#define isa_virt_to_bus virt_to_phys
++#define isa_page_to_bus page_to_phys
++#define isa_bus_to_virt phys_to_virt
++
++/*
++ * However PCI ones are not necessarily 1:1 and therefore these interfaces
++ * are forbidden in portable PCI drivers.
++ *
++ * Allow them on x86 for legacy drivers, though.
++ */
++#define virt_to_bus virt_to_phys
++#define bus_to_virt phys_to_virt
++
++
+ #ifdef CONFIG_X86_32
+ # include "io_32.h"
+ #else
 ===================================================================
 --- a/arch/x86/include/asm/io_32.h
 +++ b/arch/x86/include/asm/io_32.h
-@@ -37,8 +37,6 @@
-   *  - Arnaldo Carvalho de Melo <acme@conectiva.com.br>
-   */
+@@ -52,47 +52,6 @@
+ #define xlate_dev_kmem_ptr(p)	p
  
--#define IO_SPACE_LIMIT 0xffff
+ /**
+- *	virt_to_phys	-	map virtual addresses to physical
+- *	@address: address to remap
+- *
+- *	The returned physical address is the physical (CPU) mapping for
+- *	the memory address given. It is only valid to use this function on
+- *	addresses directly mapped or allocated via kmalloc.
+- *
+- *	This function does not give bus mappings for DMA transfers. In
+- *	almost all conceivable cases a device driver should not be using
+- *	this function
+- */
 -
- #define XQUAD_PORTIO_BASE 0xfe400000
- #define XQUAD_PORTIO_QUAD 0x40000  /* 256k per quad. */
+-static inline unsigned long virt_to_phys(volatile void *address)
+-{
+-	return __pa(address);
+-}
+-
+-/**
+- *	phys_to_virt	-	map physical address to virtual
+- *	@address: address to remap
+- *
+- *	The returned virtual address is a current CPU mapping for
+- *	the memory address given. It is only valid to use this function on
+- *	addresses that have a kernel mapping
+- *
+- *	This function does not handle bus mappings for DMA transfers. In
+- *	almost all conceivable cases a device driver should not be using
+- *	this function
+- */
+-
+-static inline void *phys_to_virt(unsigned long address)
+-{
+-	return __va(address);
+-}
+-
+-/*
+- * Change "struct page" to physical address.
+- */
+-#define page_to_phys(page)    ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
+-
+-/**
+  * ioremap     -   map bus memory into CPU space
+  * @offset:    bus address of the memory
+  * @size:      size of the resource to map
+@@ -121,22 +80,6 @@
  
+ extern void iounmap(volatile void __iomem *addr);
+ 
+-/*
+- * ISA I/O bus memory addresses are 1:1 with the physical address.
+- */
+-#define isa_virt_to_bus virt_to_phys
+-#define isa_page_to_bus page_to_phys
+-#define isa_bus_to_virt phys_to_virt
+-
+-/*
+- * However PCI ones are not necessarily 1:1 and therefore these interfaces
+- * are forbidden in portable PCI drivers.
+- *
+- * Allow them on x86 for legacy drivers, though.
+- */
+-#define virt_to_bus virt_to_phys
+-#define bus_to_virt phys_to_virt
+-
+ static inline void
+ memset_io(volatile void __iomem *addr, unsigned char val, int count)
+ {
 ===================================================================
 --- a/arch/x86/include/asm/io_64.h
 +++ b/arch/x86/include/asm/io_64.h
-@@ -136,8 +136,6 @@
- __OUTS(w)
- __OUTS(l)
- 
--#define IO_SPACE_LIMIT 0xffff
--
- #if defined(__KERNEL__) && defined(__x86_64__)
+@@ -140,27 +140,6 @@
  
  #include <linux/vmalloc.h>
+ 
+-#ifndef __i386__
+-/*
+- * Change virtual addresses to physical addresses and vv.
+- * These are pretty trivial
+- */
+-static inline unsigned long virt_to_phys(volatile void *address)
+-{
+-	return __pa(address);
+-}
+-
+-static inline void *phys_to_virt(unsigned long address)
+-{
+-	return __va(address);
+-}
+-#endif
+-
+-/*
+- * Change "struct page" to physical address.
+- */
+-#define page_to_phys(page)    ((dma_addr_t)page_to_pfn(page) << PAGE_SHIFT)
+-
+ #include <asm-generic/iomap.h>
+ 
+ /*
+@@ -185,22 +164,6 @@
+ 
+ extern void __iomem *fix_ioremap(unsigned idx, unsigned long phys);
+ 
+-/*
+- * ISA I/O bus memory addresses are 1:1 with the physical address.
+- */
+-#define isa_virt_to_bus virt_to_phys
+-#define isa_page_to_bus page_to_phys
+-#define isa_bus_to_virt phys_to_virt
+-
+-/*
+- * However PCI ones are not necessarily 1:1 and therefore these interfaces
+- * are forbidden in portable PCI drivers.
+- *
+- * Allow them on x86 for legacy drivers, though.
+- */
+-#define virt_to_bus virt_to_phys
+-#define bus_to_virt phys_to_virt
+-
+ void __memcpy_fromio(void *, unsigned long, unsigned);
+ void __memcpy_toio(unsigned long, const void *, unsigned);
+ 
+
 
