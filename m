@@ -1,100 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbZA1Xd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758583AbZA1Xe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757284AbZA1Xd6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:33:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757433AbZA1XbI
+	id S1758583AbZA1Xe2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757923AbZA1XbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:31:08 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:33571 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756546AbZA1XbE (ORCPT
+	Wed, 28 Jan 2009 18:31:23 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:55682 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757910AbZA1XbV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:31:04 -0500
+	Wed, 28 Jan 2009 18:31:21 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=dyIbLGfnHmPTOzlUyBG+O+63t+8t4TdmwMJZY772FGJFukexnCEwBOixHSox7l6Vyl
-         G9dlDlwrh0WzXXjCkRwT3WIXQ4sNaP9EqBs0mvedfUSuUfZx4o1hyzFdor7Rmu1HRqwJ
-         +H/WxvvLPqH4Lw4voeyCNyjL2NhPWnNxU/Tmc=
-Date: Thu, 29 Jan 2009 02:30:56 +0300
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: jeff@garzik.org, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, rjw@sisk.pl
-Subject: Re: [PATCH] sata_sil: Fix build breakage
-Message-ID: <20090128233056.GA30358@orion>
-References: <1233118922-15350-1-git-send-email-galak@kernel.crashing.org> <1233118922-15350-2-git-send-email-galak@kernel.crashing.org> <1233118922-15350-3-git-send-email-galak@kernel.crashing.org> <5B9826B6-792F-4C66-A4C1-E002B0DD60B1@kernel.crashing.org>
+        b=YEEkQCMHKFgLAV3s70dduvM2jhWFdQNAyMT/T81F2fS7aTn/CekT5RwBcX6+bGSQnF
+         s2fG4FMp0m+dzQDxpmYOWTe2hRse7SSaHRB1pykSMcWnBuCYOSR8RzVxKFwWfCWy0Ssk
+         hrvffqpWKj+7GKyNNuQp56ng9zY4En1jFaUPA=
+Date: Thu, 29 Jan 2009 00:31:14 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alasdair G Kergon <agk@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC v2][PATCH] create workqueue threads only when needed
+Message-ID: <20090128233112.GB7631@nowhere>
+References: <20090128002714.GA5086@nowhere> <20090128030224.GA4867@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5B9826B6-792F-4C66-A4C1-E002B0DD60B1@kernel.crashing.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090128030224.GA4867@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 12:08:56AM -0600, Kumar Gala wrote:
->
-> On Jan 27, 2009, at 11:02 PM, Kumar Gala wrote:
->
->> The following commit introduces:
->>
->> commit e57db7bde7bff95ae812736ca00c73bd5271455b
->> Author: Rafael J. Wysocki <rjw@sisk.pl>
->> Date:   Mon Jan 19 20:58:29 2009 +0100
->>
->>    SATA Sil: Blacklist system that spins off disks during ACPI power off
->>
->> the following build errors on non-x86 systems:
->>
->> drivers/ata/sata_sil.c: In function 'sil_broken_system_poweroff':
->> drivers/ata/sata_sil.c:713: error: implicit declaration of function 
->> 'dmi_first_match'
->> drivers/ata/sata_sil.c:713: warning: initialization makes pointer from 
->> integer without a cast
->>
->> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
->> ---
->> drivers/ata/sata_sil.c |    2 ++
->> 1 files changed, 2 insertions(+), 0 deletions(-)
->
->
-> it was pointed out that fixing include/linux/dmi.h was the better way to 
-> fix this.  I've posted a patch for fixing dmi.h that supersedes this patch.
->
+On Wed, Jan 28, 2009 at 04:02:24AM +0100, Oleg Nesterov wrote:
+> On 01/28, Frederic Weisbecker wrote:
+> >
+> > +static void workqueue_unshadow(struct cpu_workqueue_struct *cwq)
+> > +{
+> > +	struct workqueue_shadow *ws;
+> > +
+> > +	/* Prevent from concurrent unshadowing */
+> > +	if (unlikely(atomic_inc_return(&cwq->unshadowed) != 1))
+> > +		goto already_unshadowed;
+> > +
+> > +	/*
+> > +	 * The work can be inserted whatever is the context.
+> > +	 * But such atomic allocation will be rare and freed soon.
+> > +	 */
+> > +	ws = kmalloc(sizeof(*ws), GFP_ATOMIC);
+> > +	if (!ws) {
+> > +		WARN_ON_ONCE(1);
+> > +		goto already_unshadowed;
+> > +	}
+> > +	INIT_DELAYED_WORK(&ws->work, workqueue_unshadow_work);
+> > +	ws->cwq = cwq;
+> > +	schedule_delayed_work(&ws->work, 0);
+> > +
+> > +	return;
+> > +
+> > +already_unshadowed:
+> > +	atomic_dec(&cwq->unshadowed);
+> > +}
+> 
+> Can't understand why do you use delayed work...
+> 
+> I must admit, I don't like this patch. Perhaps I am wrong, mostly I
+> dislike the complications it adds.
+> 
+> Anybody else please vote for this change?
+> 
+> Hmm. We never reset cwq->unshadowed, so cwq->thread becomes "non-lazy"
+> after cpu_down() + cpu_up().
+> 
+> And. Of course it is not good that queue_work() can silently fail just
+> because GFP_ATOMIC fails. This is not acceptable, imho. But fixable.
+> 
+> What is not fixable is that this patch adds a subtle lock-ordering
+> problem. With this patch any flush_work() or flush_workqueue() or
+> destroy_workqueue() depend on keventd, and can deadlock if the caller
+> shares the lock with any work_struct on keventd.
+> 
+> Or. let's suppose keventd has a sleeping work_struct which waits
+> for the event. Now we queue the work which should "implement"
+> this event on !unshadowed wq - deadlock.
+> 
+> Another problem. workqueue_unshadow_work() populates cwq->thread and
+> binds it to smp_processor_id(). This is not safe, CPU can go away
+> after smp_processor_id() but before wake_up_process().
+> 
+> Oh, and schedule_delayed_work() is not right, think about queue_work_on().
 
-It breaks build for me in the same way even after your fix
-(d8204ee2: dmi: Fix build breakage)
 
-Subject: [PATCH] sata_sil: Fix build breakage
-From: Alexander Beregalov <a.beregalov@gmail.com>
+Hi Oleg,
 
- Commit e57db7b (SATA Sil: Blacklist system that spins off disks during ACPI power off)
- breaks build like the following, in both cases when CONFIG_DMI set or not.
+I was about to retry the same approach but through async functions (kernel/async.c)
+which would have solved the possible deadlock you described and would have made
+the synchronizations easier.
 
-        drivers/ata/sata_sil.c: In function 'sil_broken_system_poweroff':
-        drivers/ata/sata_sil.c:713: error: implicit declaration of function 'dmi_first_match'
-        drivers/ata/sata_sil.c:713: warning: initialization makes pointer from integer without a cast
+But actually this is only a half solution:
 
-  sata_sil.c should include dmi.h
+Pointless workqueues stay pointless, even if they don't appear before they run once.
+And moreover this is hiding the real problem: parts of the kernel use dedicated workqueues
+while kevent is sufficient most of the time.
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
+And if there are problems with using the workqueues, because of deadlocks or slow
+works, async functions are a good solution.
 
+I think (more precisely I agree with you) these callsites should be fixed
+individually. I shall fix some of them if I can with the limited hardware I can test.
 
- drivers/ata/sata_sil.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Thanks.
 
-diff --git a/drivers/ata/sata_sil.c b/drivers/ata/sata_sil.c
-index bfd55b0..9f02959 100644
---- a/drivers/ata/sata_sil.c
-+++ b/drivers/ata/sata_sil.c
-@@ -44,6 +44,7 @@
- #include <linux/device.h>
- #include <scsi/scsi_host.h>
- #include <linux/libata.h>
-+#include <linux/dmi.h>
  
- #define DRV_NAME	"sata_sil"
- #define DRV_VERSION	"2.4"
+> >  static void cleanup_workqueue_thread(struct cpu_workqueue_struct *cwq)
+> >  {
+> > +	DEFINE_WAIT(wait);
+> > +	long timeout = 0;
+> > +	int unshadowed = atomic_read(&cwq->unshadowed);
+> > +
+> > +	/* Shadowed => no thread has been created */
+> > +	if (!unshadowed)
+> > +		return;
+> 
+> This is not right, if the previous workqueue_unshadow() failed, we
+> can return with the pending works.
+> 
+> > +
+> >  	/*
+> > -	 * Our caller is either destroy_workqueue() or CPU_POST_DEAD,
+> > -	 * cpu_add_remove_lock protects cwq->thread.
+> > +	 * If it's unshadowed, we want to ensure the thread creation
+> > +	 * has been completed.
+> >  	 */
+> > -	if (cwq->thread == NULL)
+> > -		return;
+> > +	prepare_to_wait(&cwq->thread_creation, &wait, TASK_UNINTERRUPTIBLE);
+> > +	if (!cwq->thread)
+> > +		timeout = schedule_timeout_interruptible(HZ * 3);
+> > +	finish_wait(&cwq->thread_creation, &wait);
+> > +
+> > +	/* We waited for 3 seconds, this is likely a soft lockup */
+> > +	WARN_ON(timeout);
+> 
+> Can't understand... If timeout != 0, then we were woken by
+> workqueue_unshadow_work() ?
+> 
+> Anyway. We should not proceed if we failed to create cwq->thread.
+> The kernel can crash. And of course this is not good too. Yes,
+> you modified flush_cpu_workqueue() to call workqueue_unshadow(),
+> but this can fail too. And if another thread cancels the pending
+> works, flush_cpu_workqueue() just returns, and we crash. Or we
+> can hang forever.
+> 
+> Also. Please note that cleanup_workqueue_thread() can also be
+> called by CPU_UP_CANCELED when cwq->thread == NULL because it
+> was never created. We should do nothing in this case, but we
+> will hang if cwq->unshadowed != 0.
+> 
+> >  		switch (action) {
+> >  		case CPU_UP_PREPARE:
+> > +			/* Will be created during the first work insertion */
+> > +			if (!atomic_read(&cwq->unshadowed))
+> > +				break;
+> >  			if (!create_workqueue_thread(cwq, cpu))
+> >  				break;
+> >  			printk(KERN_ERR "workqueue [%s] for %i failed\n",
+> > @@ -964,6 +1086,8 @@ undo:
+> >  			goto undo;
+> >
+> >  		case CPU_ONLINE:
+> > +			if (!atomic_read(&cwq->unshadowed))
+> > +				break;
+> >  			start_workqueue_thread(cwq, cpu);
+> >  			break;
+> 
+> Suppose that we have some strange cpu_callback(action, cpu)
+> which does:
+> 
+> 		case CPU_UP_PREPARE:
+> 			queue_work_on(cpu, my_wq, percpu_work);
+> 			break;
+> 		case CPU_UP_CANCELED:
+> 			cancel_work_sync(percpu_work);
+> 
+> Currently this works. But with this patch, queue_work_on() above
+> can leak workqueue_shadow.
+> 
+> Oleg.
+> 
+
