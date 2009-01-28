@@ -1,153 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZA1SYa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752981AbZA1Scz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753994AbZA1SYa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 13:24:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbZA1SYV
+	id S1752981AbZA1Scz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 13:32:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZA1Scq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 13:24:21 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:57159 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751730AbZA1SYU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 13:24:20 -0500
-Date: Wed, 28 Jan 2009 13:24:15 -0500
-From: Jeff Layton <jlayton@redhat.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] proc: do PDE usecounting even for ->read_proc,
- ->write_proc
-Message-ID: <20090128132415.6ff52584@tleilax.poochiereds.net>
-In-Reply-To: <20090126233151.GA7339@x200.localdomain>
-References: <20090126233151.GA7339@x200.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Jan 2009 13:32:46 -0500
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:53262 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751052AbZA1Scp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 13:32:45 -0500
+Date: Wed, 28 Jan 2009 18:02:51 +0000
+From: Darren Salt <linux@youmustbejoking.demon.co.uk>
+To: corentincj@iksaif.net, stable@kernel.org
+Cc: acpi4asus-user@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Message-ID: <502A4547BC%linux@youmustbejoking.demon.co.uk>
+Mail-Followup-To: corentincj@iksaif.net, acpi4asus-user@lists.sourceforge.net,
+ stable@kernel.org, linux-kernel@vger.kernel.org,
+ linux@youmustbejoking.demon.co.uk
+User-Agent: Gemini/2.29m (Qt/3.3.8b) (Linux-x86_64)
+X-SDate: Wed, 5629 Sep 1993 18:02:51 +0000
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-SA-Exim-Connect-IP: 192.168.0.5
+X-SA-Exim-Mail-From: linux@youmustbejoking.demon.co.uk
+Subject: [PATCH] Oops when changing backlight brightness during eeepc-laptop init
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on pentagram.youmustbejoking.demon.co.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009 02:31:51 +0300
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+I got the following oops while changing the backlight brightness during
+startup. When it happens, it prevents use of the hotkeys, Fn-Fx, and the lid
+button.
 
-> Not exactly tested but one should get the idea.
-> 
-> 
-> 
-> -----------------------------------------------
-> struct proc_dir_entry::owner is going to be removed. Now it's only necessary
-> to protect PDEs which are using ->read_proc, ->write_proc hooks.
-> 
-> However, ->owner assignments are racy and make it very easy for someone to switch
-> ->owner on live PDE (as some subsystems do) without fixing refcounts and so on.
-> 
-> http://bugzilla.kernel.org/show_bug.cgi?id=12454
-> 
-> So, ->owner is on death row.
-> 
-> Proxy file operations exist already (proc_file_operations), just bump usecount
-> when necessary.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-> ---
->  fs/proc/generic.c  |   48 ++++++++++++++++++++++++++++++++++++++----------
->  fs/proc/inode.c    |    2 +-
->  fs/proc/internal.h |    1 +
->  3 files changed, 40 insertions(+), 11 deletions(-)
-> 
-> diff --git a/fs/proc/generic.c b/fs/proc/generic.c
-> index 5ee636a..65cc1ee 100644
-> --- a/fs/proc/generic.c
-> +++ b/fs/proc/generic.c
-> @@ -37,7 +37,7 @@ static int proc_match(int len, const char *name, struct proc_dir_entry *de)
->  #define PROC_BLOCK_SIZE	(PAGE_SIZE - 1024)
->  
->  static ssize_t
-> -proc_file_read(struct file *file, char __user *buf, size_t nbytes,
-> +__proc_file_read(struct file *file, char __user *buf, size_t nbytes,
->  	       loff_t *ppos)
->  {
->  	struct inode * inode = file->f_path.dentry->d_inode;
-> @@ -183,19 +183,47 @@ proc_file_read(struct file *file, char __user *buf, size_t nbytes,
->  }
->  
->  static ssize_t
-> +proc_file_read(struct file *file, char __user *buf, size_t nbytes,
-> +	       loff_t *ppos)
-> +{
-> +	struct proc_dir_entry *pde = PDE(file->f_path.dentry->d_inode);
-> +	ssize_t rv = -EIO;
-> +
-> +	spin_lock(&pde->pde_unload_lock);
-> +	if (!pde->proc_fops) {
-> +		spin_unlock(&pde->pde_unload_lock);
-> +		return rv;
-> +	}
-> +	pde->pde_users++;
-> +	spin_unlock(&pde->pde_unload_lock);
-> +
-> +	rv = __proc_file_read(file, buf, nbytes, ppos);
-> +
-> +	pde_users_dec(pde);
-> +	return rv;
-> +}
-> +
-> +static ssize_t
->  proc_file_write(struct file *file, const char __user *buffer,
->  		size_t count, loff_t *ppos)
->  {
-> -	struct inode *inode = file->f_path.dentry->d_inode;
-> -	struct proc_dir_entry * dp;
-> -	
-> -	dp = PDE(inode);
-> -
-> -	if (!dp->write_proc)
-> -		return -EIO;
-> +	struct proc_dir_entry *pde = PDE(file->f_path.dentry->d_inode);
-> +	ssize_t rv = -EIO;
-> +
-> +	if (pde->write_proc) {
-> +		spin_lock(&pde->pde_unload_lock);
-> +		if (!pde->proc_fops) {
-> +			spin_unlock(&pde->pde_unload_lock);
-> +			return rv;
-> +		}
-> +		pde->pde_users++;
-> +		spin_unlock(&pde->pde_unload_lock);
->  
-> -	/* FIXME: does this routine need ppos?  probably... */
-> -	return dp->write_proc(file, buffer, count, dp->data);
-> +		/* FIXME: does this routine need ppos?  probably... */
-> +		rv = pde->write_proc(file, buffer, count, pde->data);
-> +		pde_users_dec(pde);
-> +	}
-> +	return rv;
->  }
->  
->  
-> diff --git a/fs/proc/inode.c b/fs/proc/inode.c
-> index 0bbb937..7a55346 100644
-> --- a/fs/proc/inode.c
-> +++ b/fs/proc/inode.c
-> @@ -127,7 +127,7 @@ static void __pde_users_dec(struct proc_dir_entry *pde)
->  		complete(pde->pde_unload_completion);
->  }
->  
-> -static void pde_users_dec(struct proc_dir_entry *pde)
-> +void pde_users_dec(struct proc_dir_entry *pde)
->  {
->  	spin_lock(&pde->pde_unload_lock);
->  	__pde_users_dec(pde);
-> diff --git a/fs/proc/internal.h b/fs/proc/internal.h
-> index ab62ede..5b890ba 100644
-> --- a/fs/proc/internal.h
-> +++ b/fs/proc/internal.h
-> @@ -102,5 +102,6 @@ struct pde_opener {
->  	int (*release)(struct inode *, struct file *);
->  	struct list_head lh;
->  };
-> +void pde_users_dec(struct proc_dir_entry *pde);
->  
->  extern struct list_head proc_automounts;
+It's a clear use-before-init, as I verified by testing with an
+appropriately-placed "else printk".
 
-I did some testing with this today and it seems to all work as expected. Nice work, Alexey.
+BUG: unable to handle kernel NULL pointer dereference at 00000000
+*pde = 00000000 
+Oops: 0002 [#1] PREEMPT SMP 
+Pid: 160, comm: kacpi_notify Not tainted (2.6.28.1-eee901 #4) 901
+EIP: 0060:[<c0264e68>]  [<c0264e68>] eeepc_hotk_notify+26/da
+EFLAGS: 00010246 CPU: 1
+Using defaults from ksymoops -t elf32-i386 -a i386
+EAX: 00000009 EBX: 00000000 ECX: 00000009 EDX: f70dbf64
+ESI: 00000029 EDI: f7335188 EBP: c02112c9 ESP: f70dbf80
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+ f70731e0 f73acd50 c02164ac f7335180 f70aa040 c02112e6 f733518c c012b62f
+ f70aa044 f70aa040 c012bdba f70aa04c 00000000 c012be6e 00000000 f70bdf80
+ c012e198 f70dbfc4 f70dbfc4 f70aa040 c012bdba 00000000 c012e0c9 c012e091
+Call Trace:
+ [<c02164ac>] ? acpi_ev_notify_dispatch+4c/55
+ [<c02112e6>] ? acpi_os_execute_deferred+1d/25
+ [<c012b62f>] ? run_workqueue+71/f1
+ [<c012bdba>] ? worker_thread+0/bf
+ [<c012be6e>] ? worker_thread+b4/bf
+ [<c012e198>] ? autoremove_wake_function+0/2b
+ [<c012bdba>] ? worker_thread+0/bf
+ [<c012e0c9>] ? kthread+38/5f
+ [<c012e091>] ? kthread+0/5f
+ [<c0103abf>] ? kernel_thread_helper+7/10
+Code: 00 00 00 00 c3 83 3d 60 5c 50 c0 00 56 89 d6 53 0f 84 c4 00 00 00 8d 42
+e0 83 f8 0f 77 0f 8b 1d 68 5c 50 c0 89 d8 e8 a9 fa ff ff <89> 03 8b 1d 60 5c
+50 c0 89 f2 83 e2 7f 0f b7 4c 53 10 8d 41 01 
 
-Tested-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Darren Salt <linux@youmustbejoking.demon.co.uk>
+
+(The patch is against 2.6.28.1. It's also needed for 2.6.29, in which I see
+that the driver is now in drivers/platform/x86. Hardware is a 901 with BIOS
+1808.)
+
+--- a/drivers/misc/eeepc-laptop.c
++++ b/drivers/misc/eeepc-laptop.c
+@@ -510,7 +510,8 @@
+ static void notify_brn(void)
+ {
+ 	struct backlight_device *bd = eeepc_backlight_device;
+-	bd->props.brightness = read_brightness(bd);
++	if (bd)
++		bd->props.brightness = read_brightness(bd);
+ }
+ 
+ static void eeepc_hotk_notify(acpi_handle handle, u32 event, void *data)
+
+-- 
+| Darren Salt    | linux or ds at              | nr. Ashington, | Toon
+| RISC OS, Linux | youmustbejoking,demon,co,uk | Northumberland | Army
+| + Buy less and make it last longer.         INDUSTRY CAUSES GLOBAL WARMING.
+
+Never be first. Never be last. Never volunteer for anything.
