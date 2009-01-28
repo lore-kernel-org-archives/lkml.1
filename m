@@ -1,77 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbZA1JZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbZA1J1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbZA1JZO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 04:25:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZA1JYz
+	id S1754780AbZA1J1b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 04:27:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZA1J1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 04:24:55 -0500
-Received: from out2.smtp.messagingengine.com ([66.111.4.26]:56542 "EHLO
-	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752171AbZA1JYy (ORCPT
+	Wed, 28 Jan 2009 04:27:22 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38509 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753025AbZA1J1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 04:24:54 -0500
-Message-Id: <1233134693.21525.1297159411@webmail.messagingengine.com>
-X-Sasl-Enc: 7RMDlRFbDvIQQCTUcrLtN6K5OmxE1FlpzFKGcMhP1yw0 1233134693
-From: "Bron Gondwana" <brong@fastmail.fm>
-To: "Davide Libenzi" <davidel@xmailserver.org>, "Greg KH" <gregkh@suse.de>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, "Justin Forbes" <jmforbes@linuxtx.org>,
-       "Zwane Mwaikambo" <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, "Randy Dunlap" <rdunlap@xenotime.net>,
-       "Dave Jones" <davej@redhat.com>,
-       "Chuck Wolber" <chuckw@quantumlinux.com>
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset="us-ascii"
+	Wed, 28 Jan 2009 04:27:20 -0500
+Date: Wed, 28 Jan 2009 10:27:10 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Len Brown <lenb@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Subject: Re: [PATCH 1/1] PM/Hibernate: fix "swap breaks after hibernation
+	failures"
+Message-ID: <20090128092709.GA27210@elf.ucw.cz>
+References: <200901272317.43512.rjw@sisk.pl> <200901272319.00102.rjw@sisk.pl>
 MIME-Version: 1.0
-X-Mailer: MessagingEngine.com Webmail Interface
-In-Reply-To: <alpine.DEB.1.10.0901272243130.20262@alien.or.mcafeemobile.com>
-References: <1232704065.25510.1296328851@webmail.messagingengine.com>
- <20090123170631.GB11566@suse.de> <20090124130334.GA8031@brong.net>
- <20090125110126.GA11598@brong.net> <20090125122039.GA16603@brong.net>
- <20090128003519.GA11395@suse.de><20090128033824.GA1662@brong.net>
- <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com>
- <20090128035746.GA3351@brong.net>
- <alpine.DEB.1.10.0901272002180.20262@alien.or.mcafeemobile.com>
- <20090128052630.GA9512@suse.de><alpine.DEB.1.10.0901272135400.20262@alien.or.mcafeemobile.com>
- <alpine.DEB.1.10.0901272243130.20262@alien.or.mcafeemobile.com>
-Subject: Re: [patch 016/104] epoll: introduce resource usage limits
-Date: Wed, 28 Jan 2009 20:24:53 +1100
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200901272319.00102.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 27 Jan 2009 22:57 -0800, "Davide Libenzi" <davidel@xmailserver.org> wrote:
-> On Tue, 27 Jan 2009, Davide Libenzi wrote:
+On Tue 2009-01-27 23:18:59, Rafael J. Wysocki wrote:
+> From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
 > 
-> > Or, like Willy said, make (for -stable) the default unlimited, and 
-> > let sysadmins to put the bounds if they feel the DoS can apply to them.
+> http://bugzilla.kernel.org/show_bug.cgi?id=12239
 > 
-> Whose patch follows ...
+> The image writing code dropped a reference to the current swap device.
+> This doesn't show up if the hibernation succeeds - because it doesn't
+> affect the image which gets resumed.  But it means multiple _failed_
+> hibernations end up freeing the swap device while it is still use!
+> 
+> swsusp_write() finds the block device for the swap file using swap_type_of().
+> It then uses blkdev_get() / blkdev_put() to open and close the block device.
+> 
+> Unfortunately, blkdev_get() assumes ownership of the inode of the block_device
+> passed to it.  So blkdev_put() calls iput() on the inode.  This is by design
+> and other callers expect this behaviour.  The fix is for swap_type_of() to take
+> a reference on the inode using bdget().
+> 
+> Signed-off-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-ACK.
+Acked-by: Pavel Machek <pavel@suse.cz>
 
-Solves my problem and my "advocate of the poor suffering sysadmins who
-have to track down why their stuff suddenly broke with a stable update
-hat" problem as well.
-
-One wondering...
-
-> -       if (unlikely(atomic_read(&user->epoll_devs) >=
-> -                       max_user_instances))
-> +       if (atomic_read(&user->epoll_devs) >= max_user_instances)
->  		goto free_uid;
-
-Any reason this has become _less_ unlikely()?
-
-Thanks,
-
-Bron.
-
+> 
+> diff --git a/mm/swapfile.c b/mm/swapfile.c
+> index f48b831..7740478 100644
+> --- a/mm/swapfile.c
+> +++ b/mm/swapfile.c
+> @@ -635,7 +635,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+>  
+>  		if (!bdev) {
+>  			if (bdev_p)
+> -				*bdev_p = sis->bdev;
+> +				*bdev_p = bdget(sis->bdev->bd_dev);
+>  
+>  			spin_unlock(&swap_lock);
+>  			return i;
+> @@ -647,7 +647,7 @@ int swap_type_of(dev_t device, sector_t offset, struct block_device **bdev_p)
+>  					struct swap_extent, list);
+>  			if (se->start_block == offset) {
+>  				if (bdev_p)
+> -					*bdev_p = sis->bdev;
+> +					*bdev_p = bdget(sis->bdev->bd_dev);
+>  
+>  				spin_unlock(&swap_lock);
+>  				bdput(bdev);
+> 
+> 
+> 
+> 
 
 -- 
-  Bron Gondwana
-  brong@fastmail.fm
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
