@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZA1W0t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbZA1W34@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbZA1W0t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 17:26:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbZA1W0X
+	id S1755271AbZA1W34 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 17:29:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZA1W3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 17:26:23 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:44190 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751887AbZA1W0W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 17:26:22 -0500
-Date: Wed, 28 Jan 2009 22:26:12 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org
-Subject: Re: [PATCH A 01/10] OMAP2/3: Add non-CORE DPLL rate set code and M, N programming
-Message-ID: <20090128222612.GK23301@n2100.arm.linux.org.uk>
-References: <20090128020447.7244.80496.stgit@localhost.localdomain> <20090128021243.7244.6362.stgit@localhost.localdomain> <20090128221056.GJ23301@n2100.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 28 Jan 2009 17:29:47 -0500
+Received: from ozlabs.org ([203.10.76.45]:52305 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751731AbZA1W3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 17:29:47 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 5/6] module: make modversion_info contain a pointer, not an array.
+Date: Thu, 29 Jan 2009 08:59:40 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, Shawn Bohrer <shawn.bohrer@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>
+References: <200901290005.52819.rusty@rustcorp.com.au> <20090128065231.64d12ffd@infradead.org>
+In-Reply-To: <20090128065231.64d12ffd@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090128221056.GJ23301@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901290859.40725.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 10:10:56PM +0000, Russell King - ARM Linux wrote:
-> Since it's been posted to lists, comments are going to be made...
+On Thursday 29 January 2009 01:22:31 Arjan van de Ven wrote:
+> On Thu, 29 Jan 2009 00:05:52 +1030
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> On Tue, Jan 27, 2009 at 07:12:47PM -0700, Paul Walmsley wrote:
-> > +	/*
-> > +	 * According to the 12-5 CDP code from TI, "Limitation 2.5"
-> > +	 * on 3430ES1 prevents us from changing DPLL multipliers or dividers
-> > +	 * on DPLL4.
-> > +	 */
-> > +	if (omap_rev() == OMAP3430_REV_ES1_0 &&
-> > +	    !strcmp("dpll4_ck", clk->name)) {
-> > +		printk(KERN_ERR "clock: DPLL4 cannot change rate due to "
-> > +		       "silicon 'Limitation 2.5' on 3430ES1.\n");
-> > +		return -EINVAL;
-> > +	}
+> > 
+> > With allmodconfig (minus non-building modules) on 32-bit x86:
+> > Total size of modules before: 60009790 bytes
+> > Total size of modules after: 55927866 bytes
+> > 
+> > Saving 7% of module size for CONFIG_MODVERSIONS=y; and these sections
+> > are kept resident as well.
+> > 
 > 
-> Yuck.  That's revolting and extremely fragile.  Don't play these games.
-> You've got plenty of free flag bits in clk->flags which could be used
-> to prevent the DPLL from being changed.  You've also got other ways to
-> prevent it - eg, setting dpll_data to NULL.
+> that reminds me.. can we just simplify MODVERSIONS to be a md5sum (or
+> sha1 whatver) of the .config file in the VERMAGIC ?
+> it's a lot more reliable in detecting incompatibilities, and a lot
+> less space consumed.
+
+Unfortunately people really seem to want the finer granularity that MODVERSIONS (sometimes) provides :(  I've tried killing it off several times, and always failed.
+
+We did discuss changing modversions not to descend more than one level deep into types (ie. MODVERSION(int fn(struct foo *)) would depend on the type of struct foo, but not the type of any struct pointers in struct foo) to reduce the problem where header changes cause type definitions to be exposed or hidden and thus change the modversion.
+
+I asked someone to do some analysis on what effect this would have on signatures in real releases, but never heard back (it was in Austin last year, and there was beer...)
+
+Cheers,
+Rusty.
+
+
+
+ undefined types
+
+
+
+
+
 > 
-> To do exception handling based on strcmp(), or even worse register offset
-> and bit position (as is done elsewhere in the OMAP code) is utterly insane.
-
-To further expand on this point, this patch also has:
-
-@@ -588,6 +595,7 @@ static struct clk dpll4_ck = {
-        .enable         = &omap3_noncore_dpll_enable,
-        .disable        = &omap3_noncore_dpll_disable,
-        .round_rate     = &omap2_dpll_round_rate,
-+       .set_rate       = &omap3_noncore_dpll_set_rate,
-        .recalc         = &omap3_dpll_recalc,
- };
-
-
-We can handle this exception by replacing that set_rate function with
-one which knows about this explicit quirk for this clock.  In other
-words, rather than having that strcmp(), the following would be a much
-better way to handle this exception:
-
-static int omap3_dpll4_set_rate(struct clk *clk, unsigned long rate)
-{
-	if (omap_rev() == OMAP3430_REV_ES1_0) {
-		printk(KERN_ERR "clock: DPLL4 cannot change rate due to "
-		       "silicon 'Limitation 2.5' on 3430ES1.\n");
-		return -EINVAL;
-	}
-	return omap3_noncore_dpll_set_rate(clk, rate);
-}
