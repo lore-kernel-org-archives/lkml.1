@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762343AbZA1U6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbZA1U7I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762343AbZA1U6l (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757310AbZA1UqO
+	id S1758164AbZA1U7I (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:59:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760027AbZA1Uqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:46:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57939 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756850AbZA1UqM (ORCPT
+	Wed, 28 Jan 2009 15:46:47 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44368 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760020AbZA1Uqp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 15:46:12 -0500
-Date: Wed, 28 Jan 2009 12:44:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: agraf@suse.de, Clemens Noss <cnoss@gmx.de>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: linux-next: Tree for January 23 (kvm)
-Message-Id: <20090128124410.c203fab1.akpm@linux-foundation.org>
-In-Reply-To: <20090128142616.GA4344@amt.cnet>
-References: <20090123184826.f2c91472.sfr@canb.auug.org.au>
-	<497A29D0.2010307@oracle.com>
-	<20090128015149.791e10dd.akpm@linux-foundation.org>
-	<A6E711C3-9127-4B57-9BD2-0C00D773C8EA@suse.de>
-	<20090128142616.GA4344@amt.cnet>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 28 Jan 2009 15:46:45 -0500
+Date: Wed, 28 Jan 2009 20:47:05 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: bmckinlay@perle.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 60/80] tty: extract the pty init time special cases
+Message-ID: <20090128204705.7140d5fd@lxorguk.ukuu.org.uk>
+In-Reply-To: <OF7AEEC39E.E1555596-ON8525754C.006E408A-8525754C.0071A192@perle.com>
+References: <20090122124042.7251ff0f@lxorguk.ukuu.org.uk>
+	<OF7AEEC39E.E1555596-ON8525754C.006E408A-8525754C.0071A192@perle.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,93 +30,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc mailing lists)
+> So you are saying that if I merge my ptyx module into the kernel tree THEN 
+> these
+> exports would be added?  They would have to be, since I would still want 
 
-On Wed, 28 Jan 2009 12:26:16 -0200
-Marcelo Tosatti <mtosatti@redhat.com> wrote:
+It would then seem reasonable to do so
 
-> On Wed, Jan 28, 2009 at 11:20:16AM +0100, Alexander Graf wrote:
-> >
-> > On 28.01.2009, at 10:51, Andrew Morton wrote:
-> >
-> >> On Fri, 23 Jan 2009 12:34:24 -0800 Randy Dunlap 
-> >> <randy.dunlap@oracle.com> wrote:
-> >>
-> >>> Stephen Rothwell wrote:
-> >>>> Hi all,
-> >>>>
-> >>>> News:  I will be on leave next week, so there will probably be no
-> >>>> linux-next release until Feb 2.
-> >>>>
-> >>>> Changes since 20090122:
-> >>>
-> >>>
-> >>> kvm changes cause this build error on i386:
-> >>>
-> >>> when kvm is built as module:
-> >>> ERROR: "__moddi3" [arch/x86/kvm/kvm.ko] undefined!
-> >>>
-> >>> or when kvm is built into the kernel image:
-> >>> lapic.c:(.text+0x19276): undefined reference to `__moddi3'
-> >>>
-> >>>
-> >>> I guess it's this line:
-> >>> 	ns = ktime_to_ns(remaining) % apic->timer.period;
-> >>>
-> >>
-> >> dammit, I just spent N minutes hunting down the same thing in
-> >> the Jan 26 linux-next :(
-> >>
-> >
-> > Yeah, Clemens Foss posted a real fix on kvm@vger already.
+> my 
+> driver to be a module instead of statically linked with the kernel like 
+> pty is.
 
-Probably wasn't the best mailing list, as this bug affects all
-developers and testers..  But whatever - thanks.
+Sure - although it might make more sense to add any neede features to the
+generic pty driver - hard to tell when you don't seem interested in
+discussing that.
 
-> commit efe4ff38b2bbc3944d0b2c9b6ec669b67cb7acbc
-> Author: Clemens Noss <cnoss@gmx.de>
-> Date:   Mon Jan 26 02:55:16 2009 +0100
-> 
->     KVM: x86: fix "__moddi3 undefined" build failure in lapic.c
->     
->     use mod_64 from arch/x86/kvm/i8254.c to fix
->     ERROR: "__moddi3" [arch/x86/kvm/kvm.ko] undefined!
->     
->     Signed-off-by: Clemens Noss <cnoss@gmx.de>
->     Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
-> 
-> diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
-> index d8adc50..f0b67f2 100644
-> --- a/arch/x86/kvm/lapic.c
-> +++ b/arch/x86/kvm/lapic.c
-> @@ -35,6 +35,12 @@
->  #include "kvm_cache_regs.h"
->  #include "irq.h"
->  
-> +#ifndef CONFIG_X86_64
-> +#define mod_64(x, y) ((x) - (y) * div64_u64(x, y))
-> +#else
-> +#define mod_64(x, y) ((x) % (y))
-> +#endif
-> +
->  #define PRId64 "d"
->  #define PRIx64 "llx"
->  #define PRIu64 "u"
-> @@ -525,7 +531,7 @@ static u32 apic_get_tmcct(struct kvm_lapic *apic)
->  	if (ktime_to_ns(remaining) < 0)
->  		remaining = ktime_set(0, 0);
->  
-> -	ns = ktime_to_ns(remaining) % apic->timer.period;
-> +	ns = mod_64(ktime_to_ns(remaining), apic->timer.period);
->  	tmcct = div64_u64(ns, (APIC_BUS_CYCLE_NS * apic->timer.divide_count));
->  
->  	return tmcct;
+> I think the fact that you had to "ask at the time what other PTY drivers 
+> there 
+> were" indicates that these symbols should have been simply exported to 
+> avoid 
+> any problems with out of tree PTY drivers.
 
-Rather than cooking up a private implementation I think it would be
-better to implement a kernel-wide mod64_u64() (?) facility and then to
-use that in KVM.  There will presumably be other sites which will (or
-already do) need such a thing.
+The linux kernel doesn't carry extra symbols for out of tree drivers. Why
+should it - even keeping an index of them would be hard and it would be
+impossible to know which ones are in use. Plus they change regularly -
+the tty layer will change further soon for example, it's just having a
+settling in period before the next big changes.
 
-However it'll probably be a bit hard, getting the signednesses of the
-args and the return value right.
+> By not exporting these symbols it means that the Linux kernel is now 
+> forcing 
+> anyone who wants to develop a PTY type TTY driver to be merged into the 
+> kernel 
+> tree by not exporting these TTY functions. This doesn't seem very "open 
+> and 
+> flexible".
 
+No you can provide the GPL symbol exports with the same patch as your pty
+driver. There are millions of Linux users and each unused EXPORT_SYMBOL
+costs memory to all those people - why should they carry that burden ?
+
+Alan
