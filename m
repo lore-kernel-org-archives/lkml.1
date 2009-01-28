@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752459AbZA1MRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbZA1MTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752459AbZA1MRy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 07:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZA1MRp
+	id S1753361AbZA1MTZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 07:19:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZA1MTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 07:17:45 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:44049 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751217AbZA1MRo (ORCPT
+	Wed, 28 Jan 2009 07:19:14 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:55923 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbZA1MTN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 07:17:44 -0500
-Date: Wed, 28 Jan 2009 23:17:41 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: Force panic on continuous CPRNG test failure
-	when in FIPS mode
-Message-ID: <20090128121741.GA17496@gondor.apana.org.au>
-References: <20090123155817.GA29548@hmsreliant.think-freely.org> <20090128041828.GB13157@gondor.apana.org.au> <20090128121511.GA6361@hmsreliant.think-freely.org>
+	Wed, 28 Jan 2009 07:19:13 -0500
+To: Roger Larsson <roger.larsson@e-gatan.se>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Robert Love <rml@tech9.net>, Pavel Machek <pavel@ucw.cz>,
+       netdev@vger.kernel.org
+Subject: Re: PROBLEM: in_atomic() misuse all over the place
+From: Andi Kleen <andi@firstfloor.org>
+References: <200901280010.37633.roger.larsson@e-gatan.se>
+Date: Wed, 28 Jan 2009 13:18:50 +0100
+In-Reply-To: <200901280010.37633.roger.larsson@e-gatan.se> (Roger Larsson's message of "Wed, 28 Jan 2009 00:10:37 +0100")
+Message-ID: <87pri7k4id.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090128121511.GA6361@hmsreliant.think-freely.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 07:15:11AM -0500, Neil Horman wrote:
-> On Wed, Jan 28, 2009 at 03:18:28PM +1100, Herbert Xu wrote:
-> > 
-> > I'm OK with this change but I'd like it to look like:
-> > 
-> > 	if (fips_enabled) {
-> > 		panic(...)
-> > 	}
-> > 
-> > 	blah blah blah
-> > 
-> > This way the FIPS crap doesn't get in the way of everyday use.
-> > 
-> > Thanks,
-> 
-> 
-> Sure, new patch, extra commentary removed.  Also brought the panic/printk text
-> into agreement.
+Roger Larsson <roger.larsson@e-gatan.se> writes:
 
-Hmm no I wasn't referring to the comment, but rather that you
-should just move the stuff in the else branch into the main code
-path since the panic makes the else redundant.
+[cc netdev since network code is discussed]
 
-Cheers,
+> [2.] Full description of the problem/report:
+>
+> The problem is that in_atomic() only works on preemptive kernels...
+
+That's not fully correct. It works in tasklets/softirqs/spin_lock_bh
+on all kernels.
+
+> file:  include/net/sock.h
+>
+>    static inline gfp_t gfp_any(void)
+>    {
+>      return in_atomic() ? GFP_ATOMIC : GFP_KERNEL;
+>    }
+
+That's typically for softirq vs non softirq, which is important
+for the network stack.
+
+That said its undoubtedly possible that some users get
+it wrong and assume it applies to spinlocks (without _bh) too. 
+But at least the classical uses in the network stack should be ok.
+
+I personally would consider anyone using it inside a normal
+spinlock dubious anyways, because GFP_ATOMIC is the wrong
+thing to use here. The correct way is to either switch to a mutex/sem
+or move the allocation outside the lock.
+
+-Andi
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+ak@linux.intel.com -- Speaking for myself only.
