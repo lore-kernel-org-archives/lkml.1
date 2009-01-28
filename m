@@ -1,177 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbZA1RNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752692AbZA1ROA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751875AbZA1RNp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 12:13:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZA1RNg
+	id S1752692AbZA1ROA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 12:14:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZA1RNm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 12:13:36 -0500
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:56039 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750899AbZA1RNf (ORCPT
+	Wed, 28 Jan 2009 12:13:42 -0500
+Received: from casper.infradead.org ([85.118.1.10]:49050 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751655AbZA1RNl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 12:13:35 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AuwEAC0dgElMQWt2/2dsb2JhbACBbsszhUcG
-Date: Wed, 28 Jan 2009 12:13:31 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [BUG][kprobes][vunmap?]: kprobes may cause memory corruption
-Message-ID: <20090128171331.GA9006@Krystal>
-References: <497FC3B1.7050805@redhat.com> <497FE895.1080708@redhat.com> <20090128154824.GA6025@Krystal> <49808EEF.1020700@redhat.com>
+	Wed, 28 Jan 2009 12:13:41 -0500
+Subject: Re: 2.6.28 regression: hard lockup when interrupting cdda2wav
+From: Peter Zijlstra <peterz@infradead.org>
+To: Matthias Reichl <hias@horus.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       "jens.axboe" <jens.axboe@oracle.com>, Tejun Heo <tj@kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <20090128164140.GA5557@horus.com>
+References: <20090128164140.GA5557@horus.com>
+Content-Type: text/plain
+Date: Wed, 28 Jan 2009 18:13:25 +0100
+Message-Id: <1233162805.10992.60.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <49808EEF.1020700@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:06:36 up 27 days, 17:04,  3 users,  load average: 1.93, 1.61,
-	1.34
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> Mathieu Desnoyers wrote:
-> > * Masami Hiramatsu (mhiramat@redhat.com) wrote:
-> >> Masami Hiramatsu wrote:
-> > Hi Masami,
-> > 
-> > This would not surprise me if it came from bug in the new vmap()
-> > implementation done in this commit :
-> > 
-> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db64fe02258f1507e13fe5212a989922323685ce
-> > 
-> > Especially because going from vmap -> vm_map_ram makes this behavior
-> > disappear.
-> > 
-> > Looking at the commit, I notice that it delays vunmap so it's done in
-> > batch to minimize locking effect. I think it would be good to create a
-> > test case to try to isolate this, without any kprobes/text_poke
-> > involved, which does something like this :
-> > 
-> > load module (this is also doing vmalloc, so it might be part of the
-> >              problem)
-> >   for i (i=0; i < 400; i++) {
-> >     vmap()
-> >     vfree()
->       ^^^^^ vunmap?
-
-yep.
-
-> >   }
-> > unload module
-> > 
-> > Another interesting test would be :
-> > 
-> >   for i (i=0; i < 400; i++) {
-> >     vmalloc()
-> >     vfree()
-> >   }
+On Wed, 2009-01-28 at 17:41 +0100, Matthias Reichl wrote:
 > 
-> Hi Mathieu,
+> I think I found a regression in the 2.6.28 kernel (tested with 2.6.28
+> and 2.6.28.2). With 2.6.27.6 and 2.6.27.13 everything is fine.
 > 
-> Thank you for test ideas.
-> I made both of above two tests and run it. Both test modules
-> do NOT cause memory corruption...
+> If I interrupt cdda2wav (pressing ctrl-c) while extracting an audio
+> track, the kernel locks up. SysReq (or sending a break via the
+> serial console) doesn't work, only pressing reset helps.
 > 
+> I tested with cdda2wav from the original cdrtools code, version
+> 2.01.01a57pre2 and some older versions.
+> 
+> To reproduce this bug, try "cdda2wav -dev=x,y,z 1" and then press
+> ctrl-c while the track is being ripped.
+> 
+> Here are the messages printed to the console:
+> 
+> =============================================
+> [ INFO: possible recursive locking detected ]
+> 2.6.28.2-dbg #1
+> ---------------------------------------------
+> swapper/0 is trying to acquire lock:
+>  (&q->__queue_lock){.+..}, at: [<ffffffff8040e3d5>] blk_put_request+0x25/0x60
+> 
+> but task is already holding lock:
+>  (&q->__queue_lock){.+..}, at: [<ffffffff8040e2ba>] blk_end_io+0x5a/0xa0
+> 
+> other info that might help us debug this:
+> 1 lock held by swapper/0:
+>  #0:  (&q->__queue_lock){.+..}, at: [<ffffffff8040e2ba>] blk_end_io+0x5a/0xa0
+> 
+> stack backtrace:
+> Pid: 0, comm: swapper Not tainted 2.6.28.2-dbg #1
+> Call Trace:
+>  <IRQ>  [<ffffffff8026cbb7>] __lock_acquire+0x1797/0x1930
+>  [<ffffffff806abb3b>] error_exit+0x29/0xa9
+>  [<ffffffff80521be0>] sg_rq_end_io+0x0/0x2e0
+>  [<ffffffff8026cdea>] lock_acquire+0x9a/0xe0
+>  [<ffffffff8040e3d5>] blk_put_request+0x25/0x60
+>  [<ffffffff806ab523>] _spin_lock_irqsave+0x43/0x90
+>  [<ffffffff8040e3d5>] blk_put_request+0x25/0x60
+>  [<ffffffff8040e3d5>] blk_put_request+0x25/0x60
+>  [<ffffffff80520734>] sg_finish_rem_req+0xa4/0x100
+>  [<ffffffff80521e58>] sg_rq_end_io+0x278/0x2e0
+>  [<ffffffff8040e061>] end_that_request_last+0x61/0x260
+>  [<ffffffff8040e2c8>] blk_end_io+0x68/0xa0
+>  [<ffffffff80507e21>] scsi_end_request+0x41/0xd0
+>  [<ffffffff80508510>] scsi_io_completion+0x130/0x470
+>  [<ffffffff804131c5>] blk_done_softirq+0x75/0x90
+>  [<ffffffff802487eb>] __do_softirq+0x9b/0x180
+>  [<ffffffff80213df3>] native_sched_clock+0x13/0x70
+>  [<ffffffff8020d6ec>] call_softirq+0x1c/0x30
+>  [<ffffffff8020f175>] do_softirq+0x65/0xa0
+>  [<ffffffff80248285>] irq_exit+0xa5/0xb0
+>  [<ffffffff8020f467>] do_IRQ+0x107/0x1d0
+>  [<ffffffff8020c7fb>] ret_from_intr+0x0/0xf
+>  <EOI>  [<ffffffff80214ba6>] mwait_idle+0x56/0x60
+>  [<ffffffff80214b9d>] mwait_idle+0x4d/0x60
+>  [<ffffffff8020b353>] cpu_idle+0x63/0xc0
 
-OK
 
-> > All this called in a loop. This would help isolating the "vmap" part of
-> > the issue. If this test is not enough, then we should maybe try
-> > something like this in a kernel module (which does what text_poke does
-> > with vmalloc, more or less) in a loop :
-> > 
-> > char somedata[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
-> > char copydata[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
-> 
-> Should both of them have PAGE_SIZE*2?
-> 
+Indeed, it looks like sg_rq_end_io() goes funny by calling
+blk_put_request() where those without ->end_io() method call
+__blk_put_request().
 
-Yes.
+CC'ed those who actually know what the code is about.
 
-> > 
-> > void test_vmap(void)
-> > }
-> >   struct page *pages[2];
-> >   char *vaddr;
-> >   int i;
-> > 
-> >   for (i = 0; i < 2 * PAGE_SIZE; i++)
-> >     copydata[i] = somedata[i];
-> >   page[0] = virt_to_page(&somedata);
-> >   BUG_ON(!page[0]);
-> >   page[1] = virt_to_page(&somedata + PAGE_SIZE);
-> >   BUG_ON(!page[1]);
-> >   vaddr = vmap(pages, 2, VM_MAP, PAGE_KERNEL);
-> >   BUG_ON(!vaddr);
-> > 
-> >   for (i = 0; i < 2 * PAGE_SIZE; i++)
-> >     vaddr[i] = copydata[i] + 1;
-> >   
-> >   vunmap(vaddr);
-> >   
-> >   for (i = 0; i < 2 * PAGE_SIZE; i++)
-> >     BUG_ON(somedata[i] != copydata[i] + 1);
-> > }
-> 
-> Hmm, when I ran above code, it hit the last BUG_ON().
-> I checked that somedata[i] didn't updated.
-> 
-
-Do you hit the BUG_ON after the first loop ?
-
-> > Given you don't seem to have hit the
-> >         for (i = 0; i < len; i++)
-> >                 BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
-> > test at the end of text_poke,
-> 
-> However, when I ran kprobe-based test, it doesn't hit the BUG_ON()
-> in text_poke().
-> 
-
-The variable declarations should have been 2*PAGE_SIZE, hopefully you
-fixed them.
-
-There is also a sync_core() in text_poke. It should not matter, but
-maybe that could help ?
-
-> > I suspect the write through the vmapped
-> > area is correctly done, but that the problem may lay in the mm layer.
-> > Maybe it's running out of pre-allocated vmap areas or something like
-> > this ?
-> 
-> I haven't seen vmalloc failure message on 2.6.29-rc2.
-> 
-
-It could be because the available vmalloc space is slightly higher.
-Looking into the lazy vunmap threshold would be useful.
-
-You could also try with loop values higher than 400.
-
-Mathieu
-
-> Thank you again,
-> 
-> 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
