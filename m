@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZA1EVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZA1E0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbZA1EVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 23:21:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZA1EVM
+	id S1754093AbZA1E0e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 23:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZA1E0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 23:21:12 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:34709 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751455AbZA1EVL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 23:21:11 -0500
-Date: Wed, 28 Jan 2009 15:21:07 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: force reset of cprng on allocation
-Message-ID: <20090128042107.GC13157@gondor.apana.org.au>
-References: <20090123165027.GB29548@hmsreliant.think-freely.org>
+	Tue, 27 Jan 2009 23:26:24 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50000 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751603AbZA1E0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 23:26:24 -0500
+Date: Wed, 28 Jan 2009 05:23:37 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, hch@infradead.org,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
+       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
+Message-ID: <20090128042337.GA15060@redhat.com>
+References: <20090115153211.663df310@bike.lwn.net> <20090122065104.2787df2d.akpm@linux-foundation.org> <20090122203248.GA20159@infradead.org> <20090123045646.GK15750@one.firstfloor.org> <20090127165504.53ed7a2d.akpm@linux-foundation.org> <20090128031439.GA11025@redhat.com> <20090127205739.1384343f@bike.lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090123165027.GB29548@hmsreliant.think-freely.org>
+In-Reply-To: <20090127205739.1384343f@bike.lwn.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 11:50:27AM -0500, Neil Horman wrote:
-> pseudo RNGs provide predictable outputs based on input parateters {key, V, DT},
-> the idea behind them is that only the user should know what the inputs are.
-> While its nice to have default known values for testing purposes, it seems
-> dangerous to allow the use of those default values without some sort of safety
-> measure in place, lest an attacker easily guess the output of the cprng.  This
-> patch forces the NEED_RESET flag on when allocating a cprng context, so that any
-> user is forced to reseed it before use.  The defaults can still be used for
-> testing, but this will prevent their inadvertent use, and be more secure.
->    
-> Signed-off-by: Neil Horman <nhorman@redhat.com>
+On 01/27, Jonathan Corbet wrote:
+>
+> On Wed, 28 Jan 2009 04:14:39 +0100
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > I'll try to make the patch tomorrow, but the problem is that I am not
+> > sure this is not too ugly.
+>
+> FWIW, I'm partway through a new attempt using bitops for f_flags, moving
+> FASYNC flag handling into fasync_helper(), and doing away with
+> additional locks altogether.  I have to get past the publication
+> deadline before I can finish it, though.
 
-Applied to cryptodev.  Thanks Neil!
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Great. I'd be happy to agree with another approach.
+
+But please don't forget it is not strictly necessary f_op->fasync()
+must use fasync_helper(). And we have users (pipe_rdwr_fasync) which
+call fasync_helper() twice.
+
+Oleg.
+
