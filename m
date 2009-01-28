@@ -1,300 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752297AbZA1TU0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZA1TWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752297AbZA1TU0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 14:20:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZA1TUM
+	id S1752728AbZA1TWP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 14:22:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZA1TV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 14:20:12 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:40107 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbZA1TUK (ORCPT
+	Wed, 28 Jan 2009 14:21:58 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:28472 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZA1TV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 14:20:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SPYPLjyXH93BV/b57nXr8a3ubvLRhIqXOzChnFTpKtbLT8g+FH4RuMi2NcjF2LqO7T
-         Hpq3ZRGwR+vTzBjOScnotL4pzfFxFoqkyNT8jwL7mzth9TT+izMishhoOFD/1tn1By++
-         FWLcH3GgE/6D37HWcwlR7pG0CCe6N5PFUMuCg=
-MIME-Version: 1.0
-In-Reply-To: <20090108163024.GB26413@suse.de>
-References: <8447d6730901080149l4146139an9fad00fd88d72fb9@mail.gmail.com>
-	 <20090108112741.GA3053@local>
-	 <8447d6730901080806r238354c7u81071a28d8b483ff@mail.gmail.com>
-	 <20090108163024.GB26413@suse.de>
-Date: Wed, 28 Jan 2009 20:20:07 +0100
-Message-ID: <8447d6730901281120k1153f682oa4e8f3e6249eee7b@mail.gmail.com>
-Subject: Re: [PATCH 1/3] Driver for user access to internal clocks
-From: Davide Rizzo <elpa.rizzo@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: "Hans J. Koch" <hjk@linutronix.de>, linux-kernel@vger.kernel.org,
-       ben-linux@fluff.org, linux-api@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 28 Jan 2009 14:21:57 -0500
+Date: Wed, 28 Jan 2009 21:21:22 +0200 (EET)
+Message-Id: <20090128.212122.193700100.Hiroshi.DOYU@nokia.com>
+To: linux@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 05/10] omap mailbox: fix empty struct device for omap1
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+In-Reply-To: <20090128175043.GB23301@n2100.arm.linux.org.uk>
+References: <20090128144955.GA23089@n2100.arm.linux.org.uk>
+	<20090128.172951.193700554.Hiroshi.DOYU@nokia.com>
+	<20090128175043.GB23301@n2100.arm.linux.org.uk>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Multipart/Mixed;
+ boundary="--Next_Part(Wed_Jan_28_21_21_22_2009_542)--"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jan 2009 19:21:24.0336 (UTC) FILETIME=[9BE85700:01C9817D]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Same comments here as for your "timer.c" file:
->        - too generic of a name
->        - needs proper documentation
->        - send any kernel api changes also to linux-api@vger.kernel.org
->
-> thanks,
->
-> greg k-h
->
-Here is the modified user mode clock access driver.
-I moved it in /drivers/misc and reorganized virtual files under /sys/class/clock
+----Next_Part(Wed_Jan_28_21_21_22_2009_542)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-This driver is for user level programs to interact with system clocks.
-It allows to read and modify rates and parents, using virtual files.
-It requires the implementation of 2 additional functions in the clk interface:
- clk_for_each() and clk_name().
-Actually I implemented that functions only for Samsung S3C24xx platform.
+From: ext Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 05/10] omap mailbox: fix empty struct device for omap1
+Date: Wed, 28 Jan 2009 18:50:43 +0100
 
-Signed-off-by: Davide Rizzo <elpa.rizzo@gmail.com>
+> On Wed, Jan 28, 2009 at 05:29:51PM +0200, Hiroshi DOYU wrote:
+> > diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
+> > index 44e9101..af32db0 100644
+> > --- a/arch/arm/mach-omap2/mailbox.c
+> > +++ b/arch/arm/mach-omap2/mailbox.c
+> > @@ -14,7 +14,9 @@
+> >  #include <linux/clk.h>
+> >  #include <linux/err.h>
+> >  #include <linux/platform_device.h>
+> > -#include <linux/io.h>
+> > +
+> > +#include <asm/io.h>
+> > +
+> 
+> NAK.
+> 
+> > diff --git a/arch/arm/mach-omap1/mailbox.c b/arch/arm/mach-omap1/mailbox.c
+> > index 59abbf3..92a90be 100644
+> > --- a/arch/arm/mach-omap1/mailbox.c
+> > +++ b/arch/arm/mach-omap1/mailbox.c
+> > @@ -1,7 +1,7 @@
+> >  /*
+> >   * Mailbox reservation modules for DSP
+> >   *
+> > - * Copyright (C) 2006 Nokia Corporation
+> > + * Copyright (C) 2006-2009 Nokia Corporation
+> >   * Written by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+> >   *
+> >   * This file is subject to the terms and conditions of the GNU General Public
+> > @@ -13,7 +13,9 @@
+> >  #include <linux/resource.h>
+> >  #include <linux/interrupt.h>
+> >  #include <linux/platform_device.h>
+> > -#include <linux/io.h>
+> > +
+> > +#include <asm/io.h>
+> > +
+> 
+> NAK.
+> 
+> See fced80c735941fa518ac67c0b61bbe153fb8c050.
+> 
+> The above can not be explained by a mis-merge - they are not a mere
+> reversion of the above change.  They look like a purposeful change
+> back to the wrong include file.
+
+It seems that I misunderstood your comment in the following mail.
+
+http://lkml.indiana.edu/hypermail/linux/kernel/0901.2/00610.html
+
+Reverted both header file changes. Update attached patches.
+
+----Next_Part(Wed_Jan_28_21_21_22_2009_542)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0006-omap-mailbox-fix-empty-struct-device-for-omap2.patch"
+
+>From f0bd423fbd7401bbd491a0ebc6393eec230e6b14 Mon Sep 17 00:00:00 2001
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Date: Wed, 28 Jan 2009 21:19:02 +0200
+Subject: [PATCH 06/10] omap mailbox: fix empty struct device for omap2
+
+Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
 ---
-diff -urpN linux-2.6.29-rc2/drivers/misc/Kconfig
-linux-2.6.29-rc2.elpa/drivers/misc/Kconfig
---- linux-2.6.29-rc2/drivers/misc/Kconfig	2009-01-17 11:32:40.000000000 +0100
-+++ linux-2.6.29-rc2.elpa/drivers/misc/Kconfig	2009-01-28
-19:21:43.000000000 +0100
-@@ -232,4 +232,19 @@ config DELL_LAPTOP
+ arch/arm/mach-omap2/devices.c |    2 +-
+ arch/arm/mach-omap2/mailbox.c |   13 +++++++------
+ 2 files changed, 8 insertions(+), 7 deletions(-)
 
- source "drivers/misc/c2port/Kconfig"
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 0da2640..2a14084 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -61,7 +61,7 @@ static struct resource omap3_mbox_resources[] = {
+ };
+ 
+ static struct platform_device mbox_device = {
+-	.name		= "mailbox",
++	.name		= "omap2-mailbox",
+ 	.id		= -1,
+ };
+ 
+diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
+index 44e9101..0b8476b 100644
+--- a/arch/arm/mach-omap2/mailbox.c
++++ b/arch/arm/mach-omap2/mailbox.c
+@@ -234,7 +234,7 @@ static struct omap_mbox mbox_iva_info = {
+ };
+ #endif
+ 
+-static int __init omap2_mbox_probe(struct platform_device *pdev)
++static int __devinit omap2_mbox_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+ 	int ret;
+@@ -257,7 +257,7 @@ static int __init omap2_mbox_probe(struct platform_device *pdev)
+ 		goto err_dsp;
+ 	}
+ 
+-	ret = omap_mbox_register(&mbox_dsp_info);
++	ret = omap_mbox_register(&pdev->dev, &mbox_dsp_info);
+ 	if (ret)
+ 		goto err_dsp;
+ 
+@@ -271,7 +271,7 @@ static int __init omap2_mbox_probe(struct platform_device *pdev)
+ 			goto err_iva1;
+ 		}
+ 		mbox_iva_info.irq = res->start;
+-		ret = omap_mbox_register(&mbox_iva_info);
++		ret = omap_mbox_register(&pdev->dev, &mbox_iva_info);
+ 		if (ret)
+ 			goto err_iva1;
+ 	}
+@@ -285,7 +285,7 @@ err_dsp:
+ 	return ret;
+ }
+ 
+-static int omap2_mbox_remove(struct platform_device *pdev)
++static int __devexit omap2_mbox_remove(struct platform_device *pdev)
+ {
+ #if defined(CONFIG_ARCH_OMAP2420)
+ 	omap_mbox_unregister(&mbox_iva_info);
+@@ -297,9 +297,9 @@ static int omap2_mbox_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver omap2_mbox_driver = {
+ 	.probe = omap2_mbox_probe,
+-	.remove = omap2_mbox_remove,
++	.remove = __devexit_p(omap2_mbox_remove),
+ 	.driver = {
+-		.name = "mailbox",
++		.name = "omap2-mailbox",
+ 	},
+ };
+ 
+@@ -319,3 +319,4 @@ module_exit(omap2_mbox_exit);
+ MODULE_LICENSE("GPL v2");
+ MODULE_DESCRIPTION("omap mailbox: omap2/3 architecture specific functions");
+ MODULE_AUTHOR("Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, Paul Mundt");
++MODULE_ALIAS("platform:omap2-mailbox");
+-- 
+1.6.1.rc4
 
-+config UM_CLOCK
-+	bool "User mode clock driver"
-+	depends on SYSFS
-+	default n
-+	---help---
-+	Allows user mode programs to configure and control internal clocks'
-+	 rates and parents through virtual files in sysfs.
-+	This driver requires implementation of some additional functions
-+	 in architecture specific low-level drivers: clk_for_each() and
-+	 clk_get_name(). Moreover, it requires clk_get() to recognize the
-+	 "name.id" format
-+	Currently they're implemented only on Samsung S3C24xx platforms.
-+
-+	If unsure, say N.
-+
- endif # MISC_DEVICES
-diff -urpN linux-2.6.29-rc2/drivers/misc/Makefile
-linux-2.6.29-rc2.elpa/drivers/misc/Makefile
---- linux-2.6.29-rc2/drivers/misc/Makefile	2009-01-17 11:32:40.000000000 +0100
-+++ linux-2.6.29-rc2.elpa/drivers/misc/Makefile	2009-01-28
-19:21:43.000000000 +0100
-@@ -20,3 +20,4 @@ obj-$(CONFIG_SGI_XP)		+= sgi-xp/
- obj-$(CONFIG_SGI_GRU)		+= sgi-gru/
- obj-$(CONFIG_HP_ILO)		+= hpilo.o
- obj-$(CONFIG_C2PORT)		+= c2port/
-+obj-$(CONFIG_UM_CLOCK) += um_clock.o
-diff -urpN linux-2.6.29-rc2/drivers/misc/um_clock.c
-linux-2.6.29-rc2.elpa/drivers/misc/um_clock.c
---- linux-2.6.29-rc2/drivers/misc/um_clock.c	1970-01-01 01:00:00.000000000 +0100
-+++ linux-2.6.29-rc2.elpa/drivers/misc/um_clock.c	2009-01-28
-19:21:43.000000000 +0100
-@@ -0,0 +1,174 @@
-+/*
-+ driver/misc/clock.c
-+
-+ Written Feb 2008 by Davide Rizzo <elpa.rizzo@gmail.com>
-+
-+ This driver allows to read and modify internal clocks' rates using
-+  virtual files. User can also read and modify parents.
-+
-+ This driver requires implementation of clk_name() and clk_enum() functions
-+  in architecture specific clock.c
-+
-+ This program is free software; you can redistribute it and/or modify
-+ it under the terms of the GNU General Public License as published by
-+ the Free Software Foundation; either version 2 of the License, or
-+ (at your option) any later version.
-+
-+ This program is distributed in the hope that it will be useful,
-+ but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ GNU General Public License for more details.
-+
-+ You should have received a copy of the GNU General Public License
-+ along with this program; if not, write to the Free Software
-+ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+*/
-+
-+#include <linux/device.h>
-+#include <linux/clk.h>
-+#include <linux/kdev_t.h>
-+#include <linux/err.h>
-+
-+static DEFINE_MUTEX(mutex);
-+
-+static ssize_t rate_show(struct device *dev, struct device_attribute *attr,
-+	char *buffer)
-+{
-+	unsigned long rate;
-+	struct clk *clk;
-+
-+	clk = dev_get_drvdata(dev);
-+	rate = 0;
-+
-+	mutex_lock(&mutex);
-+
-+	rate = clk_get_rate(clk);
-+
-+	mutex_unlock(&mutex);
-+
-+	return sprintf(buffer, "%ld\n", rate);
-+}
-+
-+static ssize_t rate_store(struct device *dev, struct device_attribute *attr,
-+	const char *buffer, size_t count)
-+{
-+	unsigned long rate;
-+	struct clk *clk;
-+	int err;
-+
-+	clk = dev_get_drvdata(dev);
-+	err = strict_strtoul(buffer, 10, &rate);
-+	if (err)
-+		return err;
-+
-+	mutex_lock(&mutex);
-+
-+	if (rate != 0) {
-+		clk_set_rate(clk, clk_round_rate(clk, rate));
-+		clk_enable(clk);
-+	} else
-+		clk_disable(clk);
-+
-+	mutex_unlock(&mutex);
-+
-+	return count;
-+}
-+
-+static ssize_t parent_show(struct device *dev,
-+	struct device_attribute *attr, char *buffer)
-+{
-+	struct clk *parent, *clk;
-+
-+	clk = dev_get_drvdata(dev);
-+
-+	mutex_lock(&mutex);
-+
-+	parent = clk_get_parent(clk);
-+	if (parent && !IS_ERR(parent)) {
-+		const char *name = clk_get_name(parent);
-+		if (IS_ERR(name)) {
-+			mutex_unlock(&mutex);
-+			return PTR_ERR(name);
-+		}
-+		strlcpy(buffer, name, PAGE_SIZE);
-+	} else
-+		buffer[0] = '\0';
-+	strlcat(buffer, "\n", PAGE_SIZE);
-+
-+	mutex_unlock(&mutex);
-+
-+	return strlen(buffer);
-+}
-+
-+static ssize_t parent_store(struct device *dev,
-+	struct device_attribute *attr, const char *buffer, size_t count)
-+{
-+	struct clk *parent;
-+
-+	char *s = kstrdup(buffer, GFP_KERNEL);
-+
-+	if (!s)
-+		return -ENOMEM;
-+	if (s[strlen(s) - 1] == '\n')
-+		s[strlen(s) - 1] = '\0';
-+	parent = clk_get(dev, s);
-+	kfree(s);
-+	if (IS_ERR(parent))
-+		return PTR_ERR(parent);
-+
-+	mutex_lock(&mutex);
-+
-+	clk_set_parent(dev_get_drvdata(dev), parent);
-+
-+	mutex_unlock(&mutex);
-+
-+	clk_put(parent);
-+	return count;
-+}
-+
-+static DEVICE_ATTR(rate, S_IRUGO | S_IWUSR, rate_show, rate_store);
-+static DEVICE_ATTR(parent, S_IRUGO | S_IWUSR, parent_show, parent_store);
-+
-+static const struct attribute *clock_attrs[] = {
-+	&dev_attr_rate.attr,
-+	&dev_attr_parent.attr,
-+	NULL,
-+};
-+
-+static const struct attribute_group clock_attr_group = {
-+	.attrs = (struct attribute **) clock_attrs,
-+};
-+
-+static struct class gpclock_class = {
-+	.name =		"clock",
-+	.owner =	THIS_MODULE,
-+};
-+
-+static int create_clock_attr(struct clk *clk, void *data)
-+{
-+	struct device *dev;
-+	const char *name;
-+
-+	name = clk_get_name(clk);
-+	if (name == NULL || IS_ERR(name)) {
-+		pr_debug("Invalid clock's name\n");
-+		return PTR_ERR(name);
-+	}
-+	dev = device_create(&gpclock_class, (struct device *)data, MKDEV(0, 0),
-+		clk, name);
-+	if (!dev)
-+		return -ENODEV;
-+	return sysfs_create_group(&dev->kobj, &clock_attr_group);
-+}
-+
-+static int __init gpclock_init(void)
-+{
-+	int ret;
-+
-+	ret = class_register(&gpclock_class);
-+	if (ret >= 0)
-+		ret = clk_for_each(create_clock_attr, NULL);
-+	return ret;
-+}
-+subsys_initcall(gpclock_init);
-+
-diff -urpN linux-2.6.29-rc2/Documentation/ABI/testing/sysfs-class-clock
-linux-2.6.29-rc2.elpa/Documentation/ABI/testing/sysfs-class-clock
---- linux-2.6.29-rc2/Documentation/ABI/testing/sysfs-class-clock	1970-01-01
-01:00:00.000000000 +0100
-+++ linux-2.6.29-rc2.elpa/Documentation/ABI/testing/sysfs-class-clock	2009-01-28
-19:21:43.000000000 +0100
-@@ -0,0 +1,20 @@
-+What:		/sys/class/clock
-+Date:		January 2009
-+Contact:	Davide Rizzo <elpa.rizzo@gmail.com>
-+Description:
-+		The /sys/class/clock directory will consist of a group of
-+		subdirectories each one describing an internal clock in the kernel.
-+		The name of the subdirectory is the clock's name.
-+		If a clock is device specific, its name is in the form "name.id".
-+		In each directory there are 2 virtual files: rate and parent.
-+		Both these files are r/w, but there can be some architecture-dependent
-+		limitations on write access on one or both of them.
-+		For this interface to work, it needs some low-level implementations (look
-+		at include/linux/clk.h):
-+		- clk_for_each()
-+		- clk_name()
-+		- clk_get() should recognize also the "name.id" format
-+		Actually I implemented these only for Samsung S3C SoC in
-+		arch/arm/plat-s3c/clock.c
-+
-+Users:
+
+----Next_Part(Wed_Jan_28_21_21_22_2009_542)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0005-omap-mailbox-fix-empty-struct-device-for-omap1.patch"
+
+>From f6efca787d09564c0cfd8ad1cb21d29213df8862 Mon Sep 17 00:00:00 2001
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Date: Wed, 28 Jan 2009 21:18:07 +0200
+Subject: [PATCH 05/10] omap mailbox: fix empty struct device for omap1
+
+Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+---
+ arch/arm/mach-omap1/devices.c |    2 +-
+ arch/arm/mach-omap1/mailbox.c |   29 +++++++++++++++--------------
+ 2 files changed, 16 insertions(+), 15 deletions(-)
+
+diff --git a/arch/arm/mach-omap1/devices.c b/arch/arm/mach-omap1/devices.c
+index 77382d8..b4b6106 100644
+--- a/arch/arm/mach-omap1/devices.c
++++ b/arch/arm/mach-omap1/devices.c
+@@ -86,7 +86,7 @@ static struct resource mbox_resources[] = {
+ };
+ 
+ static struct platform_device mbox_device = {
+-	.name		= "mailbox",
++	.name		= "omap1-mailbox",
+ 	.id		= -1,
+ 	.num_resources	= ARRAY_SIZE(mbox_resources),
+ 	.resource	= mbox_resources,
+diff --git a/arch/arm/mach-omap1/mailbox.c b/arch/arm/mach-omap1/mailbox.c
+index 59abbf3..0af4d6c 100644
+--- a/arch/arm/mach-omap1/mailbox.c
++++ b/arch/arm/mach-omap1/mailbox.c
+@@ -1,7 +1,7 @@
+ /*
+  * Mailbox reservation modules for DSP
+  *
+- * Copyright (C) 2006 Nokia Corporation
++ * Copyright (C) 2006-2009 Nokia Corporation
+  * Written by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+@@ -27,7 +27,7 @@
+ #define MAILBOX_DSP2ARM1_Flag		0x1c
+ #define MAILBOX_DSP2ARM2_Flag		0x20
+ 
+-unsigned long mbox_base;
++static void __iomem *mbox_base;
+ 
+ struct omap_mbox1_fifo {
+ 	unsigned long cmd;
+@@ -40,14 +40,14 @@ struct omap_mbox1_priv {
+ 	struct omap_mbox1_fifo rx_fifo;
+ };
+ 
+-static inline int mbox_read_reg(unsigned int reg)
++static inline int mbox_read_reg(size_t ofs)
+ {
+-	return __raw_readw(mbox_base + reg);
++	return __raw_readw(mbox_base + ofs);
+ }
+ 
+-static inline void mbox_write_reg(unsigned int val, unsigned int reg)
++static inline void mbox_write_reg(u32 val, size_t ofs)
+ {
+-	__raw_writew(val, mbox_base + reg);
++	__raw_writew(val, mbox_base + ofs);
+ }
+ 
+ /* msg */
+@@ -143,7 +143,7 @@ struct omap_mbox mbox_dsp_info = {
+ };
+ EXPORT_SYMBOL(mbox_dsp_info);
+ 
+-static int __init omap1_mbox_probe(struct platform_device *pdev)
++static int __devinit omap1_mbox_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+ 	int ret = 0;
+@@ -170,12 +170,10 @@ static int __init omap1_mbox_probe(struct platform_device *pdev)
+ 	}
+ 	mbox_dsp_info.irq = res->start;
+ 
+-	ret = omap_mbox_register(&mbox_dsp_info);
+-
+-	return ret;
++	return omap_mbox_register(&pdev->dev, &mbox_dsp_info);
+ }
+ 
+-static int omap1_mbox_remove(struct platform_device *pdev)
++static int __devexit omap1_mbox_remove(struct platform_device *pdev)
+ {
+ 	omap_mbox_unregister(&mbox_dsp_info);
+ 
+@@ -184,9 +182,9 @@ static int omap1_mbox_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver omap1_mbox_driver = {
+ 	.probe	= omap1_mbox_probe,
+-	.remove	= omap1_mbox_remove,
++	.remove	= __devexit_p(omap1_mbox_remove),
+ 	.driver	= {
+-		.name	= "mailbox",
++		.name	= "omap1-mailbox",
+ 	},
+ };
+ 
+@@ -203,4 +201,7 @@ static void __exit omap1_mbox_exit(void)
+ module_init(omap1_mbox_init);
+ module_exit(omap1_mbox_exit);
+ 
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("omap mailbox: omap1 architecture specific functions");
++MODULE_AUTHOR("Hiroshi DOYU" <Hiroshi.DOYU@nokia.com>);
++MODULE_ALIAS("platform:omap1-mailbox");
+-- 
+1.6.1.rc4
+
+
+----Next_Part(Wed_Jan_28_21_21_22_2009_542)----
