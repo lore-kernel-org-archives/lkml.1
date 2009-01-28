@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbZA1EAP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZA1EAm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754336AbZA1EAP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 23:00:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZA1D77
+	id S1754739AbZA1EAm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 23:00:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZA1EAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 22:59:59 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43564 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752182AbZA1D76 (ORCPT
+	Tue, 27 Jan 2009 23:00:33 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:50461 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752295AbZA1EAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 22:59:58 -0500
-Message-ID: <497FD678.9000504@jp.fujitsu.com>
-Date: Wed, 28 Jan 2009 12:52:24 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
+	Tue, 27 Jan 2009 23:00:32 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 27 Jan 2009 20:00:30 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Bron Gondwana <brong@fastmail.fm>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
+In-Reply-To: <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>
+Message-ID: <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com>
+References: <20090128033824.GA1662@brong.net> <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: [PATCH take2 2/3] unify PM-Timer messages
-References: <497FD4F3.3080006@jp.fujitsu.com>
-In-Reply-To: <497FD4F3.3080006@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When LOCAL APIC was calibrated, the debug message is displayed as follows.
+On Wed, 28 Jan 2009, Bron Gondwana wrote:
 
-	CPU0: Intel(R) Xeon(R) CPU            5110  @ 1.60GHz stepping 06
-	Using local APIC timer interrupts.
-	calibrating APIC timer ...
-	... lapic delta = 3773131
-	... PM timer delta = 812434
-	APIC calibration not consistent with PM Timer: 226ms instead of 100ms
-	APIC delta adjusted to PM-Timer: 1662420 (3773131)
-	TSC delta adjusted to PM-Timer: 159592409 (362220564)
-	..... delta 1662420
-	..... mult: 71411249
-	..... calibration result: 265987
-	..... CPU clock speed is 1595.0924 MHz.
-	..... host bus clock speed is 265.0987 MHz.
+> Both Postfix and Apache use an epoll instance per child, which
+> leads to significant scalability issues with max_user_instances
+> set so low.  Bump the default to 1024 so medium sized sites are
+> not impacted.
 
-There are three type of PM-Timer (PM-Timer, PM Timer, and PM timer),
-in this message. This patch unifies those messages to PM-Timer.
+NACK. Epoll allocates globally about 100 to 160 bytes (32/64 bit) for each 
+file added to the interface:
 
-Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+	for i 1..1024
+		for j 1..1024
+			if i!=j
+				add j -> i
 
----
- arch/x86/kernel/apic.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+That's (N^2 * {100, 160}) = 100MB to 160MB of pinned kernel memory, 
+explotable by simple users with untouched NFILES.
+This is the reason such limit was introduced in the first place. Again, 
+for the 10th time, if you have a loaded server with multiple processes 
+using epoll:
 
-Index: linux-2.6.29-rc2/arch/x86/kernel/apic.c
-===================================================================
---- linux-2.6.29-rc2.orig/arch/x86/kernel/apic.c	2009-01-28 12:14:42.000000000 +0900
-+++ linux-2.6.29-rc2/arch/x86/kernel/apic.c	2009-01-28 12:14:51.000000000 +0900
-@@ -547,7 +547,7 @@ calibrate_by_pmtimer(long deltapm, long
- 	return -1;
- #endif
+$ echo NN > /proc/sys/fs/epoll/max_user_instances
 
--	apic_printk(APIC_VERBOSE, "... PM timer delta = %ld\n", deltapm);
-+	apic_printk(APIC_VERBOSE, "... PM-Timer delta = %ld\n", deltapm);
+Note that NN does not consume any resource "per se", so if you feel 
+threatened by such limit, you can go wild with it.
 
- 	/* Check, if the PM timer is available */
- 	if (!deltapm)
-@@ -557,14 +557,14 @@ calibrate_by_pmtimer(long deltapm, long
 
- 	if (deltapm > (pm_100ms - pm_thresh) &&
- 	    deltapm < (pm_100ms + pm_thresh)) {
--		apic_printk(APIC_VERBOSE, "... PM timer result ok\n");
-+		apic_printk(APIC_VERBOSE, "... PM-Timer result ok\n");
- 		return 0;
- 	}
 
- 	res = (((u64)deltapm) *  mult) >> 22;
- 	do_div(res, 1000000);
- 	pr_warning("APIC calibration not consistent "
--		   "with PM Timer: %ldms instead of 100ms\n",(long)res);
-+		   "with PM-Timer: %ldms instead of 100ms\n",(long)res);
+- Davide
 
- 	/* Correct the lapic counter value */
- 	res = (((u64)(*delta)) * pm_100ms);
+
