@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZA1E0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZA1E3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbZA1E0e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 23:26:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZA1E0Y
+	id S1754063AbZA1E3X (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 23:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZA1E3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 23:26:24 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50000 "EHLO mx2.redhat.com"
+	Tue, 27 Jan 2009 23:29:14 -0500
+Received: from tundra.namei.org ([65.99.196.166]:3063 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751603AbZA1E0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 23:26:24 -0500
-Date: Wed, 28 Jan 2009 05:23:37 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, hch@infradead.org,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
-       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
-Message-ID: <20090128042337.GA15060@redhat.com>
-References: <20090115153211.663df310@bike.lwn.net> <20090122065104.2787df2d.akpm@linux-foundation.org> <20090122203248.GA20159@infradead.org> <20090123045646.GK15750@one.firstfloor.org> <20090127165504.53ed7a2d.akpm@linux-foundation.org> <20090128031439.GA11025@redhat.com> <20090127205739.1384343f@bike.lwn.net>
+	id S1751874AbZA1E3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 23:29:13 -0500
+Date: Wed, 28 Jan 2009 15:29:03 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Casey Schaufler <casey@schaufler-ca.com>
+cc: LKLM <linux-kernel@vger.kernel.org>,
+       LSM <linux-security-module@vger.kernel.org>,
+       "Ahmed S. Darwish" <darwish.07@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] smackfs load append mode fix - resend unmundged.
+In-Reply-To: <497FD9CD.1090202@schaufler-ca.com>
+Message-ID: <alpine.LRH.1.10.0901281527290.14028@tundra.namei.org>
+References: <497FD9CD.1090202@schaufler-ca.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090127205739.1384343f@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/27, Jonathan Corbet wrote:
->
-> On Wed, 28 Jan 2009 04:14:39 +0100
-> Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > I'll try to make the patch tomorrow, but the problem is that I am not
-> > sure this is not too ugly.
->
-> FWIW, I'm partway through a new attempt using bitops for f_flags, moving
-> FASYNC flag handling into fasync_helper(), and doing away with
-> additional locks altogether.  I have to get past the publication
-> deadline before I can finish it, though.
+On Tue, 27 Jan 2009, Casey Schaufler wrote:
 
-Great. I'd be happy to agree with another approach.
+> From: Casey Schaufler <casey@schaufler-ca.com>
+> 
+> Given just how hard it is to find the code that uses MAY_APPEND
+> it's probably not a big surprise that this went unnoticed for so
+> long. The Smack rules loading code is incorrectly setting the
+> MAY_READ bit when MAY_APPEND is requested.
+> 
+> Signed-off-by: Casey Schaufler <casey@schaufler-ca.com>
 
-But please don't forget it is not strictly necessary f_op->fasync()
-must use fasync_helper(). And we have users (pipe_rdwr_fasync) which
-call fasync_helper() twice.
+The patch was still corrupt (and you didn't format the subject line 
+properly).
 
-Oleg.
+A fixed version for Linus may be pulled via:
 
+The following changes since commit e4a7ca29039e615ce13a61b9c6abfb2aa394e9a1:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/usb-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
+
+Casey Schaufler (1):
+      smack: smackfs load append mode fix
+
+ security/smack/smackfs.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+
+-- 
+James Morris
+<jmorris@namei.org>
