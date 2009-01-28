@@ -1,75 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755283AbZA1N5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbZA1N6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755283AbZA1N5m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 08:57:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbZA1N4b
+	id S1754926AbZA1N6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 08:58:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbZA1N53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 08:56:31 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47056 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751930AbZA1N4a (ORCPT
+	Wed, 28 Jan 2009 08:57:29 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60371 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755180AbZA1N52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 08:56:30 -0500
-Message-Id: <20090128135253.777811766@chello.nl>
-References: <20090128135137.632938951@chello.nl>
+	Wed, 28 Jan 2009 08:57:28 -0500
+Message-Id: <20090128135458.063167381@chello.nl>
+References: <20090128135352.679025549@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 28 Jan 2009 14:51:40 +0100
+Date: Wed, 28 Jan 2009 14:54:00 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: mingo@elte.hu, efault@gmx.de
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 3/3] sched: fix buddie group latency
-Content-Disposition: inline; filename=sched-group-buddies.patch
+To: mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org, npiggin@suse.de,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [PATCH 08/21] lockdep: generate the state bit definitions
+Content-Disposition: inline; filename=lockdep-generate8.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Similar to the previous patch, by not clearing buddies we can select entities
-past their run quota, which can increase latency. This means we have to clear
-group buddies as well.
+Generate the state bit definitions from the lockdep_states.h file.
 
-Do not use the group clear for pick_next_task(), otherwise that'll get O(n^2).
+Also, move LOCK_USED to last, so that the
+
+ USED_IN
+ USED_IN_READ
+ ENABLED
+ ENABLED_READ
+
+states are nicely bit aligned -- we're going to use that property
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/sched_fair.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ kernel/lockdep_internals.h |   47 +++++++++++++++++++--------------------------
+ 1 file changed, 20 insertions(+), 27 deletions(-)
 
-Index: linux-2.6/kernel/sched_fair.c
+Index: linux-2.6/kernel/lockdep_internals.h
 ===================================================================
---- linux-2.6.orig/kernel/sched_fair.c
-+++ linux-2.6/kernel/sched_fair.c
-@@ -719,7 +719,7 @@ enqueue_entity(struct cfs_rq *cfs_rq, st
- 		__enqueue_entity(cfs_rq, se);
- }
+--- linux-2.6.orig/kernel/lockdep_internals.h
++++ linux-2.6/kernel/lockdep_internals.h
+@@ -10,43 +10,36 @@
+  * Lock-class usage-state bits:
+  */
+ enum lock_usage_bit {
+-	LOCK_USED = 0,
+-	LOCK_USED_IN_HARDIRQ,
+-	LOCK_USED_IN_SOFTIRQ,
+-	LOCK_USED_IN_RECLAIM_FS,
+-	LOCK_ENABLED_SOFTIRQ,
+-	LOCK_ENABLED_HARDIRQ,
+-	LOCK_ENABLED_RECLAIM_FS,
+-	LOCK_USED_IN_HARDIRQ_READ,
+-	LOCK_USED_IN_SOFTIRQ_READ,
+-	LOCK_USED_IN_RECLAIM_FS_READ,
+-	LOCK_ENABLED_SOFTIRQ_READ,
+-	LOCK_ENABLED_HARDIRQ_READ,
+-	LOCK_ENABLED_RECLAIM_FS_READ,
++#define LOCKDEP_STATE(__STATE)		\
++	LOCK_USED_IN_##__STATE,		\
++	LOCK_USED_IN_##__STATE##_READ,	\
++	LOCK_ENABLED_##__STATE,		\
++	LOCK_ENABLED_##__STATE##_READ,
++#include "lockdep_states.h"
++#undef LOCKDEP_STATE
++	LOCK_USED,
+ 	LOCK_USAGE_STATES
+ };
  
--static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
-+static void __clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
- {
- 	if (cfs_rq->last == se)
- 		cfs_rq->last = NULL;
-@@ -728,6 +728,12 @@ static void clear_buddies(struct cfs_rq 
- 		cfs_rq->next = NULL;
- }
- 
-+static void clear_buddies(struct cfs_rq *cfs_rq, struct sched_entity *se)
-+{
-+	for_each_sched_entity(se)
-+		__clear_buddies(cfs_rq_of(se), se);
-+}
+ /*
+  * Usage-state bitmasks:
+  */
+-#define LOCKF_USED			(1 << LOCK_USED)
+-#define LOCKF_USED_IN_HARDIRQ		(1 << LOCK_USED_IN_HARDIRQ)
+-#define LOCKF_USED_IN_SOFTIRQ		(1 << LOCK_USED_IN_SOFTIRQ)
+-#define LOCKF_USED_IN_RECLAIM_FS	(1 << LOCK_USED_IN_RECLAIM_FS)
+-#define LOCKF_ENABLED_HARDIRQ		(1 << LOCK_ENABLED_HARDIRQ)
+-#define LOCKF_ENABLED_SOFTIRQ		(1 << LOCK_ENABLED_SOFTIRQ)
+-#define LOCKF_ENABLED_RECLAIM_FS	(1 << LOCK_ENABLED_RECLAIM_FS)
++#define __LOCKF(__STATE)	LOCKF_##__STATE = (1 << LOCK_##__STATE),
 +
- static void
- dequeue_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int sleep)
- {
-@@ -1502,7 +1508,7 @@ static struct task_struct *pick_next_tas
- 		 * If se was a buddy, clear it so that it will have to earn
- 		 * the favour again.
- 		 */
--		clear_buddies(cfs_rq, se);
-+		__clear_buddies(cfs_rq, se);
- 		set_next_entity(cfs_rq, se);
- 		cfs_rq = group_cfs_rq(se);
- 	} while (cfs_rq);
++enum {
++#define LOCKDEP_STATE(__STATE)						\
++	__LOCKF(USED_IN_##__STATE)					\
++	__LOCKF(USED_IN_##__STATE##_READ)				\
++	__LOCKF(ENABLED_##__STATE)					\
++	__LOCKF(ENABLED_##__STATE##_READ)
++#include "lockdep_states.h"
++#undef LOCKDEP_STATE
++	__LOCKF(USED)
++};
+ 
+ #define LOCKF_ENABLED_IRQ (LOCKF_ENABLED_HARDIRQ | LOCKF_ENABLED_SOFTIRQ)
+ #define LOCKF_USED_IN_IRQ (LOCKF_USED_IN_HARDIRQ | LOCKF_USED_IN_SOFTIRQ)
+ 
+-#define LOCKF_USED_IN_HARDIRQ_READ	(1 << LOCK_USED_IN_HARDIRQ_READ)
+-#define LOCKF_USED_IN_SOFTIRQ_READ	(1 << LOCK_USED_IN_SOFTIRQ_READ)
+-#define LOCKF_USED_IN_RECLAIM_FS_READ	(1 << LOCK_USED_IN_RECLAIM_FS_READ)
+-#define LOCKF_ENABLED_HARDIRQ_READ	(1 << LOCK_ENABLED_HARDIRQ_READ)
+-#define LOCKF_ENABLED_SOFTIRQ_READ	(1 << LOCK_ENABLED_SOFTIRQ_READ)
+-#define LOCKF_ENABLED_RECLAIM_FS_READ	(1 << LOCK_ENABLED_RECLAIM_FS_READ)
+-
+ #define LOCKF_ENABLED_IRQ_READ \
+ 		(LOCKF_ENABLED_HARDIRQ_READ | LOCKF_ENABLED_SOFTIRQ_READ)
+ #define LOCKF_USED_IN_IRQ_READ \
 
 -- 
 
