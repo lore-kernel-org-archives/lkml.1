@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbZA1T63@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZA1T7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbZA1T63 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 14:58:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751172AbZA1T6V
+	id S1753575AbZA1T7S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 14:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751281AbZA1T7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 14:58:21 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:36917 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbZA1T6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 14:58:20 -0500
-Date: Wed, 28 Jan 2009 20:58:15 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mmc: add MODALIAS linkage for MMC/SD devices
-Message-ID: <20090128205815.3f0e60d6@mjolnir.drzeus.cx>
-In-Reply-To: <20090128150639.GA31473@shadowen.org>
-References: <1231268198-12556-1-git-send-email-apw@canonical.com>
-	<20090112160519.3ba21848@mjolnir.drzeus.cx>
-	<20090115150003.GB6896@shadowen.org>
-	<20090124185612.5afddbb0@mjolnir.drzeus.cx>
-	<ac3eb2510901241545l4eb9f77dvebd5861340b3447e@mail.gmail.com>
-	<20090125164858.6b281c6c@mjolnir.drzeus.cx>
-	<ac3eb2510901250800g40dd31d8q35e626413f2853a1@mail.gmail.com>
-	<20090127201406.27c8592f@mjolnir.drzeus.cx>
-	<ac3eb2510901271126o52eeb867q402d919c3ae6fa56@mail.gmail.com>
-	<20090128150639.GA31473@shadowen.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Jan 2009 14:59:05 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:54212 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbZA1T7C (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 14:59:02 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 28 Jan 2009 11:59:01 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Mikael Pettersson <mikpe@it.uu.se>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: if (unlikely(...)) == unnecessary?
+In-Reply-To: <18816.47047.304831.827133@harpo.it.uu.se>
+Message-ID: <alpine.DEB.1.10.0901281156290.21401@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0901272346480.20262@alien.or.mcafeemobile.com> <18816.47047.304831.827133@harpo.it.uu.se>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009 15:06:39 +0000
-Andy Whitcroft <apw@canonical.com> wrote:
+On Wed, 28 Jan 2009, Mikael Pettersson wrote:
 
+> Davide Libenzi writes:
+>  > I noticed that GCC >= 3.3 (not tried the ones before) automatically 
+>  > branches out the "if" code (and follow-through the "else" code, if there). 
+>  > Is that a coincidence or a rule we can rely on going forward?
 > 
-> So asre we happy with the last textual patch or should I refactor back
-> to mmc:block.
+> Coincidence.
 > 
+> Why on earth would you want to rely on an purely private implementation
+> detail like that?
 
-I prefer "block" and a comment near the code so that noone
-misinterprets the system as a normal device to driver mapping.
+I didn't want to. I was just curious if anyone that actually followed GCC 
+developments in the last few years could shed some light on it.
 
-Rgds
--- 
-     -- Pierre Ossman
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
+- Davide
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+
