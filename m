@@ -1,57 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbZA1NJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZA1N2m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753699AbZA1NJT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 08:09:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbZA1NJD
+	id S1753469AbZA1N2m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 08:28:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751123AbZA1N2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 08:09:03 -0500
-Received: from ozlabs.org ([203.10.76.45]:59719 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751552AbZA1NJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 08:09:01 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Shawn Bohrer <shawn.bohrer@gmail.com>
-Subject: Re: Modversions and long symbol names
-Date: Wed, 28 Jan 2009 23:38:56 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <20090120173636.GB24529@mediacenter>
-In-Reply-To: <20090120173636.GB24529@mediacenter>
+	Wed, 28 Jan 2009 08:28:33 -0500
+Received: from out5.smtp.messagingengine.com ([66.111.4.29]:53278 "EHLO
+	out5.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750740AbZA1N2c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 08:28:32 -0500
+Date: Thu, 29 Jan 2009 00:28:29 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Bron Gondwana <brong@fastmail.fm>, Ray Lee <ray-lk@madrabbit.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
+Message-ID: <20090128132829.GA9326@brong.net>
+References: <20090128033824.GA1662@brong.net> <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm> <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com> <2c0942db0901272007w4298738cq37918f776276d424@mail.gmail.com> <20090128101641.33978100@lxorguk.ukuu.org.uk> <20090128105902.GB29864@brong.net> <20090128113640.2ea5a9fb@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200901282338.56696.rusty@rustcorp.com.au>
+In-Reply-To: <20090128113640.2ea5a9fb@lxorguk.ukuu.org.uk>
+Organization: brong.net
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 21 January 2009 04:06:36 Shawn Bohrer wrote:
-> Currently when modversions is enabled the kernel will not load any
-> modules that depend on exported symbols with names longer than
-> 64 - sizeof(unsigned long) characters.
+On Wed, Jan 28, 2009 at 11:36:40AM +0000, Alan Cox wrote:
+> > > "A kernel upgrade in a -stable series point release fixed a security DoS"
+> > 
+> > Alan, that's a complete load of bollocks.  It broke common configurations 
+> > of java, postfix and apache on real-world machines, causing significant
+> > actual denials of service in previously reliable configurations.
 > 
-> This is because the struct modversion_info has the name member set to a
-> size of MODULE_NAME_LEN.  This is not the module name this is the symbol
-> name so I'm guessing this is a mistake or at least a misused constant.
+> It fixed a security DoS. I was merely pointing out that the description
+> provided before was bogus, incomplete and loaded.
 
-Yes, it's overloaded.
+Not allowing user logins would have fixed that particular security DoS
+too.  There's a range of pretty destructive things that can "fix" one 
+issue at the expense of creating others.
 
-> Is it possible to increase this size to something more reasonable like
-> 512 characters?
+This particular choice of fix just happens to have caused at least three
+reported (though not to LKML, but I'll post the URLs for the other two
+again in a sec) commonly used applications issues.  These applications
+were using the published API in a way which used to work perfectly
+well, and not DoSing the system.
 
-Oh, you almost had me.  Almost.
+How would you define a regression otherwise?  A public and commonly used
+API had a new user-space visable error code added that it had never
+returned before, and a low enough limit set that this error was seen in
+practice by multiple sites.
 
-This *looks* like the kind of naive question a newbie would ask.  And a poor coder would simply patch in the increase.  A reasonable coder would also make a comment about the potential bloat.  A good coder would ask why you need more than fifty_five_characters_in_one_single_exported_identifier.
+http://marc.info/?l=fedora-devel-list&m=123134150926934&w=2
 
-But you're operating on a completely different level!
+http://pero.blogs.aprilmayjune.org/2009/01/22/hadoop-and-linux-kernel-2627-epoll-limits/
 
-You chose this example to demonstrate, by (if I may) expandio ad absurdum, that our current approach is flawed.  Obviously you *knew* that it could be converted to a pointer, and equally obviously this would require us to process relocations before parsing version symbols.  Clearly, you understood that this would mean we had to find another solution for struct module versioning, but you knew that that was always the first symbol version anyway.
+> > viable within the code.  The DoS works by creating epoll descriptors
+> > watching other epoll descriptors, which strikes me as a much less
+> > real-world actual use pattern than a bunch of separate daemons with an
+> > epoll watcher each.
+> 
+> Deliberate attackers don't have to follow typical usage patterns.
 
-You no-doubt knew that we could potentially save 7% on our module size using this approach.  But obviously not wanting to criticize my code, you instead chose this oh-so-subtle intimation where I would believe the triumph to be mine alone!
+Sure, but if typical usage patterns hit your sensor, then you have false
+positives.  Adding a DoS sensor that gets false positives is a regression, 
+and whitewashing it as "fixed a security DoS" is bogus.  It did that, but
+also more than that, and the more was/is sucky.
 
-I am humbled by your genius, and I only hope that my patch series approaches the Nirvanic perfection you foresaw.
+> > If it's possible to count watches only if they're added to another epoll
+> > instance, then we'd have a metric that still catches the N^2 attack, but
+> > doesn't interact with the common non-attacky use-case.
+> 
+> Agreed entirely.
 
-Kudos Shawn, kudos!
-Rusty.
+Yeah, enough arguing hey.  Let's come up with a real fix that doesn't
+give sites the ugly choice between remaining vulnerable to a known DoS
+attack or hobbling common programs that aren't actually using that many
+resources.
+
+Bron.
