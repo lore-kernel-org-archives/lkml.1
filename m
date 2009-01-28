@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZA1WlZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbZA1Wmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754673AbZA1WlZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 17:41:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZA1WlQ
+	id S1753076AbZA1Wmr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 17:42:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751296AbZA1Wmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 17:41:16 -0500
-Received: from casper.infradead.org ([85.118.1.10]:38648 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751364AbZA1WlP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 17:41:15 -0500
-Date: Wed, 28 Jan 2009 14:41:14 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Shawn Bohrer <shawn.bohrer@gmail.com>,
-       Jon Masters <jonathan@jonmasters.org>
-Subject: Re: [PATCH 5/6] module: make modversion_info contain a pointer, not
- an array.
-Message-ID: <20090128144114.4aeaa0ff@infradead.org>
-In-Reply-To: <200901290859.40725.rusty@rustcorp.com.au>
-References: <200901290005.52819.rusty@rustcorp.com.au>
-	<20090128065231.64d12ffd@infradead.org>
-	<200901290859.40725.rusty@rustcorp.com.au>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Jan 2009 17:42:36 -0500
+Received: from gw.goop.org ([64.81.55.164]:52550 "EHLO abulafia.goop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751332AbZA1Wmf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 17:42:35 -0500
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Subject: [PATCH 0 of 7] x86/paravirt: optimise pvop calls and register use
+Message-Id: <patchbomb.1233182100@abulafia.goop.org>
+Date: Wed, 28 Jan 2009 14:35:00 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ravikiran Thirumalai <kiran@scalemp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 08:59:40 +1030
-Rusty Russell <rusty@rustcorp.com.au> wrote:
+Hi Ingo,
 
-> On Thursday 29 January 2009 01:22:31 Arjan van de Ven wrote:
-> > On Thu, 29 Jan 2009 00:05:52 +1030
-> > Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > 
-> > > 
-> > > With allmodconfig (minus non-building modules) on 32-bit x86:
-> > > Total size of modules before: 60009790 bytes
-> > > Total size of modules after: 55927866 bytes
-> > > 
-> > > Saving 7% of module size for CONFIG_MODVERSIONS=y; and these
-> > > sections are kept resident as well.
-> > > 
-> > 
-> > that reminds me.. can we just simplify MODVERSIONS to be a md5sum
-> > (or sha1 whatver) of the .config file in the VERMAGIC ?
-> > it's a lot more reliable in detecting incompatibilities, and a lot
-> > less space consumed.
-> 
-> Unfortunately people really seem to want the finer granularity that
-> MODVERSIONS (sometimes) provides :(  I've tried killing it off
-> several times, and always failed.
+This series implements a sequence of optimisations to reduce the
+impact of enabling CONFIG_PARAVIRT while running native.
 
-but we could just stick the result in VERMAGIC right?
-rather than tacking it to every symbol.
+They are:
+  (0. Move some Xen code around to make later changes work better.)
 
-how you calculate the global checksum is almost a separate debate.
+  1. For a number of the pvops, the native implemention is a simple
+     identity function which returns its argument.  Add a specific
+     paravirt identity function which the patcher can treat specially,
+     by directly inlining the either nops (32-bit) or a mov (64-bit)
+     into the instruction stream.
 
+  2. When a pvop is called from asm code, it also provides a hint
+     about what registers are available to be clobbered by the called
+     code.  Until now, that information was ignored, and all
+     caller-save registers were saved.  Now, don't bother
+     saving/restoring registers which are clobberable.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+  3. The C calling convention lists which registers the caller can
+     expect to survive a function call, and which the callee is
+     allowed to clobber.  The latter set is quite large, especially on
+     64-bit.  This means that converting a pile of simple inline
+     functions into function calls caused a lot more register
+     pressure, making the generated code much worse.
+
+     I introduce a new "callee-save" calling convention which makes
+     only the return register (eax:edx on 32-bit, rax on 64)
+     callee-clobberable; the callee must preserve all other registers,
+     including the argument registers.
+
+     This makes the callsites for these functions clobber many fewer
+     registers, giving the compiler a chance to generate better code.
+
+     Small asm functions, which generally only use one or two
+     registers anyway, to be directly called.  C code can also be
+     called via a thunk, which does the necessary register
+     saving/restoring (generated by PV_CALLEE_SAVE_REGS_THUNK(func)).
+
+     The irq enable/disable/save/restore functions are the first to
+     make use of this calling convention, since they are the most
+     commonly used in the kernel, and are also called form asm code.
+
+  4. Convert the pte_val/make_pte identity functions to use the
+     callee-save convention; they're only identity functions anyway,
+     so they have no need to trash lots of registers.
+
+I had to make some adjustments to VSMP and lguest to match the new
+calling conventions.  I wasn't sure how I should change VMI, so I'm
+waiting for Zach's input on that (VMI doesn't compile at the moment).
+
+In testing, the net result was that the overhead dropped by about 75%,
+though I found it hard to really get stable results.  The most obvious
+improvement was a reduction in L2 references, presumably meaning that
+L1 was getting a better hit rate.  Each of these transforms is an
+unambigious improvement in generated code for the native case, so I'm
+curious to see what other people see.
+
+Thanks,
+	J
+
