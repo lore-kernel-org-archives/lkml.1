@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761507AbZA1Uw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbZA1Uxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761507AbZA1Uw5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbZA1Uci
+	id S1754992AbZA1Uxa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:53:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756608AbZA1Ucl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:32:38 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:47900 "EHLO
+	Wed, 28 Jan 2009 15:32:41 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:47899 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755578AbZA1Uce (ORCPT
+	with ESMTP id S1755573AbZA1Uce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Jan 2009 15:32:34 -0500
-MBOX-Line: From nobody Wed Jan 28 12:08:26 2009
+MBOX-Line: From nobody Wed Jan 28 12:08:23 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH C 06/13] OMAP3 clock: DPLLs should enter bypass if new rate is
-	sys_ck
+Subject: [PATCH C 05/13] OMAP2/3 clock: fix DPLL rate calculation
 To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>,
+Cc: linux-omap@vger.kernel.org, Tero Kristo <tero.kristo@nokia.com>,
+       Paul Walmsley <paul@pwsan.com>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Peter de Schrijver <peter.de-schrijver@nokia.com>,
        Tony Lindgren <tony@atomide.com>
-Date: Wed, 28 Jan 2009 12:08:26 -0700
-Message-ID: <20090128190823.12092.2638.stgit@localhost.localdomain>
+Date: Wed, 28 Jan 2009 12:08:23 -0700
+Message-ID: <20090128190820.12092.1675.stgit@localhost.localdomain>
 In-Reply-To: <20090128190724.12092.22239.stgit@localhost.localdomain>
 References: <20090128190724.12092.22239.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
@@ -29,83 +31,643 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch causes a DPLL to enter bypass when it is instructed to set
-its rate to that of its bypass clock.  Previously this was only possible
-after setting the DPLL rate, then disabling and re-enabling it.
+From: Tero Kristo <tero.kristo@nokia.com>
 
-linux-omap source commit is 9c909ac90902a9c0ecca2bc9ac36289cb84990f5.
+Removes the clksel-based DPLL rate handling from the OMAP3 clock tree.
+In its place, omap2_get_dpll_rate() now has code to determine whether the DPLL
+is bypassed.  This obsoletes several clocks, which are removed by this patch.
 
+Also, previously, the OMAP2xxx code returned the wrong value for the
+DPLL rate under some conditions.  Move the CORE_CLK rate recalculation
+to clock24xx.c:omap2xxx_clk_get_core_rate().
+
+This patch is a collaboration between Tero Kristo <tero.kristo@nokia.com>
+and Paul Walmsley <paul@pwsan.com>.  Thanks to Peter de Schrijver
+<peter.de-schrijver@nokia.com> for help debugging and Kevin Hilman
+<khilman@deeprootsystems.com> for reporting the OMAP2 build problems with
+an earlier version of this patch.
+
+linux-omap source commits are 3241b19e23fb95cf03d0e9747273458cfb82d7aa,
+88b5d9b6872be2d944895ca0f6c236f262e4e8d3, and
+18a550088456d3c39e4eccf901ddd8669dbe6ee3.
+
+Signed-off-by: Tero Kristo <tero.kristo@nokia.com>
 Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Peter de Schrijver <peter.de-schrijver@nokia.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/clock34xx.c |   40 ++++++++++++++++++++++++++++-----------
- 1 files changed, 29 insertions(+), 11 deletions(-)
+ arch/arm/mach-omap2/clock.c             |   43 +++++++-
+ arch/arm/mach-omap2/clock.h             |   15 +++
+ arch/arm/mach-omap2/clock24xx.c         |   43 +++++---
+ arch/arm/mach-omap2/clock24xx.h         |    2 
+ arch/arm/mach-omap2/clock34xx.c         |    4 -
+ arch/arm/mach-omap2/clock34xx.h         |  169 +++----------------------------
+ arch/arm/mach-omap2/memory.c            |    2 
+ arch/arm/plat-omap/include/mach/clock.h |   13 +-
+ 8 files changed, 105 insertions(+), 186 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/clock34xx.c b/arch/arm/mach-omap2/clock34xx.c
-index c5efd7e..0f058c3 100644
---- a/arch/arm/mach-omap2/clock34xx.c
-+++ b/arch/arm/mach-omap2/clock34xx.c
-@@ -371,13 +371,17 @@ static int omap3_noncore_dpll_program(struct clk *clk, u16 m, u8 n, u16 freqsel)
-  * @clk: struct clk * of DPLL to set
-  * @rate: rounded target rate
-  *
-- * Program the DPLL with the rounded target rate.  Returns -EINVAL upon
-- * error, or 0 upon success.
-+ * Set the DPLL CLKOUT to the target rate.  If the DPLL can enter
-+ * low-power bypass, and the target rate is the bypass source clock
-+ * rate, then configure the DPLL for bypass.  Otherwise, round the
-+ * target rate if it hasn't been done already, then program and lock
-+ * the DPLL.  Returns -EINVAL upon error, or 0 upon success.
-  */
- static int omap3_noncore_dpll_set_rate(struct clk *clk, unsigned long rate)
- {
- 	u16 freqsel;
- 	struct dpll_data *dd;
-+	int ret;
+diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
+index d902309..b517469 100644
+--- a/arch/arm/mach-omap2/clock.c
++++ b/arch/arm/mach-omap2/clock.c
+@@ -136,22 +136,53 @@ void omap2_init_clksel_parent(struct clk *clk)
+ 	return;
+ }
  
- 	if (!clk || !rate)
- 		return -EINVAL;
-@@ -389,18 +393,32 @@ static int omap3_noncore_dpll_set_rate(struct clk *clk, unsigned long rate)
- 	if (rate == omap2_get_dpll_rate(clk))
+-/* Returns the DPLL rate */
++/**
++ * omap2_get_dpll_rate - returns the current DPLL CLKOUT rate
++ * @clk: struct clk * of a DPLL
++ *
++ * DPLLs can be locked or bypassed - basically, enabled or disabled.
++ * When locked, the DPLL output depends on the M and N values.  When
++ * bypassed, on OMAP2xxx, the output rate is either the 32KiHz clock
++ * or sys_clk.  Bypass rates on OMAP3 depend on the DPLL: DPLLs 1 and
++ * 2 are bypassed with dpll1_fclk and dpll2_fclk respectively
++ * (generated by DPLL3), while DPLL 3, 4, and 5 bypass rates are sys_clk.
++ * Returns the current DPLL CLKOUT rate (*not* CLKOUTX2) if the DPLL is
++ * locked, or the appropriate bypass rate if the DPLL is bypassed, or 0
++ * if the clock @clk is not a DPLL.
++ */
+ u32 omap2_get_dpll_rate(struct clk *clk)
+ {
+ 	long long dpll_clk;
+-	u32 dpll_mult, dpll_div, dpll;
++	u32 dpll_mult, dpll_div, v;
+ 	struct dpll_data *dd;
+ 
+ 	dd = clk->dpll_data;
+-	/* REVISIT: What do we return on error? */
+ 	if (!dd)
  		return 0;
  
--	if (dd->last_rounded_rate != rate)
--		omap2_dpll_round_rate(clk, rate);
-+	if (dd->bypass_clk->rate == rate &&
-+	    (clk->dpll_data->modes & (1 << DPLL_LOW_POWER_BYPASS))) {
- 
--	if (dd->last_rounded_rate == 0)
--		return -EINVAL;
-+		pr_debug("clock: %s: set rate: entering bypass.\n", clk->name);
+-	dpll = __raw_readl(dd->mult_div1_reg);
+-	dpll_mult = dpll & dd->mult_mask;
++	/* Return bypass rate if DPLL is bypassed */
++	v = __raw_readl(dd->control_reg);
++	v &= dd->enable_mask;
++	v >>= __ffs(dd->enable_mask);
 +
-+		ret = _omap3_noncore_dpll_bypass(clk);
++	if (cpu_is_omap24xx()) {
 +
-+	} else {
++		if (v == OMAP2XXX_EN_DPLL_LPBYPASS ||
++		    v == OMAP2XXX_EN_DPLL_FRBYPASS)
++			return clk->parent->rate;
 +
-+		if (dd->last_rounded_rate != rate)
-+			omap2_dpll_round_rate(clk, rate);
- 
--	freqsel = _omap3_dpll_compute_freqsel(clk, dd->last_rounded_n);
--	if (!freqsel)
--		WARN_ON(1);
-+		if (dd->last_rounded_rate == 0)
-+			return -EINVAL;
- 
--	omap3_noncore_dpll_program(clk, dd->last_rounded_m, dd->last_rounded_n,
--				   freqsel);
-+		freqsel = _omap3_dpll_compute_freqsel(clk, dd->last_rounded_n);
-+		if (!freqsel)
-+			WARN_ON(1);
++	} else if (cpu_is_omap34xx()) {
 +
-+		pr_debug("clock: %s: set rate: locking rate to %lu.\n",
-+			 clk->name, rate);
-+
-+		ret = omap3_noncore_dpll_program(clk, dd->last_rounded_m,
-+						 dd->last_rounded_n, freqsel);
++		if (v == OMAP3XXX_EN_DPLL_LPBYPASS ||
++		    v == OMAP3XXX_EN_DPLL_FRBYPASS)
++			return dd->bypass_clk->rate;
 +
 +	}
++
++	v = __raw_readl(dd->mult_div1_reg);
++	dpll_mult = v & dd->mult_mask;
+ 	dpll_mult >>= __ffs(dd->mult_mask);
+-	dpll_div = dpll & dd->div1_mask;
++	dpll_div = v & dd->div1_mask;
+ 	dpll_div >>= __ffs(dd->div1_mask);
  
- 	omap3_dpll_recalc(clk);
+ 	dpll_clk = (long long)clk->parent->rate * dpll_mult;
+diff --git a/arch/arm/mach-omap2/clock.h b/arch/arm/mach-omap2/clock.h
+index 3fa2e26..72bb320 100644
+--- a/arch/arm/mach-omap2/clock.h
++++ b/arch/arm/mach-omap2/clock.h
+@@ -21,6 +21,21 @@
+ /* The maximum error between a target DPLL rate and the rounded rate in Hz */
+ #define DEFAULT_DPLL_RATE_TOLERANCE	50000
  
++/* CM_CLKSEL2_PLL.CORE_CLK_SRC bits (2XXX) */
++#define CORE_CLK_SRC_32K		0x0
++#define CORE_CLK_SRC_DPLL		0x1
++#define CORE_CLK_SRC_DPLL_X2		0x2
++
++/* OMAP2xxx CM_CLKEN_PLL.EN_DPLL bits - for omap2_get_dpll_rate() */
++#define OMAP2XXX_EN_DPLL_LPBYPASS		0x1
++#define OMAP2XXX_EN_DPLL_FRBYPASS		0x2
++#define OMAP2XXX_EN_DPLL_LOCKED			0x3
++
++/* OMAP3xxx CM_CLKEN_PLL*.EN_*_DPLL bits - for omap2_get_dpll_rate() */
++#define OMAP3XXX_EN_DPLL_LPBYPASS		0x5
++#define OMAP3XXX_EN_DPLL_FRBYPASS		0x6
++#define OMAP3XXX_EN_DPLL_LOCKED			0x7
++
+ int omap2_clk_init(void);
+ int omap2_clk_enable(struct clk *clk);
+ void omap2_clk_disable(struct clk *clk);
+diff --git a/arch/arm/mach-omap2/clock24xx.c b/arch/arm/mach-omap2/clock24xx.c
+index 8533c3a..a2c13ef 100644
+--- a/arch/arm/mach-omap2/clock24xx.c
++++ b/arch/arm/mach-omap2/clock24xx.c
+@@ -61,19 +61,32 @@ static struct clk *sclk;
+  * Omap24xx specific clock functions
+  *-------------------------------------------------------------------------*/
+ 
+-/* This actually returns the rate of core_ck, not dpll_ck. */
+-static u32 omap2_get_dpll_rate_24xx(struct clk *tclk)
++/**
++ * omap2xxx_clk_get_core_rate - return the CORE_CLK rate
++ * @clk: pointer to the combined dpll_ck + core_ck (currently "dpll_ck")
++ *
++ * Returns the CORE_CLK rate.  CORE_CLK can have one of three rate
++ * sources on OMAP2xxx: the DPLL CLKOUT rate, DPLL CLKOUTX2, or 32KHz
++ * (the latter is unusual).  This currently should be called with
++ * struct clk *dpll_ck, which is a composite clock of dpll_ck and
++ * core_ck.
++ */
++static u32 omap2xxx_clk_get_core_rate(struct clk *clk)
+ {
+-	long long dpll_clk;
+-	u8 amult;
++	long long core_clk;
++	u32 v;
+ 
+-	dpll_clk = omap2_get_dpll_rate(tclk);
++	core_clk = omap2_get_dpll_rate(clk);
+ 
+-	amult = cm_read_mod_reg(PLL_MOD, CM_CLKSEL2);
+-	amult &= OMAP24XX_CORE_CLK_SRC_MASK;
+-	dpll_clk *= amult;
++	v = cm_read_mod_reg(PLL_MOD, CM_CLKSEL2);
++	v &= OMAP24XX_CORE_CLK_SRC_MASK;
+ 
+-	return dpll_clk;
++	if (v == CORE_CLK_SRC_32K)
++		core_clk = 32768;
++	else
++		core_clk *= v;
++
++	return core_clk;
+ }
+ 
+ static int omap2_enable_osc_ck(struct clk *clk)
+@@ -173,7 +186,7 @@ static long omap2_dpllcore_round_rate(unsigned long target_rate)
+ 
+ static void omap2_dpllcore_recalc(struct clk *clk)
+ {
+-	clk->rate = omap2_get_dpll_rate_24xx(clk);
++	clk->rate = omap2xxx_clk_get_core_rate(clk);
+ 
+ 	propagate_rate(clk);
+ }
+@@ -188,7 +201,7 @@ static int omap2_reprogram_dpllcore(struct clk *clk, unsigned long rate)
+ 	int ret = -EINVAL;
+ 
+ 	local_irq_save(flags);
+-	cur_rate = omap2_get_dpll_rate_24xx(&dpll_ck);
++	cur_rate = omap2xxx_clk_get_core_rate(&dpll_ck);
+ 	mult = cm_read_mod_reg(PLL_MOD, CM_CLKSEL2);
+ 	mult &= OMAP24XX_CORE_CLK_SRC_MASK;
+ 
+@@ -326,7 +339,7 @@ static int omap2_select_table_rate(struct clk *clk, unsigned long rate)
+ 	}
+ 
+ 	curr_prcm_set = prcm;
+-	cur_rate = omap2_get_dpll_rate_24xx(&dpll_ck);
++	cur_rate = omap2xxx_clk_get_core_rate(&dpll_ck);
+ 
+ 	if (prcm->dpll_speed == cur_rate / 2) {
+ 		omap2_reprogram_sdrc(CORE_CLK_SRC_DPLL, 1);
+@@ -535,8 +548,10 @@ void __init omap2_clk_rewrite_base(struct clk *clk)
+ {
+ 	omap2_clk_check_reg(clk->flags, &clk->clksel_reg);
+ 	omap2_clk_check_reg(clk->flags, &clk->enable_reg);
+-	if (clk->dpll_data)
++	if (clk->dpll_data) {
+ 		omap2_clk_check_reg(0, &clk->dpll_data->mult_div1_reg);
++		omap2_clk_check_reg(0, &clk->dpll_data->control_reg);
++	}
+ }
+ 
+ int __init omap2_clk_init(void)
+@@ -579,7 +594,7 @@ int __init omap2_clk_init(void)
+ 	}
+ 
+ 	/* Check the MPU rate set by bootloader */
+-	clkrate = omap2_get_dpll_rate_24xx(&dpll_ck);
++	clkrate = omap2xxx_clk_get_core_rate(&dpll_ck);
+ 	for (prcm = rate_table; prcm->mpu_speed; prcm++) {
+ 		if (!(prcm->flags & cpu_mask))
+ 			continue;
+diff --git a/arch/arm/mach-omap2/clock24xx.h b/arch/arm/mach-omap2/clock24xx.h
+index 2587c3d..f6177e3 100644
+--- a/arch/arm/mach-omap2/clock24xx.h
++++ b/arch/arm/mach-omap2/clock24xx.h
+@@ -680,6 +680,8 @@ static struct dpll_data dpll_dd = {
+ 	.mult_div1_reg		= _CM_REG_OFFSET(PLL_MOD, CM_CLKSEL1),
+ 	.mult_mask		= OMAP24XX_DPLL_MULT_MASK,
+ 	.div1_mask		= OMAP24XX_DPLL_DIV_MASK,
++	.control_reg		= _CM_REG_OFFSET(PLL_MOD, CM_CLKEN),
++	.enable_mask		= OMAP24XX_EN_DPLL_MASK,
+ 	.max_multiplier		= 1024,
+ 	.max_divider		= 16,
+ 	.rate_tolerance		= DEFAULT_DPLL_RATE_TOLERANCE
+diff --git a/arch/arm/mach-omap2/clock34xx.c b/arch/arm/mach-omap2/clock34xx.c
+index 0f493f5..c5efd7e 100644
+--- a/arch/arm/mach-omap2/clock34xx.c
++++ b/arch/arm/mach-omap2/clock34xx.c
+@@ -512,11 +512,11 @@ static void omap3_clkoutx2_recalc(struct clk *clk)
+ 
+ 	dd = pclk->dpll_data;
+ 
+-	WARN_ON(!dd->control_reg || !dd->enable_mask);
++	WARN_ON(!dd->enable_mask);
+ 
+ 	v = __raw_readl(dd->control_reg) & dd->enable_mask;
+ 	v >>= __ffs(dd->enable_mask);
+-	if (v != DPLL_LOCKED)
++	if (v != OMAP3XXX_EN_DPLL_LOCKED)
+ 		clk->rate = clk->parent->rate;
+ 	else
+ 		clk->rate = clk->parent->rate * 2;
+diff --git a/arch/arm/mach-omap2/clock34xx.h b/arch/arm/mach-omap2/clock34xx.h
+index 5d20075..0c50a2d 100644
+--- a/arch/arm/mach-omap2/clock34xx.h
++++ b/arch/arm/mach-omap2/clock34xx.h
+@@ -257,16 +257,6 @@ static struct clk sys_clkout1 = {
+ 
+ /* CM CLOCKS */
+ 
+-static const struct clksel_rate dpll_bypass_rates[] = {
+-	{ .div = 1, .val = 0, .flags = RATE_IN_343X | DEFAULT_RATE },
+-	{ .div = 0 }
+-};
+-
+-static const struct clksel_rate dpll_locked_rates[] = {
+-	{ .div = 1, .val = 1, .flags = RATE_IN_343X | DEFAULT_RATE },
+-	{ .div = 0 }
+-};
+-
+ static const struct clksel_rate div16_dpll_rates[] = {
+ 	{ .div = 1, .val = 1, .flags = RATE_IN_343X | DEFAULT_RATE },
+ 	{ .div = 2, .val = 2, .flags = RATE_IN_343X },
+@@ -529,40 +519,22 @@ static struct clk dpll3_m2_ck = {
+ 	.recalc		= &omap2_clksel_recalc,
+ };
+ 
+-static const struct clksel core_ck_clksel[] = {
+-	{ .parent = &sys_ck,	  .rates = dpll_bypass_rates },
+-	{ .parent = &dpll3_m2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+ static struct clk core_ck = {
+ 	.name		= "core_ck",
+-	.init		= &omap2_init_clksel_parent,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
+-	.clksel_mask	= OMAP3430_ST_CORE_CLK_MASK,
+-	.clksel		= core_ck_clksel,
++	.parent		= &dpll3_m2_ck,
+ 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES |
+ 				PARENT_CONTROLS_CLOCK,
+ 	.clkdm		= { .name = "cm_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
+-};
+-
+-static const struct clksel dpll3_m2x2_ck_clksel[] = {
+-	{ .parent = &sys_ck,	  .rates = dpll_bypass_rates },
+-	{ .parent = &dpll3_x2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
++	.recalc		= &followparent_recalc,
+ };
+ 
+ static struct clk dpll3_m2x2_ck = {
+ 	.name		= "dpll3_m2x2_ck",
+-	.init		= &omap2_init_clksel_parent,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
+-	.clksel_mask	= OMAP3430_ST_CORE_CLK_MASK,
+-	.clksel		= dpll3_m2x2_ck_clksel,
++	.parent		= &dpll3_x2_ck,
+ 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES |
+ 				PARENT_CONTROLS_CLOCK,
+ 	.clkdm		= { .name = "dpll3_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
++	.recalc		= &followparent_recalc,
+ };
+ 
+ /* The PWRDN bit is apparently only available on 3430ES2 and above */
+@@ -596,23 +568,13 @@ static struct clk dpll3_m3x2_ck = {
+ 	.recalc		= &omap3_clkoutx2_recalc,
+ };
+ 
+-static const struct clksel emu_core_alwon_ck_clksel[] = {
+-	{ .parent = &sys_ck,	    .rates = dpll_bypass_rates },
+-	{ .parent = &dpll3_m3x2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+ static struct clk emu_core_alwon_ck = {
+ 	.name		= "emu_core_alwon_ck",
+ 	.parent		= &dpll3_m3x2_ck,
+-	.init		= &omap2_init_clksel_parent,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
+-	.clksel_mask	= OMAP3430_ST_CORE_CLK_MASK,
+-	.clksel		= emu_core_alwon_ck_clksel,
+ 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES |
+ 				PARENT_CONTROLS_CLOCK,
+ 	.clkdm		= { .name = "dpll3_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
++	.recalc		= &followparent_recalc,
+ };
+ 
+ /* DPLL4 */
+@@ -696,12 +658,6 @@ static struct clk dpll4_m2x2_ck = {
+ 	.recalc		= &omap3_clkoutx2_recalc,
+ };
+ 
+-static const struct clksel omap_96m_alwon_fck_clksel[] = {
+-	{ .parent = &sys_ck,	    .rates = dpll_bypass_rates },
+-	{ .parent = &dpll4_m2x2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+ /*
+  * DPLL4 generates DPLL4_M2X2_CLK which is then routed into the PRM as
+  * PRM_96M_ALWON_(F)CLK.  Two clocks then emerge from the PRM:
+@@ -711,14 +667,10 @@ static const struct clksel omap_96m_alwon_fck_clksel[] = {
+ static struct clk omap_96m_alwon_fck = {
+ 	.name		= "omap_96m_alwon_fck",
+ 	.parent		= &dpll4_m2x2_ck,
+-	.init		= &omap2_init_clksel_parent,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
+-	.clksel_mask	= OMAP3430_ST_PERIPH_CLK_MASK,
+-	.clksel		= omap_96m_alwon_fck_clksel,
+ 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES |
+ 				PARENT_CONTROLS_CLOCK,
+ 	.clkdm		= { .name = "prm_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
++	.recalc		= &followparent_recalc,
+ };
+ 
+ static struct clk cm_96m_fck = {
+@@ -785,25 +737,6 @@ static struct clk dpll4_m3x2_ck = {
+ 	.recalc		= &omap3_clkoutx2_recalc,
+ };
+ 
+-static const struct clksel virt_omap_54m_fck_clksel[] = {
+-	{ .parent = &sys_ck,	    .rates = dpll_bypass_rates },
+-	{ .parent = &dpll4_m3x2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+-static struct clk virt_omap_54m_fck = {
+-	.name		= "virt_omap_54m_fck",
+-	.parent		= &dpll4_m3x2_ck,
+-	.init		= &omap2_init_clksel_parent,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
+-	.clksel_mask	= OMAP3430_ST_PERIPH_CLK_MASK,
+-	.clksel		= virt_omap_54m_fck_clksel,
+-	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES |
+-				PARENT_CONTROLS_CLOCK,
+-	.clkdm		= { .name = "dpll4_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
+-};
+-
+ static const struct clksel_rate omap_54m_d4m3x2_rates[] = {
+ 	{ .div = 1, .val = 0, .flags = RATE_IN_343X | DEFAULT_RATE },
+ 	{ .div = 0 }
+@@ -815,7 +748,7 @@ static const struct clksel_rate omap_54m_alt_rates[] = {
+ };
+ 
+ static const struct clksel omap_54m_clksel[] = {
+-	{ .parent = &virt_omap_54m_fck, .rates = omap_54m_d4m3x2_rates },
++	{ .parent = &dpll4_m3x2_ck, .rates = omap_54m_d4m3x2_rates },
+ 	{ .parent = &sys_altclk,    .rates = omap_54m_alt_rates },
+ 	{ .parent = NULL }
+ };
+@@ -1013,25 +946,6 @@ static struct clk dpll5_m2_ck = {
+ 	.recalc		= &omap2_clksel_recalc,
+ };
+ 
+-static const struct clksel omap_120m_fck_clksel[] = {
+-	{ .parent = &sys_ck,	  .rates = dpll_bypass_rates },
+-	{ .parent = &dpll5_m2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+-static struct clk omap_120m_fck = {
+-	.name		= "omap_120m_fck",
+-	.parent		= &dpll5_m2_ck,
+-	.init		= &omap2_init_clksel_parent,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST2),
+-	.clksel_mask	= OMAP3430ES2_ST_PERIPH2_CLK_MASK,
+-	.clksel		= omap_120m_fck_clksel,
+-	.flags		= CLOCK_IN_OMAP3430ES2 | RATE_PROPAGATES |
+-				PARENT_CONTROLS_CLOCK,
+-	.clkdm		= { .name = "dpll5_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
+-};
+-
+ /* CM EXTERNAL CLOCK OUTPUTS */
+ 
+ static const struct clksel_rate clkout2_src_core_rates[] = {
+@@ -1138,29 +1052,13 @@ static struct clk dpll1_fck = {
+ 	.recalc		= &omap2_clksel_recalc,
+ };
+ 
+-/*
+- * MPU clksel:
+- * If DPLL1 is locked, mpu_ck derives from DPLL1; otherwise, mpu_ck
+- * derives from the high-frequency bypass clock originating from DPLL3,
+- * called 'dpll1_fck'
+- */
+-static const struct clksel mpu_clksel[] = {
+-	{ .parent = &dpll1_fck,	    .rates = dpll_bypass_rates },
+-	{ .parent = &dpll1_x2m2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+ static struct clk mpu_ck = {
+ 	.name		= "mpu_ck",
+ 	.parent		= &dpll1_x2m2_ck,
+-	.init		= &omap2_init_clksel_parent,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(MPU_MOD, OMAP3430_CM_IDLEST_PLL),
+-	.clksel_mask	= OMAP3430_ST_MPU_CLK_MASK,
+-	.clksel		= mpu_clksel,
+ 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES |
+ 				PARENT_CONTROLS_CLOCK,
+ 	.clkdm		= { .name = "mpu_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
++	.recalc		= &followparent_recalc,
+ };
+ 
+ /* arm_fck is divided by two when DPLL1 locked; otherwise, passthrough mpu_ck */
+@@ -1216,32 +1114,15 @@ static struct clk dpll2_fck = {
+ 	.recalc		= &omap2_clksel_recalc,
+ };
+ 
+-/*
+- * IVA2 clksel:
+- * If DPLL2 is locked, iva2_ck derives from DPLL2; otherwise, iva2_ck
+- * derives from the high-frequency bypass clock originating from DPLL3,
+- * called 'dpll2_fck'
+- */
+-
+-static const struct clksel iva2_clksel[] = {
+-	{ .parent = &dpll2_fck,	  .rates = dpll_bypass_rates },
+-	{ .parent = &dpll2_m2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+ static struct clk iva2_ck = {
+ 	.name		= "iva2_ck",
+ 	.parent		= &dpll2_m2_ck,
+ 	.init		= &omap2_init_clksel_parent,
+ 	.enable_reg	= _OMAP34XX_CM_REGADDR(OMAP3430_IVA2_MOD, CM_FCLKEN),
+ 	.enable_bit	= OMAP3430_CM_FCLKEN_IVA2_EN_IVA2_SHIFT,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(OMAP3430_IVA2_MOD,
+-					  OMAP3430_CM_IDLEST_PLL),
+-	.clksel_mask	= OMAP3430_ST_IVA2_CLK_MASK,
+-	.clksel		= iva2_clksel,
+ 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES,
+ 	.clkdm		= { .name = "iva2_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
++	.recalc		= &followparent_recalc,
+ };
+ 
+ /* Common interface clocks */
+@@ -1473,7 +1354,7 @@ static struct clk ts_fck = {
+ 
+ static struct clk usbtll_fck = {
+ 	.name		= "usbtll_fck",
+-	.parent		= &omap_120m_fck,
++	.parent		= &dpll5_m2_ck,
+ 	.enable_reg	= _OMAP34XX_CM_REGADDR(CORE_MOD, OMAP3430ES2_CM_FCLKEN3),
+ 	.enable_bit	= OMAP3430ES2_EN_USBTLL_SHIFT,
+ 	.flags		= CLOCK_IN_OMAP3430ES2,
+@@ -2207,24 +2088,14 @@ static struct clk des1_ick = {
+ };
+ 
+ /* DSS */
+-static const struct clksel dss1_alwon_fck_clksel[] = {
+-	{ .parent = &sys_ck,	    .rates = dpll_bypass_rates },
+-	{ .parent = &dpll4_m4x2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+ static struct clk dss1_alwon_fck = {
+ 	.name		= "dss1_alwon_fck",
+ 	.parent		= &dpll4_m4x2_ck,
+-	.init		= &omap2_init_clksel_parent,
+ 	.enable_reg	= _OMAP34XX_CM_REGADDR(OMAP3430_DSS_MOD, CM_FCLKEN),
+ 	.enable_bit	= OMAP3430_EN_DSS1_SHIFT,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
+-	.clksel_mask	= OMAP3430_ST_PERIPH_CLK_MASK,
+-	.clksel		= dss1_alwon_fck_clksel,
+ 	.flags		= CLOCK_IN_OMAP343X,
+ 	.clkdm		= { .name = "dss_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
++	.recalc		= &followparent_recalc,
+ };
+ 
+ static struct clk dss_tv_fck = {
+@@ -2270,24 +2141,14 @@ static struct clk dss_ick = {
+ 
+ /* CAM */
+ 
+-static const struct clksel cam_mclk_clksel[] = {
+-	{ .parent = &sys_ck,	    .rates = dpll_bypass_rates },
+-	{ .parent = &dpll4_m5x2_ck, .rates = dpll_locked_rates },
+-	{ .parent = NULL }
+-};
+-
+ static struct clk cam_mclk = {
+ 	.name		= "cam_mclk",
+ 	.parent		= &dpll4_m5x2_ck,
+-	.init		= &omap2_init_clksel_parent,
+-	.clksel_reg	= _OMAP34XX_CM_REGADDR(PLL_MOD, CM_IDLEST),
+-	.clksel_mask	= OMAP3430_ST_PERIPH_CLK_MASK,
+-	.clksel		= cam_mclk_clksel,
+ 	.enable_reg	= _OMAP34XX_CM_REGADDR(OMAP3430_CAM_MOD, CM_FCLKEN),
+ 	.enable_bit	= OMAP3430_EN_CAM_SHIFT,
+ 	.flags		= CLOCK_IN_OMAP343X,
+ 	.clkdm		= { .name = "cam_clkdm" },
+-	.recalc		= &omap2_clksel_recalc,
++	.recalc		= &followparent_recalc,
+ };
+ 
+ static struct clk cam_ick = {
+@@ -2315,7 +2176,7 @@ static struct clk csi2_96m_fck = {
+ 
+ static struct clk usbhost_120m_fck = {
+ 	.name		= "usbhost_120m_fck",
+-	.parent		= &omap_120m_fck,
++	.parent		= &dpll5_m2_ck,
+ 	.enable_reg	= _OMAP34XX_CM_REGADDR(OMAP3430ES2_USBHOST_MOD, CM_FCLKEN),
+ 	.enable_bit	= OMAP3430ES2_EN_USBHOST2_SHIFT,
+ 	.flags		= CLOCK_IN_OMAP3430ES2,
+@@ -2364,7 +2225,7 @@ static const struct clksel_rate usim_120m_rates[] = {
+ 
+ static const struct clksel usim_clksel[] = {
+ 	{ .parent = &omap_96m_fck,	.rates = usim_96m_rates },
+-	{ .parent = &omap_120m_fck,	.rates = usim_120m_rates },
++	{ .parent = &dpll5_m2_ck,	.rates = usim_120m_rates },
+ 	{ .parent = &sys_ck,		.rates = div2_rates },
+ 	{ .parent = NULL },
+ };
+@@ -3176,7 +3037,6 @@ static struct clk *onchip_34xx_clks[] __initdata = {
+ 	&omap_96m_alwon_fck,
+ 	&omap_96m_fck,
+ 	&cm_96m_fck,
+-	&virt_omap_54m_fck,
+ 	&omap_54m_fck,
+ 	&omap_48m_fck,
+ 	&omap_12m_fck,
+@@ -3193,7 +3053,6 @@ static struct clk *onchip_34xx_clks[] __initdata = {
+ 	&emu_per_alwon_ck,
+ 	&dpll5_ck,
+ 	&dpll5_m2_ck,
+-	&omap_120m_fck,
+ 	&clkout2_src_ck,
+ 	&sys_clkout2,
+ 	&corex2_fck,
+diff --git a/arch/arm/mach-omap2/memory.c b/arch/arm/mach-omap2/memory.c
+index b7669c8..db024fd 100644
+--- a/arch/arm/mach-omap2/memory.c
++++ b/arch/arm/mach-omap2/memory.c
+@@ -29,6 +29,8 @@
+ 
+ #include "prm.h"
+ 
++#include "clock.h"
++
+ #include "memory.h"
+ #include "sdrc.h"
+ 
+diff --git a/arch/arm/plat-omap/include/mach/clock.h b/arch/arm/plat-omap/include/mach/clock.h
+index 0fb4271..73676ee 100644
+--- a/arch/arm/plat-omap/include/mach/clock.h
++++ b/arch/arm/plat-omap/include/mach/clock.h
+@@ -41,14 +41,14 @@ struct dpll_data {
+ 	u16			max_multiplier;
+ 	u8			max_divider;
+ 	u32			max_tolerance;
+-	void __iomem		*idlest_reg;
+-	u32			idlest_mask;
+ 	struct clk		*bypass_clk;
++	void __iomem		*control_reg;
++	u32			enable_mask;
+ #  if defined(CONFIG_ARCH_OMAP3)
++	void __iomem		*idlest_reg;
++	u32			idlest_mask;
+ 	u32			freqsel_mask;
+ 	u8			modes;
+-	void __iomem		*control_reg;
+-	u32			enable_mask;
+ 	u8			auto_recal_bit;
+ 	u8			recal_en_bit;
+ 	u8			recal_st_bit;
+@@ -165,9 +165,4 @@ extern void clk_init_cpufreq_table(struct cpufreq_frequency_table **table);
+ #define RATE_IN_24XX		(RATE_IN_242X | RATE_IN_243X)
+ 
+ 
+-/* CM_CLKSEL2_PLL.CORE_CLK_SRC options (24XX) */
+-#define CORE_CLK_SRC_32K		0
+-#define CORE_CLK_SRC_DPLL		1
+-#define CORE_CLK_SRC_DPLL_X2		2
+-
+ #endif
 
 
