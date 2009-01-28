@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbZA1Xje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZA1Xjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757565AbZA1Xje (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:39:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbZA1XjP
+	id S1758051AbZA1Xjw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756830AbZA1XjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:39:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:44337 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756060AbZA1XjO (ORCPT
+	Wed, 28 Jan 2009 18:39:22 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:39202 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756722AbZA1XjT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:39:14 -0500
-Message-ID: <4980EAA1.8020600@zytor.com>
-Date: Wed, 28 Jan 2009 15:30:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 28 Jan 2009 18:39:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FbIF3N1xatVivYRytPuGb5QAmOL8Xo0McsR2spQ29feKtEofIa0A77lH1cNWF0G0nY
+         O6fOgBKyTF63oCknbED8OsYhzTWJV2kf1Zu9XBfha39sUNzNg9Ymr0Bzmxkp9TGEqcHQ
+         hCIO68tYt0vVGSt2u5hds9IePqvgbnm9Pro0A=
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] x86: do not expose CONFIG_BSWAP to userspace
-References: <20090127222825.GA27097@elte.hu> <1233179884.6717.59.camel@brick> <4980D913.3000505@zytor.com> <200901290024.09815.arnd@arndb.de>
-In-Reply-To: <200901290024.09815.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <2QN7KFic7LG.A.03.I-QdJB@chimera>
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera>
+	 <2QN7KFic7LG.A.03.I-QdJB@chimera>
+Date: Thu, 29 Jan 2009 02:39:17 +0300
+Message-ID: <a4423d670901281539s958128avcaf4756021125795@mail.gmail.com>
+Subject: Re: [Bug #12402] 2.6.29-rc: kernel BUG at fs/xfs/support/debug.c:108
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Eric Sandeen <sandeen@sandeen.net>, Dave Chinner <david@fromorbit.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> 
-> I take this as a strong indication that user space applications
-> won't generally expect to get the bswap instruction from including
-> the kernel headers. For the longest time, we actually had
-> 
-> /* For avoiding bswap on i386 */
-> #ifdef __KERNEL__
-> #include <linux/config.h>
-> #endif
-> 
-> which I read as explicitly using the portable i386 version for
-> all user space.
-> 
+2009/1/20 Rafael J. Wysocki <rjw@sisk.pl>:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12402
+> Subject         : 2.6.29-rc: kernel BUG at fs/xfs/support/debug.c:108
+> Submitter       : Alexander Beregalov <a.beregalov@gmail.com>
+> Date            : 2009-01-09 04:41 (11 days old)
+> References      : http://thread.gmane.org/gmane.comp.file-systems.xfs.general/27548
+> Handled-By      : Christoph Hellwig <hch@infradead.org>
+>
 
-This is true, although it would be nice to be able to generate BSWAP now 
-when most distros compile with -march=i586 or higher.  The reason noone 
-cared for the longest time was that noone wanted to compile userspace 
-for anything other than the i386 baseline.
+Should be closed, thanks.
 
-	-hpa
-
+commit 74e2d06521913443c7e2697037909f5efc200ec5
+(Long btree pointers are still 64 bit on disk)
