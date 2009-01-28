@@ -1,150 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZA1GRg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZA1GV3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZA1GRg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 01:17:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZA1GR2
+	id S1754644AbZA1GV3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 01:21:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZA1GVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 01:17:28 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:26979 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751878AbZA1GR1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 01:17:27 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	content-type:content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
-	b=qvPCq0BMIENtxZBlDABCmbLmA5N8rQVLGE9IfzDslH24NN00+fff5s0SzEeRspfOe
-	6JIxZfMzww14e77vKH3Ww==
-MIME-Version: 1.0
-In-Reply-To: <20090128060140.16117.44772.stgit@hyd-omgvisitor1.hyd.corp.google.com>
-References: <20090128060140.16117.44772.stgit@hyd-omgvisitor1.hyd.corp.google.com>
-Date: Wed, 28 Jan 2009 11:47:22 +0530
-Message-ID: <af41c7c40901272217j4bc8e0devbe5f22ffbd07b692@mail.gmail.com>
-Subject: Re: [PATCH v2][RESEND] Allow RT requests to pre-empt ongoing BE 
-	timeslice in CFQ.
-From: Divyesh Shah <dpshah@google.com>
-To: jens.axboe@oracle.com, mikew@google.com, nauman@google.com,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-GMailtapped-By: 172.28.16.143
-X-GMailtapped: dpshah
+	Wed, 28 Jan 2009 01:21:20 -0500
+Received: from 1wt.eu ([62.212.114.60]:1859 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751866AbZA1GVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 01:21:20 -0500
+Date: Wed, 28 Jan 2009 07:20:21 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Greg KH <gregkh@suse.de>, Bron Gondwana <brong@fastmail.fm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
+Subject: Re: [patch 016/104] epoll: introduce resource usage limits
+Message-ID: <20090128062021.GA32360@1wt.eu>
+References: <20090125110126.GA11598@brong.net> <20090125122039.GA16603@brong.net> <20090128003519.GA11395@suse.de> <20090128033824.GA1662@brong.net> <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com> <20090128035746.GA3351@brong.net> <alpine.DEB.1.10.0901272002180.20262@alien.or.mcafeemobile.com> <20090128052630.GA9512@suse.de> <20090128053642.GL5038@1wt.eu> <alpine.DEB.1.10.0901272142530.20262@alien.or.mcafeemobile.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901272142530.20262@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-+ Jens Axboe
+On Tue, Jan 27, 2009 at 09:48:07PM -0800, Davide Libenzi wrote:
+> On Wed, 28 Jan 2009, Willy Tarreau wrote:
+> 
+> > On Tue, Jan 27, 2009 at 09:26:30PM -0800, Greg KH wrote:
+> > > On Tue, Jan 27, 2009 at 08:10:41PM -0800, Davide Libenzi wrote:
+> > > > In my servers, I know if they are going to be loaded, and I bump NFILES 
+> > > > (and a few other things) to the correct place. Since many of those 
+> > > > limits do not actually pre-allocate any resource, I don't need to wait and 
+> > > > monitor the values, before taking proper action.
+> > > 
+> > > But what about people who want to know what the current usages are, so
+> > > that they _can_ monitor things and adjust them on the fly if things are
+> > > about to go boom?
+> > > 
+> > > I see no reason why we can't leave the value where it is today, and add
+> > > the ability to both turn the limits off entirely, and also report our
+> > > current usage.  That keeps the DOS from happening on "default" systems,
+> > > and lets admins have an idea if they need to bump up the values on their
+> > > systems as well.
+> > > 
+> > > I don't understand your objection to allowing the usage to be monitored.
+> > 
+> > Agreed. If sysadmins get trapped by the upgrade, the fix for an
+> > hypotethical DoS is a 100%-certain DoS by itself. The general sense
+> > that "if it's not broken, don't fix it" applies here as well. The
+> > server's sysadmin should not be bothered by a security upgrade (anyway,
+> > after a few minutes of havoc in prod, he will revert to previous version
+> > without trying to understand any further). But the campus sysadmin having
+> > trouble with local users already spends a lot of time tweaking limits.
+> > Now we offer them a new limit they can tune, they'll happily use it.
+> > Anyway, even at 128 they'll probably lower it down a lot. So basically
+> > we're with a medium value which does not fit any usage.
+> 
+> You know, it's not me that decides what goes of certain trees or not ;) 
+> I've been pinged about the problem, and a patch was sent with values that 
+> seemed appropriate for typical epoll usages. Epoll is a multiplexing 
+> interface, so the thought was that not too many instances were lingering 
+> around. Probably the default max_instances should have been made lomem 
+> dependent like max_user_watches in the first place, leading to higher 
+> max_instances values, with respect of the potential DoS.
 
-On Wed, Jan 28, 2009 at 11:35 AM, Divyesh Shah <dpshah@google.com> wrote:
-> This patch adds the ability to pre-empt an ongoing BE timeslice when a RT
-> request is waiting for the current timeslice to complete. This reduces the
-> wait time to disk for RT requests from an upper bound of 4 (current value
-> of cfq_quantum) to 1 disk request.
->
-> Signed-off-by: Divyesh Shah <dpshah@google.com>
-> ---
-> Applied Jens' suggeested changes to avoid the rb lookup and use !cfq_class_rt()
-> and retested.
->
-> Latency(secs) for the RT task when doing sequential reads from 10G file.
->                       | only RT | RT + BE | RT + BE + this patch
-> small (512 byte) reads | 143     | 163     | 145
-> large (1Mb) reads      | 142     | 158     | 146
->
->  block/cfq-iosched.c |   39 ++++++++++++++++++++++++++++++++++++++-
->  1 files changed, 38 insertions(+), 1 deletions(-)
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index e8525fa..5fec9e5 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -84,6 +84,11 @@ struct cfq_data {
->         */
->        struct cfq_rb_root service_tree;
->        unsigned int busy_queues;
-> +       /*
-> +        * Used to track any pending rt requests so we can pre-empt current
-> +        * non-RT cfqq in service when this value is non-zero.
-> +        */
-> +       unsigned int busy_rt_queues;
->
->        int rq_in_driver;
->        int sync_flight;
-> @@ -562,6 +567,8 @@ static void cfq_add_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->        BUG_ON(cfq_cfqq_on_rr(cfqq));
->        cfq_mark_cfqq_on_rr(cfqq);
->        cfqd->busy_queues++;
-> +       if (cfq_class_rt(cfqq))
-> +               cfqd->busy_rt_queues++;
->
->        cfq_resort_rr_list(cfqd, cfqq);
->  }
-> @@ -581,6 +588,8 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->
->        BUG_ON(!cfqd->busy_queues);
->        cfqd->busy_queues--;
-> +       if (cfq_class_rt(cfqq))
-> +               cfqd->busy_rt_queues--;
->  }
->
->  /*
-> @@ -1005,6 +1014,20 @@ static struct cfq_queue *cfq_select_queue(struct cfq_data *cfqd)
->                goto expire;
->
->        /*
-> +        * If we have a RT cfqq waiting, then we pre-empt the current non-rt
-> +        * cfqq.
-> +        */
-> +       if (!cfq_class_rt(cfqq) && cfqd->busy_rt_queues) {
-> +               /*
-> +                * We simulate this as cfqq timed out so that it gets to bank
-> +                * the remaining of its time slice.
-> +                */
-> +               cfq_log_cfqq(cfqd, cfqq, "preempt");
-> +               cfq_slice_expired(cfqd, 1);
-> +               goto new_queue;
-> +       }
-> +
-> +       /*
->         * The active queue has requests and isn't expired, allow it to
->         * dispatch.
->         */
-> @@ -1067,6 +1090,13 @@ __cfq_dispatch_requests(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->                if (RB_EMPTY_ROOT(&cfqq->sort_list))
->                        break;
->
-> +               /*
-> +                * If there is a non-empty RT cfqq waiting for current
-> +                * cfqq's timeslice to complete, pre-empt this cfqq
-> +                */
-> +               if (!cfq_class_rt(cfqq) && cfqd->busy_rt_queues)
-> +                       break;
-> +
->        } while (dispatched < max_dispatch);
->
->        /*
-> @@ -1801,6 +1831,12 @@ cfq_should_preempt(struct cfq_data *cfqd, struct cfq_queue *new_cfqq,
->        if (rq_is_meta(rq) && !cfqq->meta_pending)
->                return 1;
->
-> +       /*
-> +        * Allow an RT request to pre-empt an ongoing non-RT cfqq timeslice.
-> +        */
-> +       if (cfq_class_rt(new_cfqq) && !cfq_class_rt(cfqq))
-> +               return 1;
-> +
->        if (!cfqd->active_cic || !cfq_cfqq_wait_request(cfqq))
->                return 0;
->
-> @@ -1870,7 +1906,8 @@ cfq_rq_enqueued(struct cfq_data *cfqd, struct cfq_queue *cfqq,
->                /*
->                 * not the active queue - expire current slice if it is
->                 * idle and has expired it's mean thinktime or this new queue
-> -                * has some old slice time left and is of higher priority
-> +                * has some old slice time left and is of higher priority or
-> +                * this new queue is RT and the current one is BE
->                 */
->                cfq_preempt_queue(cfqd, cfqq);
->                cfq_mark_cfqq_must_dispatch(cfqq);
->
->
+Davide, I know it's not you who decide. I mean, one patch was proposed
+with one arbitrary limit. I've seen it in advance too and I too thought
+it would be more than enough. Now people are reporting breakage from
+common applications which work in a funny way (I think that using epoll
+to poll for one single FD in a multi-process architecture can be called
+funny). But those people are not expected to understand the internals,
+and most likely their application's behaviour might not be more precisely
+described than "it broke since upgrade to 2.6.27.13".
+
+I think we should accept the fact that the fix is causing problems
+for people while it was not expected to do so. One of the solutions
+would be to increase the arbitrary ratio from 1% to more than that,
+but it will still break big setups. Another solution is to accept
+that the patch provides a tunable that admins might act on to stop
+local users' nasty activities if required, but leave the limit off
+by default. And I think that's a saner approach, especially for a
+stable series.
+
+Regards,
+Willy
+
