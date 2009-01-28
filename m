@@ -1,131 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZA1XdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbZA1Xdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbZA1XdK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:33:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757288AbZA1X2n
+	id S1758390AbZA1Xdk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:33:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757411AbZA1X3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:28:43 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:52093 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757270AbZA1X2m (ORCPT
+	Wed, 28 Jan 2009 18:29:24 -0500
+Received: from moutng.kundenserver.de ([212.227.126.177]:53843 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757408AbZA1X3W convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:28:42 -0500
-Date: Wed, 28 Jan 2009 23:28:31 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org
-Subject: Re: [PATCH A 09/10] OMAP2/3: Remove OMAP_PRM_REGADDR, OMAP_CM_REGADDR
-Message-ID: <20090128232831.GL23301@n2100.arm.linux.org.uk>
-References: <20090128020447.7244.80496.stgit@localhost.localdomain> <20090128021312.7244.2415.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 28 Jan 2009 18:29:22 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: do not expose CONFIG_BSWAP to userspace
+Date: Thu, 29 Jan 2009 00:24:08 +0100
+User-Agent: KMail/1.9.9
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@kernel.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+References: <20090127222825.GA27097@elte.hu> <1233179884.6717.59.camel@brick> <4980D913.3000505@zytor.com>
+In-Reply-To: <4980D913.3000505@zytor.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090128021312.7244.2415.stgit@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901290024.09815.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1++ltRnaaqyGsoYum+78D8xd5Sc6uIDhTIP6at
+ xyGdBLZkHbVjrNkCzI1IguPn96TCEo4r40y2lgzWkngdx9ZZYE
+ P66M5//eXsy3apWKqiFtg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 07:13:16PM -0700, Paul Walmsley wrote:
-> diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-> index c4b80a4..55c5d67 100644
-> --- a/arch/arm/mach-omap2/clock.c
-> +++ b/arch/arm/mach-omap2/clock.c
-> @@ -27,6 +27,7 @@
->  #include <mach/clock.h>
->  #include <mach/clockdomain.h>
->  #include <mach/cpu.h>
-> +#include <mach/prcm.h>
->  #include <asm/div64.h>
->  
->  #include "memory.h"
-> @@ -247,9 +248,9 @@ static void omap2_clk_wait_ready(struct clk *clk)
->  	/* REVISIT: What are the appropriate exclusions for 34XX? */
->  	/* OMAP3: ignore DSS-mod clocks */
->  	if (cpu_is_omap34xx() &&
-> -	    (((u32)reg & ~0xff) == (u32)OMAP_CM_REGADDR(OMAP3430_DSS_MOD, 0) ||
-> -	     ((((u32)reg & ~0xff) == (u32)OMAP_CM_REGADDR(CORE_MOD, 0)) &&
-> -	     clk->enable_bit == OMAP3430_EN_SSI_SHIFT)))
-> +	    (((u32)reg & ~0xff) == cm_read_mod_reg(OMAP3430_DSS_MOD, 0) ||
-> +	     ((((u32)reg & ~0xff) == cm_read_mod_reg(CORE_MOD, 0)) &&
-> +	      clk->enable_bit == OMAP3430_EN_SSI_SHIFT)))
->  		return;
+On Wednesday 28 January 2009, H. Peter Anvin wrote:
+> So, one ends up doing something like:
+> 
+> #ifdef __i486__
+> # define __CPU_HAVE_BSWAP
+> #endif
+> #ifdef __i586__
+> # define __CPU_HAVE_BSWAP
+> #endif
+> 
+> ... and so on, and have to keep this up to date with the latest 
+> inventions of the gcc people.  *Sob.*
 
-As suggested in patch 2, I hate this approach.  It's far better to deal
-with this by changing the way we handle enabling and disabling clocks,
-hence my
+Well, to put this into perspective: The bswap inline assembly was
+introduced in Linux-1.3.51 "Greased Weasel", back in 1995 and at
+no time it was ever visible to user space, unless the code manually
+included <linux/config.h> (which we broke) or defined CONFIG_M486,
+CONFIG_X86_BSWAP and/or __KERNEL__, depending on the kernel version.
 
-"[ARM] omap: eliminate unnecessary conditionals in omap2_clk_wait_ready"
+I take this as a strong indication that user space applications
+won't generally expect to get the bswap instruction from including
+the kernel headers. For the longest time, we actually had
 
-> @@ -476,6 +466,37 @@ static int __init omap2_clk_arch_init(void)
->  }
->  arch_initcall(omap2_clk_arch_init);
->  
-> +static u32 prm_base;
-> +static u32 cm_base;
-> +
-> +/*
-> + * Since we share clock data for 242x and 243x, we need to rewrite some
-> + * some register base offsets. Assume offset is at prm_base if flagged,
-> + * else assume it's cm_base.
-> + */
-> +static inline void omap2_clk_check_reg(u32 flags, void __iomem **reg)
-> +{
-> +	u32 tmp = (__force u32)*reg;
-> +
-> +	if ((tmp >> 24) != 0)
-> +		return;
-> +
-> +	if (flags & OFFSET_GR_MOD)
-> +		tmp += prm_base;
-> +	else
-> +		tmp += cm_base;
-> +
-> +	*reg = (__force void __iomem *)tmp;
-> +}
-> +
-> +void __init omap2_clk_rewrite_base(struct clk *clk)
-> +{
-> +	omap2_clk_check_reg(clk->flags, &clk->clksel_reg);
-> +	omap2_clk_check_reg(clk->flags, &clk->enable_reg);
-> +	if (clk->dpll_data)
-> +		omap2_clk_check_reg(0, &clk->dpll_data->mult_div1_reg);
-> +}
-> +
->  int __init omap2_clk_init(void)
->  {
->  	struct prcm_config *prcm;
-> @@ -487,6 +508,12 @@ int __init omap2_clk_init(void)
->  	else if (cpu_is_omap2430())
->  		cpu_mask = RATE_IN_243X;
->  
-> +	for (clkp = onchip_24xx_clks;
-> +	     clkp < onchip_24xx_clks + ARRAY_SIZE(onchip_24xx_clks);
-> +	     clkp++) {
-> +			omap2_clk_rewrite_base(*clkp);
-> +	}
-> +
+/* For avoiding bswap on i386 */
+#ifdef __KERNEL__
+#include <linux/config.h>
+#endif
 
-I'm afraid this also fails to satisfy my decency filter.  Let's summarise
-what's going on here.
+which I read as explicitly using the portable i386 version for
+all user space.
 
-- the structure initializers are setup to cast integer register offsets
-  to void __iomem *.
-- the code above walks all clock structures, looking for what could be
-  considered an offset (iow, bits 31-24 of the pointer being zero).
-- it looks at the OFFSET_GR_MOD flag to determine which base to add in
-- the base address is not 'void __iomem *' but 'u32'.
-- we update the void __iomem * pointers in the structure.
-
-So, we have a base address which is an integer, and an offset which is
-an void __iomem *.
-
-I can see why you want to do this, but I think it needs more thought.
-I'll sit on this patch for a while.
-
-In the mean time, I've fixed up patches 1-8,10 to apply on top of my
-patch set.
-
-However, still waiting for a few to come through: D6, E2 and F2.  No,
-these aren't suck in any of my mail spools or list admin queues.
+	Arnd <><
