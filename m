@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbZA1Ugy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757976AbZA1Uh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757896AbZA1Ugy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:36:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZA1U3k
+	id S1757976AbZA1Uh0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:37:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbZA1U3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:29:40 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:32950 "EHLO
+	Wed, 28 Jan 2009 15:29:42 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:32940 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755426AbZA1U3c (ORCPT
+	with ESMTP id S1755429AbZA1U3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Jan 2009 15:29:32 -0500
-MBOX-Line: From nobody Tue Jan 27 19:12:50 2009
+MBOX-Line: From nobody Wed Jan 28 12:27:59 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH A 02/10] OMAP: Fix sparse,
-	checkpatch warnings in OMAP2/3 PRCM/PM code
+Subject: [PATCH E 11/14] OMAP clock: track child clocks
 To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Cc: Paul Walmsley <paul@pwsan.com>, Tony Lindgren <tony@atomide.com>,
-       linux-omap@vger.kernel.org
-Date: Tue, 27 Jan 2009 19:12:50 -0700
-Message-ID: <20090128021247.7244.10391.stgit@localhost.localdomain>
-In-Reply-To: <20090128020447.7244.80496.stgit@localhost.localdomain>
-References: <20090128020447.7244.80496.stgit@localhost.localdomain>
+Cc: linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>,
+       Tony Lindgren <tony@atomide.com>
+Date: Wed, 28 Jan 2009 12:27:59 -0700
+Message-ID: <20090128192756.29333.41541.stgit@localhost.localdomain>
+In-Reply-To: <20090128192551.29333.82943.stgit@localhost.localdomain>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -29,441 +28,419 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix sparse & checkpatch warnings in OMAP2/3 PRCM & PM code.  This mostly
-consists of:
+Track child clocks for each struct clk.  This optimizes traversals of the
+clock tree from parent to child, which happens during rate propagation, and
+in the future, clock notifiers.
 
-- converting pointer comparisons to integers in form similar to
-  (ptr == 0) to the standard idiom (!ptr)
+Previously, parent-to-child traversals sequentially scanned the entire
+clock list at each step to determine the children of a particular
+clock node.  Now each struct clk maintains a clock list of its
+children.  For a DPLL3_M2_CK rate change, this converts what were
+about O(6*180*2) operations into O(6*6*2) operations.  The savings
+will be even more significant after the future notifier patches:
+something like O(6*180*6) to O(6*6*6).
 
-- labeling a few non-static private functions as static
+The price paid is additional runtime memory consumption - 8 bytes per
+clock and 16 bytes per child clock - roughly 4.5KiB on OMAP3.  The
+memory comes mostly from bootmem, since initial clock registration
+takes place before slab is ready.  Several other operations will take
+slightly more time due the extra bookkeeping: clk_register(),
+clk_unregister(), clk_set_parent(), and omap2_init_clksel_parent().
 
-- adding prototypes for *_init() functions in the appropriate header
-  files, and getting rid of the corresponding open-coded extern
-  prototypes in other C files
-
-- renaming the variable 'sclk' in mach-omap2/clock.c:omap2_get_apll_clkin
-  to avoid shadowing an earlier declaration
-
-Clean up checkpatch issues.  This mostly involves:
-
-- converting some asm/ includes to linux/ includes
-
-- cleaning up some whitespace
-
-- getting rid of braces for conditionals with single following statements
-
-Also take care of a few odds and ends, including:
-
-- getting rid of unlikely() and likely() - none of this code is particularly
-  fast-path code, so the performance impact seems slim; and some of those
-  likely() and unlikely() indicators are probably not as accurate as the
-  ARM's branch predictor
-
-- removing some superfluous casts
-
-linux-omap source commit is 347df59f5d20fdf905afbc26b1328b0e28a8a01b.
+linux-omap source commit is c4cd1332c2a78112624f4a418116e95fa6e9e57c.
 
 Signed-off-by: Paul Walmsley <paul@pwsan.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/clock.c                   |   61 ++++++++++++-------------
- arch/arm/mach-omap2/clock.h                   |    2 -
- arch/arm/mach-omap2/clock24xx.c               |   16 ++++---
- arch/arm/mach-omap2/pm.c                      |    2 -
- arch/arm/plat-omap/include/mach/clock.h       |    4 +-
- arch/arm/plat-omap/include/mach/powerdomain.h |    1 
- arch/arm/plat-omap/include/mach/prcm.h        |    5 +-
- arch/arm/plat-omap/include/mach/system.h      |    4 +-
- 8 files changed, 49 insertions(+), 46 deletions(-)
+ arch/arm/mach-omap2/clock.c             |    4 +
+ arch/arm/plat-omap/clock.c              |  221 ++++++++++++++++++++++++-------
+ arch/arm/plat-omap/include/mach/clock.h |   22 +++
+ 3 files changed, 199 insertions(+), 48 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-index ad721e0..c4b80a4 100644
+index 0c00706..6ca67cb 100644
 --- a/arch/arm/mach-omap2/clock.c
 +++ b/arch/arm/mach-omap2/clock.c
-@@ -26,7 +26,6 @@
+@@ -223,7 +223,11 @@ void omap2_init_clksel_parent(struct clk *clk)
+ 						 clk->name, clks->parent->name,
+ 						 ((clk->parent) ?
+ 						  clk->parent->name : "NULL"));
++					if (clk->parent)
++						omap_clk_del_child(clk->parent,
++								   clk);
+ 					clk->parent = clks->parent;
++					omap_clk_add_child(clk->parent, clk);
+ 				};
+ 				found = 1;
+ 			}
+diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
+index 7a7547d..8417d11 100644
+--- a/arch/arm/plat-omap/clock.c
++++ b/arch/arm/plat-omap/clock.c
+@@ -23,6 +23,8 @@
+ #include <linux/cpufreq.h>
+ #include <linux/debugfs.h>
+ #include <linux/io.h>
++#include <linux/bootmem.h>
++#include <linux/slab.h>
  
  #include <mach/clock.h>
- #include <mach/clockdomain.h>
--#include <mach/sram.h>
- #include <mach/cpu.h>
- #include <asm/div64.h>
  
-@@ -190,11 +189,10 @@ int omap2_wait_clock_ready(void __iomem *reg, u32 mask, const char *name)
- 	 * 24xx uses 0 to indicate not ready, and 1 to indicate ready.
- 	 * 34xx reverses this, just to keep us on our toes
- 	 */
--	if (cpu_mask & (RATE_IN_242X | RATE_IN_243X)) {
-+	if (cpu_mask & (RATE_IN_242X | RATE_IN_243X))
- 		ena = mask;
--	} else if (cpu_mask & RATE_IN_343X) {
-+	else if (cpu_mask & RATE_IN_343X)
- 		ena = 0;
--	}
+@@ -32,6 +34,142 @@ static DEFINE_SPINLOCK(clockfw_lock);
  
- 	/* Wait for lock */
- 	while (((__raw_readl(reg) & mask) != ena) &&
-@@ -267,7 +265,7 @@ static void omap2_clk_wait_ready(struct clk *clk)
- /* Enables clock without considering parent dependencies or use count
-  * REVISIT: Maybe change this to use clk->enable like on omap1?
-  */
--int _omap2_clk_enable(struct clk *clk)
-+static int _omap2_clk_enable(struct clk *clk)
- {
- 	u32 regval32;
+ static struct clk_functions *arch_clock;
  
-@@ -277,7 +275,7 @@ int _omap2_clk_enable(struct clk *clk)
- 	if (clk->enable)
- 		return clk->enable(clk);
- 
--	if (unlikely(clk->enable_reg == NULL)) {
-+	if (!clk->enable_reg) {
- 		printk(KERN_ERR "clock.c: Enable for %s without enable code\n",
- 		       clk->name);
- 		return 0; /* REVISIT: -EINVAL */
-@@ -297,7 +295,7 @@ int _omap2_clk_enable(struct clk *clk)
- }
- 
- /* Disables clock without considering parent dependencies or use count */
--void _omap2_clk_disable(struct clk *clk)
-+static void _omap2_clk_disable(struct clk *clk)
- {
- 	u32 regval32;
- 
-@@ -309,7 +307,7 @@ void _omap2_clk_disable(struct clk *clk)
- 		return;
++/**
++ * omap_clk_for_each_child - call callback on each child clock of clk
++ * @clk: struct clk * to use as the "parent"
++ * @parent_rate: rate of the parent of @clk to pass along
++ * @rate_storage: flag indicating whether current or temporary rates are used
++ * @cb: pointer to a callback function
++ *
++ * For each child clock of @clk, call the callback function @cb, passing
++ * along the contents of @parent_rate and @rate_storage.  If the callback
++ * function returns non-zero, terminate the function and pass along the
++ * return value.
++ */
++static int omap_clk_for_each_child(struct clk *clk, unsigned long parent_rate,
++				   u8 rate_storage,
++				   int (*cb)(struct clk *clk,
++					     unsigned long parent_rate,
++					     u8 rate_storage))
++{
++	struct clk_child *child;
++	int ret;
++
++	list_for_each_entry(child, &clk->children, node) {
++		ret = (*cb)(child->clk, parent_rate, rate_storage);
++		if (ret)
++			break;
++	}
++
++	return ret;
++}
++
++/**
++ * omap_clk_has_children - does clk @clk have any child clocks?
++ * @clk: struct clk * to test for child clocks
++ *
++ * If clock @clk has any child clocks, return 1; otherwise, return 0.
++ */
++static int omap_clk_has_children(struct clk *clk)
++{
++	return (list_empty(&clk->children)) ? 0 : 1;
++}
++
++/**
++ * _do_propagate_rate - callback function for rate propagation
++ * @clk: struct clk * to recalc and propagate from
++ * @parent_rate: rate of the parent of @clk, to use in recalculation
++ * @rate_storage: flag indicating whether current or temporary rates are used
++ *
++ * If @clk has a recalc function, call it.  If @clk has any children,
++ * propagate @clk's rate.  Returns 0.
++ */
++static int _do_propagate_rate(struct clk *clk, unsigned long parent_rate,
++			      u8 rate_storage)
++{
++	if (clk->recalc)
++		clk->recalc(clk, parent_rate, rate_storage);
++	if (omap_clk_has_children(clk))
++		propagate_rate(clk, rate_storage);
++	return 0;
++}
++
++/**
++ * omap_clk_add_child - add a child clock @clk2 to @clk
++ * @clk: parent struct clk *
++ * @clk2: new child struct clk *
++ *
++ * Add a child clock @clk2 to the list of children of parent clock
++ * @clk.  Will potentially allocate memory from bootmem or, if
++ * available, from slab.  Must only be called with the clock framework
++ * spinlock held.  No return value.
++ */
++void omap_clk_add_child(struct clk *clk, struct clk *clk2)
++{
++	struct clk_child *child;
++	int reuse = 0;
++
++	if (!clk->children.next)
++		INIT_LIST_HEAD(&clk->children);
++
++	list_for_each_entry(child, &clk->children, node) {
++		if (child->flags & CLK_CHILD_DELETED) {
++			reuse = 1;
++			child->flags &= ~CLK_CHILD_DELETED;
++			break;
++		}
++	}
++
++	if (!reuse) {
++		if (slab_is_available())
++			child = kmalloc(sizeof(struct clk_child), GFP_ATOMIC);
++		else
++			child = alloc_bootmem(sizeof(struct clk_child));
++
++		if (!child) {
++			WARN_ON(1);
++			return;
++		}
++
++		memset(child, 0, sizeof(struct clk_child));
++
++		if (slab_is_available())
++			child->flags |= CLK_CHILD_SLAB_ALLOC;
++	}
++
++	child->clk = clk2;
++
++	list_add_tail(&child->node, &clk->children);
++}
++
++/**
++ * omap_clk_del_child - add a child clock @clk2 to @clk
++ * @clk: parent struct clk *
++ * @clk2: former child struct clk *
++ *
++ * Remove a child clock @clk2 from the list of children of parent
++ * clock @clk.  Must only be called with the clock framework spinlock
++ * held.  No return value.
++ */
++void omap_clk_del_child(struct clk *clk, struct clk *clk2)
++{
++	struct clk_child *child, *tmp;
++
++	/* Loop over all existing clk_childs, when found, deallocate */
++	list_for_each_entry_safe(child, tmp, &clk->children, node) {
++		if (child->clk == clk2) {
++			list_del(&child->node);
++			if (child->flags & CLK_CHILD_SLAB_ALLOC) {
++				kfree(child);
++			} else {
++				child->clk = NULL;
++				child->flags |= CLK_CHILD_DELETED;
++			}
++			break;
++		}
++	}
++}
++
+ /*-------------------------------------------------------------------------
+  * Standard clock functions defined in include/linux/clk.h
+  *-------------------------------------------------------------------------*/
+@@ -85,13 +223,9 @@ int clk_enable(struct clk *clk)
+ 	spin_lock_irqsave(&clockfw_lock, flags);
+ 	if (arch_clock->clk_enable) {
+ 		ret = arch_clock->clk_enable(clk);
+-		if (ret == 0 && clk->flags & RECALC_ON_ENABLE) {
+-			if (clk->recalc)
+-				(*clk->recalc)(clk, clk->parent->rate,
+-					       CURRENT_RATE);
+-			if (clk->flags & RATE_PROPAGATES)
+-				propagate_rate(clk, CURRENT_RATE);
+-		}
++		if (ret == 0 && clk->flags & RECALC_ON_ENABLE)
++			_do_propagate_rate(clk, clk->parent->rate,
++					   CURRENT_RATE);
  	}
  
--	if (clk->enable_reg == NULL) {
-+	if (!clk->enable_reg) {
- 		/*
- 		 * 'Independent' here refers to a clock which is not
- 		 * controlled by its parent.
-@@ -332,7 +330,7 @@ void omap2_clk_disable(struct clk *clk)
+ 	spin_unlock_irqrestore(&clockfw_lock, flags);
+@@ -117,13 +251,9 @@ void clk_disable(struct clk *clk)
+ 
+ 	if (arch_clock->clk_disable) {
+ 		arch_clock->clk_disable(clk);
+-		if (clk->flags & RECALC_ON_ENABLE) {
+-			if (clk->recalc)
+-				(*clk->recalc)(clk, clk->parent->rate,
+-					       CURRENT_RATE);
+-			if (clk->flags & RATE_PROPAGATES)
+-				propagate_rate(clk, CURRENT_RATE);
+-		}
++		if (clk->flags & RECALC_ON_ENABLE)
++			_do_propagate_rate(clk, clk->parent->rate,
++					   CURRENT_RATE);
+ 	}
+ 
+ out:
+@@ -203,13 +333,9 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
+ 
+ 	if (arch_clock->clk_set_rate) {
+ 		ret = arch_clock->clk_set_rate(clk, rate);
+-		if (ret == 0) {
+-			if (clk->recalc)
+-				(*clk->recalc)(clk, clk->parent->rate,
+-					       CURRENT_RATE);
+-			if (clk->flags & RATE_PROPAGATES)
+-				propagate_rate(clk, CURRENT_RATE);
+-		}
++		if (ret == 0)
++			_do_propagate_rate(clk, clk->parent->rate,
++					   CURRENT_RATE);
+ 	}
+ 
+ 	spin_unlock_irqrestore(&clockfw_lock, flags);
+@@ -221,6 +347,7 @@ EXPORT_SYMBOL(clk_set_rate);
+ int clk_set_parent(struct clk *clk, struct clk *parent)
  {
- 	if (clk->usecount > 0 && !(--clk->usecount)) {
- 		_omap2_clk_disable(clk);
--		if (likely((u32)clk->parent))
-+		if (clk->parent)
- 			omap2_clk_disable(clk->parent);
- 		if (clk->clkdm)
- 			omap2_clkdm_clk_disable(clk->clkdm, clk);
-@@ -345,10 +343,10 @@ int omap2_clk_enable(struct clk *clk)
- 	int ret = 0;
+ 	unsigned long flags;
++	struct clk *prev_parent;
+ 	int ret = -EINVAL;
  
- 	if (clk->usecount++ == 0) {
--		if (likely((u32)clk->parent))
-+		if (clk->parent)
- 			ret = omap2_clk_enable(clk->parent);
+ 	if (clk == NULL || IS_ERR(clk) || parent == NULL || IS_ERR(parent))
+@@ -229,13 +356,13 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
+ 	spin_lock_irqsave(&clockfw_lock, flags);
  
--		if (unlikely(ret != 0)) {
-+		if (ret != 0) {
- 			clk->usecount--;
- 			return ret;
+ 	if (arch_clock->clk_set_parent) {
++		prev_parent = clk->parent;
+ 		ret = arch_clock->clk_set_parent(clk, parent);
+ 		if (ret == 0) {
+-			if (clk->recalc)
+-				(*clk->recalc)(clk, clk->parent->rate,
+-					       CURRENT_RATE);
+-			if (clk->flags & RATE_PROPAGATES)
+-				propagate_rate(clk, CURRENT_RATE);
++			omap_clk_del_child(prev_parent, clk);
++			omap_clk_add_child(parent, clk);
++			_do_propagate_rate(clk, clk->parent->rate,
++					   CURRENT_RATE);
  		}
-@@ -358,7 +356,7 @@ int omap2_clk_enable(struct clk *clk)
+ 	}
  
- 		ret = _omap2_clk_enable(clk);
+@@ -299,26 +426,18 @@ void followparent_recalc(struct clk *clk, unsigned long new_parent_rate,
+ /* Propagate rate to children */
+ void propagate_rate(struct clk *tclk, u8 rate_storage)
+ {
+-	struct clk *clkp;
+ 	unsigned long parent_rate = 0;
  
--		if (unlikely(ret != 0)) {
-+		if (ret != 0) {
- 			if (clk->clkdm)
- 				omap2_clkdm_clk_disable(clk->clkdm, clk);
- 
-@@ -386,13 +384,13 @@ void omap2_clksel_recalc(struct clk *clk)
- 	if (div == 0)
+ 	if (tclk == NULL || IS_ERR(tclk))
  		return;
  
--	if (unlikely(clk->rate == clk->parent->rate / div))
-+	if (clk->rate == (clk->parent->rate / div))
- 		return;
- 	clk->rate = clk->parent->rate / div;
+-	list_for_each_entry(clkp, &clocks, node) {
+-		if (likely(clkp->parent != tclk))
+-			continue;
+-
+-		if (rate_storage == CURRENT_RATE)
+-			parent_rate = tclk->rate;
+-		else if (rate_storage == TEMP_RATE)
+-			parent_rate = tclk->temp_rate;
++	if (rate_storage == CURRENT_RATE)
++		parent_rate = tclk->rate;
++	else if (rate_storage == TEMP_RATE)
++		parent_rate = tclk->temp_rate;
  
- 	pr_debug("clock: new clock rate is %ld (div %d)\n", clk->rate, div);
- 
--	if (unlikely(clk->flags & RATE_PROPAGATES))
-+	if (clk->flags & RATE_PROPAGATES)
- 		propagate_rate(clk);
+-		if (clkp->recalc)
+-			clkp->recalc(clkp, parent_rate, rate_storage);
+-		if (clkp->flags & RATE_PROPAGATES)
+-			propagate_rate(clkp, rate_storage);
+-	}
++	omap_clk_for_each_child(tclk, parent_rate, rate_storage,
++				_do_propagate_rate);
  }
  
-@@ -405,8 +403,8 @@ void omap2_clksel_recalc(struct clk *clk)
-  * the element associated with the supplied parent clock address.
-  * Returns a pointer to the struct clksel on success or NULL on error.
-  */
--const struct clksel *omap2_get_clksel_by_parent(struct clk *clk,
--						struct clk *src_clk)
-+static const struct clksel *omap2_get_clksel_by_parent(struct clk *clk,
-+						       struct clk *src_clk)
+ /**
+@@ -332,14 +451,9 @@ void recalculate_root_clocks(void)
  {
- 	const struct clksel *clks;
+ 	struct clk *clkp;
  
-@@ -455,7 +453,7 @@ u32 omap2_clksel_round_rate_div(struct clk *clk, unsigned long target_rate,
- 	*new_div = 1;
- 
- 	clks = omap2_get_clksel_by_parent(clk, clk->parent);
--	if (clks == NULL)
-+	if (!clks)
- 		return ~0;
- 
- 	for (clkr = clks->rates; clkr->div; clkr++) {
-@@ -514,7 +512,7 @@ long omap2_clksel_round_rate(struct clk *clk, unsigned long target_rate)
- /* Given a clock and a rate apply a clock specific rounding function */
- long omap2_clk_round_rate(struct clk *clk, unsigned long rate)
- {
--	if (clk->round_rate != NULL)
-+	if (clk->round_rate)
- 		return clk->round_rate(clk, rate);
- 
- 	if (clk->flags & RATE_FIXED)
-@@ -540,7 +538,7 @@ u32 omap2_clksel_to_divisor(struct clk *clk, u32 field_val)
- 	const struct clksel_rate *clkr;
- 
- 	clks = omap2_get_clksel_by_parent(clk, clk->parent);
--	if (clks == NULL)
-+	if (!clks)
- 		return 0;
- 
- 	for (clkr = clks->rates; clkr->div; clkr++) {
-@@ -576,7 +574,7 @@ u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
- 	WARN_ON(div == 0);
- 
- 	clks = omap2_get_clksel_by_parent(clk, clk->parent);
--	if (clks == NULL)
-+	if (!clks)
- 		return 0;
- 
- 	for (clkr = clks->rates; clkr->div; clkr++) {
-@@ -601,9 +599,9 @@ u32 omap2_divisor_to_clksel(struct clk *clk, u32 div)
-  *
-  * Returns the address of the clksel register upon success or NULL on error.
-  */
--void __iomem *omap2_get_clksel(struct clk *clk, u32 *field_mask)
-+static void __iomem *omap2_get_clksel(struct clk *clk, u32 *field_mask)
- {
--	if (unlikely((clk->clksel_reg == NULL) || (clk->clksel_mask == NULL)))
-+	if (!clk->clksel_reg || (clk->clksel_mask == 0))
- 		return NULL;
- 
- 	*field_mask = clk->clksel_mask;
-@@ -623,7 +621,7 @@ u32 omap2_clksel_get_divisor(struct clk *clk)
- 	void __iomem *div_addr;
- 
- 	div_addr = omap2_get_clksel(clk, &field_mask);
--	if (div_addr == NULL)
-+	if (!div_addr)
- 		return 0;
- 
- 	field_val = __raw_readl(div_addr) & field_mask;
-@@ -642,7 +640,7 @@ int omap2_clksel_set_rate(struct clk *clk, unsigned long rate)
- 		return -EINVAL;
- 
- 	div_addr = omap2_get_clksel(clk, &field_mask);
--	if (div_addr == NULL)
-+	if (!div_addr)
- 		return -EINVAL;
- 
- 	field_val = omap2_divisor_to_clksel(clk, new_div);
-@@ -680,10 +678,10 @@ int omap2_clk_set_rate(struct clk *clk, unsigned long rate)
- 		return -EINVAL;
- 
- 	/* dpll_ck, core_ck, virt_prcm_set; plus all clksel clocks */
--	if (clk->set_rate != NULL)
-+	if (clk->set_rate)
- 		ret = clk->set_rate(clk, rate);
- 
--	if (unlikely(ret == 0 && (clk->flags & RATE_PROPAGATES)))
-+	if (ret == 0 && (clk->flags & RATE_PROPAGATES))
- 		propagate_rate(clk);
- 
- 	return ret;
-@@ -704,7 +702,7 @@ static u32 omap2_clksel_get_src_field(void __iomem **src_addr,
- 	*src_addr = NULL;
- 
- 	clks = omap2_get_clksel_by_parent(clk, src_clk);
--	if (clks == NULL)
-+	if (!clks)
- 		return 0;
- 
- 	for (clkr = clks->rates; clkr->div; clkr++) {
-@@ -734,7 +732,7 @@ int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
- 	void __iomem *src_addr;
- 	u32 field_val, field_mask, reg_val, parent_div;
- 
--	if (unlikely(clk->flags & CONFIG_PARTICIPANT))
-+	if (clk->flags & CONFIG_PARTICIPANT)
- 		return -EINVAL;
- 
- 	if (!clk->clksel)
-@@ -742,7 +740,7 @@ int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
- 
- 	field_val = omap2_clksel_get_src_field(&src_addr, new_parent,
- 					       &field_mask, clk, &parent_div);
--	if (src_addr == NULL)
-+	if (!src_addr)
- 		return -EINVAL;
- 
- 	if (clk->usecount > 0)
-@@ -773,7 +771,7 @@ int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent)
- 	pr_debug("clock: set parent of %s to %s (new rate %ld)\n",
- 		 clk->name, clk->parent->name, clk->rate);
- 
--	if (unlikely(clk->flags & RATE_PROPAGATES))
-+	if (clk->flags & RATE_PROPAGATES)
- 		propagate_rate(clk);
- 
- 	return 0;
-@@ -805,7 +803,8 @@ int omap2_dpll_set_rate_tolerance(struct clk *clk, unsigned int tolerance)
- 	return 0;
+-	list_for_each_entry(clkp, &clocks, node) {
+-		if (unlikely(!clkp->parent)) {
+-			if (clkp->recalc)
+-				clkp->recalc(clkp, 0, CURRENT_RATE);
+-			if (clkp->flags & RATE_PROPAGATES)
+-				propagate_rate(clkp, CURRENT_RATE);
+-		}
+-	}
++	list_for_each_entry(clkp, &clocks, node)
++		if (unlikely(!clkp->parent))
++			_do_propagate_rate(clkp, 0, CURRENT_RATE);
  }
  
--static unsigned long _dpll_compute_new_rate(unsigned long parent_rate, unsigned int m, unsigned int n)
-+static unsigned long _dpll_compute_new_rate(unsigned long parent_rate,
-+					    unsigned int m, unsigned int n)
+ int clk_register(struct clk *clk)
+@@ -349,6 +463,10 @@ int clk_register(struct clk *clk)
+ 
+ 	mutex_lock(&clocks_mutex);
+ 	list_add(&clk->node, &clocks);
++	if (!clk->children.next)
++		INIT_LIST_HEAD(&clk->children);
++	if (clk->parent)
++		omap_clk_add_child(clk->parent, clk);
+ 	if (clk->init)
+ 		clk->init(clk);
+ 	mutex_unlock(&clocks_mutex);
+@@ -359,11 +477,18 @@ EXPORT_SYMBOL(clk_register);
+ 
+ void clk_unregister(struct clk *clk)
  {
- 	unsigned long long num;
- 
-diff --git a/arch/arm/mach-omap2/clock.h b/arch/arm/mach-omap2/clock.h
-index 1fb330e..3fa2e26 100644
---- a/arch/arm/mach-omap2/clock.h
-+++ b/arch/arm/mach-omap2/clock.h
-@@ -27,7 +27,7 @@ void omap2_clk_disable(struct clk *clk);
- long omap2_clk_round_rate(struct clk *clk, unsigned long rate);
- int omap2_clk_set_rate(struct clk *clk, unsigned long rate);
- int omap2_clk_set_parent(struct clk *clk, struct clk *new_parent);
--int omap2_dpll_rate_tolerance_set(struct clk *clk, unsigned int tolerance);
-+int omap2_dpll_set_rate_tolerance(struct clk *clk, unsigned int tolerance);
- long omap2_dpll_round_rate(struct clk *clk, unsigned long target_rate);
- 
- #ifdef CONFIG_OMAP_RESET_CLOCKS
-diff --git a/arch/arm/mach-omap2/clock24xx.c b/arch/arm/mach-omap2/clock24xx.c
-index d382eb0..59b1fb2 100644
---- a/arch/arm/mach-omap2/clock24xx.c
-+++ b/arch/arm/mach-omap2/clock24xx.c
-@@ -153,7 +153,7 @@ static void omap2_clk_fixed_disable(struct clk *clk)
-  * Uses the current prcm set to tell if a rate is valid.
-  * You can go slower, but not faster within a given rate set.
-  */
--long omap2_dpllcore_round_rate(unsigned long target_rate)
-+static long omap2_dpllcore_round_rate(unsigned long target_rate)
- {
- 	u32 high, low, core_clk_src;
- 
-@@ -366,7 +366,9 @@ static int omap2_select_table_rate(struct clk *clk, unsigned long rate)
- 
- 		/* Major subsystem dividers */
- 		tmp = cm_read_mod_reg(CORE_MOD, CM_CLKSEL1) & OMAP24XX_CLKSEL_DSS2_MASK;
--		cm_write_mod_reg(prcm->cm_clksel1_core | tmp, CORE_MOD, CM_CLKSEL1);
-+		cm_write_mod_reg(prcm->cm_clksel1_core | tmp, CORE_MOD,
-+				 CM_CLKSEL1);
++	struct clk_child *child, *tmp;
 +
- 		if (cpu_is_omap2430())
- 			cm_write_mod_reg(prcm->cm_clksel_mdm,
- 					 OMAP2430_MDM_MOD, CM_CLKSEL);
-@@ -398,20 +400,20 @@ static struct clk_functions omap2_clk_functions = {
+ 	if (clk == NULL || IS_ERR(clk))
+ 		return;
  
- static u32 omap2_get_apll_clkin(void)
- {
--	u32 aplls, sclk = 0;
-+	u32 aplls, srate = 0;
- 
- 	aplls = cm_read_mod_reg(PLL_MOD, CM_CLKSEL1);
- 	aplls &= OMAP24XX_APLLS_CLKIN_MASK;
- 	aplls >>= OMAP24XX_APLLS_CLKIN_SHIFT;
- 
- 	if (aplls == APLLS_CLKIN_19_2MHZ)
--		sclk = 19200000;
-+		srate = 19200000;
- 	else if (aplls == APLLS_CLKIN_13MHZ)
--		sclk = 13000000;
-+		srate = 13000000;
- 	else if (aplls == APLLS_CLKIN_12MHZ)
--		sclk = 12000000;
-+		srate = 12000000;
- 
--	return sclk;
-+	return srate;
+ 	mutex_lock(&clocks_mutex);
+ 	list_del(&clk->node);
++	if (clk->parent)
++		omap_clk_del_child(clk->parent, clk);
++	list_for_each_entry_safe(child, tmp, &clk->children, node)
++		if (child->flags & CLK_CHILD_SLAB_ALLOC)
++			kfree(child);
+ 	mutex_unlock(&clocks_mutex);
  }
- 
- static u32 omap2_get_sysclkdiv(void)
-diff --git a/arch/arm/mach-omap2/pm.c b/arch/arm/mach-omap2/pm.c
-index 55361c1..ea8ceae 100644
---- a/arch/arm/mach-omap2/pm.c
-+++ b/arch/arm/mach-omap2/pm.c
-@@ -103,7 +103,7 @@ static struct platform_suspend_ops omap_pm_ops = {
- 	.valid		= suspend_valid_only_mem,
- };
- 
--int __init omap2_pm_init(void)
-+static int __init omap2_pm_init(void)
- {
- 	return 0;
- }
+ EXPORT_SYMBOL(clk_unregister);
 diff --git a/arch/arm/plat-omap/include/mach/clock.h b/arch/arm/plat-omap/include/mach/clock.h
-index 85a88ad..5f37735 100644
+index 9b1d1f8..358bf9e 100644
 --- a/arch/arm/plat-omap/include/mach/clock.h
 +++ b/arch/arm/plat-omap/include/mach/clock.h
-@@ -111,12 +111,12 @@ struct clk_functions {
- 
- extern unsigned int mpurate;
- 
--extern int clk_init(struct clk_functions * custom_clocks);
-+extern int clk_init(struct clk_functions *custom_clocks);
- extern int clk_register(struct clk *clk);
- extern void clk_unregister(struct clk *clk);
- extern void propagate_rate(struct clk *clk);
- extern void recalculate_root_clocks(void);
--extern void followparent_recalc(struct clk * clk);
-+extern void followparent_recalc(struct clk *clk);
- extern void clk_allow_idle(struct clk *clk);
- extern void clk_deny_idle(struct clk *clk);
- extern int clk_get_usecount(struct clk *clk);
-diff --git a/arch/arm/plat-omap/include/mach/powerdomain.h b/arch/arm/plat-omap/include/mach/powerdomain.h
-index 2806a9c..4948cb7 100644
---- a/arch/arm/plat-omap/include/mach/powerdomain.h
-+++ b/arch/arm/plat-omap/include/mach/powerdomain.h
-@@ -145,6 +145,7 @@ int pwrdm_get_mem_bank_count(struct powerdomain *pwrdm);
- 
- int pwrdm_set_next_pwrst(struct powerdomain *pwrdm, u8 pwrst);
- int pwrdm_read_next_pwrst(struct powerdomain *pwrdm);
-+int pwrdm_read_pwrst(struct powerdomain *pwrdm);
- int pwrdm_read_prev_pwrst(struct powerdomain *pwrdm);
- int pwrdm_clear_all_prev_pwrst(struct powerdomain *pwrdm);
- 
-diff --git a/arch/arm/plat-omap/include/mach/prcm.h b/arch/arm/plat-omap/include/mach/prcm.h
-index 56eba0f..24ac3c7 100644
---- a/arch/arm/plat-omap/include/mach/prcm.h
-+++ b/arch/arm/plat-omap/include/mach/prcm.h
-@@ -20,10 +20,11 @@
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-  */
- 
--#ifndef __ASM_ARM_ARCH_DPM_PRCM_H
--#define __ASM_ARM_ARCH_DPM_PRCM_H
-+#ifndef __ASM_ARM_ARCH_OMAP_PRCM_H
-+#define __ASM_ARM_ARCH_OMAP_PRCM_H
- 
- u32 omap_prcm_get_reset_sources(void);
-+void omap_prcm_arch_reset(char mode);
+@@ -60,6 +60,21 @@ struct dpll_data {
  
  #endif
  
-diff --git a/arch/arm/plat-omap/include/mach/system.h b/arch/arm/plat-omap/include/mach/system.h
-index 06923f2..e9b9563 100644
---- a/arch/arm/plat-omap/include/mach/system.h
-+++ b/arch/arm/plat-omap/include/mach/system.h
-@@ -9,12 +9,12 @@
- #include <asm/mach-types.h>
- #include <mach/hardware.h>
- 
-+#include <mach/prcm.h>
++/**
++ * struct clk_child - used to track the children of a clock
++ * @clk: child struct clk *
++ * @node: list_head
++ * @flags: is this entry allocated in bootmem or slab?  is it deleted?
++ *
++ * One struct clk_child is allocated for each child clock @clk of a
++ * parent clock.  @flags values are listed below and start with CLK_CHILD_*.
++ */
++struct clk_child {
++	struct clk		*clk;
++	struct list_head	node;
++	u8			flags;
++};
 +
- #ifndef CONFIG_MACH_VOICEBLUE
- #define voiceblue_reset()		do {} while (0)
+ struct clk {
+ 	struct list_head	node;
+ 	struct module		*owner;
+@@ -68,6 +83,7 @@ struct clk {
+ 	struct clk		*parent;
+ 	unsigned long		rate;
+ 	unsigned long		temp_rate;
++	struct list_head	children;
+ 	__u32			flags;
+ 	u32			enable_reg;
+ 	__u8			enable_bit;
+@@ -132,6 +148,8 @@ extern void clk_enable_init_clocks(void);
+ #ifdef CONFIG_CPU_FREQ
+ extern void clk_init_cpufreq_table(struct cpufreq_frequency_table **table);
  #endif
++void omap_clk_add_child(struct clk *clk, struct clk *clk2);
++void omap_clk_del_child(struct clk *clk, struct clk *clk2);
  
--extern void omap_prcm_arch_reset(char mode);
--
- static inline void arch_idle(void)
- {
- 	cpu_do_idle();
+ /* Clock flags */
+ #define RATE_CKCTL		(1 << 0)	/* Main fixed ratio clocks */
+@@ -174,6 +192,10 @@ extern void clk_init_cpufreq_table(struct cpufreq_frequency_table **table);
+ #define CURRENT_RATE		0
+ #define TEMP_RATE		1
+ 
++/* clk_child flags */
++#define CLK_CHILD_SLAB_ALLOC	(1 << 0)	/* if !set, bootmem was used */
++#define CLK_CHILD_DELETED	(1 << 1)	/* can be reused */
++
+ /*
+  * clk.prcm_mod flags (possible since only the top byte in clk.prcm_mod
+  * is significant)
 
 
