@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZA1SS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753527AbZA1STc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbZA1SS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 13:18:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZA1SSi
+	id S1753527AbZA1STc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 13:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZA1SSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 13:18:38 -0500
-Received: from bohort.kerlabs.com ([62.160.40.57]:36541 "EHLO
+	Wed, 28 Jan 2009 13:18:39 -0500
+Received: from bohort.kerlabs.com ([62.160.40.57]:52967 "EHLO
 	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751120AbZA1SSg (ORCPT
+	with ESMTP id S1751601AbZA1SSg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Jan 2009 13:18:36 -0500
 From: Louis Rilling <louis.rilling@kerlabs.com>
@@ -15,9 +15,9 @@ To: Joel Becker <Joel.Becker@oracle.com>
 Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
        cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org,
        Louis Rilling <louis.rilling@kerlabs.com>
-Subject: [PATCH 1/2] configfs: Silence lockdep on mkdir() and rmdir()
-Date: Wed, 28 Jan 2009 19:18:32 +0100
-Message-Id: <1233166713-9668-2-git-send-email-louis.rilling@kerlabs.com>
+Subject: [PATCH 2/2] configfs: Rework configfs_depend_item() locking and make lockdep happy
+Date: Wed, 28 Jan 2009 19:18:33 +0100
+Message-Id: <1233166713-9668-3-git-send-email-louis.rilling@kerlabs.com>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1233166713-9668-1-git-send-email-louis.rilling@kerlabs.com>
 References: <1233166713-9668-1-git-send-email-louis.rilling@kerlabs.com>
@@ -25,272 +25,225 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When attaching default groups (subdirs) of a new group (in mkdir() or
-in configfs_register()), configfs recursively takes inode's mutexes
-along the path from the parent of the new group to the default
-subdirs. This is needed to ensure that the VFS will not race with
-operations on these sub-dirs. This is safe for the following reasons:
+configfs_depend_item() recursively locks all inodes mutex from configfs root to
+the target item, which makes lockdep unhappy. The purpose of this recursive
+locking is to ensure that the item tree can be safely parsed and that the target
+item, if found, is not about to leave.
 
-- the VFS allows one to lock first an inode and second one of its
-  children (The lock subclasses for this pattern are respectively
-  I_MUTEX_PARENT and I_MUTEX_CHILD);
-- from this rule any inode path can be recursively locked in
-  descending order as long as it stays under a single mountpoint and
-  does not follow symlinks.
+This patch reworks configfs_depend_item() locking using configfs_dirent_lock.
+Since configfs_dirent_lock protects all changes to the configfs_dirent tree, and
+protects tagging of items to be removed, this lock can be used instead of the
+inodes mutex lock chain.
+This needs that the check for dependents be done atomically with
+CONFIGFS_USET_DROPPING tagging.
 
-Unfortunately lockdep does not know (yet?) how to handle such
-recursion.
-
-I've tried to use Peter Zijlstra's lock_set_subclass() helper to
-upgrade i_mutexes from I_MUTEX_CHILD to I_MUTEX_PARENT when we know
-that we might recursively lock some of their descendant, but this
-usage does not seem to fit the purpose of lock_set_subclass() because
-it leads to several i_mutex locked with subclass I_MUTEX_PARENT by
-the same task.
-
->From inside configfs it is not possible to serialize those recursive
-locking with a top-level one, because mkdir() and rmdir() are already
-called with inodes locked by the VFS. So using some
-mutex_lock_nest_lock() is not an option.
-
-I am proposing two solutions:
-1) one that wraps recursive mutex_lock()s with
-   lockdep_off()/lockdep_on().
-2) (as suggested earlier by Peter Zijlstra) one that puts the
-   i_mutexes recursively locked in different classes based on their
-   depth from the top-level config_group created. This
-   induces an arbitrary limit (MAX_LOCK_DEPTH - 2 == 46) on the
-   nesting of configfs default groups whenever lockdep is activated
-   but this limit looks reasonably high. Unfortunately, this also
-   isolates VFS operations on configfs default groups from the others
-   and thus lowers the chances to detect locking issues.
-
-Nobody likes solution 1), what I can understand.
-
-This patch implements solution 2). However lockdep is still not happy with
-configfs_depend_item(). Next patch reworks the locking of
-configfs_depend_item() and finally makes lockdep happy.
+Now lockdep looks happy with configfs.
 
 Changelog:
-- put s_depth logic in separate functions and remove #ifdef LOCKDEP in the
-  hooked functions.
+- added the following note to explain why configfs_depend_prep() is correct
+  when examining attaching items:
++ * Note: items in the middle of attachment start with s_type = 0
++ * (configfs_new_dirent()), and configfs_make_dirent() (called from
++ * create_dir()) sets s_type = CONFIGFS_DIR|CONFIGFS_USET_CREATING. In both
++ * cases the item is ignored. Since s_type is an int, we rely on the CPU to
++ * atomically update the value, without making configfs_make_dirent() take
++ * configfs_dirent_lock.
+
+- fixed parenthesis on pattern !a & b && c --> !(a & b) && c
 - quiet checkpatch
 
 Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
 ---
- fs/configfs/configfs_internal.h |    3 +
- fs/configfs/dir.c               |   90 +++++++++++++++++++++++++++++++++++++++
- fs/configfs/inode.c             |   38 ++++++++++++++++
- 3 files changed, 131 insertions(+), 0 deletions(-)
+ fs/configfs/dir.c |   98 ++++++++++++++++++++++++-----------------------------
+ 1 files changed, 44 insertions(+), 54 deletions(-)
 
-diff --git a/fs/configfs/configfs_internal.h b/fs/configfs/configfs_internal.h
-index 762d287..da6061a 100644
---- a/fs/configfs/configfs_internal.h
-+++ b/fs/configfs/configfs_internal.h
-@@ -39,6 +39,9 @@ struct configfs_dirent {
- 	umode_t			s_mode;
- 	struct dentry		* s_dentry;
- 	struct iattr		* s_iattr;
-+#ifdef CONFIG_LOCKDEP
-+	int			s_depth;
-+#endif
- };
- 
- #define CONFIGFS_ROOT		0x0001
 diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
-index 8e93341..836596b 100644
+index 836596b..2739514 100644
 --- a/fs/configfs/dir.c
 +++ b/fs/configfs/dir.c
-@@ -78,6 +78,92 @@ static struct dentry_operations configfs_dentry_ops = {
- 	.d_delete	= configfs_d_delete,
- };
- 
-+#ifdef CONFIG_LOCKDEP
-+
-+/*
-+ * Helpers to make lockdep happy with our recursive locking of default groups'
-+ * inodes (see configfs_attach_group() and configfs_detach_group()).
-+ * We put default groups i_mutexes in separate classes according to their depth
-+ * from the youngest non-default group ancestor.
-+ *
-+ * For a non-default group A having default groups A/B, A/C, and A/C/D, default
-+ * groups A/B and A/C will have their inode's mutex in class
-+ * default_group_class[0], and default group A/C/D will be in
-+ * default_group_class[1].
-+ *
-+ * The lock classes are declared and assigned in inode.c, according to the
-+ * s_depth value.
-+ * The s_depth value is initialized to -1, adjusted to >= 0 when attaching
-+ * default groups, and reset to -1 when all default groups are attached. During
-+ * attachment, if configfs_create() sees s_depth > 0, the lock class of the new
-+ * inode's mutex is set to default_group_class[s_depth - 1].
-+ */
-+
-+static void configfs_init_dirent_depth(struct configfs_dirent *sd)
-+{
-+	sd->s_depth = -1;
-+}
-+
-+static void configfs_set_dir_dirent_depth(struct configfs_dirent *parent_sd,
-+					  struct configfs_dirent *sd)
-+{
-+	int parent_depth = parent_sd->s_depth;
-+
-+	if (parent_depth >= 0)
-+		sd->s_depth = parent_depth + 1;
-+}
-+
-+static void
-+configfs_adjust_dir_dirent_depth_before_populate(struct configfs_dirent *sd)
-+{
-+	/*
-+	 * item's i_mutex class is already setup, so s_depth is now only
-+	 * used to set new sub-directories s_depth, which is always done
-+	 * with item's i_mutex locked.
-+	 */
-+	/*
-+	 *  sd->s_depth == -1 iff we are a non default group.
-+	 *  else (we are a default group) sd->s_depth > 0 (see
-+	 *  create_dir()).
-+	 */
-+	if (sd->s_depth == -1)
-+		/*
-+		 * We are a non default group and we are going to create
-+		 * default groups.
-+		 */
-+		sd->s_depth = 0;
-+}
-+
-+static void
-+configfs_adjust_dir_dirent_depth_after_populate(struct configfs_dirent *sd)
-+{
-+	/* We will not create default groups anymore. */
-+	sd->s_depth = -1;
-+}
-+
-+#else /* CONFIG_LOCKDEP */
-+
-+static void configfs_init_dirent_depth(struct configfs_dirent *sd)
-+{
-+}
-+
-+static void configfs_set_dir_dirent_depth(struct configfs_dirent *parent_sd,
-+					  struct configfs_dirent *sd)
-+{
-+}
-+
-+static void
-+configfs_adjust_dir_dirent_depth_before_populate(struct configfs_dirent *sd)
-+{
-+}
-+
-+static void
-+configfs_adjust_dir_dirent_depth_after_populate(struct configfs_dirent *sd)
-+{
-+}
-+
-+#endif /* CONFIG_LOCKDEP */
-+
- /*
-  * Allocates a new configfs_dirent and links it to the parent configfs_dirent
+@@ -1006,11 +1006,11 @@ static int configfs_dump(struct configfs_dirent *sd, int level)
+  * Note, btw, that this can be called at *any* time, even when a configfs
+  * subsystem isn't registered, or when configfs is loading or unloading.
+  * Just like configfs_register_subsystem().  So we take the same
+- * precautions.  We pin the filesystem.  We lock each i_mutex _in_order_
+- * on our way down the tree.  If we can find the target item in the
++ * precautions.  We pin the filesystem.  We lock configfs_dirent_lock.
++ * If we can find the target item in the
+  * configfs tree, it must be part of the subsystem tree as well, so we
+- * do not need the subsystem semaphore.  Holding the i_mutex chain locks
+- * out mkdir() and rmdir(), who might be racing us.
++ * do not need the subsystem semaphore.  Holding configfs_dirent_lock helps
++ * locking out mkdir() and rmdir(), who might be racing us.
   */
-@@ -94,6 +180,7 @@ static struct configfs_dirent *configfs_new_dirent(struct configfs_dirent * pare
- 	INIT_LIST_HEAD(&sd->s_links);
- 	INIT_LIST_HEAD(&sd->s_children);
- 	sd->s_element = element;
-+	configfs_init_dirent_depth(sd);
- 	spin_lock(&configfs_dirent_lock);
- 	if (parent_sd->s_type & CONFIGFS_USET_DROPPING) {
- 		spin_unlock(&configfs_dirent_lock);
-@@ -187,6 +274,7 @@ static int create_dir(struct config_item * k, struct dentry * p,
- 		error = configfs_make_dirent(p->d_fsdata, d, k, mode,
- 					     CONFIGFS_DIR | CONFIGFS_USET_CREATING);
- 	if (!error) {
-+		configfs_set_dir_dirent_depth(p->d_fsdata, d->d_fsdata);
- 		error = configfs_create(d, mode, init_dir);
- 		if (!error) {
- 			inc_nlink(p->d_inode);
-@@ -789,11 +877,13 @@ static int configfs_attach_group(struct config_item *parent_item,
- 		 * error, as rmdir() would.
- 		 */
- 		mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_CHILD);
-+		configfs_adjust_dir_dirent_depth_before_populate(sd);
- 		ret = populate_groups(to_config_group(item));
- 		if (ret) {
- 			configfs_detach_item(item);
- 			dentry->d_inode->i_flags |= S_DEAD;
- 		}
-+		configfs_adjust_dir_dirent_depth_after_populate(sd);
- 		mutex_unlock(&dentry->d_inode->i_mutex);
- 		if (ret)
- 			d_delete(dentry);
-diff --git a/fs/configfs/inode.c b/fs/configfs/inode.c
-index 5d349d3..4921e74 100644
---- a/fs/configfs/inode.c
-+++ b/fs/configfs/inode.c
-@@ -33,10 +33,15 @@
- #include <linux/backing-dev.h>
- #include <linux/capability.h>
- #include <linux/sched.h>
-+#include <linux/lockdep.h>
  
- #include <linux/configfs.h>
- #include "configfs_internal.h"
+ /*
+@@ -1023,17 +1023,23 @@ static int configfs_dump(struct configfs_dirent *sd, int level)
+  * do that so we can unlock it if we find nothing.
+  *
+  * Here we do a depth-first search of the dentry hierarchy looking for
+- * our object.  We take i_mutex on each step of the way down.  IT IS
+- * ESSENTIAL THAT i_mutex LOCKING IS ORDERED.  If we come back up a branch,
+- * we'll drop the i_mutex.
++ * our object.
++ * We deliberately ignore items tagged as dropping since they are virtually
++ * dead, as well as items in the middle of attachment since they virtually
++ * do not exist yet. This completes the locking out of racing mkdir() and
++ * rmdir().
++ * Note: items in the middle of attachment start with s_type = 0
++ * (configfs_new_dirent()), and configfs_make_dirent() (called from
++ * create_dir()) sets s_type = CONFIGFS_DIR|CONFIGFS_USET_CREATING. In both
++ * cases the item is ignored. Since s_type is an int, we rely on the CPU to
++ * atomically update the value, without making configfs_make_dirent() take
++ * configfs_dirent_lock.
+  *
+- * If the target is not found, -ENOENT is bubbled up and we have released
+- * all locks.  If the target was found, the locks will be cleared by
+- * configfs_depend_rollback().
++ * If the target is not found, -ENOENT is bubbled up.
+  *
+  * This adds a requirement that all config_items be unique!
+  *
+- * This is recursive because the locking traversal is tricky.  There isn't
++ * This is recursive.  There isn't
+  * much on the stack, though, so folks that need this function - be careful
+  * about your stack!  Patches will be accepted to make it iterative.
+  */
+@@ -1045,13 +1051,13 @@ static int configfs_depend_prep(struct dentry *origin,
  
-+#ifdef CONFIG_LOCKDEP
-+static struct lock_class_key default_group_class[MAX_LOCK_DEPTH];
-+#endif
-+
- extern struct super_block * configfs_sb;
+ 	BUG_ON(!origin || !sd);
  
- static const struct address_space_operations configfs_aops = {
-@@ -150,6 +155,38 @@ struct inode * configfs_new_inode(mode_t mode, struct configfs_dirent * sd)
- 	return inode;
+-	/* Lock this guy on the way down */
+-	mutex_lock(&sd->s_dentry->d_inode->i_mutex);
+ 	if (sd->s_element == target)  /* Boo-yah */
+ 		goto out;
+ 
+ 	list_for_each_entry(child_sd, &sd->s_children, s_sibling) {
+-		if (child_sd->s_type & CONFIGFS_DIR) {
++		if ((child_sd->s_type & CONFIGFS_DIR) &&
++		    !(child_sd->s_type & CONFIGFS_USET_DROPPING) &&
++		    !(child_sd->s_type & CONFIGFS_USET_CREATING)) {
+ 			ret = configfs_depend_prep(child_sd->s_dentry,
+ 						   target);
+ 			if (!ret)
+@@ -1060,33 +1066,12 @@ static int configfs_depend_prep(struct dentry *origin,
+ 	}
+ 
+ 	/* We looped all our children and didn't find target */
+-	mutex_unlock(&sd->s_dentry->d_inode->i_mutex);
+ 	ret = -ENOENT;
+ 
+ out:
+ 	return ret;
  }
  
-+#ifdef CONFIG_LOCKDEP
-+
-+static void configfs_set_inode_lock_class(struct configfs_dirent *sd,
-+					  struct inode *inode)
-+{
-+	int depth = sd->s_depth;
-+
-+	if (depth > 0) {
-+		if (depth <= ARRAY_SIZE(default_group_class)) {
-+			lockdep_set_class(&inode->i_mutex,
-+					  &default_group_class[depth - 1]);
-+		} else {
-+			/*
-+			 * In practice the maximum level of locking depth is
-+			 * already reached. Just inform about possible reasons.
-+			 */
-+			printk(KERN_INFO "configfs: Too many levels of inodes"
-+			       " for the locking correctness validator.\n");
-+			printk(KERN_INFO "Spurious warnings may appear.\n");
-+		}
-+	}
-+}
-+
-+#else /* CONFIG_LOCKDEP */
-+
-+static void configfs_set_inode_lock_class(struct configfs_dirent *sd,
-+					  struct inode *inode)
-+{
-+}
-+
-+#endif /* CONFIG_LOCKDEP */
-+
- int configfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *))
+-/*
+- * This is ONLY called if configfs_depend_prep() did its job.  So we can
+- * trust the entire path from item back up to origin.
+- *
+- * We walk backwards from item, unlocking each i_mutex.  We finish by
+- * unlocking origin.
+- */
+-static void configfs_depend_rollback(struct dentry *origin,
+-				     struct config_item *item)
+-{
+-	struct dentry *dentry = item->ci_dentry;
+-
+-	while (dentry != origin) {
+-		mutex_unlock(&dentry->d_inode->i_mutex);
+-		dentry = dentry->d_parent;
+-	}
+-
+-	mutex_unlock(&origin->d_inode->i_mutex);
+-}
+-
+ int configfs_depend_item(struct configfs_subsystem *subsys,
+ 			 struct config_item *target)
  {
- 	int error = 0;
-@@ -162,6 +199,7 @@ int configfs_create(struct dentry * dentry, int mode, int (*init)(struct inode *
- 					struct inode *p_inode = dentry->d_parent->d_inode;
- 					p_inode->i_mtime = p_inode->i_ctime = CURRENT_TIME;
- 				}
-+				configfs_set_inode_lock_class(sd, inode);
- 				goto Proceed;
- 			}
- 			else
+@@ -1127,17 +1112,21 @@ int configfs_depend_item(struct configfs_subsystem *subsys,
+ 
+ 	/* Ok, now we can trust subsys/s_item */
+ 
+-	/* Scan the tree, locking i_mutex recursively, return 0 if found */
++	spin_lock(&configfs_dirent_lock);
++	/* Scan the tree, return 0 if found */
+ 	ret = configfs_depend_prep(subsys_sd->s_dentry, target);
+ 	if (ret)
+-		goto out_unlock_fs;
++		goto out_unlock_dirent_lock;
+ 
+-	/* We hold all i_mutexes from the subsystem down to the target */
++	/*
++	 * We are sure that the item is not about to be removed by rmdir(), and
++	 * not in the middle of attachment by mkdir().
++	 */
+ 	p = target->ci_dentry->d_fsdata;
+ 	p->s_dependent_count += 1;
+ 
+-	configfs_depend_rollback(subsys_sd->s_dentry, target);
+-
++out_unlock_dirent_lock:
++	spin_unlock(&configfs_dirent_lock);
+ out_unlock_fs:
+ 	mutex_unlock(&configfs_sb->s_root->d_inode->i_mutex);
+ 
+@@ -1162,10 +1151,10 @@ void configfs_undepend_item(struct configfs_subsystem *subsys,
+ 	struct configfs_dirent *sd;
+ 
+ 	/*
+-	 * Since we can trust everything is pinned, we just need i_mutex
+-	 * on the item.
++	 * Since we can trust everything is pinned, we just need
++	 * configfs_dirent_lock.
+ 	 */
+-	mutex_lock(&target->ci_dentry->d_inode->i_mutex);
++	spin_lock(&configfs_dirent_lock);
+ 
+ 	sd = target->ci_dentry->d_fsdata;
+ 	BUG_ON(sd->s_dependent_count < 1);
+@@ -1176,7 +1165,7 @@ void configfs_undepend_item(struct configfs_subsystem *subsys,
+ 	 * After this unlock, we cannot trust the item to stay alive!
+ 	 * DO NOT REFERENCE item after this unlock.
+ 	 */
+-	mutex_unlock(&target->ci_dentry->d_inode->i_mutex);
++	spin_unlock(&configfs_dirent_lock);
+ }
+ EXPORT_SYMBOL(configfs_undepend_item);
+ 
+@@ -1376,13 +1365,6 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
+ 	if (sd->s_type & CONFIGFS_USET_DEFAULT)
+ 		return -EPERM;
+ 
+-	/*
+-	 * Here's where we check for dependents.  We're protected by
+-	 * i_mutex.
+-	 */
+-	if (sd->s_dependent_count)
+-		return -EBUSY;
+-
+ 	/* Get a working ref until we have the child */
+ 	parent_item = configfs_get_config_item(dentry->d_parent);
+ 	subsys = to_config_group(parent_item)->cg_subsys;
+@@ -1406,9 +1388,17 @@ static int configfs_rmdir(struct inode *dir, struct dentry *dentry)
+ 
+ 		mutex_lock(&configfs_symlink_mutex);
+ 		spin_lock(&configfs_dirent_lock);
+-		ret = configfs_detach_prep(dentry, &wait_mutex);
+-		if (ret)
+-			configfs_detach_rollback(dentry);
++		/*
++		 * Here's where we check for dependents.  We're protected by
++		 * configfs_dirent_lock.
++		 * If no dependent, atomically tag the item as dropping.
++		 */
++		ret = sd->s_dependent_count ? -EBUSY : 0;
++		if (!ret) {
++			ret = configfs_detach_prep(dentry, &wait_mutex);
++			if (ret)
++				configfs_detach_rollback(dentry);
++		}
+ 		spin_unlock(&configfs_dirent_lock);
+ 		mutex_unlock(&configfs_symlink_mutex);
+ 
 -- 
 1.5.6.5
 
