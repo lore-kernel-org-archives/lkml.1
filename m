@@ -1,155 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761546AbZA2AJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759671AbZA2AKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761546AbZA2AJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 19:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758433AbZA1Xpx
+	id S1759671AbZA2AKa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 19:10:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbZA1Xpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:45:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53117 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:45:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53125 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758343AbZA1Xpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:45:50 -0500
+	id S1758671AbZA1Xpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:45:52 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 069/114] x86: eliminate asm/mach-*/mach_mpparse.h
-Date: Wed, 28 Jan 2009 23:42:15 +0000
-Message-Id: <1233186180-29883-70-git-send-email-mingo@elte.hu>
+Subject: [PATCH 065/114] x86, smp: remove ->restore_NMI_vector()
+Date: Wed, 28 Jan 2009 23:42:11 +0000
+Message-Id: <1233186180-29883-66-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
 References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:45:38 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:45:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the definition to mpparse.h.
+Nothing actually restores the NMI vector - so remove this
+logic altogether.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/mach-default/mach_mpparse.h |   17 -----------------
- arch/x86/include/asm/mach-generic/mach_mpparse.h |    8 --------
- arch/x86/include/asm/mpspec.h                    |    4 ++++
- arch/x86/kernel/acpi/boot.c                      |    1 -
- arch/x86/kernel/es7000_32.c                      |    1 -
- arch/x86/kernel/mpparse.c                        |    1 -
- arch/x86/mach-generic/bigsmp.c                   |    1 -
- arch/x86/mach-generic/default.c                  |    1 -
- 8 files changed, 4 insertions(+), 30 deletions(-)
- delete mode 100644 arch/x86/include/asm/mach-default/mach_mpparse.h
- delete mode 100644 arch/x86/include/asm/mach-generic/mach_mpparse.h
+ arch/x86/include/asm/genapic.h       |    1 -
+ arch/x86/include/asm/numaq/wakecpu.h |   10 ----------
+ arch/x86/kernel/genapic_flat_64.c    |    2 --
+ arch/x86/kernel/genx2apic_cluster.c  |    1 -
+ arch/x86/kernel/genx2apic_phys.c     |    1 -
+ arch/x86/kernel/genx2apic_uv_x.c     |    1 -
+ arch/x86/mach-generic/bigsmp.c       |    1 -
+ arch/x86/mach-generic/default.c      |    1 -
+ arch/x86/mach-generic/es7000.c       |    1 -
+ arch/x86/mach-generic/numaq.c        |    1 -
+ arch/x86/mach-generic/summit.c       |    1 -
+ 11 files changed, 0 insertions(+), 21 deletions(-)
 
-diff --git a/arch/x86/include/asm/mach-default/mach_mpparse.h b/arch/x86/include/asm/mach-default/mach_mpparse.h
-deleted file mode 100644
-index af0da14..0000000
---- a/arch/x86/include/asm/mach-default/mach_mpparse.h
-+++ /dev/null
-@@ -1,17 +0,0 @@
--#ifndef _ASM_X86_MACH_DEFAULT_MACH_MPPARSE_H
--#define _ASM_X86_MACH_DEFAULT_MACH_MPPARSE_H
--
--static inline int
--generic_mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
+diff --git a/arch/x86/include/asm/genapic.h b/arch/x86/include/asm/genapic.h
+index 90e83a7..e5f9c56 100644
+--- a/arch/x86/include/asm/genapic.h
++++ b/arch/x86/include/asm/genapic.h
+@@ -82,7 +82,6 @@ struct genapic {
+ 	void (*wait_for_init_deassert)(atomic_t *deassert);
+ 	void (*smp_callin_clear_local_apic)(void);
+ 	void (*store_NMI_vector)(unsigned short *high, unsigned short *low);
+-	void (*restore_NMI_vector)(unsigned short *high, unsigned short *low);
+ 	void (*inquire_remote_apic)(int apicid);
+ };
+ 
+diff --git a/arch/x86/include/asm/numaq/wakecpu.h b/arch/x86/include/asm/numaq/wakecpu.h
+index 1232017..920dcfe 100644
+--- a/arch/x86/include/asm/numaq/wakecpu.h
++++ b/arch/x86/include/asm/numaq/wakecpu.h
+@@ -25,16 +25,6 @@ numaq_store_NMI_vector(unsigned short *high, unsigned short *low)
+ 	  *((volatile unsigned short *)phys_to_virt(NUMAQ_TRAMPOLINE_PHYS_LOW));
+ }
+ 
+-static inline void
+-numaq_restore_NMI_vector(unsigned short *high, unsigned short *low)
 -{
--	return 0;
+-	printk("Restoring NMI vector\n");
+-	*((volatile unsigned short *)phys_to_virt(NUMAQ_TRAMPOLINE_PHYS_HIGH)) =
+-								 *high;
+-	*((volatile unsigned short *)phys_to_virt(NUMAQ_TRAMPOLINE_PHYS_LOW)) =
+-								 *low;
 -}
 -
--/* Hook from generic ACPI tables.c */
--static inline int default_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
--{
--	return 0;
--}
--
--
--#endif /* _ASM_X86_MACH_DEFAULT_MACH_MPPARSE_H */
-diff --git a/arch/x86/include/asm/mach-generic/mach_mpparse.h b/arch/x86/include/asm/mach-generic/mach_mpparse.h
-deleted file mode 100644
-index 22bfb56..0000000
---- a/arch/x86/include/asm/mach-generic/mach_mpparse.h
-+++ /dev/null
-@@ -1,8 +0,0 @@
--#ifndef _ASM_X86_MACH_GENERIC_MACH_MPPARSE_H
--#define _ASM_X86_MACH_GENERIC_MACH_MPPARSE_H
--
--extern int generic_mps_oem_check(struct mpc_table *, char *, char *);
--
--extern int default_acpi_madt_oem_check(char *, char *);
--
--#endif /* _ASM_X86_MACH_GENERIC_MACH_MPPARSE_H */
-diff --git a/arch/x86/include/asm/mpspec.h b/arch/x86/include/asm/mpspec.h
-index 62d14ce..432e9cb 100644
---- a/arch/x86/include/asm/mpspec.h
-+++ b/arch/x86/include/asm/mpspec.h
-@@ -142,4 +142,8 @@ static inline void physid_set_mask_of_physid(int physid, physid_mask_t *map)
+ static inline void inquire_remote_apic(int apicid)
+ {
+ }
+diff --git a/arch/x86/kernel/genapic_flat_64.c b/arch/x86/kernel/genapic_flat_64.c
+index 3a28d6a..e9237f5 100644
+--- a/arch/x86/kernel/genapic_flat_64.c
++++ b/arch/x86/kernel/genapic_flat_64.c
+@@ -229,7 +229,6 @@ struct genapic apic_flat =  {
+ 	.wait_for_init_deassert		= NULL,
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
+ };
  
- extern physid_mask_t phys_cpu_present_map;
+@@ -375,6 +374,5 @@ struct genapic apic_physflat =  {
+ 	.wait_for_init_deassert		= NULL,
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
+ };
+diff --git a/arch/x86/kernel/genx2apic_cluster.c b/arch/x86/kernel/genx2apic_cluster.c
+index abc5ee3..7c87156 100644
+--- a/arch/x86/kernel/genx2apic_cluster.c
++++ b/arch/x86/kernel/genx2apic_cluster.c
+@@ -233,6 +233,5 @@ struct genapic apic_x2apic_cluster = {
+ 	.wait_for_init_deassert		= NULL,
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
+ };
+diff --git a/arch/x86/kernel/genx2apic_phys.c b/arch/x86/kernel/genx2apic_phys.c
+index dc815ef..5cbae8a 100644
+--- a/arch/x86/kernel/genx2apic_phys.c
++++ b/arch/x86/kernel/genx2apic_phys.c
+@@ -219,6 +219,5 @@ struct genapic apic_x2apic_phys = {
+ 	.wait_for_init_deassert		= NULL,
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
+ };
+diff --git a/arch/x86/kernel/genx2apic_uv_x.c b/arch/x86/kernel/genx2apic_uv_x.c
+index b590873..6adb5e6 100644
+--- a/arch/x86/kernel/genx2apic_uv_x.c
++++ b/arch/x86/kernel/genx2apic_uv_x.c
+@@ -292,7 +292,6 @@ struct genapic apic_x2apic_uv_x = {
+ 	.wait_for_init_deassert		= NULL,
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= NULL,
+ };
  
-+extern int generic_mps_oem_check(struct mpc_table *, char *, char *);
-+
-+extern int default_acpi_madt_oem_check(char *, char *);
-+
- #endif /* _ASM_X86_MPSPEC_H */
-diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-index 5391631..7b02a1c 100644
---- a/arch/x86/kernel/acpi/boot.c
-+++ b/arch/x86/kernel/acpi/boot.c
-@@ -63,7 +63,6 @@ EXPORT_SYMBOL(acpi_disabled);
- 
- #ifdef	CONFIG_X86_LOCAL_APIC
- #include <mach_apic.h>
--#include <mach_mpparse.h>
- #endif				/* CONFIG_X86_LOCAL_APIC */
- 
- #endif				/* X86 */
-diff --git a/arch/x86/kernel/es7000_32.c b/arch/x86/kernel/es7000_32.c
-index d7f433e..8faea13 100644
---- a/arch/x86/kernel/es7000_32.c
-+++ b/arch/x86/kernel/es7000_32.c
-@@ -40,7 +40,6 @@
- #include <asm/smp.h>
- #include <asm/atomic.h>
- #include <asm/apicdef.h>
--#include <mach_mpparse.h>
- #include <asm/genapic.h>
- #include <asm/setup.h>
- 
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index b12fa5c..c693016 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -32,7 +32,6 @@
- #include <mach_apic.h>
- #ifdef CONFIG_X86_32
- #include <mach_apicdef.h>
--#include <mach_mpparse.h>
- #endif
- 
- /*
 diff --git a/arch/x86/mach-generic/bigsmp.c b/arch/x86/mach-generic/bigsmp.c
-index 6fcccfb..626f45c 100644
+index ecdb230..d9377af 100644
 --- a/arch/x86/mach-generic/bigsmp.c
 +++ b/arch/x86/mach-generic/bigsmp.c
-@@ -16,7 +16,6 @@
- #include <linux/smp.h>
- #include <asm/bigsmp/apic.h>
- #include <asm/bigsmp/ipi.h>
--#include <asm/mach-default/mach_mpparse.h>
+@@ -111,6 +111,5 @@ struct genapic apic_bigsmp = {
  
- static int dmi_bigsmp; /* can be set by dmi scanners */
- 
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= inquire_remote_apic,
+ };
 diff --git a/arch/x86/mach-generic/default.c b/arch/x86/mach-generic/default.c
-index e3c5114..6485e57 100644
+index 9509256..b004257 100644
 --- a/arch/x86/mach-generic/default.c
 +++ b/arch/x86/mach-generic/default.c
-@@ -15,7 +15,6 @@
- #include <linux/init.h>
- #include <asm/mach-default/mach_apic.h>
- #include <asm/mach-default/mach_ipi.h>
--#include <asm/mach-default/mach_mpparse.h>
+@@ -92,6 +92,5 @@ struct genapic apic_default = {
  
- static void default_vector_allocation_domain(int cpu, struct cpumask *retmask)
- {
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= inquire_remote_apic,
+ };
+diff --git a/arch/x86/mach-generic/es7000.c b/arch/x86/mach-generic/es7000.c
+index 1319070..62673a8 100644
+--- a/arch/x86/mach-generic/es7000.c
++++ b/arch/x86/mach-generic/es7000.c
+@@ -148,6 +148,5 @@ struct genapic apic_es7000 = {
+ 	/* Nothing to do for most platforms, since cleared by the INIT cycle: */
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= inquire_remote_apic,
+ };
+diff --git a/arch/x86/mach-generic/numaq.c b/arch/x86/mach-generic/numaq.c
+index d7f7fcf..2c33415 100644
+--- a/arch/x86/mach-generic/numaq.c
++++ b/arch/x86/mach-generic/numaq.c
+@@ -112,6 +112,5 @@ struct genapic apic_numaq = {
+ 
+ 	.smp_callin_clear_local_apic	= numaq_smp_callin_clear_local_apic,
+ 	.store_NMI_vector		= numaq_store_NMI_vector,
+-	.restore_NMI_vector		= numaq_restore_NMI_vector,
+ 	.inquire_remote_apic		= inquire_remote_apic,
+ };
+diff --git a/arch/x86/mach-generic/summit.c b/arch/x86/mach-generic/summit.c
+index 46fca79..c2471a9 100644
+--- a/arch/x86/mach-generic/summit.c
++++ b/arch/x86/mach-generic/summit.c
+@@ -91,6 +91,5 @@ struct genapic apic_summit = {
+ 
+ 	.smp_callin_clear_local_apic	= NULL,
+ 	.store_NMI_vector		= NULL,
+-	.restore_NMI_vector		= NULL,
+ 	.inquire_remote_apic		= inquire_remote_apic,
+ };
 -- 
 1.6.0.2
 
