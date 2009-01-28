@@ -1,124 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755091AbZA1R6q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZA1R7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755091AbZA1R6q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 12:58:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZA1R6X
+	id S1754254AbZA1R7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 12:59:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751354AbZA1R7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 12:58:23 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:48944 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754590AbZA1R6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 12:58:21 -0500
-Message-ID: <49809CCE.40409@redhat.com>
-Date: Wed, 28 Jan 2009 12:58:38 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 28 Jan 2009 12:59:41 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:46847 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbZA1R7k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 12:59:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gRwxvHPPMQ3fr8hL/7+t1+TgjzniA0GOE6zbSE0IpByx35nega5+4PD3wUK0II7Xxk
+         Fi3m/0ABI4W4TVnkd2iTmXLHDsLhEwp1RPz3VNRmVKSRJ8kDw4kKyJ8DP5FuPV4Ss877
+         32hX1W2i+2axkSJwDw2wcZtYmwsi6J3Dd0hpg=
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [BUG][kprobes][vunmap?]: kprobes may cause memory corruption
-References: <497FC3B1.7050805@redhat.com> <497FE895.1080708@redhat.com> <20090128154824.GA6025@Krystal> <49808EEF.1020700@redhat.com> <20090128171331.GA9006@Krystal>
-In-Reply-To: <20090128171331.GA9006@Krystal>
-X-Enigmail-Version: 0.95.7
+In-Reply-To: <20090127174158.519e5abd.akpm@linux-foundation.org>
+References: <1232919337-21434-1-git-send-email-righi.andrea@gmail.com>
+	 <20090127174158.519e5abd.akpm@linux-foundation.org>
+Date: Wed, 28 Jan 2009 18:59:37 +0100
+Message-ID: <a2776ec50901280959l6f96d2e0g72ce5eed665894a7@mail.gmail.com>
+Subject: Re: [PATCH -mmotm] mm: unify some pmd_*() functions
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       David Howells <dhowells@redhat.com>,
+       Hirokazu Takata <takata@linux-m32r.org>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> Mathieu Desnoyers wrote:
-[...]
->>> All this called in a loop. This would help isolating the "vmap" part of
->>> the issue. If this test is not enough, then we should maybe try
->>> something like this in a kernel module (which does what text_poke does
->>> with vmalloc, more or less) in a loop :
->>>
->>> char somedata[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
->>> char copydata[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
->> Should both of them have PAGE_SIZE*2?
+On Wed, Jan 28, 2009 at 2:41 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Sun, 25 Jan 2009 22:35:37 +0100
+> Andrea Righi <righi.andrea@gmail.com> wrote:
+>
+>> diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
+>> index a7cdc48..b132d69 100644
+>> --- a/include/asm-generic/pgtable-nopmd.h
+>> +++ b/include/asm-generic/pgtable-nopmd.h
+>> @@ -4,6 +4,7 @@
+>>  #ifndef __ASSEMBLY__
 >>
-> 
-> Yes.
-> 
->>> void test_vmap(void)
->>> }
->>>   struct page *pages[2];
->>>   char *vaddr;
->>>   int i;
->>>
->>>   for (i = 0; i < 2 * PAGE_SIZE; i++)
->>>     copydata[i] = somedata[i];
->>>   page[0] = virt_to_page(&somedata);
->>>   BUG_ON(!page[0]);
->>>   page[1] = virt_to_page(&somedata + PAGE_SIZE);
->>>   BUG_ON(!page[1]);
-
-Oops, these should be vmalloc_to_page(), shouldn't it?
-
->>>   vaddr = vmap(pages, 2, VM_MAP, PAGE_KERNEL);
->>>   BUG_ON(!vaddr);
->>>
->>>   for (i = 0; i < 2 * PAGE_SIZE; i++)
->>>     vaddr[i] = copydata[i] + 1;
->>>   
->>>   vunmap(vaddr);
->>>   
->>>   for (i = 0; i < 2 * PAGE_SIZE; i++)
->>>     BUG_ON(somedata[i] != copydata[i] + 1);
->>> }
->> Hmm, when I ran above code, it hit the last BUG_ON().
->> I checked that somedata[i] didn't updated.
+>>  #include <asm-generic/pgtable-nopud.h>
+>> +#include <asm/bug.h>
 >>
-> 
-> Do you hit the BUG_ON after the first loop ?
-
-At the first loop, it hit the BUG_ON.
-
->>> Given you don't seem to have hit the
->>>         for (i = 0; i < len; i++)
->>>                 BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
->>> test at the end of text_poke,
->> However, when I ran kprobe-based test, it doesn't hit the BUG_ON()
->> in text_poke().
+>>  struct mm_struct;
 >>
-> 
-> The variable declarations should have been 2*PAGE_SIZE, hopefully you
-> fixed them.
+>
+> Why not include the preferred <linux/bug.h>?
 
-Sure,
+Using linux/bug.h leads to include hell (i.e. on x86 with
+CONFIG_X86_PAE not set):
+...
+  CC      arch/x86/kernel/asm-offsets.s
+In file included from include/linux/thread_info.h:55,
+                 from include/linux/preempt.h:9,
+                 from include/linux/spinlock.h:50,
+                 from include/linux/seqlock.h:29,
+                 from include/linux/time.h:8,
+                 from include/linux/stat.h:60,
+                 from include/linux/module.h:10,
+                 from include/linux/bug.h:4,
+                 from include/asm-generic/pgtable-nopmd.h:7,
+                 from
+/home/arighi/Software/linux/mmotm/arch/x86/include/asm/page.h:132,
+                 from
+/home/arighi/Software/linux/mmotm/arch/x86/include/asm/processor.h:18,
+                 from
+/home/arighi/Software/linux/mmotm/arch/x86/include/asm/atomic_32.h:6,
+                 from
+/home/arighi/Software/linux/mmotm/arch/x86/include/asm/atomic.h:2,
+                 from include/linux/crypto.h:20,
+                 from arch/x86/kernel/asm-offsets_32.c:7,
+                 from arch/x86/kernel/asm-offsets.c:2:
+/home/arighi/Software/linux/mmotm/arch/x86/include/asm/thread_info.h:34:
+error: expected specifier-qualifier-list before 'mm_segment_t'
+...
 
-> There is also a sync_core() in text_poke. It should not matter, but
-> maybe that could help ?
-
-Adding sync_core() could not help me... anyway, I'll try again
-with using vmalloc_to_page().
-
->>> I suspect the write through the vmapped
->>> area is correctly done, but that the problem may lay in the mm layer.
->>> Maybe it's running out of pre-allocated vmap areas or something like
->>> this ?
->> I haven't seen vmalloc failure message on 2.6.29-rc2.
->>
-> 
-> It could be because the available vmalloc space is slightly higher.
-> Looking into the lazy vunmap threshold would be useful.
-> 
-> You could also try with loop values higher than 400.
-
-OK, Thanks,
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+-Andrea
