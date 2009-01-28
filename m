@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753249AbZA1XB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZA1XC5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753249AbZA1XB1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZA1XBS
+	id S1753863AbZA1XC5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:02:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZA1XCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:01:18 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:39283 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751754AbZA1XBR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:01:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=F7E0XrRi9aGdyd9wDIKNx9uCY9z3n6NO/RyylwRQC0S2ejEhCSDYnIpOUZ3Bxf5NZ8
-         jh0xaqL17CRAoFQrlrlUWBGEyBX6FyTnFgyR4z2PteKlhu8Yrsh1I8Q68eDPkoRZRGN3
-         Kc9srkQZQEo4ocrhpWkpbHd5lISWeveNkeQ7w=
-Subject: Re: [PATCH] - UV fix compile error on IA64 & eliminate compiler
- warning
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20090128212104.GA1156@sgi.com>
-References: <20090128212104.GA1156@sgi.com>
-Content-Type: text/plain
-Date: Wed, 28 Jan 2009 15:01:14 -0800
-Message-Id: <1233183674.6717.69.camel@brick>
+	Wed, 28 Jan 2009 18:02:49 -0500
+Received: from main.gmane.org ([80.91.229.2]:40292 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751754AbZA1XCs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:02:48 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Ben Pfaff <blp@cs.stanford.edu>
+Subject: Re: [PATCH] x86: do not expose CONFIG_BSWAP to userspace
+Date: Wed, 28 Jan 2009 15:04:07 -0800
+Message-ID: <873af36niw.fsf@blp.benpfaff.org>
+References: <20090127222825.GA27097@elte.hu> <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain> <1233106614.3256.6.camel@localhost.localdomain> <200901281337.52294.arnd@arndb.de> <49809A65.2090501@kernel.org> <1233170532.6717.49.camel@brick> <alpine.LFD.2.00.0901281141510.3123@localhost.localdomain> <1233172994.6717.56.camel@brick> <4980CD51.70601@zytor.com> <1233179884.6717.59.camel@brick> <4980D913.3000505@zytor.com> <1233182314.6717.66.camel@brick>
+Reply-To: blp@cs.stanford.edu
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: adsl-75-36-168-230.dsl.pltn13.sbcglobal.net
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+Cancel-Lock: sha1:/psV8p3TFTsQsU9RXoDMcUQzJtQ=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-28 at 15:21 -0600, Jack Steiner wrote:
-> Also eliminate a warning message in uv.h.
+Harvey Harrison <harvey.harrison@gmail.com> writes:
 
-Which was....?
+> Is there a byteswap builtin in gcc?  At least AVR32
+> seems to use it, but perhaps it's not generally exposed...perhaps we
+> could ask the gcc-folk?
 
-Harvey
+Yes, GCC has byteswap builtins on x86 documented as follows:
+
+ -- Built-in Function: int32_t __builtin_bswap32 (int32_t x)
+     Returns X with the order of the bytes reversed; for example,
+     `0xaabbccdd' becomes `0xddccbbaa'.  Byte here always means exactly
+     8 bits.
+
+ -- Built-in Function: int64_t __builtin_bswap64 (int64_t x)
+     Similar to `__builtin_bswap32', except the argument and return
+     types are 64-bit.
+
+These were only added as of GCC 4.3 though.
+-- 
+Ben Pfaff 
+http://benpfaff.org
 
