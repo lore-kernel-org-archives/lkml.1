@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZA1ASa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752378AbZA1ATm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754189AbZA1ASa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 19:18:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbZA1ASA
+	id S1752378AbZA1ATm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 19:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZA1ATe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 19:18:00 -0500
-Received: from mga09.intel.com ([134.134.136.24]:62530 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752128AbZA1AR6 convert rfc822-to-8bit (ORCPT
+	Tue, 27 Jan 2009 19:19:34 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39537 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751582AbZA1ATd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 19:17:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,335,1231142400"; 
-   d="scan'208";a="381925894"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Rick Jones <rick.jones2@hp.com>, David Miller <davem@davemloft.net>
-CC: "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "tj@kernel.org" <tj@kernel.org>,
-       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "brgerst@gmail.com" <brgerst@gmail.com>,
-       "ebiederm@xmission.com" <ebiederm@xmission.com>,
-       "travis@sgi.com" <travis@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "steiner@sgi.com" <steiner@sgi.com>,
-       "hugh@veritas.com" <hugh@veritas.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "mathieu.desnoyers@polymtl.ca" <mathieu.desnoyers@polymtl.ca>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
-Date: Tue, 27 Jan 2009 16:17:56 -0800
-Subject: RE: [PATCH] percpu: add optimized generic percpu accessors
-Thread-Topic: [PATCH] percpu: add optimized generic percpu accessors
-Thread-Index: AcmA0UwB/LqzCvfBSxKlbLO4Tn4gogACiWUw
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA35F317617@orsmsx505.amr.corp.intel.com>
-References: <200901271213.18605.rusty@rustcorp.com.au>
-	<497E705B.5000302@kernel.org>	<alpine.DEB.1.10.0901271506580.3114@qirst.com>
- <20090127.134747.153565246.davem@davemloft.net> <497F8F02.9000603@hp.com>
-In-Reply-To: <497F8F02.9000603@hp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 27 Jan 2009 19:19:33 -0500
+Date: Tue, 27 Jan 2009 16:19:13 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
+In-Reply-To: <497FA2F5.2040806@zytor.com>
+Message-ID: <alpine.LFD.2.00.0901271616130.3123@localhost.localdomain>
+References: <20090127222825.GA27097@elte.hu> <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain> <497F9740.4000505@zytor.com> <alpine.LFD.2.00.0901271527340.3123@localhost.localdomain> <497FA2F5.2040806@zytor.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I was asking around, and was told that on IA64 *harware* at least, in addition to
-> supporting multiple page sizes (up to a GB IIRC), one can pin up to 8 or perhaps
-> 1/2 the TLB entries.
 
-The number of TLB entries that can be pinned is model specific (but the
-minimum allowed is 8 each for code & data).  Page sizes supported also
-vary by model, recent models go up to 4GB.
 
-BUT ... we stopped pinning this entry in the TLB when benchmarks showed
-that it was better to just insert this as a regular TLB entry which might
-can be dropped to map something else.  So now there is code in the Alt-DTLB
-miss handler (ivt.S) to insert the per-cpu mapping on an as needed basis.
+On Tue, 27 Jan 2009, H. Peter Anvin wrote:
 
-> So, in theory if one were so inclined the special pinned per-CPU entry could
-> either be more than one 64K entry, or a single, rather larger entry.
+> Linus Torvalds wrote:
+> > 
+> > Do you think the "fix headers_check" patches spend lots of time analyzing
+> > things? I bet no. They just try to make the warning go away, so you don't
+> > actually end up with any more "coverage" anyway. Quite the reverse - instead
+> > of having a simple rule ("CONFIG_xyz options simply do not exist in user
+> > space"), you end up having ad-hoc hacks on a per-fix basis.
+> > 
+> 
+> This is probably true.  I think we should add this as one more of the
+> preprocessing rules which we really should just do, as well as automatic
+> mangling of integer types.
 
-Managing a larger space could be done ... but at the expense of making
-the Alt-DTLB miss handler do a memory lookup to find the physical address
-of the per-cpu page needed (assuming that we allocate a bunch of random
-physical pages for use as per-cpu space rather than a single contiguous
-block of physical memory).
+Btw, the really scary thing is that I bet there are programs out there 
+that "know" about kernel internals, and do things like
 
-When do we know the total amount of per-cpu memory needed?
-1) CONFIG time?
-2) Boot time?
-3) Arbitrary run time?
+	#define CONFIG_SMP 1
+	#define __KERNEL__ 1
+	#include <asm/atomic.h>
 
--Tony
+in order to get the atomic helpers from the kernel, and using CONFIG_xyz 
+markers to force the exact version they want.
+
+And we will inevitably always end up breaking stuff like that. Nothing we 
+can do about it - in the end, users can do infinitely odd things and know 
+about our internals, and whatever changes we do will occasionally break 
+some of the more incestuous code.
+
+			Linus
