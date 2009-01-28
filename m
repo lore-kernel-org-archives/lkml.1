@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755117AbZA1J15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754561AbZA1Jfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755117AbZA1J15 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 04:27:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753121AbZA1J1r
+	id S1754561AbZA1Jfk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 04:35:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZA1Jfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 04:27:47 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:37709 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbZA1J1r (ORCPT
+	Wed, 28 Jan 2009 04:35:30 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:44024 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753120AbZA1Jfa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 04:27:47 -0500
-Subject: Re: [patch] slub: fix per cpu kmem_cache_cpu array memory leak
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: David Rientjes <rientjes@google.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0901280115470.28944@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0901271859010.17612@chino.kir.corp.google.com>
-	 <1233132733.16201.0.camel@penberg-laptop>
-	 <84144f020901280058h36fedf37j600185c255db5e2a@mail.gmail.com>
-	 <alpine.DEB.2.00.0901280115470.28944@chino.kir.corp.google.com>
-Date: Wed, 28 Jan 2009 11:27:44 +0200
-Message-Id: <1233134864.16201.3.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 28 Jan 2009 04:35:30 -0500
+Date: Wed, 28 Jan 2009 09:35:25 +0000
+From: Andy Whitcroft <apw@canonical.com>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org
+Subject: Re: Checkpatch false positive?
+Message-ID: <20090128093525.GB10291@shadowen.org>
+References: <20090127154904.GC8289@duck.suse.cz> <20090127160601.GA20342@localhost.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090127160601.GA20342@localhost.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+On Tue, Jan 27, 2009 at 06:06:01PM +0200, Adrian Bunk wrote:
+> On Tue, Jan 27, 2009 at 04:49:05PM +0100, Jan Kara wrote:
+> >   Hi,
+> > 
+> >   I've used checkpatch.pl to verify one of my patches. It complains:
+> > 
+> > ERROR: trailing statements should be on next line
+> > #167: FILE: fs/quota/quota_tree.c:249:
+> > +       for (i = 0, ddquot = buf + sizeof(struct qt_disk_dqdbheader);
+> > [...]
+> >              i++, ddquot += info->dqi_entry_size);
+> > 
+> >   But the code looks like:
+> >         for (i = 0, ddquot = buf + sizeof(struct qt_disk_dqdbheader);
+> >              i < qtree_dqstr_in_blk(info) && !qtree_entry_unused(info, ddquot);
+> >              i++, ddquot += info->dqi_entry_size);
+> > 
+> >   Which is IMHO correct. Maybe it's because the for has actually empty body
+> > and the ; is at the end of the line with for. But I didn't find anything in
+> > CodingStyle that would forbid
+> > 	for (...);
+> > and
+> > 	for (...)
+> > 		;
+> > Looks a bit strange.
+> 
+> for (...); is a common C programming error, usually it's some kind of:
+> 
+> 	for(........);
+> 		do_something();
+> 
+> This code does something different than intended.
+> And yes, we had such bugs in the kernel.
+> 
+> 
+> 	for(........)
+> 		;
+> 
+> is correct. The "looks a bit strange" is what actually tells readers 
+> what the code is doing (and that the author did it intentionally).
 
-On Wed, 28 Jan 2009, Pekka Enberg wrote:
-> > Btw, did you hit this bug during testing or did you just spot it
-> > during review? That is, do we need to get this to -stable? 
+Yeah its about being explicit that you intended there to be an empty
+statement in this construct.  We tend to get bitten even more by if form
+of this:
 
-On Wed, 2009-01-28 at 01:20 -0800, David Rientjes wrote:
-> I ran into it while hacking the per cpu arrays, but haven't witnessed it 
-> on a vanilla kernel.  Since there are no guarantees that a kmem_cache_cpu 
-> will not be allocated on this boundary, I would recommend it for -stable.
+	if (foo);
+		something();
 
-Documentation/stable_kernel_rules.txt states that:
+But we catch them all.  And always remember if you really think it looks
+better or makes more sense one way and checkpatch is upset you can
+ignore checkpatch.  It is advice on what will be accepted not
+necessarily the final arbiter.  That is the maintainers role, checkpatch
+is a tool to help you.
 
- - It must fix a real bug that bothers people (not a, "This could be a
-   problem..." type thing).
-
-The bug has been there for a very long time and hasn't generated any bug
-reports so I think I'll just push it to mainline and leave it that. 
-
-Thanks!
-
-		Pekka
-
+-apw
