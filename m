@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760999AbZA1X7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbZA2AA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760999AbZA1X7r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:59:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758573AbZA1Xow
+	id S1757786AbZA2AA0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 19:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758543AbZA1Xox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:44:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:52925 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:44:53 -0500
+Received: from hera.kernel.org ([140.211.167.34]:52918 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758543AbZA1Xov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:44:51 -0500
+	id S1758553AbZA1Xot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:44:49 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 042/114] x86, apic: clean up ->apicid_to_node()
-Date: Wed, 28 Jan 2009 23:41:48 +0000
-Message-Id: <1233186180-29883-43-git-send-email-mingo@elte.hu>
+Subject: [PATCH 039/114] x86, apic: clean up ->ioapic_phys_id_map()
+Date: Wed, 28 Jan 2009 23:41:45 +0000
+Message-Id: <1233186180-29883-40-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
 References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:44:35 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:44:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -34,179 +34,181 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
  arch/x86/include/asm/es7000/apic.h            |    2 +-
  arch/x86/include/asm/mach-default/mach_apic.h |    2 +-
  arch/x86/include/asm/mach-generic/mach_apic.h |    1 -
- arch/x86/include/asm/numaq/apic.h             |    4 ++--
- arch/x86/include/asm/summit/apic.h            |    2 +-
- arch/x86/kernel/smpboot.c                     |    2 +-
+ arch/x86/include/asm/numaq/apic.h             |    2 +-
+ arch/x86/include/asm/summit/apic.h            |    3 ++-
+ arch/x86/kernel/io_apic.c                     |    4 ++--
  arch/x86/mach-generic/bigsmp.c                |    2 +-
  arch/x86/mach-generic/default.c               |    2 +-
  arch/x86/mach-generic/es7000.c                |    2 +-
  arch/x86/mach-generic/numaq.c                 |    2 +-
  arch/x86/mach-generic/summit.c                |    2 +-
- 12 files changed, 12 insertions(+), 13 deletions(-)
+ 12 files changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/arch/x86/include/asm/bigsmp/apic.h b/arch/x86/include/asm/bigsmp/apic.h
-index df59298..77f0b73 100644
+index 8194130..05116d5 100644
 --- a/arch/x86/include/asm/bigsmp/apic.h
 +++ b/arch/x86/include/asm/bigsmp/apic.h
-@@ -62,7 +62,7 @@ static inline void bigsmp_setup_apic_routing(void)
- 		"Physflat", nr_ioapics);
+@@ -94,7 +94,7 @@ static inline int cpu_to_logical_apicid(int cpu)
+ 	return cpu_physical_id(cpu);
  }
  
--static inline int apicid_to_node(int logical_apicid)
-+static inline int bigsmp_apicid_to_node(int logical_apicid)
+-static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
++static inline physid_mask_t bigsmp_ioapic_phys_id_map(physid_mask_t phys_map)
  {
- 	return apicid_2_node[hard_smp_processor_id()];
- }
+ 	/* For clustered we don't have a good way to do this yet - hack */
+ 	return physids_promote(0xFFL);
 diff --git a/arch/x86/include/asm/es7000/apic.h b/arch/x86/include/asm/es7000/apic.h
-index 632e4cd..bcdf314 100644
+index 06f5757..db3e652 100644
 --- a/arch/x86/include/asm/es7000/apic.h
 +++ b/arch/x86/include/asm/es7000/apic.h
-@@ -82,7 +82,7 @@ static inline void es7000_setup_apic_routing(void)
- 			nr_ioapics, cpus_addr(*es7000_target_cpus())[0]);
- }
- 
--static inline int apicid_to_node(int logical_apicid)
-+static inline int es7000_apicid_to_node(int logical_apicid)
- {
- 	return 0;
- }
-diff --git a/arch/x86/include/asm/mach-default/mach_apic.h b/arch/x86/include/asm/mach-default/mach_apic.h
-index f418d47..2f78209 100644
---- a/arch/x86/include/asm/mach-default/mach_apic.h
-+++ b/arch/x86/include/asm/mach-default/mach_apic.h
-@@ -78,7 +78,7 @@ static inline void default_setup_apic_routing(void)
+@@ -125,7 +125,7 @@ static inline int cpu_to_logical_apicid(int cpu)
  #endif
  }
  
--static inline int apicid_to_node(int logical_apicid)
-+static inline int default_apicid_to_node(int logical_apicid)
+-static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
++static inline physid_mask_t es7000_ioapic_phys_id_map(physid_mask_t phys_map)
  {
- #ifdef CONFIG_SMP
- 	return apicid_2_node[hard_smp_processor_id()];
+ 	/* For clustered we don't have a good way to do this yet - hack */
+ 	return physids_promote(0xff);
+diff --git a/arch/x86/include/asm/mach-default/mach_apic.h b/arch/x86/include/asm/mach-default/mach_apic.h
+index 23e0a2d..7abdaae 100644
+--- a/arch/x86/include/asm/mach-default/mach_apic.h
++++ b/arch/x86/include/asm/mach-default/mach_apic.h
+@@ -99,7 +99,7 @@ static inline unsigned long default_check_apicid_present(int bit)
+ 	return physid_isset(bit, phys_cpu_present_map);
+ }
+ 
+-static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
++static inline physid_mask_t default_ioapic_phys_id_map(physid_mask_t phys_map)
+ {
+ 	return phys_map;
+ }
 diff --git a/arch/x86/include/asm/mach-generic/mach_apic.h b/arch/x86/include/asm/mach-generic/mach_apic.h
-index bdea0a7..b585a8e 100644
+index 8e51f41..c1c96e6 100644
 --- a/arch/x86/include/asm/mach-generic/mach_apic.h
 +++ b/arch/x86/include/asm/mach-generic/mach_apic.h
 @@ -3,7 +3,6 @@
  
  #include <asm/genapic.h>
  
--#define apicid_to_node (apic->apicid_to_node)
- #define cpu_to_logical_apicid (apic->cpu_to_logical_apicid) 
- #define cpu_present_to_apicid (apic->cpu_present_to_apicid)
- #define apicid_to_cpu_present (apic->apicid_to_cpu_present)
+-#define ioapic_phys_id_map (apic->ioapic_phys_id_map)
+ #define setup_apic_routing (apic->setup_apic_routing)
+ #define multi_timer_check (apic->multi_timer_check)
+ #define apicid_to_node (apic->apicid_to_node)
 diff --git a/arch/x86/include/asm/numaq/apic.h b/arch/x86/include/asm/numaq/apic.h
-index 22bdf3d..a0e3b43 100644
+index 8022974..dc7499b 100644
 --- a/arch/x86/include/asm/numaq/apic.h
 +++ b/arch/x86/include/asm/numaq/apic.h
-@@ -76,14 +76,14 @@ static inline int cpu_present_to_apicid(int mps_cpu)
+@@ -48,7 +48,7 @@ static inline int multi_timer_check(int apic, int irq)
+ 	return apic != 0 && irq == 0;
+ }
+ 
+-static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_map)
++static inline physid_mask_t numaq_ioapic_phys_id_map(physid_mask_t phys_map)
+ {
+ 	/* We don't have a good way to do this yet - hack */
+ 	return physids_promote(0xFUL);
+diff --git a/arch/x86/include/asm/summit/apic.h b/arch/x86/include/asm/summit/apic.h
+index 9108c89..4dafb58 100644
+--- a/arch/x86/include/asm/summit/apic.h
++++ b/arch/x86/include/asm/summit/apic.h
+@@ -109,7 +109,8 @@ static inline int cpu_present_to_apicid(int mps_cpu)
  		return BAD_APICID;
  }
  
--static inline int apicid_to_node(int logical_apicid) 
-+static inline int numaq_apicid_to_node(int logical_apicid) 
+-static inline physid_mask_t ioapic_phys_id_map(physid_mask_t phys_id_map)
++static inline physid_mask_t
++ summit_ioapic_phys_id_map(physid_mask_t phys_id_map)
  {
- 	return logical_apicid >> 4;
- }
+ 	/* For clustered we don't have a good way to do this yet - hack */
+ 	return physids_promote(0x0F);
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index 49899e0..db79ad9 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -2108,7 +2108,7 @@ static void __init setup_ioapic_ids_from_mpc(void)
+ 	 * This is broken; anything with a real cpu count has to
+ 	 * circumvent this idiocy regardless.
+ 	 */
+-	phys_id_present_map = ioapic_phys_id_map(phys_cpu_present_map);
++	phys_id_present_map = apic->ioapic_phys_id_map(phys_cpu_present_map);
  
- static inline physid_mask_t apicid_to_cpu_present(int logical_apicid)
- {
--	int node = apicid_to_node(logical_apicid);
-+	int node = numaq_apicid_to_node(logical_apicid);
- 	int cpu = __ffs(logical_apicid & 0xf);
+ 	/*
+ 	 * Set the IOAPIC ID to the value stored in the MPC table.
+@@ -3862,7 +3862,7 @@ int __init io_apic_get_unique_id(int ioapic, int apic_id)
+ 	 */
  
- 	return physid_mask_of_physid(cpu + 4*node);
-diff --git a/arch/x86/include/asm/summit/apic.h b/arch/x86/include/asm/summit/apic.h
-index acb7bd1..cfff276 100644
---- a/arch/x86/include/asm/summit/apic.h
-+++ b/arch/x86/include/asm/summit/apic.h
-@@ -75,7 +75,7 @@ static inline void summit_setup_apic_routing(void)
- 						nr_ioapics);
- }
+ 	if (physids_empty(apic_id_map))
+-		apic_id_map = ioapic_phys_id_map(phys_cpu_present_map);
++		apic_id_map = apic->ioapic_phys_id_map(phys_cpu_present_map);
  
--static inline int apicid_to_node(int logical_apicid)
-+static inline int summit_apicid_to_node(int logical_apicid)
- {
- #ifdef CONFIG_SMP
- 	return apicid_2_node[hard_smp_processor_id()];
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 3791b4a..1dd4cec 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -163,7 +163,7 @@ static void map_cpu_to_logical_apicid(void)
- {
- 	int cpu = smp_processor_id();
- 	int apicid = logical_smp_processor_id();
--	int node = apicid_to_node(apicid);
-+	int node = apic->apicid_to_node(apicid);
- 
- 	if (!node_online(node))
- 		node = first_online_node;
+ 	spin_lock_irqsave(&ioapic_lock, flags);
+ 	reg_00.raw = io_apic_read(ioapic, 0);
 diff --git a/arch/x86/mach-generic/bigsmp.c b/arch/x86/mach-generic/bigsmp.c
-index d074956..2f41214 100644
+index 7b7fc47..f2a3418 100644
 --- a/arch/x86/mach-generic/bigsmp.c
 +++ b/arch/x86/mach-generic/bigsmp.c
-@@ -80,7 +80,7 @@ struct genapic apic_bigsmp = {
- 	.ioapic_phys_id_map		= bigsmp_ioapic_phys_id_map,
- 	.setup_apic_routing		= bigsmp_setup_apic_routing,
- 	.multi_timer_check		= NULL,
--	.apicid_to_node			= apicid_to_node,
-+	.apicid_to_node			= bigsmp_apicid_to_node,
- 	.cpu_to_logical_apicid		= cpu_to_logical_apicid,
- 	.cpu_present_to_apicid		= cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= apicid_to_cpu_present,
+@@ -77,7 +77,7 @@ struct genapic apic_bigsmp = {
+ 	.vector_allocation_domain	= bigsmp_vector_allocation_domain,
+ 	.init_apic_ldr			= bigsmp_init_apic_ldr,
+ 
+-	.ioapic_phys_id_map		= ioapic_phys_id_map,
++	.ioapic_phys_id_map		= bigsmp_ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
+ 	.multi_timer_check		= multi_timer_check,
+ 	.apicid_to_node			= apicid_to_node,
 diff --git a/arch/x86/mach-generic/default.c b/arch/x86/mach-generic/default.c
-index 6a21aa7..d391c2d 100644
+index 633e848..c403f3d 100644
 --- a/arch/x86/mach-generic/default.c
 +++ b/arch/x86/mach-generic/default.c
-@@ -61,7 +61,7 @@ struct genapic apic_default = {
- 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
- 	.setup_apic_routing		= default_setup_apic_routing,
- 	.multi_timer_check		= NULL,
--	.apicid_to_node			= apicid_to_node,
-+	.apicid_to_node			= default_apicid_to_node,
- 	.cpu_to_logical_apicid		= cpu_to_logical_apicid,
- 	.cpu_present_to_apicid		= cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= apicid_to_cpu_present,
+@@ -58,7 +58,7 @@ struct genapic apic_default = {
+ 	.vector_allocation_domain	= default_vector_allocation_domain,
+ 	.init_apic_ldr			= default_init_apic_ldr,
+ 
+-	.ioapic_phys_id_map		= ioapic_phys_id_map,
++	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
+ 	.multi_timer_check		= multi_timer_check,
+ 	.apicid_to_node			= apicid_to_node,
 diff --git a/arch/x86/mach-generic/es7000.c b/arch/x86/mach-generic/es7000.c
-index 0be59a5..933f2a3 100644
+index b70833e..ce09baf 100644
 --- a/arch/x86/mach-generic/es7000.c
 +++ b/arch/x86/mach-generic/es7000.c
-@@ -122,7 +122,7 @@ struct genapic apic_es7000 = {
- 	.ioapic_phys_id_map		= es7000_ioapic_phys_id_map,
- 	.setup_apic_routing		= es7000_setup_apic_routing,
- 	.multi_timer_check		= NULL,
--	.apicid_to_node			= apicid_to_node,
-+	.apicid_to_node			= es7000_apicid_to_node,
- 	.cpu_to_logical_apicid		= cpu_to_logical_apicid,
- 	.cpu_present_to_apicid		= cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= apicid_to_cpu_present,
+@@ -119,7 +119,7 @@ struct genapic apic_es7000 = {
+ 	.vector_allocation_domain	= es7000_vector_allocation_domain,
+ 	.init_apic_ldr			= es7000_init_apic_ldr,
+ 
+-	.ioapic_phys_id_map		= ioapic_phys_id_map,
++	.ioapic_phys_id_map		= es7000_ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
+ 	.multi_timer_check		= multi_timer_check,
+ 	.apicid_to_node			= apicid_to_node,
 diff --git a/arch/x86/mach-generic/numaq.c b/arch/x86/mach-generic/numaq.c
-index da4ed65..38344fb 100644
+index a06fda5..5d98f18 100644
 --- a/arch/x86/mach-generic/numaq.c
 +++ b/arch/x86/mach-generic/numaq.c
-@@ -67,7 +67,7 @@ struct genapic apic_numaq = {
- 	.ioapic_phys_id_map		= numaq_ioapic_phys_id_map,
- 	.setup_apic_routing		= numaq_setup_apic_routing,
- 	.multi_timer_check		= numaq_multi_timer_check,
--	.apicid_to_node			= apicid_to_node,
-+	.apicid_to_node			= numaq_apicid_to_node,
- 	.cpu_to_logical_apicid		= cpu_to_logical_apicid,
- 	.cpu_present_to_apicid		= cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= apicid_to_cpu_present,
+@@ -64,7 +64,7 @@ struct genapic apic_numaq = {
+ 	.vector_allocation_domain	= numaq_vector_allocation_domain,
+ 	.init_apic_ldr			= numaq_init_apic_ldr,
+ 
+-	.ioapic_phys_id_map		= ioapic_phys_id_map,
++	.ioapic_phys_id_map		= numaq_ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
+ 	.multi_timer_check		= multi_timer_check,
+ 	.apicid_to_node			= apicid_to_node,
 diff --git a/arch/x86/mach-generic/summit.c b/arch/x86/mach-generic/summit.c
-index b618a18..6150604 100644
+index 36c552f..6abdd53 100644
 --- a/arch/x86/mach-generic/summit.c
 +++ b/arch/x86/mach-generic/summit.c
-@@ -60,7 +60,7 @@ struct genapic apic_summit = {
- 	.ioapic_phys_id_map		= summit_ioapic_phys_id_map,
- 	.setup_apic_routing		= summit_setup_apic_routing,
- 	.multi_timer_check		= NULL,
--	.apicid_to_node			= apicid_to_node,
-+	.apicid_to_node			= summit_apicid_to_node,
- 	.cpu_to_logical_apicid		= cpu_to_logical_apicid,
- 	.cpu_present_to_apicid		= cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= apicid_to_cpu_present,
+@@ -57,7 +57,7 @@ struct genapic apic_summit = {
+ 	.vector_allocation_domain	= summit_vector_allocation_domain,
+ 	.init_apic_ldr			= summit_init_apic_ldr,
+ 
+-	.ioapic_phys_id_map		= ioapic_phys_id_map,
++	.ioapic_phys_id_map		= summit_ioapic_phys_id_map,
+ 	.setup_apic_routing		= setup_apic_routing,
+ 	.multi_timer_check		= multi_timer_check,
+ 	.apicid_to_node			= apicid_to_node,
 -- 
 1.6.0.2
 
