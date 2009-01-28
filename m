@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758862AbZA1Xt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759248AbZA1Xug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758862AbZA1Xt7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbZA1Xnx
+	id S1759248AbZA1Xug (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:50:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757916AbZA1Xny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:43:53 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37428 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:43:54 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37440 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758202AbZA1Xnu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:43:50 -0500
+	id S1752622AbZA1Xnx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:43:53 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 015/114] x86, genapic: cleanup 32-bit apic_numaq template
-Date: Wed, 28 Jan 2009 23:41:21 +0000
-Message-Id: <1233186180-29883-16-git-send-email-mingo@elte.hu>
+Subject: [PATCH 016/114] x86, genapic: cleanup 32-bit apic_es7000 template
+Date: Wed, 28 Jan 2009 23:41:22 +0000
+Message-Id: <1233186180-29883-17-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
 References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:43:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:43:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -32,22 +32,22 @@ Clean up the APIC driver template:
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/mach-generic/numaq.c |   58 ++++++++++++++++++++++++++++++++++++++++-
+ arch/x86/mach-generic/es7000.c |   58 +++++++++++++++++++++++++++++++++++++++-
  1 files changed, 57 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/mach-generic/numaq.c b/arch/x86/mach-generic/numaq.c
-index 3679e22..fa486ca 100644
---- a/arch/x86/mach-generic/numaq.c
-+++ b/arch/x86/mach-generic/numaq.c
-@@ -50,4 +50,60 @@ static void vector_allocation_domain(int cpu, cpumask_t *retmask)
+diff --git a/arch/x86/mach-generic/es7000.c b/arch/x86/mach-generic/es7000.c
+index 2f4f4a6..4a404ea 100644
+--- a/arch/x86/mach-generic/es7000.c
++++ b/arch/x86/mach-generic/es7000.c
+@@ -100,4 +100,60 @@ static void vector_allocation_domain(int cpu, cpumask_t *retmask)
  	*retmask = (cpumask_t){ { [0] = APIC_ALL_CPUS, } };
  }
  
--struct genapic apic_numaq = APIC_INIT("NUMAQ", probe_numaq);
-+struct genapic apic_numaq = {
+-struct genapic __initdata_refok apic_es7000 = APIC_INIT("es7000", probe_es7000);
++struct genapic apic_es7000 = {
 +
-+	.name				= "NUMAQ",
-+	.probe				= probe_numaq,
++	.name				= "es7000",
++	.probe				= probe_es7000,
 +	.acpi_madt_oem_check		= acpi_madt_oem_check,
 +	.apic_id_registered		= apic_id_registered,
 +
