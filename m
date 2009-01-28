@@ -1,176 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760815AbZA2AK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761643AbZA2ALY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760815AbZA2AK5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 19:10:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758469AbZA1Xp4
+	id S1761643AbZA2ALY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 19:11:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758100AbZA1Xp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:45:56 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53128 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:45:57 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53131 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758673AbZA1Xpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755674AbZA1Xpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Jan 2009 18:45:53 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 066/114] x86, smp: refactor ->inquire_remote_apic() methods
-Date: Wed, 28 Jan 2009 23:42:12 +0000
-Message-Id: <1233186180-29883-67-git-send-email-mingo@elte.hu>
+Subject: [PATCH 068/114] x86, smp: eliminate asm/mach-default/mach_wakecpu.h
+Date: Wed, 28 Jan 2009 23:42:14 +0000
+Message-Id: <1233186180-29883-69-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
 References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:45:31 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:45:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing exciting - a few subarches dont want APIC remote reads to
-be performed - the others are content with the default method.
-
- - extend the generic code to handle NULL methods
-
- - clear out dummy methods and replace them with NULL
-
- - clean up: remove wrapper macros, etc.
+Spread mach_wakecpu.h's definitions into apic.h and genapic.h
+and remove mach_wakecpu.h.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/es7000/wakecpu.h            |    8 --------
- arch/x86/include/asm/mach-default/mach_wakecpu.h |    2 +-
- arch/x86/include/asm/mach-generic/mach_wakecpu.h |    2 --
- arch/x86/include/asm/numaq/wakecpu.h             |    4 ----
- arch/x86/kernel/smpboot.c                        |    4 ++--
- arch/x86/mach-generic/bigsmp.c                   |    2 +-
- arch/x86/mach-generic/default.c                  |    2 +-
- arch/x86/mach-generic/es7000.c                   |    2 +-
- arch/x86/mach-generic/numaq.c                    |    2 +-
- arch/x86/mach-generic/summit.c                   |    2 +-
- 10 files changed, 8 insertions(+), 22 deletions(-)
+ arch/x86/include/asm/apic.h                      |   15 +++++++++++++
+ arch/x86/include/asm/genapic.h                   |    7 ++++++
+ arch/x86/include/asm/mach-default/mach_wakecpu.h |   25 ----------------------
+ arch/x86/kernel/smpboot.c                        |    1 -
+ arch/x86/mach-generic/bigsmp.c                   |    1 -
+ arch/x86/mach-generic/default.c                  |    1 -
+ arch/x86/mach-generic/es7000.c                   |    1 -
+ arch/x86/mach-generic/summit.c                   |    1 -
+ 8 files changed, 22 insertions(+), 30 deletions(-)
+ delete mode 100644 arch/x86/include/asm/mach-default/mach_wakecpu.h
 
-diff --git a/arch/x86/include/asm/es7000/wakecpu.h b/arch/x86/include/asm/es7000/wakecpu.h
-index 71a3a41..99c72be 100644
---- a/arch/x86/include/asm/es7000/wakecpu.h
-+++ b/arch/x86/include/asm/es7000/wakecpu.h
-@@ -13,12 +13,4 @@ static inline void es7000_wait_for_init_deassert(atomic_t *deassert)
- 	return;
- }
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index ab1d51a..e8f0304 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -41,6 +41,21 @@ extern unsigned int apic_verbosity;
+ extern int local_apic_timer_c2_ok;
  
--extern void __inquire_remote_apic(int apicid);
+ extern int disable_apic;
++
++#ifdef CONFIG_SMP
++extern void __inquire_remote_apic(int apicid);
++#else /* CONFIG_SMP */
++static inline void __inquire_remote_apic(int apicid)
++{
++}
++#endif /* CONFIG_SMP */
++
++static inline void default_inquire_remote_apic(int apicid)
++{
++	if (apic_verbosity >= APIC_DEBUG)
++		__inquire_remote_apic(apicid);
++}
++
+ /*
+  * Basic functions accessing APICs.
+  */
+diff --git a/arch/x86/include/asm/genapic.h b/arch/x86/include/asm/genapic.h
+index e5f9c56..1772dad 100644
+--- a/arch/x86/include/asm/genapic.h
++++ b/arch/x86/include/asm/genapic.h
+@@ -113,4 +113,11 @@ extern int default_cpu_present_to_apicid(int mps_cpu);
+ extern int default_check_phys_apicid_present(int boot_cpu_physical_apicid);
+ #endif
+ 
++static inline void default_wait_for_init_deassert(atomic_t *deassert)
++{
++	while (!atomic_read(deassert))
++		cpu_relax();
++	return;
++}
++
+ #endif /* _ASM_X86_GENAPIC_64_H */
+diff --git a/arch/x86/include/asm/mach-default/mach_wakecpu.h b/arch/x86/include/asm/mach-default/mach_wakecpu.h
+deleted file mode 100644
+index b1cde56..0000000
+--- a/arch/x86/include/asm/mach-default/mach_wakecpu.h
++++ /dev/null
+@@ -1,25 +0,0 @@
+-#ifndef _ASM_X86_MACH_DEFAULT_MACH_WAKECPU_H
+-#define _ASM_X86_MACH_DEFAULT_MACH_WAKECPU_H
 -
--static inline void inquire_remote_apic(int apicid)
+-static inline void default_wait_for_init_deassert(atomic_t *deassert)
+-{
+-	while (!atomic_read(deassert))
+-		cpu_relax();
+-	return;
+-}
+-
+-#ifdef CONFIG_SMP
+-extern void __inquire_remote_apic(int apicid);
+-#else /* CONFIG_SMP */
+-static inline void __inquire_remote_apic(int apicid)
+-{
+-}
+-#endif /* CONFIG_SMP */
+-
+-static inline void default_inquire_remote_apic(int apicid)
 -{
 -	if (apic_verbosity >= APIC_DEBUG)
 -		__inquire_remote_apic(apicid);
 -}
 -
- #endif /* __ASM_MACH_WAKECPU_H */
-diff --git a/arch/x86/include/asm/mach-default/mach_wakecpu.h b/arch/x86/include/asm/mach-default/mach_wakecpu.h
-index 656bb5e..b1cde56 100644
---- a/arch/x86/include/asm/mach-default/mach_wakecpu.h
-+++ b/arch/x86/include/asm/mach-default/mach_wakecpu.h
-@@ -16,7 +16,7 @@ static inline void __inquire_remote_apic(int apicid)
- }
- #endif /* CONFIG_SMP */
- 
--static inline void inquire_remote_apic(int apicid)
-+static inline void default_inquire_remote_apic(int apicid)
- {
- 	if (apic_verbosity >= APIC_DEBUG)
- 		__inquire_remote_apic(apicid);
-diff --git a/arch/x86/include/asm/mach-generic/mach_wakecpu.h b/arch/x86/include/asm/mach-generic/mach_wakecpu.h
-index 93207df..0b884c0 100644
---- a/arch/x86/include/asm/mach-generic/mach_wakecpu.h
-+++ b/arch/x86/include/asm/mach-generic/mach_wakecpu.h
-@@ -1,6 +1,4 @@
- #ifndef _ASM_X86_MACH_GENERIC_MACH_WAKECPU_H
- #define _ASM_X86_MACH_GENERIC_MACH_WAKECPU_H
- 
--#define inquire_remote_apic (apic->inquire_remote_apic)
--
- #endif /* _ASM_X86_MACH_GENERIC_MACH_APIC_H */
-diff --git a/arch/x86/include/asm/numaq/wakecpu.h b/arch/x86/include/asm/numaq/wakecpu.h
-index 920dcfe..afe8143 100644
---- a/arch/x86/include/asm/numaq/wakecpu.h
-+++ b/arch/x86/include/asm/numaq/wakecpu.h
-@@ -25,8 +25,4 @@ numaq_store_NMI_vector(unsigned short *high, unsigned short *low)
- 	  *((volatile unsigned short *)phys_to_virt(NUMAQ_TRAMPOLINE_PHYS_LOW));
- }
- 
--static inline void inquire_remote_apic(int apicid)
--{
--}
--
- #endif /* __ASM_NUMAQ_WAKECPU_H */
+-#endif /* _ASM_X86_MACH_DEFAULT_MACH_WAKECPU_H */
 diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index 1492024..170adc5 100644
+index 170adc5..1fdc1a7 100644
 --- a/arch/x86/kernel/smpboot.c
 +++ b/arch/x86/kernel/smpboot.c
-@@ -876,8 +876,8 @@ do_rest:
- 			else
- 				/* trampoline code not run */
- 				printk(KERN_ERR "Not responding.\n");
--			if (get_uv_system_type() != UV_NON_UNIQUE_APIC)
--				inquire_remote_apic(apicid);
-+			if (apic->inquire_remote_apic)
-+				apic->inquire_remote_apic(apicid);
- 		}
- 	}
+@@ -66,7 +66,6 @@
+ #include <linux/mc146818rtc.h>
  
+ #include <mach_apic.h>
+-#include <mach_wakecpu.h>
+ #include <smpboot_hooks.h>
+ 
+ #ifdef CONFIG_X86_32
 diff --git a/arch/x86/mach-generic/bigsmp.c b/arch/x86/mach-generic/bigsmp.c
-index d9377af..4d8b2d4 100644
+index 4d8b2d4..6fcccfb 100644
 --- a/arch/x86/mach-generic/bigsmp.c
 +++ b/arch/x86/mach-generic/bigsmp.c
-@@ -111,5 +111,5 @@ struct genapic apic_bigsmp = {
+@@ -17,7 +17,6 @@
+ #include <asm/bigsmp/apic.h>
+ #include <asm/bigsmp/ipi.h>
+ #include <asm/mach-default/mach_mpparse.h>
+-#include <asm/mach-default/mach_wakecpu.h>
  
- 	.smp_callin_clear_local_apic	= NULL,
- 	.store_NMI_vector		= NULL,
--	.inquire_remote_apic		= inquire_remote_apic,
-+	.inquire_remote_apic		= default_inquire_remote_apic,
- };
+ static int dmi_bigsmp; /* can be set by dmi scanners */
+ 
 diff --git a/arch/x86/mach-generic/default.c b/arch/x86/mach-generic/default.c
-index b004257..c12dd23 100644
+index c12dd23..e3c5114 100644
 --- a/arch/x86/mach-generic/default.c
 +++ b/arch/x86/mach-generic/default.c
-@@ -92,5 +92,5 @@ struct genapic apic_default = {
+@@ -16,7 +16,6 @@
+ #include <asm/mach-default/mach_apic.h>
+ #include <asm/mach-default/mach_ipi.h>
+ #include <asm/mach-default/mach_mpparse.h>
+-#include <asm/mach-default/mach_wakecpu.h>
  
- 	.smp_callin_clear_local_apic	= NULL,
- 	.store_NMI_vector		= NULL,
--	.inquire_remote_apic		= inquire_remote_apic,
-+	.inquire_remote_apic		= default_inquire_remote_apic,
- };
+ static void default_vector_allocation_domain(int cpu, struct cpumask *retmask)
+ {
 diff --git a/arch/x86/mach-generic/es7000.c b/arch/x86/mach-generic/es7000.c
-index 62673a8..be090b2 100644
+index 8b6113e..bb11166 100644
 --- a/arch/x86/mach-generic/es7000.c
 +++ b/arch/x86/mach-generic/es7000.c
-@@ -148,5 +148,5 @@ struct genapic apic_es7000 = {
- 	/* Nothing to do for most platforms, since cleared by the INIT cycle: */
- 	.smp_callin_clear_local_apic	= NULL,
- 	.store_NMI_vector		= NULL,
--	.inquire_remote_apic		= inquire_remote_apic,
-+	.inquire_remote_apic		= default_inquire_remote_apic,
- };
-diff --git a/arch/x86/mach-generic/numaq.c b/arch/x86/mach-generic/numaq.c
-index 2c33415..ddb50fb 100644
---- a/arch/x86/mach-generic/numaq.c
-+++ b/arch/x86/mach-generic/numaq.c
-@@ -112,5 +112,5 @@ struct genapic apic_numaq = {
+@@ -14,7 +14,6 @@
+ #include <linux/acpi.h>
+ #include <linux/smp.h>
+ #include <asm/ipi.h>
+-#include <asm/mach-default/mach_wakecpu.h>
  
- 	.smp_callin_clear_local_apic	= numaq_smp_callin_clear_local_apic,
- 	.store_NMI_vector		= numaq_store_NMI_vector,
--	.inquire_remote_apic		= inquire_remote_apic,
-+	.inquire_remote_apic		= NULL,
- };
+ #define APIC_DFR_VALUE_CLUSTER		(APIC_DFR_CLUSTER)
+ #define INT_DELIVERY_MODE_CLUSTER	(dest_LowestPrio)
 diff --git a/arch/x86/mach-generic/summit.c b/arch/x86/mach-generic/summit.c
-index c2471a9..d5db304 100644
+index d5db304..673a64f 100644
 --- a/arch/x86/mach-generic/summit.c
 +++ b/arch/x86/mach-generic/summit.c
-@@ -91,5 +91,5 @@ struct genapic apic_summit = {
+@@ -16,7 +16,6 @@
+ #include <asm/summit/apic.h>
+ #include <asm/summit/ipi.h>
+ #include <asm/summit/mpparse.h>
+-#include <asm/mach-default/mach_wakecpu.h>
  
- 	.smp_callin_clear_local_apic	= NULL,
- 	.store_NMI_vector		= NULL,
--	.inquire_remote_apic		= inquire_remote_apic,
-+	.inquire_remote_apic		= default_inquire_remote_apic,
- };
+ static int probe_summit(void)
+ {
 -- 
 1.6.0.2
 
