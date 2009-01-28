@@ -1,66 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752512AbZA1Sw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbZA1TDu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752512AbZA1Sw6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 13:52:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZA1Swt
+	id S1752340AbZA1TDu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 14:03:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751356AbZA1TDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 13:52:49 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54386 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751155AbZA1Swt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 13:52:49 -0500
-Date: Wed, 28 Jan 2009 13:52:47 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, jens.axboe@oracle.com
-Subject: Re: Buggy IPI and MTRR code on low memory
-In-Reply-To: <1233166834.10992.61.camel@laptop>
-Message-ID: <alpine.DEB.1.10.0901281334200.25359@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>  <1233161182.10992.52.camel@laptop>  <alpine.DEB.1.10.0901281221450.25359@gandalf.stny.rr.com> <1233166834.10992.61.camel@laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 28 Jan 2009 14:03:42 -0500
+Received: from mx5.mail.ru ([194.67.23.25]:23877 "EHLO mx5.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751272AbZA1TDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 14:03:41 -0500
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: Re: [PATCH] firmware: speed up request_firmware()
+To: Ira Snyder <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org
+Date: Wed, 28 Jan 2009 22:03:25 +0300
+References: <20090128180446.GB31107@ovro.caltech.edu>
+User-Agent: KNode/0.99.01
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1LSFhF-0002OC-00.arvidjaar-mail-ru@mx5.mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ira Snyder wrote:
 
-On Wed, 28 Jan 2009, Peter Zijlstra wrote:
-
-> On Wed, 2009-01-28 at 12:24 -0500, Steven Rostedt wrote:
-> > On Wed, 28 Jan 2009, Peter Zijlstra wrote:
-> > > ---
-> > > Subject: x86: fix potential deadlock in set_mtrr()
-> > > From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > > Date: Wed Jan 28 17:17:32 CET 2009
-> > > 
-> > > smp_call_function() can fall-back to waiting on completion in case of
-> > > low memory (GFP_ATOMIC). set_mtrr() relies on the async behaviour of !wait.
-> > > 
-> > > This would deadlock.
-> > > 
-> > > Fix this by providing per-cpu csd's and using __smp_call_function_single().
-> > 
-> > I applied the patch but it still locked up in the testing NMI 
-> > watchdog code. Not saying your patch is at fault, because we never made it 
-> > to your code. This is probably not an issue, since if we have low memory 
-> > at bootup, we have much bigger problems to deal with.
-> > 
-> > I'll have skip the NMI test and see if it locks up any place else.
 > 
-> Right, the NMI code does exactly the same, in that case your patch might
-> well be the best way forward.
+> Without this patch, loading a 12MB firmware image (FPGA bitfiles) called
+> vmalloc() approximately 3000 times. With the patch, vmalloc() is only
+> called 13 times, however, some memory is wasted until firmware_release()
+> is called. Usually, this happens very quickly, so it shouldn't be a
+> problem.
+> 
 
-Is there any reason to force the user to have to deal with a wait? We can 
-add this code to handle the failed alloc case, and I can even make it a 
-bit better to only do the copy *d = data; when the RELEASE flag is set.
-
--- Steve
-
+Some drivers cache firmware in memory. Doubing the amount of needed memory 
+definitely would not be the best idea. Check drivers/net/wireless for 
+examples.
