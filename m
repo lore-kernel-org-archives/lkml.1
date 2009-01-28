@@ -1,104 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753291AbZA1UFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbZA1UTv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753291AbZA1UFR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:05:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZA1UFE
+	id S1752864AbZA1UTv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:19:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZA1UTm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:05:04 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:25160 "EHLO
-	VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751328AbZA1UFD (ORCPT
+	Wed, 28 Jan 2009 15:19:42 -0500
+Received: from liberdade.minaslivre.org ([72.232.18.203]:38405 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751121AbZA1UTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 15:05:03 -0500
-X-BigFish: VPS-3(zz1fa4Lzzzzz32i6bh65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 5,
-X-WSS-ID: 0KE76FQ-01-QTR-01
-From: Mark Langsdorf <mark.langsdorf@amd.com>
-To: cpufreq@vger.kernel.org, lkml@vger.kernel.org
-Subject: [PATCH] Determine latency from ACPI
-Date: Tue, 27 Jan 2009 14:03:47 -0600
-User-Agent: KMail/1.9.10
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200901271403.47731.mark.langsdorf@amd.com>
-X-OriginalArrivalTime: 28 Jan 2009 20:04:47.0678 (UTC) FILETIME=[AB9ECDE0:01C98183]
+	Wed, 28 Jan 2009 15:19:42 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: tiwai@suse.de
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH] AC97: Fix function name type in comment s/updat/update/
+Date: Wed, 28 Jan 2009 18:20:06 -0200
+Message-Id: <1233174006-16210-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At this time, the PowerNow! driver for K8 uses an experimentally 
-derived formula to calculate transition latency.  The value it
-provides is orders of magnitude too large on modern systems.
-This patch replaces the formula with ACPI _PSS latency values
-for more accuracy and better performance.
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ sound/pci/ac97/ac97_codec.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-I've tested it on two 2nd generation Opteron systems, a 3rd
-generation Operton system, and a Turion X2 without seeing any
-stability problems.
-
--Mark Langsdorf
-Operating System Research Center
-AMD
-
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -931,10 +931,25 @@ static void powernow_k8_cpu_exit_acpi(st
- 		acpi_processor_unregister_performance(&data->acpi_data, data->cpu);
- }
+diff --git a/sound/pci/ac97/ac97_codec.c b/sound/pci/ac97/ac97_codec.c
+index e2b843b..27551e9 100644
+--- a/sound/pci/ac97/ac97_codec.c
++++ b/sound/pci/ac97/ac97_codec.c
+@@ -383,7 +383,7 @@ int snd_ac97_update_bits(struct snd_ac97 *ac97, unsigned short reg, unsigned sho
  
-+static int get_transition_latency(struct powernow_k8_data *data)
-+{
-+	int max_latency = 0;
-+	int i;
-+	for (i = 0; i < data->acpi_data.state_count; i++) {
-+		int cur_latency = data->acpi_data.states[i].transition_latency
-+			+ data->acpi_data.states[i].bus_master_latency;
-+		if (cur_latency > max_latency)
-+			max_latency = cur_latency;
-+	}
-+	/* value in usecs, needs to be in nanoseconds */
-+	return 1000 * max_latency;
-+}
-+
- #else
- static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data) { return -ENODEV; }
- static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data) { return; }
- static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index) { return; }
-+static int get_transition_latency(struct powernow_k8_data *data) { return 0; }
- #endif /* CONFIG_X86_POWERNOW_K8_ACPI */
+ EXPORT_SYMBOL(snd_ac97_update_bits);
  
- /* Take a frequency, and issue the fid/vid transition command */
-@@ -1167,7 +1182,13 @@ static int __cpuinit powernowk8_cpu_init
- 			kfree(data);
- 			return -ENODEV;
- 		}
--	}
-+		/* Take a crude guess here.
-+		 * That guess was in microseconds, so multiply with 1000 */
-+		pol->cpuinfo.transition_latency = (
-+			 ((data->rvo + 8) * data->vstable * VST_UNITS_20US) +
-+			 ((1 << data->irt) * 30)) * 1000;
-+	} else /* ACPI _PSS objects available */
-+		pol->cpuinfo.transition_latency = get_transition_latency(data);
- 
- 	/* only run on specific CPU from here on */
- 	oldmask = current->cpus_allowed;
-@@ -1197,11 +1218,6 @@ static int __cpuinit powernowk8_cpu_init
- 	else
- 		pol->cpus = per_cpu(cpu_core_map, pol->cpu);
- 	data->available_cores = &(pol->cpus);
--
--	/* Take a crude guess here.
--	 * That guess was in microseconds, so multiply with 1000 */
--	pol->cpuinfo.transition_latency = (((data->rvo + 8) * data->vstable * VST_UNITS_20US)
--	    + (3 * (1 << data->irt) * 10)) * 1000;
- 
- 	if (cpu_family == CPU_HW_PSTATE)
- 		pol->cur = find_khz_freq_from_pstate(data->powernow_table, data->currpstate);
+-/* no lock version - see snd_ac97_updat_bits() */
++/* no lock version - see snd_ac97_update_bits() */
+ int snd_ac97_update_bits_nolock(struct snd_ac97 *ac97, unsigned short reg,
+ 				unsigned short mask, unsigned short value)
+ {
+-- 
+1.6.0.6
 
