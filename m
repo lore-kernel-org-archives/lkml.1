@@ -1,109 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753336AbZA1M1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZA1MlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753336AbZA1M1S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 07:27:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbZA1M1H
+	id S1753030AbZA1MlS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 07:41:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZA1MlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 07:27:07 -0500
-Received: from liberdade.minaslivre.org ([72.232.18.203]:44144 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750740AbZA1M1G (ORCPT
+	Wed, 28 Jan 2009 07:41:06 -0500
+Received: from moutng.kundenserver.de ([212.227.126.171]:51383 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbZA1MlF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 07:27:06 -0500
-Date: Wed, 28 Jan 2009 10:27:30 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ALSA: Don't cold reset AC97 codecs in some ICH chipsets
-Message-ID: <20090128122730.GC13699@vespa.holoscopio.com>
-References: <1233136956-16830-1-git-send-email-cascardo@holoscopio.com> <s5hbptrws77.wl%tiwai@suse.de>
+	Wed, 28 Jan 2009 07:41:05 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
+Date: Wed, 28 Jan 2009 13:37:51 +0100
+User-Agent: KMail/1.9.9
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+References: <20090127222825.GA27097@elte.hu> <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain> <1233106614.3256.6.camel@localhost.localdomain>
+In-Reply-To: <1233106614.3256.6.camel@localhost.localdomain>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+nBD6E3TurpgldQp"
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <s5hbptrws77.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200901281337.52294.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/0R9DnUAxiP3pDzEfZX9BuWBz0IirK/RRcgxr
+ n3C2FkoGu7Tep9X15YHd/PPfpcF5QFrcBpKQ42UNtZ2y1AInug
+ utbnnttEPL4rSJ8u2qEAw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 28 January 2009, Jaswinder Singh Rajput wrote:
+> If we do not want to export __arch_swab32 and __arch_swab64 then we can
+> put whole block in #ifdef __KERNEL__ then we will get rid of above
+> solution.
 
---+nBD6E3TurpgldQp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+For the specific x86 swab code, that would certainly be the simplest
+way, user space should not be using those inline assemblies either
+way.
 
-On Wed, Jan 28, 2009 at 01:06:20PM +0100, Takashi Iwai wrote:
-> At Wed, 28 Jan 2009 08:02:36 -0200,
-> Thadeu Lima de Souza Cascardo wrote:
-> >=20
-> > Check in a quirk list if it should do cold reset when AC97 power saving
-> > is enabled. Some devices do not resume properly when cold reset,
-> > although power saving works OK.
-> >=20
-> > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
->=20
-> Thanks for the patch.
-> We can go better further with this patch now :)
->=20
-> The logic is basically fine, but just a few comments...
->=20
-> > diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
-> > index 19d3391..69b3ed8 100644
-> > --- a/sound/pci/intel8x0.c
-> > +++ b/sound/pci/intel8x0.c
-> ...
-> > +static int snd_intel8x0_ich_chip_cold_reset(struct intel8x0 *chip)
-> > +{
-> > +	unsigned int cnt;
-> >  	/* ACLink on, 2 channels */
-> > +
-> > +	if (snd_pci_quirk_lookup(chip->pci, ich_chip_reset_mode))
-> > +		return -EIO;
->=20
-> I feel it isn't intuitive to return -EIO here.
-> It'd be more straightforward to call snd_intel8x0_ich_chip_reset()
-> from here?
->=20
-> 	if (snd_pci_quirk_lookup(chip->pci, ich_chip_reset_mode))
-> 		return snd_intl8x0_ich_chip_reset(chip);
->=20
->=20
-> > +	if (snd_intel8x0_ich_chip_cold_reset(chip) < 0)
-> > +		if ((err =3D snd_intel8x0_ich_chip_reset(chip)) < 0)
-> > +			return err;
->=20
-> Please make the change checkpatch-clean.
->=20
-> Could you fix and repost?
+I think the more interesting question is whether we want to export
+*any* inline helpers that are not part of the ABI to user space.
+We already killed most of them (spinlocks, atomics, ...) and what
+remains is basically just the byteorder code. All that is required
+for the ABI is the information whether the system is big- or
+little-endian, but not all the rest.
 
-I did checkpatch it, but since this style is used in many places in the
-intel8x0.c code, I thought I would leave it this way. Should I send a
-cleanup patch too?
-
-By the way, I have some very trivial comment typo patches lying around.
-I will post them too.
-
->=20
->=20
-> thanks,
->=20
-> Takashi
-
-Regards,
-Cascardo.
-
---+nBD6E3TurpgldQp
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmATzEACgkQyTpryRcqtS3QcQCeI0Ymg86Gk2LXBC93TqgFqGq1
-7KoAniP1dNomNc8zfEWYKL3kcmM2glDK
-=4Zts
------END PGP SIGNATURE-----
-
---+nBD6E3TurpgldQp--
+	Arnd <><
