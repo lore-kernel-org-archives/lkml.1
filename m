@@ -1,66 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbZA1ADe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753819AbZA1AEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321AbZA1ADe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 19:03:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZA1ADZ
+	id S1753819AbZA1AEG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 19:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751262AbZA1ADu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 19:03:25 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:56656 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751038AbZA1ADZ (ORCPT
+	Tue, 27 Jan 2009 19:03:50 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:57394 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751062AbZA1ADt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 19:03:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=C9uasKusxHjP79P/rLjqfPY/daBb65EK1xmAhi76704xXsqQxR6GVz+iZbzIT3aiSS
-         cHqErl87hMVNwQp+OjSg69bMsNgEQe7iga0jSnbp+79j8M2/zbivweefW/LNr/LCvNpa
-         Pq7XyN6p2S3wYEkjk10t36q1pS9V5QEvNRwkU=
-Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain>
-References: <20090127222825.GA27097@elte.hu>
-	 <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 27 Jan 2009 16:03:21 -0800
-Message-Id: <1233101001.6717.5.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 27 Jan 2009 19:03:49 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 28 Jan 2009 01:03:34 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: swiotlb default size (64 MB) too small?
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <497F9CC5.8080807@s5r6.in-berlin.de>
+Message-ID: <tkrat.511cc93cd769cafe@s5r6.in-berlin.de>
+References: <20090127165508L.fujita.tomonori@lab.ntt.co.jp>
+ <20090127183723W.fujita.tomonori@lab.ntt.co.jp>
+ <tkrat.9e61b4a2f7087aca@s5r6.in-berlin.de>
+ <20090128083135Y.fujita.tomonori@lab.ntt.co.jp>
+ <497F9CC5.8080807@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-01-27 at 14:57 -0800, Linus Torvalds wrote:
-> 
-> On Tue, 27 Jan 2009, Ingo Molnar wrote:
-> > 
-> > Should i perhaps not bother with the stuff below? Cannot turn off 
-> > CONFIG_HEADERS_CHECK in my builds because it can cause build failures.
-
-> So I think it makes our headers worse. Code like
-> 
-> 	> +#ifdef __KERNEL__
-> 	> +# ifdef CONFIG_X86_BSWAP
-> 	> +# define __X86_BSWAP  
-> 	> +# endif /* CONFIG_X86_BSWAP */
-> 	> +#endif /* __KERNEL__ */
-> 
-> just doesn't make sense. It doesn't make sense _inside_ the kernel, and it 
-> doesn't make sense _outside_ it either.
-> 
-
-Or just wrap all of asm/swab.h in #ifdef __KERNEL__.
-
-Harvey
+> FUJITA Tomonori wrote:
+>> On Tue, 27 Jan 2009 18:03:40 +0100 (CET)
+>> Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+>>> +	if (orb->page_table_bus)
+>>> +		dma_unmap_single(card_device, orb->page_table_bus,
+>>> +				 sizeof(orb->page_table), DMA_TO_DEVICE);
+>> 
+>> Well, this does not look correct since zero can be a valid dma
+>> address.
 
 
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: firewire: sbp2: fix DMA mapping leak on the failure path
+
+Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+who also provided a first version of the fix.
+
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-sbp2.c |   27 +++++++++++++++++----------
+ 1 file changed, 17 insertions(+), 10 deletions(-)
+
+Index: linux/drivers/firewire/fw-sbp2.c
+===================================================================
+--- linux.orig/drivers/firewire/fw-sbp2.c
++++ linux/drivers/firewire/fw-sbp2.c
+@@ -1323,6 +1323,19 @@ static unsigned int sbp2_status_to_sense
+ 	}
+ }
+ 
++static void sbp2_unmap_scatterlist(struct device *card_device,
++				   struct sbp2_command_orb *orb)
++{
++	if (scsi_sg_count(orb->cmd))
++		dma_unmap_sg(card_device, scsi_sglist(orb->cmd),
++			     scsi_sg_count(orb->cmd),
++			     orb->cmd->sc_data_direction);
++
++	if (orb->request.misc & cpu_to_be32(COMMAND_ORB_PAGE_TABLE_PRESENT))
++		dma_unmap_single(card_device, orb->page_table_bus,
++				 sizeof(orb->page_table), DMA_TO_DEVICE);
++}
++
+ static void complete_command_orb(struct sbp2_orb *base_orb,
+ 				 struct sbp2_status *status)
+ {
+@@ -1364,15 +1377,7 @@ static void complete_command_orb(struct 
+ 
+ 	dma_unmap_single(device->card->device, orb->base.request_bus,
+ 			 sizeof(orb->request), DMA_TO_DEVICE);
+-
+-	if (scsi_sg_count(orb->cmd) > 0)
+-		dma_unmap_sg(device->card->device, scsi_sglist(orb->cmd),
+-			     scsi_sg_count(orb->cmd),
+-			     orb->cmd->sc_data_direction);
+-
+-	if (orb->page_table_bus != 0)
+-		dma_unmap_single(device->card->device, orb->page_table_bus,
+-				 sizeof(orb->page_table), DMA_TO_DEVICE);
++	sbp2_unmap_scatterlist(device->card->device, orb);
+ 
+ 	orb->cmd->result = result;
+ 	orb->done(orb->cmd);
+@@ -1493,8 +1498,10 @@ static int sbp2_scsi_queuecommand(struct
+ 	orb->base.request_bus =
+ 		dma_map_single(device->card->device, &orb->request,
+ 			       sizeof(orb->request), DMA_TO_DEVICE);
+-	if (dma_mapping_error(device->card->device, orb->base.request_bus))
++	if (dma_mapping_error(device->card->device, orb->base.request_bus)) {
++		sbp2_unmap_scatterlist(device->card->device, orb);
+ 		goto out;
++	}
+ 
+ 	sbp2_send_orb(&orb->base, lu, lu->tgt->node_id, generation,
+ 		      lu->command_block_agent_address + SBP2_ORB_POINTER);
+
+-- 
+Stefan Richter
+-=====-==--= ---= ===--
+http://arcgraph.de/sr/
 
