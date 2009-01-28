@@ -1,100 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZA1DJK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753227AbZA1DRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbZA1DJK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 22:09:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbZA1DI4
+	id S1753227AbZA1DRZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 22:17:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZA1DRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 22:08:56 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:39894 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbZA1DIz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 22:08:55 -0500
-Date: Tue, 27 Jan 2009 19:05:18 -0800
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       cluster-devel@redhat.com, swhiteho <swhiteho@redhat.com>
-Subject: Re: [PATCH] configfs: Silence lockdep on mkdir(), rmdir() and
-	configfs_depend_item()
-Message-ID: <20090128030518.GB7244@mail.oracle.com>
-Mail-Followup-To: Peter Zijlstra <peterz@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, cluster-devel@redhat.com,
-	swhiteho <swhiteho@redhat.com>
-References: <20081218092744.GB30789@mail.oracle.com> <1229601399.9487.218.camel@twins> <1229603308.9487.227.camel@twins> <20081218225837.GB21870@mail.oracle.com> <1232973009.4863.76.camel@laptop> <20090126132453.GD7532@hawkmoon.kerlabs.com> <1232977283.4863.79.camel@laptop> <20090126140032.GE7532@hawkmoon.kerlabs.com> <1232979562.4863.101.camel@laptop> <20090126145536.GG7532@hawkmoon.kerlabs.com>
+	Tue, 27 Jan 2009 22:17:17 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44922 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751292AbZA1DRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 22:17:16 -0500
+Date: Wed, 28 Jan 2009 04:14:39 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>, hch@infradead.org, corbet@lwn.net,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
+       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
+Message-ID: <20090128031439.GA11025@redhat.com>
+References: <20090115153211.663df310@bike.lwn.net> <20090122065104.2787df2d.akpm@linux-foundation.org> <20090122203248.GA20159@infradead.org> <20090123045646.GK15750@one.firstfloor.org> <20090127165504.53ed7a2d.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090126145536.GG7532@hawkmoon.kerlabs.com>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
-	come to perfection.
+In-Reply-To: <20090127165504.53ed7a2d.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.497FCBD1.00D2:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you both for keeping up on this.  I owe Louis some review that I'm
-going to try to get to.
+On 01/27, Andrew Morton wrote:
+>
+> On Fri, 23 Jan 2009 05:56:46 +0100
+> Andi Kleen <andi@firstfloor.org> wrote:
+>
+> > On Thu, Jan 22, 2009 at 03:32:49PM -0500, Christoph Hellwig wrote:
+> > > On Thu, Jan 22, 2009 at 06:51:04AM -0800, Andrew Morton wrote:
+> > > > OK, replacing a lock_kernel() with a spin_lock(&global_lock) is pretty
+> > > > straightforwad.  But it's really really sad.  It basically leaves a great
+> > > > big FIXME in there.  It'd be better to fix it.
+> > >
+> > >
+> > > Umm, we've been discussiong this in and out a guestimated million times.
+> > >
+> > > Let's go forward with Jon's patch which is on obvious improvement and
+> > > if it shows problems later on we can revisit it.
+> >
+> > The point was that we already have a better patch from Oleg.
+> >
+>
+> Where is this patch?
 
-On Mon, Jan 26, 2009 at 03:55:36PM +0100, Louis Rilling wrote:
-> On 26/01/09 15:19 +0100, Peter Zijlstra wrote:
-> > On Mon, 2009-01-26 at 15:00 +0100, Louis Rilling wrote:
-> > 
-> > > > Its not a locking correctness thing, but simply not being able to do it
-> > > > from the vfs calls because those assume locks held?
-> > > > 
-> > > > Can't you simply punt the work to a worklet once you've created/removed
-> > > > the non-default group, which can be done from within the vfs callback ?
-> > > 
-> > > I'm not sure to understand your suggestion. Is this:
-> > > 1) for mkdir(), create the non-default group, but without its default groups,
-> > > and defer their creation to a worker which won't have constraints on locks held
-> > > by any caller;
-> > > 2) for rmdir(), unlink the non-default group, but without unlinking its default
-> > > groups, and defer the recursive work to a lock-free context?
-> > > 
-> > > For mkdir(), this may work. Maybe a bit confusing for userspace, since mkdir(A)
-> > > returns as soon as A is created, but A may be populated later and userspace may
-> > > rely on A being populated as soon as it is created (current behavior). As a
-> > > configfs user, this makes my life harder...
-> > 
-> > Right, so that is the whole crux of the matter?
+I didn't send the actual patch. The idea is,
 
-	The "appearance" of the entire default group hierarchy should be
-atomic.  When mkdir(2) returns, it is all there.  This does make our
-lives a little difficult inside configfs, but it makes everyone else's
-lives much easier.
+	can't we use O_LOCK_FLAGS bit? I agree, it is a bit ugly,
+	and I won't insist if you don't like is.
 
-> Probably not. I'm not the maintainer of configfs, but I guess that Joel is a bit
-> reluctant to deeply rework parts of something that actually works (conflicts
-> with lockdep excepted).
+		static inline int try_lock_f_flags(struct file *file)
+		{
+			return !test_and_set_bit(O_LOCK_FLAGS, file->f_flags);
+		}
 
-	That is true - it works, and safely, and the lockdep conflict is
-the only real known issue.  I'm not wary of changing it, I'm only wary
-of breaking it.  That is, I want to understand what is being changed and
-be sure that we're keeping the correctness we have so far.  I don't want
-to change it and "hope" we got it right, you know?  This makes me
-cautious, but don't think I'm against change.  As I stated, having
-lockdep work for us is a good thing.
+		static inline set_f_flags(struct file *file, unsigned int flags)
+		{
+			file->f_flags = flags & ~O_LOCK_FLAGS;
+		}
 
-	More replies to the other mails coming.
+	Now, nobody should change ->f_flags directly (except create/open
+	pathes. For example, ioctl_fionbio() should be changed:
 
-Joel
+			if (try_lock_f_flags(filp)) {
+				if (on)
+					set_f_flags(filp, filp->f_flags | flag);
+				else
+					set_f_flags(filp, filp->f_flags & ~flag);
+			}
 
--- 
+	If try_lock_f_flags() fails we do nothing, as if the current owner of
+	O_LOCK_FLAGS changes ->f_flags after us.
 
-You can use a screwdriver to screw in screws or to clean your ears,
-however, the latter needs real skill, determination and a lack of fear
-of injuring yourself.  It is much the same with JavaScript.
-	- Chris Heilmann
+and, from another message,
 
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+	No need to disable preemption, we never spin waiting for the
+	lock bit. If it is locked - somebody else updates ->f_flags,
+	we can pretend it does this after us. This can confuse F_GETFL
+	after F_SETFL (if F_SETFL "fails"), but I think in that case
+	user-space is wrong anyway, it must not do F_GETFL in parallel.
+
+I'll try to make the patch tomorrow, but the problem is that I am not
+sure this is not too ugly. At least Jonathan dislikes this approach,
+and I do understand him ;)
+
+Oleg.
+
