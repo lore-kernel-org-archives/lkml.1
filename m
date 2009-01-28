@@ -1,137 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754554AbZA1Q7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZA1RAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754554AbZA1Q7T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 11:59:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbZA1Q7J
+	id S1754710AbZA1RAq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 12:00:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZA1RAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 11:59:09 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:40367 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbZA1Q7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 11:59:08 -0500
-Message-ID: <49808EEF.1020700@redhat.com>
-Date: Wed, 28 Jan 2009 11:59:27 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 28 Jan 2009 12:00:36 -0500
+Received: from e31.co.us.ibm.com ([32.97.110.149]:60750 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbZA1RAf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 12:00:35 -0500
+Date: Wed, 28 Jan 2009 22:30:09 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: =?iso-8859-1?Q?Fr=E9d=E9ric_Weisbecker_=3Cfweisbec=40gmail=2Ecom=3E?=@thinktux.in.ibm.com
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       powertop ml <power@bughost.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       srostedt@redhat.com, Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Neil Horman <nhorman@tuxdriver.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH] tracer for sys_open() - sreadahead
+Message-ID: <20090128170009.GB5365@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere> <20090128093821.GA14549@in.ibm.com> <c62985530901280621k54a47515g952cd29444a6054e@mail.gmail.com>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [BUG][kprobes][vunmap?]: kprobes may cause memory corruption
-References: <497FC3B1.7050805@redhat.com> <497FE895.1080708@redhat.com> <20090128154824.GA6025@Krystal>
-In-Reply-To: <20090128154824.GA6025@Krystal>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c62985530901280621k54a47515g952cd29444a6054e@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Masami Hiramatsu (mhiramat@redhat.com) wrote:
->> Masami Hiramatsu wrote:
-> Hi Masami,
+On Wed, Jan 28, 2009 at 03:21:24PM +0100, Frédéric Weisbecker wrote:
+> 2009/1/28 Ananth N Mavinakayanahalli <ananth@in.ibm.com>:
+> > On Tue, Jan 27, 2009 at 11:43:05PM +0100, Frederic Weisbecker wrote:
+> >> On Tue, Jan 27, 2009 at 12:08:04PM -0800, Kok, Auke wrote:
+
+...
+
+> > Here is something I did sometime ago that uses utrace. It is per task
+> > doesn't use ftrace and is just intended as a prototype. It traces both
+> > syscalls and returns.
+> >
+> > ---
+> >
+> > Here is the beginnings of a simple utrace based strace. Right now, one
+> > needs to invoke this program with a 'insmod <modname> tid=<tid>'.
+> >
+> > The output looks something like this:
+> > [267352.641112] Attached to 32604 => 0xd8f60090
+> > [267353.981046] 2
+> > [267353.981085] 197 0x1 0xbff8cd84 0x86cff4 0x86d4c0 0x86d4c0 0xbff8cd50a = 0
+> > [267353.981097] 192 0x0 0x1000 0x3 0x22 0xffffffff 0x0 = b7f8d000
+> > [267353.981124] 4 0x1 0xb7f8d000 0xd 0xd 0xb7f8d000 0xbff8cda8 = d
+> > [267353.981174] 4 0x1 0xb7f8d000 0x3 0x3 0xb7f8d000 0xbff8c7dc = 3
+> > [267353.981209] 252 0x0 0x0 0x86e0d0 0x0 0x86b274 0xbff8cee8 =
+> > [267353.981215] Task 32604 exited
+> > [267355.460180] Cannot find PID 32604
+> >
+> > I know strace does a pretty print, but this is a quick and dirty
+> > prototype.
+> > ---
+> >
+> > #include <linux/module.h>
+> > #include <linux/utrace.h>
+> > #include <linux/err.h>
+> > #include <asm/syscall.h>
+> >
+> > MODULE_DESCRIPTION("syscall trace");
+> > MODULE_LICENSE("GPL");
+> >
+> > static int target_tid;
+> >
+> > module_param_named(tid, target_tid, int, 0);
+> >
+> > static u32 task_syscall_entry(u32 action, struct utrace_attached_engine *engine,
+> >                struct task_struct *task, struct pt_regs *regs)
+> > {
+> >        long callno;
+> >        unsigned long args[6];
+> >
+> >        callno = syscall_get_nr(task, regs);
+> >        syscall_get_arguments(task, regs, 0, 6, args);
+> >
+> >        printk(KERN_INFO "%ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx = ",
+> >                callno, args[0], args[1], args[2], args[3], args[4], args[5]);
+> >        return UTRACE_RESUME;
+> > }
+> >
+> > static u32 task_syscall_exit(u32 action, struct utrace_attached_engine *engine,
+> >                struct task_struct *task, struct pt_regs *regs)
+> > {
+> >        long retval = syscall_get_return_value(task, regs);
+> >        printk("%lx\n", retval);
+> >        return UTRACE_RESUME;
+> > }
+> >
+> > static u32 task_exit(enum utrace_resume_action action,
+> >                struct utrace_attached_engine *engine, struct task_struct *task,
+> >                long orig_code, long *code)
+> > {
+> >        printk("\n");
+> >        printk(KERN_INFO "Task %d exited\n", target_tid);
+> >        return UTRACE_DETACH;
+> > }
+> >
+> > static const struct utrace_engine_ops syscall_ops =
+> > {
+> >        .report_syscall_entry = task_syscall_entry,
+> >        .report_syscall_exit = task_syscall_exit,
+> >        .report_exit = task_exit,
+> > };
+> >
+> > static int __init strace_init(void)
+> > {
+> >        struct pid *pid;
+> >        int ret = 0;
+> >        struct task_struct *target;
+> >        struct utrace_attached_engine *engine;
+> >
+> >        pid = find_get_pid(target_tid);
+> >        if (pid == NULL) {
+> >                printk(KERN_ERR "Cannot find PID %d\n", target_tid);
+> >                ret = -ESRCH;
+> >                goto out;
+> >        }
+> >
+> >        engine = utrace_attach_pid(pid, UTRACE_ATTACH_CREATE, &syscall_ops, 0);
+> >        if (IS_ERR(engine)) {
+> >                printk(KERN_ERR "utrace_attach_pid: %ld\n", PTR_ERR(engine));
+> >                ret = -EINVAL;
+> >                goto out;
+> >        } else if (engine == NULL) {
+> >                printk(KERN_ERR "utrace_attach_pid => NULL\n");
+> >                ret = -EINVAL;
+> >                goto out;
+> >        } else
+> >                printk(KERN_INFO "Attached to %d => 0x%p\n",
+> >                                target_tid, engine);
+> >
+> >        /*
+> >         * If utrace_attach_pid() succeeded above, we are sure the target
+> >         * is valid here
+> >         */
+> >        target = pid_task(pid, PIDTYPE_PID);
+> >        put_pid(pid);
+> >
+> >        ret = utrace_set_events(target, engine, UTRACE_EVENT_SYSCALL |
+> >                        UTRACE_EVENT(EXIT));
+> >        if (ret)
+> >                printk(KERN_ERR "utrace_set_events returned %d\n", ret);
+> >
+> > out:
+> >        return ret;
+> > }
+> >
+> > static void __exit strace_exit(void)
+> > {
+> >        int ret = 0;
+> >        struct pid *pid;
+> >        struct utrace_attached_engine *engine;
+> >        struct task_struct *target;
+> >
+> >        pid = find_get_pid(target_tid);
+> >        if (pid == NULL) {
+> >                printk(KERN_ERR "Cannot find PID %d\n", target_tid);
+> >                return;
+> >        }
+> >
+> >        target = pid_task(pid, PIDTYPE_PID);
+> >        put_pid(pid);
+> >        engine = utrace_attach_task(target, UTRACE_ATTACH_MATCH_OPS,
+> >                        &syscall_ops, 0);
+> >        if (IS_ERR(engine))
+> >                printk(KERN_ERR "Can't find self: %ld\n", PTR_ERR(engine));
+> >        else if (engine == NULL)
+> >                printk(KERN_ERR "Can't find self: no match\n");
+> >        else {
+> >                printk(KERN_INFO "Trying detach 0x%p from %d\n",
+> >                                engine, target_tid);
+> >                ret = utrace_control(target, engine, UTRACE_DETACH);
+> >                if (ret)
+> >                        printk(KERN_ERR "utrace_control returned %d\n",
+> >                                        ret);
+> >        }
+> > }
+> >
+> > module_init(strace_init);
+> > module_exit(strace_exit);
+> >
 > 
-> This would not surprise me if it came from bug in the new vmap()
-> implementation done in this commit :
 > 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=db64fe02258f1507e13fe5212a989922323685ce
-> 
-> Especially because going from vmap -> vm_map_ram makes this behavior
-> disappear.
-> 
-> Looking at the commit, I notice that it delays vunmap so it's done in
-> batch to minimize locking effect. I think it would be good to create a
-> test case to try to isolate this, without any kprobes/text_poke
-> involved, which does something like this :
-> 
-> load module (this is also doing vmalloc, so it might be part of the
->              problem)
->   for i (i=0; i < 400; i++) {
->     vmap()
->     vfree()
-      ^^^^^ vunmap?
->   }
-> unload module
-> 
-> Another interesting test would be :
-> 
->   for i (i=0; i < 400; i++) {
->     vmalloc()
->     vfree()
->   }
+> This is a very convenient Api. I would be glad to use it with ftrace.
+> But, what is it's status currently? Some projects to merge it?
 
-Hi Mathieu,
+Its currently available as a git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git
 
-Thank you for test ideas.
-I made both of above two tests and run it. Both test modules
-do NOT cause memory corruption...
+There is work going on to merge it upstream. Roland McGrath will be able
+to better answer when. However, one of the biggest requirements to merge
+it is an in-kernel user. Hopefully Frank's prototype and/or an ftrace
+integration of the above snippet should be incentive to push for some
+in-tree users :-)
 
-> All this called in a loop. This would help isolating the "vmap" part of
-> the issue. If this test is not enough, then we should maybe try
-> something like this in a kernel module (which does what text_poke does
-> with vmalloc, more or less) in a loop :
-> 
-> char somedata[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
-> char copydata[PAGE_SIZE] __attribute__((aligned(PAGE_SIZE)));
-
-Should both of them have PAGE_SIZE*2?
-
-> 
-> void test_vmap(void)
-> }
->   struct page *pages[2];
->   char *vaddr;
->   int i;
-> 
->   for (i = 0; i < 2 * PAGE_SIZE; i++)
->     copydata[i] = somedata[i];
->   page[0] = virt_to_page(&somedata);
->   BUG_ON(!page[0]);
->   page[1] = virt_to_page(&somedata + PAGE_SIZE);
->   BUG_ON(!page[1]);
->   vaddr = vmap(pages, 2, VM_MAP, PAGE_KERNEL);
->   BUG_ON(!vaddr);
-> 
->   for (i = 0; i < 2 * PAGE_SIZE; i++)
->     vaddr[i] = copydata[i] + 1;
->   
->   vunmap(vaddr);
->   
->   for (i = 0; i < 2 * PAGE_SIZE; i++)
->     BUG_ON(somedata[i] != copydata[i] + 1);
-> }
-
-Hmm, when I ran above code, it hit the last BUG_ON().
-I checked that somedata[i] didn't updated.
-
-> Given you don't seem to have hit the
->         for (i = 0; i < len; i++)
->                 BUG_ON(((char *)addr)[i] != ((char *)opcode)[i]);
-> test at the end of text_poke,
-
-However, when I ran kprobe-based test, it doesn't hit the BUG_ON()
-in text_poke().
-
-> I suspect the write through the vmapped
-> area is correctly done, but that the problem may lay in the mm layer.
-> Maybe it's running out of pre-allocated vmap areas or something like
-> this ?
-
-I haven't seen vmalloc failure message on 2.6.29-rc2.
-
-Thank you again,
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Ananth
