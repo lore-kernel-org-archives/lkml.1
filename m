@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZA1GV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbZA1GZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZA1GV3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 01:21:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751969AbZA1GVU
+	id S1754464AbZA1GZP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 01:25:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZA1GY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 01:21:20 -0500
-Received: from 1wt.eu ([62.212.114.60]:1859 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751866AbZA1GVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 01:21:20 -0500
-Date: Wed, 28 Jan 2009 07:20:21 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Greg KH <gregkh@suse.de>, Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
-Subject: Re: [patch 016/104] epoll: introduce resource usage limits
-Message-ID: <20090128062021.GA32360@1wt.eu>
-References: <20090125110126.GA11598@brong.net> <20090125122039.GA16603@brong.net> <20090128003519.GA11395@suse.de> <20090128033824.GA1662@brong.net> <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com> <20090128035746.GA3351@brong.net> <alpine.DEB.1.10.0901272002180.20262@alien.or.mcafeemobile.com> <20090128052630.GA9512@suse.de> <20090128053642.GL5038@1wt.eu> <alpine.DEB.1.10.0901272142530.20262@alien.or.mcafeemobile.com>
-Mime-Version: 1.0
+	Wed, 28 Jan 2009 01:24:59 -0500
+Received: from kroah.org ([198.145.64.141]:45882 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751866AbZA1GY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 01:24:58 -0500
+Date: Tue, 27 Jan 2009 22:19:40 -0800
+From: Greg KH <greg@kroah.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Sam Liddicott <sam@liddicott.com>, Ming Lei <tom.leiming@gmail.com>,
+       Linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux USB list <linux-usb@vger.kernel.org>
+Subject: Re: "permanently" unbind a device from a driver?
+Message-ID: <20090128061940.GA14275@kroah.com>
+References: <497638FF.8050805@msgid.tls.msk.ru> <20090120210254.GA5609@kroah.com> <d82e647a0901210744t1655bacesf23bcd54e30002e9@mail.gmail.com> <20090121162345.GB22615@kroah.com> <4977596D.409@liddicott.com> <20090121181124.GA17410@kroah.com> <49779284.50603@msgid.tls.msk.ru>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901272142530.20262@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <49779284.50603@msgid.tls.msk.ru>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 09:48:07PM -0800, Davide Libenzi wrote:
-> On Wed, 28 Jan 2009, Willy Tarreau wrote:
+On Thu, Jan 22, 2009 at 12:24:20AM +0300, Michael Tokarev wrote:
+> Greg KH wrote:
+> > On Wed, Jan 21, 2009 at 05:20:45PM -0000, Sam Liddicott wrote:
+> >> * Greg KH wrote, On 21/01/09 16:23:
+> >>> On Wed, Jan 21, 2009 at 11:44:03PM +0800, Ming Lei wrote:
+> >>>   
+> >>>> 2009/1/21 Greg KH <greg@kroah.com>:
+> >>>>     
+> >>>>> Just add a blacklist rule to the usbhid driver for this device.  There
+> >>>>> are a number of devices out there that need this functionality, which is
+> >>>>> why there is such a list.
+> >>>>>       
+> >>>> Is it possible to implement a generic blacklist mechanism in driver core
+> >>>> to support the function for all kinds of drivers? or is it necessary to do that?
+> >>>>     
+> >>> It's not necessary as the hid core already supports this very thing due
+> >>> to the need for it (it's the easiest way to write a userspace Windows
+> >>> driver, so lots of manufacturers lie about their devices in order to
+> >>> work around having to write a Windows kernel driver.)
+> >>>
+> >>> So just add this device to the hid core blacklist, and you are all set.
+> >>>
+> >>> Care to send a patch?
 > 
-> > On Tue, Jan 27, 2009 at 09:26:30PM -0800, Greg KH wrote:
-> > > On Tue, Jan 27, 2009 at 08:10:41PM -0800, Davide Libenzi wrote:
-> > > > In my servers, I know if they are going to be loaded, and I bump NFILES 
-> > > > (and a few other things) to the correct place. Since many of those 
-> > > > limits do not actually pre-allocate any resource, I don't need to wait and 
-> > > > monitor the values, before taking proper action.
-> > > 
-> > > But what about people who want to know what the current usages are, so
-> > > that they _can_ monitor things and adjust them on the fly if things are
-> > > about to go boom?
-> > > 
-> > > I see no reason why we can't leave the value where it is today, and add
-> > > the ability to both turn the limits off entirely, and also report our
-> > > current usage.  That keeps the DOS from happening on "default" systems,
-> > > and lets admins have an idea if they need to bump up the values on their
-> > > systems as well.
-> > > 
-> > > I don't understand your objection to allowing the usage to be monitored.
+> Ok, I'm looking at this now, but have a question:
+> which quirk code(s)/bits should I use for that?
+> Assuming the table in question is in
+>  drivers/hid/usbhid/hid-quirks.c
+> file.
+> What's needed is to stop usbhid module from claiming this device in the
+> first place.
+
+No, add the device to the hid_ignore_list[] table in
+drivers/hid/hid-core.c.
+
+> >> I've often felt that a /proc or /sys interface to allow blacklist
+> >> additions or quirk addition would be great.
 > > 
-> > Agreed. If sysadmins get trapped by the upgrade, the fix for an
-> > hypotethical DoS is a 100%-certain DoS by itself. The general sense
-> > that "if it's not broken, don't fix it" applies here as well. The
-> > server's sysadmin should not be bothered by a security upgrade (anyway,
-> > after a few minutes of havoc in prod, he will revert to previous version
-> > without trying to understand any further). But the campus sysadmin having
-> > trouble with local users already spends a lot of time tweaking limits.
-> > Now we offer them a new limit they can tune, they'll happily use it.
-> > Anyway, even at 128 they'll probably lower it down a lot. So basically
-> > we're with a medium value which does not fit any usage.
+> > Some subsystems support this, like the HID subsystem :)
 > 
-> You know, it's not me that decides what goes of certain trees or not ;) 
-> I've been pinged about the problem, and a patch was sent with values that 
-> seemed appropriate for typical epoll usages. Epoll is a multiplexing 
-> interface, so the thought was that not too many instances were lingering 
-> around. Probably the default max_instances should have been made lomem 
-> dependent like max_user_watches in the first place, leading to higher 
-> max_instances values, with respect of the potential DoS.
+> Oh, I didn't know.  In fact, that's exactly what I was asking in my
+> first email in this thread - to have some module parameter or a sysfs
+> file which can be touched to stop the module from claiming the device.
+> This also helps to debug it, to know the right bits to use.. which I
+> don't know...  ;)
 
-Davide, I know it's not you who decide. I mean, one patch was proposed
-with one arbitrary limit. I've seen it in advance too and I too thought
-it would be more than enough. Now people are reporting breakage from
-common applications which work in a funny way (I think that using epoll
-to poll for one single FD in a multi-process architecture can be called
-funny). But those people are not expected to understand the internals,
-and most likely their application's behaviour might not be more precisely
-described than "it broke since upgrade to 2.6.27.13".
+There is some way to do this, but I can't recall how at the moment.  Try
+asking the HID maintainer about this.
 
-I think we should accept the fact that the fix is causing problems
-for people while it was not expected to do so. One of the solutions
-would be to increase the arbitrary ratio from 1% to more than that,
-but it will still break big setups. Another solution is to accept
-that the patch provides a tunable that admins might act on to stop
-local users' nasty activities if required, but leave the limit off
-by default. And I think that's a saner approach, especially for a
-stable series.
+good luck,
 
-Regards,
-Willy
-
+greg k-h
