@@ -1,139 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZA1Ok1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZA1OuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbZA1Ok1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 09:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbZA1OkT
+	id S1752184AbZA1OuZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 09:50:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751074AbZA1OuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 09:40:19 -0500
-Received: from liberdade.minaslivre.org ([72.232.18.203]:46121 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbZA1OkS (ORCPT
+	Wed, 28 Jan 2009 09:50:11 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58933 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750988AbZA1OuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 09:40:18 -0500
-From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-To: tiwai@suse.de
-Cc: linux-kernel@vger.kernel.org,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Subject: [PATCH] ALSA: Don't cold reset AC97 codecs in some ICH chipsets
-Date: Wed, 28 Jan 2009 12:40:42 -0200
-Message-Id: <1233153642-4882-1-git-send-email-cascardo@holoscopio.com>
-X-Mailer: git-send-email 1.6.0.6
+	Wed, 28 Jan 2009 09:50:09 -0500
+Date: Wed, 28 Jan 2009 14:49:55 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 05/10] omap mailbox: fix empty struct device for omap1
+Message-ID: <20090128144955.GA23089@n2100.arm.linux.org.uk>
+References: <20090116081919.17571.34378.stgit@oreo.research.nokia.com> <20090116082727.17571.87307.stgit@oreo.research.nokia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090116082727.17571.87307.stgit@oreo.research.nokia.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check in a quirk list if it should do cold reset when AC97 power saving
-is enabled. Some devices do not resume properly when cold reset,
-although power saving works OK.
+On Fri, Jan 16, 2009 at 10:27:27AM +0200, Hiroshi DOYU wrote:
+> @@ -17,6 +17,8 @@
+>  #include <mach/mailbox.h>
+>  #include <mach/irqs.h>
+>  
+> +#define DRV_NAME "omap1-mailbox"
 
-Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
----
- sound/pci/intel8x0.c |   68 ++++++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 52 insertions(+), 16 deletions(-)
+I don't see any need for this define - it just adds an additional level of
+indirection when trying to find out the name of the driver.  It's only
+used in two places as is, so it's value is rather limited:
 
-diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
-index 19d3391..b37bd26 100644
---- a/sound/pci/intel8x0.c
-+++ b/sound/pci/intel8x0.c
-@@ -2287,23 +2287,23 @@ static void do_ali_reset(struct intel8x0 *chip)
- 	iputdword(chip, ICHREG(ALI_INTERRUPTSR), 0x00000000);
- }
- 
--static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
--{
--	unsigned long end_time;
--	unsigned int cnt, status, nstatus;
--	
--	/* put logic to right state */
--	/* first clear status bits */
--	status = ICH_RCS | ICH_MCINT | ICH_POINT | ICH_PIINT;
--	if (chip->device_type == DEVICE_NFORCE)
--		status |= ICH_NVSPINT;
--	cnt = igetdword(chip, ICHREG(GLOB_STA));
--	iputdword(chip, ICHREG(GLOB_STA), cnt & status);
-+#ifdef CONFIG_SND_AC97_POWER_SAVE
-+static struct snd_pci_quirk ich_chip_reset_mode[] = {
-+	SND_PCI_QUIRK(0x1014, 0x051f, "Thinkpad R32", 1),
-+	{ } /* end */
-+};
- 
-+static int snd_intel8x0_ich_chip_cold_reset(struct intel8x0 *chip)
-+{
-+	unsigned int cnt;
- 	/* ACLink on, 2 channels */
-+
-+	if (snd_pci_quirk_lookup(chip->pci, ich_chip_reset_mode))
-+		return -EIO;
-+
- 	cnt = igetdword(chip, ICHREG(GLOB_CNT));
- 	cnt &= ~(ICH_ACLINK | ICH_PCM_246_MASK);
--#ifdef CONFIG_SND_AC97_POWER_SAVE
-+
- 	/* do cold reset - the full ac97 powerdown may leave the controller
- 	 * in a warm state but actually it cannot communicate with the codec.
- 	 */
-@@ -2312,22 +2312,58 @@ static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
- 	udelay(10);
- 	iputdword(chip, ICHREG(GLOB_CNT), cnt | ICH_AC97COLD);
- 	msleep(1);
-+	return 0;
-+}
-+#define snd_intel8x0_ich_chip_can_cold_reset(chip) \
-+	(!snd_pci_quirk_lookup(chip->pci, ich_chip_reset_mode))
- #else
-+#define snd_intel8x0_ich_chip_cold_reset(x) do { } while (0)
-+#define snd_intel8x0_ich_chip_can_cold_reset(chip) (0)
-+#endif
-+
-+static int snd_intel8x0_ich_chip_reset(struct intel8x0 *chip)
-+{
-+	unsigned long end_time;
-+	unsigned int cnt;
-+	/* ACLink on, 2 channels */
-+	cnt = igetdword(chip, ICHREG(GLOB_CNT));
-+	cnt &= ~(ICH_ACLINK | ICH_PCM_246_MASK);
- 	/* finish cold or do warm reset */
- 	cnt |= (cnt & ICH_AC97COLD) == 0 ? ICH_AC97COLD : ICH_AC97WARM;
- 	iputdword(chip, ICHREG(GLOB_CNT), cnt);
- 	end_time = (jiffies + (HZ / 4)) + 1;
- 	do {
- 		if ((igetdword(chip, ICHREG(GLOB_CNT)) & ICH_AC97WARM) == 0)
--			goto __ok;
-+			return 0;
- 		schedule_timeout_uninterruptible(1);
- 	} while (time_after_eq(end_time, jiffies));
- 	snd_printk(KERN_ERR "AC'97 warm reset still in progress? [0x%x]\n",
- 		   igetdword(chip, ICHREG(GLOB_CNT)));
- 	return -EIO;
-+}
-+
-+static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
-+{
-+	unsigned long end_time;
-+	unsigned int status, nstatus;
-+	unsigned int cnt;
-+	int err;
-+
-+	/* put logic to right state */
-+	/* first clear status bits */
-+	status = ICH_RCS | ICH_MCINT | ICH_POINT | ICH_PIINT;
-+	if (chip->device_type == DEVICE_NFORCE)
-+		status |= ICH_NVSPINT;
-+	cnt = igetdword(chip, ICHREG(GLOB_STA));
-+	iputdword(chip, ICHREG(GLOB_STA), cnt & status);
-+
-+	if (snd_intel8x0_ich_chip_can_cold_reset(chip))
-+		err = snd_intel8x0_ich_chip_cold_reset(chip);
-+	else
-+		err = snd_intel8x0_ich_chip_reset(chip);
-+	if (err < 0)
-+		return err;
- 
--      __ok:
--#endif
- 	if (probing) {
- 		/* wait for any codec ready status.
- 		 * Once it becomes ready it should remain ready
--- 
-1.6.0.6
-
+> @@ -184,9 +184,9 @@ static int omap1_mbox_remove(struct platform_device *pdev)
+>  
+>  static struct platform_driver omap1_mbox_driver = {
+>  	.probe	= omap1_mbox_probe,
+> -	.remove	= omap1_mbox_remove,
+> +	.remove	= __devexit_p(omap1_mbox_remove),
+>  	.driver	= {
+> -		.name	= "mailbox",
+> +		.name	= DRV_NAME,
+>  	},
+>  };
+>  
+> @@ -203,4 +203,7 @@ static void __exit omap1_mbox_exit(void)
+>  module_init(omap1_mbox_init);
+>  module_exit(omap1_mbox_exit);
+>  
+> -MODULE_LICENSE("GPL");
+> +MODULE_LICENSE("GPL v2");
+> +MODULE_DESCRIPTION("omap mailbox: omap1 architecture specific functions");
+> +MODULE_AUTHOR("Hiroshi DOYU" <Hiroshi.DOYU@nokia.com>);
+> +MODULE_ALIAS("platform:"DRV_NAME);
