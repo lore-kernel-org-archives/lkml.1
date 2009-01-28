@@ -1,101 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZA1OCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757534AbZA1ODX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757379AbZA1OCi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 09:02:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbZA1N5j
+	id S1757534AbZA1ODX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 09:03:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755378AbZA1N5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 08:57:39 -0500
-Received: from casper.infradead.org ([85.118.1.10]:47088 "EHLO
+	Wed, 28 Jan 2009 08:57:41 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47091 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755247AbZA1N5a (ORCPT
+	with ESMTP id S1754336AbZA1N5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 08:57:30 -0500
-Message-Id: <20090128135459.047759697@chello.nl>
+	Wed, 28 Jan 2009 08:57:32 -0500
+Message-Id: <20090128135458.908979135@chello.nl>
 References: <20090128135352.679025549@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 28 Jan 2009 14:54:10 +0100
+Date: Wed, 28 Jan 2009 14:54:09 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, npiggin@suse.de,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 18/21] lockdep: add comments to mark_lock_irq()
-Content-Disposition: inline; filename=lockdep-mark_irq7.patch
+Subject: [PATCH 17/21] lockdep: remove macro usage from mark_held_locks()
+Content-Disposition: inline; filename=lockdep-mark_held_locks.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-re-add some of the comments that got lost in the refactoring.
+Now that we have nice numerical relations for the states, remove the macro
+magics.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/lockdep.c |   37 ++++++++++++++++++++++++++++++-------
- 1 file changed, 30 insertions(+), 7 deletions(-)
+ kernel/lockdep.c |   20 +++++---------------
+ 1 file changed, 5 insertions(+), 15 deletions(-)
 
 Index: linux-2.6/kernel/lockdep.c
 ===================================================================
 --- linux-2.6.orig/kernel/lockdep.c
 +++ linux-2.6/kernel/lockdep.c
-@@ -2054,6 +2054,9 @@ static int exclusive_bit(int new_bit)
- 	int state = new_bit & ~3;
- 	int dir = new_bit & 2;
+@@ -2099,14 +2099,6 @@ enum mark_type {
+ #undef LOCKDEP_STATE
+ };
  
-+	/*
-+	 * keep state, bit flip the direction and strip read.
-+	 */
- 	return state | (dir ^ 2);
- }
- 
-@@ -2070,22 +2073,42 @@ mark_lock_irq(struct task_struct *curr, 
- 	int read = new_bit & 1;
- 	int dir = new_bit & 2;
- 
-+	/*
-+	 * mark USED_IN has to look forwards -- to ensure no dependency
-+	 * has ENABLED state, which would allow recursion deadlocks.
-+	 *
-+	 * mark ENABLED has to look backwards -- to ensure no dependee
-+	 * has USED_IN state, which, again, would allow  recursion deadlocks.
-+	 */
- 	check_usage_f usage = dir ?
- 		check_usage_backwards : check_usage_forwards;
- 
-+	/*
-+	 * Validate that this particular lock does not have conflicting
-+	 * usage states.
-+	 */
- 	if (!valid_state(curr, this, new_bit, excl_bit))
- 		return 0;
- 
--	if (!read && !valid_state(curr, this, new_bit, excl_bit + 1))
--		return 0;
+-#define MARK_HELD_CASE(__STATE)						\
+-	case __STATE:							\
+-		if (hlock->read)					\
+-			usage_bit = LOCK_ENABLED_##__STATE##_READ;	\
+-		else							\
+-			usage_bit = LOCK_ENABLED_##__STATE;		\
+-		break;
 -
--	if ((!read || (!dir || STRICT_READ_CHECKS)) &&
-+	/*
-+	 * Validate that the lock dependencies don't have conflicting usage
-+	 * states.
-+	 */
-+	if ((!read || !dir || STRICT_READ_CHECKS) &&
- 			!usage(curr, this, excl_bit, name))
- 		return 0;
+ /*
+  * Mark all held locks with a usage bit:
+  */
+@@ -2120,13 +2112,11 @@ mark_held_locks(struct task_struct *curr
+ 	for (i = 0; i < curr->lockdep_depth; i++) {
+ 		hlock = curr->held_locks + i;
  
--	if ((!read && STRICT_READ_CHECKS) &&
--			!usage(curr, this, excl_bit + 1, rname))
--		return 0;
-+	/*
-+	 * Check for read in write conflicts
-+	 */
-+	if (!read) {
-+	       	if (!valid_state(curr, this, new_bit, excl_bit + 1))
-+			return 0;
+-		switch (mark) {
+-#define LOCKDEP_STATE(__STATE) MARK_HELD_CASE(__STATE)
+-#include "lockdep_states.h"
+-#undef LOCKDEP_STATE
+-		default:
+-			BUG();
+-		}
++		usage_bit = 2 + (mark << 2); /* ENABLED */
++		if (hlock->read)
++			usage_bit += 1; /* READ */
 +
-+		if (STRICT_READ_CHECKS &&
-+				!usage(curr, this, excl_bit + 1, rname))
-+			return 0;
-+	}
++		BUG_ON(usage_bit >= LOCK_USAGE_STATES);
  
- 	if (state_verbose(new_bit, hlock_class(this)))
- 		return 2;
+ 		if (!mark_lock(curr, hlock, usage_bit))
+ 			return 0;
 
 -- 
 
