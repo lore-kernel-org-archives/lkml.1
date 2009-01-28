@@ -1,46 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZA1VTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbZA1VVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZA1VTU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 16:19:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZA1VTG
+	id S1756221AbZA1VVU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 16:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751121AbZA1VVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 16:19:06 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56998 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751705AbZA1VTF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 16:19:05 -0500
-Date: Wed, 28 Jan 2009 21:18:44 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, tony@atomide.com,
-       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: OMAP clock fast-forward: an introduction to six series
-Message-ID: <20090128211844.GI23301@n2100.arm.linux.org.uk>
-References: <alpine.DEB.2.00.0901281310590.14710@utopia.booyaka.com>
+	Wed, 28 Jan 2009 16:21:12 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:53006 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751302AbZA1VVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 16:21:10 -0500
+Date: Wed, 28 Jan 2009 15:21:04 -0600
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] - UV fix compile error on IA64 & eliminate compiler warning
+Message-ID: <20090128212104.GA1156@sgi.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0901281310590.14710@utopia.booyaka.com>
-User-Agent: Mutt/1.4.2.1i
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 01:22:22PM -0700, Paul Walmsley wrote:
-> Per rmk's preferences, some patches have been 'compressed.' That is, some 
-> fix patches have been rolled into a single patch with the original.  To 
-> ease cross-referencing with the linux-omap git tree, original commit IDs 
-> have been inserted into the patch messages.  Also, what would have been an 
-> extremely long series has been split into six smaller, cumulative, roughly 
-> thematic patch series.  If requested, I would be pleased to simply send 
-> one large series of the original, uncompressed patches.  Thanks to the git 
-> and stgit authors and contributors: without those tools, this process 
-> would have been nearly impossible.
 
-Since this patch series was only really meant for me to do some follow-on
-work on it (to merge it into my tree) is it really necessary to submit
-this 70 patch series via slow email via several mailing lists?
+The GRU driver is used on both IA64 & x86.
+The 2 architectures have different ways of detecting the
+platform type, ie. whether the platform is a UV system.
+Although it is possible to reconcile the 2 methods,
+only one place currently makes the test.
 
-At the rate they're coming through I might have the entire set by
-midnight...
+Also eliminate a warning message in uv.h.
+
+Signed-off-by: Jack Steiner <steiner@sgi.com>
+
+
+---
+ arch/x86/include/asm/uv/uv.h   |    1 +
+ drivers/misc/sgi-gru/gru.h     |    2 --
+ drivers/misc/sgi-gru/grufile.c |    1 +
+ 3 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux/arch/x86/include/asm/uv/uv.h
+===================================================================
+--- linux.orig/arch/x86/include/asm/uv/uv.h	2009-01-28 12:43:27.000000000 -0600
++++ linux/arch/x86/include/asm/uv/uv.h	2009-01-28 15:13:58.000000000 -0600
+@@ -2,6 +2,7 @@
+ #define _ASM_X86_UV_UV_H
+ 
+ enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
++struct mm_struct;
+ 
+ #ifdef CONFIG_X86_UV
+ 
+Index: linux/drivers/misc/sgi-gru/gru.h
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/gru.h	2009-01-28 12:43:28.000000000 -0600
++++ linux/drivers/misc/sgi-gru/gru.h	2009-01-28 14:53:52.000000000 -0600
+@@ -19,8 +19,6 @@
+ #ifndef __GRU_H__
+ #define __GRU_H__
+ 
+-#include <asm/uv/uv.h>
+-
+ /*
+  * GRU architectural definitions
+  */
+Index: linux/drivers/misc/sgi-gru/grufile.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-gru/grufile.c	2009-01-28 13:04:08.000000000 -0600
++++ linux/drivers/misc/sgi-gru/grufile.c	2009-01-28 15:12:04.000000000 -0600
+@@ -46,6 +46,7 @@
+ #if defined CONFIG_X86_64
+ #include <asm/genapic.h>
+ #include <asm/irq.h>
++#include <asm/uv/uv.h>
+ #define IS_UV()		is_uv_system()
+ #elif defined CONFIG_IA64
+ #include <asm/system.h>
