@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbZA1GhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZA1Gid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755180AbZA1GhX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 01:37:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZA1GhJ
+	id S1755045AbZA1Gid (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 01:38:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbZA1GiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 01:37:09 -0500
-Received: from omr10.networksolutionsemail.com ([205.178.146.60]:54945 "EHLO
-	omr10.networksolutionsemail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752486AbZA1GhI (ORCPT
+	Wed, 28 Jan 2009 01:38:25 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:47743 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752524AbZA1GiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 01:37:08 -0500
-Message-ID: <497FFD06.8010001@nerdgrounds.com>
-Date: Tue, 27 Jan 2009 22:36:54 -0800
-From: Jonathan Campbell <jon@nerdgrounds.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Wed, 28 Jan 2009 01:38:24 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 27 Jan 2009 22:38:22 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Greg KH <gregkh@suse.de>
+cc: Bron Gondwana <brong@fastmail.fm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
+Subject: Re: [patch 016/104] epoll: introduce resource usage limits
+In-Reply-To: <20090128052630.GA9512@suse.de>
+Message-ID: <alpine.DEB.1.10.0901272135400.20262@alien.or.mcafeemobile.com>
+References: <1232704065.25510.1296328851@webmail.messagingengine.com> <20090123170631.GB11566@suse.de> <20090124130334.GA8031@brong.net> <20090125110126.GA11598@brong.net> <20090125122039.GA16603@brong.net> <20090128003519.GA11395@suse.de>
+ <20090128033824.GA1662@brong.net> <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com> <20090128035746.GA3351@brong.net> <alpine.DEB.1.10.0901272002180.20262@alien.or.mcafeemobile.com> <20090128052630.GA9512@suse.de>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: Eric Anholt <eric@anholt.net>
-CC: Mark Knecht <markknecht@gmail.com>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
-References: <497E4531.20800@nerdgrounds.com>	 <5bdc1c8b0901261859g58a413e1x52208a6f2c1f9ccd@mail.gmail.com>	 <1233031451.4851.31.camel@gaiman>	 <5bdc1c8b0901270937h27c48290p4fb5233f06593e44@mail.gmail.com> <1233091414.25539.8.camel@gaiman>
-In-Reply-To: <1233091414.25539.8.camel@gaiman>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well my expectation of vramfs is that it's not meant to be used for the 
-heavy-duty 3D gaming-style rendering that GEM is built to handle. It's 
-meant for lighter tasks, like simple 2D/3D compositing or GPU work where 
-you know what your resources need, you don't need to take that much, and 
-you need direct mmap() access because some of it involves video that you 
-will handle later. Situations like this can work perfectly fine without 
-the use of a swapping system.
+On Tue, 27 Jan 2009, Greg KH wrote:
 
-My other concern is that GEM with a filesystem might be the best option 
-for 3D gaming, but that it wouldn't work if the driver doesn't know the 
-card. The DRI drivers, as far as I know, are tied to the GPU and chipset 
-of the device (because they have to manage it, after all!). How exactly 
-would GEM work for cards that it doesn't recognize, like one machine of 
-mine with a weird ATI chipset nobody knows how to talk to? If GEM 
-doesn't recognize it, it won't provide VRAM resources to use it, right?
+> On Tue, Jan 27, 2009 at 08:10:41PM -0800, Davide Libenzi wrote:
+> > In my servers, I know if they are going to be loaded, and I bump NFILES 
+> > (and a few other things) to the correct place. Since many of those 
+> > limits do not actually pre-allocate any resource, I don't need to wait and 
+> > monitor the values, before taking proper action.
+> 
+> But what about people who want to know what the current usages are, so
+> that they _can_ monitor things and adjust them on the fly if things are
+> about to go boom?
+> 
+> I see no reason why we can't leave the value where it is today, and add
+> the ability to both turn the limits off entirely, and also report our
+> current usage.  That keeps the DOS from happening on "default" systems,
+> and lets admins have an idea if they need to bump up the values on their
+> systems as well.
+> 
+> I don't understand your objection to allowing the usage to be monitored.
 
-This is where vramfs has it's advantage: it's not the absolute best 
-solution for 3D graphics, but it's simple, it can serve as a starting 
-point for GPU experiments from userspace, or if nothing else allows the 
-use of the onboard video RAM on an otherwise unused and unrecognized 
-video device. It's device-agnostic by design.
-> The way you want do that is using OpenGL to put your data in textures
-> and framebuffer objects, and render them.  With KMS, we'll be able to
-> support EGL even on the console so you can do the work without having an
-> X environment set up.
->
-> The problem with vramfs as a basis for GPU offload is that most GPU
-> tasks end up at some point exceeding the size of available
-> aperture/VRAM.  So you need code that manages loading buffer objects in
-> and out on demand, managing the execution pipeline and GPU and CPU
-> caches as required.  We have that with GEM already.
->
-> Remember, writing data to an aperture isn't the hard part of offloading
-> to the GPU, programming the GPU is.  That's why you use OpenGL or
-> another abstraction to do it.
->
->   
+Do you really want to add that crud just to monitor a value? That cost 
+absolutely zero (in terms of pre-allocated resources) to bump up?
+Is not like, that you want to keep the bound value close to the current 
+peak because using an even higher value could result in pre-allocated 
+resource waste. No because I could understand if rising such number to 
+higher-than-needed values could result in waste of resources, so you want 
+to monitor it to keep it as close as possible to the peak. But this is not 
+the case.
+So today we have three groups of users:
+
+- Users that have been hit by the limit
+  * Those have probably bumped the value up to the wazzoo.
+
+- Unaware users with machines having potential of hitting the current limit
+  * Those, monitor or not, being unaware, they won't notice it until hits. 
+    And since rising it costs zero, they'd likely prefer to bump it to the 
+    stars instead of monitoring an incrementing by small steps.
+  * Applying a lomem-dependent max_instances default value like the two 
+    lines patch I posted, is probably the best choice even for stable.
+
+- Unaware users with low-load machines
+  * Those won't even notice it.
+
+The default value can be rised, bound to lomem sizes. I see no problems in 
+there. Or, like Willy said, make (for -stable) the default unlimited, and 
+let sysadmins to put the bounds if they feel the DoS can apply to them.
+
+
+
+
+- Davide
+
 
