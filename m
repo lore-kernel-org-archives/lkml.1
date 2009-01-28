@@ -1,51 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbZA1Oi2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZA1Ok1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119AbZA1Oi2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 09:38:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbZA1OiU
+	id S1753354AbZA1Ok1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 09:40:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751136AbZA1OkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 09:38:20 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:57389 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbZA1OiT (ORCPT
+	Wed, 28 Jan 2009 09:40:19 -0500
+Received: from liberdade.minaslivre.org ([72.232.18.203]:46121 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751123AbZA1OkS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 09:38:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Go0O7ITXSoSaU9Xq207taPf2i7GDaDZFWEA8M2Z4W+yyhpMSjHvzStp0pVZeTu5s6S
-         kF1I2QWIsK1r4LX4r9AXoXuTecwnPBuwA4M1vewSZUGcO0prHuQyub1AJawSiMejPeDf
-         c11O/wlKgxEiVsj+pVJqndjokRleaJiwt6Dkg=
-MIME-Version: 1.0
-In-Reply-To: <20090128102841.GA24924@barrios-desktop>
-References: <20090128102841.GA24924@barrios-desktop>
-Date: Wed, 28 Jan 2009 23:38:17 +0900
-X-Google-Sender-Auth: 3e2c02abfa9ac2a8
-Message-ID: <2f11576a0901280638w6a18d5fel4997a226a8e924cc@mail.gmail.com>
-Subject: Re: [BUG] mlocked page counter mismatch
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: linux mm <linux-mm@kvack.org>, linux kernel <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Jan 2009 09:40:18 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: tiwai@suse.de
+Cc: linux-kernel@vger.kernel.org,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH] ALSA: Don't cold reset AC97 codecs in some ICH chipsets
+Date: Wed, 28 Jan 2009 12:40:42 -0200
+Message-Id: <1233153642-4882-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/28 MinChan Kim <minchan.kim@gmail.com>:
->
-> After executing following program, 'cat /proc/meminfo' shows
-> following result.
->
-> --
-> # cat /proc/meminfo
-> ..
-> Unevictable:           8 kB
-> Mlocked:               8 kB
-> ..
+Check in a quirk list if it should do cold reset when AC97 power saving
+is enabled. Some devices do not resume properly when cold reset,
+although power saving works OK.
 
-ok, I'll hand this bug.
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ sound/pci/intel8x0.c |   68 ++++++++++++++++++++++++++++++++++++++-----------
+ 1 files changed, 52 insertions(+), 16 deletions(-)
+
+diff --git a/sound/pci/intel8x0.c b/sound/pci/intel8x0.c
+index 19d3391..b37bd26 100644
+--- a/sound/pci/intel8x0.c
++++ b/sound/pci/intel8x0.c
+@@ -2287,23 +2287,23 @@ static void do_ali_reset(struct intel8x0 *chip)
+ 	iputdword(chip, ICHREG(ALI_INTERRUPTSR), 0x00000000);
+ }
+ 
+-static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
+-{
+-	unsigned long end_time;
+-	unsigned int cnt, status, nstatus;
+-	
+-	/* put logic to right state */
+-	/* first clear status bits */
+-	status = ICH_RCS | ICH_MCINT | ICH_POINT | ICH_PIINT;
+-	if (chip->device_type == DEVICE_NFORCE)
+-		status |= ICH_NVSPINT;
+-	cnt = igetdword(chip, ICHREG(GLOB_STA));
+-	iputdword(chip, ICHREG(GLOB_STA), cnt & status);
++#ifdef CONFIG_SND_AC97_POWER_SAVE
++static struct snd_pci_quirk ich_chip_reset_mode[] = {
++	SND_PCI_QUIRK(0x1014, 0x051f, "Thinkpad R32", 1),
++	{ } /* end */
++};
+ 
++static int snd_intel8x0_ich_chip_cold_reset(struct intel8x0 *chip)
++{
++	unsigned int cnt;
+ 	/* ACLink on, 2 channels */
++
++	if (snd_pci_quirk_lookup(chip->pci, ich_chip_reset_mode))
++		return -EIO;
++
+ 	cnt = igetdword(chip, ICHREG(GLOB_CNT));
+ 	cnt &= ~(ICH_ACLINK | ICH_PCM_246_MASK);
+-#ifdef CONFIG_SND_AC97_POWER_SAVE
++
+ 	/* do cold reset - the full ac97 powerdown may leave the controller
+ 	 * in a warm state but actually it cannot communicate with the codec.
+ 	 */
+@@ -2312,22 +2312,58 @@ static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
+ 	udelay(10);
+ 	iputdword(chip, ICHREG(GLOB_CNT), cnt | ICH_AC97COLD);
+ 	msleep(1);
++	return 0;
++}
++#define snd_intel8x0_ich_chip_can_cold_reset(chip) \
++	(!snd_pci_quirk_lookup(chip->pci, ich_chip_reset_mode))
+ #else
++#define snd_intel8x0_ich_chip_cold_reset(x) do { } while (0)
++#define snd_intel8x0_ich_chip_can_cold_reset(chip) (0)
++#endif
++
++static int snd_intel8x0_ich_chip_reset(struct intel8x0 *chip)
++{
++	unsigned long end_time;
++	unsigned int cnt;
++	/* ACLink on, 2 channels */
++	cnt = igetdword(chip, ICHREG(GLOB_CNT));
++	cnt &= ~(ICH_ACLINK | ICH_PCM_246_MASK);
+ 	/* finish cold or do warm reset */
+ 	cnt |= (cnt & ICH_AC97COLD) == 0 ? ICH_AC97COLD : ICH_AC97WARM;
+ 	iputdword(chip, ICHREG(GLOB_CNT), cnt);
+ 	end_time = (jiffies + (HZ / 4)) + 1;
+ 	do {
+ 		if ((igetdword(chip, ICHREG(GLOB_CNT)) & ICH_AC97WARM) == 0)
+-			goto __ok;
++			return 0;
+ 		schedule_timeout_uninterruptible(1);
+ 	} while (time_after_eq(end_time, jiffies));
+ 	snd_printk(KERN_ERR "AC'97 warm reset still in progress? [0x%x]\n",
+ 		   igetdword(chip, ICHREG(GLOB_CNT)));
+ 	return -EIO;
++}
++
++static int snd_intel8x0_ich_chip_init(struct intel8x0 *chip, int probing)
++{
++	unsigned long end_time;
++	unsigned int status, nstatus;
++	unsigned int cnt;
++	int err;
++
++	/* put logic to right state */
++	/* first clear status bits */
++	status = ICH_RCS | ICH_MCINT | ICH_POINT | ICH_PIINT;
++	if (chip->device_type == DEVICE_NFORCE)
++		status |= ICH_NVSPINT;
++	cnt = igetdword(chip, ICHREG(GLOB_STA));
++	iputdword(chip, ICHREG(GLOB_STA), cnt & status);
++
++	if (snd_intel8x0_ich_chip_can_cold_reset(chip))
++		err = snd_intel8x0_ich_chip_cold_reset(chip);
++	else
++		err = snd_intel8x0_ich_chip_reset(chip);
++	if (err < 0)
++		return err;
+ 
+-      __ok:
+-#endif
+ 	if (probing) {
+ 		/* wait for any codec ready status.
+ 		 * Once it becomes ready it should remain ready
+-- 
+1.6.0.6
+
