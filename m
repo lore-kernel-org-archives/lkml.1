@@ -1,209 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZA1RAq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbZA1RB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754710AbZA1RAq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 12:00:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZA1RAg
+	id S1755409AbZA1RB2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 12:01:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751516AbZA1RBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 12:00:36 -0500
-Received: from e31.co.us.ibm.com ([32.97.110.149]:60750 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbZA1RAf (ORCPT
+	Wed, 28 Jan 2009 12:01:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:45500 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbZA1RBS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 12:00:35 -0500
-Date: Wed, 28 Jan 2009 22:30:09 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric_Weisbecker_=3Cfweisbec=40gmail=2Ecom=3E?=@thinktux.in.ibm.com
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       powertop ml <power@bughost.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
-       srostedt@redhat.com, Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] tracer for sys_open() - sreadahead
-Message-ID: <20090128170009.GB5365@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere> <20090128093821.GA14549@in.ibm.com> <c62985530901280621k54a47515g952cd29444a6054e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530901280621k54a47515g952cd29444a6054e@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 28 Jan 2009 12:01:18 -0500
+Subject: Re: Buggy IPI and MTRR code on low memory
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, jens.axboe@oracle.com
+In-Reply-To: <alpine.DEB.1.10.0901281153080.25359@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>
+	 <1233161182.10992.52.camel@laptop>
+	 <alpine.DEB.1.10.0901281153080.25359@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Wed, 28 Jan 2009 18:00:49 +0100
+Message-Id: <1233162049.10992.56.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 03:21:24PM +0100, Frédéric Weisbecker wrote:
-> 2009/1/28 Ananth N Mavinakayanahalli <ananth@in.ibm.com>:
-> > On Tue, Jan 27, 2009 at 11:43:05PM +0100, Frederic Weisbecker wrote:
-> >> On Tue, Jan 27, 2009 at 12:08:04PM -0800, Kok, Auke wrote:
-
-...
-
-> > Here is something I did sometime ago that uses utrace. It is per task
-> > doesn't use ftrace and is just intended as a prototype. It traces both
-> > syscalls and returns.
-> >
-> > ---
-> >
-> > Here is the beginnings of a simple utrace based strace. Right now, one
-> > needs to invoke this program with a 'insmod <modname> tid=<tid>'.
-> >
-> > The output looks something like this:
-> > [267352.641112] Attached to 32604 => 0xd8f60090
-> > [267353.981046] 2
-> > [267353.981085] 197 0x1 0xbff8cd84 0x86cff4 0x86d4c0 0x86d4c0 0xbff8cd50a = 0
-> > [267353.981097] 192 0x0 0x1000 0x3 0x22 0xffffffff 0x0 = b7f8d000
-> > [267353.981124] 4 0x1 0xb7f8d000 0xd 0xd 0xb7f8d000 0xbff8cda8 = d
-> > [267353.981174] 4 0x1 0xb7f8d000 0x3 0x3 0xb7f8d000 0xbff8c7dc = 3
-> > [267353.981209] 252 0x0 0x0 0x86e0d0 0x0 0x86b274 0xbff8cee8 =
-> > [267353.981215] Task 32604 exited
-> > [267355.460180] Cannot find PID 32604
-> >
-> > I know strace does a pretty print, but this is a quick and dirty
-> > prototype.
-> > ---
-> >
-> > #include <linux/module.h>
-> > #include <linux/utrace.h>
-> > #include <linux/err.h>
-> > #include <asm/syscall.h>
-> >
-> > MODULE_DESCRIPTION("syscall trace");
-> > MODULE_LICENSE("GPL");
-> >
-> > static int target_tid;
-> >
-> > module_param_named(tid, target_tid, int, 0);
-> >
-> > static u32 task_syscall_entry(u32 action, struct utrace_attached_engine *engine,
-> >                struct task_struct *task, struct pt_regs *regs)
-> > {
-> >        long callno;
-> >        unsigned long args[6];
-> >
-> >        callno = syscall_get_nr(task, regs);
-> >        syscall_get_arguments(task, regs, 0, 6, args);
-> >
-> >        printk(KERN_INFO "%ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx = ",
-> >                callno, args[0], args[1], args[2], args[3], args[4], args[5]);
-> >        return UTRACE_RESUME;
-> > }
-> >
-> > static u32 task_syscall_exit(u32 action, struct utrace_attached_engine *engine,
-> >                struct task_struct *task, struct pt_regs *regs)
-> > {
-> >        long retval = syscall_get_return_value(task, regs);
-> >        printk("%lx\n", retval);
-> >        return UTRACE_RESUME;
-> > }
-> >
-> > static u32 task_exit(enum utrace_resume_action action,
-> >                struct utrace_attached_engine *engine, struct task_struct *task,
-> >                long orig_code, long *code)
-> > {
-> >        printk("\n");
-> >        printk(KERN_INFO "Task %d exited\n", target_tid);
-> >        return UTRACE_DETACH;
-> > }
-> >
-> > static const struct utrace_engine_ops syscall_ops =
-> > {
-> >        .report_syscall_entry = task_syscall_entry,
-> >        .report_syscall_exit = task_syscall_exit,
-> >        .report_exit = task_exit,
-> > };
-> >
-> > static int __init strace_init(void)
-> > {
-> >        struct pid *pid;
-> >        int ret = 0;
-> >        struct task_struct *target;
-> >        struct utrace_attached_engine *engine;
-> >
-> >        pid = find_get_pid(target_tid);
-> >        if (pid == NULL) {
-> >                printk(KERN_ERR "Cannot find PID %d\n", target_tid);
-> >                ret = -ESRCH;
-> >                goto out;
-> >        }
-> >
-> >        engine = utrace_attach_pid(pid, UTRACE_ATTACH_CREATE, &syscall_ops, 0);
-> >        if (IS_ERR(engine)) {
-> >                printk(KERN_ERR "utrace_attach_pid: %ld\n", PTR_ERR(engine));
-> >                ret = -EINVAL;
-> >                goto out;
-> >        } else if (engine == NULL) {
-> >                printk(KERN_ERR "utrace_attach_pid => NULL\n");
-> >                ret = -EINVAL;
-> >                goto out;
-> >        } else
-> >                printk(KERN_INFO "Attached to %d => 0x%p\n",
-> >                                target_tid, engine);
-> >
-> >        /*
-> >         * If utrace_attach_pid() succeeded above, we are sure the target
-> >         * is valid here
-> >         */
-> >        target = pid_task(pid, PIDTYPE_PID);
-> >        put_pid(pid);
-> >
-> >        ret = utrace_set_events(target, engine, UTRACE_EVENT_SYSCALL |
-> >                        UTRACE_EVENT(EXIT));
-> >        if (ret)
-> >                printk(KERN_ERR "utrace_set_events returned %d\n", ret);
-> >
-> > out:
-> >        return ret;
-> > }
-> >
-> > static void __exit strace_exit(void)
-> > {
-> >        int ret = 0;
-> >        struct pid *pid;
-> >        struct utrace_attached_engine *engine;
-> >        struct task_struct *target;
-> >
-> >        pid = find_get_pid(target_tid);
-> >        if (pid == NULL) {
-> >                printk(KERN_ERR "Cannot find PID %d\n", target_tid);
-> >                return;
-> >        }
-> >
-> >        target = pid_task(pid, PIDTYPE_PID);
-> >        put_pid(pid);
-> >        engine = utrace_attach_task(target, UTRACE_ATTACH_MATCH_OPS,
-> >                        &syscall_ops, 0);
-> >        if (IS_ERR(engine))
-> >                printk(KERN_ERR "Can't find self: %ld\n", PTR_ERR(engine));
-> >        else if (engine == NULL)
-> >                printk(KERN_ERR "Can't find self: no match\n");
-> >        else {
-> >                printk(KERN_INFO "Trying detach 0x%p from %d\n",
-> >                                engine, target_tid);
-> >                ret = utrace_control(target, engine, UTRACE_DETACH);
-> >                if (ret)
-> >                        printk(KERN_ERR "utrace_control returned %d\n",
-> >                                        ret);
-> >        }
-> > }
-> >
-> > module_init(strace_init);
-> > module_exit(strace_exit);
-> >
+On Wed, 2009-01-28 at 11:56 -0500, Steven Rostedt wrote:
+> On Wed, 28 Jan 2009, Peter Zijlstra wrote:
 > 
+> > On Wed, 2009-01-28 at 11:38 -0500, Steven Rostedt wrote:
+> > 
+> > > The problem is that if we use the stack, then we must wait for the 
+> > > function to finish. But in the mtrr code, the called functions are waiting 
+> > > for the caller to do something after the smp_call_function. Thus we 
+> > > deadlock!
+> > 
+> > You'd have to 'fix' the regular fallback paths to use your scheme as
+> > well.
 > 
-> This is a very convenient Api. I would be glad to use it with ftrace.
-> But, what is it's status currently? Some projects to merge it?
+> Not sure what you mean by that. I booted just fine with the patch, and 
+> forcing data to NULL. Although, I'm not saying that these should not be 
+> fixed.
 
-Its currently available as a git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/frob/linux-2.6-utrace.git
+Yeah, I was being confused by:
 
-There is work going on to merge it upstream. Roland McGrath will be able
-to better answer when. However, one of the biggest requirements to merge
-it is an in-kernel user. Hopefully Frank's prototype and/or an ftrace
-integration of the above snippet should be incentive to push for some
-in-tree users :-)
+> @@ -230,6 +242,20 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+>                         data = kmalloc(sizeof(*data), GFP_ATOMIC);
+>                         if (data)
+>                                 data->flags = CSD_FLAG_ALLOC;
+> +                       else {
+> +                               /*
+> +                                * There exist callers that call
+> +                                * functions that will wait on the caller
+> +                                * to do something after calling this.
+> +                                * This means we can not wait for the callee
+> +                                * function to finish.
+> +                                * Use the stack data but have the callee
+> +                                * copy it and tell us we can continue
+> +                                * before they call the function.
+> +                                */
+> +                               data = &d;
+> +                               data->flags = CSD_FLAG_RELEASE;
+> +                       }
+>                 }
+>                 if (!data) {
+>                         data = &d;
 
-Ananth
+that second !data test in there, thinking there was a fallback path
+still relying on CSD_FLAG_WAIT.
+
+It appears all is well indeed.
+
