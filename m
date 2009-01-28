@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754172AbZA1UiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZA1Uix@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754172AbZA1UiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:38:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755505AbZA1U3n
+	id S1756907AbZA1Uix (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:38:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbZA1U3p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:29:43 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:32949 "EHLO
+	Wed, 28 Jan 2009 15:29:45 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:32956 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755435AbZA1U3c (ORCPT
+	with ESMTP id S1755439AbZA1U3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Jan 2009 15:29:32 -0500
-MBOX-Line: From nobody Wed Jan 28 12:27:53 2009
+MBOX-Line: From nobody Wed Jan 28 12:28:07 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH E 09/14] OMAP2/3 clock: drop recalc function pointers from
-	fixed rate clocks
+Subject: [PATCH E 14/14] OMAP clock: rearrange clock.h structure order
 To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>,
-       Tony Lindgren <tony@atomide.com>
-Date: Wed, 28 Jan 2009 12:27:53 -0700
-Message-ID: <20090128192751.29333.10463.stgit@localhost.localdomain>
+Cc: linux-omap@vger.kernel.org, Russell King <rmk+kernel@arm.linux.org.uk>,
+       Paul Walmsley <paul@pwsan.com>, Tony Lindgren <tony@atomide.com>
+Date: Wed, 28 Jan 2009 12:28:07 -0700
+Message-ID: <20090128192804.29333.82743.stgit@localhost.localdomain>
 In-Reply-To: <20090128192551.29333.82943.stgit@localhost.localdomain>
 References: <20090128192551.29333.82943.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
@@ -29,190 +28,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that rate recalculation and rate propagation are two separate
-operations, drop recalc function pointers from all fixed rate clocks.
-Their rates are fixed, so there's no need to recalculate.
+From: Russell King <rmk@dyn-67.arm.linux.org.uk>
 
-linux-omap source commit is 5e96093d1f7f2ff27ba61f4174f429ddca15a4b9.
+... to eliminate unnecessary padding.  We have rather a lot of these
+structures, so eliminating unnecessary padding results in a saving of
+1488 bytes.
 
+[paul@pwsan.com: updated against current linux-omap clock tree, now saves
+1512 bytes on OMAP3 builds]
+
+linux-omap source commit is 64a423d87fae87608642c28393bb440b45e5e25e.
+
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 Signed-off-by: Paul Walmsley <paul@pwsan.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/clock24xx.h |    4 ----
- arch/arm/mach-omap2/clock34xx.h |   10 ----------
- arch/arm/plat-omap/clock.c      |   18 ++++++++++--------
- 3 files changed, 10 insertions(+), 22 deletions(-)
+ arch/arm/plat-omap/include/mach/clock.h |   30 +++++++++++++++---------------
+ 1 files changed, 15 insertions(+), 15 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/clock24xx.h b/arch/arm/mach-omap2/clock24xx.h
-index 929a257..30f3c57 100644
---- a/arch/arm/mach-omap2/clock24xx.h
-+++ b/arch/arm/mach-omap2/clock24xx.h
-@@ -627,7 +627,6 @@ static struct clk func_32k_ck = {
- 	.flags		= CLOCK_IN_OMAP242X | CLOCK_IN_OMAP243X |
- 				RATE_FIXED | ALWAYS_ENABLED | RATE_PROPAGATES,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
+diff --git a/arch/arm/plat-omap/include/mach/clock.h b/arch/arm/plat-omap/include/mach/clock.h
+index 58450a1..9d38a25 100644
+--- a/arch/arm/plat-omap/include/mach/clock.h
++++ b/arch/arm/plat-omap/include/mach/clock.h
+@@ -20,8 +20,8 @@ struct clockdomain;
+ #if defined(CONFIG_ARCH_OMAP2) || defined(CONFIG_ARCH_OMAP3)
+ 
+ struct clksel_rate {
+-	u8			div;
+ 	u32			val;
++	u8			div;
+ 	u8			flags;
  };
  
- /* Typical 12/13MHz in standalone mode, will be 26Mhz in chassis mode */
-@@ -657,7 +656,6 @@ static struct clk alt_ck = {		/* Typical 54M or 48M, may not exist */
- 	.flags		= CLOCK_IN_OMAP242X | CLOCK_IN_OMAP243X |
- 				RATE_FIXED | ALWAYS_ENABLED | RATE_PROPAGATES,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
+@@ -31,30 +31,30 @@ struct clksel {
  };
  
- /*
-@@ -709,7 +707,6 @@ static struct clk apll96_ck = {
- 	.enable_bit	= OMAP24XX_EN_96M_PLL_SHIFT,
- 	.enable		= &omap2_clk_fixed_enable,
- 	.disable	= &omap2_clk_fixed_disable,
--	.recalc		= &propagate_rate,
+ struct dpll_data {
+-	u16			mult_div1_reg;
+ 	u32			mult_mask;
+ 	u32			div1_mask;
+-	u16			last_rounded_m;
+-	u8			last_rounded_n;
+ 	unsigned long		last_rounded_rate;
+ 	unsigned int		rate_tolerance;
+-	u16			max_multiplier;
+-	u8			min_divider;
+-	u8			max_divider;
+ 	u32			max_tolerance;
+ 	struct clk		*bypass_clk;
+-	u16			control_reg;
+ 	u32			enable_mask;
++	u16			mult_div1_reg;
++	u16			control_reg;
++	u16			max_multiplier;
++	u16			last_rounded_m;
++	u8			last_rounded_n;
++	u8			min_divider;
++	u8			max_divider;
+ #  if defined(CONFIG_ARCH_OMAP3)
+-	u16			idlest_reg;
+-	u32			idlest_mask;
+-	u32			freqsel_mask;
+ 	u8			modes;
+ 	u8			auto_recal_bit;
+ 	u8			recal_en_bit;
+ 	u8			recal_st_bit;
+ 	u16			autoidle_reg;
++	u16			idlest_reg;
+ 	u32			autoidle_mask;
++	u32			idlest_mask;
++	u32			freqsel_mask;
+ #  endif
  };
  
- static struct clk apll54_ck = {
-@@ -724,7 +721,6 @@ static struct clk apll54_ck = {
- 	.enable_bit	= OMAP24XX_EN_54M_PLL_SHIFT,
- 	.enable		= &omap2_clk_fixed_enable,
- 	.disable	= &omap2_clk_fixed_disable,
--	.recalc		= &propagate_rate,
- };
- 
- /*
-diff --git a/arch/arm/mach-omap2/clock34xx.h b/arch/arm/mach-omap2/clock34xx.h
-index 5357507..66cbe0c 100644
---- a/arch/arm/mach-omap2/clock34xx.h
-+++ b/arch/arm/mach-omap2/clock34xx.h
-@@ -67,7 +67,6 @@ static struct clk omap_32k_fck = {
- 	.flags		= CLOCK_IN_OMAP343X | RATE_FIXED | RATE_PROPAGATES |
- 				ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- static struct clk secure_32k_fck = {
-@@ -76,7 +75,6 @@ static struct clk secure_32k_fck = {
- 	.flags		= CLOCK_IN_OMAP343X | RATE_FIXED | RATE_PROPAGATES |
- 				ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- /* Virtual source clocks for osc_sys_ck */
-@@ -86,7 +84,6 @@ static struct clk virt_12m_ck = {
- 	.flags		= CLOCK_IN_OMAP343X | RATE_FIXED | RATE_PROPAGATES |
- 				ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- static struct clk virt_13m_ck = {
-@@ -95,7 +92,6 @@ static struct clk virt_13m_ck = {
- 	.flags		= CLOCK_IN_OMAP343X | RATE_FIXED | RATE_PROPAGATES |
- 				ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- static struct clk virt_16_8m_ck = {
-@@ -104,7 +100,6 @@ static struct clk virt_16_8m_ck = {
- 	.flags		= CLOCK_IN_OMAP3430ES2 | RATE_FIXED | RATE_PROPAGATES |
- 				ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- static struct clk virt_19_2m_ck = {
-@@ -113,7 +108,6 @@ static struct clk virt_19_2m_ck = {
- 	.flags		= CLOCK_IN_OMAP343X | RATE_FIXED | RATE_PROPAGATES |
- 				ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- static struct clk virt_26m_ck = {
-@@ -122,7 +116,6 @@ static struct clk virt_26m_ck = {
- 	.flags		= CLOCK_IN_OMAP343X | RATE_FIXED | RATE_PROPAGATES |
- 				ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- static struct clk virt_38_4m_ck = {
-@@ -131,7 +124,6 @@ static struct clk virt_38_4m_ck = {
- 	.flags		= CLOCK_IN_OMAP343X | RATE_FIXED | RATE_PROPAGATES |
- 				ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- static const struct clksel_rate osc_sys_12m_rates[] = {
-@@ -220,7 +212,6 @@ static struct clk sys_altclk = {
- 	.name		= "sys_altclk",
- 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES | ALWAYS_ENABLED,
- 	.clkdm		= { .name = "cm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- /*
-@@ -232,7 +223,6 @@ static struct clk mcbsp_clks = {
- 	.name		= "mcbsp_clks",
- 	.flags		= CLOCK_IN_OMAP343X | RATE_PROPAGATES | ALWAYS_ENABLED,
- 	.clkdm		= { .name = "prm_clkdm" },
--	.recalc		= &propagate_rate,
- };
- 
- /* PRM EXTERNAL CLOCK OUTPUT */
-diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
-index c60548a..4cf1145 100644
---- a/arch/arm/plat-omap/clock.c
-+++ b/arch/arm/plat-omap/clock.c
-@@ -187,7 +187,8 @@ int clk_set_rate(struct clk *clk, unsigned long rate)
- 	if (arch_clock->clk_set_rate) {
- 		ret = arch_clock->clk_set_rate(clk, rate);
- 		if (ret == 0) {
--			(*clk->recalc)(clk);
-+			if (clk->recalc)
-+				(*clk->recalc)(clk);
- 			if (clk->flags & RATE_PROPAGATES)
- 				propagate_rate(clk);
- 		}
-@@ -212,7 +213,8 @@ int clk_set_parent(struct clk *clk, struct clk *parent)
- 	if (arch_clock->clk_set_parent) {
- 		ret = arch_clock->clk_set_parent(clk, parent);
- 		if (ret == 0) {
--			(*clk->recalc)(clk);
-+			if (clk->recalc)
-+				(*clk->recalc)(clk);
- 			if (clk->flags & RATE_PROPAGATES)
- 				propagate_rate(clk);
- 		}
-@@ -285,11 +287,10 @@ void propagate_rate(struct clk * tclk)
- 	list_for_each_entry(clkp, &clocks, node) {
- 		if (likely(clkp->parent != tclk))
- 			continue;
--		if (likely((u32)clkp->recalc)) {
-+		if (clkp->recalc)
- 			clkp->recalc(clkp);
--			if (clkp->flags & RATE_PROPAGATES)
--				propagate_rate(clkp);
--		}
-+		if (clkp->flags & RATE_PROPAGATES)
-+			propagate_rate(clkp);
- 	}
- }
- 
-@@ -305,8 +306,9 @@ void recalculate_root_clocks(void)
- 	struct clk *clkp;
- 
- 	list_for_each_entry(clkp, &clocks, node) {
--		if (unlikely(!clkp->parent) && likely((u32)clkp->recalc)) {
--			clkp->recalc(clkp);
-+		if (unlikely(!clkp->parent)) {
-+			if (clkp->recalc)
-+				clkp->recalc(clkp);
- 			if (clkp->flags & RATE_PROPAGATES)
- 				propagate_rate(clkp);
- 		}
+@@ -85,18 +85,17 @@ struct clk {
+ 	struct list_head	children;
+ 	__u32			flags;
+ 	u32			enable_reg;
+-	__u8			enable_bit;
+-	__s8			usecount;
+-	u8			idlest_bit;
+ 	void			(*recalc)(struct clk *, unsigned long, u8);
+ 	int			(*set_rate)(struct clk *, unsigned long);
+ 	long			(*round_rate)(struct clk *, unsigned long);
+ 	void			(*init)(struct clk *);
+ 	int			(*enable)(struct clk *);
+ 	void			(*disable)(struct clk *);
++	__u8			enable_bit;
++	__s8			usecount;
++	u8			idlest_bit;
+ #if defined(CONFIG_ARCH_OMAP2) || defined(CONFIG_ARCH_OMAP3)
+ 	u8			fixed_div;
+-	u16			clksel_reg;
+ 	u32			clksel_mask;
+ 	const struct clksel	*clksel;
+ 	struct dpll_data	*dpll_data;
+@@ -104,6 +103,7 @@ struct clk {
+ 		const char		*name;
+ 		struct clockdomain	*ptr;
+ 	} clkdm;
++	u16			clksel_reg;
+ 	s16			prcm_mod;
+ #else
+ 	__u8			rate_offset;
 
 
