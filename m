@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754056AbZA1EOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbZA1EQA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754056AbZA1EOr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 23:14:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZA1EOi
+	id S1754722AbZA1EQA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 23:16:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZA1EPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 23:14:38 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:54897 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752180AbZA1EOi (ORCPT
+	Tue, 27 Jan 2009 23:15:51 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:35582 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751372AbZA1EPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 23:14:38 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 27 Jan 2009 20:14:36 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ray Lee <ray-lk@madrabbit.org>
-cc: Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
-In-Reply-To: <2c0942db0901272007w4298738cq37918f776276d424@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0901272010470.20262@alien.or.mcafeemobile.com>
-References: <20090128033824.GA1662@brong.net>  <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>  <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com> <2c0942db0901272007w4298738cq37918f776276d424@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 27 Jan 2009 23:15:50 -0500
+Date: Tue, 27 Jan 2009 20:13:53 -0800
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Louis Rilling <louis.rilling@kerlabs.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
+Subject: Re: [PATCH 2/2] configfs: Rework configfs_depend_item() locking
+	and make lockdep happy
+Message-ID: <20090128041353.GF7244@mail.oracle.com>
+Mail-Followup-To: Louis Rilling <louis.rilling@kerlabs.com>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
+References: <20081218111536.GR19128@hawkmoon.kerlabs.com> <1229623218-8056-3-git-send-email-louis.rilling@kerlabs.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1229623218-8056-3-git-send-email-louis.rilling@kerlabs.com>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+	come to perfection.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.497FDBD3.00B8:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009, Ray Lee wrote:
-
-> On Tue, Jan 27, 2009 at 8:00 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > On Wed, 28 Jan 2009, Bron Gondwana wrote:
-> >
-> >> Both Postfix and Apache use an epoll instance per child, which
-> >> leads to significant scalability issues with max_user_instances
-> >> set so low.  Bump the default to 1024 so medium sized sites are
-> >> not impacted.
-> >
-> > NACK. Epoll allocates globally about 100 to 160 bytes (32/64 bit) for each
-> > file added to the interface:
-> >
-> >        for i 1..1024
-> >                for j 1..1024
-> >                        if i!=j
-> >                                add j -> i
-> >
-> > That's (N^2 * {100, 160}) = 100MB to 160MB of pinned kernel memory,
-> > explotable by simple users with untouched NFILES.
-> > This is the reason such limit was introduced in the first place. Again,
-> > for the 10th time, if you have a loaded server with multiple processes
-> > using epoll:
-> >
-> > $ echo NN > /proc/sys/fs/epoll/max_user_instances
-> >
-> > Note that NN does not consume any resource "per se", so if you feel
-> > threatened by such limit, you can go wild with it.
+On Thu, Dec 18, 2008 at 07:00:18PM +0100, Louis Rilling wrote:
+> configfs_depend_item() recursively locks all inodes mutex from configfs root to
+> the target item, which makes lockdep unhappy. The purpose of this recursive
+> locking is to ensure that the item tree can be safely parsed and that the target
+> item, if found, is not about to leave.
 > 
-> It's really simple. A kernel upgrade in a -stable series point release
-> broke a rational user-space setup. If you don't want to adjust the
-> defaults, then the sane thing to do is to revert the commit that
-> caused the grief. Postfix is everywhere. Apache is everywhere.
+> This patch reworks configfs_depend_item() locking using configfs_dirent_lock.
+> Since configfs_dirent_lock protects all changes to the configfs_dirent tree, and
+> protects tagging of items to be removed, this lock can be used instead of the
+> inodes mutex lock chain.
+> This needs that the check for dependents be done atomically with
+> CONFIGFS_USET_DROPPING tagging.
 > 
-> Userspace is not broken here, and the whole idea of a -stable series
-> is that administrators can upgrade to them without having to worry
-> about things getting broken or making specific configuration changes
-> by point release.
+> Now lockdep looks happy with configfs.
 
-The reason Greg took it, was that in a multiuser systems, that's a DoS 
-EZ-PZ Lemon Squeezie.
+	This looks almost, but not quite right.
+	In the create path, we do configfs_new_dirent() before we set
+sd->s_type.  But configfs_new_dirent() attaches sd->s_sibling.  So, in
+aonther thread, configfs_depend_prep() can traverse this s_sibling
+without CONFIGFS_USET_CREATING being set.  This turns out to be safe
+because CONFIGFS_DIR is also not set - but boy I'd like a comment about
+that.
+	What if we're in mkdir(2) in one thread and another thread is  
+trying to pin the parent directory?  That is, we are inside
+configfs_mkdir(parent, new_dentry, mode).  The other thread is doing
+configfs_depend_item(subsys, parent).  With this patch, the other thread
+will not take parent->i_mutex.  It will happily determine that
+parent is part of the tree and bump its s_dependent with no locking.  Is
+this OK?
+	If it is - isn't this patch good without any other reason?  That
+is, aside from the issues of lockdep, isn't it better for
+configfs_depend_item() to never have to worry about the VFS locks other
+than the configfs root?
+
+Joel
 
 
+-- 
 
-- Davide
+ The zen have a saying:
+ "When you learn how to listen, ANYONE can be your teacher."
 
-
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
