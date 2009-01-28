@@ -1,64 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZA1Lip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZA1Lr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755353AbZA1Lip (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 06:38:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZA1Lic
+	id S1754575AbZA1Lr6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 06:47:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751334AbZA1Lrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 06:38:32 -0500
-Received: from smtp.nokia.com ([192.100.122.233]:29727 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754593AbZA1Lib (ORCPT
+	Wed, 28 Jan 2009 06:47:48 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:60244 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751241AbZA1Lrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 06:38:31 -0500
-Date: Wed, 28 Jan 2009 13:37:58 +0200 (EET)
-Message-Id: <20090128.133758.55858977.Hiroshi.DOYU@nokia.com>
-To: linux@arm.linux.org.uk
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org
-Subject: Re: [PATCH 3/6] omap iommu: omap3 iommu device registration
-From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-In-Reply-To: <20090128104157.GC15907@n2100.arm.linux.org.uk>
-References: <20090117162139.GB12341@n2100.arm.linux.org.uk>
-	<20090127.232935.68131092.Hiroshi.DOYU@nokia.com>
-	<20090128104157.GC15907@n2100.arm.linux.org.uk>
-X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 28 Jan 2009 06:47:47 -0500
+Message-ID: <498045D1.60005@jp.fujitsu.com>
+Date: Wed, 28 Jan 2009 20:47:29 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: linux-pci@vger.kernel.org, "Barnes, Jesse" <jesse.barnes@intel.com>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Len Brown <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, shaohua.li@intel.com,
+       Grant Grundler <grundler@parisc-linux.org>
+Subject: Re: ACPI hotplug panic with current git head
+References: <1231604250.3642.33.camel@localhost.localdomain>	 <alpine.LFD.2.00.0901121604380.5859@localhost.localdomain>	 <1231807693.27151.21.camel@localhost.localdomain>	 <1232046108.5966.57.camel@localhost.localdomain>	 <alpine.LFD.2.00.0901151421110.4737@localhost.localdomain>	 <1232049269.5966.64.camel@localhost.localdomain>	 <1232050347.5966.66.camel@localhost.localdomain>	 <4970242C.4010404@jp.fujitsu.com>	 <1232115546.3224.5.camel@localhost.localdomain>	 <4973D2EE.3060203@jp.fujitsu.com>	 <1232328216.3247.68.camel@localhost.localdomain>	 <4973EF64.2050404@jp.fujitsu.com> <1232558780.736.24.camel@localhost.localdomain> <497D1BD7.9000609@jp.fujitsu.com>
+In-Reply-To: <497D1BD7.9000609@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jan 2009 11:38:00.0904 (UTC) FILETIME=[DFC54C80:01C9813C]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: ext Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 3/6] omap iommu: omap3 iommu device registration
-Date: Wed, 28 Jan 2009 11:41:57 +0100
-
-> On Tue, Jan 27, 2009 at 11:29:35PM +0200, Hiroshi DOYU wrote:
-> > I attached the update one.
+Kenji Kaneshige wrote:
+> James Bottomley wrote:
+>> On Mon, 2009-01-19 at 12:11 +0900, Kenji Kaneshige wrote:
+>>> I'm sending the debug patch against 2.6.29-rc1 below. I'm also
+>>> sending it as an attachment. It also contains the code to prevent
+>>> the kernel panic from you. Please note that you will see two
+>>> WARN_ON(1) messages with the patch. Those are shown by my debug
+>>> patch.
+>>>
+>>> Could you try it and send me the whole dmsg output?
+>> Actually, the machine is now running -rc2, so the patch doesn't quite
+>> apply: 
+>>
+>> jejb@sparkweed> patch -p1 < ~/tmp.diff
+>> patching file include/linux/pci-acpi.h
+>> patching file drivers/pci/hotplug/acpiphp_glue.c
+>> Hunk #1 FAILED at 266.
+>> Hunk #2 succeeded at 467 (offset 2 lines).
+>> Hunk #3 succeeded at 489 (offset 2 lines).
+>> Hunk #4 succeeded at 518 (offset 2 lines).
+>> Hunk #5 succeeded at 556 (offset 2 lines).
+>>
+>> Looks like the rejection is in the NULL check piece, so I've already
+>> actually sent you the information it would produce.
+>>
+>> The dmesg output is pretty big, below.
+>>
 > 
-> Thanks.  I want to hold off on taking these just a little bit longer.
-
-OK. agreed.
-
-> > +static const struct iommu_platform_data omap3_iommu_pdata[] __initconst = {
-> > +     {
-> > +             .name = "isp",
-> > +             .nr_tlb_entries = 8,
-> > +             .clk_name = "cam_ick",
-> > +     },
-> > +     {
-> > +             .name = "iva2",
-> > +             .nr_tlb_entries = 32,
-> > +             .clk_name = "iva2_ck",
+> Thank you very much, James.
 > 
-> With the omap clk implementation in a state of flux, hopefully moving
-> towards something which better reflects the intentions of the clk API,
-> passing clk names around becomes entirely wasteful and unnecessary.
+> Thanks to you, I found the root cause of the
+> problem. The acpi_pci_get_bridge_handle() function assumes
+> pci_bus->self is NULL on the root bus. But it is not true
+> and pci_bus->self can have a non-NULL value on some
+> platfroms (like yours). So it must check pci_bus->parent
+> instead.
 > 
-> That's not to say that what you currently have won't work with the patches
-> as they currently stand - it will work as is.  I'd just rather avoid
-> having to have a separate patch to convert this code as well.
+> I found some other code that has the same wrong assumption.
+> I'll make a fix for them and send it soon.
+> 
 
-OK. I'll update later, then.
+I made several patches to fix the wrong assumption described
+above. It is very difficult for me to check all the code that
+refers pci_bus->self. So I checked include/linux/pci-acpi.h and
+the code under drivers/pci/ only. And I made patches for the code
+like below:
+
+ - The code that clearly chooses host bridge operation or
+   PCI-to-PCI bridge operation based on pci_bus->self.
+
+ - The code that might cause endless loop if pci_bus->self is
+   not NULL on the PCI root bus.
+
+The patches are
+
+ - [PATCH 1/8] PCI/ACPI: fix wrong assumption in acpi_pci_get_bridge_handle
+ - [PATCH 2/8] PCI/ACPI: fix wrong assumption in acpi_find_root_bridge_handle
+ - [PATCH 3/8] PCI hotplug: fix wrong assumption in acpi_get_hp_params_from_firmware
+ - [PATCH 4/8] PCI hotplug: fix wrong assumption in acpi_get_hp_hw_control_from_firmware
+ - [PATCH 5/8] PCI: fix wrong assumption in pci_find_upstream_pcie_bridge
+ - [PATCH 6/8] PCI: fix wrong assumption in pci_read_bridge_bases
+ - [PATCH 7/8] PCI: fix wrong assumption in pci_get_interrupt_pin
+ - [PATCH 8/8] PCI: fix wrong assumption in pci_common_swizzle
+
+Thanks,
+Kenji Kaneshige
+
+
