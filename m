@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759483AbZA1U4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761203AbZA1U4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759483AbZA1U4h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:56:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbZA1UdY
+	id S1761203AbZA1U4y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbZA1UdY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 28 Jan 2009 15:33:24 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:47911 "EHLO
+Received: from utopia.booyaka.com ([72.9.107.138]:47914 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756788AbZA1UdU (ORCPT
+	with ESMTP id S1754891AbZA1UdW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 15:33:20 -0500
-MBOX-Line: From nobody Wed Jan 28 12:08:35 2009
+	Wed, 28 Jan 2009 15:33:22 -0500
+MBOX-Line: From nobody Wed Jan 28 12:08:46 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH C 09/13] OMAP3 clock: fix non-CORE DPLL rate assignment bugs
+Subject: [PATCH C 13/13] OMAP3 clock: disable DPLL autoidle while waiting for
+	DPLL to lock
 To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
 Cc: linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>,
-       Tomi Valkeinen <tomi.valkeinen@nokia.com>, Rick Bronson <rick@efn.org>,
-       Timo Kokkonen <timo.t.kokkonen@nokia.com>,
-       Sakari Poussa <sakari.poussa@nokia.com>,
+       Peter de Schrijver <peter.de-schrijver@nokia.com>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
        Tony Lindgren <tony@atomide.com>
-Date: Wed, 28 Jan 2009 12:08:35 -0700
-Message-ID: <20090128190832.12092.37861.stgit@localhost.localdomain>
+Date: Wed, 28 Jan 2009 12:08:46 -0700
+Message-ID: <20090128190844.12092.15000.stgit@localhost.localdomain>
 In-Reply-To: <20090128190724.12092.22239.stgit@localhost.localdomain>
 References: <20090128190724.12092.22239.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
@@ -31,58 +31,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 8b1f0bd44fe490ec631230c8c040753a2bda8caa introduced a bug that
-caused non-CORE DPLL rates to be incorrectly set on boot in
-omap3_noncore_dpll_enable().  Debugged by Tomi Valkeinen
-<tomi.valkeinen@nokia.com> - thanks Tomi.
+During _omap3_noncore_dpll_lock(), if a DPLL has no active downstream
+clocks and DPLL autoidle is enabled, the DPLL may never lock, since it
+will enter autoidle immediately.  To resolve this, disable DPLL
+autoidle while locking the DPLL, and unconditionally wait for the DPLL
+to lock.  This fixes some bugs where the kernel would hang when returning
+from retention or return the wrong rate for the DPLL.
 
-Also fix omap3_noncore_dpll_set_rate() to assign clk->rate after a
-DPLL reprogram.
+This patch is a collaboration with Peter de Schrijver
+<peter.de-schrijver@nokia.com> and Kevin Hilman
+<khilman@deeprootsystems.com>.
 
-Tested on 3430SDP.
-
-linux-omap source commit is 2ac1da8c787f73f067e717408e631501ba60aabc.
+linux-omap source commit is 3b7de4be879f1f4f55ae59882a5cbd80f6dcf0f0.
 
 Signed-off-by: Paul Walmsley <paul@pwsan.com>
-Cc: Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Cc: Rick Bronson <rick@efn.org>
-Cc: Timo Kokkonen <timo.t.kokkonen@nokia.com>
-Cc: Sakari Poussa <sakari.poussa@nokia.com>
+Cc: Peter de Schrijver <peter.de-schrijver@nokia.com>
+Cc: Kevin Hilman <khilman@deeprootsystems.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/clock34xx.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
+ arch/arm/mach-omap2/clock34xx.c |   15 +++++----------
+ 1 files changed, 5 insertions(+), 10 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/clock34xx.c b/arch/arm/mach-omap2/clock34xx.c
-index 424eed6..c943043 100644
+index c943043..33d5a51 100644
 --- a/arch/arm/mach-omap2/clock34xx.c
 +++ b/arch/arm/mach-omap2/clock34xx.c
-@@ -270,7 +270,6 @@ static int _omap3_noncore_dpll_stop(struct clk *clk)
- static int omap3_noncore_dpll_enable(struct clk *clk)
- {
- 	int r;
--	long rate;
- 	struct dpll_data *dd;
+@@ -162,19 +162,14 @@ static int _omap3_noncore_dpll_lock(struct clk *clk)
  
- 	if (clk == &dpll3_ck)
-@@ -286,7 +285,7 @@ static int omap3_noncore_dpll_enable(struct clk *clk)
- 		r = _omap3_noncore_dpll_lock(clk);
+ 	ai = omap3_dpll_autoidle_read(clk);
  
- 	if (!r)
--		clk->rate = rate;
-+		clk->rate = omap2_get_dpll_rate(clk);
++	omap3_dpll_deny_idle(clk);
++
+ 	_omap3_dpll_write_clken(clk, DPLL_LOCKED);
+ 
+-	if (ai) {
+-		/*
+-		 * If no downstream clocks are enabled, CM_IDLEST bit
+-		 * may never become active, so don't wait for DPLL to lock.
+-		 */
+-		r = 0;
++	r = _omap3_wait_dpll_status(clk, 1);
++
++	if (ai)
+ 		omap3_dpll_allow_idle(clk);
+-	} else {
+-		r = _omap3_wait_dpll_status(clk, 1);
+-		omap3_dpll_deny_idle(clk);
+-	};
  
  	return r;
  }
-@@ -429,6 +428,9 @@ static int omap3_noncore_dpll_set_rate(struct clk *clk, unsigned long rate)
- 		ret = omap3_noncore_dpll_program(clk, dd->last_rounded_m,
- 						 dd->last_rounded_n, freqsel);
- 
-+		if (!ret)
-+			clk->rate = rate;
-+
- 	}
- 
- 	omap3_dpll_recalc(clk);
 
 
