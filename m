@@ -1,59 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764703AbZA2Ab2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765453AbZA2Abs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764703AbZA2Ab2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 19:31:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758162AbZA1Xyw
+	id S1765453AbZA2Abs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 19:31:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759520AbZA1Xzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:54:52 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:42243 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760255AbZA1Xyu (ORCPT
+	Wed, 28 Jan 2009 18:55:45 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:41413 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759318AbZA1Xzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:54:50 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 28 Jan 2009 15:54:49 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Chris Adams <cmadams@hiwaay.net>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch 016/104] epoll: introduce resource usage limits
-In-Reply-To: <20090128214608.GA1495059@hiwaay.net>
-Message-ID: <alpine.DEB.1.10.0901281551490.21401@alien.or.mcafeemobile.com>
-References: <bF63r-1nB-59@gated-at.bofh.it> <bXmsS-4eW-1@gated-at.bofh.it> <bXmMj-4HC-7@gated-at.bofh.it> <bXqQ1-2GV-49@gated-at.bofh.it> <bXxHH-5zl-23@gated-at.bofh.it> <bXQqZ-1hm-9@gated-at.bofh.it> <bYb2q-8bp-21@gated-at.bofh.it> <bYchR-1AT-3@gated-at.bofh.it>
- <bZ6Di-6ZV-1@gated-at.bofh.it> <bZ9rz-2X3-7@gated-at.bofh.it> <20090128214608.GA1495059@hiwaay.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 28 Jan 2009 18:55:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=SGJjs83DR4MwRkdhfdxx7FONbflkW3Uz8XMz8QLOBO/mq2aGZZUk85eHKws6O7Qk8T
+         9X4co3d49zIVf8Eeu1RuwRhJ+mQskWDHedSxe41PoAcbgJFSjDd0dbo42fKmCuNXlj21
+         G7eHGT0x6G1CuO2Gk3klIJioGsZvFnIJtA3ww=
+Date: Thu, 29 Jan 2009 08:55:14 +0900
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux mm <linux-mm@kvack.org>, linux kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [BUG] mlocked page counter mismatch
+Message-ID: <20090128235514.GB24924@barrios-desktop>
+References: <20090128102841.GA24924@barrios-desktop> <1233156832.8760.85.camel@lts-notebook>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233156832.8760.85.camel@lts-notebook>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009, Chris Adams wrote:
-
-> Once upon a time, Davide Libenzi  <davidel@xmailserver.org> said:
-> >I already gave you my opinion on such code. There is no need for it. If 
-> >your servers are loaded, in the same way you bump NFILES (and likely 
-> >even other default configs), you bump up max_user_instances:
+On Wed, Jan 28, 2009 at 10:33:52AM -0500, Lee Schermerhorn wrote:
+> On Wed, 2009-01-28 at 19:28 +0900, MinChan Kim wrote:
+> > After executing following program, 'cat /proc/meminfo' shows
+> > following result. 
+> > 
+> > --
+> > # cat /proc/meminfo 
+> > ..
+> > Unevictable:           8 kB
+> > Mlocked:               8 kB
+> > ..
 > 
-> The flip side of that is this could just be added to the list of limits
-> you set on a multi-user system if you don't want $LUSER to DoS your
-> server (such as max procs, cpu time, virtual memory, etc.).  I don't
-> think this is a security issue on single-user systems or servers with
-> only privileged access.
+> Sorry, from your description, I can't understand what the problem is.
+> Are you saying that 8kB [2 pages] remains locked after you run your
+> test?
+
+Yes. 
+Sorry. My explanation was not enought. 
+
 > 
-> Admins of multi-user systems are used to having to manage limits (see
-> pam_limits for example).  Admins of single-user or privileged servers
-> (e.g. mail or non-shared web servers) are not for the most part (postfix
-> doesn't open 1025 files in a single process).
+> What did meminfo show before running the test program?  And what kernel
+> version?
 
-It seems this is the most agreeable solution based on this thread replies. 
-That is, leave it unbound, and offer limiting capabilities to multiuser 
-sysadmins.
+The meminfo showed mlocked, unevictable pages was zero. 
+My kernel version is 2.6.29-rc2. 
+
+> 
+> > 
+> > -- test program --
+> > 
+> > #include <stdio.h>
+> > #include <sys/mman.h>
+> > int main()
+> > {
+> >         char buf[64] = {0,};
+> >         char *ptr;
+> >         int k;
+> >         int i,j;
+> >         int x,y;
+> >         mlockall(MCL_CURRENT);
+> >         sprintf(buf, "cat /proc/%d/maps", getpid());
+> >         system(buf);
+> >         return 0;
+> > }
+> > 
+> > --
+> > 
+> > It seems mlocked page counter have a problem.
+> > After I diged in source, I found that try_to_unmap_file called 
+> > try_to_mlock_page about shared mapping pages 
+> > since other vma had VM_LOCKED flag.
+> > After all, try_to_mlock_page called mlock_vma_page. 
+> > so, mlocked counter increased
+> 
+> This path of try_to_unmap_file() -> try_to_mlock_page() should only be
+> invoked during reclaim--from shrink_page_list().  [try_to_unmap() is
+> also called from page migration, but in this case, try_to_unmap_one()
+> won't return SWAP_MLOCK so we don't call try_to_mlock_page().]  Unless
+> your system is in continuous reclaim, I don't think you'd hit this
+> during your test program.
+
+My system was not reclaim mode. It could be called following path. 
+exit_mmap -> munlock_vma_pages_all->munlock_vma_page->try_to_munlock->
+try_to_unmap_file->try_to_mlock_page
+
+> 
+> > 
+> > But, After I called munlockall intentionally, the counter work well. 
+> > In case of munlockall, we already had a mmap_sem about write. 
+> > Such a case, try_to_mlock_page can't call mlock_vma_page.
+> > so, mlocked counter didn't increased. 
+> > As a result, the counter seems to be work well but I think 
+> > it also have a problem.
+> 
+> I THINK this is a artifact of the way stats are accumulated in per cpu
+> differential counters and pushed to the zone state accumulators when a
+> threshold is reached.  I've seen this condition before, but it
+> eventually clears itself as the stats get pushed to the zone state.
+> Still, it bears more investigation, as it's been a while since I worked
+> on this and some subsequent fixes could have broken it:
+
+Hmm... My test result is as follow. 
+
+1) without munlockall
+before:
+
+root@barrios-target-linux:~# tail -8 /proc/vmstat 
+unevictable_pgs_culled 0
+unevictable_pgs_scanned 0
+unevictable_pgs_rescued 0
+unevictable_pgs_mlocked 0
+unevictable_pgs_munlocked 0
+unevictable_pgs_cleared 0
+unevictable_pgs_stranded 0
+unevictable_pgs_mlockfreed 0
+
+root@barrios-target-linux:~# cat /proc/meminfo | egrep 'Mlo|Unev'
+Unevictable:           0 kB
+Mlocked:               0 kB
+
+after:
+root@barrios-target-linux:~# tail -8 /proc/vmstat 
+unevictable_pgs_culled 369
+unevictable_pgs_scanned 0
+unevictable_pgs_rescued 388
+unevictable_pgs_mlocked 392
+unevictable_pgs_munlocked 387
+unevictable_pgs_cleared 1
+unevictable_pgs_stranded 0
+unevictable_pgs_mlockfreed 0
+
+root@barrios-target-linux:~# cat /proc/meminfo | egrep 'Mlo|Unev'
+Unevictable:           8 kB
+Mlocked:               8 kB
+
+after dropping cache
+
+root@barrios-target-linux:~# cat /proc/meminfo | egrep 'Mlo|Unev'
+Unevictable:           4 kB
+Mlocked:               4 kB
 
 
+2) with munlockall 
 
-- Davide
+barrios-target@barrios-target-linux:~$ tail -8 /proc/vmstat
+unevictable_pgs_culled 0
+unevictable_pgs_scanned 0
+unevictable_pgs_rescued 0
+unevictable_pgs_mlocked 0
+unevictable_pgs_munlocked 0
+unevictable_pgs_cleared 0
+unevictable_pgs_stranded 0
+unevictable_pgs_mlockfreed 0
+
+barrios-target@barrios-target-linux:~$ cat /proc/meminfo | egrep 'Mlo|Unev'
+Unevictable:           0 kB
+Mlocked:               0 kB
+
+after
 
 
+root@barrios-target-linux:~# tail -8 /proc/vmstat
+unevictable_pgs_culled 369
+unevictable_pgs_scanned 0
+unevictable_pgs_rescued 389
+unevictable_pgs_mlocked 389
+unevictable_pgs_munlocked 389
+unevictable_pgs_cleared 0
+unevictable_pgs_stranded 0
+unevictable_pgs_mlockfreed 0
+
+root@barrios-target-linux:~# cat /proc/meminfo | egrep 'Mlo|Unev'
+Unevictable:           0 kB
+Mlocked:               0 kB
+
+Both tests have to show same result. 
+But is didn't. 
+
+I think it's not per-cpu problem. 
+
+When I digged in the source, I found that. 
+In case of test without munlockall, try_to_unmap_file calls try_to_mlock_page 
+since some pages are mapped several vmas(I don't know why that pages is shared 
+other vma in same process. One of page which i have seen is test program's 
+first code page[page->index : 0 vma->vm_pgoff : 0]. It was mapped by data vma, too). 
+Other vma have VM_LOCKED.
+So try_to_unmap_file calls try_to_mlock_page. Then, After calling 
+successful down_read_try_lock call, mlock_vma_page increased mlocked
+counter again. 
+
+In case of test with munlockall, try_to_mlock_page's down_read_trylock 
+couldn't be sucessful. That's because munlockall called down_write.
+At result, try_to_mlock_page cannot call try_to_mlock_page. so, mlocked counter 
+don't increased. I think it's not right. 
+But fortunately Mlocked number is right. :(
+
+--
+Kinds Regards
+MinChan Kim
