@@ -1,47 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbZA1KYO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbZA1KYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753740AbZA1KYO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 05:24:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZA1KX5
+	id S1754926AbZA1KYb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 05:24:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZA1KYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 05:23:57 -0500
-Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:48420 "EHLO
+	Wed, 28 Jan 2009 05:24:00 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:48462 "EHLO
 	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750947AbZA1KX4 (ORCPT
+	by vger.kernel.org with ESMTP id S1751328AbZA1KX6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 05:23:56 -0500
+	Wed, 28 Jan 2009 05:23:58 -0500
 From: "Henrik Rydberg" <rydberg@euromail.se>
 To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>
-Subject: [PATCH 0/6] input: resend of pending patches
-Date: Wed, 28 Jan 2009 11:23:43 +0100
-Message-Id: <1233138229-12489-1-git-send-email-rydberg@euromail.se>
+Subject: [PATCH 1/6] input: bcm5974: Prepare for a new trackpad header type
+Date: Wed, 28 Jan 2009 11:23:44 +0100
+Message-Id: <1233138229-12489-2-git-send-email-rydberg@euromail.se>
 X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1233138229-12489-1-git-send-email-rydberg@euromail.se>
+References: <1233138229-12489-1-git-send-email-rydberg@euromail.se>
 X-Originating-IP: 83.248.192.132
-X-Scan-Result: No virus found in message 1LS7aM-00058c-3G.
-X-Scan-Signature: ch-smtp01.sth.basefarm.net 1LS7aM-00058c-3G 62ac3c4b5e27701b20252547d6ce78dc
+X-Scan-Result: No virus found in message 1LS7aN-0005MY-4k.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1LS7aN-0005MY-4k fa9de7982ce494b6287ef9f66eb61d56
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+The new unibody Macbooks are equipped with an integrated button and
+trackpad. The package header of the trackpad interface has changed to
+also contain information about the integrated button.  This patch
+performs the necessary preparations to allow for the new package
+header.
 
-here are the outstanding input patches.
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ drivers/input/mouse/bcm5974.c |   42 ++++++++++++++++++++++------------------
+ 1 files changed, 23 insertions(+), 19 deletions(-)
 
-Cheers,
-Henrik
-
-Henrik Rydberg (6):
-  input: bcm5974: Prepare for a new trackpad header type
-  input: bcm5974: Add quad-finger tapping
-  input: bcm5974: Add support for the Macbook 5 (Unibody)
-  input: bcm5974: Augmented debug information
-  input: Allow certain EV_ABS events to bypass all filtering
-  input: Add a detailed multi-touch finger data report protocol (rev2)
-
- drivers/input/input.c         |   36 +++++++++++++++
- drivers/input/mouse/bcm5974.c |   99 ++++++++++++++++++++++++++++++----------
- include/linux/input.h         |   29 ++++++++++++
- 3 files changed, 139 insertions(+), 25 deletions(-)
+diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
+index 2998a6a..e97462e 100644
+--- a/drivers/input/mouse/bcm5974.c
++++ b/drivers/input/mouse/bcm5974.c
+@@ -96,13 +96,14 @@ struct bt_data {
+ 	u8 rel_y;		/* relative y coordinate */
+ };
+ 
+-/* trackpad header structure */
+-struct tp_header {
+-	u8 unknown1[16];	/* constants, timers, etc */
+-	u8 fingers;		/* number of fingers on trackpad */
+-	u8 unknown2[9];		/* constants, timers, etc */
++/* trackpad header types */
++enum tp_type {
++	TYPE1			/* plain trackpad */
+ };
+ 
++/* trackpad finger data offsets */
++#define FINGER_TYPE1		26
++
+ /* trackpad finger structure */
+ struct tp_finger {
+ 	__le16 origin;		/* zero when switching track finger */
+@@ -119,11 +120,9 @@ struct tp_finger {
+ 	__le16 multi;		/* one finger: varies, more fingers: constant */
+ };
+ 
+-/* trackpad data structure, empirically at least ten fingers */
+-struct tp_data {
+-	struct tp_header header;
+-	struct tp_finger finger[16];
+-};
++/* trackpad finger data size, empirically at least ten fingers */
++#define SIZEOF_FINGER		sizeof(struct tp_finger)
++#define SIZEOF_ALL_FINGERS	(16 * SIZEOF_FINGER)
+ 
+ /* device-specific parameters */
+ struct bcm5974_param {
+@@ -139,6 +138,8 @@ struct bcm5974_config {
+ 	int bt_ep;		/* the endpoint of the button interface */
+ 	int bt_datalen;		/* data length of the button interface */
+ 	int tp_ep;		/* the endpoint of the trackpad interface */
++	enum tp_type tp_type;	/* type of trackpad interface */
++	int tp_offset;		/* offset to trackpad finger data */
+ 	int tp_datalen;		/* data length of the trackpad interface */
+ 	struct bcm5974_param p;	/* finger pressure limits */
+ 	struct bcm5974_param w;	/* finger width limits */
+@@ -158,7 +159,7 @@ struct bcm5974 {
+ 	struct urb *bt_urb;		/* button usb request block */
+ 	struct bt_data *bt_data;	/* button transferred data */
+ 	struct urb *tp_urb;		/* trackpad usb request block */
+-	struct tp_data *tp_data;	/* trackpad transferred data */
++	u8 *tp_data;			/* trackpad transferred data */
+ 	int fingers;			/* number of fingers on trackpad */
+ };
+ 
+@@ -184,7 +185,7 @@ static const struct bcm5974_config bcm5974_config_table[] = {
+ 		USB_DEVICE_ID_APPLE_WELLSPRING_ISO,
+ 		USB_DEVICE_ID_APPLE_WELLSPRING_JIS,
+ 		0x84, sizeof(struct bt_data),
+-		0x81, sizeof(struct tp_data),
++		0x81, TYPE1, FINGER_TYPE1, FINGER_TYPE1 + SIZEOF_ALL_FINGERS,
+ 		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
+ 		{ DIM_WIDTH, DIM_WIDTH / SN_WIDTH, 0, 2048 },
+ 		{ DIM_X, DIM_X / SN_COORD, -4824, 5342 },
+@@ -195,7 +196,7 @@ static const struct bcm5974_config bcm5974_config_table[] = {
+ 		USB_DEVICE_ID_APPLE_WELLSPRING2_ISO,
+ 		USB_DEVICE_ID_APPLE_WELLSPRING2_JIS,
+ 		0x84, sizeof(struct bt_data),
+-		0x81, sizeof(struct tp_data),
++		0x81, TYPE1, FINGER_TYPE1, FINGER_TYPE1 + SIZEOF_ALL_FINGERS,
+ 		{ DIM_PRESSURE, DIM_PRESSURE / SN_PRESSURE, 0, 256 },
+ 		{ DIM_WIDTH, DIM_WIDTH / SN_WIDTH, 0, 2048 },
+ 		{ DIM_X, DIM_X / SN_COORD, -4824, 4824 },
+@@ -276,18 +277,20 @@ static int report_bt_state(struct bcm5974 *dev, int size)
+ static int report_tp_state(struct bcm5974 *dev, int size)
+ {
+ 	const struct bcm5974_config *c = &dev->cfg;
+-	const struct tp_finger *f = dev->tp_data->finger;
++	const struct tp_finger *f;
+ 	struct input_dev *input = dev->input;
+-	const int fingers = (size - 26) / 28;
+-	int raw_p, raw_w, raw_x, raw_y;
++	int raw_p, raw_w, raw_x, raw_y, raw_n;
+ 	int ptest = 0, origin = 0, nmin = 0, nmax = 0;
+ 	int abs_p = 0, abs_w = 0, abs_x = 0, abs_y = 0;
+ 
+-	if (size < 26 || (size - 26) % 28 != 0)
++	if (size < c->tp_offset || (size - c->tp_offset) % SIZEOF_FINGER != 0)
+ 		return -EIO;
+ 
++	f = (const struct tp_finger *)(dev->tp_data + c->tp_offset);
++	raw_n = (size - c->tp_offset) / SIZEOF_FINGER;
++
+ 	/* always track the first finger; when detached, start over */
+-	if (fingers) {
++	if (raw_n) {
+ 		raw_p = raw2int(f->force_major);
+ 		raw_w = raw2int(f->size_major);
+ 		raw_x = raw2int(f->abs_x);
+@@ -307,12 +310,13 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ 		abs_w = int2bound(&c->w, raw_w);
+ 		abs_x = int2bound(&c->x, raw_x - c->x.devmin);
+ 		abs_y = int2bound(&c->y, c->y.devmax - raw_y);
+-		for (; f != dev->tp_data->finger + fingers; f++) {
++		while (raw_n--) {
+ 			ptest = int2bound(&c->p, raw2int(f->force_major));
+ 			if (ptest > PRESSURE_LOW)
+ 				nmax++;
+ 			if (ptest > PRESSURE_HIGH)
+ 				nmin++;
++			f++;
+ 		}
+ 	}
+ 
+-- 
+1.5.6.3
 
