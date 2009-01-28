@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbZA1SP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754883AbZA1SPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754558AbZA1SP3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 13:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZA1SPO
+	id S1754883AbZA1SPs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 13:15:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZA1SPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 13:15:14 -0500
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:6583 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbZA1SPM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 13:15:12 -0500
-Message-ID: <4980A07A.5060904@caviumnetworks.com>
-Date: Wed, 28 Jan 2009 10:14:18 -0800
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, corbet@lwn.net,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
-       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+	Wed, 28 Jan 2009 13:15:37 -0500
+Received: from waste.org ([66.93.16.53]:37142 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751601AbZA1SPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 13:15:36 -0500
 Subject: Re: [PATCH, RFC] Remove fasync() BKL usage, take 3325
-References: <20090115153211.663df310@bike.lwn.net> <20090122065104.2787df2d.akpm@linux-foundation.org> <20090122203248.GA20159@infradead.org> <20090123045646.GK15750@one.firstfloor.org> <20090127165504.53ed7a2d.akpm@linux-foundation.org> <20090128031439.GA11025@redhat.com> <20090128173618.GA3174@infradead.org>
-In-Reply-To: <20090128173618.GA3174@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       viro@ZenIV.linux.org.uk, linux-api@vger.kernel.org,
+       alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20090128175541.GA7074@infradead.org>
+References: <20090115153211.663df310@bike.lwn.net>
+	 <20090122065104.2787df2d.akpm@linux-foundation.org>
+	 <20090122203248.GA20159@infradead.org>
+	 <20090123045646.GK15750@one.firstfloor.org>
+	 <20090127165504.53ed7a2d.akpm@linux-foundation.org>
+	 <20090128031439.GA11025@redhat.com> <20090128173618.GA3174@infradead.org>
+	 <20090128104414.09aee3f9@bike.lwn.net>
+	 <20090128175541.GA7074@infradead.org>
+Content-Type: text/plain
+Date: Wed, 28 Jan 2009 12:13:47 -0600
+Message-Id: <1233166427.5202.907.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jan 2009 18:14:18.0380 (UTC) FILETIME=[3C4034C0:01C98174]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Wed, Jan 28, 2009 at 04:14:39AM +0100, Oleg Nesterov wrote:
->> I didn't send the actual patch. The idea is,
->>
->> 	can't we use O_LOCK_FLAGS bit? I agree, it is a bit ugly,
->> 	and I won't insist if you don't like is.
->>
->> 		static inline int try_lock_f_flags(struct file *file)
->> 		{
->> 			return !test_and_set_bit(O_LOCK_FLAGS, file->f_flags);
->> 		}
+On Wed, 2009-01-28 at 12:55 -0500, Christoph Hellwig wrote:
+> On Wed, Jan 28, 2009 at 10:44:14AM -0700, Jonathan Corbet wrote:
+> > If others disagree, and using bitops is not an idea which will fly, I'd
+> > sure like to know sooner rather than later.
 > 
-> ->f_flags is an unsigned int and the bit macros need an unsigned long.
-> Increasing the size of struct file for this is probably a bad idea.
-> 
+> There are more than enough use cases that have large numbers of open
+> files (e.g. various high-end network servers).  While it might not be
+> as sewer as for inodes I think it's really bad idea to do it for no
+> reason. 
 
-Could that be seen as a deficiency in the bit macros?
+Maybe we can just demote f_ep_lock to f_lock and share it? 
 
-Could we modify them so that they worked on unsigned int as well?  I 
-know we could for some architectures.
+Or extend flags and have two independent bitlocks in it. This actually
+shrinks struct_file for most users.
 
-David Daney
+-- 
+http://selenic.com : development and support for Mercurial and Linux
+
+
