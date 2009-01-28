@@ -1,102 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZA1KjW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZA1KmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbZA1KjW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 05:39:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbZA1KjC
+	id S1754839AbZA1KmV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 05:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbZA1KmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 05:39:02 -0500
-Received: from ozlabs.org ([203.10.76.45]:52440 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754781AbZA1KjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 05:39:00 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-Date: Wed, 28 Jan 2009 21:08:49 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
-       akpm@linux-foundation.org, hpa@zytor.com, brgerst@gmail.com,
-       ebiederm@xmission.com, cl@linux-foundation.org, travis@sgi.com,
-       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-References: <20090115183942.GA6325@elte.hu> <200901271213.18605.rusty@rustcorp.com.au> <497E705B.5000302@kernel.org>
-In-Reply-To: <497E705B.5000302@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Jan 2009 05:42:12 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:37230 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751217AbZA1KmL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 05:42:11 -0500
+Date: Wed, 28 Jan 2009 10:41:57 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 3/6] omap iommu: omap3 iommu device registration
+Message-ID: <20090128104157.GC15907@n2100.arm.linux.org.uk>
+References: <20090116083719.18344.28959.stgit@oreo.research.nokia.com> <20090117162139.GB12341@n2100.arm.linux.org.uk> <20090127.232935.68131092.Hiroshi.DOYU@nokia.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901282108.51864.rusty@rustcorp.com.au>
+In-Reply-To: <20090127.232935.68131092.Hiroshi.DOYU@nokia.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009 12:54:27 Tejun Heo wrote:
-> Hello, Rusty.
+On Tue, Jan 27, 2009 at 11:29:35PM +0200, Hiroshi DOYU wrote:
+> I attached the update one.
 
-Hi Tejun!
+Thanks.  I want to hold off on taking these just a little bit longer.
 
-> There actually were quite some places where atomic add ops would be
-> useful, especially the places where statistics are collected.  For
-> logical bitops, I don't think we'll have too many of them.
+> +static const struct iommu_platform_data omap3_iommu_pdata[] __initconst = {
+> +	{
+> +		.name = "isp",
+> +		.nr_tlb_entries = 8,
+> +		.clk_name = "cam_ick",
+> +	},
+> +	{
+> +		.name = "iva2",
+> +		.nr_tlb_entries = 32,
+> +		.clk_name = "iva2_ck",
 
-If the stats are only manipulated in one context, than an atomic requirement is overkill (and expensive on non-x86).
+With the omap clk implementation in a state of flux, hopefully moving
+towards something which better reflects the intentions of the clk API,
+passing clk names around becomes entirely wasteful and unnecessary.
 
-> > If they are worth doing generically, should the ops be atomic? To
-> > extrapolate from x86 usages again, it seems to be happy with
-> > non-atomic (tho of course it is atomic on x86).
-> 
-> If atomic rw/add/sub are implementible on most archs (and judging from
-> local_t, I suppose it is), I think it should.  So that it can replace
-> local_t and we won't need something else again in the future.
-
-This is more like Christoph's CPU_OPS: they were special operators on normal per-cpu vars/ptrs.  Generic version was irqsave+op+irqrestore.
-
-I actually like this idea, but Mathieu insists that the ops be NMI-safe, for ftrace.  Hence local_t needing to be atomic_t for generic code.
-
-AFAICT we'll need a hybrid: HAVE_NMISAFE_CPUOPS, and if not, use atomic_t
-in ftrace (which isn't NMI safe on parisc or sparc/32 anyway, but I don't think we care).
-
-Other than the shouting, I liked Christoph's system:
-- CPU_INC = always safe (eg. local_irq_save/per_cpu(i)++/local_irq_restore)
-- _CPU_INC = not safe against interrupts (eg. get_cpu/per_cpu(i)++/put_cpu)
-- __CPU_INC = not safe against anything (eg. per_cpu(i)++)
-
-I prefer the name 'local' to the name 'cpu', but I'm not hugely fussed.
-
-> >> Another question to ask is whether to keep using separate
-> >> interfaces for static and dynamic percpu variables or migrate to
-> >> something which can take both.
-> >
-> > Well, IA64 can do stuff with static percpus that it can't do with
-> > dynamic (assuming we get expanding dynamic percpu areas
-> > later). That's because they use TLB tricks for a static 64k per-cpu
-> > area, but this doesn't scale.  That might not be vital: abandoning
-> > that trick will mean they can't optimise read_percpu/read_percpu_var
-> > etc as much.
-> 
-> Isn't something like the following possible?
-> 
-> #define pcpu_read(ptr)						\
-> ({								\
-> 	if (__builtin_constant_p(ptr) &&			\
-> 	    ptr >= PCPU_STATIC_START && ptr < PCPU_STATIC_END)	\
-> 		do 64k TLB trick for static pcpu;		\
-> 	else							\
-> 		do generic stuff;				\
-> })
-
-No, that will be "do generic stuff", since it's a link-time constant.  I don't know that this is a huge worry, to be honest.  We can leave the __ia64_per_cpu_var for their arch-specific code (I feel the same way about x86 to be honest).
-
-> > Tejun, any chance of you updating the tj-percpu tree? My current
-> > patches are against Linus's tree, and rebasing them on yours
-> > involves some icky merging.
-> 
-> If Ingo is okay with it, I'm fine with it too.  Unless Ingo objects,
-> I'll do it tomorrow-ish (still big holiday here).
-
-Ah, I did not realize that you celebrated Australia day :)
-
-Cheers!
-Rusty.
+That's not to say that what you currently have won't work with the patches
+as they currently stand - it will work as is.  I'd just rather avoid
+having to have a separate patch to convert this code as well.
