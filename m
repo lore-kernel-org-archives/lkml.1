@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752313AbZA1RZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752128AbZA1R2O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752313AbZA1RZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 12:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751256AbZA1RYu
+	id S1752128AbZA1R2O (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 12:28:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751104AbZA1R14
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 12:24:50 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:56078 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751052AbZA1RYu (ORCPT
+	Wed, 28 Jan 2009 12:27:56 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:35693 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751052AbZA1R1z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 12:24:50 -0500
-Date: Wed, 28 Jan 2009 12:24:48 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, jens.axboe@oracle.com
-Subject: Re: Buggy IPI and MTRR code on low memory
-In-Reply-To: <1233161182.10992.52.camel@laptop>
-Message-ID: <alpine.DEB.1.10.0901281221450.25359@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com> <1233161182.10992.52.camel@laptop>
+	Wed, 28 Jan 2009 12:27:55 -0500
+Date: Wed, 28 Jan 2009 11:50:21 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Herbert Xu <herbert@gondor.apana.org.au>, akpm@linux-foundation.org,
+       hpa@zytor.com, brgerst@gmail.com, ebiederm@xmission.com, travis@sgi.com,
+       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+In-Reply-To: <200901282108.51864.rusty@rustcorp.com.au>
+Message-ID: <alpine.DEB.1.10.0901281148540.13825@qirst.com>
+References: <20090115183942.GA6325@elte.hu> <200901271213.18605.rusty@rustcorp.com.au> <497E705B.5000302@kernel.org> <200901282108.51864.rusty@rustcorp.com.au>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,27 +31,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 28 Jan 2009, Rusty Russell wrote:
 
-On Wed, 28 Jan 2009, Peter Zijlstra wrote:
-> ---
-> Subject: x86: fix potential deadlock in set_mtrr()
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Wed Jan 28 17:17:32 CET 2009
-> 
-> smp_call_function() can fall-back to waiting on completion in case of
-> low memory (GFP_ATOMIC). set_mtrr() relies on the async behaviour of !wait.
-> 
-> This would deadlock.
-> 
-> Fix this by providing per-cpu csd's and using __smp_call_function_single().
+> AFAICT we'll need a hybrid: HAVE_NMISAFE_CPUOPS, and if not, use atomic_t
+> in ftrace (which isn't NMI safe on parisc or sparc/32 anyway, but I don't think we care).
 
-I applied the patch but it still locked up in the testing NMI 
-watchdog code. Not saying your patch is at fault, because we never made it 
-to your code. This is probably not an issue, since if we have low memory 
-at bootup, we have much bigger problems to deal with.
+Right.
 
-I'll have skip the NMI test and see if it locks up any place else.
 
--- Steve
+> Other than the shouting, I liked Christoph's system:
+> - CPU_INC = always safe (eg. local_irq_save/per_cpu(i)++/local_irq_restore)
+> - _CPU_INC = not safe against interrupts (eg. get_cpu/per_cpu(i)++/put_cpu)
+> - __CPU_INC = not safe against anything (eg. per_cpu(i)++)
+>
+> I prefer the name 'local' to the name 'cpu', but I'm not hugely fussed.
 
+The term cpu is meaning multiple things at this point. So yes it may be
+better to go with glibc naming of thread local space.
 
