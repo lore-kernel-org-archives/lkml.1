@@ -1,153 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbZA1Ck6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZA1CyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753122AbZA1Ck6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 21:40:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZA1Ckt
+	id S1752829AbZA1CyS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 21:54:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZA1CyF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 21:40:49 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34236 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752084AbZA1Cks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 21:40:48 -0500
-Message-ID: <497FC3ED.7080601@jp.fujitsu.com>
-Date: Wed, 28 Jan 2009 11:33:17 +0900
-From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
-User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [PATCH 1/3] fix debug message of CPU clock speed
-References: <497EC23A.7050408@jp.fujitsu.com> <497EC3F8.6020100@jp.fujitsu.com> <20090127125349.GB23121@elte.hu>
-In-Reply-To: <20090127125349.GB23121@elte.hu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Tue, 27 Jan 2009 21:54:05 -0500
+Received: from sh.osrg.net ([192.16.179.4]:60393 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752077AbZA1CyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 21:54:04 -0500
+Date: Wed, 28 Jan 2009 11:53:45 +0900
+To: ink@jurassic.park.msu.ru
+Cc: akpm@linux-foundation.org, rth@twiddle.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] alpha: compile fixes
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090127083823.GB15452@jurassic.park.msu.ru>
+References: <20090127083823.GB15452@jurassic.park.msu.ru>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090128115403R.fujita.tomonori@lab.ntt.co.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ingo
+On Tue, 27 Jan 2009 11:38:23 +0300
+Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
 
-Thank you for your comments.
-I apply your comments to the patch ASAP.
+> - jensen build: fix conflicting declarations for pci_alloc_consistent()
+>   and undefined virt_to_phys();
+> 
+> - SMP: arch/alpha/kernel/smp.c:124: warning: passing argument 2
+>        of '__cpu_test_and_set' discards qualifiers from pointer target type
+>   Interestingly, this only happens with gcc-4.2; gcc <= 4.1 and gcc-4.3
+>   are OK. Fixed with extra assignment.
+> 
+> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+> ---
+>  arch/alpha/include/asm/dma-mapping.h |    2 ++
+>  arch/alpha/kernel/pci-noop.c         |    3 ++-
+>  arch/alpha/kernel/smp.c              |    3 ++-
+>  3 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/alpha/include/asm/dma-mapping.h b/arch/alpha/include/asm/dma-mapping.h
+> index a5801ae..04eb568 100644
+> --- a/arch/alpha/include/asm/dma-mapping.h
+> +++ b/arch/alpha/include/asm/dma-mapping.h
+> @@ -29,6 +29,8 @@
+>  
+>  #else	/* no PCI - no IOMMU. */
+>  
+> +#include <asm/io.h>	/* for virt_to_phys() */
+> +
+>  struct scatterlist;
+>  void *dma_alloc_coherent(struct device *dev, size_t size,
+>  			 dma_addr_t *dma_handle, gfp_t gfp);
+> diff --git a/arch/alpha/kernel/pci-noop.c b/arch/alpha/kernel/pci-noop.c
+> index 8ac0831..c19a376 100644
+> --- a/arch/alpha/kernel/pci-noop.c
+> +++ b/arch/alpha/kernel/pci-noop.c
+> @@ -109,7 +109,8 @@ sys_pciconfig_write(unsigned long bus, unsigned long dfn,
+>  /* Stubs for the routines in pci_iommu.c: */
+>  
+>  void *
+> -pci_alloc_consistent(struct pci_dev *pdev, size_t size, dma_addr_t *dma_addrp)
+> +__pci_alloc_consistent(struct pci_dev *pdev, size_t size,
+> +		       dma_addr_t *dma_addrp, gfp_t gfp)
+>  {
+>  	return NULL;
+>  }
 
-Regard,
-Yasuaki Ishimatsu
+A patch to change Alpha to handle two dma mapping implementations
+(pci-noop and the IOMMU) in the standard way (like X86, POWER, IA64,
+etc do) is acceptable?
 
-Ingo Molnar wrote:
-> * Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com> wrote:
-> 
->> LOCAL APIC is corrected by PM-Timer, when SMI occurred while LOCAL APIC 
->> is calibrated. In this case, LOCAL APIC debug message(Boot with 
->> apic=debug) is displayed correctly, however, CPU clock speed debug 
->> message is displayed wrongly .
-> 
-> your fix looks good, but there are a few minor style details that need to 
-> be addressed:
-> 
->> When SMI occured on my machine, which has 1.6GHz CPU, CPU clock speed is 
->> displayed 3622.0205 MHz as follow.
->>
->> 	CPU0: Intel(R) Xeon(R) CPU            5110  @ 1.60GHz stepping 06
->> 	Using local APIC timer interrupts.
->> 	calibrating APIC timer ...
->> 	... lapic delta = 3773130
->> 	... PM timer delta = 812434
->> 	APIC calibration not consistent with PM Timer: 226ms instead of 100ms
->> 	APIC delta adjusted to PM-Timer: 1662420 (3773130)
->> 	..... delta 1662420
->> 	..... mult: 71411249
->> 	..... calibration result: 265987
->> 	..... CPU clock speed is 3622.0205 MHz.  =====>  here
->> 	..... host bus clock speed is 265.0987 MHz.
->>
->> This patch fixes to displaying CPU clock speed correctly as follow.
->>
->> 	CPU0: Intel(R) Xeon(R) CPU            5110  @ 1.60GHz stepping 06
->> 	Using local APIC timer interrupts.
->> 	calibrating APIC timer ...
->> 	... lapic delta = 3773131
->> 	... PM timer delta = 812434
->> 	APIC calibration not consistent with PM Timer: 226ms instead of 100ms
->> 	APIC delta adjusted to PM-Timer: 1662420 (3773131)
->> 	TSC delta adjusted to PM-Timer: 159592409 (362220564)
->> 	..... delta 1662420
->> 	..... mult: 71411249
->> 	..... calibration result: 265987
->> 	..... CPU clock speed is 1595.0924 MHz.
->> 	..... host bus clock speed is 265.0987 MHz.
->>
->> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
->>
->> ---
->>  arch/x86/kernel/apic.c |   23 +++++++++++++++++------
->>  1 file changed, 17 insertions(+), 6 deletions(-)
->>
->> Index: linux-2.6.29-rc2/arch/x86/kernel/apic.c
->> ===================================================================
->> --- linux-2.6.29-rc2.orig/arch/x86/kernel/apic.c	2009-01-27 11:04:40.000000000 +0900
->> +++ linux-2.6.29-rc2/arch/x86/kernel/apic.c	2009-01-27 12:29:03.000000000 +0900
->> @@ -535,7 +535,8 @@ static void __init lapic_cal_handler(str
->>  	}
->>  }
->>
->> -static int __init calibrate_by_pmtimer(long deltapm, long *delta)
->> +static int __init calibrate_by_pmtimer(long deltapm, long *delta,
->> +						long *deltatsc)
-> 
-> The cleaner prototype line-width break is:
-> 
->   + static int __init
->   + calibrate_by_pmtimer(long deltapm, long *delta, long *deltatsc)
-> 
-> 
-> this function:
-> 
->> @@ -569,6 +570,15 @@ static int __init calibrate_by_pmtimer(l
->>  		pr_info("APIC delta adjusted to PM-Timer: "
->>  			"%lu (%ld)\n", (unsigned long)res, *delta);
->>  		*delta = (long)res;
->> +
->> +		if (cpu_has_tsc) {
->> +			res = (((u64)(*deltatsc)) * pm_100ms);
->> +			do_div(res, deltapm);
->> +			apic_printk(APIC_VERBOSE, "TSC delta adjusted to "
->> +					"PM-Timer: %lu (%ld)\n",
->> +					(unsigned long)res, *deltatsc);
->> +			*deltatsc = (long)res;
->> +		}
-> 
-> has too deep nesting in the form of:
-> 
-> 	if (A) {
-> 		...
-> 	} else {
-> 		...
-> 		if (B) {
-> 			...
-> 		}
-> 	}
-> 
-> 	return 0;
-> 
-> 
-> Could you please restructure it to a cleaner control flow, in the form of:
-> 
-> 	if (A) {
-> 		...
-> 		return 0;
-> 	}
-> 	...
-> 	if (B) {
-> 		...
->   	}
-> 
-> 	return 0;
-> 
-> ?
-> 
-> Thanks,
-> 
-> 	Ingo
-> 
+pci-noop has something like struct dma_map_ops nommu_dma_ops (similar
+to pci-nommu.c in arch/x86/kernel/pci-nommu.c) and pci_iommu.c has
+struct dma_map_ops iommu_dma_ops. Then at startup, the kernel properly
+sets dma_ops pointer to nommu_dma_ops or iommu_dma_ops.
 
+Then we can handle the dma mapping operations in the consistent way,
+e.g., dma_map_sg can be just `return ops->map_sg(dev, sg, nents,
+dir)`.
