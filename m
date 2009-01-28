@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753030AbZA1MlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZA1MzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753030AbZA1MlS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 07:41:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751241AbZA1MlG
+	id S1753248AbZA1MzX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 07:55:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751552AbZA1MzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 07:41:06 -0500
-Received: from moutng.kundenserver.de ([212.227.126.171]:51383 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbZA1MlF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 07:41:05 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
-Date: Wed, 28 Jan 2009 13:37:51 +0100
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-References: <20090127222825.GA27097@elte.hu> <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain> <1233106614.3256.6.camel@localhost.localdomain>
-In-Reply-To: <1233106614.3256.6.camel@localhost.localdomain>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901281337.52294.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/0R9DnUAxiP3pDzEfZX9BuWBz0IirK/RRcgxr
- n3C2FkoGu7Tep9X15YHd/PPfpcF5QFrcBpKQ42UNtZ2y1AInug
- utbnnttEPL4rSJ8u2qEAw==
+	Wed, 28 Jan 2009 07:55:06 -0500
+Received: from sh.osrg.net ([192.16.179.4]:59178 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751020AbZA1MzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 07:55:05 -0500
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: mingo@elte.hu, tony.luck@intel.com
+Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non DMA_64BIT_MASK devices
+Date: Wed, 28 Jan 2009 21:53:16 +0900
+Message-Id: <1233147198-30299-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 January 2009, Jaswinder Singh Rajput wrote:
-> If we do not want to export __arch_swab32 and __arch_swab64 then we can
-> put whole block in #ifdef __KERNEL__ then we will get rid of above
-> solution.
+Before the dma ops unification, IA64 always uses GFP_DMA for
+dma_alloc_coherent like:
 
-For the specific x86 swab code, that would certainly be the simplest
-way, user space should not be using those inline assemblies either
-way.
+#define dma_alloc_coherent(dev, size, handle, gfp)	\
+	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
 
-I think the more interesting question is whether we want to export
-*any* inline helpers that are not part of the ABI to user space.
-We already killed most of them (spinlocks, atomics, ...) and what
-remains is basically just the byteorder code. All that is required
-for the ABI is the information whether the system is big- or
-little-endian, but not all the rest.
+This GFP_DMA enforcement doesn't make sense for IOMMUs since they can
+do address translation to give addresses that devices can access
+to. The IOMMU drivers ignore the zone flag. However, this is still
+necessary for swiotlb since it can't do address translation.
 
-	Arnd <><
+We don't always need to use GFP_DMA for swiotlb. We need GFP_DMA for
+devices incapable of 64bit DMA.
+
+This patch is sorta updated version of:
+
+http://marc.info/?l=linux-kernel&m=122638215612705&w=2
+
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
+---
+ arch/ia64/kernel/pci-swiotlb.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
+
+diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
+index 717ad4f..573f02c 100644
+--- a/arch/ia64/kernel/pci-swiotlb.c
++++ b/arch/ia64/kernel/pci-swiotlb.c
+@@ -13,8 +13,16 @@
+ int swiotlb __read_mostly;
+ EXPORT_SYMBOL(swiotlb);
+ 
++static void *ia64_swiotlb_alloc_coherent(struct device *dev, size_t size,
++					 dma_addr_t *dma_handle, gfp_t gfp)
++{
++	if (dev->coherent_dma_mask != DMA_64BIT_MASK)
++		gfp |= GFP_DMA;
++	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
++}
++
+ struct dma_map_ops swiotlb_dma_ops = {
+-	.alloc_coherent = swiotlb_alloc_coherent,
++	.alloc_coherent = ia64_swiotlb_alloc_coherent,
+ 	.free_coherent = swiotlb_free_coherent,
+ 	.map_page = swiotlb_map_page,
+ 	.unmap_page = swiotlb_unmap_page,
+-- 
+1.6.0.6
+
