@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbZA1EHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbZA1EKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbZA1EHn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 23:07:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZA1EHf
+	id S1754016AbZA1EKy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 23:10:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZA1EKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 23:07:35 -0500
-Received: from fk-out-0910.google.com ([209.85.128.186]:60944 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752182AbZA1EHe (ORCPT
+	Tue, 27 Jan 2009 23:10:45 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:51390 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751631AbZA1EKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 23:07:34 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=XsEw9aZZzZq8VoEwXC1WoM13jn/8soJMyessmCQO9pfTLqPBzOLUpTZsbZLrFUUW9u
-         ZohmZi4LW7h8/lqBLJEYipPircZx4Lx5v3NmBIir6vRa6aRvTL/DoWvCyl9kzKPSWaUn
-         GvB7XFNkQHWqESzLBfmdldxXK1Dt+ZYuLTDtw=
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com>
-References: <20090128033824.GA1662@brong.net>
-	 <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>
-	 <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com>
-Date: Tue, 27 Jan 2009 20:07:32 -0800
-X-Google-Sender-Auth: 0b78b3b7aa5aa031
-Message-ID: <2c0942db0901272007w4298738cq37918f776276d424@mail.gmail.com>
-Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
-From: Ray Lee <ray-lk@madrabbit.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Bron Gondwana <brong@fastmail.fm>,
+	Tue, 27 Jan 2009 23:10:44 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 27 Jan 2009 20:10:41 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Bron Gondwana <brong@fastmail.fm>
+cc: Greg KH <gregkh@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
+Subject: Re: [patch 016/104] epoll: introduce resource usage limits
+In-Reply-To: <20090128035746.GA3351@brong.net>
+Message-ID: <alpine.DEB.1.10.0901272002180.20262@alien.or.mcafeemobile.com>
+References: <1232686261.9977.1296303473@webmail.messagingengine.com> <20090123051620.GA8122@suse.de> <1232704065.25510.1296328851@webmail.messagingengine.com> <20090123170631.GB11566@suse.de> <20090124130334.GA8031@brong.net> <20090125110126.GA11598@brong.net>
+ <20090125122039.GA16603@brong.net> <20090128003519.GA11395@suse.de> <20090128033824.GA1662@brong.net> <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com> <20090128035746.GA3351@brong.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 8:00 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> On Wed, 28 Jan 2009, Bron Gondwana wrote:
->
->> Both Postfix and Apache use an epoll instance per child, which
->> leads to significant scalability issues with max_user_instances
->> set so low.  Bump the default to 1024 so medium sized sites are
->> not impacted.
->
-> NACK. Epoll allocates globally about 100 to 160 bytes (32/64 bit) for each
-> file added to the interface:
->
->        for i 1..1024
->                for j 1..1024
->                        if i!=j
->                                add j -> i
->
-> That's (N^2 * {100, 160}) = 100MB to 160MB of pinned kernel memory,
-> explotable by simple users with untouched NFILES.
-> This is the reason such limit was introduced in the first place. Again,
-> for the 10th time, if you have a loaded server with multiple processes
-> using epoll:
->
-> $ echo NN > /proc/sys/fs/epoll/max_user_instances
->
-> Note that NN does not consume any resource "per se", so if you feel
-> threatened by such limit, you can go wild with it.
+On Wed, 28 Jan 2009, Bron Gondwana wrote:
 
-It's really simple. A kernel upgrade in a -stable series point release
-broke a rational user-space setup. If you don't want to adjust the
-defaults, then the sane thing to do is to revert the commit that
-caused the grief. Postfix is everywhere. Apache is everywhere.
+> On Tue, Jan 27, 2009 at 07:46:18PM -0800, Davide Libenzi wrote:
+> > On Wed, 28 Jan 2009, Bron Gondwana wrote:
+> > 
+> > > On Tue, Jan 27, 2009 at 04:35:19PM -0800, Greg KH wrote:
+> > > > Can you resubmit all 4 patches, and cc: the epoll author, Davide?  He's
+> > > > the one that needs to accept these changes.
+> > > 
+> > > It's three now (two of them deserved to merged) and re-ordered so the
+> > > first two are trivial and the complex bits are easily skipped if you
+> > > don't want them.  
+> > > 
+> > > Just looking for Davide's email address.  Found it :)  I'll follow up
+> > > this message with the patches.  I'm not going to CC everyone else again
+> > > - but I'll CC LKML so you can follow it there if you want.
+> > 
+> > I already gave you my opinion on such code. There is no need for it. If 
+> > your servers are loaded, in the same way you bump NFILES (and likely 
+> > even other default configs), you bump up max_user_instances:
+>  
+> How can you tell if it's heavily loaded if you can't tell what the
+> current usage is?  Just wait until you hit the limit?
 
-Userspace is not broken here, and the whole idea of a -stable series
-is that administrators can upgrade to them without having to worry
-about things getting broken or making specific configuration changes
-by point release.
+In my servers, I know if they are going to be loaded, and I bump NFILES 
+(and a few other things) to the correct place. Since many of those 
+limits do not actually pre-allocate any resource, I don't need to wait and 
+monitor the values, before taking proper action.
+Sorry, the whole patch set is a big NACK for many reasons.
+We'd have happily avoided those limits altogether, but 100-160MB of kernel 
+memory able to be pinned by unprivileged users is easily a DoS on multiuser
+systems.
+
+
+
+- Davide
+
+
