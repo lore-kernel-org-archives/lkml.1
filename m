@@ -1,121 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZA1Va5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZA1Vb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbZA1Va5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 16:30:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZA1Vaq
+	id S1755533AbZA1Vb5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 16:31:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZA1Vbr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 16:30:46 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52309 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752238AbZA1Vap (ORCPT
+	Wed, 28 Jan 2009 16:31:47 -0500
+Received: from mu-out-0910.google.com ([209.85.134.190]:50363 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751302AbZA1Vbp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 16:30:45 -0500
-Date: Wed, 28 Jan 2009 13:29:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: steven@ngls.net
-Cc: bugme-daemon@bugzilla.kernel.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 12564] New: poor performance while
- preprocessing source code
-Message-Id: <20090128132942.c957a199.akpm@linux-foundation.org>
-In-Reply-To: <bug-12564-10286@http.bugzilla.kernel.org/>
-References: <bug-12564-10286@http.bugzilla.kernel.org/>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Jan 2009 16:31:45 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=q+mWD/P9QVYmsX70O9UBxzBrCoXMa+3Tq2Zlrc7+6/HUIYD4it+/8BvOcXmaBc+QyZ
+         iZ4TqfpC1TKVIxZYfGNxapk7l9U9CUjGqgUTv31H5Kfijs/SWj7DURcapUwiKjgWE1q1
+         BZgUNwLH5ShxAHNM5nAPOQv0XRNdmChcTdVaA=
+MIME-Version: 1.0
+In-Reply-To: <8c5a844a0901230310h7aa1ec83h60817de2b36212d8@mail.gmail.com>
+References: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com>
+	 <Pine.LNX.4.64.0901221658550.14302@blonde.anvils>
+	 <8c5a844a0901221500m7af8ff45v169b6523ad9d7ad3@mail.gmail.com>
+	 <20090122231358.GA27033@elte.hu>
+	 <8c5a844a0901230310h7aa1ec83h60817de2b36212d8@mail.gmail.com>
+Date: Wed, 28 Jan 2009 23:31:43 +0200
+Message-ID: <8c5a844a0901281331w4cea7ab2y305d5a1af96e313e@mail.gmail.com>
+Subject: Re: [PATCH 2.6.28 1/2] memory: improve find_vma
+From: Daniel Lowengrub <lowdanie@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
-
-On Wed, 28 Jan 2009 11:29:52 -0800 (PST)
-bugme-daemon@bugzilla.kernel.org wrote:
-
-> http://bugzilla.kernel.org/show_bug.cgi?id=12564
-> 
->            Summary: poor performance while preprocessing source code
->            Product: IO/Storage
-
-Thanks for the report.
-
->            Version: 2.5
->      KernelVersion: 2.6.28.2
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: normal
->           Priority: P1
->          Component: Other
->         AssignedTo: io_other@kernel-bugs.osdl.org
->         ReportedBy: steven@ngls.net
-> 
-> 
-> Latest working kernel version: 2.6.26-rc3
-> Earliest failing kernel version: 2.6.26-rc4 (or 2.6.26-rc3 + patch)
-
-(huge performance regression in NFS)
- 
-> Distribution: gentoo
-> 
-> Hardware Environment:
->   Various 32 and 64 bit Intel and AMD machines with various
-> PATA and SATA disks and various network interfaces.
-> 
-> Problem Description:
->   Here's my situation.  I've recently upgraded the kernels
-> on ~30 computers at work (from 2.6.21 to 2.6.27).  These 
-> computers are used to build and test software we develop.  
-> We speed up the building process using distcc.  However,
-> after the kernel upgrade, the builds are much much slower.
-> The preprocessing stage seems to be at least 10 times
-> slower.
->   As evidence of this slowdown I am attaching two images created
-> using distccmon-gnome.  Both snapshots were taken shortly 
-> after starting builds in a clean sandbox.  The only difference
-> is the kernel.  "fast.png" was generated while running
-> kernel 2.6.25.20.  "slow.png" was generated with 2.6.26.
-> The light purple sections indicate the preprocessing times
-> for each file.  
->   This slowdown is observed on both 32 and 64 bit computers
-> and using either gcc or the intel compiler. (The intel compiler
-> builds do not use distcc, but that are also slower.)  Strangely 
-> enough, it's still faster to use an NFS mounted sandbox on a
-> machine with an older kernel than the same sandbox on the local
-> machine with a newer kernel.  (This suggests to me that it
-> is neither a disk or network IO problem.)
->   I've used git bisect to narrow it down to a single commit:
-> # bad: [b0b539739fe9b7d75002412a787cfdf4efddbc33] NFS: Ensure that 'noac'
-> and/or 'actimeo=0' turn off attribute caching
-
-And thanks for bisecting it.
-
-> This is the first commit after v2.6.26-rc3.  I'm not an
-> experienced git user, so I don't know how to narrow it down
-> further.  Distccmon-gnome snapshots from the bisection
-> process are similar to the ones noted above.
->   Naturally, I would like the newer kernels to have similar
-> performance to the older kernels.
->   I will be attaching various items.  Let me know what other 
-> information might be helpful.
-> 
-> Steps to reproduce:
-> distccmon-gnome &
-> # using a makefile setup to use distcc:
-> make -j 5 all
-> # note preprocessing times in distccmon
-> 
-
-Something I don't understand from this:
-
-If your normal setup is using distcc then what role does NFS have to
-play?  I mean, distcc kind-of replaces NFS in this workload.
-
-Perhaps you could briefly describe the topology/data-flow/etc so that
-we can see how NFS could be a bottleneck here?
-
-Thanks.
+On Fri, Jan 23, 2009 at 1:10 PM, Daniel Lowengrub <lowdanie@gmail.com> wrote:
+> On Fri, Jan 23, 2009 at 1:13 AM, Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> * Daniel Lowengrub <lowdanie@gmail.com> wrote:
+>>
+>>> Simple syscall: 0.7419 / 0.4244 microseconds
+>>> Simple read: 1.2071 / 0.7270 microseconds
+>>
+>>there must be a significant measurement mistake here: none of your patches
+>>affect the 'simple syscall' path, nor the sys_read() path.
+>>
+>>        Ingo
+> I ran the tests again, this time I ran them twice on each system and
+> calculated the average, the differences between results on the same os
+> were very small - I guess this means that the results were accurate.
+> I also made sure that no other programs were running during the tests.
+>  Here're the new results using the same format of
+> test : standard kernel / kernel after patch
+>
+> Simple syscall: 0.26080 / 0.24935 microseconds
+> Simple read: 0.42580 / 0.43080 microseconds
+> Simple write: 0.36695 / 0.34565 microseconds
+> Simple stat: 2.71205 / 2.37415 microseconds
+> Simple fstat: 0.74955 / 0.66450 microseconds
+> Simple open/close: 3.95465 / 3.35740 microseconds
+> Select on 10 fd's: 0.74590 / 0.79510 microseconds
+> Select on 100 fd's: 2.97720 / 3.03445 microseconds
+> Select on 250 fd's: 6.51940 / 6.58265 microseconds
+> Select on 500 fd's: 12.56530 / 12.63580 microseconds
+> Signal handler installation: 0.63005 / 0.65285 microseconds
+> Signal handler overhead: 2.30350 / 2.24475 microseconds
+> Protection fault: 0.41750 / 0.42705 microseconds
+> Pipe latency: 6.04580 / 5.61270 microseconds
+> AF_UNIX sock stream latency: 9.00595 / 8.65615 microseconds
+> Process fork+exit: 130.57580 / 122.26665 microseconds
+> Process fork+execve: 491.81820 / 460.79490 microseconds
+> Process fork+/bin/sh -c: 2173.16665 / 2088.50000 microseconds
+> File /home/daniel/tmp/XXX write bandwidth: 23814.50000 / 23298.50000 KB/sec
+> Pagefaults on /home/daniel/tmp/XXX: 1.22625 / 1.17470 microseconds
+>
+> "mappings
+> 0.5242880 6.91 / 7.11
+> 1.0485760 12.00 / 10.42
+> 2.0971520 20.00 / 17.50
+> 4.1943040 36.00 / 33.00
+> 8.3886080 70.50 / 61.00
+> 16.7772160 121.00 / 114.50
+> 33.5544320 237.50 / 217.50
+> 67.1088640 472.50 / 427.50
+> 134.2177280 947.00 / 846.00
+> 268.4354560 1891.00 / 1694.00
+> 536.8709120 3786.00 / 3362.00
+> 1073.7418240 8252.00 / 7357.00
+>
+> As you expected, now there isn't a significant difference in the syscalls.
+> The summery of the tests where 2.6.28D.1 is the kernel after the patch
+> and 2.6.28D is the standard kernel is:
+>
+> Processor, Processes - times in microseconds - smaller is better
+> ------------------------------------------------------------------------------
+> Host                 OS    Mhz null null      open slct sig  sig  fork exec sh
+>                               call  I/O stat clos TCP  inst hndl proc proc proc
+> --------- --------------- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+> localhost Linux 2.6.28D   1678 0.26 0.40 2.71 4.02 5.61 0.63 2.30 129. 494. 2172
+> localhost Linux 2.6.28D   1678 0.26 0.40 2.71 3.89 5.61 0.63 2.31 131. 489. 2174
+> localhost Linux 2.6.28D.1 1678 0.25 0.39 2.38 3.34 5.70 0.65 2.24 122. 457. 2083
+> localhost Linux 2.6.28D.1 1678 0.25 0.39 2.37 3.37 5.68 0.65 2.25 122. 463. 2094
+>
+> What do you think?  Are there other tests you'd like me to run?
+> Daniel
+>
+Do you think that this patch is useful?  Should I keep working on the idea?
+Thanks
