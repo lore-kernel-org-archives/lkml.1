@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZA1Jwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZA1JyO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbZA1Jwc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 04:52:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbZA1JwU
+	id S1754312AbZA1JyO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 04:54:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbZA1Jx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 04:52:20 -0500
-Received: from mga02.intel.com ([134.134.136.20]:49052 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbZA1JwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 04:52:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,337,1231142400"; 
-   d="scan'208";a="485215597"
-Subject: Re: hardware time stamping with optional structs in data area
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: "davem@davemloft.net" <davem@davemloft.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-api@vger.kernel.org" <linux-api@vger.kernel.org>
-In-Reply-To: <20090128090821.GA15770@gondor.apana.org.au>
-References: <20090128090821.GA15770@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Wed, 28 Jan 2009 10:52:13 +0100
-Message-Id: <1233136333.26507.38.camel@pohly-MOBL>
+	Wed, 28 Jan 2009 04:53:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36860 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750995AbZA1Jx5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 04:53:57 -0500
+Date: Wed, 28 Jan 2009 01:51:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, avi@redhat.com,
+       Marcelo Tosatti <mtosatti@redhat.com>, Alexander Graf <agraf@suse.de>
+Subject: Re: linux-next: Tree for January 23 (kvm)
+Message-Id: <20090128015149.791e10dd.akpm@linux-foundation.org>
+In-Reply-To: <497A29D0.2010307@oracle.com>
+References: <20090123184826.f2c91472.sfr@canb.auug.org.au>
+	<497A29D0.2010307@oracle.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-28 at 11:08 +0200, Herbert Xu wrote:
-> Patrick Ohly <patrick.ohly@intel.com> wrote:
-> >
-> > True - at this time. But what if this extension mechanism turns out to
-> > be useful and we end up with more optional structures? I was hoping that
-> > this might be the case and thus tried to make it easy to add more
-> > structures.
+On Fri, 23 Jan 2009 12:34:24 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > News:  I will be on leave next week, so there will probably be no
+> > linux-next release until Feb 2.
+> > 
+> > Changes since 20090122:
 > 
-> You're putting the extension in the skb->end area, right?
+> 
+> kvm changes cause this build error on i386:
+> 
+> when kvm is built as module:
+> ERROR: "__moddi3" [arch/x86/kvm/kvm.ko] undefined!
+> 
+> or when kvm is built into the kernel image:
+> lapic.c:(.text+0x19276): undefined reference to `__moddi3'
+> 
+> 
+> I guess it's this line:
+> 	ns = ktime_to_ns(remaining) % apic->timer.period;
+> 
 
-Right.
-
-> How big are the time stamps? If they're not that big, why don't
-> we put it into the shinfo structure itself? For the common case,
-> we have plenty of space due to kmalloc padding anyway.
-
-Two 64 bit fields have to be added for time stamps plus 3 bits for flags
-(for time stamping instructions, currently in skb_shared_tx).
-
-Putting that into shinfo should work fine. I thought extending that
-structure with information that isn't needed for all packets was as bad
-as extending sk_buff itself. If that isn't the case, then extending
-shinfo definitely is the simplest solution.
-
-Bye, Patrick
-
+dammit, I just spent N minutes hunting down the same thing in
+the Jan 26 linux-next :(
 
