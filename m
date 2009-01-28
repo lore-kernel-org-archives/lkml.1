@@ -1,188 +1,411 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbZA1OEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZA1OEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756993AbZA1OEa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 09:04:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZA1N5n
+	id S1756996AbZA1OEu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 09:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZA1N5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 08:57:43 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60386 "EHLO
+	Wed, 28 Jan 2009 08:57:44 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60384 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755279AbZA1N5c (ORCPT
+	with ESMTP id S1755276AbZA1N5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Jan 2009 08:57:32 -0500
-Message-Id: <20090128135459.332648902@chello.nl>
+Message-Id: <20090128135457.506926079@chello.nl>
 References: <20090128135352.679025549@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 28 Jan 2009 14:54:12 +0100
+Date: Wed, 28 Jan 2009 14:53:54 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, npiggin@suse.de,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 20/21] lockdep: get_user_chars() redo
-Content-Disposition: inline; filename=lockdep-get_usage_chars2.patch
+Subject: [PATCH 02/21] lockdep: sanitize bit names
+Content-Disposition: inline; filename=lockdep-generate.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Generic, states independent, get_user_chars().
+s/\(LOCKF\?_ENABLED_[^ ]*\)S\(_READ\)\?\>/\1\2/g
+
+So that the USED_IN and ENABLED have the same names.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- Documentation/lockdep-design.txt |   30 +++++++++++++++++-------------
- kernel/lockdep.c                 |   26 +++++++++++++-------------
- kernel/lockdep_internals.h       |    7 ++++---
- kernel/lockdep_proc.c            |    6 +++---
- 4 files changed, 37 insertions(+), 32 deletions(-)
+ include/linux/lockdep.h |   22 ++++++------
+ kernel/lockdep.c        |   84 ++++++++++++++++++++++++------------------------
+ kernel/lockdep_proc.c   |   12 +++---
+ 3 files changed, 59 insertions(+), 59 deletions(-)
 
+Index: linux-2.6/include/linux/lockdep.h
+===================================================================
+--- linux-2.6.orig/include/linux/lockdep.h
++++ linux-2.6/include/linux/lockdep.h
+@@ -28,14 +28,14 @@ enum lock_usage_bit
+ 	LOCK_USED_IN_HARDIRQ,
+ 	LOCK_USED_IN_SOFTIRQ,
+ 	LOCK_USED_IN_RECLAIM_FS,
+-	LOCK_ENABLED_SOFTIRQS,
+-	LOCK_ENABLED_HARDIRQS,
++	LOCK_ENABLED_SOFTIRQ,
++	LOCK_ENABLED_HARDIRQ,
+ 	LOCK_HELD_OVER_RECLAIM_FS,
+ 	LOCK_USED_IN_HARDIRQ_READ,
+ 	LOCK_USED_IN_SOFTIRQ_READ,
+ 	LOCK_USED_IN_RECLAIM_FS_READ,
+-	LOCK_ENABLED_SOFTIRQS_READ,
+-	LOCK_ENABLED_HARDIRQS_READ,
++	LOCK_ENABLED_SOFTIRQ_READ,
++	LOCK_ENABLED_HARDIRQ_READ,
+ 	LOCK_HELD_OVER_RECLAIM_FS_READ,
+ 	LOCK_USAGE_STATES
+ };
+@@ -47,22 +47,22 @@ enum lock_usage_bit
+ #define LOCKF_USED_IN_HARDIRQ		(1 << LOCK_USED_IN_HARDIRQ)
+ #define LOCKF_USED_IN_SOFTIRQ		(1 << LOCK_USED_IN_SOFTIRQ)
+ #define LOCKF_USED_IN_RECLAIM_FS	(1 << LOCK_USED_IN_RECLAIM_FS)
+-#define LOCKF_ENABLED_HARDIRQS		(1 << LOCK_ENABLED_HARDIRQS)
+-#define LOCKF_ENABLED_SOFTIRQS		(1 << LOCK_ENABLED_SOFTIRQS)
++#define LOCKF_ENABLED_HARDIRQ		(1 << LOCK_ENABLED_HARDIRQ)
++#define LOCKF_ENABLED_SOFTIRQ		(1 << LOCK_ENABLED_SOFTIRQ)
+ #define LOCKF_HELD_OVER_RECLAIM_FS	(1 << LOCK_HELD_OVER_RECLAIM_FS)
+ 
+-#define LOCKF_ENABLED_IRQS (LOCKF_ENABLED_HARDIRQS | LOCKF_ENABLED_SOFTIRQS)
++#define LOCKF_ENABLED_IRQ (LOCKF_ENABLED_HARDIRQ | LOCKF_ENABLED_SOFTIRQ)
+ #define LOCKF_USED_IN_IRQ (LOCKF_USED_IN_HARDIRQ | LOCKF_USED_IN_SOFTIRQ)
+ 
+ #define LOCKF_USED_IN_HARDIRQ_READ	(1 << LOCK_USED_IN_HARDIRQ_READ)
+ #define LOCKF_USED_IN_SOFTIRQ_READ	(1 << LOCK_USED_IN_SOFTIRQ_READ)
+ #define LOCKF_USED_IN_RECLAIM_FS_READ	(1 << LOCK_USED_IN_RECLAIM_FS_READ)
+-#define LOCKF_ENABLED_HARDIRQS_READ	(1 << LOCK_ENABLED_HARDIRQS_READ)
+-#define LOCKF_ENABLED_SOFTIRQS_READ	(1 << LOCK_ENABLED_SOFTIRQS_READ)
++#define LOCKF_ENABLED_HARDIRQ_READ	(1 << LOCK_ENABLED_HARDIRQ_READ)
++#define LOCKF_ENABLED_SOFTIRQ_READ	(1 << LOCK_ENABLED_SOFTIRQ_READ)
+ #define LOCKF_HELD_OVER_RECLAIM_FS_READ	(1 << LOCK_HELD_OVER_RECLAIM_FS_READ)
+ 
+-#define LOCKF_ENABLED_IRQS_READ \
+-		(LOCKF_ENABLED_HARDIRQS_READ | LOCKF_ENABLED_SOFTIRQS_READ)
++#define LOCKF_ENABLED_IRQ_READ \
++		(LOCKF_ENABLED_HARDIRQ_READ | LOCKF_ENABLED_SOFTIRQ_READ)
+ #define LOCKF_USED_IN_IRQ_READ \
+ 		(LOCKF_USED_IN_HARDIRQ_READ | LOCKF_USED_IN_SOFTIRQ_READ)
+ 
 Index: linux-2.6/kernel/lockdep.c
 ===================================================================
 --- linux-2.6.orig/kernel/lockdep.c
 +++ linux-2.6/kernel/lockdep.c
-@@ -487,25 +487,25 @@ static char get_usage_char(struct lock_c
- 	return c;
- }
+@@ -450,12 +450,12 @@ static const char *usage_str[] =
+ 	[LOCK_USED] =			"initial-use ",
+ 	[LOCK_USED_IN_HARDIRQ] =	"in-hardirq-W",
+ 	[LOCK_USED_IN_SOFTIRQ] =	"in-softirq-W",
+-	[LOCK_ENABLED_SOFTIRQS] =	"softirq-on-W",
+-	[LOCK_ENABLED_HARDIRQS] =	"hardirq-on-W",
++	[LOCK_ENABLED_SOFTIRQ] =	"softirq-on-W",
++	[LOCK_ENABLED_HARDIRQ] =	"hardirq-on-W",
+ 	[LOCK_USED_IN_HARDIRQ_READ] =	"in-hardirq-R",
+ 	[LOCK_USED_IN_SOFTIRQ_READ] =	"in-softirq-R",
+-	[LOCK_ENABLED_SOFTIRQS_READ] =	"softirq-on-R",
+-	[LOCK_ENABLED_HARDIRQS_READ] =	"hardirq-on-R",
++	[LOCK_ENABLED_SOFTIRQ_READ] =	"softirq-on-R",
++	[LOCK_ENABLED_HARDIRQ_READ] =	"hardirq-on-R",
+ 	[LOCK_USED_IN_RECLAIM_FS] =	"in-reclaim-W",
+ 	[LOCK_USED_IN_RECLAIM_FS_READ] = "in-reclaim-R",
+ 	[LOCK_HELD_OVER_RECLAIM_FS] =	"ov-reclaim-W",
+@@ -476,28 +476,28 @@ get_usage_chars(struct lock_class *class
+ 	if (class->usage_mask & LOCKF_USED_IN_HARDIRQ)
+ 		*c1 = '+';
+ 	else
+-		if (class->usage_mask & LOCKF_ENABLED_HARDIRQS)
++		if (class->usage_mask & LOCKF_ENABLED_HARDIRQ)
+ 			*c1 = '-';
  
--void
--get_usage_chars(struct lock_class *class, char *c1, char *c2, char *c3,
--					char *c4, char *c5, char *c6)
--{
--	*c1 = get_usage_char(class, LOCK_USED_IN_HARDIRQ);
--	*c2 = get_usage_char(class, LOCK_USED_IN_SOFTITQ);
--	*c3 = get_usage_char(class, LOCK_USED_IN_HARDIRQ_READ);
--	*c4 = get_usage_char(class, LOCK_USED_IN_SOFTITQ_READ);
-+void get_usage_chars(struct lock_class *class, char usage[LOCK_USAGE_CHARS])
-+{
-+	int i = 0;
-+
-+#define LOCKDEP_STATE(__STATE) 						\
-+	usage[i++] = get_usage_char(class, LOCK_USED_IN_##__STATE);	\
-+	usage[i++] = get_usage_char(class, LOCK_USED_IN_##__STATE##_READ);
-+#include "lockdep_states.h"
-+#undef LOCKDEP_STATE
+ 	if (class->usage_mask & LOCKF_USED_IN_SOFTIRQ)
+ 		*c2 = '+';
+ 	else
+-		if (class->usage_mask & LOCKF_ENABLED_SOFTIRQS)
++		if (class->usage_mask & LOCKF_ENABLED_SOFTIRQ)
+ 			*c2 = '-';
  
--	*c5 = get_usage_char(class, LOCK_USED_IN_RECLAIM_FS);
--	*c6 = get_usage_char(class, LOCK_USED_IN_RECLAIM_FS_READ);
-+	usage[i] = '\0';
- }
- 
- static void print_lock_name(struct lock_class *class)
- {
--	char str[KSYM_NAME_LEN], c1, c2, c3, c4, c5, c6;
-+	char str[KSYM_NAME_LEN], usage[LOCK_USAGE_CHARS];
- 	const char *name;
- 
--	get_usage_chars(class, &c1, &c2, &c3, &c4, &c5, &c6);
-+	get_usage_chars(class, usage);
- 
- 	name = class->name;
- 	if (!name) {
-@@ -518,7 +518,7 @@ static void print_lock_name(struct lock_
- 		if (class->subclass)
- 			printk("/%d", class->subclass);
+-	if (class->usage_mask & LOCKF_ENABLED_HARDIRQS_READ)
++	if (class->usage_mask & LOCKF_ENABLED_HARDIRQ_READ)
+ 		*c3 = '-';
+ 	if (class->usage_mask & LOCKF_USED_IN_HARDIRQ_READ) {
+ 		*c3 = '+';
+-		if (class->usage_mask & LOCKF_ENABLED_HARDIRQS_READ)
++		if (class->usage_mask & LOCKF_ENABLED_HARDIRQ_READ)
+ 			*c3 = '?';
  	}
--	printk("){%c%c%c%c%c%c}", c1, c2, c3, c4, c5, c6);
-+	printk("){%s}", usage);
- }
  
- static void print_lockdep_cache(struct lockdep_map *lock)
-Index: linux-2.6/kernel/lockdep_internals.h
-===================================================================
---- linux-2.6.orig/kernel/lockdep_internals.h
-+++ linux-2.6/kernel/lockdep_internals.h
-@@ -70,9 +70,10 @@ enum {
- extern struct list_head all_lock_classes;
- extern struct lock_chain lock_chains[];
+-	if (class->usage_mask & LOCKF_ENABLED_SOFTIRQS_READ)
++	if (class->usage_mask & LOCKF_ENABLED_SOFTIRQ_READ)
+ 		*c4 = '-';
+ 	if (class->usage_mask & LOCKF_USED_IN_SOFTIRQ_READ) {
+ 		*c4 = '+';
+-		if (class->usage_mask & LOCKF_ENABLED_SOFTIRQS_READ)
++		if (class->usage_mask & LOCKF_ENABLED_SOFTIRQ_READ)
+ 			*c4 = '?';
+ 	}
  
--extern void
--get_usage_chars(struct lock_class *class, char *c1, char *c2, char *c3,
--					char *c4, char *c5, char *c6);
-+#define LOCK_USAGE_CHARS (1+LOCK_USAGE_STATES/2)
-+
-+extern void get_usage_chars(struct lock_class *class,
-+			    char usage[LOCK_USAGE_CHARS]);
+@@ -1296,7 +1296,7 @@ check_prev_add_irq(struct task_struct *c
+ 	 * forwards-subgraph starting at <next>:
+ 	 */
+ 	if (!check_usage(curr, prev, next, LOCK_USED_IN_HARDIRQ,
+-					LOCK_ENABLED_HARDIRQS, "hard"))
++					LOCK_ENABLED_HARDIRQ, "hard"))
+ 		return 0;
  
- extern const char * __get_key_name(struct lockdep_subclass_key *key, char *str);
+ 	/*
+@@ -1306,7 +1306,7 @@ check_prev_add_irq(struct task_struct *c
+ 	 * forwards-subgraph starting at <next>:
+ 	 */
+ 	if (!check_usage(curr, prev, next, LOCK_USED_IN_HARDIRQ_READ,
+-					LOCK_ENABLED_HARDIRQS, "hard-read"))
++					LOCK_ENABLED_HARDIRQ, "hard-read"))
+ 		return 0;
  
+ 	/*
+@@ -1316,7 +1316,7 @@ check_prev_add_irq(struct task_struct *c
+ 	 * forwards-subgraph starting at <next>:
+ 	 */
+ 	if (!check_usage(curr, prev, next, LOCK_USED_IN_SOFTIRQ,
+-					LOCK_ENABLED_SOFTIRQS, "soft"))
++					LOCK_ENABLED_SOFTIRQ, "soft"))
+ 		return 0;
+ 	/*
+ 	 * Prove that the new dependency does not connect a softirq-safe-read
+@@ -1325,7 +1325,7 @@ check_prev_add_irq(struct task_struct *c
+ 	 * forwards-subgraph starting at <next>:
+ 	 */
+ 	if (!check_usage(curr, prev, next, LOCK_USED_IN_SOFTIRQ_READ,
+-					LOCK_ENABLED_SOFTIRQS, "soft"))
++					LOCK_ENABLED_SOFTIRQ, "soft"))
+ 		return 0;
+ 
+ 	/*
+@@ -2008,17 +2008,17 @@ static int mark_lock_irq(struct task_str
+ 
+ 	switch(new_bit) {
+ 	case LOCK_USED_IN_HARDIRQ:
+-		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_HARDIRQS))
++		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_HARDIRQ))
+ 			return 0;
+ 		if (!valid_state(curr, this, new_bit,
+-				 LOCK_ENABLED_HARDIRQS_READ))
++				 LOCK_ENABLED_HARDIRQ_READ))
+ 			return 0;
+ 		/*
+ 		 * just marked it hardirq-safe, check that this lock
+ 		 * took no hardirq-unsafe lock in the past:
+ 		 */
+ 		if (!check_usage_forwards(curr, this,
+-					  LOCK_ENABLED_HARDIRQS, "hard"))
++					  LOCK_ENABLED_HARDIRQ, "hard"))
+ 			return 0;
+ #if STRICT_READ_CHECKS
+ 		/*
+@@ -2026,24 +2026,24 @@ static int mark_lock_irq(struct task_str
+ 		 * took no hardirq-unsafe-read lock in the past:
+ 		 */
+ 		if (!check_usage_forwards(curr, this,
+-				LOCK_ENABLED_HARDIRQS_READ, "hard-read"))
++				LOCK_ENABLED_HARDIRQ_READ, "hard-read"))
+ 			return 0;
+ #endif
+ 		if (hardirq_verbose(hlock_class(this)))
+ 			ret = 2;
+ 		break;
+ 	case LOCK_USED_IN_SOFTIRQ:
+-		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_SOFTIRQS))
++		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_SOFTIRQ))
+ 			return 0;
+ 		if (!valid_state(curr, this, new_bit,
+-				 LOCK_ENABLED_SOFTIRQS_READ))
++				 LOCK_ENABLED_SOFTIRQ_READ))
+ 			return 0;
+ 		/*
+ 		 * just marked it softirq-safe, check that this lock
+ 		 * took no softirq-unsafe lock in the past:
+ 		 */
+ 		if (!check_usage_forwards(curr, this,
+-					  LOCK_ENABLED_SOFTIRQS, "soft"))
++					  LOCK_ENABLED_SOFTIRQ, "soft"))
+ 			return 0;
+ #if STRICT_READ_CHECKS
+ 		/*
+@@ -2051,7 +2051,7 @@ static int mark_lock_irq(struct task_str
+ 		 * took no softirq-unsafe-read lock in the past:
+ 		 */
+ 		if (!check_usage_forwards(curr, this,
+-				LOCK_ENABLED_SOFTIRQS_READ, "soft-read"))
++				LOCK_ENABLED_SOFTIRQ_READ, "soft-read"))
+ 			return 0;
+ #endif
+ 		if (softirq_verbose(hlock_class(this)))
+@@ -2083,27 +2083,27 @@ static int mark_lock_irq(struct task_str
+ 			ret = 2;
+ 		break;
+ 	case LOCK_USED_IN_HARDIRQ_READ:
+-		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_HARDIRQS))
++		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_HARDIRQ))
+ 			return 0;
+ 		/*
+ 		 * just marked it hardirq-read-safe, check that this lock
+ 		 * took no hardirq-unsafe lock in the past:
+ 		 */
+ 		if (!check_usage_forwards(curr, this,
+-					  LOCK_ENABLED_HARDIRQS, "hard"))
++					  LOCK_ENABLED_HARDIRQ, "hard"))
+ 			return 0;
+ 		if (hardirq_verbose(hlock_class(this)))
+ 			ret = 2;
+ 		break;
+ 	case LOCK_USED_IN_SOFTIRQ_READ:
+-		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_SOFTIRQS))
++		if (!valid_state(curr, this, new_bit, LOCK_ENABLED_SOFTIRQ))
+ 			return 0;
+ 		/*
+ 		 * just marked it softirq-read-safe, check that this lock
+ 		 * took no softirq-unsafe lock in the past:
+ 		 */
+ 		if (!check_usage_forwards(curr, this,
+-					  LOCK_ENABLED_SOFTIRQS, "soft"))
++					  LOCK_ENABLED_SOFTIRQ, "soft"))
+ 			return 0;
+ 		if (softirq_verbose(hlock_class(this)))
+ 			ret = 2;
+@@ -2121,7 +2121,7 @@ static int mark_lock_irq(struct task_str
+ 		if (reclaim_verbose(hlock_class(this)))
+ 			ret = 2;
+ 		break;
+-	case LOCK_ENABLED_HARDIRQS:
++	case LOCK_ENABLED_HARDIRQ:
+ 		if (!valid_state(curr, this, new_bit, LOCK_USED_IN_HARDIRQ))
+ 			return 0;
+ 		if (!valid_state(curr, this, new_bit,
+@@ -2147,7 +2147,7 @@ static int mark_lock_irq(struct task_str
+ 		if (hardirq_verbose(hlock_class(this)))
+ 			ret = 2;
+ 		break;
+-	case LOCK_ENABLED_SOFTIRQS:
++	case LOCK_ENABLED_SOFTIRQ:
+ 		if (!valid_state(curr, this, new_bit, LOCK_USED_IN_SOFTIRQ))
+ 			return 0;
+ 		if (!valid_state(curr, this, new_bit,
+@@ -2199,7 +2199,7 @@ static int mark_lock_irq(struct task_str
+ 		if (reclaim_verbose(hlock_class(this)))
+ 			ret = 2;
+ 		break;
+-	case LOCK_ENABLED_HARDIRQS_READ:
++	case LOCK_ENABLED_HARDIRQ_READ:
+ 		if (!valid_state(curr, this, new_bit, LOCK_USED_IN_HARDIRQ))
+ 			return 0;
+ #if STRICT_READ_CHECKS
+@@ -2214,7 +2214,7 @@ static int mark_lock_irq(struct task_str
+ 		if (hardirq_verbose(hlock_class(this)))
+ 			ret = 2;
+ 		break;
+-	case LOCK_ENABLED_SOFTIRQS_READ:
++	case LOCK_ENABLED_SOFTIRQ_READ:
+ 		if (!valid_state(curr, this, new_bit, LOCK_USED_IN_SOFTIRQ))
+ 			return 0;
+ #if STRICT_READ_CHECKS
+@@ -2274,16 +2274,16 @@ mark_held_locks(struct task_struct *curr
+ 		switch (mark) {
+ 		case HARDIRQ:
+ 			if (hlock->read)
+-				usage_bit = LOCK_ENABLED_HARDIRQS_READ;
++				usage_bit = LOCK_ENABLED_HARDIRQ_READ;
+ 			else
+-				usage_bit = LOCK_ENABLED_HARDIRQS;
++				usage_bit = LOCK_ENABLED_HARDIRQ;
+ 			break;
+ 
+ 		case SOFTIRQ:
+ 			if (hlock->read)
+-				usage_bit = LOCK_ENABLED_SOFTIRQS_READ;
++				usage_bit = LOCK_ENABLED_SOFTIRQ_READ;
+ 			else
+-				usage_bit = LOCK_ENABLED_SOFTIRQS;
++				usage_bit = LOCK_ENABLED_SOFTIRQ;
+ 			break;
+ 
+ 		case RECLAIM_FS:
+@@ -2520,19 +2520,19 @@ static int mark_irqflags(struct task_str
+ 	if (!hlock->hardirqs_off) {
+ 		if (hlock->read) {
+ 			if (!mark_lock(curr, hlock,
+-					LOCK_ENABLED_HARDIRQS_READ))
++					LOCK_ENABLED_HARDIRQ_READ))
+ 				return 0;
+ 			if (curr->softirqs_enabled)
+ 				if (!mark_lock(curr, hlock,
+-						LOCK_ENABLED_SOFTIRQS_READ))
++						LOCK_ENABLED_SOFTIRQ_READ))
+ 					return 0;
+ 		} else {
+ 			if (!mark_lock(curr, hlock,
+-					LOCK_ENABLED_HARDIRQS))
++					LOCK_ENABLED_HARDIRQ))
+ 				return 0;
+ 			if (curr->softirqs_enabled)
+ 				if (!mark_lock(curr, hlock,
+-						LOCK_ENABLED_SOFTIRQS))
++						LOCK_ENABLED_SOFTIRQ))
+ 					return 0;
+ 		}
+ 	}
+@@ -2640,10 +2640,10 @@ static int mark_lock(struct task_struct 
+ 	case LOCK_USED_IN_SOFTIRQ:
+ 	case LOCK_USED_IN_HARDIRQ_READ:
+ 	case LOCK_USED_IN_SOFTIRQ_READ:
+-	case LOCK_ENABLED_HARDIRQS:
+-	case LOCK_ENABLED_SOFTIRQS:
+-	case LOCK_ENABLED_HARDIRQS_READ:
+-	case LOCK_ENABLED_SOFTIRQS_READ:
++	case LOCK_ENABLED_HARDIRQ:
++	case LOCK_ENABLED_SOFTIRQ:
++	case LOCK_ENABLED_HARDIRQ_READ:
++	case LOCK_ENABLED_SOFTIRQ_READ:
+ 	case LOCK_USED_IN_RECLAIM_FS:
+ 	case LOCK_USED_IN_RECLAIM_FS_READ:
+ 	case LOCK_HELD_OVER_RECLAIM_FS:
 Index: linux-2.6/kernel/lockdep_proc.c
 ===================================================================
 --- linux-2.6.orig/kernel/lockdep_proc.c
 +++ linux-2.6/kernel/lockdep_proc.c
-@@ -84,7 +84,7 @@ static int l_show(struct seq_file *m, vo
- {
- 	struct lock_class *class = v;
- 	struct lock_list *entry;
--	char c1, c2, c3, c4, c5, c6;
-+	char usage[LOCK_USAGE_CHARS];
+@@ -300,27 +300,27 @@ static int lockdep_stats_show(struct seq
+ 			nr_uncategorized++;
+ 		if (class->usage_mask & LOCKF_USED_IN_IRQ)
+ 			nr_irq_safe++;
+-		if (class->usage_mask & LOCKF_ENABLED_IRQS)
++		if (class->usage_mask & LOCKF_ENABLED_IRQ)
+ 			nr_irq_unsafe++;
+ 		if (class->usage_mask & LOCKF_USED_IN_SOFTIRQ)
+ 			nr_softirq_safe++;
+-		if (class->usage_mask & LOCKF_ENABLED_SOFTIRQS)
++		if (class->usage_mask & LOCKF_ENABLED_SOFTIRQ)
+ 			nr_softirq_unsafe++;
+ 		if (class->usage_mask & LOCKF_USED_IN_HARDIRQ)
+ 			nr_hardirq_safe++;
+-		if (class->usage_mask & LOCKF_ENABLED_HARDIRQS)
++		if (class->usage_mask & LOCKF_ENABLED_HARDIRQ)
+ 			nr_hardirq_unsafe++;
+ 		if (class->usage_mask & LOCKF_USED_IN_IRQ_READ)
+ 			nr_irq_read_safe++;
+-		if (class->usage_mask & LOCKF_ENABLED_IRQS_READ)
++		if (class->usage_mask & LOCKF_ENABLED_IRQ_READ)
+ 			nr_irq_read_unsafe++;
+ 		if (class->usage_mask & LOCKF_USED_IN_SOFTIRQ_READ)
+ 			nr_softirq_read_safe++;
+-		if (class->usage_mask & LOCKF_ENABLED_SOFTIRQS_READ)
++		if (class->usage_mask & LOCKF_ENABLED_SOFTIRQ_READ)
+ 			nr_softirq_read_unsafe++;
+ 		if (class->usage_mask & LOCKF_USED_IN_HARDIRQ_READ)
+ 			nr_hardirq_read_safe++;
+-		if (class->usage_mask & LOCKF_ENABLED_HARDIRQS_READ)
++		if (class->usage_mask & LOCKF_ENABLED_HARDIRQ_READ)
+ 			nr_hardirq_read_unsafe++;
  
- 	if (v == SEQ_START_TOKEN) {
- 		seq_printf(m, "all lock classes:\n");
-@@ -100,8 +100,8 @@ static int l_show(struct seq_file *m, vo
- 	seq_printf(m, " BD:%5ld", lockdep_count_backward_deps(class));
- #endif
- 
--	get_usage_chars(class, &c1, &c2, &c3, &c4, &c5, &c6);
--	seq_printf(m, " %c%c%c%c%c%c", c1, c2, c3, c4, c5, c6);
-+	get_usage_chars(class, usage);
-+	seq_printf(m, " %s", usage);
- 
- 	seq_printf(m, ": ");
- 	print_name(m, class);
-Index: linux-2.6/Documentation/lockdep-design.txt
-===================================================================
---- linux-2.6.orig/Documentation/lockdep-design.txt
-+++ linux-2.6/Documentation/lockdep-design.txt
-@@ -27,33 +27,37 @@ lock-class.
- State
- -----
- 
--The validator tracks lock-class usage history into 5 separate state bits:
-+The validator tracks lock-class usage history into 4n + 1 separate state bits:
- 
--- 'ever held in hardirq context'                    [ == hardirq-safe   ]
--- 'ever held in softirq context'                    [ == softirq-safe   ]
--- 'ever held with hardirqs enabled'                 [ == hardirq-unsafe ]
--- 'ever held with softirqs and hardirqs enabled'    [ == softirq-unsafe ]
-+- 'ever held in STATE context'
-+- 'ever head as readlock in STATE context'
-+- 'ever head with STATE enabled'
-+- 'ever head as readlock with STATE enabled'
-+
-+Where STATE can be either one of (kernel/lockdep_states.h)
-+ - hardirq
-+ - softirq
-+ - reclaim_fs
- 
- - 'ever used'                                       [ == !unused        ]
- 
--When locking rules are violated, these 4 state bits are presented in the
--locking error messages, inside curlies.  A contrived example:
-+When locking rules are violated, these state bits are presented in the
-+locking error messages, inside curlies. A contrived example:
- 
-    modprobe/2287 is trying to acquire lock:
--    (&sio_locks[i].lock){--..}, at: [<c02867fd>] mutex_lock+0x21/0x24
-+    (&sio_locks[i].lock){-.-...}, at: [<c02867fd>] mutex_lock+0x21/0x24
- 
-    but task is already holding lock:
--    (&sio_locks[i].lock){--..}, at: [<c02867fd>] mutex_lock+0x21/0x24
-+    (&sio_locks[i].lock){-.-...}, at: [<c02867fd>] mutex_lock+0x21/0x24
- 
- 
--The bit position indicates hardirq, softirq, hardirq-read,
--softirq-read respectively, and the character displayed in each
--indicates:
-+The bit position indicates STATE, STATE-read, for each of the states listed
-+above, and the character displayed in each indicates:
- 
-    '.'  acquired while irqs disabled
-    '+'  acquired in irq context
-    '-'  acquired with irqs enabled
--   '?' read acquired in irq context with irqs enabled.
-+   '?'  acquired in irq context with irqs enabled.
- 
- Unused mutexes cannot be part of the cause of an error.
- 
+ #ifdef CONFIG_PROVE_LOCKING
 
 -- 
 
