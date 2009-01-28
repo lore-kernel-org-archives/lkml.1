@@ -1,86 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbZA1He0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbZA1HlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbZA1He0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 02:34:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZA1HeR
+	id S1753589AbZA1HlZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 02:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZA1HlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 02:34:17 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:57859 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbZA1HeR (ORCPT
+	Wed, 28 Jan 2009 02:41:13 -0500
+Received: from smtp120.sbc.mail.sp1.yahoo.com ([69.147.64.93]:29307 "HELO
+	smtp120.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752132AbZA1HlL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 02:34:17 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 27 Jan 2009 23:34:14 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Bron Gondwana <brong@fastmail.fm>
-cc: Greg KH <gregkh@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
-Subject: Re: [patch 016/104] epoll: introduce resource usage limits
-In-Reply-To: <1233125523.19204.1297144311@webmail.messagingengine.com>
-Message-ID: <alpine.DEB.1.10.0901272323240.20262@alien.or.mcafeemobile.com>
-References: <1232704065.25510.1296328851@webmail.messagingengine.com> <20090123170631.GB11566@suse.de> <20090124130334.GA8031@brong.net> <20090125110126.GA11598@brong.net> <20090125122039.GA16603@brong.net> <20090128003519.GA11395@suse.de><20090128033824.GA1662@brong.net>
- <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com> <20090128035746.GA3351@brong.net> <alpine.DEB.1.10.0901272002180.20262@alien.or.mcafeemobile.com> <20090128052630.GA9512@suse.de> <alpine.DEB.1.10.0901272135400.20262@alien.or.mcafeemobile.com>
- <1233125523.19204.1297144311@webmail.messagingengine.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Jan 2009 02:41:11 -0500
+X-YMail-OSG: F7UOXhIVM1k5ShDnVzIVrxFIs9_DMxQgm.cSjMzM7wnZg8tKCaWQ24AmlevEcCfu1j33lkOIVAT0IRYtlM4QSanME00tLTeeyeq0xO4DdcQgHcy1nv9PwsMpTedd6llk0I.YbhKBuzr8QYBc7DpTbrUSDHtUl3QxT8E6ETg5tUMxioinWoCcsJV9QpHyMdabOxEs6zoiCh4DvBMv0Kv5jiE9s6mxxDg-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH 0/2] [Target_Core_Mod] Add running SPC-3 Persistent
+	Reservation logic
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Joel Becker <joel.becker@oracle.com>, Hannes Reinecke <hare@suse.de>,
+       Ming Zhang <blackmagic02881@gmail.com>,
+       Arne Redlich <agr@powerkom-dd.de>,
+       "Ross S. W. Walker" <rswwalker@gmail.com>,
+       Rafiu Fakunle <rafiu@openfiler.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain
+Date: Tue, 27 Jan 2009 23:40:01 -0800
+Message-Id: <1233128401.6442.148.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009, Bron Gondwana wrote:
+Greetings all,
 
-> On Tue, 27 Jan 2009 22:38 -0800, "Davide Libenzi" <davidel@xmailserver.org> wrote:
-> > So today we have three groups of users:
-> >
-> > - Users that have been hit by the limit
-> >   * Those have probably bumped the value up to the wazzoo.
-> 
-> Yeah, pretty much.  But we've bumped things up to the wazzoo before
-> only to discover that our usage crept up there (file-max of 300,000
-> being a case on one machine recently.  Appears you can hit that
-> pretty easily when you change from smaller machines to 32Gb memory
-> 
-> That's why the first time we hit file-max, we added a check into
-> our monitoring system so we get warned before we hit it.  Any
-> fixed limit, I'd want one of these.  Makes me sleep much better
-> (literally, the bloody things SMS me if checks start failing)
+This patch series adds the first running SPC-3 compliant Persistent Reservation
+emulation support for PROUT REGISTER -> PROUT RESERVE -> PRIN READ_RESERVATIONS ->
+PROUT RELEASE -> PROUT UNREGISTER, tested and running with Doug Gilbert's
+very excellent sg_persist command.  This was tested against Open/iSCSI Initiators
+running LIO-Target iSCSI/TCP, and Core-iSCSI Initiators running LIO-Target iSCSI/SCTP.
 
-Why are you wasting your time in tail-chasing a value? If your load is so 
-unpredictable that you can't find a proper upper bound (and it almost 
-never is), make it unlimited (or redicoulously high enough).
-Warned, by which assumption? That the value rises just as much to hit the 
-warn, but not to pass the current limit? How about *fail*, if the burst is 
-high enough to hit your inexplicably constrained value?
-All this in oder to keep as-close-as-the-peak a value that costs no 
-resources in pre-allocation terms.
+I will be adding information about TCM/LIO-Target v3.0 and LIO-Target v2.9 usage wrt
+Persistent Reservations on to the http://Linux-iSCSI.org wiki at some point as well,
+so folks can get their own SPC-3 compliant PR enabled Linux/iSCSI Targets up and running!
 
+This patch is made against lio-core-2.6.git/master and tested on v2.6.29-rc2 x86
+32-bit HVM.  The lio-core-2.6.git tree can be found at:
 
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
 
+Subject: [PATCH 1/2] [Target_Core_Mod/PERSISTENT_RESERVATION]: Add Service Action RESERVE/RELEASE w/ all_tg_pt=[0,1]
+Subject: [PATCH 2/2] [Target_Core_Mod/ConfigFS]: Updates for PERSISTENT_RESERVE
 
-> > - Unaware users with machines having potential of hitting the current
-> > limit
-> >   * Those, monitor or not, being unaware, they won't notice it until
-> >   hits. 
-> >     And since rising it costs zero, they'd likely prefer to bump it to
-> >     the 
-> >     stars instead of monitoring an incrementing by small steps.
-> 
-> True.  After they spend a day and a half figuring out what's causing
-> them out-of-files errors.  They swear a lot and do the wazzoo thing.
+Unpacking objects: 100% (12/12), done.
+>From /pub/scm/linux/kernel/git/nab/lio-core-2.6
+ * branch            master     -> FETCH_HEAD
+Updating a4bcd2c..ab56467
+Fast forward
+ drivers/lio-core/target_core_base.h     |    3 +-
+ drivers/lio-core/target_core_configfs.c |  116 +++++++++--
+ drivers/lio-core/target_core_pr.c       |  354 ++++++++++++++++++++++++++++++-
+ drivers/lio-core/target_core_pr.h       |    1 +
+ 4 files changed, 446 insertions(+), 28 deletions(-)
 
-And, since they didn't know about the new limit, an even less known 
-"monitor" would have help in ...?
+Here is what it looks like in action, starting from the start, with no
+PR registrations or reservations, lets have a look via Target_Core_Mod/ConfigFS
+for a Linux LVM block device:
 
+*) The setup...
 
+Here is waht things now look like in Target_Core_Mod/ConfigFS for each
+$HBA/$STORAGE_OBJECT, in this example, a Linux LVM struct block_device named
+'lvm_test0' is used for the ConfigFS $STORAGE_OBJECT:
 
-- Davide
+`-- target
+    |-- core
+    |   |-- iblock_0
+    |   |   |-- hba_info
+    |   |   `-- lvm_test0
+	<SNIP>
+    |   |       |-- pr
+    |   |       |   |-- res_holder
+    |   |       |   |-- res_pr_all_tgt_pts
+    |   |       |   |-- res_pr_generation
+    |   |       |   |-- res_pr_registered_i_pts
+    |   |       |   |-- res_pr_type
+    |   |       |   `-- res_type
+    |   |       `-- wwn
+    |   |           |-- evpd_assoc_logical_unit
+    |   |           |-- evpd_assoc_scsi_target_device
+    |   |           |-- evpd_assoc_target_port
+    |   |           |-- evpd_protocol_identifier
+    |   |           `-- evpd_unit_serial
+	<SNIP>
+
+initiator# # sg_persist --in --report-capabilities -v /dev/sde
+    inquiry cdb: 12 00 00 00 24 00 
+  LIO-ORG  IBLOCK  v3.0
+  Peripheral device type: disk
+    Persistent Reservation In cmd: 5e 02 00 00 00 00 00 20 00 00 
+Report capabilities response:
+  Compatible Reservation Handling(CRH): 0
+  Specify Initiator Ports Capable(SIP_C): 0
+  All Target Ports Capable(ATP_C): 1
+  Persist Through Power Loss Capable(PTPL_C): 0
+  Type Mask Valid(TMV): 1
+  Allow commands: 1
+  Persist Through Power Loss Active(PTPL_A): 0
+    Support indicated in Type mask:
+      Write Exclusive, all registrants: 0
+      Exclusive Access, registrants only: 0
+      Write Exclusive, registrants only: 0
+      Exclusive Access: 1
+      Write Exclusive: 1
+      Exclusive Access, all registrants: 0
+
+target# cat /sys/kernel/config/target/core/iblock_0/lvm_test0/pr/*
+No SPC-3 Reservation holder
+No SPC-3 Reservation holder
+0x00000000
+SPC-3 PR Registrations:
+None
+No SPC-3 Reservation holder
+SPC3_PERSISTENT_RESERVATIONS
+
+*) PROUT REGISTER:
+
+initiator# sg_persist --out --register --param-sark=0x5678efff --param-alltgpt -v /dev/sde
+    inquiry cdb: 12 00 00 00 24 00 
+  LIO-ORG  IBLOCK  v3.0
+  Peripheral device type: disk
+    Persistent Reservation Out cmd: 5f 00 00 00 00 00 00 00 18 00 
+PR out: command (Register) successful
+
+target# cat /sys/kernel/config/target/core/iblock_0/lvm_test0/pr/*
+No SPC-3 Reservation holder
+No SPC-3 Reservation holder
+0x00000001
+SPC-3 PR Registrations:
+iSCSI Node: iqn.1993-08.org.debian:01:2dadf92d0ef Key: 0x000000005678efff PRgen: 0x00000000
+No SPC-3 Reservation holder
+SPC3_PERSISTENT_RESERVATIONS
+
+*) PROUT RESERVE: With a prout_type=1 for PR Type: WRITE_EXCLUSIVE (0x01)
+
+initiator# sg_persist --out --reserve --param-rk=0x5678efff --prout-type=1 -v /dev/sde
+    inquiry cdb: 12 00 00 00 24 00 
+  LIO-ORG  IBLOCK  v3.0
+  Peripheral device type: disk
+    Persistent Reservation Out cmd: 5f 01 01 00 00 00 00 00 18 00 
+PR out: command (Reserve) successful
+
+target# cat /sys/kernel/config/target/core/iblock_0/lvm_test0/pr/*
+SPC-3 Reservation FABRIC[iSCSI]: Initiator: iqn.1993-08.org.debian:01:2dadf92d0ef
+SPC-3 Reservation holder: All Target Ports reserved
+0x00000001
+SPC-3 PR Registrations:
+iSCSI Node: iqn.1993-08.org.debian:01:2dadf92d0ef Key: 0x000000005678efff PRgen: 0x00000000
+SPC-3 Reservation Type: Write Exclusive Access
+SPC3_PERSISTENT_RESERVATIONS
+
+*) PRIN READ_RESERVATIONS:
+
+initiator# sg_persist --in --read-reservation -v /dev/sde
+    inquiry cdb: 12 00 00 00 24 00 
+  LIO-ORG  IBLOCK  v3.0
+  Peripheral device type: disk
+    Persistent Reservation In cmd: 5e 01 00 00 00 00 00 20 00 00 
+  PR generation=0x1, Reservation follows:
+    Key=0x5678efff
+    scope: LU_SCOPE,  type: Write Exclusive
+
+*) PROUT RELEASE:
+
+initiator# sg_persist --out --release --param-rk=0x5678efff --prout-type=1 -v /dev/sde
+    inquiry cdb: 12 00 00 00 24 00 
+  LIO-ORG  IBLOCK  v3.0
+  Peripheral device type: disk
+    Persistent Reservation Out cmd: 5f 02 01 00 00 00 00 00 18 00 
+PR out: command (Release) successful
+
+target# cat /sys/kernel/config/target/core/iblock_0/lvm_test0/pr/*
+No SPC-3 Reservation holder
+No SPC-3 Reservation holder
+0x00000001
+SPC-3 PR Registrations:
+iSCSI Node: iqn.1993-08.org.debian:01:2dadf92d0ef Key: 0x000000005678efff PRgen: 0x00000000
+No SPC-3 Reservation holder
+SPC3_PERSISTENT_RESERVATIONS
+
+*) PRIN UNREGISTER:
+
+initiator# sg_persist --out --register --param-rk=0x5678efff --param-sark=0 -v /dev/sde
+    inquiry cdb: 12 00 00 00 24 00 
+  LIO-ORG  IBLOCK  v3.0
+  Peripheral device type: disk
+    Persistent Reservation Out cmd: 5f 00 00 00 00 00 00 00 18 00 
+PR out: command (Register) successful
+
+target#cat /sys/kernel/config/target/core/iblock_0/lvm_test0/pr/*
+No SPC-3 Reservation holder
+No SPC-3 Reservation holder
+0x00000001
+SPC-3 PR Registrations:
+None
+No SPC-3 Reservation holder
+SPC3_PERSISTENT_RESERVATIONS
+
+Comments..?
+
+--nab
 
