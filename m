@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZA1IWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754319AbZA1IZX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754282AbZA1IWn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 03:22:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752851AbZA1IWd
+	id S1754319AbZA1IZX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 03:25:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZA1IZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 03:22:33 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:33940 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752829AbZA1IWb (ORCPT
+	Wed, 28 Jan 2009 03:25:10 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:43470 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752877AbZA1IZJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 03:22:31 -0500
-Message-ID: <498018BD.2000806@nokia.com>
-Date: Wed, 28 Jan 2009 10:35:09 +0200
-From: Adrian Hunter <ext-adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080925)
-MIME-Version: 1.0
-To: Grazvydas Ignotas <notasas@gmail.com>
-CC: "tony@atomide.com" <tony@atomide.com>,
-       "drzeus-mmc@drzeus.cx" <drzeus-mmc@drzeus.cx>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] OMAP HSMMC: fix MMC3 dma
-References: <1233052573-6223-1-git-send-email-notasas@gmail.com>	 <497EF7E2.7010906@nokia.com> <6ed0b2680901270900t24838c73l3aa8edca62c91710@mail.gmail.com>
-In-Reply-To: <6ed0b2680901270900t24838c73l3aa8edca62c91710@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 28 Jan 2009 08:21:57.0850 (UTC) FILETIME=[7C71B3A0:01C98121]
-X-Nokia-AV: Clean
+	Wed, 28 Jan 2009 03:25:09 -0500
+Subject: Re: [PATCH v4] softlockup: remove hung_task_check_count
+From: Peter Zijlstra <peterz@infradead.org>
+To: Mandeep Singh Baines <msb@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       rientjes@google.com, mbligh@google.com, thockin@google.com,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20090127184851.GD22298@google.com>
+References: <1232991701.4863.222.camel@laptop>
+	 <20090127003055.GA21269@google.com> <20090127132626.GH23121@elte.hu>
+	 <20090127184851.GD22298@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 28 Jan 2009 09:25:00 +0100
+Message-Id: <1233131100.10992.43.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Grazvydas Ignotas wrote:
-> On Tue, Jan 27, 2009 at 2:02 PM, Adrian Hunter
-> <ext-adrian.hunter@nokia.com> wrote:
->> Grazvydas Ignotas wrote:
->>> Data transfers on third OMAP3 MMC controller don't work
->>> because DMA line numbers are only defined for MMC1 and MMC2.
->>> Fix that and store line numbers in mmc_omap_host structure
->>> to reduce code size.
->>> Tested on OMAP3 pandora board.
->>>
->>> Signed-off-by: Grazvydas Ignotas <notasas@gmail.com>
->>> ---
->>>  drivers/mmc/host/omap_hsmmc.c |   31 +++++++++++++++++++++++--------
->>>  1 files changed, 23 insertions(+), 8 deletions(-)
->>>
->> Have you considered using the scatter-gather emulation patch:
->>
->>        http://marc.info/?l=linux-omap&m=122726069922195&w=2
->>
->> It was reverted:
->>
->>        http://marc.info/?l=linux-omap&m=122904725322787&w=2
->>
->> because of a hardware problem with OMAP3430 before ES3.0, but applying:
->>
->>
->>  http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=6a79e391df295bd7c2aa1309ea5031f361c197fd
->>
->> seems to overcome even that.
+On Tue, 2009-01-27 at 10:48 -0800, Mandeep Singh Baines wrote:
+> Ingo Molnar (mingo@elte.hu) wrote:
+> > 
+> > * Mandeep Singh Baines <msb@google.com> wrote:
+> > 
+> > > The design was proposed by Frédéric Weisbecker. Peter Zijlstra suggested 
+> > > the use of RCU.
+> > 
+> > ok, this looks _much_ cleaner.
+> > 
+> > One question:
+> > 
+> > > -	read_lock(&tasklist_lock);
+> > > +	rcu_read_lock();
+> > >  	do_each_thread(g, t) {
+> > > -		if (!--max_count)
+> > > +		if (need_resched())
+> > >  			goto unlock;
+> > 
+> > Isnt it dangerous to skip a check just because we got marked for 
+> > reschedule? Since it runs so rarely it could by accident be preempted and 
+> > we'd not get any checking done for a long time.
+> > 
 > 
-> Hmm, but it still doesn't know about MMC3. But in case that SG patch
-> goes first, I can resend.
+> Yeah, the checking could be deferred indefinitely. So you could have a system
+> where tasks are hung but it takes a really long time to detect this and
+> finally panic the system. Not so good for high-availability.
 
-I just meant, you might be interested because it gives better performance.
-
-No, it doesn't know about MMC3, but it does hit some of the same lines of
-code.
+Why break out at all? Are you that worried about khungtaskd introducing
+latencies? Is using preemptible RCU an option for you?
 
