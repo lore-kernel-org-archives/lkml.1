@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbZA1SeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753580AbZA1Sfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753145AbZA1SeZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 13:34:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751240AbZA1SeR
+	id S1753580AbZA1Sfv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 13:35:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZA1Sfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 13:34:17 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57293 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751524AbZA1SeQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 13:34:16 -0500
-Date: Wed, 28 Jan 2009 13:34:13 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Peter Zijlstra <peterz@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, jens.axboe@oracle.com
-Subject: Re: Buggy IPI and MTRR code on low memory
-In-Reply-To: <20090128102208.68a900cc@infradead.org>
-Message-ID: <alpine.DEB.1.10.0901281331130.25359@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com> <1233161182.10992.52.camel@laptop> <alpine.DEB.1.10.0901281221450.25359@gandalf.stny.rr.com> <20090128102208.68a900cc@infradead.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Jan 2009 13:35:43 -0500
+Received: from waste.org ([66.93.16.53]:34798 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751518AbZA1Sfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 13:35:42 -0500
+Subject: Re: [PATCH] firmware: speed up request_firmware()
+From: Matt Mackall <mpm@selenic.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ira Snyder <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090128181117.35fb319b@lxorguk.ukuu.org.uk>
+References: <20090128180446.GB31107@ovro.caltech.edu>
+	 <20090128181117.35fb319b@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Wed, 28 Jan 2009 12:35:22 -0600
+Message-Id: <1233167722.18091.2.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 28 Jan 2009, Arjan van de Ven wrote:
-
-> On Wed, 28 Jan 2009 12:24:48 -0500 (EST)
-> Steven Rostedt <rostedt@goodmis.org> wrote:
+On Wed, 2009-01-28 at 18:11 +0000, Alan Cox wrote:
+> > Without this patch, loading a 12MB firmware image (FPGA bitfiles) called
+> > vmalloc() approximately 3000 times. With the patch, vmalloc() is only
+> > called 13 times, however, some memory is wasted until firmware_release() is
+> > called. Usually, this happens very quickly, so it shouldn't be a problem.
 > 
-> > > ---
-> > I'll have skip the NMI test and see if it locks up any place else.
-> 
-> if you get an NMI during MTRR changing you are more or less screwed.
-> Really. (the cpu is uncachable etc)
+> Particularly on 32bit x86 vmalloc memory space is very precious so while
+> the current buffer size default may be too small doubling repeatedly is
+> not a good model IMHO.
 
-Heh, the NMI is just another place that has the IPI problem. A different
-issue to the MTRR. Well, same bug, different place.
+How about a small exponent like 1.1?
 
-> 
-> the MTRR code should disable NMIs as much as possible.
-> 
-> and for sure in -RT, the MTRR change section should not be preemptable
-> at all.
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-Yeah, that is why I found this. The current code calls kfree and such from 
-the IPI if it is allocated (not to mention the kmalloc in 
-smp_call_function. Both of which can sleep in RT. I was forcing the 
-data=NULL case in RT to keep it from entering the allocation code paths. 
-But this is where I found the deadlock with MTRR (and NMI).
-
--- Steve
 
