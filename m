@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbZA1To5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbZA1Tpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752843AbZA1To5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 14:44:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751120AbZA1Tos
+	id S1753503AbZA1Tpj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 14:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751282AbZA1Tpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 14:44:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37244 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750979AbZA1Tos (ORCPT
+	Wed, 28 Jan 2009 14:45:30 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57900 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750979AbZA1Tpa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 14:44:48 -0500
-Date: Wed, 28 Jan 2009 11:44:13 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Harvey Harrison <harvey.harrison@gmail.com>
-cc: "H. Peter Anvin" <hpa@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
-In-Reply-To: <1233170532.6717.49.camel@brick>
-Message-ID: <alpine.LFD.2.00.0901281141510.3123@localhost.localdomain>
-References: <20090127222825.GA27097@elte.hu>  <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain>  <1233106614.3256.6.camel@localhost.localdomain>  <200901281337.52294.arnd@arndb.de>  <49809A65.2090501@kernel.org> <1233170532.6717.49.camel@brick>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Jan 2009 14:45:30 -0500
+Date: Wed, 28 Jan 2009 19:45:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Ira Snyder <iws@ovro.caltech.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firmware: speed up request_firmware()
+Message-ID: <20090128194534.457d58cd@lxorguk.ukuu.org.uk>
+In-Reply-To: <E1LSFhF-0002OC-00.arvidjaar-mail-ru@mx5.mail.ru>
+References: <20090128180446.GB31107@ovro.caltech.edu>
+	<E1LSFhF-0002OC-00.arvidjaar-mail-ru@mx5.mail.ru>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Some drivers cache firmware in memory. Doubing the amount of needed memory 
+> definitely would not be the best idea. Check drivers/net/wireless for 
+> examples.
 
+A lot of drivers could perfectly happily exist with a simple iterator
+helper and being returned sg lists of pages. It seems that for big
+firmwares at least there is a root cause which is deeper than how you
+grow your vmalloc buffer.
 
-On Wed, 28 Jan 2009, Harvey Harrison wrote:
-> On Wed, 2009-01-28 at 09:48 -0800, H. Peter Anvin wrote:
-> > 
-> > In general, no.  The byteswap API is a legacy exception.
-> 
-> But now that swab.h has been separated out, we could just stop exporting the
-> asm/swab.h bits while still providing a generic C-based implementation to
-> userspace.
-
-Well, the _reason_ the byteswap stuff has been interesting to user space 
-is that the kernel did it better than the alternatives. Rather than having 
-purely "work with big-endian data" (the networking htonl etc functions), 
-the kernel had good and fairly optimized handling of various different 
-forms of byte order handling.
-
-Which is why people wanted to use it in the first place - and which is why 
-then doing just the generic C-based thing doesn't really fix the issue. 
-Things may compile, but they kind of lost the point.
-
-		Linus
+Alan
