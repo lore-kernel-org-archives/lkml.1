@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753740AbZA1ASM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754189AbZA1ASa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753740AbZA1ASM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 19:18:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZA1ARz
+	id S1754189AbZA1ASa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 19:18:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752406AbZA1ASA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 19:17:55 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:35013 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751769AbZA1ARy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 19:17:54 -0500
-To: tj@kernel.org
-Subject: Re: [PATCH 07/10] x86: uv cleanup
-Cc: linux-kernel@vger.kernel.org
-Message-Id: <E1LRy9o-0005WD-7N@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Tue, 27 Jan 2009 18:19:52 -0600
+	Tue, 27 Jan 2009 19:18:00 -0500
+Received: from mga09.intel.com ([134.134.136.24]:62530 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752128AbZA1AR6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 19:17:58 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,335,1231142400"; 
+   d="scan'208";a="381925894"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Rick Jones <rick.jones2@hp.com>, David Miller <davem@davemloft.net>
+CC: "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "tj@kernel.org" <tj@kernel.org>,
+       "rusty@rustcorp.com.au" <rusty@rustcorp.com.au>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "brgerst@gmail.com" <brgerst@gmail.com>,
+       "ebiederm@xmission.com" <ebiederm@xmission.com>,
+       "travis@sgi.com" <travis@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "steiner@sgi.com" <steiner@sgi.com>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "mathieu.desnoyers@polymtl.ca" <mathieu.desnoyers@polymtl.ca>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>
+Date: Tue, 27 Jan 2009 16:17:56 -0800
+Subject: RE: [PATCH] percpu: add optimized generic percpu accessors
+Thread-Topic: [PATCH] percpu: add optimized generic percpu accessors
+Thread-Index: AcmA0UwB/LqzCvfBSxKlbLO4Tn4gogACiWUw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA35F317617@orsmsx505.amr.corp.intel.com>
+References: <200901271213.18605.rusty@rustcorp.com.au>
+	<497E705B.5000302@kernel.org>	<alpine.DEB.1.10.0901271506580.3114@qirst.com>
+ <20090127.134747.153565246.davem@davemloft.net> <497F8F02.9000603@hp.com>
+In-Reply-To: <497F8F02.9000603@hp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> I was asking around, and was told that on IA64 *harware* at least, in addition to
+> supporting multiple page sizes (up to a GB IIRC), one can pin up to 8 or perhaps
+> 1/2 the TLB entries.
 
+The number of TLB entries that can be pinned is model specific (but the
+minimum allowed is 8 each for code & data).  Page sizes supported also
+vary by model, recent models go up to 4GB.
 
-Hi Tejun,
+BUT ... we stopped pinning this entry in the TLB when benchmarks showed
+that it was better to just insert this as a regular TLB entry which might
+can be dropped to map something else.  So now there is code in the Alt-DTLB
+miss handler (ivt.S) to insert the per-cpu mapping on an as needed basis.
 
-I appreciate your consolidation and cleanup of the UV code, relative
-to 32 vs 64.
+> So, in theory if one were so inclined the special pinned per-CPU entry could
+> either be more than one 64K entry, or a single, rather larger entry.
 
-I have a question about the addition of the
-        WARN_ON(!in_atomic());
-in uv_flush_tlb_others().
-The patch is
-http://marc.info/?l=linux-kernel&m=123252788121855&w=2
+Managing a larger space could be done ... but at the expense of making
+the Alt-DTLB miss handler do a memory lookup to find the physical address
+of the per-cpu page needed (assuming that we allocate a bunch of random
+physical pages for use as per-cpu space rather than a single contiguous
+block of physical memory).
 
-I expect this function to always entered preemptable.  
-Could you explain a bit about your thought behind this WARN_ON?
+When do we know the total amount of per-cpu memory needed?
+1) CONFIG time?
+2) Boot time?
+3) Arbitrary run time?
 
-Thanks.
--Cliff
-
-
-
-
-const struct cpumask *uv_flush_tlb_others(const struct cpumask *cpumask,
-                                          struct mm_struct *mm,
-                                          unsigned long va, unsigned int cpu)
-{
-        static DEFINE_PER_CPU(cpumask_t, flush_tlb_mask);
-        struct cpumask *flush_mask = &__get_cpu_var(flush_tlb_mask);
-        int i;
-        int bit;
-        int blade;
-        int uv_cpu;
-        int this_blade;
-        int locals = 0;
-        struct bau_desc *bau_desc;
-
-        WARN_ON(!in_atomic());
-
-        cpumask_andnot(flush_mask, cpumask, cpumask_of(cpu));
-
-        uv_cpu = uv_blade_processor_id();
-        this_blade = uv_numa_blade_id();
-
+-Tony
