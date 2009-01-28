@@ -1,93 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755298AbZA1K6T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbZA1K7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755298AbZA1K6T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 05:58:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbZA1K5p
+	id S1754499AbZA1K7V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 05:59:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbZA1K7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 05:57:45 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:47294 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbZA1K5n (ORCPT
+	Wed, 28 Jan 2009 05:59:07 -0500
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:42201 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750947AbZA1K7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 05:57:43 -0500
-Subject: Re: since 2.6.29-rc: apple infrared keeps system awake?
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg@redhat.com>, Samuel Ortiz <sameo@openedhand.com>
-In-Reply-To: <alpine.LNX.1.10.0901271417070.5377@jikos.suse.cz>
-References: <1232635779.4224.12.camel@johannes.local>
-	 <alpine.LRH.1.10.0901261151320.26411@twin.jikos.cz>
-	 <1232968513.20525.1.camel@johannes.local>
-	 <alpine.LNX.1.10.0901261220150.5377@jikos.suse.cz>
-	 <1232969733.20525.4.camel@johannes.local>
-	 <alpine.LNX.1.10.0901271417070.5377@jikos.suse.cz>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-BiiqlFiOICoAJw0VVrVS"
-Date: Wed, 28 Jan 2009 11:27:41 +0100
-Message-Id: <1233138461.3936.11.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 28 Jan 2009 05:59:04 -0500
+Date: Wed, 28 Jan 2009 21:59:02 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Davide Libenzi <davidel@xmailserver.org>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
+Message-ID: <20090128105902.GB29864@brong.net>
+References: <20090128033824.GA1662@brong.net> <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm> <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com> <2c0942db0901272007w4298738cq37918f776276d424@mail.gmail.com> <20090128101641.33978100@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090128101641.33978100@lxorguk.ukuu.org.uk>
+Organization: brong.net
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 28, 2009 at 10:16:41AM +0000, Alan Cox wrote:
+> > It's really simple. A kernel upgrade in a -stable series point release
+> > broke a rational user-space setup. If you don't want to adjust the
+> 
+> You can just as equally load the description the other way:
 
---=-BiiqlFiOICoAJw0VVrVS
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Only if you're ignoring reality.
 
-On Tue, 2009-01-27 at 14:18 +0100, Jiri Kosina wrote:
-> On Mon, 26 Jan 2009, Johannes Berg wrote:
->=20
-> > Is it possible that I was just in an environment where there was lots o=
-f=20
-> > random infrared traffic that the device picked up? Is it possible to=20
-> > disable it completely?
->=20
-> Well, you can always unbind the driver from the device, I guess that=20
-> should shut it up.
+> "A kernel upgrade in a -stable series point release fixed a security DoS"
 
-Ok, I'll have to write a script for that or something ;)
+Alan, that's a complete load of bollocks.  It broke common configurations 
+of java, postfix and apache on real-world machines, causing significant
+actual denials of service in previously reliable configurations.
 
-> But I'd like to understand why this started happening all of a sudden. Ar=
-e=20
-> you able to reproduce this easily?
+How about "A kernel upgrade in a -stable series replaced one potential
+DoS with another DoS and provided a tunable knob to select which DoS you
+would prefer, defaulting to the opposite of the previous behaviour"
+ 
+> Which is not to say that a smarter limit isn't needed.
 
-I've watched this issue some more over the last couple of days, and it
-seems that it's not (at least not only) related to the kernel version,
-2.6.29-rc2 is behaving just fine right now for me. I'm almost ready to
-blame it only on the environment, though I don't know why a few places
-at university would have so much infrared signal that the device felt a
-need to react to them all the time.
+Yeah, I have an idea about that, but I need to see if it's actually
+viable within the code.  The DoS works by creating epoll descriptors
+watching other epoll descriptors, which strikes me as a much less
+real-world actual use pattern than a bunch of separate daemons with an
+epoll watcher each.
 
-I'll try to see whether it happens there with an older kernel too, in
-which case I'll just blame it on the environment and disable the device
-(well, I guess I want that anyway lest someone actually tries to use the
-IR when I'm somewhere with my laptop)
+If it's possible to count watches only if they're added to another epoll
+instance, then we'd have a metric that still catches the N^2 attack, but
+doesn't interact with the common non-attacky use-case.
 
-johannes
+I'd be much happier if we could remove the dichotomy of "allow the DoS
+or live with a highly crippled epoll implementation until some of the
+biggest daemons out there change their usage patterns" (thinking
+particularly of java 1.6 and apache here.  Largish postfix installations
+are much rarer)
 
---=-BiiqlFiOICoAJw0VVrVS
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJgDMaAAoJEKVg1VMiehFY/tQP/18BUYIpDeiaABvS1iTiSR0m
-zAAbjPgBr7/O7UDY73okyI4xyrrQsi9ApWBj134aXqF1rVam350d39mIwUJduv51
-xmCTkn9bMR9sxF+tkB5b0tQlZfRHye/TvZnDof2dcc9rBU9k1oAXQjCYVbFhuHnd
-rdPohE4Hb/sNMEOGTsb332tZfxvSsOTBsWu7gtC9n0UM1f7sHUjy+iDUQtLCT/9+
-NZS2Fcv2QT7vgLmO5XA238APD4UM4kNFHwLr2uYutfxVbTmlRPpcp2+Tb/i10SHV
-Wgj+lYl+538oqrOoLi3gO3GtEiw9thM3X3slhHaQ9It4+0YfP4Ra/Y7MEtXkc7kT
-QfbiD3b/dIFzMthbUjt3rSHuiaBELpE9+I2Tv0c4PMaRYXUzRSFgi22kIxWAvaZ4
-gSWY+FVmTiccNbVPpun1IrjiB3VsAHjzCCftDmwavkfFAMz6ZmZyZFsuuW313lKf
-0qxPZV/FPp5nIm1wBnRTa0XYq0c1fpE1YzxnVvZfROY6qg40oXg6Q2d2ciyW3f2j
-ne8kc+vuo+Di4We8E8gZCdg2k5O9Zw/xWE3CKLggh8aYtFlPyuBQolNJHOFg+1jw
-zcTgqhTyzJt9WpZoHQSWtfciwz6Qr1RgfVQ/vp7RvquwQ/yYyWC62q+jLZingxSN
-piG31Cteory8Qcww/6LT
-=A3ZR
------END PGP SIGNATURE-----
-
---=-BiiqlFiOICoAJw0VVrVS--
-
+Bron.
