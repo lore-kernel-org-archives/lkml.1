@@ -1,99 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764174AbZA2AVa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbZA2AWQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764174AbZA2AVa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 19:21:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758850AbZA1Xqw
+	id S1761567AbZA2AWQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 19:22:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758860AbZA1Xq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:46:52 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53339 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:46:56 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53353 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758841AbZA1Xqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:46:51 -0500
+	id S1758841AbZA1Xqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:46:54 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 095/114] x86/Voyager: remove X86_BIOS_REBOOT Kconfig quirk
-Date: Wed, 28 Jan 2009 23:42:41 +0000
-Message-Id: <1233186180-29883-96-git-send-email-mingo@elte.hu>
+Subject: [PATCH 093/114] x86: generalize boot_cpu_id
+Date: Wed, 28 Jan 2009 23:42:39 +0000
+Message-Id: <1233186180-29883-94-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
 References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:46:36 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:46:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Voyager has this Kconfig quirk:
-
-config X86_BIOS_REBOOT
-	bool
-	depends on !X86_VOYAGER
-	default y
-
-Voyager should use the existing machine_ops.emergency_restart reboot
-quirk mechanism instead of a build-time quirk.
+x86/Voyager can boot on non-zero processors. While that can probably
+be fixed by properly remapping the physical CPU IDs, keep boot_cpu_id
+for now for easier transition - and expand it to all of x86.
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/Kconfig             |    6 ------
- arch/x86/include/asm/proto.h |    4 ----
- arch/x86/kernel/Makefile     |    2 +-
- 3 files changed, 1 insertions(+), 11 deletions(-)
+ arch/x86/Kconfig           |    4 ----
+ arch/x86/include/asm/cpu.h |    6 +-----
+ arch/x86/kernel/setup.c    |   14 ++++++++++++++
+ arch/x86/kernel/smpboot.c  |   12 ------------
+ 4 files changed, 15 insertions(+), 21 deletions(-)
 
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 1d50c9d..c0d79ab 100644
+index 3671506..f4dd851 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
-@@ -190,11 +190,6 @@ config X86_HT
- 	depends on SMP
- 	default y
+@@ -238,10 +238,6 @@ config SMP
  
--config X86_BIOS_REBOOT
--	bool
--	depends on !X86_VOYAGER
--	default y
+ 	  If you don't know what to do here, say N.
+ 
+-config X86_HAS_BOOT_CPU_ID
+-	def_bool y
+-	depends on X86_VOYAGER
 -
- config X86_TRAMPOLINE
- 	bool
- 	depends on SMP || (64BIT && ACPI_SLEEP)
-@@ -1361,7 +1356,6 @@ source kernel/Kconfig.hz
+ config SPARSE_IRQ
+ 	bool "Support sparse irq numbering"
+ 	depends on PCI_MSI || HT_IRQ
+diff --git a/arch/x86/include/asm/cpu.h b/arch/x86/include/asm/cpu.h
+index f03b23e..b185091 100644
+--- a/arch/x86/include/asm/cpu.h
++++ b/arch/x86/include/asm/cpu.h
+@@ -32,10 +32,6 @@ extern void arch_unregister_cpu(int);
  
- config KEXEC
- 	bool "kexec system call"
--	depends on X86_BIOS_REBOOT
- 	help
- 	  kexec is a system call that implements the ability to shutdown your
- 	  current kernel, and to start another kernel.  It is like a reboot
-diff --git a/arch/x86/include/asm/proto.h b/arch/x86/include/asm/proto.h
-index d6a22f9..49fb3ec 100644
---- a/arch/x86/include/asm/proto.h
-+++ b/arch/x86/include/asm/proto.h
-@@ -18,11 +18,7 @@ extern void syscall32_cpu_init(void);
+ DECLARE_PER_CPU(int, cpu_state);
  
- extern void check_efer(void);
- 
--#ifdef CONFIG_X86_BIOS_REBOOT
- extern int reboot_force;
+-#ifdef CONFIG_X86_HAS_BOOT_CPU_ID
+-extern unsigned char boot_cpu_id;
 -#else
--static const int reboot_force = 0;
+-#define boot_cpu_id				0
 -#endif
++extern unsigned int boot_cpu_id;
  
- long do_arch_prctl(struct task_struct *task, int code, unsigned long addr);
+ #endif /* _ASM_X86_CPU_H */
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index eeb180b..609e5af 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -112,6 +112,20 @@
+ #define ARCH_SETUP
+ #endif
  
-diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
-index 1ab8e47..2ba32d2 100644
---- a/arch/x86/kernel/Makefile
-+++ b/arch/x86/kernel/Makefile
-@@ -50,7 +50,7 @@ obj-y				+= step.o
- obj-$(CONFIG_STACKTRACE)	+= stacktrace.o
- obj-y				+= cpu/
- obj-y				+= acpi/
--obj-$(CONFIG_X86_BIOS_REBOOT)	+= reboot.o
-+obj-y				+= reboot.o
- obj-$(CONFIG_MCA)		+= mca_32.o
- obj-$(CONFIG_X86_MSR)		+= msr.o
- obj-$(CONFIG_X86_CPUID)		+= cpuid.o
++unsigned int boot_cpu_id __read_mostly;
++
++#ifdef CONFIG_X86_64
++int default_cpu_present_to_apicid(int mps_cpu)
++{
++	return __default_cpu_present_to_apicid(mps_cpu);
++}
++
++int default_check_phys_apicid_present(int boot_cpu_physical_apicid)
++{
++	return __default_check_phys_apicid_present(boot_cpu_physical_apicid);
++}
++#endif
++
+ #ifndef CONFIG_DEBUG_BOOT_PARAMS
+ struct boot_params __initdata boot_params;
+ #else
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index e90b3e5..bc7e220 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -905,18 +905,6 @@ do_rest:
+ 	return boot_error;
+ }
+ 
+-#ifdef CONFIG_X86_64
+-int default_cpu_present_to_apicid(int mps_cpu)
+-{
+-	return __default_cpu_present_to_apicid(mps_cpu);
+-}
+-
+-int default_check_phys_apicid_present(int boot_cpu_physical_apicid)
+-{
+-	return __default_check_phys_apicid_present(boot_cpu_physical_apicid);
+-}
+-#endif
+-
+ int __cpuinit native_cpu_up(unsigned int cpu)
+ {
+ 	int apicid = apic->cpu_present_to_apicid(cpu);
 -- 
 1.6.0.2
 
