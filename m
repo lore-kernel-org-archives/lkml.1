@@ -1,84 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZA1WLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZA1WLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZA1WLT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 17:11:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZA1WLH
+	id S1753415AbZA1WLj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 17:11:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZA1WL0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 17:11:07 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36524 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbZA1WLG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 17:11:06 -0500
-Date: Wed, 28 Jan 2009 22:10:56 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org
-Subject: Re: [PATCH A 01/10] OMAP2/3: Add non-CORE DPLL rate set code and M, N programming
-Message-ID: <20090128221056.GJ23301@n2100.arm.linux.org.uk>
-References: <20090128020447.7244.80496.stgit@localhost.localdomain> <20090128021243.7244.6362.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090128021243.7244.6362.stgit@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 28 Jan 2009 17:11:26 -0500
+Received: from mga03.intel.com ([143.182.124.21]:31690 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751554AbZA1WLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 17:11:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,339,1231142400"; 
+   d="scan'208";a="104778593"
+Message-ID: <4980D6A0.9030004@intel.com>
+Date: Wed, 28 Jan 2009 14:05:20 -0800
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081103)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       powertop ml <power@bughost.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "srostedt@redhat.com" <srostedt@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       "Kok, Auke" <auke@foo-projects.org>
+Subject: Re: [PATCH] tracer for sys_open() - sreadahead
+References: <497F69A4.2070007@intel.com> <20090127205137.GD15877@ghostprotocols.net> <20090127211452.GA5850@nowhere>
+In-Reply-To: <20090127211452.GA5850@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jan 2009 22:11:24.0089 (UTC) FILETIME=[5B6F2290:01C98195]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since it's been posted to lists, comments are going to be made...
+Frederic Weisbecker wrote:
+> On Tue, Jan 27, 2009 at 06:51:37PM -0200, Arnaldo Carvalho de Melo wrote:
+>> Em Tue, Jan 27, 2009 at 12:08:04PM -0800, Kok, Auke escreveu:
+>>> This tracer monitors regular file open() syscalls. This is a fast
+>>> and low-overhead alternative to strace, and does not allow or
+>>> require to be attached to every process.
+>>>
+>>> The tracer only logs succesfull calls, as those are the only ones we
+>>> are currently interested in, and we can determine the absolute path
+>>> of these files as we log.
+>>>
+>>> Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+>> <SNIP>
+>>  
+>>> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+>>> index 4d3d381..24c17d2 100644
+>>> --- a/kernel/trace/trace.h
+>>> +++ b/kernel/trace/trace.h
+>>> @@ -30,6 +30,7 @@ enum trace_type {
+>>>         TRACE_USER_STACK,
+>>>         TRACE_HW_BRANCHES,
+>>>         TRACE_POWER,
+>>> +       TRACE_OPEN,
+>> Why not a TRACE_VFS or TRACE_SYSCALL and then multiplex there open,
+>> close, etc? trace_assign_type will get humongous in no time this way.
+> 
+> 
+> That's what I was about to answer too.
+> That would be sad to find one tracer for open, one for read, one for write...
+> 
+>  
+>> TRACE_BLK does multiplexing, as does TRACE_PROCESS that Frank just
+>> posted too, and I'm working on a plugin for the patch that Neil
+>> submitted for the socket layer that also will need an entry there for
+>> its tracepoints.
+>>
+>> Frederic, it seems that discussion about subtypes has to continue :-)
+> 
+> 
+> Indeed, that becomes serious :-)
+> 
 
-On Tue, Jan 27, 2009 at 07:12:47PM -0700, Paul Walmsley wrote:
-> +	/*
-> +	 * According to the 12-5 CDP code from TI, "Limitation 2.5"
-> +	 * on 3430ES1 prevents us from changing DPLL multipliers or dividers
-> +	 * on DPLL4.
-> +	 */
-> +	if (omap_rev() == OMAP3430_REV_ES1_0 &&
-> +	    !strcmp("dpll4_ck", clk->name)) {
-> +		printk(KERN_ERR "clock: DPLL4 cannot change rate due to "
-> +		       "silicon 'Limitation 2.5' on 3430ES1.\n");
-> +		return -EINVAL;
-> +	}
+I totally agree - this tracer was purely made quick-and-dirty to get sreadahead to
+the next level. The in-kernel syscall trace facility is extremely potent and I
+don't doubt that my patch may have been found slightly absurd by some :)
 
-Yuck.  That's revolting and extremely fragile.  Don't play these games.
-You've got plenty of free flag bits in clk->flags which could be used
-to prevent the DPLL from being changed.  You've also got other ways to
-prevent it - eg, setting dpll_data to NULL.
+In all it was not productive to write a giant trace facility just to get
+sreadahead one tracer type. Now that the code works and the benefit is proven, I'm
+happy to see if we can work on making a decent long-term non-specialistic solution.
 
-To do exception handling based on strcmp(), or even worse register offset
-and bit position (as is done elsewhere in the OMAP code) is utterly insane.
+Auke
 
-However, what's worse is that, below...
-
-> +static int omap3_noncore_dpll_set_rate(struct clk *clk, unsigned long rate)
-> +{
-> +	u16 freqsel;
-> +	struct dpll_data *dd;
-> +
-> +	if (!clk || !rate)
-> +		return -EINVAL;
-> +
-> +	dd = clk->dpll_data;
-> +	if (!dd)
-> +		return -EINVAL;
-> +
-> +	if (rate == omap2_get_dpll_rate(clk))
-> +		return 0;
-> +
-> +	if (dd->last_rounded_rate != rate)
-> +		omap2_dpll_round_rate(clk, rate);
-> +
-> +	if (dd->last_rounded_rate == 0)
-> +		return -EINVAL;
-> +
-> +	freqsel = _omap3_dpll_compute_freqsel(clk, dd->last_rounded_n);
-> +	if (!freqsel)
-> +		WARN_ON(1);
-> +
-> +	omap3_noncore_dpll_program(clk, dd->last_rounded_m, dd->last_rounded_n,
-> +				   freqsel);
-
-The return value from the above test isn't checked, so this function
-will succeed even for dpll4_ck.
