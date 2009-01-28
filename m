@@ -1,44 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbZA1Vex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbZA1Vpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754763AbZA1Vex (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 16:34:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZA1Veo
+	id S1753805AbZA1Vpj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 16:45:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZA1Vpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 16:34:44 -0500
-Received: from kroah.org ([198.145.64.141]:55981 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751584AbZA1Veo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 16:34:44 -0500
-Date: Wed, 28 Jan 2009 13:33:22 -0800
-From: Greg KH <greg@kroah.com>
-To: mtk.manpages@gmail.com
-Cc: linux-man@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: open(2) says O_DIRECT works on 512 byte boundries?
-Message-ID: <20090128213322.GA15789@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 28 Jan 2009 16:45:30 -0500
+Received: from www.tglx.de ([62.245.132.106]:45149 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751302AbZA1Vp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 16:45:29 -0500
+Message-Id: <20090128211912.300823284@linutronix.de>
+User-Agent: quilt/0.46-1
+Date: Wed, 28 Jan 2009 21:28:58 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Carsten Emde <carsten.emde@osadl.org>
+Subject: [patch-rt 0/4] Bugfixes for 2.6.26-rt
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In looking at open(2), it says that O_DIRECT works on 512 byte boundries
-with the 2.6 kernel release:
-	Under Linux 2.4, transfer sizes, and the alignment of the user
-	buffer and  the file offset must all be multiples of the logical
-	block size of the file system.  Under Linux 2.6, alignment  to
-	512-byte  boundaries suffices.
+Carsten and I spent some time to decode remaining weird behaviour of
+2.6.26-rt.
 
-However if you try to access an O_DIRECT opened file with a buffer that
-is PAGE_SIZE aligned + 512 bytes, it fails in a bad way (wrong data is
-read.)
+Mostly trivial fixes, but nasty to reproduce and decode.
 
-Is this just a mistake in the documentation?  Or am I reading it
-incorrectly?
+Thanks,
 
-I have a test program that shows this if anyone wants it.
+	tglx
+-- 
 
-thanks,
-
-greg k-h
