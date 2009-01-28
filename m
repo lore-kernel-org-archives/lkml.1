@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757920AbZA1Xgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756207AbZA1XjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757920AbZA1Xgc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756783AbZA1XgI
+	id S1756207AbZA1XjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:39:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZA1XjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:36:08 -0500
-Received: from rv-out-0506.google.com ([209.85.198.232]:61635 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756717AbZA1XgG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:36:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=NHZRvVabL2uC1gCugcTuUZWcCFAydjuf7cuKhg8PMCTM9OkAO89nFOqwhgSuAXllwl
-         mXA1xPYA54G0rX/9mghZowlaUtEaA7wD4bXbAd7qkuJ6987t7NhRzClawT70G1A0mrKu
-         PhSq0BdaPnMT45u1VPtw2zgxUz/MmBFzKyQYU=
-Subject: Re: [PATCH] x86: do not expose CONFIG_BSWAP to userspace
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+	Wed, 28 Jan 2009 18:39:00 -0500
+Received: from gw.goop.org ([64.81.55.164]:38749 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751756AbZA1Xi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:38:59 -0500
+Message-ID: <4980EC90.60105@goop.org>
+Date: Wed, 28 Jan 2009 15:38:56 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Zachary Amsden <zach@vmware.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Ian Campbell <Ian.Campbell@citrix.com>,
        Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <4980E9DF.2070101@zytor.com>
-References: <20090127222825.GA27097@elte.hu>
-	 <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain>
-	 <1233106614.3256.6.camel@localhost.localdomain>
-	 <200901281337.52294.arnd@arndb.de>  <49809A65.2090501@kernel.org>
-	 <1233170532.6717.49.camel@brick>
-	 <alpine.LFD.2.00.0901281141510.3123@localhost.localdomain>
-	 <1233172994.6717.56.camel@brick>  <4980CD51.70601@zytor.com>
-	 <1233179884.6717.59.camel@brick>  <4980D913.3000505@zytor.com>
-	 <1233182314.6717.66.camel@brick>  <4980E9DF.2070101@zytor.com>
-Content-Type: text/plain
-Date: Wed, 28 Jan 2009 15:36:04 -0800
-Message-Id: <1233185764.5322.0.camel@brick>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC WIP] x86/paravirt: add register-saving thunks to	reduce
+ caller register pressure
+References: <4980A07D.3010008@goop.org> <1233183903.16317.242.camel@bodhitayantram.eng.vmware.com>
+In-Reply-To: <1233183903.16317.242.camel@bodhitayantram.eng.vmware.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-28 at 15:27 -0800, H. Peter Anvin wrote:
-> Harvey Harrison wrote:
-> > 
-> > Well, that's unfortunate, how about we just export the BSWAP version
-> > unconditionally and hope pure i386 just goes away someday?
-> > 
-> 
-> Well, we already have MOVBE coming up, too...
-> 
+Zachary Amsden wrote:
+> Enable/Disable have no clobbers at all.
+> Save clobbers only return value, %eax
+> Restore also clobbers nothing.
+>
+> The patching code has gotten quite complex with the 32/64 union; let me
+> apply it first and see before I comment on the patch.
+>   
 
-Is someone already working on an __arch_swab{16|32|64}p to use them?
+This gets it to compile.
 
-Harvey
+diff -r 452b0aa6f629 arch/x86/kernel/vmi_32.c
+--- a/arch/x86/kernel/vmi_32.c	Wed Jan 28 14:18:52 2009 -0800
++++ b/arch/x86/kernel/vmi_32.c	Wed Jan 28 15:37:54 2009 -0800
+@@ -670,10 +670,11 @@
+ 	para_fill(pv_mmu_ops.write_cr2, SetCR2);
+ 	para_fill(pv_mmu_ops.write_cr3, SetCR3);
+ 	para_fill(pv_cpu_ops.write_cr4, SetCR4);
+-	para_fill(pv_irq_ops.save_fl, GetInterruptMask);
+-	para_fill(pv_irq_ops.restore_fl, SetInterruptMask);
+-	para_fill(pv_irq_ops.irq_disable, DisableInterrupts);
+-	para_fill(pv_irq_ops.irq_enable, EnableInterrupts);
++
++	para_fill(pv_irq_ops.save_fl.func, GetInterruptMask);
++	para_fill(pv_irq_ops.restore_fl.func, SetInterruptMask);
++	para_fill(pv_irq_ops.irq_disable.func, DisableInterrupts);
++	para_fill(pv_irq_ops.irq_enable.func, EnableInterrupts);
+ 
+ 	para_fill(pv_cpu_ops.wbinvd, WBINVD);
+ 	para_fill(pv_cpu_ops.read_tsc, RDTSC);
 
+    J
