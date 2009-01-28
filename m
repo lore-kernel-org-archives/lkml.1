@@ -1,72 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZA1CjZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753122AbZA1Ck6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZA1CjZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 21:39:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZA1CjM
+	id S1753122AbZA1Ck6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 21:40:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZA1Ckt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 21:39:12 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36091 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752076AbZA1CjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 21:39:10 -0500
-Message-ID: <497FC560.2000204@redhat.com>
-Date: Tue, 27 Jan 2009 21:39:28 -0500
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 27 Jan 2009 21:40:49 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34236 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752084AbZA1Cks (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 21:40:48 -0500
+Message-ID: <497FC3ED.7080601@jp.fujitsu.com>
+Date: Wed, 28 Jan 2009 11:33:17 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: [PATCH][bugfix?][kprobes][vunmap?]: use vm_map_ram() in text_poke()
-References: <497FC3B1.7050805@redhat.com>
-In-Reply-To: <497FC3B1.7050805@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [PATCH 1/3] fix debug message of CPU clock speed
+References: <497EC23A.7050408@jp.fujitsu.com> <497EC3F8.6020100@jp.fujitsu.com> <20090127125349.GB23121@elte.hu>
+In-Reply-To: <20090127125349.GB23121@elte.hu>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use vm_map_ram() instead of vmap() in text_poke(), because text_poke()
-just want to map pages temporarily.
+Hi, Ingo
 
----
-As far as I tested, this patch works fine for me.
-However, there might be another hidden bug in the kernel...
-We need to fix that too.
+Thank you for your comments.
+I apply your comments to the patch ASAP.
 
- arch/x86/kernel/alternative.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Regard,
+Yasuaki Ishimatsu
 
-Index: 2.6-rc/arch/x86/kernel/alternative.c
-===================================================================
---- 2.6-rc.orig/arch/x86/kernel/alternative.c
-+++ 2.6-rc/arch/x86/kernel/alternative.c
-@@ -515,12 +515,12 @@ void *__kprobes text_poke(void *addr, co
- 	BUG_ON(!pages[0]);
- 	if (!pages[1])
- 		nr_pages = 1;
--	vaddr = vmap(pages, nr_pages, VM_MAP, PAGE_KERNEL);
-+	vaddr = vm_map_ram(pages, nr_pages, -1, PAGE_KERNEL);
- 	BUG_ON(!vaddr);
- 	local_irq_save(flags);
- 	memcpy(&vaddr[(unsigned long)addr & ~PAGE_MASK], opcode, len);
- 	local_irq_restore(flags);
--	vunmap(vaddr);
-+	vm_unmap_ram(vaddr, nr_pages);
- 	sync_core();
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+Ingo Molnar wrote:
+> * Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com> wrote:
+> 
+>> LOCAL APIC is corrected by PM-Timer, when SMI occurred while LOCAL APIC 
+>> is calibrated. In this case, LOCAL APIC debug message(Boot with 
+>> apic=debug) is displayed correctly, however, CPU clock speed debug 
+>> message is displayed wrongly .
+> 
+> your fix looks good, but there are a few minor style details that need to 
+> be addressed:
+> 
+>> When SMI occured on my machine, which has 1.6GHz CPU, CPU clock speed is 
+>> displayed 3622.0205 MHz as follow.
+>>
+>> 	CPU0: Intel(R) Xeon(R) CPU            5110  @ 1.60GHz stepping 06
+>> 	Using local APIC timer interrupts.
+>> 	calibrating APIC timer ...
+>> 	... lapic delta = 3773130
+>> 	... PM timer delta = 812434
+>> 	APIC calibration not consistent with PM Timer: 226ms instead of 100ms
+>> 	APIC delta adjusted to PM-Timer: 1662420 (3773130)
+>> 	..... delta 1662420
+>> 	..... mult: 71411249
+>> 	..... calibration result: 265987
+>> 	..... CPU clock speed is 3622.0205 MHz.  =====>  here
+>> 	..... host bus clock speed is 265.0987 MHz.
+>>
+>> This patch fixes to displaying CPU clock speed correctly as follow.
+>>
+>> 	CPU0: Intel(R) Xeon(R) CPU            5110  @ 1.60GHz stepping 06
+>> 	Using local APIC timer interrupts.
+>> 	calibrating APIC timer ...
+>> 	... lapic delta = 3773131
+>> 	... PM timer delta = 812434
+>> 	APIC calibration not consistent with PM Timer: 226ms instead of 100ms
+>> 	APIC delta adjusted to PM-Timer: 1662420 (3773131)
+>> 	TSC delta adjusted to PM-Timer: 159592409 (362220564)
+>> 	..... delta 1662420
+>> 	..... mult: 71411249
+>> 	..... calibration result: 265987
+>> 	..... CPU clock speed is 1595.0924 MHz.
+>> 	..... host bus clock speed is 265.0987 MHz.
+>>
+>> Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+>>
+>> ---
+>>  arch/x86/kernel/apic.c |   23 +++++++++++++++++------
+>>  1 file changed, 17 insertions(+), 6 deletions(-)
+>>
+>> Index: linux-2.6.29-rc2/arch/x86/kernel/apic.c
+>> ===================================================================
+>> --- linux-2.6.29-rc2.orig/arch/x86/kernel/apic.c	2009-01-27 11:04:40.000000000 +0900
+>> +++ linux-2.6.29-rc2/arch/x86/kernel/apic.c	2009-01-27 12:29:03.000000000 +0900
+>> @@ -535,7 +535,8 @@ static void __init lapic_cal_handler(str
+>>  	}
+>>  }
+>>
+>> -static int __init calibrate_by_pmtimer(long deltapm, long *delta)
+>> +static int __init calibrate_by_pmtimer(long deltapm, long *delta,
+>> +						long *deltatsc)
+> 
+> The cleaner prototype line-width break is:
+> 
+>   + static int __init
+>   + calibrate_by_pmtimer(long deltapm, long *delta, long *deltatsc)
+> 
+> 
+> this function:
+> 
+>> @@ -569,6 +570,15 @@ static int __init calibrate_by_pmtimer(l
+>>  		pr_info("APIC delta adjusted to PM-Timer: "
+>>  			"%lu (%ld)\n", (unsigned long)res, *delta);
+>>  		*delta = (long)res;
+>> +
+>> +		if (cpu_has_tsc) {
+>> +			res = (((u64)(*deltatsc)) * pm_100ms);
+>> +			do_div(res, deltapm);
+>> +			apic_printk(APIC_VERBOSE, "TSC delta adjusted to "
+>> +					"PM-Timer: %lu (%ld)\n",
+>> +					(unsigned long)res, *deltatsc);
+>> +			*deltatsc = (long)res;
+>> +		}
+> 
+> has too deep nesting in the form of:
+> 
+> 	if (A) {
+> 		...
+> 	} else {
+> 		...
+> 		if (B) {
+> 			...
+> 		}
+> 	}
+> 
+> 	return 0;
+> 
+> 
+> Could you please restructure it to a cleaner control flow, in the form of:
+> 
+> 	if (A) {
+> 		...
+> 		return 0;
+> 	}
+> 	...
+> 	if (B) {
+> 		...
+>   	}
+> 
+> 	return 0;
+> 
+> ?
+> 
+> Thanks,
+> 
+> 	Ingo
+> 
 
