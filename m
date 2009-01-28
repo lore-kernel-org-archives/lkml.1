@@ -1,121 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZA1LFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754581AbZA1LIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbZA1LFe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 06:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751039AbZA1LFZ
+	id S1754581AbZA1LIb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 06:08:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750995AbZA1LIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 06:05:25 -0500
-Received: from fg-out-1718.google.com ([72.14.220.153]:25129 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750947AbZA1LFY (ORCPT
+	Wed, 28 Jan 2009 06:08:23 -0500
+Received: from mu-out-0910.google.com ([209.85.134.191]:46046 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750753AbZA1LIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 06:05:24 -0500
+	Wed, 28 Jan 2009 06:08:22 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=naaGQcTsAnoeonGDuuuG8b8jCyWfdjurutQXI8RZDTnu5frZn/8VzJdA5/hkk5gEHt
-         mJy3o4lYjbv/M3rs3geS3YNY55RGVD5GR2zKc/mvFRQ44O38kuml/UwEG7TLrhrGGS16
-         uScrcR18GhyjAGyX0fGN3W1crJIMiyzH/QRJ0=
+        b=Mz4QhEW17uWzL0FmRCmKvxh55jPiH8pqtYIIfAAvOKE+6q5bmMwRYVWvs83A6Gx7my
+         AU4c0Sjfdz6IdMgp7GntpbLlTUYEej+Zfmp4B64mYa7C9JQmcgCsZ/EO6brBEhzXlK09
+         8PIrB3D2EhrB+IwvVI3kgZvKbHJaGIZDS7I+8=
 MIME-Version: 1.0
-In-Reply-To: <200901222217.09351.rjw@sisk.pl>
-References: <c4e36d110901111152o63c4cda0j88f4c89950bd2b90@mail.gmail.com>
-	 <20090120115500.GA4442@elte.hu>
-	 <c4e36d110901220714j524343c5k2673d5626aef2460@mail.gmail.com>
-	 <200901222217.09351.rjw@sisk.pl>
-Date: Wed, 28 Jan 2009 12:05:21 +0100
-Message-ID: <c4e36d110901280305r71b3a55ah14d3ec6c1b982071@mail.gmail.com>
-Subject: Re: 2.6.29-rc1 does not resume on Lenove T61
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Ingo Molnar <mingo@elte.hu>, Johannes Berg <johannes@sipsolutions.net>,
-       Dmitry Adamushko <dmitry.adamushko@gmail.com>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
+In-Reply-To: <20090128053204.GB8720@brong.net>
+References: <20090128033824.GA1662@brong.net>
+	 <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>
+	 <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com>
+	 <20090128053204.GB8720@brong.net>
+Date: Wed, 28 Jan 2009 12:08:20 +0100
+Message-ID: <19f34abd0901280308w18407fd5rd4d7d95e3799cf60@mail.gmail.com>
+Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Bron Gondwana <brong@fastmail.fm>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       dbrownell@users.sourceforge.net
-Content-Type: text/plain; charset=ISO-8859-1
+       Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/22 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Thursday 22 January 2009, Zdenek Kabelac wrote:
->> 2009/1/20 Ingo Molnar <mingo@elte.hu>:
->> >
->> > (Cc:-ed Johannes Berg)
->> >
->> > * Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
->> >
->> >> With network enabled - the error is back - thus it might be a bug in
->> >> ieee80211 stack ??
->> >
->> > yes, the crash implicates the ieee80211 stack [ieee80211_stop() in
->> > net/mac80211/iface.c]:
->> >
->> Btw - I've tried your branch   tip-latest
->> (52a4061e1d88ad242c8022f68df3686c3bc05159)
->>  - and this branch now resets my machine during resume. (it suspends -
->> auto-wake-up and reboots)
->>  - so it this branch actually suggested to be used/tested ?
->
-> Apparently, it's missing the patch from
-> http://bugzilla.kernel.org/show_bug.cgi?id=12399
+On Wed, Jan 28, 2009 at 6:32 AM, Bron Gondwana <brong@fastmail.fm> wrote:
+> That's clearly not happening here - so it seems that maybe our "happy
+> medium" is actually in closer inspection of what's going on rather than
+> a blanket low N to keep N^2 down.
 
-Ok - I could confirm that  kernel commit
-e4a7ca29039e615ce13a61b9c6abfb2aa394e9a1 does work properly with
-suspend/resume sequence - i.e. no auto-wakeup and no ugly  gpf Ooops
-could be seen - at least not for now :)
+Mh, could another solution to this all be to limit the number times
+you can add a single epoll descriptor to another descriptor's set?
 
-Here is just one warning I could see in my dmesg  now:
+So you would still get the "upwards cascading" behaviour (i.e. A can
+monitor B and C), but the "downwards cascading" would be prohibited
+(i.e. B and C can't both monitor A).
+
+I think this is a reasonable alternative, which would again allow a
+number of epoll instances limited only by the number of open file
+descriptors.
 
 
-pci 0000:15:00.0: suspend
-pci 0000:15:00.0: PCI INT A disabled
-iwl3945 0000:03:00.0: suspend
-------------[ cut here ]------------
-WARNING: at drivers/pci/pci-driver.c:368 pci_legacy_suspend+0xdd/0xf0()
-Hardware name: 6464CTO
-Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4
-nf_defrag_ipv4 xt_state nf_conntrack ipt_RE
-JECT xt_tcpudp iptable_filter ip_tables x_tables bridge stp llc sco
-l2cap bluetooth autofs4 sunrpc ipv6 binfmt_misc loop dm_mirro
-r dm_region_hash dm_log dm_mod kvm_intel kvm i915 drm i2c_algo_bit
-uinput snd_hda_codec_analog snd_hda_intel snd_hda_codec arc4 e
-cb snd_seq_oss snd_seq_midi_event cryptomgr snd_seq aead
-snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm usbhid evdev
-crypto_blk
-cipher sdhci_pci snd_timer crypto_hash rtc_cmos sdhci mmc_core hid snd
-crypto_algapi iwl3945 mac80211 psmouse rtc_core button sou
-ndcore thinkpad_acpi rfkill backlight nvram led_class sr_mod rtc_lib
-i2c_i801 i2c_core snd_page_alloc iTCO_wdt iTCO_vendor_suppor
-t lib80211 serio_raw e1000e cfg80211 intel_agp battery ac cdrom
-uhci_hcd ohci_hcd ehci_hcd usbcore [last unloaded: microcode]
-Pid: 2754, comm: pm-suspend Not tainted 2.6.29-rc2 #23
-Call Trace:
- [<ffffffff802472ef>] warn_slowpath+0xaf/0x110
- [<ffffffff80252e60>] ? process_timeout+0x0/0x10
- [<ffffffff80553227>] ? schedule_timeout+0x77/0xf0
- [<ffffffff803bed65>] ? pci_bus_write_config_word+0x75/0x90
- [<ffffffff805532be>] ? schedule_timeout_uninterruptible+0x1e/0x20
- [<ffffffff803c2d7e>] ? pci_raw_set_power_state+0x15e/0x240
- [<ffffffff803c2f07>] ? pci_set_power_state+0xa7/0x180
- [<ffffffff803c5f1d>] pci_legacy_suspend+0xdd/0xf0
- [<ffffffff803c60d5>] pci_pm_suspend+0xa5/0xb0
- [<ffffffff804531c2>] pm_op+0x162/0x1b0
- [<ffffffff80453acf>] device_suspend+0x47f/0x630
- [<ffffffff802820d7>] suspend_devices_and_enter+0x47/0x1c0
- [<ffffffff802823e6>] enter_state+0x166/0x1e0
- [<ffffffff8028251a>] state_store+0xba/0x100
- [<ffffffff803b0077>] kobj_attr_store+0x17/0x20
- [<ffffffff803414cf>] sysfs_write_file+0xcf/0x140
- [<ffffffff802e4e1b>] vfs_write+0xcb/0x190
- [<ffffffff802e4fe5>] sys_write+0x55/0x90
- [<ffffffff8020c70b>] system_call_fastpath+0x16/0x1b
----[ end trace 5626061031e81c26 ]---
-i801_smbus 0000:00:1f.3: suspend
-ahci 0000:00:1f.2: suspend
+Vegard
 
-
-Zdenek
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
