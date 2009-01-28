@@ -1,78 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbZA1Xdk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757284AbZA1Xd6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758390AbZA1Xdk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:33:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757411AbZA1X3Y
+	id S1757284AbZA1Xd6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:33:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757433AbZA1XbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:29:24 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:53843 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757408AbZA1X3W convert rfc822-to-8bit (ORCPT
+	Wed, 28 Jan 2009 18:31:08 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:33571 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756546AbZA1XbE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:29:22 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: do not expose CONFIG_BSWAP to userspace
-Date: Thu, 29 Jan 2009 00:24:08 +0100
-User-Agent: KMail/1.9.9
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@kernel.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-References: <20090127222825.GA27097@elte.hu> <1233179884.6717.59.camel@brick> <4980D913.3000505@zytor.com>
-In-Reply-To: <4980D913.3000505@zytor.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 28 Jan 2009 18:31:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dyIbLGfnHmPTOzlUyBG+O+63t+8t4TdmwMJZY772FGJFukexnCEwBOixHSox7l6Vyl
+         G9dlDlwrh0WzXXjCkRwT3WIXQ4sNaP9EqBs0mvedfUSuUfZx4o1hyzFdor7Rmu1HRqwJ
+         +H/WxvvLPqH4Lw4voeyCNyjL2NhPWnNxU/Tmc=
+Date: Thu, 29 Jan 2009 02:30:56 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: jeff@garzik.org, Linus Torvalds <torvalds@osdl.org>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, rjw@sisk.pl
+Subject: Re: [PATCH] sata_sil: Fix build breakage
+Message-ID: <20090128233056.GA30358@orion>
+References: <1233118922-15350-1-git-send-email-galak@kernel.crashing.org> <1233118922-15350-2-git-send-email-galak@kernel.crashing.org> <1233118922-15350-3-git-send-email-galak@kernel.crashing.org> <5B9826B6-792F-4C66-A4C1-E002B0DD60B1@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901290024.09815.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1++ltRnaaqyGsoYum+78D8xd5Sc6uIDhTIP6at
- xyGdBLZkHbVjrNkCzI1IguPn96TCEo4r40y2lgzWkngdx9ZZYE
- P66M5//eXsy3apWKqiFtg==
+In-Reply-To: <5B9826B6-792F-4C66-A4C1-E002B0DD60B1@kernel.crashing.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 January 2009, H. Peter Anvin wrote:
-> So, one ends up doing something like:
-> 
-> #ifdef __i486__
-> # define __CPU_HAVE_BSWAP
-> #endif
-> #ifdef __i586__
-> # define __CPU_HAVE_BSWAP
-> #endif
-> 
-> ... and so on, and have to keep this up to date with the latest 
-> inventions of the gcc people.  *Sob.*
+On Wed, Jan 28, 2009 at 12:08:56AM -0600, Kumar Gala wrote:
+>
+> On Jan 27, 2009, at 11:02 PM, Kumar Gala wrote:
+>
+>> The following commit introduces:
+>>
+>> commit e57db7bde7bff95ae812736ca00c73bd5271455b
+>> Author: Rafael J. Wysocki <rjw@sisk.pl>
+>> Date:   Mon Jan 19 20:58:29 2009 +0100
+>>
+>>    SATA Sil: Blacklist system that spins off disks during ACPI power off
+>>
+>> the following build errors on non-x86 systems:
+>>
+>> drivers/ata/sata_sil.c: In function 'sil_broken_system_poweroff':
+>> drivers/ata/sata_sil.c:713: error: implicit declaration of function 
+>> 'dmi_first_match'
+>> drivers/ata/sata_sil.c:713: warning: initialization makes pointer from 
+>> integer without a cast
+>>
+>> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+>> ---
+>> drivers/ata/sata_sil.c |    2 ++
+>> 1 files changed, 2 insertions(+), 0 deletions(-)
+>
+>
+> it was pointed out that fixing include/linux/dmi.h was the better way to 
+> fix this.  I've posted a patch for fixing dmi.h that supersedes this patch.
+>
 
-Well, to put this into perspective: The bswap inline assembly was
-introduced in Linux-1.3.51 "Greased Weasel", back in 1995 and at
-no time it was ever visible to user space, unless the code manually
-included <linux/config.h> (which we broke) or defined CONFIG_M486,
-CONFIG_X86_BSWAP and/or __KERNEL__, depending on the kernel version.
+It breaks build for me in the same way even after your fix
+(d8204ee2: dmi: Fix build breakage)
 
-I take this as a strong indication that user space applications
-won't generally expect to get the bswap instruction from including
-the kernel headers. For the longest time, we actually had
+Subject: [PATCH] sata_sil: Fix build breakage
+From: Alexander Beregalov <a.beregalov@gmail.com>
 
-/* For avoiding bswap on i386 */
-#ifdef __KERNEL__
-#include <linux/config.h>
-#endif
+ Commit e57db7b (SATA Sil: Blacklist system that spins off disks during ACPI power off)
+ breaks build like the following, in both cases when CONFIG_DMI set or not.
 
-which I read as explicitly using the portable i386 version for
-all user space.
+        drivers/ata/sata_sil.c: In function 'sil_broken_system_poweroff':
+        drivers/ata/sata_sil.c:713: error: implicit declaration of function 'dmi_first_match'
+        drivers/ata/sata_sil.c:713: warning: initialization makes pointer from integer without a cast
 
-	Arnd <><
+  sata_sil.c should include dmi.h
+
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+
+
+ drivers/ata/sata_sil.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/ata/sata_sil.c b/drivers/ata/sata_sil.c
+index bfd55b0..9f02959 100644
+--- a/drivers/ata/sata_sil.c
++++ b/drivers/ata/sata_sil.c
+@@ -44,6 +44,7 @@
+ #include <linux/device.h>
+ #include <scsi/scsi_host.h>
+ #include <linux/libata.h>
++#include <linux/dmi.h>
+ 
+ #define DRV_NAME	"sata_sil"
+ #define DRV_VERSION	"2.4"
