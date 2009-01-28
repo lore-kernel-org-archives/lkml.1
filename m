@@ -1,81 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZA1K3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZA1KdA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbZA1K3J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 05:29:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750854AbZA1K24
+	id S1754017AbZA1KdA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 05:33:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbZA1Kcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 05:28:56 -0500
-Received: from rv-out-0506.google.com ([209.85.198.225]:54610 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750777AbZA1K2z (ORCPT
+	Wed, 28 Jan 2009 05:32:51 -0500
+Received: from bohort.kerlabs.com ([62.160.40.57]:45398 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750777AbZA1Kcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 05:28:55 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=WdrN7mgKpV7/P0XZ2wJKJypTYNm/rEWdBO8RR3kCUnpCCA4XSqu7NT9YnJw50DRJLf
-         0FcPi3xVqCnBYPD/k8/b7KHBSUHoU045OQxC50eOnHxPMZ9Q6/hc3k1RaU+qoi9RFY+Y
-         qUJYxtHtcSOfefCEN/rJyQT5M4/hLkmxdAL0k=
-Date: Wed, 28 Jan 2009 19:28:41 +0900
-From: MinChan Kim <minchan.kim@gmail.com>
-To: linux mm <linux-mm@kvack.org>
-Cc: linux kernel <linux-kernel@vger.kernel.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [BUG] mlocked page counter mismatch
-Message-ID: <20090128102841.GA24924@barrios-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 28 Jan 2009 05:32:50 -0500
+Date: Wed, 28 Jan 2009 11:32:47 +0100
+From: Louis Rilling <Louis.Rilling@kerlabs.com>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
+Subject: Re: [PATCH 2/2] configfs: Rework configfs_depend_item() locking
+	and make lockdep happy
+Message-ID: <20090128103247.GK7532@hawkmoon.kerlabs.com>
+Reply-To: Louis.Rilling@kerlabs.com
+Mail-Followup-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
+References: <20081218111536.GR19128@hawkmoon.kerlabs.com> <1229623218-8056-3-git-send-email-louis.rilling@kerlabs.com> <20090128041353.GF7244@mail.oracle.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-20437-1233138605-0001-2"
 Content-Disposition: inline
+In-Reply-To: <20090128041353.GF7244@mail.oracle.com>
 User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-After executing following program, 'cat /proc/meminfo' shows
-following result. 
+--=_bohort-20437-1233138605-0001-2
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
---
-# cat /proc/meminfo 
-..
-Unevictable:           8 kB
-Mlocked:               8 kB
-..
+On 27/01/09 20:13 -0800, Joel Becker wrote:
+> On Thu, Dec 18, 2008 at 07:00:18PM +0100, Louis Rilling wrote:
+> > configfs_depend_item() recursively locks all inodes mutex from configfs=
+ root to
+> > the target item, which makes lockdep unhappy. The purpose of this recur=
+sive
+> > locking is to ensure that the item tree can be safely parsed and that t=
+he target
+> > item, if found, is not about to leave.
+> >=20
+> > This patch reworks configfs_depend_item() locking using configfs_dirent=
+_lock.
+> > Since configfs_dirent_lock protects all changes to the configfs_dirent =
+tree, and
+> > protects tagging of items to be removed, this lock can be used instead =
+of the
+> > inodes mutex lock chain.
+> > This needs that the check for dependents be done atomically with
+> > CONFIGFS_USET_DROPPING tagging.
+> >=20
+> > Now lockdep looks happy with configfs.
+>=20
+> 	This looks almost, but not quite right.
+> 	In the create path, we do configfs_new_dirent() before we set
+> sd->s_type.  But configfs_new_dirent() attaches sd->s_sibling.  So, in
+> aonther thread, configfs_depend_prep() can traverse this s_sibling
+> without CONFIGFS_USET_CREATING being set.  This turns out to be safe
+> because CONFIGFS_DIR is also not set - but boy I'd like a comment about
+> that.
 
--- test program --
+Definitely agreed. I should have written this comment instead of letting you
+notice this.
 
-#include <stdio.h>
-#include <sys/mman.h>
-int main()
-{
-        char buf[64] = {0,};
-        char *ptr;
-        int k;
-        int i,j;
-        int x,y;
-        mlockall(MCL_CURRENT);
-        sprintf(buf, "cat /proc/%d/maps", getpid());
-        system(buf);
-        return 0;
-}
+> 	What if we're in mkdir(2) in one thread and another thread is =20
+> trying to pin the parent directory?  That is, we are inside
+> configfs_mkdir(parent, new_dentry, mode).  The other thread is doing
+> configfs_depend_item(subsys, parent).  With this patch, the other thread
+> will not take parent->i_mutex.  It will happily determine that
+> parent is part of the tree and bump its s_dependent with no locking.  Is
+> this OK?
 
---
+Yes this is the expected impact. It is OK because
+1) under a same critical section of configfs_dirent_lock, depend_item()
+checks that CONFIGFS_USET_DROPPING is not set and bumps s_dependent;
+2) under a same critical section of configfs_dirent_lock, configfs_rmdir()
+checks the s_dependent count and tries to set CONFIGFS_USET_DROPPING.
 
-It seems mlocked page counter have a problem.
-After I diged in source, I found that try_to_unmap_file called 
-try_to_mlock_page about shared mapping pages 
-since other vma had VM_LOCKED flag.
-After all, try_to_mlock_page called mlock_vma_page. 
-so, mlocked counter increased
+> 	If it is - isn't this patch good without any other reason?  That
+> is, aside from the issues of lockdep, isn't it better for
+> configfs_depend_item() to never have to worry about the VFS locks other
+> than the configfs root?
 
-But, After I called munlockall intentionally, the counter work well. 
-In case of munlockall, we already had a mmap_sem about write. 
-Such a case, try_to_mlock_page can't call mlock_vma_page.
-so, mlocked counter didn't increased. 
-As a result, the counter seems to be work well but I think 
-it also have a problem.
+Yes, this patch may look like an improvement, independently from lockdep. I
+think that locking is simpler this way, and this also removes the need for
+configfs_depend_rollback(). Moreover this moves towards the management of
+configfs_dirents protected by configfs_dirent_lock only. In the end, it's u=
+p to
+you to judge if this is a good direction ;)
 
+Thanks,
 
+Louis
 
+--=20
+Dr Louis Rilling			Kerlabs
+Skype: louis.rilling			Batiment Germanium
+Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
+http://www.kerlabs.com/			35700 Rennes
+
+--=_bohort-20437-1233138605-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFJgDRPVKcRuvQ9Q1QRAvcIAJ41AjxIGhZZGlrEAxwoINP7gayuUwCeNyii
+HDBdvohmRZKe2eLCCSOdkQk=
+=O/Jz
+-----END PGP SIGNATURE-----
+
+--=_bohort-20437-1233138605-0001-2--
