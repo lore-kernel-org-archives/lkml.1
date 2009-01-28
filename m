@@ -1,255 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755464AbZA1OEJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbZA1OEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755464AbZA1OEJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 09:04:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbZA1N5m
+	id S1756993AbZA1OEa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 09:04:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZA1N5n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 08:57:42 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:60385 "EHLO
+	Wed, 28 Jan 2009 08:57:43 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60386 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755277AbZA1N5c (ORCPT
+	with ESMTP id S1755279AbZA1N5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 28 Jan 2009 08:57:32 -0500
-Message-Id: <20090128135459.457120451@chello.nl>
+Message-Id: <20090128135459.332648902@chello.nl>
 References: <20090128135352.679025549@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 28 Jan 2009 14:54:13 +0100
+Date: Wed, 28 Jan 2009 14:54:12 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, npiggin@suse.de,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 21/21] lockdep: simplify check_prev_add_irq()
-Content-Disposition: inline; filename=lockdep-check_prev_add_irq.patch
+Subject: [PATCH 20/21] lockdep: get_user_chars() redo
+Content-Disposition: inline; filename=lockdep-get_usage_chars2.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove the manual state iteration thingy.
+Generic, states independent, get_user_chars().
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- kernel/lockdep.c |  154 +++++++++++++++++++++----------------------------------
- 1 file changed, 61 insertions(+), 93 deletions(-)
+ Documentation/lockdep-design.txt |   30 +++++++++++++++++-------------
+ kernel/lockdep.c                 |   26 +++++++++++++-------------
+ kernel/lockdep_internals.h       |    7 ++++---
+ kernel/lockdep_proc.c            |    6 +++---
+ 4 files changed, 37 insertions(+), 32 deletions(-)
 
 Index: linux-2.6/kernel/lockdep.c
 ===================================================================
 --- linux-2.6.orig/kernel/lockdep.c
 +++ linux-2.6/kernel/lockdep.c
-@@ -1268,68 +1268,84 @@ check_usage(struct task_struct *curr, st
- 			bit_backwards, bit_forwards, irqclass);
+@@ -487,25 +487,25 @@ static char get_usage_char(struct lock_c
+ 	return c;
  }
  
--static int
--check_prev_add_irq(struct task_struct *curr, struct held_lock *prev,
--		struct held_lock *next)
-+static const char *state_names[] = {
-+#define LOCKDEP_STATE(__STATE) \
-+	STR(__STATE),
+-void
+-get_usage_chars(struct lock_class *class, char *c1, char *c2, char *c3,
+-					char *c4, char *c5, char *c6)
+-{
+-	*c1 = get_usage_char(class, LOCK_USED_IN_HARDIRQ);
+-	*c2 = get_usage_char(class, LOCK_USED_IN_SOFTITQ);
+-	*c3 = get_usage_char(class, LOCK_USED_IN_HARDIRQ_READ);
+-	*c4 = get_usage_char(class, LOCK_USED_IN_SOFTITQ_READ);
++void get_usage_chars(struct lock_class *class, char usage[LOCK_USAGE_CHARS])
++{
++	int i = 0;
++
++#define LOCKDEP_STATE(__STATE) 						\
++	usage[i++] = get_usage_char(class, LOCK_USED_IN_##__STATE);	\
++	usage[i++] = get_usage_char(class, LOCK_USED_IN_##__STATE##_READ);
 +#include "lockdep_states.h"
 +#undef LOCKDEP_STATE
-+};
-+
-+static const char *state_rnames[] = {
-+#define LOCKDEP_STATE(__STATE) \
-+	STR(__STATE)"-READ",
-+#include "lockdep_states.h"
-+#undef LOCKDEP_STATE
-+};
-+
-+static inline const char *state_name(enum lock_usage_bit bit)
+ 
+-	*c5 = get_usage_char(class, LOCK_USED_IN_RECLAIM_FS);
+-	*c6 = get_usage_char(class, LOCK_USED_IN_RECLAIM_FS_READ);
++	usage[i] = '\0';
+ }
+ 
+ static void print_lock_name(struct lock_class *class)
  {
--	/*
--	 * Prove that the new dependency does not connect a hardirq-safe
--	 * lock with a hardirq-unsafe lock - to achieve this we search
--	 * the backwards-subgraph starting at <prev>, and the
--	 * forwards-subgraph starting at <next>:
--	 */
--	if (!check_usage(curr, prev, next, LOCK_USED_IN_HARDIRQ,
--					LOCK_ENABLED_HARDIRQ, "hard"))
--		return 0;
-+	return (bit & 1) ? state_rnames[bit >> 2] : state_names[bit >> 2];
-+}
+-	char str[KSYM_NAME_LEN], c1, c2, c3, c4, c5, c6;
++	char str[KSYM_NAME_LEN], usage[LOCK_USAGE_CHARS];
+ 	const char *name;
  
-+static int exclusive_bit(int new_bit)
-+{
- 	/*
--	 * Prove that the new dependency does not connect a hardirq-safe-read
--	 * lock with a hardirq-unsafe lock - to achieve this we search
--	 * the backwards-subgraph starting at <prev>, and the
--	 * forwards-subgraph starting at <next>:
-+	 * USED_IN
-+	 * USED_IN_READ
-+	 * ENABLED
-+	 * ENABLED_READ
-+	 *
-+	 * bit 0 - write/read
-+	 * bit 1 - used_in/enabled
-+	 * bit 2+  state
- 	 */
--	if (!check_usage(curr, prev, next, LOCK_USED_IN_HARDIRQ_READ,
--					LOCK_ENABLED_HARDIRQ, "hard-read"))
--		return 0;
-+
-+	int state = new_bit & ~3;
-+	int dir = new_bit & 2;
+-	get_usage_chars(class, &c1, &c2, &c3, &c4, &c5, &c6);
++	get_usage_chars(class, usage);
  
- 	/*
--	 * Prove that the new dependency does not connect a softirq-safe
--	 * lock with a softirq-unsafe lock - to achieve this we search
--	 * the backwards-subgraph starting at <prev>, and the
--	 * forwards-subgraph starting at <next>:
-+	 * keep state, bit flip the direction and strip read.
- 	 */
--	if (!check_usage(curr, prev, next, LOCK_USED_IN_SOFTIRQ,
--					LOCK_ENABLED_SOFTIRQ, "soft"))
--		return 0;
-+	return state | (dir ^ 2);
-+}
-+
-+static int check_irq_usage(struct task_struct *curr, struct held_lock *prev,
-+			   struct held_lock *next, enum lock_usage_bit bit)
-+{
- 	/*
--	 * Prove that the new dependency does not connect a softirq-safe-read
--	 * lock with a softirq-unsafe lock - to achieve this we search
-+	 * Prove that the new dependency does not connect a hardirq-safe
-+	 * lock with a hardirq-unsafe lock - to achieve this we search
- 	 * the backwards-subgraph starting at <prev>, and the
- 	 * forwards-subgraph starting at <next>:
- 	 */
--	if (!check_usage(curr, prev, next, LOCK_USED_IN_SOFTIRQ_READ,
--					LOCK_ENABLED_SOFTIRQ, "soft"))
-+	if (!check_usage(curr, prev, next, bit,
-+			   exclusive_bit(bit), state_name(bit)))
- 		return 0;
- 
-+	bit++; /* _READ */
-+
- 	/*
--	 * Prove that the new dependency does not connect a reclaim-fs-safe
--	 * lock with a reclaim-fs-unsafe lock - to achieve this we search
-+	 * Prove that the new dependency does not connect a hardirq-safe-read
-+	 * lock with a hardirq-unsafe lock - to achieve this we search
- 	 * the backwards-subgraph starting at <prev>, and the
- 	 * forwards-subgraph starting at <next>:
- 	 */
--	if (!check_usage(curr, prev, next, LOCK_USED_IN_RECLAIM_FS,
--					LOCK_ENABLED_RECLAIM_FS, "reclaim-fs"))
-+	if (!check_usage(curr, prev, next, bit,
-+			   exclusive_bit(bit), state_name(bit)))
- 		return 0;
- 
--	/*
--	 * Prove that the new dependency does not connect a reclaim-fs-safe-read
--	 * lock with a reclaim-fs-unsafe lock - to achieve this we search
--	 * the backwards-subgraph starting at <prev>, and the
--	 * forwards-subgraph starting at <next>:
--	 */
--	if (!check_usage(curr, prev, next, LOCK_USED_IN_RECLAIM_FS_READ,
--					LOCK_ENABLED_RECLAIM_FS, "reclaim-fs-read"))
-+	return 1;
-+}
-+
-+static int
-+check_prev_add_irq(struct task_struct *curr, struct held_lock *prev,
-+		struct held_lock *next)
-+{
-+#define LOCKDEP_STATE(__STATE)						\
-+	if (!check_irq_usage(curr, prev, next, LOCK_USED_IN_##__STATE))	\
- 		return 0;
-+#include "lockdep_states.h"
-+#undef LOCKDEP_STATE
- 
- 	return 1;
- }
-@@ -1984,30 +2000,6 @@ static int RECLAIM_FS_verbose(struct loc
- 
- #define STRICT_READ_CHECKS	1
- 
--static const char *state_names[] = {
--#define LOCKDEP_STATE(__STATE) \
--	STR(__STATE),
--#include "lockdep_states.h"
--#undef LOCKDEP_STATE
--};
--
--static inline const char *state_name(enum lock_usage_bit bit)
--{
--	return state_names[bit >> 2];
--}
--
--static const char *state_rnames[] = {
--#define LOCKDEP_STATE(__STATE) \
--	STR(__STATE)"-READ",
--#include "lockdep_states.h"
--#undef LOCKDEP_STATE
--};
--
--static inline const char *state_rname(enum lock_usage_bit bit)
--{
--	return state_rnames[bit >> 2];
--}
--
- static int (*state_verbose_f[])(struct lock_class *class) = {
- #define LOCKDEP_STATE(__STATE) \
- 	__STATE##_verbose,
-@@ -2021,37 +2013,12 @@ static inline int state_verbose(enum loc
- 	return state_verbose_f[bit >> 2](class);
- }
- 
--static int exclusive_bit(int new_bit)
--{
--	/*
--	 * USED_IN
--	 * USED_IN_READ
--	 * ENABLED
--	 * ENABLED_READ
--	 *
--	 * bit 0 - write/read
--	 * bit 1 - used_in/enabled
--	 * bit 2+  state
--	 */
--
--	int state = new_bit & ~3;
--	int dir = new_bit & 2;
--
--	/*
--	 * keep state, bit flip the direction and strip read.
--	 */
--	return state | (dir ^ 2);
--}
--
- typedef int (*check_usage_f)(struct task_struct *, struct held_lock *,
- 			     enum lock_usage_bit bit, const char *name);
- 
- static int
- mark_lock_irq(struct task_struct *curr, struct held_lock *this, int new_bit)
- {
--	const char *name = state_name(new_bit);
--	const char *rname = state_rname(new_bit);
--
- 	int excl_bit = exclusive_bit(new_bit);
- 	int read = new_bit & 1;
- 	int dir = new_bit & 2;
-@@ -2078,7 +2045,7 @@ mark_lock_irq(struct task_struct *curr, 
- 	 * states.
- 	 */
- 	if ((!read || !dir || STRICT_READ_CHECKS) &&
--			!usage(curr, this, excl_bit, name))
-+			!usage(curr, this, excl_bit, state_name(new_bit)))
- 		return 0;
- 
- 	/*
-@@ -2089,7 +2056,8 @@ mark_lock_irq(struct task_struct *curr, 
- 			return 0;
- 
- 		if (STRICT_READ_CHECKS &&
--				!usage(curr, this, excl_bit + 1, rname))
-+			!usage(curr, this, excl_bit + 1,
-+				state_name(new_bit + 1)))
- 			return 0;
+ 	name = class->name;
+ 	if (!name) {
+@@ -518,7 +518,7 @@ static void print_lock_name(struct lock_
+ 		if (class->subclass)
+ 			printk("/%d", class->subclass);
  	}
+-	printk("){%c%c%c%c%c%c}", c1, c2, c3, c4, c5, c6);
++	printk("){%s}", usage);
+ }
+ 
+ static void print_lockdep_cache(struct lockdep_map *lock)
+Index: linux-2.6/kernel/lockdep_internals.h
+===================================================================
+--- linux-2.6.orig/kernel/lockdep_internals.h
++++ linux-2.6/kernel/lockdep_internals.h
+@@ -70,9 +70,10 @@ enum {
+ extern struct list_head all_lock_classes;
+ extern struct lock_chain lock_chains[];
+ 
+-extern void
+-get_usage_chars(struct lock_class *class, char *c1, char *c2, char *c3,
+-					char *c4, char *c5, char *c6);
++#define LOCK_USAGE_CHARS (1+LOCK_USAGE_STATES/2)
++
++extern void get_usage_chars(struct lock_class *class,
++			    char usage[LOCK_USAGE_CHARS]);
+ 
+ extern const char * __get_key_name(struct lockdep_subclass_key *key, char *str);
+ 
+Index: linux-2.6/kernel/lockdep_proc.c
+===================================================================
+--- linux-2.6.orig/kernel/lockdep_proc.c
++++ linux-2.6/kernel/lockdep_proc.c
+@@ -84,7 +84,7 @@ static int l_show(struct seq_file *m, vo
+ {
+ 	struct lock_class *class = v;
+ 	struct lock_list *entry;
+-	char c1, c2, c3, c4, c5, c6;
++	char usage[LOCK_USAGE_CHARS];
+ 
+ 	if (v == SEQ_START_TOKEN) {
+ 		seq_printf(m, "all lock classes:\n");
+@@ -100,8 +100,8 @@ static int l_show(struct seq_file *m, vo
+ 	seq_printf(m, " BD:%5ld", lockdep_count_backward_deps(class));
+ #endif
+ 
+-	get_usage_chars(class, &c1, &c2, &c3, &c4, &c5, &c6);
+-	seq_printf(m, " %c%c%c%c%c%c", c1, c2, c3, c4, c5, c6);
++	get_usage_chars(class, usage);
++	seq_printf(m, " %s", usage);
+ 
+ 	seq_printf(m, ": ");
+ 	print_name(m, class);
+Index: linux-2.6/Documentation/lockdep-design.txt
+===================================================================
+--- linux-2.6.orig/Documentation/lockdep-design.txt
++++ linux-2.6/Documentation/lockdep-design.txt
+@@ -27,33 +27,37 @@ lock-class.
+ State
+ -----
+ 
+-The validator tracks lock-class usage history into 5 separate state bits:
++The validator tracks lock-class usage history into 4n + 1 separate state bits:
+ 
+-- 'ever held in hardirq context'                    [ == hardirq-safe   ]
+-- 'ever held in softirq context'                    [ == softirq-safe   ]
+-- 'ever held with hardirqs enabled'                 [ == hardirq-unsafe ]
+-- 'ever held with softirqs and hardirqs enabled'    [ == softirq-unsafe ]
++- 'ever held in STATE context'
++- 'ever head as readlock in STATE context'
++- 'ever head with STATE enabled'
++- 'ever head as readlock with STATE enabled'
++
++Where STATE can be either one of (kernel/lockdep_states.h)
++ - hardirq
++ - softirq
++ - reclaim_fs
+ 
+ - 'ever used'                                       [ == !unused        ]
+ 
+-When locking rules are violated, these 4 state bits are presented in the
+-locking error messages, inside curlies.  A contrived example:
++When locking rules are violated, these state bits are presented in the
++locking error messages, inside curlies. A contrived example:
+ 
+    modprobe/2287 is trying to acquire lock:
+-    (&sio_locks[i].lock){--..}, at: [<c02867fd>] mutex_lock+0x21/0x24
++    (&sio_locks[i].lock){-.-...}, at: [<c02867fd>] mutex_lock+0x21/0x24
+ 
+    but task is already holding lock:
+-    (&sio_locks[i].lock){--..}, at: [<c02867fd>] mutex_lock+0x21/0x24
++    (&sio_locks[i].lock){-.-...}, at: [<c02867fd>] mutex_lock+0x21/0x24
+ 
+ 
+-The bit position indicates hardirq, softirq, hardirq-read,
+-softirq-read respectively, and the character displayed in each
+-indicates:
++The bit position indicates STATE, STATE-read, for each of the states listed
++above, and the character displayed in each indicates:
+ 
+    '.'  acquired while irqs disabled
+    '+'  acquired in irq context
+    '-'  acquired with irqs enabled
+-   '?' read acquired in irq context with irqs enabled.
++   '?'  acquired in irq context with irqs enabled.
+ 
+ Unused mutexes cannot be part of the cause of an error.
  
 
 -- 
