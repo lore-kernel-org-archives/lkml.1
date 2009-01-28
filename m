@@ -1,153 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbZA1Ndu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZA1Nfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753716AbZA1Ndu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 08:33:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbZA1Ndl
+	id S1753863AbZA1Nfu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 08:35:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751037AbZA1Nfl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 08:33:41 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:46609 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751020AbZA1Ndk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 08:33:40 -0500
-Date: Wed, 28 Jan 2009 15:11:34 +1100
-From: Simon Horman <horms@verge.net.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Neil Horman <nhorman@tuxdriver.com>,
-       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
-       kexec@lists.infradead.org, Eric Biederman <ebiederm@xmision.com>
-Subject: Re: [PATCH]: add dmesg log symbols to /proc/vmcoreinfo lists
-Message-ID: <20090128041109.GA4943@verge.net.au>
-References: <20090119212127.GA13157@hmsreliant.think-freely.org> <20090120141551.GA5125@redhat.com> <20090120150958.GB18207@hmsreliant.think-freely.org> <20090120152255.GB5125@redhat.com> <20090127001211.f847ea5a.akpm@linux-foundation.org>
+	Wed, 28 Jan 2009 08:35:41 -0500
+Received: from ozlabs.org ([203.10.76.45]:55187 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750740AbZA1Nfk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 08:35:40 -0500
+To: linux-kernel@vger.kernel.org
+Cc: Shawn Bohrer <shawn.bohrer@gmail.com>
+From: Rusty Russell <rusty@rustcorp.com.au>
+Date: Thu, 29 Jan 2009 00:05:32 +1030
+CC: Shawn Bohrer <shawn.bohrer@gmail.com>
+Subject: [PATCH 1/6] module: clarify the force-loading taint message.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090127001211.f847ea5a.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200901290005.32346.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 12:12:11AM -0800, Andrew Morton wrote:
-> On Tue, 20 Jan 2009 10:22:56 -0500 Vivek Goyal <vgoyal@redhat.com> wrote:
-> 
-> > On Tue, Jan 20, 2009 at 10:09:58AM -0500, Neil Horman wrote:
-> > > On Tue, Jan 20, 2009 at 09:15:51AM -0500, Vivek Goyal wrote:
-> > > > On Mon, Jan 19, 2009 at 04:21:27PM -0500, Neil Horman wrote:
-> > > > > Hey all-
-> > > > > 	It would be nice to be able to extract the dmesg log from a vmcore file
-> > > > > without needing to keep the debug symbols for the running kernel handy all the
-> > > > > time.  We have a facility to do this in /proc/vmcore.  This patch adds the
-> > > > > log_buf and log_end symbols to the vmcoreinfo area so that tools (like
-> > > > > makedumpfile) can easily extract the dmesg logs from a vmcore image.
-> > > > > 
-> > > > 
-> > > > It would be nice to get dmesg log if debug symbols are not around. Can't
-> > > > we use System.map for getting symbol addresses? vmcoreinfo had started
-> > > > small and seems to be growing now. I am thinking down the line will making
-> > > > use of System.map for such cases make sense?
-> > > > 
-> > > 
-> > > System.map only include exported and public symbols.  log_buf and log_end are
-> > > static, and not reported in the System.map.  Its a nice idea, but not
-> > > comprehensive for everything in the kernel.
-> > > 
-> > > ><snip>
-> > > > 
-> > > > Will it be an issue if we make log_buf and log_end non static and directly
-> > > > access these in kexec.c?
-> > > > 
-> > > I had considered that, but was a bit hesitant to do so, since it exposes the
-> > > internal implementation of the dmesg buffer.  In the event someone disables
-> > > CONFIG_PRINTK, thats just more code we need to ifdef.  With this implementation
-> > > we just stub out the log_buf_setup function, and let that be that.  It seems
-> > > more consice to me this way.
-> > > 
-> > 
-> > Makes sense to me.
-> > 
-> > Acked-by: Vivek Goyal <vgoyal@redhat.com>
-> > 
-> 
-> I rewrote the title to
-> 
-> 	kexec: add dmesg log symbols to /proc/vmcoreinfo lists
-> 
-> it's nice to identify which subsystem is responsible for a patch.
-> 
-> I also did all the below.  Please check it.  (Is anyone else reading all
-> this stuff??)
 
-These look fine to me. Unfortunately they don't apply to the version
-of Linus' tree that I have checked out and I'm away from net access
-at this moment (though obviously not by the time this message reaches you).
-I'll update my tree and check once I'm back online.
+Two of three callers of try_to_force_load() are not because of a
+missing version, so change the messages:
 
-Eric Biederman usually watches kexec stuff. I'm pretty sure he
-is on the kexec mailing list, but I've CCed him anyway.
+Old:
+	<modname>: no version for "magic" found: kernel tainted.
+New:
+	<modname>: bad vermagic: kernel tainted.
 
-> From: Andrew Morton <akpm@linux-foundation.org>
-> 
-> - switch didnt-need-to-be-a-macro to inline
-> 
-> - Remove unneeded ifdefs (we already did that in the header)
-> 
-> - repair bouncy enter key
-> 
-> Cc: Neil Horman <nhorman@tuxdriver.com>
-> Cc: Simon Horman <horms@verge.net.au>
-> Cc: Vivek Goyal <vgoyal@redhat.com>
-> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-> ---
-> 
->  include/linux/kernel.h |    5 ++++-
->  kernel/kexec.c         |    2 --
->  kernel/printk.c        |    1 -
->  3 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff -puN include/linux/kernel.h~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix include/linux/kernel.h
-> --- a/include/linux/kernel.h~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix
-> +++ a/include/linux/kernel.h
-> @@ -254,7 +254,10 @@ static inline int printk_ratelimit(void)
->  static inline bool printk_timed_ratelimit(unsigned long *caller_jiffies, \
->  					  unsigned int interval_msec)	\
->  		{ return false; }
-> -#define log_buf_kexec_setup() do {} while(0)
-> +
-> +static inline void log_buf_kexec_setup(void)
-> +{
-> +}
->  #endif
->  
->  extern int printk_needs_cpu(int cpu);
-> diff -puN kernel/kexec.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix kernel/kexec.c
-> --- a/kernel/kexec.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix
-> +++ a/kernel/kexec.c
-> @@ -1409,9 +1409,7 @@ static int __init crash_save_vmcoreinfo_
->  	VMCOREINFO_OFFSET(list_head, prev);
->  	VMCOREINFO_OFFSET(vm_struct, addr);
->  	VMCOREINFO_LENGTH(zone.free_area, MAX_ORDER);
-> -#ifdef CONFIG_PRINTK
->  	log_buf_kexec_setup();
-> -#endif
->  	VMCOREINFO_LENGTH(free_area.free_list, MIGRATE_TYPES);
->  	VMCOREINFO_NUMBER(NR_FREE_PAGES);
->  	VMCOREINFO_NUMBER(PG_lru);
-> diff -puN kernel/printk.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix kernel/printk.c
-> --- a/kernel/printk.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix
-> +++ a/kernel/printk.c
-> @@ -143,7 +143,6 @@ void log_buf_kexec_setup(void)
->  	VMCOREINFO_SYMBOL(log_end);
->  }
->  
-> -
->  static int __init log_buf_len_setup(char *str)
->  {
->  	unsigned size = memparse(str, &str);
-> _
+Old:
+	<modname>: no version for "nocrc" found: kernel tainted.
+New:
+	<modname>: no versions for exported symbols: kernel tainted.
 
--- 
-Simon Horman
-  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
-  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
+Old:
+	<modname>: no version for "<symname>" found: kernel tainted.
+New:
+	<modname>: <symname>: kernel tainted.
+
+And the last one will be going away in follow-up patches anyway.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ kernel/module.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/kernel/module.c b/kernel/module.c
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -961,12 +961,12 @@ static struct module_attribute *modinfo_
+ 
+ static const char vermagic[] = VERMAGIC_STRING;
+ 
+-static int try_to_force_load(struct module *mod, const char *symname)
++static int try_to_force_load(struct module *mod, const char *reason)
+ {
+ #ifdef CONFIG_MODULE_FORCE_LOAD
+ 	if (!test_taint(TAINT_FORCED_MODULE))
+-		printk("%s: no version for \"%s\" found: kernel tainted.\n",
+-		       mod->name, symname);
++		printk(KERN_WARNING "%s: %s: kernel tainted.\n",
++		       mod->name, reason);
+ 	add_taint_module(mod, TAINT_FORCED_MODULE);
+ 	return 0;
+ #else
+@@ -1978,7 +1977,7 @@ static noinline struct module *load_modu
+ 	modmagic = get_modinfo(sechdrs, infoindex, "vermagic");
+ 	/* This is allowed: modprobe --force will invalidate it. */
+ 	if (!modmagic) {
+-		err = try_to_force_load(mod, "magic");
++		err = try_to_force_load(mod, "bad vermagic");
+ 		if (err)
+ 			goto free_hdr;
+ 	} else if (!same_magic(modmagic, vermagic, versindex)) {
+@@ -2167,8 +2166,8 @@ static noinline struct module *load_modu
+ 	    || (mod->num_unused_gpl_syms && !mod->unused_gpl_crcs)
+ #endif
+ 		) {
+-		printk(KERN_WARNING "%s: No versions for exported symbols.\n", mod->name);
+-		err = try_to_force_load(mod, "nocrc");
++		err = try_to_force_load(mod,
++					"no versions for exported symbols");
+ 		if (err)
+ 			goto cleanup;
+ 	}
 
