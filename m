@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762228AbZA1U55@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZA1U5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762228AbZA1U55 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:57:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZA1Ukv
+	id S1754575AbZA1U5k (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756658AbZA1UeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:40:51 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49878 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758661AbZA1Uku (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 15:40:50 -0500
-Message-ID: <4980C278.8030204@redhat.com>
-Date: Wed, 28 Jan 2009 15:39:20 -0500
-From: Chris Snook <csnook@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 28 Jan 2009 15:34:24 -0500
+Received: from ovro.ovro.caltech.edu ([192.100.16.2]:49876 "EHLO
+	ovro.ovro.caltech.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755880AbZA1UeX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 15:34:23 -0500
+Date: Wed, 28 Jan 2009 12:34:21 -0800
+From: Ira Snyder <iws@ovro.caltech.edu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] firmware: speed up request_firmware()
+Message-ID: <20090128203421.GC31107@ovro.caltech.edu>
+References: <20090128180446.GB31107@ovro.caltech.edu> <E1LSFhF-0002OC-00.arvidjaar-mail-ru@mx5.mail.ru> <20090128194534.457d58cd@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: if (unlikely(...)) == unnecessary?
-References: <alpine.DEB.1.10.0901272346480.20262@alien.or.mcafeemobile.com> <49809C2E.3000005@redhat.com> <alpine.DEB.1.10.0901281130020.21401@alien.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0901281130020.21401@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090128194534.457d58cd@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.0 (ovro.ovro.caltech.edu); Wed, 28 Jan 2009 12:34:22 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
-> On Wed, 28 Jan 2009, Chris Snook wrote:
+On Wed, Jan 28, 2009 at 07:45:34PM +0000, Alan Cox wrote:
+> > Some drivers cache firmware in memory. Doubing the amount of needed memory 
+> > definitely would not be the best idea. Check drivers/net/wireless for 
+> > examples.
 > 
->> Davide Libenzi wrote:
->>> I noticed that GCC >= 3.3 (not tried the ones before) automatically branches
->>> out the "if" code (and follow-through the "else" code, if there). Is that a
->>> coincidence or a rule we can rely on going forward?
->> That's the default behavior, but there are lots of things that can cause it to
->> behave differently.
-> 
-> Please don't keep me hanging. What are they (just a few of the "lots" 
-> that makes GCC follow-through "if" code)?
-> 
-> 
-> - Davide
-> 
+> A lot of drivers could perfectly happily exist with a simple iterator
+> helper and being returned sg lists of pages. It seems that for big
+> firmwares at least there is a root cause which is deeper than how you
+> grow your vmalloc buffer.
 > 
 
-When you turn on optimizations, gcc will try to avoid branching just to execute 
-a few instructions, since the cache miss and page fault penalties greatly exceed 
-the cost of a branch mispredict.  The thresholds and heuristics vary, but in 
-general, if you stick something like this:
+An sg list of pages would be perfect for my usage. I didn't want to
+change an existing kernel interface, so I just made the easiest change
+that worked for me.
 
-if (condition) foo++;
-else if (complex condition) {do lots of stuff}
+Another thing that could be done is trimming the vmalloc() down to the
+exact size needed after the firmware has finished loading. That would
+still waste memory until the copy from userspace is finished, though.
 
-In the middle of a long function body and compile with optimizations enabled, 
-gcc will try to put the foo++ right after the evaluation.  Some ISAs support 
-conditional instructions to let the compiler help fill pipeline bubbles, and 
-some superscalar processors will speculatively execute it in parallel with their 
-evaluation of the second condition, and proceed with whichever execution path is 
-chosen when they retire the instruction evaluating the first conditional.
+I'd be happy to test patches anyone comes up with.
 
--- Chris
+Thanks,
+Ira
