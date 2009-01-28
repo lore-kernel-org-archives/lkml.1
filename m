@@ -1,95 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZA1Mz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbZA1M6c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754876AbZA1Mz6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 07:55:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZA1MzN
+	id S1753743AbZA1M6c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 07:58:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZA1M6Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 07:55:13 -0500
-Received: from sh.osrg.net ([192.16.179.4]:59185 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751866AbZA1MzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 07:55:09 -0500
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-To: mingo@elte.hu, tony.luck@intel.com
-Cc: linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       David Woodhouse <David.Woodhouse@intel.com>
-Subject: [PATCH -tip 2/3] IA64: fix VT-d dma_mapping_error
-Date: Wed, 28 Jan 2009 21:53:17 +0900
-Message-Id: <1233147198-30299-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1233147198-30299-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-References: <1233147198-30299-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	Wed, 28 Jan 2009 07:58:24 -0500
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:33203 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751123AbZA1M6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 07:58:22 -0500
+Message-ID: <4980565E.3000800@krogh.cc>
+Date: Wed, 28 Jan 2009 13:58:06 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080724)
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org, linux-nfs@vger.kernel.org,
+       autofs@linux.kernel.org
+Subject: Re: Linux 2.6.27.13
+References: <20090125004823.GA6711@kroah.com>
+In-Reply-To: <20090125004823.GA6711@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-dma_mapping_error is used to see if dma_map_single and dma_map_page
-succeed. IA64 VT-d dma_mapping_error always says that dma_map_single
-is successful even though it could fail. Note that X86 VT-d works
-properly in this regard.
+Greg KH wrote:
+> We (the -stable team) are announcing the release of the 2.6.27.13
+> kernel.
+> 
+> It contains a wide range of bugfixes, and all users of the 2.6.27 kernel
+> series are strongly encouraged to upgrade.
+> 
+> I'll also be replying to this message with a copy of the patch between
+> 2.6.27.12 and 2.6.27.13
 
-This patch fixes IA64 VT-d dma_mapping_error by adding VT-d's own
-dma_mapping_error() that works for both X86_64 and IA64. VT-d uses
-zero as an error dma address so VT-d's dma_mapping_error returns 1 if
-a passed dma address is zero (as x86's VT-d dma_mapping_error does
-now).
+Still on a 2.6.27.6  I got this on an NFS client while restarting the 
+NFS-server at the other end. Seems autofs/nfs releated.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: David Woodhouse <David.Woodhouse@intel.com>
----
- arch/ia64/kernel/pci-dma.c |    6 ------
- drivers/pci/intel-iommu.c  |    6 ++++++
- 2 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/ia64/kernel/pci-dma.c b/arch/ia64/kernel/pci-dma.c
-index a647f11..e4cb443 100644
---- a/arch/ia64/kernel/pci-dma.c
-+++ b/arch/ia64/kernel/pci-dma.c
-@@ -99,11 +99,6 @@ int iommu_dma_supported(struct device *dev, u64 mask)
- }
- EXPORT_SYMBOL(iommu_dma_supported);
- 
--static int vtd_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
--{
--	return 0;
--}
--
- void __init pci_iommu_alloc(void)
- {
- 	dma_ops = &intel_dma_ops;
-@@ -113,7 +108,6 @@ void __init pci_iommu_alloc(void)
- 	dma_ops->sync_single_for_device = machvec_dma_sync_single;
- 	dma_ops->sync_sg_for_device = machvec_dma_sync_sg;
- 	dma_ops->dma_supported = iommu_dma_supported;
--	dma_ops->mapping_error = vtd_dma_mapping_error;
- 
- 	/*
- 	 * The order of these functions is important for
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index c933980..59de563 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -2581,6 +2581,11 @@ int intel_map_sg(struct device *hwdev, struct scatterlist *sglist, int nelems,
- 	return nelems;
- }
- 
-+static int intel_mapping_error(struct device *dev, dma_addr_t dma_addr)
-+{
-+	return !dma_addr;
-+}
-+
- struct dma_map_ops intel_dma_ops = {
- 	.alloc_coherent = intel_alloc_coherent,
- 	.free_coherent = intel_free_coherent,
-@@ -2588,6 +2593,7 @@ struct dma_map_ops intel_dma_ops = {
- 	.unmap_sg = intel_unmap_sg,
- 	.map_page = intel_map_page,
- 	.unmap_page = intel_unmap_page,
-+	.mapping_error = intel_mapping_error,
- };
- 
- static inline int iommu_domain_cache_init(void)
--- 
-1.6.0.6
+[6367172.212954] ------------[ cut here ]------------
+[6367172.213122] kernel BUG at net/sunrpc/rpcb_clnt.c:498!
+[6367172.213263] invalid opcode: 0000 [1] SMP
+[6367172.213397] CPU 1
+[6367172.213502] Modules linked in: nfs lockd sunrpc autofs4 ipv6 
+iptable_filter ip_tables x_tables usbhid hid uhci_hcd ehci_hcd usbkbd 
+parport_pc lp parport af_packet i2c_amd756 i2c_core container amd_rng 
+serio_raw button k8temp shpchp pci_hotplug evdev pcspkr psmouse ext3 jbd 
+mbcache sg sd_mod ide_cd_mod cdrom ata_generic libata dock floppy mptspi 
+mptscsih mptbase scsi_transport_spi scsi_mod tg3 libphy amd74xx ide_core 
+ohci_hcd usbcore thermal processor fan thermal_sys fuse
+[6367172.214628] Pid: 5802, comm: automount Not tainted 2.6.27.6 #2
+[6367172.214778] RIP: 0010:[<ffffffffa02c5288>]  [<ffffffffa02c5288>] 
+rpcb_getport_async+0x318/0x440 [sunrpc]
+[6367172.215082] RSP: 0018:ffff880037a3bb48  EFLAGS: 00010287
+[6367172.215226] RAX: ffffffffa02e2da0 RBX: ffff8800fade5200 RCX: 
+00000000c0000100
+[6367172.215467] RDX: 0000000000000001 RSI: ffff880037a3bc18 RDI: 
+ffff8800f659ba00
+[6367172.215708] RBP: ffff8800faf30000 R08: ffff880037a3a000 R09: 
+000823d4ebf72992
+[6367172.215948] R10: ffff8800ba8f3928 R11: ffffffffa02c4f70 R12: 
+ffff8800f6672200
+[6367172.216189] R13: ffff8800f659ba00 R14: ffff8800d54d0c00 R15: 
+ffff8800d54d0b70
+[6367172.216430] FS:  00007f95a76396e0(0000) GS:ffff8800fbb0e280(0000) 
+knlGS:00000000556f68c0
+[6367172.216681] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[6367172.216681] CR2: 00007f93cfcb3768 CR3: 0000000028fbb000 CR4: 
+00000000000006e0
+[6367172.216681] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
+0000000000000000
+[6367172.216681] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
+0000000000000400
+[6367172.216681] Process automount (pid: 5802, threadinfo 
+ffff880037a3a000, task ffff8800bab7c440)
+[6367172.216681] Stack:  ffff8800bab7c680 000000015edfa7ae 
+0000000300000000 ffff8800f61093c8
+[6367172.216681]  0000000000000000 0000000000000296 0000000000000282 
+ffff880037a3bc08
+[6367172.216681]  ffff880037a3bc18 0000000000000082 ffff8800c1002ee0 
+ffffffffa02bc750
+[6367172.216681] Call Trace:
+[6367172.216681]  [<ffffffffa02bc750>] ? rpc_wait_bit_killable+0x0/0x40 
+[sunrpc]
+[6367172.216681]  [<ffffffff80459e1b>] ? __wait_on_bit+0x6b/0x80
+[6367172.216681]  [<ffffffffa02bc750>] ? rpc_wait_bit_killable+0x0/0x40 
+[sunrpc]
+[6367172.216681]  [<ffffffff80459eaa>] ? out_of_line_wait_on_bit+0x7a/0xa0
+[6367172.216681]  [<ffffffff8024c9f0>] ? wake_bit_function+0x0/0x30
+[6367172.216681]  [<ffffffffa02bcd83>] ? __rpc_execute+0x63/0x270 [sunrpc]
+[6367172.216681]  [<ffffffffa02b5c84>] ? rpc_run_task+0x34/0x70 [sunrpc]
+[6367172.216681]  [<ffffffffa02b5d5c>] ? rpc_call_sync+0x3c/0x60 [sunrpc]
+[6367172.216681]  [<ffffffffa0314e8a>] ? nfs3_rpc_wrapper+0x3a/0x60 [nfs]
+[6367172.216681]  [<ffffffffa0315631>] ? nfs3_proc_getattr+0x51/0x90 [nfs]
+[6367172.216681]  [<ffffffffa0307635>] ? 
+__nfs_revalidate_inode+0x175/0x2a0 [nfs]
+[6367172.216681]  [<ffffffff802a9f13>] ? path_walk+0x63/0xb0
+[6367172.216681]  [<ffffffff802aa02a>] ? do_path_lookup+0x7a/0x160
+[6367172.216681]  [<ffffffff802a8eb5>] ? getname+0xe5/0x1f0
+[6367172.216681]  [<ffffffff802aac85>] ? user_path_at+0x55/0x80
+[6367172.216681]  [<ffffffff8027f1b2>] ? do_wp_page+0x262/0x550
+[6367172.216681]  [<ffffffff802a2915>] ? cp_new_stat+0xe5/0x100
+[6367172.216681]  [<ffffffffa03080da>] ? nfs_getattr+0x7a/0x120 [nfs]
+[6367172.216681]  [<ffffffff802a2c47>] ? vfs_lstat_fd+0x37/0x60
+[6367172.216681]  [<ffffffff802a2c97>] ? sys_newlstat+0x27/0x50
+[6367172.216681]  [<ffffffff8020c2db>] ? system_call_fastpath+0x16/0x1b
+[6367172.216681]
+[6367172.216681]
+[6367172.216681] Code: ff ff ff 0f 84 7f fd ff ff 41 0f b7 b5 06 01 00 
+00 48 c7 c2 b0 cc 2c a0 48 c7 c7 88 03 2d a0 31 c0 e8 8d 38 f7 df e9 5d 
+fd ff ff <0f> 0b eb fe 0f 1f 40 00 8b 85 a0 00 00 00 0f b7 b7 06 01 00 00
+[6367172.216681] RIP  [<ffffffffa02c5288>] 
+rpcb_getport_async+0x318/0x440 [sunrpc]
+[6367172.216681]  RSP <ffff880037a3bb48>
+[6367172.223900] ---[ end trace 5edd17395c2b1b4f ]---
+
+
+Full dmesg here:
+http://krogh.cc/~jesper/dmesg-autofs-nfs.txt
 
