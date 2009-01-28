@@ -1,289 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754063AbZA1Ho3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbZA1ILV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754063AbZA1Ho3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 02:44:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZA1HoS
+	id S1753404AbZA1ILV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 03:11:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbZA1ILE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 02:44:18 -0500
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:39532 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752273AbZA1HoR (ORCPT
+	Wed, 28 Jan 2009 03:11:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:38508 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751217AbZA1ILB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 02:44:17 -0500
-X-YMail-OSG: 5mTLAEwVM1kxD_6x8p8W65Hfn3otV4NT9GzSf3CzXrVCsuE_iVxvD2YtY.vbQEUxLMqOIbK6djadAzdAGuY5qA1kulb.14NOaK9Dllzn2XlwIDW_2p96Pl5mxg_QcNXnme7KMEKCaDjy9HEY6Xdq16J1tkQkKw53DnftnPK9GDOMY0VqceJjk0oJihWCdcAwWl2.aRZE78ENXtHzuMA2XFQqgYP5LGN1nlyEph4Len5U.Lhh0aM-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 2/2] [Target_Core_Mod/ConfigFS]: Updates for
-	PERSISTENT_RESERVE
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: "Linux-iSCSI.org Target Dev" 
-	<linux-iscsi-target-dev@googlegroups.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Joel Becker <joel.becker@oracle.com>, Hannes Reinecke <hare@suse.de>,
-       Ming Zhang <blackmagic02881@gmail.com>,
-       Arne Redlich <agr@powerkom-dd.de>,
-       "Ross S. W. Walker" <rswwalker@gmail.com>,
-       Rafiu Fakunle <rafiu@openfiler.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Tue, 27 Jan 2009 23:43:08 -0800
-Message-Id: <1233128588.6442.154.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Jan 2009 03:11:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ceiuDuL+l0LHr5MEfEJ3tYthlSEWEkSZeRQntJ6OyjjQ/plfO7ifTDWMbryB+DYtU2
+         7S1UX3tcPwkXuV+TF/GOlT29RG0XIHzngTcXaQskbP6t0DwXyRQ+KhygL39Ts77uILy8
+         INkGRFBx8It/2DwdEPS2S6m7SbPNCOjGnQ/ng=
+Date: Wed, 28 Jan 2009 08:10:54 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v3] tcp: splice as many packets as possible at once
+Message-ID: <20090128081054.GA4190@ff.dom.local>
+References: <20090127114805.GA30982@gondor.apana.org.au> <20090127121642.GA5866@ff.dom.local> <20090127123111.GB5866@ff.dom.local> <20090127.090651.237239521.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090127.090651.237239521.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From ab56467bfab7716f932362e17afd913ad4fce7a9 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Tue, 27 Jan 2009 23:16:18 -0800
-Subject: [PATCH 2/2] [Target_Core_Mod/ConfigFS]: Updates for PERSISTENT_RESERVE
+On Tue, Jan 27, 2009 at 09:06:51AM -0800, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Tue, 27 Jan 2009 12:31:11 +0000
+> 
+> > On Tue, Jan 27, 2009 at 12:16:42PM +0000, Jarek Poplawski wrote:
+> > > On Tue, Jan 27, 2009 at 10:48:05PM +1100, Herbert Xu wrote:
+> > > > On Tue, Jan 27, 2009 at 10:35:11AM +0000, Jarek Poplawski wrote:
+> > > > >
+> > > > > > > Yes, but ip_append_data() (and skb_append_datato_frags() for
+> > > > > > > NETIF_F_UFO only, so currently not a problem), uses this differently,
+> > > > > > > and these pages in sk->sk_sndmsg_page could leak or be used after
+> > > > > > > kfree. (I didn't track locking in these other places).
+> > > > > > 
+> > > > > > It'll be freed when the socket is freed so that should be fine.
+> > > > > 
+> > > > > I don't think so: these places can overwrite sk->sk_sndmsg_page left
+> > > > > after tcp_sendmsg(), or skb_splice_bits() now, with NULL or a new
+> > > > > pointer without put_page() (they only reference copied chunks and
+> > > > > expect auto freeing). On the other hand, if tcp_sendmsg() reads after
+> > > > > them it could use a pointer after the page is freed, I guess.
+> > > > 
+> > > > I wasn't referring to the first part of your sentence.  That can't
+> > > > happen because they're only used for UDP sockets, this is a TCP
+> > > > socket.
+> > > 
+> > > Do you mean this part from ip_append_data() isn't used for TCP?:
+> > 
+> > Actually, the beginning part of ip_append_data() should be enough too.
+> > So I guess I missed your point...
+> 
+> TCP doesn't use ip_append_data(), period.
 
-This patch adds /sys/kernel/config/target/core/$HBA/$STORAGE_OBJECT/pr/res_pr_type,
-as well as adds functionality for other SPC-3 PERSISTENT_RESERVE output
-of existing reservations.  It has been tested with sg_persist, here is what it
-looks like with tree /sys/kernel/config
+Hmm... I see: TCP does use ip_send_reply(), so ip_append_data() too,
+but with a special socket.
 
-`-- target
-    |-- core
-    |   |-- iblock_0
-    |   |   |-- hba_info
-    |   |   `-- lvm_test0
-	<SNIP>
-    |   |       |-- pr
-    |   |       |   |-- res_holder
-    |   |       |   |-- res_pr_all_tgt_pts
-    |   |       |   |-- res_pr_generation
-    |   |       |   |-- res_pr_registered_i_pts
-    |   |       |   |-- res_pr_type
-    |   |       |   `-- res_type
-    |   |       `-- wwn
-    |   |           |-- evpd_assoc_logical_unit
-    |   |           |-- evpd_assoc_scsi_target_device
-    |   |           |-- evpd_assoc_target_port
-    |   |           |-- evpd_protocol_identifier
-    |   |           `-- evpd_unit_serial
-
-cat /sys/kernel/config/target/core/iblock_0/lvm_test0/pr/*
-SPC-3 Reservation FABRIC[iSCSI]: Initiator: iqn.1993-08.org.debian:01:2dadf92d0ef
-SPC-3 Reservation holder: All Target Ports reserved
-0x00000002
-SPC-3 PR Registrations:
-iSCSI Node: iqn.1993-08.org.debian:01:2dadf92d0ef Key: 0x000000005678efff PRgen: 0x00000001
-SPC-3 Reservation Type: Write Exclusive Access
-SPC3_PERSISTENT_RESERVATIONS
-
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
----
- drivers/lio-core/target_core_configfs.c |  116 ++++++++++++++++++++++++++----
- 1 files changed, 100 insertions(+), 16 deletions(-)
-
-diff --git a/drivers/lio-core/target_core_configfs.c b/drivers/lio-core/target_core_configfs.c
-index 68763cc..3dd7dbd 100644
---- a/drivers/lio-core/target_core_configfs.c
-+++ b/drivers/lio-core/target_core_configfs.c
-@@ -40,6 +40,7 @@
- #include <target_core_plugin.h>
- #include <target_core_seobj.h>
- #include <target_core_transport.h>
-+#include <target_core_pr.h>
- 
- #ifdef SNMP_SUPPORT
- #include <linux/proc_fs.h>
-@@ -786,7 +787,21 @@ static ssize_t target_core_dev_pr_show_spc3_res (
- 	char *page,
- 	ssize_t *len)
- {
--	*len += sprintf(page+*len, "Not Implemented yet\n");
-+	se_node_acl_t *se_nacl;
-+	t10_pr_registration_t *pr_reg;
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+	if (!(pr_reg = dev->dev_pr_res_holder)) {
-+		*len += sprintf(page+*len, "No SPC-3 Reservation holder\n");
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return(*len);	
-+	}
-+	se_nacl = pr_reg->pr_reg_nacl;
-+	*len += sprintf(page+*len, "SPC-3 Reservation FABRIC[%s]: Initiator: %s\n",
-+		TPG_TFO(se_nacl->se_tpg)->get_fabric_name(),
-+		se_nacl->initiatorname);
-+	spin_unlock(&dev->dev_reservation_lock);
-+
- 	return(*len);
- }
- 
-@@ -799,11 +814,11 @@ static ssize_t target_core_dev_pr_show_spc2_res (
- 
- 	spin_lock(&dev->dev_reservation_lock);
- 	if (!(se_nacl = dev->dev_reserved_node_acl)) {
--		*len += sprintf(page+*len, "None\n");
-+		*len += sprintf(page+*len, "No SPC-2 Reservation holder\n");
- 		spin_unlock(&dev->dev_reservation_lock);
- 		return(*len);
- 	}
--	*len += sprintf(page+*len, "FABRIC[%s]: Initiator: %s\n",
-+	*len += sprintf(page+*len, "SPC-2 Reservation FABRIC[%s]: Initiator: %s\n",
- 		TPG_TFO(se_nacl->se_tpg)->get_fabric_name(),
- 		se_nacl->initiatorname);
- 	spin_unlock(&dev->dev_reservation_lock);
-@@ -849,17 +864,50 @@ static ssize_t target_core_dev_pr_show_attr_res_pr_all_tgt_pts (
- 	struct se_subsystem_dev_s *su_dev,
- 	char *page)
- {
-+	se_device_t *dev;
-+	se_node_acl_t *se_nacl;
-+	se_portal_group_t *se_tpg;
-+	t10_pr_registration_t *pr_reg;
- 	ssize_t len = 0;
- 
--	if (!(su_dev->se_dev_ptr))
-+	if (!(dev = su_dev->se_dev_ptr))
- 		return(-ENODEV);
- 
--	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS) {
--		return(sprintf(page, "res_pr_all_tgt_pts only valid for"
--			" SPC3_PERSISTENT_RESERVATIONS\n"));
-+	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS) 
-+		return(len);
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+        if (!(pr_reg = dev->dev_pr_res_holder)) {
-+		len = sprintf(page, "No SPC-3 Reservation holder\n");
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return(len);
- 	}
-+	/*
-+	 * See All Target Ports (ALL_TG_PT) bit in spcr17, section 6.14.3
-+	 * Basic PERSISTENT RESERVER OUT parameter list, page 290
-+	 */
-+	if (pr_reg->pr_reg_all_tg_pt)
-+		len = sprintf(page, "SPC-3 Reservation holder: All Target"
-+			" Ports reserved\n");
-+	else {
-+		se_lun_t *lun = dev->dev_pr_tg_port_res_lun;
-+		struct target_core_fabric_ops *tfo;
-+
-+		se_nacl = pr_reg->pr_reg_nacl;
-+		se_tpg = se_nacl->se_tpg;
-+		tfo = TPG_TFO(se_tpg);
-+
-+		len = sprintf(page, "SPC-3 Reservation holder: Single Target"
-+			" Port reserved\n");	
-+		len += sprintf(page+len, "SPC-3 Reservation holder: Fabric: "
-+			" %s Node Endpoint: %s\n", tfo->get_fabric_name(),
-+			tfo->tpg_get_wwn(se_tpg));	
-+		len += sprintf(page+len, "SPC-3 Reservation holder: Portal"
-+			" Identifer Tag: %hu Logical Unit: %u\n",
-+			tfo->tpg_get_tag(se_tpg), lun->unpacked_lun);
-+	}
-+	spin_unlock(&dev->dev_reservation_lock);
- 
--	len = sprintf(page, "Not Implemented yet\n");
- 	return(len);
- }
- 
-@@ -875,10 +923,8 @@ static ssize_t target_core_dev_pr_show_attr_res_pr_generation (
- 	if (!(su_dev->se_dev_ptr))
- 		return(-ENODEV);
- 
--	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS) {
--		return(sprintf(page, "res_pr_generation only valid for"
--			" SPC3_PERSISTENT_RESERVATIONS\n"));
--	}
-+	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS)
-+		return(0);
- 
- 	return(sprintf(page, "0x%08x\n", T10_RES(su_dev)->pr_generation));
- }
-@@ -896,15 +942,16 @@ static ssize_t target_core_dev_pr_show_attr_res_pr_registered_i_pts (
- 	t10_pr_registration_t *pr_reg;
- 	unsigned char buf[384];
- 	ssize_t len = 0;
-+	int reg_count = 0;
- 
- 	if (!(su_dev->se_dev_ptr))
- 		return(-ENODEV);
- 
--	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS) {
--		len = sprintf(page, "res_pr_registered_i_pts only valid for"
--			" SPC3_PERSISTENT_RESERVATIONS\n");
-+	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS)
- 		return(len);
--	}
-+
-+	len += sprintf(page+len, "SPC-3 PR Registrations:\n");
-+
- 	spin_lock(&T10_RES(su_dev)->registration_lock);
- 	list_for_each_entry(pr_reg, &T10_RES(su_dev)->registration_list,
- 			pr_reg_list) {
-@@ -920,15 +967,51 @@ static ssize_t target_core_dev_pr_show_attr_res_pr_registered_i_pts (
- 			break;
- 
- 		len += sprintf(page+len, "%s", buf);	
-+		reg_count++;
- 	}
- 	spin_unlock(&T10_RES(su_dev)->registration_lock);
- 
-+	if (!(reg_count))
-+		len += sprintf(page+len, "None\n");
-+
- 	return(len);
- }
- 
- SE_DEV_PR_ATTR_RO(res_pr_registered_i_pts);
- 
- /*
-+ * res_pr_type
-+ */
-+static ssize_t target_core_dev_pr_show_attr_res_pr_type (
-+	struct se_subsystem_dev_s *su_dev,
-+	char *page)
-+{
-+	se_device_t *dev;
-+	t10_pr_registration_t *pr_reg;
-+	ssize_t len = 0;
-+
-+	if (!(dev = su_dev->se_dev_ptr))
-+		return(-ENODEV);
-+
-+	if (T10_RES(su_dev)->res_type != SPC3_PERSISTENT_RESERVATIONS)
-+		return(len);
-+
-+	spin_lock(&dev->dev_reservation_lock);
-+	if (!(pr_reg = dev->dev_pr_res_holder)) {
-+		len = sprintf(page, "No SPC-3 Reservation holder\n");
-+		spin_unlock(&dev->dev_reservation_lock);
-+		return(len);
-+	}
-+	len = sprintf(page, "SPC-3 Reservation Type: %s\n",
-+		core_scsi3_pr_dump_type(pr_reg->pr_res_type));
-+	spin_unlock(&dev->dev_reservation_lock);
-+
-+	return(len);
-+}
-+
-+SE_DEV_PR_ATTR_RO(res_pr_type);
-+
-+/*
-  * res_type
-  */
- static ssize_t target_core_dev_pr_show_attr_res_type (
-@@ -967,6 +1050,7 @@ static struct configfs_attribute *target_core_dev_pr_attrs[] = {
- 	&target_core_dev_pr_res_pr_all_tgt_pts.attr,
- 	&target_core_dev_pr_res_pr_generation.attr,
- 	&target_core_dev_pr_res_pr_registered_i_pts.attr,
-+	&target_core_dev_pr_res_pr_type.attr,
- 	&target_core_dev_pr_res_type.attr,
- 	NULL,
- };
--- 
-1.5.4.1
-
-
-
+Thanks for the explanations,
+Jarek P.
