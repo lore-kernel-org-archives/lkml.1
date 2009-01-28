@@ -1,221 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbZA2AFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757597AbZA2AFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759491AbZA2AFA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 19:05:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758646AbZA1XpY
+	id S1757597AbZA2AFh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 19:05:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757751AbZA1Xp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:45:24 -0500
-Received: from hera.kernel.org ([140.211.167.34]:53032 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:45:26 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53040 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758333AbZA1XpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:45:20 -0500
+	id S1758636AbZA1XpX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:45:23 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
 Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
        Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 054/114] x86: consolidate the ->mps_oem_check() code
-Date: Wed, 28 Jan 2009 23:42:00 +0000
-Message-Id: <1233186180-29883-55-git-send-email-mingo@elte.hu>
+Subject: [PATCH 056/114] x86, apic: refactor ->apic_id_mask & APIC_ID_MASK
+Date: Wed, 28 Jan 2009 23:42:02 +0000
+Message-Id: <1233186180-29883-57-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
 References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:45:02 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:45:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- spread out the mps_oem_check() namespace on a per APIC driver basis
+- spread out the namespace on a per driver basis
+
+ - get rid of wrapper macros
 
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/include/asm/es7000/mpparse.h            |    6 ------
- arch/x86/include/asm/mach-default/mach_mpparse.h |    2 +-
- arch/x86/include/asm/mach-generic/mach_mpparse.h |    3 +--
- arch/x86/include/asm/summit/mpparse.h            |    4 ++--
- arch/x86/kernel/mpparse.c                        |    2 +-
+ arch/x86/include/asm/bigsmp/apicdef.h            |    2 +-
+ arch/x86/include/asm/es7000/apicdef.h            |    2 +-
+ arch/x86/include/asm/mach-default/mach_apicdef.h |    3 +--
+ arch/x86/include/asm/mach-generic/mach_apicdef.h |    2 --
+ arch/x86/include/asm/numaq/apicdef.h             |    2 +-
+ arch/x86/include/asm/summit/apicdef.h            |    2 +-
+ arch/x86/kernel/apic.c                           |    4 ++--
+ arch/x86/kernel/genapic_flat_64.c                |    2 +-
  arch/x86/mach-generic/bigsmp.c                   |    2 +-
  arch/x86/mach-generic/default.c                  |    2 +-
- arch/x86/mach-generic/es7000.c                   |    5 +++--
- arch/x86/mach-generic/numaq.c                    |    4 ++--
- arch/x86/mach-generic/probe.c                    |    3 ++-
+ arch/x86/mach-generic/es7000.c                   |    2 +-
+ arch/x86/mach-generic/numaq.c                    |    2 +-
  arch/x86/mach-generic/summit.c                   |    2 +-
- 11 files changed, 15 insertions(+), 20 deletions(-)
+ 13 files changed, 13 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/include/asm/es7000/mpparse.h b/arch/x86/include/asm/es7000/mpparse.h
-index 30692c4..662eb1e 100644
---- a/arch/x86/include/asm/es7000/mpparse.h
-+++ b/arch/x86/include/asm/es7000/mpparse.h
-@@ -8,13 +8,7 @@ extern int find_unisys_acpi_oem_table(unsigned long *oem_addr);
- extern void unmap_unisys_acpi_oem_table(unsigned long oem_addr);
- extern void setup_unisys(void);
+diff --git a/arch/x86/include/asm/bigsmp/apicdef.h b/arch/x86/include/asm/bigsmp/apicdef.h
+index ed25dd6..6e58781 100644
+--- a/arch/x86/include/asm/bigsmp/apicdef.h
++++ b/arch/x86/include/asm/bigsmp/apicdef.h
+@@ -1,7 +1,7 @@
+ #ifndef __ASM_MACH_APICDEF_H
+ #define __ASM_MACH_APICDEF_H
  
--#ifndef CONFIG_X86_GENERICARCH
--extern int default_acpi_madt_oem_check(char *oem_id, char *oem_table_id);
--extern int mps_oem_check(struct mpc_table *mpc, char *oem, char *productid);
--#endif
--
- #ifdef CONFIG_ACPI
--
- static inline int es7000_check_dsdt(void)
+-#define		APIC_ID_MASK		(0xFF<<24)
++#define		BIGSMP_APIC_ID_MASK		(0xFF<<24)
+ 
+ static inline unsigned bigsmp_get_apic_id(unsigned long x)
  {
- 	struct acpi_table_header header;
-diff --git a/arch/x86/include/asm/mach-default/mach_mpparse.h b/arch/x86/include/asm/mach-default/mach_mpparse.h
-index 8fa0177..af0da14 100644
---- a/arch/x86/include/asm/mach-default/mach_mpparse.h
-+++ b/arch/x86/include/asm/mach-default/mach_mpparse.h
-@@ -2,7 +2,7 @@
- #define _ASM_X86_MACH_DEFAULT_MACH_MPPARSE_H
+diff --git a/arch/x86/include/asm/es7000/apicdef.h b/arch/x86/include/asm/es7000/apicdef.h
+index e237917..476da0c 100644
+--- a/arch/x86/include/asm/es7000/apicdef.h
++++ b/arch/x86/include/asm/es7000/apicdef.h
+@@ -1,7 +1,7 @@
+ #ifndef __ASM_ES7000_APICDEF_H
+ #define __ASM_ES7000_APICDEF_H
  
- static inline int
--mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
-+generic_mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
+-#define		APIC_ID_MASK		(0xFF<<24)
++#define		ES7000_APIC_ID_MASK		(0xFF<<24)
+ 
+ static inline unsigned int es7000_get_apic_id(unsigned long x)
  {
- 	return 0;
- }
-diff --git a/arch/x86/include/asm/mach-generic/mach_mpparse.h b/arch/x86/include/asm/mach-generic/mach_mpparse.h
-index f497d96..22bfb56 100644
---- a/arch/x86/include/asm/mach-generic/mach_mpparse.h
-+++ b/arch/x86/include/asm/mach-generic/mach_mpparse.h
-@@ -1,8 +1,7 @@
- #ifndef _ASM_X86_MACH_GENERIC_MACH_MPPARSE_H
- #define _ASM_X86_MACH_GENERIC_MACH_MPPARSE_H
+diff --git a/arch/x86/include/asm/mach-default/mach_apicdef.h b/arch/x86/include/asm/mach-default/mach_apicdef.h
+index e84d437..8318d12 100644
+--- a/arch/x86/include/asm/mach-default/mach_apicdef.h
++++ b/arch/x86/include/asm/mach-default/mach_apicdef.h
+@@ -4,10 +4,9 @@
+ #include <asm/apic.h>
  
+ #ifdef CONFIG_X86_64
+-#define	APIC_ID_MASK		(apic->apic_id_mask)
+ #define	SET_APIC_ID(x)		(apic->set_apic_id(x))
+ #else
+-#define		APIC_ID_MASK		(0xF<<24)
++#define		DEFAULT_APIC_ID_MASK	(0x0F<<24)
+ 
+ static inline unsigned default_get_apic_id(unsigned long x) 
+ {
+diff --git a/arch/x86/include/asm/mach-generic/mach_apicdef.h b/arch/x86/include/asm/mach-generic/mach_apicdef.h
+index 645520b..61caa65 100644
+--- a/arch/x86/include/asm/mach-generic/mach_apicdef.h
++++ b/arch/x86/include/asm/mach-generic/mach_apicdef.h
+@@ -3,8 +3,6 @@
+ 
+ #ifndef APIC_DEFINITION
+ #include <asm/genapic.h>
 -
--extern int mps_oem_check(struct mpc_table *, char *, char *);
-+extern int generic_mps_oem_check(struct mpc_table *, char *, char *);
- 
- extern int default_acpi_madt_oem_check(char *, char *);
- 
-diff --git a/arch/x86/include/asm/summit/mpparse.h b/arch/x86/include/asm/summit/mpparse.h
-index 555ed82..4bbcce3 100644
---- a/arch/x86/include/asm/summit/mpparse.h
-+++ b/arch/x86/include/asm/summit/mpparse.h
-@@ -11,8 +11,8 @@ extern void setup_summit(void);
- #define setup_summit()	{}
+-#define APIC_ID_MASK (apic->apic_id_mask)
  #endif
  
--static inline int mps_oem_check(struct mpc_table *mpc, char *oem,
--		char *productid)
-+static inline int
-+summit_mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
+ #endif /* _ASM_X86_MACH_GENERIC_MACH_APICDEF_H */
+diff --git a/arch/x86/include/asm/numaq/apicdef.h b/arch/x86/include/asm/numaq/apicdef.h
+index 29f5e3d..6f2cc5d 100644
+--- a/arch/x86/include/asm/numaq/apicdef.h
++++ b/arch/x86/include/asm/numaq/apicdef.h
+@@ -1,7 +1,7 @@
+ #ifndef __ASM_NUMAQ_APICDEF_H
+ #define __ASM_NUMAQ_APICDEF_H
+ 
+-#define APIC_ID_MASK (0xF<<24)
++#define NUMAQ_APIC_ID_MASK (0xF<<24)
+ 
+ static inline unsigned int numaq_get_apic_id(unsigned long x)
  {
- 	if (!strncmp(oem, "IBM ENSW", 8) &&
- 			(!strncmp(productid, "VIGIL SMP", 9)
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index f6fb192..b12fa5c 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -292,7 +292,7 @@ static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
+diff --git a/arch/x86/include/asm/summit/apicdef.h b/arch/x86/include/asm/summit/apicdef.h
+index 4286528..0373f0c 100644
+--- a/arch/x86/include/asm/summit/apicdef.h
++++ b/arch/x86/include/asm/summit/apicdef.h
+@@ -1,7 +1,7 @@
+ #ifndef __ASM_SUMMIT_APICDEF_H
+ #define __ASM_SUMMIT_APICDEF_H
+ 
+-#define		APIC_ID_MASK		(0xFF<<24)
++#define		SUMMIT_APIC_ID_MASK		(0xFF<<24)
+ 
+ static inline unsigned summit_get_apic_id(unsigned long x)
+ {
+diff --git a/arch/x86/kernel/apic.c b/arch/x86/kernel/apic.c
+index 9d6374d..5f7f3a9 100644
+--- a/arch/x86/kernel/apic.c
++++ b/arch/x86/kernel/apic.c
+@@ -1009,11 +1009,11 @@ int __init verify_local_APIC(void)
+ 	 */
+ 	reg0 = apic_read(APIC_ID);
+ 	apic_printk(APIC_DEBUG, "Getting ID: %x\n", reg0);
+-	apic_write(APIC_ID, reg0 ^ APIC_ID_MASK);
++	apic_write(APIC_ID, reg0 ^ apic->apic_id_mask);
+ 	reg1 = apic_read(APIC_ID);
+ 	apic_printk(APIC_DEBUG, "Getting ID: %x\n", reg1);
+ 	apic_write(APIC_ID, reg0);
+-	if (reg1 != (reg0 ^ APIC_ID_MASK))
++	if (reg1 != (reg0 ^ apic->apic_id_mask))
  		return 0;
  
- #ifdef CONFIG_X86_32
--	mps_oem_check(mpc, oem, str);
-+	generic_mps_oem_check(mpc, oem, str);
- #endif
- 	/* save the local APIC address, it might be non-default */
- 	if (!acpi_lapic)
+ 	/*
+diff --git a/arch/x86/kernel/genapic_flat_64.c b/arch/x86/kernel/genapic_flat_64.c
+index ab47091..78baa55 100644
+--- a/arch/x86/kernel/genapic_flat_64.c
++++ b/arch/x86/kernel/genapic_flat_64.c
+@@ -352,7 +352,7 @@ struct genapic apic_physflat =  {
+ 
+ 	.get_apic_id			= flat_get_apic_id,
+ 	.set_apic_id			= set_apic_id,
+-	.apic_id_mask			= 0xFFu<<24,
++	.apic_id_mask			= 0xFFu << 24,
+ 
+ 	.cpu_mask_to_apicid		= physflat_cpu_mask_to_apicid,
+ 	.cpu_mask_to_apicid_and		= physflat_cpu_mask_to_apicid_and,
 diff --git a/arch/x86/mach-generic/bigsmp.c b/arch/x86/mach-generic/bigsmp.c
-index d04b389..6bf6aaf 100644
+index 9eca977..1f4ad4f 100644
 --- a/arch/x86/mach-generic/bigsmp.c
 +++ b/arch/x86/mach-generic/bigsmp.c
-@@ -88,7 +88,7 @@ struct genapic apic_bigsmp = {
- 	.check_phys_apicid_present	= bigsmp_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= bigsmp_phys_pkg_id,
--	.mps_oem_check			= mps_oem_check,
-+	.mps_oem_check			= NULL,
+@@ -92,7 +92,7 @@ struct genapic apic_bigsmp = {
  
- 	.get_apic_id			= get_apic_id,
+ 	.get_apic_id			= bigsmp_get_apic_id,
  	.set_apic_id			= NULL,
+-	.apic_id_mask			= APIC_ID_MASK,
++	.apic_id_mask			= BIGSMP_APIC_ID_MASK,
+ 
+ 	.cpu_mask_to_apicid		= cpu_mask_to_apicid,
+ 	.cpu_mask_to_apicid_and		= cpu_mask_to_apicid_and,
 diff --git a/arch/x86/mach-generic/default.c b/arch/x86/mach-generic/default.c
-index 5c9266f..e5f85cd 100644
+index d51a3f0..239af25 100644
 --- a/arch/x86/mach-generic/default.c
 +++ b/arch/x86/mach-generic/default.c
-@@ -69,7 +69,7 @@ struct genapic apic_default = {
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= default_phys_pkg_id,
--	.mps_oem_check			= mps_oem_check,
-+	.mps_oem_check			= NULL,
+@@ -73,7 +73,7 @@ struct genapic apic_default = {
  
- 	.get_apic_id			= get_apic_id,
+ 	.get_apic_id			= default_get_apic_id,
  	.set_apic_id			= NULL,
+-	.apic_id_mask			= APIC_ID_MASK,
++	.apic_id_mask			= DEFAULT_APIC_ID_MASK,
+ 
+ 	.cpu_mask_to_apicid		= cpu_mask_to_apicid,
+ 	.cpu_mask_to_apicid_and		= cpu_mask_to_apicid_and,
 diff --git a/arch/x86/mach-generic/es7000.c b/arch/x86/mach-generic/es7000.c
-index 52787e3..f861163 100644
+index 1944675..21fb33e 100644
 --- a/arch/x86/mach-generic/es7000.c
 +++ b/arch/x86/mach-generic/es7000.c
-@@ -36,11 +36,12 @@ static int probe_es7000(void)
- }
+@@ -128,7 +128,7 @@ struct genapic apic_es7000 = {
  
- static __init int
--mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
-+es7000_mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
- {
- 	if (mpc->oemptr) {
- 		struct mpc_oemtable *oem_table =
- 			(struct mpc_oemtable *)mpc->oemptr;
-+
- 		if (!strncmp(oem, "UNISYS", 6))
- 			return parse_unisys_oem((char *)oem_table);
- 	}
-@@ -123,7 +124,7 @@ struct genapic apic_es7000 = {
- 	.check_phys_apicid_present	= es7000_check_phys_apicid_present,
- 	.enable_apic_mode		= es7000_enable_apic_mode,
- 	.phys_pkg_id			= es7000_phys_pkg_id,
--	.mps_oem_check			= mps_oem_check,
-+	.mps_oem_check			= es7000_mps_oem_check,
- 
- 	.get_apic_id			= get_apic_id,
+ 	.get_apic_id			= es7000_get_apic_id,
  	.set_apic_id			= NULL,
+-	.apic_id_mask			= APIC_ID_MASK,
++	.apic_id_mask			= ES7000_APIC_ID_MASK,
+ 
+ 	.cpu_mask_to_apicid		= cpu_mask_to_apicid,
+ 	.cpu_mask_to_apicid_and		= cpu_mask_to_apicid_and,
 diff --git a/arch/x86/mach-generic/numaq.c b/arch/x86/mach-generic/numaq.c
-index 6a1134e..517882c 100644
+index fcbba84..27d2d1f 100644
 --- a/arch/x86/mach-generic/numaq.c
 +++ b/arch/x86/mach-generic/numaq.c
-@@ -19,7 +19,7 @@
- #include <asm/numaq/wakecpu.h>
- #include <asm/numaq.h>
+@@ -92,7 +92,7 @@ struct genapic apic_numaq = {
  
--static int mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
-+static int __numaq_mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
- {
- 	numaq_mps_oem_check(mpc, oem, productid);
- 	return found_numaq;
-@@ -88,7 +88,7 @@ struct genapic apic_numaq = {
- 	.check_phys_apicid_present	= numaq_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= numaq_phys_pkg_id,
--	.mps_oem_check			= mps_oem_check,
-+	.mps_oem_check			= __numaq_mps_oem_check,
- 
- 	.get_apic_id			= get_apic_id,
+ 	.get_apic_id			= numaq_get_apic_id,
  	.set_apic_id			= NULL,
-diff --git a/arch/x86/mach-generic/probe.c b/arch/x86/mach-generic/probe.c
-index 799a70f..ab68c6e 100644
---- a/arch/x86/mach-generic/probe.c
-+++ b/arch/x86/mach-generic/probe.c
-@@ -110,7 +110,8 @@ void __init generic_apic_probe(void)
+-	.apic_id_mask			= APIC_ID_MASK,
++	.apic_id_mask			= NUMAQ_APIC_ID_MASK,
  
- /* These functions can switch the APIC even after the initial ->probe() */
- 
--int __init mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
-+int __init
-+generic_mps_oem_check(struct mpc_table *mpc, char *oem, char *productid)
- {
- 	int i;
- 
+ 	.cpu_mask_to_apicid		= cpu_mask_to_apicid,
+ 	.cpu_mask_to_apicid_and		= cpu_mask_to_apicid_and,
 diff --git a/arch/x86/mach-generic/summit.c b/arch/x86/mach-generic/summit.c
-index 2d6843a..719e944 100644
+index 5650eaf..f24cba1 100644
 --- a/arch/x86/mach-generic/summit.c
 +++ b/arch/x86/mach-generic/summit.c
-@@ -68,7 +68,7 @@ struct genapic apic_summit = {
- 	.check_phys_apicid_present	= summit_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= summit_phys_pkg_id,
--	.mps_oem_check			= mps_oem_check,
-+	.mps_oem_check			= summit_mps_oem_check,
+@@ -72,7 +72,7 @@ struct genapic apic_summit = {
  
- 	.get_apic_id			= get_apic_id,
+ 	.get_apic_id			= summit_get_apic_id,
  	.set_apic_id			= NULL,
+-	.apic_id_mask			= APIC_ID_MASK,
++	.apic_id_mask			= SUMMIT_APIC_ID_MASK,
+ 
+ 	.cpu_mask_to_apicid		= cpu_mask_to_apicid,
+ 	.cpu_mask_to_apicid_and		= cpu_mask_to_apicid_and,
 -- 
 1.6.0.2
 
