@@ -1,73 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZA1HBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZA1HFv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbZA1HBW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 02:01:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZA1HBJ
+	id S1753469AbZA1HFv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 02:05:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZA1HFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 02:01:09 -0500
-Received: from 1wt.eu ([62.212.114.60]:1873 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751666AbZA1HBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 02:01:09 -0500
-Date: Wed, 28 Jan 2009 07:59:12 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Greg KH <gregkh@suse.de>, Bron Gondwana <brong@fastmail.fm>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
-Subject: Re: [patch 016/104] epoll: introduce resource usage limits
-Message-ID: <20090128065912.GC32725@1wt.eu>
-References: <20090128003519.GA11395@suse.de> <20090128033824.GA1662@brong.net> <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com> <20090128035746.GA3351@brong.net> <alpine.DEB.1.10.0901272002180.20262@alien.or.mcafeemobile.com> <20090128052630.GA9512@suse.de> <20090128053642.GL5038@1wt.eu> <alpine.DEB.1.10.0901272142530.20262@alien.or.mcafeemobile.com> <20090128062021.GA32360@1wt.eu> <alpine.DEB.1.10.0901272226370.20262@alien.or.mcafeemobile.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901272226370.20262@alien.or.mcafeemobile.com>
-User-Agent: Mutt/1.5.11
+	Wed, 28 Jan 2009 02:05:42 -0500
+Received: from mail-gx0-f21.google.com ([209.85.217.21]:53468 "EHLO
+	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751292AbZA1HFl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 02:05:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RETihZpfwOx0NmE3XGSORpx3ZOWOC2GqFoHAv0LgK2mOCu+F+DHcUi6CvSphHXDtCW
+         B5W6YCAcPbocSRA9TvjLPOQOrW8pYPw0iBxe8rc4ONGet6eN/4Mk24NAX4yi7hNp1A4J
+         p6Hhu1FWyW00B/SRvEC0Q4AULAl18jJfLy4XI=
+MIME-Version: 1.0
+In-Reply-To: <497FFD06.8010001@nerdgrounds.com>
+References: <497E4531.20800@nerdgrounds.com>
+	 <5bdc1c8b0901261859g58a413e1x52208a6f2c1f9ccd@mail.gmail.com>
+	 <1233031451.4851.31.camel@gaiman>
+	 <5bdc1c8b0901270937h27c48290p4fb5233f06593e44@mail.gmail.com>
+	 <1233091414.25539.8.camel@gaiman> <497FFD06.8010001@nerdgrounds.com>
+Date: Wed, 28 Jan 2009 17:05:40 +1000
+Message-ID: <21d7e9970901272305n6ec9506bodaaae29915f7914b@mail.gmail.com>
+Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
+From: Dave Airlie <airlied@gmail.com>
+To: Jonathan Campbell <jon@nerdgrounds.com>
+Cc: Eric Anholt <eric@anholt.net>, Mark Knecht <markknecht@gmail.com>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 10:36:25PM -0800, Davide Libenzi wrote:
-> On Wed, 28 Jan 2009, Willy Tarreau wrote:
-> 
-> > Davide, I know it's not you who decide. I mean, one patch was proposed
-> > with one arbitrary limit. I've seen it in advance too and I too thought
-> > it would be more than enough. Now people are reporting breakage from
-> > common applications which work in a funny way (I think that using epoll
-> > to poll for one single FD in a multi-process architecture can be called
-> > funny). But those people are not expected to understand the internals,
-> > and most likely their application's behaviour might not be more precisely
-> > described than "it broke since upgrade to 2.6.27.13".
-> > 
-> > I think we should accept the fact that the fix is causing problems
-> > for people while it was not expected to do so. One of the solutions
-> > would be to increase the arbitrary ratio from 1% to more than that,
-> > but it will still break big setups. Another solution is to accept
-> > that the patch provides a tunable that admins might act on to stop
-> > local users' nasty activities if required, but leave the limit off
-> > by default. And I think that's a saner approach, especially for a
-> > stable series.
-> 
-> Absolutely. There is no 100% fit solution here. Heck, if we want to remove 
-> the tunable altogether I'm the happiest one, but the problem with the 
-> pinneable memory is there.
+On Wed, Jan 28, 2009 at 4:36 PM, Jonathan Campbell <jon@nerdgrounds.com> wrote:
+> Well my expectation of vramfs is that it's not meant to be used for the
+> heavy-duty 3D gaming-style rendering that GEM is built to handle. It's meant
+> for lighter tasks, like simple 2D/3D compositing or GPU work where you know
+> what your resources need, you don't need to take that much, and you need
+> direct mmap() access because some of it involves video that you will handle
+> later. Situations like this can work perfectly fine without the use of a
+> swapping system.
 
-we shouldn't remove the tunable IMHO.
+I can't think of a nice way to say this, but this idea is crack.
 
-> We can decide to remove the caps in the default setup, and leave default 
-> setups open to the DoS. I've no problem with that (and, as we know, I 
-> don't decide policies).
-> Then sysadmins of multiuser systems will have to enforce the caps 
-> themselves in order to limit the potential DoS. This is probably a good 
-> strategy for -stable anyway.
+I can see one use for vramfs which is to use VRAM as a file backing
+store, we won't mention that VRAM is slow. Some caveats being
+the PCI aperture only exposes 1/2 the VRAM on some cards, there is
+more hidden away where the CPU can't find it.
+ and that some cards have made up VRAM (read IGPs).
 
-Yes, this is what I'd like to see in -stable too. I'm currently contacting
-a few people I suggested to upgrade to 2.6.27.13 to warn them about the
-issue.
+It doesn't in any way serve as a basis for talking to the GPU behind
+said VRAM or as a basis for any
+sort of backend to talk to the GPU.
 
-Regards,
-Willy
+Dave.
 
+>
+> My other concern is that GEM with a filesystem might be the best option for
+> 3D gaming, but that it wouldn't work if the driver doesn't know the card.
+> The DRI drivers, as far as I know, are tied to the GPU and chipset of the
+> device (because they have to manage it, after all!). How exactly would GEM
+> work for cards that it doesn't recognize, like one machine of mine with a
+> weird ATI chipset nobody knows how to talk to? If GEM doesn't recognize it,
+> it won't provide VRAM resources to use it, right?
+>
+> This is where vramfs has it's advantage: it's not the absolute best solution
+> for 3D graphics, but it's simple, it can serve as a starting point for GPU
+> experiments from userspace, or if nothing else allows the use of the onboard
+> video RAM on an otherwise unused and unrecognized video device. It's
+> device-agnostic by design.
+>>
+>> The way you want do that is using OpenGL to put your data in textures
+>> and framebuffer objects, and render them.  With KMS, we'll be able to
+>> support EGL even on the console so you can do the work without having an
+>> X environment set up.
+>>
+>> The problem with vramfs as a basis for GPU offload is that most GPU
+>> tasks end up at some point exceeding the size of available
+>> aperture/VRAM.  So you need code that manages loading buffer objects in
+>> and out on demand, managing the execution pipeline and GPU and CPU
+>> caches as required.  We have that with GEM already.
+>>
+>> Remember, writing data to an aperture isn't the hard part of offloading
+>> to the GPU, programming the GPU is.  That's why you use OpenGL or
+>> another abstraction to do it.
+>>
+>>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
