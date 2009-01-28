@@ -1,285 +1,385 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZA1Xnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758275AbZA1XoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbZA1Xnp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:43:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756695AbZA1XnR
+	id S1758275AbZA1XoM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:44:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757821AbZA1XnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:43:17 -0500
-Received: from hera.kernel.org ([140.211.167.34]:37320 "EHLO hera.kernel.org"
+	Wed, 28 Jan 2009 18:43:22 -0500
+Received: from hera.kernel.org ([140.211.167.34]:37334 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757995AbZA1XnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:43:13 -0500
+	id S1757489AbZA1XnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:43:20 -0500
 From: Ingo Molnar <mingo@elte.hu>
 To: linux-kernel@vger.kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: x86: unify genapic code, unify subarchitectures, remove old subarchitecture code
-Date: Wed, 28 Jan 2009 23:41:06 +0000
-Message-Id: <1233186180-29883-1-git-send-email-mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH 003/114] x86, genapic: unify struct genapic
+Date: Wed, 28 Jan 2009 23:41:09 +0000
+Message-Id: <1233186180-29883-4-git-send-email-mingo@elte.hu>
 X-Mailer: git-send-email 1.6.0.2
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:43:02 +0000 (UTC)
+In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu>
+References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 28 Jan 2009 23:43:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Move over the (now identical) struct genapic definitions from
+genapic_32/64.h to genapic.h.
 
-This series of 114 patches implements a long desired restructuring,
-unification and cleanup of the x86 APIC/SMP/subarch code:
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/include/asm/genapic.h    |   96 +++++++++++++++++++++++++++
+ arch/x86/include/asm/genapic_32.h |   93 --------------------------
+ arch/x86/include/asm/genapic_64.h |  129 ++++++-------------------------------
+ 3 files changed, 115 insertions(+), 203 deletions(-)
+ rewrite arch/x86/include/asm/genapic_64.h (84%)
 
-  - unifies the 32-bit and 64-bit genapic code
-
-  - sorts out all the subarch details into standalone and boot-time
-    probable quirk modules
-
-  - removes the build-time subarch hacks that we had on 32-bit.
-
-This inevitably touches an awful lot of x86 code, and rather intrusively
-so:
-
-    112 files changed, 3277 insertions(+), 3209 deletions(-)
-
-So breakages are to be expected. The commits are queued up in
-tip/x86/apic and are in tip/master as well:
-
-    http://people.redhat.com/mingo/tip.git/README
-
-I ported the NUMAQ / Summit / bigsmp and ES7000 subarchitectures to the
-new setup. They build and boot on regular hardware but are otherwise
-untested. The x86/Voyager subarch is not fully ported yet (i cleaned up
-its Kconfig impact) and hence disabled it for the time being. It
-ought to be relatively straightforward to port it to the new code.
-
-	Ingo
-
------------------------>
-
- arch/x86/Kconfig                                  |  203 ++++-----
- arch/x86/Kconfig.debug                            |    2 +-
- arch/x86/Makefile                                 |   26 --
- arch/x86/include/asm/apic.h                       |   33 ++
- arch/x86/include/asm/apm.h                        |   73 ++++
- arch/x86/include/asm/bigsmp/apic.h                |   71 ++--
- arch/x86/include/asm/bigsmp/apicdef.h             |    8 +-
- arch/x86/include/asm/bigsmp/ipi.h                 |   16 +-
- arch/x86/include/asm/cpu.h                        |    6 +-
- arch/x86/include/asm/do_timer.h                   |   16 +
- arch/x86/include/asm/entry_arch.h                 |   57 +++
- arch/x86/include/asm/es7000/apic.h                |  242 -----------
- arch/x86/include/asm/es7000/apicdef.h             |   13 -
- arch/x86/include/asm/es7000/ipi.h                 |   22 -
- arch/x86/include/asm/es7000/mpparse.h             |   29 --
- arch/x86/include/asm/es7000/wakecpu.h             |   37 --
- arch/x86/include/asm/genapic.h                    |  262 ++++++++++++-
- arch/x86/include/asm/genapic_32.h                 |  141 ------
- arch/x86/include/asm/genapic_64.h                 |   60 ---
- arch/x86/include/asm/hw_irq.h                     |    6 +-
- arch/x86/include/asm/ipi.h                        |   95 ++++-
- arch/x86/include/asm/mach-default/apm.h           |   73 ----
- arch/x86/include/asm/mach-default/do_timer.h      |   16 -
- arch/x86/include/asm/mach-default/entry_arch.h    |   52 ---
- arch/x86/include/asm/mach-default/mach_apic.h     |  168 --------
- arch/x86/include/asm/mach-default/mach_apicdef.h  |   24 -
- arch/x86/include/asm/mach-default/mach_ipi.h      |   64 ---
- arch/x86/include/asm/mach-default/mach_mpparse.h  |   17 -
- arch/x86/include/asm/mach-default/mach_mpspec.h   |   12 -
- arch/x86/include/asm/mach-default/mach_timer.h    |   48 ---
- arch/x86/include/asm/mach-default/mach_traps.h    |   33 --
- arch/x86/include/asm/mach-default/mach_wakecpu.h  |   41 --
- arch/x86/include/asm/mach-default/pci-functions.h |   19 -
- arch/x86/include/asm/mach-default/setup_arch.h    |    3 -
- arch/x86/include/asm/mach-default/smpboot_hooks.h |   61 ---
- arch/x86/include/asm/mach-generic/gpio.h          |   15 -
- arch/x86/include/asm/mach-generic/mach_apic.h     |   35 --
- arch/x86/include/asm/mach-generic/mach_apicdef.h  |   11 -
- arch/x86/include/asm/mach-generic/mach_ipi.h      |   10 -
- arch/x86/include/asm/mach-generic/mach_mpparse.h  |    9 -
- arch/x86/include/asm/mach-generic/mach_mpspec.h   |   12 -
- arch/x86/include/asm/mach-generic/mach_wakecpu.h  |   12 -
- arch/x86/include/asm/mach_timer.h                 |   48 +++
- arch/x86/include/asm/mach_traps.h                 |   33 ++
- arch/x86/include/asm/mpspec.h                     |   33 ++-
- arch/x86/include/asm/numaq/apic.h                 |  142 -------
- arch/x86/include/asm/numaq/apicdef.h              |   14 -
- arch/x86/include/asm/numaq/ipi.h                  |   22 -
- arch/x86/include/asm/numaq/mpparse.h              |    6 -
- arch/x86/include/asm/numaq/wakecpu.h              |   45 --
- arch/x86/include/asm/pci-functions.h              |   19 +
- arch/x86/include/asm/proto.h                      |    4 -
- arch/x86/include/asm/setup_arch.h                 |    3 +
- arch/x86/include/asm/smp.h                        |   19 -
- arch/x86/include/asm/smpboot_hooks.h              |   61 +++
- arch/x86/include/asm/summit/apic.h                |  202 ---------
- arch/x86/include/asm/summit/apicdef.h             |   13 -
- arch/x86/include/asm/summit/ipi.h                 |   26 --
- arch/x86/include/asm/summit/mpparse.h             |  109 -----
- arch/x86/kernel/Makefile                          |   11 +-
- arch/x86/kernel/acpi/boot.c                       |   25 +-
- arch/x86/kernel/apic.c                            |   46 ++-
- arch/x86/kernel/apm_32.c                          |    2 +-
- arch/x86/kernel/bigsmp_32.c                       |  268 ++++++++++++
- arch/x86/kernel/cpu/addon_cpuid_features.c        |   20 +-
- arch/x86/kernel/cpu/amd.c                         |    2 +-
- arch/x86/kernel/cpu/common.c                      |   19 +-
- arch/x86/kernel/cpu/intel.c                       |    2 +-
- arch/x86/kernel/crash.c                           |    2 +-
- arch/x86/kernel/entry_32.S                        |    2 +-
- arch/x86/kernel/es7000_32.c                       |  468 ++++++++++++++++++++-
- arch/x86/kernel/genapic_64.c                      |   22 +-
- arch/x86/kernel/genapic_flat_64.c                 |  176 ++++++---
- arch/x86/kernel/genx2apic_cluster.c               |  133 ++++--
- arch/x86/kernel/genx2apic_phys.c                  |  125 ++++---
- arch/x86/kernel/genx2apic_uv_x.c                  |  111 ++++--
- arch/x86/kernel/io_apic.c                         |  197 ++++-----
- arch/x86/kernel/ipi.c                             |   33 +-
- arch/x86/kernel/irq_32.c                          |    2 +-
- arch/x86/kernel/kgdb.c                            |    4 +-
- arch/x86/kernel/mpparse.c                         |   26 +-
- arch/x86/kernel/nmi.c                             |    2 +-
- arch/x86/kernel/numaq_32.c                        |  280 ++++++++++++-
- arch/x86/kernel/probe_32.c                        |  411 ++++++++++++++++++
- arch/x86/kernel/probe_roms_32.c                   |    2 +-
- arch/x86/kernel/process.c                         |    2 +-
- arch/x86/kernel/reboot.c                          |    4 +-
- arch/x86/kernel/setup.c                           |   30 +-
- arch/x86/kernel/smp.c                             |   13 +-
- arch/x86/kernel/smpboot.c                         |   37 +-
- arch/x86/kernel/summit_32.c                       |  417 ++++++++++++++++++-
- arch/x86/kernel/time_32.c                         |    2 +-
- arch/x86/kernel/tlb_uv.c                          |    2 +-
- arch/x86/kernel/traps.c                           |    2 +-
- arch/x86/kernel/tsc.c                             |    2 +-
- arch/x86/kernel/visws_quirks.c                    |    6 +-
- arch/x86/kernel/vmiclock_32.c                     |    2 +-
- arch/x86/mach-default/setup.c                     |  162 -------
- arch/x86/mach-generic/Makefile                    |   11 -
- arch/x86/mach-generic/bigsmp.c                    |   60 ---
- arch/x86/mach-generic/default.c                   |   27 --
- arch/x86/mach-generic/es7000.c                    |  103 -----
- arch/x86/mach-generic/numaq.c                     |   53 ---
- arch/x86/mach-generic/probe.c                     |  152 -------
- arch/x86/mach-generic/summit.c                    |   40 --
- arch/x86/mm/Makefile                              |    2 +-
- arch/x86/mm/tlb.c                                 |    4 +-
- arch/x86/pci/numaq_32.c                           |    2 +-
- arch/x86/pci/pcbios.c                             |    2 +-
- drivers/clocksource/acpi_pm.c                     |    2 +-
- drivers/clocksource/cyclone.c                     |    2 +-
- drivers/mtd/nand/Kconfig                          |    2 +-
- 112 files changed, 3277 insertions(+), 3209 deletions(-)
-
-Ingo Molnar (114):
-      x86, genapic: refactor genapic_64.h
-      x86, genapic: refactor genapic_32.h
-      x86, genapic: unify struct genapic
-      x86, genapic: finish unification
-      x86, genapic: cleanups
-      x86, genapic: provide IPI callbacks unconditionally
-      x86: rename 'genapic' to 'apic'
-      x86: clean up genapic_flat
-      x86: clean up genapic_phys_flat
-      x86: clean up apic_x2apic_uv_x
-      x86: clean up apic_x2apic_phys
-      x86: clean up apic_x2apic_cluster
-      x86, genapic: cleanup 32-bit apic_default template
-      x86, genapic: cleanup 32-bit apic_bigsmp template
-      x86, genapic: cleanup 32-bit apic_numaq template
-      x86, genapic: cleanup 32-bit apic_es7000 template
-      x86, genapic: cleanup 32-bit apic_summit template
-      x86: remove APIC_INIT / APICFUNC / IPIFUNC
-      x86: clean up apic->acpi_madt_oem_check methods
-      x86: clean up apic->apic_id_registered() methods
-      x86, genapic: rename int_delivery_mode, et. al.
-      x86, apic: remove IRQ_DEST_MODE / IRQ_DELIVERY_MODE
-      x86, apic: remove DEFAULT_IRQ_DELIVERY_MODE and DEFAULT_IRQ_DEST_MODE
-      x86, apic: remove SUMMIT_IRQ_DELIVERY_MODE and SUMMIT_IRQ_DEST_MODE
-      x86, apic: remove NUMAQ_IRQ_DELIVERY_MODE and NUMAQ_IRQ_DEST_MODE
-      x86, apic: remove BIGSMP_IRQ_DELIVERY_MODE and BIGSMP_IRQ_DEST_MODE
-      x86, apic: remove ES7000_IRQ_DELIVERY_MODE and ES7000_IRQ_DEST_MODE
-      x86, apic: remove IRQ_DEST_MODE
-      x86, apic: clean up target_cpus methods
-      x86, apic: clean up / remove TARGET_CPUS
-      x86: clean up esr_disable() methods
-      x86: rename ->ESR_DISABLE to ->disable_esr
-      x86: clean up the APIC_DEST_LOGICAL logic
-      x86, apic: rename genapic::apic_destination_logical to genapic::dest_logical
-      x86, apic: clean up check_apicid*() callbacks
-      x86, apic: remove no_balance_irq and no_ioapic_check flags
-      x86, apic: clean up ->vector_allocation_domain()
-      x86, apic: clean up ->init_apic_ldr()
-      x86, apic: clean up ->ioapic_phys_id_map()
-      x86, apic: clean up ->setup_apic_routing()
-      x86, apic: streamline the ->multi_timer_check() quirk
-      x86, apic: clean up ->apicid_to_node()
-      x86, apic: clean up ->cpu_to_logical_apicid()
-      x86, apic: clean up ->cpu_present_to_apicid()
-      x86, apic: clean up ->apicid_to_cpu_present()
-      x86: refactor ->setup_portio_remap() subarch methods
-      x86: refactor ->check_phys_apicid_present() subarch methods
-      x86: refactor ->enable_apic_mode() subarch methods
-      x86, es7000: clean up es7000_enable_apic_mode()
-      x86, apic: unify phys_pkg_id()
-      x86, apic: refactor ->phys_pkg_id()
-      x86, smp: clean up mps_oem_check()
-      x86, mpparse: call the generic quirk handlers early
-      x86: consolidate the ->mps_oem_check() code
-      x86, apic: refactor ->get_apic_id() & GET_APIC_ID()
-      x86, apic: refactor ->apic_id_mask & APIC_ID_MASK
-      x86, apic: get rid of *_APIC_ID_MASK definitions
-      x86, apic: refactor ->cpu_mask_to_apicid*()
-      x86, apic: untangle the send_IPI_*() jungle
-      x86, smp: clean up ->trampoline_phys_low/high handling
-      x86: set ->trampoline_phys_low/high on 64-bit too
-      x86, smp: refactor ->wait_for_init_deassert()
-      x86, smp: refactor ->smp_callin_clear_local_apic() methods
-      x86, smp: refactor ->store/restore_NMI_vector() methods
-      x86, smp: remove ->restore_NMI_vector()
-      x86, smp: refactor ->inquire_remote_apic() methods
-      x86, ES7000: consolidate the APIC code
-      x86, smp: eliminate asm/mach-default/mach_wakecpu.h
-      x86: eliminate asm/mach-*/mach_mpparse.h
-      x86: remove mach_mpspec.h
-      x86: remove mach_apicdef.h
-      x86, smp: refactor ->wake_cpu
-      x86, numaq: consolidate code
-      x86, summit: consolidate code
-      x86: remove mach_apic.h
-      x86, ES7000: Consolidate code
-      x86, NUMAQ: Consolidate code
-      x86, bigsmp: consolidate code
-      x86, bigsmp: consolidate header code
-      x86, smp: remove mach_ipi.h
-      x86: remove subarchitecture support code
-      x86: move mach-default/*.h files to asm/
-      x86: remove subarchitecture support
-      x86/Voyager: clean up BROKEN Kconfig reference
-      x86: disable Voyager temporarily
-      x86/Voyager: remove MCA Kconfig quirk
-      x86/Voyager: remove NATSEMI Kconfig quirk
-      x86/Voyager: remove KVM Kconfig quirk
-      x86/Voyager: remove KGDB Kconfig quirk
-      x86/Voyager: remove HIBERNATION Kconfig quirk
-      x86/Voyager: remove ARCH_SUSPEND_POSSIBLE Kconfig quirk
-      x86: replace CONFIG_X86_SMP with CONFIG_SMP
-      x86: generalize boot_cpu_id
-      x86/Voyager: remove X86_HT Kconfig quirk
-      x86/Voyager: remove X86_BIOS_REBOOT Kconfig quirk
-      x86/Voyager: remove X86_FIND_SMP_CONFIG Kconfig quirk
-      x86/VisWS: remove Kconfig quirk
-      x86/Voyager: remove VMI Kconfig quirk
-      x86/Voyager: remove KVM_CLOCK quirk
-      x86/Voyager: remove KVM_GUEST quirk
-      x86/Voyager: remove PARAVIRT Kconfig quirk
-      x86/Voyager: remove APIC/IO-APIC Kbuild quirk
-      x86/Voyager: remove MCE quirk
-      x86/Voyager: remove HOTPLUG_CPU Kconfig quirk
-      x86/Voyager: remove power management Kconfig quirk
-      x86/Voyager: remove ISA quirk
-      x86: cleanup, introduce CONFIG_NON_STANDARD_PLATFORMS
-      x86: move ELAN to the NON_STANDARD_PLATFORM section
-      x86: move VOYAGER to the NON_STANDARD_PLATFORM section
-      x86: move non-standard 32-bit platform Kconfig entries
-      x86: move X86_VSMP from subarch menu
-      x86: remove the subarch menu
-      x86: rename X86_GENERICARCH to X86_32_NON_STANDARD
-      x86/Voyager: move to the X86_32_NON_STANDARD code section
-
+diff --git a/arch/x86/include/asm/genapic.h b/arch/x86/include/asm/genapic.h
+index d48bee6..3dea66a 100644
+--- a/arch/x86/include/asm/genapic.h
++++ b/arch/x86/include/asm/genapic.h
+@@ -1,5 +1,101 @@
++#ifndef _ASM_X86_GENAPIC_H
++#define _ASM_X86_GENAPIC_H
++
++#include <linux/cpumask.h>
++
++/*
++ * Copyright 2004 James Cleverdon, IBM.
++ * Subject to the GNU Public License, v.2
++ *
++ * Generic APIC sub-arch data struct.
++ *
++ * Hacked for x86-64 by James Cleverdon from i386 architecture code by
++ * Martin Bligh, Andi Kleen, James Bottomley, John Stultz, and
++ * James Cleverdon.
++ */
++
++struct genapic {
++	char *name;
++
++	int (*probe)(void);
++	int (*acpi_madt_oem_check)(char *oem_id, char *oem_table_id);
++	int (*apic_id_registered)(void);
++
++	u32 int_delivery_mode;
++	u32 int_dest_mode;
++
++	const struct cpumask *(*target_cpus)(void);
++
++	int ESR_DISABLE;
++
++	int apic_destination_logical;
++	unsigned long (*check_apicid_used)(physid_mask_t bitmap, int apicid);
++	unsigned long (*check_apicid_present)(int apicid);
++
++	int no_balance_irq;
++	int no_ioapic_check;
++
++	void (*vector_allocation_domain)(int cpu, struct cpumask *retmask);
++	void (*init_apic_ldr)(void);
++
++	physid_mask_t (*ioapic_phys_id_map)(physid_mask_t map);
++
++	void (*setup_apic_routing)(void);
++	int (*multi_timer_check)(int apic, int irq);
++	int (*apicid_to_node)(int logical_apicid);
++	int (*cpu_to_logical_apicid)(int cpu);
++	int (*cpu_present_to_apicid)(int mps_cpu);
++	physid_mask_t (*apicid_to_cpu_present)(int phys_apicid);
++	void (*setup_portio_remap)(void);
++	int (*check_phys_apicid_present)(int boot_cpu_physical_apicid);
++	void (*enable_apic_mode)(void);
++#ifdef CONFIG_X86_32
++	u32 (*phys_pkg_id)(u32 cpuid_apic, int index_msb);
++#else
++	unsigned int (*phys_pkg_id)(int index_msb);
++#endif
++
++	/*
++	 * When one of the next two hooks returns 1 the genapic
++	 * is switched to this. Essentially they are additional
++	 * probe functions:
++	 */
++	int (*mps_oem_check)(struct mpc_table *mpc, char *oem,
++			     char *productid);
++
++	unsigned int (*get_apic_id)(unsigned long x);
++	unsigned long (*set_apic_id)(unsigned int id);
++	unsigned long apic_id_mask;
++
++	unsigned int (*cpu_mask_to_apicid)(const struct cpumask *cpumask);
++	unsigned int (*cpu_mask_to_apicid_and)(const struct cpumask *cpumask,
++					       const struct cpumask *andmask);
++
++#ifdef CONFIG_SMP
++	/* ipi */
++	void (*send_IPI_mask)(const struct cpumask *mask, int vector);
++	void (*send_IPI_mask_allbutself)(const struct cpumask *mask,
++					 int vector);
++	void (*send_IPI_allbutself)(int vector);
++	void (*send_IPI_all)(int vector);
++	void (*send_IPI_self)(int vector);
++#endif
++	/* wakeup_secondary_cpu */
++	int (*wakeup_cpu)(int apicid, unsigned long start_eip);
++
++	int trampoline_phys_low;
++	int trampoline_phys_high;
++	void (*wait_for_init_deassert)(atomic_t *deassert);
++	void (*smp_callin_clear_local_apic)(void);
++	void (*store_NMI_vector)(unsigned short *high, unsigned short *low);
++	void (*restore_NMI_vector)(unsigned short *high, unsigned short *low);
++	void (*inquire_remote_apic)(int apicid);
++};
++
+ #ifdef CONFIG_X86_32
+ # include "genapic_32.h"
+ #else
+ # include "genapic_64.h"
+ #endif
++
++#endif /* _ASM_X86_GENAPIC_64_H */
+diff --git a/arch/x86/include/asm/genapic_32.h b/arch/x86/include/asm/genapic_32.h
+index 5808b7d..a56785e 100644
+--- a/arch/x86/include/asm/genapic_32.h
++++ b/arch/x86/include/asm/genapic_32.h
+@@ -4,99 +4,6 @@
+ #include <asm/mpspec.h>
+ #include <asm/atomic.h>
+ 
+-/*
+- * Generic APIC driver interface.
+- *
+- * An straight forward mapping of the APIC related parts of the
+- * x86 subarchitecture interface to a dynamic object.
+- *
+- * This is used by the "generic" x86 subarchitecture.
+- *
+- * Copyright 2003 Andi Kleen, SuSE Labs.
+- */
+-
+-struct mpc_bus;
+-struct mpc_table;
+-struct mpc_cpu;
+-
+-struct genapic {
+-	char *name;
+-
+-	int (*probe)(void);
+-	int (*acpi_madt_oem_check)(char *oem_id, char *oem_table_id);
+-	int (*apic_id_registered)(void);
+-
+-	u32 int_delivery_mode;
+-	u32 int_dest_mode;
+-
+-	const struct cpumask *(*target_cpus)(void);
+-
+-	int ESR_DISABLE;
+-
+-	int apic_destination_logical;
+-	unsigned long (*check_apicid_used)(physid_mask_t bitmap, int apicid);
+-	unsigned long (*check_apicid_present)(int apicid);
+-
+-	int no_balance_irq;
+-	int no_ioapic_check;
+-
+-	void (*vector_allocation_domain)(int cpu, struct cpumask *retmask);
+-	void (*init_apic_ldr)(void);
+-
+-	physid_mask_t (*ioapic_phys_id_map)(physid_mask_t map);
+-
+-	void (*setup_apic_routing)(void);
+-	int (*multi_timer_check)(int apic, int irq);
+-	int (*apicid_to_node)(int logical_apicid);
+-	int (*cpu_to_logical_apicid)(int cpu);
+-	int (*cpu_present_to_apicid)(int mps_cpu);
+-	physid_mask_t (*apicid_to_cpu_present)(int phys_apicid);
+-	void (*setup_portio_remap)(void);
+-	int (*check_phys_apicid_present)(int boot_cpu_physical_apicid);
+-	void (*enable_apic_mode)(void);
+-#ifdef CONFIG_X86_32
+-	u32 (*phys_pkg_id)(u32 cpuid_apic, int index_msb);
+-#else
+-	unsigned int (*phys_pkg_id)(int index_msb);
+-#endif
+-
+-	/*
+-	 * When one of the next two hooks returns 1 the genapic
+-	 * is switched to this. Essentially they are additional
+-	 * probe functions:
+-	 */
+-	int (*mps_oem_check)(struct mpc_table *mpc, char *oem,
+-			     char *productid);
+-
+-	unsigned int (*get_apic_id)(unsigned long x);
+-	unsigned long (*set_apic_id)(unsigned int id);
+-	unsigned long apic_id_mask;
+-
+-	unsigned int (*cpu_mask_to_apicid)(const struct cpumask *cpumask);
+-	unsigned int (*cpu_mask_to_apicid_and)(const struct cpumask *cpumask,
+-					       const struct cpumask *andmask);
+-
+-#ifdef CONFIG_SMP
+-	/* ipi */
+-	void (*send_IPI_mask)(const struct cpumask *mask, int vector);
+-	void (*send_IPI_mask_allbutself)(const struct cpumask *mask,
+-					 int vector);
+-	void (*send_IPI_allbutself)(int vector);
+-	void (*send_IPI_all)(int vector);
+-	void (*send_IPI_self)(int vector);
+-#endif
+-	/* wakeup_secondary_cpu */
+-	int (*wakeup_cpu)(int apicid, unsigned long start_eip);
+-
+-	int trampoline_phys_low;
+-	int trampoline_phys_high;
+-	void (*wait_for_init_deassert)(atomic_t *deassert);
+-	void (*smp_callin_clear_local_apic)(void);
+-	void (*store_NMI_vector)(unsigned short *high, unsigned short *low);
+-	void (*restore_NMI_vector)(unsigned short *high, unsigned short *low);
+-	void (*inquire_remote_apic)(int apicid);
+-};
+-
+ #define APICFUNC(x) .x = x,
+ 
+ /* More functions could be probably marked IPIFUNC and save some space
+diff --git a/arch/x86/include/asm/genapic_64.h b/arch/x86/include/asm/genapic_64.h
+dissimilarity index 84%
+index 0a5f712..c70ca0d 100644
+--- a/arch/x86/include/asm/genapic_64.h
++++ b/arch/x86/include/asm/genapic_64.h
+@@ -1,110 +1,19 @@
+-#ifndef _ASM_X86_GENAPIC_64_H
+-#define _ASM_X86_GENAPIC_64_H
+-
+-#include <linux/cpumask.h>
+-
+-/*
+- * Copyright 2004 James Cleverdon, IBM.
+- * Subject to the GNU Public License, v.2
+- *
+- * Generic APIC sub-arch data struct.
+- *
+- * Hacked for x86-64 by James Cleverdon from i386 architecture code by
+- * Martin Bligh, Andi Kleen, James Bottomley, John Stultz, and
+- * James Cleverdon.
+- */
+-
+-struct genapic {
+-	char *name;
+-
+-	int (*probe)(void);
+-	int (*acpi_madt_oem_check)(char *oem_id, char *oem_table_id);
+-	int (*apic_id_registered)(void);
+-
+-	u32 int_delivery_mode;
+-	u32 int_dest_mode;
+-
+-	const struct cpumask *(*target_cpus)(void);
+-
+-	int ESR_DISABLE;
+-
+-	int apic_destination_logical;
+-	unsigned long (*check_apicid_used)(physid_mask_t bitmap, int apicid);
+-	unsigned long (*check_apicid_present)(int apicid);
+-
+-	int no_balance_irq;
+-	int no_ioapic_check;
+-
+-	void (*vector_allocation_domain)(int cpu, struct cpumask *retmask);
+-	void (*init_apic_ldr)(void);
+-
+-	physid_mask_t (*ioapic_phys_id_map)(physid_mask_t map);
+-
+-	void (*setup_apic_routing)(void);
+-	int (*multi_timer_check)(int apic, int irq);
+-	int (*apicid_to_node)(int logical_apicid);
+-	int (*cpu_to_logical_apicid)(int cpu);
+-	int (*cpu_present_to_apicid)(int mps_cpu);
+-	physid_mask_t (*apicid_to_cpu_present)(int phys_apicid);
+-	void (*setup_portio_remap)(void);
+-	int (*check_phys_apicid_present)(int boot_cpu_physical_apicid);
+-	void (*enable_apic_mode)(void);
+-#ifdef CONFIG_X86_32
+-	u32 (*phys_pkg_id)(u32 cpuid_apic, int index_msb);
+-#else
+-	unsigned int (*phys_pkg_id)(int index_msb);
+-#endif
+-
+-	/*
+-	 * When one of the next two hooks returns 1 the genapic
+-	 * is switched to this. Essentially they are additional
+-	 * probe functions:
+-	 */
+-	int (*mps_oem_check)(struct mpc_table *mpc, char *oem,
+-			     char *productid);
+-
+-	unsigned int (*get_apic_id)(unsigned long x);
+-	unsigned long (*set_apic_id)(unsigned int id);
+-	unsigned long apic_id_mask;
+-
+-	unsigned int (*cpu_mask_to_apicid)(const struct cpumask *cpumask);
+-	unsigned int (*cpu_mask_to_apicid_and)(const struct cpumask *cpumask,
+-					       const struct cpumask *andmask);
+-
+-#ifdef CONFIG_SMP
+-	/* ipi */
+-	void (*send_IPI_mask)(const struct cpumask *mask, int vector);
+-	void (*send_IPI_mask_allbutself)(const struct cpumask *mask,
+-					 int vector);
+-	void (*send_IPI_allbutself)(int vector);
+-	void (*send_IPI_all)(int vector);
+-	void (*send_IPI_self)(int vector);
+-#endif
+-	/* wakeup_secondary_cpu */
+-	int (*wakeup_cpu)(int apicid, unsigned long start_eip);
+-
+-	int trampoline_phys_low;
+-	int trampoline_phys_high;
+-	void (*wait_for_init_deassert)(atomic_t *deassert);
+-	void (*smp_callin_clear_local_apic)(void);
+-	void (*store_NMI_vector)(unsigned short *high, unsigned short *low);
+-	void (*restore_NMI_vector)(unsigned short *high, unsigned short *low);
+-	void (*inquire_remote_apic)(int apicid);
+-};
+-
+-extern struct genapic *genapic;
+-
+-extern struct genapic apic_flat;
+-extern struct genapic apic_physflat;
+-extern struct genapic apic_x2apic_cluster;
+-extern struct genapic apic_x2apic_phys;
+-extern int acpi_madt_oem_check(char *, char *);
+-
+-extern void apic_send_IPI_self(int vector);
+-
+-extern struct genapic apic_x2apic_uv_x;
+-DECLARE_PER_CPU(int, x2apic_extra_bits);
+-
+-extern void setup_apic_routing(void);
+-
+-#endif /* _ASM_X86_GENAPIC_64_H */
++#ifndef _ASM_X86_GENAPIC_64_H
++#define _ASM_X86_GENAPIC_64_H
++
++extern struct genapic *genapic;
++
++extern struct genapic apic_flat;
++extern struct genapic apic_physflat;
++extern struct genapic apic_x2apic_cluster;
++extern struct genapic apic_x2apic_phys;
++extern int acpi_madt_oem_check(char *, char *);
++
++extern void apic_send_IPI_self(int vector);
++
++extern struct genapic apic_x2apic_uv_x;
++DECLARE_PER_CPU(int, x2apic_extra_bits);
++
++extern void setup_apic_routing(void);
++
++#endif /* _ASM_X86_GENAPIC_64_H */
+-- 
+1.6.0.2
 
