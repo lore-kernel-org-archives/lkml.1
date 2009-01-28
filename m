@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZA1Qzq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZA1Q4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755189AbZA1Qzq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 11:55:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751850AbZA1Qzh
+	id S1755405AbZA1Q4V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 11:56:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZA1Q4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 11:55:37 -0500
-Received: from cmpxchg.org ([85.214.51.133]:49925 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751508AbZA1Qzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 11:55:36 -0500
-Date: Wed, 28 Jan 2009 17:55:12 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+	Wed, 28 Jan 2009 11:56:11 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:37636 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751120AbZA1Q4K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 11:56:10 -0500
+Date: Wed, 28 Jan 2009 11:56:09 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] migration: migrate_vmas should check "vma"
-Message-ID: <20090128165512.GA22588@cmpxchg.org>
-References: <20090128162619.2205befd.nishimura@mxp.nes.nec.co.jp> <alpine.DEB.1.10.0901281140540.7765@qirst.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0901281140540.7765@qirst.com>
+       Arjan van de Ven <arjan@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, jens.axboe@oracle.com
+Subject: Re: Buggy IPI and MTRR code on low memory
+In-Reply-To: <1233161182.10992.52.camel@laptop>
+Message-ID: <alpine.DEB.1.10.0901281153080.25359@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com> <1233161182.10992.52.camel@laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 11:42:36AM -0500, Christoph Lameter wrote:
-> On Wed, 28 Jan 2009, Daisuke Nishimura wrote:
+
+On Wed, 28 Jan 2009, Peter Zijlstra wrote:
+
+> On Wed, 2009-01-28 at 11:38 -0500, Steven Rostedt wrote:
 > 
-> > migrate_vmas() should check "vma" not "vma->vm_next" for for-loop condition.
+> > The problem is that if we use the stack, then we must wait for the 
+> > function to finish. But in the mtrr code, the called functions are waiting 
+> > for the caller to do something after the smp_call_function. Thus we 
+> > deadlock!
 > 
-> The loop condition is checked before vma = vma->vm_next. So the last
-> iteration of the loop will now be run with vma = NULL?
+> You'd have to 'fix' the regular fallback paths to use your scheme as
+> well.
 
-No, the condition is always checked before the body is executed.  The
-assignment to vma->vm_next happens at the end of every body.
+Not sure what you mean by that. I booted just fine with the patch, and 
+forcing data to NULL. Although, I'm not saying that these should not be 
+fixed.
 
-Try this:
+-- Steve
 
-		int a = 2;
-
-		for (puts("init"); puts("cond"), a; puts("next"))
-			a--;
-
-	Hannes
