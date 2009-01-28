@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752829AbZA1CyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752898AbZA1DAL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752829AbZA1CyS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 21:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZA1CyF
+	id S1752898AbZA1DAL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 22:00:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751685AbZA1C76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 21:54:05 -0500
-Received: from sh.osrg.net ([192.16.179.4]:60393 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752077AbZA1CyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 21:54:04 -0500
-Date: Wed, 28 Jan 2009 11:53:45 +0900
-To: ink@jurassic.park.msu.ru
-Cc: akpm@linux-foundation.org, rth@twiddle.net, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] alpha: compile fixes
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090127083823.GB15452@jurassic.park.msu.ru>
-References: <20090127083823.GB15452@jurassic.park.msu.ru>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090128115403R.fujita.tomonori@lab.ntt.co.jp>
+	Tue, 27 Jan 2009 21:59:58 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:14152 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751518AbZA1C75 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 21:59:57 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=vcLsh17I3moCtaajzS4+jM/Jmk3vI7UqUKj5FDHGYEPiORX+b5M7QQ30Op1gwUUqL
+	vfkIN4QlDxB2wiXOu25yA==
+Date: Tue, 27 Jan 2009 18:59:46 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [patch] slub: fix per cpu kmem_cache_cpu array memory leak
+Message-ID: <alpine.DEB.2.00.0901271859010.17612@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.24.198.81
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009 11:38:23 +0300
-Ivan Kokshaysky <ink@jurassic.park.msu.ru> wrote:
+The per cpu array of kmem_cache_cpu structures accomodates
+NR_KMEM_CACHE_CPU such structs.
 
-> - jensen build: fix conflicting declarations for pci_alloc_consistent()
->   and undefined virt_to_phys();
-> 
-> - SMP: arch/alpha/kernel/smp.c:124: warning: passing argument 2
->        of '__cpu_test_and_set' discards qualifiers from pointer target type
->   Interestingly, this only happens with gcc-4.2; gcc <= 4.1 and gcc-4.3
->   are OK. Fixed with extra assignment.
-> 
-> Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-> ---
->  arch/alpha/include/asm/dma-mapping.h |    2 ++
->  arch/alpha/kernel/pci-noop.c         |    3 ++-
->  arch/alpha/kernel/smp.c              |    3 ++-
->  3 files changed, 6 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/alpha/include/asm/dma-mapping.h b/arch/alpha/include/asm/dma-mapping.h
-> index a5801ae..04eb568 100644
-> --- a/arch/alpha/include/asm/dma-mapping.h
-> +++ b/arch/alpha/include/asm/dma-mapping.h
-> @@ -29,6 +29,8 @@
->  
->  #else	/* no PCI - no IOMMU. */
->  
-> +#include <asm/io.h>	/* for virt_to_phys() */
-> +
->  struct scatterlist;
->  void *dma_alloc_coherent(struct device *dev, size_t size,
->  			 dma_addr_t *dma_handle, gfp_t gfp);
-> diff --git a/arch/alpha/kernel/pci-noop.c b/arch/alpha/kernel/pci-noop.c
-> index 8ac0831..c19a376 100644
-> --- a/arch/alpha/kernel/pci-noop.c
-> +++ b/arch/alpha/kernel/pci-noop.c
-> @@ -109,7 +109,8 @@ sys_pciconfig_write(unsigned long bus, unsigned long dfn,
->  /* Stubs for the routines in pci_iommu.c: */
->  
->  void *
-> -pci_alloc_consistent(struct pci_dev *pdev, size_t size, dma_addr_t *dma_addrp)
-> +__pci_alloc_consistent(struct pci_dev *pdev, size_t size,
-> +		       dma_addr_t *dma_addrp, gfp_t gfp)
->  {
->  	return NULL;
->  }
+When this array overflows and a struct is allocated by kmalloc(), it may
+have an address at the upper bound of this array.  If this happens, it
+does not get freed and the per cpu kmem_cache_cpu_free pointer will be out
+of bounds after kmem_cache_destroy() or cpu offlining.
 
-A patch to change Alpha to handle two dma mapping implementations
-(pci-noop and the IOMMU) in the standard way (like X86, POWER, IA64,
-etc do) is acceptable?
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ mm/slub.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-pci-noop has something like struct dma_map_ops nommu_dma_ops (similar
-to pci-nommu.c in arch/x86/kernel/pci-nommu.c) and pci_iommu.c has
-struct dma_map_ops iommu_dma_ops. Then at startup, the kernel properly
-sets dma_ops pointer to nommu_dma_ops or iommu_dma_ops.
-
-Then we can handle the dma mapping operations in the consistent way,
-e.g., dma_map_sg can be just `return ops->map_sg(dev, sg, nents,
-dir)`.
+diff --git a/mm/slub.c b/mm/slub.c
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1996,7 +1996,7 @@ static struct kmem_cache_cpu *alloc_kmem_cache_cpu(struct kmem_cache *s,
+ static void free_kmem_cache_cpu(struct kmem_cache_cpu *c, int cpu)
+ {
+ 	if (c < per_cpu(kmem_cache_cpu, cpu) ||
+-			c > per_cpu(kmem_cache_cpu, cpu) + NR_KMEM_CACHE_CPU) {
++			c >= per_cpu(kmem_cache_cpu, cpu) + NR_KMEM_CACHE_CPU) {
+ 		kfree(c);
+ 		return;
+ 	}
