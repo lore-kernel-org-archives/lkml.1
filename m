@@ -1,75 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752892AbZA1Pbw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbZA1PeN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752892AbZA1Pbw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 10:31:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZA1Pbn
+	id S1753588AbZA1PeN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 10:34:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZA1Pd6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 10:31:43 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:50583 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751453AbZA1Pbm (ORCPT
+	Wed, 28 Jan 2009 10:33:58 -0500
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:36981 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751019AbZA1Pd5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 10:31:42 -0500
-Date: Wed, 28 Jan 2009 10:31:41 -0500
-To: "Catalin(ux) M. BOIE" <catab@embedromix.ro>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Seagate disk freeze for 30 seconds then comes back (RecovComm 10B8B)
-Message-ID: <20090128153141.GC26064@csclub.uwaterloo.ca>
-References: <alpine.LFD.2.00.0901271739400.2013@mail.embedromix.ro>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901271739400.2013@mail.embedromix.ro>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Wed, 28 Jan 2009 10:33:57 -0500
+Subject: Re: [BUG] mlocked page counter mismatch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: MinChan Kim <minchan.kim@gmail.com>
+Cc: linux mm <linux-mm@kvack.org>, linux kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+In-Reply-To: <20090128102841.GA24924@barrios-desktop>
+References: <20090128102841.GA24924@barrios-desktop>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Wed, 28 Jan 2009 10:33:52 -0500
+Message-Id: <1233156832.8760.85.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 11:30:42AM +0200, Catalin(ux) M. BOIE wrote:
-> I have a ST9160821AS drive, firmware 3.BHE, and I experience some seldom 
-> problems with it. It is in a HP 6715s HP laptop, kernel 2.6.27.5.
+On Wed, 2009-01-28 at 19:28 +0900, MinChan Kim wrote:
+> After executing following program, 'cat /proc/meminfo' shows
+> following result. 
 > 
-> The error message is:
-> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x80002 action 0x6 frozen
-> ata1: SError: { RecovComm 10B8B }
-> ata1.00: cmd ca/00:f8:11:b8:38/00:00:00:00:00/ec tag 0 dma 126976 out
-> res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
-> ata1.00: status: { DRDY }
-> ata1: hard resetting link
-> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
-> ata1.00: SB600 AHCI: limiting to 255 sectors per cmd
-> ata1.00: SB600 AHCI: limiting to 255 sectors per cmd
-> ata1.00: configured for UDMA/100
-> ata1: EH complete
-> sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
-> sd 0:0:0:0: [sda] Write Protect is off
-> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
-> support DPO or FUA
+> --
+> # cat /proc/meminfo 
+> ..
+> Unevictable:           8 kB
+> Mlocked:               8 kB
+> ..
+
+Sorry, from your description, I can't understand what the problem is.
+Are you saying that 8kB [2 pages] remains locked after you run your
+test?
+
+What did meminfo show before running the test program?  And what kernel
+version?
+
 > 
-> When it happens, the system freezes for around 30 seconds.
+> -- test program --
 > 
-> Seagate told me that there is no firmware update for this drive.
+> #include <stdio.h>
+> #include <sys/mman.h>
+> int main()
+> {
+>         char buf[64] = {0,};
+>         char *ptr;
+>         int k;
+>         int i,j;
+>         int x,y;
+>         mlockall(MCL_CURRENT);
+>         sprintf(buf, "cat /proc/%d/maps", getpid());
+>         system(buf);
+>         return 0;
+> }
 > 
-> Please, let me know if it is a software issue.
+> --
+> 
+> It seems mlocked page counter have a problem.
+> After I diged in source, I found that try_to_unmap_file called 
+> try_to_mlock_page about shared mapping pages 
+> since other vma had VM_LOCKED flag.
+> After all, try_to_mlock_page called mlock_vma_page. 
+> so, mlocked counter increased
 
-This sounds like a very widely known and discussed firmware problem.  It
-happens with Linux, Windows, and Mac OS X, as well as various NAS boxes.
-It is seagate's fault.  Of course I had only seen it mentioned for the
-500GB, 750GB, 1TB and 1.5TB drives.  Somehow yours seems like it should
-be a different series, but then again why should a firmware bug not be
-duplicated on all their drives.
+This path of try_to_unmap_file() -> try_to_mlock_page() should only be
+invoked during reclaim--from shrink_page_list().  [try_to_unmap() is
+also called from page migration, but in this case, try_to_unmap_one()
+won't return SWAP_MLOCK so we don't call try_to_mlock_page().]  Unless
+your system is in continuous reclaim, I don't think you'd hit this
+during your test program.
 
-One discussion is here: http://techreport.com/discussions.x/15863
+> 
+> But, After I called munlockall intentionally, the counter work well. 
+> In case of munlockall, we already had a mmap_sem about write. 
+> Such a case, try_to_mlock_page can't call mlock_vma_page.
+> so, mlocked counter didn't increased. 
+> As a result, the counter seems to be work well but I think 
+> it also have a problem.
 
-Seriously annoying for raid users of course when a drive falls out of
-the raid for no good reason.
+I THINK this is a artifact of the way stats are accumulated in per cpu
+differential counters and pushed to the zone state accumulators when a
+threshold is reached.  I've seen this condition before, but it
+eventually clears itself as the stats get pushed to the zone state.
+Still, it bears more investigation, as it's been a while since I worked
+on this and some subsequent fixes could have broken it:
+
+I ran your test program on one of our x86_64 test systems running
+2.6.29-rc2-mmotm-090116-1618, immediately after boot.  Here's what I
+saw:
+
+## before:
+#cat /proc/meminfo | egrep 'Unev|Mlo'
+Unevictable:        3448 kB
+Mlocked:            3448 kB	# = 862 4k pages
+
+This is the usual case on this platform. I'm using a RHEL5 distro
+installation and one of the system daemons mlocks itself.  I forget
+which.  I'll need to investigate further.  Also, it's possible that this
+value itself is lower than the actual number of mlocked pages because
+some of the counts may still be in the per cpu differential counters.
+
+#tail -8 /proc/vmstat
+unevictable_pgs_culled 738
+unevictable_pgs_scanned 0
+unevictable_pgs_rescued 117  # = 89 + 28 - OK
+unevictable_pgs_mlocked 979  # 979 - 117 = 862 remaining locked
+unevictable_pgs_munlocked 89
+unevictable_pgs_cleared 28
+unevictable_pgs_stranded 0
+unevictable_pgs_mlockfreed 0
+
+So far, so good.  Now, run your test:
+
+#./mck-mlock-test
+<snip the map output>
+#cat /proc/meminfo | egrep 'Unev|Mlo'
+Unevictable:        3460 kB
+Mlocked:            3460 kB	# = 865 pages;  3 more than above
+
+# tail -8 /proc/vmstat
+unevictable_pgs_culled 757
+unevictable_pgs_scanned 0
+unevictable_pgs_rescued 154	# = 125 + 29 - OK
+unevictable_pgs_mlocked 1374	# 1374 - 154 = 1220 ???? 
+unevictable_pgs_munlocked 125
+unevictable_pgs_cleared 29
+unevictable_pgs_stranded 0
+unevictable_pgs_mlockfreed 0
+
+So, we have 3 additional pages shown as unevictable; and our stats don't
+add up.  We see way more pages mlocked than munlocked/cleared.  [Aside:
+clear happens on file truncation and COW of mlocked pages.]  I wonder if
+this is the result of removing some of the lru_add_drain_all() calls
+that we used to have in the mlock code to improve the statistics.  We
+don't seem to have stranded any pages--that is, left them unevictable
+because we couldn't isolate them from the lru for munlock.
+
+If I drop caches, or run a moderately heavy mlock test--both of which
+generate quite a bit of zone and vmstat activity--the meminfo values
+become:
+
+Unevictable:        3456 kB
+Mlocked:            3456 kB
+
+Which is two more mlocked pages than we saw right after boot.  If I
+rerun your test repeatedly, the values always show as 3460kB.  Dropping
+caches always restores it to 3456kB.  This may be the correct value with
+the per cpu differential values pushed.  You could try dropping the page
+cache and see what the values are on your system.  You could also add
+the following line to your test program before the call to mlockall()
+and after the existing call to system():
+
+	system("cat /proc/meminfo | egrep 'Unev|Mlo'");
+
+I will add this to my list of things to be investigated, but I won't get
+to it for a while.  If I see more evidence that the counters are,
+indeed, broken, I'll try to bump the priority.
+
+Thanks,
+Lee
 
 
-I seem to recall some people had found that if you disabled some part of
-the drive caching the problem seemed to go away (as did a lot of the
-drive's performance of course).
 
--- 
-Len Sorensen
+
+
