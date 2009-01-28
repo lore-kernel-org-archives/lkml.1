@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbZA1Vqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756095AbZA1VrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754292AbZA1Vqw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 16:46:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZA1Vpu
+	id S1756095AbZA1VrQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 16:47:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbZA1VqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 16:45:50 -0500
-Received: from www.tglx.de ([62.245.132.106]:45173 "EHLO www.tglx.de"
+	Wed, 28 Jan 2009 16:46:11 -0500
+Received: from bee.hiwaay.net ([216.180.54.11]:39939 "EHLO bee.hiwaay.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754389AbZA1Vpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 16:45:49 -0500
-Message-Id: <20090128212709.371517363@linutronix.de>
-References: <20090128211912.300823284@linutronix.de>
-User-Agent: quilt/0.46-1
-Date: Wed, 28 Jan 2009 21:29:20 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Carsten Emde <carsten.emde@osadl.org>
-Subject: [patch-rt 4/4] sched: mark SCHED_HRTICK broken
-Content-Disposition: inline;
-	filename=do-not-configure-sched-hrtick-since-it-is-currently-broken.patch
+	id S1755094AbZA1VqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 16:46:10 -0500
+Date: Wed, 28 Jan 2009 15:46:08 -0600
+From: Chris Adams <cmadams@hiwaay.net>
+To: linux-kernel@vger.kernel.org
+Subject: Re: [patch 016/104] epoll: introduce resource usage limits
+Message-ID: <20090128214608.GA1495059@hiwaay.net>
+References: <bF63r-1nB-59@gated-at.bofh.it> <bXmsS-4eW-1@gated-at.bofh.it> <bXmMj-4HC-7@gated-at.bofh.it> <bXqQ1-2GV-49@gated-at.bofh.it> <bXxHH-5zl-23@gated-at.bofh.it> <bXQqZ-1hm-9@gated-at.bofh.it> <bYb2q-8bp-21@gated-at.bofh.it> <bYchR-1AT-3@gated-at.bofh.it> <bZ6Di-6ZV-1@gated-at.bofh.it> <bZ9rz-2X3-7@gated-at.bofh.it>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0901271942270.20262@alien.or.mcafeemobile.com>
+User-Agent: Mutt/1.4i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-SCHED_HRTICK is broken and not yet fixed in mainline. WTF is it still
-enabled in -rt ?
+Once upon a time, Davide Libenzi  <davidel@xmailserver.org> said:
+>I already gave you my opinion on such code. There is no need for it. If 
+>your servers are loaded, in the same way you bump NFILES (and likely 
+>even other default configs), you bump up max_user_instances:
 
-Suggested-by: Peter Zijlstra <peterz@infradead.org>
-Tested-by: Carsten Emde <C.Emde@osadl.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- kernel/Kconfig.hz |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The flip side of that is this could just be added to the list of limits
+you set on a multi-user system if you don't want $LUSER to DoS your
+server (such as max procs, cpu time, virtual memory, etc.).  I don't
+think this is a security issue on single-user systems or servers with
+only privileged access.
 
-Index: linux-2.6.26/kernel/Kconfig.hz
-===================================================================
---- linux-2.6.26.orig/kernel/Kconfig.hz
-+++ linux-2.6.26/kernel/Kconfig.hz
-@@ -55,4 +55,4 @@ config HZ
- 	default 1000 if HZ_1000
- 
- config SCHED_HRTICK
--	def_bool HIGH_RES_TIMERS && X86
-+	def_bool HIGH_RES_TIMERS && X86 && BROKEN
+Admins of multi-user systems are used to having to manage limits (see
+pam_limits for example).  Admins of single-user or privileged servers
+(e.g. mail or non-shared web servers) are not for the most part (postfix
+doesn't open 1025 files in a single process).
 
 -- 
-
+Chris Adams <cmadams@hiwaay.net>
+Systems and Network Administrator - HiWAAY Internet Services
+I don't speak for anybody but myself - that's enough trouble.
