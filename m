@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZA1EAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754614AbZA1EBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbZA1EAm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 23:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752182AbZA1EAd
+	id S1754614AbZA1EBM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 23:01:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZA1EA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 23:00:33 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:50461 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752295AbZA1EAc (ORCPT
+	Tue, 27 Jan 2009 23:00:56 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43589 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752182AbZA1EAz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 23:00:32 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 27 Jan 2009 20:00:30 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Bron Gondwana <brong@fastmail.fm>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <gregkh@suse.de>
-Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
-In-Reply-To: <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>
-Message-ID: <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com>
-References: <20090128033824.GA1662@brong.net> <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 27 Jan 2009 23:00:55 -0500
+Message-ID: <497FD6B4.8090906@jp.fujitsu.com>
+Date: Wed, 28 Jan 2009 12:53:24 +0900
+From: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20071019)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: [PATCH take2 3/3] fix typo "ACPI_PM_OVRRUN" -> "ACPI_PM_OVERRUN"
+References: <497FD4F3.3080006@jp.fujitsu.com>
+In-Reply-To: <497FD4F3.3080006@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009, Bron Gondwana wrote:
+This patch fixes typo.
 
-> Both Postfix and Apache use an epoll instance per child, which
-> leads to significant scalability issues with max_user_instances
-> set so low.  Bump the default to 1024 so medium sized sites are
-> not impacted.
+Signed-off-by: Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>
 
-NACK. Epoll allocates globally about 100 to 160 bytes (32/64 bit) for each 
-file added to the interface:
+---
+ arch/x86/kernel/apic.c     |    2 +-
+ arch/x86/kernel/tsc.c      |    2 +-
+ include/linux/acpi_pmtmr.h |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-	for i 1..1024
-		for j 1..1024
-			if i!=j
-				add j -> i
+Index: linux-2.6.29-rc2/arch/x86/kernel/apic.c
+===================================================================
+--- linux-2.6.29-rc2.orig/arch/x86/kernel/apic.c	2009-01-28 12:14:51.000000000 +0900
++++ linux-2.6.29-rc2/arch/x86/kernel/apic.c	2009-01-28 12:15:00.000000000 +0900
+@@ -528,7 +528,7 @@ static void __init lapic_cal_handler(str
+ 		lapic_cal_t2 = tapic;
+ 		lapic_cal_tsc2 = tsc;
+ 		if (pm < lapic_cal_pm1)
+-			pm += ACPI_PM_OVRRUN;
++			pm += ACPI_PM_OVERRUN;
+ 		lapic_cal_pm2 = pm;
+ 		lapic_cal_j2 = jiffies;
+ 		break;
+Index: linux-2.6.29-rc2/arch/x86/kernel/tsc.c
+===================================================================
+--- linux-2.6.29-rc2.orig/arch/x86/kernel/tsc.c	2009-01-28 12:07:08.000000000 +0900
++++ linux-2.6.29-rc2/arch/x86/kernel/tsc.c	2009-01-28 12:15:00.000000000 +0900
+@@ -161,7 +161,7 @@ static unsigned long calc_pmtimer_ref(u6
+ 		return ULONG_MAX;
 
-That's (N^2 * {100, 160}) = 100MB to 160MB of pinned kernel memory, 
-explotable by simple users with untouched NFILES.
-This is the reason such limit was introduced in the first place. Again, 
-for the 10th time, if you have a loaded server with multiple processes 
-using epoll:
+ 	if (pm2 < pm1)
+-		pm2 += (u64)ACPI_PM_OVRRUN;
++		pm2 += (u64)ACPI_PM_OVERRUN;
+ 	pm2 -= pm1;
+ 	tmp = pm2 * 1000000000LL;
+ 	do_div(tmp, PMTMR_TICKS_PER_SEC);
+Index: linux-2.6.29-rc2/include/linux/acpi_pmtmr.h
+===================================================================
+--- linux-2.6.29-rc2.orig/include/linux/acpi_pmtmr.h	2009-01-28 12:07:08.000000000 +0900
++++ linux-2.6.29-rc2/include/linux/acpi_pmtmr.h	2009-01-28 12:15:00.000000000 +0900
+@@ -10,7 +10,7 @@
+ #define ACPI_PM_MASK CLOCKSOURCE_MASK(24)
 
-$ echo NN > /proc/sys/fs/epoll/max_user_instances
+ /* Overrun value */
+-#define ACPI_PM_OVRRUN	(1<<24)
++#define ACPI_PM_OVERRUN	(1<<24)
 
-Note that NN does not consume any resource "per se", so if you feel 
-threatened by such limit, you can go wild with it.
-
-
-
-- Davide
-
+ #ifdef CONFIG_X86_PM_TIMER
 
