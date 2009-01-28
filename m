@@ -1,150 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752457AbZA1TZZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751875AbZA1T1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752457AbZA1TZZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 14:25:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZA1TZL
+	id S1751875AbZA1T1d (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 14:27:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZA1T1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 14:25:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50127 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751318AbZA1TZK (ORCPT
+	Wed, 28 Jan 2009 14:27:24 -0500
+Received: from rn-out-0910.google.com ([64.233.170.187]:7723 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbZA1T1X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 14:25:10 -0500
-Date: Wed, 28 Jan 2009 11:24:31 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Helge Deller <deller@gmx.de>
-Cc: bugme-daemon@bugzilla.kernel.org, Frans Pop <elendil@planet.nl>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       Matthew Garrett <mjg@redhat.com>, Brown <lenb@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 12560] New: crash in hp_wmi_bios_setup (hp-wmi
- driver)
-Message-Id: <20090128112431.43a836b1.akpm@linux-foundation.org>
-In-Reply-To: <bug-12560-10286@http.bugzilla.kernel.org/>
-References: <bug-12560-10286@http.bugzilla.kernel.org/>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Jan 2009 14:27:23 -0500
+MIME-Version: 1.0
+In-Reply-To: <498095F2.4060502@zytor.com>
+References: <497A0500.3080706@gmail.com> <497B408C.20802@gmail.com>
+	 <20090124172758.GA31699@elte.hu> <200901272042.57272.baldrick@free.fr>
+	 <497F7BBE.4070500@zytor.com>
+	 <f73f7ab80901271745o4e426baew8a1f67dbacbe1aef@mail.gmail.com>
+	 <497FBB30.3020804@zytor.com>
+	 <f73f7ab80901280528m6a4f123axbaff9ec284bebe32@mail.gmail.com>
+	 <498095F2.4060502@zytor.com>
+Date: Wed, 28 Jan 2009 14:27:22 -0500
+Message-ID: <f73f7ab80901281127t191c9c97nba99d859224e14bd@mail.gmail.com>
+Subject: Re: [LLVMdev] inline asm semantics: output constraint width smaller 
+	than input
+From: Kyle Moffett <kyle@moffetthome.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Duncan Sands <baldrick@free.fr>, llvmdev@cs.uiuc.edu,
+       Ingo Molnar <mingo@elte.hu>,
+       =?UTF-8?B?VMO2csO2ayBFZHdpbg==?= <edwintorok@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009 04:54:38 -0800 (PST) bugme-daemon@bugzilla.kernel.org wrote:
-
-> http://bugzilla.kernel.org/show_bug.cgi?id=12560
-> 
->            Summary: crash in hp_wmi_bios_setup (hp-wmi driver)
-> ...
-> Problem Description:
-> 2.6.29-rc2 crashes at bootup when CONFIG_HP_WMI=y (hp-wmi driver)
+On Wed, Jan 28, 2009 at 12:29 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Kyle Moffett wrote:
+>> Even in the 64-bit-integer on 32-bit-CPU case, you still end up with
+>> the lower 32-bits in a standard integer GPR, and it's trivial to just
+>> ignore the "upper" register.  You also would not need to do any kind
+>> of bit-shift, so long as your inline assembly initializes both GPRs
+>> and puts the halves of the result where they belong.
 >
-> screenshot of crash is available here:
-> http://userweb.kernel.org/~deller/bz_12560/dcp_4175.jpg
+> In this case, we're talking about what happens when the assembly takes a
+> 64-bit input operand in the same register as a 32-bit output operand
+> (with a "0" constraint.)  Is the output operand the same register number
+> as the high register or the low register?  On an LE machine the answer
+> is trivial and obvious -- the low register; on a BE machine both
+> interpretations are possible (I actually suspect gcc will assign the
+> high register, just based on how gcc internals work in this case.)
 
-You can sort of blame me for that, because I haven't merged
-http://userweb.kernel.org/~akpm/mmotm/broken-out/hp-wmi-fix-regressions-caused-by-missing-if-statement.patch
-yet.
+On a BE 32-bit machine, the "output register" technically ought to be
+"64-bit" anyways, since it's constrained to be the same as the 64-bit
+"input register".  That means that you ought to make sure to set
+*both* output registers appropriately, one of them being 0 and the
+other being the 32-bit number.  I think that's the only answer that
+actually makes any sense from a holistic code-generation sense.  So it
+seems we are in violent agreement :-D.
 
-However, perhaps I was being unconsciously clever here.  Why did it oops???
-
-Look:
-
-(this is the fixed code from -mm):
-
-static int __init hp_wmi_bios_setup(struct platform_device *device)
-{
-	int err;
-	int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
-
-	err = device_create_file(&device->dev, &dev_attr_display);
-	if (err)
-		goto add_sysfs_error;
-	err = device_create_file(&device->dev, &dev_attr_hddtemp);
-	if (err)
-		goto add_sysfs_error;
-	err = device_create_file(&device->dev, &dev_attr_als);
-	if (err)
-		goto add_sysfs_error;
-	err = device_create_file(&device->dev, &dev_attr_dock);
-	if (err)
-		goto add_sysfs_error;
-
-	if (wireless & 0x1) {
-		wifi_rfkill = rfkill_allocate(&device->dev, RFKILL_TYPE_WLAN);
-		wifi_rfkill->name = "hp-wifi";
-		wifi_rfkill->state = hp_wmi_wifi_state();
-		wifi_rfkill->toggle_radio = hp_wmi_wifi_set;
-		wifi_rfkill->user_claim_unsupported = 1;
-		err = rfkill_register(wifi_rfkill);
-		if (err)
-			goto add_sysfs_error;
-	}
-
-	if (wireless & 0x2) {
-		bluetooth_rfkill = rfkill_allocate(&device->dev,
-						   RFKILL_TYPE_BLUETOOTH);
-		bluetooth_rfkill->name = "hp-bluetooth";
-		bluetooth_rfkill->state = hp_wmi_bluetooth_state();
-		bluetooth_rfkill->toggle_radio = hp_wmi_bluetooth_set;
-		bluetooth_rfkill->user_claim_unsupported = 1;
-		err = rfkill_register(bluetooth_rfkill);
-+		if (err)
-			goto register_bluetooth_error;
-	}
-
-	if (wireless & 0x4) {
-		wwan_rfkill = rfkill_allocate(&device->dev, RFKILL_TYPE_WWAN);
-		wwan_rfkill->name = "hp-wwan";
-		wwan_rfkill->state = hp_wmi_wwan_state();
-		wwan_rfkill->toggle_radio = hp_wmi_wwan_set;
-		wwan_rfkill->user_claim_unsupported = 1;
-		err = rfkill_register(wwan_rfkill);
-		if (err)
-			goto register_wwan_err;
-	}
-
-	return 0;
-register_wwan_err:
-	rfkill_unregister(bluetooth_rfkill);
-register_bluetooth_error:
-	rfkill_unregister(wifi_rfkill);
-add_sysfs_error:
-	cleanup_sysfs(device);
-	return err;
-}
-
-if local variable `wireless' has a value of 2 and rfkill_register()
-fails, the error recovery path will do rfkill_unregister(wifi_rfkill),
-but wifi_rfkill was never registered!
-
-So we should do this:
-
---- a/drivers/platform/x86/hp-wmi.c~hp-wmi-fix-error-path-in-hp_wmi_bios_setup
-+++ a/drivers/platform/x86/hp-wmi.c
-@@ -458,9 +458,11 @@ static int __init hp_wmi_bios_setup(stru
- 
- 	return 0;
- register_wwan_err:
--	rfkill_unregister(bluetooth_rfkill);
-+	if (bluetooth_rfkill)
-+		rfkill_unregister(bluetooth_rfkill);
- register_bluetooth_error:
--	rfkill_unregister(wifi_rfkill);
-+	if (wifi_rfkill)
-+		rfkill_unregister(wifi_rfkill);
- add_sysfs_error:
- 	cleanup_sysfs(device);
- 	return err;
-_
-
-yes?
-
-
-<looks at your screenshot>
-
-yup, you hit a BUG().  For some reason there's no indication of this in
-the trace (apart from the opcode in the Code: line).  I wonder why the
-first line of the BUG handler didn't come out?
-
-
+Cheers,
+Kyle Moffett
