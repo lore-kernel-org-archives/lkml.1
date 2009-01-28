@@ -1,83 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZA1Wk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZA1WlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbZA1Wk4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 17:40:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZA1Wks
+	id S1754673AbZA1WlZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 17:41:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZA1WlQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 17:40:48 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:34506 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751332AbZA1Wkr (ORCPT
+	Wed, 28 Jan 2009 17:41:16 -0500
+Received: from casper.infradead.org ([85.118.1.10]:38648 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbZA1WlP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 17:40:47 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=CUnfcDQ+4vZuPkC26ncFD/9xgiE7jwZwGW7ZJ2p2ynWnTKYAJgdO/mKDvh493SrccY
-         r7kSL/NM8SqPMcOEAANqT6OBP/rdDTHhjtxPoGzRjTl+laT8DLNjBywN0gBnPQc7OdLg
-         bj89SG3k2FwtAYOTL2qgIRR/RAZeoGNzLaRTQ=
-Subject: Re: [PATCH] x86: do not expose CONFIG_BSWAP to userspace
-From: Harvey Harrison <harvey.harrison@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, "H. Peter Anvin" <hpa@kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0901281411490.3123@localhost.localdomain>
-References: <20090127222825.GA27097@elte.hu>
-	 <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain>
-	 <1233106614.3256.6.camel@localhost.localdomain>
-	 <200901281337.52294.arnd@arndb.de>  <49809A65.2090501@kernel.org>
-	 <1233170532.6717.49.camel@brick>
-	 <alpine.LFD.2.00.0901281141510.3123@localhost.localdomain>
-	 <1233172994.6717.56.camel@brick>  <4980CD51.70601@zytor.com>
-	 <1233179884.6717.59.camel@brick>
-	 <alpine.LFD.2.00.0901281411490.3123@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 28 Jan 2009 14:40:44 -0800
-Message-Id: <1233182444.6717.68.camel@brick>
+	Wed, 28 Jan 2009 17:41:15 -0500
+Date: Wed, 28 Jan 2009 14:41:14 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Shawn Bohrer <shawn.bohrer@gmail.com>,
+       Jon Masters <jonathan@jonmasters.org>
+Subject: Re: [PATCH 5/6] module: make modversion_info contain a pointer, not
+ an array.
+Message-ID: <20090128144114.4aeaa0ff@infradead.org>
+In-Reply-To: <200901290859.40725.rusty@rustcorp.com.au>
+References: <200901290005.52819.rusty@rustcorp.com.au>
+	<20090128065231.64d12ffd@infradead.org>
+	<200901290859.40725.rusty@rustcorp.com.au>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-28 at 14:13 -0800, Linus Torvalds wrote:
-> 
-> On Wed, 28 Jan 2009, Harvey Harrison wrote:
-> >
-> > Use ifdef __i486__ to ensure the BSWAP instruction is available
-> > on 32-bit x86.
+On Thu, 29 Jan 2009 08:59:40 +1030
+Rusty Russell <rusty@rustcorp.com.au> wrote:
+
+> On Thursday 29 January 2009 01:22:31 Arjan van de Ven wrote:
+> > On Thu, 29 Jan 2009 00:05:52 +1030
+> > Rusty Russell <rusty@rustcorp.com.au> wrote:
 > > 
-> > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > ---
-> > HPA,
+> > > 
+> > > With allmodconfig (minus non-building modules) on 32-bit x86:
+> > > Total size of modules before: 60009790 bytes
+> > > Total size of modules after: 55927866 bytes
+> > > 
+> > > Saving 7% of module size for CONFIG_MODVERSIONS=y; and these
+> > > sections are kept resident as well.
+> > > 
 > > 
-> > I'm afraid my knowledge of gcc compiler flags for various models is
-> > lacking, I used i486 as suggested, just wanted to make sure I understood
-> > you corectly.
+> > that reminds me.. can we just simplify MODVERSIONS to be a md5sum
+> > (or sha1 whatver) of the .config file in the VERMAGIC ?
+> > it's a lot more reliable in detecting incompatibilities, and a lot
+> > less space consumed.
 > 
-> I really don't think this works.
-> 
-> Try this:
-> 
-> 	cpp -dM -m32 -march=pentium t.c | grep i486
-> 
-> and see the marked absense of __i486__ anywhere.
-> 
-> At least CONFIG_X86_BSWAP gives the right behaviour for the kernel.
+> Unfortunately people really seem to want the finer granularity that
+> MODVERSIONS (sometimes) provides :(  I've tried killing it off
+> several times, and always failed.
 
-You're right, it doesn't work.  Perhaps just exporting the bswap version
-all the time and i386-only people can worry about patching it out?
+but we could just stick the result in VERMAGIC right?
+rather than tacking it to every symbol.
 
-Harvey
+how you calculate the global checksum is almost a separate debate.
 
 
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
