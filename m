@@ -1,121 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756651AbZA1Ucr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756886AbZA1Udc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756651AbZA1Ucr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:32:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZA1U3G
+	id S1756886AbZA1Udc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:33:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755328AbZA1U3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:29:06 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:32856 "EHLO
+	Wed, 28 Jan 2009 15:29:19 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:32860 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbZA1U3E (ORCPT
+	with ESMTP id S1755279AbZA1U3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 15:29:04 -0500
-Date: Wed, 28 Jan 2009 13:22:22 -0700 (MST)
+	Wed, 28 Jan 2009 15:29:15 -0500
+MBOX-Line: From nobody Wed Jan 28 12:27:31 2009
 From: Paul Walmsley <paul@pwsan.com>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-cc: tony@atomide.com, rmk@arm.linux.org.uk, linux-omap@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: OMAP clock fast-forward: an introduction to six series
-Message-ID: <alpine.DEB.2.00.0901281310590.14710@utopia.booyaka.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Subject: [PATCH E 01/14] OMAP2 SDRC: move mach-omap2/memory.h into
+	include/asm-arm/arch-omap/sdrc.h
+To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, Paul Walmsley <paul@pwsan.com>,
+       Tony Lindgren <tony@atomide.com>
+Date: Wed, 28 Jan 2009 12:27:31 -0700
+Message-ID: <20090128192725.29333.88359.stgit@localhost.localdomain>
+In-Reply-To: <20090128192551.29333.82943.stgit@localhost.localdomain>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3.222.gddca
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Move the contents of the arch/arm/mach-omap2/memory.h file to the
+existing include/asm-arm/arch-omap/sdrc.h file, and remove memory.h.
+Modify files which include memory.h to include asm/arch/sdrc.h instead.
 
-Hello,
+linux-omap source commit is e7ae2d89921372fc4b9712a32cc401d645597807.
 
-This set of six patch series brings mainline Linux up-to-date with the 
-current state of the clock framework in the linux-omap tree.  The patches 
-have received extensive testing by OMAP users on the linux-omap mailing 
-list, linux-omap@vger.kernel.org.  Current-generation OMAP dev boards 
-include the BeagleBoard <http://www.beagleboard.org/> and the Gumstix 
-Overo <http://www.gumstix.com/>.
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+---
+ arch/arm/mach-omap2/clock.c            |    2 +
+ arch/arm/mach-omap2/clock24xx.c        |    2 +
+ arch/arm/mach-omap2/clock34xx.c        |    2 +
+ arch/arm/mach-omap2/io.c               |    4 +--
+ arch/arm/mach-omap2/memory.c           |    9 ++++++-
+ arch/arm/mach-omap2/memory.h           |   43 --------------------------------
+ arch/arm/plat-omap/include/mach/gpmc.h |    2 +
+ arch/arm/plat-omap/include/mach/sdrc.h |   21 ++++++++++++++++
+ 8 files changed, 35 insertions(+), 50 deletions(-)
+ delete mode 100644 arch/arm/mach-omap2/memory.h
 
-The oldest of the source patches dates back to June 2008.  It's not clear 
-to me why the upstream merge process for these patches has been so 
-difficult.  I hope that, going forward, upstream merges for OMAP patches 
-can keep up with the pace of development on linux-omap, so this type of 
-massive merge is unnecessary.
+diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
+index 0cd4761..9c62ada 100644
+--- a/arch/arm/mach-omap2/clock.c
++++ b/arch/arm/mach-omap2/clock.c
+@@ -31,7 +31,7 @@
+ #include <mach/control.h>
+ #include <asm/div64.h>
+ 
+-#include "memory.h"
++#include <mach/sdrc.h>
+ #include "sdrc.h"
+ #include "clock.h"
+ #include "prm.h"
+diff --git a/arch/arm/mach-omap2/clock24xx.c b/arch/arm/mach-omap2/clock24xx.c
+index e66287f..a11ba09 100644
+--- a/arch/arm/mach-omap2/clock24xx.c
++++ b/arch/arm/mach-omap2/clock24xx.c
+@@ -34,7 +34,7 @@
+ 
+ #include <asm/div64.h>
+ 
+-#include "memory.h"
++#include <asm/arch/sdrc.h>
+ #include "clock.h"
+ #include "clock24xx.h"
+ #include "prm.h"
+diff --git a/arch/arm/mach-omap2/clock34xx.c b/arch/arm/mach-omap2/clock34xx.c
+index c3c8537..3dba9ca 100644
+--- a/arch/arm/mach-omap2/clock34xx.c
++++ b/arch/arm/mach-omap2/clock34xx.c
+@@ -31,7 +31,7 @@
+ #include <mach/sram.h>
+ #include <asm/div64.h>
+ 
+-#include "memory.h"
++#include <mach/sdrc.h>
+ #include "clock.h"
+ #include "clock34xx.h"
+ #include "prm.h"
+diff --git a/arch/arm/mach-omap2/io.c b/arch/arm/mach-omap2/io.c
+index 5ea64f9..2b5f28a 100644
+--- a/arch/arm/mach-omap2/io.c
++++ b/arch/arm/mach-omap2/io.c
+@@ -27,8 +27,8 @@
+ #include <mach/mux.h>
+ #include <mach/omapfb.h>
+ #include <mach/sram.h>
+-
+-#include "memory.h"
++#include <mach/sdrc.h>
++#include <mach/gpmc.h>
+ 
+ #include "clock.h"
+ 
+diff --git a/arch/arm/mach-omap2/memory.c b/arch/arm/mach-omap2/memory.c
+index db024fd..62a87cf 100644
+--- a/arch/arm/mach-omap2/memory.c
++++ b/arch/arm/mach-omap2/memory.c
+@@ -31,9 +31,16 @@
+ 
+ #include "clock.h"
+ 
+-#include "memory.h"
++#include <mach/sdrc.h>
+ #include "sdrc.h"
+ 
++/* Memory timing, DLL mode flags */
++#define M_DDR		1
++#define M_LOCK_CTRL	(1 << 2)
++#define M_UNLOCK	0
++#define M_LOCK		1
++
++
+ void __iomem *omap2_sdrc_base;
+ void __iomem *omap2_sms_base;
+ 
+diff --git a/arch/arm/mach-omap2/memory.h b/arch/arm/mach-omap2/memory.h
+deleted file mode 100644
+index bb3db80..0000000
+--- a/arch/arm/mach-omap2/memory.h
++++ /dev/null
+@@ -1,43 +0,0 @@
+-/*
+- * linux/arch/arm/mach-omap2/memory.h
+- *
+- * Interface for memory timing related functions for OMAP24XX
+- *
+- * Copyright (C) 2005 Texas Instruments Inc.
+- * Richard Woodruff <r-woodruff2@ti.com>
+- *
+- * Copyright (C) 2005 Nokia Corporation
+- * Tony Lindgren <tony@atomide.com>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License version 2 as
+- * published by the Free Software Foundation.
+- */
+-
+-#ifndef ARCH_ARM_MACH_OMAP2_MEMORY_H
+-#define ARCH_ARM_MACH_OMAP2_MEMORY_H
+-
+-/* Memory timings */
+-#define M_DDR		1
+-#define M_LOCK_CTRL	(1 << 2)
+-#define M_UNLOCK	0
+-#define M_LOCK		1
+-
+-struct memory_timings {
+-	u32 m_type;		/* ddr = 1, sdr = 0 */
+-	u32 dll_mode;		/* use lock mode = 1, unlock mode = 0 */
+-	u32 slow_dll_ctrl;	/* unlock mode, dll value for slow speed */
+-	u32 fast_dll_ctrl;	/* unlock mode, dll value for fast speed */
+-	u32 base_cs;		/* base chip select to use for calculations */
+-};
+-
+-extern void omap2_init_memory_params(u32 force_lock_to_unlock_mode);
+-extern u32 omap2_memory_get_slow_dll_ctrl(void);
+-extern u32 omap2_memory_get_fast_dll_ctrl(void);
+-extern u32 omap2_memory_get_type(void);
+-u32 omap2_dll_force_needed(void);
+-u32 omap2_reprogram_sdrc(u32 level, u32 force);
+-void __init omap2_init_memory(void);
+-void __init gpmc_init(void);
+-
+-#endif
+diff --git a/arch/arm/plat-omap/include/mach/gpmc.h b/arch/arm/plat-omap/include/mach/gpmc.h
+index 45b6784..921b165 100644
+--- a/arch/arm/plat-omap/include/mach/gpmc.h
++++ b/arch/arm/plat-omap/include/mach/gpmc.h
+@@ -103,6 +103,6 @@ extern int gpmc_cs_request(int cs, unsigned long size, unsigned long *base);
+ extern void gpmc_cs_free(int cs);
+ extern int gpmc_cs_set_reserved(int cs, int reserved);
+ extern int gpmc_cs_reserved(int cs);
+-extern void gpmc_init(void);
++extern void __init gpmc_init(void);
+ 
+ #endif
+diff --git a/arch/arm/plat-omap/include/mach/sdrc.h b/arch/arm/plat-omap/include/mach/sdrc.h
+index a98c6c3..c905b52 100644
+--- a/arch/arm/plat-omap/include/mach/sdrc.h
++++ b/arch/arm/plat-omap/include/mach/sdrc.h
+@@ -74,4 +74,25 @@
+ #define SMS_SYSCONFIG		0x010
+ /* REVISIT: fill in other SMS registers here */
+ 
++#ifndef __ASSEMBLER__
++
++struct memory_timings {
++	u32 m_type;		/* ddr = 1, sdr = 0 */
++	u32 dll_mode;		/* use lock mode = 1, unlock mode = 0 */
++	u32 slow_dll_ctrl;	/* unlock mode, dll value for slow speed */
++	u32 fast_dll_ctrl;	/* unlock mode, dll value for fast speed */
++	u32 base_cs;		/* base chip select to use for calculations */
++};
++
++extern void omap2_init_memory_params(u32 force_lock_to_unlock_mode);
++extern u32 omap2_memory_get_slow_dll_ctrl(void);
++extern u32 omap2_memory_get_fast_dll_ctrl(void);
++extern u32 omap2_memory_get_type(void);
++u32 omap2_dll_force_needed(void);
++u32 omap2_reprogram_sdrc(u32 level, u32 force);
++void __init omap2_init_memory(void);
++
++#endif
++
++
+ #endif
 
-Per rmk's preferences, some patches have been 'compressed.' That is, some 
-fix patches have been rolled into a single patch with the original.  To 
-ease cross-referencing with the linux-omap git tree, original commit IDs 
-have been inserted into the patch messages.  Also, what would have been an 
-extremely long series has been split into six smaller, cumulative, roughly 
-thematic patch series.  If requested, I would be pleased to simply send 
-one large series of the original, uncompressed patches.  Thanks to the git 
-and stgit authors and contributors: without those tools, this process 
-would have been nearly impossible.
 
-Each series has been compile-tested for 5912 OSK (OMAP1), H4 and 2430SDP 
-(OMAP2), and BeagleBoard (OMAP3), and boot-tested on 2430SDP and Beagle.
-After the sixth series, the diff with the linux-omap tree for the files 
-listed below is minimal.
-
-
-regards,
-
-- Paul
-
-
-manifest:
-
-[PATCH A 00/10] OMAP clock, A of F: preliminaries
-[PATCH B 00/10] OMAP clock, B of F: clockdomain, powerdomain updates
-[PATCH C 00/13] OMAP clock, C of F: DPLL updates
-[PATCH D 00/11] OMAP clock, D of F: clock code cleanup
-[PATCH E 00/14] OMAP clock, E of F: SDRAM fixes, clock optimization
-[PATCH F 00/12] OMAP clock, F of F: more clock cleanup
-
-diffstat (post-compression; pre-compression stats are larger):
-
- arch/arm/mach-omap1/clock.c                   |  168 -                              
- arch/arm/mach-omap1/clock.h                   |  136 -                              
- arch/arm/mach-omap2/Makefile                  |    8                                
- arch/arm/mach-omap2/board-2430sdp.c           |    2                                
- arch/arm/mach-omap2/board-apollon.c           |    2                                
- arch/arm/mach-omap2/board-generic.c           |    2
- arch/arm/mach-omap2/board-h4.c                |    2
- arch/arm/mach-omap2/board-ldp.c               |    2
- arch/arm/mach-omap2/board-omap3beagle.c       |    2
- arch/arm/mach-omap2/clock.c                   |  786 ++++----
- arch/arm/mach-omap2/clock.h                   |   30
- arch/arm/mach-omap2/clock24xx.c               |  409 ++--
- arch/arm/mach-omap2/clock24xx.h               | 1395 ++++++++------
- arch/arm/mach-omap2/clock34xx.c               |  399 +++-
- arch/arm/mach-omap2/clock34xx.h               | 2509 ++++++++++++++------------
- arch/arm/mach-omap2/clockdomain.c             |   66
- arch/arm/mach-omap2/clockdomains.h            |  132 -
- arch/arm/mach-omap2/cm-regbits-24xx.h         |   81
- arch/arm/mach-omap2/cm-regbits-34xx.h         |  121 -
- arch/arm/mach-omap2/cm.h                      |   20
- arch/arm/mach-omap2/io.c                      |   10
- arch/arm/mach-omap2/mcbsp.c                   |    5
- arch/arm/mach-omap2/memory.c                  |   14
- arch/arm/mach-omap2/memory.h                  |   43
- arch/arm/mach-omap2/pm.c                      |    2
- arch/arm/mach-omap2/powerdomains.h            |    8
- arch/arm/mach-omap2/powerdomains34xx.h        |   63
- arch/arm/mach-omap2/prcm-common.h             |  198 +-
- arch/arm/mach-omap2/prm-regbits-34xx.h        |    9
- arch/arm/mach-omap2/prm.h                     |  166 -
- arch/arm/mach-omap2/sdrc.c                    |   95
- arch/arm/mach-omap2/sdrc2xxx.c                |   83
- arch/arm/mach-omap2/sram242x.S                |    5
- arch/arm/mach-omap2/sram243x.S                |    5
- arch/arm/plat-omap/clock.c                    |  366 ++-
- arch/arm/plat-omap/common.c                   |    4
- arch/arm/plat-omap/cpu-omap.c                 |   57
- arch/arm/plat-omap/include/mach/clock.h       |  178 -
- arch/arm/plat-omap/include/mach/clockdomain.h |   24
- arch/arm/plat-omap/include/mach/common.h      |    7
- arch/arm/plat-omap/include/mach/gpmc.h        |    2
- arch/arm/plat-omap/include/mach/io.h          |    4
- arch/arm/plat-omap/include/mach/powerdomain.h |    5
- arch/arm/plat-omap/include/mach/prcm.h        |    5
- arch/arm/plat-omap/include/mach/sdrc.h        |   82
- arch/arm/plat-omap/include/mach/system.h      |    4
- 46 files changed, 4641 insertions(+), 3075 deletions(-)
