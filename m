@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbZA1UlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbZA1Ulo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756114AbZA1UlY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 15:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754746AbZA1UaK
+	id S1758847AbZA1Ulo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 15:41:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZA1UaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 15:30:10 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:32994 "EHLO
+	Wed, 28 Jan 2009 15:30:13 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:32996 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754700AbZA1UaI (ORCPT
+	with ESMTP id S1754758AbZA1UaK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 15:30:08 -0500
-MBOX-Line: From nobody Tue Jan 27 19:12:57 2009
+	Wed, 28 Jan 2009 15:30:10 -0500
+MBOX-Line: From nobody Tue Jan 27 19:13:05 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH A 04/10] OMAP3: move USBHOST SAR handling from clock framework
-	to powerdomain layer
+Subject: [PATCH A 06/10] OMAP2: Fix definition of SGX clock register bits
 To: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
-Cc: Paul Walmsley <paul@pwsan.com>, Tony Lindgren <tony@atomide.com>,
+Cc: Daniel Stone <daniel.stone@nokia.com>, Tony Lindgren <tony@atomide.com>,
        linux-omap@vger.kernel.org
-Date: Tue, 27 Jan 2009 19:12:57 -0700
-Message-ID: <20090128021254.7244.13579.stgit@localhost.localdomain>
+Date: Tue, 27 Jan 2009 19:13:05 -0700
+Message-ID: <20090128021302.7244.33650.stgit@localhost.localdomain>
 In-Reply-To: <20090128020447.7244.80496.stgit@localhost.localdomain>
 References: <20090128020447.7244.80496.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
@@ -29,66 +28,64 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove usbhost_sar_fclk from the OMAP3 clock framework.  The bit that
-the clock was tweaking doesn't actually enable or disable a clock; it
-controls whether the hardware will save and restore USBHOST state
-when the powerdomain changes state.  (That happens to coincidentally
-enable a clock for the duration of the operation, hence the earlier
-confusion.)
+From: Daniel Stone <daniel.stone@nokia.com>
 
-In place of the clock, mark the USBHOST powerdomain as supporting
-hardware save-and-restore functionality.
+The GFX/SGX functional and interface clocks have different masks, for
+some unknown reason, so split EN_SGX_SHIFT into one each for fclk and
+iclk.
 
-linux-omap source commit is f3ceac86a9d425d101d606d87a5af44afef27179.
+Correct according to the TRM and the far more important 'does this
+actually work at all?' metric.
 
-Signed-off-by: Paul Walmsley <paul@pwsan.com>
+linux-omap source commit is de1121fdb899f762b9e717f44eaf3fae7c00cd3e.
+
+Signed-off-by: Daniel Stone <daniel.stone@nokia.com>
 Signed-off-by: Tony Lindgren <tony@atomide.com>
 ---
- arch/arm/mach-omap2/clock34xx.h        |   12 ------------
- arch/arm/mach-omap2/powerdomains34xx.h |    1 +
- 2 files changed, 1 insertions(+), 12 deletions(-)
+ arch/arm/mach-omap2/clock34xx.h       |    4 ++--
+ arch/arm/mach-omap2/cm-regbits-34xx.h |    8 ++++++--
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
 diff --git a/arch/arm/mach-omap2/clock34xx.h b/arch/arm/mach-omap2/clock34xx.h
-index 877b274..23b909d 100644
+index f8c9885..63adfab 100644
 --- a/arch/arm/mach-omap2/clock34xx.h
 +++ b/arch/arm/mach-omap2/clock34xx.h
-@@ -2216,17 +2216,6 @@ static struct clk usbhost_ick = {
+@@ -1293,7 +1293,7 @@ static struct clk sgx_fck = {
+ 	.name		= "sgx_fck",
+ 	.init		= &omap2_init_clksel_parent,
+ 	.enable_reg	= OMAP_CM_REGADDR(OMAP3430ES2_SGX_MOD, CM_FCLKEN),
+-	.enable_bit	= OMAP3430ES2_EN_SGX_SHIFT,
++	.enable_bit	= OMAP3430ES2_CM_FCLKEN_SGX_EN_SGX_SHIFT,
+ 	.clksel_reg	= OMAP_CM_REGADDR(OMAP3430ES2_SGX_MOD, CM_CLKSEL),
+ 	.clksel_mask	= OMAP3430ES2_CLKSEL_SGX_MASK,
+ 	.clksel		= sgx_clksel,
+@@ -1307,7 +1307,7 @@ static struct clk sgx_ick = {
+ 	.parent		= &l3_ick,
+ 	.init		= &omap2_init_clk_clkdm,
+ 	.enable_reg	= OMAP_CM_REGADDR(OMAP3430ES2_SGX_MOD, CM_ICLKEN),
+-	.enable_bit	= OMAP3430ES2_EN_SGX_SHIFT,
++	.enable_bit	= OMAP3430ES2_CM_ICLKEN_SGX_EN_SGX_SHIFT,
+ 	.flags		= CLOCK_IN_OMAP3430ES2,
+ 	.clkdm_name	= "sgx_clkdm",
  	.recalc		= &followparent_recalc,
- };
+diff --git a/arch/arm/mach-omap2/cm-regbits-34xx.h b/arch/arm/mach-omap2/cm-regbits-34xx.h
+index a46f93c..f3c327b 100644
+--- a/arch/arm/mach-omap2/cm-regbits-34xx.h
++++ b/arch/arm/mach-omap2/cm-regbits-34xx.h
+@@ -332,8 +332,12 @@
+ #define OMAP3430ES1_CLKACTIVITY_GFX_MASK		(1 << 0)
  
--static struct clk usbhost_sar_fck = {
--	.name		= "usbhost_sar_fck",
--	.parent		= &osc_sys_ck,
--	.init		= &omap2_init_clk_clkdm,
--	.enable_reg	= OMAP_PRM_REGADDR(OMAP3430ES2_USBHOST_MOD, PM_PWSTCTRL),
--	.enable_bit	= OMAP3430ES2_SAVEANDRESTORE_SHIFT,
--	.flags		= CLOCK_IN_OMAP3430ES2,
--	.clkdm_name	= "usbhost_clkdm",
--	.recalc		= &followparent_recalc,
--};
--
- /* WKUP */
+ /* CM_FCLKEN_SGX */
+-#define OMAP3430ES2_EN_SGX_SHIFT			1
+-#define OMAP3430ES2_EN_SGX_MASK				(1 << 1)
++#define OMAP3430ES2_CM_FCLKEN_SGX_EN_SGX_SHIFT		1
++#define OMAP3430ES2_CM_FCLKEN_SGX_EN_SGX_MASK		(1 << 1)
++
++/* CM_ICLKEN_SGX */
++#define OMAP3430ES2_CM_ICLKEN_SGX_EN_SGX_SHIFT		0
++#define OMAP3430ES2_CM_ICLKEN_SGX_EN_SGX_MASK		(1 << 0)
  
- static const struct clksel_rate usim_96m_rates[] = {
-@@ -3174,7 +3163,6 @@ static struct clk *onchip_34xx_clks[] __initdata = {
- 	&usbhost_120m_fck,
- 	&usbhost_48m_fck,
- 	&usbhost_ick,
--	&usbhost_sar_fck,
- 	&usim_fck,
- 	&gpt1_fck,
- 	&wkup_32k_fck,
-diff --git a/arch/arm/mach-omap2/powerdomains34xx.h b/arch/arm/mach-omap2/powerdomains34xx.h
-index f573f71..3a8e4fb 100644
---- a/arch/arm/mach-omap2/powerdomains34xx.h
-+++ b/arch/arm/mach-omap2/powerdomains34xx.h
-@@ -312,6 +312,7 @@ static struct powerdomain usbhost_pwrdm = {
- 	.sleepdep_srcs	  = dss_per_usbhost_sleepdeps,
- 	.pwrsts		  = PWRSTS_OFF_RET_ON,
- 	.pwrsts_logic_ret = PWRDM_POWER_RET,
-+	.flags		  = PWRDM_HAS_HDWR_SAR, /* for USBHOST ctrlr only */
- 	.banks		  = 1,
- 	.pwrsts_mem_ret	  = {
- 		[0] = PWRDM_POWER_RET, /* MEMRETSTATE */
+ /* CM_CLKSEL_SGX */
+ #define OMAP3430ES2_CLKSEL_SGX_SHIFT			0
 
 
