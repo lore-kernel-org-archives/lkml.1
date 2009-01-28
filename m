@@ -1,53 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752759AbZA1Aji@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZA1AoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752759AbZA1Aji (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 27 Jan 2009 19:39:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751545AbZA1Aj3
+	id S1753047AbZA1AoX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 27 Jan 2009 19:44:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZA1AoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 27 Jan 2009 19:39:29 -0500
-Received: from cantor.suse.de ([195.135.220.2]:55059 "EHLO mx1.suse.de"
+	Tue, 27 Jan 2009 19:44:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44964 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751423AbZA1Aj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 27 Jan 2009 19:39:29 -0500
-Date: Tue, 27 Jan 2009 16:35:19 -0800
-From: Greg KH <gregkh@suse.de>
-To: Bron Gondwana <brong@fastmail.fm>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       stable@kernel.org, Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>
-Subject: Re: [patch 016/104] epoll: introduce resource usage limits
-Message-ID: <20090128003519.GA11395@suse.de>
-References: <20081203193901.715896543@mini.kroah.org> <20081203194849.GQ8950@kroah.com> <1232686261.9977.1296303473@webmail.messagingengine.com> <20090123051620.GA8122@suse.de> <1232704065.25510.1296328851@webmail.messagingengine.com> <20090123170631.GB11566@suse.de> <20090124130334.GA8031@brong.net> <20090125110126.GA11598@brong.net> <20090125122039.GA16603@brong.net>
+	id S1751394AbZA1AoO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 27 Jan 2009 19:44:14 -0500
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       powertop ml <power@bughost.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, Ingo Molnar <mingo@elte.hu>,
+       srostedt@redhat.com, Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Neil Horman <nhorman@tuxdriver.com>, utrace-devel@redhat.com
+Subject: Re: [PATCH] tracer for sys_open() - sreadahead
+References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere>
+From: fche@redhat.com (Frank Ch. Eigler)
+Date: Tue, 27 Jan 2009 19:43:32 -0500
+In-Reply-To: <20090127224303.GB5850@nowhere> (Frederic Weisbecker's message of "Tue, 27 Jan 2009 23:43:05 +0100")
+Message-ID: <y0mtz7ks1jf.fsf@ton.toronto.redhat.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090125122039.GA16603@brong.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jan 25, 2009 at 11:20:39PM +1100, Bron Gondwana wrote:
-> On Sun, Jan 25, 2009 at 10:01:27PM +1100, Bron Gondwana wrote:
-> > On Sun, Jan 25, 2009 at 12:03:34AM +1100, Bron Gondwana wrote:
-> > > The attached patches do this - the first bumps the default to 1024, and
-> > > the second adds /proc/sys/fs/epoll/limits which contains 4 values.  The
-> > > first two are the maximum current value for each field, and the second
-> > > two are the values of max_user_instances and max_user_watches again,
-> > > similar to the file-max interface.
-> > 
-> > And this third one (on top of the other two) adds the UIDs of the most
-> > heavily using users to the "limits" file, to help you track them down.
-> 
-> Patch 4 - I'll stop now ;)
+Frederic Weisbecker <fweisbec@gmail.com> writes:
 
-Heh.
+> [...]
+> Speaking about a global syscall tracer, I made a patch to trace only the syscalls
+> with the function-graph-tracer.
+> http://lkml.org/lkml/2008/12/30/267 This low-level part can easily
+> be used by all tracers that would like to inspect syscalls.
+> [...]
+> Just a change is needed: Steven requested that the part inside
+> syscall_trace_enter become a tracepoint, making it totally shareable
+> between tracers and easy to turn on and off.
 
-Can you resubmit all 4 patches, and cc: the epoll author, Davide?  He's
-the one that needs to accept these changes.
+Alternately, you could just rely on utrace's hooks.  They were thought
+out more fully with respect to parameter access, manipulation, and
+programmatic control befitting even a debugger.
 
-thanks,
 
-greg k-h
+- FChE
