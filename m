@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754813AbZA1LeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbZA1Lgm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754813AbZA1LeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 06:34:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751541AbZA1LeJ
+	id S1754506AbZA1Lgm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 06:36:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZA1Lgd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 06:34:09 -0500
-Received: from tac.ki.iif.hu ([193.6.222.43]:57791 "EHLO tac.ki.iif.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751212AbZA1LeI convert rfc822-to-8bit (ORCPT
+	Wed, 28 Jan 2009 06:36:33 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34145 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751258AbZA1Lgc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 06:34:08 -0500
-From: Ferenc Wagner <wferi@niif.hu>
-To: Arve =?utf-8?B?SGrDuG5uZXbDpWc=?= <arve@android.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc2 dies on startup
-References: <877i4rjw38.fsf@tac.ki.iif.hu>
-	<20090125224625.96429d3d.akpm@linux-foundation.org>
-	<d6200be20901261629y2e3d8804h16055b9497125371@mail.gmail.com>
-Date: Wed, 28 Jan 2009 12:33:58 +0100
-In-Reply-To: Ferenc Wagner's message of "Tue, 27 Jan 2009 18:15:31 +0100"
-Message-ID: <873af33brt.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 28 Jan 2009 06:36:32 -0500
+Date: Wed, 28 Jan 2009 11:36:40 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bron Gondwana <brong@fastmail.fm>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Davide Libenzi <davidel@xmailserver.org>,
+       Bron Gondwana <brong@fastmail.fm>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
+Message-ID: <20090128113640.2ea5a9fb@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090128105902.GB29864@brong.net>
+References: <20090128033824.GA1662@brong.net>
+	<59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>
+	<alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com>
+	<2c0942db0901272007w4298738cq37918f776276d424@mail.gmail.com>
+	<20090128101641.33978100@lxorguk.ukuu.org.uk>
+	<20090128105902.GB29864@brong.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ferenc Wagner <wferi@niif.hu> writes:
+> > "A kernel upgrade in a -stable series point release fixed a security DoS"
+> 
+> Alan, that's a complete load of bollocks.  It broke common configurations 
+> of java, postfix and apache on real-world machines, causing significant
+> actual denials of service in previously reliable configurations.
 
-> Arve Hjønnevåg <arve@android.com> writes:
->
->> On Sun, Jan 25, 2009 at 10:46 PM, Andrew Morton
->> <akpm@linux-foundation.org> wrote:
->>
->>> At a guess I'd say that drivers/staging/android/ram_console.c is calling
->>> the reed-solomon code earlier than it's expecting.  But that might be
->>> totally wrong.
->>
->> Yes, but it also is trying to use a zero sized buffer at virtual
->> address 0 so it will not work much better if you turn off ecc.
->
-> This sounds understandable given that the defaults are
->
-> CONFIG_ANDROID_RAM_CONSOLE_EARLY_ADDR=0x0
-> CONFIG_ANDROID_RAM_CONSOLE_EARLY_SIZE=0x0
->
->> This patch (to the android kernel tree) add some validation:
->
-> Compiling it now (on the vanilla tree).
+It fixed a security DoS. I was merely pointing out that the description
+provided before was bogus, incomplete and loaded.
 
-Fine, this patch helps.  Instead of
+> viable within the code.  The DoS works by creating epoll descriptors
+> watching other epoll descriptors, which strikes me as a much less
+> real-world actual use pattern than a bunch of separate daemons with an
+> epoll watcher each.
 
-[    0.000000] Detected 1536.828 MHz processor.
-[    0.004000] Console: colour VGA+ 80x25
-[    0.004000] console [ttyS0] enabled
-[    0.004000] BUG: unable to handle kernel paging request at f000e816
-[    0.004000] IP: [<c0190b5c>] kmem_cache_alloc+0x2d/0x95
-[...]
+Deliberate attackers don't have to follow typical usage patterns.
 
-now I get
+> If it's possible to count watches only if they're added to another epoll
+> instance, then we'd have a metric that still catches the N^2 attack, but
+> doesn't interact with the common non-attacky use-case.
 
-[    0.000000] Detected 1537.027 MHz processor.
-[    0.004000] Console: colour VGA+ 80x25
-[    0.004000] console [tty0] enabled
-[    0.004000] ram_console: buffer (null), invalid size 0, datasize -12
-[    0.004000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-[...]
--- 
-Thanks,
-Feri.
+Agreed entirely.
