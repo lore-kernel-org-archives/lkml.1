@@ -1,177 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbZA1PeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751625AbZA1Ped@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753588AbZA1PeN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 10:34:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZA1Pd6
+	id S1751625AbZA1Ped (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 10:34:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751403AbZA1PeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 10:33:58 -0500
-Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:36981 "EHLO
-	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751019AbZA1Pd5 (ORCPT
+	Wed, 28 Jan 2009 10:34:20 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:53290 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754041AbZA1PeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 10:33:57 -0500
-Subject: Re: [BUG] mlocked page counter mismatch
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: linux mm <linux-mm@kvack.org>, linux kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-In-Reply-To: <20090128102841.GA24924@barrios-desktop>
-References: <20090128102841.GA24924@barrios-desktop>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Wed, 28 Jan 2009 10:33:52 -0500
-Message-Id: <1233156832.8760.85.camel@lts-notebook>
+	Wed, 28 Jan 2009 10:34:19 -0500
+Date: Wed, 28 Jan 2009 17:29:51 +0200 (EET)
+Message-Id: <20090128.172951.193700554.Hiroshi.DOYU@nokia.com>
+To: linux@arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 05/10] omap mailbox: fix empty struct device for omap1
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+In-Reply-To: <20090128144955.GA23089@n2100.arm.linux.org.uk>
+References: <20090116081919.17571.34378.stgit@oreo.research.nokia.com>
+	<20090116082727.17571.87307.stgit@oreo.research.nokia.com>
+	<20090128144955.GA23089@n2100.arm.linux.org.uk>
+X-Mailer: Mew version 5.2 on Emacs 22.2 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: Multipart/Mixed;
+ boundary="--Next_Part(Wed_Jan_28_17_29_51_2009_186)--"
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 28 Jan 2009 15:29:52.0878 (UTC) FILETIME=[43F410E0:01C9815D]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-28 at 19:28 +0900, MinChan Kim wrote:
-> After executing following program, 'cat /proc/meminfo' shows
-> following result. 
+----Next_Part(Wed_Jan_28_17_29_51_2009_186)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+
+Hi Russell,
+
+From: ext Russell King - ARM Linux <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 05/10] omap mailbox: fix empty struct device for omap1
+Date: Wed, 28 Jan 2009 15:49:55 +0100
+
+> On Fri, Jan 16, 2009 at 10:27:27AM +0200, Hiroshi DOYU wrote:
+> > @@ -17,6 +17,8 @@
+> >  #include <mach/mailbox.h>
+> >  #include <mach/irqs.h>
+> >
+> > +#define DRV_NAME "omap1-mailbox"
 > 
-> --
-> # cat /proc/meminfo 
-> ..
-> Unevictable:           8 kB
-> Mlocked:               8 kB
-> ..
+> I don't see any need for this define - it just adds an additional level of
+> indirection when trying to find out the name of the driver.  It's only
+> used in two places as is, so it's value is rather limited:
 
-Sorry, from your description, I can't understand what the problem is.
-Are you saying that 8kB [2 pages] remains locked after you run your
-test?
+I fixed this along with the patch 06/10 as well. A whole patchset is available as:
 
-What did meminfo show before running the test program?  And what kernel
-version?
+The following changes since commit 1de9e8e70f5acc441550ca75433563d91b269bbe:
+  Linus Torvalds (1):
+        Linux 2.6.29-rc2
 
-> 
-> -- test program --
-> 
-> #include <stdio.h>
-> #include <sys/mman.h>
-> int main()
-> {
->         char buf[64] = {0,};
->         char *ptr;
->         int k;
->         int i,j;
->         int x,y;
->         mlockall(MCL_CURRENT);
->         sprintf(buf, "cat /proc/%d/maps", getpid());
->         system(buf);
->         return 0;
-> }
-> 
-> --
-> 
-> It seems mlocked page counter have a problem.
-> After I diged in source, I found that try_to_unmap_file called 
-> try_to_mlock_page about shared mapping pages 
-> since other vma had VM_LOCKED flag.
-> After all, try_to_mlock_page called mlock_vma_page. 
-> so, mlocked counter increased
+are available in the git repository at:
 
-This path of try_to_unmap_file() -> try_to_mlock_page() should only be
-invoked during reclaim--from shrink_page_list().  [try_to_unmap() is
-also called from page migration, but in this case, try_to_unmap_one()
-won't return SWAP_MLOCK so we don't call try_to_mlock_page().]  Unless
-your system is in continuous reclaim, I don't think you'd hit this
-during your test program.
+  http://git.gitorious.org/lk/mainline.git mailbox
 
-> 
-> But, After I called munlockall intentionally, the counter work well. 
-> In case of munlockall, we already had a mmap_sem about write. 
-> Such a case, try_to_mlock_page can't call mlock_vma_page.
-> so, mlocked counter didn't increased. 
-> As a result, the counter seems to be work well but I think 
-> it also have a problem.
+Hiroshi DOYU (10):
+      omap mailbox: cleanup omap2 register definition with macro
+      omap mailbox: add initial omap3 support
+      omap mailbox: print hardware revision at startup
+      omap mailbox: fix empty struct device for omap_mbox
+      omap mailbox: fix empty struct device for omap1
+      omap mailbox: fix empty struct device for omap2
+      omap mailbox: add save_/restore_ctx() for PM
+      omap mailbox: move mailbox.h into mailbox.c
+      omap mailbox: convert sequence bit checking to module paramter
+      omap mailbox: remove unnecessary header file inclusion
 
-I THINK this is a artifact of the way stats are accumulated in per cpu
-differential counters and pushed to the zone state accumulators when a
-threshold is reached.  I've seen this condition before, but it
-eventually clears itself as the stats get pushed to the zone state.
-Still, it bears more investigation, as it's been a while since I worked
-on this and some subsequent fixes could have broken it:
+ arch/arm/mach-omap1/devices.c              |    2 +-
+ arch/arm/mach-omap1/mailbox.c              |   33 +++--
+ arch/arm/mach-omap2/devices.c              |   39 ++++--
+ arch/arm/mach-omap2/mailbox.c              |  199 ++++++++++++++++------------
+ arch/arm/plat-omap/Kconfig                 |    8 +
+ arch/arm/plat-omap/include/mach/mailbox.h  |   27 ++++-
+ arch/arm/plat-omap/include/mach/omap34xx.h |    1 +
+ arch/arm/plat-omap/mailbox.c               |  152 ++++++++++++++++------
+ arch/arm/plat-omap/mailbox.h               |  100 --------------
+ 9 files changed, 313 insertions(+), 248 deletions(-)
+ delete mode 100644 arch/arm/plat-omap/mailbox.h
 
-I ran your test program on one of our x86_64 test systems running
-2.6.29-rc2-mmotm-090116-1618, immediately after boot.  Here's what I
-saw:
+----Next_Part(Wed_Jan_28_17_29_51_2009_186)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0006-omap-mailbox-fix-empty-struct-device-for-omap2.patch"
 
-## before:
-#cat /proc/meminfo | egrep 'Unev|Mlo'
-Unevictable:        3448 kB
-Mlocked:            3448 kB	# = 862 4k pages
+>From 200f6c53d6d297690616d2b348b0ac01a969e795 Mon Sep 17 00:00:00 2001
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Date: Sun, 18 Jan 2009 01:04:08 +0200
+Subject: [PATCH 06/10] omap mailbox: fix empty struct device for omap2
 
-This is the usual case on this platform. I'm using a RHEL5 distro
-installation and one of the system daemons mlocks itself.  I forget
-which.  I'll need to investigate further.  Also, it's possible that this
-value itself is lower than the actual number of mlocked pages because
-some of the counts may still be in the per cpu differential counters.
+Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+---
+ arch/arm/mach-omap2/devices.c |    2 +-
+ arch/arm/mach-omap2/mailbox.c |   17 ++++++++++-------
+ 2 files changed, 11 insertions(+), 8 deletions(-)
 
-#tail -8 /proc/vmstat
-unevictable_pgs_culled 738
-unevictable_pgs_scanned 0
-unevictable_pgs_rescued 117  # = 89 + 28 - OK
-unevictable_pgs_mlocked 979  # 979 - 117 = 862 remaining locked
-unevictable_pgs_munlocked 89
-unevictable_pgs_cleared 28
-unevictable_pgs_stranded 0
-unevictable_pgs_mlockfreed 0
-
-So far, so good.  Now, run your test:
-
-#./mck-mlock-test
-<snip the map output>
-#cat /proc/meminfo | egrep 'Unev|Mlo'
-Unevictable:        3460 kB
-Mlocked:            3460 kB	# = 865 pages;  3 more than above
-
-# tail -8 /proc/vmstat
-unevictable_pgs_culled 757
-unevictable_pgs_scanned 0
-unevictable_pgs_rescued 154	# = 125 + 29 - OK
-unevictable_pgs_mlocked 1374	# 1374 - 154 = 1220 ???? 
-unevictable_pgs_munlocked 125
-unevictable_pgs_cleared 29
-unevictable_pgs_stranded 0
-unevictable_pgs_mlockfreed 0
-
-So, we have 3 additional pages shown as unevictable; and our stats don't
-add up.  We see way more pages mlocked than munlocked/cleared.  [Aside:
-clear happens on file truncation and COW of mlocked pages.]  I wonder if
-this is the result of removing some of the lru_add_drain_all() calls
-that we used to have in the mlock code to improve the statistics.  We
-don't seem to have stranded any pages--that is, left them unevictable
-because we couldn't isolate them from the lru for munlock.
-
-If I drop caches, or run a moderately heavy mlock test--both of which
-generate quite a bit of zone and vmstat activity--the meminfo values
-become:
-
-Unevictable:        3456 kB
-Mlocked:            3456 kB
-
-Which is two more mlocked pages than we saw right after boot.  If I
-rerun your test repeatedly, the values always show as 3460kB.  Dropping
-caches always restores it to 3456kB.  This may be the correct value with
-the per cpu differential values pushed.  You could try dropping the page
-cache and see what the values are on your system.  You could also add
-the following line to your test program before the call to mlockall()
-and after the existing call to system():
-
-	system("cat /proc/meminfo | egrep 'Unev|Mlo'");
-
-I will add this to my list of things to be investigated, but I won't get
-to it for a while.  If I see more evidence that the counters are,
-indeed, broken, I'll try to bump the priority.
-
-Thanks,
-Lee
-
-
-
+diff --git a/arch/arm/mach-omap2/devices.c b/arch/arm/mach-omap2/devices.c
+index 0da2640..2a14084 100644
+--- a/arch/arm/mach-omap2/devices.c
++++ b/arch/arm/mach-omap2/devices.c
+@@ -61,7 +61,7 @@ static struct resource omap3_mbox_resources[] = {
+ };
+ 
+ static struct platform_device mbox_device = {
+-	.name		= "mailbox",
++	.name		= "omap2-mailbox",
+ 	.id		= -1,
+ };
+ 
+diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
+index 44e9101..af32db0 100644
+--- a/arch/arm/mach-omap2/mailbox.c
++++ b/arch/arm/mach-omap2/mailbox.c
+@@ -14,7 +14,9 @@
+ #include <linux/clk.h>
+ #include <linux/err.h>
+ #include <linux/platform_device.h>
+-#include <linux/io.h>
++
++#include <asm/io.h>
++
+ #include <mach/mailbox.h>
+ #include <mach/irqs.h>
+ 
+@@ -234,7 +236,7 @@ static struct omap_mbox mbox_iva_info = {
+ };
+ #endif
+ 
+-static int __init omap2_mbox_probe(struct platform_device *pdev)
++static int __devinit omap2_mbox_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+ 	int ret;
+@@ -257,7 +259,7 @@ static int __init omap2_mbox_probe(struct platform_device *pdev)
+ 		goto err_dsp;
+ 	}
+ 
+-	ret = omap_mbox_register(&mbox_dsp_info);
++	ret = omap_mbox_register(&pdev->dev, &mbox_dsp_info);
+ 	if (ret)
+ 		goto err_dsp;
+ 
+@@ -271,7 +273,7 @@ static int __init omap2_mbox_probe(struct platform_device *pdev)
+ 			goto err_iva1;
+ 		}
+ 		mbox_iva_info.irq = res->start;
+-		ret = omap_mbox_register(&mbox_iva_info);
++		ret = omap_mbox_register(&pdev->dev, &mbox_iva_info);
+ 		if (ret)
+ 			goto err_iva1;
+ 	}
+@@ -285,7 +287,7 @@ err_dsp:
+ 	return ret;
+ }
+ 
+-static int omap2_mbox_remove(struct platform_device *pdev)
++static int __devexit omap2_mbox_remove(struct platform_device *pdev)
+ {
+ #if defined(CONFIG_ARCH_OMAP2420)
+ 	omap_mbox_unregister(&mbox_iva_info);
+@@ -297,9 +299,9 @@ static int omap2_mbox_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver omap2_mbox_driver = {
+ 	.probe = omap2_mbox_probe,
+-	.remove = omap2_mbox_remove,
++	.remove = __devexit_p(omap2_mbox_remove),
+ 	.driver = {
+-		.name = "mailbox",
++		.name = "omap2-mailbox",
+ 	},
+ };
+ 
+@@ -319,3 +321,4 @@ module_exit(omap2_mbox_exit);
+ MODULE_LICENSE("GPL v2");
+ MODULE_DESCRIPTION("omap mailbox: omap2/3 architecture specific functions");
+ MODULE_AUTHOR("Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, Paul Mundt");
++MODULE_ALIAS("platform:omap2-mailbox");
+-- 
+1.6.1.rc4
 
 
+----Next_Part(Wed_Jan_28_17_29_51_2009_186)--
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0005-omap-mailbox-fix-empty-struct-device-for-omap1.patch"
+
+>From 6f215301eab1e20c83d4e55e0de5faec62b17ae7 Mon Sep 17 00:00:00 2001
+From: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Date: Sun, 18 Jan 2009 01:04:07 +0200
+Subject: [PATCH 05/10] omap mailbox: fix empty struct device for omap1
+
+Signed-off-by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+---
+ arch/arm/mach-omap1/devices.c |    2 +-
+ arch/arm/mach-omap1/mailbox.c |   33 ++++++++++++++++++---------------
+ 2 files changed, 19 insertions(+), 16 deletions(-)
+
+diff --git a/arch/arm/mach-omap1/devices.c b/arch/arm/mach-omap1/devices.c
+index 77382d8..b4b6106 100644
+--- a/arch/arm/mach-omap1/devices.c
++++ b/arch/arm/mach-omap1/devices.c
+@@ -86,7 +86,7 @@ static struct resource mbox_resources[] = {
+ };
+ 
+ static struct platform_device mbox_device = {
+-	.name		= "mailbox",
++	.name		= "omap1-mailbox",
+ 	.id		= -1,
+ 	.num_resources	= ARRAY_SIZE(mbox_resources),
+ 	.resource	= mbox_resources,
+diff --git a/arch/arm/mach-omap1/mailbox.c b/arch/arm/mach-omap1/mailbox.c
+index 59abbf3..92a90be 100644
+--- a/arch/arm/mach-omap1/mailbox.c
++++ b/arch/arm/mach-omap1/mailbox.c
+@@ -1,7 +1,7 @@
+ /*
+  * Mailbox reservation modules for DSP
+  *
+- * Copyright (C) 2006 Nokia Corporation
++ * Copyright (C) 2006-2009 Nokia Corporation
+  * Written by: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+  *
+  * This file is subject to the terms and conditions of the GNU General Public
+@@ -13,7 +13,9 @@
+ #include <linux/resource.h>
+ #include <linux/interrupt.h>
+ #include <linux/platform_device.h>
+-#include <linux/io.h>
++
++#include <asm/io.h>
++
+ #include <mach/mailbox.h>
+ #include <mach/irqs.h>
+ 
+@@ -27,7 +29,7 @@
+ #define MAILBOX_DSP2ARM1_Flag		0x1c
+ #define MAILBOX_DSP2ARM2_Flag		0x20
+ 
+-unsigned long mbox_base;
++static void __iomem *mbox_base;
+ 
+ struct omap_mbox1_fifo {
+ 	unsigned long cmd;
+@@ -40,14 +42,14 @@ struct omap_mbox1_priv {
+ 	struct omap_mbox1_fifo rx_fifo;
+ };
+ 
+-static inline int mbox_read_reg(unsigned int reg)
++static inline int mbox_read_reg(size_t ofs)
+ {
+-	return __raw_readw(mbox_base + reg);
++	return __raw_readw(mbox_base + ofs);
+ }
+ 
+-static inline void mbox_write_reg(unsigned int val, unsigned int reg)
++static inline void mbox_write_reg(u32 val, size_t ofs)
+ {
+-	__raw_writew(val, mbox_base + reg);
++	__raw_writew(val, mbox_base + ofs);
+ }
+ 
+ /* msg */
+@@ -143,7 +145,7 @@ struct omap_mbox mbox_dsp_info = {
+ };
+ EXPORT_SYMBOL(mbox_dsp_info);
+ 
+-static int __init omap1_mbox_probe(struct platform_device *pdev)
++static int __devinit omap1_mbox_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res;
+ 	int ret = 0;
+@@ -170,12 +172,10 @@ static int __init omap1_mbox_probe(struct platform_device *pdev)
+ 	}
+ 	mbox_dsp_info.irq = res->start;
+ 
+-	ret = omap_mbox_register(&mbox_dsp_info);
+-
+-	return ret;
++	return omap_mbox_register(&pdev->dev, &mbox_dsp_info);
+ }
+ 
+-static int omap1_mbox_remove(struct platform_device *pdev)
++static int __devexit omap1_mbox_remove(struct platform_device *pdev)
+ {
+ 	omap_mbox_unregister(&mbox_dsp_info);
+ 
+@@ -184,9 +184,9 @@ static int omap1_mbox_remove(struct platform_device *pdev)
+ 
+ static struct platform_driver omap1_mbox_driver = {
+ 	.probe	= omap1_mbox_probe,
+-	.remove	= omap1_mbox_remove,
++	.remove	= __devexit_p(omap1_mbox_remove),
+ 	.driver	= {
+-		.name	= "mailbox",
++		.name	= "omap1-mailbox",
+ 	},
+ };
+ 
+@@ -203,4 +203,7 @@ static void __exit omap1_mbox_exit(void)
+ module_init(omap1_mbox_init);
+ module_exit(omap1_mbox_exit);
+ 
+-MODULE_LICENSE("GPL");
++MODULE_LICENSE("GPL v2");
++MODULE_DESCRIPTION("omap mailbox: omap1 architecture specific functions");
++MODULE_AUTHOR("Hiroshi DOYU" <Hiroshi.DOYU@nokia.com>);
++MODULE_ALIAS("platform:omap1-mailbox");
+-- 
+1.6.1.rc4
+
+
+----Next_Part(Wed_Jan_28_17_29_51_2009_186)----
