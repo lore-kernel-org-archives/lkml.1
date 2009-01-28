@@ -1,177 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754643AbZA1Ki4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755189AbZA1KjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754643AbZA1Ki4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 05:38:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750943AbZA1Kir
+	id S1755189AbZA1KjW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 05:39:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbZA1KjC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 05:38:47 -0500
-Received: from bohort.kerlabs.com ([62.160.40.57]:43373 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750839AbZA1Kiq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 05:38:46 -0500
-Date: Wed, 28 Jan 2009 11:38:43 +0100
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-Subject: Re: [PATCH 1/2] configfs: Silence lockdep on mkdir() and rmdir()
-Message-ID: <20090128103843.GL7532@hawkmoon.kerlabs.com>
-Reply-To: Louis.Rilling@kerlabs.com
-Mail-Followup-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	cluster-devel@redhat.com, swhiteho@redhat.com, peterz@infradead.org
-References: <20081218111536.GR19128@hawkmoon.kerlabs.com> <1229623218-8056-2-git-send-email-louis.rilling@kerlabs.com> <20090128035547.GE7244@mail.oracle.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-20491-1233138962-0001-2"
+	Wed, 28 Jan 2009 05:39:02 -0500
+Received: from ozlabs.org ([203.10.76.45]:52440 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754781AbZA1KjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 05:39:00 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+Date: Wed, 28 Jan 2009 21:08:49 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
+       akpm@linux-foundation.org, hpa@zytor.com, brgerst@gmail.com,
+       ebiederm@xmission.com, cl@linux-foundation.org, travis@sgi.com,
+       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+References: <20090115183942.GA6325@elte.hu> <200901271213.18605.rusty@rustcorp.com.au> <497E705B.5000302@kernel.org>
+In-Reply-To: <497E705B.5000302@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090128035547.GE7244@mail.oracle.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200901282108.51864.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tuesday 27 January 2009 12:54:27 Tejun Heo wrote:
+> Hello, Rusty.
 
---=_bohort-20491-1233138962-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Tejun!
 
-On 27/01/09 19:55 -0800, Joel Becker wrote:
-> On Thu, Dec 18, 2008 at 07:00:17PM +0100, Louis Rilling wrote:
+> There actually were quite some places where atomic add ops would be
+> useful, especially the places where statistics are collected.  For
+> logical bitops, I don't think we'll have too many of them.
 
-[...]
+If the stats are only manipulated in one context, than an atomic requirement is overkill (and expensive on non-x86).
 
->=20
-> >  #define CONFIGFS_ROOT		0x0001
-> > diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
-> > index 8e93341..f21be74 100644
-> > --- a/fs/configfs/dir.c
-> > +++ b/fs/configfs/dir.c
-> > @@ -94,6 +94,9 @@ static struct configfs_dirent *configfs_new_dirent(st=
-ruct configfs_dirent * pare
-> >  	INIT_LIST_HEAD(&sd->s_links);
-> >  	INIT_LIST_HEAD(&sd->s_children);
-> >  	sd->s_element =3D element;
-> > +#ifdef CONFIG_LOCKDEP
-> > +	sd->s_depth =3D -1;
-> > +#endif
-> >  	spin_lock(&configfs_dirent_lock);
-> >  	if (parent_sd->s_type & CONFIGFS_USET_DROPPING) {
-> >  		spin_unlock(&configfs_dirent_lock);
-> > @@ -176,6 +179,17 @@ static int init_symlink(struct inode * inode)
-> >  	return 0;
-> >  }
-> > =20
-> > +#ifdef CONFIG_LOCKDEP
-> > +static void configfs_set_dir_dirent_depth(struct configfs_dirent *pare=
-nt_sd,
-> > +					  struct configfs_dirent *sd)
-> > +{
-> > +	int parent_depth =3D parent_sd->s_depth;
-> > +
-> > +	if (parent_depth >=3D 0)
-> > +		sd->s_depth =3D parent_depth + 1;
-> > +}
-> > +#endif
-> > +
-> >  static int create_dir(struct config_item * k, struct dentry * p,
-> >  		      struct dentry * d)
-> >  {
-> > @@ -187,6 +201,9 @@ static int create_dir(struct config_item * k, struc=
-t dentry * p,
-> >  		error =3D configfs_make_dirent(p->d_fsdata, d, k, mode,
-> >  					     CONFIGFS_DIR | CONFIGFS_USET_CREATING);
-> >  	if (!error) {
-> > +#ifdef CONFIG_LOCKDEP
-> > +		configfs_set_dir_dirent_depth(p->d_fsdata, d->d_fsdata);
-> > +#endif
-> >  		error =3D configfs_create(d, mode, init_dir);
-> >  		if (!error) {
-> >  			inc_nlink(p->d_inode);
->=20
-> 	Can you change this to provide non-lockdep versions of
-> functions?  We don't want "#ifdef CONFIG_LOCKDEP" everywhere.  What we
-> want is the code to call functions unconditionally, and the functions to
-> do nothing if lockdep is not enabled.  Like:
->=20
-> #ifdef CONFIG_LOCKDEP
-> static inline void configfs_init_dir_dirent_depth(dirent)
-> {
->     dirent->s_depth =3D -1;
-> }
->=20
-> static void configfs_set_dir_dirent_depth(struct configfs_dirent *parent_=
-sd,
-> 					  struct configfs_dirent *sd)
-> {
-> 	int parent_depth =3D parent_sd->s_depth;
->=20
-> 	if (parent_depth >=3D 0)
-> 		sd->s_depth =3D parent_depth + 1;
-> }
-> #else
-> static inline void configfs_init_dir_dirent_depth(dirent)
-> {
-> }
->=20
-> static void configfs_set_dir_dirent_depth(struct configfs_dirent *parent_=
-sd,
-> 					  struct configfs_dirent *sd)
-> {
-> }
-> #endif
->=20
-> 	This makes the callsites much nicer to read:
->=20
-> @@ -94,6 +94,9 @@ static struct configfs_dirent *configfs_new_dirent(stru=
-ct configfs_dirent * pare
->  	INIT_LIST_HEAD(&sd->s_links);
->  	INIT_LIST_HEAD(&sd->s_children);
->  	sd->s_element =3D element;
-> +	configfs_init_dir_dirent_depth(sd);
->  	spin_lock(&configfs_dirent_lock);
->  	if (parent_sd->s_type & CONFIGFS_USET_DROPPING) {
->  		spin_unlock(&configfs_dirent_lock);
-> @@ -187,6 +201,7 @@ static int create_dir(struct config_item * k, struct =
-dentry * p,
->  		error =3D configfs_make_dirent(p->d_fsdata, d, k, mode,
->  					     CONFIGFS_DIR | CONFIGFS_USET_CREATING);
->  	if (!error) {
-> +		configfs_set_dir_dirent_depth(p->d_fsdata, d->d_fsdata);
->  		error =3D configfs_create(d, mode, init_dir);
->  		if (!error) {
->  			inc_nlink(p->d_inode);
+> > If they are worth doing generically, should the ops be atomic? To
+> > extrapolate from x86 usages again, it seems to be happy with
+> > non-atomic (tho of course it is atomic on x86).
+> 
+> If atomic rw/add/sub are implementible on most archs (and judging from
+> local_t, I suppose it is), I think it should.  So that it can replace
+> local_t and we won't need something else again in the future.
 
-Sure, that's why I said that this could be cleaner ;)
+This is more like Christoph's CPU_OPS: they were special operators on normal per-cpu vars/ptrs.  Generic version was irqsave+op+irqrestore.
 
->=20
-> 	Otherwise, this patch seems pretty straightforward.
+I actually like this idea, but Mathieu insists that the ops be NMI-safe, for ftrace.  Hence local_t needing to be atomic_t for generic code.
 
-Cleaner patch coming.
+AFAICT we'll need a hybrid: HAVE_NMISAFE_CPUOPS, and if not, use atomic_t
+in ftrace (which isn't NMI safe on parisc or sparc/32 anyway, but I don't think we care).
 
-Thanks,
+Other than the shouting, I liked Christoph's system:
+- CPU_INC = always safe (eg. local_irq_save/per_cpu(i)++/local_irq_restore)
+- _CPU_INC = not safe against interrupts (eg. get_cpu/per_cpu(i)++/put_cpu)
+- __CPU_INC = not safe against anything (eg. per_cpu(i)++)
 
-Louis
+I prefer the name 'local' to the name 'cpu', but I'm not hugely fussed.
 
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
+> >> Another question to ask is whether to keep using separate
+> >> interfaces for static and dynamic percpu variables or migrate to
+> >> something which can take both.
+> >
+> > Well, IA64 can do stuff with static percpus that it can't do with
+> > dynamic (assuming we get expanding dynamic percpu areas
+> > later). That's because they use TLB tricks for a static 64k per-cpu
+> > area, but this doesn't scale.  That might not be vital: abandoning
+> > that trick will mean they can't optimise read_percpu/read_percpu_var
+> > etc as much.
+> 
+> Isn't something like the following possible?
+> 
+> #define pcpu_read(ptr)						\
+> ({								\
+> 	if (__builtin_constant_p(ptr) &&			\
+> 	    ptr >= PCPU_STATIC_START && ptr < PCPU_STATIC_END)	\
+> 		do 64k TLB trick for static pcpu;		\
+> 	else							\
+> 		do generic stuff;				\
+> })
 
---=_bohort-20491-1233138962-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
+No, that will be "do generic stuff", since it's a link-time constant.  I don't know that this is a huge worry, to be honest.  We can leave the __ia64_per_cpu_var for their arch-specific code (I feel the same way about x86 to be honest).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+> > Tejun, any chance of you updating the tj-percpu tree? My current
+> > patches are against Linus's tree, and rebasing them on yours
+> > involves some icky merging.
+> 
+> If Ingo is okay with it, I'm fine with it too.  Unless Ingo objects,
+> I'll do it tomorrow-ish (still big holiday here).
 
-iD8DBQFJgDWzVKcRuvQ9Q1QRAqgKAJ4oXyOrNqIzImIkSdOunu8cn9sOHQCg0xnp
-L0Gw/DvsgLVHwNSLD3zHiL4=
-=amBH
------END PGP SIGNATURE-----
+Ah, I did not realize that you celebrated Australia day :)
 
---=_bohort-20491-1233138962-0001-2--
+Cheers!
+Rusty.
