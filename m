@@ -1,240 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbZA1XGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZA1XI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755111AbZA1XGW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:06:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZA1XGF
+	id S1754704AbZA1XI6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:08:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZA1XIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:06:05 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47667 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751981AbZA1XGB (ORCPT
+	Wed, 28 Jan 2009 18:08:49 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:64901 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751364AbZA1XIr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:06:01 -0500
-Date: Wed, 28 Jan 2009 15:04:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Patrick <steven@ngls.net>
-Cc: bugme-daemon@bugzilla.kernel.org, linux-nfs@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 12564] New: poor performance while
- preprocessing source code
-Message-Id: <20090128150438.fe0137f1.akpm@linux-foundation.org>
-In-Reply-To: <1233182618.25546.33.camel@bluishred.int.infinisim.com>
-References: <bug-12564-10286@http.bugzilla.kernel.org/>
-	<20090128132942.c957a199.akpm@linux-foundation.org>
-	<1233182618.25546.33.camel@bluishred.int.infinisim.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 28 Jan 2009 18:08:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Do4R+WwooWCpEXJMS5jg30JX3KkfhLRYnqOHMqQs5xUVVOpyc4Qz/7LQtMNtCzIdGO
+         ST5YaD+3A09X8kv3P3UEnY4CGeVmS0YR0nEaumXc2ohDF1kEm9lnow4wkcliu8Zhbb8X
+         QUalFTVJ5klwlb4ICZOBUj1zXee9yN34YWpSc=
+Date: Thu, 29 Jan 2009 00:08:39 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: dmitry.torokhov@gmail.com, dtor@mail.ru, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, linux-input@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH] psmouse: run kpsmoused only while needed
+Message-ID: <20090128230837.GA7631@nowhere>
+References: <496fd1d3.0d135e0a.171b.43ea@mx.google.com> <20090126143210.ce6a4503.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090126143210.ce6a4503.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009 14:43:37 -0800
-Steven Patrick <steven@ngls.net> wrote:
-
-> > > Problem Description:
-> > >   Here's my situation.  I've recently upgraded the kernels
-> > > on ~30 computers at work (from 2.6.21 to 2.6.27).  These 
-> > > computers are used to build and test software we develop.  
-> > > We speed up the building process using distcc.  However,
-> > > after the kernel upgrade, the builds are much much slower.
-> > > The preprocessing stage seems to be at least 10 times
-> > > slower.
-> > >   As evidence of this slowdown I am attaching two images created
-> > > using distccmon-gnome.  Both snapshots were taken shortly 
-> > > after starting builds in a clean sandbox.  The only difference
-> > > is the kernel.  "fast.png" was generated while running
-> > > kernel 2.6.25.20.  "slow.png" was generated with 2.6.26.
-> > > The light purple sections indicate the preprocessing times
-> > > for each file.  
-> > >   This slowdown is observed on both 32 and 64 bit computers
-> > > and using either gcc or the intel compiler. (The intel compiler
-> > > builds do not use distcc, but that are also slower.)  Strangely 
-> > > enough, it's still faster to use an NFS mounted sandbox on a
-> > > machine with an older kernel than the same sandbox on the local
-> > > machine with a newer kernel.  (This suggests to me that it
-> > > is neither a disk or network IO problem.)
-> > >   I've used git bisect to narrow it down to a single commit:
-> > > # bad: [b0b539739fe9b7d75002412a787cfdf4efddbc33] NFS: Ensure that 'noac'
-> > > and/or 'actimeo=0' turn off attribute caching
-> > 
-> > And thanks for bisecting it.
+On Mon, Jan 26, 2009 at 02:32:10PM -0800, Andrew Morton wrote:
+> On Thu, 15 Jan 2009 16:16:19 -0800 (PST)
+> Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
->   I think it might be possible to bisect further, but I
-> don't know how get git to do it.  
-
-OK..
-
-> > > This is the first commit after v2.6.26-rc3.  I'm not an
-> > > experienced git user, so I don't know how to narrow it down
-> > > further.  Distccmon-gnome snapshots from the bisection
-> > > process are similar to the ones noted above.
-> > >   Naturally, I would like the newer kernels to have similar
-> > > performance to the older kernels.
-> > >   I will be attaching various items.  Let me know what other 
-> > > information might be helpful.
-> > > 
-> > > Steps to reproduce:
-> > > distccmon-gnome &
-> > > # using a makefile setup to use distcc:
-> > > make -j 5 all
-> > > # note preprocessing times in distccmon
-> > > 
+> > While looking at the workqueue tracer, I noticed that kpsmoused receives
+> > rarely (if not never) events.
 > > 
-> > Something I don't understand from this:
+> > Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
+> > workqueue. But recync are rare. While reading an old discussion, it seems
+> > that usual workqueue events can't be used for that purpose because resync
+> > can take too much time and could delay the other works in queue.
 > > 
-> > If your normal setup is using distcc then what role does NFS have to
-> > play?  I mean, distcc kind-of replaces NFS in this workload.
+> > But if you have built psmouse driver, this workqueue will always be present
+> > whether you have a ps/2 port or not. And its events are rare.
+> > 
+> > To avoid this pointless task, this patch makes the kpsmoused a kernel
+> > thread only created on the fly when a recync is needed. Once the recync is done,
+> > this thread will die. So you will almost never see it, and it will not be
+> > an inactive task anymore.
+> > 
+> > This thread is created through a usual workqueue event (because we can't create
+> > it from interrupt).
+> > 
 > 
->   I don't believe that this actually has anything to do
-> with NFS.  The only way I could see NFS coming into this is the
-> fact that I use amd to automount home directories.
->   The commit mentioned above modifies just over 100 files, very
-> few of which appear related to NFS.  I've attached the diifs.
-> It appears to be a number of fixes rolled up into one patch.
-> This is why I believe it might be possible to continue bisecting
-> with git.  But, to do that I suspect I would need to use a
-> different repository and/or tag or version names.
->   BTW, the diffs were generated with "git diff v2.6.26-rc3"
-> after having done the bisection.  This is why it looks to me
-> like this one commit includes multiple updates.  Since all
-> bisection iterations were bad, the diffs against the good
-> version must be the diffs of the one commit.  Of course, I 
-> reserve the right to have made a mistake or not understand 
-> things completely.
->   There was one other detail that seemed strange.  In the
-> last four bisection iterations, the kernel identified
-> itself as -rc2 instead of -rc3.  I assumed an update
-> accidentally changed it back.
+> Seems like a reasonable objective.
+> 
+> >
+> > ...
+> >
+> >  /*
+> >   * __psmouse_set_state() sets new psmouse state and resets all flags.
+> > @@ -313,7 +307,8 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
+> >  		       psmouse->name, psmouse->phys, psmouse->pktcnt);
+> >  		psmouse->badbyte = psmouse->packet[0];
+> >  		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
+> > -		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
+> > +		atomic_inc(&psmouse->nb_recync_pending);
+> 
+> The patch and the changelog consistently misspell "sync".
+> 
+> A code comment (in psmouse.h) which clearly spells out the role of
+> nb_recync_pending would be useful.
+> 
+> > +		schedule_work(&psmouse->resync_work);
+> >  		goto out;
+> >  	}
+> >  
+> >
+> > ...
+> >
+> > @@ -1131,7 +1155,13 @@ static void psmouse_disconnect(struct serio *serio)
+> >  
+> >  	/* make sure we don't have a resync in progress */
+> >  	mutex_unlock(&psmouse_mutex);
+> > -	flush_workqueue(kpsmoused_wq);
+> > +
+> > +	prepare_to_wait(&psmouse->recync_pending_queue, &wait,
+> > +				TASK_UNINTERRUPTIBLE);
+> > +	if (atomic_read(&psmouse->nb_recync_pending))
+> > +		schedule();
+> > +	finish_wait(&psmouse->recync_pending_queue, &wait);
+> 
+> So... we're requiring that nb_recync_pending is zero at this stage?
+> 
+> I wonder if the code manages to do that.  A little WARN_ON(), maybe?
+> 
+> >  	mutex_lock(&psmouse_mutex);
+> >  
+> 
 
-Heaven knows.
+After reading how work the async jobs (kernel/async.c), I think it would be better
+to actually use it instead of creating a thread through a workqueue and wait for a
+counter to be zero to be sure all is flushed.
 
-OK, "This is the first commit after v2.6.26-rc3", so NFS is innocent. 
-Presumably your git bisect landed on a big merge commit.
+The async functions provide local execution and synchronisation domains through special cookies,
+which means long tasks of mouse resync will not starve other works.
 
-I'm afaid I'm not the person who can tell you how to fix this - it
-hasn't happened to me in a while, but I don't know what I did to
-prevent it happening :(
-
-Here's the diffstat from your diffs.txt.gz:
-
- arch/m68k/configs/multi_defconfig              | 1269 -------------------------
- b/MAINTAINERS                                  |    4 
- b/Makefile                                     |    2 
- b/arch/arm/common/locomo.c                     |   66 -
- b/arch/arm/kernel/armksyms.c                   |    2 
- b/arch/arm/kernel/arthur.c                     |    2 
- b/arch/arm/mach-omap1/board-palmte.c           |    2 
- b/arch/arm/mach-omap1/board-palmz71.c          |    2 
- b/arch/arm/mach-omap2/board-2430sdp.c          |    1 
- b/arch/arm/mach-omap2/board-apollon.c          |    1 
- b/arch/arm/mach-omap2/board-generic.c          |    1 
- b/arch/arm/mach-omap2/board-h4.c               |    1 
- b/arch/arm/mach-omap2/clock.c                  |    4 
- b/arch/arm/mach-omap2/clock34xx.h              |   21 
- b/arch/arm/mach-omap2/cm-regbits-34xx.h        |    1 
- b/arch/arm/mach-omap2/mailbox.c                |   25 
- b/arch/arm/mach-omap2/prm.h                    |    2 
- b/arch/arm/mach-orion5x/dns323-setup.c         |    2 
- b/arch/arm/mach-orion5x/kurobox_pro-setup.c    |    2 
- b/arch/arm/mach-pxa/colibri.c                  |    3 
- b/arch/arm/mach-pxa/spitz.c                    |    1 
- b/arch/arm/mm/proc-arm925.S                    |    2 
- b/arch/arm/mm/proc-arm926.S                    |    2 
- b/arch/arm/mm/proc-arm940.S                    |    2 
- b/arch/arm/mm/proc-arm946.S                    |    2 
- b/arch/arm/plat-omap/clock.c                   |   10 
- b/arch/arm/plat-omap/dma.c                     |    2 
- b/arch/arm/plat-omap/mailbox.c                 |    1 
- b/arch/blackfin/mach-bf527/boards/ezkit.c      |    2 
- b/arch/m68k/Kconfig                            |    9 
- b/arch/m68k/configs/amiga_defconfig            |  159 +--
- b/arch/m68k/configs/apollo_defconfig           |  140 --
- b/arch/m68k/configs/atari_defconfig            |  143 +-
- b/arch/m68k/configs/bvme6000_defconfig         |  138 --
- b/arch/m68k/configs/hp300_defconfig            |  142 +-
- b/arch/m68k/configs/mac_defconfig              |  144 +-
- b/arch/m68k/configs/mvme147_defconfig          |  138 --
- b/arch/m68k/configs/mvme16x_defconfig          |  138 --
- b/arch/m68k/configs/q40_defconfig              |  159 +--
- b/arch/m68k/configs/sun3_defconfig             |  140 --
- b/arch/m68k/configs/sun3x_defconfig            |  140 --
- b/arch/m68k/kernel/head.S                      |    2 
- b/arch/m68k/kernel/setup.c                     |   15 
- b/arch/powerpc/platforms/pasemi/misc.c         |    7 
- b/arch/sparc64/defconfig                       |   40 
- b/arch/sparc64/mm/init.c                       |    2 
- b/arch/x86/kernel/process.c                    |   36 
- b/arch/x86/mm/pat.c                            |    2 
- b/drivers/block/amiflop.c                      |    6 
- b/drivers/block/z2ram.c                        |    2 
- b/drivers/char/snsc_event.c                    |    2 
- b/drivers/char/vme_scc.c                       |    4 
- b/drivers/i2c/busses/i2c-amd756.c              |    2 
- b/drivers/i2c/busses/i2c-nforce2.c             |   28 
- b/drivers/i2c/chips/max6875.c                  |    3 
- b/drivers/i2c/i2c-core.c                       |   22 
- b/drivers/ide/legacy/macide.c                  |    3 
- b/drivers/input/keyboard/hilkbd.c              |    4 
- b/drivers/input/misc/hp_sdc_rtc.c              |    5 
- b/drivers/input/serio/hp_sdc_mlc.c             |    5 
- b/drivers/input/serio/q40kbd.c                 |    2 
- b/drivers/media/video/cs5345.c                 |    7 
- b/drivers/media/video/cs53l32a.c               |   10 
- b/drivers/media/video/cx18/cx18-i2c.c          |    9 
- b/drivers/media/video/cx25840/cx25840-core.c   |    7 
- b/drivers/media/video/et61x251/et61x251_core.c |    2 
- b/drivers/media/video/ivtv/ivtv-i2c.c          |   13 
- b/drivers/media/video/m52790.c                 |    9 
- b/drivers/media/video/msp3400-driver.c         |   17 
- b/drivers/media/video/saa7115.c                |   40 
- b/drivers/media/video/saa7127.c                |    9 
- b/drivers/media/video/saa717x.c                |    9 
- b/drivers/media/video/sn9c102/sn9c102_core.c   |    2 
- b/drivers/media/video/tuner-core.c             |   17 
- b/drivers/media/video/upd64031a.c              |    6 
- b/drivers/media/video/upd64083.c               |    6 
- b/drivers/media/video/vp27smpx.c               |    9 
- b/drivers/media/video/wm8739.c                 |    7 
- b/drivers/media/video/wm8775.c                 |    7 
- b/drivers/media/video/zc0301/zc0301_core.c     |    2 
- b/drivers/media/video/zoran_device.c           |    2 
- b/drivers/media/video/zoran_driver.c           |    2 
- b/drivers/net/82596.c                          |    7 
- b/drivers/net/apne.c                           |    3 
- b/drivers/net/mac89x0.c                        |    3 
- b/drivers/net/macmace.c                        |    3 
- b/drivers/net/sun3lance.c                      |    3 
- b/drivers/net/wireless/atmel.c                 |    2 
- b/drivers/video/Kconfig                        |    4 
- b/drivers/video/amifb.c                        |    4 
- b/drivers/video/dnfb.c                         |    3 
- b/drivers/video/hpfb.c                         |    2 
- b/drivers/video/pxafb.c                        |    5 
- b/fs/befs/endian.h                             |    2 
- b/fs/nfs/inode.c                               |    7 
- b/include/asm-arm/arch-omap/common.h           |    4 
- b/include/asm-arm/arch-omap/control.h          |    2 
- b/include/asm-arm/arch-omap/mmc.h              |   24 
- b/include/asm-arm/arch-sa1100/irqs.h           |    2 
- b/include/asm-arm/hardware/locomo.h            |   19 
- b/include/asm-m68k/bug.h                       |    4 
- b/include/asm-m68k/io.h                        |   44 
- b/include/asm-m68k/setup.h                     |    2 
- b/include/asm-m68k/uaccess.h                   |    6 
- b/include/linux/i2c.h                          |    7 
- b/include/linux/i2c/pcf857x.h                  |    3 
- 106 files changed, 833 insertions(+), 2743 deletions(-)
-
-Now, distcc has a long track record of tripping up bugs and regressions
-in the networking code - it's very clever that way.  But it doesn't
-look like there were any relevant networking changes in that window.
-
-So I think the next step is to ask you to continue with (or redo) that
-bisection search.
-
-Is there someone who is more git-competent than I who could help with
-this please?
-
+What do you think about it?
 
