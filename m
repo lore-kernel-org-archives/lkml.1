@@ -1,126 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbZA1XVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbZA1X0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755836AbZA1XVe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 18:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZA1XV0
+	id S1755105AbZA1X0Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 18:26:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZA1X0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 18:21:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41867 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751826AbZA1XVZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 18:21:25 -0500
-Date: Wed, 28 Jan 2009 15:20:48 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de, peterz@infradead.org, arjan@infradead.org,
-       rusty@rustcorp.com.au, jens.axboe@oracle.com
+	Wed, 28 Jan 2009 18:26:00 -0500
+Received: from ozlabs.org ([203.10.76.45]:43122 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751931AbZA1XZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 18:25:59 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Steven Rostedt <rostedt@goodmis.org>, Nick Piggin <npiggin@suse.de>
 Subject: Re: Buggy IPI and MTRR code on low memory
-Message-Id: <20090128152048.40ac3526.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0901281741310.7408@gandalf.stny.rr.com>
+Date: Thu, 29 Jan 2009 09:55:38 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>
 References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>
-	<20090128131202.21757da6.akpm@linux-foundation.org>
-	<20090128131327.417b01e1.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0901281621450.25359@gandalf.stny.rr.com>
-	<20090128140725.782f5cc1.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0901281741310.7408@gandalf.stny.rr.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+In-Reply-To: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901290955.38940.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009 17:47:55 -0500 (EST)
-Steven Rostedt <rostedt@goodmis.org> wrote:
-
+On Thursday 29 January 2009 03:08:14 Steven Rostedt wrote:
 > 
-> On Wed, 28 Jan 2009, Andrew Morton wrote:
-> > 
-> > So if we're going to use per-cpu data then we'd need to protect it with
-> > a lock.  We could (should?) have a separate lock for each destination
-> > CPU.
-> > 
-> > We could make smp_call_function_single() block until the IPI handler
-> > has consumed the call_single_data, in which case we might as well put
-> > the call_single_data, onto the caller's stack, as you've done.
-> > 
-> > Or we could take the per-cpu spinlock in smp_call_function_single(),
-> > and release it in the IPI handler, after the call_single_data has been
-> > consumed, which is a bit more efficient.  But I have a suspicion that
-> > this is AB/BA deadlockable.
-> > 
-> > <tries to think of any scenarios>
-> > 
-> > <fails>
-> > 
-> > So we have
-> > 
-> > smp_call_function_single(int cpu)
-> > {
-> > 	spin_lock(per_cpu(cpu, locks));
-> > 	per_cpu(cpu, call_single_data) = <stuff>
-> > 	send_ipi(cpu);
-> > 	return;
-> > }
-> > 
-> > ipi_handler(...)
-> > {
-> > 	int cpu = smp_processor_id();
-> > 	call_single_data csd = per_cpu(cpu, call_single_data);
-> > 
-> > 	spin_unlock(per_cpu(cpu, locks));
-> > 	use(csd);
-> > }
-> > 
-> > does that work?
+> While developing the RT git tree I came across this deadlock.
 > 
-> I don't think so. With ticket spinlocks and such, that just looks like it 
-> is destine to crash. Also, spinlocks disable preemption, and we would need 
-> to enable it again otherwise we have a dangling preempt_disable.
-
-Well that sucks.
-
-I think the model of taking a lock, passing the data across to another
-thread of control and having that thread of control release the lock
-once the data has been consumed is a good one.  It's faster and in this
-case it means that we can now (maybe) perform (wait=0) IPI calls with local
-interrupts disabled, which wasn't the case before.
-
-It's a shame that irrelevant-other-stuff prevents us from implementing
-such a thing.  Of course, we can still do it, via some ad-hoc locking
-thing using raw_spin_lock/atomic_t's/bitops/cpu_relax/etc.
-
-> > 
-> > Dunno if it's any better than what you have now.  It does however
-> > remove the unpleasant "try kmalloc and if that failed, try something
-> > else" mess.
+> To avoid touching the memory allocator in smp_call_function_many I forced 
+> the stack use case, the path that would be taken if data fails to 
+> allocate.
 > 
-> We could have a percpu for single data and still use the lock. Keep the 
-> method of the IPI handler signaling to the caller that they copied it to 
-> their stack. Then the caller could release the lock.
+> Here's the current code in kernel/smp.c:
 
-Yeah, spose so.  That separates the signalling from the locking, rather
-than using the lock as the signal.  But it's an inferior solution
-because it a) makes the caller hang around until the consumer has
-executed and it b) requires that callers still have local interrupts
-enabled.
+Interesting.  I simplified smp_call_function_ma{sk,ny}, and introduced this bug (see 54b11e6d57a10aa9d0009efd93873e17bffd5d30).
 
-Now, maybe we can never implement b) at all - maybe we'll still require
-that callers have local interrupts enabled.  Because there might be
-arch_send_call_function_single_ipi() which has to loop around until it
-sees that the target CPU has accepted the interrupt, dunno.
+We used to wait on OOM, yes, but we didn't do them one at a time.
 
-> We can keep this only for the non wait case. Most users set the wait bit, 
-> so it will only slow down the non waiters.
+We could restore that quiesce code, or call a function on all online cpus using on-stack data, and have them atomic_dec a counter when they're done (I'm not sure why we didn't do this in the first place: Nick?)
 
-It would be good to avoid separate sync and async code paths as much
-as possible, of course.
+> The problem is that if we use the stack, then we must wait for the 
+> function to finish. But in the mtrr code, the called functions are waiting 
+> for the caller to do something after the smp_call_function. Thus we 
+> deadlock! This mtrr code seems to have been there for a while. At least 
+> longer than the git history.
 
-> Of course this will only work with the single cpu function callers. I 
-> think the all cpu function callers still need to alloc.
+I don't see how the *ever* worked then, even with the quiesce stuff.
 
-I haven't really thought about the smp_call_function_many()
-common case.  
+> The patch creates another flag called CSD_FLAG_RELEASE. If we fail
+> to alloc the data and the wait bit is not set, we still use the stack
+> but we also set this flag instead of the wait flag. The receiving IPI 
+> will copy the data locally, and if this flag is set, it will clear it. The 
+> caller, after sending the IPI, will wait on this flag to be cleared.
+
+Doesn't this break with more than one cpus?  I think a refcnt is needed for the general case...
+
+Rusty.
