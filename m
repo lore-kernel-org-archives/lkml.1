@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbZA1JIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbZA1JNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbZA1JIr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 04:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751453AbZA1JI3
+	id S1754213AbZA1JNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 04:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZA1JNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 04:08:29 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:53020 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751217AbZA1JI2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 04:08:28 -0500
-Date: Wed, 28 Jan 2009 20:08:21 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Patrick Ohly <patrick.ohly@intel.com>
-Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-api@vger.kernel.org
-Subject: Re: hardware time stamping with optional structs in data area
-Message-ID: <20090128090821.GA15770@gondor.apana.org.au>
+	Wed, 28 Jan 2009 04:13:11 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:44287 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751282AbZA1JNK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 04:13:10 -0500
+Date: Wed, 28 Jan 2009 09:13:06 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Lubomir Rintel <lkundrak@v3.sk>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       eric@anholt.net
+Subject: Re: [PATCH] Fix a panic with 1M of shared memory, no GTT entries
+In-Reply-To: <1233131443.5389.12.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.0901280912350.29809@skynet.skynet.ie>
+References: <1233131443.5389.12.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233069837.24438.54.camel@pohly-MOBL>
-Organization: Core
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.netdev
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patrick Ohly <patrick.ohly@intel.com> wrote:
->
-> True - at this time. But what if this extension mechanism turns out to
-> be useful and we end up with more optional structures? I was hoping that
-> this might be the case and thus tried to make it easy to add more
-> structures.
 
-You're putting the extension in the skb->end area, right?
+> When GTT size is equal to amount of video memory, the amount of GTT
+> entries is computed lower than zero, which is invalid and leads to
+> off-by-one error in intel_i915_configure()
+> 
+> Originally posted here:
+> http://bugzilla.kernel.org/show_bug.cgi?id=12539
+> http://bugzilla.redhat.com/show_bug.cgi?id=445592
 
-How big are the time stamps? If they're not that big, why don't
-we put it into the shinfo structure itself? For the common case,
-we have plenty of space due to kmalloc padding anyway.
+cc'ed Intel agp knowledge.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Dave.
+
+> 
+> Signed-Off-By: Lubomir Rintel <lkundrak@v3.sk>
+> ---
+>  drivers/char/agp/intel-agp.c |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+> index c771418..4373adb 100644
+> --- a/drivers/char/agp/intel-agp.c
+> +++ b/drivers/char/agp/intel-agp.c
+> @@ -633,13 +633,15 @@ static void intel_i830_init_gtt_entries(void)
+>  			break;
+>  		}
+>  	}
+> -	if (gtt_entries > 0)
+> +	if (gtt_entries > 0) {
+>  		dev_info(&agp_bridge->dev->dev, "detected %dK %s memory\n",
+>  		       gtt_entries / KB(1), local ? "local" : "stolen");
+> -	else
+> +		gtt_entries /= KB(4);
+> +	} else {
+>  		dev_info(&agp_bridge->dev->dev,
+>  		       "no pre-allocated video memory detected\n");
+> -	gtt_entries /= KB(4);
+> +		gtt_entries = 0;
+> +	}
+>  
+>  	intel_private.gtt_entries = gtt_entries;
+>  }
+> 
