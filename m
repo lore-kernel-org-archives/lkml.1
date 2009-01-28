@@ -1,57 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbZA1WZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756703AbZA1W0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbZA1WZv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 17:25:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751155AbZA1WZj
+	id S1756703AbZA1W0P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 17:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbZA1WZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 17:25:39 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58226 "EHLO mx2.redhat.com"
+	Wed, 28 Jan 2009 17:25:44 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39321 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751240AbZA1WZj convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 17:25:39 -0500
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: linux1394-devel@lists.sourceforge.net
-Subject: Re: [PATCH RFT 7/7] firewire: sbp2: add workarounds for 2nd and 3rd generation iPods
-Date: Wed, 28 Jan 2009 17:25:25 -0500
-User-Agent: KMail/1.10.4 (Linux/2.6.27.12-170.2.5.fc10.x86_64; KDE/4.1.4; x86_64; ; )
-Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@bitplanet.net>,
-       linux-kernel@vger.kernel.org
-References: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de> <tkrat.b82b9fbc17b1a032@s5r6.in-berlin.de> <200901281718.41873.jarod@redhat.com>
-In-Reply-To: <200901281718.41873.jarod@redhat.com>
+	id S1753082AbZA1WZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 17:25:43 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] dmi: Fix build breakage
+Date: Wed, 28 Jan 2009 23:24:59 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@osdl.org>, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1233122840-24142-1-git-send-email-galak@kernel.crashing.org>
+In-Reply-To: <1233122840-24142-1-git-send-email-galak@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200901281725.25750.jarod@redhat.com>
+Message-Id: <200901282325.00215.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 January 2009 17:18:41 Jarod Wilson wrote:
-> >   - Is the "no page tables" workaround really necessary for 2nd gen.
-> >     iPods, or is the 128k limit sufficient as reported for the Ubuntu
-> >     8.10 kernel?
->
-> Looks to me like the no page tables workaround isn't needed. I could
-> have sworn the defaults w/this patch (workarounds 0x48) was actually
-> causing dd to fail last night, but I haven't been able to reproduce
-> that failure, now that I'm trying (maybe I this ipod mixed up with one
-> of the others in the pile...).
+On Wednesday 28 January 2009, Kumar Gala wrote:
+> The following commit introduced:
+> 
+> commit d7b1956fed33d30c4815e848fd7a143722916868
+> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> Date:   Mon Jan 19 20:55:50 2009 +0100
+> 
+>     DMI: Introduce dmi_first_match to make the interface more flexible
+> 
+> compile errors like the following when !CONFIG_DMI
+> 
+>     drivers/ata/sata_sil.c: In function 'sil_broken_system_poweroff':
+>     drivers/ata/sata_sil.c:713: error: implicit declaration of function 'dmi_first_match'
+>     drivers/ata/sata_sil.c:713: warning: initialization makes pointer from integer without a cast
+> 
+> We just need a dummy version of dmi_first_match() to fix this all up.
 
-Yep, I'm a dummy. The failure I was thinking of was w/the completely
-flaky 3rd-gen iPod, just went back and looked at logs.
+Well, my bad.  Thanks for the fix!
 
-So far as I can tell, I'm thinking 128k limit + fix capacity should be
-okay for both the 2nd and 3rd-gen iPods, and if someone comes up with
-evidence that the 2nd-gen does something badly w/the fix capacity
-workaround enabled, then we revisit trying to apply the workarounds
-more narrowly somehow.
+> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> ---
+> 
+> This should supercede the driver specific patches I posted earlier.
+> 
+> - k
+> 
+>  include/linux/dmi.h |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/include/linux/dmi.h b/include/linux/dmi.h
+> index aea2310..d741b9c 100644
+> --- a/include/linux/dmi.h
+> +++ b/include/linux/dmi.h
+> @@ -65,6 +65,8 @@ static inline int dmi_walk(void (*decode)(const struct dmi_header *))
+>  	{ return -1; }
+>  static inline bool dmi_match(enum dmi_field f, const char *str)
+>  	{ return false; }
+> +static inline const struct dmi_system_id *
+> +	dmi_first_match(const struct dmi_system_id *list) { return NULL; }
+>  
+>  #endif
+>  
 
--- 
-Jarod Wilson
-jarod@redhat.com
-
+Rafael
