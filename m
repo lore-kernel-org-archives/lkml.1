@@ -1,53 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759096AbZA2PyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbZA2QEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759096AbZA2PyS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 10:54:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZA2PyH
+	id S1755080AbZA2QEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 11:04:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZA2QEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 10:54:07 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38704 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751118AbZA2PyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 10:54:05 -0500
-Date: Thu, 29 Jan 2009 10:53:42 -0500
-From: "Frank Ch. Eigler" <fche@redhat.com>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       utrace-devel@redhat.com, "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       powertop ml <power@bughost.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, srostedt@redhat.com,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH] tracer for sys_open() - sreadahead
-Message-ID: <20090129155341.GB20679@redhat.com>
-References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere> <20090127225048.GA4652@nowhere> <20090129140451.GM24391@elte.hu> <c62985530901290629i168ac12cjc4b22140caceff58@mail.gmail.com> <20090129143120.GS24391@elte.hu> <c62985530901290640j10e63127s59ce22e860a508f8@mail.gmail.com> <20090129150934.GF6512@elte.hu> <c62985530901290734i26c5b664m2b0342b29cc95807@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530901290734i26c5b664m2b0342b29cc95807@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+	Thu, 29 Jan 2009 11:04:09 -0500
+Received: from gmp-eb-inf-2.sun.com ([192.18.6.24]:55735 "EHLO
+	gmp-eb-inf-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751750AbZA2QEI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 11:04:08 -0500
+Date: Thu, 29 Jan 2009 17:03:35 +0100
+From: Frank Mehnert <Frank.Mehnert@Sun.COM>
+Subject: Re: PFs on pages pinned with get_user_pages()
+In-reply-to: <1233240757.4495.94.camel@laptop>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>
+Message-id: <200901291703.35463.frank.mehnert@sun.com>
+Organization: Sun Microsystems
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=nextPart8876601.V7GM12iFoE
+Content-transfer-encoding: 7BIT
+References: <200901290905.10966.frank.mehnert@sun.com>
+ <200901291541.32618.frank.mehnert@sun.com> <1233240757.4495.94.camel@laptop>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi -
 
-On Thu, Jan 29, 2009 at 04:34:46PM +0100, Frédéric Weisbecker wrote:
-> 2009/1/29 Ingo Molnar <mingo@elte.hu>:
-> [...]
-> >> > sure - how do the minimal bits/callbacks look like which enable syscall
-> >> > tracing?
+--nextPart8876601.V7GM12iFoE
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> I know you are talking about the only necessary bits from utrace to
-> have the syscalls tracing.  But I can't answer you better than would
-> the utrace people.  And actually I'm not sure the utrace bits for
-> syscall tracing can be isolated from the rest of its core.
+On Thursday 29 January 2009, Peter Zijlstra wrote:
+> > > That aside, is there any reason you have to avoid scheduling? Otherwi=
+se
+> > > I would just allow so and be done with it.
+> >
+> > The reason is that our code expects that to ensure syncing of the CPU
+> > state with the saved state. I fear it is quite difficult to change
+> > that...
+>
+> Ah, is that what KVM uses the preempt notifiers for? Could you too?
 
-My understanding is that the parts of utrace that remain out-of-tree
-are relatively integrated, and just present the programmatic callback
-API to the already merged "tracehook" layer.
+Right, that could be an option.
 
-- FChE
+We will try to change our code which is a big effort as we try
+to keep the code as unique as possible between the different
+hosts we support (Linux, Solaris, Windows, Mac OS X).
+
+Just to be sure: There is no other option than disabling interrupts
+or calling disable_preemption() to prevent scheduling?
+
+Kind regards,
+
+=46rank
+=2D-=20
+Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
+
+--nextPart8876601.V7GM12iFoE
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmB01cACgkQ6z8pigLf3Eej7wCdGTDgRfXFDvD9M301IUmK4hWF
+s3QAmwZrQmXIKp/CKkvcekr5l6Gwi5rD
+=YeQM
+-----END PGP SIGNATURE-----
+
+--nextPart8876601.V7GM12iFoE--
