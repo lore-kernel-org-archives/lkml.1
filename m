@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbZA2RYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbZA2Rat@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757289AbZA2RYb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 12:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZA2RYW
+	id S1756835AbZA2Rat (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 12:30:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZA2Rak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 12:24:22 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43019 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752339AbZA2RYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 12:24:21 -0500
-Date: Thu, 29 Jan 2009 12:24:06 -0500
-From: Dave Jones <davej@redhat.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Xiaoning Ding <dingxn@ymail.com>, linux-kernel@vger.kernel.org
-Subject: Re: a question about p4_clockmod module on Xeon quad core
-	processors
-Message-ID: <20090129172406.GB14096@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Michael Tokarev <mjt@tls.msk.ru>, Xiaoning Ding <dingxn@ymail.com>,
-	linux-kernel@vger.kernel.org
-References: <603382.20833.qm@web59902.mail.ac4.yahoo.com> <20090128210200.GA19527@redhat.com> <4981A0AC.5030300@msgid.tls.msk.ru>
+	Thu, 29 Jan 2009 12:30:40 -0500
+Received: from omr6.networksolutionsemail.com ([205.178.146.56]:42222 "EHLO
+	omr6.networksolutionsemail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751358AbZA2Rak (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 12:30:40 -0500
+Message-ID: <4981E7BD.3040507@nerdgrounds.com>
+Date: Thu, 29 Jan 2009 09:30:37 -0800
+From: Jonathan Campbell <jon@nerdgrounds.com>
+User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4981A0AC.5030300@msgid.tls.msk.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Peter W. Morreale" <pmorreale@novell.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, devel@driverdev.osuosl.org,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
+References: <497E4531.20800@nerdgrounds.com> <497E4919.60907@zytor.com>	 <497E4C5E.2030201@nerdgrounds.com> <1233248649.7191.130.camel@hermosa.site>
+In-Reply-To: <1233248649.7191.130.camel@hermosa.site>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 03:27:24PM +0300, Michael Tokarev wrote:
+Every VGA device connected to the PCI bus has resources that are known 
+to the Linux kernel. One of the memory resources is the video RAM 
+(always the largest prefetchable resource listed), with the base and 
+length known to the PCI subsystem. So, all vramfs needs on mount is the 
+PCI device, and the mountpoint, and it can dole it out to userspace. 
+Reading and writing is handled with ioremap(). mmap() is handled by 
+directly mmaping() that VRAM into user-space (just like /dev/fb0). Files 
+are recorded in system memory as a list of entities with a starting 
+block and length, so no fragmentation is possible.
 
- > > p4-clockmod doesn't change the processor frequency.
- > 
- > Hmm..  But what it really does, then?
+No communication with the GPU is needed to do this, it's possible to use 
+VRAM this way even on devices that nobody in the system knows how to 
+talk to.
+> How do you accomplish that? 
+>
+> (I haven't yet looked at your code...)
+>
+> -PWM
+>
+>   
 
-it modulates the clock so the CPU isn't always availble for doing work.
-
- > I used it one one machine which had a flaky CPU cooler,
- > to reduce power consumption during hot summer days.
-
-it reduces the amount of heat generated, by making jobs
-take longer to finish. This comes at a cost of the CPU not
-being able to enter lower C states for longer periods of time,
-so you may end up actually using *more* power.
-
- > It worked, and reportedly the frequency varied from
- > 200MHz to the max of 2.4GHz (it's a P4 Xeon).
-
-The CPU was always at 2.4GHz, even if it said '200MHz'.
-It was just only doing work once in every 12 clocks.
-
-	Dave
-
--- 
-http://www.codemonkey.org.uk
