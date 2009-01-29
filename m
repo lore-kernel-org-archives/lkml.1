@@ -1,70 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZA2Xma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759522AbZA2Xo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759705AbZA2Xma (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZA2XmV
+	id S1759522AbZA2Xo2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZA2XoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:42:21 -0500
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:37663 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752864AbZA2XmU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:42:20 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ag4FAD/LgUlMQWt2/2dsb2JhbACBbslshBAG
-Date: Thu, 29 Jan 2009 18:42:03 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       anil.s.keshavamurthy@intel.com, davem@davemloft.net
-Subject: LTTng 0.88 adds dynamic instrumentation support (kprobes)
-Message-ID: <20090129234203.GA20044@Krystal>
+	Thu, 29 Jan 2009 18:44:21 -0500
+Received: from main.gmane.org ([80.91.229.2]:47428 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752950AbZA2XoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 18:44:20 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Switching from (deprecated) IDE driver -> SATA (PATA support)
+Date: Thu, 29 Jan 2009 18:44:09 -0500
+Message-ID: <49823F49.4000407@tmr.com>
+References: <alpine.DEB.1.10.0901250553430.2441@p34.internal.lan> <20090125110742.4ba54c0b@lxorguk.ukuu.org.uk> <alpine.DEB.1.10.0901250705300.6888@p34.internal.lan> <alpine.DEB.1.10.0901250715030.10379@p34.internal.lan> <alpine.DEB.1.10.0901250726530.10805__44823.8515914001$1232890466$gmane$org@p34.internal.lan> <497CD5F3.8030901@tmr.com> <alpine.DEB.1.10.0901251614160.16676@p34.internal.lan>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 18:22:36 up 28 days, 23:20,  4 users,  load average: 0.22, 0.07,
-	0.09
-User-Agent: Mutt/1.5.16 (2007-06-11)
+X-Complaints-To: usenet@ger.gmane.org
+Cc: linux-ide@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: pool-68-236-142-151.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
+In-Reply-To: <alpine.DEB.1.10.0901251614160.16676@p34.internal.lan>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Justin Piszcz wrote:
+> 
+> 
+> On Sun, 25 Jan 2009, Bill Davidsen wrote:
+> 
+>> Justin Piszcz wrote:
+>>>
+>>>
+>>> On Sun, 25 Jan 2009, Justin Piszcz wrote:
+>>>
+>>>>
+>>>>
+>>>> On Sun, 25 Jan 2009, Justin Piszcz wrote:
+>>>>
+>>>>>
+>>>>>
+>>>>> On Sun, 25 Jan 2009, Alan Cox wrote:
+>>>>>
+>>>>>> Easiest is to use labels. Old ide will keep hda,b,c,d constant
+>>>>>> providing you have interfaces using the legacy IDE port mappings 
+>>>>>> (0x1f0
+>>>>>> and 0x170). Libata doesn't do that as pretty much every 
+>>>>>> distribution had
+>>>>>> already switched to volume labels, and the user space can do the 
+>>>>>> job far
+>>>>>> better than the kernel - especially as the newer devices with modern
+>>>>>> interfaces don't have the old BIOS/DOS legacy ideas any more.
+>>>>>>
+>>>>>> Mount by label also means you can flip back and forth between the
+>>>>>> different drivers and kernel revisions.
+>>>>>>
+>>>>>> Alan
+>>>>>>
+>>>> It comes with one :)
+>>>> # xfs_admin -u  /dev/sdd2
+>>>> UUID = 77ae4251-631f-4656-a365-c5723f5c5da8
+>>>>
+>>>> Will try to use this to boot; however, I'd prefer the labels over 
+>>>> the UUID, wish there was an easy way to set it.
+>>>>
+>>>> Justin.
+>>>>
+>>>> _______________________________________________
+>>>> xfs mailing list
+>>>> xfs@oss.sgi.com
+>>>> http://oss.sgi.com/mailman/listinfo/xfs
+>>>>
+>>>
+>>> One final question, without udev, how does one determine the UUID of 
+>>> a non-XFS
+>>> partition, e.g., swap?
+>>>
+>> One uses blkid. Which suggests that you can solve your name problem by 
+>> not using names and switching to UUID.
+> 
+> This will fix the /etc/fstab issue but not LILO/boot one, per the 
+> earlier poster, need an initrd/etc for that.
+> 
+Good point, I have not used LILO since about Slackware 8.1, or any system w/o 
+initrd in ages. I suppose there is a benefit to running without initrd, but I 
+confess that I can't remember what it is. So I don't immediately consider the 
+issues and limitations if you run without initrd.
 
-LTTng 0.88 and LTTV 0.12.9 now support dynamic kernel instrumentation
-with kprobes through a simple /mnt/debugfs/ltt/kprobes/ interface.
-
-Usage example :
-
-ltt-armall
-echo do_fork > /mnt/debugfs/ltt/kprobes/enable
-lttctl -C -w /tmp/trace trace
-(so something)
-lttctl -D trace
-lttv -m textDump -e event.name=kernel.kprobe -t /tmp/trace
-
-Trace set contains 1 traces
-
-kernel.kprobe: 2486.393516120 (/tmp/trace/kernel_2), 0, 0, , , 0, 0x0,
-    MODE_UNKNOWN { ip = FFFFFFFF8023CDC0 }
-kernel.kprobe: 2489.826739495 (/tmp/trace/kernel_2), 25527, 25527, bash,
-    , 25526, 0x0, SYSCALL { ip = FFFFFFFF8023CDC0 [do_fork+0x0/0x3e0] }
-kernel.kprobe: 2491.618955019 (/tmp/trace/kernel_6), 25527, 25527, bash,
-    , 25526, 0x0, SYSCALL { ip = FFFFFFFF8023CDC0 [do_fork+0x0/0x3e0] }
-End trace set
-
-Enable, disable and list operations are availables to manipulate the
-active LTTng kprobes.
-
-LTTV 0.12.9 adds support to print the symbol names along with the
-kprobes addresses.
-
-Mathieu
+Well I answered how to GET the UUID, he didn't ask me how to USE it. And I 
+certainly didn't think of it, even though the info was there. :-(
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
