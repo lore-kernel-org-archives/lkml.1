@@ -1,159 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbZA2SGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZA2SIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758426AbZA2SGR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 13:06:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbZA2SGB
+	id S1758617AbZA2SIi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 13:08:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZA2SI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 13:06:01 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37817 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754473AbZA2SGA (ORCPT
+	Thu, 29 Jan 2009 13:08:29 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33656 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751942AbZA2SI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 13:06:00 -0500
-Date: Thu, 29 Jan 2009 10:05:09 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adam Tkac <vonsch@gmail.com>
-Cc: Peter Palfrader <weasel@debian.org>, linux-kernel@vger.kernel.org,
-       debian-admin@lists.debian.org, team@security.debian.org,
-       libpam-modules@packages.debian.org, stable@kernel.org
-Subject: Re: 2.6.28, rlimits, performance and debian etch
-Message-Id: <20090129100509.6969970f.akpm@linux-foundation.org>
-In-Reply-To: <20090129121900.GA2827@evileye.atkac.englab.brq.redhat.com>
-References: <20090121115219.GA2754@anguilla.noreply.org>
-	<20090127151703.c356c5db.akpm@linux-foundation.org>
-	<20090129121900.GA2827@evileye.atkac.englab.brq.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 13:08:28 -0500
+Date: Thu, 29 Jan 2009 13:08:27 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>, jens.axboe@oracle.com
+Subject: Re: [PATCH -v2] use per cpu data for single cpu ipi calls
+In-Reply-To: <1233251741.4495.111.camel@laptop>
+Message-ID: <alpine.DEB.1.10.0901291306550.27527@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>  <200901290955.38940.rusty@rustcorp.com.au>  <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com>  <20090128173039.cbc29e81.akpm@linux-foundation.org>  <1233218954.7835.11.camel@twins>
+  <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com>  <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain>  <1233251222.4495.110.camel@laptop> <1233251741.4495.111.camel@laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 13:19:00 +0100 Adam Tkac <vonsch@gmail.com> wrote:
 
-> On Tue, Jan 27, 2009 at 03:17:03PM -0800, Andrew Morton wrote:
-> > On Wed, 21 Jan 2009 12:52:19 +0100
-> > Peter Palfrader <weasel@debian.org> wrote:
+On Thu, 29 Jan 2009, Peter Zijlstra wrote:
 > > 
-> > > Hi,
-> > > 
-> > > I spent several hours trying to get to the bottom of a serious
-> > > performance issue that appeared on one of our servers after upgrading to
-> > > 2.6.28.  In the end it's what could be considered a userspace bug that
-> > > was triggered by a change in 2.6.28.  Since this might also affect other
-> > > people I figured I'd at least document what I found here, and maybe we
-> > > can even do something about it:
-> > > 
-> > > 
-> > > So, I upgraded some of debian.org's machines to 2.6.28.1 and immediately
-> > > the team maintaining our ftp archive complained that one of their
-> > > scripts that previously ran in a few minutes still hadn't even come
-> > > close to being done after an hour or so.  Downgrading to 2.6.27 fixed
-> > > that.
-> > > 
-> > > Turns out that script is forking a lot and something in it or python or
-> > > whereever closes all the file descriptors it doesn't want to pass on.
-> > > That is, it starts at zero and goes up to ulimit -n/RLIMIT_NOFILE and
-> > > closes them all with a few exceptions.
-> > > 
-> > > Turns out that takes a long time when your limit -n is now 2^20 (1048576).
-> > > 
-> > > With 2.6.27.* the ulimit -n was the standard 1024, but with 2.6.28 it is
-> > > now a thousand times that.
-> > > 
-> > > 2.6.28 included a patch titled "rlimit: permit setting RLIMIT_NOFILE to
-> > > RLIM_INFINITY" (0c2d64fb6cae9aae480f6a46cfe79f8d7d48b59f)[1] that
-> > > allows, as the title implies, to set the limit for number of files to
-> > > infinity.
-> > > 
-> > > Closer investigation showed that the broken default ulimit did not apply
-> > > to "system" processes (like stuff started from init).  In the end I
-> > > could establish that all processes that passed through pam_limit at one
-> > > point had the bad resource limit.
-> > > 
-> > > Apparently the pam library in Debian etch (4.0) initializes the limits
-> > > to some default values when it doesn't have any settings in limit.conf
-> > > to override them.  Turns out that for nofiles this is RLIM_INFINITY.
-> > > Commenting out "case RLIMIT_NOFILE" in pam_limit.c:267 of our pam
-> > > package version 0.79-5 fixes that - tho I'm not sure what side effects
-> > > that has.
-> > > 
-> > > Debian lenny (the upcoming 5.0 version) doesn't have this issue as it
-> > > uses a different pam (version).
-> > > 
-> > > 
-> > > I'm a bit unsure where to go from here.  Maybe the pam library in etch
-> > > should be fixed.  Maybe the patch should be reverted (but then it may be
-> > > more correct now and that's what the changelog entry suggests).
-> > > As a stopgap measure I could also just define nofile in limits.conf.
-> > > 
-> > > Thanks for listening.  Also thanks to Rik and Nocholas who helped track
-> > > some of this down.
-> > > 
-> > > Cheers,
-> > > Peter
-> > > 1. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0c2d64fb6cae9aae480f6a46cfe79f8d7d48b59f
-> > >    http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=0c2d64fb6cae9aae480f6a46cfe79f8d7d48b59f
 > > 
-> > Ho hum, thanks.
+> > > +                       else {
+> > > +                               data = &per_cpu(csd_data, cpu);
+> > > +                               spin_lock(&per_cpu(csd_data_lock, cpu));
+> > > +                               while (data->flags & CSD_FLAG_LOCK)
+> > > +                                       cpu_relax();
+> > > +                               data->flags = CSD_FLAG_LOCK;
+> > > +                               spin_unlock(&per_cpu(csd_data_lock, cpu));
+> > > +                       }
 > > 
-> > Well, I think we just revert it for now.  We can bring it back later
-> > if someone is thus inclined.  Along with some sort of opt-in control,
-> > perhaps in /proc.  Which defaults to "off".
+> > I think your argument would hold if he did:
 > > 
+> >   data = &__get_cpu_var(csd_data);
+> > 
+> > But now he's actually grabbing the remote cpu's csd, and thus needs
+> > atomicy around that remote csd -- which two cpus could contend for.
 > 
-> Hi all,
+> So the below should do
 > 
-> I don't think the "rlim_infinity" patch should be reverted. Let me try
-> to explain why.
+> ---
+>  kernel/smp.c |    6 +-----
+>  1 files changed, 1 insertions(+), 5 deletions(-)
 > 
-> First, code which sets limits to RLIM_INFINITY is very bad idea and
-> that code is Debian specific. I downloaded original pam 0.79 (stripped):
-> 
-> for(i = 0; i < RLIM_NLIMITS; i++) {
-> 	...
-> 	int r = getrlimit(i, &pl->limits[i].limit);
-> 	...
-> 
-> as you can see original pam sets limits to inherited defaults. After
-> code written above Debian adds their patch:
-> 
-> if (limits_not_defined_in_limits_conf) {
-> 	...
-> 	case RLIMIT_NOFILE:
-> 	...
-> 		pl->limits[i].limit.rlim_cur = RLIM_INFINITY;
-> 		pl->limits[i].limit.rlim_max = RLIM_INFINITY;
-> 	...
-> }
-> 
-> so as you can see inherited default limits are overriden to infinity.
-> In my opinion Debian should revert their patch which is, at least,
-> pretty incorrect and unsecure.
-> 
-> Next argument is POSIX compatibility (from setrlimit() specification):
-> 
-> "The value RLIM_INFINITY, defined in <sys/resource.h>, shall be
-> considered to be larger than any other limit value. If a call to
-> getrlimit() returns RLIM_INFINITY for a resource, it means the
-> implementation shall not enforce limits on that resource. Specifying
-> RLIM_INFINITY as any resource limit value on a successful call to
-> setrlimit() shall inhibit enforcement of that resource limit."
-> 
-> So kernel does what is expected. If you want "unlimited" number of
-> descriptors, you have it.
-> 
-> Please consider again where exactly problem is, if in Debian patch or
-> in kernel patch. From my point of view Debian patch should be
-> reverted, not the kernel one.
-> 
+> diff --git a/kernel/smp.c b/kernel/smp.c
+> index 9bce851..9eead6c 100644
+> --- a/kernel/smp.c
+> +++ b/kernel/smp.c
+> @@ -201,8 +201,6 @@ void generic_smp_call_function_single_interrupt(void)
+>  }
+>  
+>  static DEFINE_PER_CPU(struct call_single_data, csd_data);
+> -static DEFINE_PER_CPU(spinlock_t, csd_data_lock) =
+> -	__SPIN_LOCK_UNLOCKED(csd_lock);
+>  
+>  /*
+>   * smp_call_function_single - Run a function on a specific CPU
+> @@ -259,12 +257,10 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+>  			if (data)
+>  				data->flags = CSD_FLAG_ALLOC;
+>  			else {
+> -				data = &per_cpu(csd_data, cpu);
+> -				spin_lock(&per_cpu(csd_data_lock, cpu));
+> +				data = &per_cpu(csd_data, me);
+>  				while (data->flags & CSD_FLAG_LOCK)
+>  					cpu_relax();
+>  				data->flags = CSD_FLAG_LOCK;
+> -				spin_unlock(&per_cpu(csd_data_lock, cpu));
+>  			}
+>  		} else {
+>  			data = &d;
 
-Sure, debian might well be wrong.  But the bottom line is that the
-kernel changed, and people's machines broke.
+Ah, OK.
 
-If the kernel change was really really important then we might just
-grit our teeth and live with the breakage.  But this change _wasn't_ a
-terribly important one.  So I think we should back it out while we find
-another way of implementing it which does not break currently deployed
-installations.
+So if we just use our own CPU data, we can through away the spinlocks and 
+just do the test ourselves.
+
+That's even better.
+
+Ingo, can you apply Peter's patch on top of mine.
+
+-- Steve
+
