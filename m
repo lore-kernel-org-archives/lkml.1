@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZA2TQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbZA2TWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755318AbZA2TQX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:16:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZA2TQK
+	id S1756464AbZA2TWT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:22:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754522AbZA2TWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:16:10 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:51145 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751785AbZA2TQJ (ORCPT
+	Thu, 29 Jan 2009 14:22:00 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:26357 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754449AbZA2TV7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:16:09 -0500
-Date: Thu, 29 Jan 2009 13:33:13 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
-       akpm@linux-foundation.org, hpa@zytor.com, brgerst@gmail.com,
-       ebiederm@xmission.com, travis@sgi.com, linux-kernel@vger.kernel.org,
-       steiner@sgi.com, hugh@veritas.com,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-In-Reply-To: <20090128180757.GA9908@Krystal>
-Message-ID: <alpine.DEB.1.10.0901291315320.9622@qirst.com>
-References: <20090115183942.GA6325@elte.hu> <200901271213.18605.rusty@rustcorp.com.au> <497E705B.5000302@kernel.org> <200901282108.51864.rusty@rustcorp.com.au> <alpine.DEB.1.10.0901281148540.13825@qirst.com> <20090128180757.GA9908@Krystal>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 29 Jan 2009 14:21:59 -0500
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090127122156.784924f4@i1501.lan.towertech.it>
+References: <1233018263.14510.112.camel@localhost.localdomain>
+	 <20090127122156.784924f4@i1501.lan.towertech.it>
+Date: Thu, 29 Jan 2009 11:21:58 -0800
+Message-ID: <9ae48b020901291121n319be519o473db5fdc031ea8f@mail.gmail.com>
+Subject: Re: [PATCH] x86: i2c rtc instead of cmos rtc
+From: Ed Swierk <eswierk@aristanetworks.com>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, tglx@linutronix.de, mingo@redhat.com,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009, Mathieu Desnoyers wrote:
+On Tue, Jan 27, 2009 at 3:21 AM, Alessandro Zummo
+<alessandro.zummo@towertech.it> wrote:
+>  can't you just avoid compiling rtc cmos? or compile it as a module and
+>  load the i2c rtc first?
 
-> > The term cpu is meaning multiple things at this point. So yes it may be
-> > better to go with glibc naming of thread local space.
-> >
->
-> However using "local" for "per-cpu" could be confusing with the glibc
-> naming of thread local space, because "per-thread" and "per-cpu"
-> variables are different from a synchronization POV and we can end up
-> needing both (e.g. a thread local variable can never be accessed by
-> another thread, but a cpu local variable could be accessed by a
-> different CPU due to scheduling).
+In our embedded application it's more convenient to build all the
+drivers needed to support various hardware configurations into the
+kernel, and avoid messing with modules. This works fine for devices
+that can be detected dynamically, but RTC chips are among the few that
+need to be configured statically; my change just relaxes the current
+assumption that all x86 boards have a usable CMOS RTC.
 
-gcc/glibc support a __thread attribute to variables. As far as I can tell
-this automatically makes gcc perform the relocation to the current
-context using a segment register.
-
-But its a weird ABI http://people.redhat.com/drepper/tls.pdf. After
-reading that I agree that we should stay with the cpu ops and forget about
-the local and thread stuff in gcc/glibc.
-
+--Ed
