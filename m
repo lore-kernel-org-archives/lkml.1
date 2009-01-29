@@ -1,160 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758451AbZA2Ic1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZA2IeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758451AbZA2Ic1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 03:32:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753232AbZA2IcJ
+	id S1757329AbZA2IeM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 03:34:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZA2Id4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 03:32:09 -0500
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:58817 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755895AbZA2IcH (ORCPT
+	Thu, 29 Jan 2009 03:33:56 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37520 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751317AbZA2Idz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 03:32:07 -0500
-Date: Thu, 29 Jan 2009 14:01:59 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
-       mingo@elte.hu, richardj_moore@uk.ibm.com, jason.wessel@windriver.com
-Subject: [Patch 10/10] Sample HW breakpoint over kernel data address
-Message-ID: <20090129083159.GG7750@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090129074845.GA5078@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090129074845.GA5078@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 29 Jan 2009 03:33:55 -0500
+Date: Thu, 29 Jan 2009 00:33:21 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Henrik Rydberg" <rydberg@euromail.se>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] input: bcm5974: Prepare for a new trackpad header
+ type
+Message-Id: <20090129003321.e9c8c36c.akpm@linux-foundation.org>
+In-Reply-To: <1233138229-12489-2-git-send-email-rydberg@euromail.se>
+References: <1233138229-12489-1-git-send-email-rydberg@euromail.se>
+	<1233138229-12489-2-git-send-email-rydberg@euromail.se>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces a sample kernel module to demonstrate the use of Hardware Breakpoint
-feature. It places a breakpoint over the kernel variable 'pid_max' to monitor all
-write operations and emits a function-backtrace when done.
+On Wed, 28 Jan 2009 11:23:44 +0100 "Henrik Rydberg" <rydberg@euromail.se> wrote:
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- samples/Kconfig                         |    6 ++
- samples/Makefile                        |    3 -
- samples/hw_breakpoint/Makefile          |    1 
- samples/hw_breakpoint/data_breakpoint.c |   80 ++++++++++++++++++++++++++++++++
- 4 files changed, 89 insertions(+), 1 deletion(-)
+> static int report_tp_state(struct bcm5974 *dev, int size)
+>  {
+>  	const struct bcm5974_config *c = &dev->cfg;
+> -	const struct tp_finger *f = dev->tp_data->finger;
+> +	const struct tp_finger *f;
+>  	struct input_dev *input = dev->input;
+> -	const int fingers = (size - 26) / 28;
+> -	int raw_p, raw_w, raw_x, raw_y;
+> +	int raw_p, raw_w, raw_x, raw_y, raw_n;
+>  	int ptest = 0, origin = 0, nmin = 0, nmax = 0;
+>  	int abs_p = 0, abs_w = 0, abs_x = 0, abs_y = 0;
+>  
+> -	if (size < 26 || (size - 26) % 28 != 0)
+> +	if (size < c->tp_offset || (size - c->tp_offset) % SIZEOF_FINGER != 0)
+>  		return -EIO;
+>  
+> +	f = (const struct tp_finger *)(dev->tp_data + c->tp_offset);
 
-Index: linux-hbkpt-lkml-29-rc2/samples/Kconfig
-===================================================================
---- linux-hbkpt-lkml-29-rc2.orig/samples/Kconfig
-+++ linux-hbkpt-lkml-29-rc2/samples/Kconfig
-@@ -39,5 +39,11 @@ config SAMPLE_KRETPROBES
- 	default m
- 	depends on SAMPLE_KPROBES && KRETPROBES
- 
-+config SAMPLE_HW_BREAKPOINT
-+	tristate "Build kernel hardware breakpoint examples -- loadable modules only"
-+	depends on m
-+	help
-+	  This builds kernel hardware breakpoint example modules.
-+
- endif # SAMPLES
- 
-Index: linux-hbkpt-lkml-29-rc2/samples/Makefile
-===================================================================
---- linux-hbkpt-lkml-29-rc2.orig/samples/Makefile
-+++ linux-hbkpt-lkml-29-rc2/samples/Makefile
-@@ -1,3 +1,4 @@
- # Makefile for Linux samples code
- 
--obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/
-+obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/ \
-+			   hw_breakpoint/
-Index: linux-hbkpt-lkml-29-rc2/samples/hw_breakpoint/Makefile
-===================================================================
---- /dev/null
-+++ linux-hbkpt-lkml-29-rc2/samples/hw_breakpoint/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_SAMPLE_HW_BREAKPOINT) += data_breakpoint.o
-Index: linux-hbkpt-lkml-29-rc2/samples/hw_breakpoint/data_breakpoint.c
-===================================================================
---- /dev/null
-+++ linux-hbkpt-lkml-29-rc2/samples/hw_breakpoint/data_breakpoint.c
-@@ -0,0 +1,80 @@
-+/*
-+ * data_breakpoint.c - Sample HW Breakpoint file to watch kernel data address
-+ *
-+ * This file is a kernel module that places a breakpoint over 'pid_max' kernel
-+ * variable using Hardware Breakpoint register. The corresponding handler which
-+ * prints a backtrace is invoked everytime a write operation is performed on
-+ * that variable.
-+ *
-+ * After inserting this module, invoke a write operation using
-+ * 'echo <desired_value> > /proc/sys/kernel/pid_max'
-+ * to find the function-call backtrace.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+#include <linux/module.h>	/* Needed by all modules */
-+#include <linux/kernel.h>	/* Needed for KERN_INFO */
-+#include <linux/init.h>		/* Needed for the macros */
-+
-+#include <asm/hw_breakpoint.h>
-+
-+struct hw_breakpoint pid_max_hbkpt;
-+
-+void pid_max_hbkpt_installed(struct hw_breakpoint *temp, struct pt_regs
-+								*temp_regs)
-+{
-+	printk(KERN_INFO "pid_max_hbkpt ENABLED\n");
-+}
-+
-+void pid_max_hbkpt_uninstalled(struct hw_breakpoint *temp, struct
-+							pt_regs * temp_regs)
-+{
-+	printk(KERN_INFO "pid_max_hbkpt DISABLED\n");
-+}
-+
-+void pid_max_hbkpt_handler(struct hw_breakpoint *temp, struct pt_regs
-+								*temp_regs)
-+{
-+	printk(KERN_INFO "pid_max value is changed\n");
-+	dump_stack();
-+	printk(KERN_INFO "Dump stack from pid_max_hbkpt_handler\n");
-+}
-+
-+static int __init hw_break_module_init(void)
-+{
-+	int ret;
-+
-+#ifdef CONFIG_X86
-+	pid_max_hbkpt.info.name = "pid_max";
-+	pid_max_hbkpt.info.type = HW_BREAKPOINT_WRITE;
-+	pid_max_hbkpt.info.len = HW_BREAKPOINT_LEN_4;
-+	pid_max_hbkpt.priority = HW_BREAKPOINT_PRIO_NORMAL;
-+
-+	pid_max_hbkpt.installed = (void *)pid_max_hbkpt_installed;
-+	pid_max_hbkpt.uninstalled = (void *)pid_max_hbkpt_uninstalled;
-+	pid_max_hbkpt.triggered = (void *)pid_max_hbkpt_handler;
-+#endif /* CONFIG_X86 */
-+
-+	ret = register_kernel_hw_breakpoint(&pid_max_hbkpt);
-+
-+	if (ret < 0) {
-+		printk(KERN_INFO "Breakpoint registration failed\n");
-+		return ret;
-+	} else
-+		printk(KERN_INFO "HW Breakpoint for pid_max write installed\n");
-+
-+	return 0;
-+}
-+
-+static void __exit hw_break_module_exit(void)
-+{
-+	unregister_kernel_hw_breakpoint(&pid_max_hbkpt);
-+	printk(KERN_INFO "HW Breakpoint for pid_max write uninstalled\n");
-+}
-+
-+module_init(hw_break_module_init);
-+module_exit(hw_break_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("K.Prasad");
-+MODULE_DESCRIPTION("pid_max breakpoint");
+Is there anything which guarantees that `f' is sufficiently aligned? 
+If not, the code might cause unaligned exceptions on some
+architectures?
+
