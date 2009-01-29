@@ -1,125 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756825AbZA2SqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZA2Stq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756825AbZA2SqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 13:46:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZA2SqH
+	id S1756078AbZA2Stq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 13:49:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZA2Sta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 13:46:07 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:51255 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbZA2SqG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 13:46:06 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 29 Jan 2009 10:46:04 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Bron Gondwana <brong@fastmail.fm>
-Subject: Re: [patch] drop epoll max_user_instances and rely only on
- max_user_watches
-In-Reply-To: <20090129005716.6dd51929.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0901291020510.15448@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0901282010250.21401@alien.or.mcafeemobile.com> <20090129005716.6dd51929.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 29 Jan 2009 13:49:30 -0500
+Received: from gw.goop.org ([64.81.55.164]:53996 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751100AbZA2St3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 13:49:29 -0500
+Message-ID: <4981FA36.2000301@goop.org>
+Date: Thu, 29 Jan 2009 10:49:26 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jeff@garzik.org>
+CC: Stephen Hemminger <shemminger@linux-foundation.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [PATCH] net: add ARP notify option for devices
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009, Andrew Morton wrote:
+From: Stephen Hemminger <shemminger@linux-foundation.org>
 
-> 
-> > Subject: [patch] drop epoll max_user_instances and rely only on max_user_watches
-> 
-> nanonit: please prepare titles in the form "subsystem-id:
-> what-i-did-to-it", so a suitable name here would be
-> 
-> 	epoll: drop max_user_instances and rely only on max_user_watches
+This adds another inet device option to enable gratuitous ARP
+when device is brought up or address change. This is handy for
+clusters or virtualization.
 
-Sorry, I forgot, again. I sent those by hand, while I have that logic in 
-my scripts.
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ Documentation/networking/ip-sysctl.txt |    6 ++++++
+ include/linux/inetdevice.h             |    1 +
+ include/linux/sysctl.h                 |    1 +
+ kernel/sysctl_check.c                  |    1 +
+ net/ipv4/devinet.c                     |    9 +++++++++
+ 5 files changed, 18 insertions(+)
 
-
-
-> On Wed, 28 Jan 2009 20:56:07 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
-> 
-> > Linus suggested to put limits where the money is, and max_user_watches 
-> > already does that w/out the need of max_user_instances. That has the 
-> > advantage to mitigate the potential DoS while allowing pretty generous 
-> > default behavior.
-> 
-> A reader of this changelog would be wondering what this DoS is.
-
-	for i 1..1021
-		fd[i] = epoll_create()
-	for i 1..1021
-		for j 1..1021, j != i
-			epoll_ctl(fd[i], ADD, fd[j])
-
-I'm not sure we want to advertise it too much though.
-
-
-> > Allowing top 4% of low memory (per user) to be allocated in epoll 
-> > watches, we have:
-> > 
-> > LOMEM    MAX_WATCHES (per user)
-> > 512MB    ~178000
-> > 1GB      ~356000
-> > 2GB      ~712000
-> > 
-> > A box with 512MB of lomem, will meet some challenge in hitting 180K 
-> > watches, socket buffers math teaches us.
-> > No more max_user_instances limits then.
-> 
-> So the max consumable memory is
-> 
-> 	number-of-users * max_user_watches * sizeof(whatever)
-> 
-> ?
-> 
-> So if enough users gang up (or if one person has access to a lot of
-> UIDs), there's still a DoS?
-> 
-> I suspect we can live with that.
-
-I think so, given that we've seen that putting too restrictive limits 
-creates more problems. A similar thing, even though milder, exist on 
-sys_poll too. sys_poll eats (on a 32bit box) 28 bytes of kernel memory for 
-each 12 bytes of user memory, worse figures on a 64bit box.
-
-
-
-> I assume that because you based all this on all the other patches, you
-> view it as 2.6.30 material?
-> 
-> > @@ -581,10 +570,6 @@
-> 
-> please use `diff -p'.  It helps.
-
-Need to add to my quilt diff options :)
-
-
-
-> The code I have is
-> 
-> 	if (error < 0)
-> 		ep_free(ep);
-> 	else
-> 		atomic_inc(&ep->user->epoll_devs);
-> 
-> so I obviously nuked the `else' as well.
-
-That's the right thing.
-
-
-- Davide
+===================================================================
+--- a/Documentation/networking/ip-sysctl.txt
++++ b/Documentation/networking/ip-sysctl.txt
+@@ -782,6 +782,12 @@
+ 	The max value from conf/{all,interface}/arp_ignore is used
+ 	when ARP request is received on the {interface}
+ 
++arp_notify - BOOLEAN
++	Define mode for notification of address and device changes.
++	0 - (default): do nothing
++	1 - Generate gratuitous arp replies when device is brought up
++	    or hardware address changes.
++
+ arp_accept - BOOLEAN
+ 	Define behavior when gratuitous arp replies are received:
+ 	0 - drop gratuitous arp frames
+===================================================================
+--- a/include/linux/inetdevice.h
++++ b/include/linux/inetdevice.h
+@@ -108,6 +108,7 @@
+ #define IN_DEV_ARPFILTER(in_dev)	IN_DEV_ORCONF((in_dev), ARPFILTER)
+ #define IN_DEV_ARP_ANNOUNCE(in_dev)	IN_DEV_MAXCONF((in_dev), ARP_ANNOUNCE)
+ #define IN_DEV_ARP_IGNORE(in_dev)	IN_DEV_MAXCONF((in_dev), ARP_IGNORE)
++#define IN_DEV_ARP_NOTIFY(in_dev)	IN_DEV_MAXCONF((in_dev), ARP_NOTIFY)
+ 
+ struct in_ifaddr
+ {
+===================================================================
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -490,6 +490,7 @@
+ 	NET_IPV4_CONF_ARP_IGNORE=19,
+ 	NET_IPV4_CONF_PROMOTE_SECONDARIES=20,
+ 	NET_IPV4_CONF_ARP_ACCEPT=21,
++	NET_IPV4_CONF_ARP_NOTIFY=22,
+ 	__NET_IPV4_CONF_MAX
+ };
+ 
+===================================================================
+--- a/kernel/sysctl_check.c
++++ b/kernel/sysctl_check.c
+@@ -219,6 +219,7 @@
+ 	{ NET_IPV4_CONF_ARP_IGNORE,		"arp_ignore" },
+ 	{ NET_IPV4_CONF_PROMOTE_SECONDARIES,	"promote_secondaries" },
+ 	{ NET_IPV4_CONF_ARP_ACCEPT,		"arp_accept" },
++	{ NET_IPV4_CONF_ARP_NOTIFY,		"arp_notify" },
+ 	{}
+ };
+ 
+===================================================================
+--- a/net/ipv4/devinet.c
++++ b/net/ipv4/devinet.c
+@@ -1075,6 +1075,14 @@
+ 			}
+ 		}
+ 		ip_mc_up(in_dev);
++		/* fall through */
++	case NETDEV_CHANGEADDR:
++		if (IN_DEV_ARP_NOTIFY(in_dev))
++			arp_send(ARPOP_REQUEST, ETH_P_ARP,
++				 in_dev->ifa_list->ifa_address,
++				 dev,
++				 in_dev->ifa_list->ifa_address,
++				 NULL, dev->dev_addr, NULL);
+ 		break;
+ 	case NETDEV_DOWN:
+ 		ip_mc_down(in_dev);
+@@ -1439,6 +1447,7 @@
+ 		DEVINET_SYSCTL_RW_ENTRY(ARP_ANNOUNCE, "arp_announce"),
+ 		DEVINET_SYSCTL_RW_ENTRY(ARP_IGNORE, "arp_ignore"),
+ 		DEVINET_SYSCTL_RW_ENTRY(ARP_ACCEPT, "arp_accept"),
++		DEVINET_SYSCTL_RW_ENTRY(ARP_NOTIFY, "arp_notify"),
+ 
+ 		DEVINET_SYSCTL_FLUSHING_ENTRY(NOXFRM, "disable_xfrm"),
+ 		DEVINET_SYSCTL_FLUSHING_ENTRY(NOPOLICY, "disable_policy"),
 
 
