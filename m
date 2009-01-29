@@ -1,59 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZA2HF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758139AbZA2HF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbZA2HF2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 02:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752287AbZA2HFR
+	id S1758139AbZA2HF4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 02:05:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZA2HFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 02:05:17 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:42550 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752152AbZA2HFQ (ORCPT
+	Thu, 29 Jan 2009 02:05:47 -0500
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:50280 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752339AbZA2HFq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 02:05:16 -0500
-Date: Thu, 29 Jan 2009 00:05:13 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: linux-arm-kernel@lists.arm.linux.org.uk, tony@atomide.com,
-       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: OMAP clock fast-forward: an introduction to six series
-In-Reply-To: <20090128211844.GI23301@n2100.arm.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0901282357560.32081@utopia.booyaka.com>
-References: <alpine.DEB.2.00.0901281310590.14710@utopia.booyaka.com> <20090128211844.GI23301@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 29 Jan 2009 02:05:46 -0500
+Date: Thu, 29 Jan 2009 12:35:27 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org,
+       mingo@elte.hu, richardj_moore@uk.ibm.com, naren@linux.vnet.ibm.com
+Subject: Re: [RFC Patch 0/9] Hardware Breakpoint interfaces - v4
+Message-ID: <20090129070527.GA24496@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090122135640.GA11161@in.ibm.com> <Pine.LNX.4.44L0.0901221032220.2417-100000@iolanthe.rowland.org> <20090123110720.GA22751@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090123110720.GA22751@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Russell,
-
-On Wed, 28 Jan 2009, Russell King - ARM Linux wrote:
-
-> On Wed, Jan 28, 2009 at 01:22:22PM -0700, Paul Walmsley wrote:
-> > Per rmk's preferences, some patches have been 'compressed.' That is, some 
-> > fix patches have been rolled into a single patch with the original.  To 
-> > ease cross-referencing with the linux-omap git tree, original commit IDs 
-> > have been inserted into the patch messages.  Also, what would have been an 
-> > extremely long series has been split into six smaller, cumulative, roughly 
-> > thematic patch series.  If requested, I would be pleased to simply send 
-> > one large series of the original, uncompressed patches.  Thanks to the git 
-> > and stgit authors and contributors: without those tools, this process 
-> > would have been nearly impossible.
+On Fri, Jan 23, 2009 at 04:37:20PM +0530, K.Prasad wrote:
+> On Thu, Jan 22, 2009 at 10:42:48AM -0500, Alan Stern wrote:
+> > On Thu, 22 Jan 2009, K.Prasad wrote:
+> > 
+> > > Hi All,
+> > > 	Please find the new set of patches that introduce kernel
+> > > interfaces to use Hardware Breakpoint registers and an implementation
+> > > for x86 (and x86_64) architecture, now labelled as Version IV.
+> > > 
+> > > The patches are based on 2.6.29-rc2 and have been tested to work fine on
+> > > x86 architecture. Some of the major changes over the previous version of
+> > > patches include:
+> > > i) A sample kernel module that uses Data Hardware breakpoint over a
+> > > kernel variable to monitor write operations. See
+> > > samples/hw_breakpoint/data_breakpoint.c.
+> > > ii) Changes in the register_kernel_hw_breakpoint() interface to accept
+> > > only one parameter - pointer to a 'hw_breakpoint' structure which will
+> > > contain all relevant data members.
+> > 
+> > I see some problems with this immediately.  Firstly, as a result of
+> > this change the sample code in include/asm-generic/hw_breakpoint.h is
+> > now incorrect.  You need to change the comments when you change the
+> > code.
+> > 
+> > Second, your arch_store_info() routine is broken.  It checks for a
+> > kernel symbol name even if when a userspace breakpoint is being
+> > registered.  You should move that check up into validate_settings().
+> > 
+> > As a related matter, why did you put the "name" field into the
+> > arch-dependent part?  Clearly it should be arch-independent.
+> > 
+> > Alan Stern
+> > 
 > 
-> Since this patch series was only really meant for me to do some follow-on
-> work on it (to merge it into my tree) is it really necessary to submit
-> this 70 patch series via slow email via several mailing lists?
+> The user-space breakpoint requests face an issue due to removal of
+> HW_BREAKPOINT_EXECUTE support, since ptrace was made to service these
+> requests through the __register_user_hw_breakpoint() interface.
+> 
+> Through offline discussions, the suggestion gathered was to let ptrace
+> process these requests for instruction watchpoint while maintaining a
+> coherent view on the number of available registers.
+> 
+> I will send out a patch that refactors ptrace to handle instruction
+> watchpoint requests (until we get it to support through our interface),
+> which should also contain changes to the corresponding comments and
+> 'name' field.
+> 
+> Thanks,
+> K.Prasad
+>
 
-I posted the patches for final review and upstream merging.
+I choose to retain the "name" field in the arch-dependent structure. For
+one, it keeps all related things like address, type and symbol name
+grouped together, and secondly it allows individual arch implementations
+the choice to allow "name" based look-up when unsuitable (even for x86
+it wouldn't be suitable for I/O breakpoints). Let me know if you still
+find the placement of this member unpalatable!
 
-Not sure what the follow-on work is that you mention.  But if it's 
-additional development work, such as modifying the linux-omap clock code 
-to use your recent clkdev code, that should really be discussed 
-separately, and patches posted for comment to linux-omap, so the OMAP 
-community has a chance to test it first.  People on that list seem to be 
-pretty reasonable...
+And as said earlier, the user-space was broken not because of an issue
+with atch_store_info() but due to an issue with 'ptrace' interfacing
+with the proposed infrastructure. All user-space requests would have the
+address field populated and hence the 'kallsyms_lookup_name()' branch in
+arch_store_info() wouldn't be taken.
 
-regards,
+I would be sending the patches that have the user-space issue fixed
+shortly.
 
-- Paul
+Thanks,
+K.Prasad
+
