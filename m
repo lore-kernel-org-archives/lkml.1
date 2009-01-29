@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbZA2FCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZA2FJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757403AbZA2FCB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 00:02:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZA2FBs
+	id S1754803AbZA2FJv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 00:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZA2FJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 00:01:48 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37407 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754822AbZA2FBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 00:01:46 -0500
-Date: Thu, 29 Jan 2009 05:58:48 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Alasdair G Kergon <agk@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [RFC v2][PATCH] create workqueue threads only when needed
-Message-ID: <20090129045848.GB5231@redhat.com>
-References: <20090128002714.GA5086@nowhere> <20090128030224.GA4867@redhat.com> <20090128233112.GB7631@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090128233112.GB7631@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 29 Jan 2009 00:09:42 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:52542 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbZA2FJm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 00:09:42 -0500
+Subject: 2.6.26.8-rt13
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <srostedt@redhat.com>
+Content-Type: text/plain
+Date: Thu, 29 Jan 2009 00:09:39 -0500
+Message-Id: <1233205779.922.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/29, Frederic Weisbecker wrote:
->
-> I was about to retry the same approach but through async functions (kernel/async.c)
-> which would have solved the possible deadlock you described and would have made
-> the synchronizations easier.
->
-> But actually this is only a half solution:
->
-> Pointless workqueues stay pointless, even if they don't appear before they run once.
-> And moreover this is hiding the real problem: parts of the kernel use dedicated workqueues
-> while kevent is sufficient most of the time.
->
-> And if there are problems with using the workqueues, because of deadlocks or slow
-> works, async functions are a good solution.
+We are pleased to announce the 2.6.26.8-rt14 tree which can be
+downloaded from the following location:
 
-Completely agreed.
+  http://rt.et.redhat.com/download/
 
-And. Even if some subsystem really needs its own workqueue, probably it
-can use the single-threaded one, but we have a lot of multithreaded wqs.
+Information on the RT patch can be found at:
 
-Oleg.
+  http://rt.wiki.kernel.org/index.php/Main_Page
+
+Changes since 2.6.26.6-rt13
+
+ - don't disable interrupts in ide ata code on RT (Steven Rostedt)
+
+ - backport hex fix in ftrace (Carsten Emde)
+
+ - fix trace histogram warn on (Thomas Gleixner)
+
+ - fix ftrace preempt count recording (Carsten Emde)
+
+  - disable SCHED_HRTICK (Thomas Gleixner)
+
+  - fix typo in tasklet_hi_action (Adam Sampson)
+
+to build the 2.6.26.8-rt14 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.26.8.bz2
+  http://rt.et.redhat.com/download/patch-2.6.26.8-rt14.bz2
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+***************************************************************
+***************************************************************
+******  COMING SOON !!! COMING SOON !!! COMING SOON !!! *******
+******  COMING SOON !!! COMING SOON !!! COMING SOON !!! *******
+***************************************************************
+***************************************************************
+
+The RT git tree is almost ready!  It is currently based off of 2.6.28,
+until it becomes a little more stable. You can down load it now from the
+git repo:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-rt.git
+
+It boots on x86_64. A few more patches still need to be applied, but the
+majority of them have been incorporated. Work on the non x86 archs also
+needs to be done.
+
+Once the git tree is pretty stable I will release a 2.6.28-rt1 patch,
+make a v2.6.28-rt branch and then go right in sync with the mainline
+tree.
+
+Feel free to download it now and give it a try. And you can send me any
+crashes that you see.
+
+
+-- Steve
+
+
 
