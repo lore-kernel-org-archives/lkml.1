@@ -1,123 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbZA2Wy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZA2Wyr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757855AbZA2Wy1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 17:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZA2WyR
+	id S1754990AbZA2Wyr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 17:54:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757523AbZA2Wy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 17:54:17 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41449 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751601AbZA2WyQ (ORCPT
+	Thu, 29 Jan 2009 17:54:26 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:60299 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756524AbZA2WyZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 17:54:16 -0500
-Date: Fri, 30 Jan 2009 07:54:07 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non DMA_64BIT_MASK devices
-Cc: mingo@elte.hu, tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20090129205446N.fujita.tomonori@lab.ntt.co.jp>
-References: <20090129200303.E2C2.E1E9C6FF@jp.fujitsu.com> <20090129205446N.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20090130073511.F48F.E1E9C6FF@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Thu, 29 Jan 2009 17:54:25 -0500
+Subject: Re: Creating the RT git tree
+From: Jon Masters <jonathan@jonmasters.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Clark Williams <clark.williams@gmail.com>,
+       Gregory Haskins <ghaskins@novell.com>
+In-Reply-To: <1233267328.3937.66.camel@perihelion.bos.jonmasters.org>
+References: <alpine.DEB.1.10.0812161556460.25356@gandalf.stny.rr.com>
+	 <1233263200.3937.44.camel@perihelion.bos.jonmasters.org>
+	 <1f1b08da0901291407q7aeaa13es730bad17abda9b66@mail.gmail.com>
+	 <1233267328.3937.66.camel@perihelion.bos.jonmasters.org>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Thu, 29 Jan 2009 17:54:12 -0500
+Message-Id: <1233269652.3937.74.camel@perihelion.bos.jonmasters.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 29 Jan 2009 20:41:07 +0900
-> Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+On Thu, 2009-01-29 at 17:15 -0500, Jon Masters wrote:
+> On Thu, 2009-01-29 at 14:07 -0800, john stultz wrote:
 > 
-> > > Before the dma ops unification, IA64 always uses GFP_DMA for
-> > > dma_alloc_coherent like:
-> > > 
-> > > #define dma_alloc_coherent(dev, size, handle, gfp)	\
-> > > 	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
-> > > 
-> > > This GFP_DMA enforcement doesn't make sense for IOMMUs since they can
-> > > do address translation to give addresses that devices can access
-> > > to. The IOMMU drivers ignore the zone flag. However, this is still
-> > > necessary for swiotlb since it can't do address translation.
-> > > 
-> > > We don't always need to use GFP_DMA for swiotlb. We need GFP_DMA for
-> > > devices incapable of 64bit DMA.
-> > > 
-> > > This patch is sorta updated version of:
-> > > 
-> > > http://marc.info/?l=linux-kernel&m=122638215612705&w=2
-> > > 
-> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > > ---
-> > >  arch/ia64/kernel/pci-swiotlb.c |   10 +++++++++-
-> > >  1 files changed, 9 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-> > > index 717ad4f..573f02c 100644
-> > > --- a/arch/ia64/kernel/pci-swiotlb.c
-> > > +++ b/arch/ia64/kernel/pci-swiotlb.c
-> > > @@ -13,8 +13,16 @@
-> > >  int swiotlb __read_mostly;
-> > >  EXPORT_SYMBOL(swiotlb);
-> > >  
-> > > +static void *ia64_swiotlb_alloc_coherent(struct device *dev, size_t size,
-> > > +					 dma_addr_t *dma_handle, gfp_t gfp)
-> > > +{
-> > > +	if (dev->coherent_dma_mask != DMA_64BIT_MASK)
-> > > +		gfp |= GFP_DMA;
-> > > +	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
-> > > +}
-> > > +
-> > >  struct dma_map_ops swiotlb_dma_ops = {
-> > > -	.alloc_coherent = swiotlb_alloc_coherent,
-> > > +	.alloc_coherent = ia64_swiotlb_alloc_coherent,
-> > >  	.free_coherent = swiotlb_free_coherent,
-> > >  	.map_page = swiotlb_map_page,
-> > >  	.unmap_page = swiotlb_unmap_page,
-> > > -- 
-> > > 1.6.0.6
-> > 
-> > 
-> > Though I may be misunderstanding something, this initialization seems to be
-> > called only when CONFIG_IA64_DIG_VTD is on.
+> > git log -r origin/linus..origin/rt/threadirqs
 > 
-> Hmm, what's 'this initialization'?
+> Ok. So perhaps it's the branch creation during:
 > 
-> This patch always sets swiotlb_dma_ops.alloc_coherent to
-> ia64_swiotlb_alloc_coherent.
-
-I tested your patch, but, ia64_swiotlb_alloc_coherent() was not called with
-CONFIG_GENERIC.
-
-swiotlb_dma_ops is set by pci_swiotlb_init().
-However, it seems to be not called when CONFIG_IA64_DIG/Generic configuration.
-
-
-> > > This patch is sorta updated version of:
-> > > 
-> > > http://marc.info/?l=linux-kernel&m=122638215612705&w=2
-> > > 
-
-This old version is effective even CONFIG_GENERIC/CONFIG_IA64_DIG.
-
-Bye.
-
+> git checkout -b threadirqs origin/rt/threadirqs
 > 
-> 
-> > CONFIG_IA64_DIG_VTD
-> >   platform_dma_init() -> pci_iommu_alloc() -> pci_swiotlb_init()
-> > 
-> > CONFIG_IA64_DIG/CONFIG_IA64_GENERIC
-> >   platform_dma_init() -> swiotlb_dma_init()
-> > 
-> > Is it intended? 
-> > Do you wish GFP_DMA should be always ON when generic config?
+> Because yeah, that does show what I want. This is weird. Is there some
+> git expert who can tell me why I'm seeing linus merges in my local
+> branch? My local branch should be simply the same as the remote one...
 
+Bah. I think I was just fat-fingering something. Ok, so it does actually
+work if I do this:
 
--- 
-Yasunori Goto 
+git log master...threadirqs
+
+or replace master with $whatever. Ok, that's really what I wanted. It
+would be nice if a branch could be setup without all the merge history
+builtin - that's supposed to be in the rt-master and so forth
+branches...but whatever.
+
+Jon.
 
 
