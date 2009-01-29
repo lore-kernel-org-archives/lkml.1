@@ -1,54 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbZA2ITS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZA2I2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbZA2ITS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 03:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZA2ITE
+	id S1754840AbZA2I2s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 03:28:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZA2I2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 03:19:04 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60205 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752009AbZA2ITC (ORCPT
+	Thu, 29 Jan 2009 03:28:38 -0500
+Received: from e28smtp06.in.ibm.com ([59.145.155.6]:57034 "EHLO
+	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751135AbZA2I2h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 03:19:02 -0500
-Date: Thu, 29 Jan 2009 00:18:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [PATCH] migration: migrate_vmas should check "vma"
-Message-Id: <20090129001849.9f8fdcb3.akpm@linux-foundation.org>
-In-Reply-To: <20090129101623.0d64d81b.nishimura@mxp.nes.nec.co.jp>
-References: <20090128162619.2205befd.nishimura@mxp.nes.nec.co.jp>
-	<alpine.DEB.1.10.0901281140540.7765@qirst.com>
-	<20090128165512.GA22588@cmpxchg.org>
-	<20090129101623.0d64d81b.nishimura@mxp.nes.nec.co.jp>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 03:28:37 -0500
+Date: Thu, 29 Jan 2009 13:58:29 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
+       mingo@elte.hu, richardj_moore@uk.ibm.com, jason.wessel@windriver.com
+Subject: [Patch 4/10] Introduce virtual debug register in thread_struct and
+	wrapper-routines around process related functions
+Message-ID: <20090129082829.GA7750@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090129074845.GA5078@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090129074845.GA5078@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 10:16:23 +0900 Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+This patch introduces virtual debug registers to used by the per-thread
+structure ad wrapper routines to manage debug registers by process-related
+functions.
 
-> On Wed, 28 Jan 2009 17:55:12 +0100, Johannes Weiner <hannes@cmpxchg.org> wrote:
-> > On Wed, Jan 28, 2009 at 11:42:36AM -0500, Christoph Lameter wrote:
-> > > On Wed, 28 Jan 2009, Daisuke Nishimura wrote:
-> > > 
-> > > > migrate_vmas() should check "vma" not "vma->vm_next" for for-loop condition.
-> > > 
-> > > The loop condition is checked before vma = vma->vm_next. So the last
-> > > iteration of the loop will now be run with vma = NULL?
-> > 
-> > No, the condition is always checked before the body is executed.  The
-> > assignment to vma->vm_next happens at the end of every body.
-> > 
-> So, I think in current code the loop body is not executed
-> about the last vma in the list.
-> 
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+---
+ arch/x86/include/asm/debugreg.h  |   27 +++++++++++++++++++++++++++
+ arch/x86/include/asm/processor.h |   10 +++-------
+ 2 files changed, 30 insertions(+), 7 deletions(-)
 
-Yep.
-
-Is this serious enough to bother fixing in 2.6.29?
+Index: linux-hbkpt-lkml-29-rc2/arch/x86/include/asm/debugreg.h
+===================================================================
+--- linux-hbkpt-lkml-29-rc2.orig/arch/x86/include/asm/debugreg.h
++++ linux-hbkpt-lkml-29-rc2/arch/x86/include/asm/debugreg.h
+@@ -49,6 +49,8 @@
+ 
+ #define DR_LOCAL_ENABLE_SHIFT 0    /* Extra shift to the local enable bit */
+ #define DR_GLOBAL_ENABLE_SHIFT 1   /* Extra shift to the global enable bit */
++#define DR_LOCAL_ENABLE (0x1)      /* Local enable for reg 0 */
++#define DR_GLOBAL_ENABLE (0x2)     /* Global enable for reg 0 */
+ #define DR_ENABLE_SIZE 2           /* 2 enable bits per register */
+ 
+ #define DR_LOCAL_ENABLE_MASK (0x55)  /* Set  local bits for all 4 regs */
+@@ -67,4 +69,29 @@
+ #define DR_LOCAL_SLOWDOWN (0x100)   /* Local slow the pipeline */
+ #define DR_GLOBAL_SLOWDOWN (0x200)  /* Global slow the pipeline */
+ 
++/*
++ * HW breakpoint additions
++ */
++#ifdef __KERNEL__
++
++/* For process management */
++void flush_thread_hw_breakpoint(struct task_struct *tsk);
++int copy_thread_hw_breakpoint(struct task_struct *tsk,
++		struct task_struct *child, unsigned long clone_flags);
++void dump_thread_hw_breakpoint(struct task_struct *tsk, int u_debugreg[8]);
++void switch_to_thread_hw_breakpoint(struct task_struct *tsk);
++
++/* For CPU management */
++void load_debug_registers(void);
++static inline void disable_debug_registers(void)
++{
++	set_debugreg(0UL, 7);
++}
++
++/* For use by ptrace */
++unsigned long thread_get_debugreg(struct task_struct *tsk, int n);
++int thread_set_debugreg(struct task_struct *tsk, int n, unsigned long val);
++
++#endif	/* __KERNEL__ */
++
+ #endif /* _ASM_X86_DEBUGREG_H */
+Index: linux-hbkpt-lkml-29-rc2/arch/x86/include/asm/processor.h
+===================================================================
+--- linux-hbkpt-lkml-29-rc2.orig/arch/x86/include/asm/processor.h
++++ linux-hbkpt-lkml-29-rc2/arch/x86/include/asm/processor.h
+@@ -405,13 +405,9 @@ struct thread_struct {
+ 	unsigned long		ip;
+ 	unsigned long		fs;
+ 	unsigned long		gs;
+-	/* Hardware debugging registers: */
+-	unsigned long		debugreg0;
+-	unsigned long		debugreg1;
+-	unsigned long		debugreg2;
+-	unsigned long		debugreg3;
+-	unsigned long		debugreg6;
+-	unsigned long		debugreg7;
++/* Hardware breakpoint info */
++	unsigned long	vdr6;
++	struct thread_hw_breakpoint	*hw_breakpoint_info;
+ 	/* Fault info: */
+ 	unsigned long		cr2;
+ 	unsigned long		trap_no;
