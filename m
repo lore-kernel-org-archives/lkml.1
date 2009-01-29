@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbZA2Jax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbZA2JfM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbZA2Jax (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 04:30:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753149AbZA2Jah
+	id S1756815AbZA2JfM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 04:35:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZA2Jey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 04:30:37 -0500
-Received: from gw.goop.org ([64.81.55.164]:51175 "EHLO mail.goop.org"
+	Thu, 29 Jan 2009 04:34:54 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42363 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752880AbZA2Jag (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 04:30:36 -0500
-Message-ID: <4981773A.1050403@goop.org>
-Date: Thu, 29 Jan 2009 01:30:34 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1753363AbZA2Jex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 04:34:53 -0500
+Date: Thu, 29 Jan 2009 10:32:30 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] reparent_thread: fix a zombie leak if /sbin/init
+	ignores SIGCHLD
+Message-ID: <20090129093230.GA30844@redhat.com>
+References: <20090129080600.GA26878@redhat.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Zachary Amsden <zach@vmware.com>,
-       Ravikiran Thirumalai <kiran@scalemp.com>
-Subject: Re: [PATCH 4 of 7] x86/paravirt: selectively save/restore regs around
- pvops calls
-References: <patchbomb.1233182100@abulafia.goop.org> <5849eb6475c1bbe5a6ca.1233182104@abulafia.goop.org> <200901291917.26601.rusty@rustcorp.com.au>
-In-Reply-To: <200901291917.26601.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090129080600.GA26878@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Thursday 29 January 2009 09:05:04 Jeremy Fitzhardinge wrote:
->   
->> +#define PV_SAVE_REGS(set)			\
->> +	COND_PUSH(set, CLBR_RAX, rax);		\
->> +	COND_PUSH(set, CLBR_RCX, rcx);		\
->> +	COND_PUSH(set, CLBR_RDX, rdx);		\
->> +	COND_PUSH(set, CLBR_RSI, rsi);		\
->> +	COND_PUSH(set, CLBR_RDI, rdi);		\
->> +	COND_PUSH(set, CLBR_R8, r8);		\
->> +	COND_PUSH(set, CLBR_R9, r9);		\
->> +	COND_PUSH(set, CLBR_R10, r10);		\
->> +	COND_PUSH(set, CLBR_R11, r11)
->>     
+On 01/29, Oleg Nesterov wrote:
 >
-> It's kind of messy.  Can we do something clever here with token pasting?
->   
+> If /sbin/init ignores SIGCHLD and we re-parent a zombie, it is leaked.
+> reparent_thread() does do_notify_parent() which sets ->exit_signal = -1
+> in this case. This means that nobody except us can reap it, the detached
+> task is not visible to do_wait().
 
-I tried a few things, but no.  Passing in just RAX, and then pasting 
-CLBR_##reg works, and the assembler accepts %RAX - but - the asm code 
-also #defines RAX <some stack offset>, so the assembler ends up seeing 
-%48.  I considered renaming all the CLBR_ defines to CLBR_rax, but that 
-looks unhappy too.  So I stayed with this.
+Just in case, for reviewers...
 
-    J
+To verify that the problem does exist and it is really fixed, I used the
+stupid patch below, it allows to change init's SIGCHLD handler to SIG_IGN
+and then restore it via prctl(1000, 0/1).	
+
+Oleg.
+
+--- kernel/sys.c~	2009-01-19 10:44:33.000000000 +0100
++++ kernel/sys.c	2009-01-29 07:37:09.000000000 +0100
+@@ -1703,6 +1703,9 @@ SYSCALL_DEFINE1(umask, int, mask)
+ 	return mask;
+ }
+ 
++void __user *I_SC;
++#include <linux/pid_namespace.h>
++
+ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
+ 		unsigned long, arg4, unsigned long, arg5)
+ {
+@@ -1716,6 +1719,17 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
+ 
+ 	error = 0;
+ 	switch (option) {
++		case 1000: {
++			struct task_struct *i = init_pid_ns.child_reaper;
++
++			if (!I_SC) I_SC = i->sighand->action[SIGCHLD-1].sa.sa_handler;
++
++			i->sighand->action[SIGCHLD-1].sa.sa_handler =
++				arg2 ? I_SC : SIG_IGN;
++
++			break;
++		}
++
+ 		case PR_SET_PDEATHSIG:
+ 			if (!valid_signal(arg2)) {
+ 				error = -EINVAL;
+
