@@ -1,101 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZA2JOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756430AbZA2JQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbZA2JOP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 04:14:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZA2JN6
+	id S1756430AbZA2JQE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 04:16:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZA2JPq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 04:13:58 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49658 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751621AbZA2JN5 (ORCPT
+	Thu, 29 Jan 2009 04:15:46 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:40383 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751524AbZA2JPq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 04:13:57 -0500
-Date: Thu, 29 Jan 2009 01:11:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>, Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>, stable@kernel.org
-Subject: Re: [RFC v7] wait: prevent exclusive waiter starvation
-Message-Id: <20090129011143.884e5573.akpm@linux-foundation.org>
-In-Reply-To: <20090129083108.GA27495@redhat.com>
-References: <20090123095904.GA22890@cmpxchg.org>
-	<20090123113541.GB12684@redhat.com>
-	<20090123133050.GA19226@redhat.com>
-	<20090126215957.GA3889@cmpxchg.org>
-	<20090127032359.GA17359@redhat.com>
-	<20090127193434.GA19673@cmpxchg.org>
-	<20090127200544.GA28843@redhat.com>
-	<20090128091453.GA22036@cmpxchg.org>
-	<20090129044227.GA5231@redhat.com>
-	<20090128233734.81d8004a.akpm@linux-foundation.org>
-	<20090129083108.GA27495@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 04:15:46 -0500
+Date: Thu, 29 Jan 2009 02:15:44 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: "Woodruff, Richard" <r-woodruff2@ti.com>
+cc: "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>
+Subject: RE: [PATCH B 06/10] OMAP3 pwrdm: add CORE SAR handling (for USBTLL
+ module)
+In-Reply-To: <alpine.DEB.2.00.0901290042020.32081@utopia.booyaka.com>
+Message-ID: <alpine.DEB.2.00.0901290212360.18004@utopia.booyaka.com>
+References: <20090128024301.27240.39391.stgit@localhost.localdomain> <20090128024421.27240.95450.stgit@localhost.localdomain> <13B9B4C6EF24D648824FF11BE89671620376DEB7A5@dlee02.ent.ti.com> <alpine.DEB.2.00.0901290042020.32081@utopia.booyaka.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 09:31:08 +0100 Oleg Nesterov <oleg@redhat.com> wrote:
+Hi Richard,
 
-> On 01/28, Andrew Morton wrote:
-> >
-> > On Thu, 29 Jan 2009 05:42:27 +0100 Oleg Nesterov <oleg@redhat.com> wrote:
-> >
-> > > On 01/28, Johannes Weiner wrote:
-> > > >
-> > > > Add abort_exclusive_wait() which removes the process' wait descriptor
-> > > > from the waitqueue, iff still queued, or wakes up the next waiter
-> > > > otherwise.  It does so under the waitqueue lock.  Racing with a wake
-> > > > up means the aborting process is either already woken (removed from
-> > > > the queue) and will wake up the next waiter, or it will remove itself
-> > > > from the queue and the concurrent wake up will apply to the next
-> > > > waiter after it.
-> > > >
-> > > > Use abort_exclusive_wait() in __wait_event_interruptible_exclusive()
-> > > > and __wait_on_bit_lock() when they were interrupted by other means
-> > > > than a wake up through the queue.
-> > >
-> > > Imho, this all is right, and this patch should replace
-> > > lock_page_killable-avoid-lost-wakeups.patch (except for stable tree).
-> >
-> > I dropped lock_page_killable-avoid-lost-wakeups.patch a while ago.
-> >
-> > So I think we're saying that
-> > lock_page_killable-avoid-lost-wakeups.patch actually did fix the bug?
-> 
-> I think yes,
-> 
-> > And that "[RFC v7] wait: prevent exclusive waiter starvation" fixes it
-> > as well, and in a preferable manner, but not a manner which we consider
-> > suitable for -stable?  (why?)
-> 
-> I meant that lock_page_killable-avoid-lost-wakeups.patch is much simpler,
-> and thus it looks more "safe" for -stable.
-> 
-> But it is not optimal, and Johannes's patch is also more generic, it fixes
-> wait_event_interruptible_exclusive() as well.
-> 
-> > And hence that lock_page_killable-avoid-lost-wakeups.patch is the
-> > appropriate fix for -stable?
-> >
-> > If so, that's a bit unusual, and the -stable maintainers may choose to
-> > take the patch which we're putting into 2.6.29.
-> 
-> Well, I don't know ;)
-> 
-> But Johannes's looks good to me, if you already dropped the old patch,
-> then I think this one can go into -stable after some testing. Hopefully
-> maintainers can review it.
-> 
+On Thu, 29 Jan 2009, Paul Walmsley wrote:
 
-OK, thanks.  That's why we pay the stable guys the big bucks.
+> > TLLSAR is not functional till ES3.1 (and beyound).  Is it possible to flag it this way?
+> 
+> Yes, it's easy in this case.  Thanks for the note.  I will send along an 
+> updated patch for this.
 
-I tagged the patch with
+N.B. - fixxing this required a separate change to the omap_chip flag 
+system, so I'll send the two necessary patches to the linux-omap mailing 
+list for further testing.
 
-Cc: <stable@kernel.org>         ["after some testing"]
-
+- Paul
