@@ -1,72 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbZA2BKC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbZA2BNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757600AbZA2BKC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 20:10:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZA2BJt
+	id S1757230AbZA2BNR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 20:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZA2BNA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 20:09:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50311 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753351AbZA2BJs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 20:09:48 -0500
-Date: Wed, 28 Jan 2009 17:09:14 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
-Message-ID: <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 28 Jan 2009 20:13:00 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:53568 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751988AbZA2BM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 20:12:59 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Subject: Re: [PATCH RFC] sh: maple: Add support for SEGA Dreamcast VMU and clean up maple bus driver (2/3)
+Date: Wed, 28 Jan 2009 20:12:54 -0500
+User-Agent: KMail/1.10.4 (Linux/2.6.28; KDE/4.1.4; x86_64; ; )
+Cc: Paul Mundt <lethal@linux-sh.org>, Greg KH <greg@kroah.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       dwmw2 <dwmw2@infradead.org>, "linux-sh" <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-input" <linux-input@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>
+References: <1233186456.6734.16.camel@localhost.localdomain> <200901281944.57894.vapier@gentoo.org> <1233190170.6734.36.camel@localhost.localdomain>
+In-Reply-To: <1233190170.6734.36.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed;
+  boundary="nextPart1586976.Qj0ey7Ajbh";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901282012.56699.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1586976.Qj0ey7Ajbh
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-
-On Wed, 28 Jan 2009, Parag Warudkar wrote:
+On Wednesday 28 January 2009 19:49:30 Adrian McMenamin wrote:
+> On Wed, 2009-01-28 at 19:44 -0500, Mike Frysinger wrote:
+> > On Wednesday 28 January 2009 19:09:10 Adrian McMenamin wrote:
+> > > +static struct maple_driver vmu_flash_driver = {
+> > > +	.function =	MAPLE_FUNC_MEMCARD,
+> > > +	.drv = {
+> > > +		.name =		"Dreamcast_visual_memory",
+> >
+> > i thought there was like a 16byte limit or something on this ?
 >
-> This is similar to the issue reported back in Jul 2007 - 
-> http://kerneltrap.org/mailarchive/linux-kernel/2007/8/1/154073/thread 
-> which was fixed with a patch to unconditionally save/restore pci config 
-> space - that one is still in tg3.c.
+> Don't think so, it's just a const char* isn't it?
 
-In fact, the new PCI suspend/restore code should have made that 
-unnecessary, since the PCI layer now makes sure that a save/restore is 
-done even if the driver hadn't done it.
+yeah, looks like.  not sure what i remember.
+-mike
 
-But at the same time, still having the driver do it certainly shouldn't 
-have _hurt_ anything either. But it's quite possible that the tg3 thing is 
-very sensitive to the exact order things happen in - there's a lot of 
-comments about bugs in there ;)
+--nextPart1586976.Qj0ey7Ajbh
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
-> After resume tg3 complains that no firmware is running and eth0 is 
-> non-existent. Rmmoding and modprobing tg3 again causes some timeouts and 
-> errors from tg3 and the link still doesn't work.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
-That seems to imply that even the reset failed, which is interesting. 
+iQIcBAABAgAGBQJJgQKYAAoJEEFjO5/oN/WBuasQAJyBRG8GcuCDrYc49MXpbpoh
+Yf/mR628/d71apzAQACOiIerICXWlKUY/OloGQtUUeByCQJSBPtKRNKjFyVM4t3p
+hT9KY6fcmGlD84fQ7cBBCYhj7hiWZOj0r3oKw0Dmo2WjyTDTL3BnXFvuxwSaTGL2
+yxfDCvzfin8KU3/2IKOy5wss7pe7RilHrxreW+X3v0X2Zd6eDgHUDcYyU0Cqi7lH
+hhjnjMuQHQDI1PSOvZ0mDPsOnoilgFOg79iI9n5MF3D9DwotsXtzqmbJ/Oinvenr
+gk74XZ2xsaXM9aYxD8I2mFL6KE+31PhmHFasvhy88l7NSsRk8Tn+SmqVLLz5oAgI
+Ytf6nKGGoNJDWsAA7Qq2ALmy4X36IdToq7+QPZmGg8WZqLjznfAxTrdzfdeRd4dT
+lkoe8q7MhbEtdbJkhg3ZrNR8Y0058z+zLZGI1wSfZSOc10CUixQV1xCDvppmhEPH
+XgIvK96EmPTBP1TTb5ySRmaf6Qd6ZI2yBMA9DsOZUHosDartwdIKaaLI3lDvM9Lt
+koXTSaYZ3SzB0xsUy4OzTNjJRw6npPT8M58SgAAXWuaCpNWlbpXI0yzhJX/C29Qn
+h/gu2ho1ML2XUNTHDAcT1P8k7GMqj8BHmQ00JZK6c/CwpQXtSt4DXCNCf1jLw43t
+49UpsmV13u/4TBNF4XBD
+=5Oby
+-----END PGP SIGNATURE-----
 
-But it also possibly means that the problem is not necessarily the driver 
-itself, but some cached state that we keep around in "struct pci_dev" even 
-across a module load/unload. 
-
-For example, if we get the "dev->current_state" cache wrong, then we may 
-not actually end up changing it when we should, because we think we 
-already match the target state. I don't _think_ that is it, but that's the 
-kind of thing that could happen.
-
-Can you do a
-
-	lspci -vvxxx -s [tg3-device]
-
-before-and-after suspend? Is there some state that looks like it got 
-corrupted?
-
-			Linus
+--nextPart1586976.Qj0ey7Ajbh--
