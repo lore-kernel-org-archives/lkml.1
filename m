@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760276AbZA2Xvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbZA2X4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760276AbZA2Xvm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759514AbZA2XvW
+	id S1758403AbZA2X4O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:56:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754001AbZA2Xz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:51:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49516 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756835AbZA2XvT (ORCPT
+	Thu, 29 Jan 2009 18:55:57 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:58778 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751850AbZA2Xz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:51:19 -0500
-Date: Thu, 29 Jan 2009 15:50:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-Cc: hans-christian.egtvedt@atmel.com, linux-kernel@vger.kernel.org,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Huang Weiyi <weiyi.huang@gmail.com>
-Subject: Re: [PATCH 1/1] atmel-ssc: fix misuse of dev_dbg when requested ssc
- instance is not found
-Message-Id: <20090129155042.e0ea148d.akpm@linux-foundation.org>
-In-Reply-To: <20090129174655.1f440f3e@hcegtvedt>
-References: <1232369876-19428-1-git-send-email-hans-christian.egtvedt@atmel.com>
-	<20090129174655.1f440f3e@hcegtvedt>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 18:55:56 -0500
+From: "Henrik Rydberg" <rydberg@euromail.se>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>
+Subject: [PATCH] input: bcm5974: Declare alignment usage
+Date: Fri, 30 Jan 2009 00:55:44 +0100
+Message-Id: <1233273344-6225-1-git-send-email-rydberg@euromail.se>
+X-Mailer: git-send-email 1.5.6.3
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1LSgjh-0002Tl-4r.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1LSgjh-0002Tl-4r 212ab9c8c16ef1a60e0a8ed2aec92fd9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 17:46:55 +0100
-Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com> wrote:
+This patch adds struct alignment information and adds comments to
+ensure all access of finger data is two-byte aligned.
 
-> On Mon, 19 Jan 2009 13:57:56 +0100
-> Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com> wrote:
-> > This patch replaces the dev_dbg(...) with a pr_err since the ssc
-> > pointer is not valid when the id is not found in the list.
-> > 
-> > Signed-off-by: Hans-Christian Egtvedt
-> > <hans-christian.egtvedt@atmel.com> ---
-> >  drivers/misc/atmel-ssc.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/misc/atmel-ssc.c b/drivers/misc/atmel-ssc.c
-> > index 6b35874..6cff1bb 100644
-> > --- a/drivers/misc/atmel-ssc.c
-> > +++ b/drivers/misc/atmel-ssc.c
-> > @@ -35,7 +35,7 @@ struct ssc_device *ssc_request(unsigned int ssc_num)
-> >  
-> >  	if (!ssc_valid) {
-> >  		spin_unlock(&user_lock);
-> > -		dev_dbg(&ssc->pdev->dev, "could not find requested device\n");
-> > +		pr_err("ssc: ssc%d platform device is missing\n", ssc_num);
-> >  		return ERR_PTR(-ENODEV);
-> >  	}
-> >  
-> 
-> Bump, or did I miss the merge window?
-> 
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+---
+ drivers/input/mouse/bcm5974.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-(Top-posting repaired.  Please don't do that!  It makes it horrid to
-reply to you)
+diff --git a/drivers/input/mouse/bcm5974.c b/drivers/input/mouse/bcm5974.c
+index 874ae11..37f2341 100644
+--- a/drivers/input/mouse/bcm5974.c
++++ b/drivers/input/mouse/bcm5974.c
+@@ -110,17 +110,17 @@ enum tp_type {
+ 	TYPE2			/* button integrated in trackpad */
+ };
+ 
+-/* trackpad finger data offsets */
+-#define FINGER_TYPE1		26
+-#define FINGER_TYPE2		30
++/* trackpad finger data offsets, le16-aligned */
++#define FINGER_TYPE1		(13 * sizeof(__le16))
++#define FINGER_TYPE2		(15 * sizeof(__le16))
+ 
+-/* trackpad button data offsets */
++/* trackpad button data offsets, u8-aligned */
+ #define BUTTON_TYPE2		15
+ 
+ /* integrated button capability by configuration */
+ #define HAS_INTEGRATED_BUTTON(c)	(c->tp_type == TYPE2)
+ 
+-/* trackpad finger structure */
++/* trackpad finger structure, le16-aligned */
+ struct tp_finger {
+ 	__le16 origin;		/* zero when switching track finger */
+ 	__le16 abs_x;		/* absolute x coodinate */
+@@ -134,7 +134,7 @@ struct tp_finger {
+ 	__le16 force_minor;	/* trackpad force, minor axis? */
+ 	__le16 unused[3];	/* zeros */
+ 	__le16 multi;		/* one finger: varies, more fingers: constant */
+-};
++} __attribute__((packed,aligned(2)));
+ 
+ /* trackpad finger data size, empirically at least ten fingers */
+ #define SIZEOF_FINGER		sizeof(struct tp_finger)
+@@ -321,6 +321,7 @@ static int report_tp_state(struct bcm5974 *dev, int size)
+ 	if (size < c->tp_offset || (size - c->tp_offset) % SIZEOF_FINGER != 0)
+ 		return -EIO;
+ 
++	/* finger data, le16-aligned */
+ 	f = (const struct tp_finger *)(dev->tp_data + c->tp_offset);
+ 	raw_n = (size - c->tp_offset) / SIZEOF_FINGER;
+ 
+-- 
+1.5.6.3
 
-(Suitable cc's added - this was why your patch got lost)
-
-The patch seems reasonable but the changelog seems to be quite
-misleading.  I did this:
-
-   The ssc pointer is not valid when the id is not found in the
-   list.  Convert the message from a debug one into an error message
-   and avoid dereferencing the bad pointer.
-
-OK?
