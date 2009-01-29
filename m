@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZA2RoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbZA2Ro2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbZA2RoD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 12:44:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZA2Rnt
+	id S1759002AbZA2Ro2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 12:44:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZA2RoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 12:43:49 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:42050 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754527AbZA2Rns (ORCPT
+	Thu, 29 Jan 2009 12:44:14 -0500
+Received: from nf-out-0910.google.com ([64.233.182.187]:14412 "EHLO
+	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754158AbZA2RoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 12:43:48 -0500
+	Thu, 29 Jan 2009 12:44:12 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=CQHedaPc5G6Mr0HYaHl3Rk3613tUF7ZZ2Ur+c9R8lushWZ5a8DRcoqC15rA4Jsnio4
-         gfPTHaMtGedrMW4Y4isTMAMVErK9kdGijQjGwUMu2ANXR113Mt8FSap4gtEfL9GVPoJq
-         7HLiLWY4g2DVo4Vrk8KeCR00AsoLYF7qxT1ug=
-Date: Thu, 29 Jan 2009 20:49:31 +0300
+        b=Y7tobgldUZ8eUoKV2+57oPWhwqauzSU3SiFv4VyjfOna/1o3uC+9R6atIeZ2JuzDbL
+         CnNbW1ca4Z1clto06qlpimP+izY34THFi7FOlS8wfePZOmjFVX28Ehez19WUBFqjMFv5
+         8eeTMVqtVpm4N+1DD58kcW8wZwi9jThxMy7q8=
+Date: Thu, 29 Jan 2009 20:49:54 +0300
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 03/17] proc tty: switch ip2 to ->proc_fops
-Message-ID: <20090129174931.GC21643@x200.localdomain>
+Subject: [PATCH 04/17] proc tty: switch istallion to ->proc_fops
+Message-ID: <20090129174954.GD21643@x200.localdomain>
 References: <20090129174830.GA21643@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,173 +35,217 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- drivers/char/ip2/ip2main.c |   74 ++++++++++++++++++++-----------------------
- 1 files changed, 34 insertions(+), 40 deletions(-)
+ drivers/char/istallion.c |  121 ++++++++++++++++++++--------------------------
+ 1 files changed, 52 insertions(+), 69 deletions(-)
 
-diff --git a/drivers/char/ip2/ip2main.c b/drivers/char/ip2/ip2main.c
-index 70e0ebc..afd9247 100644
---- a/drivers/char/ip2/ip2main.c
-+++ b/drivers/char/ip2/ip2main.c
-@@ -139,7 +139,7 @@
- #include <linux/seq_file.h>
+diff --git a/drivers/char/istallion.c b/drivers/char/istallion.c
+index 5c3dc6b..fff19f7 100644
+--- a/drivers/char/istallion.c
++++ b/drivers/char/istallion.c
+@@ -24,6 +24,7 @@
+ #include <linux/tty.h>
+ #include <linux/tty_flip.h>
+ #include <linux/serial.h>
++#include <linux/seq_file.h>
+ #include <linux/cdk.h>
+ #include <linux/comstats.h>
+ #include <linux/istallion.h>
+@@ -613,7 +614,6 @@ static int	stli_breakctl(struct tty_struct *tty, int state);
+ static void	stli_waituntilsent(struct tty_struct *tty, int timeout);
+ static void	stli_sendxchar(struct tty_struct *tty, char ch);
+ static void	stli_hangup(struct tty_struct *tty);
+-static int	stli_portinfo(struct stlibrd *brdp, struct stliport *portp, int portnr, char *pos);
  
- static const struct file_operations ip2mem_proc_fops;
--static int ip2_read_proc(char *, char **, off_t, int, int *, void * );
-+static const struct file_operations ip2_proc_fops;
+ static int	stli_brdinit(struct stlibrd *brdp);
+ static int	stli_startbrd(struct stlibrd *brdp);
+@@ -1893,20 +1893,10 @@ static void stli_sendxchar(struct tty_struct *tty, char ch)
+ 	stli_cmdwait(brdp, portp, A_PORTCTRL, &actrl, sizeof(asyctrl_t), 0);
+ }
  
- /********************/
- /* Type Definitions */
-@@ -446,9 +446,9 @@ static const struct tty_operations ip2_ops = {
- 	.stop            = ip2_stop,
- 	.start           = ip2_start,
- 	.hangup          = ip2_hangup,
--	.read_proc       = ip2_read_proc,
- 	.tiocmget	 = ip2_tiocmget,
- 	.tiocmset	 = ip2_tiocmset,
-+	.proc_fops	 = &ip2_proc_fops,
- };
- 
- /******************************************************************************/
-@@ -3029,19 +3029,17 @@ static const struct file_operations ip2mem_proc_fops = {
-  * different sources including ip2mkdev.c and a couple of other drivers.
-  * The bugs are all mine.  :-)	=mhw=
-  */
--static int ip2_read_proc(char *page, char **start, off_t off,
--				int count, int *eof, void *data)
-+static int ip2_proc_show(struct seq_file *m, void *v)
+-/*****************************************************************************/
+-
+-#define	MAXLINE		80
+-
+-/*
+- *	Format info for a specified port. The line is deliberately limited
+- *	to 80 characters. (If it is too long it will be truncated, if too
+- *	short then padded with spaces).
+- */
+-
+-static int stli_portinfo(struct stlibrd *brdp, struct stliport *portp, int portnr, char *pos)
++static void stli_portinfo(struct seq_file *m, struct stlibrd *brdp, struct stliport *portp, int portnr)
  {
- 	int	i, j, box;
--	int	len = 0;
- 	int	boxes = 0;
- 	int	ports = 0;
- 	int	tports = 0;
--	off_t	begin = 0;
- 	i2eBordStrPtr  pB;
-+	char *sep;
+-	char *sp, *uart;
+-	int rc, cnt;
++	char *uart;
++	int rc;
  
--	len += sprintf(page, "ip2info: 1.0 driver: %s\n", pcVersion );
--	len += sprintf(page+len, "Driver: SMajor=%d CMajor=%d IMajor=%d MaxBoards=%d MaxBoxes=%d MaxPorts=%d\n",
-+	seq_printf(m, "ip2info: 1.0 driver: %s\n", pcVersion);
-+	seq_printf(m, "Driver: SMajor=%d CMajor=%d IMajor=%d MaxBoards=%d MaxBoxes=%d MaxPorts=%d\n",
- 			IP2_TTY_MAJOR, IP2_CALLOUT_MAJOR, IP2_IPL_MAJOR,
- 			IP2_MAX_BOARDS, ABS_MAX_BOXES, ABS_BIGGEST_BOX);
+ 	rc = stli_portcmdstats(NULL, portp);
  
-@@ -3053,7 +3051,8 @@ static int ip2_read_proc(char *page, char **start, off_t off,
- 			switch( pB->i2ePom.e.porID & ~POR_ID_RESERVED ) 
- 			{
- 			case POR_ID_FIIEX:
--				len += sprintf( page+len, "Board %d: EX ports=", i );
-+				seq_printf(m, "Board %d: EX ports=", i);
-+				sep = "";
- 				for( box = 0; box < ABS_MAX_BOXES; ++box )
- 				{
- 					ports = 0;
-@@ -3065,79 +3064,74 @@ static int ip2_read_proc(char *page, char **start, off_t off,
- 							++ports;
- 						}
- 					}
--					len += sprintf( page+len, "%d,", ports );
-+					seq_printf(m, "%s%d", sep, ports);
-+					sep = ",";
- 					tports += ports;
- 				}
--
--				--len;	/* Backup over that last comma */
--
--				len += sprintf( page+len, " boxes=%d width=%d", boxes, pB->i2eDataWidth16 ? 16 : 8 );
-+				seq_printf(m, " boxes=%d width=%d", boxes, pB->i2eDataWidth16 ? 16 : 8);
- 				break;
- 
- 			case POR_ID_II_4:
--				len += sprintf(page+len, "Board %d: ISA-4 ports=4 boxes=1", i );
-+				seq_printf(m, "Board %d: ISA-4 ports=4 boxes=1", i);
- 				tports = ports = 4;
- 				break;
- 
- 			case POR_ID_II_8:
--				len += sprintf(page+len, "Board %d: ISA-8-std ports=8 boxes=1", i );
-+				seq_printf(m, "Board %d: ISA-8-std ports=8 boxes=1", i);
- 				tports = ports = 8;
- 				break;
- 
- 			case POR_ID_II_8R:
--				len += sprintf(page+len, "Board %d: ISA-8-RJ11 ports=8 boxes=1", i );
-+				seq_printf(m, "Board %d: ISA-8-RJ11 ports=8 boxes=1", i);
- 				tports = ports = 8;
- 				break;
- 
- 			default:
--				len += sprintf(page+len, "Board %d: unknown", i );
-+				seq_printf(m, "Board %d: unknown", i);
- 				/* Don't try and probe for minor numbers */
- 				tports = ports = 0;
- 			}
- 
- 		} else {
- 			/* Don't try and probe for minor numbers */
--			len += sprintf(page+len, "Board %d: vacant", i );
-+			seq_printf(m, "Board %d: vacant", i);
- 			tports = ports = 0;
+@@ -1918,44 +1908,50 @@ static int stli_portinfo(struct stlibrd *brdp, struct stliport *portp, int portn
+ 		default:uart = "CD1400"; break;
  		}
+ 	}
+-
+-	sp = pos;
+-	sp += sprintf(sp, "%d: uart:%s ", portnr, uart);
++	seq_printf(m, "%d: uart:%s ", portnr, uart);
  
- 		if( tports ) {
--			len += sprintf(page+len, " minors=" );
+ 	if ((brdp->state & BST_STARTED) && (rc >= 0)) {
+-		sp += sprintf(sp, "tx:%d rx:%d", (int) stli_comstats.txtotal,
++		char sep;
++
++		seq_printf(m, "tx:%d rx:%d", (int) stli_comstats.txtotal,
+ 			(int) stli_comstats.rxtotal);
+ 
+ 		if (stli_comstats.rxframing)
+-			sp += sprintf(sp, " fe:%d",
++			seq_printf(m, " fe:%d",
+ 				(int) stli_comstats.rxframing);
+ 		if (stli_comstats.rxparity)
+-			sp += sprintf(sp, " pe:%d",
++			seq_printf(m, " pe:%d",
+ 				(int) stli_comstats.rxparity);
+ 		if (stli_comstats.rxbreaks)
+-			sp += sprintf(sp, " brk:%d",
++			seq_printf(m, " brk:%d",
+ 				(int) stli_comstats.rxbreaks);
+ 		if (stli_comstats.rxoverrun)
+-			sp += sprintf(sp, " oe:%d",
++			seq_printf(m, " oe:%d",
+ 				(int) stli_comstats.rxoverrun);
+ 
+-		cnt = sprintf(sp, "%s%s%s%s%s ",
+-			(stli_comstats.signals & TIOCM_RTS) ? "|RTS" : "",
+-			(stli_comstats.signals & TIOCM_CTS) ? "|CTS" : "",
+-			(stli_comstats.signals & TIOCM_DTR) ? "|DTR" : "",
+-			(stli_comstats.signals & TIOCM_CD) ? "|DCD" : "",
+-			(stli_comstats.signals & TIOCM_DSR) ? "|DSR" : "");
+-		*sp = ' ';
+-		sp += cnt;
++		sep = ' ';
++		if (stli_comstats.signals & TIOCM_RTS) {
++			seq_printf(m, "%c%s", sep, "RTS");
++			sep = '|';
++		}
++		if (stli_comstats.signals & TIOCM_CTS) {
++			seq_printf(m, "%c%s", sep, "CTS");
++			sep = '|';
++		}
++		if (stli_comstats.signals & TIOCM_DTR) {
++			seq_printf(m, "%c%s", sep, "DTR");
++			sep = '|';
++		}
++		if (stli_comstats.signals & TIOCM_CD) {
++			seq_printf(m, "%c%s", sep, "DCD");
++			sep = '|';
++		}
++		if (stli_comstats.signals & TIOCM_DSR) {
++			seq_printf(m, "%c%s", sep, "DSR");
++			sep = '|';
++		}
+ 	}
 -
-+			seq_puts(m, " minors=");
-+			sep = "";
- 			for ( box = 0; box < ABS_MAX_BOXES; ++box )
- 			{
- 				for ( j = 0; j < ABS_BIGGEST_BOX; ++j )
- 				{
- 					if ( pB->i2eChannelMap[box] & (1 << j) )
- 					{
--						len += sprintf (page+len,"%d,",
-+						seq_printf(m, "%s%d", sep,
- 							j + ABS_BIGGEST_BOX *
- 							(box+i*ABS_MAX_BOXES));
-+						sep = ",";
- 					}
- 				}
- 			}
+-	for (cnt = (sp - pos); (cnt < (MAXLINE - 1)); cnt++)
+-		*sp++ = ' ';
+-	if (cnt >= MAXLINE)
+-		pos[(MAXLINE - 2)] = '+';
+-	pos[(MAXLINE - 1)] = '\n';
 -
--			page[ len - 1 ] = '\n';	/* Overwrite that last comma */
--		} else {
--			len += sprintf (page+len,"\n" );
+-	return(MAXLINE);
++	seq_putc(m, '\n');
+ }
+ 
+ /*****************************************************************************/
+@@ -1964,26 +1960,15 @@ static int stli_portinfo(struct stlibrd *brdp, struct stliport *portp, int portn
+  *	Port info, read from the /proc file system.
+  */
+ 
+-static int stli_readproc(char *page, char **start, off_t off, int count, int *eof, void *data)
++static int stli_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct stlibrd *brdp;
+ 	struct stliport *portp;
+ 	unsigned int brdnr, portnr, totalport;
+-	int curoff, maxoff;
+-	char *pos;
+ 
+-	pos = page;
+ 	totalport = 0;
+-	curoff = 0;
+-
+-	if (off == 0) {
+-		pos += sprintf(pos, "%s: version %s", stli_drvtitle,
+-			stli_drvversion);
+-		while (pos < (page + MAXLINE - 1))
+-			*pos++ = ' ';
+-		*pos++ = '\n';
+-	}
+-	curoff =  MAXLINE;
++
++	seq_printf(m, "%s: version %s\n", stli_drvtitle, stli_drvversion);
+ 
+ /*
+  *	We scan through for each board, panel and port. The offset is
+@@ -1996,33 +1981,31 @@ static int stli_readproc(char *page, char **start, off_t off, int count, int *eo
+ 		if (brdp->state == 0)
+ 			continue;
+ 
+-		maxoff = curoff + (brdp->nrports * MAXLINE);
+-		if (off >= maxoff) {
+-			curoff = maxoff;
+-			continue;
 -		}
 -
--		if (len+begin > off+count)
--			break;
--		if (len+begin < off) {
--			begin += len;
--			len = 0;
+ 		totalport = brdnr * STL_MAXPORTS;
+ 		for (portnr = 0; (portnr < brdp->nrports); portnr++,
+ 		    totalport++) {
+ 			portp = brdp->ports[portnr];
+ 			if (portp == NULL)
+ 				continue;
+-			if (off >= (curoff += MAXLINE))
+-				continue;
+-			if ((pos - page + MAXLINE) > count)
+-				goto stli_readdone;
+-			pos += stli_portinfo(brdp, portp, totalport, pos);
++			stli_portinfo(m, brdp, portp, totalport);
  		}
-+		seq_putc(m, '\n');
  	}
 +	return 0;
-+ }
- 
--	if (i >= IP2_MAX_BOARDS)
--		*eof = 1;
--	if (off >= len+begin)
--		return 0;
-+static int ip2_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, ip2_proc_show, NULL);
 +}
  
--	*start = page + (off-begin);
--	return ((count < begin+len-off) ? count : begin+len-off);
-- }
-+static const struct file_operations ip2_proc_fops = {
+-	*eof = 1;
+-
+-stli_readdone:
+-	*start = page;
+-	return(pos - page);
++static int stli_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, stli_proc_show, NULL);
+ }
+ 
++static const struct file_operations stli_proc_fops = {
 +	.owner		= THIS_MODULE,
-+	.open		= ip2_proc_open,
++	.open		= stli_proc_open,
 +	.read		= seq_read,
 +	.llseek		= seq_lseek,
 +	.release	= single_release,
 +};
-  
- /******************************************************************************/
- /* Function:   ip2trace()                                                     */
++
+ /*****************************************************************************/
+ 
+ /*
+@@ -4427,9 +4410,9 @@ static const struct tty_operations stli_ops = {
+ 	.break_ctl = stli_breakctl,
+ 	.wait_until_sent = stli_waituntilsent,
+ 	.send_xchar = stli_sendxchar,
+-	.read_proc = stli_readproc,
+ 	.tiocmget = stli_tiocmget,
+ 	.tiocmset = stli_tiocmset,
++	.proc_fops = &stli_proc_fops,
+ };
+ 
+ static const struct tty_port_operations stli_port_ops = {
 -- 
 1.5.6.5
 
