@@ -1,57 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZA2Ebm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbZA2EcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755448AbZA2Ebm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 23:31:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757850AbZA2Eb2
+	id S1758048AbZA2EcE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 23:32:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758602AbZA2Ebf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 23:31:28 -0500
-Received: from gw.goop.org ([64.81.55.164]:39917 "EHLO mail.goop.org"
+	Wed, 28 Jan 2009 23:31:35 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33317 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757820AbZA2Eb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 23:31:28 -0500
-Message-ID: <4981311D.9080205@goop.org>
-Date: Wed, 28 Jan 2009 20:31:25 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1758439AbZA2Ebe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 23:31:34 -0500
+Date: Thu, 29 Jan 2009 05:29:14 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jerome Marchand <jmarchan@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] ptrace: kill __ptrace_detach(), fix ->exit_state check
+Message-ID: <20090129042913.GA5100@redhat.com>
 MIME-Version: 1.0
-To: Simon Horman <horms@verge.net.au>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Stable Kernel <stable@kernel.org>,
-       "dan.magenheimer@oracle.com" <dan.magenheimer@oracle.com>
-Subject: Re: [PATCH] xen: make sysfs files behave as their names suggest
-References: <4980FD4C.3030700@goop.org> <20090129023516.GB1319@verge.net.au>
-In-Reply-To: <20090129023516.GB1319@verge.net.au>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Horman wrote:
-> On Wed, Jan 28, 2009 at 04:50:20PM -0800, Jeremy Fitzhardinge wrote:
->   
->> 1: make "target_kb" only accept and produce a memory size in kilobytes.
->> 2: add a second "target" file which produces output in bytes, and will accept
->>   memparse input (scaled bytes)
->>
->> This fixes the rather irritating problem that writing the same value
->> read back into target_kb would end up shrinking the domain by a factor
->> of 1024, with generally bad results.
->>     
->
-> Are there any compatibility issues that we should care about
-> related to this change?
->   
+Move the code from __ptrace_detach() to its single caller and kill this
+helper.
 
-Well, in theory, but not in practice I think.
+Also, fix the ->exit_state check, we shouldn't wake up EXIT_DEAD tasks.
+Actually, I think task_is_stopped_or_traced() makes more sense, but this
+needs another patch.
 
-It changes the behaviour of target_kb from accepting bytes into 
-kilobytes, and it no longer parses a k/m/g suffix.  The old behaviour 
-was a definite bug, given the name of the file, so I consider this to be 
-pure bugfix.  The kernel introducing this interface has only been out 
-for a week or two, so I don't think there's much chance anyone has 
-started relying on the buggy behaviour.
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-    J
+--- 6.29-rc3/kernel/ptrace.c~1_KILL_DETACH	2009-01-29 02:30:00.000000000 +0100
++++ 6.29-rc3/kernel/ptrace.c	2009-01-29 03:24:51.000000000 +0100
+@@ -235,16 +235,6 @@ out:
+ 	return retval;
+ }
+ 
+-static inline void __ptrace_detach(struct task_struct *child, unsigned int data)
+-{
+-	child->exit_code = data;
+-	/* .. re-parent .. */
+-	__ptrace_unlink(child);
+-	/* .. and wake it up. */
+-	if (child->exit_state != EXIT_ZOMBIE)
+-		wake_up_process(child);
+-}
+-
+ int ptrace_detach(struct task_struct *child, unsigned int data)
+ {
+ 	if (!valid_signal(data))
+@@ -254,10 +244,16 @@ int ptrace_detach(struct task_struct *ch
+ 	ptrace_disable(child);
+ 	clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
+ 
+-	write_lock_irq(&tasklist_lock);
+ 	/* protect against de_thread()->release_task() */
+-	if (child->ptrace)
+-		__ptrace_detach(child, data);
++	write_lock_irq(&tasklist_lock);
++	if (child->ptrace) {
++		child->exit_code = data;
++
++		__ptrace_unlink(child);
++
++		if (!child->exit_state)
++			wake_up_process(child);
++	}
+ 	write_unlock_irq(&tasklist_lock);
+ 
+ 	return 0;
+
