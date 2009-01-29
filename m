@@ -1,109 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbZA2ODW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756997AbZA2OE4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757841AbZA2ODW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 09:03:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZA2ODH
+	id S1756997AbZA2OE4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:04:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbZA2OEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 09:03:07 -0500
-Received: from gmp-eb-inf-2.sun.com ([192.18.6.24]:47906 "EHLO
-	gmp-eb-inf-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752651AbZA2ODG (ORCPT
+	Thu, 29 Jan 2009 09:04:48 -0500
+Received: from smtp.nokia.com ([192.100.122.230]:34937 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752880AbZA2OEr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 09:03:06 -0500
-Date: Thu, 29 Jan 2009 15:02:47 +0100
-From: Frank Mehnert <Frank.Mehnert@Sun.COM>
-Subject: Re: PFs on pages pinned with get_user_pages()
-In-reply-to: <1233236630.4495.80.camel@laptop>
-To: linux-kernel@vger.kernel.org
-Cc: Peter Zijlstra <peterz@infradead.org>
-Message-id: <200901291502.48312.frank.mehnert@sun.com>
-Organization: Sun Microsystems
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart1341903.Qsp4XQ16TP
-Content-transfer-encoding: 7BIT
-References: <200901290905.10966.frank.mehnert@sun.com>
- <200901291408.02454.frank.mehnert@sun.com> <1233236630.4495.80.camel@laptop>
-User-Agent: KMail/1.9.9
+	Thu, 29 Jan 2009 09:04:47 -0500
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org
+Date: Thu, 29 Jan 2009 18:02:17 +0200
+Message-Id: <20090129160217.24794.31524.sendpatchset@localhost.localdomain>
+Subject: [GIT PULL] UBI changes for 2.6.29-rc3
+X-OriginalArrivalTime: 29 Jan 2009 14:03:36.0154 (UTC) FILETIME=[60CC6BA0:01C9821A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Linus,
 
---nextPart1341903.Qsp4XQ16TP
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+please pull from
 
-On Thursday 29 January 2009, Peter Zijlstra wrote:
-> On Thu, 2009-01-29 at 14:08 +0100, Frank Mehnert wrote:
-> > Peter,
->
-> (please retain CC's)
->
-> > On Thursday 29 January 2009, Peter Zijlstra wrote:
-> > > On Thu, 2009-01-29 at 09:05 +0100, Frank Mehnert wrote:
-> > > > please could someone explain me under which circumstances a
-> > > > pagefault, either generated from kernel code or from userland code,
-> > > > can occur on pages which are pinned with get_user_pages()?
-> > > >
-> > > > So far my understanding was that this can _never_ happen but I seems
-> > > > to be wrong. Under high memory pressure I get PFs on such pages
-> > > > raised from kernel code and the PFs are handled by do_swap_page().
-> > > > When this happens, page_count is 3 but page_mapped() returns false.
-> > >
-> > > Under memory pressure the page reclaim will first unmap the physical
-> > > page from the virtual address range, and then try to free it.
-> >
-> > Which means the page table entry is removed but the physical page
-> > is not swapped out, right?
->
-> Correct.
->
-> > > Obviously the freeing bit fails if you hold a reference to it, but the
-> > > unmap will work.
-> >
-> > Right.
-> >
-> > > After that, userspace will have to (minor) fault the stuff back in.
+git://git.infradead.org/ubi-2.6.git linux-next
 
-[...]
+The changes I kindly ask you to pull are mostly about adding some
+UBI ioctls, rather than fixes. We add ioctls for UBI functionality
+which has always be accessible via kernel API, so we do not really
+change much and I think the changes are harmless. I just want to
+make life of our users easier by pushing the patches to 2.6.29,
+rather than delaying them until 2.6.30. And there are few fixes
+and clean-ups.
 
-> > Question: Is it possible to prevent these minor page faults at all?
->
-> Not without some serious tinkering to the VM -- and in the case of the
-> dirty fault, not at all.
->
-> Why are you asking?
+The following changes since commit 1de9e8e70f5acc441550ca75433563d91b269bbe:
+  Linus Torvalds (1):
+        Linux 2.6.29-rc2
 
-I'm one of the VirtualBox developers. We are trying to fix the annoying
-kerneloops warning 'BUG: sleeping function called from invalid context'
-reported by the Fedora folks. This warning occurs when do_swap_page()
-calls lock_page() and in_atomic() returns true.
+are available in the git repository at:
 
-This warning appears when we touch into memory which is pinned with
-get_user_pages(). In VT-x/AMD-V mode we are executing some code in the
-context of the Linux kernel. To prevent scheduling of the current CPU
-core we disable the interripts. preempt_disable() would be probably the
-better choice but this would oops as well if CONFIG_PREEMPT is enabled.
+  git://git.infradead.org/ubi-2.6.git ..BRANCH.NOT.VERIFIED..
 
-Kind regards,
+Artem Bityutskiy (7):
+      UBI: improve ioctl commentaries
+      UBI: remove unnecessry header inclusion
+      UBI: allow all ioctls
+      UBI: add ioctl compatibility
+      UBI: use nicer 64-bit math
+      UBI: remove unused variable
+      UBI: fix resource de-allocation
 
-=46rank
-=2D-=20
-Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
+Corentin Chary (3):
+      UBI: add ioctl for map operation
+      UBI: add ioctl for unmap operation
+      UBI: add ioctl for is_mapped operation
 
---nextPart1341903.Qsp4XQ16TP
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Jan Engelhardt (1):
+      UBI: constify file operations
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Sidney Amani (1):
+      UBI: allow direct user-space I/O
 
-iEYEABECAAYFAkmBtwgACgkQ6z8pigLf3EehKQCcDNVS/FxWb6wRN2MuVTTZ4G6Q
-tzIAn2+kx63Ikha5t0SC3ItC9uzg+ytC
-=5U+d
------END PGP SIGNATURE-----
+ drivers/mtd/ubi/Kconfig.debug |   10 --
+ drivers/mtd/ubi/build.c       |   21 +++--
+ drivers/mtd/ubi/cdev.c        |  184 +++++++++++++++++++++++++++++-----------
+ drivers/mtd/ubi/gluebi.c      |   11 +--
+ drivers/mtd/ubi/scan.c        |    8 +-
+ drivers/mtd/ubi/ubi.h         |   11 ++-
+ drivers/mtd/ubi/upd.c         |   21 ++---
+ drivers/mtd/ubi/vmt.c         |   17 ++--
+ include/mtd/ubi-user.h        |  132 ++++++++++++++++++++++++-----
+ 9 files changed, 284 insertions(+), 131 deletions(-)
 
---nextPart1341903.Qsp4XQ16TP--
+Thanks,
+Artem.
