@@ -1,84 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755090AbZA2V2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZA2V3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755090AbZA2V2g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 16:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZA2V22
+	id S1757462AbZA2V3g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 16:29:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZA2V31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 16:28:28 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:50614 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751489AbZA2V21 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 16:28:27 -0500
-Date: Thu, 29 Jan 2009 15:30:29 -0600
-From: Cliff Wickman <cpw@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       tj@kernel.org
-Subject: Re: [PATCH] x86: UV cleanup
-Message-ID: <20090129213029.GA29154@sgi.com>
-References: <E1LScjM-00073R-Cu@eag09.americas.sgi.com> <20090129203517.GE12819@elte.hu>
+	Thu, 29 Jan 2009 16:29:27 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:35695 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbZA2V31 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 16:29:27 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49821F99.4070108@s5r6.in-berlin.de>
+Date: Thu, 29 Jan 2009 22:28:57 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090129203517.GE12819@elte.hu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Alan Stern <stern@rowland.harvard.edu>
+CC: Jarod Wilson <jarod@redhat.com>, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
+Subject: Re: [PATCH RFT 7/7] firewire: sbp2: add workarounds for 2nd and 3rd
+ generation iPods
+References: <Pine.LNX.4.44L0.0901291536020.2394-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0901291536020.2394-100000@iolanthe.rowland.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Stern wrote:
+> On Thu, 29 Jan 2009, Stefan Richter wrote:
+>> Obviously they changed something in Ubuntu 8.10 which suddenly made 3rd
+>> gen iPods vulnerable too.  If the report is accurate, then this is /not/
+>> the READ CAPACITY 10 issue where device's capacity report is off by one.
+>> (The reported capacity without workaround is an even number and thus
+>> possibly correct.)
+> 
+> Don't make that assumption.  One of the small number of devices which 
+> really did have an odd number of sectors was an early iPod.
 
-On Thu, Jan 29, 2009 at 09:35:17PM +0100, Ingo Molnar wrote:
-> 
-> * Cliff Wickman <cpw@sgi.com> wrote:
-> 
-> > From: Cliff Wickman <cpw@sgi.com>
-> > 
-> > This patch tweaks a couple things:
-> > 
-> > - uv_flush_tlb_others()
-> >   the WARN_ON(!in_atomic()); fails if CONFIG_PREEMPT is not enabled
-> > 
-> >   The #ifdef may not be the right fix. The fix is probably in the
-> >   in_atomic macro, but I'm not sure what in_atomic() should return
-> >   if CONFIG_PREEMPT is turned off.  I tested making it return 1 in that
-> >   case, but that yielded tons of warnings.
-> > 
-> >   The simpler fix for tlb_uv.c would be to just drop the WARN_ON.
-> > 
-> > - uv_flush_send_and_wait() should return a pointer if the broadcast
-> >   remote tlb shootdown requests fail. That causes the conventional IPI
-> >   method of shootdown to be used.
-> 
-> hm, this isnt a cleanup but a fix - i.e. needs to go into x86/urgent as a 
-> separate patch, right?
+Ah, interesting.
 
-Yes, it is a fix.  I'll re-post, and send the WARN_ON issue as a
-separate patch.
+(Jarod, didn't you see OS X report the same size on that 3rd gen. iPod
+as Linux without quirk flag, or did I dream this?  In any case this
+could of course simply mean that OS X uses a wrongly reported size...)
 
- 
-> and this:
+>>  Rather, this is apparently the kind of the bug where
+>> an access which includes the last sector corrupts some state in the
+>> firmware, causing the firmware to error out on subsequent accesses.  The
+>> actual IO errors in the reporter's log happen at low LBAs, not at LBAs
+>> at the end.
 > 
-> > @@ -316,7 +316,9 @@ const struct cpumask *uv_flush_tlb_other
-> >  	int locals = 0;
-> >  	struct bau_desc *bau_desc;
-> >  
-> > +#ifdef CONFIG_PREEMPT
-> >  	WARN_ON(!in_atomic());
-> > +#endif
-> 
-> is indeed somewhat ugly - and we have no proper primitive to test for 
-> atomicity. (mainly because we dont know about atomicity on a non-preempt 
-> kernel)
-> 
-> 	Ingo
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Are you aware of the last_sector_bug flag?  It prevents sectors near 
+> the end of the device from being accessed using anything other than 
+> single-sector reads or writes.  Some devices don't like it if, for 
+> example, you do a 2-sector read that includes the last sector.
 
+Now that you mention it I do remember.  I would need to ask the reporter
+of the Ubuntu bug who has a fully working 3rd gen iPod (unlike Jarod's
+3rd gen iPod which doesn't work reliably anymore) to compile a kernel
+from patched sources if I really wanted to investigate whether the
+last_sector_bug flag fixes the issue too.  The fix_capacity flag can be
+easily enabled for FireWire disks by users of binary kernel packages at
+runtime, so that's what I had the reporter try.
+
+Hmm, I'm beginning to suspect that I should duplicate usb-storage's
+
+	if (sdev->type == TYPE_DISK)
+		sdev->last_sector_bug = 1;
+
+into the FireWire drivers.  There aren't any fundamental downsides to
+this, are there?
+
+>> Now, what does OS X do with those iPods?  I don't know.  Maybe they have
+>> quirks lists like we do.  There could be something to be found in the
+>> Darwin sources.  But I consider it more likely that OS X simply does not
+>> do the kind of accesses that Linux does which tend to crash all those
+>> crap firmwares left and right.
+>>
+>> Evidently, at least popular Windows incarnations don't do such accesses,
+>> at least not in normal usage.  Otherwise this class of firmware bugs
+>> could simply not exist in mass market devices.
+> 
+> Linux uses the last-sector accesses to check whether or not the device 
+> is part of a RAID.  Apparently Windows and OS X don't support the kinds 
+> of RAID that need this.
+
+Or they don't support these kinds of RAID over certain transports like
+USB and FireWire...?
 -- 
-Cliff Wickman
-Silicon Graphics, Inc.
-cpw@sgi.com
-(651) 683-3824
+Stefan Richter
+-=====-==--= ---= ===-=
+http://arcgraph.de/sr/
