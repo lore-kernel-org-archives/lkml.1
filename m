@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbZA2OQE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbZA2OQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbZA2OQE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 09:16:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZA2OPx
+	id S1758461AbZA2OQt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:16:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZA2OQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 09:15:53 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:47916 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752622AbZA2OPw (ORCPT
+	Thu, 29 Jan 2009 09:16:40 -0500
+Received: from rv-out-0506.google.com ([209.85.198.236]:1233 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752648AbZA2OQk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 09:15:52 -0500
-Date: Thu, 29 Jan 2009 15:15:35 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, linux-kernel@vger.kernel.org
-Subject: Re: [bug] CONFIG_I2C_VIAPRO=y breaks skge
-Message-ID: <20090129151535.2fb84505@hyperion.delvare>
-In-Reply-To: <20090129134916.GK24391@elte.hu>
-References: <20090127151359.GA20369@elte.hu>
-	<20090127162729.50cd2e61@hyperion.delvare>
-	<20090127154410.GA24470@elte.hu>
-	<20090127182631.13568383@hyperion.delvare>
-	<20090129134916.GK24391@elte.hu>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Jan 2009 09:16:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mqaaDwimYO+WE3UmL5PmQNx2RItv5JdJBT10X+QtLLDNqxBGajvh97uDL582DxRlZ4
+         HVEVSsqiC/vpPdtCF4PyCvZPFVKiLNLriQWVK8N6kxgIFyjCyVwYxxTyKhOm/uuS3OJr
+         I43vSf4k81DXmGoDNVlFSeurSLbxo4/BGidh0=
+MIME-Version: 1.0
+In-Reply-To: <20090129134537.12121834@lxorguk.ukuu.org.uk>
+References: <1a26b4920901290302w5c9bb79cra29fda5e67cc96a4@mail.gmail.com>
+	 <20090129134537.12121834@lxorguk.ukuu.org.uk>
+Date: Thu, 29 Jan 2009 15:16:39 +0100
+Message-ID: <1a26b4920901290616r40c1edd0tec62d0e6bf24dc9@mail.gmail.com>
+Subject: Re: NEWBIE: how to change serial device<->port association
+From: Pazzo Da Legare <pazzodalegare@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 14:49:16 +0100, Ingo Molnar wrote:
-> 
-> * Jean Delvare <khali@linux-fr.org> wrote:
-> > Well my guess is that you have included an I2C chip driver with a weak 
-> > detection routine. More likely this is a typical case of "if it hurts, 
-> > don't do it". But maybe we can improve the help text or default, or even 
-> > disable probing for these devices.
-> > 
-> > At this point I am reasonably certain that the i2c-viapro driver is 
-> > innocent.
-> 
-> i've excluded the VIAPRO driver on that box (and only the VIAPRO driver - 
-> i.e. all those other I2C drivers still run frequently) - and the problem 
-> has not reoccured in about ~1000 bootups.
-> 
-> Combined with the fact that this box has a VIA chipset, does that not 
-> implicate the viapro driver, at least to a certain degree?
+Dear Alan,
 
-This VIA chipset is the bridge over which the bugs run. Blaming on it
-for the problem you've hit would be similar to blaming the USB host
-controller driver for a bug that is in the USB keyboard or mouse driver.
+Thank you very much for your help.
+I'm going to have a look at the table you mentioned. Yes, I know that
+usually one should make the selection from application, in my case I'm
+trying to uniform two different hardware maintaining  the
+configuration for applications (running on both).
 
-The "other I2C drivers" don't run frequently at all now that you've
-disabled i2c-viapro. Without an I2C bus to probe on the machine, these
-drivers don't do anything.
+The hws have a different combination of kind serials and I would like
+to present the same ttyS* to applications. I need to have different
+kernel configuration so I thought I could uniform things there....I'm
+going to evaluate the hardness
 
-So, again, if you are still willing to help me solve the problem,
-please boot the bad kernel and run:
 
-$ ls -l /sys/bus/i2c/devices/*/driver
+p
 
-Then we'll know which drivers attached to I2C devices on your SMBus.
-Figuring out which one shouldn't have will likely be straightforward.
-
-Thanks,
--- 
-Jean Delvare
+2009/1/29 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> On Thu, 29 Jan 2009 12:02:49 +0100
+> Pazzo Da Legare <pazzodalegare@gmail.com> wrote:
+>
+>> Dear ML,
+>>
+>> how can I instruct the kernel (if possible) to map a certain serial
+>> port to a specific device ttySx?
+>
+> The kernel mapping defaults are from a table so you could recompile
+> the kernel. However applications should always let you select a serial
+> port.
+>
+> Alan
+>
