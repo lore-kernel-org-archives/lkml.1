@@ -1,92 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756699AbZA2Nyc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZA2OCt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756699AbZA2Nyc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 08:54:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZA2NyX
+	id S1755878AbZA2OCt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:02:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZA2OCk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 08:54:23 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45459 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752335AbZA2NyW (ORCPT
+	Thu, 29 Jan 2009 09:02:40 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:49574 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752553AbZA2OCk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 08:54:22 -0500
-Subject: [PATCH 22/21] lockdep: use stringify.h
-From: Peter Zijlstra <peterz@infradead.org>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, npiggin@suse.de,
-       Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <20090128135352.679025549@chello.nl>
-References: <20090128135352.679025549@chello.nl>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 14:54:09 +0100
-Message-Id: <1233237249.4495.82.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+	Thu, 29 Jan 2009 09:02:40 -0500
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: x86: unify genapic code, unify subarchitectures, remove old subarchitecture code
+From: Andi Kleen <andi@firstfloor.org>
+References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
+Date: Thu, 29 Jan 2009 15:02:10 +0100
+In-Reply-To: <1233186180-29883-1-git-send-email-mingo@elte.hu> (Ingo Molnar's message of "Wed, 28 Jan 2009 23:41:06 +0000")
+Message-ID: <87vdryw6ql.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: lockdep: use stringify.h
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Thu Jan 29 14:50:36 CET 2009
+Ingo Molnar <mingo@elte.hu> writes:
+>
+> So breakages are to be expected. The commits are queued up in
+> tip/x86/apic and are in tip/master as well:
+>
+>     http://people.redhat.com/mingo/tip.git/README
 
-Arnd pointed out we have the stringify macro magic already in-kernel.
+I haven't read it all, but the stuff I looked at looked
+all reasonable and indeed cleaned up the 32bit code significantly
+(and be neutral on 64bit). Thanks for doing that work.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Arnd Bergmann <arnd@arndb.de>
----
- kernel/lockdep.c |   16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+My suggestion would be to deprecate and then remove es7000 and
+numaq too. The es7000 subarch is only for very old es7000 systems (the
+newer ones all work with bigsmp) and I expect the user base is very
+likely zero or very near it. For NUMAQ it's similar -- there's
+apparently one system left at IBM, and I'm sure IBM can find some
+replacement. Especially NUMAQ has some ugly ifdefery outside the
+subarch code too that would be good to remove. Overall that would
+be a good cleanup without impacting the user base really.
 
-Index: linux-2.6/kernel/lockdep.c
-===================================================================
---- linux-2.6.orig/kernel/lockdep.c
-+++ linux-2.6/kernel/lockdep.c
-@@ -41,6 +41,7 @@
- #include <linux/utsname.h>
- #include <linux/hash.h>
- #include <linux/ftrace.h>
-+#include <linux/stringify.h>
- 
- #include <asm/sections.h>
- 
-@@ -445,14 +446,11 @@ atomic_t nr_find_usage_backwards_recursi
-  * Locking printouts:
-  */
- 
--#define __STR(foo)	#foo
--#define STR(foo)	__STR(foo)
--
- #define __USAGE(__STATE)						\
--	[LOCK_USED_IN_##__STATE] = "IN-"STR(__STATE)"-W",		\
--	[LOCK_ENABLED_##__STATE] = STR(__STATE)"-ON-W",			\
--	[LOCK_USED_IN_##__STATE##_READ] = "IN-"STR(__STATE)"-R",	\
--	[LOCK_ENABLED_##__STATE##_READ] = STR(__STATE)"-ON-R",
-+	[LOCK_USED_IN_##__STATE] = "IN-"__stringify(__STATE)"-W",	\
-+	[LOCK_ENABLED_##__STATE] = __stringify(__STATE)"-ON-W",		\
-+	[LOCK_USED_IN_##__STATE##_READ] = "IN-"__stringify(__STATE)"-R",\
-+	[LOCK_ENABLED_##__STATE##_READ] = __stringify(__STATE)"-ON-R",
- 
- static const char *usage_str[] =
- {
-@@ -1270,14 +1268,14 @@ check_usage(struct task_struct *curr, st
- 
- static const char *state_names[] = {
- #define LOCKDEP_STATE(__STATE) \
--	STR(__STATE),
-+	__stringify(__STATE),
- #include "lockdep_states.h"
- #undef LOCKDEP_STATE
- };
- 
- static const char *state_rnames[] = {
- #define LOCKDEP_STATE(__STATE) \
--	STR(__STATE)"-READ",
-+	__stringify(__STATE)"-READ",
- #include "lockdep_states.h"
- #undef LOCKDEP_STATE
- };
+Also bigsmp is kind of obsolete too, it could be probably
+merged with default with very tiny impact because it's not
+all that different.
 
+-Andi
 
+-- 
+ak@linux.intel.com -- Speaking for myself only.
