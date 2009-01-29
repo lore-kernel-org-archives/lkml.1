@@ -1,51 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbZA2Ohf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbZA2Oh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755850AbZA2Ohf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 09:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZA2Oh0
+	id S1758679AbZA2Oh6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:37:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZA2Ohp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 09:37:26 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:43274 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752700AbZA2Oh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 09:37:26 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Justin P. Mattock" <justinmattock@gmail.com>
-Subject: Re: macbook pro radeon suspend issue
-Date: Thu, 29 Jan 2009 15:36:37 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <49812E3B.6050106@gmail.com>
-In-Reply-To: <49812E3B.6050106@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 09:37:45 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:32966 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbZA2Ohp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 09:37:45 -0500
+Date: Thu, 29 Jan 2009 14:37:33 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH D 11/11] Fix omap1 clock issues
+Message-ID: <20090129143733.GB18233@n2100.arm.linux.org.uk>
+References: <20090128191638.16688.33452.stgit@localhost.localdomain> <20090128191844.16688.39372.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901291536.37348.rjw@sisk.pl>
+In-Reply-To: <20090128191844.16688.39372.stgit@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 January 2009, Justin P. Mattock wrote:
-> No sure if there is a bug report already or not.
-> For the macbook pro(ATI chipset) suspend is broken.
-> As for kernel version: latest git.
-> Last week(before LCA, and during the week, since being no merges.)
-> the system would wakeup, show a black screen and sit there. Now
-> after a couple of merges have been completed The system wakes up,
-> but instantly reboot's.
+On Wed, Jan 28, 2009 at 12:18:48PM -0700, Paul Walmsley wrote:
+> From: Tony Lindgren <tony@atomide.com>
 > 
-> I tried to supply any info(ohci1394_dma) when the wakeup occurs, but had 
-> no response
-> for some reason or another.
-> I can try and do a bisect, the only problem
-> I have though, is I never labeled good/bad commits(forgot how too);
+> This fixes booting, and is a step toward fixing things properly:
 > 
-> In any case If I'm in an urgent need, of having  to suspend
-> the system(not in anytime soon at the moment),
-> then Ill just revert kernels to one that I know works.     :^)
+> - Make enable_reg u32 instead of u16
 
-Which is that?
+No, you're passing this to __raw_read/write, so it needs to be
+void __iomem *, not u32.  If there's another patch doing that it
+needs to be combined with this one.  The miniscule details of
+fixes upon fixes aren't interesting for submission purposes, and
+just adds extra unnecessary review load for upstream people.
 
-Rafael
+Ditto for anything else which is passed to __raw_read/write*.
