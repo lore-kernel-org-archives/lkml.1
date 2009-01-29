@@ -1,134 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZA2XDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759317AbZA2XEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755880AbZA2XDf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:03:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbZA2XD0
+	id S1759317AbZA2XEi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:04:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754291AbZA2XEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:03:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48322 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754017AbZA2XDZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:03:25 -0500
-Date: Thu, 29 Jan 2009 15:02:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Hugh Dickins <hugh@veritas.com>
-cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
- file segments
-In-Reply-To: <Pine.LNX.4.64.0901292200220.17808@blonde.anvils>
-Message-ID: <alpine.LFD.2.00.0901291448360.3054@localhost.localdomain>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>  <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain> <1233259410.2315.75.camel@lts-notebook> <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
- <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain> <Pine.LNX.4.64.0901292200220.17808@blonde.anvils>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 29 Jan 2009 18:04:22 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45181 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753445AbZA2XEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 18:04:20 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Parag Warudkar <parag.lkml@gmail.com>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+Date: Fri, 30 Jan 2009 00:03:37 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Matt Carlson <mcarlson@broadcom.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net> <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
+In-Reply-To: <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901300003.38550.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 29 Jan 2009, Hugh Dickins wrote:
+On Thursday 29 January 2009, Parag Warudkar wrote:
 > 
-> The problem has always been that file->f_op->mmap(file, vma) on a
-> special file can do various strange things, changing surprising
-> fields of the struct vma passed to it, changing its mergeability.
+> On Thu, 29 Jan 2009, Matt Carlson wrote:
+> 
+> > Can you apply the following test patch and see if it helps?  The patch
+> > does two things.  First, it enables a bit which should restore firmware
+> > communication.  If that fixes the problem, then let me know and I'll
+> > spin a proper patch.
+> > 
+> > In the event that it doesn't work, the patch goes on to test the memory
+> > mapping by simply printing the register value at offset 0x0.  The value
+> > should be the device's vendor ID and device ID.  Please post the
+> > results so that I can verify it.
+> > 
+> > 
+> > diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+> > index 8b3f846..39fce42 100644
+> > --- a/drivers/net/tg3.c
+> > +++ b/drivers/net/tg3.c
+> > @@ -7227,6 +7227,11 @@ static int tg3_init_hw(struct tg3 *tp, int reset_phy)
+> >  {
+> >  	tg3_switch_clocks(tp);
+> >  
+> > +	printk( KERN_NOTICE "%s: Reg value at offset 0x0 is 0x%x\n",
+> > +		tp->dev->name, tr32(0x0) );
+> > +
+> > +	tw32(MEMARB_MODE, tr32(MEMARB_MODE) | MEMARB_MODE_ENABLE);
+> > +
+> >  	tw32(TG3PCI_MEM_WIN_BASE_ADDR, 0);
+> >  
+> >  	return tg3_reset_hw(tp, reset_phy);
+> > 
+> 
+> Hi Matt,
+> 
+> Thanks for the patch. It didn't help with resume - but below is the 
+> output after patching, let me know if you need more details.
 
-Ahh, you're right. That's somewhat bogus, but it does explain why we have 
-those two separate merge_vma() calls.
+[--snip--]
 
-And as you also point out:
+In the meantime I tried to rework tg3 suspend/resume so that it uses the new
+PCI core capability of handling the PCI-specific parts of both operations.
 
-> Now it may well be that every driver which does something strange
-> there already sets one of the VM_SPECIAL flags which prevent merging,
-> or can easily be fixed to do so, or otherwise clearly cannot pose a
-> problem.
+The patch is appended, please see if it makes any difference.
 
-.. and I think this is the right answer. If a device driver really does 
-something as odd as play games with the offset that would make merging 
-wrong, it had better set some of the VM_SPECIAL bits (presumably VM_IO) in 
-order to never merge at all.
-
-I added DaveM to the cc, since he's the one who is credited with the 
-comment saying that several drivers change addr (vm_start). I only really 
-see one, namely bf54x-lq043fb.c, and that one really depends on the whole 
-nommu thing (ie it seems to simply require a particular virtual address, 
-broken as that may be).
-
-Btw, changing vm_start is actually very very wrong - it cannot work in 
-general. Why? Because we earlier checked the "overlapping mmap" case with 
-the original vm_start, an a driver that changes its vm_start in its mmap() 
-routine would cause odd issues there. We also pass in "prev" to vma_link, 
-so it could end up in totally the wrong place.
-
-So changing vm_start is a sign of a driver bug, nothing less.
-
-But there are more drivers who do change vm_pgoff, which is at least valid 
-(if a bit dodgy), and is indeed a mergeability issue.  But at least a 
-subset of those do already set VM_IO (eg fbmem.c - I only looked at one, 
-and was happy that it already did that).
-
-As background for Davem, here's the patch once more.
-
-			Linus
+Thanks,
+Rafael
 
 ---
- mm/mmap.c |   26 ++++++--------------------
- 1 files changed, 6 insertions(+), 20 deletions(-)
+ drivers/net/tg3.c |   70 +++++++++++++++++++-----------------------------------
+ 1 file changed, 25 insertions(+), 45 deletions(-)
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 8d95902..d3fa10a 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1134,16 +1134,11 @@ munmap_back:
+Index: linux-2.6/drivers/net/tg3.c
+===================================================================
+--- linux-2.6.orig/drivers/net/tg3.c
++++ linux-2.6/drivers/net/tg3.c
+@@ -13330,18 +13330,13 @@ static void __devexit tg3_remove_one(str
  	}
+ }
  
- 	/*
--	 * Can we just expand an old private anonymous mapping?
--	 * The VM_SHARED test is necessary because shmem_zero_setup
--	 * will create the file object for a shared anonymous map below.
-+	 * Can we just expand an old mapping?
- 	 */
--	if (!file && !(vm_flags & VM_SHARED)) {
--		vma = vma_merge(mm, prev, addr, addr + len, vm_flags,
--					NULL, NULL, pgoff, NULL);
--		if (vma)
+-static int tg3_suspend(struct pci_dev *pdev, pm_message_t state)
++#ifdef CONFIG_PM
++
++static int tg3_suspend(struct device *device)
+ {
++	struct pci_dev *pdev = to_pci_dev(device);
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct tg3 *tp = netdev_priv(dev);
+-	pci_power_t target_state;
+-	int err;
+-
+-	/* PCI register 4 needs to be saved whether netif_running() or not.
+-	 * MSI address and data need to be saved if using MSI and
+-	 * netif_running().
+-	 */
+-	pci_save_state(pdev);
+ 
+ 	if (!netif_running(dev))
+ 		return 0;
+@@ -13363,50 +13358,19 @@ static int tg3_suspend(struct pci_dev *p
+ 	tp->tg3_flags &= ~TG3_FLAG_INIT_COMPLETE;
+ 	tg3_full_unlock(tp);
+ 
+-	target_state = pdev->pm_cap ? pci_target_state(pdev) : PCI_D3hot;
+-
+-	err = tg3_set_power_state(tp, target_state);
+-	if (err) {
+-		int err2;
+-
+-		tg3_full_lock(tp, 0);
+-
+-		tp->tg3_flags |= TG3_FLAG_INIT_COMPLETE;
+-		err2 = tg3_restart_hw(tp, 1);
+-		if (err2)
 -			goto out;
+-
+-		tp->timer.expires = jiffies + tp->timer_offset;
+-		add_timer(&tp->timer);
+-
+-		netif_device_attach(dev);
+-		tg3_netif_start(tp);
+-
+-out:
+-		tg3_full_unlock(tp);
+-
+-		if (!err2)
+-			tg3_phy_start(tp);
 -	}
-+	vma = vma_merge(mm, prev, addr, addr + len, vm_flags, NULL, file, pgoff, NULL);
-+	if (vma)
-+		goto out;
+-
+-	return err;
++	return 0;
+ }
  
- 	/*
- 	 * Determine the object being mapped and call the appropriate
-@@ -1206,17 +1201,8 @@ munmap_back:
- 	if (vma_wants_writenotify(vma))
- 		vma->vm_page_prot = vm_get_page_prot(vm_flags & ~VM_SHARED);
+-static int tg3_resume(struct pci_dev *pdev)
++static int tg3_resume(struct device *device)
+ {
++	struct pci_dev *pdev = to_pci_dev(device);
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+ 	struct tg3 *tp = netdev_priv(dev);
+ 	int err;
  
--	if (file && vma_merge(mm, prev, addr, vma->vm_end,
--			vma->vm_flags, NULL, file, pgoff, vma_policy(vma))) {
--		mpol_put(vma_policy(vma));
--		kmem_cache_free(vm_area_cachep, vma);
--		fput(file);
--		if (vm_flags & VM_EXECUTABLE)
--			removed_exe_file_vma(mm);
--	} else {
--		vma_link(mm, vma, prev, rb_link, rb_parent);
--		file = vma->vm_file;
--	}
-+	vma_link(mm, vma, prev, rb_link, rb_parent);
-+	file = vma->vm_file;
+-	pci_restore_state(tp->pdev);
+-
+ 	if (!netif_running(dev))
+ 		return 0;
  
- 	/* Once vma denies write, undo our temporary denial count */
- 	if (correct_wcount)
+-	err = tg3_set_power_state(tp, PCI_D0);
+-	if (err)
+-		return err;
+-
+ 	netif_device_attach(dev);
+ 
+ 	tg3_full_lock(tp, 0);
+@@ -13430,13 +13394,29 @@ out:
+ 	return err;
+ }
+ 
++struct dev_pm_ops tg3_pm_ops = {
++	.suspend = tg3_suspend,
++	.resume = tg3_resume,
++	.freeze = tg3_suspend,
++	.thaw = tg3_resume,
++	.poweroff = tg3_suspend,
++	.restore = tg3_resume,
++};
++
++#define TG3_PM_OPS	(&tg3_pm_ops)
++
++#else /* !CONFIG_PM */
++
++#define TG3_PM_OPS	NULL
++
++#endif /* !CONFIG_PM */
++
+ static struct pci_driver tg3_driver = {
+ 	.name		= DRV_MODULE_NAME,
+ 	.id_table	= tg3_pci_tbl,
+ 	.probe		= tg3_init_one,
+ 	.remove		= __devexit_p(tg3_remove_one),
+-	.suspend	= tg3_suspend,
+-	.resume		= tg3_resume
++	.driver.pm	= TG3_PM_OPS,
+ };
+ 
+ static int __init tg3_init(void)
+
