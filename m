@@ -1,79 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZA2CGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbZA2CH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZA2CGu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 21:06:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZA2CGl
+	id S1757627AbZA2CH0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 21:07:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbZA2CHB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 21:06:41 -0500
-Received: from n4a.bullet.mail.ac4.yahoo.com ([76.13.13.67]:36493 "HELO
-	n4a.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752522AbZA2CGk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 21:06:40 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 724564.82350.bm@omp109.mail.ac4.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ymail.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
-  b=T1YCFPiTZLlvFIUC23yX6JMe0sDvZgxh1qJTsUJoL0cjm4l08h0Yz7PIq3ksCjnytOjz0m5sQclAz8zLCJa1qtxnVWBvLAr4UlSx5WWw2XuztdbKuAw5JnfvSRypuY9zaalUH64Mh5mjOzWon4jkko18/2vfpde81QCQdV3eXgY=;
-X-YMail-OSG: JCloMg4VM1nHzN3gW_nUQe.hrRaMGHoRQSdssmCsvBdcxguMOM_yIU01muADlMJ6DFxRcriwO2tCgL4eNSarjAFnqoUU_uO9BCd5JNHTaecGSHXu4vbMEBB5LNBWekyI4DB4jy3_N2JKiDecBEDKHm8yZSfXWx8tqpeDnfeSWAM.kPEpHbxIfe2YiT0SSY2NagfXuUc-
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Wed, 28 Jan 2009 18:06:37 -0800 (PST)
-From: Xiaoning Ding <dingxn@ymail.com>
-Reply-To: dingxn@ymail.com
-Subject: Re: a question about p4_clockmod module on Xeon quad core processors
-To: Dave Jones <davej@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090128210200.GA19527@redhat.com>
+	Wed, 28 Jan 2009 21:07:01 -0500
+Received: from ozlabs.org ([203.10.76.45]:43521 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756912AbZA2CG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 21:06:56 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+Date: Thu, 29 Jan 2009 12:36:46 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
+       akpm@linux-foundation.org, hpa@zytor.com, brgerst@gmail.com,
+       ebiederm@xmission.com, cl@linux-foundation.org, travis@sgi.com,
+       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+References: <20090115183942.GA6325@elte.hu> <200901282108.51864.rusty@rustcorp.com.au> <498039E2.7090107@kernel.org>
+In-Reply-To: <498039E2.7090107@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <630240.73962.qm@web59913.mail.ac4.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901291236.48189.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the correction. 
-My experiments need to reduce CPU speed. However, I can only reduce the speed by about 30% (from 2.67GHz to 2GHz) with ACPI. That is not enough for the experiments. 
+On Wednesday 28 January 2009 21:26:34 Tejun Heo wrote:
+> Hello,
 
-p4-clockmod has not been removed from 2.6.29. It is under the same directory as acpi-cpufreq (arch/x86/kernel/cpu/cpufreq). So I thought it was an alternative approach. But I could not get it loaded.
+Hi Tejun,
 
-Xiaoning
-
-
---- On Wed, 1/28/09, Dave Jones <davej@redhat.com> wrote:
-
-> From: Dave Jones <davej@redhat.com>
-> Subject: Re: a question about p4_clockmod module on Xeon quad core processors
-> To: "Xiaoning Ding" <dingxn@ymail.com>
-> Cc: linux-kernel@vger.kernel.org
-> Date: Wednesday, January 28, 2009, 9:02 PM
-> On Tue, Jan 27, 2009 at 12:17:25PM -0800, Xiaoning Ding
-> wrote:
->  > Hi list,
->  > 
->  > I have tried the p4-clockmod module in Linux kernel
-> 2.6.29 on Xeon 5355 quad-core CPUs with no luck. It seems
-> current p4-clockmod driver still cannot support Intel Quad
-> core processors, right? 
->  > 
->  > I know I can also use acpi-cpufreq. It can only scale
-> down the frequence from 2.67GHz to 2GHz. But I need some
-> lower frequencies for some experiments.
+> Rusty Russell wrote:
+> > If the stats are only manipulated in one context, than an atomic
+> > requirement is overkill (and expensive on non-x86).
 > 
-> p4-clockmod doesn't change the processor frequency.
-> Because of common misconceptions like this, the user
-> interface has been removed.
-> 
-> In 2.6.29, the clock modulation code is called directly
-> from ACPI
-> whenever thermal events indicate that throttling is
-> necessary.
-> 
-> 	Dave
-> 
-> -- 
-> http://www.codemonkey.org.uk
+> Yes, it is.  I was hoping it to be not more expensive on most archs.
+> It isn't on x86 at the very least but I don't know much about other
+> archs.
 
+Hmm, you can garner this from the local_t stats which were flying around.
+(see Re: local_add_return from me), or look in the preamble to
+http://ozlabs.org/~rusty/kernel/rr-latest/misc:test-local_t.patch ).
 
-      
+Of course, if you want to be my hero, you could implement "soft" irq
+disable for all archs, which would make this cheaper.
 
+> > Other than the shouting, I liked Christoph's system:
+> > - CPU_INC = always safe (eg. local_irq_save/per_cpu(i)++/local_irq_restore)
+> > - _CPU_INC = not safe against interrupts (eg. get_cpu/per_cpu(i)++/put_cpu)
+> > - __CPU_INC = not safe against anything (eg. per_cpu(i)++)
+> > 
+> > I prefer the name 'local' to the name 'cpu', but I'm not hugely fussed.
+> 
+> I like local better too but no biggies one way or the other.
+
+Maybe kill local_t and take the name back.  I'll leave it to you...
+
+> > Ah, I did not realize that you celebrated Australia day :)
+> 
+> Hey, didn't know Australia was founded on lunar New Year's day.
+> Nice. :-)
+
+That would have been cool, but no; first time in 76 years they matched tho.
+
+Thanks,
+Rusty.
