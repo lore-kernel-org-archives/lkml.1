@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbZA2PKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758685AbZA2POX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759345AbZA2PKW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 10:10:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbZA2PKE
+	id S1758685AbZA2POX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 10:14:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754112AbZA2PON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 10:10:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53836 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753854AbZA2PKB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 10:10:01 -0500
-Date: Thu, 29 Jan 2009 16:09:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       powertop ml <power@bughost.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, srostedt@redhat.com,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, utrace-devel@redhat.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH] tracer for sys_open() - sreadahead
-Message-ID: <20090129150934.GF6512@elte.hu>
-References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere> <20090127225048.GA4652@nowhere> <20090129140451.GM24391@elte.hu> <c62985530901290629i168ac12cjc4b22140caceff58@mail.gmail.com> <20090129143120.GS24391@elte.hu> <c62985530901290640j10e63127s59ce22e860a508f8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Thu, 29 Jan 2009 10:14:13 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33257 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753607AbZA2POM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 10:14:12 -0500
+Date: Thu, 29 Jan 2009 15:14:01 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
+Message-ID: <20090129151401.GC18233@n2100.arm.linux.org.uk>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c62985530901290640j10e63127s59ce22e860a508f8@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090128192756.29333.41541.stgit@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 28, 2009 at 12:27:59PM -0700, Paul Walmsley wrote:
+> The price paid is additional runtime memory consumption - 8 bytes per
+> clock and 16 bytes per child clock - roughly 4.5KiB on OMAP3.
 
-* Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+For OMAP3, that's 222 struct clks of which 182 are children, and indeed
+222 * 8 + 182 * 16 gives about 4.5K.  On OMAP2, it's 140 and 136,
+giving 140 * 8 + 136 * 16 = 3.3K.
 
-> 2009/1/29 Ingo Molnar <mingo@elte.hu>:
-> >>
-> >> Several people talked me about utrace and gave some examples about it in
-> >> this discussion. The Api is very convenient to fetch syscall numbers,
-> >> arguments and return values. And the hooks are done in the generic core
-> >> code, so it is arch independent.
-> >>
-> >> The only drawback I can see is that it is not yet merged upstream, in
-> >> need of in-kernel users. If it only depends on this condition, we could
-> >> be these users...
-> >>
-> >> What do you think?
-> >
-> > sure - how do the minimal bits/callbacks look like which enable syscall
-> > tracing?
-> >
-> >        Ingo
-> 
-> 
-> There is a very straightforward example provided by Ananth in there:
-> http://lkml.org/lkml/2009/1/28/59
+Moving struct clk_child into struct clk means that its clk and flags
+members can be deleted, making it 8 bytes in size - effectively just
+the list_head.  We need a list_head for the 'children' as you have it.
+So, that works out as 16 bytes per clock.  That gives 3.5K on OMAP3
+and 2.2K on OMAP2.
 
-I mean, how does the infrastructure patch look like - what code does this 
-add to the kernel - just to get the syscall tracing bits. Lets get some 
-progress here - it's clear that tracing syscalls is good, we just need to 
-do it and look at actual patches.
+So, by taking that alternative approach, not only do you end up using
+less memory, but you also don't have to have the overhead of your
+custom memory bookkeeping.
 
-	Ingo
+The other change I'd suggest is that you have one function which deals
+with setting the parent of a clock:
+
+void clk_reparent(struct clk *child, struct clk *parent)
+{
+	list_del_init(&child->sibling);
+	if (parent)
+		list_add(&child->sibling, &parent->children);
+	child->parent = parent;
+
+	/* now do the debugfs renaming to reattach the child
+	   to the proper parent */
+}
+
+which is a lot simpler than your omap_clk_add_child() and omap_clk_del_child().
+
+These should be in the _core_ OMAP clock code, not just in the OMAP2
+clock code.  OMAP1 has child clocks as well as OMAP2.
