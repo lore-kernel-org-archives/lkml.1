@@ -1,58 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZA2T1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbZA2T2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757500AbZA2T1z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:27:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZA2T1p
+	id S1756729AbZA2T2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:28:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756703AbZA2T1u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:27:45 -0500
-Received: from kroah.org ([198.145.64.141]:52891 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751750AbZA2T1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:27:44 -0500
-Date: Thu, 29 Jan 2009 11:24:23 -0800
-From: Greg KH <greg@kroah.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Pavel Machek <pavel@suse.cz>,
-       Sandro Bonazzola <sandro.bonazzola@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] w35und: fix usb_control_msg() error handling in
-	wb35_probe()
-Message-ID: <20090129192423.GC31847@kroah.com>
-References: <Pine.LNX.4.64.0901221205400.27341@melkki.cs.Helsinki.FI> <20090126175115.GA29205@kroah.com> <497DFB04.1040802@cs.helsinki.fi> <84144f020901261010h67958566lbd9ea240dc6d9ec@mail.gmail.com>
+	Thu, 29 Jan 2009 14:27:50 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:52208 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756341AbZA2T1t (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 14:27:49 -0500
+Date: Thu, 29 Jan 2009 14:27:34 -0500
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Simon Horman <horms@verge.net.au>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org, Miao Xie <miaox@cn.fujitsu.com>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: mmotm 2009-01-28-02-17 uploaded (i386 build errors: cpusets &
+	kexec)
+Message-ID: <20090129192734.GA10037@hmsreliant.think-freely.org>
+References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org> <49808E3F.1090805@oracle.com> <20090128163040.88b05b3d.akpm@linux-foundation.org> <20090129022846.GA1319@verge.net.au> <20090129120935.GB9221@hmsreliant.think-freely.org> <20090129100157.965bd396.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <84144f020901261010h67958566lbd9ea240dc6d9ec@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090129100157.965bd396.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 26, 2009 at 08:10:42PM +0200, Pekka Enberg wrote:
-> On Mon, Jan 26, 2009 at 8:03 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > Greg KH wrote:
-> >>
-> >> On Thu, Jan 22, 2009 at 12:06:33PM +0200, Pekka J Enberg wrote:
-> >>>
-> >>> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> >>>
-> >>> If successful, the usb_control_msg() function returns the number of
-> >>> bytes transferred. Fix up wb35_probe() to only bail out if the function
-> >>> returns a negative number.
-> >>>
-> >>> Reported-by: Sandro Bonazzola <sandro.bonazzola@gmail.com>
-> >>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> >>
-> >> I'm confused, should I apply this patch or not?
-> >
-> > Yes, you should. What's confusing you here?
+On Thu, Jan 29, 2009 at 10:01:57AM -0800, Andrew Morton wrote:
+> On Thu, 29 Jan 2009 07:09:35 -0500 Neil Horman <nhorman@tuxdriver.com> wrote:
 > 
-> Oh, looking at the thread, I see how you got confused. The patch
-> doesn't fix all of Sandro's problems but is an obvious improvement so
-> it should be merged.
+> > > > So does that.
+> > > > 
+> > > > --- a/kernel/printk.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix-fix
+> > > > +++ a/kernel/printk.c
+> > > > @@ -137,11 +137,13 @@ static char *log_buf = __log_buf;
+> > > >  static int log_buf_len = __LOG_BUF_LEN;
+> > > >  static unsigned logged_chars; /* Number of chars produced since last read+clear operation */
+> > > >  
+> > > > +#ifdef CONFIG_KEXEC
+> > > >  void log_buf_kexec_setup(void)
+> > > >  {
+> > > >  	VMCOREINFO_SYMBOL(log_buf);
+> > > >  	VMCOREINFO_SYMBOL(log_end);
+> > > >  }
+> > > > +#endif
+> > > >  
+> > > >  static int __init log_buf_len_setup(char *str)
+> > > >  {
+> > > > _
+> > > 
+> > > Weird, I thought I checked that just now. In any case this email
+> > > was already in my inbox. In any case, I can now produce the problem,
+> > > and this patch resolves it.
+> > > 
+> > 
+> > Sorry, i didn't think to check on conditions when CONFIG_KEXEC wasn't set.  I
+> > assumed we had a stub for all the VMCOREINFO defines.  Why don't we fix it in
+> > that manner?  I mean we have serveral arch specific additions to vmcoreinfo, all
+> > of which apparently must be ifdefd for this to work.  Why not just fix it in
+> > conditional definition?
+> 
+> I didn't do that because then we'd have an empty function log_buf_kexec_setup()
+> floating about in every vmlinux.
+> 
+> Hardly a big issue, but a bit regrettable.
+> 
+Won't the compiler just eliminate that symbol during final link, given that its
+not an exported symbol?
+Neil
 
-Hm, it doesn't apply to the latest -next tree, care to respin it?
-
-thanks,
-
-greg k-h
