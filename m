@@ -1,55 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZA2KYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZA2K1n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbZA2KYZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 05:24:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZA2KYQ
+	id S1756080AbZA2K1n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 05:27:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751375AbZA2K1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 05:24:16 -0500
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:49046 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751635AbZA2KYO (ORCPT
+	Thu, 29 Jan 2009 05:27:34 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46982 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbZA2K1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 05:24:14 -0500
-X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-02.arcor-online.net 434E43FE7DA
-Subject: Re: [Bugme-new] [Bug 12562] New: High overhead while switching or
- synchronizing threads on different cores
-From: Thomas Pilarski <thomas.pi@arcor.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
-       Gregory Haskins <ghaskins@novell.com>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1233223979.5294.41.camel@bugs-laptop>
-References: <bug-12562-10286@http.bugzilla.kernel.org/>
-	 <20090128125604.94ed3fe0.akpm@linux-foundation.org>
-	 <1233181507.6988.14.camel@bugs-laptop>  <1233220048.7835.19.camel@twins>
-	 <1233223979.5294.41.camel@bugs-laptop>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 11:24:04 +0100
-Message-Id: <1233224644.5294.52.camel@bugs-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 05:27:33 -0500
+Date: Thu, 29 Jan 2009 10:27:23 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tero Kristo <tero.kristo@nokia.com>,
+       Kevin Hilman <khilman@deeprootsystems.com>,
+       Peter de Schrijver <peter.de-schrijver@nokia.com>,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH C 05/13] OMAP2/3 clock: fix DPLL rate calculation
+Message-ID: <20090129102723.GA2577@dyn-67.arm.linux.org.uk>
+Mail-Followup-To: Paul Walmsley <paul@pwsan.com>,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+	Tero Kristo <tero.kristo@nokia.com>,
+	Kevin Hilman <khilman@deeprootsystems.com>,
+	Peter de Schrijver <peter.de-schrijver@nokia.com>,
+	Tony Lindgren <tony@atomide.com>
+References: <20090128190724.12092.22239.stgit@localhost.localdomain> <20090128190820.12092.1675.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090128190820.12092.1675.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some explanation of the test program. 
+On Wed, Jan 28, 2009 at 12:08:23PM -0700, Paul Walmsley wrote:
+> +	if (cpu_is_omap24xx()) {
+> +
+> +		if (v == OMAP2XXX_EN_DPLL_LPBYPASS ||
+> +		    v == OMAP2XXX_EN_DPLL_FRBYPASS)
+> +			return clk->parent->rate;
+> +
+> +	} else if (cpu_is_omap34xx()) {
+> +
+> +		if (v == OMAP3XXX_EN_DPLL_LPBYPASS ||
+> +		    v == OMAP3XXX_EN_DPLL_FRBYPASS)
+> +			return dd->bypass_clk->rate;
+> +
+> +	}
 
-./schedulerissue 1 4096 8 2000
-1 producer and 1 consumer
-buffer size of 4096 doubles * 8byte 
-8 buffer (256kB total buffer)
-2000 messages
+You shouldn't introduce two ways of doing the same thing.  Make both
+OMAP2 and OMAP3 behaviour the same so that you have less to think
+about when looking at the code.
 
-./schedulerissue 2 4096 8 2000
-2 producer and 2 consumer
-buffer size of 4096 doubles * 8byte 
-8 buffer (256kB total buffer)
-2000 messages
+Also, when accepting patches, try to make sure that they conform to
+the coding style, rather than repeatedly committing noisy coding style
+cleanup patches.
 
+So, the above should be:
 
-It was not 512KB bytes in the test before, but 4MB.
-But there is the same problem with a total buffer size of 48kB and 4
-threads (./schedulerissue 2 2048 3 20000).
++	if (cpu_is_omap24xx()) {
++		if (v == OMAP2XXX_EN_DPLL_LPBYPASS ||
++		    v == OMAP2XXX_EN_DPLL_FRBYPASS)
++			return dd->bypass_clk->rate;
++	} else if (cpu_is_omap34xx()) {
++		if (v == OMAP3XXX_EN_DPLL_LPBYPASS ||
++		    v == OMAP3XXX_EN_DPLL_FRBYPASS)
++			return dd->bypass_clk->rate;
++	}
 
-
+And this patch should be combined with the previous one which creates
+the whole 'bypass_clk' thing.  There's not much point to a patch which
+just adds an unused field and initializers to a structure.
