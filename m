@@ -1,104 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZA2BnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbZA2Bnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbZA2BnS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 20:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZA2BnB
+	id S1753759AbZA2Bnw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 20:43:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752759AbZA2Bnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 20:43:01 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:1955 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752269AbZA2BnA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 20:43:00 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:references:
-	mime-version:content-type:content-disposition:
-	content-transfer-encoding:in-reply-to:x-operating-system:user-agent:
-	x-gmailtapped-by:x-gmailtapped;
-	b=ExdaASpNX1TUJWV0kp4ac1eJbcP2REgTI/GxDK9rDrZI0Vx9bTluETfBUz/C2zfsP
-	wm68WQnYf4/fabMmhyb0A==
-Date: Wed, 28 Jan 2009 17:42:45 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       rientjes@google.com, mbligh@google.com, thockin@google.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v4] softlockup: remove hung_task_check_count
-Message-ID: <20090129014245.GM22298@google.com>
-References: <1232991701.4863.222.camel@laptop> <20090127003055.GA21269@google.com> <20090127132626.GH23121@elte.hu> <20090127184851.GD22298@google.com> <1233131100.10992.43.camel@laptop>
+	Wed, 28 Jan 2009 20:43:42 -0500
+Received: from ozlabs.org ([203.10.76.45]:60113 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752613AbZA2Bnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 20:43:41 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Date: Thu, 29 Jan 2009 12:13:32 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20090116191108.135927000@polaris-admin.engr.sgi.com> <200901282332.29429.rusty@rustcorp.com.au> <20090128114440.77abc1b2.akpm@linux-foundation.org>
+In-Reply-To: <20090128114440.77abc1b2.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1233131100.10992.43.camel@laptop>
-X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
-User-Agent: Mutt/1.5.11
-X-GMailtapped-By: 172.24.198.101
-X-GMailtapped: msb
+Message-Id: <200901291213.32959.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra (peterz@infradead.org) wrote:
-> On Tue, 2009-01-27 at 10:48 -0800, Mandeep Singh Baines wrote:
-> > Ingo Molnar (mingo@elte.hu) wrote:
-> > > 
-> > > * Mandeep Singh Baines <msb@google.com> wrote:
-> > > 
-> > > > The design was proposed by Frédéric Weisbecker. Peter Zijlstra suggested 
-> > > > the use of RCU.
-> > > 
-> > > ok, this looks _much_ cleaner.
-> > > 
-> > > One question:
-> > > 
-> > > > -	read_lock(&tasklist_lock);
-> > > > +	rcu_read_lock();
-> > > >  	do_each_thread(g, t) {
-> > > > -		if (!--max_count)
-> > > > +		if (need_resched())
-> > > >  			goto unlock;
-> > > 
-> > > Isnt it dangerous to skip a check just because we got marked for 
-> > > reschedule? Since it runs so rarely it could by accident be preempted and 
-> > > we'd not get any checking done for a long time.
-> > > 
-> > 
-> > Yeah, the checking could be deferred indefinitely. So you could have a system
-> > where tasks are hung but it takes a really long time to detect this and
-> > finally panic the system. Not so good for high-availability.
+On Thursday 29 January 2009 06:14:40 Andrew Morton wrote:
+> It's vulnerable to the same deadlock, I think?  Suppose we have:
+...
+> - A calls work_on_cpu() and takes woc_mutex.
 > 
-> Why break out at all? Are you that worried about khungtaskd introducing
-> latencies?
-
-Yes, I was worried about disabling preemption for an unbounded amount of
-time.
-
-> Is using preemptible RCU an option for you?
+> - Before function_which_takes_L() has started to execute, task B takes L
+>   then calls work_on_cpu() and task B blocks on woc_mutex.
 > 
+> - Now function_which_takes_L() runs, and blocks on L
 
-I had not even considered that. To be honest, I had not even heard of it
-till now. So I spent another morning at LWN grokking preemptible RCU;)
+Agreed, but now it's a fairly simple case.  Both sides have to take lock L, and both have to call work_on_cpu.
 
-I think it can work. I'm a little worried about the OOM risk. It could take
-a really long time to iterate over the task list. A lot of pending kfree()s
-could build up in that time.
+Workqueues are more generic and widespread, and an amazing amount of stuff gets called from them.  That's why I felt uncomfortable with removing the one known problematic caller.
 
-I'm still unclear as to whether khungtaskd would get priority boosted
-or not. Are only tasks that explicitly block (by sleeping on a lock)
-boostable or would a task which got pre-empted inside the critical section
-also be boostable? My worry here is khungtaskd would run at high priority for
-an indefinite amount of time making it more overhead. Is there an OOMing-soon
-booster?
-
-But I think this can all be mitigated by adding back the max_count sysctl.
-But preemptible RCU would allow increasing the default to a much higher
-value or we may even be able to make the default "check all tasks".
-
-Running out of time today but I'll send out a patch tomorrow.
-
-Thanks Peter!
-
-Regards,
-Mandeep
+Thanks,
+Rusty.
