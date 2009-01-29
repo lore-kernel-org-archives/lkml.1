@@ -1,219 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758409AbZA2Xlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZA2Xma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758409AbZA2Xlw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZA2Xll
+	id S1759705AbZA2Xma (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:42:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZA2XmV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:41:41 -0500
-Received: from mms2.broadcom.com ([216.31.210.18]:4749 "EHLO mms2.broadcom.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbZA2Xlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:41:40 -0500
-X-Server-Uuid: D3C04415-6FA8-4F2C-93C1-920E106A2031
-Date: Thu, 29 Jan 2009 15:41:27 -0800
-From: "Matt Carlson" <mcarlson@broadcom.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: "Parag Warudkar" <parag.lkml@gmail.com>,
-       "Matthew Carlson" <mcarlson@broadcom.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-Message-ID: <20090129234127.GA14023@xw6200.broadcom.net>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
- <20090129184215.GA13459@xw6200.broadcom.net>
- <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
- <200901300003.38550.rjw@sisk.pl>
-MIME-Version: 1.0
-In-Reply-To: <200901300003.38550.rjw@sisk.pl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-WSS-ID: 659CE1233FC43354575-01-01
-Content-Type: text/plain;
- charset=us-ascii
-Content-Disposition: inline
+	Thu, 29 Jan 2009 18:42:21 -0500
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:37663 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752864AbZA2XmU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 18:42:20 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ag4FAD/LgUlMQWt2/2dsb2JhbACBbslshBAG
+Date: Thu, 29 Jan 2009 18:42:03 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       anil.s.keshavamurthy@intel.com, davem@davemloft.net
+Subject: LTTng 0.88 adds dynamic instrumentation support (kprobes)
+Message-ID: <20090129234203.GA20044@Krystal>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 18:22:36 up 28 days, 23:20,  4 users,  load average: 0.22, 0.07,
+	0.09
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 03:03:37PM -0800, Rafael J. Wysocki wrote:
-> On Thursday 29 January 2009, Parag Warudkar wrote:
-> > 
-> > On Thu, 29 Jan 2009, Matt Carlson wrote:
-> > 
-> > > Can you apply the following test patch and see if it helps?  The patch
-> > > does two things.  First, it enables a bit which should restore firmware
-> > > communication.  If that fixes the problem, then let me know and I'll
-> > > spin a proper patch.
-> > > 
-> > > In the event that it doesn't work, the patch goes on to test the memory
-> > > mapping by simply printing the register value at offset 0x0.  The value
-> > > should be the device's vendor ID and device ID.  Please post the
-> > > results so that I can verify it.
-> > > 
-> > > 
-> > > diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-> > > index 8b3f846..39fce42 100644
-> > > --- a/drivers/net/tg3.c
-> > > +++ b/drivers/net/tg3.c
-> > > @@ -7227,6 +7227,11 @@ static int tg3_init_hw(struct tg3 *tp, int reset_phy)
-> > >  {
-> > >  	tg3_switch_clocks(tp);
-> > >  
-> > > +	printk( KERN_NOTICE "%s: Reg value at offset 0x0 is 0x%x\n",
-> > > +		tp->dev->name, tr32(0x0) );
-> > > +
-> > > +	tw32(MEMARB_MODE, tr32(MEMARB_MODE) | MEMARB_MODE_ENABLE);
-> > > +
-> > >  	tw32(TG3PCI_MEM_WIN_BASE_ADDR, 0);
-> > >  
-> > >  	return tg3_reset_hw(tp, reset_phy);
-> > > 
-> > 
-> > Hi Matt,
-> > 
-> > Thanks for the patch. It didn't help with resume - but below is the 
-> > output after patching, let me know if you need more details.
-> 
-> [--snip--]
-> 
-> In the meantime I tried to rework tg3 suspend/resume so that it uses the new
-> PCI core capability of handling the PCI-specific parts of both operations.
-> 
-> The patch is appended, please see if it makes any difference.
-> 
-> Thanks,
-> Rafael
-> 
-> ---
->  drivers/net/tg3.c |   70 +++++++++++++++++++-----------------------------------
->  1 file changed, 25 insertions(+), 45 deletions(-)
-> 
-> Index: linux-2.6/drivers/net/tg3.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/tg3.c
-> +++ linux-2.6/drivers/net/tg3.c
-> @@ -13330,18 +13330,13 @@ static void __devexit tg3_remove_one(str
->  	}
->  }
->  
-> -static int tg3_suspend(struct pci_dev *pdev, pm_message_t state)
-> +#ifdef CONFIG_PM
-> +
-> +static int tg3_suspend(struct device *device)
->  {
-> +	struct pci_dev *pdev = to_pci_dev(device);
->  	struct net_device *dev = pci_get_drvdata(pdev);
->  	struct tg3 *tp = netdev_priv(dev);
-> -	pci_power_t target_state;
-> -	int err;
-> -
-> -	/* PCI register 4 needs to be saved whether netif_running() or not.
-> -	 * MSI address and data need to be saved if using MSI and
-> -	 * netif_running().
-> -	 */
-> -	pci_save_state(pdev);
->  
->  	if (!netif_running(dev))
->  		return 0;
-> @@ -13363,50 +13358,19 @@ static int tg3_suspend(struct pci_dev *p
->  	tp->tg3_flags &= ~TG3_FLAG_INIT_COMPLETE;
->  	tg3_full_unlock(tp);
->  
-> -	target_state = pdev->pm_cap ? pci_target_state(pdev) : PCI_D3hot;
-> -
-> -	err = tg3_set_power_state(tp, target_state);
+Hi,
 
-tg3_set_power_state() does way more than configuring the power
-management registers to the desired state though.  It sets up WOL,
-configures the chip clocks, etc.  This isn't safe to remove.
+LTTng 0.88 and LTTV 0.12.9 now support dynamic kernel instrumentation
+with kprobes through a simple /mnt/debugfs/ltt/kprobes/ interface.
 
-> -	if (err) {
-> -		int err2;
-> -
-> -		tg3_full_lock(tp, 0);
-> -
-> -		tp->tg3_flags |= TG3_FLAG_INIT_COMPLETE;
-> -		err2 = tg3_restart_hw(tp, 1);
-> -		if (err2)
-> -			goto out;
-> -
-> -		tp->timer.expires = jiffies + tp->timer_offset;
-> -		add_timer(&tp->timer);
-> -
-> -		netif_device_attach(dev);
-> -		tg3_netif_start(tp);
-> -
-> -out:
-> -		tg3_full_unlock(tp);
-> -
-> -		if (!err2)
-> -			tg3_phy_start(tp);
-> -	}
-> -
-> -	return err;
-> +	return 0;
->  }
->  
-> -static int tg3_resume(struct pci_dev *pdev)
-> +static int tg3_resume(struct device *device)
->  {
-> +	struct pci_dev *pdev = to_pci_dev(device);
->  	struct net_device *dev = pci_get_drvdata(pdev);
->  	struct tg3 *tp = netdev_priv(dev);
->  	int err;
->  
-> -	pci_restore_state(tp->pdev);
-> -
->  	if (!netif_running(dev))
->  		return 0;
->  
-> -	err = tg3_set_power_state(tp, PCI_D0);
+Usage example :
 
-...and here tg3_set_power_state() restores our ability to communicate
-with the chip via MMIO.  Also, after restoring the power state to D0,
-the chip is switched back from VAux to VMain.  This isn't safe either.
+ltt-armall
+echo do_fork > /mnt/debugfs/ltt/kprobes/enable
+lttctl -C -w /tmp/trace trace
+(so something)
+lttctl -D trace
+lttv -m textDump -e event.name=kernel.kprobe -t /tmp/trace
 
-> -	if (err)
-> -		return err;
-> -
->  	netif_device_attach(dev);
->  
->  	tg3_full_lock(tp, 0);
-> @@ -13430,13 +13394,29 @@ out:
->  	return err;
->  }
->  
-> +struct dev_pm_ops tg3_pm_ops = {
-> +	.suspend = tg3_suspend,
-> +	.resume = tg3_resume,
-> +	.freeze = tg3_suspend,
-> +	.thaw = tg3_resume,
-> +	.poweroff = tg3_suspend,
-> +	.restore = tg3_resume,
-> +};
-> +
-> +#define TG3_PM_OPS	(&tg3_pm_ops)
-> +
-> +#else /* !CONFIG_PM */
-> +
-> +#define TG3_PM_OPS	NULL
-> +
-> +#endif /* !CONFIG_PM */
-> +
->  static struct pci_driver tg3_driver = {
->  	.name		= DRV_MODULE_NAME,
->  	.id_table	= tg3_pci_tbl,
->  	.probe		= tg3_init_one,
->  	.remove		= __devexit_p(tg3_remove_one),
-> -	.suspend	= tg3_suspend,
-> -	.resume		= tg3_resume
-> +	.driver.pm	= TG3_PM_OPS,
->  };
->  
->  static int __init tg3_init(void)
-> 
-> 
+Trace set contains 1 traces
 
+kernel.kprobe: 2486.393516120 (/tmp/trace/kernel_2), 0, 0, , , 0, 0x0,
+    MODE_UNKNOWN { ip = FFFFFFFF8023CDC0 }
+kernel.kprobe: 2489.826739495 (/tmp/trace/kernel_2), 25527, 25527, bash,
+    , 25526, 0x0, SYSCALL { ip = FFFFFFFF8023CDC0 [do_fork+0x0/0x3e0] }
+kernel.kprobe: 2491.618955019 (/tmp/trace/kernel_6), 25527, 25527, bash,
+    , 25526, 0x0, SYSCALL { ip = FFFFFFFF8023CDC0 [do_fork+0x0/0x3e0] }
+End trace set
+
+Enable, disable and list operations are availables to manipulate the
+active LTTng kprobes.
+
+LTTV 0.12.9 adds support to print the symbol names along with the
+kprobes addresses.
+
+Mathieu
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
