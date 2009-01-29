@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbZA2WHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbZA2WHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759668AbZA2WHd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 17:07:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbZA2WGt
+	id S1759877AbZA2WHw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 17:07:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759597AbZA2WHG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 17:06:49 -0500
-Received: from an-out-0708.google.com ([209.85.132.243]:3289 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754192AbZA2WGq (ORCPT
+	Thu, 29 Jan 2009 17:07:06 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:57080 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759589AbZA2WHD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 17:06:46 -0500
+	Thu, 29 Jan 2009 17:07:03 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=t7jLSwq8tz/lxJlYposwgXCMescnFJRCqy2XBWwAsvrdCMkgxPvSJriffGhhVyMNij
-         6u/wPbmz1AdubuRCo7ycAG9BZs6rf4wUcTLGs4vALYxNBwhfR2QeGo7F7xV4lwq/8ym7
-         acuiNhT1MGNLzvQsUxQw7QSq3hSUcio0MiOus=
-Date: Thu, 29 Jan 2009 17:06:35 -0500 (EST)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-desktop
-To: Matt Carlson <mcarlson@broadcom.com>
-cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <20090129184215.GA13459@xw6200.broadcom.net>
-Message-ID: <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pLK33QVIjx0G04E3EzWNnExHGAGdvJJo/lJkXcQGbBAavQhnpLbxU1OUWi5X3DWxM/
+         1D9VkiZkQXcpdUVuzPuLR4R+C9eIPicevykQ9eZ9NPCqUOwzhi10vK6jHXlZ08/BEQNl
+         CnH0Y1gTCu2BqH8JRUag2l/RoRMgCdSn8o7Sk=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1233263200.3937.44.camel@perihelion.bos.jonmasters.org>
+References: <alpine.DEB.1.10.0812161556460.25356@gandalf.stny.rr.com>
+	 <1233263200.3937.44.camel@perihelion.bos.jonmasters.org>
+Date: Thu, 29 Jan 2009 14:07:01 -0800
+X-Google-Sender-Auth: bd8809e80af51851
+Message-ID: <1f1b08da0901291407q7aeaa13es730bad17abda9b66@mail.gmail.com>
+Subject: Re: Creating the RT git tree
+From: john stultz <johnstul@us.ibm.com>
+To: Jon Masters <jonathan@jonmasters.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Clark Williams <clark.williams@gmail.com>,
+       Gregory Haskins <ghaskins@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Jan 29, 2009 at 1:06 PM, Jon Masters <jonathan@jonmasters.org> wrote:
+> *). I might not be the best git user on the planet (trying to fix that)
+> but I would really like to just see the patches that are specific to a
+> given topic branch, without the merge noise. For example, a git log on
+> the threadirqs branch shows me all the other patches in linus' tree as
+> merges are done. I could do a git log --grep="threadirqs" but is there a
+> better way? How do I instruct git to show me just the patches added
+> specifically in threadirqs?
 
+This seems to work for me:
+  git log -r origin/linus..origin/rt/threadirqs
 
-On Thu, 29 Jan 2009, Matt Carlson wrote:
+Although git show doesn't seem to like that.
 
-> Can you apply the following test patch and see if it helps?  The patch
-> does two things.  First, it enables a bit which should restore firmware
-> communication.  If that fixes the problem, then let me know and I'll
-> spin a proper patch.
-> 
-> In the event that it doesn't work, the patch goes on to test the memory
-> mapping by simply printing the register value at offset 0x0.  The value
-> should be the device's vendor ID and device ID.  Please post the
-> results so that I can verify it.
-> 
-> 
-> diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-> index 8b3f846..39fce42 100644
-> --- a/drivers/net/tg3.c
-> +++ b/drivers/net/tg3.c
-> @@ -7227,6 +7227,11 @@ static int tg3_init_hw(struct tg3 *tp, int reset_phy)
->  {
->  	tg3_switch_clocks(tp);
->  
-> +	printk( KERN_NOTICE "%s: Reg value at offset 0x0 is 0x%x\n",
-> +		tp->dev->name, tr32(0x0) );
-> +
-> +	tw32(MEMARB_MODE, tr32(MEMARB_MODE) | MEMARB_MODE_ENABLE);
-> +
->  	tw32(TG3PCI_MEM_WIN_BASE_ADDR, 0);
->  
->  	return tg3_reset_hw(tp, reset_phy);
-> 
-
-Hi Matt,
-
-Thanks for the patch. It didn't help with resume - but below is the 
-output after patching, let me know if you need more details.
-
-( Looks like 0xffffffff is invalid/corrupted device id /vendor id? )
-
-[  163.856001] tg3 0000:0e:00.0: restoring config space at offset 0xc (was 0x0, writing 0x20040000)                                                                                                            
-[  163.856001] tg3 0000:0e:00.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)                                                                                                                  
-[  163.856001] tg3 0000:0e:00.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100006)                                                                                                         
-
-[snip]
-
-[  164.450277] pcieport-driver 0000:1e:00.0: setting latency timer to 64
-[  164.450415] pcieport-driver 0000:1e:01.0: setting latency timer to 64
-[  164.450493] tg3 0000:0e:00.0: restoring config space at offset 0xc (was 0x0, writing 0x20040000)
-[  164.451110] serial 00:08: activated
-
-[snip]
-
-[  168.913863] Restarting tasks ... done.
-[  170.332953] tg3 0000:0e:00.0: wake-up capability disabled by ACPI
-[  170.332960] tg3 0000:0e:00.0: PME# disabled
-[  170.333047] tg3 0000:0e:00.0: irq 54 for MSI/MSI-X
-[  170.333250] eth0: Reg value at offset 0x0 is 0xffffffff
-[  170.394281] [drm] Loading R500 Microcode
-[  170.394330] [drm] Num pipes: 1
-[  171.726650] tg3: eth0: No firmware running.
-[  183.119745] ADDRCONF(NETDEV_UP): eth0: link is not ready
-
-
-Parag
+thanks
+-john
