@@ -1,55 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZA2PgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZA2Pkg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbZA2PgF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 10:36:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758338AbZA2PfX
+	id S1758877AbZA2Pkg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 10:40:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752667AbZA2Pk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 10:35:23 -0500
-Received: from casper.infradead.org ([85.118.1.10]:48910 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758737AbZA2PfW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 10:35:22 -0500
-Date: Thu, 29 Jan 2009 07:29:38 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: tom.leiming@gmail.com
-Cc: kay.sievers@vrfy.org, greg@kroah.com, linux-kernel@vger.kernel.org,
-       Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [PATCH] driver core: remove polling for driver_probe_done
-Message-ID: <20090129072938.2761a6ed@infradead.org>
-In-Reply-To: <1233242110-5422-1-git-send-email-tom.leiming@gmail.com>
-References: <1233242110-5422-1-git-send-email-tom.leiming@gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 29 Jan 2009 10:40:27 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35415 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750943AbZA2Pk0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 10:40:26 -0500
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: mtk.manpages@gmail.com, Robert Hancock <hancockr@shaw.ca>,
+       linux-man@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: open(2) says O_DIRECT works on 512 byte boundries?
+References: <20090128213322.GA15789@kroah.com> <4980FB4D.9090009@shaw.ca>
+	<20090129011758.GA26534@kroah.com>
+	<cfd18e0f0901281859u250f202fj3ef40fb8531f1dc3@mail.gmail.com>
+	<20090129031349.GA23722@kroah.com>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Thu, 29 Jan 2009 10:40:22 -0500
+In-Reply-To: <20090129031349.GA23722@kroah.com> (Greg KH's message of "Wed, 28
+	Jan 2009 19:13:49 -0800")
+Message-ID: <x49iqnyi0ih.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> @@ -396,9 +396,9 @@ void __init prepare_namespace(void)
->  	if ((ROOT_DEV == 0) && root_wait) {
->  		printk(KERN_INFO "Waiting for root device %s...\n",
->  			saved_root_name);
-> -		while (driver_probe_done() != 0 ||
-> -			(ROOT_DEV = name_to_dev_t(saved_root_name))
-> == 0)
-> -			msleep(100);
-> +		ROOT_DEV = name_to_dev_t(saved_root_name);
-> +		if (ROOT_DEV)
-> +			driver_probe_wait_done();
->  	}
->  
+Greg KH <greg@kroah.com> writes:
 
-Hi,
+> On Thu, Jan 29, 2009 at 03:59:12PM +1300, Michael Kerrisk wrote:
+>> On Thu, Jan 29, 2009 at 2:17 PM, Greg KH <greg@kroah.com> wrote:
+>> >
+>> >
+>> >
+>> > On Wed, Jan 28, 2009 at 06:41:49PM -0600, Robert Hancock wrote:
+>> >>
+>> >>
+>> >> Greg KH wrote:
+>> >>> In looking at open(2), it says that O_DIRECT works on 512 byte boundries
+>> >>> with the 2.6 kernel release:
+>> >>>      Under Linux 2.4, transfer sizes, and the alignment of the user
+>> >>>      buffer and  the file offset must all be multiples of the logical
+>> >>>      block size of the file system.  Under Linux 2.6, alignment  to
+>> >>>      512-byte  boundaries suffices.
+>> >>> However if you try to access an O_DIRECT opened file with a buffer that
+>> >>> is PAGE_SIZE aligned + 512 bytes, it fails in a bad way (wrong data is
+>> >>> read.)
+>> >>> Is this just a mistake in the documentation?  Or am I reading it
+>> >>> incorrectly?
+>> >>> I have a test program that shows this if anyone wants it.
+>> >>
+>> >> Well, it sounds like a bug to me.. even if it's not supported, if you do
+>> >> such an access, surely the kernel should detect that and return EINVAL or
+>> >> something rather than reading corrupted data..
+>> >
+>> > It doesn't.  It says the read is successful, yet the data is not really
+>> > read into the buffer.  Portions of it is, but not the amount we asked
+>> > for.
+>> 
+>> Greg,
+>> 
+>> Can you post your test program?
+>
+> Sure, here it is.  I'm still not quite sure it is valid, but at first
+> glance it seems to be.
+>
+> Run it once with no arguments and all of the files will be created.
+> Then run it again with no offset being asked for:
+> 	./dma_thread -a 0
+> then with an offset:
+> 	./dma_thread -a 512
+>
+> The second one breaks.
 
-another comment:
+There are several folks working on this.  See "Corruption with O_DIRECT
+and unaligned user buffers" on the linux-fsdevel list.  There is also a
+Red Hat bugzilla for this (471613) that several folks have been working
+through.
 
-this is not equivalent
-
-you turned "wait until all probing is done OR until the device exists"
-into "wait until all probing is done"... which might be several seconds
-longer!
+Cheers,
+Jeff
