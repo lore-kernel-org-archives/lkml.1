@@ -1,53 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbZA2Gu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbZA2GvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758057AbZA2Gu5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 01:50:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZA2Guq
+	id S1758225AbZA2GvW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 01:51:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZA2Gut
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 01:50:46 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:45204 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbZA2Gup (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 01:50:45 -0500
-Subject: Re: [PATCH 5/6] module: make modversion_info contain a pointer,
-	not an array.
-From: Jon Masters <jonathan@jonmasters.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       Shawn Bohrer <shawn.bohrer@gmail.com>
-In-Reply-To: <200901290859.40725.rusty@rustcorp.com.au>
-References: <200901290005.52819.rusty@rustcorp.com.au>
-	 <20090128065231.64d12ffd@infradead.org>
-	 <200901290859.40725.rusty@rustcorp.com.au>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Thu, 29 Jan 2009 01:50:23 -0500
-Message-Id: <1233211823.3937.1.camel@perihelion.bos.jonmasters.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+	Thu, 29 Jan 2009 01:50:49 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40120 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753607AbZA2Gus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 01:50:48 -0500
+Date: Wed, 28 Jan 2009 22:46:43 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, hpa@zytor.com, serue@us.ibm.com,
+       "David C. Hansen" <haveblue@us.ibm.com>,
+       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
+       sukadev@us.ibm.com
+Subject: [RFC][PATCH 3/5] Move common mknod_ptmx() calls into caller
+Message-ID: <20090129064643.GD23160@us.ibm.com>
+References: <20090129064259.GA23160@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090129064259.GA23160@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-29 at 08:59 +1030, Rusty Russell wrote:
 
-> We did discuss changing modversions not to descend more than
-> one level deep into types (ie. MODVERSION(int fn(struct foo *))
-> would depend on the type of struct foo, but not the type of any
-> struct pointers in struct foo) to reduce the problem where header
-> changes cause type definitions to be exposed or hidden and thus
-> change the modversion.
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Wed, 28 Jan 2009 18:54:25 -0800
+Subject: [RFC][PATCH 3/5] Move common mknod_ptmx() calls into caller
 
-Yeah. We looked at that for a certain Enterprise Linux distribution but
-various people suggested it was more hassle than it was worth to get it
-right. I did do some initial poking - I'll dig it up and post it here.
+We create 'ptmx' node in both single-instance and multiple-instance
+mounts. So devpts_get_sb() can call mknod_ptmx() once rather than
+have both modes calling mknod_ptmx() separately.
 
-Jon.
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ fs/devpts/inode.c |   36 +++++++++++++++++-------------------
+ 1 files changed, 17 insertions(+), 19 deletions(-)
 
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index 8e00779..97b8e9f 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -343,17 +343,7 @@ static int new_pts_mount(struct file_system_type *fs_type, int flags,
+ 	fsi = DEVPTS_SB(mnt->mnt_sb);
+ 	memcpy(&fsi->mount_opts, opts, sizeof(opts));
+ 
+-	err = mknod_ptmx(mnt->mnt_sb);
+-	if (err)
+-		goto fail;
+-
+ 	return 0;
+-
+-fail:
+-	dput(mnt->mnt_sb->s_root);
+-	up_write(&mnt->mnt_sb->s_umount);
+-	deactivate_super(mnt->mnt_sb);
+-	return err;
+ }
+ 
+ /*
+@@ -421,13 +411,6 @@ static int init_pts_mount(struct file_system_type *fs_type, int flags,
+ 	if (err)
+ 		return err;
+ 
+-	err = mknod_ptmx(mnt->mnt_sb);
+-	if (err) {
+-		dput(mnt->mnt_sb->s_root);
+-		up_write(&mnt->mnt_sb->s_umount);
+-		deactivate_super(mnt->mnt_sb);
+-	}
+-
+ 	return err;
+ }
+ 
+@@ -444,9 +427,24 @@ static int devpts_get_sb(struct file_system_type *fs_type,
+ 	}
+ 
+ 	if (opts.newinstance)
+-		return new_pts_mount(fs_type, flags, data, &opts, mnt);
++		error = new_pts_mount(fs_type, flags, data, &opts, mnt);
+ 	else
+-		return init_pts_mount(fs_type, flags, data, &opts, mnt);
++		error = init_pts_mount(fs_type, flags, data, &opts, mnt);
++
++	if (error)
++		return error;
++
++	error = mknod_ptmx(mnt->mnt_sb);
++	if (error)
++		goto out_dput;
++
++	return 0;
++
++out_dput:
++	dput(mnt->mnt_sb->s_root);
++	up_write(&mnt->mnt_sb->s_umount);
++	deactivate_super(mnt->mnt_sb);
++	return error;
+ }
+ 
+ #else
+-- 
+1.5.2.5
 
