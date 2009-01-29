@@ -1,66 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZA2W6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbZA2W7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758198AbZA2W6l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 17:58:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZA2W6d
+	id S1758418AbZA2W7u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 17:59:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752479AbZA2W7l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 17:58:33 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:63648 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbZA2W6c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 17:58:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=qks5JkjKAySD06sxR3i5cltGSr8Np/50MErizC6DaaZ3ELQdZ4appKs6wdt19Ch0jm
-         yrXxz9K7cswCP4z4jXy8dHpC9XgApjsng0WmZDRVwSG4Z2oISJv7OeqXPWl+PIBKiG8S
-         GLYGpe19P6ZbIh9OdoMS9KHTTRqxosdh/lBE8=
+	Thu, 29 Jan 2009 17:59:41 -0500
+Received: from isrv.corpit.ru ([81.13.33.159]:50211 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751573AbZA2W7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 17:59:41 -0500
+Message-ID: <498234DA.5030104@msgid.tls.msk.ru>
+Date: Fri, 30 Jan 2009 01:59:38 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-In-Reply-To: <20090129221402.GA1984@elte.hu>
-References: <1233186180-29883-1-git-send-email-mingo@elte.hu>
-	 <87vdryw6ql.fsf@basil.nowhere.org>
-	 <eada2a070901291324t1a2dbb08hbff7b026c77d69cd@mail.gmail.com>
-	 <20090129221402.GA1984@elte.hu>
-Date: Thu, 29 Jan 2009 14:58:28 -0800
-X-Google-Sender-Auth: c0d6ff0ef9f5ac0e
-Message-ID: <eada2a070901291458m24249390xc0df8c11a2d2fd15@mail.gmail.com>
-Subject: Re: x86: unify genapic code, unify subarchitectures, remove old 
-	subarchitecture code
-From: Tim Pepper <lnxninja@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Nicholas Miell <nmiell@comcast.net>
+CC: Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: vm: shmat() address for 32 vs 64 bit kernel
+References: <4981FEBF.5050603@msgid.tls.msk.ru> <1233258106.12514.6.camel@entropy>
+In-Reply-To: <1233258106.12514.6.camel@entropy>
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 2:14 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> At this point there's no technical need to kill it - it's a zero-overhead
-> thing tucked away into a single .c module in arch/x86/kernel/numaq_32.c. I
-> even consolidated most of its headers in that file, to reduce its cross
-> section.
+Nicholas Miell wrote:
+> On Thu, 2009-01-29 at 22:08 +0300, Michael Tokarev wrote:
+>>
+>> shmat(174358532, 0, 0)            = 0x9569f000
+>> Here, the segment ends at (0x9569f000+579067904)/1024/1024 = 2942Mb.
+>>
+>> And here's what happens with 64bits kernel:
+>>
+>> shmget(0xc9a7c840, 579067904, IPC_CREAT|IPC_EXCL|0640) = 294912
+>> Here, the segment ends at 3965Mb.
+>>
+[]
+>> I understand full well many bad points here: proprietary software,
+>> old legacy code, not supported, buggy.
+> 
+> Fortunately, compatibility is compatibility, and none of these are
+> relevant. :)
 
-Wish we'd have piped up earlier to save you a bit of work.
+Well, compatibility for 64bits kernel and 32bits userland it not
+the first priority, so to say.
 
-> So two days ago it might have made some sense to rip out this code - now
-> there's no pressing need really. We can remove it in a few years once the
-> last beep has been received from those platforms. The numaq code is now
-> quite similar to an old driver in drivers/* - there's no real downside
-> from having it around.
+[]
+> On 32-bit systems, the kernel is mapped into the last gigabyte of the 4
+> GB address space for every process. On 64-bit systems, the kernel is
+> mapped in the negative half of the 64-bit address space for all
+> processes, which leaves the top gigabyte of the 4 GB address space free
+> for userspace use.
+> 
+> Most of the time this just means more memory for the processes that need
+> it, but (as you have discovered) sometimes it can cause problems, which
+> is why the setarch command has the --3gb flag.
 
-We can make the NUMAQ's beep still, if not boot.  :)
+Oh.  Nice thing, I just discovered personality(2) stuff ;)
+Thank you very much for the pointer!
 
-Reality is they're just not worth the effort any more and there's no
-sign of anybody else having them.  Assuming your code goes in for
-2.6.30 it'll be easy to drop NUMAQ support.  Even if there's not much
-downside there's also not much reason to leave it in but marked
-deprecated/broken.
+Except of some.. interesting stuff here.  It does not quite work as
+*I*'d expect (not to say it's wrong but just unexpected).  Namely,
+when setarch is also 32bits, it can't execute anything after setting
+ADDR_LIMIT_3GB (or PER_LINUX32_3GB).  execve(2) returns immediately
+with EFAULT error.  But if doing the same from a 64bit executable,
+it all works as expected.  Or when doing the same from 32bit exe
+running on a 32bit kernel.  I.e. the only problematic case for
+personality(PER_LINUX32_3GB) call is 32bit userspace on 64bit kernel.
 
+personality(PER_LINUX32_3GB)            = 0
+execve("/bin/echo", ["/bin/echo", "foo"], [/* 13 vars */]) = -1 EFAULT (Bad address)
 
+Should it work? ;)
 
-Tim
+For now, it is running correctly when using a 64bits setarch executable
+in-between.  Sure it will not work anymore if I'll reboot into 32bits
+kernel ;)  (I run 64bits now because I'm trying to move data between
+two databases, one old 32bits and another is 64 bits).
+
+Thank you!
+
+/mjt
