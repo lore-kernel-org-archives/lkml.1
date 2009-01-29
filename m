@@ -1,327 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758942AbZA2PDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759166AbZA2PEW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758942AbZA2PDm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 10:03:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbZA2PDe
+	id S1759166AbZA2PEW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 10:04:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbZA2PEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 10:03:34 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:53783 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753773AbZA2PDd (ORCPT
+	Thu, 29 Jan 2009 10:04:06 -0500
+Received: from rv-out-0506.google.com ([209.85.198.224]:8144 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754661AbZA2PED (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 10:03:33 -0500
-Subject: [PATCH v4] timer: implement lockdep deadlock detection
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090129123804.GA22239@elte.hu>
-References: <20090127132759.GI23121@elte.hu>
-	 <20090127134128.GA24965@elte.hu> <1233079597.4755.2.camel@johannes.local>
-	 <1233081027.10992.21.camel@laptop> <1233082650.4455.9.camel@johannes.local>
-	 <1233130815.10992.39.camel@laptop> <1233136487.4151.5.camel@johannes.local>
-	 <1233137581.10992.44.camel@laptop>
-	 <1233140081.3936.21.camel@johannes.local>
-	 <1233166017.4811.9.camel@johannes.local>  <20090129123804.GA22239@elte.hu>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 16:03:20 +0100
-Message-Id: <1233241400.4035.6.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 29 Jan 2009 10:04:03 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vVXfF+Izy4YLGgdF4TBtQey7aMZFkVUq1FzVOhNWHWk2zMwWRk6fHzKmBU9Qbrpku3
+         ZYu9EKKvzTp4WHLhAIZanCCPOTL/BfHKJCYO7BKduHtNVXnUDjUuxLVnw+pJGcQpp01S
+         mw5znzRDQpXEUYoYySj8wxiQEdTSxPTGZ22ls=
+MIME-Version: 1.0
+In-Reply-To: <200901291354.04005.oliver@neukum.org>
+References: <1a26b4920901290302w5c9bb79cra29fda5e67cc96a4@mail.gmail.com>
+	 <alpine.LSU.2.00.0901291342050.15159@fbirervta.pbzchgretzou.qr>
+	 <200901291354.04005.oliver@neukum.org>
+Date: Thu, 29 Jan 2009 16:04:02 +0100
+Message-ID: <1a26b4920901290704v35666410u437d92810c1254c1@mail.gmail.com>
+Subject: Re: how to change serial device<->port association
+From: Pazzo Da Legare <pazzodalegare@gmail.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Jan Engelhardt <jengelh@medozas.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This modifies the timer code in a way to allow lockdep to detect
-deadlocks resulting from a lock being taken in the timer function
-as well as around the del_timer_sync() call.
+Dear Oliver,
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
----
-v2: fix coding/comment style
-v3: accept freeing timer from timer function, fix init_timer_on_stack
-    in no-lockdep case
-v4: fix statically declared timer names/lockdep keys
+Thank you very much for your help. I'm going to try your suggestion.
 
- include/linux/timer.h |   93 +++++++++++++++++++++++++++++++++++++++++++++-----
- kernel/timer.c        |   70 +++++++++++++++++++++++++++++++------
- 2 files changed, 142 insertions(+), 21 deletions(-)
+p
 
---- wireless-testing.orig/include/linux/timer.h	2009-01-28 11:33:17.000000000 +0100
-+++ wireless-testing/include/linux/timer.h	2009-01-29 16:01:49.000000000 +0100
-@@ -5,6 +5,7 @@
- #include <linux/ktime.h>
- #include <linux/stddef.h>
- #include <linux/debugobjects.h>
-+#include <linux/stringify.h>
- 
- struct tvec_base;
- 
-@@ -21,52 +22,126 @@ struct timer_list {
- 	char start_comm[16];
- 	int start_pid;
- #endif
-+#ifdef CONFIG_LOCKDEP
-+	struct lockdep_map lockdep_map;
-+#endif
- };
- 
- extern struct tvec_base boot_tvec_bases;
- 
-+#ifdef CONFIG_LOCKDEP
-+/*
-+ * NB: because we have to copy the lockdep_map, setting the lockdep_map key
-+ * (second argument) here is required, otherwise it could be initialised to
-+ * the copy of the lockdep_map later! We use the pointer to and the string
-+ * "<file>:<line>" as the key resp. the name of the lockdep_map.
-+ */
-+#define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)				\
-+	.lockdep_map = STATIC_LOCKDEP_MAP_INIT(_kn, &_kn),
-+#else
-+#define __TIMER_LOCKDEP_MAP_INITIALIZER(_kn)
-+#endif
-+
- #define TIMER_INITIALIZER(_function, _expires, _data) {		\
- 		.entry = { .prev = TIMER_ENTRY_STATIC },	\
- 		.function = (_function),			\
- 		.expires = (_expires),				\
- 		.data = (_data),				\
- 		.base = &boot_tvec_bases,			\
-+		__TIMER_LOCKDEP_MAP_INITIALIZER(		\
-+			__FILE__ ":" __stringify(__LINE__))	\
- 	}
- 
- #define DEFINE_TIMER(_name, _function, _expires, _data)		\
- 	struct timer_list _name =				\
- 		TIMER_INITIALIZER(_function, _expires, _data)
- 
--void init_timer(struct timer_list *timer);
--void init_timer_deferrable(struct timer_list *timer);
-+void init_timer_key(struct timer_list *timer,
-+		    const char *name,
-+		    struct lock_class_key *key);
-+void init_timer_deferrable_key(struct timer_list *timer,
-+			       const char *name,
-+			       struct lock_class_key *key);
-+
-+#ifdef CONFIG_LOCKDEP
-+#define init_timer(timer)						\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_key((timer), #timer, &__key);		\
-+	} while (0)
-+
-+#define init_timer_deferrable(timer)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_deferrable_key((timer), #timer, &__key);	\
-+	} while (0)
-+
-+#define init_timer_on_stack(timer)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		init_timer_on_stack_key((timer), #timer, &__key);	\
-+	} while (0)
-+
-+#define setup_timer(timer, fn, data)					\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		setup_timer_key((timer), #timer, &__key, (fn), (data));\
-+	} while (0)
-+
-+#define setup_timer_on_stack(timer, fn, data)				\
-+	do {								\
-+		static struct lock_class_key __key;			\
-+		setup_timer_on_stack_key((timer), #timer, &__key,	\
-+					 (fn), (data));			\
-+	} while (0)
-+#else
-+#define init_timer(timer)\
-+	init_timer_key((timer), NULL, NULL)
-+#define init_timer_deferrable(timer)\
-+	init_timer_deferrable_key((timer), NULL, NULL)
-+#define init_timer_on_stack(timer)\
-+	init_timer_on_stack_key((timer), NULL, NULL)
-+#define setup_timer(timer, fn, data)\
-+	setup_timer_key((timer), NULL, NULL, (fn), (data))
-+#define setup_timer_on_stack(timer, fn, data)\
-+	setup_timer_on_stack_key((timer), NULL, NULL, (fn), (data))
-+#endif
- 
- #ifdef CONFIG_DEBUG_OBJECTS_TIMERS
--extern void init_timer_on_stack(struct timer_list *timer);
-+extern void init_timer_on_stack_key(struct timer_list *timer,
-+				    const char *name,
-+				    struct lock_class_key *key);
- extern void destroy_timer_on_stack(struct timer_list *timer);
- #else
- static inline void destroy_timer_on_stack(struct timer_list *timer) { }
--static inline void init_timer_on_stack(struct timer_list *timer)
-+static inline void init_timer_on_stack_key(struct timer_list *timer,
-+					   const char *name,
-+					   struct lock_class_key *key)
- {
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- }
- #endif
- 
--static inline void setup_timer(struct timer_list * timer,
-+static inline void setup_timer_key(struct timer_list * timer,
-+				const char *name,
-+				struct lock_class_key *key,
- 				void (*function)(unsigned long),
- 				unsigned long data)
- {
- 	timer->function = function;
- 	timer->data = data;
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- }
- 
--static inline void setup_timer_on_stack(struct timer_list *timer,
-+static inline void setup_timer_on_stack_key(struct timer_list *timer,
-+					const char *name,
-+					struct lock_class_key *key,
- 					void (*function)(unsigned long),
- 					unsigned long data)
- {
- 	timer->function = function;
- 	timer->data = data;
--	init_timer_on_stack(timer);
-+	init_timer_on_stack_key(timer, name, key);
- }
- 
- /**
---- wireless-testing.orig/kernel/timer.c	2009-01-28 11:33:17.000000000 +0100
-+++ wireless-testing/kernel/timer.c	2009-01-28 11:34:26.000000000 +0100
-@@ -491,14 +491,18 @@ static inline void debug_timer_free(stru
- 	debug_object_free(timer, &timer_debug_descr);
- }
- 
--static void __init_timer(struct timer_list *timer);
--
--void init_timer_on_stack(struct timer_list *timer)
-+static void __init_timer(struct timer_list *timer,
-+			 const char *name,
-+			 struct lock_class_key *key);
-+
-+void init_timer_on_stack_key(struct timer_list *timer,
-+			     const char *name,
-+			     struct lock_class_key *key)
- {
- 	debug_object_init_on_stack(timer, &timer_debug_descr);
--	__init_timer(timer);
-+	__init_timer(timer, name, key);
- }
--EXPORT_SYMBOL_GPL(init_timer_on_stack);
-+EXPORT_SYMBOL_GPL(init_timer_on_stack_key);
- 
- void destroy_timer_on_stack(struct timer_list *timer)
- {
-@@ -512,7 +516,9 @@ static inline void debug_timer_activate(
- static inline void debug_timer_deactivate(struct timer_list *timer) { }
- #endif
- 
--static void __init_timer(struct timer_list *timer)
-+static void __init_timer(struct timer_list *timer,
-+			 const char *name,
-+			 struct lock_class_key *key)
- {
- 	timer->entry.next = NULL;
- 	timer->base = __raw_get_cpu_var(tvec_bases);
-@@ -521,6 +527,7 @@ static void __init_timer(struct timer_li
- 	timer->start_pid = -1;
- 	memset(timer->start_comm, 0, TASK_COMM_LEN);
- #endif
-+	lockdep_init_map(&timer->lockdep_map, name, key, 0);
- }
- 
- /**
-@@ -530,19 +537,23 @@ static void __init_timer(struct timer_li
-  * init_timer() must be done to a timer prior calling *any* of the
-  * other timer functions.
-  */
--void init_timer(struct timer_list *timer)
-+void init_timer_key(struct timer_list *timer,
-+		    const char *name,
-+		    struct lock_class_key *key)
- {
- 	debug_timer_init(timer);
--	__init_timer(timer);
-+	__init_timer(timer, name, key);
- }
--EXPORT_SYMBOL(init_timer);
-+EXPORT_SYMBOL(init_timer_key);
- 
--void init_timer_deferrable(struct timer_list *timer)
-+void init_timer_deferrable_key(struct timer_list *timer,
-+			       const char *name,
-+			       struct lock_class_key *key)
- {
--	init_timer(timer);
-+	init_timer_key(timer, name, key);
- 	timer_set_deferrable(timer);
- }
--EXPORT_SYMBOL(init_timer_deferrable);
-+EXPORT_SYMBOL(init_timer_deferrable_key);
- 
- static inline void detach_timer(struct timer_list *timer,
- 				int clear_pending)
-@@ -789,6 +800,15 @@ EXPORT_SYMBOL(try_to_del_timer_sync);
-  */
- int del_timer_sync(struct timer_list *timer)
- {
-+#ifdef CONFIG_LOCKDEP
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	lock_map_acquire(&timer->lockdep_map);
-+	lock_map_release(&timer->lockdep_map);
-+	local_irq_restore(flags);
-+#endif
-+
- 	for (;;) {
- 		int ret = try_to_del_timer_sync(timer);
- 		if (ret >= 0)
-@@ -861,10 +881,36 @@ static inline void __run_timers(struct t
- 
- 			set_running_timer(base, timer);
- 			detach_timer(timer, 1);
-+
- 			spin_unlock_irq(&base->lock);
- 			{
- 				int preempt_count = preempt_count();
-+
-+#ifdef CONFIG_LOCKDEP
-+				/*
-+				 * It is permissible to free the timer from
-+				 * inside the function that is called from
-+				 * it, this we need to take into account for
-+				 * lockdep too. To avoid bogus "held lock
-+				 * freed" warnings as well as problems when
-+				 * looking into timer->lockdep_map, make a
-+				 * copy and use that here.
-+				 */
-+				struct lockdep_map lockdep_map =
-+					timer->lockdep_map;
-+#endif
-+				/*
-+				 * Couple the lock chain with the lock chain at
-+				 * del_timer_sync() by acquiring the lock_map
-+				 * around the fn() call here and in
-+				 * del_timer_sync().
-+				 */
-+				lock_map_acquire(&lockdep_map);
-+
- 				fn(data);
-+
-+				lock_map_release(&lockdep_map);
-+
- 				if (preempt_count != preempt_count()) {
- 					printk(KERN_ERR "huh, entered %p "
- 					       "with preempt_count %08x, exited"
-
-
+2009/1/29 Oliver Neukum <oliver@neukum.org>:
+> Am Thursday 29 January 2009 13:43:02 schrieb Jan Engelhardt:
+>> >Serial: 8250/16550 driver $Revision: 1.90 $ 6 ports, IRQ sharing disabled
+>> >serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+>> >serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+>> >serial8250: ttyS2 at I/O 0x3e8 (irq = 4) is a NS16550A
+>> >serial8250: ttyS3 at I/O 0x2e8 (irq = 3) is a NS16550A
+>> >00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+>> >00:09: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+>> >00:0b: ttyS2 at I/O 0x3e8 (irq = 10) is a NS16550A
+>> >00:0c: ttyS3 at I/O 0x2e8 (irq = 11) is a NS16550A
+>> >
+>> >I would like to change the map ttySx -> I/O port. I try with setserial
+>> >but it doesn't work....Any clue?
+>
+> They are just names. Create device nodes with the name you like and
+> the correct major:minor combination. Udev can do this for you.
+>
+>        Regards
+>                Oliver
+>
+>
