@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbZA2Pl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbZA2Pot@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759238AbZA2Pl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 10:41:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZA2Plt
+	id S1758762AbZA2Pot (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 10:44:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752118AbZA2Pol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 10:41:49 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:45933 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752118AbZA2Plt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 10:41:49 -0500
-Date: Thu, 29 Jan 2009 09:41:46 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: suresh.b.siddha@intel.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
-Subject: Possible x2apic breakage
-Message-ID: <20090129154146.GA2694@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+	Thu, 29 Jan 2009 10:44:41 -0500
+Received: from lirone.symas.net ([64.71.152.235]:57958 "EHLO lirone.symas.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752117AbZA2Pok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 10:44:40 -0500
+X-Greylist: delayed 2201 seconds by postgrey-1.27 at vger.kernel.org; Thu, 29 Jan 2009 10:44:40 EST
+Message-ID: <4981C648.3000108@symas.com>
+Date: Thu, 29 Jan 2009 07:07:52 -0800
+From: Howard Chu <hyc@symas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; rv:1.9.2a1pre) Gecko/20081227 SeaMonkey/2.0a1pre Firefox/3.0.3
+MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: epoll optimizations
+References: <Pine.LNX.4.64.0703061628470.3661@alien.or.mcafeemobile.com>
+In-Reply-To: <Pine.LNX.4.64.0703061628470.3661@alien.or.mcafeemobile.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suresh -
+Something I tripped over recently, that might be nice to change... HANGUP 
+events are always reported, and apparently can't be turned off. In 
+level-triggered mode, if your event loop treats Hangups as lower priority than 
+read/write events, an outstanding Hangup will continue to be signaled every 
+time you call epoll_wait() until it's finally disposed of. It would be nice if 
+Hangups were always oneshot events, regardless of whether the FD was 
+configured level, edge, or oneshot. Certainly we know that the *cause* of a 
+Hangup can only happen once on any descriptor, so it makes no sense for it to 
+be reported more than once.
 
-This popped up in Ingo's x86 tree yesterday. This appears to be breaking
-on our simulator running in x2apic mode. If I understand the code,
-this is a real breakage and not a problem in our simulator:
-
-
-arch/x86/include/asm/genapic.h
-
-	static inline unsigned int read_apic_id(void)
-	{
-        	unsigned int reg;
-
-        	reg = *(u32 *)(APIC_BASE + APIC_ID);
-        	return apic->get_apic_id(reg);
-	}
-
-
-As expected, the failure occurs right after:
-
-	Enabling x2apic
-	Enabled x2apic and interrupt-remapping
-
-The next reference to apicid tries to read from mem instead of MSRs.
-
-
---- jack
-
+-- 
+   -- Howard Chu
+   CTO, Symas Corp.           http://www.symas.com
+   Director, Highland Sun     http://highlandsun.com/hyc/
+   Chief Architect, OpenLDAP  http://www.openldap.org/project/
