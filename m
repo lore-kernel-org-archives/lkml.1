@@ -1,108 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZA2Xgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbZA2XhM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756861AbZA2Xgc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:36:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZA2XgX
+	id S1758932AbZA2XhM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:37:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbZA2Xgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:36:23 -0500
-Received: from sh.osrg.net ([192.16.179.4]:60517 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644AbZA2XgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:36:22 -0500
-Date: Fri, 30 Jan 2009 08:36:12 +0900
-To: y-goto@jp.fujitsu.com
-Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, tony.luck@intel.com,
-       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
-Subject: Re: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non
- DMA_64BIT_MASK devices
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090130073511.F48F.E1E9C6FF@jp.fujitsu.com>
-References: <20090129200303.E2C2.E1E9C6FF@jp.fujitsu.com>
-	<20090129205446N.fujita.tomonori@lab.ntt.co.jp>
-	<20090130073511.F48F.E1E9C6FF@jp.fujitsu.com>
+	Thu, 29 Jan 2009 18:36:54 -0500
+Received: from smtp115.sbc.mail.sp1.yahoo.com ([69.147.64.88]:33350 "HELO
+	smtp115.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753090AbZA2Xgx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 18:36:53 -0500
+X-YMail-OSG: VrjkYSUVM1lvqCnF7Heb.adUo8nKe6R_ma0hOJ3J0KUaLE58M15jGnYWezasDu4Jnj4wpKSJFrCD66FWynlefw5G3DviX3TyxpAjmRHvD38vz8RemoeXbXGLXBkbJTo7MO2pwiumLfbr6NQtZWLw.5dgPQlm2zRioFbBpLUuRIzN.YnkkZy11FPheYkeLZZ7COgc1CV7ZPjN6p0zGkGwO7OQcmRf4j4-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [PATCH 1/4] [Linux/SCSI]: Change RECEIVE_CREDENTIAL
+	to	VLC_SA_RECEIVE_CREDENTIAL
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+In-Reply-To: <4981972A.2090801@panasas.com>
+References: <1233093749.6442.97.camel@haakon2.linux-iscsi.org>
+	 <1233094236.6442.110.camel@haakon2.linux-iscsi.org>
+	 <4981972A.2090801@panasas.com>
+Content-Type: text/plain
+Date: Thu, 29 Jan 2009 15:31:35 -0800
+Message-Id: <1233271895.6442.220.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090130083654U.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 30 Jan 2009 08:36:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009 07:54:07 +0900
-Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-
-> > On Thu, 29 Jan 2009 20:41:07 +0900
-> > Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+On Thu, 2009-01-29 at 13:46 +0200, Boaz Harrosh wrote:
+> Nicholas A. Bellinger wrote:
+> > Hi James,
 > > 
-> > > > Before the dma ops unification, IA64 always uses GFP_DMA for
-> > > > dma_alloc_coherent like:
-> > > > 
-> > > > #define dma_alloc_coherent(dev, size, handle, gfp)	\
-> > > > 	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
-> > > > 
-> > > > This GFP_DMA enforcement doesn't make sense for IOMMUs since they can
-> > > > do address translation to give addresses that devices can access
-> > > > to. The IOMMU drivers ignore the zone flag. However, this is still
-> > > > necessary for swiotlb since it can't do address translation.
-> > > > 
-> > > > We don't always need to use GFP_DMA for swiotlb. We need GFP_DMA for
-> > > > devices incapable of 64bit DMA.
-> > > > 
-> > > > This patch is sorta updated version of:
-> > > > 
-> > > > http://marc.info/?l=linux-kernel&m=122638215612705&w=2
-> > > > 
-> > > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > > > ---
-> > > >  arch/ia64/kernel/pci-swiotlb.c |   10 +++++++++-
-> > > >  1 files changed, 9 insertions(+), 1 deletions(-)
-> > > > 
-> > > > diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-> > > > index 717ad4f..573f02c 100644
-> > > > --- a/arch/ia64/kernel/pci-swiotlb.c
-> > > > +++ b/arch/ia64/kernel/pci-swiotlb.c
-> > > > @@ -13,8 +13,16 @@
-> > > >  int swiotlb __read_mostly;
-> > > >  EXPORT_SYMBOL(swiotlb);
-> > > >  
-> > > > +static void *ia64_swiotlb_alloc_coherent(struct device *dev, size_t size,
-> > > > +					 dma_addr_t *dma_handle, gfp_t gfp)
-> > > > +{
-> > > > +	if (dev->coherent_dma_mask != DMA_64BIT_MASK)
-> > > > +		gfp |= GFP_DMA;
-> > > > +	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
-> > > > +}
-> > > > +
-> > > >  struct dma_map_ops swiotlb_dma_ops = {
-> > > > -	.alloc_coherent = swiotlb_alloc_coherent,
-> > > > +	.alloc_coherent = ia64_swiotlb_alloc_coherent,
-> > > >  	.free_coherent = swiotlb_free_coherent,
-> > > >  	.map_page = swiotlb_map_page,
-> > > >  	.unmap_page = swiotlb_unmap_page,
-> > > > -- 
-> > > > 1.6.0.6
-> > > 
-> > > 
-> > > Though I may be misunderstanding something, this initialization seems to be
-> > > called only when CONFIG_IA64_DIG_VTD is on.
+> > Let me know if you need a fresh respin of this patch..  According to
+> > spc4r17 section D.3.5, VLC_SA_RECEIVE_CREDENTIAL is the only
+> > VARIABLE_LENGTH_CMD defined Service ACtion..
 > > 
-> > Hmm, what's 'this initialization'?
-> > 
-> > This patch always sets swiotlb_dma_ops.alloc_coherent to
-> > ia64_swiotlb_alloc_coherent.
+> > --nab
 > 
-> I tested your patch, but, ia64_swiotlb_alloc_coherent() was not called with
-> CONFIG_GENERIC.
+> Not accurate. See file include/scsi/osd_protocol.h in the scsi-misc
+> git-tree master branch. The complete OSD command set is VARIABLE_LENGTH_CMD
+> based. There must be others as well
+> 
 
-You use the generic kernel on a DIG box, right? If so, yeah, there is
-something wrong.
+Ok, what I meant was:
+
+>From searching spc4r17, VLC_SA_RECEIVE_CREDENTIAL (0x1800) is the only
+SPC-4 defined VARIABLE_LENGTH_CMD defined Service Action in Table D.8.
+>From SPC-4, the range 0x1800 -> 0x1FFF is reserved for SPC-4 defined
+VARIABLE_LENGTH_CMD SAs.  
+
+I see that OSD SAs for VARIABLE_LENGTH_CMD opcode are defined in range
+0x8800 -> 0x8FFF, so does not it make sense to add the single VLC_SA_*
+prefixed define above for range 0x1800 -> 0x1FFF in
+include/scsi/scsi.h..?
+
+Many thanks for your most valuable of time,
+
+--nab
 
 
-> swiotlb_dma_ops is set by pci_swiotlb_init().
-> However, it seems to be not called when CONFIG_IA64_DIG/Generic configuration.
+> Boaz
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 
-You are talking about setting dma_ops to swiotlb_dma_ops?
-
-I think that swiotlb_dma_init() also sets dma_ops to swiotlb_dma_ops.
