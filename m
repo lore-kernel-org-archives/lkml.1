@@ -1,88 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZA2Ow0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759055AbZA2Ow7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758906AbZA2Ow0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 09:52:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754091AbZA2OwS
+	id S1759055AbZA2Ow7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:52:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZA2Owu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 09:52:18 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:55492 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754153AbZA2OwR (ORCPT
+	Thu, 29 Jan 2009 09:52:50 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:40914 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754091AbZA2Owt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 09:52:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:reply-to:date:x-google-sender-auth:message-id
-         :subject:from:to:content-type:content-transfer-encoding;
-        b=QO9jaowonNFIdW/FYN5S3b9qmlk90QWMaxjDT6gN03eAGqolzITDX1iY0W810xpHgT
-         Px81P0bm7/YnjmndJCr5ea2/gvgPdi1u8WJHLMGyWfopO/AXCgowQ3u2EOZ46znpDEwM
-         kwKhXkYJOixfHpah/uVG3IhM3NUsvYWWiAFjI=
-MIME-Version: 1.0
-Reply-To: vsriram@mistralsolutions.com
-Date: Thu, 29 Jan 2009 20:22:15 +0530
-X-Google-Sender-Auth: 002bbf12974c3901
-Message-ID: <8bf247760901290652j44562471x173ceca987f4ca2a@mail.gmail.com>
-Subject: reboot produces a crash.
-From: "Sriram V." <vsriram@mistralsolutions.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Jan 2009 09:52:49 -0500
+Subject: Re: PFs on pages pinned with get_user_pages()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frank Mehnert <Frank.Mehnert@Sun.COM>
+Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200901291541.32618.frank.mehnert@sun.com>
+References: <200901290905.10966.frank.mehnert@sun.com>
+	 <200901291502.48312.frank.mehnert@sun.com>
+	 <1233238854.4495.93.camel@laptop>
+	 <200901291541.32618.frank.mehnert@sun.com>
+Content-Type: text/plain
+Date: Thu, 29 Jan 2009 15:52:37 +0100
+Message-Id: <1233240757.4495.94.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   I am using 2.6.28 kernel. When i reboot. I get the following dump.
+On Thu, 2009-01-29 at 15:41 +0100, Frank Mehnert wrote:
+> On Thursday 29 January 2009, Peter Zijlstra wrote:
+> > On Thu, 2009-01-29 at 15:02 +0100, Frank Mehnert wrote:
+> > > I'm one of the VirtualBox developers. We are trying to fix the annoying
+> > > kerneloops warning 'BUG: sleeping function called from invalid context'
+> > > reported by the Fedora folks. This warning occurs when do_swap_page()
+> > > calls lock_page() and in_atomic() returns true.
+> > >
+> > > This warning appears when we touch into memory which is pinned with
+> > > get_user_pages(). In VT-x/AMD-V mode we are executing some code in the
+> > > context of the Linux kernel. To prevent scheduling of the current CPU
+> > > core we disable the interripts. preempt_disable() would be probably the
+> > > better choice but this would oops as well if CONFIG_PREEMPT is enabled.
+> >
+> > but to get there, you'd have to have called handle_mm_fault() which
+> > requires the mmap_sem, which should also give that might_sleep()
+> > warning.
+> 
+> The stacktrace is
+> 
+>   __might_sleep()
+>   lock_page()
+>   handle_mm_fault()
+>   do_page_fault()
+>   error_code
+> 
+> So yes, handle_mm_fault() is called. But I assume that down_read_trylock()
+> succeeded before we were forced to call down_read().
+> 
+> > That aside, is there any reason you have to avoid scheduling? Otherwise
+> > I would just allow so and be done with it.
+> 
+> The reason is that our code expects that to ensure syncing of the CPU
+> state with the saved state. I fear it is quite difficult to change that...
 
-   Am trying to debug this - I want to know which module is causing the
-   crash.
+Ah, is that what KVM uses the preempt notifiers for? Could you too?
 
-   How does anyone debug this?
-
-Regards,
-sriram
-
-
-[<c007d97c>] (warn_slowpath+0x0/0x80) from [<c019dd58>] (kobject_put+0x3c/0x5c)
- r3:0000034f r2:c037041a
- r6:00000000 r5:c730c200 r4:c7802c20
-[<c019dd1c>] (kobject_put+0x0/0x5c) from [<c01da150>]
-(device_shutdown+0x88/0xa0)
- r4:c03f9fbc
-[<c01da0c8>] (device_shutdown+0x0/0xa0) from [<c008ac14>]
-(kernel_restart_prepare+0x2c/0x3c)
- r5:28121969 r4:00000000
-[<c008abe8>] (kernel_restart_prepare+0x0/0x3c) from [<c008ac64>]
-(kernel_restart+0x14/0x48)
-[<c008ac50>] (kernel_restart+0x0/0x48) from [<c008c08c>] (sys_reboot+0xd4/0x1b0)
- r5:28121969 r4:01234567
-[<c008bfb8>] (sys_reboot+0x0/0x1b0) from [<c0050e40>]
-(ret_fast_syscall+0x0/0x2c)
- r7:00000058 r6:00000001 r5:00018380 r4:afe35e60
----[ end trace 3e890316ac4bb261 ]---
-------------[ cut here ]------------
-WARNING: at lib/kobject.c:592 kobject_put+0x3c/0x5c()
-kobject: '<NULL>' (c7802c60): is not initialized, yet kobject_put() is
-being called.
-Modules linked in:
- r5:28121969 r4:00000000
-[<c008abe8>] (kernel_restart_prepare+0x0/0x3c) from [<c008ac64>]
-(kernel_restart+0x14/0x48)
-[<c008ac50>] (kernel_restart+0x0/0x48) from [<c008c08c>] (sys_reboot+0xd4/0x1b0)
- r5:28121969 r4:01234567
-[<c008bfb8>] (sys_reboot+0x0/0x1b0) from [<c0050e40>]
-(ret_fast_syscall+0x0/0x2c)
- r7:00000058 r6:00000001 r5:00018380 r4:afe35e60
----[ end trace 3e890316ac4bb261 ]---
-------------[ cut here ]------------
-WARNING: at lib/kobject.c:592 kobject_put+0x3c/0x5c()
-kobject: '<NULL>' (c7802ca0): is not initialized, yet kobject_put() is
-being called.
-Modules linked in:
-[<c0054f0c>] (dump_stack+0x0/0x14) from [<c007d9e0>] (warn_slowpath+0x64/0x80)
-[<c007d97c>] (warn_slowpath+0x0/0x80) from [<c019dd58>] (kobject_put+0x3c/0x5c)
- r3:0000032c r2:c037041a
- r6:00000000 r5:c730c200 r4:c7802ca0
-[<c019dd1c>] (kobject_put+0x0/0x5c) from [<c01da160>]
-(device_shutdown+0x98/0xa0)
- r4:c03f9fbc
