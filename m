@@ -1,100 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbZA2Tma@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbZA2Ttc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758874AbZA2Tma (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:42:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755167AbZA2TmU
+	id S1756743AbZA2Ttc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:49:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbZA2TtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:42:20 -0500
-Received: from qmta08.emeryville.ca.mail.comcast.net ([76.96.30.80]:60067 "EHLO
-	QMTA08.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755653AbZA2TmT (ORCPT
+	Thu, 29 Jan 2009 14:49:23 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:60293 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752378AbZA2TtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:42:19 -0500
-Subject: Re: vm: shmat() address for 32 vs 64 bit kernel
-From: Nicholas Miell <nmiell@comcast.net>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4981FEBF.5050603@msgid.tls.msk.ru>
-References: <4981FEBF.5050603@msgid.tls.msk.ru>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 11:41:46 -0800
-Message-Id: <1233258106.12514.6.camel@entropy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Thu, 29 Jan 2009 14:49:22 -0500
+Message-ID: <4982083E.50200@ct.jp.nec.com>
+Date: Thu, 29 Jan 2009 11:49:18 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: uaccess: fix compilation error on CONFIG_M386
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-29 at 22:08 +0300, Michael Tokarev wrote:
-> I were needed to run a legacy application which uses
-> Oracle 8 database.  Tried to run it on a 64bit kernel,
-> which is running on my machine for a long time, together
-> with 32bits userland.  Everything worked but not oracle,
-> which segfaults at startup on 64bits kernel, but works
-> just fine when running the same but 32bits kernel
-> (userspace is the same).
-> 
-> After much debugging I found this difference which may
-> be relevant.  It's the address returned by shmat() routine.
-> 
-> Here are the relevant stuff for 32bits:
-> 
-> shmget(0x4d21f3bc, 579067904, IPC_CREAT|IPC_EXCL|0640) = 174358532
-> shmat(174358532, 0, 0)            = 0x9569f000
-> 
-> Here, the segment ends at (0x9569f000+579067904)/1024/1024 = 2942Mb.
-> 
-> And here's what happens with 64bits kernel:
-> 
-> shmget(0xc9a7c840, 579067904, IPC_CREAT|IPC_EXCL|0640) = 294912
-> shmat(294912, 0, 0)               = 0xd5548000
-> 
-> Here, the segment ends at 3965Mb.
-> 
-> And right after that shmat, oracle process terminates with SIGSEGV
-> (on 64bits kernel, but continues just fine on 32bits).
-> 
-> I understand full well many bad points here: proprietary software,
-> old legacy code, not supported, buggy.
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
-Fortunately, compatibility is compatibility, and none of these are
-relevant. :)
+Impact: fix compilation error
 
-> But the question really is: why the difference in the first place,
-> for 32bits userland, between 32 and 64bits kernels?  Can this diff
-> be "fixed" somehow?  For example, I remember kernel/user memory
-> split kconfig option - is there similar thing for 32bits userspace
-> on 64bits kernel?
-> 
+In case of !CONFIG_X86_WP_WORKS_OK, __put_user_size_ex() is not defined.
+Add macros for !CONFIG_X86_WP_WORKS_OK case.
 
-On 32-bit systems, the kernel is mapped into the last gigabyte of the 4
-GB address space for every process. On 64-bit systems, the kernel is
-mapped in the negative half of the 64-bit address space for all
-processes, which leaves the top gigabyte of the 4 GB address space free
-for userspace use.
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/include/asm/uaccess.h |   22 ++++++++++++++++++++--
+ 1 files changed, 20 insertions(+), 2 deletions(-)
 
-Most of the time this just means more memory for the processes that need
-it, but (as you have discovered) sometimes it can cause problems, which
-is why the setarch command has the --3gb flag.
-
-> (And for the record, in case others will encounter the same issue:
-> the process started it all sees this:
-> 
-> SQL> startup
-> ORA-24323: value not allowed
-> ORA-03113: end-of-file on communication channel
-> 
-> and in the alert file we see this:
-> 
-> Errors in file /usr/oracle/8.1/rdbms/log/ora_3365.trc:
-> ORA-00445: background process "PMON" did not start after 120 seconds
-> )
-> 
-> Thanks!
-> 
-> /mjt
-
+diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+index 0ec6de4..b9a2415 100644
+--- a/arch/x86/include/asm/uaccess.h
++++ b/arch/x86/include/asm/uaccess.h
+@@ -525,8 +525,6 @@ struct __large_struct { unsigned long buf[100]; };
+  */
+ #define get_user_try		uaccess_try
+ #define get_user_catch(err)	uaccess_catch(err)
+-#define put_user_try		uaccess_try
+-#define put_user_catch(err)	uaccess_catch(err)
+ 
+ #define get_user_ex(x, ptr)	do {					\
+ 	unsigned long __gue_val;					\
+@@ -534,9 +532,29 @@ struct __large_struct { unsigned long buf[100]; };
+ 	(x) = (__force __typeof__(*(ptr)))__gue_val;			\
+ } while (0)
+ 
++#ifdef CONFIG_X86_WP_WORKS_OK
++
++#define put_user_try		uaccess_try
++#define put_user_catch(err)	uaccess_catch(err)
++
+ #define put_user_ex(x, ptr)						\
+ 	__put_user_size_ex((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
+ 
++#else /* !CONFIG_X86_WP_WORKS_OK */
++
++#define put_user_try		do {		\
++	int __uaccess_err = 0;
++
++#define put_user_catch(err)			\
++	(err) |= __uaccess_err;			\
++} while (0)
++
++#define put_user_ex(x, ptr)	do {		\
++	__uaccess_err |= __put_user(x, ptr);	\
++} while (0)
++
++#endif /* CONFIG_X86_WP_WORKS_OK */
++
+ /*
+  * movsl can be slow when source and dest are not both 8-byte aligned
+  */
 -- 
-Nicholas Miell <nmiell@comcast.net>
+1.6.0.4
 
