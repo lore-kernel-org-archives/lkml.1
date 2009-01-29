@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbZA2TdD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbZA2Te2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756290AbZA2TdD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:33:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZA2Tcv
+	id S1757984AbZA2Te2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:34:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZA2TeU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:32:51 -0500
-Received: from qw-out-2122.google.com ([74.125.92.27]:35285 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752026AbZA2Tcu (ORCPT
+	Thu, 29 Jan 2009 14:34:20 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50292 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751552AbZA2TeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:32:50 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=S8gGvLJW19FyW70vBaMxfURFc6C7liKyVROCeVgmsLDsaaJthF7p0D18Lmx69lB0YI
-         LyO6P93RxXsSItIgFfmaNx0+ofweLxhsErMZE9vkF9eyWQVB9EeugRa4aWkb1LR7xKwL
-         rSDXZCbT6sylWrColLd2tMKY6Kn2iK4QwtC4o=
-Message-ID: <4982045B.6090206@gmail.com>
-Date: Thu, 29 Jan 2009 11:32:43 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: macbook pro radeon suspend issue
-References: <49812E3B.6050106@gmail.com> <200901291536.37348.rjw@sisk.pl>
-In-Reply-To: <200901291536.37348.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 29 Jan 2009 14:34:20 -0500
+Date: Thu, 29 Jan 2009 19:34:40 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: bmckinlay@perle.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 60/80] tty: extract the pty init time special cases
+Message-ID: <20090129193440.2c6efb65@lxorguk.ukuu.org.uk>
+In-Reply-To: <OFD0116D1D.5061D2AB-ON8525754D.005C6317-8525754D.00661977@perle.com>
+References: <20090128204705.7140d5fd@lxorguk.ukuu.org.uk>
+	<OFD0116D1D.5061D2AB-ON8525754D.005C6317-8525754D.00661977@perle.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Thursday 29 January 2009, Justin P. Mattock wrote:
->   
->> No sure if there is a bug report already or not.
->> For the macbook pro(ATI chipset) suspend is broken.
->> As for kernel version: latest git.
->> Last week(before LCA, and during the week, since being no merges.)
->> the system would wakeup, show a black screen and sit there. Now
->> after a couple of merges have been completed The system wakes up,
->> but instantly reboot's.
->>
->> I tried to supply any info(ohci1394_dma) when the wakeup occurs, but had 
->> no response
->> for some reason or another.
->> I can try and do a bisect, the only problem
->> I have though, is I never labeled good/bad commits(forgot how too);
->>
->> In any case If I'm in an urgent need, of having  to suspend
->> the system(not in anytime soon at the moment),
->> then Ill just revert kernels to one that I know works.     :^)
->>     
->
-> Which is that?
->
-> Rafael
->
->   
-O.K. I ended up grabbing the packages from debian
-to get it working.
+>   - any required documentation explaining how the driver works and 
+> describing
+>     the API for the master side of the PTY driver ?
 
-regards;
+The first most useful part would be understand what your pty driver does
+and is required that is not in the base one. Just an idea of what extra
+APIs it provides would be quite useful. If it is stuff like virtual modem
+lines then that is stuff I want to see supported in the base kernel
+anyway.
 
-Justin P. Mattock
+> As mentioned above the Linux kernel has supported "out of tree" PTY type 
+> TTY 
+> drivers all the way back to kernel 2.2.x and up to 2.6.27. To do this the 
+
+By chance.. as to policies about kernel recompiles, that is between you
+and the vendors. Maybe the vendors will add the symbols to their tree for
+you ?
+
+Equally look at the positives - if the facilities you need are in the
+base kernel your customers won't run into arguments between yourselves
+and the base kernel vendor over support.
+
+Alan
