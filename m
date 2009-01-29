@@ -1,142 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZA2CLi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbZA2CLy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbZA2CLi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 21:11:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZA2CLH
+	id S1755414AbZA2CLy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 21:11:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbZA2CLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 21:11:07 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:60188 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751790AbZA2CLD (ORCPT
+	Wed, 28 Jan 2009 21:11:43 -0500
+Received: from n4.bullet.mail.ac4.yahoo.com ([76.13.13.28]:42322 "HELO
+	n4.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758378AbZA2CLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 21:11:03 -0500
-Message-ID: <4981102C.2000400@linux.vnet.ibm.com>
-Date: Wed, 28 Jan 2009 18:10:52 -0800
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Wed, 28 Jan 2009 21:11:42 -0500
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 983734.86665.bm@omp106.mail.ac4.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ymail.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=E7APyc0r51nCi4l2Hj0kXdel9iSsO6bbtoOFN1fKdNxP9U5EAqO4LtASBTwPWmeo9hGPzR2RL/6hU8U4w6yQBh6OinUJB6FvKbUoVpyzr34C4qCidbhnk9ZXfSyyqn8J469xAsUzWv6hZRw1bGXQjKpKjyUADJbiBJPYXl/OMUI=;
+X-YMail-OSG: gDkmHv4VM1l3RIJUtWCaPKKQmpf_gb90lf.7XwjzJ6Vi7HW61sqms8eKjE64ZafLhBBt4e5oxqQorkNZEDd_p2D4UQz7NT7QclFByy2CXGk4.ObIUu2sBERxWLzc8dOPNWgjSjnHCQy91LIvZGGfOem9iA7iux6XmiGY_ghM.m3Ctmx9CwbAchexFmUF
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Wed, 28 Jan 2009 18:11:40 -0800 (PST)
+From: Xiaoning Ding <dingxn@ymail.com>
+Reply-To: dingxn@ymail.com
+Subject: Re: a question about p4_clockmod module on Xeon quad core processors
+To: Wes Felter <wesley@felter.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <4980C8A9.6090904@felter.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
-Subject: Re: [announce] Performance Counters for Linux, v6
-References: <20090121185021.GA8852@elte.hu>
-In-Reply-To: <20090121185021.GA8852@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <765076.76058.qm@web59913.mail.ac4.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> We are pleased to announce version 6 of our performance counters subsystem 
-> implementation. The shortlog, diffstat and the combo patch can be found 
-> below. The combo patch against latest -git (2.6.29-rc2) can be also found 
-> at:
-> 
->    http://people.redhat.com/mingo/perfcounters/perfcounters-v6-v2.6.29-rc2.patch
-> 
-> It's also available in tip/master at:
-> 
->    http://people.redhat.com/mingo/tip.git/README
-> 
-> There are many changes in the v6 release:
-> 
->  - PowerPC performance counters support from Paul Mackerras, for POWER6
->    and for the PPC970 family.
-> 
->  - ioctl API to disable/enable individual counters and groups without
->    closing their fd. This can be useful for libraries, ad-hoc 
->    instrumentation and PAPI support.
-> 
->  - 'pinned' and 'exclusive' counter attributes - for those
->    applications that want to influence counter scheduling explicitly.
-> 
->  - The 'perfstat' utility (ex 'timec') has been updated:
-> 
->       http://people.redhat.com/mingo/perfcounters/perfstat.c
-> 
->  - 'kerneltop' (easy-to-use text mode NMI profiler) has been updated:
->    
->       http://people.redhat.com/mingo/perfcounters/kerneltop.c
-> 
->  - Merged to latest mainline
-> 
->  - Various fixes and other updates
-> 
-> 	Ingo
+I installed msr-tools, but could not find detailed information on how to change cpu speed with the tools. Can you point me to detailed documentations? Or, can you share your code?
 
-I'm not sure if this is the right place to propose such a thing, but I 
-think it would be very valuable to have a standardized user-side library 
-to accompany this addition to the kernel.
+Thanks!
 
-In particular, as a starting place for the discussion, I'd like to see 
-functions in it that are very similar to a subset of what is currently 
-in libpfm.  Specifically, I'd like to see the following functions (with 
-the names changed to pcl_* perhaps):
+Xiaoning
 
-extern pfm_err_t pfm_find_event(const char *str, unsigned int *idx);
-extern pfm_err_t pfm_find_event_bycode(int code, unsigned int *idx);
-extern pfm_err_t pfm_find_event_bycode_next(int code, unsigned int start,
-                                             unsigned int *next);
-extern pfm_err_t pfm_find_event_mask(unsigned int event_idx, const char 
-*str,
-                                      unsigned int *mask_idx);
-extern pfm_err_t pfm_find_full_event(const char *str, pfmlib_event_t *e);
+--- On Wed, 1/28/09, Wes Felter <wesley@felter.org> wrote:
 
-extern pfm_err_t pfm_get_max_event_name_len(size_t *len);
-
-extern pfm_err_t pfm_get_num_events(unsigned int *count);
-extern pfm_err_t pfm_get_num_event_masks(unsigned int event_idx,
-                                          unsigned int *count);
-extern pfm_err_t pfm_get_event_name(unsigned int idx, char *name,
-                                     size_t maxlen);
-extern pfm_err_t pfm_get_full_event_name(pfmlib_event_t *e, char *name,
-                                          size_t maxlen);
-extern pfm_err_t pfm_get_event_code(unsigned int idx, int *code);
-extern pfm_err_t pfm_get_event_mask_code(unsigned int idx,
-                                          unsigned int mask_idx,
-                                          unsigned int *code);
-extern pfm_err_t pfm_get_event_description(unsigned int idx, char **str);
-extern pfm_err_t pfm_get_event_code_counter(unsigned int idx, unsigned 
-int cnt,
-                                             int *code);
-extern pfm_err_t pfm_get_event_mask_name(unsigned int event_idx,
-                                          unsigned int mask_idx,
-                                          char *name, size_t maxlen);
-extern pfm_err_t pfm_get_event_mask_description(unsigned int event_idx,
-                                                 unsigned int mask_idx,
-                                                 char **desc);
+> From: Wes Felter <wesley@felter.org>
+> Subject: Re: a question about p4_clockmod module on Xeon quad core processors
+> To: dingxn@ymail.com
+> Cc: linux-kernel@vger.kernel.org
+> Date: Wednesday, January 28, 2009, 9:05 PM
+> Xiaoning Ding wrote:
+> > Hi list,
+> > 
+> > I have tried the p4-clockmod module in Linux kernel
+> 2.6.29 on Xeon 5355 quad-core CPUs with no luck. It seems
+> current p4-clockmod driver still cannot support Intel Quad
+> core processors, right? 
+> > I know I can also use acpi-cpufreq. It can only scale
+> down the frequence from 2.67GHz to 2GHz. But I need some
+> lower frequencies for some experiments.
+> 
+> Clock modulation is quite simple; in the past I've done
+> it from userspace with /dev/cpu/*/msr or written my own
+> module to do it. I don't know if I've ever tried it
+> on quad-cores, but it worked on dual-core Woodcrest. (Note:
+> I was not trying to save energy.)
+> 
+> Wes Felter - wesley@felter.org
 
 
-Now, since it's not clear right now how unit masks are going to be 
-handled in your proposal, I'm not sure the that *_event_mask_* functions 
-are applicable, but I think something that fills that function will be 
-needed.
-
-Architectures that have need for additional functionality should be free 
-to add arch-specific functions.
-
-Full descriptions of these functions can be found in the man pages of 
-the libpfm documentation.
-
-Any thoughts on this?  Do you already have a user library structure in mind?
-
--- 
-Regards,
-
-- Corey
-
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+      
 
