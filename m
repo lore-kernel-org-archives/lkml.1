@@ -1,150 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbZA2Aw2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758219AbZA2AxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbZA2Aw2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 19:52:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbZA2AwT
+	id S1758219AbZA2AxA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 19:53:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbZA2Awt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 19:52:19 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51768 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752002AbZA2AwS (ORCPT
+	Wed, 28 Jan 2009 19:52:49 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:18742 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752253AbZA2Awr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 19:52:18 -0500
-Date: Wed, 28 Jan 2009 19:52:16 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Nick Piggin <npiggin@suse.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: [PATCH] use per cpu data for single cpu ipi calls
-In-Reply-To: <200901290955.38940.rusty@rustcorp.com.au>
-Message-ID: <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com> <200901290955.38940.rusty@rustcorp.com.au>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 28 Jan 2009 19:52:47 -0500
+X-Trace: 138198401/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.198/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.44.176.198
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.3 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AhIFAAeMgElQLLDG/2dsb2JhbACBbslQhUcG
+X-IronPort-AV: E=Sophos;i="4.37,340,1231113600"; 
+   d="scan'208";a="138198401"
+Subject: Re: [PATCH RFC] sh: maple: Add support for SEGA Dreamcast VMU and
+ clean up maple bus driver (2/3)
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, Greg KH <greg@kroah.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       dwmw2 <dwmw2@infradead.org>, linux-sh <linux-sh@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-input <linux-input@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>
+In-Reply-To: <200901281944.57894.vapier@gentoo.org>
+References: <1233186456.6734.16.camel@localhost.localdomain>
+	 <1233187069.6734.21.camel@localhost.localdomain>
+	 <1233187750.6734.27.camel@localhost.localdomain>
+	 <200901281944.57894.vapier@gentoo.org>
+Content-Type: text/plain
+Date: Thu, 29 Jan 2009 00:49:30 +0000
+Message-Id: <1233190170.6734.36.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2009-01-28 at 19:44 -0500, Mike Frysinger wrote:
+> On Wednesday 28 January 2009 19:09:10 Adrian McMenamin wrote:
+> > +static struct maple_driver vmu_flash_driver = {
+> > +	.function =	MAPLE_FUNC_MEMCARD,
+> > +	.drv = {
+> > +		.name =		"Dreamcast_visual_memory",
+> 
+> i thought there was like a 16byte limit or something on this ?
 
-The smp_call_function can be passed a wait parameter telling it to
-wait for all the functions running on other CPUs to complete before
-returning, or to return without waiting. Unfortunately, this is
-currently just a suggestion and not manditory. That is, the
-smp_call_function can decide not to return and wait instead.
 
-The reason for this is because it uses kmalloc to allocate storage
-to send to the called CPU and that CPU will free it when it is done.
-But if we fail to allocate the storage, the stack is used instead.
-This means we must wait for the called CPU to finish before
-continuing.
+Don't think so, it's just a const char* isn't it?
 
-Unfortunatly, some callers do no abide by this hint and act as if
-the non-wait option is mandatory. The MTRR code for instance will
-deadlock if the smp_call_function is set to wait. This is because
-the smp_call_function will wait for the other CPUs to finish their
-called functions, but those functions are waiting on the caller to
-continue.
-
-This patch changes the generic smp_call_function code to use per cpu
-variables instead of allocating for a single CPU call. The
-smp_call_function_many will fall back to the smp_call_function_single
-if it fails its alloc. The smp_call_function_single is modified
-to not force the wait state.
-
-Since we now are using a single data per cpu we must synchronize the
-callers to prevent a second caller modifying the data before the
-first called IPI functions complete. To do so, I added a flag to
-the call_single_data called CSD_FLAG_LOCK. When the single CPU is
-called (which can be called when a many call fails an alloc), we
-set the LOCK bit on this per cpu data. When the caller finishes
-it clears the LOCK bit.
-
-The caller must wait till the LOCK bit is cleared before setting
-it. When it is cleared, there is no IPI function using it.
-A spinlock is used to synchronize the setting of the bit between
-callers. Since only one callee can be called at a time, and it
-is the only thing to clear it, the IPI does not need to use
-any locking.
-
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 5cfa0e5..aba3813 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -18,6 +18,7 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(call_function_lock);
- enum {
- 	CSD_FLAG_WAIT		= 0x01,
- 	CSD_FLAG_ALLOC		= 0x02,
-+	CSD_FLAG_LOCK		= 0x04,
- };
- 
- struct call_function_data {
-@@ -186,6 +187,9 @@ void generic_smp_call_function_single_interrupt(void)
- 			if (data_flags & CSD_FLAG_WAIT) {
- 				smp_wmb();
- 				data->flags &= ~CSD_FLAG_WAIT;
-+			} else if (data_flags & CSD_FLAG_LOCK) {
-+				smp_wmb();
-+				data->flags &= ~CSD_FLAG_LOCK;
- 			} else if (data_flags & CSD_FLAG_ALLOC)
- 				kfree(data);
- 		}
-@@ -196,6 +200,9 @@ void generic_smp_call_function_single_interrupt(void)
- 	}
- }
- 
-+static DEFINE_PER_CPU(struct call_single_data, csd_data);
-+static DEFINE_SPINLOCK(csd_data_lock);
-+
- /*
-  * smp_call_function_single - Run a function on a specific CPU
-  * @func: The function to run. This must be fast and non-blocking.
-@@ -224,14 +231,35 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
- 		func(info);
- 		local_irq_restore(flags);
- 	} else if ((unsigned)cpu < nr_cpu_ids && cpu_online(cpu)) {
--		struct call_single_data *data = NULL;
-+		struct call_single_data *data;
- 
- 		if (!wait) {
--			data = kmalloc(sizeof(*data), GFP_ATOMIC);
--			if (data)
--				data->flags = CSD_FLAG_ALLOC;
--		}
--		if (!data) {
-+			data = &per_cpu(csd_data, cpu);
-+			/*
-+			 * We are calling a function on a single CPU
-+			 * and we are not going to wait for it to finish.
-+			 * We use a per cpu data to pass the information
-+			 * to that CPU, but since all callers of this
-+			 * code will use the same data, we must
-+			 * synchronize the callers to prevent a new caller
-+			 * from corrupting the data before the callee
-+			 * can access it.
-+			 *
-+			 * The CSD_FLAG_LOCK is used to let us know when
-+			 * the IPI handler is done with the data.
-+			 * The first caller will set it, and the callee
-+			 * will clear it. The next caller must wait for
-+			 * it to clear before we set it again. This
-+			 * will make sure the callee is done with the
-+			 * data before a new caller will use it.
-+			 * We use spinlocks to manage the callers.
-+			 */
-+			spin_lock(&csd_data_lock);
-+			while (data->flags & CSD_FLAG_LOCK)
-+				cpu_relax();
-+			data->flags = CSD_FLAG_LOCK;
-+			spin_unlock(&csd_data_lock);
-+		} else {
- 			data = &d;
- 			data->flags = CSD_FLAG_WAIT;
- 		}
