@@ -1,57 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbZA2CMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757603AbZA2CUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758547AbZA2CMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 21:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZA2CM0
+	id S1757603AbZA2CUX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 21:20:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753067AbZA2CUG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 21:12:26 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55950 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751790AbZA2CMZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 21:12:25 -0500
-Date: Wed, 28 Jan 2009 18:12:05 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
-       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090128181205.3b15fa4a.akpm@linux-foundation.org>
-In-Reply-To: <200901291213.32959.rusty@rustcorp.com.au>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<200901282332.29429.rusty@rustcorp.com.au>
-	<20090128114440.77abc1b2.akpm@linux-foundation.org>
-	<200901291213.32959.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 28 Jan 2009 21:20:06 -0500
+Received: from mms3.broadcom.com ([216.31.210.19]:4772 "EHLO MMS3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752008AbZA2CUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 21:20:04 -0500
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+Date: Wed, 28 Jan 2009 18:19:44 -0800
+From: "Matt Carlson" <mcarlson@broadcom.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+cc: "Parag Warudkar" <parag.lkml@gmail.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Matthew Carlson" <mcarlson@broadcom.com>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+Message-ID: <20090129021944.GA12879@xw6200.broadcom.net>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
+ <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain>
+ <alpine.DEB.2.00.0901282049040.5026@parag-desktop>
+ <alpine.LFD.2.00.0901281757240.3123@localhost.localdomain>
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.0901281757240.3123@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-WSS-ID: 659FCDCC5KC6100367-01-01
+Content-Type: text/plain;
+ charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 12:13:32 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> On Thursday 29 January 2009 06:14:40 Andrew Morton wrote:
-> > It's vulnerable to the same deadlock, I think?  Suppose we have:
-> ...
-> > - A calls work_on_cpu() and takes woc_mutex.
+On Wed, Jan 28, 2009 at 06:10:37PM -0800, Linus Torvalds wrote:
+> 
+> 
+> On Wed, 28 Jan 2009, Parag Warudkar wrote:
 > > 
-> > - Before function_which_takes_L() has started to execute, task B takes L
-> >   then calls work_on_cpu() and task B blocks on woc_mutex.
-> > 
-> > - Now function_which_takes_L() runs, and blocks on L
+> > Sure, diff -u below. There are differences but not sure if they are 
+> > abnormal or expected.
 > 
-> Agreed, but now it's a fairly simple case.  Both sides have to take lock L, and both have to call work_on_cpu.
+> Well, they're all in the "extended set", ie not the basic registers that 
+> the PCI layer saves. The PCI layer normally just saves the low 16 dwords, 
+> along with the PCI[EX] capability thing.
 > 
-> Workqueues are more generic and widespread, and an amazing amount of stuff gets called from them.  That's why I felt uncomfortable with removing the one known problematic caller.
+> None of the PCI save/restore routines have ever saved the extended state 
+> (well, "ever" is a strong word - I think we long ago used to pass in how 
+> many bytes we wanted saved, but got rid of it), and it certainly didn't 
+> change with the recent PCI suspend/resume changes.
 > 
+> I get the feeling that it's some odd tg3 issue. That tg3 driver does have 
+> that special
+> 
+>         /* Make sure register accesses (indirect or otherwise)
+>          * will function correctly.
+>          */
+>         pci_write_config_dword(tp->pdev,
+>                                TG3PCI_MISC_HOST_CTRL,
+>                                tp->misc_host_ctrl);
+> 
+> in its own version of setting the power state, and maybe that really 
+> _must_ happen before we actually set the state back to PCI_D0. That sounds 
+> very odd, but hey..
+> 
+> I added Matt Carlson to the cc, since he seems to be the main tg3 
+> authority here.
+> 
+> Matt: the whole discussion is on netdev and the kernel mailing list, but 
+> the short version is that -rc3 suspends and resumes for Parag again 
+> (unlike -rc2), but tg3 doesn't appear to resume properly. The generic PCI 
+> layer now does more at resume time (very early, when interrupts are still 
+> off), see
+> 
+>  - pci_pm_resume_noirq ->
+>      pci_pm_default_resume_noirq() ->
+>        pci_restore_standard_config()
+> 
+> for more of the details (basically it always does that 
+> "pci_restore_state()" and tries to bring the device back to PCI_D0).
 
-hm.  it's a bit of a timebomb.
-
-y'know, the original way in which acpi-cpufreq did this is starting to
-look attractive.  Migrate self to that CPU then just call the dang
-function.  Slow, but no deadlocks (I think)?
-
+Thanks Linus.  I'm looking over the diffs Parag sent and I already see
+some suspicious register settings.  Let me think about this some more
+and then I'll jump into the discussion.
 
