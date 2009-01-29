@@ -1,41 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758014AbZA2BFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757600AbZA2BKC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758014AbZA2BFw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 20:05:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753168AbZA2BFn
+	id S1757600AbZA2BKC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 20:10:02 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZA2BJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 20:05:43 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:45627 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752692AbZA2BFn (ORCPT
+	Wed, 28 Jan 2009 20:09:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50311 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753351AbZA2BJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 20:05:43 -0500
-Date: Wed, 28 Jan 2009 20:05:37 -0500
-From: Kyle McMartin <kyle@infradead.org>
-To: Greg KH <greg@kroah.com>
-Cc: kyle@infradead.org, stable@kernel.org, arjan@linux.intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [stable] [PATCH stable] resources: skip sanity check of busy
-	resources
-Message-ID: <20090129010537.GA11255@bombadil.infradead.org>
-References: <20090127161007.GG5034@bombadil.infradead.org> <20090129004306.GF23732@kroah.com>
+	Wed, 28 Jan 2009 20:09:48 -0500
+Date: Wed, 28 Jan 2009 17:09:14 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Parag Warudkar <parag.lkml@gmail.com>
+cc: netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
+Message-ID: <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090129004306.GF23732@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 04:43:06PM -0800, Greg KH wrote:
-> Thanks for the patch.  Next time, if you could let us know what the git
-> commit id is for the patch in Linus's tree, it would save me having to
-> dig to find it :)
-> 
 
-Doh, sorry, I thought I had passed -x to cherry-pick.
 
-Will remember for next time.
+On Wed, 28 Jan 2009, Parag Warudkar wrote:
+>
+> This is similar to the issue reported back in Jul 2007 - 
+> http://kerneltrap.org/mailarchive/linux-kernel/2007/8/1/154073/thread 
+> which was fixed with a patch to unconditionally save/restore pci config 
+> space - that one is still in tg3.c.
 
-cheers, Kyle
+In fact, the new PCI suspend/restore code should have made that 
+unnecessary, since the PCI layer now makes sure that a save/restore is 
+done even if the driver hadn't done it.
+
+But at the same time, still having the driver do it certainly shouldn't 
+have _hurt_ anything either. But it's quite possible that the tg3 thing is 
+very sensitive to the exact order things happen in - there's a lot of 
+comments about bugs in there ;)
+
+> After resume tg3 complains that no firmware is running and eth0 is 
+> non-existent. Rmmoding and modprobing tg3 again causes some timeouts and 
+> errors from tg3 and the link still doesn't work.
+
+That seems to imply that even the reset failed, which is interesting. 
+
+But it also possibly means that the problem is not necessarily the driver 
+itself, but some cached state that we keep around in "struct pci_dev" even 
+across a module load/unload. 
+
+For example, if we get the "dev->current_state" cache wrong, then we may 
+not actually end up changing it when we should, because we think we 
+already match the target state. I don't _think_ that is it, but that's the 
+kind of thing that could happen.
+
+Can you do a
+
+	lspci -vvxxx -s [tg3-device]
+
+before-and-after suspend? Is there some state that looks like it got 
+corrupted?
+
+			Linus
