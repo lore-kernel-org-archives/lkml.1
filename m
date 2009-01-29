@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756218AbZA2IH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZA2IHr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756218AbZA2IH0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 03:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZA2IHM
+	id S1757413AbZA2IHr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 03:07:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZA2IHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 03:07:12 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:32989 "EHLO mx2.suse.de"
+	Thu, 29 Jan 2009 03:07:35 -0500
+Received: from ns.suse.de ([195.135.220.2]:46193 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751332AbZA2IHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 03:07:10 -0500
-Date: Thu, 29 Jan 2009 09:07:09 +0100
-Message-ID: <s5hr62ma636.wl%tiwai@suse.de>
+	id S1751717AbZA2IHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 03:07:34 -0500
+Date: Thu, 29 Jan 2009 09:07:33 +0100
+Message-ID: <s5hpri6a62i.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] AC97: Print AC97 flags in proc file to make debug it easier
-In-Reply-To: <1233164362-12635-1-git-send-email-cascardo@holoscopio.com>
-References: <1233164362-12635-1-git-send-email-cascardo@holoscopio.com>
+Cc: trivial@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] AC97: Fix function name type in comment s/updat/update/
+In-Reply-To: <1233174006-16210-1-git-send-email-cascardo@holoscopio.com>
+References: <1233174006-16210-1-git-send-email-cascardo@holoscopio.com>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -26,37 +26,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Wed, 28 Jan 2009 15:39:22 -0200,
+At Wed, 28 Jan 2009 18:20:06 -0200,
 Thadeu Lima de Souza Cascardo wrote:
-> 
-> While debugging some code paths in AC97 codec patches and its suspend
-> and resume functions, getting to know the flags has proved useful to
-> follow those code paths.
 > 
 > Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
 
-Applied.  Thanks.
+Applied to sound git tree.
 
 
 Takashi
 
 > ---
->  sound/pci/ac97/ac97_proc.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
+>  sound/pci/ac97/ac97_codec.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/sound/pci/ac97/ac97_proc.c b/sound/pci/ac97/ac97_proc.c
-> index 060ea59..73b17d5 100644
-> --- a/sound/pci/ac97/ac97_proc.c
-> +++ b/sound/pci/ac97/ac97_proc.c
-> @@ -125,6 +125,8 @@ static void snd_ac97_proc_read_main(struct snd_ac97 *ac97, struct snd_info_buffe
->          snd_iprintf(buffer, "PCI Subsys Device: 0x%04x\n\n",
->                      ac97->subsystem_device);
+> diff --git a/sound/pci/ac97/ac97_codec.c b/sound/pci/ac97/ac97_codec.c
+> index e2b843b..27551e9 100644
+> --- a/sound/pci/ac97/ac97_codec.c
+> +++ b/sound/pci/ac97/ac97_codec.c
+> @@ -383,7 +383,7 @@ int snd_ac97_update_bits(struct snd_ac97 *ac97, unsigned short reg, unsigned sho
 >  
-> +	snd_iprintf(buffer, "Flags: %x\n", ac97->flags);
-> +
->  	if ((ac97->ext_id & AC97_EI_REV_MASK) >= AC97_EI_REV_23) {
->  		val = snd_ac97_read(ac97, AC97_INT_PAGING);
->  		snd_ac97_update_bits(ac97, AC97_INT_PAGING,
+>  EXPORT_SYMBOL(snd_ac97_update_bits);
+>  
+> -/* no lock version - see snd_ac97_updat_bits() */
+> +/* no lock version - see snd_ac97_update_bits() */
+>  int snd_ac97_update_bits_nolock(struct snd_ac97 *ac97, unsigned short reg,
+>  				unsigned short mask, unsigned short value)
+>  {
 > -- 
 > 1.6.0.6
 > 
