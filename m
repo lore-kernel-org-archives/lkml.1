@@ -1,111 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbZA2T3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756290AbZA2TdD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbZA2T3X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:29:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZA2T3L
+	id S1756290AbZA2TdD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:33:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753855AbZA2Tcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:29:11 -0500
-Received: from ug-out-1314.google.com ([66.249.92.175]:23050 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbZA2T3J (ORCPT
+	Thu, 29 Jan 2009 14:32:51 -0500
+Received: from qw-out-2122.google.com ([74.125.92.27]:35285 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752026AbZA2Tcu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:29:09 -0500
+	Thu, 29 Jan 2009 14:32:50 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=NHngBZlEil1L0/SoPifcKHx2TrPifH/MJPKOGNssNlQzqsXKGJRlC88scQ4C3Gac+2
-         jFEwAoTiyLcX0rsRtaLWxt+IH4eFWYXUdOZuMYuuwrabWMzAG9HD2RMpHkJYsNu4ya1r
-         s/OrsTP3A9a43kMJVx0zVo7bdtiN4bi9cjup8=
-Date: Thu, 29 Jan 2009 22:31:41 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: akpm@linux-foundation.org, chris@zankel.net
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] xtensa: fix compilation somewhat
-Message-ID: <20090129193141.GA21625@x200.localdomain>
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=S8gGvLJW19FyW70vBaMxfURFc6C7liKyVROCeVgmsLDsaaJthF7p0D18Lmx69lB0YI
+         LyO6P93RxXsSItIgFfmaNx0+ofweLxhsErMZE9vkF9eyWQVB9EeugRa4aWkb1LR7xKwL
+         rSDXZCbT6sylWrColLd2tMKY6Kn2iK4QwtC4o=
+Message-ID: <4982045B.6090206@gmail.com>
+Date: Thu, 29 Jan 2009 11:32:43 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: macbook pro radeon suspend issue
+References: <49812E3B.6050106@gmail.com> <200901291536.37348.rjw@sisk.pl>
+In-Reply-To: <200901291536.37348.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* ->put_char changes
-* HIGHMEM is bogus it seems, there is no kmap_atomic() et al
-* some includes
+Rafael J. Wysocki wrote:
+> On Thursday 29 January 2009, Justin P. Mattock wrote:
+>   
+>> No sure if there is a bug report already or not.
+>> For the macbook pro(ATI chipset) suspend is broken.
+>> As for kernel version: latest git.
+>> Last week(before LCA, and during the week, since being no merges.)
+>> the system would wakeup, show a black screen and sit there. Now
+>> after a couple of merges have been completed The system wakes up,
+>> but instantly reboot's.
+>>
+>> I tried to supply any info(ohci1394_dma) when the wakeup occurs, but had 
+>> no response
+>> for some reason or another.
+>> I can try and do a bisect, the only problem
+>> I have though, is I never labeled good/bad commits(forgot how too);
+>>
+>> In any case If I'm in an urgent need, of having  to suspend
+>> the system(not in anytime soon at the moment),
+>> then Ill just revert kernels to one that I know works.     :^)
+>>     
+>
+> Which is that?
+>
+> Rafael
+>
+>   
+O.K. I ended up grabbing the packages from debian
+to get it working.
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+regards;
 
- arch/xtensa/Kconfig                 |    3 ---
- arch/xtensa/kernel/setup.c          |    2 ++
- arch/xtensa/kernel/traps.c          |    1 +
- arch/xtensa/mm/fault.c              |    1 +
- arch/xtensa/platforms/iss/console.c |    6 ++----
- 5 files changed, 6 insertions(+), 7 deletions(-)
-
---- a/arch/xtensa/Kconfig
-+++ b/arch/xtensa/Kconfig
-@@ -103,9 +103,6 @@ config MATH_EMULATION
- 	help
- 	Can we use information of configuration file?
- 
--config HIGHMEM
--	bool "High memory support"
--
- endmenu
- 
- menu "Platform options"
---- a/arch/xtensa/kernel/setup.c
-+++ b/arch/xtensa/kernel/setup.c
-@@ -44,6 +44,8 @@
- #include <asm/setup.h>
- #include <asm/param.h>
- 
-+#include <platform/hardware.h>
-+
- #if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_DUMMY_CONSOLE)
- struct screen_info screen_info = { 0, 24, 0, 0, 0, 80, 0, 0, 0, 24, 1, 16};
- #endif
---- a/arch/xtensa/kernel/traps.c
-+++ b/arch/xtensa/kernel/traps.c
-@@ -30,6 +30,7 @@
- #include <linux/stringify.h>
- #include <linux/kallsyms.h>
- #include <linux/delay.h>
-+#include <linux/hardirq.h>
- 
- #include <asm/ptrace.h>
- #include <asm/timex.h>
---- a/arch/xtensa/mm/fault.c
-+++ b/arch/xtensa/mm/fault.c
-@@ -14,6 +14,7 @@
- 
- #include <linux/mm.h>
- #include <linux/module.h>
-+#include <linux/hardirq.h>
- #include <asm/mmu_context.h>
- #include <asm/cacheflush.h>
- #include <asm/hardirq.h>
---- a/arch/xtensa/platforms/iss/console.c
-+++ b/arch/xtensa/platforms/iss/console.c
-@@ -140,16 +140,14 @@ static void rs_poll(unsigned long priv)
- }
- 
- 
--static void rs_put_char(struct tty_struct *tty, unsigned char ch)
-+static int rs_put_char(struct tty_struct *tty, unsigned char ch)
- {
- 	char buf[2];
- 
--	if (!tty)
--		return;
--
- 	buf[0] = ch;
- 	buf[1] = '\0';		/* Is this NULL necessary? */
- 	__simc (SYS_write, 1, (unsigned long) buf, 1, 0, 0);
-+	return 1;
- }
- 
- static void rs_flush_chars(struct tty_struct *tty)
+Justin P. Mattock
