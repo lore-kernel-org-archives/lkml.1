@@ -1,91 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbZA2PH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbZA2PIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086AbZA2PH2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 10:07:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbZA2PHR
+	id S1755761AbZA2PIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 10:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbZA2PIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 10:07:17 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55653 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753854AbZA2PHP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 10:07:15 -0500
-Date: Thu, 29 Jan 2009 16:07:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
+	Thu, 29 Jan 2009 10:08:05 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:45982 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754818AbZA2PIE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 10:08:04 -0500
+Date: Thu, 29 Jan 2009 10:08:01 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Peter Zijlstra <peterz@infradead.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
-Message-ID: <20090129150701.GE6512@elte.hu>
-References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <200901271628.54037.rjw@sisk.pl> <20090127154946.GA28209@elte.hu> <200901272218.39608.rjw@sisk.pl>
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>, jens.axboe@oracle.com
+Subject: [PATCH -v2] use per cpu data for single cpu ipi calls
+In-Reply-To: <1233218954.7835.11.camel@twins>
+Message-ID: <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com>
+References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>  <200901290955.38940.rusty@rustcorp.com.au>  <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com>  <20090128173039.cbc29e81.akpm@linux-foundation.org>
+ <1233218954.7835.11.camel@twins>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901272218.39608.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+The smp_call_function can be passed a wait parameter telling it to
+wait for all the functions running on other CPUs to complete before
+returning, or to return without waiting. Unfortunately, this is
+currently just a suggestion and not manditory. That is, the
+smp_call_function can decide not to return and wait instead.
 
-> On Tuesday 27 January 2009, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > > In fact whatever check you put in it's _always_ going to be 
-> > > > fundamentally more fragile than direct instrumentation: you cannot 
-> > > > possibly check all possible places that enable interrupts. (they could 
-> > > > be disabling interrupts as a _restore_irqs() sequence for example)
-> > > 
-> > > In this particular case, I'm not really interested in that.  What I'm 
-> > > interested in is which driver's ->suspend_late() or ->resume_early() (or 
-> > > the equivalents for sysdevs) has enabled interrupts, which is quite easy 
-> > > to check directly.
-> > 
-> > But this is exactly what it does - without any need for debug checks 
-> > spread around!
-> > 
-> > You'll get a _full stack dump_ from the very driver that is enabling 
-> > interrupts! You dont get a trace - you get a stack dump of the very place 
-> > that is buggy. It does not get any better than that.
-> 
-> I'm not going to argue.
-> 
-> Nevertheless, IMO something like the patch below should be sufficient to catch
-> these bugs.
-> 
-> Thanks,
-> Rafael
-> 
-> 
-> ---
->  drivers/base/power/main.c |   12 ++++++++++++
->  drivers/base/sys.c        |   21 ++++++++++++++++-----
->  include/linux/pm.h        |   18 ++++++++++++++++++
->  3 files changed, 46 insertions(+), 5 deletions(-)
+The reason for this is because it uses kmalloc to allocate storage
+to send to the called CPU and that CPU will free it when it is done.
+But if we fail to allocate the storage, the stack is used instead.
+This means we must wait for the called CPU to finish before
+continuing.
 
-hm, so now you sprinkle debug checks all around the code, instead of 
-putting in a single pair of:
+Unfortunatly, some callers do no abide by this hint and act as if
+the non-wait option is mandatory. The MTRR code for instance will
+deadlock if the smp_call_function is set to wait. This is because
+the smp_call_function will wait for the other CPUs to finish their
+called functions, but those functions are waiting on the caller to
+continue.
 
-    force_irqs_off_start();
-    ...
-    force_irqs_off_end();
+This patch changes the generic smp_call_function code to use per cpu
+variables if the allocation of the data fails for a single CPU call. The
+smp_call_function_many will fall back to the smp_call_function_single
+if it fails its alloc. The smp_call_function_single is modified
+to not force the wait state.
 
-which would catch everything that your checks would catch - and it would 
-catch more. In what way is your approach better?
+Since we now are using a single data per cpu we must synchronize the
+callers to prevent a second caller modifying the data before the
+first called IPI functions complete. To do so, I added a flag to
+the call_single_data called CSD_FLAG_LOCK. When the single CPU is
+called (which can be called when a many call fails an alloc), we
+set the LOCK bit on this per cpu data. When the caller finishes
+it clears the LOCK bit.
 
-	Ingo
+The caller must wait till the LOCK bit is cleared before setting
+it. When it is cleared, there is no IPI function using it.
+A spinlock is used to synchronize the setting of the bit between
+callers. Since only one callee can be called at a time, and it
+is the only thing to clear it, the IPI does not need to use
+any locking.
+
+ [
+   changes for v2:
+
+   -- kept kmalloc and only use per cpu if kmalloc fails.
+          (Requested by Peter Zijlstra)
+
+   -- added per cpu spinlocks
+          (Requested by Andrew Morton and Peter Zijlstra)
+ ]
+
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+diff --git a/kernel/smp.c b/kernel/smp.c
+index 5cfa0e5..9bce851 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -18,6 +18,7 @@ __cacheline_aligned_in_smp DEFINE_SPINLOCK(call_function_lock);
+ enum {
+ 	CSD_FLAG_WAIT		= 0x01,
+ 	CSD_FLAG_ALLOC		= 0x02,
++	CSD_FLAG_LOCK		= 0x04,
+ };
+ 
+ struct call_function_data {
+@@ -186,6 +187,9 @@ void generic_smp_call_function_single_interrupt(void)
+ 			if (data_flags & CSD_FLAG_WAIT) {
+ 				smp_wmb();
+ 				data->flags &= ~CSD_FLAG_WAIT;
++			} else if (data_flags & CSD_FLAG_LOCK) {
++				smp_wmb();
++				data->flags &= ~CSD_FLAG_LOCK;
+ 			} else if (data_flags & CSD_FLAG_ALLOC)
+ 				kfree(data);
+ 		}
+@@ -196,6 +200,10 @@ void generic_smp_call_function_single_interrupt(void)
+ 	}
+ }
+ 
++static DEFINE_PER_CPU(struct call_single_data, csd_data);
++static DEFINE_PER_CPU(spinlock_t, csd_data_lock) =
++	__SPIN_LOCK_UNLOCKED(csd_lock);
++
+ /*
+  * smp_call_function_single - Run a function on a specific CPU
+  * @func: The function to run. This must be fast and non-blocking.
+@@ -224,14 +232,41 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 		func(info);
+ 		local_irq_restore(flags);
+ 	} else if ((unsigned)cpu < nr_cpu_ids && cpu_online(cpu)) {
+-		struct call_single_data *data = NULL;
++		struct call_single_data *data;
+ 
+ 		if (!wait) {
++			/*
++			 * We are calling a function on a single CPU
++			 * and we are not going to wait for it to finish.
++			 * We first try to allocate the data, but if we
++			 * fail, we fall back to use a per cpu data to pass
++			 * the information to that CPU. Since all callers
++			 * of this code will use the same data, we must
++			 * synchronize the callers to prevent a new caller
++			 * from corrupting the data before the callee
++			 * can access it.
++			 *
++			 * The CSD_FLAG_LOCK is used to let us know when
++			 * the IPI handler is done with the data.
++			 * The first caller will set it, and the callee
++			 * will clear it. The next caller must wait for
++			 * it to clear before we set it again. This
++			 * will make sure the callee is done with the
++			 * data before a new caller will use it.
++			 * We use spinlocks to manage the callers.
++			 */
+ 			data = kmalloc(sizeof(*data), GFP_ATOMIC);
+ 			if (data)
+ 				data->flags = CSD_FLAG_ALLOC;
+-		}
+-		if (!data) {
++			else {
++				data = &per_cpu(csd_data, cpu);
++				spin_lock(&per_cpu(csd_data_lock, cpu));
++				while (data->flags & CSD_FLAG_LOCK)
++					cpu_relax();
++				data->flags = CSD_FLAG_LOCK;
++				spin_unlock(&per_cpu(csd_data_lock, cpu));
++			}
++		} else {
+ 			data = &d;
+ 			data->flags = CSD_FLAG_WAIT;
+ 		}
+
