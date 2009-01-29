@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbZA2Th2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbZA2Tkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757581AbZA2Th2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:37:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZA2ThN
+	id S1758154AbZA2Tkj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:40:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbZA2Tk1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:37:13 -0500
-Received: from relay3.sgi.com ([192.48.171.31]:51172 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751552AbZA2ThM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:37:12 -0500
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: UV cleanup
-Cc: mingo@elte.hu, tj@kernel.org
-Message-Id: <E1LScjM-00073R-Cu@eag09.americas.sgi.com>
-From: Cliff Wickman <cpw@sgi.com>
-Date: Thu, 29 Jan 2009 13:39:16 -0600
+	Thu, 29 Jan 2009 14:40:27 -0500
+Received: from n1b.bullet.mail.ac4.yahoo.com ([76.13.13.71]:21657 "HELO
+	n1b.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752507AbZA2Tk0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 14:40:26 -0500
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 449436.99435.bm@omp119.mail.ac4.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ymail.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=wC+xHx2Wp2sqTw3jCMTp8MIeEsXI4fNXWM9y7doP9OdVGo0plktAeBzBXEq1aptG6qHqsGaJNhyXEXsFbOBikQLNHXRJYrtkxGG7Ku7pmLbzl9xzmqDJ5wmSVyGoB/V8fWUHUwCcqHiUkH10VbAW4Mw/B+MES6nWOv+YgFbOTy4=;
+X-YMail-OSG: u1SgbJIVM1m8A.bVr8qT89Mw.l0gDRm.FqRB2wU9krB3ul9wkfp0yNKIItJpnXAZy6puIh.gOOLbIVFne36FKIgAsatG8ar9SiF8ahdaW9v1t9jUvU0veclv41kuJFrrnK8EcWMD0rgN.Q9.eLAblFfwiszAW956MF96GctxAJ2j0oqen0N2IfbbXz_g0pu71m0fJUpMR2udpsiVhXowfGRqWIIzRe8SHONFojXR
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Thu, 29 Jan 2009 11:40:25 -0800 (PST)
+From: Xiaoning Ding <dingxn@ymail.com>
+Reply-To: dingxn@ymail.com
+Subject: Re: a question about p4_clockmod module on Xeon quad core processors
+To: Michael Tokarev <mjt@tls.msk.ru>, Dave Jones <davej@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090129172406.GB14096@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <279321.76517.qm@web59906.mail.ac4.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--- On Thu, 1/29/09, Dave Jones <davej@redhat.com> wrote:
+
+> From: Dave Jones <davej@redhat.com>
+> Subject: Re: a question about p4_clockmod module on Xeon quad core processors
+> To: "Michael Tokarev" <mjt@tls.msk.ru>
+> Cc: "Xiaoning Ding" <dingxn@ymail.com>, linux-kernel@vger.kernel.org
+> Date: Thursday, January 29, 2009, 5:24 PM
+> On Thu, Jan 29, 2009 at 03:27:24PM +0300, Michael Tokarev
+> wrote:
+> 
+>  > > p4-clockmod doesn't change the processor
+> frequency.
+>  > 
+>  > Hmm..  But what it really does, then?
+> 
+> it modulates the clock so the CPU isn't always availble
+> for doing work.
+> 
+>  > I used it one one machine which had a flaky CPU
+> cooler,
+>  > to reduce power consumption during hot summer days.
+> 
+> it reduces the amount of heat generated, by making jobs
+> take longer to finish. This comes at a cost of the CPU not
+> being able to enter lower C states for longer periods of
+> time,
+> so you may end up actually using *more* power.
+> 
+>  > It worked, and reportedly the frequency varied from
+>  > 200MHz to the max of 2.4GHz (it's a P4 Xeon).
+> 
+> The CPU was always at 2.4GHz, even if it said
+> '200MHz'.
+> It was just only doing work once in every 12 clocks.
+> 
+> 	Dave
+> 
+> -- 
+> http://www.codemonkey.org.uk
+> --
+> To unsubscribe from this list: send the line
+> "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at 
+> http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+Thanks for the explanation. So the conclusion is that ACPI-cpufreq can reduce power consumption by lowering cpu frequencies, and p4-clockmod can hardly save power because CPU frequences are not changed.
+
+My experiments do not consider power consumption. It only requires to slow down the speed of some cores by either reducing frequencies or clock modulation. In such case, p4-clockmod is still a good choice for me. Can anyone give me some hints on whether p4-clockmod works on Xeon quad-core processors, and how to get it work?
+
+Thanks!
+
+Xiaoning
 
 
-From: Cliff Wickman <cpw@sgi.com>
+      
 
-This patch tweaks a couple things:
-
-- uv_flush_tlb_others()
-  the WARN_ON(!in_atomic()); fails if CONFIG_PREEMPT is not enabled
-
-  The #ifdef may not be the right fix. The fix is probably in the
-  in_atomic macro, but I'm not sure what in_atomic() should return
-  if CONFIG_PREEMPT is turned off.  I tested making it return 1 in that
-  case, but that yielded tons of warnings.
-
-  The simpler fix for tlb_uv.c would be to just drop the WARN_ON.
-
-- uv_flush_send_and_wait() should return a pointer if the broadcast
-  remote tlb shootdown requests fail. That causes the conventional IPI
-  method of shootdown to be used.
-
-Diffed against 2.6.29-rc2
-  (Ingo's tree)
-
-Signed-off-by: Cliff Wickman <cpw@sgi.com>
----
- arch/x86/kernel/tlb_uv.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
-
-Index: linux/arch/x86/kernel/tlb_uv.c
-===================================================================
---- linux.orig/arch/x86/kernel/tlb_uv.c
-+++ linux/arch/x86/kernel/tlb_uv.c
-@@ -259,7 +259,7 @@ const struct cpumask *uv_flush_send_and_
- 		 * the cpu's, all of which are still in the mask.
- 		 */
- 		__get_cpu_var(ptcstats).ptc_i++;
--		return 0;
-+		return flush_mask;
- 	}
- 
- 	/*
-@@ -316,7 +316,9 @@ const struct cpumask *uv_flush_tlb_other
- 	int locals = 0;
- 	struct bau_desc *bau_desc;
- 
-+#ifdef CONFIG_PREEMPT
- 	WARN_ON(!in_atomic());
-+#endif
- 
- 	cpumask_andnot(flush_mask, cpumask, cpumask_of(cpu));
- 
