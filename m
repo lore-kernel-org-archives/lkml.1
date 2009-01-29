@@ -1,78 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbZA2Vhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbZA2Voa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759470AbZA2Vhf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 16:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758570AbZA2Vgn
+	id S1758522AbZA2Voa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 16:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZA2VoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 16:36:43 -0500
-Received: from gw.goop.org ([64.81.55.164]:59827 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756861AbZA2Vgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 16:36:42 -0500
-Message-ID: <49822168.4020108@goop.org>
-Date: Thu, 29 Jan 2009 13:36:40 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 29 Jan 2009 16:44:20 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:63865 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751348AbZA2VoT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 16:44:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=quz9lDROP83Ib2mAorMI1vLm7ugMh7ryCYDTDQopnfryBCEzrc7mIUCPw1mWL5LVhA
+         0TBQLyrkJYIz8NM5kXMcyXbm1MJtZ46reNzhhfWmjBOU1FZWb2VX48VxSINWOrbjpr15
+         ENHORsi8BvhArZWpCL3nPX9xcBXw7LYtDBWWw=
 MIME-Version: 1.0
-To: Brian Gerst <brgerst@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] xen: setup percpu data pointers
-References: <49818842.5020004@goop.org> <1233236625-17928-1-git-send-email-brgerst@gmail.com>
-In-Reply-To: <1233236625-17928-1-git-send-email-brgerst@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Reply-To: eranian@gmail.com
+In-Reply-To: <49820B03.6010807@linux.vnet.ibm.com>
+References: <20090121185021.GA8852@elte.hu>
+	 <4981102C.2000400@linux.vnet.ibm.com>
+	 <7c86c4470901290432h77d479c9k160a7b793b2812bb@mail.gmail.com>
+	 <49820B03.6010807@linux.vnet.ibm.com>
+Date: Thu, 29 Jan 2009 22:44:17 +0100
+Message-ID: <7c86c4470901291344xbeb1b62scfa979cbd1549981@mail.gmail.com>
+Subject: Re: [announce] Performance Counters for Linux, v6
+From: stephane eranian <eranian@googlemail.com>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>,
+       "perfmon2-devel@lists.sourceforge.net" 
+	<perfmon2-devel@lists.sourceforge.net>,
+       Papi <ptools-perfapi@cs.utk.edu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to access percpu data fairly early, so set up the percpu
-registers as soon as possible.  We only need to load the appropriate
-segment register.  We already have a GDT, but its hard to change it
-early because we need to manipulate the pagetable to do so, and that
-hasn't been set up yet.
+On Thu, Jan 29, 2009 at 9:01 PM, Corey Ashford
+<cjashfor@linux.vnet.ibm.com> wrote:
+>>>
+>>> I'm not sure if this is the right place to propose such a thing, but I
+>>> think
+>>> it would be very valuable to have a standardized user-side library to
+>>> accompany this addition to the kernel.
+>>>
+>>> In particular, as a starting place for the discussion, I'd like to see
+>>> functions in it that are very similar to a subset of what is currently in
+>>> libpfm.  Specifically, I'd like to see the following functions (with the
+>>> names changed to pcl_* perhaps):
+>>>
+>>> extern pfm_err_t pfm_find_event(const char *str, unsigned int *idx);
+>>> extern pfm_err_t pfm_find_event_bycode(int code, unsigned int *idx);
+>>> extern pfm_err_t pfm_find_event_bycode_next(int code, unsigned int start,
+>>>                                           unsigned int *next);
+>>> extern pfm_err_t pfm_find_event_mask(unsigned int event_idx, const char
+>>> *str,
+>>>                                    unsigned int *mask_idx);
+>>> extern pfm_err_t pfm_find_full_event(const char *str, pfmlib_event_t *e);
+>>>
+>>> extern pfm_err_t pfm_get_max_event_name_len(size_t *len);
+>>>
+>>> extern pfm_err_t pfm_get_num_events(unsigned int *count);
+>>> extern pfm_err_t pfm_get_num_event_masks(unsigned int event_idx,
+>>>                                        unsigned int *count);
+>>> extern pfm_err_t pfm_get_event_name(unsigned int idx, char *name,
+>>>                                   size_t maxlen);
+>>> extern pfm_err_t pfm_get_full_event_name(pfmlib_event_t *e, char *name,
+>>>                                        size_t maxlen);
+>>> extern pfm_err_t pfm_get_event_code(unsigned int idx, int *code);
+>>> extern pfm_err_t pfm_get_event_mask_code(unsigned int idx,
+>>>                                        unsigned int mask_idx,
+>>>                                        unsigned int *code);
+>>> extern pfm_err_t pfm_get_event_description(unsigned int idx, char **str);
+>>> extern pfm_err_t pfm_get_event_code_counter(unsigned int idx, unsigned
+>>> int
+>>> cnt,
+>>>                                           int *code);
+>>> extern pfm_err_t pfm_get_event_mask_name(unsigned int event_idx,
+>>>                                        unsigned int mask_idx,
+>>>                                        char *name, size_t maxlen);
+>>> extern pfm_err_t pfm_get_event_mask_description(unsigned int event_idx,
+>>>                                               unsigned int mask_idx,
+>>>                                               char **desc);
+>>>
+>>>
+>>> Now, since it's not clear right now how unit masks are going to be
+>>> handled
+>>> in your proposal, I'm not sure the that *_event_mask_* functions are
+>>> applicable, but I think something that fills that function will be
+>>> needed.
+>>>
+>>> Architectures that have need for additional functionality should be free
+>>> to
+>>> add arch-specific functions.
+>>>
+>>> Full descriptions of these functions can be found in the man pages of the
+>>> libpfm documentation.
+>>>
+>>> Any thoughts on this?  Do you already have a us
+>>
+>> er library structure in mind?
+>> Yes, I did give some thoughts to all of this. In fact, I have been
+>> playing a bit with
+>> libpfm and the LPC proposal.
+>>
+>> I think, given that LPC is dealing with event -> counter assignment in
+>> the kernel, libpfm
+>> does not have to do it. All it needs to do is event:attributes ->
+>> value, and that value is
+>> then passed to the kernel in raw mode.
+>>
+>> Event attributes includes on x86, for instance, the edge, invert,
+>> counter-mask, plm, field.
+>> I think we could do something more generic than what is currently
+>> there. That would not
+>> require PMU specific data structures for attributes. Just pass
+>> everything into a string.
+>>
+>> To that extent, I have been experimenting with something along those
+>> lines:
+>>
+>>    int pfm_get_event_encoding(char *event_str, uint64_t **values, int
+>> *count);
+>>
+>> events are encoded as follows:
+>>
+>>
+>> event_name:[unit_mask1:unit_mask2:...:unit_maskn][::A1=V1:A2=V2:..:An=Vn]
+>>
+>> Attribute names and values depend on each PMU model. Attributes names
+>> are strings.
+>> Values can have any type.
+>>
+>> For X86, most attributes would be identical, same thing on Itanium
+>> because they are
+>> architected.
+>>
+>> Some PMU models may need more than one 64-bit value to configure one
+>> event, That is
+>> is why there is vector and a count. Libpfm should not be concerned
+>> with how those values
+>> are encoded and passed to the kernel. It should be concerned with the
+>> event -> value
+>> as described in the PMU documentation.
+>>
+>> Given that LPC manages events independently of each other, libpfm does
+>> not reallly need
+>> to process multiple events at a time to get a global view of what is
+>> being measured.
+>>
+>> Here is an example:
+>>
+>> $ self inst_retired:any_p::i=1:c=1:u=1:k=1
+>> [0x1d300c0 event_sel=0xc0 umask=0x0 os=1 usr=1 en=1 int=1 inv=1 edge=0
+>> cnt_mask=1] INST_RETIRED
+>
+> This looks encouraging!
+>
+> I assume the library would still retain the functions that allow us to
+> iterate through the available events, and obtain text description of events.
+>  Would it make sense to have similar functions to obtain the available unit
+> masks and attributes for a particular event?
+>
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/enlighten.c |    3 +++
- arch/x86/xen/smp.c       |    5 ++++-
- 2 files changed, 7 insertions(+), 1 deletion(-)
+Yes, that would most likely stay there, although, I think we could
+simplify a bit.
 
-===================================================================
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1646,6 +1640,9 @@
- 	have_vcpu_info_placement = 0;
- #endif
- 
-+	/* setup percpu state */
-+	load_percpu_segment(0);
-+
- 	xen_smp_init();
- 
- 	/* Get mfn list */
-===================================================================
---- a/arch/x86/xen/smp.c
-+++ b/arch/x86/xen/smp.c
-@@ -170,7 +170,8 @@
- 
- 	/* We've switched to the "real" per-cpu gdt, so make sure the
- 	   old memory can be recycled */
--	make_lowmem_page_readwrite(&per_cpu_var(gdt_page));
-+	make_lowmem_page_readwrite(__per_cpu_load +
-+				   (unsigned long)&per_cpu_var(gdt_page));
- 
- 	xen_setup_vcpu_info_placement();
- }
-@@ -235,6 +236,8 @@
- 	ctxt->user_regs.ss = __KERNEL_DS;
- #ifdef CONFIG_X86_32
- 	ctxt->user_regs.fs = __KERNEL_PERCPU;
-+#else
-+	ctxt->gs_base_kernel = per_cpu_offset(cpu);
- #endif
- 	ctxt->user_regs.eip = (unsigned long)cpu_bringup_and_idle;
- 	ctxt->user_regs.eflags = 0x1000; /* IOPL_RING1 */
+> For debugging purposes at least, it might make sense to have a function that
+> does the inverse of pfm_get_event_encoding as well.
+>
+Yes, we could provide the opposite function.
 
-
+I also believe this same scheme could be used to describe non-event features,
+such as IBS, LBR, Opcode matcher.
