@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754321AbZA2DWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757724AbZA2DYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754321AbZA2DWQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 22:22:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753332AbZA2DWA
+	id S1757724AbZA2DYu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 22:24:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZA2DYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 22:22:00 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:58340 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753071AbZA2DV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 22:21:59 -0500
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH revised] ieee1394: sbp2: add workarounds for 2nd and 3rd generation iPods
-Date: Wed, 28 Jan 2009 22:21:50 -0500
-User-Agent: KMail/1.10.4 (Linux/2.6.27.12-170.2.5.fc10.x86_64; KDE/4.1.4; x86_64; ; )
-Cc: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de> <tkrat.a24a8ff6f4c5711f@s5r6.in-berlin.de> <tkrat.9a5f1819d300396d@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.9a5f1819d300396d@s5r6.in-berlin.de>
+	Wed, 28 Jan 2009 22:24:41 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:38022 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbZA2DYk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 22:24:40 -0500
+Message-ID: <49812168.7070708@oracle.com>
+Date: Wed, 28 Jan 2009 19:24:24 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mmotm] fix more cpuset breakage
+References: <200901290142.n0T1gq02009439@imap1.linux-foundation.org>
+In-Reply-To: <200901290142.n0T1gq02009439@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901282221.50245.jarod@redhat.com>
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4981216B.01A2:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 January 2009 18:13:20 Stefan Richter wrote:
-> as per https://bugs.launchpad.net/bugs/294391.  These got one sample of
-> each iPod generation going.  However there still occurred I/O stalls
-> with the 3rd generation iPod which remain undiagnosed at the time of
-> this writing.
->
-> Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Same workarounds do the trick on the new stack, should be good to go
-here too.
+Not everyone uses cpusets, so fix the b0rked build (part 2):
 
-Acked-by: Jarod Wilson <jarod@redhat.com>
+kernel/kthread.c:243: error: 'struct task_struct' has no member named 'mems_allowed'
 
--- 
-Jarod Wilson
-jarod@redhat.com
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ kernel/kthread.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
+--- mmotm-2009-0128-1742.orig/kernel/kthread.c
++++ mmotm-2009-0128-1742/kernel/kthread.c
+@@ -240,7 +240,9 @@ int kthreadd(void *unused)
+ 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+ 	set_cpus_allowed_ptr(tsk, CPU_MASK_ALL_PTR);
+ 
++#ifdef CONFIG_CPUSETS
+ 	current->mems_allowed = node_possible_map;
++#endif
+ 	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+ 
+ 	for (;;) {
