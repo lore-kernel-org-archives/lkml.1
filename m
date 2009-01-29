@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759868AbZA2XWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760167AbZA2XWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759868AbZA2XWj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:22:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZA2XW0
+	id S1760167AbZA2XWy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:22:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbZA2XW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:22:26 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:51612 "EHLO
-	VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751775AbZA2XWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:22:25 -0500
-X-BigFish: VS-49(z21eWz1432R98dR936eQ1805M103dK7cf0izz10c0jzzz2dh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-Message-ID: <49823A13.50703@am.sony.com>
-Date: Thu, 29 Jan 2009 15:21:55 -0800
-From: Frank Rowand <frank.rowand@am.sony.com>
-Reply-To: frank.rowand@am.sony.com
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 29 Jan 2009 18:22:28 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47165 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751850AbZA2XW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 18:22:27 -0500
+Date: Fri, 30 Jan 2009 00:22:07 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: allow 8 more cpus could be used
+Message-ID: <20090129232207.GC30601@elte.hu>
+References: <49822B1D.9070708@kernel.org> <20090129224236.GD1465@elte.hu> <49823166.4010702@oracle.com> <20090129231259.GB29611@elte.hu> <49823869.4010406@oracle.com>
 MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: avorontsov@ru.mvista.com, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, linux-rt-users@vger.kernel.org
-Subject: Re: 2.6.28-rt on PowerPC
-References: <20090129213429.GA29014@oksana.dev.rtsoft.ru> <1233270043.3833.57.camel@localhost.localdomain>
-In-Reply-To: <1233270043.3833.57.camel@localhost.localdomain>
-Content-Type: text/plain; charset="ISO-8859-1"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 29 Jan 2009 23:22:07.0918 (UTC) FILETIME=[675DCCE0:01C98268]
-X-SEL-encryption-scan: scanned
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49823869.4010406@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Fri, 2009-01-30 at 00:34 +0300, Anton Vorontsov wrote:
->> Hi Steven,
->>
->> I know 2.6.28-rt isn't yet ready, but I could not resist to try
->> it anyway. ;-)
->>
->> Here are few issues and ways to solve them:
->>
->> Currently the -rt tree doesn't link for arch/powerpc:
->>
->>   LD      .tmp_vmlinux1
->>   arch/powerpc/kernel/built-in.o: In function `show_interrupts':
->>   (.text+0x27bc): undefined reference to `__call_bad_lock_func'
->>   arch/powerpc/kernel/built-in.o: In function `show_interrupts':
->>   (.text+0x28b0): undefined reference to `__call_bad_lock_func'
->>   make: *** [.tmp_vmlinux1] Error 1
+
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+
+> Ingo Molnar wrote:
+> > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > 
+> >> Ingo Molnar wrote:
+> >>> * Yinghai Lu <yinghai@kernel.org> wrote:
+> >>>
+> >>>> Impact: fix left out MARCO
+> >>>>
+> >>>> X86_PC will be always enabled. so need to check if we have bigsmp 
+> >>>> support built in before cut off more than 8 cpus.
+> >>> ah, that's a leftover reference to X86_PC. It can now be removed, together 
+> >>> with the Kconfig X86_PC option.
+> >>>
+> >>>> -#if defined(CONFIG_X86_PC) && defined(CONFIG_X86_32)
+> >>>> +#if defined(CONFIG_X86_PC) && !defined(CONFIG_X86_BIGSMP)
+> >>>>  	if (def_to_bigsmp && nr_cpu_ids > 8) {
+> >>>>  		unsigned int cpu;
+> >>>>  		unsigned nr;
+> >>> Could you please send a patch that removes both X86_PC and X86_BIGSMP - 
+> >>> and removes the above cutoff code too, so that it will be built-in all the 
+> >>> time?
+> >> and at what cost, please?
+> > 
+> > the size difference between a bigsmp and a normal-smp x86 defconfig kernel 
+> > is 0.011%. Zero difference on a UP kernel. (And UP is what most of the 
+> > ultra-embedded systems are using)
 > 
-> Thanks! I have not yet had the chance to apply any arch patches yet. I
-> do plan on doing so after getting the code mostly working on x86.
+> That's static size?  how about cpu and apic table space?
 
-Your email can at an opportune time for me...  I was starting to try
-2.6.28-rt on ARM and quickly came to the conclusion that the arch
-patches weren't the focus yet.  But I'm currently side-tracked with
-getting my board to even boot a vanilla 2.6.28 kernel first.  Do
-you expect to get to the arches in the next week or two?  If not,
-I may head down that path for ARM myself.
+What do you mean? What is your point and what is your exact question?
 
-Thanks!
-
--Frank Rowand
-
-
+	Ingo
