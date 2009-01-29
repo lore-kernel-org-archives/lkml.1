@@ -1,58 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752860AbZA2JHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbZA2JKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752860AbZA2JHr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 04:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZA2JHb
+	id S1756297AbZA2JKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 04:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751621AbZA2JKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 04:07:31 -0500
-Received: from viefep13-int.chello.at ([62.179.121.33]:54176 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751625AbZA2JH3 (ORCPT
+	Thu, 29 Jan 2009 04:10:24 -0500
+Received: from edna.telenet-ops.be ([195.130.132.58]:54196 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752339AbZA2JKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 04:07:29 -0500
-X-SourceIP: 213.46.9.244
-Subject: Re: [Bugme-new] [Bug 12562] New: High overhead while switching or
- synchronizing threads on different cores
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Thomas Pilarski <thomas.pi@arcor.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mike Galbraith <efault@gmx.de>,
-       Gregory Haskins <ghaskins@novell.com>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1233181507.6988.14.camel@bugs-laptop>
-References: <bug-12562-10286@http.bugzilla.kernel.org/>
-	 <20090128125604.94ed3fe0.akpm@linux-foundation.org>
-	 <1233181507.6988.14.camel@bugs-laptop>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 10:07:28 +0100
-Message-Id: <1233220048.7835.19.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 04:10:21 -0500
+Date: Thu, 29 Jan 2009 10:10:11 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+cc: Linux Frame Buffer Device Development 
+	<linux-fbdev-devel@lists.sourceforge.net>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       linux-pm@lists.linux-foundation.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: [Linux-fbdev-devel] [2.6.29-rc2] fb_mmap: circular locking
+ dependency on hibernation
+In-Reply-To: <200901272137.57757.arvidjaar@mail.ru>
+Message-ID: <Pine.LNX.4.64.0901291009220.13600@anakin>
+References: <200901272137.57757.arvidjaar@mail.ru>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-01-28 at 23:25 +0100, Thomas Pilarski wrote:
-> Am Mittwoch, den 28.01.2009, 12:56 -0800 schrieb Andrew Morton: 
-> 
-> > (There's testcase code in the bugzilla report)
-> > 
-> > (Seems to be a regression)
-> 
-> There is a regression, because of the improved cpu switching. The
-> problem exists in every kernel. 
+On Tue, 27 Jan 2009, Andrey Borzenkov wrote:
+> I do not know if this is new; I usually do not hibernate at all and was 
+> testing another driver actually. I do not remember such issues in 2.6.28 
+> though. Dmesg follows; config attached.
 
-This is a contradiction in terms - twice.
+> [11715.652498] =======================================================
+> [11715.652520] [ INFO: possible circular locking dependency detected ]
+> [11715.652534] 2.6.29-rc2-1avb #11
+> [11715.652541] -------------------------------------------------------
+> [11715.652550] s2disk/25519 is trying to acquire lock:
+> [11715.652562]  (&fb_info->lock){--..}, at: [<c0223017>] fb_mmap+0x97/0x170
+> [11715.652623] 
+> [11715.652625] but task is already holding lock:
+> [11715.652632]  (&mm->mmap_sem){----}, at: [<c010639e>] sys_mmap2+0x8e/0xc0
+> [11715.652669] 
+> [11715.652671] which lock already depends on the new lock.
+> [11715.652675] 
+> [11715.652681] 
+> [11715.652683] the existing dependency chain (in reverse order) is:
+> [11715.652691] 
+> [11715.652693] -> #1 (&mm->mmap_sem){----}:
+> [11715.652707]        [<c0144ecf>] __lock_acquire+0x129f/0x1930
+> [11715.652730]        [<c01455bc>] lock_acquire+0x5c/0x80
+> [11715.652742]        [<c0181e57>] might_fault+0x77/0xa0
+> [11715.652764]        [<c0209325>] copy_from_user+0x35/0x130
+> [11715.652782]        [<c0223ef5>] fb_ioctl+0x1d5/0x3f0
+> [11715.652797]        [<c01a51d0>] vfs_ioctl+0x20/0x80
+> [11715.652832]        [<c01a53e2>] do_vfs_ioctl+0x72/0x570
+> [11715.652845]        [<c01a5919>] sys_ioctl+0x39/0x70
+> [11715.652857]        [<c0103371>] sysenter_do_call+0x12/0x31
+> [11715.652870]        [<ffffffff>] 0xffffffff
+> [11715.652973] 
+> [11715.652975] -> #0 (&fb_info->lock){--..}:
+> [11715.652988]        [<c014503c>] __lock_acquire+0x140c/0x1930
+> [11715.653000]        [<c01455bc>] lock_acquire+0x5c/0x80
+> [11715.653011]        [<c030761a>] mutex_lock_nested+0xba/0x2f0
+> [11715.653032]        [<c0223017>] fb_mmap+0x97/0x170
+> [11715.653044]        [<c0188996>] mmap_region+0x1d6/0x530
+> [11715.653067]        [<c0188ec3>] do_mmap_pgoff+0x1d3/0x2f0
+> [11715.653079]        [<c01063bd>] sys_mmap2+0xad/0xc0
+> [11715.653091]        [<c0103371>] sysenter_do_call+0x12/0x31
+> [11715.653102]        [<ffffffff>] 0xffffffff
+> [11715.653116] 
+> [11715.653119] other info that might help us debug this:
+> [11715.653122] 
+> [11715.653130] 1 lock held by s2disk/25519:
+> [11715.653137]  #0:  (&mm->mmap_sem){----}, at: [<c010639e>] 
+> sys_mmap2+0x8e/0xc0
+> [11715.653156] 
+> [11715.653158] stack backtrace:
+> [11715.653170] Pid: 25519, comm: s2disk Not tainted 2.6.29-rc2-1avb #11
+> [11715.653179] Call Trace:
+> [11715.653190]  [<c0306248>] ? printk+0x18/0x20
+> [11715.653202]  [<c01437df>] print_circular_bug_tail+0xcf/0xe0
+> [11715.653213]  [<c014503c>] __lock_acquire+0x140c/0x1930
+> [11715.653224]  [<c014328b>] ? trace_hardirqs_on+0xb/0x10
+> [11715.653242]  [<c0309125>] ? _spin_unlock_irqrestore+0x35/0x60
+> [11715.653254]  [<c0140dc5>] ? lock_release_holdtime+0x35/0x210
+> [11715.653265]  [<c01455bc>] lock_acquire+0x5c/0x80
+> [11715.653277]  [<c0223017>] ? fb_mmap+0x97/0x170
+> [11715.653287]  [<c030761a>] mutex_lock_nested+0xba/0x2f0
+> [11715.653298]  [<c0223017>] ? fb_mmap+0x97/0x170
+> [11715.653309]  [<c0223017>] ? fb_mmap+0x97/0x170
+> [11715.653335]  [<c019514d>] ? kmem_cache_alloc+0xad/0x100
+> [11715.653347]  [<c0223017>] fb_mmap+0x97/0x170
+> [11715.653358]  [<c0188996>] mmap_region+0x1d6/0x530
+> [11715.653371]  [<c0186a9d>] ? arch_get_unmapped_area_topdown+0x10d/0x170
+> [11715.653383]  [<c0188ec3>] do_mmap_pgoff+0x1d3/0x2f0
+> [11715.653395]  [<c01063bd>] sys_mmap2+0xad/0xc0
+> [11715.653406]  [<c0103371>] sysenter_do_call+0x12/0x31
 
-If it is a regression, then clearly things haven't improved.
+Is this fixed by http://patchwork.kernel.org/patch/3259/?
 
-If it is a regression, state clearly when it worked last. If it never
-worked, it cannot be a regression.
+Gr{oetje,eeting}s,
 
-> I takes a lot of time to switch between the threads, when they are
-> executed on different cores.
-> Perhaps of the big buffer size of 512KB?
+						Geert
 
-Of course, pushing 512kb to another cpu means lots and lots of cache
-misses.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
