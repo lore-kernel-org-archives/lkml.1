@@ -1,115 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759141AbZA2Vxh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbZA2V6f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759141AbZA2Vxh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 16:53:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZA2Vx2
+	id S1756903AbZA2V6f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 16:58:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZA2V6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 16:53:28 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:58087 "EHLO
-	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751914AbZA2Vx0 (ORCPT
+	Thu, 29 Jan 2009 16:58:25 -0500
+Received: from ey-out-2122.google.com ([74.125.78.26]:45680 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752253AbZA2V6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 16:53:26 -0500
-X-BigFish: VPS-1(zz1fa4Lzzzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KE964J-02-4U5-01
-Content-Disposition: inline
-From: Mark Langsdorf <mark.langsdorf@amd.com>
-To: cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH][retry 1] Determine latency from ACPI
-Date: Thu, 29 Jan 2009 15:55:25 -0600
-User-Agent: KMail/1.9.10
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-ID: <200901291555.25594.mark.langsdorf@amd.com>
-X-OriginalArrivalTime: 29 Jan 2009 21:53:19.0573 (UTC) FILETIME=[FF6CE050:01C9825B]
+	Thu, 29 Jan 2009 16:58:24 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=QfbDRYsQ5dLXAuEYtyWEM66qYerN1J9Bi2wPppzCDOuUctl1wXAdavW9pOPBdjXCBk
+         g5v3H3dZR9+WBTF7Tzhh8UFARHyIDBS0aA0lSAFiobuTiVxEWU3tudpeH7chS/HSDEeG
+         6hF51hGYhgv/RJBriQKd3menWjUtLYNMsgKYU=
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Roman Zippel <zippel@linux-m68k.org>,
+       David Howells <dhowells@redhat.com>,
+       Hirokazu Takata <takata@linux-m32r.org>,
+       Andrea Righi <righi.andrea@gmail.com>
+Subject: [PATCH -mmotm] mm: unify some pmd_*() functions fix for m68k sun3
+Date: Thu, 29 Jan 2009 22:58:17 +0100
+Message-Id: <1233266297-12995-1-git-send-email-righi.andrea@gmail.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At this time, the PowerNow! driver for K8 uses an experimentally 
-derived formula to calculate transition latency.  The value it
-provides is orders of magnitude too large on modern systems.
-This patch replaces the formula with ACPI _PSS latency values
-for more accuracy and better performance.
+sun3_defconfig fails with:
 
-I've tested it on two 2nd generation Opteron systems, a 3rd
-generation Operton system, and a Turion X2 without seeing any
-stability problems.
+    CC      mm/memory.o
+  mm/memory.c: In function 'free_pmd_range':
+  mm/memory.c:176: error: implicit declaration of function '__pmd_free_tlb'
+  mm/memory.c: In function '__pmd_alloc':
+  mm/memory.c:2903: error: implicit declaration of function 'pmd_alloc_one_bug'
+  mm/memory.c:2903: warning: initialization makes pointer from integer without a cast
+  mm/memory.c:2917: error: implicit declaration of function 'pmd_free'
+  make[3]: *** [mm/memory.o] Error 1
 
-Resent this patch to merge with Yinghai Lu's
-"x86/powernow: fix cpus_allowed brokage when acpi=off".
+Add the missing include.
 
--Mark Langsdorf
-Operating System Research Center
-AMD
+Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+---
+ include/asm-m68k/sun3_pgalloc.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
-
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -939,10 +939,25 @@ static void powernow_k8_cpu_exit_acpi(st
- 	free_cpumask_var(data->acpi_data.shared_cpu_map);
- }
+diff --git a/include/asm-m68k/sun3_pgalloc.h b/include/asm-m68k/sun3_pgalloc.h
+index 0fe28fc..399d280 100644
+--- a/include/asm-m68k/sun3_pgalloc.h
++++ b/include/asm-m68k/sun3_pgalloc.h
+@@ -11,6 +11,7 @@
+ #define _SUN3_PGALLOC_H
  
-+static int get_transition_latency(struct powernow_k8_data *data)
-+{
-+	int max_latency = 0;
-+	int i;
-+	for (i = 0; i < data->acpi_data.state_count; i++) {
-+		int cur_latency = data->acpi_data.states[i].transition_latency
-+			+ data->acpi_data.states[i].bus_master_latency;
-+		if (cur_latency > max_latency)
-+			max_latency = cur_latency;
-+	}
-+	/* value in usecs, needs to be in nanoseconds */
-+	return 1000 * max_latency;
-+}
-+
- #else
- static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data) { return -ENODEV; }
- static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data) { return; }
- static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index) { return; }
-+static int get_transition_latency(struct powernow_k8_data *data) { return 0; }
- #endif /* CONFIG_X86_POWERNOW_K8_ACPI */
+ #include <asm/tlb.h>
++#include <asm-generic/pgtable-nopmd.h>
  
- /* Take a frequency, and issue the fid/vid transition command */
-@@ -1145,8 +1160,9 @@ static int __cpuinit powernowk8_cpu_init
- 	oldmask = current->cpus_allowed;
- 
- 	rc = powernow_k8_cpu_init_acpi(data);
--	if (!rc) {
-+	if (!rc) { /* ACPI _PSS objects available */
- 		k8_cpu_acpi_inited = 1;
-+		pol->cpuinfo.transition_latency = get_transition_latency(data);
- 	} else {
- 		/*
- 		 * Use the PSB BIOS structure. This is only availabe on
-@@ -1181,6 +1197,11 @@ static int __cpuinit powernowk8_cpu_init
- 		if (rc) {
- 			goto err_out;
- 		}
-+		/* Take a crude guess here.
-+		 * That guess was in microseconds, so multiply with 1000 */
-+		pol->cpuinfo.transition_latency = (
-+			 ((data->rvo + 8) * data->vstable * VST_UNITS_20US) +
-+			 ((1 << data->irt) * 30)) * 1000;
- 	}
- 
- 	/* only run on specific CPU from here on */
-@@ -1210,11 +1231,6 @@ static int __cpuinit powernowk8_cpu_init
- 	else
- 		cpumask_copy(pol->cpus, &per_cpu(cpu_core_map, pol->cpu));
- 	data->available_cores = pol->cpus;
--
--	/* Take a crude guess here.
--	 * That guess was in microseconds, so multiply with 1000 */
--	pol->cpuinfo.transition_latency = (((data->rvo + 8) * data->vstable * VST_UNITS_20US)
--	    + (3 * (1 << data->irt) * 10)) * 1000;
- 
- 	if (cpu_family == CPU_HW_PSTATE)
- 		pol->cur = find_khz_freq_from_pstate(data->powernow_table, data->currpstate);
-
+ /* FIXME - when we get this compiling */
+ /* erm, now that it's compiling, what do we do with it? */
+-- 
+1.5.6.3
 
