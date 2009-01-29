@@ -1,66 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZA2OlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZA2OmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757207AbZA2OlP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 09:41:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZA2Ok6
+	id S1758601AbZA2OmG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:42:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZA2Olv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 09:40:58 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:24527 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753397AbZA2Ok5 (ORCPT
+	Thu, 29 Jan 2009 09:41:51 -0500
+Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:42807 "EHLO
+	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752319AbZA2Olu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 09:40:57 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dFB9JGirIEovMxU7h1ZcmPZ1eiPELh8bR0aUnRRsQq+mceqtRo0yNQVvkd89dATMpV
-         DWr9BPpc+Hp2ToBV7n3t8Hn5FKoI6WvdGCr1uC2WvpqvyEya+lzAETk9of6H9ZkIQy/G
-         J1q22BpXcdSQcFDk01UWni2dZkP2WRR2xV65U=
-MIME-Version: 1.0
-In-Reply-To: <20090129143120.GS24391@elte.hu>
-References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere>
-	 <20090127225048.GA4652@nowhere> <20090129140451.GM24391@elte.hu>
-	 <c62985530901290629i168ac12cjc4b22140caceff58@mail.gmail.com>
-	 <20090129143120.GS24391@elte.hu>
-Date: Thu, 29 Jan 2009 15:40:55 +0100
-Message-ID: <c62985530901290640j10e63127s59ce22e860a508f8@mail.gmail.com>
-Subject: Re: [PATCH] tracer for sys_open() - sreadahead
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       powertop ml <power@bughost.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, srostedt@redhat.com,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, utrace-devel@redhat.com,
-       Roland McGrath <roland@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 09:41:50 -0500
+Date: Thu, 29 Jan 2009 15:41:32 +0100
+From: Frank Mehnert <Frank.Mehnert@Sun.COM>
+Subject: Re: PFs on pages pinned with get_user_pages()
+In-reply-to: <1233238854.4495.93.camel@laptop>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <200901291541.32618.frank.mehnert@sun.com>
+Organization: Sun Microsystems
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=nextPart1853270.k5jLsgMOGj
+Content-transfer-encoding: 7BIT
+References: <200901290905.10966.frank.mehnert@sun.com>
+ <200901291502.48312.frank.mehnert@sun.com> <1233238854.4495.93.camel@laptop>
+User-Agent: KMail/1.9.9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/29 Ingo Molnar <mingo@elte.hu>:
->>
->> Several people talked me about utrace and gave some examples about it in
->> this discussion. The Api is very convenient to fetch syscall numbers,
->> arguments and return values. And the hooks are done in the generic core
->> code, so it is arch independent.
->>
->> The only drawback I can see is that it is not yet merged upstream, in
->> need of in-kernel users. If it only depends on this condition, we could
->> be these users...
->>
->> What do you think?
->
-> sure - how do the minimal bits/callbacks look like which enable syscall
-> tracing?
->
->        Ingo
 
+--nextPart1853270.k5jLsgMOGj
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-There is a very straightforward example provided by Ananth in there:
-http://lkml.org/lkml/2009/1/28/59
+On Thursday 29 January 2009, Peter Zijlstra wrote:
+> On Thu, 2009-01-29 at 15:02 +0100, Frank Mehnert wrote:
+> > I'm one of the VirtualBox developers. We are trying to fix the annoying
+> > kerneloops warning 'BUG: sleeping function called from invalid context'
+> > reported by the Fedora folks. This warning occurs when do_swap_page()
+> > calls lock_page() and in_atomic() returns true.
+> >
+> > This warning appears when we touch into memory which is pinned with
+> > get_user_pages(). In VT-x/AMD-V mode we are executing some code in the
+> > context of the Linux kernel. To prevent scheduling of the current CPU
+> > core we disable the interripts. preempt_disable() would be probably the
+> > better choice but this would oops as well if CONFIG_PREEMPT is enabled.
+>
+> but to get there, you'd have to have called handle_mm_fault() which
+> requires the mmap_sem, which should also give that might_sleep()
+> warning.
+
+The stacktrace is
+
+  __might_sleep()
+  lock_page()
+  handle_mm_fault()
+  do_page_fault()
+  error_code
+
+So yes, handle_mm_fault() is called. But I assume that down_read_trylock()
+succeeded before we were forced to call down_read().
+
+> That aside, is there any reason you have to avoid scheduling? Otherwise
+> I would just allow so and be done with it.
+
+The reason is that our code expects that to ensure syncing of the CPU
+state with the saved state. I fear it is quite difficult to change that...
+
+Kind regards,
+
+=46rank
+=2D-=20
+Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
+
+--nextPart1853270.k5jLsgMOGj
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmBwBwACgkQ6z8pigLf3Ec/rgCfVFGd/Unt65FgXuYhult/nac6
+1/EAni3ZBU8MFjmokdlwyUDdWoMslNI3
+=M0SH
+-----END PGP SIGNATURE-----
+
+--nextPart1853270.k5jLsgMOGj--
