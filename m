@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756138AbZA2Gka@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756604AbZA2GmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756138AbZA2Gka (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 01:40:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZA2GkV
+	id S1756604AbZA2GmV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 01:42:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbZA2GmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 01:40:21 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:57373 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZA2GkU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 01:40:20 -0500
-Message-ID: <49814E89.6090802@zytor.com>
-Date: Wed, 28 Jan 2009 22:36:57 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 29 Jan 2009 01:42:11 -0500
+Received: from mta23.gyao.ne.jp ([125.63.38.249]:13092 "EHLO mx.gate01.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751651AbZA2GmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 01:42:10 -0500
+Date: Thu, 29 Jan 2009 15:39:08 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Matt Fleming <matt@console-pimps.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] sh: Relax inline assembly constraints
+Message-ID: <20090129063908.GE32243@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Matt Fleming <matt@console-pimps.org>, linux-sh@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <1232486078-11227-1-git-send-email-matt@console-pimps.org> <1232486078-11227-2-git-send-email-matt@console-pimps.org> <1232486078-11227-1-git-send-email-matt@console-pimps.org>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] x86: unify asm/io.h: IO_SPACE_LIMIT
-References: <4980ED5F.30904@goop.org>
-In-Reply-To: <4980ED5F.30904@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1232486078-11227-2-git-send-email-matt@console-pimps.org> <1232486078-11227-1-git-send-email-matt@console-pimps.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeremy,
+On Tue, Jan 20, 2009 at 09:14:37PM +0000, Matt Fleming wrote:
+> When dereferencing the memory address contained in a register and
+> modifying the value at that memory address, the register should not be
+> listed in the inline asm outputs. The value at the memory address is an
+> output (which is taken care of with the "memory" clobber), not the register.
+> 
+> Signed-off-by: Matt Fleming <matt@console-pimps.org>
 
-I applied patch #1 to tip:x86/cleanups, however, patch #2 and #3 are
-identical... did you mean to do something different here?
+On Tue, Jan 20, 2009 at 09:14:38PM +0000, Matt Fleming wrote:
+> Now that atomic_t is a generic opaque type for all architectures, it is
+> unwise to use intimate knowledge of its internals when manipulating it.
+> 
+> Instead of relying on the "counter" member being at offset 0 from the
+> beginning of an atomic_t, explicitly reference the member. This guards
+> us from any changes to the layout of the beginning of the atomic_t type.
+> 
+> Signed-off-by: Matt Fleming <matt@console-pimps.org>
 
-Furthermore, please provide an actual description (and preferrably an
-Impact: line) with your patches.  In particular, when unifying code that
-is identical between 32 and 64 bits, please specify this in the
-description (e.g. "unified functions X and Y which were already
-identical between 32 and 64 bits"), so we know why there isn't a
-preceeding patch to remove the remaining differences.
-
-Thanks,
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Applied, thanks.
