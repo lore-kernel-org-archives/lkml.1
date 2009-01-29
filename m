@@ -1,55 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbZA2SwM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757039AbZA2SzK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757136AbZA2SwM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 13:52:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZA2Sv4
+	id S1757039AbZA2SzK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 13:55:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZA2Syy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 13:51:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33822 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753468AbZA2Sv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 13:51:56 -0500
-Date: Thu, 29 Jan 2009 19:51:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [PATCH -next/mmotm/resend] kmemtrace: fix printk formats
-Message-ID: <20090129185145.GB14810@elte.hu>
-References: <200901291030.n0TAUhRI003046@imap1.linux-foundation.org> <4981E86F.60909@oracle.com>
+	Thu, 29 Jan 2009 13:54:54 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:55214 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752128AbZA2Syx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 13:54:53 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 29 Jan 2009 10:54:41 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: mtk.manpages@gmail.com
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>,
+       Bron Gondwana <brong@fastmail.fm>
+Subject: Re: [patch] drop epoll max_user_instances and rely only on 
+ max_user_watches
+In-Reply-To: <cfd18e0f0901290203r139cb5bfgc02a0dcb1347aba8@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0901291053580.15448@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0901282010250.21401@alien.or.mcafeemobile.com>  <20090129005716.6dd51929.akpm@linux-foundation.org> <cfd18e0f0901290203r139cb5bfgc02a0dcb1347aba8@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4981E86F.60909@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 29 Jan 2009, Michael Kerrisk wrote:
 
-* Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> Since max_user_instances was added in 2.6.28, and this is an ABI
+> change, I suggest this should go into .29-rc, so that
+> max_user_instances spends as little time in the wild as possible.
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> Fix kmemtrace printk warnings:
-> 
-> kernel/trace/kmemtrace.c:142: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
-> kernel/trace/kmemtrace.c:147: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc:      Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> ---
->  kernel/trace/kmemtrace.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Agreed, like I already told Andrew. Sorry Michael for the double change to 
+the man page :/
 
-it's in tip/tracing already, i applied it 6 days ago.
 
-	Ingo
+- Davide
+
+
