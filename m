@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757478AbZA2TZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZA2T1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757478AbZA2TZA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:25:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754608AbZA2TYv
+	id S1757500AbZA2T1z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:27:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZA2T1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:24:51 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:44833 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576AbZA2TYv (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:24:51 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-01-29-02-29 uploaded (wimax)
-In-Reply-To: Your message of "Thu, 29 Jan 2009 10:58:49 PST."
-             <200901291058.50466.inaky@linux.intel.com>
-From: Valdis.Kletnieks@vt.edu
-References: <200901291030.n0TAUhRI003046@imap1.linux-foundation.org> <4981EC35.1030306@oracle.com>
-            <200901291058.50466.inaky@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1233257034_3709P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Thu, 29 Jan 2009 14:23:54 -0500
-Message-ID: <49521.1233257034@turing-police.cc.vt.edu>
+	Thu, 29 Jan 2009 14:27:45 -0500
+Received: from kroah.org ([198.145.64.141]:52891 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751750AbZA2T1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 14:27:44 -0500
+Date: Thu, 29 Jan 2009 11:24:23 -0800
+From: Greg KH <greg@kroah.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Pavel Machek <pavel@suse.cz>,
+       Sandro Bonazzola <sandro.bonazzola@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] w35und: fix usb_control_msg() error handling in
+	wb35_probe()
+Message-ID: <20090129192423.GC31847@kroah.com>
+References: <Pine.LNX.4.64.0901221205400.27341@melkki.cs.Helsinki.FI> <20090126175115.GA29205@kroah.com> <497DFB04.1040802@cs.helsinki.fi> <84144f020901261010h67958566lbd9ea240dc6d9ec@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020901261010h67958566lbd9ea240dc6d9ec@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1233257034_3709P
-Content-Type: text/plain; charset=us-ascii
+On Mon, Jan 26, 2009 at 08:10:42PM +0200, Pekka Enberg wrote:
+> On Mon, Jan 26, 2009 at 8:03 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > Greg KH wrote:
+> >>
+> >> On Thu, Jan 22, 2009 at 12:06:33PM +0200, Pekka J Enberg wrote:
+> >>>
+> >>> From: Pekka Enberg <penberg@cs.helsinki.fi>
+> >>>
+> >>> If successful, the usb_control_msg() function returns the number of
+> >>> bytes transferred. Fix up wb35_probe() to only bail out if the function
+> >>> returns a negative number.
+> >>>
+> >>> Reported-by: Sandro Bonazzola <sandro.bonazzola@gmail.com>
+> >>> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> >>
+> >> I'm confused, should I apply this patch or not?
+> >
+> > Yes, you should. What's confusing you here?
+> 
+> Oh, looking at the thread, I see how you got confused. The patch
+> doesn't fix all of Sandro's problems but is an obvious improvement so
+> it should be merged.
 
-On Thu, 29 Jan 2009 10:58:49 PST, Inaky Perez-Gonzalez said:
+Hm, it doesn't apply to the latest -next tree, care to respin it?
 
-> How do you guys generate all this configs? I thought I had tried all
-> possible combinations and I guess I was wrong...
+thanks,
 
-I think Randy has a special evilly-biased random generator for 'make randconfig'.
-I just attract bad karma trying to build it on my laptop with the same config
-I've used all along. ;)
-
---==_Exmh_1233257034_3709P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD4DBQFJggJKcC3lWbTT17ARAqKpAKC6rxrknfXmfNNMRPArDQIf9J0BJgCYtWde
-fYLz+iDYTSEz54Eoe2JvUQ==
-=Nqgg
------END PGP SIGNATURE-----
-
---==_Exmh_1233257034_3709P--
+greg k-h
