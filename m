@@ -1,135 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763563AbZA2AeO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765878AbZA2Aeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763563AbZA2AeO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 19:34:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764106AbZA2AVN
+	id S1765878AbZA2Aeg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 19:34:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762383AbZA2A20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 19:21:13 -0500
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:23121 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760282AbZA2AVL (ORCPT
+	Wed, 28 Jan 2009 19:28:26 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:41811 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761066AbZA2A2Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 19:21:11 -0500
-X-MUA: Evolution 2.24.3 
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AhIFAIeEgElQLLDG/2dsb2JhbACBbsl4hUcG
-X-IronPort-AV: E=Sophos;i="4.37,340,1231113600"; 
-   d="scan'208";a="134939758"
-Subject: [PATCH RFC] sh: maple: Add support for SEGA Dreamcast VMU and
- clean up maple bus driver (3/3)
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: Paul Mundt <lethal@linux-sh.org>
-Cc: Greg KH <greg@kroah.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       dwmw2 <dwmw2@infradead.org>, linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>
-In-Reply-To: <1233187750.6734.27.camel@localhost.localdomain>
-References: <1233186456.6734.16.camel@localhost.localdomain>
-	 <1233187069.6734.21.camel@localhost.localdomain>
-	 <1233187750.6734.27.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 00:18:07 +0000
-Message-Id: <1233188287.6734.32.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Wed, 28 Jan 2009 19:28:24 -0500
+Message-Id: <1233188902.29314.1297315165@webmail.messagingengine.com>
+X-Sasl-Enc: NawIL15HRM/ywpeaVC6MhBfAxnrtIXzJRbcFku85a/T2 1233188902
+From: "Bron Gondwana" <brong@fastmail.fm>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Cc: "Vegard Nossum" <vegard.nossum@gmail.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Greg KH" <gregkh@suse.de>
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <20090128033824.GA1662@brong.net>
+ <59410684d947bc68862a4f5d6c2a5bb1f29519ee.1233114169.git.brong@fastmail.fm>
+ <alpine.DEB.1.10.0901271949070.20262@alien.or.mcafeemobile.com>
+ <20090128053204.GB8720@brong.net>
+ <19f34abd0901280308w18407fd5rd4d7d95e3799cf60@mail.gmail.com><alpine.DEB.1.10.0901280849340.20724@alien.or.mcafeemobile.com>
+ <20090128205119.GA8587@brong.net>
+ <alpine.DEB.1.10.0901281538400.21401@alien.or.mcafeemobile.com>
+Subject: Re: [PATCH 1/3] epoll: increase default max_user_instances to 1024
+In-Reply-To: <alpine.DEB.1.10.0901281538400.21401@alien.or.mcafeemobile.com>
+Date: Thu, 29 Jan 2009 11:28:22 +1100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Consequential patch to the maple keyboard driver and general fix to the keyboard driver.
 
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
----
 
-diff --git a/drivers/input/keyboard/maple_keyb.c b/drivers/input/keyboard/maple_keyb.c
-index 22f17a5..8d3bb1d 100644
---- a/drivers/input/keyboard/maple_keyb.c
-+++ b/drivers/input/keyboard/maple_keyb.c
-@@ -140,7 +140,7 @@ static void dc_kbd_callback(struct mapleq *mq)
- {
- 	struct maple_device *mapledev = mq->dev;
- 	struct dc_kbd *kbd = maple_get_drvdata(mapledev);
--	unsigned long *buf = mq->recvbuf;
-+	unsigned long *buf = (unsigned long *)(mq->recvbuf->buf);
- 
- 	/*
- 	 * We should always get the lock because the only
-@@ -159,22 +159,41 @@ static void dc_kbd_callback(struct mapleq *mq)
- 
- static int probe_maple_kbd(struct device *dev)
- {
--	struct maple_device *mdev = to_maple_dev(dev);
--	struct maple_driver *mdrv = to_maple_driver(dev->driver);
-+	struct maple_device *mdev;
-+	struct maple_driver *mdrv;
- 	int i, error;
- 	struct dc_kbd *kbd;
- 	struct input_dev *idev;
- 
--	if (!(mdev->function & MAPLE_FUNC_KEYBOARD))
--		return -EINVAL;
-+	mdev = to_maple_dev(dev);
-+	if (!mdev) {
-+		error = EINVAL;
-+		goto fail;
-+	}
-+
-+	mdrv = to_maple_driver(dev->driver);
-+	if (!mdrv) {
-+		error = EINVAL;
-+		goto fail;
-+	}
-+
-+	if (!(mdev->function & MAPLE_FUNC_KEYBOARD)) {
-+		error = EINVAL;
-+		goto fail;
-+	}
- 
- 	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
--	idev = input_allocate_device();
--	if (!kbd || !idev) {
--		error = -ENOMEM;
-+	if (!kbd) {
-+		error = ENOMEM;
- 		goto fail;
- 	}
- 
-+	idev = input_allocate_device();
-+	if (!idev) {
-+		error = ENOMEM;
-+		goto fail_idev_alloc;
-+	}
-+
- 	kbd->dev = idev;
- 	memcpy(kbd->keycode, dc_kbd_keycode, sizeof(kbd->keycode));
- 
-@@ -195,7 +214,7 @@ static int probe_maple_kbd(struct device *dev)
- 
- 	error = input_register_device(idev);
- 	if (error)
--		goto fail;
-+		goto fail_register;
- 
- 	/* Maple polling is locked to VBLANK - which may be just 50/s */
- 	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50,
-@@ -207,11 +226,13 @@ static int probe_maple_kbd(struct device *dev)
- 
- 	return error;
- 
--fail:
-+fail_register:
-+	maple_set_drvdata(mdev, NULL);
- 	input_free_device(idev);
-+fail_idev_alloc:
- 	kfree(kbd);
--	maple_set_drvdata(mdev, NULL);
--	return error;
-+fail:
-+	return -error;
- }
- 
- static int remove_maple_kbd(struct device *dev)
+On Wed, 28 Jan 2009 15:51 -0800, "Davide Libenzi" <davidel@xmailserver.org> wrote:
+> On Thu, 29 Jan 2009, Bron Gondwana wrote:
+> 
+> > On Wed, Jan 28, 2009 at 08:52:51AM -0800, Davide Libenzi wrote:
+> > > On Wed, 28 Jan 2009, Vegard Nossum wrote:
+> > > 
+> > > > On Wed, Jan 28, 2009 at 6:32 AM, Bron Gondwana <brong@fastmail.fm> wrote:
+> > > > > That's clearly not happening here - so it seems that maybe our "happy
+> > > > > medium" is actually in closer inspection of what's going on rather than
+> > > > > a blanket low N to keep N^2 down.
+> > > > 
+> > > > Mh, could another solution to this all be to limit the number times
+> > > > you can add a single epoll descriptor to another descriptor's set?
+> > > 
+> > > In the example that was posted, a single fd was added a single time inside 
+> > > the other 1000+ fds. Epoll already has detection for too long chains and 
+> > > closed loops, but you can't put those in the fast path. And epoll_ctl() is 
+> > > one of those.
+> > 
+> > Not even if you're adding an epoll watcher inside another epoll watcher?
+> 
+> Adding an epoll fd inside another epoll fd is perfectly legal. It would
+> kinda suck if epoll itself wouldn't expose a pollable interface too.
 
+Yeah, I'm not suggesting killing it completely, just putting the limit
+at that level rather than limiting watches completely.
+
+The other thing I've looked at is just limiting watches per process to
+rlim[RLIMIT_NFILE].  Any reason why that wouldn't be enough?  It means
+you get limited to less than RLIMIT_NFILE if you add the same file
+descriptor to multiple epolls... but that's not too scary.
+
+> > The problem I have here is that "a single fd was added a single time
+> > inside the other 1000+ fds" is different behaviour to the daemons out
+> > there.  They're pretty much all using flat layouts:
+> 
+> Yes, that is not what programs normally do. Most of the times you have 
+> nesting level equal zero, although we've seen recently that the 
+> epoll-being-pollable feature (hence nesting) is used too. Say you have
+> two 
+> (or more) libraries, each own monitoring different things, and each own 
+> with its own wait+dispatch loop. If these libraries didn't have a chance 
+> to expose a pollable fd, you'd have to run their wait+dispatch loop in 
+> seaprate threads. Whereas epoll being itself pollable allows you to:
+> 
+> 	epoll_wait(lib1_fd, lib2_fd)
+> 	if (ready(lib1_fd))
+> 		lib1_dispatch()
+> 	if (ready(lib2_fd))
+> 		lib2_dispatch()
+> 
+> This is pretty powerful, although needs care for wakeups and poll nested 
+> calls.
+
+That would only add a couple of "epoll watching epoll" instances though - you
+could still limit that to a pretty low number and not impact normal use.
+
+Bron.
+-- 
+  Bron Gondwana
+  brong@fastmail.fm
 
