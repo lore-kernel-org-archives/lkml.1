@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760138AbZA2Way@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbZA2WbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760138AbZA2Way (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 17:30:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZA2Wam
+	id S1759631AbZA2WbR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 17:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760074AbZA2Wav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 17:30:42 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44994 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752384AbZA2Wal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 17:30:41 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
-Date: Thu, 29 Jan 2009 23:29:58 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: =?iso-8859-1?q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <200901272218.39608.rjw@sisk.pl> <20090129150701.GE6512@elte.hu>
-In-Reply-To: <20090129150701.GE6512@elte.hu>
+	Thu, 29 Jan 2009 17:30:51 -0500
+Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:55967 "EHLO
+	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760047AbZA2Wat (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 17:30:49 -0500
+Message-ID: <49822E0D.2070607@euromail.se>
+Date: Thu, 29 Jan 2009 23:30:37 +0100
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/6] input: bcm5974: Prepare for a new trackpad header
+ type
+References: <1233138229-12489-1-git-send-email-rydberg@euromail.se>	<1233138229-12489-2-git-send-email-rydberg@euromail.se> <20090129003321.e9c8c36c.akpm@linux-foundation.org>
+In-Reply-To: <20090129003321.e9c8c36c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901292329.59121.rjw@sisk.pl>
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1LSfPL-0002Ah-6t.
+X-Scan-Signature: ch-smtp02.sth.basefarm.net 1LSfPL-0002Ah-6t 35660b8a268bb8b3a6157aaeaefabbd5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 January 2009, Ingo Molnar wrote:
+Andrew Morton wrote:
+> On Wed, 28 Jan 2009 11:23:44 +0100 "Henrik Rydberg" <rydberg@euromail.se> wrote:
+
+Thanks for taking care of the patches, and for spotting the surplus
+patches 5/6 and 6/6 - my mistake.
+
+>> +	f = (const struct tp_finger *)(dev->tp_data + c->tp_offset);
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Is there anything which guarantees that `f' is sufficiently aligned? 
+> If not, the code might cause unaligned exceptions on some
+> architectures?
 > 
-> > On Tuesday 27 January 2009, Ingo Molnar wrote:
-> > > 
-> > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > 
-> > > > > In fact whatever check you put in it's _always_ going to be 
-> > > > > fundamentally more fragile than direct instrumentation: you cannot 
-> > > > > possibly check all possible places that enable interrupts. (they could 
-> > > > > be disabling interrupts as a _restore_irqs() sequence for example)
-> > > > 
-> > > > In this particular case, I'm not really interested in that.  What I'm 
-> > > > interested in is which driver's ->suspend_late() or ->resume_early() (or 
-> > > > the equivalents for sysdevs) has enabled interrupts, which is quite easy 
-> > > > to check directly.
-> > > 
-> > > But this is exactly what it does - without any need for debug checks 
-> > > spread around!
-> > > 
-> > > You'll get a _full stack dump_ from the very driver that is enabling 
-> > > interrupts! You dont get a trace - you get a stack dump of the very place 
-> > > that is buggy. It does not get any better than that.
-> > 
-> > I'm not going to argue.
-> > 
-> > Nevertheless, IMO something like the patch below should be sufficient to catch
-> > these bugs.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > 
-> > ---
-> >  drivers/base/power/main.c |   12 ++++++++++++
-> >  drivers/base/sys.c        |   21 ++++++++++++++++-----
-> >  include/linux/pm.h        |   18 ++++++++++++++++++
-> >  3 files changed, 46 insertions(+), 5 deletions(-)
-> 
-> hm, so now you sprinkle debug checks all around the code, instead of 
-> putting in a single pair of:
-> 
->     force_irqs_off_start();
->     ...
->     force_irqs_off_end();
 
-And what debug options exactly would that require to be set to work?
-
-> which would catch everything that your checks would catch - and it would 
-> catch more.
-
-Except that the checks trigger in specific places, so if a check triggers you
-know precisely where the bug happened regardless of what garbage is in the call
-trace.
-
-> In what way is your approach better?
-
-That depends on the answer to my question above.
+I believe it is - I will send a patch in reply to this message that
+ought to make it clearer.
 
 Thanks,
-Rafael
+Henrik
