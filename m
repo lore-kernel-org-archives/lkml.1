@@ -1,97 +1,243 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757462AbZA2V3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbZA2VbM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757462AbZA2V3g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 16:29:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZA2V31
+	id S1758216AbZA2VbM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 16:31:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZA2Vaw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 16:29:27 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:35695 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbZA2V31 (ORCPT
+	Thu, 29 Jan 2009 16:30:52 -0500
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:52529 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbZA2Vat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 16:29:27 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49821F99.4070108@s5r6.in-berlin.de>
-Date: Thu, 29 Jan 2009 22:28:57 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
+	Thu, 29 Jan 2009 16:30:49 -0500
+Date: Thu, 29 Jan 2009 16:27:25 -0500
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: pull request: wireless-2.6 2009-01-29
+Message-ID: <20090129212725.GB6085@tuxdriver.com>
 MIME-Version: 1.0
-To: Alan Stern <stern@rowland.harvard.edu>
-CC: Jarod Wilson <jarod@redhat.com>, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>
-Subject: Re: [PATCH RFT 7/7] firewire: sbp2: add workarounds for 2nd and 3rd
- generation iPods
-References: <Pine.LNX.4.44L0.0901291536020.2394-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0901291536020.2394-100000@iolanthe.rowland.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Stern wrote:
-> On Thu, 29 Jan 2009, Stefan Richter wrote:
->> Obviously they changed something in Ubuntu 8.10 which suddenly made 3rd
->> gen iPods vulnerable too.  If the report is accurate, then this is /not/
->> the READ CAPACITY 10 issue where device's capacity report is off by one.
->> (The reported capacity without workaround is an even number and thus
->> possibly correct.)
-> 
-> Don't make that assumption.  One of the small number of devices which 
-> really did have an odd number of sectors was an early iPod.
+Dave,
 
-Ah, interesting.
+I present to you another round of patches intended for 2.6.29.  There is
+a MAINTAINERS patch that recognizes the reality that Michael Wu is no
+longer touching mac80211.  There is a power setting patch for rtl8187
+that corrects a functional regression, and a NULL pointer fix for
+iwlagn.  There are a couple of regulatory-related patches that are
+isolated and I think merit inclusion based on their nature.  Finally,
+there is an ath5k fix for an older problem that is more prevalent since
+the merge of "ath5k: ignore the return value of
+ath5k_hw_noise_floor_calibration" and which addresses kernel.org bugs
+12068 and 12080.
 
-(Jarod, didn't you see OS X report the same size on that 3rd gen. iPod
-as Linux without quirk flag, or did I dream this?  In any case this
-could of course simply mean that OS X uses a wrongly reported size...)
+Please let me know if there are problems!
 
->>  Rather, this is apparently the kind of the bug where
->> an access which includes the last sector corrupts some state in the
->> firmware, causing the firmware to error out on subsequent accesses.  The
->> actual IO errors in the reporter's log happen at low LBAs, not at LBAs
->> at the end.
-> 
-> Are you aware of the last_sector_bug flag?  It prevents sectors near 
-> the end of the device from being accessed using anything other than 
-> single-sector reads or writes.  Some devices don't like it if, for 
-> example, you do a 2-sector read that includes the last sector.
+Thanks,
 
-Now that you mention it I do remember.  I would need to ask the reporter
-of the Ubuntu bug who has a fully working 3rd gen iPod (unlike Jarod's
-3rd gen iPod which doesn't work reliably anymore) to compile a kernel
-from patched sources if I really wanted to investigate whether the
-last_sector_bug flag fixes the issue too.  The fix_capacity flag can be
-easily enabled for FireWire disks by users of binary kernel packages at
-runtime, so that's what I had the reporter try.
+John
+---
 
-Hmm, I'm beginning to suspect that I should duplicate usb-storage's
+Individual patches are available here:
 
-	if (sdev->type == TYPE_DISK)
-		sdev->last_sector_bug = 1;
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
 
-into the FireWire drivers.  There aren't any fundamental downsides to
-this, are there?
+---
 
->> Now, what does OS X do with those iPods?  I don't know.  Maybe they have
->> quirks lists like we do.  There could be something to be found in the
->> Darwin sources.  But I consider it more likely that OS X simply does not
->> do the kind of accesses that Linux does which tend to crash all those
->> crap firmwares left and right.
->>
->> Evidently, at least popular Windows incarnations don't do such accesses,
->> at least not in normal usage.  Otherwise this class of firmware bugs
->> could simply not exist in mass market devices.
-> 
-> Linux uses the last-sector accesses to check whether or not the device 
-> is part of a RAID.  Apparently Windows and OS X don't support the kinds 
-> of RAID that need this.
+The following changes since commit 5376071069ec8a7e6a8112beab16fc24f5139475:
+  Linus Torvalds (1):
+        Merge master.kernel.org:/home/rmk/linux-2.6-arm
 
-Or they don't support these kinds of RAID over certain transports like
-USB and FireWire...?
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Bob Copeland (1):
+      ath5k: fix locking in ath5k_config
+
+Johannes Berg (1):
+      mac80211: remove Michael Wu as maintainer
+
+Larry Finger (1):
+      rtl8187: Fix error in setting OFDM power settings for RTL8187L
+
+Luis R. Rodriguez (2):
+      cfg80211: Fix sanity check on 5 GHz when processing country IE
+      cfg80211: print correct intersected regulatory domain
+
+Zhu, Yi (1):
+      iwlwifi: fix kernel oops when ucode DMA memory allocation failure
+
+ MAINTAINERS                                    |    2 -
+ drivers/net/wireless/ath5k/base.c              |   10 ++++++-
+ drivers/net/wireless/iwlwifi/iwl-agn.c         |    4 +++
+ drivers/net/wireless/rtl818x/rtl8187_rtl8225.c |   10 ++++++-
+ net/wireless/reg.c                             |   32 +++++++++++++++---------
+ 5 files changed, 41 insertions(+), 17 deletions(-)
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index d992d40..474ec0c 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2836,8 +2836,6 @@ S:	Maintained
+ MAC80211
+ P:	Johannes Berg
+ M:	johannes@sipsolutions.net
+-P:	Michael Wu
+-M:	flamingice@sourmilk.net
+ L:	linux-wireless@vger.kernel.org
+ W:	http://linuxwireless.org/
+ T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-2.6.git
+diff --git a/arch/arm/mach-integrator/clock.h b/arch/arm/mach-integrator/clock.h
+deleted file mode 100644
+index e69de29..0000000
+diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
+index 8ef8735..a533ed6 100644
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -1028,6 +1028,8 @@ ath5k_setup_bands(struct ieee80211_hw *hw)
+  * it's done by reseting the chip.  To accomplish this we must
+  * first cleanup any pending DMA, then restart stuff after a la
+  * ath5k_init.
++ *
++ * Called with sc->lock.
+  */
+ static int
+ ath5k_chan_set(struct ath5k_softc *sc, struct ieee80211_channel *chan)
+@@ -2814,11 +2816,17 @@ ath5k_config(struct ieee80211_hw *hw, u32 changed)
+ {
+ 	struct ath5k_softc *sc = hw->priv;
+ 	struct ieee80211_conf *conf = &hw->conf;
++	int ret;
++
++	mutex_lock(&sc->lock);
+ 
+ 	sc->bintval = conf->beacon_int;
+ 	sc->power_level = conf->power_level;
+ 
+-	return ath5k_chan_set(sc, conf->channel);
++	ret = ath5k_chan_set(sc, conf->channel);
++
++	mutex_unlock(&sc->lock);
++	return ret;
+ }
+ 
+ static int
+diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
+index 0dc8eed..b35c881 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-agn.c
++++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
+@@ -1719,6 +1719,10 @@ static int iwl_read_ucode(struct iwl_priv *priv)
+ 	priv->ucode_data_backup.len = data_size;
+ 	iwl_alloc_fw_desc(priv->pci_dev, &priv->ucode_data_backup);
+ 
++	if (!priv->ucode_code.v_addr || !priv->ucode_data.v_addr ||
++	    !priv->ucode_data_backup.v_addr)
++		goto err_pci_alloc;
++
+ 	/* Initialization instructions and data */
+ 	if (init_size && init_data_size) {
+ 		priv->ucode_init.len = init_size;
+diff --git a/drivers/net/wireless/rtl818x/rtl8187_rtl8225.c b/drivers/net/wireless/rtl818x/rtl8187_rtl8225.c
+index 4e75e8e..78df281 100644
+--- a/drivers/net/wireless/rtl818x/rtl8187_rtl8225.c
++++ b/drivers/net/wireless/rtl818x/rtl8187_rtl8225.c
+@@ -285,7 +285,10 @@ static void rtl8225_rf_set_tx_power(struct ieee80211_hw *dev, int channel)
+ 	ofdm_power = priv->channels[channel - 1].hw_value >> 4;
+ 
+ 	cck_power = min(cck_power, (u8)11);
+-	ofdm_power = min(ofdm_power, (u8)35);
++	if (ofdm_power > (u8)15)
++		ofdm_power = 25;
++	else
++		ofdm_power += 10;
+ 
+ 	rtl818x_iowrite8(priv, &priv->map->TX_GAIN_CCK,
+ 			 rtl8225_tx_gain_cck_ofdm[cck_power / 6] >> 1);
+@@ -536,7 +539,10 @@ static void rtl8225z2_rf_set_tx_power(struct ieee80211_hw *dev, int channel)
+ 	cck_power += priv->txpwr_base & 0xF;
+ 	cck_power = min(cck_power, (u8)35);
+ 
+-	ofdm_power = min(ofdm_power, (u8)15);
++	if (ofdm_power > (u8)15)
++		ofdm_power = 25;
++	else
++		ofdm_power += 10;
+ 	ofdm_power += priv->txpwr_base >> 4;
+ 	ofdm_power = min(ofdm_power, (u8)35);
+ 
+diff --git a/net/wireless/reg.c b/net/wireless/reg.c
+index bc494ce..85c9034 100644
+--- a/net/wireless/reg.c
++++ b/net/wireless/reg.c
+@@ -498,6 +498,7 @@ static struct ieee80211_regdomain *country_ie_2_rd(
+ 	 * calculate the number of reg rules we will need. We will need one
+ 	 * for each channel subband */
+ 	while (country_ie_len >= 3) {
++		int end_channel = 0;
+ 		struct ieee80211_country_ie_triplet *triplet =
+ 			(struct ieee80211_country_ie_triplet *) country_ie;
+ 		int cur_sub_max_channel = 0, cur_channel = 0;
+@@ -509,9 +510,25 @@ static struct ieee80211_regdomain *country_ie_2_rd(
+ 			continue;
+ 		}
+ 
++		/* 2 GHz */
++		if (triplet->chans.first_channel <= 14)
++			end_channel = triplet->chans.first_channel +
++				triplet->chans.num_channels;
++		else
++			/*
++			 * 5 GHz -- For example in country IEs if the first
++			 * channel given is 36 and the number of channels is 4
++			 * then the individual channel numbers defined for the
++			 * 5 GHz PHY by these parameters are: 36, 40, 44, and 48
++			 * and not 36, 37, 38, 39.
++			 *
++			 * See: http://tinyurl.com/11d-clarification
++			 */
++			end_channel =  triplet->chans.first_channel +
++				(4 * (triplet->chans.num_channels - 1));
++
+ 		cur_channel = triplet->chans.first_channel;
+-		cur_sub_max_channel = ieee80211_channel_to_frequency(
+-			cur_channel + triplet->chans.num_channels);
++		cur_sub_max_channel = end_channel;
+ 
+ 		/* Basic sanity check */
+ 		if (cur_sub_max_channel < cur_channel)
+@@ -590,15 +607,6 @@ static struct ieee80211_regdomain *country_ie_2_rd(
+ 			end_channel = triplet->chans.first_channel +
+ 				triplet->chans.num_channels;
+ 		else
+-			/*
+-			 * 5 GHz -- For example in country IEs if the first
+-			 * channel given is 36 and the number of channels is 4
+-			 * then the individual channel numbers defined for the
+-			 * 5 GHz PHY by these parameters are: 36, 40, 44, and 48
+-			 * and not 36, 37, 38, 39.
+-			 *
+-			 * See: http://tinyurl.com/11d-clarification
+-			 */
+ 			end_channel =  triplet->chans.first_channel +
+ 				(4 * (triplet->chans.num_channels - 1));
+ 
+@@ -1276,7 +1284,7 @@ static void reg_country_ie_process_debug(
+ 	if (intersected_rd) {
+ 		printk(KERN_DEBUG "cfg80211: We intersect both of these "
+ 			"and get:\n");
+-		print_regdomain_info(rd);
++		print_regdomain_info(intersected_rd);
+ 		return;
+ 	}
+ 	printk(KERN_DEBUG "cfg80211: Intersection between both failed\n");
 -- 
-Stefan Richter
--=====-==--= ---= ===-=
-http://arcgraph.de/sr/
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
