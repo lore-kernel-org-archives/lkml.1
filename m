@@ -1,142 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756080AbZA2E4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZA2E6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756080AbZA2E4U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 23:56:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZA2E4L
+	id S1756861AbZA2E6U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 23:58:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZA2E6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 23:56:11 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:35210 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751375AbZA2E4K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 23:56:10 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 28 Jan 2009 20:56:07 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Willy Tarreau <w@1wt.eu>, Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Bron Gondwana <brong@fastmail.fm>
-Subject: [patch] drop epoll max_user_instances and rely only on
- max_user_watches
-Message-ID: <alpine.DEB.1.10.0901282010250.21401@alien.or.mcafeemobile.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 28 Jan 2009 23:58:11 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41191 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751375AbZA2E6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 23:58:10 -0500
+Message-ID: <498136FC.2020206@kernel.org>
+Date: Wed, 28 Jan 2009 20:56:28 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Dave Jones" <davej@redhat.com>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: [PATCH] x86/powernow: fix cpus_allowed brokage when acpi=off
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus suggested to put limits where the money is, and max_user_watches 
-already does that w/out the need of max_user_instances. That has the 
-advantage to mitigate the potential DoS while allowing pretty generous 
-default behavior.
-Allowing top 4% of low memory (per user) to be allocated in epoll 
-watches, we have:
 
-LOMEM    MAX_WATCHES (per user)
-512MB    ~178000
-1GB      ~356000
-2GB      ~712000
+Impact: fix current->cpus_allowed overwriting.
 
-A box with 512MB of lomem, will meet some challenge in hitting 180K 
-watches, socket buffers math teaches us.
-No more max_user_instances limits then.
+on one AMD Fam10h SMP system:
+when checking numactl output, when acpi=off
+found output is not right.
+
+# numactl --show
+policy: default
+preferred node: current
+physcpubind: 5 7 10 11 12 13
+cpubind: 1 2 3
+nodebind: 1 2 3
+membind: 0 1 2 3
+
+it turns out in powernowk8_cpu_init there is path ( ACPI is off or _PSS is not there)
+it will try to overwrite current->cpus_allowed with uninitialized oldmask.
+
+caused by
+| commit 2fdf66b491ac706657946442789ec644cc317e1a
+| Author: Rusty Russell <rusty@rustcorp.com.au>
+| Date:   Wed Dec 31 18:08:47 2008 -0800
+|
+|    cpumask: convert shared_cpu_map in acpi_processor* structs to cpumask_var_t
 
 
+need to get oldmask early.
+also remove some wrong warning when acpi is disabled.
+and don't call exit_acpi if _PSS is not found.
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+with patch get numactl correct.
 
+# numactl --show
+policy: default
+preferred node: current
+physcpubind: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
+cpubind: 0 1 2 3
+nodebind: 0 1 2 3
+membind: 0 1 2 3
 
-- Davide
-
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
 ---
- fs/eventpoll.c        |   22 ++++------------------
- include/linux/sched.h |    1 -
- 2 files changed, 4 insertions(+), 19 deletions(-)
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   17 +++++++++++++----
+ 1 file changed, 13 insertions(+), 4 deletions(-)
 
-Index: linux-2.6.mod/fs/eventpoll.c
+Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
 ===================================================================
---- linux-2.6.mod.orig/fs/eventpoll.c	2009-01-28 20:06:55.000000000 -0800
-+++ linux-2.6.mod/fs/eventpoll.c	2009-01-28 20:08:16.000000000 -0800
-@@ -234,8 +234,6 @@
- /*
-  * Configuration options available inside /proc/sys/fs/epoll/
-  */
--/* Maximum number of epoll devices, per user */
--static int max_user_instances __read_mostly;
- /* Maximum number of epoll watched descriptors, per user */
- static int max_user_watches __read_mostly;
+--- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ linux-2.6/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1124,6 +1124,7 @@ static int powernowk8_verify(struct cpuf
+ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ {
+ 	struct powernow_k8_data *data;
++	int k8_cpu_acpi_inited = 0;
+ 	cpumask_t oldmask;
+ 	int rc;
  
-@@ -261,14 +259,6 @@
+@@ -1141,14 +1142,19 @@ static int __cpuinit powernowk8_cpu_init
  
- ctl_table epoll_table[] = {
- 	{
--		.procname	= "max_user_instances",
--		.data		= &max_user_instances,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &zero,
--	},
--	{
- 		.procname	= "max_user_watches",
- 		.data		= &max_user_watches,
- 		.maxlen		= sizeof(int),
-@@ -491,7 +481,6 @@
+ 	data->cpu = pol->cpu;
+ 	data->currpstate = HW_PSTATE_INVALID;
++	oldmask = current->cpus_allowed;
  
- 	mutex_unlock(&epmutex);
- 	mutex_destroy(&ep->mtx);
--	atomic_dec(&ep->user->epoll_devs);
- 	free_uid(ep->user);
- 	kfree(ep);
- }
-@@ -581,10 +570,6 @@
- 	struct eventpoll *ep;
+ 	rc = powernow_k8_cpu_init_acpi(data);
+-	if (rc) {
++	if (!rc) {
++		k8_cpu_acpi_inited = 1;
++	} else {
+ 		/*
+ 		 * Use the PSB BIOS structure. This is only availabe on
+ 		 * an UP version, and is deprecated by AMD.
+ 		 */
+ 		if (num_online_cpus() != 1) {
++			if (acpi_disabled)
++				goto err_out;
+ #ifndef CONFIG_ACPI_PROCESSOR
+ 			printk(KERN_ERR PFX "ACPI Processor support is required "
+ 			       "for SMP systems but is absent. Please load the "
+@@ -1164,6 +1170,8 @@ static int __cpuinit powernowk8_cpu_init
+ 			goto err_out;
+ 		}
+ 		if (pol->cpu != 0) {
++			if (acpi_disabled)
++				goto err_out;
+ 			printk(KERN_ERR FW_BUG PFX "No ACPI _PSS objects for "
+ 			       "CPU other than CPU0. Complain to your BIOS "
+ 			       "vendor.\n");
+@@ -1176,7 +1184,6 @@ static int __cpuinit powernowk8_cpu_init
+ 	}
  
- 	user = get_current_user();
--	error = -EMFILE;
--	if (unlikely(atomic_read(&user->epoll_devs) >=
--			max_user_instances))
--		goto free_uid;
- 	error = -ENOMEM;
- 	ep = kzalloc(sizeof(*ep), GFP_KERNEL);
- 	if (unlikely(!ep))
-@@ -1141,7 +1126,6 @@
- 			      flags & O_CLOEXEC);
- 	if (fd < 0)
- 		ep_free(ep);
--	atomic_inc(&ep->user->epoll_devs);
+ 	/* only run on specific CPU from here on */
+-	oldmask = current->cpus_allowed;
+ 	set_cpus_allowed_ptr(current, &cpumask_of_cpu(pol->cpu));
  
- error_return:
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d) = %d\n",
-@@ -1366,8 +1350,10 @@
- 	struct sysinfo si;
+ 	if (smp_processor_id() != pol->cpu) {
+@@ -1218,7 +1225,8 @@ static int __cpuinit powernowk8_cpu_init
+ 	/* min/max the cpu is capable of */
+ 	if (cpufreq_frequency_table_cpuinfo(pol, data->powernow_table)) {
+ 		printk(KERN_ERR FW_BUG PFX "invalid powernow_table\n");
+-		powernow_k8_cpu_exit_acpi(data);
++		if (k8_cpu_acpi_inited)
++			powernow_k8_cpu_exit_acpi(data);
+ 		kfree(data->powernow_table);
+ 		kfree(data);
+ 		return -EINVAL;
+@@ -1238,7 +1246,8 @@ static int __cpuinit powernowk8_cpu_init
  
- 	si_meminfo(&si);
--	max_user_instances = 128;
--	max_user_watches = (((si.totalram - si.totalhigh) / 32) << PAGE_SHIFT) /
-+	/*
-+	 * Allows top 4% of lomem to be allocated for epoll watches (per user).
-+	 */
-+	max_user_watches = (((si.totalram - si.totalhigh) / 25) << PAGE_SHIFT) /
- 		EP_ITEM_COST;
+ err_out:
+ 	set_cpus_allowed_ptr(current, &oldmask);
+-	powernow_k8_cpu_exit_acpi(data);
++	if (k8_cpu_acpi_inited)
++		powernow_k8_cpu_exit_acpi(data);
  
- 	/* Initialize the structure used to perform safe poll wait head wake ups */
-Index: linux-2.6.mod/include/linux/sched.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/sched.h	2009-01-28 20:07:41.000000000 -0800
-+++ linux-2.6.mod/include/linux/sched.h	2009-01-28 20:08:16.000000000 -0800
-@@ -630,7 +630,6 @@
- 	atomic_t inotify_devs;	/* How many inotify devs does this user have opened? */
- #endif
- #ifdef CONFIG_EPOLL
--	atomic_t epoll_devs;	/* The number of epoll descriptors currently open */
- 	atomic_t epoll_watches;	/* The number of file descriptors currently watched */
- #endif
- #ifdef CONFIG_POSIX_MQUEUE
+ 	kfree(data);
+ 	return -ENODEV;
