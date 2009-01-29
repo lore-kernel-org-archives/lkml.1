@@ -1,76 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbZA2SX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZA2S0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757001AbZA2SX3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 13:23:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZA2SXU
+	id S1755067AbZA2S0Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 13:26:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZA2S0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 13:23:20 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45864 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752441AbZA2SXT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 13:23:19 -0500
-Subject: Re: [PATCH -v2] use per cpu data for single cpu ipi calls
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>, jens.axboe@oracle.com
-In-Reply-To: <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>
-	 <200901290955.38940.rusty@rustcorp.com.au>
-	 <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com>
-	 <20090128173039.cbc29e81.akpm@linux-foundation.org>
-	 <1233218954.7835.11.camel@twins>
-	 <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain>
-	 <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 19:23:00 +0100
-Message-Id: <1233253380.4495.123.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 13:26:16 -0500
+Received: from mx2.suse.de ([195.135.220.15]:49390 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751656AbZA2S0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 13:26:15 -0500
+Date: Thu, 29 Jan 2009 10:14:22 -0800
+From: Greg KH <gregkh@suse.de>
+To: mtk.manpages@gmail.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Willy Tarreau <w@1wt.eu>, Bron Gondwana <brong@fastmail.fm>
+Subject: Re: [patch] drop epoll max_user_instances and rely only on
+	max_user_watches
+Message-ID: <20090129181422.GA30935@suse.de>
+References: <alpine.DEB.1.10.0901282010250.21401@alien.or.mcafeemobile.com> <20090129005716.6dd51929.akpm@linux-foundation.org> <cfd18e0f0901290203r139cb5bfgc02a0dcb1347aba8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cfd18e0f0901290203r139cb5bfgc02a0dcb1347aba8@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-29 at 10:08 -0800, Linus Torvalds wrote:
+On Thu, Jan 29, 2009 at 11:03:37PM +1300, Michael Kerrisk wrote:
+> On Thu, Jan 29, 2009 at 9:57 PM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+> >
+> >> Subject: [patch] drop epoll max_user_instances and rely only on max_user_watches
+> >
+> > nanonit: please prepare titles in the form "subsystem-id:
+> > what-i-did-to-it", so a suitable name here would be
+> >
+> >        epoll: drop max_user_instances and rely only on max_user_watches
+> >
+> > On Wed, 28 Jan 2009 20:56:07 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
+> >
+> >> Linus suggested to put limits where the money is, and max_user_watches
+> >> already does that w/out the need of max_user_instances. That has the
+> >> advantage to mitigate the potential DoS while allowing pretty generous
+> >> default behavior.
+> 
+> [...]
+> 
+> > I assume that because you based all this on all the other patches, you
+> > view it as 2.6.30 material?
+> 
+> Since max_user_instances was added in 2.6.28, and this is an ABI
+> change, I suggest this should go into .29-rc, so that
+> max_user_instances spends as little time in the wild as possible.
 
-> And are you really sure it cannot be called from within interrupts? I'm 
-> finding a lot of callers of smp_call_function_single(), and while I 
-> couldn't find any that look like interrupts, I also couldn't find any 
-> indication that it never happens.
+I agree.  I'll backport the change to the .28 and .27 stable kernels as
+well, as we have complaints about the default values breaking people's
+machines.
 
-Calls with wait=1 are deadlockable when done from within irqs or irq
-disabled sections because two cpus could cross ipi each other and stay
-waiting.
+thanks,
 
-That leaves us with the !wait case, which wasn't safe because that
-kmalloc could fail, and the fallback was wait, which yields the same
-deadlock.
-
-That leaves us with 6 cases,
-
-root@laptop:/usr/src/linux-2.6# git grep "smp_call_function_single(.*0)"
-arch/blackfin/kernel/kgdb.c:    smp_call_function_single(cpu, kgdb_passive_cpu_callback, NULL, 0);
-arch/ia64/kernel/smpboot.c:     if (smp_call_function_single(master, sync_master, NULL, 0) < 0) {
-arch/ia64/kvm/kvm-ia64.c:               smp_call_function_single(ipi_pcpu, vcpu_kick_intr, vcpu, 0);
-arch/x86/kvm/x86.c:             smp_call_function_single(ipi_pcpu, vcpu_kick_intr, vcpu, 0);
-arch/x86/oprofile/nmi_int.c:            smp_call_function_single(cpu, nmi_cpu_start, NULL, 0);
-arch/x86/pci/amd_bus.c:         smp_call_function_single(cpu, enable_pci_io_ecs, NULL, 0);
-
-The kgdb one looks to be buggy, as it calls smp_call_function_single()
-from under irqs disabled.
-
-Such users should use __smp_call_single_function() with a pre-allocated
-csd.
-
-Didn't check the others.
-
-
-
+greg k-h
