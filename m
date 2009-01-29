@@ -1,248 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZA2IBn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755627AbZA2IGK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbZA2IBn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 03:01:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751554AbZA2IBe
+	id S1755627AbZA2IGK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 03:06:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZA2IF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 03:01:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52538 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751344AbZA2IBe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 03:01:34 -0500
-Date: Thu, 29 Jan 2009 00:01:20 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Pisa <pisa@cmp.felk.cvut.cz>
-Subject: Re: [patch 1/2] epoll fix own poll()
-Message-Id: <20090129000120.da7d249d.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Jan 2009 03:05:56 -0500
+Received: from ozlabs.org ([203.10.76.45]:45646 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751717AbZA2IFz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 03:05:55 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 2 of 7] x86/pvops: add a paravirt_ident functions to allow special patching
+Date: Thu, 29 Jan 2009 18:35:48 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       "Xen-devel" <xen-devel@lists.xensource.com>,
+       "the arch/x86 maintainers" <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Zachary Amsden <zach@vmware.com>,
+       Ravikiran Thirumalai <kiran@scalemp.com>
+References: <patchbomb.1233182100@abulafia.goop.org> <79ff4280c71ffeba69d2.1233182102@abulafia.goop.org>
+In-Reply-To: <79ff4280c71ffeba69d2.1233182102@abulafia.goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901291835.49251.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009 12:54:38 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
-
-> 
-> The follwing patch fixes a bug inside the epoll's f_op->poll() code, that
-> returns POLLIN even though there are no actual ready monitored fds.
-> The bug shows up if you add an epoll fd inside another fd container (poll,
-> select, epoll).
-> The problem is that callback-based wake ups used by epoll, does not carry
-> (patches will follow, to fix this) any information about the events
-> that actually happened. So the callback code, since it can't call the file*
-> ->poll() inside the callback, chains the file* into a ready-list. So, suppose
-> you added an fd with EPOLLOUT only, and some data shows up on the fd, the
-> file* mapped by the fd will be added into the ready-list (via wakeup
-> callback). During normal epoll_wait() use, this condition is sorted out
-> at the time we're actually able to call the file*'s f_op->poll().
-> Inside the old epoll's f_op->poll() though, only a quick check
-> !list_empty(ready-list) was performed, and this could have led to reporting
-> POLLIN even though no ready fds would show up at a following epoll_wait().
-> In order to correctly report the ready status for an epoll fd, the ready-list
-> must be checked to see if any really available fd+event would be ready in
-> a following epoll_wait().
-> Operation (calling f_op->poll() from inside f_op->poll()) that, like wake ups,
-> must be handled with care because of the fact that epoll fds can be added
-> to other epoll fds.
-
-One reason why I break up paragraphs like this one when cleaning up
-changelogs is so that I can actually read them :(
-
->  fs/eventpoll.c |  510 +++++++++++++++++++++++++++++++++------------------------
->  1 file changed, 304 insertions(+), 206 deletions(-)
-
-Holy cow man, this patch is HUGE!  I don't have a clue what it does nor
-how it does it.  I'd be somewhat scared to merge it into 2.6.29.  How
-serious is this bug?
-
-Please use checkpatch?  The patch attempts to add a large amount of
-crap, must notably lots of lines which for some reason start with
-space-space-tab-tab-tab.  I doubt if you meant to do that (editor brain
-damage), and checkpatch's main purpose is to tell you about things
-which you didn't mean to do.
-
-Minor nitpicks follow:
-
->
-> ...
->
-> +static int ep_scan_ready_list(struct eventpoll *ep,
-> +			      int (*sproc)(struct eventpoll *,
-> +					   struct list_head *, void *),
-> +			      void *priv)
-> +{
-> +	int error, pwake = 0;
-> +	unsigned long flags;
-> +	struct epitem *epi, *nepi;
-> +	struct list_head txlist;
+On Thursday 29 January 2009 09:05:02 Jeremy Fitzhardinge wrote:
+>  void _paravirt_nop(void);
+> +u32 _paravirt_ident_32(u32);
+> +u64 _paravirt_ident_64(u64);
 > +
-> +	INIT_LIST_HEAD(&txlist);
+>  #define paravirt_nop	((void *)_paravirt_nop)
 
-Could use
+So, we used a void * cast for the paravirt_nop case, but you decided to use explicit types for the ident cases?
 
-	LIST_HEAD(tx_list);
+>  	if (opfunc == NULL)
+>  		/* If there's no function, patch it with a ud2a (BUG) */
+>  		ret = paravirt_patch_insns(insnbuf, len, ud2a, ud2a+sizeof(ud2a));
+> -	else if (opfunc == paravirt_nop)
+> +	else if (opfunc == _paravirt_nop)
+>  		/* If the operation is a nop, then nop the callsite */
+>  		ret = paravirt_patch_nop();
 
-here
+Gratuitous change?
 
-> +	/*
-> +	 * We need to lock this because we could be hit by
-> +	 * eventpoll_release_file() and epoll_ctl(EPOLL_CTL_DEL).
-> +	 */
-> +	mutex_lock(&ep->mtx);
+> +typedef pte_t make_pte_t(pteval_t);
+> +typedef pmd_t make_pmd_t(pmdval_t);
+> +typedef pud_t make_pud_t(pudval_t);
+> +typedef pgd_t make_pgd_t(pgdval_t);
 > +
-> +	/*
-> +	 * Steal the ready list, and re-init the original one to the
-> +	 * empty list. Also, set ep->ovflist to NULL so that events
-> +	 * happening while looping w/out locks, are not lost. We cannot
-> +	 * have the poll callback to queue directly on ep->rdllist,
-> +	 * because we want the "sproc" callback to be able to do it
-> +	 * in a lockless way.
-> +	 */
-> +	spin_lock_irqsave(&ep->lock, flags);
-> +	list_splice(&ep->rdllist, &txlist);
-> +	INIT_LIST_HEAD(&ep->rdllist);
-
-list_splice_init()?
-
-> +	ep->ovflist = NULL;
-> +	spin_unlock_irqrestore(&ep->lock, flags);
+> +typedef pteval_t pte_val_t(pte_t);
+> +typedef pmdval_t pmd_val_t(pmd_t);
+> +typedef pudval_t pud_val_t(pud_t);
+> +typedef pgdval_t pgd_val_t(pgd_t);
 > +
-> +	/*
-> +	 * Now call the callback function.
-> +	 */
-> +	error = (*sproc)(ep, &txlist, priv);
 > +
-> +	spin_lock_irqsave(&ep->lock, flags);
-> +	/*
-> +	 * During the time we spent inside the "sproc" callback, some
-> +	 * other events might have been queued by the poll callback.
-> +	 * We re-insert them inside the main ready-list here.
-> +	 */
-> +	for (nepi = ep->ovflist; (epi = nepi) != NULL;
-> +	     nepi = epi->next, epi->next = EP_UNACTIVE_PTR) {
-> +		/*
-> +		 * We need to check if the item is already in the list.
-> +		 * During the "sproc" callback execution time, items are
-> +		 * queued into ->ovflist but the "txlist" might already
-> +		 * contain them, and the list_splice() below takes care of them.
-> +		 */
-> +		if (!ep_is_linked(&epi->rdllink))
-> +			list_add_tail(&epi->rdllink, &ep->rdllist);
-> +	}
-> +	/*
-> +	 * We need to set back ep->ovflist to EP_UNACTIVE_PTR, so that after
-> +	 * releasing the lock, events will be queued in the normal way inside
-> +	 * ep->rdllist.
-> +	 */
-> +	ep->ovflist = EP_UNACTIVE_PTR;
+> +#if defined(CONFIG_X86_32) && !defined(CONFIG_X86_PAE)
+> +/* 32-bit pagetable entries */
+> +#define paravirt_native_make_pte	(make_pte_t *)_paravirt_ident_32
+> +#define paravirt_native_pte_val		(pte_val_t *)_paravirt_ident_32
 > +
-> +	/*
-> +	 * Quickly re-inject items left on "txlist".
-> +	 */
-> +	list_splice(&txlist, &ep->rdllist);
+> +#define paravirt_native_make_pmd	(make_pmd_t *)_paravirt_ident_32
+> +#define paravirt_native_pmd_val		(pmd_val_t *)_paravirt_ident_32
 > +
-> +	if (!list_empty(&ep->rdllist)) {
-
-Some places the code uses ep_is_linked(&ep->rdllist), other places it
-uses open-coded list_empty().
-
-ep_is_linked() is a fairly poor helper, really - it could be passed any
-list_head at all.  I think that it would be better to do
-
-static inline int ep_is_linked(struct epitem *ep)
-{
-	return !list_empty(&ep->rdllist);
-}
-
-and then use this consistently.
-
-> +		/*
-> +		 * Wake up (if active) both the eventpoll wait list and the ->poll()
-> +		 * wait list (delayed after we release the lock).
-> +		 */
-> +		if (waitqueue_active(&ep->wq))
-> +			wake_up_locked(&ep->wq);
-> +		if (waitqueue_active(&ep->poll_wait))
-> +			pwake++;
-> +	}
-> +	spin_unlock_irqrestore(&ep->lock, flags);
+> +#define paravirt_native_make_pud	(make_pud_t *)_paravirt_ident_32
+> +#define paravirt_native_pud_val		(pud_val_t *)_paravirt_ident_32
 > +
-> +	mutex_unlock(&ep->mtx);
+> +#define paravirt_native_make_pgd	(make_pgd_t *)_paravirt_ident_32
+> +#define paravirt_native_pgd_val		(pgd_val_t *)_paravirt_ident_32
+> +#else
+> +/* 64-bit pagetable entries */
+> +#define paravirt_native_make_pte	(make_pte_t *)_paravirt_ident_64
+> +#define paravirt_native_pte_val		(pte_val_t *)_paravirt_ident_64
 > +
-> +	/* We have to call this outside the lock */
-> +	if (pwake)
-> +		ep_poll_safewake(&ep->poll_wait);
+> +#define paravirt_native_make_pmd	(make_pmd_t *)_paravirt_ident_64
+> +#define paravirt_native_pmd_val		(pmd_val_t *)_paravirt_ident_64
 > +
-> +	return error;
-> +}
->
-> ...
->
-> +static int ep_read_events_proc(struct eventpoll *ep, struct list_head *head, void *priv)
-> +{
-> +	struct epitem *epi, *tmp;
+> +#define paravirt_native_make_pud	(make_pud_t *)_paravirt_ident_64
+> +#define paravirt_native_pud_val		(pud_val_t *)_paravirt_ident_64
 > +
-> +	list_for_each_entry_safe(epi, tmp, head, rdllink) {
-> +		if (epi->ffd.file->f_op->poll(epi->ffd.file, NULL) &
-> +		    epi->event.events)
-> +			return POLLIN | POLLRDNORM;
-> +		else
-> +			/*
-> +			 * Item has been dropped into the ready list by the poll
-> +			 * callback, but it's not actually ready, as far as
-> +			 * caller requested events goes. We can remove it here.
-> +			 */
-> +			list_del_init(&epi->rdllink);
+> +#define paravirt_native_make_pgd	(make_pgd_t *)_paravirt_ident_64
+> +#define paravirt_native_pgd_val		(pgd_val_t *)_paravirt_ident_64
+> +#endif
 
-Please use braces around the comment and code when doing this. 
-Otherwise readers can lose track of the fact that we're in a
-single-statement leg of an `if' here.
+I think I prefer:
 
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->
-> ...
->
-> -is_linked:
->  	/*
->  	 * Wake up ( if active ) both the eventpoll wait list and the ->poll()
->  	 * wait list.
-> @@ -703,7 +863,7 @@
->  
->  	/* We have to call this outside the lock */
->  	if (pwake)
-> -		ep_poll_safewake(&psw, &ep->poll_wait);
-> +		ep_poll_safewake(&ep->poll_wait);
->  
->  	return 1;
->  }
-> @@ -725,10 +885,9 @@
->  		add_wait_queue(whead, &pwq->wait);
->  		list_add_tail(&pwq->llink, &epi->pwqlist);
->  		epi->nwait++;
-> -	} else {
-> +	} else
->  		/* We have to signal that an error occurred */
->  		epi->nwait = -1;
-> -	}
+/* make_pte etc and pgd_val etc are identity functions. */
+#define paravirt_native_page_op \
+	(sizeof(pte_t) == sizeof(u64) ? paravirt_ident_64 : paravirt_ident_32)
 
-Please put the braces back?  The `if' clause has them, and most people
-prefer that the `else' clause have them too.  Plus they nicely enclose
-the comment as well, as described above.
+Then use that everywhere rather than these defines?
 
->  }
->  
->
-> ...
->
+But it's a minor point; the code seems perfectly sound.
 
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+
+Thanks!
+Rusty.
