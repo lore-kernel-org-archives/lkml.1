@@ -1,30 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbZA2SEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758426AbZA2SGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001AbZA2SEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 13:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZA2SEO
+	id S1758426AbZA2SGR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 13:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754491AbZA2SGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 13:04:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59527 "EHLO
+	Thu, 29 Jan 2009 13:06:01 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37817 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753574AbZA2SEN (ORCPT
+	by vger.kernel.org with ESMTP id S1754473AbZA2SGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 13:04:13 -0500
-Date: Thu, 29 Jan 2009 10:01:57 -0800
+	Thu, 29 Jan 2009 13:06:00 -0500
+Date: Thu, 29 Jan 2009 10:05:09 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Simon Horman <horms@verge.net.au>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org, Miao Xie <miaox@cn.fujitsu.com>,
-       Vivek Goyal <vgoyal@redhat.com>
-Subject: Re: mmotm 2009-01-28-02-17 uploaded (i386 build errors: cpusets &
- kexec)
-Message-Id: <20090129100157.965bd396.akpm@linux-foundation.org>
-In-Reply-To: <20090129120935.GB9221@hmsreliant.think-freely.org>
-References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org>
-	<49808E3F.1090805@oracle.com>
-	<20090128163040.88b05b3d.akpm@linux-foundation.org>
-	<20090129022846.GA1319@verge.net.au>
-	<20090129120935.GB9221@hmsreliant.think-freely.org>
+To: Adam Tkac <vonsch@gmail.com>
+Cc: Peter Palfrader <weasel@debian.org>, linux-kernel@vger.kernel.org,
+       debian-admin@lists.debian.org, team@security.debian.org,
+       libpam-modules@packages.debian.org, stable@kernel.org
+Subject: Re: 2.6.28, rlimits, performance and debian etch
+Message-Id: <20090129100509.6969970f.akpm@linux-foundation.org>
+In-Reply-To: <20090129121900.GA2827@evileye.atkac.englab.brq.redhat.com>
+References: <20090121115219.GA2754@anguilla.noreply.org>
+	<20090127151703.c356c5db.akpm@linux-foundation.org>
+	<20090129121900.GA2827@evileye.atkac.englab.brq.redhat.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -33,40 +30,130 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 07:09:35 -0500 Neil Horman <nhorman@tuxdriver.com> wrote:
+On Thu, 29 Jan 2009 13:19:00 +0100 Adam Tkac <vonsch@gmail.com> wrote:
 
-> > > So does that.
-> > > 
-> > > --- a/kernel/printk.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix-fix
-> > > +++ a/kernel/printk.c
-> > > @@ -137,11 +137,13 @@ static char *log_buf = __log_buf;
-> > >  static int log_buf_len = __LOG_BUF_LEN;
-> > >  static unsigned logged_chars; /* Number of chars produced since last read+clear operation */
-> > >  
-> > > +#ifdef CONFIG_KEXEC
-> > >  void log_buf_kexec_setup(void)
-> > >  {
-> > >  	VMCOREINFO_SYMBOL(log_buf);
-> > >  	VMCOREINFO_SYMBOL(log_end);
-> > >  }
-> > > +#endif
-> > >  
-> > >  static int __init log_buf_len_setup(char *str)
-> > >  {
-> > > _
+> On Tue, Jan 27, 2009 at 03:17:03PM -0800, Andrew Morton wrote:
+> > On Wed, 21 Jan 2009 12:52:19 +0100
+> > Peter Palfrader <weasel@debian.org> wrote:
 > > 
-> > Weird, I thought I checked that just now. In any case this email
-> > was already in my inbox. In any case, I can now produce the problem,
-> > and this patch resolves it.
+> > > Hi,
+> > > 
+> > > I spent several hours trying to get to the bottom of a serious
+> > > performance issue that appeared on one of our servers after upgrading to
+> > > 2.6.28.  In the end it's what could be considered a userspace bug that
+> > > was triggered by a change in 2.6.28.  Since this might also affect other
+> > > people I figured I'd at least document what I found here, and maybe we
+> > > can even do something about it:
+> > > 
+> > > 
+> > > So, I upgraded some of debian.org's machines to 2.6.28.1 and immediately
+> > > the team maintaining our ftp archive complained that one of their
+> > > scripts that previously ran in a few minutes still hadn't even come
+> > > close to being done after an hour or so.  Downgrading to 2.6.27 fixed
+> > > that.
+> > > 
+> > > Turns out that script is forking a lot and something in it or python or
+> > > whereever closes all the file descriptors it doesn't want to pass on.
+> > > That is, it starts at zero and goes up to ulimit -n/RLIMIT_NOFILE and
+> > > closes them all with a few exceptions.
+> > > 
+> > > Turns out that takes a long time when your limit -n is now 2^20 (1048576).
+> > > 
+> > > With 2.6.27.* the ulimit -n was the standard 1024, but with 2.6.28 it is
+> > > now a thousand times that.
+> > > 
+> > > 2.6.28 included a patch titled "rlimit: permit setting RLIMIT_NOFILE to
+> > > RLIM_INFINITY" (0c2d64fb6cae9aae480f6a46cfe79f8d7d48b59f)[1] that
+> > > allows, as the title implies, to set the limit for number of files to
+> > > infinity.
+> > > 
+> > > Closer investigation showed that the broken default ulimit did not apply
+> > > to "system" processes (like stuff started from init).  In the end I
+> > > could establish that all processes that passed through pam_limit at one
+> > > point had the bad resource limit.
+> > > 
+> > > Apparently the pam library in Debian etch (4.0) initializes the limits
+> > > to some default values when it doesn't have any settings in limit.conf
+> > > to override them.  Turns out that for nofiles this is RLIM_INFINITY.
+> > > Commenting out "case RLIMIT_NOFILE" in pam_limit.c:267 of our pam
+> > > package version 0.79-5 fixes that - tho I'm not sure what side effects
+> > > that has.
+> > > 
+> > > Debian lenny (the upcoming 5.0 version) doesn't have this issue as it
+> > > uses a different pam (version).
+> > > 
+> > > 
+> > > I'm a bit unsure where to go from here.  Maybe the pam library in etch
+> > > should be fixed.  Maybe the patch should be reverted (but then it may be
+> > > more correct now and that's what the changelog entry suggests).
+> > > As a stopgap measure I could also just define nofile in limits.conf.
+> > > 
+> > > Thanks for listening.  Also thanks to Rik and Nocholas who helped track
+> > > some of this down.
+> > > 
+> > > Cheers,
+> > > Peter
+> > > 1. http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=0c2d64fb6cae9aae480f6a46cfe79f8d7d48b59f
+> > >    http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=0c2d64fb6cae9aae480f6a46cfe79f8d7d48b59f
+> > 
+> > Ho hum, thanks.
+> > 
+> > Well, I think we just revert it for now.  We can bring it back later
+> > if someone is thus inclined.  Along with some sort of opt-in control,
+> > perhaps in /proc.  Which defaults to "off".
 > > 
 > 
-> Sorry, i didn't think to check on conditions when CONFIG_KEXEC wasn't set.  I
-> assumed we had a stub for all the VMCOREINFO defines.  Why don't we fix it in
-> that manner?  I mean we have serveral arch specific additions to vmcoreinfo, all
-> of which apparently must be ifdefd for this to work.  Why not just fix it in
-> conditional definition?
+> Hi all,
+> 
+> I don't think the "rlim_infinity" patch should be reverted. Let me try
+> to explain why.
+> 
+> First, code which sets limits to RLIM_INFINITY is very bad idea and
+> that code is Debian specific. I downloaded original pam 0.79 (stripped):
+> 
+> for(i = 0; i < RLIM_NLIMITS; i++) {
+> 	...
+> 	int r = getrlimit(i, &pl->limits[i].limit);
+> 	...
+> 
+> as you can see original pam sets limits to inherited defaults. After
+> code written above Debian adds their patch:
+> 
+> if (limits_not_defined_in_limits_conf) {
+> 	...
+> 	case RLIMIT_NOFILE:
+> 	...
+> 		pl->limits[i].limit.rlim_cur = RLIM_INFINITY;
+> 		pl->limits[i].limit.rlim_max = RLIM_INFINITY;
+> 	...
+> }
+> 
+> so as you can see inherited default limits are overriden to infinity.
+> In my opinion Debian should revert their patch which is, at least,
+> pretty incorrect and unsecure.
+> 
+> Next argument is POSIX compatibility (from setrlimit() specification):
+> 
+> "The value RLIM_INFINITY, defined in <sys/resource.h>, shall be
+> considered to be larger than any other limit value. If a call to
+> getrlimit() returns RLIM_INFINITY for a resource, it means the
+> implementation shall not enforce limits on that resource. Specifying
+> RLIM_INFINITY as any resource limit value on a successful call to
+> setrlimit() shall inhibit enforcement of that resource limit."
+> 
+> So kernel does what is expected. If you want "unlimited" number of
+> descriptors, you have it.
+> 
+> Please consider again where exactly problem is, if in Debian patch or
+> in kernel patch. From my point of view Debian patch should be
+> reverted, not the kernel one.
+> 
 
-I didn't do that because then we'd have an empty function log_buf_kexec_setup()
-floating about in every vmlinux.
+Sure, debian might well be wrong.  But the bottom line is that the
+kernel changed, and people's machines broke.
 
-Hardly a big issue, but a bit regrettable.
+If the kernel change was really really important then we might just
+grit our teeth and live with the breakage.  But this change _wasn't_ a
+terribly important one.  So I think we should back it out while we find
+another way of implementing it which does not break currently deployed
+installations.
