@@ -1,68 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759929AbZA2XQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759833AbZA2XRM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759929AbZA2XQv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:16:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758083AbZA2XQ1
+	id S1759833AbZA2XRM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:17:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754023AbZA2XQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:16:27 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:53263 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757606AbZA2XQ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:16:26 -0500
-Message-ID: <49823869.4010406@oracle.com>
-Date: Thu, 29 Jan 2009 15:14:49 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 29 Jan 2009 18:16:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54761 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759915AbZA2XQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 18:16:45 -0500
+Date: Fri, 30 Jan 2009 00:16:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org
+Subject: Re: RFC: running out of x86 boot loader IDs
+Message-ID: <20090129231641.GC29611@elte.hu>
+References: <49823683.6060201@zytor.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Randy Dunlap <randy.dunlap@oracle.com>, Yinghai Lu <yinghai@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: allow 8 more cpus could be used
-References: <49822B1D.9070708@kernel.org> <20090129224236.GD1465@elte.hu> <49823166.4010702@oracle.com> <20090129231259.GB29611@elte.hu>
-In-Reply-To: <20090129231259.GB29611@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010208.4982386C.0186:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49823683.6060201@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> 
->> Ingo Molnar wrote:
->>> * Yinghai Lu <yinghai@kernel.org> wrote:
->>>
->>>> Impact: fix left out MARCO
->>>>
->>>> X86_PC will be always enabled. so need to check if we have bigsmp 
->>>> support built in before cut off more than 8 cpus.
->>> ah, that's a leftover reference to X86_PC. It can now be removed, together 
->>> with the Kconfig X86_PC option.
->>>
->>>> -#if defined(CONFIG_X86_PC) && defined(CONFIG_X86_32)
->>>> +#if defined(CONFIG_X86_PC) && !defined(CONFIG_X86_BIGSMP)
->>>>  	if (def_to_bigsmp && nr_cpu_ids > 8) {
->>>>  		unsigned int cpu;
->>>>  		unsigned nr;
->>> Could you please send a patch that removes both X86_PC and X86_BIGSMP - 
->>> and removes the above cutoff code too, so that it will be built-in all the 
->>> time?
->> and at what cost, please?
-> 
-> the size difference between a bigsmp and a normal-smp x86 defconfig kernel 
-> is 0.011%. Zero difference on a UP kernel. (And UP is what most of the 
-> ultra-embedded systems are using)
 
-That's static size?  how about cpu and apic table space?
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
+> The 4-bit values used to hold x86 boot loader IDs are near exhaustion.  
+> As a result, I'm proposing an extension protocol and will implement it  
+> in time for the next merge window unless there are objections.
+>
+> The proposal will be as follows:
+>
+> - The boot loader IDs (type_of_loader >> 4) E and F will be reserved:
+>
+> 	E - extended IDs
+> 	F - special uses
+>
+>   F is consistent with the current use of FF for "unknown".
+>
+> - If the boot loader ID is E, the current pad1 field at 0x226 is  
+> repurposed as an extended loader ID.  The reason to use the pad1 field  
+> is that it is present in all headers since version 2.02.  The boot  
+> loader ID will simply be: ((extended ID + 0x10) << 4) + (version), where  
+> (version) as before is (type_of_loader & 15).  This is the value which  
+> will be reported in /proc/sys/kernel/bootloader_type.
+>
+> The biggest question is probably: is there a need/desire for an extended 
+> version field, or is four bits enough for existing bootloader needs?
 
-Thanks,
--- 
-~Randy
+i think it's prudent to add an extension mechanism, regardless of demand. 
+Existing bootloader projects will be content with the IDs they already 
+have so they are unlikely to request new ones. Future bootloader projects 
+cannot request it because they dont exist yet. So there's no-one to talk 
+up.
+
+	Ingo
