@@ -1,91 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbZA2Xe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZA2Xgc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758083AbZA2Xe7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:34:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZA2Xev
+	id S1756861AbZA2Xgc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:36:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZA2XgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:34:51 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:16412 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752213AbZA2Xeu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:34:50 -0500
-Message-ID: <49823D0B.4060503@oracle.com>
-Date: Thu, 29 Jan 2009 15:34:35 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "arjan@infradead.org" <arjan@infradead.org>
-Subject: Re: boot hang: async vs. kexec
-References: <49821C68.4000502@oracle.com> <1233268080.9299.135.camel@norville.austin.ibm.com>
-In-Reply-To: <1233268080.9299.135.camel@norville.austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Jan 2009 18:36:23 -0500
+Received: from sh.osrg.net ([192.16.179.4]:60517 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751644AbZA2XgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 18:36:22 -0500
+Date: Fri, 30 Jan 2009 08:36:12 +0900
+To: y-goto@jp.fujitsu.com
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non
+ DMA_64BIT_MASK devices
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090130073511.F48F.E1E9C6FF@jp.fujitsu.com>
+References: <20090129200303.E2C2.E1E9C6FF@jp.fujitsu.com>
+	<20090129205446N.fujita.tomonori@lab.ntt.co.jp>
+	<20090130073511.F48F.E1E9C6FF@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.49823D0E.0225:SCFSTAT928724,ss=1,fgs=0
+Message-Id: <20090130083654U.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 30 Jan 2009 08:36:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Kleikamp wrote:
-> On Thu, 2009-01-29 at 13:15 -0800, Randy Dunlap wrote:
->> I (try to) do daily build/boot testing.  The newly built kernel
->> is booted via kexec.  This was working until sometime between
->> 2.6.28 and 2.6.29-rc1, so I bisected it.*
->>
->> git bisect blames this commit:
->>
->> 96777fe7b042e5a5d0fe5fb861fcd6cd80ef9634 is first bad commit
->> commit 96777fe7b042e5a5d0fe5fb861fcd6cd80ef9634
->> Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
->> Date:   Thu Jan 8 09:46:31 2009 -0600
->>
->>     async: Don't call async_synchronize_full_special() while holding sb_lock
->>     
->>     sync_filesystems() shouldn't be calling async_synchronize_full_special
->>     while holding a spinlock.  The second while loop in that function is the
->>     right place for this anyway.
->>
->>
->> The new/kexec-loaded kernel hangs during initcalls.  The last one that
->> I can see (via netconsole, might miss a few of the very last lines) is:
->>
->> calling  net_ns_init+0x0/0x14d @ 1
->> net_namespace: 1008 bytes
->> initcall net_ns_init+0x0/0x14d returned 0 after 0 usecs
->>
->>
->>
->> Any ideas/suggestions?
+On Fri, 30 Jan 2009 07:54:07 +0900
+Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+
+> > On Thu, 29 Jan 2009 20:41:07 +0900
+> > Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> > 
+> > > > Before the dma ops unification, IA64 always uses GFP_DMA for
+> > > > dma_alloc_coherent like:
+> > > > 
+> > > > #define dma_alloc_coherent(dev, size, handle, gfp)	\
+> > > > 	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
+> > > > 
+> > > > This GFP_DMA enforcement doesn't make sense for IOMMUs since they can
+> > > > do address translation to give addresses that devices can access
+> > > > to. The IOMMU drivers ignore the zone flag. However, this is still
+> > > > necessary for swiotlb since it can't do address translation.
+> > > > 
+> > > > We don't always need to use GFP_DMA for swiotlb. We need GFP_DMA for
+> > > > devices incapable of 64bit DMA.
+> > > > 
+> > > > This patch is sorta updated version of:
+> > > > 
+> > > > http://marc.info/?l=linux-kernel&m=122638215612705&w=2
+> > > > 
+> > > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > > Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
+> > > > ---
+> > > >  arch/ia64/kernel/pci-swiotlb.c |   10 +++++++++-
+> > > >  1 files changed, 9 insertions(+), 1 deletions(-)
+> > > > 
+> > > > diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
+> > > > index 717ad4f..573f02c 100644
+> > > > --- a/arch/ia64/kernel/pci-swiotlb.c
+> > > > +++ b/arch/ia64/kernel/pci-swiotlb.c
+> > > > @@ -13,8 +13,16 @@
+> > > >  int swiotlb __read_mostly;
+> > > >  EXPORT_SYMBOL(swiotlb);
+> > > >  
+> > > > +static void *ia64_swiotlb_alloc_coherent(struct device *dev, size_t size,
+> > > > +					 dma_addr_t *dma_handle, gfp_t gfp)
+> > > > +{
+> > > > +	if (dev->coherent_dma_mask != DMA_64BIT_MASK)
+> > > > +		gfp |= GFP_DMA;
+> > > > +	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
+> > > > +}
+> > > > +
+> > > >  struct dma_map_ops swiotlb_dma_ops = {
+> > > > -	.alloc_coherent = swiotlb_alloc_coherent,
+> > > > +	.alloc_coherent = ia64_swiotlb_alloc_coherent,
+> > > >  	.free_coherent = swiotlb_free_coherent,
+> > > >  	.map_page = swiotlb_map_page,
+> > > >  	.unmap_page = swiotlb_unmap_page,
+> > > > -- 
+> > > > 1.6.0.6
+> > > 
+> > > 
+> > > Though I may be misunderstanding something, this initialization seems to be
+> > > called only when CONFIG_IA64_DIG_VTD is on.
+> > 
+> > Hmm, what's 'this initialization'?
+> > 
+> > This patch always sets swiotlb_dma_ops.alloc_coherent to
+> > ia64_swiotlb_alloc_coherent.
 > 
-> I'm not sure about any limitations of git bisect, but it seems unlikely
-> to me that sync_filesystems() would be getting called this early.  Are
-> any filesystems even mounted at this point?
+> I tested your patch, but, ia64_swiotlb_alloc_coherent() was not called with
+> CONFIG_GENERIC.
 
-I don't think so.
-
-> Does reverting that commit fix the problem?  (I would be surprised, but
-> stranger things have happened.)
-
-I was also skeptical, and reverting it made no difference.
+You use the generic kernel on a DIG box, right? If so, yeah, there is
+something wrong.
 
 
->> Thanks.
->>
->>
->>
->> *caveat: This was all done with the "don't use gcc 4.1.[01]
->> because it miscompiles __weak" patch reverted.  Could that
->> be an issue/problem here?  (I'm using gcc 4.1.1.)
-> 
-> I have no idea.
+> swiotlb_dma_ops is set by pci_swiotlb_init().
+> However, it seems to be not called when CONFIG_IA64_DIG/Generic configuration.
 
-I am now using gcc 4.1.2 and seeing the same boot hang problem.
+You are talking about setting dma_ops to swiotlb_dma_ops?
 
--- 
-~Randy
+I think that swiotlb_dma_init() also sets dma_ops to swiotlb_dma_ops.
