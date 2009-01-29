@@ -1,44 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758021AbZA2XBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbZA2XCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758021AbZA2XBx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:01:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZA2XBn
+	id S1758740AbZA2XCQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:02:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbZA2XBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:01:43 -0500
-Received: from rcsinet13.oracle.com ([148.87.113.125]:34553 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753279AbZA2XBm (ORCPT
+	Thu, 29 Jan 2009 18:01:47 -0500
+Received: from e24smtp04.br.ibm.com ([32.104.18.25]:43698 "EHLO
+	e24smtp04.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755323AbZA2XBq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:01:42 -0500
-Message-ID: <49823542.4060202@oracle.com>
-Date: Thu, 29 Jan 2009 15:01:22 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29-rc3 (git tree)
-References: <alpine.LFD.2.00.0901281120460.3123@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901281120460.3123@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020B.49823546.0239:SCFSTAT928724,ss=1,fgs=0
+	Thu, 29 Jan 2009 18:01:46 -0500
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, dave@linux.vnet.ibm.com, jmorris@namei.org,
+       matthltc@us.ibm.com, zohar@linux.vnet.ibm.com
+Subject: [PATCH 0/2] TPM: refactoring and integrity
+Date: Thu, 29 Jan 2009 21:01:33 -0200
+Message-Id: <cover.1233060433.git.srajiv@linux.vnet.ibm.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the mainline kernel git tree, where are these files from
-and why?
+This patchset contains a refactoring patch and integrity one. The first addresses Matt Helsley and Dave Hansen's comments on replacing the data[] vectors by packed structures making the code easier to read and debug and also consolidates most of the tpm_show_* functions. The second one provides an interface to read and extend PCR values, which is widely used by IMA.
 
-./crash_uni.patch
-arch/x86/kernel/rb32.log
+Rajiv Andrade (2):
+  TPM: sysfs functions consolidation
+  TPM: integrity interface
 
+ drivers/char/tpm/tpm.c |  532 ++++++++++++++++++++++-------------------------
+ drivers/char/tpm/tpm.h |  140 +++++++++++++
+ include/linux/tpm.h    |   35 ++++
+ 3 files changed, 424 insertions(+), 283 deletions(-)
+ create mode 100644 include/linux/tpm.h
 
-~Randy
-
-
--- 
-~Randy
