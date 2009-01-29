@@ -1,79 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZA2UCt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZA2UDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756822AbZA2UCt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 15:02:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751879AbZA2UCk
+	id S1754790AbZA2UDm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 15:03:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZA2UDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 15:02:40 -0500
-Received: from harold.telenet-ops.be ([195.130.133.65]:46884 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbZA2UCk (ORCPT
+	Thu, 29 Jan 2009 15:03:32 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:10435 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbZA2UDb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 15:02:40 -0500
-Date: Thu, 29 Jan 2009 21:02:29 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andrea Righi <righi.andrea@gmail.com>, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>,
-       David Howells <dhowells@redhat.com>,
-       Hirokazu Takata <takata@linux-m32r.org>
-Subject: Re: [PATCH -mmotm] mm: unify some pmd_*() functions
-In-Reply-To: <20090127174158.519e5abd.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0901292101430.17617@anakin>
-References: <1232919337-21434-1-git-send-email-righi.andrea@gmail.com>
- <20090127174158.519e5abd.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 29 Jan 2009 15:03:31 -0500
+Subject: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+	file segments
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>
+	 <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 29 Jan 2009 15:03:30 -0500
+Message-Id: <1233259410.2315.75.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 27 Jan 2009, Andrew Morton wrote:
-> On Sun, 25 Jan 2009 22:35:37 +0100
-> Andrea Righi <righi.andrea@gmail.com> wrote:
-> 
-> > diff --git a/include/asm-generic/pgtable-nopmd.h b/include/asm-generic/pgtable-nopmd.h
-> > index a7cdc48..b132d69 100644
-> > --- a/include/asm-generic/pgtable-nopmd.h
-> > +++ b/include/asm-generic/pgtable-nopmd.h
-> > @@ -4,6 +4,7 @@
-> >  #ifndef __ASSEMBLY__
-> >  
-> >  #include <asm-generic/pgtable-nopud.h>
-> > +#include <asm/bug.h>
-> >  
-> >  struct mm_struct;
-> >  
-> 
-> Why not include the preferred <linux/bug.h>?
-> 
-> > BTW, I only tested this on x86 and x86_64. This needs more testing because it
-> > touches also a lot of other architectures.
-> 
-> Hopefully Geert, Roman, David and Hirokazu Takata will have time to
-> help out here.
+Against:  2.6.28.2
 
-atari_defconfig builds fine and boots on ARAnyM.
+We see a:
 
-sun3_defconfig fails with:
+BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
+IP: [<ffffffff80336805>] __downgrade_write+0x43/0xb4
+:
+Call Trace:
+ [<ffffffff80284dec>] mlock_vma_pages_range+0x53/0xc3
+ [<ffffffff80287021>] mmap_region+0x389/0x471
+ [<ffffffff802876b5>] do_mmap_pgoff+0x308/0x36d
+ [<ffffffff802100a8>] sys_mmap+0x8b/0x110
+ [<ffffffff8020bc8b>] system_call_fastpath+0x16/0x1b
 
-|   CC      mm/memory.o
-| mm/memory.c: In function 'free_pmd_range':
-| mm/memory.c:176: error: implicit declaration of function '__pmd_free_tlb'
-| mm/memory.c: In function '__pmd_alloc':
-| mm/memory.c:2903: error: implicit declaration of function 'pmd_alloc_one_bug'
-| mm/memory.c:2903: warning: initialization makes pointer from integer without a cast
-| mm/memory.c:2917: error: implicit declaration of function 'pmd_free'
-| make[3]: *** [mm/memory.o] Error 1
+when mmap_region() merges two segments of a file mmap()ed with
+MAP_LOCKED [VM_LOCKED].  
 
-Gr{oetje,eeting}s,
+This patch provides a simplistic fix, suitable, I hope, for -stable.
 
-						Geert
+Pass the merged vma to mlock_vma_pages_range().
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Tested with:  http://free.linux.hp.com/~lts/Tests/mmap_lock.c
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+I'll attempt a rework of mlock_vma_pages_range(), et al, to
+eliminate the 'vma' arg for 29-rc?.
+
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+ mm/mmap.c |   23 ++++++++++++++---------
+ 1 file changed, 14 insertions(+), 9 deletions(-)
+
+Index: linux-2.6.28.2/mm/mmap.c
+===================================================================
+--- linux-2.6.28.2.orig/mm/mmap.c	2009-01-29 11:34:08.000000000 -0500
++++ linux-2.6.28.2/mm/mmap.c	2009-01-29 12:22:14.000000000 -0500
+@@ -1094,7 +1094,7 @@ unsigned long mmap_region(struct file *f
+ 			  int accountable)
+ {
+ 	struct mm_struct *mm = current->mm;
+-	struct vm_area_struct *vma, *prev;
++	struct vm_area_struct *vma, *prev, *merged = NULL;
+ 	int correct_wcount = 0;
+ 	int error;
+ 	struct rb_node **rb_link, *rb_parent;
+@@ -1207,14 +1207,19 @@ munmap_back:
+ 	if (vma_wants_writenotify(vma))
+ 		vma->vm_page_prot = vm_get_page_prot(vm_flags & ~VM_SHARED);
+ 
+-	if (file && vma_merge(mm, prev, addr, vma->vm_end,
+-			vma->vm_flags, NULL, file, pgoff, vma_policy(vma))) {
+-		mpol_put(vma_policy(vma));
+-		kmem_cache_free(vm_area_cachep, vma);
+-		fput(file);
+-		if (vm_flags & VM_EXECUTABLE)
+-			removed_exe_file_vma(mm);
+-	} else {
++	if (file) {
++		merged = vma_merge(mm, prev, addr, vma->vm_end, vma->vm_flags,
++					NULL, file, pgoff, vma_policy(vma));
++		if (merged) {
++			mpol_put(vma_policy(vma));
++			kmem_cache_free(vm_area_cachep, vma);
++			fput(file);
++			if (vm_flags & VM_EXECUTABLE)
++				removed_exe_file_vma(mm);
++			vma = merged;	/* for mlock_vma_pages_range() */
++		}
++	}
++	if (!merged) {
+ 		vma_link(mm, vma, prev, rb_link, rb_parent);
+ 		file = vma->vm_file;
+ 	}
+
+
