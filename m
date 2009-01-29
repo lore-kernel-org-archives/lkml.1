@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756815AbZA2JfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZA2JnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756815AbZA2JfM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 04:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZA2Jey
+	id S1755872AbZA2JnU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 04:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZA2JnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 04:34:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42363 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753363AbZA2Jex (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 04:34:53 -0500
-Date: Thu, 29 Jan 2009 10:32:30 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] reparent_thread: fix a zombie leak if /sbin/init
-	ignores SIGCHLD
-Message-ID: <20090129093230.GA30844@redhat.com>
-References: <20090129080600.GA26878@redhat.com>
+	Thu, 29 Jan 2009 04:43:04 -0500
+Received: from styx.suse.cz ([82.119.242.94]:52275 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751120AbZA2JnB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 04:43:01 -0500
+Date: Thu, 29 Jan 2009 10:43:00 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Greg KH <greg@kroah.com>
+cc: Michael Tokarev <mjt@tls.msk.ru>, Sam Liddicott <sam@liddicott.com>,
+       Ming Lei <tom.leiming@gmail.com>,
+       Linux-kernel <linux-kernel@vger.kernel.org>,
+       Linux USB list <linux-usb@vger.kernel.org>
+Subject: Re: "permanently" unbind a device from a driver?
+In-Reply-To: <20090128061940.GA14275@kroah.com>
+Message-ID: <alpine.LNX.1.10.0901291038100.5377@jikos.suse.cz>
+References: <497638FF.8050805@msgid.tls.msk.ru> <20090120210254.GA5609@kroah.com> <d82e647a0901210744t1655bacesf23bcd54e30002e9@mail.gmail.com> <20090121162345.GB22615@kroah.com> <4977596D.409@liddicott.com> <20090121181124.GA17410@kroah.com>
+ <49779284.50603@msgid.tls.msk.ru> <20090128061940.GA14275@kroah.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090129080600.GA26878@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/29, Oleg Nesterov wrote:
->
-> If /sbin/init ignores SIGCHLD and we re-parent a zombie, it is leaked.
-> reparent_thread() does do_notify_parent() which sets ->exit_signal = -1
-> in this case. This means that nobody except us can reap it, the detached
-> task is not visible to do_wait().
+On Tue, 27 Jan 2009, Greg KH wrote:
 
-Just in case, for reviewers...
+> > Oh, I didn't know.  In fact, that's exactly what I was asking in my 
+> > first email in this thread - to have some module parameter or a sysfs 
+> > file which can be touched to stop the module from claiming the device. 
+> > This also helps to debug it, to know the right bits to use.. which I 
+> > don't know...  ;)
+> There is some way to do this, but I can't recall how at the moment.  
+> Try asking the HID maintainer about this.
 
-To verify that the problem does exist and it is really fixed, I used the
-stupid patch below, it allows to change init's SIGCHLD handler to SIG_IGN
-and then restore it via prctl(1000, 0/1).	
+There is a 'quirks=' parameter that can be passed to the usbhid driver. 
+Unfortunately the need for IGNORE_QUIRK went away when the whole hid stuff 
+got converted to proper bus with proper drivers.
 
-Oleg.
+But for backward userspace compatibility we want to have the 
+HID_IGNORE_QUIRK in place, solely for the purpose of users being able to 
+specify it during the module load, I agree. I currently have this queued 
+in my tree.
 
---- kernel/sys.c~	2009-01-19 10:44:33.000000000 +0100
-+++ kernel/sys.c	2009-01-29 07:37:09.000000000 +0100
-@@ -1703,6 +1703,9 @@ SYSCALL_DEFINE1(umask, int, mask)
- 	return mask;
- }
+diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+index f0a0f72..eed05a3 100644
+--- a/drivers/hid/usbhid/hid-core.c
++++ b/drivers/hid/usbhid/hid-core.c
+@@ -711,6 +711,9 @@ static int usbhid_parse(struct hid_device *hid)
+ 	quirks = usbhid_lookup_quirk(le16_to_cpu(dev->descriptor.idVendor),
+ 			le16_to_cpu(dev->descriptor.idProduct));
  
-+void __user *I_SC;
-+#include <linux/pid_namespace.h>
++	if (quirks & HID_QUIRK_IGNORE)
++		return -ENODEV;
 +
- SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
- 		unsigned long, arg4, unsigned long, arg5)
- {
-@@ -1716,6 +1719,17 @@ SYSCALL_DEFINE5(prctl, int, option, unsi
+ 	/* Many keyboards and mice don't like to be polled for reports,
+ 	 * so we will always set the HID_QUIRK_NOGET flag for them. */
+ 	if (interface->desc.bInterfaceSubClass == USB_INTERFACE_SUBCLASS_BOOT) {
+diff --git a/include/linux/hid.h b/include/linux/hid.h
+index 81aa84d..da481b3 100644
+--- a/include/linux/hid.h
++++ b/include/linux/hid.h
+@@ -270,6 +270,7 @@ struct hid_item {
  
- 	error = 0;
- 	switch (option) {
-+		case 1000: {
-+			struct task_struct *i = init_pid_ns.child_reaper;
-+
-+			if (!I_SC) I_SC = i->sighand->action[SIGCHLD-1].sa.sa_handler;
-+
-+			i->sighand->action[SIGCHLD-1].sa.sa_handler =
-+				arg2 ? I_SC : SIG_IGN;
-+
-+			break;
-+		}
-+
- 		case PR_SET_PDEATHSIG:
- 			if (!valid_signal(arg2)) {
- 				error = -EINVAL;
+ #define HID_QUIRK_INVERT			0x00000001
+ #define HID_QUIRK_NOTOUCH			0x00000002
++#define HID_QUIRK_IGNORE			0x00000004
+ #define HID_QUIRK_NOGET				0x00000008
+ #define HID_QUIRK_BADPAD			0x00000020
+ #define HID_QUIRK_MULTI_INPUT			0x00000040
 
+-- 
+Jiri Kosina
+SUSE Labs
