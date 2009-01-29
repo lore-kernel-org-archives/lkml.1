@@ -1,58 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZA2DnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758708AbZA2Dpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758617AbZA2DnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 22:43:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZA2DnA
+	id S1758708AbZA2Dpv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 22:45:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753678AbZA2Dpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 22:43:00 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50525 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753003AbZA2Dm7 (ORCPT
+	Wed, 28 Jan 2009 22:45:41 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:58182 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751754AbZA2Dpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 22:42:59 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: Re: [ltt-dev] LTTng 0.87 improved page fault tracing
-Cc: kosaki.motohiro@jp.fujitsu.com, ltt-dev@lists.casi.polymtl.ca,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090127210203.GA13478@Krystal>
-References: <20090127210203.GA13478@Krystal>
-Message-Id: <20090129123827.A959.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 28 Jan 2009 22:45:40 -0500
+Message-ID: <49812646.306@oracle.com>
+Date: Wed, 28 Jan 2009 19:45:10 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       phillip@lougher.demon.co.uk, linux-btrfs@vger.kernel.org
+Subject: Re: [PATCH] Documentation/Changes: add required versions for new
+ filesystems
+References: <1233158441-5475-1-git-send-email-notting@redhat.com> <20090128160157.GA5598@nostromo.devel.redhat.com> <20090128211347.GG8990@mit.edu>
+In-Reply-To: <20090128211347.GG8990@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu, 29 Jan 2009 12:42:55 +0900 (JST)
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.49812649.01A5:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-interesting..
-
-> I just combined the 4 page fault handler events that were in the tracing
-> hot path of LTTng into 2 :
+Theodore Tso wrote:
+> On Wed, Jan 28, 2009 at 11:01:57AM -0500, Bill Nottingham wrote:
+>> Bill Nottingham (notting@redhat.com) said: 
+>>> btrfs requires version 0.18 of its tools, and squashfs requires
+>>> 4.0.
+>> This time, with a typo fix.
 > 
-> kernel page_fault_entry
-> kernel page_fault_exit
+> While you're at it, could you also update e2fsprogs to require 1.41.4.
+> It's required for ext4, and even for ext3, if the text is going to
+> say, "if you're going to report any bugs, please update to the
+> versions of these programs".  So the line for e2fsprogs should read:
 > 
-> They take as parameter the combination of what was available in the
-> trap_entry/exit events and handle_mm_fault entry/exit events. This
-> should lessen the performance impact of the tracer when it's active.
-> I did the related modifications in LTTV 0.12.8.
+>  o  e2fsprogs              1.41.4                    # e2fsck -V
+> 
+> I could push this as a separate patch, but then there could be patch
+> conflicts, so it might be nice if you could update e2fsprogs at the
+> same time.
 
-Just question.
+I've done that and can add it to my Docs patches queue for Linus.
 
-As far as I know, customer has two different requeremtn of the page fault.
-  (1) collect number of all page fault
-      -> if it is too large, too many interrupt decrease performance.
-  (2) collect number of major page fault
-      -> major page fault indicate to increase random access I/O,
-         then, some customer want to collect major page fault
-         (don't include minor page fault)
-
-Is this patch fill (2) requirement?
-
-
-
+Thanks,
+-- 
+~Randy
