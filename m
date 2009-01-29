@@ -1,60 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759333AbZA2Ql3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbZA2Qnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759333AbZA2Ql3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 11:41:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbZA2QlT
+	id S1759128AbZA2Qnr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 11:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753076AbZA2Qnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 11:41:19 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:64080 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752905AbZA2QlS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 11:41:18 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX1/TXN29xvMJ/oYFBzU5t5y3
-Date: Thu, 29 Jan 2009 08:41:03 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Paul Walmsley <paul@pwsan.com>, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: OMAP clock fast-forward: an introduction to six series
-Message-ID: <20090129164103.GD32148@atomide.com>
-References: <alpine.DEB.2.00.0901281310590.14710@utopia.booyaka.com> <20090128211844.GI23301@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901282357560.32081@utopia.booyaka.com> <20090129081117.GA11519@n2100.arm.linux.org.uk> <20090129083049.GB11519@n2100.arm.linux.org.uk> <20090129162556.GA32148@atomide.com> <20090129163501.GE18233@n2100.arm.linux.org.uk>
+	Thu, 29 Jan 2009 11:43:39 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:55021 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751782AbZA2Qni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 11:43:38 -0500
+Date: Thu, 29 Jan 2009 17:40:32 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, dvlasenk@redhat.com, jmarchan@redhat.com,
+       roland@redhat.com
+Subject: Re: + ptrace-simplify-ptrace_exit-ignoring_children-path.patch
+	added to -mm tree
+Message-ID: <20090129164032.GA21030@redhat.com>
+References: <200901290843.n0T8hpmi002940@imap1.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090129163501.GE18233@n2100.arm.linux.org.uk>
+In-Reply-To: <200901290843.n0T8hpmi002940@imap1.linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Russell King - ARM Linux <linux@arm.linux.org.uk> [090129 08:35]:
-> On Thu, Jan 29, 2009 at 08:25:58AM -0800, Tony Lindgren wrote:
-> > To me it does not matter which way the stuff gets merged. We just need
-> > to get it all merged.
-> > 
-> > If you guys can't get it merged and sorted out then it will all fall
-> > down on me. And then I have to use tools no smaller than a sledgehammer
-> > to merge it all, so the outcome won't be pretty!
-> 
-> Well, I've continued with my approach.  28 patches are currently merged
-> onto a follow-on branch (scattered throughout the series but in order)
-> and the result builds for my OMAP1, OMAP2 and OMAP3 test builds.
+On 01/29, Andrew Morton wrote:
+>
+> The patch titled
+>      ptrace: simplify ptrace_exit()->ignoring_children() path
+> has been added to the -mm tree.  Its filename is
+>     ptrace-simplify-ptrace_exit-ignoring_children-path.patch
+> ------------------------------------------------------
+> Subject: ptrace: simplify ptrace_exit()->ignoring_children() path
+> From: Oleg Nesterov <oleg@redhat.com>
+>
+> ignoring_children() takes parent->sighand->siglock and checks
+> k_sigaction[SIGCHLD] atomically.  But this buys nothing, we can't get the
+> "really" wrong result even if we race with sigaction(SIGCHLD).  If we read
+> the "stale" sa_handler/sa_flags we can pretend it was changed right after
+> the check.
 
-OK, only 32 more patches to go :)
+I am stupid.
 
-> Patches which I've provided non-trivial comments on by and large haven't
-> been merged.  Once I've worked through the set, I'll provide a final list
-> of those outstanding so nothing should be lost.
-> 
-> I would appreciate someone _bouncing_ (not forwarding) the patches I'm
-> missing to linux@arm.linux.org.uk please.  Those being D6, E2 and F2.
+Somehow I didn't even try to think about false _negative_, and it is
+possible without ->siglock.
 
-I'll bounce them to you.
+If we race with sigaction() which changes ->action[SIGCHLD]
 
-Regards,
+	from:	{ .sa_handler = SIG_IGN, .sa_flags = 0 }
+	to:	{ .sa_handler = handler, .sa_flags = SA_NOCLDWAIT }
 
-Tony
+we can read the stores out of order, and ignoring_children() may
+return the wrong "false". Nothing really bad can happen, and the
+race is mostly theoretical, but still this is not right.
+
+
+Andrew, please replace
+	ptrace-simplify-ptrace_exit-ignoring_children-path.patch
+with the new version below.
+
+I'll also re-send the next one,
+	ptrace-reintroduce-__ptrace_detach-as-a-callee-of-ptrace_exit.patch
+because it should be re-diffed, and because I forgot to update the comments.
+
+Other patches I sent can be applied cleanly.
+
+Sorry for inconvenience!
+
+--------------------------------------------------------------------
+[PATCH 2/4] ptrace: simplify ptrace_exit()->ignoring_children() path
+
+In order to avoid the unnecessary ignoring_children() calls, ptrace_exit()
+uses "int ign" to cache the returned value.
+
+This makes sense because ptrace_exit() works with the list of tracees, but
+the next patche changes this code to work with individual threads.
+
+Remove this optimization, I don't think it is common to exit with a lot of
+attached EXIT_ZOMBIE tracees. And this makes the code a bit simpler.
+
+Also remove _irqsave/_irqrestore, this code always runs with irqs disabled.
+
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+
+--- 6.29-rc3/kernel/exit.c~2_IGN_SIGCHLD	2009-01-19 10:44:33.000000000 +0100
++++ 6.29-rc3/kernel/exit.c	2009-01-29 16:40:38.000000000 +0100
+@@ -729,19 +729,15 @@ static void exit_mm(struct task_struct *
+ }
+ 
+ /*
+- * Return nonzero if @parent's children should reap themselves.
+- *
+- * Called with write_lock_irq(&tasklist_lock) held.
++ * Called with irqs disabled, returns true if childs should reap themselves.
+  */
+-static int ignoring_children(struct task_struct *parent)
++static int ignoring_children(struct sighand_struct *sigh)
+ {
+ 	int ret;
+-	struct sighand_struct *psig = parent->sighand;
+-	unsigned long flags;
+-	spin_lock_irqsave(&psig->siglock, flags);
+-	ret = (psig->action[SIGCHLD-1].sa.sa_handler == SIG_IGN ||
+-	       (psig->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDWAIT));
+-	spin_unlock_irqrestore(&psig->siglock, flags);
++	spin_lock(&sigh->siglock);
++	ret = (sigh->action[SIGCHLD-1].sa.sa_handler == SIG_IGN) ||
++	      (sigh->action[SIGCHLD-1].sa.sa_flags & SA_NOCLDWAIT);
++	spin_unlock(&sigh->siglock);
+ 	return ret;
+ }
+ 
+@@ -754,7 +750,6 @@ static int ignoring_children(struct task
+ static void ptrace_exit(struct task_struct *parent, struct list_head *dead)
+ {
+ 	struct task_struct *p, *n;
+-	int ign = -1;
+ 
+ 	list_for_each_entry_safe(p, n, &parent->ptraced, ptrace_entry) {
+ 		__ptrace_unlink(p);
+@@ -776,12 +771,8 @@ static void ptrace_exit(struct task_stru
+ 		if (!task_detached(p) && thread_group_empty(p)) {
+ 			if (!same_thread_group(p->real_parent, parent))
+ 				do_notify_parent(p, p->exit_signal);
+-			else {
+-				if (ign < 0)
+-					ign = ignoring_children(parent);
+-				if (ign)
+-					p->exit_signal = -1;
+-			}
++			else if (ignoring_children(parent->sighand))
++				p->exit_signal = -1;
+ 		}
+ 
+ 		if (task_detached(p)) {
+
