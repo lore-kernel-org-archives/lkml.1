@@ -1,55 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757984AbZA2Te2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757581AbZA2Th2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757984AbZA2Te2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:34:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZA2TeU
+	id S1757581AbZA2Th2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:37:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZA2ThN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:34:20 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50292 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751552AbZA2TeU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:34:20 -0500
-Date: Thu, 29 Jan 2009 19:34:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: bmckinlay@perle.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 60/80] tty: extract the pty init time special cases
-Message-ID: <20090129193440.2c6efb65@lxorguk.ukuu.org.uk>
-In-Reply-To: <OFD0116D1D.5061D2AB-ON8525754D.005C6317-8525754D.00661977@perle.com>
-References: <20090128204705.7140d5fd@lxorguk.ukuu.org.uk>
-	<OFD0116D1D.5061D2AB-ON8525754D.005C6317-8525754D.00661977@perle.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 14:37:13 -0500
+Received: from relay3.sgi.com ([192.48.171.31]:51172 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751552AbZA2ThM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 14:37:12 -0500
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: UV cleanup
+Cc: mingo@elte.hu, tj@kernel.org
+Message-Id: <E1LScjM-00073R-Cu@eag09.americas.sgi.com>
+From: Cliff Wickman <cpw@sgi.com>
+Date: Thu, 29 Jan 2009 13:39:16 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->   - any required documentation explaining how the driver works and 
-> describing
->     the API for the master side of the PTY driver ?
 
-The first most useful part would be understand what your pty driver does
-and is required that is not in the base one. Just an idea of what extra
-APIs it provides would be quite useful. If it is stuff like virtual modem
-lines then that is stuff I want to see supported in the base kernel
-anyway.
 
-> As mentioned above the Linux kernel has supported "out of tree" PTY type 
-> TTY 
-> drivers all the way back to kernel 2.2.x and up to 2.6.27. To do this the 
+From: Cliff Wickman <cpw@sgi.com>
 
-By chance.. as to policies about kernel recompiles, that is between you
-and the vendors. Maybe the vendors will add the symbols to their tree for
-you ?
+This patch tweaks a couple things:
 
-Equally look at the positives - if the facilities you need are in the
-base kernel your customers won't run into arguments between yourselves
-and the base kernel vendor over support.
+- uv_flush_tlb_others()
+  the WARN_ON(!in_atomic()); fails if CONFIG_PREEMPT is not enabled
 
-Alan
+  The #ifdef may not be the right fix. The fix is probably in the
+  in_atomic macro, but I'm not sure what in_atomic() should return
+  if CONFIG_PREEMPT is turned off.  I tested making it return 1 in that
+  case, but that yielded tons of warnings.
+
+  The simpler fix for tlb_uv.c would be to just drop the WARN_ON.
+
+- uv_flush_send_and_wait() should return a pointer if the broadcast
+  remote tlb shootdown requests fail. That causes the conventional IPI
+  method of shootdown to be used.
+
+Diffed against 2.6.29-rc2
+  (Ingo's tree)
+
+Signed-off-by: Cliff Wickman <cpw@sgi.com>
+---
+ arch/x86/kernel/tlb_uv.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux/arch/x86/kernel/tlb_uv.c
+===================================================================
+--- linux.orig/arch/x86/kernel/tlb_uv.c
++++ linux/arch/x86/kernel/tlb_uv.c
+@@ -259,7 +259,7 @@ const struct cpumask *uv_flush_send_and_
+ 		 * the cpu's, all of which are still in the mask.
+ 		 */
+ 		__get_cpu_var(ptcstats).ptc_i++;
+-		return 0;
++		return flush_mask;
+ 	}
+ 
+ 	/*
+@@ -316,7 +316,9 @@ const struct cpumask *uv_flush_tlb_other
+ 	int locals = 0;
+ 	struct bau_desc *bau_desc;
+ 
++#ifdef CONFIG_PREEMPT
+ 	WARN_ON(!in_atomic());
++#endif
+ 
+ 	cpumask_andnot(flush_mask, cpumask, cpumask_of(cpu));
+ 
