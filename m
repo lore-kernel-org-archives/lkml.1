@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbZA2GvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbZA2Gvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758225AbZA2GvW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 01:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZA2Gut
+	id S1758612AbZA2Gvl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 01:51:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758259AbZA2Gv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 01:50:49 -0500
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40120 "EHLO e3.ny.us.ibm.com"
+	Thu, 29 Jan 2009 01:51:27 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:59304 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753607AbZA2Gus (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 01:50:48 -0500
-Date: Wed, 28 Jan 2009 22:46:43 -0800
+	id S1757874AbZA2GvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 01:51:25 -0500
+Date: Wed, 28 Jan 2009 22:47:20 -0800
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Christoph Hellwig <hch@lst.de>
 Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, hpa@zytor.com, serue@us.ibm.com,
        "David C. Hansen" <haveblue@us.ibm.com>,
        Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org,
        sukadev@us.ibm.com
-Subject: [RFC][PATCH 3/5] Move common mknod_ptmx() calls into caller
-Message-ID: <20090129064643.GD23160@us.ibm.com>
+Subject: [RFC][PATCH 4/5] Remove get_init_pts_sb()
+Message-ID: <20090129064720.GE23160@us.ibm.com>
 References: <20090129064259.GA23160@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -31,81 +31,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 28 Jan 2009 18:54:25 -0800
-Subject: [RFC][PATCH 3/5] Move common mknod_ptmx() calls into caller
+Date: Wed, 28 Jan 2009 18:59:28 -0800
+Subject: [RFC][PATCH 4/5] Remove get_init_pts_sb()
 
-We create 'ptmx' node in both single-instance and multiple-instance
-mounts. So devpts_get_sb() can call mknod_ptmx() once rather than
-have both modes calling mknod_ptmx() separately.
+With mknod_ptmx() moved to devpts_get_sb(), init_pts_mount() becomes
+a wrapper around get_init_pts_sb(). Remove get_init_pts_sb() and
+fold code into init_pts_mount().
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- fs/devpts/inode.c |   36 +++++++++++++++++-------------------
- 1 files changed, 17 insertions(+), 19 deletions(-)
+ fs/devpts/inode.c |   25 ++++++-------------------
+ 1 files changed, 6 insertions(+), 19 deletions(-)
 
 diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
-index 8e00779..97b8e9f 100644
+index 97b8e9f..733e8e0 100644
 --- a/fs/devpts/inode.c
 +++ b/fs/devpts/inode.c
-@@ -343,17 +343,7 @@ static int new_pts_mount(struct file_system_type *fs_type, int flags,
- 	fsi = DEVPTS_SB(mnt->mnt_sb);
- 	memcpy(&fsi->mount_opts, opts, sizeof(opts));
- 
--	err = mknod_ptmx(mnt->mnt_sb);
--	if (err)
--		goto fail;
--
- 	return 0;
--
--fail:
--	dput(mnt->mnt_sb->s_root);
--	up_write(&mnt->mnt_sb->s_umount);
--	deactivate_super(mnt->mnt_sb);
--	return err;
+@@ -347,7 +347,11 @@ static int new_pts_mount(struct file_system_type *fs_type, int flags,
  }
  
  /*
-@@ -421,13 +411,6 @@ static int init_pts_mount(struct file_system_type *fs_type, int flags,
- 	if (err)
- 		return err;
+- * get_init_pts_sb()
++ * init_pts_mount()
++ *
++ *     Mount or remount the initial kernel mount of devpts. This type of
++ *     mount maintains the legacy, single-instance semantics, while the
++ *     kernel still allows multiple-instances.
+  *
+  *     This interface is needed to support multiple namespace semantics in
+  *     devpts while preserving backward compatibility of the current 'single-
+@@ -367,7 +371,7 @@ static int new_pts_mount(struct file_system_type *fs_type, int flags,
+  *     consistently selects the 'single-namespace' superblock even in the
+  *     presence of the private namespace (i.e 'newinstance') super-blocks.
+  */
+-static int get_init_pts_sb(struct file_system_type *fs_type, int flags,
++static int init_pts_mount(struct file_system_type *fs_type, int flags,
+ 		void *data, struct pts_mount_opts *opts, struct vfsmount *mnt)
+ {
+ 	struct super_block *s;
+@@ -397,23 +401,6 @@ static int get_init_pts_sb(struct file_system_type *fs_type, int flags,
+ 	return 0;
+ }
  
--	err = mknod_ptmx(mnt->mnt_sb);
--	if (err) {
--		dput(mnt->mnt_sb->s_root);
--		up_write(&mnt->mnt_sb->s_umount);
--		deactivate_super(mnt->mnt_sb);
--	}
+-/*
+- * Mount or remount the initial kernel mount of devpts. This type of
+- * mount maintains the legacy, single-instance semantics, while the
+- * kernel still allows multiple-instances.
+- */
+-static int init_pts_mount(struct file_system_type *fs_type, int flags,
+-		void *data, struct pts_mount_opts *opts, struct vfsmount *mnt)
+-{
+-	int err;
 -
- 	return err;
- }
- 
-@@ -444,9 +427,24 @@ static int devpts_get_sb(struct file_system_type *fs_type,
- 	}
- 
- 	if (opts.newinstance)
--		return new_pts_mount(fs_type, flags, data, &opts, mnt);
-+		error = new_pts_mount(fs_type, flags, data, &opts, mnt);
- 	else
--		return init_pts_mount(fs_type, flags, data, &opts, mnt);
-+		error = init_pts_mount(fs_type, flags, data, &opts, mnt);
-+
-+	if (error)
-+		return error;
-+
-+	error = mknod_ptmx(mnt->mnt_sb);
-+	if (error)
-+		goto out_dput;
-+
-+	return 0;
-+
-+out_dput:
-+	dput(mnt->mnt_sb->s_root);
-+	up_write(&mnt->mnt_sb->s_umount);
-+	deactivate_super(mnt->mnt_sb);
-+	return error;
- }
- 
- #else
+-	err = get_init_pts_sb(fs_type, flags, data, opts, mnt);
+-	if (err)
+-		return err;
+-
+-	return err;
+-}
+-
+ static int devpts_get_sb(struct file_system_type *fs_type,
+ 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
+ {
 -- 
 1.5.2.5
 
