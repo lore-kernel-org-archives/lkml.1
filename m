@@ -1,92 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758298AbZA2O0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZA2O0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758298AbZA2O0Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 09:26:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZA2O0B
+	id S1754353AbZA2O0c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:26:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZA2O0H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 09:26:01 -0500
-Received: from relay1.sgi.com ([192.48.179.29]:57851 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751135AbZA2O0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 09:26:00 -0500
-Date: Thu, 29 Jan 2009 08:25:57 -0600
-From: Jack Steiner <steiner@sgi.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] - UV fix compile error on IA64 & eliminate compiler warning
-Message-ID: <20090129142557.GB390@sgi.com>
-References: <20090128212104.GA1156@sgi.com> <20090129133308.GE24391@elte.hu>
+	Thu, 29 Jan 2009 09:26:07 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:49426 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754780AbZA2O0G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 09:26:06 -0500
+Subject: Re: [PATCH v3] timer: implement lockdep deadlock detection
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <1233236287.4495.77.camel@laptop>
+References: <1233010786.4344.1.camel@johannes.local>
+	 <20090126230721.GA6556@elte.hu> <1233046009.4012.3.camel@johannes.local>
+	 <20090127132759.GI23121@elte.hu>  <20090127134128.GA24965@elte.hu>
+	 <1233079597.4755.2.camel@johannes.local> <1233081027.10992.21.camel@laptop>
+	 <1233082650.4455.9.camel@johannes.local> <1233130815.10992.39.camel@laptop>
+	 <1233136487.4151.5.camel@johannes.local> <1233137581.10992.44.camel@laptop>
+	 <1233140081.3936.21.camel@johannes.local>
+	 <1233166017.4811.9.camel@johannes.local>  <1233236287.4495.77.camel@laptop>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3yD0n4HtwnL2QYU+NT+I"
+Date: Thu, 29 Jan 2009 15:25:52 +0100
+Message-Id: <1233239152.4035.3.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090129133308.GE24391@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 02:33:08PM +0100, Ingo Molnar wrote:
-> 
-> * Jack Steiner <steiner@sgi.com> wrote:
-> 
-> > 
-> > The GRU driver is used on both IA64 & x86.
-> > The 2 architectures have different ways of detecting the
-> > platform type, ie. whether the platform is a UV system.
-> > Although it is possible to reconcile the 2 methods,
-> > only one place currently makes the test.
-> > 
-> > Also eliminate a warning message in uv.h.
-> > 
-> > Signed-off-by: Jack Steiner <steiner@sgi.com>
-> > 
-> > 
-> > ---
-> >  arch/x86/include/asm/uv/uv.h   |    1 +
-> >  drivers/misc/sgi-gru/gru.h     |    2 --
-> >  drivers/misc/sgi-gru/grufile.c |    1 +
-> >  3 files changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux/arch/x86/include/asm/uv/uv.h
-> > ===================================================================
-> > --- linux.orig/arch/x86/include/asm/uv/uv.h	2009-01-28 12:43:27.000000000 -0600
-> > +++ linux/arch/x86/include/asm/uv/uv.h	2009-01-28 15:13:58.000000000 -0600
-> > @@ -2,6 +2,7 @@
-> >  #define _ASM_X86_UV_UV_H
-> >  
-> >  enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
-> > +struct mm_struct;
-> 
-> hm, why is this needed?
 
-I don't see the error in your tip tree, but I saw the following earlier this week when
-compiling in the linux-next tree:
+--=-3yD0n4HtwnL2QYU+NT+I
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-	arch/x86/include/asm/uv/uv.h:16: warning: struct mm_struct declared inside parameter list
-	include/asm/uv/uv.h:16: warning: its scope is only this definition or declaration,
-						which is probably not what you want
+On Thu, 2009-01-29 at 14:38 +0100, Peter Zijlstra wrote:
+> On Wed, 2009-01-28 at 19:06 +0100, Johannes Berg wrote:
+>=20
+> > +/*
+> > + * All the indirection here is required to build the
+> > + * "<file>:<line>" string and the pointer to it.
+> > + */
+> > +#define ___TIMER_INITIALIZER(_fn, _exp, _dat, _kn)			\
+> > +	____TIMER_INITIALIZER(_fn, _exp, _dat, (_kn), &(_kn))
+> > +#define __TIMER_INITIALIZER(_fn, _exp, _dat, _f, _c, _l)		\
+> > +	___TIMER_INITIALIZER(_fn, _exp, _dat, _f # _c # _l)
+> > +#define _TIMER_INITIALIZER(_fn, _exp, _dat, _f, _l)			\
+> > +	__TIMER_INITIALIZER(_fn, _exp, _dat, _f, :, _l)
+> > +#define TIMER_INITIALIZER(_function, _expires, _data)			\
+> > +	_TIMER_INITIALIZER(_function, _expires, _data, __FILE__, __LINE__)
+>=20
+> The regular way to write that would be:
+>=20
+> #define __STR(foo) #foo
+> #define STR(foo) __STR(foo)
+>=20
+> __FILE__ ":" STR(__LINE__)
+>=20
+> I'm sure I saw that stringify thing somewhere in the kernel before, but
+> can't find it. I recently added it to lockdep.c, maybe we should add it
+> to kernel.h ?
 
-Unfortunately my log does not capture the file that produced this error.
-I believe it was from a non-UV file that indirectly included uv.h. It is
-possible that subsequent changes have removed the indirect reference.
+Ohh, hmm, my cpp could be stronger :) I'll try out with stringify and
+send a complete v4.
 
+johannes
 
-> 
-> >  #define IS_UV()		is_uv_system()
-> 
-> btw., why is there an ugly IS_UV() macro. All code should be using 
-> is_uv_system() and IS_UV() should be removed.
+--=-3yD0n4HtwnL2QYU+NT+I
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Agree & I plan to do that. I need to add a arch/ia64/include/asm/uv/uv.h
-file and hide the uglyness there. IA64 does not used the same method
-of determining the platform type. IA64 historically uses:
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-	ia64_platform_is("uv")
+iQIcBAABAgAGBQJJgbxtAAoJEKVg1VMiehFY0BEQAJFTlgDRsX24WzS4NSc/tvmn
+ttNkOSA5bHRgX/S1Og/EZQuG9IybxDR32wudIr0edvV8plumH5CBlOuXmpj1vFhz
+zdWp9HIcd9Gu8lH3hQtCWYVFRKLKcFpjjAmIHtSmXGyUEgJXNlwDTKWhRyCcjPHK
+67rrK6lw+Mk87ZbxzuPbv4h9KpGyGsjScTzzwcNAtww8QuHRmD+B3bdrf0CA6q5F
+PU6ETTEa3fijnaACeW/qzUZm7KAX/OAnbdOk+yV6CRIwEEjQ4JO3ovAvo/cIYFlR
+v8PCs578dz3bcz9UKcTZ/44bgcZmJG2+O5CRPWfYTQZqtpu8/HpiqPMok1t0l227
+Sl7JyxGLvQ+5oCM4x5ImW0nr5sKiG/MW5l/MDpoA2hOmWTBaBWW7c/bS3biGaY5e
+MWQ5UBJRE8WVdfgUtxG4j2MkqHieVHUfuM1LUoYQSSLE78j/asEZFdhRasAMnee/
+pG9IdTXnswoD18Xxj12FrYE+IwyyPYe75pODZOsh3gy9HP6FDiQv2eO/9lzqiLQH
+s5KoGOZDzGPU1a3uPxBBFeZ2Iowsz7CktxnPKO7XJ29S8Y52MkE5+F40ZOt6UWpr
+BoZ5idInc/VVdaBVOa4gtk/umhg0AqnLh24i4UwZ7SL0oihcczRYLEjVlklwiqf2
+wJYgYdxhWEUoIr6/ArVf
+=AoGN
+-----END PGP SIGNATURE-----
 
-The GRU driver must be supported on both IA64 & x86. I've tried to hide the
-platform differences but some are difficult (especially regarding irqs &
-vectors).
+--=-3yD0n4HtwnL2QYU+NT+I--
 
-
---- jack
