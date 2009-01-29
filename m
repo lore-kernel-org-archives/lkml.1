@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759722AbZA2XT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759931AbZA2XU5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759722AbZA2XT6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 18:19:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZA2XTu
+	id S1759931AbZA2XU5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 18:20:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZA2XUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 18:19:50 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:41861 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbZA2XTu (ORCPT
+	Thu, 29 Jan 2009 18:20:49 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:64340 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753096AbZA2XUs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 18:19:50 -0500
-Message-ID: <4982398D.1020506@zytor.com>
-Date: Thu, 29 Jan 2009 15:19:41 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 29 Jan 2009 18:20:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=kfenzBJln5aXuiAG95/55aKHRZIs+qvrIfO3z2KWIpXn/783hWQ603o8or/k8lTfiS
+         iSUK/qELgDwLUazSrjI5wzZA7AxAz5Lrj9bowfVryyNJxAunLgDQsxQi36GV1ZipPHVT
+         q7THp5/dSufOvKKknRSsBXkwQQSbOVUXbK3tg=
+Message-ID: <498239CC.2010200@gmail.com>
+Date: Thu, 29 Jan 2009 15:20:44 -0800
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org
-Subject: Re: RFC: running out of x86 boot loader IDs
-References: <49823683.6060201@zytor.com> <20090129231641.GC29611@elte.hu>
-In-Reply-To: <20090129231641.GC29611@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: macbook pro radeon suspend issue
+References: <49812E3B.6050106@gmail.com> <200901291536.37348.rjw@sisk.pl> <4982045B.6090206@gmail.com> <200901292319.37921.rjw@sisk.pl>
+In-Reply-To: <200901292319.37921.rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->>
->> - If the boot loader ID is E, the current pad1 field at 0x226 is  
->> repurposed as an extended loader ID.  The reason to use the pad1 field  
->> is that it is present in all headers since version 2.02.  The boot  
->> loader ID will simply be: ((extended ID + 0x10) << 4) + (version), where  
->> (version) as before is (type_of_loader & 15).  This is the value which  
->> will be reported in /proc/sys/kernel/bootloader_type.
->>
->> The biggest question is probably: is there a need/desire for an extended 
->> version field, or is four bits enough for existing bootloader needs?
-> 
-> i think it's prudent to add an extension mechanism, regardless of demand. 
-> Existing bootloader projects will be content with the IDs they already 
-> have so they are unlikely to request new ones. Future bootloader projects 
-> cannot request it because they dont exist yet. So there's no-one to talk 
-> up.
-> 
+Rafael J. Wysocki wrote:
+> On Thursday 29 January 2009, Justin P. Mattock wrote:
+>   
+>> Rafael J. Wysocki wrote:
+>>     
+>>> On Thursday 29 January 2009, Justin P. Mattock wrote:
+>>>   
+>>>       
+>>>> No sure if there is a bug report already or not.
+>>>> For the macbook pro(ATI chipset) suspend is broken.
+>>>> As for kernel version: latest git.
+>>>> Last week(before LCA, and during the week, since being no merges.)
+>>>> the system would wakeup, show a black screen and sit there. Now
+>>>> after a couple of merges have been completed The system wakes up,
+>>>> but instantly reboot's.
+>>>>
+>>>> I tried to supply any info(ohci1394_dma) when the wakeup occurs, but had 
+>>>> no response
+>>>> for some reason or another.
+>>>> I can try and do a bisect, the only problem
+>>>> I have though, is I never labeled good/bad commits(forgot how too);
+>>>>
+>>>> In any case If I'm in an urgent need, of having  to suspend
+>>>> the system(not in anytime soon at the moment),
+>>>> then Ill just revert kernels to one that I know works.     :^)
+>>>>     
+>>>>         
+>>> Which is that?
+>>>
+>>> Rafael
+>>>
+>>>   
+>>>       
+>> O.K. I ended up grabbing the packages from debian
+>> to get it working.
+>>     
+>
+> Not sure what you mean.  Care to elaborate?
+>
+> Rafael
+>
+>   
+Well, long story short,
+s2ram was not working a few weeks
+ago, as well as echo mem > sys/power/state also.
+Now this morning I built the package s2ram
+from the debian sid repository(even though I'm using jaunty), and viola
+it works again(last week s2ram was leaving a blank screen for
+some reason or another.)
 
-Good point.  If so, it probably makes most sense to split pad1 into two 
-one-byte fields; one for ID and one for version.  The bootloader_type 
-will have to continue to be (ID << 4)+basic_version; we can presumably 
-add a bootloader_version file which can report a bigger ID.
+The only issue for now at least is
+echo mem > /sys/power/state
+which results in a blank screen,
+and an instant reboot.
 
-Either that or we can expose the raw pad1 field as bootloader_exttype 
-and force any users to be aware of the field splits.
+aside note don't mean to confuse you.
+(busy at the SPIE show in san jose);
 
-	-hpa
+regards;
 
+Justin P. Mattock
