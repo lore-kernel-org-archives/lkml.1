@@ -1,67 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759586AbZA2WHB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759668AbZA2WHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759586AbZA2WHB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 17:07:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZA2WGq
+	id S1759668AbZA2WHd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 17:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbZA2WGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 17:06:46 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49668 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751772AbZA2WGp (ORCPT
+	Thu, 29 Jan 2009 17:06:49 -0500
+Received: from an-out-0708.google.com ([209.85.132.243]:3289 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754192AbZA2WGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 17:06:45 -0500
-Date: Thu, 29 Jan 2009 23:06:33 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Brian Swetland <swetland@google.com>, arve@google.com,
-       San Mehat <san@android.com>, Robert Love <rlove@google.com>,
-       linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>,
-       ext Juha Yrj?????? <juha.yrjola@solidboot.com>,
-       viktor.rosendahl@nokia.com, Trilok Soni <soni.trilok@gmail.com>
-Subject: Re: lowmemory android driver not needed?
-Message-ID: <20090129220633.GA18603@elf.ucw.cz>
-References: <2f11576a0901160518g52a3e70endc98fe4792a98b9b@mail.gmail.com> <d6200be20901212213x1069762cpd377d04bc5a04a91@mail.gmail.com> <20090128234209.A949.KOSAKI.MOTOHIRO@jp.fujitsu.com> <d6200be20901281851k45f9692em1379140c8951c195@mail.gmail.com>
+	Thu, 29 Jan 2009 17:06:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version:content-type;
+        b=t7jLSwq8tz/lxJlYposwgXCMescnFJRCqy2XBWwAsvrdCMkgxPvSJriffGhhVyMNij
+         6u/wPbmz1AdubuRCo7ycAG9BZs6rf4wUcTLGs4vALYxNBwhfR2QeGo7F7xV4lwq/8ym7
+         acuiNhT1MGNLzvQsUxQw7QSq3hSUcio0MiOus=
+Date: Thu, 29 Jan 2009 17:06:35 -0500 (EST)
+From: Parag Warudkar <parag.lkml@gmail.com>
+X-X-Sender: parag@parag-desktop
+To: Matt Carlson <mcarlson@broadcom.com>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <20090129184215.GA13459@xw6200.broadcom.net>
+Message-ID: <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d6200be20901281851k45f9692em1379140c8951c195@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> I never expected it to be merged. I wrote it to allow us to ship a product.
+
+On Thu, 29 Jan 2009, Matt Carlson wrote:
+
+> Can you apply the following test patch and see if it helps?  The patch
+> does two things.  First, it enables a bit which should restore firmware
+> communication.  If that fixes the problem, then let me know and I'll
+> spin a proper patch.
 > 
-> > The top problem is, this file stay on non proper place.
-> > then, MM folks don't review at all.
-> >
-> > I think this patch need to receive MM folks review.
+> In the event that it doesn't work, the patch goes on to test the memory
+> mapping by simply printing the register value at offset 0x0.  The value
+> should be the device's vendor ID and device ID.  Please post the
+> results so that I can verify it.
 > 
-> This patch solves two problems for us:
-> 1. It gives us more control over which process gets killed when we run
-> out of memory. This can easily be fixed in the regular oom killer
-> instead.
-> 2. It prevents the system from getting unusable due to excessive
-> demand paging. Before we added the low memory killer, we had devices
-> stuck for many minutes before the system managed to allocate enough
-> memory for the oom killer to kick in.
-> The second problem is the most critical and if it is solved, we will
-> not need this patch.
+> 
+> diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+> index 8b3f846..39fce42 100644
+> --- a/drivers/net/tg3.c
+> +++ b/drivers/net/tg3.c
+> @@ -7227,6 +7227,11 @@ static int tg3_init_hw(struct tg3 *tp, int reset_phy)
+>  {
+>  	tg3_switch_clocks(tp);
+>  
+> +	printk( KERN_NOTICE "%s: Reg value at offset 0x0 is 0x%x\n",
+> +		tp->dev->name, tr32(0x0) );
+> +
+> +	tw32(MEMARB_MODE, tr32(MEMARB_MODE) | MEMARB_MODE_ENABLE);
+> +
+>  	tw32(TG3PCI_MEM_WIN_BASE_ADDR, 0);
+>  
+>  	return tg3_reset_hw(tp, reset_phy);
+> 
 
-Ok, maybe the best way forward is to create a "demo" that can be run
-on desktop machine, where machine misbehaves (like becomes useless for
-10 minutes before OOM killer kicks in), then draw attetion of
-Andrew/Nick/etc?
+Hi Matt,
 
-									Pavel
+Thanks for the patch. It didn't help with resume - but below is the 
+output after patching, let me know if you need more details.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+( Looks like 0xffffffff is invalid/corrupted device id /vendor id? )
+
+[  163.856001] tg3 0000:0e:00.0: restoring config space at offset 0xc (was 0x0, writing 0x20040000)                                                                                                            
+[  163.856001] tg3 0000:0e:00.0: restoring config space at offset 0x3 (was 0x0, writing 0x10)                                                                                                                  
+[  163.856001] tg3 0000:0e:00.0: restoring config space at offset 0x1 (was 0x100000, writing 0x100006)                                                                                                         
+
+[snip]
+
+[  164.450277] pcieport-driver 0000:1e:00.0: setting latency timer to 64
+[  164.450415] pcieport-driver 0000:1e:01.0: setting latency timer to 64
+[  164.450493] tg3 0000:0e:00.0: restoring config space at offset 0xc (was 0x0, writing 0x20040000)
+[  164.451110] serial 00:08: activated
+
+[snip]
+
+[  168.913863] Restarting tasks ... done.
+[  170.332953] tg3 0000:0e:00.0: wake-up capability disabled by ACPI
+[  170.332960] tg3 0000:0e:00.0: PME# disabled
+[  170.333047] tg3 0000:0e:00.0: irq 54 for MSI/MSI-X
+[  170.333250] eth0: Reg value at offset 0x0 is 0xffffffff
+[  170.394281] [drm] Loading R500 Microcode
+[  170.394330] [drm] Num pipes: 1
+[  171.726650] tg3: eth0: No firmware running.
+[  183.119745] ADDRCONF(NETDEV_UP): eth0: link is not ready
+
+
+Parag
