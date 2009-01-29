@@ -1,79 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757793AbZA2WuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757855AbZA2Wy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757793AbZA2WuB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 17:50:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZA2Wtw
+	id S1757855AbZA2Wy1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 17:54:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZA2WyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 17:49:52 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:63421 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbZA2Wtw (ORCPT
+	Thu, 29 Jan 2009 17:54:17 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:41449 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751601AbZA2WyQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 17:49:52 -0500
-Message-ID: <4982324B.3050706@oracle.com>
-Date: Thu, 29 Jan 2009 14:48:43 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 29 Jan 2009 17:54:16 -0500
+Date: Fri, 30 Jan 2009 07:54:07 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non DMA_64BIT_MASK devices
+Cc: mingo@elte.hu, tony.luck@intel.com, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20090129205446N.fujita.tomonori@lab.ntt.co.jp>
+References: <20090129200303.E2C2.E1E9C6FF@jp.fujitsu.com> <20090129205446N.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20090130073511.F48F.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Maksim Yevmenkin <maksim.yevmenkin@gmail.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
- 	file segments
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>	 <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>	 <1233259410.2315.75.camel@lts-notebook>	 <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>	 <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain> <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>
-In-Reply-To: <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4982324F.02C4:SCFSTAT928724,ss=1,fgs=0
+X-Mailer: Becky! ver. 2.45 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maksim Yevmenkin wrote:
-> On Thu, Jan 29, 2009 at 12:48 PM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
->> On Thu, 29 Jan 2009, Linus Torvalds wrote:
->>> THIS PATCH IS TOTALLY UNTESTED!
->> Well, it boots. FWIW. I've not really tested anything interesting with it,
->> but any potential breakage is at least not catastrophic and immediate.
->>
->>> diff --git a/mm/mmap.c b/mm/mmap.c
->>> index 8d95902..3f78ead 100644
->>> --- a/mm/mmap.c
->>> +++ b/mm/mmap.c
->>> @@ -769,6 +769,10 @@ struct vm_area_struct *vma_merge(struct mm_struct *mm,
->>>       if (vm_flags & VM_SPECIAL)
->>>               return NULL;
->>>
->>> +     /* Anonymous shared mappings are unsharable */
->>> +     if ((vm_flags & VM_SHARED) && !file)
->>> +             return NULL;
->>> +
->> .. and I think this part of it is actually unnecessary, because what
->> happens is that a shared anon mapping is turned into a shmem mapping when
->> it is inserted, and that actually ends up allocating a file for it. So the
->> vma->vm_file for anon mappings will not match a NULL file pointer
->> _anyway_, so there's no way it would end up merging.
->>
->> So my patch can be further simplified, I think, to just the following.
->> Even more total lines removed.
->>
->> I still want somebody else to look at and think about it, though.
+> On Thu, 29 Jan 2009 20:41:07 +0900
+> Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
 > 
-> Just to confirm. This patch also appear to fix the immediate issue for us.
+> > > Before the dma ops unification, IA64 always uses GFP_DMA for
+> > > dma_alloc_coherent like:
+> > > 
+> > > #define dma_alloc_coherent(dev, size, handle, gfp)	\
+> > > 	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
+> > > 
+> > > This GFP_DMA enforcement doesn't make sense for IOMMUs since they can
+> > > do address translation to give addresses that devices can access
+> > > to. The IOMMU drivers ignore the zone flag. However, this is still
+> > > necessary for swiotlb since it can't do address translation.
+> > > 
+> > > We don't always need to use GFP_DMA for swiotlb. We need GFP_DMA for
+> > > devices incapable of 64bit DMA.
+> > > 
+> > > This patch is sorta updated version of:
+> > > 
+> > > http://marc.info/?l=linux-kernel&m=122638215612705&w=2
+> > > 
+> > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > > Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
+> > > ---
+> > >  arch/ia64/kernel/pci-swiotlb.c |   10 +++++++++-
+> > >  1 files changed, 9 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
+> > > index 717ad4f..573f02c 100644
+> > > --- a/arch/ia64/kernel/pci-swiotlb.c
+> > > +++ b/arch/ia64/kernel/pci-swiotlb.c
+> > > @@ -13,8 +13,16 @@
+> > >  int swiotlb __read_mostly;
+> > >  EXPORT_SYMBOL(swiotlb);
+> > >  
+> > > +static void *ia64_swiotlb_alloc_coherent(struct device *dev, size_t size,
+> > > +					 dma_addr_t *dma_handle, gfp_t gfp)
+> > > +{
+> > > +	if (dev->coherent_dma_mask != DMA_64BIT_MASK)
+> > > +		gfp |= GFP_DMA;
+> > > +	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
+> > > +}
+> > > +
+> > >  struct dma_map_ops swiotlb_dma_ops = {
+> > > -	.alloc_coherent = swiotlb_alloc_coherent,
+> > > +	.alloc_coherent = ia64_swiotlb_alloc_coherent,
+> > >  	.free_coherent = swiotlb_free_coherent,
+> > >  	.map_page = swiotlb_map_page,
+> > >  	.unmap_page = swiotlb_unmap_page,
+> > > -- 
+> > > 1.6.0.6
+> > 
+> > 
+> > Though I may be misunderstanding something, this initialization seems to be
+> > called only when CONFIG_IA64_DIG_VTD is on.
+> 
+> Hmm, what's 'this initialization'?
+> 
+> This patch always sets swiotlb_dma_ops.alloc_coherent to
+> ia64_swiotlb_alloc_coherent.
 
-Is there a (small) test program available?
+I tested your patch, but, ia64_swiotlb_alloc_coherent() was not called with
+CONFIG_GENERIC.
 
-Thanks,
+swiotlb_dma_ops is set by pci_swiotlb_init().
+However, it seems to be not called when CONFIG_IA64_DIG/Generic configuration.
+
+
+> > > This patch is sorta updated version of:
+> > > 
+> > > http://marc.info/?l=linux-kernel&m=122638215612705&w=2
+> > > 
+
+This old version is effective even CONFIG_GENERIC/CONFIG_IA64_DIG.
+
+Bye.
+
+> 
+> 
+> > CONFIG_IA64_DIG_VTD
+> >   platform_dma_init() -> pci_iommu_alloc() -> pci_swiotlb_init()
+> > 
+> > CONFIG_IA64_DIG/CONFIG_IA64_GENERIC
+> >   platform_dma_init() -> swiotlb_dma_init()
+> > 
+> > Is it intended? 
+> > Do you wish GFP_DMA should be always ON when generic config?
+
+
 -- 
-~Randy
+Yasunori Goto 
+
+
