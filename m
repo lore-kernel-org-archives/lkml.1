@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZA2TJB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbZA2TQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756361AbZA2TJB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:09:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZA2TIv
+	id S1755318AbZA2TQX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:16:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZA2TQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:08:51 -0500
-Received: from isrv.corpit.ru ([81.13.33.159]:35913 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbZA2TIv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:08:51 -0500
-Message-ID: <4981FEBF.5050603@msgid.tls.msk.ru>
-Date: Thu, 29 Jan 2009 22:08:47 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Thu, 29 Jan 2009 14:16:10 -0500
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:51145 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751785AbZA2TQJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 14:16:09 -0500
+Date: Thu, 29 Jan 2009 13:33:13 -0500 (EST)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
+       akpm@linux-foundation.org, hpa@zytor.com, brgerst@gmail.com,
+       ebiederm@xmission.com, travis@sgi.com, linux-kernel@vger.kernel.org,
+       steiner@sgi.com, hugh@veritas.com,
+       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org
+Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
+In-Reply-To: <20090128180757.GA9908@Krystal>
+Message-ID: <alpine.DEB.1.10.0901291315320.9622@qirst.com>
+References: <20090115183942.GA6325@elte.hu> <200901271213.18605.rusty@rustcorp.com.au> <497E705B.5000302@kernel.org> <200901282108.51864.rusty@rustcorp.com.au> <alpine.DEB.1.10.0901281148540.13825@qirst.com> <20090128180757.GA9908@Krystal>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: vm: shmat() address for 32 vs 64 bit kernel
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I were needed to run a legacy application which uses
-Oracle 8 database.  Tried to run it on a 64bit kernel,
-which is running on my machine for a long time, together
-with 32bits userland.  Everything worked but not oracle,
-which segfaults at startup on 64bits kernel, but works
-just fine when running the same but 32bits kernel
-(userspace is the same).
+On Wed, 28 Jan 2009, Mathieu Desnoyers wrote:
 
-After much debugging I found this difference which may
-be relevant.  It's the address returned by shmat() routine.
+> > The term cpu is meaning multiple things at this point. So yes it may be
+> > better to go with glibc naming of thread local space.
+> >
+>
+> However using "local" for "per-cpu" could be confusing with the glibc
+> naming of thread local space, because "per-thread" and "per-cpu"
+> variables are different from a synchronization POV and we can end up
+> needing both (e.g. a thread local variable can never be accessed by
+> another thread, but a cpu local variable could be accessed by a
+> different CPU due to scheduling).
 
-Here are the relevant stuff for 32bits:
+gcc/glibc support a __thread attribute to variables. As far as I can tell
+this automatically makes gcc perform the relocation to the current
+context using a segment register.
 
-shmget(0x4d21f3bc, 579067904, IPC_CREAT|IPC_EXCL|0640) = 174358532
-shmat(174358532, 0, 0)            = 0x9569f000
+But its a weird ABI http://people.redhat.com/drepper/tls.pdf. After
+reading that I agree that we should stay with the cpu ops and forget about
+the local and thread stuff in gcc/glibc.
 
-Here, the segment ends at (0x9569f000+579067904)/1024/1024 = 2942Mb.
-
-And here's what happens with 64bits kernel:
-
-shmget(0xc9a7c840, 579067904, IPC_CREAT|IPC_EXCL|0640) = 294912
-shmat(294912, 0, 0)               = 0xd5548000
-
-Here, the segment ends at 3965Mb.
-
-And right after that shmat, oracle process terminates with SIGSEGV
-(on 64bits kernel, but continues just fine on 32bits).
-
-I understand full well many bad points here: proprietary software,
-old legacy code, not supported, buggy.
-
-But the question really is: why the difference in the first place,
-for 32bits userland, between 32 and 64bits kernels?  Can this diff
-be "fixed" somehow?  For example, I remember kernel/user memory
-split kconfig option - is there similar thing for 32bits userspace
-on 64bits kernel?
-
-(And for the record, in case others will encounter the same issue:
-the process started it all sees this:
-
-SQL> startup
-ORA-24323: value not allowed
-ORA-03113: end-of-file on communication channel
-
-and in the alert file we see this:
-
-Errors in file /usr/oracle/8.1/rdbms/log/ora_3365.trc:
-ORA-00445: background process "PMON" did not start after 120 seconds
-)
-
-Thanks!
-
-/mjt
