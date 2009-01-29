@@ -1,101 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757605AbZA2Sum@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbZA2Sv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757605AbZA2Sum (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 13:50:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751515AbZA2Su1
+	id S1757703AbZA2Sv1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 13:51:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZA2SvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 13:50:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33597 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751367AbZA2SuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 13:50:25 -0500
-Date: Thu, 29 Jan 2009 19:49:53 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>, jens.axboe@oracle.com
-Subject: Re: [PATCH -v2] use per cpu data for single cpu ipi calls
-Message-ID: <20090129184953.GA14810@elte.hu>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com> <200901290955.38940.rusty@rustcorp.com.au> <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com> <20090128173039.cbc29e81.akpm@linux-foundation.org> <1233218954.7835.11.camel@twins> <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain> <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 29 Jan 2009 13:51:17 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:52320 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbZA2SvQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 13:51:16 -0500
+Subject: circular locking dependency on shutdown
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Manfred Spraul <manfred@colorfullife.com>,
+       Peter Zijlstra <peterz@infradead.org>, cpufreq@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qyONsnimUHMtonmTAd4d"
+Date: Thu, 29 Jan 2009 19:50:49 +0100
+Message-Id: <1233255049.4067.12.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+--=-qyONsnimUHMtonmTAd4d
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> And are you really sure it cannot be called from within interrupts? I'm 
-> finding a lot of callers of smp_call_function_single(), and while I 
-> couldn't find any that look like interrupts, I also couldn't find any 
-> indication that it never happens.
+Hi,
 
-smp_call_function_single() must not be called from irqs-off code - and 
-that implicitly includes most IRQ handlers as well. (most of which run 
-with hardirqs off)
+Every time I shut down my machine with a 2.6.29-rc2 kernel, I get a
+lockdep report that scrolls off. I tried capturing it on video, the
+relevant frames are here:
+http://johannes.sipsolutions.net/files/shutdown-lockdep-images.tar.bz2
 
-We check for that via:
+Some info I transscribed:
 
-        /* Can deadlock when called with interrupts disabled */
-        WARN_ON(irqs_disabled());
+halt is trying to acquire lock
+	(&per_cpu(cpu_policy_rwsem, cpu)){---}
 
-[ although it should probably be extended to '&& !in_interrupt()' as well, 
-  to cover the subset of IRQ handlers running with irqs enabled - which is 
-  small but nonzero. It would also cover softirqs. ]
+but task is already holding lock
+	(&cpu_hotplug.lock){--..}
 
-There are 3 reasons why sending IPIs from an irqs off critical section is 
-a bad idea currently:
+which already yadda yadda
 
-1) the implementation is deadlockable as you noted. That is self-inflicted
-   stupidity and fixable.
+lock chain:
+#1	(&cpu_hotplug.lock){--..}
+	...
+	get_online_cpus
+#0	(&per_cpu(cpu_policy_rwsem, cpu))
+	...
+	disable_nonboot_cpus
 
-2) the _concept_ of two CPUs sending IPIs to each other at once and
-   expecting them to be handled and then waiting for them is a deadlock.
-   We could allow async IPIs from irqs-off sections, but isnt that a too
-   narrow special-case?
+stacktrace:
+	down_write
+	lock_policy_rwsem_write
+	cpufreq_cpu_callback
+	notifier_call_chain
+	disable_nonboot_cpus
+	kernel_power_off
+	...
 
-3) the third reason is nasty: the act of sending an IPI on x86 hardware
-   needs to happen with interrupts enabled. In the lowlevel IPI sending
-   code we first poll the hardware whether it's ready to accept new IPIs:
-   via apic_wait_icr_idle().
 
-   There've been incidents in the past where the ICR-ready (Interrupt 
-   Command Register - ready) bit would deadlock the box in certain 
-   situations (usually with wackier APIC implementations and if there's 
-   too many IPIs 'in flight' and the only way to make progress is to allow 
-   IPIs to happen locally - i.e. to have irqs on), if the IPI was sent 
-   from an irqs-off section.
+johannes
 
-So i'm not sure we could relax things here without expecting too much of 
-the hardware.
+--=-qyONsnimUHMtonmTAd4d
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-What i like least about kernel/smp.c is the kmalloc(GFP_ATOMIC) - and we 
-had to add that in a late -rc for an essential bugfix.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-IMO that kmalloc() has "layering violation" written all over it. It turns 
-the pure act of 'sending messages' into a conceptually heavy and wide 
-facility. Is the buffering of async messages really such a big deal in 
-practice? Does anyone have any numbers?
+iQIcBAABAgAGBQJJgfqHAAoJEKVg1VMiehFYzFMQALz17Z53dK1hz4xXHwfn30va
+8sFUtnDrVrGZkDkZjSnYMoSImtv6RXqBwdzYjoGbWhsk7S4DrsORubAkCSW3C0o/
+7Y6O26wf0szDI9NAYHstUl21mCVVrdDztYHIfZUnLUf4IhALCRhUa5zmGjZ8x3YG
+abO0nL/itsNsnv37liouHTFBzOeGLmWTbcP4vTa/kdEofBJLkY4LZxY1cCixZtGw
+mCZehtTwJ1JpGiMU+7edmT2quWjsETjxgEc41Y9v/GkA2JD78a2P+GvcikmKxGMo
+nBpm8f2w93jxHUSyZxd5Yr3QCpae2uaGmQO72BNgykXxYOcSA3vhyrjG4J1fC1bW
+RukDJfWCa3TgHNuq0RG9GeXBCHyhP+nB9vX8wBF8DfNsvt8Jy+mCfe/h0nD3tL6c
+agvzOIAK1wAvzhvPueLrVvX3n0w62P5Gclv1odDeB17wyh3mP4+njVcnWPQIKDf4
+jzhNr1yiBnjb9fO9Tt0HLFxVTN7JlQBXP4DrA5uOA37HrBA3deO3kSEBKKSAzcAu
+C4VM/6CeHKA10uFcS1KstY8kxKdxLoHFbr/0NPPTSSLFCI7mKyeKtDnuBMUkDgEO
+w8NdpfBv4YLshHQeXyB79MKvBKBGQ3q72rhna3EA0NBEt+vKA8AWS/AlOuvBaq9A
+nUrXn+f5cigLMmzWmRjg
+=rLa9
+-----END PGP SIGNATURE-----
 
-Btw., there _is_ a relatively atomic, safe and instantaneous way of 
-sending IPIs on x86: sending NMIs. But that has its own host of issues 
-both on the hardware and on the software side ...
+--=-qyONsnimUHMtonmTAd4d--
 
-	Ingo
