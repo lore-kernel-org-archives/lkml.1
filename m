@@ -1,186 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758522AbZA2Voa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbZA2Vqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758522AbZA2Voa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 16:44:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZA2VoU
+	id S1758878AbZA2Vqe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 16:46:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZA2VqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 16:44:20 -0500
-Received: from fk-out-0910.google.com ([209.85.128.189]:63865 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbZA2VoT (ORCPT
+	Thu, 29 Jan 2009 16:46:25 -0500
+Received: from mga06.intel.com ([134.134.136.21]:12316 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752288AbZA2VqY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 16:44:19 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=quz9lDROP83Ib2mAorMI1vLm7ugMh7ryCYDTDQopnfryBCEzrc7mIUCPw1mWL5LVhA
-         0TBQLyrkJYIz8NM5kXMcyXbm1MJtZ46reNzhhfWmjBOU1FZWb2VX48VxSINWOrbjpr15
-         ENHORsi8BvhArZWpCL3nPX9xcBXw7LYtDBWWw=
+	Thu, 29 Jan 2009 16:46:24 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,346,1231142400"; 
+   d="scan'208";a="382481064"
+From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Organization: Intel Corporation
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [GIT PATCH] Re: mmotm 2009-01-29-02-29 uploaded (wimax)
+Date: Thu, 29 Jan 2009 13:46:16 -0800
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Toralf =?utf-8?q?F=C3=B6rster?= <toralf.foerster@gmx.de>,
+       David Miller <davem@davemloft.net>
+References: <200901291030.n0TAUhRI003046@imap1.linux-foundation.org> <4981EC35.1030306@oracle.com>
+In-Reply-To: <4981EC35.1030306@oracle.com>
 MIME-Version: 1.0
-Reply-To: eranian@gmail.com
-In-Reply-To: <49820B03.6010807@linux.vnet.ibm.com>
-References: <20090121185021.GA8852@elte.hu>
-	 <4981102C.2000400@linux.vnet.ibm.com>
-	 <7c86c4470901290432h77d479c9k160a7b793b2812bb@mail.gmail.com>
-	 <49820B03.6010807@linux.vnet.ibm.com>
-Date: Thu, 29 Jan 2009 22:44:17 +0100
-Message-ID: <7c86c4470901291344xbeb1b62scfa979cbd1549981@mail.gmail.com>
-Subject: Re: [announce] Performance Counters for Linux, v6
-From: stephane eranian <eranian@googlemail.com>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Paul Mackerras <paulus@samba.org>,
-       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>,
-       "perfmon2-devel@lists.sourceforge.net" 
-	<perfmon2-devel@lists.sourceforge.net>,
-       Papi <ptools-perfapi@cs.utk.edu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200901291346.16906.inaky@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 9:01 PM, Corey Ashford
-<cjashfor@linux.vnet.ibm.com> wrote:
->>>
->>> I'm not sure if this is the right place to propose such a thing, but I
->>> think
->>> it would be very valuable to have a standardized user-side library to
->>> accompany this addition to the kernel.
->>>
->>> In particular, as a starting place for the discussion, I'd like to see
->>> functions in it that are very similar to a subset of what is currently in
->>> libpfm.  Specifically, I'd like to see the following functions (with the
->>> names changed to pcl_* perhaps):
->>>
->>> extern pfm_err_t pfm_find_event(const char *str, unsigned int *idx);
->>> extern pfm_err_t pfm_find_event_bycode(int code, unsigned int *idx);
->>> extern pfm_err_t pfm_find_event_bycode_next(int code, unsigned int start,
->>>                                           unsigned int *next);
->>> extern pfm_err_t pfm_find_event_mask(unsigned int event_idx, const char
->>> *str,
->>>                                    unsigned int *mask_idx);
->>> extern pfm_err_t pfm_find_full_event(const char *str, pfmlib_event_t *e);
->>>
->>> extern pfm_err_t pfm_get_max_event_name_len(size_t *len);
->>>
->>> extern pfm_err_t pfm_get_num_events(unsigned int *count);
->>> extern pfm_err_t pfm_get_num_event_masks(unsigned int event_idx,
->>>                                        unsigned int *count);
->>> extern pfm_err_t pfm_get_event_name(unsigned int idx, char *name,
->>>                                   size_t maxlen);
->>> extern pfm_err_t pfm_get_full_event_name(pfmlib_event_t *e, char *name,
->>>                                        size_t maxlen);
->>> extern pfm_err_t pfm_get_event_code(unsigned int idx, int *code);
->>> extern pfm_err_t pfm_get_event_mask_code(unsigned int idx,
->>>                                        unsigned int mask_idx,
->>>                                        unsigned int *code);
->>> extern pfm_err_t pfm_get_event_description(unsigned int idx, char **str);
->>> extern pfm_err_t pfm_get_event_code_counter(unsigned int idx, unsigned
->>> int
->>> cnt,
->>>                                           int *code);
->>> extern pfm_err_t pfm_get_event_mask_name(unsigned int event_idx,
->>>                                        unsigned int mask_idx,
->>>                                        char *name, size_t maxlen);
->>> extern pfm_err_t pfm_get_event_mask_description(unsigned int event_idx,
->>>                                               unsigned int mask_idx,
->>>                                               char **desc);
->>>
->>>
->>> Now, since it's not clear right now how unit masks are going to be
->>> handled
->>> in your proposal, I'm not sure the that *_event_mask_* functions are
->>> applicable, but I think something that fills that function will be
->>> needed.
->>>
->>> Architectures that have need for additional functionality should be free
->>> to
->>> add arch-specific functions.
->>>
->>> Full descriptions of these functions can be found in the man pages of the
->>> libpfm documentation.
->>>
->>> Any thoughts on this?  Do you already have a us
->>
->> er library structure in mind?
->> Yes, I did give some thoughts to all of this. In fact, I have been
->> playing a bit with
->> libpfm and the LPC proposal.
->>
->> I think, given that LPC is dealing with event -> counter assignment in
->> the kernel, libpfm
->> does not have to do it. All it needs to do is event:attributes ->
->> value, and that value is
->> then passed to the kernel in raw mode.
->>
->> Event attributes includes on x86, for instance, the edge, invert,
->> counter-mask, plm, field.
->> I think we could do something more generic than what is currently
->> there. That would not
->> require PMU specific data structures for attributes. Just pass
->> everything into a string.
->>
->> To that extent, I have been experimenting with something along those
->> lines:
->>
->>    int pfm_get_event_encoding(char *event_str, uint64_t **values, int
->> *count);
->>
->> events are encoded as follows:
->>
->>
->> event_name:[unit_mask1:unit_mask2:...:unit_maskn][::A1=V1:A2=V2:..:An=Vn]
->>
->> Attribute names and values depend on each PMU model. Attributes names
->> are strings.
->> Values can have any type.
->>
->> For X86, most attributes would be identical, same thing on Itanium
->> because they are
->> architected.
->>
->> Some PMU models may need more than one 64-bit value to configure one
->> event, That is
->> is why there is vector and a count. Libpfm should not be concerned
->> with how those values
->> are encoded and passed to the kernel. It should be concerned with the
->> event -> value
->> as described in the PMU documentation.
->>
->> Given that LPC manages events independently of each other, libpfm does
->> not reallly need
->> to process multiple events at a time to get a global view of what is
->> being measured.
->>
->> Here is an example:
->>
->> $ self inst_retired:any_p::i=1:c=1:u=1:k=1
->> [0x1d300c0 event_sel=0xc0 umask=0x0 os=1 usr=1 en=1 int=1 inv=1 edge=0
->> cnt_mask=1] INST_RETIRED
->
-> This looks encouraging!
->
-> I assume the library would still retain the functions that allow us to
-> iterate through the available events, and obtain text description of events.
->  Would it make sense to have similar functions to obtain the available unit
-> masks and attributes for a particular event?
->
+Hi All
 
-Yes, that would most likely stay there, although, I think we could
-simplify a bit.
-
-> For debugging purposes at least, it might make sense to have a function that
-> does the inverse of pfm_get_event_encoding as well.
+On Thursday 29 January 2009, Randy Dunlap wrote:
+> akpm@linux-foundation.org wrote:
+> > The mm-of-the-moment snapshot 2009-01-29-02-29 has been uploaded to
+> >
+> >    http://userweb.kernel.org/~akpm/mmotm/
+> >
+> > and will soon be available at
+> >
+> >    git://git.zen-sources.org/zen/mmotm.git
 >
-Yes, we could provide the opposite function.
+> Build fails with:
+>
+> ERROR: "d_level_wimax" [net/wimax/wimax.ko] undefined!
+> ERROR: "d_level_size_wimax" [net/wimax/wimax.ko] undefined!
 
-I also believe this same scheme could be used to describe non-event features,
-such as IBS, LBR, Opcode matcher.
+Fixed, tested and pushed to 
+git://git.kernel.org/pub/scm/linux/kernel/git/inaky/wimax.git
+
+Thanks
+
+---
+>From 968f75d77e857fb6ac69b785533a611d21986f3d Mon Sep 17 00:00:00 2001
+From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+Date: Thu, 29 Jan 2009 13:29:05 -0800
+Subject: [PATCH] wimax: fix build issue when debugfs is disabled
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+As reported by Toralf Förster and Randy Dunlap.
+
+- http://linuxwimax.org/pipermail/wimax/2009-January/000460.html
+
+- http://lkml.org/lkml/2009/1/29/279
+
+The definitions needed for the wimax stack and i2400m driver debug
+infrastructure was, by mistake, compiled depending on CONFIG_DEBUG_FS
+(by them being placed in the debugfs.c files); thus the build broke in
+2.6.29-rc3 when debugging was enabled (CONFIG_WIMAX_DEBUG) and
+DEBUG_FS was disabled.
+
+These definitions are always needed if debug is enabled at compile
+time (independently of DEBUG_FS being or not enabled), so moving them
+to a file that is always compiled fixes the issue.
+
+Signed-off-by: Inaky Perez-Gonzalez <inaky@linux.intel.com>
+---
+ drivers/net/wimax/i2400m/debugfs.c |   14 --------------
+ drivers/net/wimax/i2400m/driver.c  |   16 ++++++++++++++++
+ net/wimax/debugfs.c                |   11 -----------
+ net/wimax/stack.c                  |   13 +++++++++++++
+ 4 files changed, 29 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/net/wimax/i2400m/debugfs.c 
+b/drivers/net/wimax/i2400m/debugfs.c
+index 6266329..9b81af3 100644
+--- a/drivers/net/wimax/i2400m/debugfs.c
++++ b/drivers/net/wimax/i2400m/debugfs.c
+@@ -234,20 +234,6 @@ struct dentry *debugfs_create_i2400m_reset(
+ 				   &fops_i2400m_reset);
+ }
+ 
+-/*
+- * Debug levels control; see debug.h
+- */
+-struct d_level D_LEVEL[] = {
+-	D_SUBMODULE_DEFINE(control),
+-	D_SUBMODULE_DEFINE(driver),
+-	D_SUBMODULE_DEFINE(debugfs),
+-	D_SUBMODULE_DEFINE(fw),
+-	D_SUBMODULE_DEFINE(netdev),
+-	D_SUBMODULE_DEFINE(rfkill),
+-	D_SUBMODULE_DEFINE(rx),
+-	D_SUBMODULE_DEFINE(tx),
+-};
+-size_t D_LEVEL_SIZE = ARRAY_SIZE(D_LEVEL);
+ 
+ #define __debugfs_register(prefix, name, parent)			\
+ do {									\
+diff --git a/drivers/net/wimax/i2400m/driver.c 
+b/drivers/net/wimax/i2400m/driver.c
+index 5f98047..e80a0b6 100644
+--- a/drivers/net/wimax/i2400m/driver.c
++++ b/drivers/net/wimax/i2400m/driver.c
+@@ -707,6 +707,22 @@ void i2400m_release(struct i2400m *i2400m)
+ EXPORT_SYMBOL_GPL(i2400m_release);
+ 
+ 
++/*
++ * Debug levels control; see debug.h
++ */
++struct d_level D_LEVEL[] = {
++	D_SUBMODULE_DEFINE(control),
++	D_SUBMODULE_DEFINE(driver),
++	D_SUBMODULE_DEFINE(debugfs),
++	D_SUBMODULE_DEFINE(fw),
++	D_SUBMODULE_DEFINE(netdev),
++	D_SUBMODULE_DEFINE(rfkill),
++	D_SUBMODULE_DEFINE(rx),
++	D_SUBMODULE_DEFINE(tx),
++};
++size_t D_LEVEL_SIZE = ARRAY_SIZE(D_LEVEL);
++
++
+ static
+ int __init i2400m_driver_init(void)
+ {
+diff --git a/net/wimax/debugfs.c b/net/wimax/debugfs.c
+index 87cf443..94d216a 100644
+--- a/net/wimax/debugfs.c
++++ b/net/wimax/debugfs.c
+@@ -28,17 +28,6 @@
+ #include "debug-levels.h"
+ 
+ 
+-/* Debug framework control of debug levels */
+-struct d_level D_LEVEL[] = {
+-	D_SUBMODULE_DEFINE(debugfs),
+-	D_SUBMODULE_DEFINE(id_table),
+-	D_SUBMODULE_DEFINE(op_msg),
+-	D_SUBMODULE_DEFINE(op_reset),
+-	D_SUBMODULE_DEFINE(op_rfkill),
+-	D_SUBMODULE_DEFINE(stack),
+-};
+-size_t D_LEVEL_SIZE = ARRAY_SIZE(D_LEVEL);
+-
+ #define __debugfs_register(prefix, name, parent)			\
+ do {									\
+ 	result = d_level_register_debugfs(prefix, name, parent);	\
+diff --git a/net/wimax/stack.c b/net/wimax/stack.c
+index d4da92f..3869c03 100644
+--- a/net/wimax/stack.c
++++ b/net/wimax/stack.c
+@@ -516,6 +516,19 @@ void wimax_dev_rm(struct wimax_dev *wimax_dev)
+ }
+ EXPORT_SYMBOL_GPL(wimax_dev_rm);
+ 
++
++/* Debug framework control of debug levels */
++struct d_level D_LEVEL[] = {
++	D_SUBMODULE_DEFINE(debugfs),
++	D_SUBMODULE_DEFINE(id_table),
++	D_SUBMODULE_DEFINE(op_msg),
++	D_SUBMODULE_DEFINE(op_reset),
++	D_SUBMODULE_DEFINE(op_rfkill),
++	D_SUBMODULE_DEFINE(stack),
++};
++size_t D_LEVEL_SIZE = ARRAY_SIZE(D_LEVEL);
++
++
+ struct genl_family wimax_gnl_family = {
+ 	.id = GENL_ID_GENERATE,
+ 	.name = "WiMAX",
+-- 
+1.5.6.5
