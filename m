@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759902AbZA2Rso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759964AbZA2RtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759902AbZA2Rso (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 12:48:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbZA2Rsc
+	id S1759964AbZA2RtN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 12:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756611AbZA2Rsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 12:48:32 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:59137 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757862AbZA2Rsb (ORCPT
+	Thu, 29 Jan 2009 12:48:54 -0500
+Received: from ey-out-2122.google.com ([74.125.78.25]:38522 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756327AbZA2Rsx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 12:48:31 -0500
+	Thu, 29 Jan 2009 12:48:53 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=YMXhTrlcjLgEKjvXz7aD5wQdBFal054G1i0FKmyud8LOijT53v045Rr+IfpT+pZQ4V
-         6cTdO+pT1kHCeJSYSXWtGPNYqmdHcDmbFTbXcMa9FxIcyQdBpbq5eT4bP/HhOfAsr5Nh
-         VJul48CqpQoKqF8qJDDJRxgS9fYMHvuLV8fq0=
-Date: Thu, 29 Jan 2009 20:54:11 +0300
+        b=qck5AZgfb2koqZoM3MqSVG6HYbmzsjG6HDbuMN25LKY9rn6dvb/oOlIrNDt8Y7Ju46
+         rArGDuA5uSPyJO76xXWXWPkUx85IzxVnWheL2UBgRxRpAWqbLtW48UnIu71rg9M935ny
+         Apjp+siTntuIKHfORe5WhHNbu2fsYgTIbzFuE=
+Date: Thu, 29 Jan 2009 20:54:34 +0300
 From: Alexey Dobriyan <adobriyan@gmail.com>
 To: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 12/17] proc tty: switch usb-serial to ->proc_fops
-Message-ID: <20090129175411.GL21643@x200.localdomain>
+Subject: [PATCH 13/17] proc tty: switch ircomm to ->proc_fops
+Message-ID: <20090129175434.GM21643@x200.localdomain>
 References: <20090129174830.GA21643@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,115 +35,326 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- drivers/usb/serial/usb-serial.c |   58 ++++++++++++++++++---------------------
- 1 files changed, 27 insertions(+), 31 deletions(-)
+ net/irda/ircomm/ircomm_tty.c |  256 +++++++++++++++++++++++-------------------
+ 1 files changed, 138 insertions(+), 118 deletions(-)
 
-diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
-index cfcfd5a..7f0b2b0 100644
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -26,6 +26,7 @@
- #include <linux/tty_flip.h>
+diff --git a/net/irda/ircomm/ircomm_tty.c b/net/irda/ircomm/ircomm_tty.c
+index 086d5ef..811984d 100644
+--- a/net/irda/ircomm/ircomm_tty.c
++++ b/net/irda/ircomm/ircomm_tty.c
+@@ -34,6 +34,7 @@
  #include <linux/module.h>
- #include <linux/moduleparam.h>
+ #include <linux/fs.h>
+ #include <linux/sched.h>
 +#include <linux/seq_file.h>
- #include <linux/spinlock.h>
- #include <linux/mutex.h>
- #include <linux/list.h>
-@@ -416,57 +417,52 @@ static int serial_break(struct tty_struct *tty, int break_state)
- 	return 0;
+ #include <linux/termios.h>
+ #include <linux/tty.h>
+ #include <linux/interrupt.h>
+@@ -72,8 +73,7 @@ static int ircomm_tty_control_indication(void *instance, void *sap,
+ static void ircomm_tty_flow_indication(void *instance, void *sap,
+ 				       LOCAL_FLOW cmd);
+ #ifdef CONFIG_PROC_FS
+-static int ircomm_tty_read_proc(char *buf, char **start, off_t offset, int len,
+-				int *eof, void *unused);
++static const struct file_operations ircomm_tty_proc_fops;
+ #endif /* CONFIG_PROC_FS */
+ static struct tty_driver *driver;
+ 
+@@ -98,7 +98,7 @@ static const struct tty_operations ops = {
+ 	.hangup          = ircomm_tty_hangup,
+ 	.wait_until_sent = ircomm_tty_wait_until_sent,
+ #ifdef CONFIG_PROC_FS
+-	.read_proc       = ircomm_tty_read_proc,
++	.proc_fops       = &ircomm_tty_proc_fops,
+ #endif /* CONFIG_PROC_FS */
+ };
+ 
+@@ -1245,150 +1245,170 @@ static void ircomm_tty_flow_indication(void *instance, void *sap,
  }
  
--static int serial_read_proc(char *page, char **start, off_t off, int count,
--							int *eof, void *data)
-+static int serial_proc_show(struct seq_file *m, void *v)
+ #ifdef CONFIG_PROC_FS
+-static int ircomm_tty_line_info(struct ircomm_tty_cb *self, char *buf)
++static void ircomm_tty_line_info(struct ircomm_tty_cb *self, struct seq_file *m)
  {
- 	struct usb_serial *serial;
--	int length = 0;
- 	int i;
+-	int  ret=0;
++	char sep;
+ 
+-	ret += sprintf(buf+ret, "State: %s\n", ircomm_tty_state[self->state]);
++	seq_printf(m, "State: %s\n", ircomm_tty_state[self->state]);
+ 
+-	ret += sprintf(buf+ret, "Service type: ");
++	seq_puts(m, "Service type: ");
+ 	if (self->service_type & IRCOMM_9_WIRE)
+-		ret += sprintf(buf+ret, "9_WIRE");
++		seq_puts(m, "9_WIRE");
+ 	else if (self->service_type & IRCOMM_3_WIRE)
+-		ret += sprintf(buf+ret, "3_WIRE");
++		seq_puts(m, "3_WIRE");
+ 	else if (self->service_type & IRCOMM_3_WIRE_RAW)
+-		ret += sprintf(buf+ret, "3_WIRE_RAW");
++		seq_puts(m, "3_WIRE_RAW");
+ 	else
+-		ret += sprintf(buf+ret, "No common service type!\n");
+-	ret += sprintf(buf+ret, "\n");
+-
+-	ret += sprintf(buf+ret, "Port name: %s\n", self->settings.port_name);
+-
+-	ret += sprintf(buf+ret, "DTE status: ");
+-	if (self->settings.dte & IRCOMM_RTS)
+-		ret += sprintf(buf+ret, "RTS|");
+-	if (self->settings.dte & IRCOMM_DTR)
+-		ret += sprintf(buf+ret, "DTR|");
+-	if (self->settings.dte)
+-		ret--; /* remove the last | */
+-	ret += sprintf(buf+ret, "\n");
+-
+-	ret += sprintf(buf+ret, "DCE status: ");
+-	if (self->settings.dce & IRCOMM_CTS)
+-		ret += sprintf(buf+ret, "CTS|");
+-	if (self->settings.dce & IRCOMM_DSR)
+-		ret += sprintf(buf+ret, "DSR|");
+-	if (self->settings.dce & IRCOMM_CD)
+-		ret += sprintf(buf+ret, "CD|");
+-	if (self->settings.dce & IRCOMM_RI)
+-		ret += sprintf(buf+ret, "RI|");
+-	if (self->settings.dce)
+-		ret--; /* remove the last | */
+-	ret += sprintf(buf+ret, "\n");
+-
+-	ret += sprintf(buf+ret, "Configuration: ");
++		seq_puts(m, "No common service type!\n");
++	seq_putc(m, '\n');
++
++	seq_printf(m, "Port name: %s\n", self->settings.port_name);
++
++	seq_printf(m, "DTE status:");
++	sep = ' ';
++	if (self->settings.dte & IRCOMM_RTS) {
++		seq_printf(m, "%cRTS", sep);
++		sep = '|';
++	}
++	if (self->settings.dte & IRCOMM_DTR) {
++		seq_printf(m, "%cDTR", sep);
++		sep = '|';
++	}
++	seq_putc(m, '\n');
++
++	seq_puts(m, "DCE status:");
++	sep = ' ';
++	if (self->settings.dce & IRCOMM_CTS) {
++		seq_printf(m, "%cCTS", sep);
++		sep = '|';
++	}
++	if (self->settings.dce & IRCOMM_DSR) {
++		seq_printf(m, "%cDSR", sep);
++		sep = '|';
++	}
++	if (self->settings.dce & IRCOMM_CD) {
++		seq_printf(m, "%cCD", sep);
++		sep = '|';
++	}
++	if (self->settings.dce & IRCOMM_RI) {
++		seq_printf(m, "%cRI", sep);
++		sep = '|';
++	}
++	seq_putc(m, '\n');
++
++	seq_puts(m, "Configuration: ");
+ 	if (!self->settings.null_modem)
+-		ret += sprintf(buf+ret, "DTE <-> DCE\n");
++		seq_puts(m, "DTE <-> DCE\n");
+ 	else
+-		ret += sprintf(buf+ret,
+-			       "DTE <-> DTE (null modem emulation)\n");
+-
+-	ret += sprintf(buf+ret, "Data rate: %d\n", self->settings.data_rate);
+-
+-	ret += sprintf(buf+ret, "Flow control: ");
+-	if (self->settings.flow_control & IRCOMM_XON_XOFF_IN)
+-		ret += sprintf(buf+ret, "XON_XOFF_IN|");
+-	if (self->settings.flow_control & IRCOMM_XON_XOFF_OUT)
+-		ret += sprintf(buf+ret, "XON_XOFF_OUT|");
+-	if (self->settings.flow_control & IRCOMM_RTS_CTS_IN)
+-		ret += sprintf(buf+ret, "RTS_CTS_IN|");
+-	if (self->settings.flow_control & IRCOMM_RTS_CTS_OUT)
+-		ret += sprintf(buf+ret, "RTS_CTS_OUT|");
+-	if (self->settings.flow_control & IRCOMM_DSR_DTR_IN)
+-		ret += sprintf(buf+ret, "DSR_DTR_IN|");
+-	if (self->settings.flow_control & IRCOMM_DSR_DTR_OUT)
+-		ret += sprintf(buf+ret, "DSR_DTR_OUT|");
+-	if (self->settings.flow_control & IRCOMM_ENQ_ACK_IN)
+-		ret += sprintf(buf+ret, "ENQ_ACK_IN|");
+-	if (self->settings.flow_control & IRCOMM_ENQ_ACK_OUT)
+-		ret += sprintf(buf+ret, "ENQ_ACK_OUT|");
+-	if (self->settings.flow_control)
+-		ret--; /* remove the last | */
+-	ret += sprintf(buf+ret, "\n");
+-
+-	ret += sprintf(buf+ret, "Flags: ");
+-	if (self->flags & ASYNC_CTS_FLOW)
+-		ret += sprintf(buf+ret, "ASYNC_CTS_FLOW|");
+-	if (self->flags & ASYNC_CHECK_CD)
+-		ret += sprintf(buf+ret, "ASYNC_CHECK_CD|");
+-	if (self->flags & ASYNC_INITIALIZED)
+-		ret += sprintf(buf+ret, "ASYNC_INITIALIZED|");
+-	if (self->flags & ASYNC_LOW_LATENCY)
+-		ret += sprintf(buf+ret, "ASYNC_LOW_LATENCY|");
+-	if (self->flags & ASYNC_CLOSING)
+-		ret += sprintf(buf+ret, "ASYNC_CLOSING|");
+-	if (self->flags & ASYNC_NORMAL_ACTIVE)
+-		ret += sprintf(buf+ret, "ASYNC_NORMAL_ACTIVE|");
+-	if (self->flags)
+-		ret--; /* remove the last | */
+-	ret += sprintf(buf+ret, "\n");
+-
+-	ret += sprintf(buf+ret, "Role: %s\n", self->client ?
+-		       "client" : "server");
+-	ret += sprintf(buf+ret, "Open count: %d\n", self->open_count);
+-	ret += sprintf(buf+ret, "Max data size: %d\n", self->max_data_size);
+-	ret += sprintf(buf+ret, "Max header size: %d\n", self->max_header_size);
++		seq_puts(m, "DTE <-> DTE (null modem emulation)\n");
++
++	seq_printf(m, "Data rate: %d\n", self->settings.data_rate);
++
++	seq_puts(m, "Flow control:");
++	sep = ' ';
++	if (self->settings.flow_control & IRCOMM_XON_XOFF_IN) {
++		seq_printf(m, "%cXON_XOFF_IN", sep);
++		sep = '|';
++	}
++	if (self->settings.flow_control & IRCOMM_XON_XOFF_OUT) {
++		seq_printf(m, "%cXON_XOFF_OUT", sep);
++		sep = '|';
++	}
++	if (self->settings.flow_control & IRCOMM_RTS_CTS_IN) {
++		seq_printf(m, "%cRTS_CTS_IN", sep);
++		sep = '|';
++	}
++	if (self->settings.flow_control & IRCOMM_RTS_CTS_OUT) {
++		seq_printf(m, "%cRTS_CTS_OUT", sep);
++		sep = '|';
++	}
++	if (self->settings.flow_control & IRCOMM_DSR_DTR_IN) {
++		seq_printf(m, "%cDSR_DTR_IN", sep);
++		sep = '|';
++	}
++	if (self->settings.flow_control & IRCOMM_DSR_DTR_OUT) {
++		seq_printf(m, "%cDSR_DTR_OUT", sep);
++		sep = '|';
++	}
++	if (self->settings.flow_control & IRCOMM_ENQ_ACK_IN) {
++		seq_printf(m, "%cENQ_ACK_IN", sep);
++		sep = '|';
++	}
++	if (self->settings.flow_control & IRCOMM_ENQ_ACK_OUT) {
++		seq_printf(m, "%cENQ_ACK_OUT", sep);
++		sep = '|';
++	}
++	seq_putc(m, '\n');
++
++	seq_puts(m, "Flags:");
++	sep = ' ';
++	if (self->flags & ASYNC_CTS_FLOW) {
++		seq_printf(m, "%cASYNC_CTS_FLOW", sep);
++		sep = '|';
++	}
++	if (self->flags & ASYNC_CHECK_CD) {
++		seq_printf(m, "%cASYNC_CHECK_CD", sep);
++		sep = '|';
++	}
++	if (self->flags & ASYNC_INITIALIZED) {
++		seq_printf(m, "%cASYNC_INITIALIZED", sep);
++		sep = '|';
++	}
++	if (self->flags & ASYNC_LOW_LATENCY) {
++		seq_printf(m, "%cASYNC_LOW_LATENCY", sep);
++		sep = '|';
++	}
++	if (self->flags & ASYNC_CLOSING) {
++		seq_printf(m, "%cASYNC_CLOSING", sep);
++		sep = '|';
++	}
++	if (self->flags & ASYNC_NORMAL_ACTIVE) {
++		seq_printf(m, "%cASYNC_NORMAL_ACTIVE", sep);
++		sep = '|';
++	}
++	seq_putc(m, '\n');
++
++	seq_printf(m, "Role: %s\n", self->client ? "client" : "server");
++	seq_printf(m, "Open count: %d\n", self->open_count);
++	seq_printf(m, "Max data size: %d\n", self->max_data_size);
++	seq_printf(m, "Max header size: %d\n", self->max_header_size);
+ 
+ 	if (self->tty)
+-		ret += sprintf(buf+ret, "Hardware: %s\n",
++		seq_printf(m, "Hardware: %s\n",
+ 			       self->tty->hw_stopped ? "Stopped" : "Running");
+-
+-	ret += sprintf(buf+ret, "\n");
+-	return ret;
+ }
+ 
+-
+-/*
+- * Function ircomm_tty_read_proc (buf, start, offset, len, eof, unused)
+- *
+- *
+- *
+- */
+-static int ircomm_tty_read_proc(char *buf, char **start, off_t offset, int len,
+-				int *eof, void *unused)
++static int ircomm_tty_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct ircomm_tty_cb *self;
+-	int count = 0, l;
 -	off_t begin = 0;
- 	char tmp[40];
+ 	unsigned long flags;
  
- 	dbg("%s", __func__);
--	length += sprintf(page, "usbserinfo:1.0 driver:2.0\n");
--	for (i = 0; i < SERIAL_TTY_MINORS && length < PAGE_SIZE; ++i) {
-+	seq_puts(m, "usbserinfo:1.0 driver:2.0\n");
-+	for (i = 0; i < SERIAL_TTY_MINORS; ++i) {
- 		serial = usb_serial_get_by_index(i);
- 		if (serial == NULL)
- 			continue;
+ 	spin_lock_irqsave(&ircomm_tty->hb_spinlock, flags);
  
--		length += sprintf(page+length, "%d:", i);
-+		seq_printf(m, "%d:", i);
- 		if (serial->type->driver.owner)
--			length += sprintf(page+length, " module:%s",
-+			seq_printf(m, " module:%s",
- 				module_name(serial->type->driver.owner));
--		length += sprintf(page+length, " name:\"%s\"",
-+		seq_printf(m, " name:\"%s\"",
- 				serial->type->description);
--		length += sprintf(page+length, " vendor:%04x product:%04x",
-+		seq_printf(m, " vendor:%04x product:%04x",
- 			le16_to_cpu(serial->dev->descriptor.idVendor),
- 			le16_to_cpu(serial->dev->descriptor.idProduct));
--		length += sprintf(page+length, " num_ports:%d",
--							serial->num_ports);
--		length += sprintf(page+length, " port:%d",
--							i - serial->minor + 1);
-+		seq_printf(m, " num_ports:%d", serial->num_ports);
-+		seq_printf(m, " port:%d", i - serial->minor + 1);
- 		usb_make_path(serial->dev, tmp, sizeof(tmp));
--		length += sprintf(page+length, " path:%s", tmp);
-+		seq_printf(m, " path:%s", tmp);
+ 	self = (struct ircomm_tty_cb *) hashbin_get_first(ircomm_tty);
+-	while ((self != NULL) && (count < 4000)) {
++	while (self != NULL) {
+ 		if (self->magic != IRCOMM_TTY_MAGIC)
+ 			break;
  
--		length += sprintf(page+length, "\n");
--		if ((length + begin) > (off + count)) {
--			usb_serial_put(serial);
+-		l = ircomm_tty_line_info(self, buf + count);
+-		count += l;
+-		if (count+begin > offset+len)
 -			goto done;
+-		if (count+begin < offset) {
+-			begin += count;
+-			count = 0;
 -		}
--		if ((length + begin) < off) {
--			begin += length;
--			length = 0;
--		}
-+		seq_putc(m, '\n');
- 		usb_serial_put(serial);
+-
++		ircomm_tty_line_info(self, m);
+ 		self = (struct ircomm_tty_cb *) hashbin_get_next(ircomm_tty);
  	}
 -	*eof = 1;
 -done:
--	if (off >= (length + begin))
--		return 0;
--	*start = page + (off-begin);
--	return (count < begin+length-off) ? count : begin+length-off;
+ 	spin_unlock_irqrestore(&ircomm_tty->hb_spinlock, flags);
 +	return 0;
- }
- 
-+static int serial_proc_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, serial_proc_show, NULL);
 +}
+ 
+-	if (offset >= count+begin)
+-		return 0;
+-	*start = buf + (offset-begin);
+-	return ((len < begin+count-offset) ? len : begin+count-offset);
++static int ircomm_tty_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, ircomm_tty_proc_show, NULL);
+ }
 +
-+static const struct file_operations serial_proc_fops = {
++static const struct file_operations ircomm_tty_proc_fops = {
 +	.owner		= THIS_MODULE,
-+	.open		= serial_proc_open,
++	.open		= ircomm_tty_proc_open,
 +	.read		= seq_read,
 +	.llseek		= seq_lseek,
 +	.release	= single_release,
 +};
-+
- static int serial_tiocmget(struct tty_struct *tty, struct file *file)
- {
- 	struct usb_serial_port *port = tty->driver_data;
-@@ -1101,9 +1097,9 @@ static const struct tty_operations serial_ops = {
- 	.unthrottle =		serial_unthrottle,
- 	.break_ctl =		serial_break,
- 	.chars_in_buffer =	serial_chars_in_buffer,
--	.read_proc =		serial_read_proc,
- 	.tiocmget =		serial_tiocmget,
- 	.tiocmset =		serial_tiocmset,
-+	.proc_fops =		&serial_proc_fops,
- };
+ #endif /* CONFIG_PROC_FS */
  
- struct tty_driver *usb_serial_tty_driver;
+ MODULE_AUTHOR("Dag Brattli <dagb@cs.uit.no>");
 -- 
 1.5.6.5
 
