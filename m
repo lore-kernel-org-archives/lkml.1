@@ -1,79 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757445AbZA2CLU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZA2CLi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757445AbZA2CLU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 21:11:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751573AbZA2CLB
+	id S1754721AbZA2CLi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 21:11:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZA2CLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 21:11:01 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52331 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751302AbZA2CLA (ORCPT
+	Wed, 28 Jan 2009 21:11:07 -0500
+Received: from e34.co.us.ibm.com ([32.97.110.152]:60188 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751790AbZA2CLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 21:11:00 -0500
-Date: Wed, 28 Jan 2009 18:10:37 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Matt Carlson <mcarlson@broadcom.com>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <alpine.DEB.2.00.0901282049040.5026@parag-desktop>
-Message-ID: <alpine.LFD.2.00.0901281757240.3123@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 28 Jan 2009 21:11:03 -0500
+Message-ID: <4981102C.2000400@linux.vnet.ibm.com>
+Date: Wed, 28 Jan 2009 18:10:52 -0800
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Stephane Eranian <eranian@googlemail.com>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Robert Richter <robert.richter@amd.com>,
+       Arjan van de Ven <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul Mackerras <paulus@samba.org>,
+       "David S. Miller" <davem@davemloft.net>, Mike Galbraith <efault@gmx.de>
+Subject: Re: [announce] Performance Counters for Linux, v6
+References: <20090121185021.GA8852@elte.hu>
+In-Reply-To: <20090121185021.GA8852@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 28 Jan 2009, Parag Warudkar wrote:
+Ingo Molnar wrote:
+> We are pleased to announce version 6 of our performance counters subsystem 
+> implementation. The shortlog, diffstat and the combo patch can be found 
+> below. The combo patch against latest -git (2.6.29-rc2) can be also found 
+> at:
 > 
-> Sure, diff -u below. There are differences but not sure if they are 
-> abnormal or expected.
+>    http://people.redhat.com/mingo/perfcounters/perfcounters-v6-v2.6.29-rc2.patch
+> 
+> It's also available in tip/master at:
+> 
+>    http://people.redhat.com/mingo/tip.git/README
+> 
+> There are many changes in the v6 release:
+> 
+>  - PowerPC performance counters support from Paul Mackerras, for POWER6
+>    and for the PPC970 family.
+> 
+>  - ioctl API to disable/enable individual counters and groups without
+>    closing their fd. This can be useful for libraries, ad-hoc 
+>    instrumentation and PAPI support.
+> 
+>  - 'pinned' and 'exclusive' counter attributes - for those
+>    applications that want to influence counter scheduling explicitly.
+> 
+>  - The 'perfstat' utility (ex 'timec') has been updated:
+> 
+>       http://people.redhat.com/mingo/perfcounters/perfstat.c
+> 
+>  - 'kerneltop' (easy-to-use text mode NMI profiler) has been updated:
+>    
+>       http://people.redhat.com/mingo/perfcounters/kerneltop.c
+> 
+>  - Merged to latest mainline
+> 
+>  - Various fixes and other updates
+> 
+> 	Ingo
 
-Well, they're all in the "extended set", ie not the basic registers that 
-the PCI layer saves. The PCI layer normally just saves the low 16 dwords, 
-along with the PCI[EX] capability thing.
+I'm not sure if this is the right place to propose such a thing, but I 
+think it would be very valuable to have a standardized user-side library 
+to accompany this addition to the kernel.
 
-None of the PCI save/restore routines have ever saved the extended state 
-(well, "ever" is a strong word - I think we long ago used to pass in how 
-many bytes we wanted saved, but got rid of it), and it certainly didn't 
-change with the recent PCI suspend/resume changes.
+In particular, as a starting place for the discussion, I'd like to see 
+functions in it that are very similar to a subset of what is currently 
+in libpfm.  Specifically, I'd like to see the following functions (with 
+the names changed to pcl_* perhaps):
 
-I get the feeling that it's some odd tg3 issue. That tg3 driver does have 
-that special
+extern pfm_err_t pfm_find_event(const char *str, unsigned int *idx);
+extern pfm_err_t pfm_find_event_bycode(int code, unsigned int *idx);
+extern pfm_err_t pfm_find_event_bycode_next(int code, unsigned int start,
+                                             unsigned int *next);
+extern pfm_err_t pfm_find_event_mask(unsigned int event_idx, const char 
+*str,
+                                      unsigned int *mask_idx);
+extern pfm_err_t pfm_find_full_event(const char *str, pfmlib_event_t *e);
 
-        /* Make sure register accesses (indirect or otherwise)
-         * will function correctly.
-         */
-        pci_write_config_dword(tp->pdev,
-                               TG3PCI_MISC_HOST_CTRL,
-                               tp->misc_host_ctrl);
+extern pfm_err_t pfm_get_max_event_name_len(size_t *len);
 
-in its own version of setting the power state, and maybe that really 
-_must_ happen before we actually set the state back to PCI_D0. That sounds 
-very odd, but hey..
+extern pfm_err_t pfm_get_num_events(unsigned int *count);
+extern pfm_err_t pfm_get_num_event_masks(unsigned int event_idx,
+                                          unsigned int *count);
+extern pfm_err_t pfm_get_event_name(unsigned int idx, char *name,
+                                     size_t maxlen);
+extern pfm_err_t pfm_get_full_event_name(pfmlib_event_t *e, char *name,
+                                          size_t maxlen);
+extern pfm_err_t pfm_get_event_code(unsigned int idx, int *code);
+extern pfm_err_t pfm_get_event_mask_code(unsigned int idx,
+                                          unsigned int mask_idx,
+                                          unsigned int *code);
+extern pfm_err_t pfm_get_event_description(unsigned int idx, char **str);
+extern pfm_err_t pfm_get_event_code_counter(unsigned int idx, unsigned 
+int cnt,
+                                             int *code);
+extern pfm_err_t pfm_get_event_mask_name(unsigned int event_idx,
+                                          unsigned int mask_idx,
+                                          char *name, size_t maxlen);
+extern pfm_err_t pfm_get_event_mask_description(unsigned int event_idx,
+                                                 unsigned int mask_idx,
+                                                 char **desc);
 
-I added Matt Carlson to the cc, since he seems to be the main tg3 
-authority here.
 
-Matt: the whole discussion is on netdev and the kernel mailing list, but 
-the short version is that -rc3 suspends and resumes for Parag again 
-(unlike -rc2), but tg3 doesn't appear to resume properly. The generic PCI 
-layer now does more at resume time (very early, when interrupts are still 
-off), see
+Now, since it's not clear right now how unit masks are going to be 
+handled in your proposal, I'm not sure the that *_event_mask_* functions 
+are applicable, but I think something that fills that function will be 
+needed.
 
- - pci_pm_resume_noirq ->
-     pci_pm_default_resume_noirq() ->
-       pci_restore_standard_config()
+Architectures that have need for additional functionality should be free 
+to add arch-specific functions.
 
-for more of the details (basically it always does that 
-"pci_restore_state()" and tries to bring the device back to PCI_D0).
+Full descriptions of these functions can be found in the man pages of 
+the libpfm documentation.
 
-			Linus
+Any thoughts on this?  Do you already have a user library structure in mind?
+
+-- 
+Regards,
+
+- Corey
+
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
+
