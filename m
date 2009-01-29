@@ -1,102 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZA2T2z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbZA2T3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758206AbZA2T2z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 14:28:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZA2T2p
+	id S1758533AbZA2T3X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 14:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZA2T3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 14:28:45 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:52218 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752419AbZA2T2o (ORCPT
+	Thu, 29 Jan 2009 14:29:11 -0500
+Received: from ug-out-1314.google.com ([66.249.92.175]:23050 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752419AbZA2T3J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 14:28:44 -0500
-Date: Thu, 29 Jan 2009 14:28:20 -0500
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Simon Horman <horms@verge.net.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       Miao Xie <miaox@cn.fujitsu.com>
-Subject: Re: mmotm 2009-01-28-02-17 uploaded (i386 build errors: cpusets &
-	kexec)
-Message-ID: <20090129192820.GB10037@hmsreliant.think-freely.org>
-References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org> <49808E3F.1090805@oracle.com> <20090128163040.88b05b3d.akpm@linux-foundation.org> <20090129022846.GA1319@verge.net.au> <20090129120935.GB9221@hmsreliant.think-freely.org> <20090129142049.GA20988@redhat.com>
+	Thu, 29 Jan 2009 14:29:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=NHngBZlEil1L0/SoPifcKHx2TrPifH/MJPKOGNssNlQzqsXKGJRlC88scQ4C3Gac+2
+         jFEwAoTiyLcX0rsRtaLWxt+IH4eFWYXUdOZuMYuuwrabWMzAG9HD2RMpHkJYsNu4ya1r
+         s/OrsTP3A9a43kMJVx0zVo7bdtiN4bi9cjup8=
+Date: Thu, 29 Jan 2009 22:31:41 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org, chris@zankel.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] xtensa: fix compilation somewhat
+Message-ID: <20090129193141.GA21625@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090129142049.GA20988@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 09:20:49AM -0500, Vivek Goyal wrote:
-> On Thu, Jan 29, 2009 at 07:09:35AM -0500, Neil Horman wrote:
-> > On Thu, Jan 29, 2009 at 11:28:50AM +0900, Simon Horman wrote:
-> > > On Wed, Jan 28, 2009 at 04:30:40PM -0800, Andrew Morton wrote:
-> > > > On Wed, 28 Jan 2009 08:56:31 -0800
-> > > > Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > > > 
-> > > > > akpm@linux-foundation.org wrote:
-> > > > > > The mm-of-the-moment snapshot 2009-01-28-02-17 has been uploaded to
-> > > > > > 
-> > > > > >    http://userweb.kernel.org/~akpm/mmotm/
-> > > > > > 
-> > > > > > and will soon be available at
-> > > > > > 
-> > > > > >    git://git.zen-sources.org/zen/mmotm.git
-> > > > > 
-> > > > > 
-> > > > > 10 randconfigs on i386, 1 good build.
-> > > > > 
-> > > > > The other 9 ended with either of these build errors:
-> > > > > 
-> > > 
-> > > [snip]
-> > > 
-> > > > So does that.
-> > > > 
-> > > > --- a/kernel/printk.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix-fix
-> > > > +++ a/kernel/printk.c
-> > > > @@ -137,11 +137,13 @@ static char *log_buf = __log_buf;
-> > > >  static int log_buf_len = __LOG_BUF_LEN;
-> > > >  static unsigned logged_chars; /* Number of chars produced since last read+clear operation */
-> > > >  
-> > > > +#ifdef CONFIG_KEXEC
-> > > >  void log_buf_kexec_setup(void)
-> > > >  {
-> > > >  	VMCOREINFO_SYMBOL(log_buf);
-> > > >  	VMCOREINFO_SYMBOL(log_end);
-> > > >  }
-> > > > +#endif
-> > > >  
-> > > >  static int __init log_buf_len_setup(char *str)
-> > > >  {
-> > > > _
-> > > 
-> > > Weird, I thought I checked that just now. In any case this email
-> > > was already in my inbox. In any case, I can now produce the problem,
-> > > and this patch resolves it.
-> > > 
-> > 
-> > Sorry, i didn't think to check on conditions when CONFIG_KEXEC wasn't set.  I
-> > assumed we had a stub for all the VMCOREINFO defines.  Why don't we fix it in
-> > that manner?  I mean we have serveral arch specific additions to vmcoreinfo, all
-> > of which apparently must be ifdefd for this to work.  Why not just fix it in
-> > conditional definition?
-> > 
-> 
-> This kind of makes sense. We probably should be taken care in kexec.h with
-> empty definition of VMCOREINFO_SYMBOL so that we can get rid of #ifdef
-> KEXEC in printk.c
-> 
-> Neil, do you want to throw in a patch for that.
-> 
+* ->put_char changes
+* HIGHMEM is bogus it seems, there is no kmap_atomic() et al
+* some includes
 
-I'd be happy to put this together, I'll do so shortly.
-Neil
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-> Thanks
-> Vivek
-> 
+ arch/xtensa/Kconfig                 |    3 ---
+ arch/xtensa/kernel/setup.c          |    2 ++
+ arch/xtensa/kernel/traps.c          |    1 +
+ arch/xtensa/mm/fault.c              |    1 +
+ arch/xtensa/platforms/iss/console.c |    6 ++----
+ 5 files changed, 6 insertions(+), 7 deletions(-)
+
+--- a/arch/xtensa/Kconfig
++++ b/arch/xtensa/Kconfig
+@@ -103,9 +103,6 @@ config MATH_EMULATION
+ 	help
+ 	Can we use information of configuration file?
+ 
+-config HIGHMEM
+-	bool "High memory support"
+-
+ endmenu
+ 
+ menu "Platform options"
+--- a/arch/xtensa/kernel/setup.c
++++ b/arch/xtensa/kernel/setup.c
+@@ -44,6 +44,8 @@
+ #include <asm/setup.h>
+ #include <asm/param.h>
+ 
++#include <platform/hardware.h>
++
+ #if defined(CONFIG_VGA_CONSOLE) || defined(CONFIG_DUMMY_CONSOLE)
+ struct screen_info screen_info = { 0, 24, 0, 0, 0, 80, 0, 0, 0, 24, 1, 16};
+ #endif
+--- a/arch/xtensa/kernel/traps.c
++++ b/arch/xtensa/kernel/traps.c
+@@ -30,6 +30,7 @@
+ #include <linux/stringify.h>
+ #include <linux/kallsyms.h>
+ #include <linux/delay.h>
++#include <linux/hardirq.h>
+ 
+ #include <asm/ptrace.h>
+ #include <asm/timex.h>
+--- a/arch/xtensa/mm/fault.c
++++ b/arch/xtensa/mm/fault.c
+@@ -14,6 +14,7 @@
+ 
+ #include <linux/mm.h>
+ #include <linux/module.h>
++#include <linux/hardirq.h>
+ #include <asm/mmu_context.h>
+ #include <asm/cacheflush.h>
+ #include <asm/hardirq.h>
+--- a/arch/xtensa/platforms/iss/console.c
++++ b/arch/xtensa/platforms/iss/console.c
+@@ -140,16 +140,14 @@ static void rs_poll(unsigned long priv)
+ }
+ 
+ 
+-static void rs_put_char(struct tty_struct *tty, unsigned char ch)
++static int rs_put_char(struct tty_struct *tty, unsigned char ch)
+ {
+ 	char buf[2];
+ 
+-	if (!tty)
+-		return;
+-
+ 	buf[0] = ch;
+ 	buf[1] = '\0';		/* Is this NULL necessary? */
+ 	__simc (SYS_write, 1, (unsigned long) buf, 1, 0, 0);
++	return 1;
+ }
+ 
+ static void rs_flush_chars(struct tty_struct *tty)
