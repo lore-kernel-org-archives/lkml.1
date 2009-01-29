@@ -1,243 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758216AbZA2VbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZA2Vbw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758216AbZA2VbM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 16:31:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZA2Vaw
+	id S1755019AbZA2Vbw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 16:31:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZA2Vbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 16:30:52 -0500
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:52529 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751698AbZA2Vat (ORCPT
+	Thu, 29 Jan 2009 16:31:41 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:41674 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbZA2Vbj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 16:30:49 -0500
-Date: Thu, 29 Jan 2009 16:27:25 -0500
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2009-01-29
-Message-ID: <20090129212725.GB6085@tuxdriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 29 Jan 2009 16:31:39 -0500
+Date: Thu, 29 Jan 2009 22:31:27 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Hans de Goede <hdegoede@redhat.com>
+Cc: Thomas Renninger <trenn@suse.de>, Luca Tettamanti <kronos.it@gmail.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] ACPI: add "auto" to acpi_enforce_resources
+Message-ID: <20090129223127.27bec9c9@hyperion.delvare>
+In-Reply-To: <4981FC38.205@redhat.com>
+References: <20090125210520.GA12963@dreamland.darkstar.lan>
+	<200901291130.35434.trenn@suse.de>
+	<68676e00901290716g1aabd6c0p1e5202fbdbc659a4@mail.gmail.com>
+	<200901291729.24859.trenn@suse.de>
+	<4981FC38.205@redhat.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+On Thu, 29 Jan 2009 19:58:00 +0100, Hans de Goede wrote:
+> Thomas Renninger wrote:
+> >>> Either this should be more generic (instead of hardcoded "ATK0110"
+> >>> device, use a list to add further specific thermal ACPI drivers). Hmm,
+> >>> maybe it's only ASUS violating the spec?
+> >> ASUS it's not actually violating any spec...
+> > They have to export the temperature through a thermal ACPI
+> > device, not through the ASUS specific ATK0110 device. This is
+> > what I mean whether there might be other vendor specific ACPI
+> > devices violating the spec (by providing temperature read
+> > functionality which should be done through the generic thermal
+> > ACPI device).
+> > 
+> 
+> hwmon IC's monitor far more then just temperatures, ASUS is doing the right 
+> thing here by providing an ACPI interface to also read voltages and fan speeds, 
+> so that these can be read in a way that does not interfere with the ACPI code.
+> 
+> And although even their interface does not expose the full functionality of the 
+> hwmon IC's, it is much much better then what the thermal ACPI code gives us.
+> 
+> >>> Thinkpads seem to read out extra thermal
+> >>> data from EC and shouldn't interfere with hwmon drivers.
+> >> The point is that there is only 1 physical sensor, which both ACPI and
+> >> a native driver want to drive; transaction on SMBus to read the sensor
+> >> are usually in the form "select bank" + "read" and the sequence is
+> >> *not* atomic. In ASUS case the IO ports are correctly reserved by the
+> >> firmware, but (historically) this wasn't taken into account.
+> > I know about this problem.
+> > 
+> >> Aside from ASUS the problem is generic since there are two drivers
+> >> poking at the same hardware; for example there are reports of native
+> >> drivers interfering with normal TZ polling (see [1])
+> > Yes, this is even worse as the check that you want to add will not
+> > catch it.
+> 
+> Ack, so the proper solution would be to just make the acpi_enforce_resources 
+> strict by default, but this may cause lack of functionality for some user who 
+> are currently using native drivers for hwmon features. Which is why I (hwmon 
+> subsytem contributor and Jean Delvare (i2c and (ex)hwmon subsystem maintainer) 
+> proposed this auto setting as a compromise. I'm fine with changing the default 
+> to strict, AFAIK Jean prefers the auto setting.
+> 
+> <snip>
+> 
+> >> At least eeepc and (some?) thinkpads have ACPI
+> >> hwmon capabilities but I don't know whether there are native drivers
+> >> available or not (but they could be "blacklisted"  preemptively like
+> >> ASUS ATK).
+> > I expect that ASUS only will interfere with specific hwmon driver(s)?
+> 
+> Yes only those used on their motherboards, and given the wide range of 
+> motherboard ASUS produces and they offer the ATK0110 interface on almost all of 
+> them, it pretty much comes down to "all hwmon and smbus drivers", although I'm 
+> sure if we look we can find exceptions.
+> 
+> > So why don't you move the check into the hwmon driver and make it not
+> > load on these systems?
+> > It's still ugly, but IMO better than to pollute the ACPI core.
+> > 
+> 
+> Because we do not want to do this in a zillion places when it should be done in 
+> only one. The right solution is to make acpi_enforce_resources strict the 
+> default, the auto setting is meant as a slow migration path to that right 
+> solution, as doing that right now probably will cause lots of complaints.
+> 
+> Actually, the really right solution would be for the ACPI subsystem to actually 
+> claim all the resources using the regular resource tracking so that drivers who 
+> want to check for resource conflicts with ACPI do not have to explicitly call
+> acpi_check_resource_conflict() (and friends), but instead will get an error 
+> when trying to claim the resources from the regular resource system. However 
+> chances are this will break things on quite a lot of systems, still it would be 
+> the right thing to do in the end IMHO.
+> 
+> <snip>
+> 
+> > If this is an ASUS only problem with very specific thermal
+> > sensors, better add the quirk at the specific sensor driver.
+> > 
+> 
+> It is neither ASUS specific, not is it limited to specific hwmon IC's, these 
+> are not thermal sensors, they are capable of monitoring far more then just 
+> temperature, which is why the ACPI thermal device interface is insufficient.
+> 
+> > PS: I just realize that in ATK0110 the same thermal device
+> > (IO port 0x22D) is used as in the generic ACPI device (_TMP).
+> > So it looks like your asus thermal driver will not only interfere
+> > with the hwmon driver, but with the ACPI thermal driver itself.
+> 
+> I would expect the ACPI code to take care of any conflicts between the various 
+> interfaces it offers itself. And if it is unsafe to call multiple ACPI methods 
+> at the same time, I would expect the ACPI core to fix this.
 
-I present to you another round of patches intended for 2.6.29.  There is
-a MAINTAINERS patch that recognizes the reality that Michael Wu is no
-longer touching mac80211.  There is a power setting patch for rtl8187
-that corrects a functional regression, and a NULL pointer fix for
-iwlagn.  There are a couple of regulatory-related patches that are
-isolated and I think merit inclusion based on their nature.  Finally,
-there is an ath5k fix for an older problem that is more prevalent since
-the merge of "ath5k: ignore the return value of
-ath5k_hw_noise_floor_calibration" and which addresses kernel.org bugs
-12068 and 12080.
+For the records, I second everything Hans wrote above.
 
-Please let me know if there are problems!
+> Also note that the above paragraph actually advocates in favour of making some 
+> kind of change to acpi_enforce_resources. Proposal, what if we change the auto 
+> setting to not only mean "strict" when an ATK0110 interface is present, but 
+> also when the ACPI thermal zone interface is present ?
+
+I expect problems if you do that without any exception. There are a
+number of desktop motherboards out there with pretty broken TZ
+implementations. To mention just one, my Jetway K8M8MS motherboard has a
+TZ which reports 9 degrees C all the time. I disassembled the DSDT to
+find out that the code is incorrect and they are reading a
+configuration register instead of the temperature register. Apparently
+customers didn't care at all, as this was never fixed. I reported to
+Jetway but didn't get any answer.
+
+More generally, the ACPI thermal zone doesn't provide a tenth of the
+functionality of native hardware monitoring drivers on desktop and
+server systems. So switching to strict when a thermal zone is found
+would be as painful as switching to strict unconditionally, in that it
+will cause a loss of functionality for many users out there. Whoever
+does this will first have to become the i2c maintainer and the hwmon
+maintainer, and then take all the flames. That won't be me for sure.
 
 Thanks,
-
-John
----
-
-Individual patches are available here:
-
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
-
----
-
-The following changes since commit 5376071069ec8a7e6a8112beab16fc24f5139475:
-  Linus Torvalds (1):
-        Merge master.kernel.org:/home/rmk/linux-2.6-arm
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-Bob Copeland (1):
-      ath5k: fix locking in ath5k_config
-
-Johannes Berg (1):
-      mac80211: remove Michael Wu as maintainer
-
-Larry Finger (1):
-      rtl8187: Fix error in setting OFDM power settings for RTL8187L
-
-Luis R. Rodriguez (2):
-      cfg80211: Fix sanity check on 5 GHz when processing country IE
-      cfg80211: print correct intersected regulatory domain
-
-Zhu, Yi (1):
-      iwlwifi: fix kernel oops when ucode DMA memory allocation failure
-
- MAINTAINERS                                    |    2 -
- drivers/net/wireless/ath5k/base.c              |   10 ++++++-
- drivers/net/wireless/iwlwifi/iwl-agn.c         |    4 +++
- drivers/net/wireless/rtl818x/rtl8187_rtl8225.c |   10 ++++++-
- net/wireless/reg.c                             |   32 +++++++++++++++---------
- 5 files changed, 41 insertions(+), 17 deletions(-)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index d992d40..474ec0c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2836,8 +2836,6 @@ S:	Maintained
- MAC80211
- P:	Johannes Berg
- M:	johannes@sipsolutions.net
--P:	Michael Wu
--M:	flamingice@sourmilk.net
- L:	linux-wireless@vger.kernel.org
- W:	http://linuxwireless.org/
- T:	git kernel.org:/pub/scm/linux/kernel/git/linville/wireless-2.6.git
-diff --git a/arch/arm/mach-integrator/clock.h b/arch/arm/mach-integrator/clock.h
-deleted file mode 100644
-index e69de29..0000000
-diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
-index 8ef8735..a533ed6 100644
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -1028,6 +1028,8 @@ ath5k_setup_bands(struct ieee80211_hw *hw)
-  * it's done by reseting the chip.  To accomplish this we must
-  * first cleanup any pending DMA, then restart stuff after a la
-  * ath5k_init.
-+ *
-+ * Called with sc->lock.
-  */
- static int
- ath5k_chan_set(struct ath5k_softc *sc, struct ieee80211_channel *chan)
-@@ -2814,11 +2816,17 @@ ath5k_config(struct ieee80211_hw *hw, u32 changed)
- {
- 	struct ath5k_softc *sc = hw->priv;
- 	struct ieee80211_conf *conf = &hw->conf;
-+	int ret;
-+
-+	mutex_lock(&sc->lock);
- 
- 	sc->bintval = conf->beacon_int;
- 	sc->power_level = conf->power_level;
- 
--	return ath5k_chan_set(sc, conf->channel);
-+	ret = ath5k_chan_set(sc, conf->channel);
-+
-+	mutex_unlock(&sc->lock);
-+	return ret;
- }
- 
- static int
-diff --git a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
-index 0dc8eed..b35c881 100644
---- a/drivers/net/wireless/iwlwifi/iwl-agn.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -1719,6 +1719,10 @@ static int iwl_read_ucode(struct iwl_priv *priv)
- 	priv->ucode_data_backup.len = data_size;
- 	iwl_alloc_fw_desc(priv->pci_dev, &priv->ucode_data_backup);
- 
-+	if (!priv->ucode_code.v_addr || !priv->ucode_data.v_addr ||
-+	    !priv->ucode_data_backup.v_addr)
-+		goto err_pci_alloc;
-+
- 	/* Initialization instructions and data */
- 	if (init_size && init_data_size) {
- 		priv->ucode_init.len = init_size;
-diff --git a/drivers/net/wireless/rtl818x/rtl8187_rtl8225.c b/drivers/net/wireless/rtl818x/rtl8187_rtl8225.c
-index 4e75e8e..78df281 100644
---- a/drivers/net/wireless/rtl818x/rtl8187_rtl8225.c
-+++ b/drivers/net/wireless/rtl818x/rtl8187_rtl8225.c
-@@ -285,7 +285,10 @@ static void rtl8225_rf_set_tx_power(struct ieee80211_hw *dev, int channel)
- 	ofdm_power = priv->channels[channel - 1].hw_value >> 4;
- 
- 	cck_power = min(cck_power, (u8)11);
--	ofdm_power = min(ofdm_power, (u8)35);
-+	if (ofdm_power > (u8)15)
-+		ofdm_power = 25;
-+	else
-+		ofdm_power += 10;
- 
- 	rtl818x_iowrite8(priv, &priv->map->TX_GAIN_CCK,
- 			 rtl8225_tx_gain_cck_ofdm[cck_power / 6] >> 1);
-@@ -536,7 +539,10 @@ static void rtl8225z2_rf_set_tx_power(struct ieee80211_hw *dev, int channel)
- 	cck_power += priv->txpwr_base & 0xF;
- 	cck_power = min(cck_power, (u8)35);
- 
--	ofdm_power = min(ofdm_power, (u8)15);
-+	if (ofdm_power > (u8)15)
-+		ofdm_power = 25;
-+	else
-+		ofdm_power += 10;
- 	ofdm_power += priv->txpwr_base >> 4;
- 	ofdm_power = min(ofdm_power, (u8)35);
- 
-diff --git a/net/wireless/reg.c b/net/wireless/reg.c
-index bc494ce..85c9034 100644
---- a/net/wireless/reg.c
-+++ b/net/wireless/reg.c
-@@ -498,6 +498,7 @@ static struct ieee80211_regdomain *country_ie_2_rd(
- 	 * calculate the number of reg rules we will need. We will need one
- 	 * for each channel subband */
- 	while (country_ie_len >= 3) {
-+		int end_channel = 0;
- 		struct ieee80211_country_ie_triplet *triplet =
- 			(struct ieee80211_country_ie_triplet *) country_ie;
- 		int cur_sub_max_channel = 0, cur_channel = 0;
-@@ -509,9 +510,25 @@ static struct ieee80211_regdomain *country_ie_2_rd(
- 			continue;
- 		}
- 
-+		/* 2 GHz */
-+		if (triplet->chans.first_channel <= 14)
-+			end_channel = triplet->chans.first_channel +
-+				triplet->chans.num_channels;
-+		else
-+			/*
-+			 * 5 GHz -- For example in country IEs if the first
-+			 * channel given is 36 and the number of channels is 4
-+			 * then the individual channel numbers defined for the
-+			 * 5 GHz PHY by these parameters are: 36, 40, 44, and 48
-+			 * and not 36, 37, 38, 39.
-+			 *
-+			 * See: http://tinyurl.com/11d-clarification
-+			 */
-+			end_channel =  triplet->chans.first_channel +
-+				(4 * (triplet->chans.num_channels - 1));
-+
- 		cur_channel = triplet->chans.first_channel;
--		cur_sub_max_channel = ieee80211_channel_to_frequency(
--			cur_channel + triplet->chans.num_channels);
-+		cur_sub_max_channel = end_channel;
- 
- 		/* Basic sanity check */
- 		if (cur_sub_max_channel < cur_channel)
-@@ -590,15 +607,6 @@ static struct ieee80211_regdomain *country_ie_2_rd(
- 			end_channel = triplet->chans.first_channel +
- 				triplet->chans.num_channels;
- 		else
--			/*
--			 * 5 GHz -- For example in country IEs if the first
--			 * channel given is 36 and the number of channels is 4
--			 * then the individual channel numbers defined for the
--			 * 5 GHz PHY by these parameters are: 36, 40, 44, and 48
--			 * and not 36, 37, 38, 39.
--			 *
--			 * See: http://tinyurl.com/11d-clarification
--			 */
- 			end_channel =  triplet->chans.first_channel +
- 				(4 * (triplet->chans.num_channels - 1));
- 
-@@ -1276,7 +1284,7 @@ static void reg_country_ie_process_debug(
- 	if (intersected_rd) {
- 		printk(KERN_DEBUG "cfg80211: We intersect both of these "
- 			"and get:\n");
--		print_regdomain_info(rd);
-+		print_regdomain_info(intersected_rd);
- 		return;
- 	}
- 	printk(KERN_DEBUG "cfg80211: Intersection between both failed\n");
 -- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Jean Delvare
