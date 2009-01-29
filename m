@@ -1,78 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755080AbZA2QEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756513AbZA2QFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755080AbZA2QEU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 11:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751864AbZA2QEJ
+	id S1756513AbZA2QFu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 11:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZA2QFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 11:04:09 -0500
-Received: from gmp-eb-inf-2.sun.com ([192.18.6.24]:55735 "EHLO
-	gmp-eb-inf-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbZA2QEI (ORCPT
+	Thu, 29 Jan 2009 11:05:42 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39219 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751864AbZA2QFm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 11:04:08 -0500
-Date: Thu, 29 Jan 2009 17:03:35 +0100
-From: Frank Mehnert <Frank.Mehnert@Sun.COM>
-Subject: Re: PFs on pages pinned with get_user_pages()
-In-reply-to: <1233240757.4495.94.camel@laptop>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Message-id: <200901291703.35463.frank.mehnert@sun.com>
-Organization: Sun Microsystems
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart8876601.V7GM12iFoE
-Content-transfer-encoding: 7BIT
-References: <200901290905.10966.frank.mehnert@sun.com>
- <200901291541.32618.frank.mehnert@sun.com> <1233240757.4495.94.camel@laptop>
-User-Agent: KMail/1.9.9
+	Thu, 29 Jan 2009 11:05:42 -0500
+Date: Thu, 29 Jan 2009 16:06:02 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pazzo Da Legare <pazzodalegare@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: NEWBIE: how to change serial device<->port association
+Message-ID: <20090129160602.235840c2@lxorguk.ukuu.org.uk>
+In-Reply-To: <1a26b4920901290616r40c1edd0tec62d0e6bf24dc9@mail.gmail.com>
+References: <1a26b4920901290302w5c9bb79cra29fda5e67cc96a4@mail.gmail.com>
+	<20090129134537.12121834@lxorguk.ukuu.org.uk>
+	<1a26b4920901290616r40c1edd0tec62d0e6bf24dc9@mail.gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> The hws have a different combination of kind serials and I would like
+> to present the same ttyS* to applications. I need to have different
 
---nextPart8876601.V7GM12iFoE
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+By having multiple different kernels for the different systems ? That
+sounds like a really really complicated way to go about the problem when
+you could just add a config file to your application.
 
-On Thursday 29 January 2009, Peter Zijlstra wrote:
-> > > That aside, is there any reason you have to avoid scheduling? Otherwi=
-se
-> > > I would just allow so and be done with it.
-> >
-> > The reason is that our code expects that to ensure syncing of the CPU
-> > state with the saved state. I fear it is quite difficult to change
-> > that...
->
-> Ah, is that what KVM uses the preempt notifiers for? Could you too?
-
-Right, that could be an option.
-
-We will try to change our code which is a big effort as we try
-to keep the code as unique as possible between the different
-hosts we support (Linux, Solaris, Windows, Mac OS X).
-
-Just to be sure: There is no other option than disabling interrupts
-or calling disable_preemption() to prevent scheduling?
-
-Kind regards,
-
-=46rank
-=2D-=20
-Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
-
---nextPart8876601.V7GM12iFoE
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmB01cACgkQ6z8pigLf3Eej7wCdGTDgRfXFDvD9M301IUmK4hWF
-s3QAmwZrQmXIKp/CKkvcekr5l6Gwi5rD
-=YeQM
------END PGP SIGNATURE-----
-
---nextPart8876601.V7GM12iFoE--
