@@ -1,69 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbZA2CVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbZA2C3P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758124AbZA2CVv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 21:21:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753979AbZA2CVl
+	id S1756612AbZA2C3P (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 21:29:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZA2C26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 21:21:41 -0500
-Received: from arroyo.ext.ti.com ([192.94.94.40]:34322 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752667AbZA2CVk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 21:21:40 -0500
-From: "Woodruff, Richard" <r-woodruff2@ti.com>
-To: Paul Walmsley <paul@pwsan.com>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>
-Date: Wed, 28 Jan 2009 20:21:18 -0600
-Subject: RE: [PATCH B 06/10] OMAP3 pwrdm: add CORE SAR handling (for USBTLL
- module)
-Thread-Topic: [PATCH B 06/10] OMAP3 pwrdm: add CORE SAR handling (for USBTLL
- module)
-Thread-Index: AcmBhnLYe5oDZ7X8SeW1PvSu48njVAAMaGUg
-Message-ID: <13B9B4C6EF24D648824FF11BE89671620376DEB7A5@dlee02.ent.ti.com>
-References: <20090128024301.27240.39391.stgit@localhost.localdomain>
- <20090128024421.27240.95450.stgit@localhost.localdomain>
-In-Reply-To: <20090128024421.27240.95450.stgit@localhost.localdomain>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
+	Wed, 28 Jan 2009 21:28:58 -0500
+Received: from kirsty.vergenet.net ([202.4.237.240]:38492 "EHLO
+	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751637AbZA2C25 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 21:28:57 -0500
+Date: Thu, 29 Jan 2009 11:28:50 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
+       Miao Xie <miaox@cn.fujitsu.com>, Neil Horman <nhorman@tuxdriver.com>,
+       Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: mmotm 2009-01-28-02-17 uploaded (i386 build errors: cpusets &
+	kexec)
+Message-ID: <20090129022846.GA1319@verge.net.au>
+References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org> <49808E3F.1090805@oracle.com> <20090128163040.88b05b3d.akpm@linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090128163040.88b05b3d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n0T2LtwM011540
 
-> 34xx TRM Delta G->H notes that the CORE powerdomain has a hardware
-> save-and-restore (SAR) control bit for the USBTLL module, similar to
-> the USBHOST powerdomain SAR bit.  Split the existing core_34xx struct
-> powerdomain into two structs, one for ES1 and one for ES2, and add the
-> PWRDM_HAS_HDWR_SAR flag to the ES2 powerdomain.
->
-> Signed-off-by: Paul Walmsley <paul@pwsan.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> +
-> +/* No wkdeps or sleepdeps for 34xx core apparently */
-> +static struct powerdomain core_34xx_es2_pwrdm = {
-> +     .name             = "core_pwrdm",
-> +     .prcm_offs        = CORE_MOD,
-> +     .omap_chip        = OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES2),
->       .pwrsts           = PWRSTS_OFF_RET_ON,
->       .dep_bit          = OMAP3430_EN_CORE_SHIFT,
-> +     .flags            = PWRDM_HAS_HDWR_SAR, /* for USBTLL only */
->       .banks            = 2,
->       .pwrsts_mem_ret   = {
->               [0] = PWRSTS_OFF_RET,    /* MEM1RETSTATE */
+On Wed, Jan 28, 2009 at 04:30:40PM -0800, Andrew Morton wrote:
+> On Wed, 28 Jan 2009 08:56:31 -0800
+> Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> 
+> > akpm@linux-foundation.org wrote:
+> > > The mm-of-the-moment snapshot 2009-01-28-02-17 has been uploaded to
+> > > 
+> > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > 
+> > > and will soon be available at
+> > > 
+> > >    git://git.zen-sources.org/zen/mmotm.git
+> > 
+> > 
+> > 10 randconfigs on i386, 1 good build.
+> > 
+> > The other 9 ended with either of these build errors:
+> > 
 
-TLLSAR is not functional till ES3.1 (and beyound).  Is it possible to flag it this way?
+[snip]
 
-If you try and use it your system will deadlock on 2nd OFF mode transition due to hardware bug.
+> So does that.
+> 
+> --- a/kernel/printk.c~kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists-fix-fix
+> +++ a/kernel/printk.c
+> @@ -137,11 +137,13 @@ static char *log_buf = __log_buf;
+>  static int log_buf_len = __LOG_BUF_LEN;
+>  static unsigned logged_chars; /* Number of chars produced since last read+clear operation */
+>  
+> +#ifdef CONFIG_KEXEC
+>  void log_buf_kexec_setup(void)
+>  {
+>  	VMCOREINFO_SYMBOL(log_buf);
+>  	VMCOREINFO_SYMBOL(log_end);
+>  }
+> +#endif
+>  
+>  static int __init log_buf_len_setup(char *str)
+>  {
+> _
 
-Regards,
-Richard W.
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Weird, I thought I checked that just now. In any case this email
+was already in my inbox. In any case, I can now produce the problem,
+and this patch resolves it.
+
+-- 
+Simon Horman
+  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
+  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
+
