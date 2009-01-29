@@ -1,122 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbZA2Ror@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbZA2RpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759323AbZA2Ror (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 12:44:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757716AbZA2RoT
+	id S1758443AbZA2RpG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 12:45:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755496AbZA2Rof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 12:44:19 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:48353 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754349AbZA2RoR (ORCPT
+	Thu, 29 Jan 2009 12:44:35 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:32910 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758454AbZA2Rod (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 12:44:17 -0500
-Date: Thu, 29 Jan 2009 12:44:15 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>, jens.axboe@oracle.com
-Subject: Re: [PATCH -v2] use per cpu data for single cpu ipi calls
-In-Reply-To: <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>  <200901290955.38940.rusty@rustcorp.com.au>  <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com>  <20090128173039.cbc29e81.akpm@linux-foundation.org> <1233218954.7835.11.camel@twins>
- <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 29 Jan 2009 12:44:33 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=abcrIUwTZZfBlseK4CE9Cm2Ei6n+OrEGZVik9qAV9HCrxW0SFLIv+XvFLA2Uy0nZ9q
+         dj8Y39tZ/6YhfUVqvLuCc5VQs3I4ZVOfkf9aytS05HHEtwlYH7Bz9jbwylonyOXQNqGy
+         c5dka6aDv7UGskPK9tSIXoDr3r4Ff5IQHOIBs=
+Date: Thu, 29 Jan 2009 20:50:15 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 05/17] proc tty: switch synclink_cs to ->proc_fops
+Message-ID: <20090129175015.GE21643@x200.localdomain>
+References: <20090129174830.GA21643@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090129174830.GA21643@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+ drivers/char/pcmcia/synclink_cs.c |   73 +++++++++++++++++--------------------
+ 1 files changed, 34 insertions(+), 39 deletions(-)
 
-On Thu, 29 Jan 2009, Linus Torvalds wrote:
-
-> 
-> 
-> On Thu, 29 Jan 2009, Steven Rostedt wrote:
-> > 
-> > The caller must wait till the LOCK bit is cleared before setting
-> > it. When it is cleared, there is no IPI function using it.
-> > A spinlock is used to synchronize the setting of the bit between
-> > callers. Since only one callee can be called at a time, and it
-> > is the only thing to clear it, the IPI does not need to use
-> > any locking.
-> 
-> That spinlock cannot be right. It is provably wrong for so many reasons..
-> 
-> Think about it. We're talking about a per-CPU lock, which already makes no 
-> sense: we're only locking against our own CPU, and we've already disabled 
-> preemption for totally unrelated reasons.
-
-Actually, we are locking against the destination CPU. Or perhaps I'm 
-misunderstanding you.  The lock is protecting the destination data. The 
-'cpu' variable  is the CPU we call to, not the current CPU.
-
-> 
-> And the only way locking can make sense against our own CPU is if we lock 
-> against interrupts - but the lock isn't actually irq-safe, so if you are 
-> trying to lock against interrupts, you are (a) doing it wrong (you should 
-> disable interrupts, not use a spinlock) and (b) causing a deadlock if it 
-> ever happens.
-
-I did not think an interrupt handler was allowed to do a 
-smp_call_function. If it is, then you are correct and this is very buggy.
-
-Both smp_call_function and smp_call_function have a:
-
-	WARN_ON(irqs_disabled());
-
-and comments saying that interrupts must be enabled and that these can
-not be called from interrupt or softirq handlers.
-
-The spin lock is to protect this scenario:
-
-	task on CPU 0 sends IPI to CPU 2
-	task on CPU 1 sends IPI to CPU 2
-
-The first task to get past that spin lock (which is for CPU 2) will send 
-the IPI. The second task will keep have to spin until the LOCK bit is 
-cleared.
-
-In other words, that spin lock is just a fancy:
-
- again:
-	flags = per_cpu(csd_data).flags & ~CSD_FLAG_LOCK;
-	if (cmpxchg(&per_cpu(csd_data, cpu).lock, flags,
-	    flags | CSD_FLAG_LOCK) != flags) {
-		cpu_relax();
-		goto again;
-	}
-
-
-> 
-> In other words: no way in hell does that make any sense what-so-ever.
-> 
-> Just remove it. As it is, it can only hurt. There's no possible point to 
-> it.
-> 
-> Now, if people actually do send IPI's from interrupts (and it does happen 
-> - cross-cpu wakeups etc), then that implies that you do want to then make 
-> the whole thing irq-safe. But the *spinlock* is pointless.
-
-But these IPIs would not use the smp_call_function routines.
-
-> 
-> But to be irq-safe, you now need to protect the _whole_ region against 
-> interrupts, because otherwise an incoming interrupt will hit while the 
-> CSD_FLAG_LOCK bit is set, perhaps _before_ the actual IPI has been sent, 
-> and now nothing will ever clear it. So the interrupt handler that tries to 
-> send an IPI will now spin forever.
-
-Again, this code is not allowed to run from an interrupt handler.
-
-> 
-> So NAK on this patch. I think the approach is correct, but the 
-> implementation is buggy.
-
--- Steve
+diff --git a/drivers/char/pcmcia/synclink_cs.c b/drivers/char/pcmcia/synclink_cs.c
+index dc073e1..b1b6cfc 100644
+--- a/drivers/char/pcmcia/synclink_cs.c
++++ b/drivers/char/pcmcia/synclink_cs.c
+@@ -51,6 +51,7 @@
+ #include <linux/ptrace.h>
+ #include <linux/ioport.h>
+ #include <linux/mm.h>
++#include <linux/seq_file.h>
+ #include <linux/slab.h>
+ #include <linux/netdevice.h>
+ #include <linux/vmalloc.h>
+@@ -2619,13 +2620,12 @@ cleanup:
+  * /proc fs routines....
+  */
+ 
+-static inline int line_info(char *buf, MGSLPC_INFO *info)
++static inline void line_info(struct seq_file *m, MGSLPC_INFO *info)
+ {
+ 	char	stat_buf[30];
+-	int	ret;
+ 	unsigned long flags;
+ 
+-	ret = sprintf(buf, "%s:io:%04X irq:%d",
++	seq_printf(m, "%s:io:%04X irq:%d",
+ 		      info->device_name, info->io_base, info->irq_level);
+ 
+ 	/* output current serial signal states */
+@@ -2649,75 +2649,70 @@ static inline int line_info(char *buf, MGSLPC_INFO *info)
+ 		strcat(stat_buf, "|RI");
+ 
+ 	if (info->params.mode == MGSL_MODE_HDLC) {
+-		ret += sprintf(buf+ret, " HDLC txok:%d rxok:%d",
++		seq_printf(m, " HDLC txok:%d rxok:%d",
+ 			      info->icount.txok, info->icount.rxok);
+ 		if (info->icount.txunder)
+-			ret += sprintf(buf+ret, " txunder:%d", info->icount.txunder);
++			seq_printf(m, " txunder:%d", info->icount.txunder);
+ 		if (info->icount.txabort)
+-			ret += sprintf(buf+ret, " txabort:%d", info->icount.txabort);
++			seq_printf(m, " txabort:%d", info->icount.txabort);
+ 		if (info->icount.rxshort)
+-			ret += sprintf(buf+ret, " rxshort:%d", info->icount.rxshort);
++			seq_printf(m, " rxshort:%d", info->icount.rxshort);
+ 		if (info->icount.rxlong)
+-			ret += sprintf(buf+ret, " rxlong:%d", info->icount.rxlong);
++			seq_printf(m, " rxlong:%d", info->icount.rxlong);
+ 		if (info->icount.rxover)
+-			ret += sprintf(buf+ret, " rxover:%d", info->icount.rxover);
++			seq_printf(m, " rxover:%d", info->icount.rxover);
+ 		if (info->icount.rxcrc)
+-			ret += sprintf(buf+ret, " rxcrc:%d", info->icount.rxcrc);
++			seq_printf(m, " rxcrc:%d", info->icount.rxcrc);
+ 	} else {
+-		ret += sprintf(buf+ret, " ASYNC tx:%d rx:%d",
++		seq_printf(m, " ASYNC tx:%d rx:%d",
+ 			      info->icount.tx, info->icount.rx);
+ 		if (info->icount.frame)
+-			ret += sprintf(buf+ret, " fe:%d", info->icount.frame);
++			seq_printf(m, " fe:%d", info->icount.frame);
+ 		if (info->icount.parity)
+-			ret += sprintf(buf+ret, " pe:%d", info->icount.parity);
++			seq_printf(m, " pe:%d", info->icount.parity);
+ 		if (info->icount.brk)
+-			ret += sprintf(buf+ret, " brk:%d", info->icount.brk);
++			seq_printf(m, " brk:%d", info->icount.brk);
+ 		if (info->icount.overrun)
+-			ret += sprintf(buf+ret, " oe:%d", info->icount.overrun);
++			seq_printf(m, " oe:%d", info->icount.overrun);
+ 	}
+ 
+ 	/* Append serial signal status to end */
+-	ret += sprintf(buf+ret, " %s\n", stat_buf+1);
++	seq_printf(m, " %s\n", stat_buf+1);
+ 
+-	ret += sprintf(buf+ret, "txactive=%d bh_req=%d bh_run=%d pending_bh=%x\n",
++	seq_printf(m, "txactive=%d bh_req=%d bh_run=%d pending_bh=%x\n",
+ 		       info->tx_active,info->bh_requested,info->bh_running,
+ 		       info->pending_bh);
+-
+-	return ret;
+ }
+ 
+ /* Called to print information about devices
+  */
+-static int mgslpc_read_proc(char *page, char **start, off_t off, int count,
+-		 int *eof, void *data)
++static int mgslpc_proc_show(struct seq_file *m, void *v)
+ {
+-	int len = 0, l;
+-	off_t	begin = 0;
+ 	MGSLPC_INFO *info;
+ 
+-	len += sprintf(page, "synclink driver:%s\n", driver_version);
++	seq_printf(m, "synclink driver:%s\n", driver_version);
+ 
+ 	info = mgslpc_device_list;
+ 	while( info ) {
+-		l = line_info(page + len, info);
+-		len += l;
+-		if (len+begin > off+count)
+-			goto done;
+-		if (len+begin < off) {
+-			begin += len;
+-			len = 0;
+-		}
++		line_info(m, info);
+ 		info = info->next_device;
+ 	}
++	return 0;
++}
+ 
+-	*eof = 1;
+-done:
+-	if (off >= len+begin)
+-		return 0;
+-	*start = page + (off-begin);
+-	return ((count < begin+len-off) ? count : begin+len-off);
++static int mgslpc_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, mgslpc_proc_show, NULL);
+ }
+ 
++static const struct file_operations mgslpc_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= mgslpc_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
+ static int rx_alloc_buffers(MGSLPC_INFO *info)
+ {
+ 	/* each buffer has header and data */
+@@ -2861,13 +2856,13 @@ static const struct tty_operations mgslpc_ops = {
+ 	.send_xchar = mgslpc_send_xchar,
+ 	.break_ctl = mgslpc_break,
+ 	.wait_until_sent = mgslpc_wait_until_sent,
+-	.read_proc = mgslpc_read_proc,
+ 	.set_termios = mgslpc_set_termios,
+ 	.stop = tx_pause,
+ 	.start = tx_release,
+ 	.hangup = mgslpc_hangup,
+ 	.tiocmget = tiocmget,
+ 	.tiocmset = tiocmset,
++	.proc_fops = &mgslpc_proc_fops,
+ };
+ 
+ static void synclink_cs_cleanup(void)
+-- 
+1.5.6.5
 
