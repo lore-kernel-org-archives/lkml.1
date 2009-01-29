@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbZA2Nd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbZA2Ngw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757411AbZA2Nd1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 08:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZA2NdS
+	id S1755587AbZA2Ngw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 08:36:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbZA2Ngn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 08:33:18 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33019 "EHLO mx2.mail.elte.hu"
+	Thu, 29 Jan 2009 08:36:43 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36300 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751289AbZA2NdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 08:33:17 -0500
-Date: Thu, 29 Jan 2009 14:33:08 +0100
+	id S1751289AbZA2Ngn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 08:36:43 -0500
+Date: Thu, 29 Jan 2009 14:36:36 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jack Steiner <steiner@sgi.com>
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] - UV fix compile error on IA64 & eliminate compiler
-	warning
-Message-ID: <20090129133308.GE24391@elte.hu>
-References: <20090128212104.GA1156@sgi.com>
+To: Alexander van Heukelum <heukelum@fastmail.fm>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: trampoline_64.S - use predefined constants
+	with simplification
+Message-ID: <20090129133636.GF24391@elte.hu>
+References: <20090128202125.GA32555@localhost> <1233179577.19086.1297291037@webmail.messagingengine.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090128212104.GA1156@sgi.com>
+In-Reply-To: <1233179577.19086.1297291037@webmail.messagingengine.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,41 +37,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jack Steiner <steiner@sgi.com> wrote:
+* Alexander van Heukelum <heukelum@fastmail.fm> wrote:
 
+> On Wed, 28 Jan 2009 23:21:25 +0300, "Cyrill Gorcunov"
+> <gorcunov@gmail.com> said:
+> > Impact: cleanup
+> > 
+> > We may use macros from processor-flags.h instead
+> > of hardcoding bits. Actually it's not direct mapping
+> > of old instructions with new ones -- BTS does change
+> > CF flag while MOV does not. But i didn't find any
+> > dependency on CF in this code.
+> > 
+> > Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> > ---
+> >
+> > Please review
 > 
-> The GRU driver is used on both IA64 & x86.
-> The 2 architectures have different ways of detecting the
-> platform type, ie. whether the platform is a UV system.
-> Although it is possible to reconcile the 2 methods,
-> only one place currently makes the test.
+> Looks good.
 > 
-> Also eliminate a warning message in uv.h.
-> 
-> Signed-off-by: Jack Steiner <steiner@sgi.com>
-> 
-> 
-> ---
->  arch/x86/include/asm/uv/uv.h   |    1 +
->  drivers/misc/sgi-gru/gru.h     |    2 --
->  drivers/misc/sgi-gru/grufile.c |    1 +
->  3 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: linux/arch/x86/include/asm/uv/uv.h
-> ===================================================================
-> --- linux.orig/arch/x86/include/asm/uv/uv.h	2009-01-28 12:43:27.000000000 -0600
-> +++ linux/arch/x86/include/asm/uv/uv.h	2009-01-28 15:13:58.000000000 -0600
-> @@ -2,6 +2,7 @@
->  #define _ASM_X86_UV_UV_H
->  
->  enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
-> +struct mm_struct;
+> Acked-by: Alexander van Heukelum <heukelum@fastmail.fm>
 
-hm, why is this needed?
-
->  #define IS_UV()		is_uv_system()
-
-btw., why is there an ugly IS_UV() macro. All code should be using 
-is_uv_system() and IS_UV() should be removed.
+applied to tip/x86/asm, thanks guys!
 
 	Ingo
