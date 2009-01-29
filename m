@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbZA2Qx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZA2REh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759639AbZA2Qx4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 11:53:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754686AbZA2Qxo
+	id S1755256AbZA2REh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 12:04:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbZA2RE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 11:53:44 -0500
-Received: from mho-01-bos.mailhop.org ([63.208.196.178]:61883 "EHLO
-	mho-01-bos.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbZA2Qxm (ORCPT
+	Thu, 29 Jan 2009 12:04:28 -0500
+Received: from charybdis-ext.suse.de ([195.135.221.2]:39220 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751558AbZA2RE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 11:53:42 -0500
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 69.181.40.92
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX184WgXQxofwZUuQQ7szfJQV
-Date: Thu, 29 Jan 2009 08:53:35 -0800
-From: Tony Lindgren <tony@atomide.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Paul Walmsley <paul@pwsan.com>, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: OMAP clock fast-forward: an introduction to six series
-Message-ID: <20090129165335.GI32148@atomide.com>
-References: <alpine.DEB.2.00.0901281310590.14710@utopia.booyaka.com> <20090128211844.GI23301@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901282357560.32081@utopia.booyaka.com> <20090129081117.GA11519@n2100.arm.linux.org.uk> <20090129083049.GB11519@n2100.arm.linux.org.uk> <20090129162556.GA32148@atomide.com> <20090129163501.GE18233@n2100.arm.linux.org.uk> <20090129164103.GD32148@atomide.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090129164103.GD32148@atomide.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 29 Jan 2009 12:04:27 -0500
+Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
+From: "Peter W. Morreale" <pmorreale@novell.com>
+To: Jonathan Campbell <jon@nerdgrounds.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, devel@driverdev.osuosl.org,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+In-Reply-To: <497E4C5E.2030201@nerdgrounds.com>
+References: <497E4531.20800@nerdgrounds.com> <497E4919.60907@zytor.com>
+	 <497E4C5E.2030201@nerdgrounds.com>
+Content-Type: text/plain
+Organization: Linux Solutions Group
+Date: Thu, 29 Jan 2009 17:04:09 +0000
+Message-Id: <1233248649.7191.130.camel@hermosa.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Tony Lindgren <tony@atomide.com> [090129 08:42]:
-> * Russell King - ARM Linux <linux@arm.linux.org.uk> [090129 08:35]:
-> > On Thu, Jan 29, 2009 at 08:25:58AM -0800, Tony Lindgren wrote:
-> > > To me it does not matter which way the stuff gets merged. We just need
-> > > to get it all merged.
-> > > 
-> > > If you guys can't get it merged and sorted out then it will all fall
-> > > down on me. And then I have to use tools no smaller than a sledgehammer
-> > > to merge it all, so the outcome won't be pretty!
-> > 
-> > Well, I've continued with my approach.  28 patches are currently merged
-> > onto a follow-on branch (scattered throughout the series but in order)
-> > and the result builds for my OMAP1, OMAP2 and OMAP3 test builds.
+On Mon, 2009-01-26 at 15:50 -0800, Jonathan Campbell wrote:
+> vramfs is designed to take the memory range and directly turn it into a 
+> usable filesystem.
+> The structures are not actually in VRAM, but the file contents are.
+> Vramfs has a builtin mechanism as described to avoid conflicting with 
+> the region in use by the framebuffer console.
 > 
-> OK, only 32 more patches to go :)
+> I don't really know about the mtd device, but I thought it would be good 
+> kernel coding practice to write a filesystem driver to pull off a stunt 
+> like that.
+> 
+> I also wrote this in consideration of the GPU which probably wouldn't 
+> know how to handle the fragmentation that would inevitably happen if 
+> ext3 needed to write blocks in a non-contiguous manner, this fs enforces 
+> the rule that files are always unbroken with only a start and length.
+> 
 
-I mean 42!
+How do you accomplish that? 
 
-> > Patches which I've provided non-trivial comments on by and large haven't
-> > been merged.  Once I've worked through the set, I'll provide a final list
-> > of those outstanding so nothing should be lost.
-> > 
-> > I would appreciate someone _bouncing_ (not forwarding) the patches I'm
-> > missing to linux@arm.linux.org.uk please.  Those being D6, E2 and F2.
+(I haven't yet looked at your code...)
+
+-PWM
+
+
+> Also, doesn't mtd come in as a block device?
+> So you'd have to format the memory region using a filesystem like ext3, 
+> right?
+> And as a block device you can't use mmap() to map that region directly 
+> into your process space, right?
+> > Jonathan Campbell wrote:
+> >>
+> >> So far I've tested it against 2.6.25.17 and 2.6.28 on both x86 and 
+> >> x86_64 with reads, writes, directory creation, symlink creation, and 
+> >> mmap() and it seems to work fine.
+> >> Just give it a range of memory on the bus, or the 
+> >> domain:bus:device:function numbers of a VGA PCI device, and it will 
+> >> mount the VGA video RAM and allow files to exist there.
+> >> As a special hack: you can also specify the size of the active 
+> >> framebuffer console so that fbcon doesn't collide with this driver 
+> >> (unless you want to see what your files look like splattered across 
+> >> your screen, ha). The active VRAM area becomes a "sentinel" file 
+> >> named "framebuffer".
+> >>
+> >> What do you guys think?
+> >>
+> >
+> > How is this different from the MTD driver we already have?
+> >
+> >     -hpa
+> > -- 
+> > To unsubscribe from this list: send the line "unsubscribe 
+> > linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> >
 > 
-> I'll bounce them to you.
-> 
-> Regards,
-> 
-> Tony
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-omap" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> _______________________________________________
+> devel mailing list
+> devel@linuxdriverproject.org
+> http://driverdev.linuxdriverproject.org/mailman/listinfo/devel
+
