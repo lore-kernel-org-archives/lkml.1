@@ -1,81 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758716AbZA2O2S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbZA2O31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758716AbZA2O2S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 09:28:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZA2O2G
+	id S1758770AbZA2O31 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:29:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752779AbZA2O3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 09:28:06 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45878 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752667AbZA2O2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 09:28:04 -0500
-Date: Thu, 29 Jan 2009 15:27:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, linux-kernel@vger.kernel.org
-Subject: Re: [bug] CONFIG_I2C_VIAPRO=y breaks skge
-Message-ID: <20090129142759.GR24391@elte.hu>
-References: <20090127151359.GA20369@elte.hu> <20090127162729.50cd2e61@hyperion.delvare> <20090127154410.GA24470@elte.hu> <20090127182631.13568383@hyperion.delvare> <20090129134916.GK24391@elte.hu> <20090129151535.2fb84505@hyperion.delvare>
+	Thu, 29 Jan 2009 09:29:19 -0500
+Received: from fk-out-0910.google.com ([209.85.128.189]:65051 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752580AbZA2O3S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 09:29:18 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=DpwmUY7RTD+gZ6NhTXl4aZNc5PqKBdPS8QJj1+jxTPlHDSjlCmRoFdoxpRbCTkl9qz
+         XLclMy6TFpSLIL3JlFKC9voyis8euc7l1XPrDR0Y1KF+0sfSjTPePvOWsZbs2KxPNfY2
+         C4YrgzZ5AvRTh83xJlpwST/XDgmCOAodcapns=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090129151535.2fb84505@hyperion.delvare>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090129140451.GM24391@elte.hu>
+References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere>
+	 <20090127225048.GA4652@nowhere> <20090129140451.GM24391@elte.hu>
+Date: Thu, 29 Jan 2009 15:29:15 +0100
+Message-ID: <c62985530901290629i168ac12cjc4b22140caceff58@mail.gmail.com>
+Subject: Re: [PATCH] tracer for sys_open() - sreadahead
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       powertop ml <power@bughost.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, srostedt@redhat.com,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>, utrace-devel@redhat.com,
+       Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/1/29 Ingo Molnar <mingo@elte.hu>:
+>
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> On Tue, Jan 27, 2009 at 11:43:03PM +0100, Frederic Weisbecker wrote:
+>> > On Tue, Jan 27, 2009 at 12:08:04PM -0800, Kok, Auke wrote:
+>> > >
+>> > > This tracer monitors regular file open() syscalls. This is a fast
+>> > > and low-overhead alternative to strace, and does not allow or
+>> > > require to be attached to every process.
+>> > >
+>> > > The tracer only logs succesfull calls, as those are the only ones we
+>> > > are currently interested in, and we can determine the absolute path
+>> > > of these files as we log.
+>> > >
+>> > > Signed-off-by: Auke Kok <auke-jan.h.kok@intel.com>
+>> >
+>> >
+>> > Hi Auke,
+>> >
+>> > Speaking about a global syscall tracer, I made a patch to trace only the syscalls
+>> > with the function-graph-tracer.
+>> >
+>> > http://lkml.org/lkml/2008/12/30/267
+>> >
+>> > Its approach and purpose is different than a tracer dedicated only to syscalls.
+>> > The function graph tracer traces execution graph of the functions and is more about
+>> > execution time spent and code flow whereas a syscall tracer can provide more specific
+>> > informations about syscalls.
+>> >
+>> > So both are not overlaping.
+>> >
+>> > But the low level part of my patch creates a thread flag _TIF_SYSCALL_TRACE which triggers
+>>
+>> s/_TIF_SYSCALL_TRACE/_TIF_SYSCALL_FTRACE
+>
+>> > Once we have it, I think a syscall tracer can be fed with new syscalls
+>> > events through several patch iterations, starting with the open and
+>> > close one :-)
+>> >
+>> > Are you ok with that?
+>> >
+>> > Steven, Ingo, do you agree?
+>
+> yes. We definitely need this on the asm syscall level, to not contaminate
+> hundreds of syscalls with tracepoints.
+>
+> Auke's sys_open() plugin would be a nice prototype for that concept - but
+> in generally it would be useful to be able to augment kernel tracer output
+> with all syscall events that occur.
+>
+> The output would be something like a slimmed-down strace, but for the
+> whole kernel and not tied to ptrace semantics (which are crippling).
+>
+> Would you be interested in extending your syscall tracing concept with
+> those bits and would you be interested in integrating Auke's plugin into
+> that
+>
+>        Ingo
 
-* Jean Delvare <khali@linux-fr.org> wrote:
 
-> On Thu, 29 Jan 2009 14:49:16 +0100, Ingo Molnar wrote:
-> > 
-> > * Jean Delvare <khali@linux-fr.org> wrote:
-> > > Well my guess is that you have included an I2C chip driver with a weak 
-> > > detection routine. More likely this is a typical case of "if it hurts, 
-> > > don't do it". But maybe we can improve the help text or default, or even 
-> > > disable probing for these devices.
-> > > 
-> > > At this point I am reasonably certain that the i2c-viapro driver is 
-> > > innocent.
-> > 
-> > i've excluded the VIAPRO driver on that box (and only the VIAPRO driver - 
-> > i.e. all those other I2C drivers still run frequently) - and the problem 
-> > has not reoccured in about ~1000 bootups.
-> > 
-> > Combined with the fact that this box has a VIA chipset, does that not 
-> > implicate the viapro driver, at least to a certain degree?
-> 
-> This VIA chipset is the bridge over which the bugs run. Blaming on it 
-> for the problem you've hit would be similar to blaming the USB host 
-> controller driver for a bug that is in the USB keyboard or mouse driver.
-> 
-> The "other I2C drivers" don't run frequently at all now that you've 
-> disabled i2c-viapro. Without an I2C bus to probe on the machine, these 
-> drivers don't do anything.
+Several people talked me about utrace and gave some examples about it
+in this discussion.
+The Api is very convenient to fetch syscall numbers, arguments and
+return values.
+And the hooks are done in the generic core code, so it is arch independent.
 
-ah, okay - i see - what i thought to be a surgical workaround has cut off 
-the whole leg. Will go back to find the ailing muscle instead.
+The only drawback I can see is that it is not yet merged upstream, in
+need of in-kernel users.
+If it only depends on this condition, we could be these users...
 
-> So, again, if you are still willing to help me solve the problem, please 
-> boot the bad kernel and run:
-> 
-> $ ls -l /sys/bus/i2c/devices/*/driver
-> 
-> Then we'll know which drivers attached to I2C devices on your SMBus. 
-> Figuring out which one shouldn't have will likely be straightforward.
-
-will take some time - but i'll revisit it.
-
-Could you give me a short list of I2C driver .config options i should 
-disable one by one (instead of viapro) ?
-
-	Ingo
+What do you think?
