@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbZA2PqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbZA2PuE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbZA2PqY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 10:46:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZA2PqP
+	id S1758530AbZA2PuE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 10:50:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbZA2Pty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 10:46:15 -0500
-Received: from wf-out-1314.google.com ([209.85.200.168]:63844 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751601AbZA2PqO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 10:46:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QKEhb6EZNRkIZhgRrBlv7z8Qry2lxmTMo+KkAqArheZNXWdTAmYcfbVrH6m/CMznJ8
-         gVdPhnRFGWnUZs6gUInkvz+YfwkFVMbjffq9/+8jk940MG/6QhhMqOWTbdVD4JrsuW0T
-         Yxl1rqEHsdja2fURWJimx6Z0Grxjfjt0gzC/0=
-MIME-Version: 1.0
-In-Reply-To: <20090129072938.2761a6ed@infradead.org>
-References: <1233242110-5422-1-git-send-email-tom.leiming@gmail.com>
-	 <20090129072938.2761a6ed@infradead.org>
-Date: Thu, 29 Jan 2009 23:46:13 +0800
-Message-ID: <d82e647a0901290746r6dadd5c0v6091e9d2b8175596@mail.gmail.com>
-Subject: Re: [PATCH] driver core: remove polling for driver_probe_done
-From: Ming Lei <tom.leiming@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: kay.sievers@vrfy.org, greg@kroah.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Jan 2009 10:49:54 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:51676 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441AbZA2Ptx (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 10:49:53 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Neil Horman <nhorman@tuxdriver.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mmotm 2009-01-28-02-17 uploaded
+In-Reply-To: Your message of "Wed, 28 Jan 2009 02:19:09 PST."
+             <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1233201805_3058P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 28 Jan 2009 23:03:25 -0500
+Message-ID: <18448.1233201805@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/29 Arjan van de Ven <arjan@infradead.org>:
->> @@ -396,9 +396,9 @@ void __init prepare_namespace(void)
->>       if ((ROOT_DEV == 0) && root_wait) {
->>               printk(KERN_INFO "Waiting for root device %s...\n",
->>                       saved_root_name);
->> -             while (driver_probe_done() != 0 ||
->> -                     (ROOT_DEV = name_to_dev_t(saved_root_name))
->> == 0)
->> -                     msleep(100);
->> +             ROOT_DEV = name_to_dev_t(saved_root_name);
->> +             if (ROOT_DEV)
->> +                     driver_probe_wait_done();
->>       }
->>
->
-> Hi,
->
-> another comment:
->
-> this is not equivalent
->
-> you turned "wait until all probing is done OR until the device exists"
-> into "wait until all probing is done"... which might be several seconds
-> longer!
+--==_Exmh_1233201805_3058P
+Content-Type: text/plain; charset=us-ascii
 
-Yes, you are right. I will consider how to fix the problem.
-Thanks.
+On Wed, 28 Jan 2009 02:19:09 PST, akpm@linux-foundation.org said:
+> The mm-of-the-moment snapshot 2009-01-28-02-17 has been uploaded to
+> 
+>    http://userweb.kernel.org/~akpm/mmotm/
 
->
+kexec-add-dmesg-log-symbols-to-proc-vmcoreinfo-lists.patch
+
+breaks the compile with CONFIG_KEXEC=n
+
+  CC      kernel/printk.o
+kernel/printk.c: In function 'log_buf_kexec_setup':
+kernel/printk.c:142: error: implicit declaration of function 'VMCOREINFO_SYMBOL'
+make[1]: *** [kernel/printk.o] Error 1
+make: *** [kernel] Error 2
 
 
+--==_Exmh_1233201805_3058P
+Content-Type: application/pgp-signature
 
--- 
-Lei Ming
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFJgSqNcC3lWbTT17ARArecAKDQ/I+XLKfIAdMFzFVjed/dyZ05/QCeI2Lz
+odi2hL45Zg21Z3R0LWKPbXc=
+=4tDu
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1233201805_3058P--
