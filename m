@@ -1,70 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZA2UG2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757546AbZA2UK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758830AbZA2UG2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 15:06:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZA2UGS
+	id S1757546AbZA2UK2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 15:10:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZA2UKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 15:06:18 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44497 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751552AbZA2UGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 15:06:17 -0500
-Message-ID: <49820C11.3070202@redhat.com>
-Date: Thu, 29 Jan 2009 15:05:37 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
+	Thu, 29 Jan 2009 15:10:14 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:34305 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752295AbZA2UKM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 15:10:12 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49820CF9.3000706@s5r6.in-berlin.de>
+Date: Thu, 29 Jan 2009 21:09:29 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20090104 SeaMonkey/1.1.14
 MIME-Version: 1.0
-To: Mike Snitzer <snitzer@gmail.com>
-CC: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
-       Arthur Jones <ajones@riverbed.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       "sct@redhat.com" <sct@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] ext3: wait on all pending commits in ext3_sync_fs
-References: <4908C951.2000309@redhat.com>	 <20081103184426.GA31894@ajones-laptop.nbttech.com>	 <20081103113318.35b0c266.akpm@linux-foundation.org>	 <20081103201428.GB30565@ajones-laptop.nbttech.com>	 <20081218231707.GB20092@atrey.karlin.mff.cuni.cz>	 <496D1233.2060905@redhat.com> <20090114042402.GH14730@mit.edu>	 <20090114172750.GJ19950@duck.suse.cz> <170fa0d20901291027g601c8674o9ec5daf67d4ad0de@mail.gmail.com>
-In-Reply-To: <170fa0d20901291027g601c8674o9ec5daf67d4ad0de@mail.gmail.com>
+To: Jarod Wilson <jarod@redhat.com>
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@bitplanet.net>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH RFT 7/7] firewire: sbp2: add workarounds for 2nd and 3rd
+ generation iPods
+References: <tkrat.6fe4fe5b72231863@s5r6.in-berlin.de> <200901281718.41873.jarod@redhat.com> <tkrat.8899c8be7878fd1f@s5r6.in-berlin.de> <200901282218.42604.jarod@redhat.com>
+In-Reply-To: <200901282218.42604.jarod@redhat.com>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mike Snitzer wrote:
-> On Wed, Jan 14, 2009 at 12:27 PM, Jan Kara <jack@suse.cz> wrote:
->> On Tue 13-01-09 23:24:02, Theodore Tso wrote:
->>> On Tue, Jan 13, 2009 at 04:14:11PM -0600, Eric Sandeen wrote:
->>>> This looks sane to me, and it does fix the below testcase.
->>>>
->>>> Care to formally propose it?
->>> Can we confirm what is being proposed?  From following this thread, I
->>> think what folks are suggesting is:
->>>
->>> 1)  Revert the current "ext3/4: wait on all pending ocmmits in ext3/4_sync_fs"
->>  Yes.
->>
->>> 2)  Apply Jan's patch "jbd[2]: Fix return value of journal_start_commit()"
->>  Yes.
->>
->>> 3)  Also apply Jan's patch "jbd2: Skip commit of a transaction without
->>> any buffers" since it appears to be a good optimization (although it's
->>> not clear it would happen once we revert (1), above.
->>  Yes, it's an optimization but I'm still a bit afraid about something
->> relying on jbd2_journal_force_commit() implying a barrier which would not
->> always be a case after this patch... So we should probably audit all users of
->> ext4_force_commit() and check that this change is fine with them.
-> 
-> Ted/Jan/Eric,
-> 
-> I just wanted to followup on this to see what the plan is.  Items 1
-> and 2 haven't occurred in any of the ext4.git branches that I can see.
->  I could be missing something but it seems this may have slipped
-> through the ext[34] cracks?
+(adding Cc: Alan Stern just in case, because he knows much more about
+all this)
 
-Hm, I agree.
+Jarod Wilson wrote:
+> On a related note... The fix capacity workaround... I think I need to
+> observe this failure myself... My own 4th-gen ipod, when connected to a
+> Mac OS X system, reports the exact capacity I get if the fix capacity
+> workaround is disabled. Do they just know not to try to access that
+> last block, or is the need for this workaround a myth? :)
 
-Jan, do you want to re-send it in its own message rather than buried in
-the other thread?  I don't know how we technically handle a "revert"
-upstream, to be honest.
+Well, before the report [1] from the Ubuntu of a what appeared to be a
+regression of Ubuntu 8.10 vs. its parent or grandparent release, we
+thought we knew that iPod 2nd + 3rd gen were _not_ affected, because
+long ago an owner of these iPods told us so.
 
--Eric
+Obviously they changed something in Ubuntu 8.10 which suddenly made 3rd
+gen iPods vulnerable too.  If the report is accurate, then this is /not/
+the READ CAPACITY 10 issue where device's capacity report is off by one.
+(The reported capacity without workaround is an even number and thus
+possibly correct.)  Rather, this is apparently the kind of the bug where
+an access which includes the last sector corrupts some state in the
+firmware, causing the firmware to error out on subsequent accesses.  The
+actual IO errors in the reporter's log happen at low LBAs, not at LBAs
+at the end.
+
+Anyway; to our moderate surprise after years of successful usage of
+these devices under Linux, we learn that a current Linux suddenly needs
+a quirk fix for them.  IMO they always needed it but they just weren't
+exposed to the dangerous access patterns, until userland or the kernel
+was changed in an as yet unidentified respect.
+
+Back to the question whether the 4th gen iPod really needs it.  Well,
+I'm quite sure that we added it because it was proven to be necessary.
+At least that's what I remember about it; if we really wanted to we
+could probably find evidence in list archives.  I don't remember which
+particular type of last sector bug it was in case of these newer iPod
+models.  Coincidentally, those dual interface iPods also need the
+workaround when used through usb-storage; see
+drivers/usb/storage/unusual_devs.h.
+
+Now, what does OS X do with those iPods?  I don't know.  Maybe they have
+quirks lists like we do.  There could be something to be found in the
+Darwin sources.  But I consider it more likely that OS X simply does not
+do the kind of accesses that Linux does which tend to crash all those
+crap firmwares left and right.
+
+Evidently, at least popular Windows incarnations don't do such accesses,
+at least not in normal usage.  Otherwise this class of firmware bugs
+could simply not exist in mass market devices.
+
+[1] https://bugs.launchpad.net/bugs/294391
+-- 
+Stefan Richter
+-=====-==--= ---= ===-=
+http://arcgraph.de/sr/
