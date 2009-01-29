@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757200AbZA2Kf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbZA2KgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757200AbZA2Kf2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 05:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751176AbZA2KfS
+	id S1757850AbZA2KgP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 05:36:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZA2Kf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 05:35:18 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56450 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751118AbZA2KfR (ORCPT
+	Thu, 29 Jan 2009 05:35:59 -0500
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:1472 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751734AbZA2Kf5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 05:35:17 -0500
-Date: Thu, 29 Jan 2009 10:35:06 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-       Tero Kristo <tero.kristo@nokia.com>
-Subject: Re: [PATCH C 08/13] OMAP3 clock: put DPLL into bypass if bypass rate = clk->rate, not hardware rate
-Message-ID: <20090129103506.GC12627@n2100.arm.linux.org.uk>
-References: <20090128190724.12092.22239.stgit@localhost.localdomain> <20090128190829.12092.86115.stgit@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090128190829.12092.86115.stgit@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 29 Jan 2009 05:35:57 -0500
+X-Trace: 138974565/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.198/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.44.176.198
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: SquirrelMail/1.4.15
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AtwEAJsVgUlQLLDG/2dsb2JhbACBbsoRhA4G
+X-IronPort-AV: E=Sophos;i="4.37,343,1231113600"; 
+   d="scan'208";a="138974565"
+Message-ID: <509354d63a44246cefe01bd35eb1374c.squirrel@newgolddream.dyndns.info>
+In-Reply-To: <20090129025754.GC31096@linux-sh.org>
+References: <1233186456.6734.16.camel@localhost.localdomain>
+    <1233187069.6734.21.camel@localhost.localdomain>
+    <1233187750.6734.27.camel@localhost.localdomain>
+    <1233188287.6734.32.camel@localhost.localdomain>
+    <20090129025754.GC31096@linux-sh.org>
+Date: Thu, 29 Jan 2009 10:34:43 -0000 (UTC)
+Subject: Re: [PATCH RFC] sh: maple: Add support for SEGA Dreamcast VMU and 
+     clean up maple bus driver (3/3)
+From: "Adrian McMenamin" <adrian@newgolddream.dyndns.info>
+To: "Paul Mundt" <lethal@linux-sh.org>,
+       "Adrian McMenamin" <adrian@newgolddream.dyndns.info>,
+       "Greg KH" <greg@kroah.com>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       "dwmw2" <dwmw2@infradead.org>, "linux-sh" <linux-sh@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>,
+       "linux-input" <linux-input@vger.kernel.org>,
+       "MTD" <linux-mtd@lists.infradead.org>
+User-Agent: SquirrelMail/1.4.15
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 12:08:32PM -0700, Paul Walmsley wrote:
-> When a non-CORE DPLL is enabled via omap3_noncore_dpll_enable(), use
-> the user's desired rate in clk->rate to determine whether to put the
-> DPLL into bypass or lock mode, rather than reading the DPLL's current
-> idle state from its hardware registers.
-> 
-> This fixes a bug observed when leaving retention. Non-CORE DPLLs were
-> not being relocked when downstream clocks re-enabled; rather, the DPLL
-> entered bypass mode.
-> 
-> Problem reported by Tero Kristo <tero.kristo@nokia.com>.
-> 
-> linux-omap source commit is 8b1f0bd44fe490ec631230c8c040753a2bda8caa.
-> 
-> Signed-off-by: Paul Walmsley <paul@pwsan.com>
-> Signed-off-by: Tony Lindgren <tony@atomide.com>
-> Cc: Tero Kristo <tero.kristo@nokia.com>
+On Thu, January 29, 2009 2:57 am, Paul Mundt wrote:
+> On Thu, Jan 29, 2009 at 12:18:07AM +0000, Adrian McMenamin wrote:
+>> +	if (!(mdev->function & MAPLE_FUNC_KEYBOARD)) {
+>> +		error = EINVAL;
+>> +		goto fail;
+>> +	}
+>>
+> What is this all about? If the function doesn't match, you should never
+> enter the probe routine in the first place. The bus code should already
+> get this right.
+>
 
-Patch 6 did it this way.  Patch 7 changed it to use omap2_get_dpll_rate()
-and this patch changes it back.  What's the point of submitting all this
-detail?  It's just pure noise.  Collapse these three patches into one
-please.
+It does, it is a fragment of old code from when the bus code was wrong
+which for reasons which pass understanding I rewrote rather than just
+excised.
+
