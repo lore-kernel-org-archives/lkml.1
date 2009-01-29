@@ -1,80 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbZA2BNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbZA2BOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbZA2BNR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 20:13:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZA2BNA
+	id S1758248AbZA2BOv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 20:14:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZA2BOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 20:13:00 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:53568 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751988AbZA2BM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 20:12:59 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Subject: Re: [PATCH RFC] sh: maple: Add support for SEGA Dreamcast VMU and clean up maple bus driver (2/3)
-Date: Wed, 28 Jan 2009 20:12:54 -0500
-User-Agent: KMail/1.10.4 (Linux/2.6.28; KDE/4.1.4; x86_64; ; )
-Cc: Paul Mundt <lethal@linux-sh.org>, Greg KH <greg@kroah.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       dwmw2 <dwmw2@infradead.org>, "linux-sh" <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-input" <linux-input@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>
-References: <1233186456.6734.16.camel@localhost.localdomain> <200901281944.57894.vapier@gentoo.org> <1233190170.6734.36.camel@localhost.localdomain>
-In-Reply-To: <1233190170.6734.36.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1586976.Qj0ey7Ajbh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Wed, 28 Jan 2009 20:14:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37203 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751981AbZA2BOl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 20:14:41 -0500
+Date: Wed, 28 Jan 2009 17:14:06 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pavel Machek <pavel@suse.cz>
+Cc: linux-kernel@vger.kernel.org, Paul.Clements@steeleye.com
+Subject: Re: nbd: add locking to nbd_ioctl
+Message-Id: <20090128171406.31745655.akpm@linux-foundation.org>
+In-Reply-To: <20090126173132.GA2605@elf.ucw.cz>
+References: <20090126173132.GA2605@elf.ucw.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200901282012.56699.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1586976.Qj0ey7Ajbh
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Mon, 26 Jan 2009 18:31:33 +0100
+Pavel Machek <pavel@suse.cz> wrote:
 
-On Wednesday 28 January 2009 19:49:30 Adrian McMenamin wrote:
-> On Wed, 2009-01-28 at 19:44 -0500, Mike Frysinger wrote:
-> > On Wednesday 28 January 2009 19:09:10 Adrian McMenamin wrote:
-> > > +static struct maple_driver vmu_flash_driver = {
-> > > +	.function =	MAPLE_FUNC_MEMCARD,
-> > > +	.drv = {
-> > > +		.name =		"Dreamcast_visual_memory",
-> >
-> > i thought there was like a 16byte limit or something on this ?
+> 
+> The code was written to rely on big kernel lock to protect it from
+> races. It mostly works when interface is not abused.
+> 
+> So this uses tx_lock to protect data structures from concurrent use
+> between ioctl and worker threads.
+> 
+> Next step will be moving from ioctl to unlocked_ioctl. 
+
+I hope I got the latest version of this...
+
+The patch adds new trailing whitespace.  Either a) you wanted to add
+new trailing whitespace or b) you're not running checkpatch.  Either
+way: bad Pavel!
+
 >
-> Don't think so, it's just a const char* isn't it?
+> ...
+>
+> +	case NBD_SET_SOCK:
+> +		{
+> +			struct file *file;
+> +			if (lo->file)
+> +				return -EBUSY;
+> +			file = fget(arg);
+> +			if (file) {
+> +				struct inode *inode = file->f_path.dentry->d_inode;
+> +				if (S_ISSOCK(inode->i_mode)) {
+> +					lo->file = file;
+> +					lo->sock = SOCKET_I(inode);
+> +					if (max_part > 0)
+> +						bdev->bd_invalidated = 1;
+> +					return 0;
+> +				} else {
+> +					fput(file);
+> +				}
+>  			}
+>  		}
+> -		return error;
+> +		return -EINVAL;
 
-yeah, looks like.  not sure what i remember.
--mike
+This isn't terribly readable - the -EINVAL is in fact specifically a
+response to receiving a !S_ISSOCK fd, but this is presented in a
+rather obfuscated way.
 
---nextPart1586976.Qj0ey7Ajbh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+>  	case NBD_SET_BLKSIZE:
+>  		lo->blksize = arg;
+>  		lo->bytesize &= ~(lo->blksize-1);
+> @@ -634,47 +626,65 @@ static int nbd_ioctl(struct block_device
+>  		set_blocksize(bdev, lo->blksize);
+>  		set_capacity(lo->disk, lo->bytesize >> 9);
+>  		return 0;
+> +
+>  	case NBD_SET_SIZE:
+>  		lo->bytesize = arg & ~(lo->blksize-1);
+>  		bdev->bd_inode->i_size = lo->bytesize;
+>  		set_blocksize(bdev, lo->blksize);
+>  		set_capacity(lo->disk, lo->bytesize >> 9);
+>  		return 0;
+> +
+>  	case NBD_SET_TIMEOUT:
+>  		lo->xmit_timeout = arg * HZ;
+>  		return 0;
+> +
+>  	case NBD_SET_SIZE_BLOCKS:
+>  		lo->bytesize = ((u64) arg) * lo->blksize;
+>  		bdev->bd_inode->i_size = lo->bytesize;
+>  		set_blocksize(bdev, lo->blksize);
+>  		set_capacity(lo->disk, lo->bytesize >> 9);
+>  		return 0;
+> +
+>  	case NBD_DO_IT:
+> -		if (lo->pid)
+> -			return -EBUSY;
+> -		if (!lo->file)
+> -			return -EINVAL;
+> -		thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
+> -		if (IS_ERR(thread))
+> -			return PTR_ERR(thread);
+> -		wake_up_process(thread);
+> -		error = nbd_do_it(lo);
+> -		kthread_stop(thread);
+> -		if (error)
+> -			return error;
+> -		sock_shutdown(lo, 1);
+> -		file = lo->file;
+> -		lo->file = NULL;
+> -		nbd_clear_que(lo);
+> -		printk(KERN_WARNING "%s: queue cleared\n", lo->disk->disk_name);
+> -		if (file)
+> -			fput(file);
+> -		lo->bytesize = 0;
+> -		bdev->bd_inode->i_size = 0;
+> -		set_capacity(lo->disk, 0);
+> -		if (max_part > 0)
+> -			ioctl_by_bdev(bdev, BLKRRPART, 0);
+> -		return lo->harderror;
+> +		{
+> +			struct task_struct *thread;
+> +			struct file *file;
+> +			int error;
+> +
+> +			if (lo->pid)
+> +				return -EBUSY;
+> +			if (!lo->file)
+> +				return -EINVAL;
+> +
+> +			mutex_unlock(&lo->tx_lock);
+> +
+> +			thread = kthread_create(nbd_thread, lo, lo->disk->disk_name);
+> +			if (IS_ERR(thread)) {
+> +				mutex_lock(&lo->tx_lock);
+> +				return PTR_ERR(thread);
+> +			}
+> +			wake_up_process(thread);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
+We could/should use kthread_run() here.
 
-iQIcBAABAgAGBQJJgQKYAAoJEEFjO5/oN/WBuasQAJyBRG8GcuCDrYc49MXpbpoh
-Yf/mR628/d71apzAQACOiIerICXWlKUY/OloGQtUUeByCQJSBPtKRNKjFyVM4t3p
-hT9KY6fcmGlD84fQ7cBBCYhj7hiWZOj0r3oKw0Dmo2WjyTDTL3BnXFvuxwSaTGL2
-yxfDCvzfin8KU3/2IKOy5wss7pe7RilHrxreW+X3v0X2Zd6eDgHUDcYyU0Cqi7lH
-hhjnjMuQHQDI1PSOvZ0mDPsOnoilgFOg79iI9n5MF3D9DwotsXtzqmbJ/Oinvenr
-gk74XZ2xsaXM9aYxD8I2mFL6KE+31PhmHFasvhy88l7NSsRk8Tn+SmqVLLz5oAgI
-Ytf6nKGGoNJDWsAA7Qq2ALmy4X36IdToq7+QPZmGg8WZqLjznfAxTrdzfdeRd4dT
-lkoe8q7MhbEtdbJkhg3ZrNR8Y0058z+zLZGI1wSfZSOc10CUixQV1xCDvppmhEPH
-XgIvK96EmPTBP1TTb5ySRmaf6Qd6ZI2yBMA9DsOZUHosDartwdIKaaLI3lDvM9Lt
-koXTSaYZ3SzB0xsUy4OzTNjJRw6npPT8M58SgAAXWuaCpNWlbpXI0yzhJX/C29Qn
-h/gu2ho1ML2XUNTHDAcT1P8k7GMqj8BHmQ00JZK6c/CwpQXtSt4DXCNCf1jLw43t
-49UpsmV13u/4TBNF4XBD
-=5Oby
------END PGP SIGNATURE-----
+> +			error = nbd_do_it(lo);
+> +			kthread_stop(thread);
+> +
+> +			mutex_lock(&lo->tx_lock);
+> +			if (error)
+> +				return error;
+> +			sock_shutdown(lo, 0);
+> +			file = lo->file;
+> +			lo->file = NULL;
+> +			nbd_clear_que(lo);
+> +			printk(KERN_WARNING "%s: queue cleared\n", lo->disk->disk_name);
 
---nextPart1586976.Qj0ey7Ajbh--
+I don't get it - why are we warning about what appears to be an
+expected operation?
+
+> +			if (file)
+> +				fput(file);
+> +			lo->bytesize = 0;
+> +			bdev->bd_inode->i_size = 0;
+> +			set_capacity(lo->disk, 0);
+> +			if (max_part > 0)
+> +				ioctl_by_bdev(bdev, BLKRRPART, 0);
+> +			return lo->harderror;
+> +		}
+> +
+
