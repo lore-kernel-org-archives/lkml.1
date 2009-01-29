@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbZA2Qed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbZA2Qfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758392AbZA2Qed (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 11:34:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753278AbZA2QeY
+	id S1759225AbZA2Qfa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 11:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbZA2QfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 11:34:24 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54385 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752653AbZA2QeX (ORCPT
+	Thu, 29 Jan 2009 11:35:20 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:36866 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754063AbZA2QfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 11:34:23 -0500
-Date: Thu, 29 Jan 2009 16:34:42 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Pazzo Da Legare <pazzodalegare@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: NEWBIE: how to change serial device<->port association
-Message-ID: <20090129163442.13a9a3f7@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LRH.1.10.0901291722360.13097@twin.jikos.cz>
-References: <1a26b4920901290302w5c9bb79cra29fda5e67cc96a4@mail.gmail.com>
-	<20090129134537.12121834@lxorguk.ukuu.org.uk>
-	<1a26b4920901290616r40c1edd0tec62d0e6bf24dc9@mail.gmail.com>
-	<20090129160602.235840c2@lxorguk.ukuu.org.uk>
-	<alpine.LRH.1.10.0901291722360.13097@twin.jikos.cz>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
+	Thu, 29 Jan 2009 11:35:19 -0500
+Date: Thu, 29 Jan 2009 16:35:01 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Tony Lindgren <tony@atomide.com>
+Cc: Paul Walmsley <paul@pwsan.com>, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: OMAP clock fast-forward: an introduction to six series
+Message-ID: <20090129163501.GE18233@n2100.arm.linux.org.uk>
+References: <alpine.DEB.2.00.0901281310590.14710@utopia.booyaka.com> <20090128211844.GI23301@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901282357560.32081@utopia.booyaka.com> <20090129081117.GA11519@n2100.arm.linux.org.uk> <20090129083049.GB11519@n2100.arm.linux.org.uk> <20090129162556.GA32148@atomide.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090129162556.GA32148@atomide.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 17:22:54 +0100 (CET)
-Jiri Kosina <jkosina@suse.cz> wrote:
-
-> On Thu, 29 Jan 2009, Alan Cox wrote:
+On Thu, Jan 29, 2009 at 08:25:58AM -0800, Tony Lindgren wrote:
+> To me it does not matter which way the stuff gets merged. We just need
+> to get it all merged.
 > 
-> > > The hws have a different combination of kind serials and I would like
-> > > to present the same ttyS* to applications. I need to have different
-> > By having multiple different kernels for the different systems ? That
-> > sounds like a really really complicated way to go about the problem when
-> > you could just add a config file to your application.
-> 
-> Another possibility is udev rule.
+> If you guys can't get it merged and sorted out then it will all fall
+> down on me. And then I have to use tools no smaller than a sledgehammer
+> to merge it all, so the outcome won't be pretty!
 
-If its a simple naming choice then a symlink might do the job. What
-Fedora and several other distros do is to create symbolic links from
-"virtual" names like /dev/modem and /dev/cdrom to the relevant port using
-ln -s
+Well, I've continued with my approach.  28 patches are currently merged
+onto a follow-on branch (scattered throughout the series but in order)
+and the result builds for my OMAP1, OMAP2 and OMAP3 test builds.
+
+Patches which I've provided non-trivial comments on by and large haven't
+been merged.  Once I've worked through the set, I'll provide a final list
+of those outstanding so nothing should be lost.
+
+I would appreciate someone _bouncing_ (not forwarding) the patches I'm
+missing to linux@arm.linux.org.uk please.  Those being D6, E2 and F2.
+
