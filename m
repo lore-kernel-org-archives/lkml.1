@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757761AbZA2Lm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbZA2LrD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757761AbZA2Lm0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 06:42:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbZA2LmS
+	id S1757351AbZA2LrD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 06:47:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753759AbZA2Lqv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 06:42:18 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:54175 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753728AbZA2LmR (ORCPT
+	Thu, 29 Jan 2009 06:46:51 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:4358 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751988AbZA2Lqu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 06:42:17 -0500
-Subject: Re: [PATCH] use per cpu data for single cpu ipi calls
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, npiggin@suse.de, torvalds@linux-foundation.org,
-       tglx@linutronix.de, arjan@infradead.org
-In-Reply-To: <20090129111330.GB30738@elte.hu>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com>
-	 <200901290955.38940.rusty@rustcorp.com.au>
-	 <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com>
-	 <20090128173039.cbc29e81.akpm@linux-foundation.org>
-	 <1233218954.7835.11.camel@twins>  <20090129111330.GB30738@elte.hu>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 12:41:56 +0100
-Message-Id: <1233229316.4495.39.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Thu, 29 Jan 2009 06:46:50 -0500
+Message-ID: <4981972A.2090801@panasas.com>
+Date: Thu, 29 Jan 2009 13:46:50 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+MIME-Version: 1.0
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: "Linux-iSCSI.org Target Dev" 
+	<linux-iscsi-target-dev@googlegroups.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: [PATCH 1/4] [Linux/SCSI]: Change RECEIVE_CREDENTIAL to	VLC_SA_RECEIVE_CREDENTIAL
+References: <1233093749.6442.97.camel@haakon2.linux-iscsi.org> <1233094236.6442.110.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1233094236.6442.110.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 29 Jan 2009 11:46:48.0864 (UTC) FILETIME=[44DF5A00:01C98207]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-29 at 12:13 +0100, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
+Nicholas A. Bellinger wrote:
+> Hi James,
 > 
-> > > Can generic_smp_call_function_single_interrupt() ever see 
-> > > CSD_FLAG_ALLOC set now?  If not, that kfree can go away.
-> > 
-> > Like said above, removing that kmalloc will hurt people.
+> Let me know if you need a fresh respin of this patch..  According to
+> spc4r17 section D.3.5, VLC_SA_RECEIVE_CREDENTIAL is the only
+> VARIABLE_LENGTH_CMD defined Service ACtion..
 > 
-> the whole promise of generic-IPI seems to dwindle and we'll get back to 
-> roughly where we started out from.
+> --nab
 
-I'd not go that far, the per-cpu csd is a nice fallback, but removing
-that kmalloc is just silly.
+Not accurate. See file include/scsi/osd_protocol.h in the scsi-misc
+git-tree master branch. The complete OSD command set is VARIABLE_LENGTH_CMD
+based. There must be others as well
 
-And I see no reason why arch specific could do any better (aside from
-sparc which has fancy ipis).
-
+Boaz
