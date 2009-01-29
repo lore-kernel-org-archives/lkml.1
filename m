@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbZA2CH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757306AbZA2CJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbZA2CH0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 28 Jan 2009 21:07:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756947AbZA2CHB
+	id S1757306AbZA2CJo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 28 Jan 2009 21:09:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753556AbZA2CJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 28 Jan 2009 21:07:01 -0500
-Received: from ozlabs.org ([203.10.76.45]:43521 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756912AbZA2CG4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 28 Jan 2009 21:06:56 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Tejun Heo <tj@kernel.org>
-Subject: Re: [PATCH] percpu: add optimized generic percpu accessors
-Date: Thu, 29 Jan 2009 12:36:46 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Herbert Xu <herbert@gondor.apana.org.au>,
-       akpm@linux-foundation.org, hpa@zytor.com, brgerst@gmail.com,
-       ebiederm@xmission.com, cl@linux-foundation.org, travis@sgi.com,
-       linux-kernel@vger.kernel.org, steiner@sgi.com, hugh@veritas.com,
-       "David S. Miller" <davem@davemloft.net>, netdev@vger.kernel.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-References: <20090115183942.GA6325@elte.hu> <200901282108.51864.rusty@rustcorp.com.au> <498039E2.7090107@kernel.org>
-In-Reply-To: <498039E2.7090107@kernel.org>
+	Wed, 28 Jan 2009 21:09:32 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:3822 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753200AbZA2CJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 28 Jan 2009 21:09:31 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=message-id:date:from:user-agent:mime-version:to:subject:
+	references:in-reply-to:content-type:
+	content-transfer-encoding:x-gmailtapped-by:x-gmailtapped;
+	b=WjtgzhEiKKFySBMAo2qezPOV9G26dhmCHbj8+whqZaW7vK6ED2BI2gC7OdZ2TbbE5
+	iVKjlRel85dfFAkZmK7aA==
+Message-ID: <49810FD6.2080501@google.com>
+Date: Wed, 28 Jan 2009 18:09:26 -0800
+From: Mike Waychison <mikew@google.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mike Waychison <mikew@google.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH v1 0/8] Deferred dput() and iput() -- reducing lock	contention
+References: <20090117022936.20425.43248.stgit@crlf.corp.google.com> <20090117081210.GL8071@disturbed>
+In-Reply-To: <20090117081210.GL8071@disturbed>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901291236.48189.rusty@rustcorp.com.au>
+X-GMailtapped-By: 172.25.146.76
+X-GMailtapped: mikew
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 28 January 2009 21:26:34 Tejun Heo wrote:
-> Hello,
-
-Hi Tejun,
-
-> Rusty Russell wrote:
-> > If the stats are only manipulated in one context, than an atomic
-> > requirement is overkill (and expensive on non-x86).
+Dave Chinner wrote:
+> On Fri, Jan 16, 2009 at 06:29:36PM -0800, Mike Waychison wrote:
+>> We've noticed that at times it can become very easy to have a system begin to
+>> livelock on dcache_lock/inode_lock (specifically in atomic_dec_and_lock()) when
+>> a lot of dentries are getting finalized at the same time (massive delete and
+>> large fdtable destructions are two paths I've seen cause problems).
+>>
+>> This patchset is an attempt to try and reduce the locking overheads associated
+>> with final dput() and final iput().  This is done by batching dentries and
+>> inodes into per-process queues and processing them in 'parallel' to consolidate
+>> some of the locking.
 > 
-> Yes, it is.  I was hoping it to be not more expensive on most archs.
-> It isn't on x86 at the very least but I don't know much about other
-> archs.
-
-Hmm, you can garner this from the local_t stats which were flying around.
-(see Re: local_add_return from me), or look in the preamble to
-http://ozlabs.org/~rusty/kernel/rr-latest/misc:test-local_t.patch ).
-
-Of course, if you want to be my hero, you could implement "soft" irq
-disable for all archs, which would make this cheaper.
-
-> > Other than the shouting, I liked Christoph's system:
-> > - CPU_INC = always safe (eg. local_irq_save/per_cpu(i)++/local_irq_restore)
-> > - _CPU_INC = not safe against interrupts (eg. get_cpu/per_cpu(i)++/put_cpu)
-> > - __CPU_INC = not safe against anything (eg. per_cpu(i)++)
-> > 
-> > I prefer the name 'local' to the name 'cpu', but I'm not hugely fussed.
+> Hmmmm. This deferring of dput/iput will have the same class of
+> effects on filesystems as the recent reverted changes to make
+> generic_delete_inode() an asynchronous process. That is, it
+> temporally separates the transaction for namespace deletion (i.e.
+> unlink) from the transaction that completes the inode deletion that
+> occurs, typically, during ->clear_inode. See the recent thread
+> titled:
 > 
-> I like local better too but no biggies one way or the other.
-
-Maybe kill local_t and take the name back.  I'll leave it to you...
-
-> > Ah, I did not realize that you celebrated Australia day :)
+> [PATCH] async: Don't call async_synchronize_full_special() while holding sb_lock
 > 
-> Hey, didn't know Australia was founded on lunar New Year's day.
-> Nice. :-)
+> For more details.
+> 
+> I suspect that change is likely to cause worse problems than the
+> async changes in that it doesn't have a cap on the number of
+> deferred operations.....
 
-That would have been cool, but no; first time in 76 years they matched tho.
+*sigh*.  So I did some testing with XFS today and you're right, 
+separating the namespace operation from the actual file delete really 
+slows things down.
 
-Thanks,
-Rusty.
+I'll follow up with a v2 patchset with more precise details, but 
+basically, I create (on one fs) 100K files (each empty) per cpu (8 core 
+machine).  I then time how long it takes to have one-process-per-cpu 
+delete it's own file hierarchy of 100K files.
+
+XFS performs horribly at this test (taking approx 34 minutes to 
+complete).  With my changes, it takes approx 57 minutes.  For 
+comparison, ext2 takes ~4.5 seconds, ext4 ~30 seconds and ext4 without a 
+journal ~4.1 seconds.
+
+Seems to me like there is a design issue causing XFS to suck at mass 
+deletes, and I can understand why you wouldn't want to separate the 
+namespace+inode drop.
+
+What say you to letting the fs itself specify whether it's inodes should 
+be handled serially (like it is today) or in deferred batches?  Patch 4 
+of this series introduced an I_SYNCIPUT flag to deal with umount issues; 
+perhaps it would make sense to have inodes from XFS tagged with this flag?
+
+Mike Waychison
