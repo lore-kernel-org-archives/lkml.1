@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbZA2FBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757403AbZA2FCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbZA2FBe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 00:01:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbZA2FBY
+	id S1757403AbZA2FCB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 00:02:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbZA2FBs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 00:01:24 -0500
-Received: from kroah.org ([198.145.64.141]:55983 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750701AbZA2FBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 00:01:24 -0500
-Date: Wed, 28 Jan 2009 20:59:16 -0800
-From: Greg KH <greg@kroah.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Arve =?utf-8?B?SGrvv71ubmV26JmN?= <arve@android.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
-       Brian Swetland <swetland@google.com>, arve@google.com,
-       San Mehat <san@android.com>, Robert Love <rlove@google.com>,
-       linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>,
-       ext Juha =?utf-8?B?WXJq77+9bOODuw==?= 
-	<juha.yrjola@solidboot.com>,
-       viktor.rosendahl@nokia.com, Trilok Soni <soni.trilok@gmail.com>
-Subject: Re: lowmemory android driver not needed?
-Message-ID: <20090129045916.GA24842@kroah.com>
-References: <20090129124555.b83ea0ae.kamezawa.hiroyu@jp.fujitsu.com> <20090129042748.GA24108@kroah.com> <20090129134233.A95C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 29 Jan 2009 00:01:48 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37407 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754822AbZA2FBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 00:01:46 -0500
+Date: Thu, 29 Jan 2009 05:58:48 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Alasdair G Kergon <agk@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [RFC v2][PATCH] create workqueue threads only when needed
+Message-ID: <20090129045848.GB5231@redhat.com>
+References: <20090128002714.GA5086@nowhere> <20090128030224.GA4867@redhat.com> <20090128233112.GB7631@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090129134233.A95C.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090128233112.GB7631@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 01:43:51PM +0900, KOSAKI Motohiro wrote:
-> > > > I never expected it to be merged. I wrote it to allow us to ship a product.
-> > > > 
-> > > Then, please write "DON'T MERGE ME" on the top of patch description.
-> > > we can adjust our viewpoints.
-> > 
-> > The code will live in the drivers/staging/ directory for now and not get
-> > merged into the "main" portion of the kernel tree until everyone can
-> > agree on it.
-> > 
-> > But for now, it is useful and seems to work for a few million devices
-> > out there, so we can't just ignore it :)
-> 
-> No. 
-> if author don't hope review and merge, we don't have any reason to reviewing.
+On 01/29, Frederic Weisbecker wrote:
+>
+> I was about to retry the same approach but through async functions (kernel/async.c)
+> which would have solved the possible deadlock you described and would have made
+> the synchronizations easier.
+>
+> But actually this is only a half solution:
+>
+> Pointless workqueues stay pointless, even if they don't appear before they run once.
+> And moreover this is hiding the real problem: parts of the kernel use dedicated workqueues
+> while kevent is sufficient most of the time.
+>
+> And if there are problems with using the workqueues, because of deadlocks or slow
+> works, async functions are a good solution.
 
-I don't think you understand the goal/model for the drivers/staging/
-subdirectories.  This is where "drivers" and other stand-alone chunks of
-code live while they are not yet up to the real mergable status for the
-rest of the kernel tree.  While there, they get cleaned up, fixed up,
-and then hopefully, merged into the main portion of the kernel tree when
-the proper subsystem maintainers say it is ok.
+Completely agreed.
 
-Whenever code in these directories is loaded, it taints the kernel with
-a TAINT_CRAP flag so that everyone involved knows to ignore any bug
-reports.
+And. Even if some subsystem really needs its own workqueue, probably it
+can use the single-threaded one, but we have a lot of multithreaded wqs.
 
-So while a review would be wonderful to have, it's not being asked for
-for this specific low-memory "driver".  I'd like to see your final
-version of what you proposed a while ago, if that goes into the kernel
-tree, then this chunk of code will merely be deleted entirely.
+Oleg.
 
-Hope this helps explain things better,
-
-greg k-h
