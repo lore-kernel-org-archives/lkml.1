@@ -1,64 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZA2NnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758225AbZA2Nn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbZA2NnJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 08:43:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZA2Nm4
+	id S1758225AbZA2Nn6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 08:43:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZA2Nnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 08:42:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53150 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752789AbZA2Nm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 08:42:56 -0500
-Date: Thu, 29 Jan 2009 14:42:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, npiggin@suse.de, torvalds@linux-foundation.org,
-       tglx@linutronix.de, arjan@infradead.org
-Subject: Re: [PATCH] use per cpu data for single cpu ipi calls
-Message-ID: <20090129134224.GH24391@elte.hu>
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com> <200901290955.38940.rusty@rustcorp.com.au> <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com> <20090128173039.cbc29e81.akpm@linux-foundation.org> <1233218954.7835.11.camel@twins> <20090129111330.GB30738@elte.hu> <1233229316.4495.39.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233229316.4495.39.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 29 Jan 2009 08:43:49 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:16347 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752981AbZA2Nns (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 08:43:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=uowttWnr1NBAZXo/ZjtCk7LhTvjkaNmGsIbbCx39cgO3U81/rMTbaASS9pZ5FOAViT
+         dLzo1uuAI6QiUxN5AOOJ48+ESDjqSfBiU4sDBaAn/HlMQGSF64OwRhonfUh3+SVwp/Wp
+         MHXhhOlLVdQLDS3SxgadhogPGRba3HK/M3iiM=
+From: Brian Gerst <brgerst@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: pass in cpu number to switch_to_new_gdt()
+Date: Thu, 29 Jan 2009 08:43:45 -0500
+Message-Id: <1233236625-17928-1-git-send-email-brgerst@gmail.com>
+X-Mailer: git-send-email 1.6.1
+In-Reply-To: <49818842.5020004@goop.org>
+References: <49818842.5020004@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: cleanup, prepare for xen boot fix.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Xen needs to call this function very early to setup the GDT and
+per-cpu segments.  Remove the call to smp_processor_id() and just
+pass in the cpu number.
 
-> On Thu, 2009-01-29 at 12:13 +0100, Ingo Molnar wrote:
-> > * Peter Zijlstra <peterz@infradead.org> wrote:
-> > 
-> > > > Can generic_smp_call_function_single_interrupt() ever see 
-> > > > CSD_FLAG_ALLOC set now?  If not, that kfree can go away.
-> > > 
-> > > Like said above, removing that kmalloc will hurt people.
-> > 
-> > the whole promise of generic-IPI seems to dwindle and we'll get back to 
-> > roughly where we started out from.
-> 
-> I'd not go that far, the per-cpu csd is a nice fallback, but removing 
-> that kmalloc is just silly.
-> 
-> And I see no reason why arch specific could do any better (aside from 
-> sparc which has fancy ipis).
+Signed-off-by: Brian Gerst <brgerst@gmail.com>
+---
+ arch/x86/include/asm/processor.h    |    2 +-
+ arch/x86/kernel/cpu/common.c        |    7 +++----
+ arch/x86/kernel/setup_percpu.c      |    2 +-
+ arch/x86/kernel/smpboot.c           |    2 +-
+ arch/x86/mach-voyager/voyager_smp.c |   11 ++++++-----
+ 5 files changed, 12 insertions(+), 12 deletions(-)
 
-well if the hw can embedd at least 64 bit of dataload in the IPI itself, 
-we could get rid of a lot of complications. But since we cannot (on x86 
-and most other architectures), we've got to demultiplex from generic data 
-which brings up serialization issues and adds overhead .
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index befa20b..1c25eb6 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -768,7 +768,7 @@ extern int sysenter_setup(void);
+ extern struct desc_ptr		early_gdt_descr;
+ 
+ extern void cpu_set_gdt(int);
+-extern void switch_to_new_gdt(void);
++extern void switch_to_new_gdt(int);
+ extern void cpu_init(void);
+ 
+ static inline unsigned long get_debugctlmsr(void)
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 652fdc9..6eacd64 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -255,10 +255,9 @@ __u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
+ 
+ /* Current gdt points %fs at the "master" per-cpu area: after this,
+  * it's on the real one. */
+-void switch_to_new_gdt(void)
++void switch_to_new_gdt(int cpu)
+ {
+ 	struct desc_ptr gdt_descr;
+-	int cpu = smp_processor_id();
+ 
+ 	gdt_descr.address = (long)get_cpu_gdt_table(cpu);
+ 	gdt_descr.size = GDT_SIZE - 1;
+@@ -993,7 +992,7 @@ void __cpuinit cpu_init(void)
+ 	 * and set up the GDT descriptor:
+ 	 */
+ 
+-	switch_to_new_gdt();
++	switch_to_new_gdt(cpu);
+ 	loadsegment(fs, 0);
+ 
+ 	load_idt((const struct desc_ptr *)&idt_descr);
+@@ -1098,7 +1097,7 @@ void __cpuinit cpu_init(void)
+ 		clear_in_cr4(X86_CR4_VME|X86_CR4_PVI|X86_CR4_TSD|X86_CR4_DE);
+ 
+ 	load_idt(&idt_descr);
+-	switch_to_new_gdt();
++	switch_to_new_gdt(cpu);
+ 
+ 	/*
+ 	 * Set up and load the per-CPU TSS and LDT
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 0d1e7ac..ef91747 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -122,7 +122,7 @@ void __init setup_per_cpu_areas(void)
+ 		 * area.  Reload any changed state for the boot CPU.
+ 		 */
+ 		if (cpu == boot_cpu_id)
+-			switch_to_new_gdt();
++			switch_to_new_gdt(cpu);
+ 
+ 		DBG("PERCPU: cpu %4d %p\n", cpu, ptr);
+ 	}
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index f9dbcff..612d3c7 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -1185,7 +1185,7 @@ out:
+ void __init native_smp_prepare_boot_cpu(void)
+ {
+ 	int me = smp_processor_id();
+-	switch_to_new_gdt();
++	switch_to_new_gdt(me);
+ 	/* already set me in cpu_online_mask in boot_cpu_init() */
+ 	cpumask_set_cpu(me, cpu_callout_mask);
+ 	per_cpu(cpu_state, me) = CPU_ONLINE;
+diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+index 331cd6d..58c7cac 100644
+--- a/arch/x86/mach-voyager/voyager_smp.c
++++ b/arch/x86/mach-voyager/voyager_smp.c
+@@ -1746,12 +1746,13 @@ static void __init voyager_smp_prepare_cpus(unsigned int max_cpus)
+ 
+ static void __cpuinit voyager_smp_prepare_boot_cpu(void)
+ {
+-	switch_to_new_gdt();
++	int cpu = smp_processor_id();
++	switch_to_new_gdt(cpu);
+ 
+-	cpu_set(smp_processor_id(), cpu_online_map);
+-	cpu_set(smp_processor_id(), cpu_callout_map);
+-	cpu_set(smp_processor_id(), cpu_possible_map);
+-	cpu_set(smp_processor_id(), cpu_present_map);
++	cpu_set(cpu, cpu_online_map);
++	cpu_set(cpu, cpu_callout_map);
++	cpu_set(cpu, cpu_possible_map);
++	cpu_set(cpu, cpu_present_map);
+ }
+ 
+ static int __cpuinit voyager_cpu_up(unsigned int cpu)
+-- 
+1.6.1
 
-	Ingo
