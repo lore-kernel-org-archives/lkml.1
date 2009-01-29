@@ -1,89 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758973AbZA2PfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZA2Pfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758973AbZA2PfY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 10:35:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758633AbZA2Pet
+	id S1754632AbZA2Pfq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 10:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZA2PfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 10:34:49 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:45321 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754282AbZA2Pes convert rfc822-to-8bit (ORCPT
+	Thu, 29 Jan 2009 10:35:19 -0500
+Received: from mail-gx0-f21.google.com ([209.85.217.21]:56258 "EHLO
+	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754121AbZA2PfS convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 10:34:48 -0500
+	Thu, 29 Jan 2009 10:35:18 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=U1E6M8vlbQRfiYmaDkaqCzFFoXcH8Ijv5Jzl0UBCoWCrTKhulaPxAOKbx/N8SkAw7x
-         0uX5XoKfT7TYZ5Fhkx6zhQq4xK5Vt+OgkHvfUbuDgd2XP5zhBrVXfojXujt16uPDP+25
-         PSNbzTy5iO0RWgWbCUhEr/43xbKELFvQkAO7k=
+        b=Gn4CeMK8xGtlXgYQOR+15/iBUp72Pc1frXc7U+ltYPGX3HIGPQ5popCxl9AReCgRoH
+         cxNfjAGirIMVzp8Un0j5uKE4MGt4eEldnUnvBCDazHEcHK/YhD4/llYk2iKfuEii/viz
+         W5SJzWKEAUkZHyLyr6Ffwz5S1fnGXZ8fCn1lI=
 MIME-Version: 1.0
-In-Reply-To: <20090129150934.GF6512@elte.hu>
-References: <497F69A4.2070007@intel.com> <20090127224303.GB5850@nowhere>
-	 <20090127225048.GA4652@nowhere> <20090129140451.GM24391@elte.hu>
-	 <c62985530901290629i168ac12cjc4b22140caceff58@mail.gmail.com>
-	 <20090129143120.GS24391@elte.hu>
-	 <c62985530901290640j10e63127s59ce22e860a508f8@mail.gmail.com>
-	 <20090129150934.GF6512@elte.hu>
-Date: Thu, 29 Jan 2009 16:34:46 +0100
-Message-ID: <c62985530901290734i26c5b664m2b0342b29cc95807@mail.gmail.com>
-Subject: Re: [PATCH] tracer for sys_open() - sreadahead
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       utrace-devel@redhat.com
-Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       powertop ml <power@bughost.org>,
-       Arjan van de Ven <arjan@linux.intel.com>, srostedt@redhat.com,
-       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090129072543.1302344c@infradead.org>
+References: <1233242110-5422-1-git-send-email-tom.leiming@gmail.com>
+	 <20090129072543.1302344c@infradead.org>
+Date: Thu, 29 Jan 2009 23:35:14 +0800
+Message-ID: <d82e647a0901290735p6cdfd80bw520a47aa3e73aa80@mail.gmail.com>
+Subject: Re: [PATCH] driver core: remove polling for driver_probe_done
+From: Ming Lei <tom.leiming@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: kay.sievers@vrfy.org, greg@kroah.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/29 Ingo Molnar <mingo@elte.hu>:
+2009/1/29 Arjan van de Ven <arjan@infradead.org>:
+> On Thu, 29 Jan 2009 23:15:10 +0800
+> tom.leiming@gmail.com wrote:
 >
-> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
+>> From: Ming Lei <tom.leiming@gmail.com>
+>>
+>> This patch renames driver_probe_done to driver_probe_wait_done,
+>> and make it wait on condition variable of probe done to remove
+>> polling for it in fs initialization.
+>>
 >
->> 2009/1/29 Ingo Molnar <mingo@elte.hu>:
->> >>
->> >> Several people talked me about utrace and gave some examples about it in
->> >> this discussion. The Api is very convenient to fetch syscall numbers,
->> >> arguments and return values. And the hooks are done in the generic core
->> >> code, so it is arch independent.
->> >>
->> >> The only drawback I can see is that it is not yet merged upstream, in
->> >> need of in-kernel users. If it only depends on this condition, we could
->> >> be these users...
->> >>
->> >> What do you think?
->> >
->> > sure - how do the minimal bits/callbacks look like which enable syscall
->> > tracing?
+> I do not see where you add the wake_up() for waking up the wait queue...
+> .... are you sure this is going to work ?
 
+really_probe always wake up the queue of probe_waitqueue,
+but no one pend on it. This patch adds the waitting on the queue.
 
-I know you are talking about the only necessary bits from utrace to
-have the syscalls tracing.
-But I can't answer you better than would the utrace people.
+static int really_probe(struct device *dev, struct device_driver *drv)
+{
+...
+done:
+        atomic_dec(&probe_count);
+        wake_up(&probe_waitqueue);
+        return ret;
+£ý
 
-And actually I'm not sure the utrace bits for syscall tracing can be
-isolated from the rest of its
-core.
-
-Anyway, I will let the utrace guy answer to it :-)
-
-
->> There is a very straightforward example provided by Ananth in there:
->> http://lkml.org/lkml/2009/1/28/59
 >
-> I mean, how does the infrastructure patch look like - what code does this
-> add to the kernel - just to get the syscall tracing bits. Lets get some
-> progress here - it's clear that tracing syscalls is good, we just need to
-> do it and look at actual patches.
+> --
+> Arjan van de Ven        Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
 >
->        Ingo
->
+
+
+
+-- 
+Lei Ming
