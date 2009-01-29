@@ -1,252 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZA2IaN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753922AbZA2Ial@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbZA2IaN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 03:30:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZA2I35
+	id S1753922AbZA2Ial (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 03:30:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbZA2IaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 03:29:57 -0500
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:47214 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751625AbZA2I34 (ORCPT
+	Thu, 29 Jan 2009 03:30:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46698 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753607AbZA2IaD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 03:29:56 -0500
-Date: Thu, 29 Jan 2009 13:59:45 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
-       mingo@elte.hu, richardj_moore@uk.ibm.com, jason.wessel@windriver.com
-Subject: [Patch 6/10] Use virtual debug registers in process/thread
-	handling code
-Message-ID: <20090129082945.GC7750@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090129074845.GA5078@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090129074845.GA5078@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 29 Jan 2009 03:30:03 -0500
+Date: Thu, 29 Jan 2009 00:29:23 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Henrik Rydberg" <rydberg@euromail.se>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/6] input: Allow certain EV_ABS events to bypass all
+ filtering
+Message-Id: <20090129002923.7dc6c6ec.akpm@linux-foundation.org>
+In-Reply-To: <1233138229-12489-6-git-send-email-rydberg@euromail.se>
+References: <1233138229-12489-1-git-send-email-rydberg@euromail.se>
+	<1233138229-12489-2-git-send-email-rydberg@euromail.se>
+	<1233138229-12489-3-git-send-email-rydberg@euromail.se>
+	<1233138229-12489-4-git-send-email-rydberg@euromail.se>
+	<1233138229-12489-5-git-send-email-rydberg@euromail.se>
+	<1233138229-12489-6-git-send-email-rydberg@euromail.se>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch enables the use of abstract/virtual debug registers in
-process-handling routines.
+On Wed, 28 Jan 2009 11:23:48 +0100 "Henrik Rydberg" <rydberg@euromail.se> wrote:
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> With the upcoming multi-touch interface as an example, there is
+> a need to make certain that all reported events actually get passed
+> to the event handler. This patch equips the input core with the
+> ability to bypass all filtering for certain EV_ABS events.
+
+This patch doesn't include Randy's fix, below.
+
+It's unchanged from v1, so I did nothing with this one.
+
+
+From: Randy Dunlap <randy.dunlap@oracle.com>
+
+Fix function args build warning:
+
+mmotm-2008-1230-1605/drivers/input/input.c:1661: warning: function declaration isn't a prototype
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Henrik Rydberg <rydberg@euromail.se>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/x86/kernel/process_32.c |   43 +++++++++++++++++++++++++------------------
- arch/x86/kernel/process_64.c |   41 ++++++++++++++++++++++++-----------------
- 2 files changed, 49 insertions(+), 35 deletions(-)
 
-Index: linux-hbkpt-lkml-29-rc2/arch/x86/kernel/process_32.c
-===================================================================
---- linux-hbkpt-lkml-29-rc2.orig/arch/x86/kernel/process_32.c
-+++ linux-hbkpt-lkml-29-rc2/arch/x86/kernel/process_32.c
-@@ -60,6 +60,8 @@
- #include <asm/idle.h>
- #include <asm/syscalls.h>
- #include <asm/ds.h>
-+#include <asm/debugreg.h>
-+#include <asm/hw_breakpoint.h>
+ drivers/input/input.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff -puN drivers/input/input.c~es-input-allow-certain-ev_abs-events-to-bypass-all-filtering-fix drivers/input/input.c
+--- a/drivers/input/input.c~es-input-allow-certain-ev_abs-events-to-bypass-all-filtering-fix
++++ a/drivers/input/input.c
+@@ -1644,7 +1644,7 @@ static const struct file_operations inpu
+ 	.open = input_open_file,
+ };
  
- asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
- 
-@@ -231,6 +233,8 @@ EXPORT_SYMBOL(kernel_thread);
-  */
- void exit_thread(void)
+-static void __init input_init_abs_bypass()
++static void __init input_init_abs_bypass(void)
  {
-+	struct task_struct *tsk = current;
-+
- 	/* The process may have allocated an io port bitmap... nuke it. */
- 	if (unlikely(test_thread_flag(TIF_IO_BITMAP))) {
- 		struct task_struct *tsk = current;
-@@ -251,6 +255,8 @@ void exit_thread(void)
- 		tss->x86_tss.io_bitmap_base = INVALID_IO_BITMAP_OFFSET;
- 		put_cpu();
- 	}
-+	if (unlikely(tsk->thread.hw_breakpoint_info))
-+		flush_thread_hw_breakpoint(tsk);
- 
- 	ds_exit_thread(current);
- }
-@@ -259,14 +265,9 @@ void flush_thread(void)
- {
- 	struct task_struct *tsk = current;
- 
--	tsk->thread.debugreg0 = 0;
--	tsk->thread.debugreg1 = 0;
--	tsk->thread.debugreg2 = 0;
--	tsk->thread.debugreg3 = 0;
--	tsk->thread.debugreg6 = 0;
--	tsk->thread.debugreg7 = 0;
- 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
--	clear_tsk_thread_flag(tsk, TIF_DEBUG);
-+	if (unlikely(tsk->thread.hw_breakpoint_info))
-+		flush_thread_hw_breakpoint(tsk);
- 	/*
- 	 * Forget coprocessor state..
- 	 */
-@@ -310,7 +311,15 @@ int copy_thread(int nr, unsigned long cl
- 
- 	savesegment(gs, p->thread.gs);
- 
-+	p->thread.hw_breakpoint_info = NULL;
-+	p->thread.io_bitmap_ptr = NULL;
-+
- 	tsk = current;
-+	err = -ENOMEM;
-+	if (unlikely(tsk->thread.hw_breakpoint_info)) {
-+		if (copy_thread_hw_breakpoint(tsk, p, clone_flags))
-+			goto out;
-+	}
- 	if (unlikely(test_tsk_thread_flag(tsk, TIF_IO_BITMAP))) {
- 		p->thread.io_bitmap_ptr = kmemdup(tsk->thread.io_bitmap_ptr,
- 						IO_BITMAP_BYTES, GFP_KERNEL);
-@@ -329,11 +338,13 @@ int copy_thread(int nr, unsigned long cl
- 	if (clone_flags & CLONE_SETTLS)
- 		err = do_set_thread_area(p, -1,
- 			(struct user_desc __user *)childregs->si, 0);
--
-+ out:
- 	if (err && p->thread.io_bitmap_ptr) {
- 		kfree(p->thread.io_bitmap_ptr);
- 		p->thread.io_bitmap_max = 0;
- 	}
-+	if (err)
-+		flush_thread_hw_breakpoint(p);
- 
- 	ds_copy_thread(p, current);
- 
-@@ -435,16 +446,6 @@ __switch_to_xtra(struct task_struct *pre
- 	else if (next->debugctlmsr != prev->debugctlmsr)
- 		update_debugctlmsr(next->debugctlmsr);
- 
--	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
--		set_debugreg(next->debugreg0, 0);
--		set_debugreg(next->debugreg1, 1);
--		set_debugreg(next->debugreg2, 2);
--		set_debugreg(next->debugreg3, 3);
--		/* no 4 and 5 */
--		set_debugreg(next->debugreg6, 6);
--		set_debugreg(next->debugreg7, 7);
--	}
--
- 	if (test_tsk_thread_flag(prev_p, TIF_NOTSC) ^
- 	    test_tsk_thread_flag(next_p, TIF_NOTSC)) {
- 		/* prev and next are different */
-@@ -592,6 +593,12 @@ __switch_to(struct task_struct *prev_p, 
- 		loadsegment(gs, next->gs);
- 
- 	x86_write_percpu(current_task, next_p);
-+	/*
-+	 * Handle debug registers.  This must be done _after_ current
-+	 * is updated.
-+	 */
-+	if (unlikely(test_tsk_thread_flag(next_p, TIF_DEBUG)))
-+		switch_to_thread_hw_breakpoint(next_p);
- 
- 	return prev_p;
- }
-Index: linux-hbkpt-lkml-29-rc2/arch/x86/kernel/process_64.c
-===================================================================
---- linux-hbkpt-lkml-29-rc2.orig/arch/x86/kernel/process_64.c
-+++ linux-hbkpt-lkml-29-rc2/arch/x86/kernel/process_64.c
-@@ -52,6 +52,8 @@
- #include <asm/proto.h>
- #include <asm/ia32.h>
- #include <asm/idle.h>
-+#include <asm/debugreg.h>
-+#include <asm/hw_breakpoint.h>
- #include <asm/syscalls.h>
- #include <asm/ds.h>
- 
-@@ -256,13 +258,9 @@ void flush_thread(void)
- 	}
- 	clear_tsk_thread_flag(tsk, TIF_DEBUG);
- 
--	tsk->thread.debugreg0 = 0;
--	tsk->thread.debugreg1 = 0;
--	tsk->thread.debugreg2 = 0;
--	tsk->thread.debugreg3 = 0;
--	tsk->thread.debugreg6 = 0;
--	tsk->thread.debugreg7 = 0;
- 	memset(tsk->thread.tls_array, 0, sizeof(tsk->thread.tls_array));
-+	if (unlikely(tsk->thread.hw_breakpoint_info))
-+		flush_thread_hw_breakpoint(tsk);
- 	/*
- 	 * Forget coprocessor state..
- 	 */
-@@ -282,6 +280,8 @@ void release_thread(struct task_struct *
- 			BUG();
- 		}
- 	}
-+	if (unlikely(me->thread.hw_breakpoint_info))
-+		flush_thread_hw_breakpoint(me);
- }
- 
- static inline void set_32bit_tls(struct task_struct *t, int tls, u32 addr)
-@@ -337,13 +337,21 @@ int copy_thread(int nr, unsigned long cl
- 
- 	p->thread.fs = me->thread.fs;
- 	p->thread.gs = me->thread.gs;
-+	p->thread.hw_breakpoint_info = NULL;
-+	p->thread.io_bitmap_ptr = NULL;
- 
- 	savesegment(gs, p->thread.gsindex);
- 	savesegment(fs, p->thread.fsindex);
- 	savesegment(es, p->thread.es);
- 	savesegment(ds, p->thread.ds);
- 
--	if (unlikely(test_tsk_thread_flag(me, TIF_IO_BITMAP))) {
-+	err = -ENOMEM;
-+	if (unlikely(me->thread.hw_breakpoint_info)) {
-+		if (copy_thread_hw_breakpoint(me, p, clone_flags))
-+			goto out;
-+	}
-+
-+if (unlikely(test_tsk_thread_flag(me, TIF_IO_BITMAP))) {
- 		p->thread.io_bitmap_ptr = kmalloc(IO_BITMAP_BYTES, GFP_KERNEL);
- 		if (!p->thread.io_bitmap_ptr) {
- 			p->thread.io_bitmap_max = 0;
-@@ -380,6 +388,9 @@ out:
- 		kfree(p->thread.io_bitmap_ptr);
- 		p->thread.io_bitmap_max = 0;
- 	}
-+	if (err)
-+		flush_thread_hw_breakpoint(p);
-+
- 	return err;
- }
- 
-@@ -482,16 +493,6 @@ static inline void __switch_to_xtra(stru
- 	else if (next->debugctlmsr != prev->debugctlmsr)
- 		update_debugctlmsr(next->debugctlmsr);
- 
--	if (test_tsk_thread_flag(next_p, TIF_DEBUG)) {
--		loaddebug(next, 0);
--		loaddebug(next, 1);
--		loaddebug(next, 2);
--		loaddebug(next, 3);
--		/* no 4 and 5 */
--		loaddebug(next, 6);
--		loaddebug(next, 7);
--	}
--
- 	if (test_tsk_thread_flag(prev_p, TIF_NOTSC) ^
- 	    test_tsk_thread_flag(next_p, TIF_NOTSC)) {
- 		/* prev and next are different */
-@@ -514,6 +515,12 @@ static inline void __switch_to_xtra(stru
- 		 */
- 		memset(tss->io_bitmap, 0xff, prev->io_bitmap_max);
- 	}
-+	/*
-+	 * Handle debug registers.  This must be done _after_ current
-+	 * is updated.
-+	 */
-+	if (unlikely(test_tsk_thread_flag(next_p, TIF_DEBUG)))
-+		switch_to_thread_hw_breakpoint(next_p);
- }
- 
- /*
+ 	const unsigned int *p;
+ 	for (p = input_abs_bypass_init_data; *p; p++)
+_
+
