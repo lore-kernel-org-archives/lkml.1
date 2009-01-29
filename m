@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbZA2WeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759281AbZA2WgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759926AbZA2WeA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 17:34:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752149AbZA2Wdv
+	id S1759281AbZA2WgH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 17:36:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753804AbZA2Wfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 17:33:51 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45872 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751348AbZA2Wdv (ORCPT
+	Thu, 29 Jan 2009 17:35:51 -0500
+Received: from an-out-0708.google.com ([209.85.132.250]:61769 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753372AbZA2Wfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 17:33:51 -0500
-Date: Thu, 29 Jan 2009 22:32:54 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
- file segments
-In-Reply-To: <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0901292200220.17808@blonde.anvils>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com> 
- <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>
- <1233259410.2315.75.camel@lts-notebook> <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
- <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>
+	Thu, 29 Jan 2009 17:35:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version:content-type;
+        b=X4FhLFG98wSe5L+NHcrW1BSK59rCDJIbbdgnZsxebUp/BAkxyXeEfjYQdw2D4DeOZR
+         uR/zC9gy9WuAuHrRTih8/whluwjoxFSsAZgYPlWaJwMqvl4iIDsouPcPJTCpwMKQ3Zv3
+         Rous8G03JuF0AVMG7Ykm7nn1w4uhC05Nmk2qg=
+Date: Thu, 29 Jan 2009 17:35:44 -0500 (EST)
+From: Parag Warudkar <parag.lkml@gmail.com>
+X-X-Sender: parag@parag-desktop
+To: Matt Carlson <mcarlson@broadcom.com>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <20090129222247.GA13861@xw6200.broadcom.net>
+Message-ID: <alpine.DEB.2.00.0901291730030.5149@parag-desktop>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net> <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
+ <20090129222247.GA13861@xw6200.broadcom.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009, Linus Torvalds wrote:
-> On Thu, 29 Jan 2009, Linus Torvalds wrote:
-> > 
-> > THIS PATCH IS TOTALLY UNTESTED!
 
-Sorry, I was away yesterday, and not yet caught up with things today.
 
-I certainly agree that it would be much nicer not to allocated a vma
-in one place, then later throw it away on finding it can be merged:
-your patch looks a plausible improvement.
+On Thu, 29 Jan 2009, Matt Carlson wrote:
 
-The problem has always been that file->f_op->mmap(file, vma) on a
-special file can do various strange things, changing surprising
-fields of the struct vma passed to it, changing its mergeability.
+> FWIW, I can suspend and resume using the latest linux-2.6 kernel
+> on a machine with a similar chip here.  The problem doesn't seem to
+> affect all Broadcom devices.
 
-Now it may well be that every driver which does something strange
-there already sets one of the VM_SPECIAL flags which prevent merging,
-or can easily be fixed to do so, or otherwise clearly cannot pose a
-problem.
+It is failing for me on HP xw6600 workstation, if that helps in any way.
 
-But I need to mull it over and do some checking tomorrow:
-anything I say tonight, I'd probably change my mind about.
-
-Hugh
+Parag
