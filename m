@@ -1,91 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758601AbZA2OmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbZA2Oor@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758601AbZA2OmG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 09:42:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753498AbZA2Olv
+	id S1758239AbZA2Oor (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 09:44:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753534AbZA2Ooj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 09:41:51 -0500
-Received: from gmp-eb-inf-1.sun.com ([192.18.6.21]:42807 "EHLO
-	gmp-eb-inf-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752319AbZA2Olu (ORCPT
+	Thu, 29 Jan 2009 09:44:39 -0500
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:47950 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753528AbZA2Ooi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 09:41:50 -0500
-Date: Thu, 29 Jan 2009 15:41:32 +0100
-From: Frank Mehnert <Frank.Mehnert@Sun.COM>
-Subject: Re: PFs on pages pinned with get_user_pages()
-In-reply-to: <1233238854.4495.93.camel@laptop>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <200901291541.32618.frank.mehnert@sun.com>
-Organization: Sun Microsystems
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=nextPart1853270.k5jLsgMOGj
-Content-transfer-encoding: 7BIT
-References: <200901290905.10966.frank.mehnert@sun.com>
- <200901291502.48312.frank.mehnert@sun.com> <1233238854.4495.93.camel@laptop>
-User-Agent: KMail/1.9.9
+	Thu, 29 Jan 2009 09:44:38 -0500
+Subject: Re: [BUG] mlocked page counter mismatch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: MinChan Kim <minchan.kim@gmail.com>, linux mm <linux-mm@kvack.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>
+In-Reply-To: <2f11576a0901290435p1bdb41b3o7171384250b93c08@mail.gmail.com>
+References: <20090128102841.GA24924@barrios-desktop>
+	 <1233156832.8760.85.camel@lts-notebook>
+	 <20090128235514.GB24924@barrios-desktop>
+	 <1233193736.8760.199.camel@lts-notebook>
+	 <2f11576a0901290435p1bdb41b3o7171384250b93c08@mail.gmail.com>
+Content-Type: text/plain
+Organization: HP/OSLO
+Date: Thu, 29 Jan 2009 09:44:36 -0500
+Message-Id: <1233240276.2315.41.camel@lts-notebook>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---nextPart1853270.k5jLsgMOGj
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On Thursday 29 January 2009, Peter Zijlstra wrote:
-> On Thu, 2009-01-29 at 15:02 +0100, Frank Mehnert wrote:
-> > I'm one of the VirtualBox developers. We are trying to fix the annoying
-> > kerneloops warning 'BUG: sleeping function called from invalid context'
-> > reported by the Fedora folks. This warning occurs when do_swap_page()
-> > calls lock_page() and in_atomic() returns true.
+On Thu, 2009-01-29 at 21:35 +0900, KOSAKI Motohiro wrote:
+> Hi
+> 
+> > I think I see it.  In try_to_unmap_anon(), called from try_to_munlock(),
+> > we have:
 > >
-> > This warning appears when we touch into memory which is pinned with
-> > get_user_pages(). In VT-x/AMD-V mode we are executing some code in the
-> > context of the Linux kernel. To prevent scheduling of the current CPU
-> > core we disable the interripts. preempt_disable() would be probably the
-> > better choice but this would oops as well if CONFIG_PREEMPT is enabled.
->
-> but to get there, you'd have to have called handle_mm_fault() which
-> requires the mmap_sem, which should also give that might_sleep()
-> warning.
+> >         list_for_each_entry(vma, &anon_vma->head, anon_vma_node) {
+> >                if (MLOCK_PAGES && unlikely(unlock)) {
+> >                        if (!((vma->vm_flags & VM_LOCKED) &&
+> > !!! should be '||' ?                                      ^^
+> >                              page_mapped_in_vma(page, vma)))
+> >                                continue;  /* must visit all unlocked vmas */
+> >                        ret = SWAP_MLOCK;  /* saw at least one mlocked vma */
+> >                } else {
+> >                        ret = try_to_unmap_one(page, vma, migration);
+> >                        if (ret == SWAP_FAIL || !page_mapped(page))
+> >                                break;
+> >                }
+> >                if (ret == SWAP_MLOCK) {
+> >                        mlocked = try_to_mlock_page(page, vma);
+> >                        if (mlocked)
+> >                                break;  /* stop if actually mlocked page */
+> >                }
+> >        }
+> >
+> > or that clause [under if (MLOCK_PAGES && unlikely(unlock))]
+> > might be clearer as:
+> >
+> >               if ((vma->vm_flags & VM_LOCKED) && page_mapped_in_vma(page, vma))
+> >                      ret = SWAP_MLOCK;  /* saw at least one mlocked vma */
+> >               else
+> >                      continue;  /* must visit all unlocked vmas */
+> >
+> > Do you agree?
+> 
+> Hmmm.
+> I don't think so.
+> 
+> >                        if (!((vma->vm_flags & VM_LOCKED) &&
+> >                              page_mapped_in_vma(page, vma)))
+> >                                continue;  /* must visit all unlocked vmas */
+> 
+> is already equivalent to
+> 
+> >               if ((vma->vm_flags & VM_LOCKED) && page_mapped_in_vma(page, vma))
+> >                      ret = SWAP_MLOCK;  /* saw at least one mlocked vma */
+> >               else
+> >   
+>                    continue;  /* must visit all unlocked vmas */
 
-The stacktrace is
+Hmmm, I should know not to try to read code when I'm that sleepy.  Had
+myself convinced that the condition was wrong...
 
-  __might_sleep()
-  lock_page()
-  handle_mm_fault()
-  do_page_fault()
-  error_code
+> 
+> 
+> > And, I wonder if we need a similar check for
+> > page_mapped_in_vma(page, vma) up in try_to_unmap_one()?
+> 
+> because page_mapped_in_vma() can return 0 if vma is anon vma only.
 
-So yes, handle_mm_fault() is called. But I assume that down_read_trylock()
-succeeded before we were forced to call down_read().
+by "vma is anon vma only", do you mean that the vma being tested--e.g.,
+that we found to be VM_LOCKED--no longer has the page mapped in it's
+page tables?  That is it's purpose--to detect this condition.  IIRC, Rik
+added it during testing of the mlock patches when we discovered we were
+mlocking pages because 
 
-> That aside, is there any reason you have to avoid scheduling? Otherwise
-> I would just allow so and be done with it.
+> 
+> In the other word,
+> struct adress_space (for file) gurantee that unrelated vma doesn't chained.
 
-The reason is that our code expects that to ensure syncing of the CPU
-state with the saved state. I fear it is quite difficult to change that...
+right.  that's why we don't have the page_mapped_in_vma() check in
+try_to_unmap_file().
 
-Kind regards,
+> but struct anon_vma (for anon) doesn't gurantee that unrelated vma
+> doesn't chained.
 
-=46rank
-=2D-=20
-Dr.-Ing. Frank Mehnert    Sun Microsystems    http://www.sun.com/
+Well, they're not exactly "unrelated"--vmas attached to an anon_vma are
+from the same "family".  Any pages that haven't been COWed will still be
+mapped into multiple mm's.
 
---nextPart1853270.k5jLsgMOGj
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+My question last night about try_to_unmap_one() wasn't really related to
+the mlock statistics glitch.  Sorry I wasn't more clear about this.  I
+was wondering about the case where shrink_page_list was trying to unmap
+a page whose vma was on an anon_vma list with other VM_LOCKED vmas that
+didn't actually map the page.  However, in the early morning light, I
+see that the call to page_check_address() handles this.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+----------
+Anyway, our original responses to this report crossed in the mail.  You
+said you'd handle it.  So, in the meantime, I'm looking at the
+mmap()/vm_merge()/mlock_vma_pages_range() issue reported yesterday.
 
-iEYEABECAAYFAkmBwBwACgkQ6z8pigLf3Ec/rgCfVFGd/Unt65FgXuYhult/nac6
-1/EAni3ZBU8MFjmokdlwyUDdWoMslNI3
-=M0SH
------END PGP SIGNATURE-----
+Regards,
+Lee
 
---nextPart1853270.k5jLsgMOGj--
