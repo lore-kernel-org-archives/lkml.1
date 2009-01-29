@@ -1,315 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbZA2IbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZA2Ibk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757892AbZA2IbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 03:31:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753779AbZA2IbF
+	id S1758107AbZA2Ibk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 03:31:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757764AbZA2IbK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 03:31:05 -0500
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:43898 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757715AbZA2IbC (ORCPT
+	Thu, 29 Jan 2009 03:31:10 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:41891 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757716AbZA2IbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 03:31:02 -0500
-Date: Thu, 29 Jan 2009 14:00:51 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>, Roland McGrath <roland@redhat.com>,
-       mingo@elte.hu, richardj_moore@uk.ibm.com, jason.wessel@windriver.com
-Subject: [Patch 8/10] Modify Ptrace routines to access breakpoint registers
-Message-ID: <20090129083051.GE7750@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090129074845.GA5078@in.ibm.com>
-MIME-Version: 1.0
+	Thu, 29 Jan 2009 03:31:06 -0500
+Date: Thu, 29 Jan 2009 08:30:49 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, tony@atomide.com,
+       linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: OMAP clock fast-forward: an introduction to six series
+Message-ID: <20090129083049.GB11519@n2100.arm.linux.org.uk>
+References: <alpine.DEB.2.00.0901281310590.14710@utopia.booyaka.com> <20090128211844.GI23301@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901282357560.32081@utopia.booyaka.com> <20090129081117.GA11519@n2100.arm.linux.org.uk>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090129074845.GA5078@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090129081117.GA11519@n2100.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies the ptrace code to use the new wrapper routines around the 
-debug/breakpoint registers.
+On Thu, Jan 29, 2009 at 08:11:17AM +0000, Russell King - ARM Linux wrote:
+> On Thu, Jan 29, 2009 at 12:05:13AM -0700, Paul Walmsley wrote:
+> > Hello Russell,
+> > 
+> > On Wed, 28 Jan 2009, Russell King - ARM Linux wrote:
+> > 
+> > > On Wed, Jan 28, 2009 at 01:22:22PM -0700, Paul Walmsley wrote:
+> > > > Per rmk's preferences, some patches have been 'compressed.' That is, some 
+> > > > fix patches have been rolled into a single patch with the original.  To 
+> > > > ease cross-referencing with the linux-omap git tree, original commit IDs 
+> > > > have been inserted into the patch messages.  Also, what would have been an 
+> > > > extremely long series has been split into six smaller, cumulative, roughly 
+> > > > thematic patch series.  If requested, I would be pleased to simply send 
+> > > > one large series of the original, uncompressed patches.  Thanks to the git 
+> > > > and stgit authors and contributors: without those tools, this process 
+> > > > would have been nearly impossible.
+> > > 
+> > > Since this patch series was only really meant for me to do some follow-on
+> > > work on it (to merge it into my tree) is it really necessary to submit
+> > > this 70 patch series via slow email via several mailing lists?
+> > 
+> > I posted the patches for final review and upstream merging.
+> > 
+> > Not sure what the follow-on work is that you mention.  But if it's 
+> > additional development work, such as modifying the linux-omap clock code 
+> > to use your recent clkdev code, that should really be discussed 
+> > separately, and patches posted for comment to linux-omap, so the OMAP 
+> > community has a chance to test it first.  People on that list seem to be 
+> > pretty reasonable...
+> 
+> If that's what you thought I was offering, forget it.  I wasn't.
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
----
- arch/x86/kernel/ptrace.c |  228 +++++++++++++++++++++++++++++++----------------
- 1 file changed, 152 insertions(+), 76 deletions(-)
+I'll expand on that.  When clockdomain and powerdomain support was added
+to the mainline kernel about six months ago, I specifically asked the
+question "Is this everything for this new code" and got told "yes".
 
-Index: linux-hbkpt-lkml-29-rc2/arch/x86/kernel/ptrace.c
-===================================================================
---- linux-hbkpt-lkml-29-rc2.orig/arch/x86/kernel/ptrace.c
-+++ linux-hbkpt-lkml-29-rc2/arch/x86/kernel/ptrace.c
-@@ -33,6 +33,7 @@
- #include <asm/prctl.h>
- #include <asm/proto.h>
- #include <asm/ds.h>
-+#include <asm/hw_breakpoint.h>
- 
- #include "tls.h"
- 
-@@ -466,95 +467,170 @@ static int genregs_set(struct task_struc
- }
- 
- /*
-- * This function is trivial and will be inlined by the compiler.
-- * Having it separates the implementation details of debug
-- * registers from the interface details of ptrace.
-+ * Decode the length and type bits for a particular breakpoint as
-+ * stored in debug register 7.  Return the "enabled" status.
-  */
--static unsigned long ptrace_get_debugreg(struct task_struct *child, int n)
-+static int decode_dr7(unsigned long dr7, int bpnum, unsigned *len,
-+		unsigned *type)
- {
--	switch (n) {
--	case 0:		return child->thread.debugreg0;
--	case 1:		return child->thread.debugreg1;
--	case 2:		return child->thread.debugreg2;
--	case 3:		return child->thread.debugreg3;
--	case 6:		return child->thread.debugreg6;
--	case 7:		return child->thread.debugreg7;
-+	int temp = dr7 >> (DR_CONTROL_SHIFT + bpnum * DR_CONTROL_SIZE);
-+
-+	*len = (temp & 0xc) | 0x40;
-+	*type = (temp & 0x3) | 0x80;
-+	return (dr7 >> (bpnum * DR_ENABLE_SIZE)) & 0x3;
-+}
-+
-+static void ptrace_triggered(struct hw_breakpoint *bp, struct pt_regs *regs)
-+{
-+	struct task_struct *tsk = current;
-+	struct thread_hw_breakpoint *thbi = tsk->thread.hw_breakpoint_info;
-+	int i;
-+
-+	/* Store in the virtual DR6 register the fact that the breakpoint
-+	 * was hit so the thread's debugger will see it.
-+	 */
-+	if (thbi) {
-+		i = bp - thbi->vdr_bps;
-+		tsk->thread.vdr6 |= (DR_TRAP0 << i);
- 	}
--	return 0;
- }
- 
--static int ptrace_set_debugreg(struct task_struct *child,
--			       int n, unsigned long data)
-+/*
-+ * Handle ptrace writes to debug register 7.
-+ */
-+static int ptrace_write_dr7(struct task_struct *tsk,
-+		struct thread_hw_breakpoint *thbi, unsigned long data)
- {
-+	struct hw_breakpoint *bp;
- 	int i;
-+	int rc = 0;
-+	unsigned long old_dr7 = thbi->vdr7;
- 
--	if (unlikely(n == 4 || n == 5))
--		return -EIO;
-+	data &= ~DR_CONTROL_RESERVED;
- 
--	if (n < 4 && unlikely(data >= debugreg_addr_limit(child)))
--		return -EIO;
-+	/* Loop through all the hardware breakpoints, making the
-+	 * appropriate changes to each.
-+	 */
-+ restore_settings:
-+	thbi->vdr7 = data;
-+	bp = &thbi->vdr_bps[0];
-+	for (i = 0; i < HB_NUM; (++i, ++bp)) {
-+		int enabled;
-+		unsigned len, type;
-+
-+		enabled = decode_dr7(data, i, &len, &type);
-+
-+		/* Unregister the breakpoint before trying to change it */
-+		if (bp->status)
-+			__unregister_user_hw_breakpoint(tsk, bp);
- 
--	switch (n) {
--	case 0:		child->thread.debugreg0 = data; break;
--	case 1:		child->thread.debugreg1 = data; break;
--	case 2:		child->thread.debugreg2 = data; break;
--	case 3:		child->thread.debugreg3 = data; break;
-+		/* Now register the breakpoint if it should be enabled.
-+		 * New invalid entries will raise an error here.
-+		 */
-+		if (enabled) {
-+			bp->triggered = ptrace_triggered;
-+			bp->info.len = len;
-+			bp->info.type = type;
-+
-+			bp->priority = HW_BREAKPOINT_PRIO_PTRACE;
-+			if (rc == 0 && __register_user_hw_breakpoint(tsk,
-+									bp) < 0)
-+				break;
-+		}
-+	}
- 
--	case 6:
--		if ((data & ~0xffffffffUL) != 0)
--			return -EIO;
--		child->thread.debugreg6 = data;
--		break;
-+	/* If anything above failed, restore the original settings */
-+	if (i < HB_NUM) {
-+		rc = -EIO;
-+		data = old_dr7;
-+		goto restore_settings;
-+	}
-+	return rc;
-+}
- 
--	case 7:
--		/*
--		 * Sanity-check data. Take one half-byte at once with
--		 * check = (val >> (16 + 4*i)) & 0xf. It contains the
--		 * R/Wi and LENi bits; bits 0 and 1 are R/Wi, and bits
--		 * 2 and 3 are LENi. Given a list of invalid values,
--		 * we do mask |= 1 << invalid_value, so that
--		 * (mask >> check) & 1 is a correct test for invalid
--		 * values.
--		 *
--		 * R/Wi contains the type of the breakpoint /
--		 * watchpoint, LENi contains the length of the watched
--		 * data in the watchpoint case.
--		 *
--		 * The invalid values are:
--		 * - LENi == 0x10 (undefined), so mask |= 0x0f00.	[32-bit]
--		 * - R/Wi == 0x10 (break on I/O reads or writes), so
--		 *   mask |= 0x4444.
--		 * - R/Wi == 0x00 && LENi != 0x00, so we have mask |=
--		 *   0x1110.
--		 *
--		 * Finally, mask = 0x0f00 | 0x4444 | 0x1110 == 0x5f54.
--		 *
--		 * See the Intel Manual "System Programming Guide",
--		 * 15.2.4
--		 *
--		 * Note that LENi == 0x10 is defined on x86_64 in long
--		 * mode (i.e. even for 32-bit userspace software, but
--		 * 64-bit kernel), so the x86_64 mask value is 0x5454.
--		 * See the AMD manual no. 24593 (AMD64 System Programming)
-+/*
-+ * Handle PTRACE_PEEKUSR calls for the debug register area.
-+ */
-+unsigned long ptrace_get_debugreg(struct task_struct *tsk, int n)
-+{
-+	struct thread_hw_breakpoint *thbi;
-+	unsigned long val = 0;
-+
-+	mutex_lock(&hw_breakpoint_mutex);
-+	thbi = tsk->thread.hw_breakpoint_info;
-+	if (n < HB_NUM) {
-+		if (thbi)
-+			val = thbi->vdr_bps[n].info.address;
-+	} else if (n == 6) {
-+		val = tsk->thread.vdr6;
-+	} else if (n == 7) {
-+		if (thbi)
-+			val = thbi->vdr7;
-+	}
-+	mutex_unlock(&hw_breakpoint_mutex);
-+	return val;
-+}
-+
-+/*
-+ * Handle PTRACE_POKEUSR calls for the debug register area.
-+ */
-+int ptrace_set_debugreg(struct task_struct *tsk, int n, unsigned long val)
-+{
-+	struct thread_hw_breakpoint *thbi;
-+	int rc = -EIO;
-+
-+	/* We have to hold this lock the entire time, to prevent thbi
-+	 * from being deallocated out from under us.
-+	 */
-+	mutex_lock(&hw_breakpoint_mutex);
-+
-+	/* There are no DR4 or DR5 registers */
-+	if (n == 4 || n == 5)
-+		;
-+
-+	/* Writes to DR6 modify the virtualized value */
-+	else if (n == 6) {
-+		tsk->thread.vdr6 = val;
-+		rc = 0;
-+	}
-+
-+	else if (!tsk->thread.hw_breakpoint_info && val == 0)
-+		rc = 0;		/* Minor optimization */
-+
-+	else if ((thbi = alloc_thread_hw_breakpoint(tsk)) == NULL)
-+		rc = -ENOMEM;
-+
-+	/* Writes to DR0 - DR3 change a breakpoint address */
-+	else if (n < HB_NUM) {
-+		struct hw_breakpoint *bp = &thbi->vdr_bps[n];
-+
-+		/* If the breakpoint is registered then unregister it,
-+		 * change it, and re-register it.  Revert to the original
-+		 * address if an error occurs.
- 		 */
--#ifdef CONFIG_X86_32
--#define	DR7_MASK	0x5f54
--#else
--#define	DR7_MASK	0x5554
--#endif
--		data &= ~DR_CONTROL_RESERVED;
--		for (i = 0; i < 4; i++)
--			if ((DR7_MASK >> ((data >> (16 + 4*i)) & 0xf)) & 1)
--				return -EIO;
--		child->thread.debugreg7 = data;
--		if (data)
--			set_tsk_thread_flag(child, TIF_DEBUG);
--		else
--			clear_tsk_thread_flag(child, TIF_DEBUG);
--		break;
-+		if (bp->status) {
-+			unsigned long old_addr = bp->info.address;
-+
-+			__unregister_user_hw_breakpoint(tsk, bp);
-+
-+			bp->info.address = val;
-+			rc = __register_user_hw_breakpoint(tsk, bp);
-+			if (rc < 0) {
-+				bp->info.address = old_addr;
-+				__register_user_hw_breakpoint(tsk, bp);
-+			}
-+		} else {
-+			bp->info.address = val;
-+			rc = 0;
-+		}
- 	}
- 
--	return 0;
-+	/* All that's left is DR7 */
-+	else
-+		rc = ptrace_write_dr7(tsk, thbi, val);
-+
-+	mutex_unlock(&hw_breakpoint_mutex);
-+	return rc;
- }
- 
- /*
-@@ -872,7 +948,7 @@ long arch_ptrace(struct task_struct *chi
- 		else if (addr >= offsetof(struct user, u_debugreg[0]) &&
- 			 addr <= offsetof(struct user, u_debugreg[7])) {
- 			addr -= offsetof(struct user, u_debugreg[0]);
--			tmp = ptrace_get_debugreg(child, addr / sizeof(data));
-+			tmp = ptrace_get_debugreg(child, addr/sizeof(data));
- 		}
- 		ret = put_user(tmp, datap);
- 		break;
-@@ -890,7 +966,7 @@ long arch_ptrace(struct task_struct *chi
- 			 addr <= offsetof(struct user, u_debugreg[7])) {
- 			addr -= offsetof(struct user, u_debugreg[0]);
- 			ret = ptrace_set_debugreg(child,
--						  addr / sizeof(data), data);
-+						addr/sizeof(data), data);
- 		}
- 		break;
- 
+I wanted to ensure that the new code I was merging was 100% up to date
+with mainline so we wouldn't have a constant drip of old patches to it.
+
+A few weeks later I pulled the omapzoom tree, which contains tony's tree
+and diffed the new code, finding some unmerged patches which I added
+_before_ that stuff went to Linus.
+
+Since then, I've asked Tony whether the clock code was 100% up to date and
+if not send me the patches.  No patches ever came forward.
+
+So, with my work on OMAP first to sort out some of the utter crappyness
+in there (which Tony had accepted.)  Tony whinged about it clashing with
+your work, but still no clock patches from you or Tony were forthcoming.
+
+Subsequent to that acceptance, and as a result of me getting utterly
+pissed off with waiting for something to happen, I converted OMAP over
+to use clkdev (so that OMAP can stop abusing the API and being used
+as a reason why new implementations should continue this abuse.)
+
+Again, Tony whinged about the big merge problem that this was creating.
+So I made an offer to manipulate _your_ changes to apply with my changes.
+
+That's the offer.  The offer is not to merge your code and then think
+about what to do with mine possibly in a year or two's time.  OMAP
+_is_ going to use the API correctly as soon as possible, no iffs or buts.
+
+Not taking the offer means that you and Tony have to deal with the merging
+issues.  Accepting the offer means I do that work for you and publish the
+results back to you for your comment.
+
+Your call.
