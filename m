@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbZA2VhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759470AbZA2Vhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbZA2VhB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 16:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757821AbZA2Vgl
+	id S1759470AbZA2Vhf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 16:37:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758570AbZA2Vgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 16:36:41 -0500
-Received: from gw.goop.org ([64.81.55.164]:59819 "EHLO mail.goop.org"
+	Thu, 29 Jan 2009 16:36:43 -0500
+Received: from gw.goop.org ([64.81.55.164]:59827 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756474AbZA2Vgj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 16:36:39 -0500
-Message-ID: <49822166.7030401@goop.org>
-Date: Thu, 29 Jan 2009 13:36:38 -0800
+	id S1756861AbZA2Vgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 16:36:42 -0500
+Message-ID: <49822168.4020108@goop.org>
+Date: Thu, 29 Jan 2009 13:36:40 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
 To: Brian Gerst <brgerst@gmail.com>
 CC: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] x86: split loading percpu segments from loading gdt
+Subject: [PATCH 2/2] xen: setup percpu data pointers
 References: <49818842.5020004@goop.org> <1233236625-17928-1-git-send-email-brgerst@gmail.com>
 In-Reply-To: <1233236625-17928-1-git-send-email-brgerst@gmail.com>
 X-Enigmail-Version: 0.95.6
@@ -27,65 +27,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen needs to be able to access percpu data from very early on.  For
-various reasons, it cannot also load the gdt at that time.   It does,
-however, have a pefectly functional gdt at that point, so there's no
-pressing need to reload the gdt.
-
-Split the function to load the segment registers off, so Xen can call
-it directly.
+We need to access percpu data fairly early, so set up the percpu
+registers as soon as possible.  We only need to load the appropriate
+segment register.  We already have a GDT, but its hard to change it
+early because we need to manipulate the pagetable to do so, and that
+hasn't been set up yet.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/processor.h |    1 +
- arch/x86/kernel/cpu/common.c     |   18 ++++++++++++------
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ arch/x86/xen/enlighten.c |    3 +++
+ arch/x86/xen/smp.c       |    5 ++++-
+ 2 files changed, 7 insertions(+), 1 deletion(-)
 
 ===================================================================
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -769,6 +769,7 @@
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -1646,6 +1640,9 @@
+ 	have_vcpu_info_placement = 0;
+ #endif
  
- extern void cpu_set_gdt(int);
- extern void switch_to_new_gdt(int);
-+extern void load_percpu_segment(int);
- extern void cpu_init(void);
++	/* setup percpu state */
++	load_percpu_segment(0);
++
+ 	xen_smp_init();
  
- static inline unsigned long get_debugctlmsr(void)
+ 	/* Get mfn list */
 ===================================================================
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -297,6 +297,16 @@
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -170,7 +170,8 @@
  
- __u32 cleared_cpu_caps[NCAPINTS] __cpuinitdata;
+ 	/* We've switched to the "real" per-cpu gdt, so make sure the
+ 	   old memory can be recycled */
+-	make_lowmem_page_readwrite(&per_cpu_var(gdt_page));
++	make_lowmem_page_readwrite(__per_cpu_load +
++				   (unsigned long)&per_cpu_var(gdt_page));
  
-+void load_percpu_segment(int cpu)
-+{
-+#ifdef CONFIG_X86_32
-+	loadsegment(fs, __KERNEL_PERCPU);
-+#else
-+	loadsegment(gs, 0);
-+	wrmsrl(MSR_GS_BASE, (unsigned long)per_cpu(irq_stack_union.gs_base, cpu));
-+#endif
-+}
-+
- /* Current gdt points %fs at the "master" per-cpu area: after this,
-  * it's on the real one. */
- void switch_to_new_gdt(int cpu)
-@@ -307,12 +317,8 @@
- 	gdt_descr.size = GDT_SIZE - 1;
- 	load_gdt(&gdt_descr);
- 	/* Reload the per-cpu base */
--#ifdef CONFIG_X86_32
--	loadsegment(fs, __KERNEL_PERCPU);
--#else
--	loadsegment(gs, 0);
--	wrmsrl(MSR_GS_BASE, (unsigned long)per_cpu(irq_stack_union.gs_base, cpu));
--#endif
-+
-+	load_percpu_segment(cpu);
+ 	xen_setup_vcpu_info_placement();
  }
- 
- static struct cpu_dev *cpu_devs[X86_VENDOR_NUM] = {};
+@@ -235,6 +236,8 @@
+ 	ctxt->user_regs.ss = __KERNEL_DS;
+ #ifdef CONFIG_X86_32
+ 	ctxt->user_regs.fs = __KERNEL_PERCPU;
++#else
++	ctxt->gs_base_kernel = per_cpu_offset(cpu);
+ #endif
+ 	ctxt->user_regs.eip = (unsigned long)cpu_bringup_and_idle;
+ 	ctxt->user_regs.eflags = 0x1000; /* IOPL_RING1 */
 
 
