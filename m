@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754879AbZA2QLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757320AbZA2QMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754879AbZA2QLp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 11:11:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751940AbZA2QLg
+	id S1757320AbZA2QMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 11:12:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbZA2QMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 11:11:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:36845 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751864AbZA2QLg (ORCPT
+	Thu, 29 Jan 2009 11:12:07 -0500
+Received: from n1b.bullet.mail.ac4.yahoo.com ([76.13.13.71]:43217 "HELO
+	n1b.bullet.mail.ac4.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751940AbZA2QMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 11:11:36 -0500
-Subject: Re: PFs on pages pinned with get_user_pages()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frank Mehnert <Frank.Mehnert@Sun.COM>
-Cc: linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200901291703.35463.frank.mehnert@sun.com>
-References: <200901290905.10966.frank.mehnert@sun.com>
-	 <200901291541.32618.frank.mehnert@sun.com>
-	 <1233240757.4495.94.camel@laptop>
-	 <200901291703.35463.frank.mehnert@sun.com>
-Content-Type: text/plain
-Date: Thu, 29 Jan 2009 17:11:23 +0100
-Message-Id: <1233245483.4495.106.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 29 Jan 2009 11:12:06 -0500
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 522466.44597.bm@omp102.mail.ac4.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=ymail.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Message-ID;
+  b=3lWyUW7KyOldep9iyakp58hKtkfCgGb/8t7XfVvTFtVjiuuj4H7PYfJy3GfrhNv6QPFFoqZPt2B2O6v3XNlyFtpxrJyo3YNRZYdUsXQTsom9yscnyfTJRB94uwfJQ4YFfVYI5gMsLdCbEN+JOJJu/mEWAUdmiMvc0mntU25FZak=;
+X-YMail-OSG: xhNSrfUVM1np2hiMBEI8rGZ8b_OHEh_5Qb3nCfXvN5.HEx8BPLwdk99HLTDLrqepwFNf8mK2aqZoS.2ACXbGRfx.khRKJX17PA3mSczXAFK5w6dDq25YGwn2bvyAlbbqg02P1EANHxPwYxbn5UzyJUk48doVaTCW8sKMXZMow1FE_QDopN1a3bHfSS.UyEgnp6ZSWClcwyAN8PBHkEo-
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Thu, 29 Jan 2009 08:12:05 -0800 (PST)
+From: Xiaoning Ding <dingxn@ymail.com>
+Reply-To: dingxn@ymail.com
+Subject: Re: a question about p4_clockmod module on Xeon quad core processors
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090127132333.2e2d4dcf@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <314817.91186.qm@web59911.mail.ac4.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-29 at 17:03 +0100, Frank Mehnert wrote:
-> On Thursday 29 January 2009, Peter Zijlstra wrote:
-> > > > That aside, is there any reason you have to avoid scheduling? Otherwise
-> > > > I would just allow so and be done with it.
-> > >
-> > > The reason is that our code expects that to ensure syncing of the CPU
-> > > state with the saved state. I fear it is quite difficult to change
-> > > that...
-> >
-> > Ah, is that what KVM uses the preempt notifiers for? Could you too?
-> 
-> Right, that could be an option.
-> 
-> We will try to change our code which is a big effort as we try
-> to keep the code as unique as possible between the different
-> hosts we support (Linux, Solaris, Windows, Mac OS X).
-> 
-> Just to be sure: There is no other option than disabling interrupts
-> or calling disable_preemption() to prevent scheduling?
+I am not trying to save energy. I want to do some experiments that requires lower CPU speed. But the experiments are not energy related. 
 
-Thing is, lock_page() and down_read() require to be able to schedule(),
-so there's no way around that.
+Xiaoning
 
-So even if there was another way to disable scheduling, you'd still have
-the same problem.
+--- On Tue, 1/27/09, Arjan van de Ven <arjan@infradead.org> wrote:
+
+> From: Arjan van de Ven <arjan@infradead.org>
+> Subject: Re: a question about p4_clockmod module on Xeon quad core processors
+> To: dingxn@ymail.com
+> Cc: linux-kernel@vger.kernel.org
+> Date: Tuesday, January 27, 2009, 9:23 PM
+> On Tue, 27 Jan 2009 12:17:25 -0800 (PST)
+> Xiaoning Ding <dingxn@ymail.com> wrote:
+> 
+> > Hi list,
+> > 
+> > I have tried the p4-clockmod module in Linux kernel
+> 2.6.29 on Xeon
+> > 5355 quad-core CPUs with no luck. It seems current
+> p4-clockmod driver
+> > still cannot support Intel Quad core processors,
+> right? 
+> 
+> you know that using clockmod will actually cost you energy
+> rather than
+> saving it right?
+> 
+> 
+> -- 
+> Arjan van de Ven 	Intel Open Source Technology Centre
+> For development, discussion and tips for power savings, 
+> visit http://www.lesswatts.org
+
+
+      
 
