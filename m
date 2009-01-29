@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbZA2M1m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757960AbZA2M22@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758035AbZA2M1m (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 07:27:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZA2M1b
+	id S1757960AbZA2M22 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 07:28:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752102AbZA2M2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 07:27:31 -0500
-Received: from hobbit.corpit.ru ([81.13.33.150]:22976 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757351AbZA2M1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 07:27:30 -0500
-Message-ID: <4981A0AC.5030300@msgid.tls.msk.ru>
-Date: Thu, 29 Jan 2009 15:27:24 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.12 (X11/20070607)
-MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Xiaoning Ding <dingxn@ymail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: a question about p4_clockmod module on Xeon quad core	processors
-References: <603382.20833.qm@web59902.mail.ac4.yahoo.com> <20090128210200.GA19527@redhat.com>
-In-Reply-To: <20090128210200.GA19527@redhat.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 29 Jan 2009 07:28:19 -0500
+Received: from casper.infradead.org ([85.118.1.10]:52544 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751940AbZA2M2T (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 07:28:19 -0500
+Subject: Re: PFs on pages pinned with get_user_pages()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Frank Mehnert <Frank.Mehnert@Sun.COM>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200901290905.10966.frank.mehnert@sun.com>
+References: <200901290905.10966.frank.mehnert@sun.com>
+Content-Type: text/plain
+Date: Thu, 29 Jan 2009 13:28:14 +0100
+Message-Id: <1233232094.4495.45.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-[]
-> p4-clockmod doesn't change the processor frequency.
+On Thu, 2009-01-29 at 09:05 +0100, Frank Mehnert wrote:
+> Hi,
+> 
+> please could someone explain me under which circumstances a pagefault,
+> either generated from kernel code or from userland code, can occur on
+> pages which are pinned with get_user_pages()?
+> 
+> So far my understanding was that this can _never_ happen but I seems to
+> be wrong. Under high memory pressure I get PFs on such pages raised from
+> kernel code and the PFs are handled by do_swap_page(). When this happens,
+> page_count is 3 but page_mapped() returns false.
 
-Hmm..  But what it really does, then?
-I used it one one machine which had a flaky CPU cooler,
-to reduce power consumption during hot summer days.
-It worked, and reportedly the frequency varied from
-200MHz to the max of 2.4GHz (it's a P4 Xeon).  Now
-I wonder why it helped to reduce the temperature and
-why the system reported different frequencies...
+Under memory pressure the page reclaim will first unmap the physical
+page from the virtual address range, and then try to free it.
 
-Thanks!
+Obviously the freeing bit fails if you hold a reference to it, but the
+unmap will work.
 
-> Because of common misconceptions like this, the user interface has been removed.
+After that, userspace will have to (minor) fault the stuff back in.
 
+Also, that same page-reclaim, or pdflush might decide to write out dirty
+data, which will also result in (minor) faults when userspace will
+re-dirty the pages.
 
-/mjt
+Having a page reference will only avoid the physical page from getting
+removed from its current mapping (and thereby also pins the mapping).
+
