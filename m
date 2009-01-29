@@ -1,94 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757703AbZA2Sv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbZA2SwM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757703AbZA2Sv1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 13:51:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZA2SvR
+	id S1757136AbZA2SwM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 13:52:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZA2Sv4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 13:51:17 -0500
-Received: from xc.sipsolutions.net ([83.246.72.84]:52320 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbZA2SvQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 13:51:16 -0500
-Subject: circular locking dependency on shutdown
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linux Kernel list <linux-kernel@vger.kernel.org>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Peter Zijlstra <peterz@infradead.org>, cpufreq@vger.kernel.org
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-qyONsnimUHMtonmTAd4d"
-Date: Thu, 29 Jan 2009 19:50:49 +0100
-Message-Id: <1233255049.4067.12.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Thu, 29 Jan 2009 13:51:56 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33822 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753468AbZA2Sv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 13:51:56 -0500
+Date: Thu, 29 Jan 2009 19:51:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [PATCH -next/mmotm/resend] kmemtrace: fix printk formats
+Message-ID: <20090129185145.GB14810@elte.hu>
+References: <200901291030.n0TAUhRI003046@imap1.linux-foundation.org> <4981E86F.60909@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4981E86F.60909@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-qyONsnimUHMtonmTAd4d
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Hi,
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix kmemtrace printk warnings:
+> 
+> kernel/trace/kmemtrace.c:142: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
+> kernel/trace/kmemtrace.c:147: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc:      Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  kernel/trace/kmemtrace.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 
-Every time I shut down my machine with a 2.6.29-rc2 kernel, I get a
-lockdep report that scrolls off. I tried capturing it on video, the
-relevant frames are here:
-http://johannes.sipsolutions.net/files/shutdown-lockdep-images.tar.bz2
+it's in tip/tracing already, i applied it 6 days ago.
 
-Some info I transscribed:
-
-halt is trying to acquire lock
-	(&per_cpu(cpu_policy_rwsem, cpu)){---}
-
-but task is already holding lock
-	(&cpu_hotplug.lock){--..}
-
-which already yadda yadda
-
-lock chain:
-#1	(&cpu_hotplug.lock){--..}
-	...
-	get_online_cpus
-#0	(&per_cpu(cpu_policy_rwsem, cpu))
-	...
-	disable_nonboot_cpus
-
-stacktrace:
-	down_write
-	lock_policy_rwsem_write
-	cpufreq_cpu_callback
-	notifier_call_chain
-	disable_nonboot_cpus
-	kernel_power_off
-	...
-
-
-johannes
-
---=-qyONsnimUHMtonmTAd4d
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJgfqHAAoJEKVg1VMiehFYzFMQALz17Z53dK1hz4xXHwfn30va
-8sFUtnDrVrGZkDkZjSnYMoSImtv6RXqBwdzYjoGbWhsk7S4DrsORubAkCSW3C0o/
-7Y6O26wf0szDI9NAYHstUl21mCVVrdDztYHIfZUnLUf4IhALCRhUa5zmGjZ8x3YG
-abO0nL/itsNsnv37liouHTFBzOeGLmWTbcP4vTa/kdEofBJLkY4LZxY1cCixZtGw
-mCZehtTwJ1JpGiMU+7edmT2quWjsETjxgEc41Y9v/GkA2JD78a2P+GvcikmKxGMo
-nBpm8f2w93jxHUSyZxd5Yr3QCpae2uaGmQO72BNgykXxYOcSA3vhyrjG4J1fC1bW
-RukDJfWCa3TgHNuq0RG9GeXBCHyhP+nB9vX8wBF8DfNsvt8Jy+mCfe/h0nD3tL6c
-agvzOIAK1wAvzhvPueLrVvX3n0w62P5Gclv1odDeB17wyh3mP4+njVcnWPQIKDf4
-jzhNr1yiBnjb9fO9Tt0HLFxVTN7JlQBXP4DrA5uOA37HrBA3deO3kSEBKKSAzcAu
-C4VM/6CeHKA10uFcS1KstY8kxKdxLoHFbr/0NPPTSSLFCI7mKyeKtDnuBMUkDgEO
-w8NdpfBv4YLshHQeXyB79MKvBKBGQ3q72rhna3EA0NBEt+vKA8AWS/AlOuvBaq9A
-nUrXn+f5cigLMmzWmRjg
-=rLa9
------END PGP SIGNATURE-----
-
---=-qyONsnimUHMtonmTAd4d--
-
+	Ingo
