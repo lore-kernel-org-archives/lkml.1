@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZA3PDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756087AbZA3PFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756112AbZA3PDR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 10:03:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZA3PDE
+	id S1756087AbZA3PFj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 10:05:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZA3PF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 10:03:04 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43523 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752309AbZA3PDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 10:03:03 -0500
-Date: Fri, 30 Jan 2009 16:02:57 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Cliff Wickman <cpw@sgi.com>
-Cc: linux-kernel@vger.kernel.org, tj@kernel.org
-Subject: Re: [PATCH] x86: UV fix uv_flush_send_and_wait
-Message-ID: <20090130150257.GA27549@elte.hu>
-References: <E1LSeXm-0007ck-9j@eag09.americas.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LSeXm-0007ck-9j@eag09.americas.sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 30 Jan 2009 10:05:29 -0500
+Received: from adelie.canonical.com ([91.189.90.139]:60132 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751729AbZA3PF3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 10:05:29 -0500
+From: Andy Whitcroft <apw@canonical.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@canonical.com>
+Subject: [PATCH 4/8] checkpatch: pointer type star may have modifiers following
+Date: Fri, 30 Jan 2009 15:05:16 +0000
+Message-Id: <1233327920-16691-5-git-send-email-apw@canonical.com>
+X-Mailer: git-send-email 1.6.1.2.419.g0d87e
+In-Reply-To: <1233327920-16691-1-git-send-email-apw@canonical.com>
+References: <1233327920-16691-1-git-send-email-apw@canonical.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We may have any modifier following a pointer type star.  Handle this:
 
-* Cliff Wickman <cpw@sgi.com> wrote:
+	void * __user * __user foo;
 
-> From: Cliff Wickman <cpw@sgi.com>
-> 
-> uv_flush_send_and_wait() should return a pointer if the broadcast
-> remote tlb shootdown requests fail. That causes the conventional IPI
-> method of shootdown to be used.
-> 
-> Diffed against 2.6.29-rc2
->   (Ingo's tree)
-> 
-> Signed-off-by: Cliff Wickman <cpw@sgi.com>
-> ---
->  arch/x86/kernel/tlb_uv.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+Signed-off-by: Andy Whitcroft <apw@canonical.com>
+---
+ scripts/checkpatch.pl |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Applied to tip/x86/urgnet, thanks Cliff!
+diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
+index 92d1371..15a5904 100755
+--- a/scripts/checkpatch.pl
++++ b/scripts/checkpatch.pl
+@@ -1886,11 +1886,11 @@ sub process {
+ 					if ($ctx !~ /[WEBC]x./ && $ca !~ /(?:\)|!|~|\*|-|\&|\||\+\+|\-\-|\{)$/) {
+ 						ERROR("space required before that '$op' $at\n" . $hereptr);
+ 					}
+-					if ($op eq '*' && $cc =~/\s*const\b/) {
++					if ($op eq '*' && $cc =~/\s*$Modifier\b/) {
+ 						# A unary '*' may be const
+ 
+ 					} elsif ($ctx =~ /.xW/) {
+-						ERROR("space prohibited after that '$op' $at\n" . $hereptr);
++						ERROR("Aspace prohibited after that '$op' $at\n" . $hereptr);
+ 					}
+ 
+ 				# unary ++ and unary -- are allowed no space on one side.
+-- 
+1.6.1.2.419.g0d87e
 
-	Ingo
