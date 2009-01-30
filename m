@@ -1,43 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZA3Ivi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbZA3IxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZA3Ivi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 03:51:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754201AbZA3IvW
+	id S1754038AbZA3IxQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 03:53:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752071AbZA3Iw7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 03:51:22 -0500
-Received: from hera.kernel.org ([140.211.167.34]:58772 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754160AbZA3IvV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 03:51:21 -0500
-Message-ID: <4982BF64.6080504@kernel.org>
-Date: Fri, 30 Jan 2009 17:50:44 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Brian Gerst <brgerst@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] xen: setup percpu data pointers
-References: <49818842.5020004@goop.org> <1233236625-17928-1-git-send-email-brgerst@gmail.com> <49822168.4020108@goop.org>
-In-Reply-To: <49822168.4020108@goop.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 30 Jan 2009 08:50:36 +0000 (UTC)
+	Fri, 30 Jan 2009 03:52:59 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:50796 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752088AbZA3Iw6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 03:52:58 -0500
+Date: Fri, 30 Jan 2009 08:52:49 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 08/14] OMAP clock: move rate recalc, propagation code up to plat-omap/clock.c
+Message-ID: <20090130085249.GB6864@n2100.arm.linux.org.uk>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192748.29333.5856.stgit@localhost.localdomain> <20090129174153.GH18233@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901300135560.26985@utopia.booyaka.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0901300135560.26985@utopia.booyaka.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> We need to access percpu data fairly early, so set up the percpu
-> registers as soon as possible.  We only need to load the appropriate
-> segment register.  We already have a GDT, but its hard to change it
-> early because we need to manipulate the pagetable to do so, and that
-> hasn't been set up yet.
+On Fri, Jan 30, 2009 at 01:42:52AM -0700, Paul Walmsley wrote:
+> I haven't looked closely at your above three patches for this, but plan to 
+> do so later today.
 > 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Regarding provenance, the patches that I sent you were developed 
+> independently, for clock notifier support.  Ultimately, I have no personal 
+> attachment as to whose patches for this go in, if all technical aspects 
+> are equal.
 
-Committed 1-2 to #tj-percpu.  Thanks.
+There's one bug that your version highlights in mine - the virtual mpu
+clock in omap1 touches the DPLL and repropagates that rate.  I've
+removed that repropagation, so that needs fixing.
 
--- 
-tejun
+However, this raises a question: why is the virtual mpu clock touching
+some other part of the clock tree.  I wonder whether this should be
+handled a different way, though the first thing that needs answering is
+why we have this alias for 'arm_ck' ?
