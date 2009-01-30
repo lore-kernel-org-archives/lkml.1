@@ -1,195 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759978AbZA3ALt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759500AbZA3AOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759978AbZA3ALt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 19:11:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755008AbZA3ALi
+	id S1759500AbZA3AOW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 19:14:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754476AbZA3AOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 19:11:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45570 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751601AbZA3ALg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 19:11:36 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Matt Carlson" <mcarlson@broadcom.com>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-Date: Fri, 30 Jan 2009 01:10:55 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: "Parag Warudkar" <parag.lkml@gmail.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901300003.38550.rjw@sisk.pl> <20090129234127.GA14023@xw6200.broadcom.net>
-In-Reply-To: <20090129234127.GA14023@xw6200.broadcom.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 29 Jan 2009 19:14:09 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58276 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753689AbZA3AOH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 19:14:07 -0500
+Date: Thu, 29 Jan 2009 16:13:57 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: james.kirin40@gmail.com, yinghai@kernel.org, rdreier@cisco.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: kernel panic when using disable_mtrr_trim [was: Re: memory
+ beyond4GB invisible to the system even though CONFIG_HIGHMEM64G=y]
+Message-Id: <20090129161357.f254e634.akpm@linux-foundation.org>
+In-Reply-To: <20090129160943.1bb0d3b5.akpm@linux-foundation.org>
+References: <baeb34bc0901201018s5c6eaedcp9ba0dc7e81642509@mail.gmail.com>
+	<20090129160943.1bb0d3b5.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901300110.56533.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 January 2009, Matt Carlson wrote:
-> On Thu, Jan 29, 2009 at 03:03:37PM -0800, Rafael J. Wysocki wrote:
-> > On Thursday 29 January 2009, Parag Warudkar wrote:
-> > > 
-> > > On Thu, 29 Jan 2009, Matt Carlson wrote:
-> > > 
-> > > > Can you apply the following test patch and see if it helps?  The patch
-> > > > does two things.  First, it enables a bit which should restore firmware
-> > > > communication.  If that fixes the problem, then let me know and I'll
-> > > > spin a proper patch.
-> > > > 
-> > > > In the event that it doesn't work, the patch goes on to test the memory
-> > > > mapping by simply printing the register value at offset 0x0.  The value
-> > > > should be the device's vendor ID and device ID.  Please post the
-> > > > results so that I can verify it.
-> > > > 
-> > > > 
-> > > > diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
-> > > > index 8b3f846..39fce42 100644
-> > > > --- a/drivers/net/tg3.c
-> > > > +++ b/drivers/net/tg3.c
-> > > > @@ -7227,6 +7227,11 @@ static int tg3_init_hw(struct tg3 *tp, int reset_phy)
-> > > >  {
-> > > >  	tg3_switch_clocks(tp);
-> > > >  
-> > > > +	printk( KERN_NOTICE "%s: Reg value at offset 0x0 is 0x%x\n",
-> > > > +		tp->dev->name, tr32(0x0) );
-> > > > +
-> > > > +	tw32(MEMARB_MODE, tr32(MEMARB_MODE) | MEMARB_MODE_ENABLE);
-> > > > +
-> > > >  	tw32(TG3PCI_MEM_WIN_BASE_ADDR, 0);
-> > > >  
-> > > >  	return tg3_reset_hw(tp, reset_phy);
-> > > > 
-> > > 
-> > > Hi Matt,
-> > > 
-> > > Thanks for the patch. It didn't help with resume - but below is the 
-> > > output after patching, let me know if you need more details.
-> > 
-> > [--snip--]
-> > 
-> > In the meantime I tried to rework tg3 suspend/resume so that it uses the new
-> > PCI core capability of handling the PCI-specific parts of both operations.
-> > 
-> > The patch is appended, please see if it makes any difference.
-> > 
-> > Thanks,
-> > Rafael
-> > 
-> > ---
-> >  drivers/net/tg3.c |   70 +++++++++++++++++++-----------------------------------
-> >  1 file changed, 25 insertions(+), 45 deletions(-)
-> > 
-> > Index: linux-2.6/drivers/net/tg3.c
-> > ===================================================================
-> > --- linux-2.6.orig/drivers/net/tg3.c
-> > +++ linux-2.6/drivers/net/tg3.c
-> > @@ -13330,18 +13330,13 @@ static void __devexit tg3_remove_one(str
-> >  	}
-> >  }
-> >  
-> > -static int tg3_suspend(struct pci_dev *pdev, pm_message_t state)
-> > +#ifdef CONFIG_PM
-> > +
-> > +static int tg3_suspend(struct device *device)
-> >  {
-> > +	struct pci_dev *pdev = to_pci_dev(device);
-> >  	struct net_device *dev = pci_get_drvdata(pdev);
-> >  	struct tg3 *tp = netdev_priv(dev);
-> > -	pci_power_t target_state;
-> > -	int err;
-> > -
-> > -	/* PCI register 4 needs to be saved whether netif_running() or not.
-> > -	 * MSI address and data need to be saved if using MSI and
-> > -	 * netif_running().
-> > -	 */
-> > -	pci_save_state(pdev);
-> >  
-> >  	if (!netif_running(dev))
-> >  		return 0;
-> > @@ -13363,50 +13358,19 @@ static int tg3_suspend(struct pci_dev *p
-> >  	tp->tg3_flags &= ~TG3_FLAG_INIT_COMPLETE;
-> >  	tg3_full_unlock(tp);
-> >  
-> > -	target_state = pdev->pm_cap ? pci_target_state(pdev) : PCI_D3hot;
-> > -
-> > -	err = tg3_set_power_state(tp, target_state);
+On Thu, 29 Jan 2009 16:09:43 -0800
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 20 Jan 2009 13:18:15 -0500
+> "James Kirin" <james.kirin40@gmail.com> wrote:
 > 
-> tg3_set_power_state() does way more than configuring the power
-> management registers to the desired state though.  It sets up WOL,
-> configures the chip clocks, etc.  This isn't safe to remove.
-
-OK, so it requires more care to be taken.
-
-However, suspend-resume seems to work on my test box with this patch applied,
-although admittedly I haven't tested WoL.
-
-I still am interested if it makes any difference for Parag.
-
-> > -	if (err) {
-> > -		int err2;
-> > -
-> > -		tg3_full_lock(tp, 0);
-> > -
-> > -		tp->tg3_flags |= TG3_FLAG_INIT_COMPLETE;
-> > -		err2 = tg3_restart_hw(tp, 1);
-> > -		if (err2)
-> > -			goto out;
-> > -
-> > -		tp->timer.expires = jiffies + tp->timer_offset;
-> > -		add_timer(&tp->timer);
-> > -
-> > -		netif_device_attach(dev);
-> > -		tg3_netif_start(tp);
-> > -
-> > -out:
-> > -		tg3_full_unlock(tp);
-> > -
-> > -		if (!err2)
-> > -			tg3_phy_start(tp);
-> > -	}
-> > -
-> > -	return err;
-> > +	return 0;
-> >  }
-> >  
-> > -static int tg3_resume(struct pci_dev *pdev)
-> > +static int tg3_resume(struct device *device)
-> >  {
-> > +	struct pci_dev *pdev = to_pci_dev(device);
-> >  	struct net_device *dev = pci_get_drvdata(pdev);
-> >  	struct tg3 *tp = netdev_priv(dev);
-> >  	int err;
-> >  
-> > -	pci_restore_state(tp->pdev);
-> > -
-> >  	if (!netif_running(dev))
-> >  		return 0;
-> >  
-> > -	err = tg3_set_power_state(tp, PCI_D0);
+> > Hi Yinghai,
+> > 
+> > When I boot with "disable_mtrr_trim mem=4g", the system boots fine.
+> > Then I changed that to
+> > "disable_mtrr_trim mem=6g" and a kernel panic occurs:
+> > 
+> > [...] Freeing unused kernel memory: 296k freed
+> > [...]  Write protecting the kernel text: 3040k
+> > [...]  Write protecting the kernel read-only data: 1352k
+> > [...]  khelper used greatest stack depth: 6724 byytes left
+> > [...]  Kernel panic - not syncing: No init found. Try passing init=
+> > option to kernel.
+> > 
+> > I can always reproduce this: all it takes it to boot from a rescue CD,
+> > switch between "mem=4g"  and "mem=6g" in /etc/lilo.conf, run lilo and
+> > reboot. If it is 4g, it boots fine; if it is 6g, a kernel panic
+> > occurs. No other changes at all were made.
+> > 
+> > Same thing (kernel panic) occurs if mem=5g is used.
+> > 
+> > I am attaching the kernel config used when this happens.
+> > 
+> > Please let me know how I can help fix this. Does it somehow depend on
+> > all those MTRR/etc memory-related options in the kernel configuration?
+> > 
 > 
-> ...and here tg3_set_power_state() restores our ability to communicate
-> with the chip via MMIO.
+> Did this get fixed?
+> 
 
-If that were the case, it wouldn't work after a resume with the patch applied.
-Still, it does work, at least with the chip I have here.
+It seems that it was fixed.
 
-> Also, after restoring the power state to D0, the chip is switched back from
-> VAux to VMain.
+The subject was rewritten, threading was broken and you weren't cc'ed. 
+Handy!
 
-Are you sure this actually happens?  On my box the chip is in D0 already
-when the BIOS returns control to the kernel.
-
-> This isn't safe either.
-
-Anyway, I'd very much prefer to separate the generic PCI operations from the
-device-specific code.
-
-Thanks,
-Rafael
