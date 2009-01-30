@@ -1,60 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbZA3KTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZA3KTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755956AbZA3KTO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 05:19:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbZA3KRx
+	id S1753602AbZA3KTj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 05:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754860AbZA3KRy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 05:17:53 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54368 "EHLO
+	Fri, 30 Jan 2009 05:17:54 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:54363 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754725AbZA3KRt (ORCPT
+	with ESMTP id S1754722AbZA3KRu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 05:17:49 -0500
+	Fri, 30 Jan 2009 05:17:50 -0500
 From: Andi Kleen <andi@firstfloor.org>
 To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, lnxninja@linux.vnet.ibm.com
-Subject: Genapic cleanup & NUMAQ/es7000 removal
-Date: Fri, 30 Jan 2009 11:17:06 +0100
-Message-Id: <1233310639-27916-1-git-send-email-andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, lnxninja@linux.vnet.ibm.com,
+       Andi Kleen <ak@linux.intel.com>
+Subject: [PATCH] Move wakeup_secondary_via_nmi into numaq_32.c
+Date: Fri, 30 Jan 2009 11:17:07 +0100
+Message-Id: <1233310639-27916-2-git-send-email-andi@firstfloor.org>
 X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1233310639-27916-1-git-send-email-andi@firstfloor.org>
+References: <1233310639-27916-1-git-send-email-andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just to demonstrate the clean up possibilities by removing es7000
-and numaq here's a sample patch series. It doesn't actually remove
-the es7000/numaq code, but just marks them broken and then
-removes all the hooks only used by them. I'm not actually sure
-I caught all the now unused hooks, there are probably now more.
-Also I think there's still some other NUMAQ only code in smpboot.c
-that could be exercised.
+From: Andi Kleen <ak@linux.intel.com>
 
-This removes 6 hooks and 2 fields out of struct genapic (out of 26
-hooks, a reduction of ~23%!) 
+It's only used there.
 
-The first three patches are independent cleanups that should
-be applied anyways.
+Signed-off-by: Andi Kleen <ak@linux.intel.com>
+---
+ arch/x86/include/asm/setup.h |    1 -
+ arch/x86/kernel/numaq_32.c   |   39 +++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/smpboot.c    |   39 ---------------------------------------
+ 3 files changed, 39 insertions(+), 40 deletions(-)
 
-This gives a nice generic cleanup:
+diff --git a/arch/x86/include/asm/setup.h b/arch/x86/include/asm/setup.h
+index 45b4027..8c8289c 100644
+--- a/arch/x86/include/asm/setup.h
++++ b/arch/x86/include/asm/setup.h
+@@ -20,7 +20,6 @@ static inline void visws_early_detect(void) { }
+ static inline int is_visws_box(void) { return 0; }
+ #endif
+ 
+-extern int wakeup_secondary_cpu_via_nmi(int apicid, unsigned long start_eip);
+ extern int wakeup_secondary_cpu_via_init(int apicid, unsigned long start_eip);
+ /*
+  * Any setup quirks to be performed?
+diff --git a/arch/x86/kernel/numaq_32.c b/arch/x86/kernel/numaq_32.c
+index 83bb055..295c82e 100644
+--- a/arch/x86/kernel/numaq_32.c
++++ b/arch/x86/kernel/numaq_32.c
+@@ -234,6 +234,45 @@ static int __init numaq_setup_ioapic_ids(void)
+ 	return 1;
+ }
+ 
++/*
++ * Poke the other CPU in the eye via NMI to wake it up. Remember that the normal
++ * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
++ * won't ... remember to clear down the APIC, etc later.
++ */
++static int __devinit
++wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
++{
++	unsigned long send_status, accept_status = 0;
++	int maxlvt;
++
++	/* Target chip */
++	/* Boot on the stack */
++	/* Kick the second */
++	apic_icr_write(APIC_DM_NMI | apic->dest_logical, logical_apicid);
++
++	pr_debug("Waiting for send to finish...\n");
++	send_status = safe_apic_wait_icr_idle();
++
++	/*
++	 * Give the other CPU some time to accept the IPI.
++	 */
++	udelay(200);
++	if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid])) {
++		maxlvt = lapic_get_maxlvt();
++		if (maxlvt > 3)			/* Due to the Pentium erratum 3AP.  */
++			apic_write(APIC_ESR, 0);
++		accept_status = (apic_read(APIC_ESR) & 0xEF);
++	}
++	pr_debug("NMI sent.\n");
++
++	if (send_status)
++		printk(KERN_ERR "APIC never delivered???\n");
++	if (accept_status)
++		printk(KERN_ERR "APIC delivery error (%lx).\n", accept_status);
++
++	return (send_status | accept_status);
++}
++
+ static int __init numaq_update_genapic(void)
+ {
+ 	apic->wakeup_cpu = wakeup_secondary_cpu_via_nmi;
+diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+index 2912fa3..709b65d 100644
+--- a/arch/x86/kernel/smpboot.c
++++ b/arch/x86/kernel/smpboot.c
+@@ -570,45 +570,6 @@ void __inquire_remote_apic(int apicid)
+ 	}
+ }
+ 
+-/*
+- * Poke the other CPU in the eye via NMI to wake it up. Remember that the normal
+- * INIT, INIT, STARTUP sequence will reset the chip hard for us, and this
+- * won't ... remember to clear down the APIC, etc later.
+- */
+-int __devinit
+-wakeup_secondary_cpu_via_nmi(int logical_apicid, unsigned long start_eip)
+-{
+-	unsigned long send_status, accept_status = 0;
+-	int maxlvt;
+-
+-	/* Target chip */
+-	/* Boot on the stack */
+-	/* Kick the second */
+-	apic_icr_write(APIC_DM_NMI | apic->dest_logical, logical_apicid);
+-
+-	pr_debug("Waiting for send to finish...\n");
+-	send_status = safe_apic_wait_icr_idle();
+-
+-	/*
+-	 * Give the other CPU some time to accept the IPI.
+-	 */
+-	udelay(200);
+-	if (APIC_INTEGRATED(apic_version[boot_cpu_physical_apicid])) {
+-		maxlvt = lapic_get_maxlvt();
+-		if (maxlvt > 3)			/* Due to the Pentium erratum 3AP.  */
+-			apic_write(APIC_ESR, 0);
+-		accept_status = (apic_read(APIC_ESR) & 0xEF);
+-	}
+-	pr_debug("NMI sent.\n");
+-
+-	if (send_status)
+-		printk(KERN_ERR "APIC never delivered???\n");
+-	if (accept_status)
+-		printk(KERN_ERR "APIC delivery error (%lx).\n", accept_status);
+-
+-	return (send_status | accept_status);
+-}
+-
+ int __devinit
+ wakeup_secondary_cpu_via_init(int phys_apicid, unsigned long start_eip)
+ {
+-- 
+1.5.6.5
 
- Kconfig                     |    4 +-
- include/asm/bigsmp/apic.h   |    4 --
- include/asm/genapic.h       |   17 ++----------
- include/asm/setup.h         |    3 --
- include/asm/smpboot_hooks.h |   10 +++----
- kernel/apic.c               |    2 -
- kernel/bigsmp_32.c          |   12 --------
- kernel/es7000_32.c          |   32 ----------------------
- kernel/genapic_flat_64.c    |   16 -----------
- kernel/genx2apic_cluster.c  |    8 -----
- kernel/genx2apic_phys.c     |    8 -----
- kernel/genx2apic_uv_x.c     |    8 -----
- kernel/io_apic.c            |   11 -------
- kernel/numaq_32.c           |   62 --------------------------------------------
- kernel/probe_32.c           |    8 -----
- kernel/setup.c              |   11 -------
- kernel/smpboot.c            |   54 ++------------------------------------
- kernel/summit_32.c          |   12 --------
- 18 files changed, 13 insertions(+), 269 deletions(-)
-
--Andi
