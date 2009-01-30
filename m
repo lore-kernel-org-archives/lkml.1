@@ -1,153 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZA3OGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbZA3OOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbZA3OGm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 09:06:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZA3OGd
+	id S1756017AbZA3OOc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 09:14:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZA3OOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 09:06:33 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51753 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753048AbZA3OGc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 09:06:32 -0500
-Date: Fri, 30 Jan 2009 15:06:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [Linux 2.6.29-rc2] BUG: using smp_processor_id() in preemptible
-Message-ID: <20090130140620.GD17401@elte.hu>
-References: <8db1092f0901170058k325dc6ddtddb42deea1ddd098@mail.gmail.com> <200901272218.39608.rjw@sisk.pl> <20090129150701.GE6512@elte.hu> <200901292329.59121.rjw@sisk.pl>
+	Fri, 30 Jan 2009 09:14:23 -0500
+Received: from mail-bw0-f12.google.com ([209.85.218.12]:43999 "EHLO
+	mail-bw0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752560AbZA3OOW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 09:14:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=S33TxbeaoZht5rEIWYKIS8HUJmEGckoJ11VCUkBBqEVaMuigGdSvesKVwJ2T1fkwKQ
+         PQzUwd69tXZ/CBWuy5oxrtDzAGUx6RvPLnuGNNv0AyQYLNstKxEqicnZ2D6+wyFN9LwH
+         WG0N5oCErCZozYVwB6erKDcw9EB6VMuArLxUs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901292329.59121.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090130135411.GT627@ghostprotocols.net>
+References: <4982c159.190c660a.7424.ffffabf9@mx.google.com>
+	 <20090130123446.GQ627@ghostprotocols.net>
+	 <20090130123916.GR627@ghostprotocols.net>
+	 <c62985530901300455h55695931nb67936e0e5b54aeb@mail.gmail.com>
+	 <20090130132126.GS627@ghostprotocols.net>
+	 <20090130135411.GT627@ghostprotocols.net>
+Date: Fri, 30 Jan 2009 15:14:19 +0100
+Message-ID: <c62985530901300614g5f3e3235q21b03a53c2f6a153@mail.gmail.com>
+Subject: Re: [PATCH] tracing/ftrace: better manage the context info for events
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2009/1/30 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
+> Em Fri, Jan 30, 2009 at 11:21:26AM -0200, Arnaldo Carvalho de Melo escreveu:
+>> Em Fri, Jan 30, 2009 at 01:55:50PM +0100, Frédéric Weisbecker escreveu:
+>> > 2009/1/30 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
+>> > > Em Fri, Jan 30, 2009 at 10:34:46AM -0200, Arnaldo Carvalho de Melo escreveu:
+>> > >> Em Fri, Jan 30, 2009 at 12:59:05AM -0800, Frederic Weisbecker escreveu:
+>> > >> > Impact: make trace_event more convenient for tracers
+>> > >> >
+>> > >> > All tracers (for the moment) that use the struct trace_event want to have
+>> > >> > the context info printed before their own output: the pid/cmdline, cpu, and timestamp.
+>> > >> >
+>> > >> > But some other tracers that want to implement their trace_event callbacks will
+>> > >> > not necessary need these information or they may want to format them as they want.
+>> > >> >
+>> > >> > This patch adds a new default-enabled trace option: TRACE_ITER_CONTEXT_INFO
+>> > >> > When disabled through:
+>> > >> >
+>> > >> > echo nocontext-info > /debugfs/tracing/trace_options
+>> > >> >
+>> > >> > The pid, cpu and timestamps headers will not be printed.
+>> > >> >
+>> > >> > IE with the sched_switch tracer with context-info (default):
+>> > >> >
+>> > >> >             bash-2935  [001]   100.356561:   2935:120:S ==> [001]     0:140:R <idle>
+>> > >> >           <idle>-0     [000]   100.412804:      0:140:R   + [000]    11:115:S events/0
+>> > >> >           <idle>-0     [000]   100.412816:      0:140:R ==> [000]    11:115:R events/0
+>> > >> >         events/0-11    [000]   100.412829:     11:115:S ==> [000]     0:140:R <idle>
+>> > >> >
+>> > >> > Without context-info:
+>> > >> >
+>> > >> >   2935:120:S ==> [001]     0:140:R <idle>
+>> > >> >      0:140:R   + [000]    11:115:S events/0
+>> > >> >      0:140:R ==> [000]    11:115:R events/0
+>> > >> >     11:115:S ==> [000]     0:140:R <idle>
+>> > >> >
+>> > >> > A tracer can disable it at runtime by clearing the bit TRACE_ITER_CONTEXT_INFO in trace_flags.
+>> > >> >
+>> > >> > Moreover, two callbacks have been added inside trace_event:
+>> > >> > _ context_info() which let a tracer override the format of the context info
+>> > >> > _ lat_context_info() which do the same with the latency_trace file
+>> > >> >
+>> > >> > If they are not defined, the usual way of printing the context info will be used.
+>> > >>
+>> > >> Please wait a bit, I'm trying to use it and the first thing I notice was
+>> > >> that I need the trace_iterator in the context callback, to get the
+>> > >> timestamp.
+>> > >
+>> > > Sorry, false alarm, the iterator is there, I was trying to build the
+>> > > whole binary trace record in the trace_event->bin(), but its not
+>> > > possible, so I'll do it in two function calls context + trace.
+>> > >
+>> > > - Arnaldo
+>> > >
+>> >
+>> > Do you need the trace_iterator from one of your event print callback?
+>> > Such as in bin() ?
+>>
+>> Yes, I'm finding the callbacks a complicating factor, I think that we
+>> should have instead a flag in the struct trace_event and struct tracer
+>> telling that we don't need the context printed and the default routine
+>> exported to tracers.
+>>
+>> That way minimise change on the old tracers but allow new ones to use
+>> the default context to be called from trace_event->trace() and not from
+>> trace_event->bin().
+>>
+>> So, to summarize, for blktrace I would use:
+>>
+>> struct trace_event {
+>>       .flags  = DONT_PRINT_CONTEXT | OTHER_FUTURE_FLAGS,
+>>       .bin    = blktrace_print_bin,
+>>       .trace  = blktrace_print_trace,
+>> }
+>>
+>> blktrace_print_bin(iter)
+>> {
+>>       full control with access to iter to get timestamp, cpu, etc
+>> }
+>>
+>> blktrace_print_trace(iter)
+>> {
+>>       print_default_context()
+>>       print tracer specific stuff
+>> }
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> On Thursday 29 January 2009, Ingo Molnar wrote:
-> > 
-> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > 
-> > > On Tuesday 27 January 2009, Ingo Molnar wrote:
-> > > > 
-> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > > > 
-> > > > > > In fact whatever check you put in it's _always_ going to be 
-> > > > > > fundamentally more fragile than direct instrumentation: you cannot 
-> > > > > > possibly check all possible places that enable interrupts. (they could 
-> > > > > > be disabling interrupts as a _restore_irqs() sequence for example)
-> > > > > 
-> > > > > In this particular case, I'm not really interested in that.  What I'm 
-> > > > > interested in is which driver's ->suspend_late() or ->resume_early() (or 
-> > > > > the equivalents for sysdevs) has enabled interrupts, which is quite easy 
-> > > > > to check directly.
-> > > > 
-> > > > But this is exactly what it does - without any need for debug checks 
-> > > > spread around!
-> > > > 
-> > > > You'll get a _full stack dump_ from the very driver that is enabling 
-> > > > interrupts! You dont get a trace - you get a stack dump of the very place 
-> > > > that is buggy. It does not get any better than that.
-> > > 
-> > > I'm not going to argue.
-> > > 
-> > > Nevertheless, IMO something like the patch below should be sufficient to catch
-> > > these bugs.
-> > > 
-> > > Thanks,
-> > > Rafael
-> > > 
-> > > 
-> > > ---
-> > >  drivers/base/power/main.c |   12 ++++++++++++
-> > >  drivers/base/sys.c        |   21 ++++++++++++++++-----
-> > >  include/linux/pm.h        |   18 ++++++++++++++++++
-> > >  3 files changed, 46 insertions(+), 5 deletions(-)
-> > 
-> > hm, so now you sprinkle debug checks all around the code, instead of 
-> > putting in a single pair of:
-> > 
-> >     force_irqs_off_start();
-> >     ...
-> >     force_irqs_off_end();
-> 
-> And what debug options exactly would that require to be set to work?
 
-hm, if you worry about that aspect: we could make it seemlessly enabled if 
-PM_DEBUG is enabled.
+I prefer that too.
+It's makes it perhaps too much complex to have one callback for the
+line headers, and one other for the
+actual trace line.
 
-> > which would catch everything that your checks would catch - and it 
-> > would catch more.
-> 
-> Except that the checks trigger in specific places, so if a check 
-> triggers you know precisely where the bug happened regardless of what 
-> garbage is in the call trace.
+IMHO, having all of the current callbacks inside trace_event with the
+trace iterator as the only argument seems
+sufficient to manage the whole line.
 
-This argument is 100% mystery to me. Do you really not see the quality 
-difference between a stack trace generated _right at the buggy piece of 
-code_ and a warning later on that might (or might not) trigger?
+And embeeding this flag inside trace_event is better rather having it
+global, zapping questions like "should we restore it when we switch
+the tracer, has its value been changed by the user?".
+its value changed recently..?)
 
-Especially considering that your approach wont catch such bugs:
 
-   ...
-   spin_unlock_irq();
-   ...
-   spin_lock_irq();
-   ...
+>> Back to trying to use your patch to show the problems in the form of a
+>> working blktrace synthesizer to use with:
+>>
+>> cat /d/tracing/trace_pipe | blkparse -i -
+>
+> Definetely, as it is it doesn't caters to the blktrace binary printing
+> needs.
+>
+> The ->context info callback is not called if TRACE_ITER_BIN is selected,
+> it should, as doing:
+>
+>        if (trace_flags & TRACE_ITER_CONTEXT_INFO) {
+>                SEQ_PUT_FIELD_RET(s, entry->pid);
+>                SEQ_PUT_FIELD_RET(s, entry->cpu);
+>                SEQ_PUT_FIELD_RET(s, iter->ts);
+>        }
+>
+> is only the default context info for binary mode, what if I want to
+> provide a different context info?
+>
+> I'll try to rework your patch into something that is useful for my needs
+> and post here.
 
-Or such bugs:
 
-   local_irq_enable();
-   ...
-   local_irq_disable();
+Ok.
 
-Or such bugs:
 
-   spin_lock_irq_save(&lock1, flags);
-   ...
-           spin_lock_irqsave(&lock2, flags);
-           ...
-           spin_unlock_irq(&lock2);          /* accidental bug */
-   ...
-   spin_unlock_irq_restore(&lock1, flags);
-
-Such types of bugs might be especially hard to find in practice, if the 
-window where irqs are enabled is small. There is no guarantee at all that 
-accidental irq enabling survives a critical section - it can be 
-re-disabled in the normal flow of things very easily.
-
-And even if we are lucky and if the irqs stay enabled by the time the 
-callback returns, what if your warning flags some big and complex driver, 
-one line of which is buggy?
-
-If you had the choice, what would you prefer - a stack dump done at the 
-point of incident (pinpointing the driver, the subsystem and the buggy 
-function with its full callframe), or your "this driver is buggy" generic 
-warning with no specificity about where that bug might be?
-
-Stacktraces _at the point of incident_, and a _guaranteed_ facility that 
-_enforces_ that irqs are off during the whole resume cycle are just about 
-the highest quality debug info and debug protection we can get in such 
-situations.
-
-I really dont understand your points about this.
-
-	Ingo
+> - Arnaldo
+>
