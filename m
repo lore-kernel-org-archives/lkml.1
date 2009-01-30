@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbZA3Vz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbZA3V5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756898AbZA3Vz6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 16:55:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZA3Vzu
+	id S1756721AbZA3V5u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 16:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZA3V5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 16:55:50 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:24804 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755134AbZA3Vzt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 16:55:49 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=GKrjc5RPV9RFtj21u5fhdrq99pbO/ajmv8ePNzaMq/JxEiPsii1MrwTJCN9KYp7vkQ
-         ipFEyOIb0ta5yEWbSdZbR12qvqy2YXrhVYUbQnNsOgw+gFCVpWjeVn0CjDZRPB4DWEwt
-         9uMvgcwlB5axe1d/y5H3kFyT6/VVclO+kYcPo=
-MIME-Version: 1.0
-Date: Fri, 30 Jan 2009 22:55:47 +0100
-Message-ID: <4dcf7d360901301355l7ed26a5aob7ef6d79d9607b6b@mail.gmail.com>
-Subject: SSD and IO schedulers
-From: Lorenzo Allegrucci <l.allegrucci@gmail.com>
-To: jens.axboe@oracle.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 30 Jan 2009 16:57:42 -0500
+Received: from slimlogic.co.uk ([89.16.172.20]:54953 "EHLO slimlogic.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753934AbZA3V5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 16:57:42 -0500
+Subject: [GIT PULL] regulator fixes
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 21:57:38 +0000
+Message-Id: <1233352658.6774.33.camel@vega.slimlogic.co.uk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I was wondering how IO schedulers such as as-iosched, deadline and
-cfq behave on SSD
-(that have virtually no seek time), from a theoretical point of view.
-How do they affect
-performance on these devices?
-I heard that the noop scheduler is often chosen by owners of EeePcs
-(with a SSD unit).
-They report superior performance by using this (quite simple) scheduler.
-Are there any scientific benchmarks around?
+Hi Linus,
 
--- 
-Lorenzo
+Please pull the following two regulator fixes.
+
+Thanks
+
+Liam
+
+---
+
+The following changes since commit 33bfad54b58cf05cfe6678c3ec9235d4bc8db4c2:
+  Linus Torvalds (1):
+        Allow opportunistic merging of VM_CAN_NONLINEAR areas
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git for-linus
+
+Philipp Zabel (1):
+      regulator: move bq24022 init back to module_init instead of subsys_initcall
+
+Roel Kluin (1):
+      leds: Fix bounds checking of wm8350->pmic.led
+
+ drivers/regulator/bq24022.c          |    6 +-----
+ drivers/regulator/wm8350-regulator.c |    2 +-
+ 2 files changed, 2 insertions(+), 6 deletions(-)
+
+
