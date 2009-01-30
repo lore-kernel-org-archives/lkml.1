@@ -1,41 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755634AbZA3M6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755607AbZA3NAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755634AbZA3M6b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 07:58:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZA3M6W
+	id S1755607AbZA3NAk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 08:00:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZA3NAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 07:58:22 -0500
-Received: from brick.kernel.dk ([93.163.65.50]:18356 "EHLO kernel.dk"
+	Fri, 30 Jan 2009 08:00:31 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:55892 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752225AbZA3M6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 07:58:22 -0500
-Date: Fri, 30 Jan 2009 13:56:32 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH -v3] use per cpu data for single cpu ipi calls
-Message-ID: <20090130125632.GT30821@kernel.dk>
-References: <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain> <1233253380.4495.123.camel@laptop> <alpine.LFD.2.00.0901291030510.3123@localhost.localdomain> <1233254680.4495.126.camel@laptop> <20090130112310.GI30821@kernel.dk> <1233318733.4495.174.camel@laptop> <20090130123858.GQ30821@kernel.dk> <1233319731.4495.177.camel@laptop> <20090130125540.GS30821@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090130125540.GS30821@kernel.dk>
+	id S1752083AbZA3NAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 08:00:30 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: marching through all physical memory in software
+From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
+Reply-To: ncunningham-lkml@crca.org.au
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Doug Thompson <norsk5@yahoo.com>, linux-mm@kvack.org,
+       bluesmoke-devel@lists.sourceforge.net
+In-Reply-To: <20090130091304.GA9495@atrey.karlin.mff.cuni.cz>
+References: <497DD8E5.1040305@nortel.com>
+	 <20090126075957.69b64a2e@infradead.org> <497F5289.404@nortel.com>
+	 <m1vds0bj2j.fsf@fess.ebiederm.org> <20090128193813.GD1222@ucw.cz>
+	 <1233306324.11332.11.camel@nigel-laptop>
+	 <20090130091304.GA9495@atrey.karlin.mff.cuni.cz>
+Content-Type: text/plain
+Date: Sat, 31 Jan 2009 00:00:51 +1100
+Message-Id: <1233320451.11332.13.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 30 2009, Jens Axboe wrote:
-> Drop the .. and it should work. Don't ask me why :-)
+Hi again.
 
-On second thought, probably because XXX.. will mean from XXX to HEAD,
-and HEAD doesn't include the edited part since it isn't committed.
+On Fri, 2009-01-30 at 10:13 +0100, Pavel Machek wrote:
+> > Hi.
+> > 
+> > On Wed, 2009-01-28 at 20:38 +0100, Pavel Machek wrote:
+> > > You can do the scrubbing today by echo reboot > /sys/power/disk; echo
+> > > disk > /sys/power/state :-)... or using uswsusp APIs.
+> > 
+> > That won't work. The RAM retains its contents across a reboot, and even
+> > for a little while after powering off.
+> 
+> Yes, and the original goal was to rewrite all the memory with same
+> contents so that parity errors don't accumulate. SO scrubbing here !=
+> trying to clear it.
 
--- 
-Jens Axboe
+Sorry - I think I missed something.
+
+AFAICS, hibernating is going to be a noop as far as doing anything to
+memory that's not touched by the process of hibernating goes. It won't
+clear it or scrub it or anything else.
+
+Regards,
+
+Nigel
 
