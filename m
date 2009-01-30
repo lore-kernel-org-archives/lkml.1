@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbZA3N4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbZA3OCS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbZA3N4s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 08:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753055AbZA3N4k
+	id S1755646AbZA3OCS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 09:02:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZA3OCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 08:56:40 -0500
-Received: from sovereign.computergmbh.de ([85.214.69.204]:40141 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753053AbZA3N4j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 08:56:39 -0500
-Date: Fri, 30 Jan 2009 14:56:37 +0100 (CET)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Nathanael Hoyle <nhoyle@hoyletech.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: scheduler nice 19 versus 'idle' behavior / static low-priority
- scheduling
-In-Reply-To: <1233303396.17301.30.camel@localhost>
-Message-ID: <alpine.LSU.2.00.0901301453190.29805@fbirervta.pbzchgretzou.qr>
-References: <1233294584.28741.2.camel@localhost>  <alpine.LSU.2.00.0901300710200.999@fbirervta.pbzchgretzou.qr>  <1233297635.17301.11.camel@localhost>  <alpine.LSU.2.00.0901300818580.28427@fbirervta.pbzchgretzou.qr>  <1233302349.17301.27.camel@localhost>
- <1233303396.17301.30.camel@localhost>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 Jan 2009 09:02:09 -0500
+Received: from hera.kernel.org ([140.211.167.34]:36943 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753090AbZA3OCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 09:02:08 -0500
+Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+In-Reply-To: <20090127233159.GA26403@elte.hu>
+References: <20090127222825.GA27097@elte.hu>
+	 <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain>
+	 <20090127233159.GA26403@elte.hu>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 19:31:32 +0530
+Message-Id: <1233324092.3670.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Ingo,
 
-On Friday 2009-01-30 09:16, Nathanael Hoyle wrote:
-><snipped old version, because of a fixed goof, and this has better
->formatting for mail client>
->
->extern char **environ;
->[...]
->  if(argc==2) {
->    if(execve(argv[1], NULL, environ) == -1) {
->      perror("Failed to execve target!");
->    }
->  } else {
->    if(execve(argv[1], argv+1, environ) == -1) {
->      perror("Failed to execve target!");
->    }
->  }
+On Wed, 2009-01-28 at 00:31 +0100, Ingo Molnar wrote:
 
-Are you sure your first execve even works? I would have used
+> Jaswider, would you mind re-doing the tree filtering out the CONFIG_* 
+> changes? I'll go over the end result once more to make sure it has no 
+> changes that make the code look worse.
+> 
 
-   if (execvp(argv[1], &argv[1]) < 0)
-	...
+Sure, why not ;-)
 
-just so (a) I do not have to deal with the ugly 'extern char **environ'
-[such should have been in a libc header imho] or use
-int main(int argc, char **argv, char **envp); (b) execvp so that
-it looks through $PATH, just as /bin/su (resp. the shell it starts) would do.
+But in your -tip tree you already have these patches. Are you going to
+revert them or should I make patches for linus tree.
+
+--
+JSR
+
