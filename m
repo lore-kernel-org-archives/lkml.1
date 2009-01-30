@@ -1,160 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZA3Ft4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZA3Fy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbZA3Ft4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 00:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZA3Fts
+	id S1753110AbZA3Fy7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 00:54:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbZA3Fyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 00:49:48 -0500
-Received: from mout.perfora.net ([74.208.4.195]:60399 "EHLO mout.perfora.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751025AbZA3Fts (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 00:49:48 -0500
-Subject: scheduler nice 19 versus 'idle' behavior / static low-priority
-	scheduling
-From: Nathanael Hoyle <nhoyle@hoyletech.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 00:49:44 -0500
-Message-Id: <1233294584.28741.2.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 30 Jan 2009 00:54:50 -0500
+Received: from rv-out-0506.google.com ([209.85.198.232]:20094 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751111AbZA3Fyt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 00:54:49 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=s2Rehyes3JyreCWVFUzmkBAgrFsNn1MuKZU7sYpVT9so4yaD/yS1xDqcUS3RWgxBQc
+         l17S1JvK/dgS7PZPGVgWSmTNxLx9xC/5a8iYsgxr03QPx6XqeHJYEzLk/hO8gYQD7pzy
+         jLypdlxjQ5QG1pdeU7evNu8aazSX3C2oojEI8=
+MIME-Version: 1.0
+In-Reply-To: <1233138229-12489-7-git-send-email-rydberg@euromail.se>
+References: <1233138229-12489-1-git-send-email-rydberg@euromail.se>
+	 <1233138229-12489-2-git-send-email-rydberg@euromail.se>
+	 <1233138229-12489-3-git-send-email-rydberg@euromail.se>
+	 <1233138229-12489-4-git-send-email-rydberg@euromail.se>
+	 <1233138229-12489-5-git-send-email-rydberg@euromail.se>
+	 <1233138229-12489-6-git-send-email-rydberg@euromail.se>
+	 <1233138229-12489-7-git-send-email-rydberg@euromail.se>
+Date: Fri, 30 Jan 2009 14:54:48 +0900
+Message-ID: <4e1455be0901292154k20dd6f47i643d274fe52a7e16@mail.gmail.com>
+Subject: Re: [PATCH 6/6] input: Add a detailed multi-touch finger data report 
+	protocol (rev2)
+From: Joon Young Shim <dofmind@gmail.com>
+To: Henrik Rydberg <rydberg@euromail.se>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/bu4BOTbrVpToxVXN1+JS1p2CAWByB1h1YQ3w
- pp3OBwe3RLmW73CEqbfef4SIf+QfDi5+VXHTpqRMzznTzU/4Sc
- 2Y3wS7EeJjCTogc9fk4WLDbY/W20Xe9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All (though perhaps of special interest to a few such as Ingo, Peter,
-and David),
-
-I am posting regarding an issue I have been dealing with recently,
-though this post is not really a request for troubleshooting.  Instead
-I'd like to ramble for just a moment about my understanding of the
-current 2.6 scheduler, describe the behavior I'm seeing, and discuss a
-couple of the architectural solutions I've considered, as well as pose
-the question whether anyone else views this as a general-case problem
-worthy of being addressed, or whether this is something that gets
-ignored by and large. It is my hope that this is not too off-topic for
-this group.
-
-First, let me explain the issue I encountered. I am running a relatively
-powerful system for a home desktop, an Intel Core 2 Quad Q9450 with 4 GB
-of RAM. If it matters for the discussion, it also has 4 drives in an
-mdraid raid-5 array, and decent I/O throughput.  In normal circumstances
-it is quite responsive as a desktop (kde 3.5.4 atm).  It is further a
-very carefully configured kernel build, including only those things
-which I truly need, and excluding everything else. I often use it to
-watch DVD movies, and have had no trouble with performance in general.
-
-Recently I installed the Folding@Home client, which many of you may be
-familiar with, intended to utilize spare CPU cycles to perform protein
-folding simulations in order to further medical research.  It is not a
-multi-threaded client at this point, so it simply runs four instances on
-my system, since it has four cores.  It is configured to run at
-nice-level 19.
-
-Because it is heavily optimized, and needs little external data to
-perform its work, it spends almost all of its time cpu-bound, with
-little to no io-wait or blocking on network calls, etc.  I had been
-using it for about a week with no real difficulty until I went to watch
-another DVD and found that the video was slightly stuttery/jerky so long
-as foldingathome was running in the background.  Once I shut it down,
-the video playback resumed its normal smooth form.
-
-There are a couple simple solutions to this:
-
-Substantially boosting the process priority of the mplayer process also
-returns the video to smooth playback, but this is undesirable in that it
-requires manual intervention each time, and root privileges. It fails to
-achieve what I want, which is for the foldingathome computation to not
-interfere with anything else I may try to do. I want my compiles to be
-as *exactly* as fast as they were without it as possible, etc.
-
-Stopping foldingathome before I do something performance sensitive is
-also possible, but again smacks of workaround rather than solution. The
-scheduler should be able to resolve the goal without me stopping the
-other work.
-
-I have done a bit of research on how the kernel scheduler works, and why
-I am seeing this behavior.  I had previously, apparently ignorantly,
-equated 'nice 19' with being akin to Microsoft Windows' 'idle' thread
-priority, and assumed it would never steal CPU cycles from a process
-with a higher(lower, depending on nomenclature) priority.
-
-It is my current understanding that when mplayer is running (also
-typically CPU bound, occassionally it becomes I/O bound briefly), one of
-the instances of foldingathome, which is sharing the CPU (core) with
-mplayer starts getting starved, and the scheduler dynamically rewards it
-with up to four additional priority levels based on the time remaining
-in its quantum which it was not allowed to execute for.
-
-At this point, when mplayer blocks for just a moment, say to page in the
-data for the next video frame, foldingathome gets scheduled again, and
-gets to run for at least MIN_TIMESLICE (plus, due to the lack of kernel
-pre-emptibility, possibly longer).  It appears that it takes too long to
-switch back to mplayer and the result is the stuttering picture I
-observe.
-
-I have tried adjusting CONFIG_HZ_xxx from 300 (where I had it) to 1000,
-and noted some improvement, but not complete remedy.
-
-In my prior searching on this, I found only one poster with the same
-essential problem (from 2004, and regarding distributed.net in the
-background, which is essentially the same problem).  The only technical
-answer given him was to perhaps try tuning the MIN_TIMESLICE value
-downward.  It is my understanding that this parameter is relatively
-important in order to avoid cache thrashing, and I do not wish to alter
-it and have not so far.
-
-Given all of the above, I am unconvinced that I see a good overall
-solution.  However, one thing that seems to me a glaring weakness of the
-scheduler is that only realtime priority threads can be given static
-priorities.  What I really want for foldingathome, and similar tasks, is
-static, low priority. Something that would not boost up, no matter how
-well behaved it was or how much it had been starved, or how close to the
-same memory segments the needed code was.
-
-I think that there are probably (at least) three approaches here. One I
-consider unnacceptable at the outset, which is to alter the semantics of
-nice 19 such that it does not boost. Since this would break existing
-assumptions and code, I do not think it is feasible.
-
-Secondly, one could add additional nice levels which would correspond to
-new static priorities below the bottom of the current user ones.  This
-should not interfere with the O(1) scheduler implementation as I
-understand it, because current I believe 5 32-bit words are used to flag
-the queue usage, and 140 priorities leaves 20 more bits available for
-new priorities. This has its own problems however, in that existing
-tools which examine process priorities could break on priorities outside
-the known 'nice' range of -20 to 19.
-
-Finally, new scheduling classes could be introduced, together with new
-system calls so that applications could select a different scheduling
-class at startup. In this way, applications could volunteer to use a
-scheduling class which never received dynamic 'reward' boosts that would
-raise their priorities.  I believe Solaris has done this since Solaris
-9, with the 'FX' scheduling class.
-
-Stepping back:
-
-1) Is my problem 'expected' based on others' understanding of the
-current design of the scheduler, or do I have a one-off problem to
-troubleshoot here?
-
-2) Am I overlooking obvious alternative (but clean) fixes?
-
-3) Does anyone else see the need for static, but low process priorities?
-
-4) What is the view of introducing a new scheduler class to handle this?
-
-I welcome any further feedback on this.  I will try to follow replies
-on-list, but would appreciate being CC'd off-list as well.  Please make
-the obvious substitution to my email address in order to bypass the
-spam-killer.
-
-Thanks,
-Nathanael Hoyle
+2009/1/28 Henrik Rydberg <rydberg@euromail.se>:
+> In order to utilize the full power of the new multi-touch devices, a
+> way to report detailed finger data to user space is needed. This patch
+> adds a multi-touch (MT) protocol which allows drivers to report details
+> for an arbitrary number of fingers.
+>
+> The driver sends a SYN_MT_REPORT event via the input_mt_sync() function
+> when a complete finger has been reported.
+>
+> In order to stay compatible with existing applications, the data
+> reported in a finger packet must not be recognized as single-touch
+> events. In addition, all finger data must bypass input filtering,
+> since subsequent events of the same type refer to different fingers.
+>
+> A set of ABS_MT events with the desired properties are defined. The
+> events are divided into categories, to allow for partial implementation.
+> The minimum set consists of ABS_MT_TOUCH_MAJOR, ABS_MT_POSITION_X and
+> ABS_MT_POSITION_Y, which allows for multiple fingers to be tracked.
+> If the device supports it, the ABS_MT_WIDTH_MAJOR may be used to provide
+> the size of the approaching finger. Anisotropy and direction may be
+> specified with ABS_MT_TOUCH_MINOR, ABS_MT_WIDTH_MINOR and
+> ABS_MT_ORIENTATION. Devices with more granular information may specify
+> general shapes as blobs, i.e., as a sequence of rectangular shapes
+> grouped together by a ABS_MT_BLOB_ID. Finally, the ABS_MT_TOOL_TYPE
+> may be used to specify whether the touching tool is a finger or a pen.
 
 
+Hi Henrik,
+
+I want to know how calculates touch coordinates at user space using a
+set of ABS_MT.
+If i do dual touch, can i get correct two coordinates through ABS_MT report?
+
+
+Joonyoung
