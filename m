@@ -1,68 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZA3OWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756135AbZA3OYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbZA3OWw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 09:22:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbZA3OWj
+	id S1756135AbZA3OYU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 09:24:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZA3OYH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 09:22:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41946 "EHLO mx3.mail.elte.hu"
+	Fri, 30 Jan 2009 09:24:07 -0500
+Received: from comal.ext.ti.com ([198.47.26.152]:45167 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756291AbZA3OWh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 09:22:37 -0500
-Date: Fri, 30 Jan 2009 15:22:22 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: seperate
-	default_send_IPI_mask_sequence/allbutself with logical
-Message-ID: <20090130142222.GC22848@elte.hu>
-References: <49827414.2020908@kernel.org> <498274A5.8010805@kernel.org>
+	id S1751916AbZA3OYG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 09:24:06 -0500
+From: "Woodruff, Richard" <r-woodruff2@ti.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Paul Walmsley <paul@pwsan.com>
+CC: "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>
+Date: Fri, 30 Jan 2009 08:23:49 -0600
+Subject: RE: [PATCH E 08/14] OMAP clock: move rate recalc, propagation code
+ up to plat-omap/clock.c
+Thread-Topic: [PATCH E 08/14] OMAP clock: move rate recalc, propagation code
+ up to plat-omap/clock.c
+Thread-Index: AcmCuDqDJ3mwXH60TAqWEcbbo5mVWgAK9/mw
+Message-ID: <13B9B4C6EF24D648824FF11BE89671620376DEC116@dlee02.ent.ti.com>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain>
+ <20090128192748.29333.5856.stgit@localhost.localdomain>
+ <20090129174153.GH18233@n2100.arm.linux.org.uk>
+ <alpine.DEB.2.00.0901300135560.26985@utopia.booyaka.com>
+ <20090130085249.GB6864@n2100.arm.linux.org.uk>
+In-Reply-To: <20090130085249.GB6864@n2100.arm.linux.org.uk>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <498274A5.8010805@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+> There's one bug that your version highlights in mine - the virtual mpu
+> clock in omap1 touches the DPLL and repropagates that rate.  I've
+> removed that repropagation, so that needs fixing.
+>
+> However, this raises a question: why is the virtual mpu clock touching
+> some other part of the clock tree.  I wonder whether this should be
+> handled a different way, though the first thing that needs answering is
+> why we have this alias for 'arm_ck' ?
 
-> 
-> Impact: 32bit should logical version
-> 
-> there are two version: for default_send_IPI_mask_sequence/allbutself
-> one in ipi.h and one in ipi.c for 32bit
-> 
-> it seems .h version overwrite ipi.c for a while.
-> 
-> restore it so 32 bit could use it's old logical version.
-> also remove dupicated functions in .c
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
-> ---
->  arch/x86/include/asm/ipi.h        |   71 ++++++++++++++++---
->  arch/x86/kernel/bigsmp_32.c       |    8 --
->  arch/x86/kernel/es7000_32.c       |    4 -
->  arch/x86/kernel/genapic_flat_64.c |    6 -
->  arch/x86/kernel/ipi.c             |  139 --------------------------------------
->  arch/x86/kernel/numaq_32.c        |    8 --
->  arch/x86/kernel/probe_32.c        |    4 -
->  arch/x86/kernel/summit_32.c       |    6 -
->  8 files changed, 77 insertions(+), 169 deletions(-)
+At one point in time the virtual clock allowed control for a set of clocks with some dependencies.  The mpu alias provided a convenient control point.
 
-Applied to tip/x86/apic, thanks!
+Tukka did original omap1 in this format. I forget its exact meaning.
 
-	Ingo
+The original omap2 code had behavior:
+        - mpu-dpll had a clock node which allowed direct mpu speed control
+        - mpu-virt-clock allowed switching between sets that have fixed ratio dependency which were pegged to current mpu-dll speed.
+                * This way round_rate would allow you to discover all valid OPPs.
+
+The first pass OMAP3 code TI did followed omap2 but it wasn't strongly bound by ratio-sets given the multiple async-dplls. Paul has taken code in a bit different direction.  He can comment on current behavior here.
+
+Regards,
+Richard W.
+
