@@ -1,55 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZA3GYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbZA3G3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbZA3GYU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 01:24:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZA3GYM
+	id S1752694AbZA3G3n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 01:29:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZA3G3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 01:24:12 -0500
-Received: from mail.gmx.net ([213.165.64.20]:55227 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751346AbZA3GYL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 01:24:11 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+X1F9Khw6XOLgRLhKsbBNge0Vk7Jpt78S9LxYAIx
-	JVJ9UhFdSGYQ0X
-Subject: Re: scheduler nice 19 versus 'idle' behavior / static low-priority
-	scheduling
-From: Mike Galbraith <efault@gmx.de>
-To: Nathanael Hoyle <nhoyle@hoyletech.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1233294584.28741.2.camel@localhost>
-References: <1233294584.28741.2.camel@localhost>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 07:24:07 +0100
-Message-Id: <1233296647.6071.15.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.62
+	Fri, 30 Jan 2009 01:29:34 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:39077 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751092AbZA3G3d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 01:29:33 -0500
+Date: Thu, 29 Jan 2009 23:29:31 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org,
+       =?ISO-8859-15?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH D 01/11] OMAP: Add clk_get_parent() for OMAP2/3
+In-Reply-To: <20090129110043.GE12627@n2100.arm.linux.org.uk>
+Message-ID: <alpine.DEB.2.00.0901292327090.26985@utopia.booyaka.com>
+References: <20090128191638.16688.33452.stgit@localhost.localdomain> <20090128191807.16688.91255.stgit@localhost.localdomain> <20090129110043.GE12627@n2100.arm.linux.org.uk>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="155748971-856422142-1233296971=:26985"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 00:49 -0500, Nathanael Hoyle wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> Recently I installed the Folding@Home client, which many of you may be
-> familiar with, intended to utilize spare CPU cycles to perform protein
-> folding simulations in order to further medical research.  It is not a
-> multi-threaded client at this point, so it simply runs four instances on
-> my system, since it has four cores.  It is configured to run at
-> nice-level 19.
-> 
-> Because it is heavily optimized, and needs little external data to
-> perform its work, it spends almost all of its time cpu-bound, with
-> little to no io-wait or blocking on network calls, etc.  I had been
-> using it for about a week with no real difficulty until I went to watch
-> another DVD and found that the video was slightly stuttery/jerky so long
-> as foldingathome was running in the background.  Once I shut it down,
-> the video playback resumed its normal smooth form.
+--155748971-856422142-1233296971=:26985
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Sounds like a problem was recently fixed.  Can you try 2.6.29-rc3 or
-2.6.28.2?
+On Thu, 29 Jan 2009, Russell King - ARM Linux wrote:
 
-	-Mike
+> On Wed, Jan 28, 2009 at 12:18:16PM -0700, Paul Walmsley wrote:
+> > From: Mans Rullgard <mans@mansr.com>
+> >=20
+> > This makes clk_get_parent() work on OMAP2/3.
+>=20
+> This is clearly something that the generic code should be doing.
+> It's not something specific to OMAP2/3.  Please move it to
+> arch/arm/plat-omap/clock.c
 
+Done; revised patch below.
+
+- Paul
+
+
+From: Mans Rullgard <mans@mansr.com>
+Date: Thu Jan 29 23:26:35 2009 -0700
+
+    OMAP: Add clk_get_parent() for OMAP1/2/3
+   =20
+    This makes clk_get_parent() work on OMAP.
+
+    linux-omap source commit is efd65273726b12e42c7225bd1703e5252bdb46c0.
+   =20
+    Signed-off-by: M=E5ns Rullg=E5rd <mans@mansr.com>
+    Signed-off-by: Tony Lindgren <tony@atomide.com>
+    [paul@pwsan.com: per rmk, made this function available on all OMAPs
+     and fixated its implementation]
+    Signed-off-by: Paul Walmsley <paul@pwsan.com>
+
+diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
+index be6aab9..eb59874 100644
+--- a/arch/arm/plat-omap/clock.c
++++ b/arch/arm/plat-omap/clock.c
+@@ -210,18 +210,7 @@ EXPORT_SYMBOL(clk_set_parent);
+=20
+ struct clk *clk_get_parent(struct clk *clk)
+ {
+-=09unsigned long flags;
+-=09struct clk * ret =3D NULL;
+-
+-=09if (clk =3D=3D NULL || IS_ERR(clk))
+-=09=09return ret;
+-
+-=09spin_lock_irqsave(&clockfw_lock, flags);
+-=09if (arch_clock->clk_get_parent)
+-=09=09ret =3D arch_clock->clk_get_parent(clk);
+-=09spin_unlock_irqrestore(&clockfw_lock, flags);
+-
+-=09return ret;
++=09return clk->parent;
+ }
+ EXPORT_SYMBOL(clk_get_parent);
+=20
+diff --git a/arch/arm/plat-omap/include/mach/clock.h b/arch/arm/plat-omap/i=
+nclude/mach/clock.h
+index f6adf39..47c9a11 100644
+--- a/arch/arm/plat-omap/include/mach/clock.h
++++ b/arch/arm/plat-omap/include/mach/clock.h
+@@ -104,7 +104,6 @@ struct clk_functions {
+ =09long=09=09(*clk_round_rate)(struct clk *clk, unsigned long rate);
+ =09int=09=09(*clk_set_rate)(struct clk *clk, unsigned long rate);
+ =09int=09=09(*clk_set_parent)(struct clk *clk, struct clk *parent);
+-=09struct clk *=09(*clk_get_parent)(struct clk *clk);
+ =09void=09=09(*clk_allow_idle)(struct clk *clk);
+ =09void=09=09(*clk_deny_idle)(struct clk *clk);
+ =09void=09=09(*clk_disable_unused)(struct clk *clk);
+--155748971-856422142-1233296971=:26985--
