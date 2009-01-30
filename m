@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755569AbZA3SeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755614AbZA3Sfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755569AbZA3SeQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 13:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZA3SeB
+	id S1755614AbZA3Sfb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 13:35:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZA3SfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 13:34:01 -0500
-Received: from accolon.hansenpartnership.com ([76.243.235.52]:39535 "EHLO
+	Fri, 30 Jan 2009 13:35:23 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:39540 "EHLO
 	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752139AbZA3SeA (ORCPT
+	by vger.kernel.org with ESMTP id S1751601AbZA3SfX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 13:34:00 -0500
-Subject: [PATCH] voyager: remove duplicate cpu_callin/out_map symbols
+	Fri, 30 Jan 2009 13:35:23 -0500
+Subject: [PATCH] voyager: fix up for moving the generic smp call func to
+	pointers
 From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: Mike Travis <travis@sgi.com>
 Cc: linux-kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain
-Date: Fri, 30 Jan 2009 18:34:01 +0000
-Message-Id: <1233340441.3248.43.camel@localhost.localdomain>
+Date: Fri, 30 Jan 2009 18:35:24 +0000
+Message-Id: <1233340524.3248.45.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
@@ -24,51 +25,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit c2d1cec1c77f7714672c1efeae075424c929e0d5
+commit e7986739a76cde5079da08809d8bbc6878387ae0
 Author: Mike Travis <travis@sgi.com>
-Date:   Sun Jan 4 05:18:03 2009 -0800
+Date:   Tue Dec 16 17:33:52 2008 -0800
 
-    x86: cleanup remaining cpumask_t ops in smpboot code
+    x86 smp: modify send_IPI_mask interface to accept cpumask_t pointers
 
-Moved the cpu_callin_map and cpu_callout_map symbols from smp boot
-local code to cpu/common.c.  However, it forgot to move them for
-voyager leading to duplicate symbols in the voyager build.  Fix this by
-making voyager use the common symbols.
+Changed all the IPI ops to take pointers, but didn't update voyager,
+which is now broken.  Make the changes in voyager as well.
 
 Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 ---
- arch/x86/mach-voyager/voyager_smp.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ arch/x86/mach-voyager/voyager_smp.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
-index dcc07d5..b1b1bd3 100644
+index b1b1bd3..7ffcdee 100644
 --- a/arch/x86/mach-voyager/voyager_smp.c
 +++ b/arch/x86/mach-voyager/voyager_smp.c
-@@ -211,8 +211,6 @@ static __u32 cpu_booted_map;
- static cpumask_t smp_commenced_mask = CPU_MASK_NONE;
+@@ -81,7 +81,7 @@ static void enable_local_vic_irq(unsigned int irq);
+ static void disable_local_vic_irq(unsigned int irq);
+ static void before_handle_vic_irq(unsigned int irq);
+ static void after_handle_vic_irq(unsigned int irq);
+-static void set_vic_irq_affinity(unsigned int irq, cpumask_t mask);
++static void set_vic_irq_affinity(unsigned int irq, const struct cpumask *mask);
+ static void ack_vic_irq(unsigned int irq);
+ static void vic_enable_cpi(void);
+ static void do_boot_cpu(__u8 cpuid);
+@@ -1597,16 +1597,16 @@ static void after_handle_vic_irq(unsigned int irq)
+  * change the mask and then do an interrupt enable CPI to re-enable on
+  * the selected processors */
  
- /* This is for the new dynamic CPU boot code */
--cpumask_t cpu_callin_map = CPU_MASK_NONE;
--cpumask_t cpu_callout_map = CPU_MASK_NONE;
+-void set_vic_irq_affinity(unsigned int irq, cpumask_t mask)
++void set_vic_irq_affinity(unsigned int irq, const struct cpumask *mask)
+ {
+ 	/* Only extended processors handle interrupts */
+ 	unsigned long real_mask;
+ 	unsigned long irq_mask = 1 << irq;
+ 	int cpu;
  
- /* The per processor IRQ masks (these are usually kept in sync) */
- static __u16 vic_irq_mask[NR_CPUS] __cacheline_aligned;
-@@ -1750,10 +1748,11 @@ static void __cpuinit voyager_smp_prepare_boot_cpu(void)
- 	init_gdt(smp_processor_id());
- 	switch_to_new_gdt();
+-	real_mask = cpus_addr(mask)[0] & voyager_extended_vic_processors;
++	real_mask = cpus_addr(*mask)[0] & voyager_extended_vic_processors;
  
--	cpu_set(smp_processor_id(), cpu_online_map);
--	cpu_set(smp_processor_id(), cpu_callout_map);
--	cpu_set(smp_processor_id(), cpu_possible_map);
--	cpu_set(smp_processor_id(), cpu_present_map);
-+	cpu_online_map = cpumask_of_cpu(smp_processor_id());
-+	cpu_callout_map = cpumask_of_cpu(smp_processor_id());
-+	cpu_callin_map = CPU_MASK_NONE;
-+	cpu_present_map = cpumask_of_cpu(smp_processor_id());
-+
+-	if (cpus_addr(mask)[0] == 0)
++	if (cpus_addr(*mask)[0] == 0)
+ 		/* can't have no CPUs to accept the interrupt -- extremely
+ 		 * bad things will happen */
+ 		return;
+@@ -1782,9 +1782,9 @@ void __init smp_setup_processor_id(void)
+ 	x86_write_percpu(cpu_number, hard_smp_processor_id());
  }
  
- static int __cpuinit voyager_cpu_up(unsigned int cpu)
+-static void voyager_send_call_func(cpumask_t callmask)
++static void voyager_send_call_func(const struct cpumask *callmask)
+ {
+-	__u32 mask = cpus_addr(callmask)[0] & ~(1 << smp_processor_id());
++	__u32 mask = cpus_addr(*callmask)[0] & ~(1 << smp_processor_id());
+ 	send_CPI(mask, VIC_CALL_FUNCTION_CPI);
+ }
+ 
 -- 
 1.5.6.6
 
