@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbZA3WzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZA3Wzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbZA3WzK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 17:55:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZA3Wy5
+	id S1757329AbZA3Wzp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 17:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756826AbZA3WzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 17:54:57 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:54240 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752361AbZA3Wy5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 17:54:57 -0500
-Date: Fri, 30 Jan 2009 23:56:42 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+	Fri, 30 Jan 2009 17:55:09 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50621 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756673AbZA3WzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 17:55:08 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Parag Warudkar <parag.lkml@gmail.com>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+Date: Fri, 30 Jan 2009 23:54:26 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Matt Carlson <mcarlson@broadcom.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kbuild: drop check for CONFIG_ in headers_check
-Message-ID: <20090130225642.GA17950@uranus.ravnborg.org>
-References: <1233342254.21493.8.camel@localhost.localdomain> <20090130192627.GA32705@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901300110.56533.rjw@sisk.pl> <alpine.DEB.2.00.0901301730230.6574@parag-desktop>
+In-Reply-To: <alpine.DEB.2.00.0901301730230.6574@parag-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090130192627.GA32705@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200901302354.27497.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The check for references to CONFIG_ symbols in exported headers turned
-out to be too agressive with the current state of affairs.
-After the work of Jaswinder to clean up all relevant cases we are down
-to almost pure noise.
+On Friday 30 January 2009, Parag Warudkar wrote:
+> 
+> On Fri, 30 Jan 2009, Rafael J. Wysocki wrote:
+> 
+> > 
+> > I still am interested if it makes any difference for Parag.
+> 
+> No difference - tg3 is still dead after resume.
 
-So lets drop the check for now - we can always add it back later
-should our headers be ready for that.
+Thanks for testing.
 
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
-Hi Ingo.
-Please include this in the  tip/core/header-fixes brach
-as this is the natural path towards mainline.
+Well, I'm not sure if tg3 is at fault, really.
 
-Jaswinder - thanks for your effort chasing all these warnings!
+What happens if you unload tg3 before suspend and load it back after the
+resume?
 
-	Sam
-
-diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
-index db30fac..56f90a4 100644
---- a/scripts/headers_check.pl
-+++ b/scripts/headers_check.pl
-@@ -38,7 +38,7 @@ foreach my $file (@files) {
- 		&check_asm_types();
- 		&check_sizetypes();
- 		&check_prototypes();
--		&check_config();
-+		# Dropped for now. Too much noise &check_config();
- 	}
- 	close FH;
- }
+Rafael
