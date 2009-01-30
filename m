@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZA3QFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZA3QQe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755255AbZA3QFj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 11:05:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZA3QFZ
+	id S1753354AbZA3QQe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 11:16:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZA3QQ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 11:05:25 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:49005 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754303AbZA3QFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 11:05:23 -0500
-Date: Fri, 30 Jan 2009 11:04:31 -0500
-From: Dave Jones <davej@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+	Fri, 30 Jan 2009 11:16:27 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36943 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbZA3QQ1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 11:16:27 -0500
+Subject: Re: [PATCH -v3] use per cpu data for single cpu ipi calls
+From: Peter Zijlstra <peterz@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
-       Mike Travis <travis@sgi.com>
-Subject: Re: [PATCH] x86/powernow: fix cpus_allowed brokage when acpi=off
-Message-ID: <20090130160431.GA12130@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Ingo Molnar <mingo@elte.hu>, Rusty Russell <rusty@rustcorp.com.au>,
-	Yinghai Lu <yinghai@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"Langsdorf, Mark" <mark.langsdorf@amd.com>,
-	Mike Travis <travis@sgi.com>
-References: <498136FC.2020206@kernel.org> <200901301210.48352.rusty@rustcorp.com.au> <20090130151701.GD27549@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090130151701.GD27549@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <alpine.LFD.2.00.0901300800350.3150@localhost.localdomain>
+References: <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com>
+	 <20090128173039.cbc29e81.akpm@linux-foundation.org>
+	 <1233218954.7835.11.camel@twins>
+	 <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain>
+	 <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com>
+	 <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
+	 <1233253380.4495.123.camel@laptop>
+	 <alpine.LFD.2.00.0901291030510.3123@localhost.localdomain>
+	 <1233254680.4495.126.camel@laptop>  <20090130112310.GI30821@kernel.dk>
+	 <1233318733.4495.174.camel@laptop>
+	 <alpine.LFD.2.00.0901300800350.3150@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 17:16:10 +0100
+Message-Id: <1233332170.4495.200.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 30, 2009 at 04:17:01PM +0100, Ingo Molnar wrote:
- > >    Yinghai, as far as I can tell your other fixes are independent (and
- > > were a problem before this commit, yes?).  Can you re-submit them on top
- > > of this patch (which is for Ingo, but against latest Linus).
- > > 
- > > Subject: cpumask: fix powernow-k8: partial revert of 2fdf66b491ac706657946442789ec644cc317e1a
- > > 
- > > Impact: fix powernow-k8 when acpi=off (or other error).
- > > 
- > > There was a spurious change introduced into powernow-k8 in this patch:
- > > the cause if that we try to "restore" the cpus_allowed we never saved.
- > > 
- > > See lkml "[PATCH] x86/powernow: fix cpus_allowed brokage when
- > > acpi=off" from Yinghai for the bug report.
- > > 
- > > Cc: Mike Travis <travis@sgi.com>
- > > Cc: Yinghai Lu <yinghai@kernel.org>
- > > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
- > 
- > applied to tip/x86/urgent, thanks guys!
- > 
- > Dave, is it fine if we send the fix to Linus via this route - or would you 
- > like to do it yourself?
+On Fri, 2009-01-30 at 08:04 -0800, Linus Torvalds wrote:
 
-I thought this was only in your tree, so I was letting you do the work anyway :-)
+> My only question is whetherr we might even drop the kmalloc() some day: 
+> I suspect that the CSD_FLAG_LOCK is essentially never a contention point, 
+> and the cost (and occasional synchronization) of kmalloc() quite possibly 
+> overwhelms any theoretical scaling ability.
 
-I'm fine with it, as long as it goes in soon.
+IIRC the recent SL*B numbers posted showed that a kmalloc could be as
+cheap as ~100 cycles or something. IPIs are sadly still a bit more
+expensive.
 
-	Dave
+> If another CPU hasn't even received its IPI before the same CPU sends the 
+> next one, I'm not sure we _want_ to send one, in fact.
 
--- 
-http://www.codemonkey.org.uk
+I think the intent was to re-route IO-completion interrupts to whatever
+cpu/node issued the IO with the idea that that cpu/node has the page
+hottest etc. and transferring the completion is cheaper than bouncing
+the page.
+
+Since that would be relaying hardware interrupts, there's nothing much
+you can do about the rate, or something, that's up to the firmware on
+$$$ scsi thing.
+
+But Jens already said that that path was using the __ variant and
+providing its own csds, the kmalloc isn't needed there, so it might all
+be moot.
+
+> But that's a secondary issue, and isn't a correctness thing, just a "do we 
+> really need three different allocations?" musing..
+
+Nick, Jens, I was under the presumption that the kmalloc was needed for
+something other than failing to deadlock, happen to remember what?
+
