@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbZA3VhD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756673AbZA3Viv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756561AbZA3VhD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 16:37:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753558AbZA3Vgx
+	id S1756673AbZA3Viv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 16:38:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753004AbZA3Vin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 16:36:53 -0500
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:10812 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006AbZA3Vgw (ORCPT
+	Fri, 30 Jan 2009 16:38:43 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43245 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752511AbZA3Vim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 16:36:52 -0500
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent
-	VM_LOCKED file segments
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+	Fri, 30 Jan 2009 16:38:42 -0500
+Date: Fri, 30 Jan 2009 13:37:28 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
 To: Hugh Dickins <hugh@veritas.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
+cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Greg KH <gregkh@suse.de>,
        Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
        linux-kernel <linux-kernel@vger.kernel.org>,
        Nick Piggin <npiggin@suse.de>,
@@ -23,75 +23,24 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
        KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Mikos Szeredi <miklos@szeredi.hu>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+ file segments
 In-Reply-To: <Pine.LNX.4.64.0901302048360.18677@blonde.anvils>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>
-	 <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>
-	 <1233259410.2315.75.camel@lts-notebook>
-	 <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
-	 <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>
-	 <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>
-	 <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
-	 <20090130055639.GA30950@suse.de>
-	 <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
-	 <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>
-	 <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain>
-	 <1233345190.908.36.camel@lts-notebook>
-	 <alpine.LFD.2.00.0901301159500.3150@localhost.localdomain>
-	 <Pine.LNX.4.64.0901302048360.18677@blonde.anvils>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 30 Jan 2009 16:36:52 -0500
-Message-Id: <1233351412.908.69.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Message-ID: <alpine.LFD.2.00.0901301326020.3150@localhost.localdomain>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>  <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>  <1233259410.2315.75.camel@lts-notebook>  <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain> 
+ <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>  <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>  <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>  <20090130055639.GA30950@suse.de>  <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
+  <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>  <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain> <1233345190.908.36.camel@lts-notebook> <alpine.LFD.2.00.0901301159500.3150@localhost.localdomain>
+ <Pine.LNX.4.64.0901302048360.18677@blonde.anvils>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 21:12 +0000, Hugh Dickins wrote:
-> On Fri, 30 Jan 2009, Linus Torvalds wrote:
-> > On Fri, 30 Jan 2009, Lee Schermerhorn wrote:
-> > > 
-> > > So happens, I'm mapping with MAP_SHARED, so the VM_ACCOUNT flag gets
-> > > cleared later in mmap_region().  Comments say that this is for checking
-> > > memory availability during shmem_file_setup().  Maybe we can move the
-> > > temporary setting of VM_ACCOUNT until just before the call to
-> > > shmem_zero_setup()?
-> > 
-> > Yeah, that would probably fix it, and looks like the right thing to do. 
-> 
-> I do need to refresh my memory on that in a moment...
-> 
-> > 
-> > It all looks pretty confused wrong to set the whole VM_ACCOUNT flag for a 
-> > file-backed file AT ALL in the first place, but the code knows that it 
-> > won't matter for a shared file, and will be cleared again later.
-> > 
-> > So it plays these temporary games with vm_flags, and it didn't matter 
-> > because of how we used to call "vma_merge()" either early only for the 
-> > anonymous memory case (that had VM_ACCOUNT stable and didn't have that 
-> > temporary case at all) or much later (after having undone the temporary 
-> > flag setting) for files.
-> 
-> I'm to blame for those games, and now they've given trouble,
-> the right thing may be to put an end to them.
-> 
-> > 
-> > Why do we pass in that "accountable" flag, btw? It's only ever set to 0 by 
-> > a MAP_PRIVATE mapping that hits is_file_hugepages() (see do_mmap_pgoff), 
-> > and we could just do that decision all inside mmap_region(). So the flag 
-> > doesn't really seem to have any real meaning, and is just passed around 
-> > for some odd historical reason?
-> 
-> It looks like the "accountable" flag dates from before Miklos separated
-> mmap_region() out from do_mmap_pgoff(): so he just passed it on down to
-> mmap_region() as an additional argument, preferring to leave the more
-> complex MAP_PRIVATE/is_file_hugepages test behind in do_mmap_pgoff().
-> 
-> It seemed rather a random refactoring to me.  Looking at it again,
-> I wonder if we should be getting do_brk() to use mmap_region() too;
-> but my appetite for cleanups is low at present, bugs we have enough.
+
+
+On Fri, 30 Jan 2009, Hugh Dickins wrote:
 > 
 > By the way, there's an argument to say that you should add
 > VM_MIXEDMAP to VM_CAN_NONLINEAR in VM_MERGEABLE_FLAGS: I don't
@@ -103,22 +52,32 @@ On Fri, 2009-01-30 at 21:12 +0000, Hugh Dickins wrote:
 > in one place only, quite a lot of drivers use vm_insert_page(), so
 > I feel more comfortable with the idea that it's stopping merges -
 > though in that case, shouldn't we add it to VM_SPECIAL?
-> 
-> But I'm caring more about that VM_ACCOUNT...
 
-I just verified that adding VM_ACCOUNT to VM_MERGEABLE does allow the
-merge to happen with the test program.  And the system didn't come
-crashing down around me.  But, I wouldn't trust that simple test as the
-last word.  A short run of a stress load I use held up/still running,
-but I can't tell whether it's merging as expected there.   
+VM_MIXEDMAP, yes. It's a special case.
 
-I am running a slightly modified version of Maksim's test program under
-the harness.  I modified it to mmap the entire region to reserve space,
-then MAP_FIXED at each page address in the range returned by the first
-mmap.  I saw that it was leaving holes between some of the pages w/o
-this.  I'm going to automate the check for merging [read map and verify
-a single segment at expected range] and leave that running with the
-load.
+But VM_INSERTPAGE - no.
 
-Lee
+Why? Because VM_INSERTPAGE implies that mmap() itself quite possibly 
+actually _does_ something (it may have inserted _all_ the pages, and may 
+not even have any ->fault handler at all).
 
+So we can't just expand a current mapping and forget about it, we need to 
+do the mmap(). So the "only do merges early" fundamentally cannot merge 
+such a vma, even if the old code did.
+
+Of course, we could look at whether it has a ->fault handler as an 
+indication of whether it's possible to merge or not. We already do that 
+for ->close, and in many ways ->fault would likely be a better indicator 
+of whether something is mergeable or not.
+
+But there's really no point. VM_INSERTPAGE implies a very special mapping: 
+it's used by things like the SCSI target user space ring map, or the magic 
+network packet mmap thing. If you use those things, you really don't care 
+about merging adjacent VM's anyway, and at least the two I looked at 
+really do the whole "pre-populate at mmap time" thing.
+
+And at least the packet one really does have a ->close function, and lacks 
+a ->fault function, so it wouldn't have merged before either (and looking 
+at ->fault again seems to be as valid as looking at ->close).
+
+			Linus
