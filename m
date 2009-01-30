@@ -1,145 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbZA3LYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754728AbZA3LZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754076AbZA3LYb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 06:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752364AbZA3LYV
+	id S1754728AbZA3LZT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 06:25:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752316AbZA3LZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 06:24:21 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48819 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752215AbZA3LYU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 06:24:20 -0500
-Date: Fri, 30 Jan 2009 20:24:13 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non DMA_64BIT_MASK devices
-Cc: mingo@elte.hu, tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20090130083654U.fujita.tomonori@lab.ntt.co.jp>
-References: <20090130073511.F48F.E1E9C6FF@jp.fujitsu.com> <20090130083654U.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20090130184210.4A8E.E1E9C6FF@jp.fujitsu.com>
+	Fri, 30 Jan 2009 06:25:01 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:10156 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbZA3LZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 06:25:00 -0500
+Date: Fri, 30 Jan 2009 12:23:11 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH -v2] use per cpu data for single cpu ipi calls
+Message-ID: <20090130112310.GI30821@kernel.dk>
+References: <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com> <20090128173039.cbc29e81.akpm@linux-foundation.org> <1233218954.7835.11.camel@twins> <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain> <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain> <1233253380.4495.123.camel@laptop> <alpine.LFD.2.00.0901291030510.3123@localhost.localdomain> <1233254680.4495.126.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.45 [ja]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233254680.4495.126.camel@laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 30 Jan 2009 07:54:07 +0900
-> Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> 
-> > > On Thu, 29 Jan 2009 20:41:07 +0900
-> > > Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> > > 
-> > > > > Before the dma ops unification, IA64 always uses GFP_DMA for
-> > > > > dma_alloc_coherent like:
-> > > > > 
-> > > > > #define dma_alloc_coherent(dev, size, handle, gfp)	\
-> > > > > 	platform_dma_alloc_coherent(dev, size, handle, (gfp) | GFP_DMA)
-> > > > > 
-> > > > > This GFP_DMA enforcement doesn't make sense for IOMMUs since they can
-> > > > > do address translation to give addresses that devices can access
-> > > > > to. The IOMMU drivers ignore the zone flag. However, this is still
-> > > > > necessary for swiotlb since it can't do address translation.
-> > > > > 
-> > > > > We don't always need to use GFP_DMA for swiotlb. We need GFP_DMA for
-> > > > > devices incapable of 64bit DMA.
-> > > > > 
-> > > > > This patch is sorta updated version of:
-> > > > > 
-> > > > > http://marc.info/?l=linux-kernel&m=122638215612705&w=2
-> > > > > 
-> > > > > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > > > > Cc: Yasunori Goto <y-goto@jp.fujitsu.com>
-> > > > > ---
-> > > > >  arch/ia64/kernel/pci-swiotlb.c |   10 +++++++++-
-> > > > >  1 files changed, 9 insertions(+), 1 deletions(-)
-> > > > > 
-> > > > > diff --git a/arch/ia64/kernel/pci-swiotlb.c b/arch/ia64/kernel/pci-swiotlb.c
-> > > > > index 717ad4f..573f02c 100644
-> > > > > --- a/arch/ia64/kernel/pci-swiotlb.c
-> > > > > +++ b/arch/ia64/kernel/pci-swiotlb.c
-> > > > > @@ -13,8 +13,16 @@
-> > > > >  int swiotlb __read_mostly;
-> > > > >  EXPORT_SYMBOL(swiotlb);
-> > > > >  
-> > > > > +static void *ia64_swiotlb_alloc_coherent(struct device *dev, size_t size,
-> > > > > +					 dma_addr_t *dma_handle, gfp_t gfp)
-> > > > > +{
-> > > > > +	if (dev->coherent_dma_mask != DMA_64BIT_MASK)
-> > > > > +		gfp |= GFP_DMA;
-> > > > > +	return swiotlb_alloc_coherent(dev, size, dma_handle, gfp);
-> > > > > +}
-> > > > > +
-> > > > >  struct dma_map_ops swiotlb_dma_ops = {
-> > > > > -	.alloc_coherent = swiotlb_alloc_coherent,
-> > > > > +	.alloc_coherent = ia64_swiotlb_alloc_coherent,
-> > > > >  	.free_coherent = swiotlb_free_coherent,
-> > > > >  	.map_page = swiotlb_map_page,
-> > > > >  	.unmap_page = swiotlb_unmap_page,
-> > > > > -- 
-> > > > > 1.6.0.6
-> > > > 
-> > > > 
-> > > > Though I may be misunderstanding something, this initialization seems to be
-> > > > called only when CONFIG_IA64_DIG_VTD is on.
-> > > 
-> > > Hmm, what's 'this initialization'?
-> > > 
-> > > This patch always sets swiotlb_dma_ops.alloc_coherent to
-> > > ia64_swiotlb_alloc_coherent.
-> > 
-> > I tested your patch, but, ia64_swiotlb_alloc_coherent() was not called with
-> > CONFIG_GENERIC.
-> 
-> You use the generic kernel on a DIG box, right? If so, yeah, there is
-> something wrong.
-> 
-> 
-> > swiotlb_dma_ops is set by pci_swiotlb_init().
-> > However, it seems to be not called when CONFIG_IA64_DIG/Generic configuration.
-> 
-> You are talking about setting dma_ops to swiotlb_dma_ops?
-> 
-> I think that swiotlb_dma_init() also sets dma_ops to swiotlb_dma_ops.
+Hi,
 
-Certainly.
-I overlooked the 7th patch of your unifying dma_ops patch set.
-ia64_swiotlb_alloc_coherent was called when I tested again.
-I'm sorry.
+A little late into this discussion, was nasty ill the past days.
 
-However, GFP_DMA is still always on in ia64_swiotlb_alloc_coherent()
-regardless of the value of dev->coherent_dma_mask.
+Anyway, v2 with the suggested patches looks fine to me. That is, use
+local cpu storage (and thus lose the lock) and retain the the kmalloc()
+for the !wait case. That should still scale fine, as far as I can tell.
+The block layer usage, for which this was originally concocted, doesn't
+really care that much, since it always provides its own csd storage and
+thus use the __ variant of the helper.
 
-After following patch applied, GFP_DMA is set correctly by your patch.
-Am I still overlooking other your patch?
-
-Bye.
-
-
-
----
- arch/ia64/include/asm/dma-mapping.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: dma_fix_test/arch/ia64/include/asm/dma-mapping.h
-===================================================================
---- dma_fix_test.orig/arch/ia64/include/asm/dma-mapping.h       2009-01-30 19:36:33.000000000 +0900
-+++ dma_fix_test/arch/ia64/include/asm/dma-mapping.h    2009-01-30 20:20:06.000000000 +0900
-@@ -71,7 +71,7 @@ static inline void *dma_alloc_coherent(s
-                                       dma_addr_t *daddr, gfp_t gfp)
- {
-        struct dma_mapping_ops *ops = platform_dma_get_ops(dev);
--       return ops->alloc_coherent(dev, size, daddr, gfp | GFP_DMA);
-+       return ops->alloc_coherent(dev, size, daddr, gfp);
- }
-
- static inline void dma_free_coherent(struct device *dev, size_t size,
-
+Peter, can you post a final complete patch for review and acks?
 
 -- 
-Yasunori Goto 
+Jens Axboe
 
