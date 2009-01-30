@@ -1,61 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbZA3SUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbZA3SUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755796AbZA3SUh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 13:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbZA3SUK
+	id S1755853AbZA3SUy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 13:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755450AbZA3SUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 13:20:10 -0500
-Received: from moutng.kundenserver.de ([212.227.126.188]:61289 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754830AbZA3SUI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 13:20:08 -0500
-Message-ID: <498344E0.6000304@vlnb.net>
-Date: Fri, 30 Jan 2009 21:20:16 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Fri, 30 Jan 2009 13:20:19 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37734 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755378AbZA3SUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 13:20:17 -0500
+Date: Fri, 30 Jan 2009 19:20:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [mingo@elte.hu: [git pull] headers_check fixes]
+Message-ID: <20090130182001.GB20302@elte.hu>
+References: <20090127222825.GA27097@elte.hu> <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain> <20090127233159.GA26403@elte.hu> <1233324092.3670.4.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: linux-scsi@vger.kernel.org
-CC: linux-kernel@vger.kernel.org, scst-devel@lists.sourceforge.net
-Subject: [PATCH][iSCSI-SCST]: Fix list corruption if SCST target registration
- fails
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18CO+yRr1uLzUkny+shD+pryMoXjG/giBwndu0
- VCvbvAnKT7Zpi21s5GPjOFaBaDK2GI/B637lcJjIcTcq7OWaLl
- 0URzZVSJEHjLqf8rVmG9A==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233324092.3670.4.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes list corruption if SCST target registration fails.
 
-Signed-off-by: Arne Redlich <agr@powerkom-dd.de>
-Signed-off-by: Vladislav Bolkhovitin <vst@vlnb.net>
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
- target.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> Hello Ingo,
+> 
+> On Wed, 2009-01-28 at 00:31 +0100, Ingo Molnar wrote:
+> 
+> > Jaswider, would you mind re-doing the tree filtering out the CONFIG_* 
+> > changes? I'll go over the end result once more to make sure it has no 
+> > changes that make the code look worse.
+> 
+> Sure, why not ;-)
+> 
+> But in your -tip tree you already have these patches. Are you going to 
+> revert them or should I make patches for linus tree.
 
-Index: iscsi-scst/kernel/target.c
-===================================================================
---- iscsi-scst/kernel/target.c	(revision 648)
-+++ iscsi-scst/kernel/target.c	(working copy)
-@@ -116,8 +116,6 @@ static int iscsi_target_create(struct ta
- 	mutex_init(&target->target_mutex);
- 	INIT_LIST_HEAD(&target->session_list);
- 
--	list_add(&target->target_list_entry, &target_list);
--
- 	target->scst_tgt = scst_register(&iscsi_template, target->name);
- 	if (!target->scst_tgt) {
- 		PRINT_ERROR("%s", "scst_register() failed");
-@@ -125,6 +123,8 @@ static int iscsi_target_create(struct ta
- 		goto out_free;
- 	}
- 
-+	list_add(&target->target_list_entry, &target_list);
-+
- 	return 0;
- 
- out_free:
+yes, i'll replace that branch with your tree - the bad commits are 
+intermixed with the good commits so reverting does not help (there would 
+be way too many ugly reverts).
 
+As long as you base your patches on Linus's -git tree i'll be able to sort 
+it all out.
+
+	Ingo
