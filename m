@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbZA3WSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbZA3W2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756251AbZA3WSm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 17:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbZA3WS3
+	id S1756662AbZA3W2V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 17:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZA3W2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 17:18:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51664 "EHLO
+	Fri, 30 Jan 2009 17:28:11 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42573 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754522AbZA3WS2 (ORCPT
+	by vger.kernel.org with ESMTP id S1751142AbZA3W2K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 17:18:28 -0500
-Date: Fri, 30 Jan 2009 14:17:44 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090130141744.007fe725.akpm@linux-foundation.org>
-In-Reply-To: <200901310829.17099.rusty@rustcorp.com.au>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<200901301633.54013.rusty@rustcorp.com.au>
-	<20090129223042.47dc42a1.akpm@linux-foundation.org>
-	<200901310829.17099.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Jan 2009 17:28:10 -0500
+Date: Fri, 30 Jan 2009 14:27:23 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: Hugh Dickins <hugh@veritas.com>, Greg KH <gregkh@suse.de>,
+       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mikos Szeredi <miklos@szeredi.hu>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+ file segments
+In-Reply-To: <1233351412.908.69.camel@lts-notebook>
+Message-ID: <alpine.LFD.2.00.0901301426390.3150@localhost.localdomain>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>  <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>  <1233259410.2315.75.camel@lts-notebook>  <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain> 
+ <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>  <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>  <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>  <20090130055639.GA30950@suse.de>  <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
+  <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>  <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain>  <1233345190.908.36.camel@lts-notebook>  <alpine.LFD.2.00.0901301159500.3150@localhost.localdomain>  <Pine.LNX.4.64.0901302048360.18677@blonde.anvils>
+ <1233351412.908.69.camel@lts-notebook>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009 08:29:15 +1030
-Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> On Friday 30 January 2009 17:00:42 Andrew Morton wrote:
-> > On Fri, 30 Jan 2009 16:33:53 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > 
-> > > On Thursday 29 January 2009 12:42:05 Andrew Morton wrote:
-> > > > On Thu, 29 Jan 2009 12:13:32 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > > > 
-> > > > > On Thursday 29 January 2009 06:14:40 Andrew Morton wrote:
-> > > > > > It's vulnerable to the same deadlock, I think?  Suppose we have:
-> > > > > ...
-> > > > > > - A calls work_on_cpu() and takes woc_mutex.
-> > > > > > 
-> > > > > > - Before function_which_takes_L() has started to execute, task B takes L
-> > > > > >   then calls work_on_cpu() and task B blocks on woc_mutex.
-> > > > > > 
-> > > > > > - Now function_which_takes_L() runs, and blocks on L
-> > > > > 
-> > > > > Agreed, but now it's a fairly simple case.  Both sides have to take lock L, and both have to call work_on_cpu.
-> > > > > 
-> > > > > Workqueues are more generic and widespread, and an amazing amount of stuff gets called from them.  That's why I felt uncomfortable with removing the one known problematic caller.
-> > > > > 
-> > > > 
-> > > > hm.  it's a bit of a timebomb.
-> > > > 
-> > > > y'know, the original way in which acpi-cpufreq did this is starting to
-> > > > look attractive.  Migrate self to that CPU then just call the dang
-> > > > function.  Slow, but no deadlocks (I think)?
-> > > 
-> > > Just buggy.  What random thread was it mugging?  If there's any path where
-> > > it's not a kthread, what if userspace does the same thing at the same time?
-> > > We risk running on the wrong cpu, *then* overriding userspace when we restore
-> > > it.
-> > 
-> > hm, Ok, not unficable but not pleasant.
-> > 
-> > > In general these cpumask games are a bad idea.
-> > 
-> > So we still don't have any non-buggy proposal.
+On Fri, 30 Jan 2009, Lee Schermerhorn wrote:
 > 
-> I disagree about the avoiding-workqueue one being buggy.
-> 
+> I just verified that adding VM_ACCOUNT to VM_MERGEABLE does allow the
+> merge to happen with the test program.  And the system didn't come
+> crashing down around me.  But, I wouldn't trust that simple test as the
+> last word.  A short run of a stress load I use held up/still running,
+> but I can't tell whether it's merging as expected there.   
 
-I assume you're talking about the patch I looked at a couple of days ago.
+Just ignoring VM_ACCOUNT for merging is not the right thing to do. It 
+probably works in practice for just about everything, but at least in 
+theory it does mean that mmap() can stop honoring MAP_NORESERVE.
 
-It's vulnerable to the same deadlock as work_on_cpu() has always been.
+Admittedly the circumstances where that happens are unlikely, and nobody 
+probably even really uses MAP_NORESERVE in the first place, so I doubt you 
+can ever see it as a real issue, but it's still technically wrong to merge 
+vma's that can differ in VM_ACCOUNT.
 
-Just as an example, take a look at allocate_threshold_blocks().  That
-function way down in the innards of x86 has blotted out large amounts of
-kernel code, so that code can now not use work_on_cpu().  Anything which
-happens inside ext3 commit (the entire block layer and all drivers
-underneath it).  Large lumps of networking code.  Parts of the page
-allocator and the VFS which I haven't started to think about yet.
+Now, the particular test you have, VM_ACCOUNT differs only during that 
+temporary window, and the vma's really do end up with the same VM_ACCOUNT 
+state in the end, so merging them is correct, but if you were to privately 
+map the same file (or private anonymous map) with the same permissions 
+next to each other so that they -could- merge, but use MAP_NORESERVE on 
+one and not on the other, then they shouldn't merge.
 
->  The same logic
-> applies to any simple callback function.
+So VM_ACCOUNT does matter - just barely - for merging, and we just happen 
+to currently hit it too much due to a very odd internal reason.
 
-Not!  The difference here is the queueing and serialisation which
-introduces dependencies between unrelated subsystems which happen to
-use this piece of core infrastructure.
-
+		Linus
