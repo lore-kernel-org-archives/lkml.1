@@ -1,49 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZA3IfX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbZA3Ifq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZA3IfX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 03:35:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZA3IfI
+	id S1752151AbZA3Ifq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 03:35:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZA3Iff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 03:35:08 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41503 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750973AbZA3IfG (ORCPT
+	Fri, 30 Jan 2009 03:35:35 -0500
+Received: from rv-out-0506.google.com ([209.85.198.231]:26604 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753788AbZA3Ife (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 03:35:06 -0500
-Date: Fri, 30 Jan 2009 00:35:01 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Huang Weiyi <weiyi.huang@gmail.com>
-Subject: Re: [PATCH 1/1] atmel-ssc: fix misuse of dev_dbg when requested ssc
- instance is not found
-Message-Id: <20090130003501.ed47dae2.akpm@linux-foundation.org>
-In-Reply-To: <20090130092025.618fa78f@hcegtvedt>
-References: <1232369876-19428-1-git-send-email-hans-christian.egtvedt@atmel.com>
-	<20090129174655.1f440f3e@hcegtvedt>
-	<20090129155042.e0ea148d.akpm@linux-foundation.org>
-	<20090130092025.618fa78f@hcegtvedt>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Jan 2009 03:35:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type;
+        b=VkW7FBRkwJdvm7j5pkDc9X1eqhURBZ3rS5Zg9AJ17R6m7w0LFse6sn/lWjl+vGp8kC
+         u60RdbPOASc4lfHf71eBhdb4OwX7z3pzfFzltvQeMbMRZ1LsW1682WCkgksQZ/XMMufQ
+         z+vzePtHnueBlLp1zbPMmySXT1jpDem8a58IY=
+MIME-Version: 1.0
+In-Reply-To: <86802c440901292253ie9e2a9dmb4580a3da1480c81@mail.gmail.com>
+References: <20090129063118.GA3586@pmhahn.de>
+	 <86802c440901292253ie9e2a9dmb4580a3da1480c81@mail.gmail.com>
+Date: Fri, 30 Jan 2009 00:35:33 -0800
+X-Google-Sender-Auth: 4452ca3d58f0fe94
+Message-ID: <86802c440901300035i6d63b8b7nc8c401c3f8b945cb@mail.gmail.com>
+Subject: Re: WOL with forcedeth broken since f55c21fd9a92a444e55ad1ca4e4732d56661bf2e
+From: Yinghai Lu <yinghai@kernel.org>
+To: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Yinghai Lu <yhlu.kernel@gmail.com>,
+       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Content-Type: multipart/mixed; boundary=000e0cd22ab099a5150461af166c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009 09:20:25 +0100 Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com> wrote:
+--000e0cd22ab099a5150461af166c
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> > (Suitable cc's added - this was why your patch got lost)
-> > 
-> 
-> AFAICT the lkml is the place for the drivers/misc stuff. Should I be
-> looking in another file than MAINTAINERS?
+On Thu, Jan 29, 2009 at 10:53 PM, Yinghai Lu <yhlu.kernel@gmail.com> wrote:
+> On Wed, Jan 28, 2009 at 10:31 PM, Philipp Matthias Hahn
+> <pmhahn@titan.lahn.de> wrote:
+>> Hello!
+>>
+>> Somewhere between 2.6.26 and 2.6.27 WOL stopped working on my MS-7350
+>> motherboard with an "nVidia Corporation MCP51 Ethernet Controller (rev a3)".
+>>        "etherwake 00:19:db:f2:e1:35" did not work
+>>        "etherwake 35:e1:f2:db:19:00" did work
 
-Lots of drivers aren't mentioned in MAINTAINERS.  It is pretty
-important to cc the relevant maintainer if poss.  `git whatchanged' is
-one way.  Or a bit of inspired guessing (atmel == Haavard, for example).
+looks like your BIOS, already reverse the MAC addr...
 
-But the easy way is to cc me - I'll route the thing in the appropriate
-direction.
+please check attached ... Rafael, wonder if will break suspend/resume...
 
+YH
+
+--000e0cd22ab099a5150461af166c
+Content-Type: text/x-patch; charset=US-ASCII; name="restore_mac_orig.patch"
+Content-Disposition: attachment; filename="restore_mac_orig.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fqklmm3a0
+
+W1BBVENIXSBmb3JjZWRldGg6IGtlZXAgbWFjIGFkZHIgdG8gb3JpZ25hbAoKSW1wYWN0OiBmaXgg
+bWFjIHJldmVyc2UgZm9yIHdvbAoKc29tZSBCSU9TIG1heSBhbHJlYWR5IHJldmVyc2UgdGhhdCwg
+dHJ5IHRvIGRvbid0IHRvdWNoIHRoZSBtYWMgYWRkciwgc28gZG9uJ3QKY29uZnVzZSB0aGUgV09M
+CgpTaWduZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpQGtlcm5lbC5vcmc+CgotLS0KIGRy
+aXZlcnMvbmV0L2ZvcmNlZGV0aC5jIHwgICA1MCArKysrKysrKysrKysrKysrKysrKysrKysrKysr
+Ky0tLS0tLS0tLS0tLS0tLS0tLS0KIDEgZmlsZSBjaGFuZ2VkLCAzMSBpbnNlcnRpb25zKCspLCAx
+OSBkZWxldGlvbnMoLSkKCkluZGV4OiBsaW51eC0yLjYvZHJpdmVycy9uZXQvZm9yY2VkZXRoLmMK
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PQotLS0gbGludXgtMi42Lm9yaWcvZHJpdmVycy9uZXQvZm9yY2VkZXRoLmMKKysr
+IGxpbnV4LTIuNi9kcml2ZXJzL25ldC9mb3JjZWRldGguYwpAQCAtNzQ4LDYgKzc0OCw4IEBAIHN0
+cnVjdCBmZV9wcml2IHsKIAkvKiBHZW5lcmFsIGRhdGE6IFJPIGZpZWxkcyAqLwogCWRtYV9hZGRy
+X3QgcmluZ19hZGRyOwogCXN0cnVjdCBwY2lfZGV2ICpwY2lfZGV2OworCS8qIHdvbmRlciBpZiBi
+aW9zIGFscmVhZHkgcmV2ZXJzZSB0aGF0ICovCisJaW50IG9yaWdfbWFjX3N0YXR1czsKIAl1MzIg
+b3JpZ19tYWNbMl07CiAJdTMyIGlycW1hc2s7CiAJdTMyIGRlc2NfdmVyOwpAQCAtNTYzOSwxNCAr
+NTY0MSwxNyBAQCBzdGF0aWMgaW50IF9fZGV2aW5pdCBudl9wcm9iZShzdHJ1Y3QgcGNpCiAJLyog
+Y2hlY2sgdGhlIHdvcmthcm91bmQgYml0IGZvciBjb3JyZWN0IG1hYyBhZGRyZXNzIG9yZGVyICov
+CiAJdHhyZWcgPSByZWFkbChiYXNlICsgTnZSZWdUcmFuc21pdFBvbGwpOwogCWlmIChpZC0+ZHJp
+dmVyX2RhdGEgJiBERVZfSEFTX0NPUlJFQ1RfTUFDQUREUikgewotCQkvKiBtYWMgYWRkcmVzcyBp
+cyBhbHJlYWR5IGluIGNvcnJlY3Qgb3JkZXIgKi8KLQkJZGV2LT5kZXZfYWRkclswXSA9IChucC0+
+b3JpZ19tYWNbMF0gPj4gIDApICYgMHhmZjsKLQkJZGV2LT5kZXZfYWRkclsxXSA9IChucC0+b3Jp
+Z19tYWNbMF0gPj4gIDgpICYgMHhmZjsKLQkJZGV2LT5kZXZfYWRkclsyXSA9IChucC0+b3JpZ19t
+YWNbMF0gPj4gMTYpICYgMHhmZjsKLQkJZGV2LT5kZXZfYWRkclszXSA9IChucC0+b3JpZ19tYWNb
+MF0gPj4gMjQpICYgMHhmZjsKLQkJZGV2LT5kZXZfYWRkcls0XSA9IChucC0+b3JpZ19tYWNbMV0g
+Pj4gIDApICYgMHhmZjsKLQkJZGV2LT5kZXZfYWRkcls1XSA9IChucC0+b3JpZ19tYWNbMV0gPj4g
+IDgpICYgMHhmZjsKKwkJbnAtPm9yaWdfbWFjX3N0YXR1cyA9IC0xOwogCX0gZWxzZSBpZiAodHhy
+ZWcgJiBOVlJFR19UUkFOU01JVFBPTExfTUFDX0FERFJfUkVWKSB7CisJCW5wLT5vcmlnX21hY19z
+dGF0dXMgPSAxOworCQlwcmludGsoS0VSTl9ERUJVRyAibnZfcHJvYmU6IHdvcmthcm91bmQgYml0
+IGZvciByZXZlcnNlZCBtYWMgYWRkciBpcyBzZXRcbiIpOworCX0gZWxzZSB7CisJCW5wLT5vcmln
+X21hY19zdGF0dXMgPSAwOworCQl3cml0ZWwodHhyZWd8TlZSRUdfVFJBTlNNSVRQT0xMX01BQ19B
+RERSX1JFViwKKwkJCSBiYXNlICsgTnZSZWdUcmFuc21pdFBvbGwpOworCQlwcmludGsoS0VSTl9E
+RUJVRyAibnZfcHJvYmU6IHNldCB3b3JrYXJvdW5kIGJpdCBmb3IgcmV2ZXJzZWQgbWFjIGFkZHJc
+biIpOworCX0KKwlpZiAobnAtPm9yaWdfbWFjX3N0YXR1cykgewogCQkvKiBtYWMgYWRkcmVzcyBp
+cyBhbHJlYWR5IGluIGNvcnJlY3Qgb3JkZXIgKi8KIAkJZGV2LT5kZXZfYWRkclswXSA9IChucC0+
+b3JpZ19tYWNbMF0gPj4gIDApICYgMHhmZjsKIAkJZGV2LT5kZXZfYWRkclsxXSA9IChucC0+b3Jp
+Z19tYWNbMF0gPj4gIDgpICYgMHhmZjsKQEAgLTU2NTQsMTQgKzU2NTksNiBAQCBzdGF0aWMgaW50
+IF9fZGV2aW5pdCBudl9wcm9iZShzdHJ1Y3QgcGNpCiAJCWRldi0+ZGV2X2FkZHJbM10gPSAobnAt
+Pm9yaWdfbWFjWzBdID4+IDI0KSAmIDB4ZmY7CiAJCWRldi0+ZGV2X2FkZHJbNF0gPSAobnAtPm9y
+aWdfbWFjWzFdID4+ICAwKSAmIDB4ZmY7CiAJCWRldi0+ZGV2X2FkZHJbNV0gPSAobnAtPm9yaWdf
+bWFjWzFdID4+ICA4KSAmIDB4ZmY7Ci0JCS8qCi0JCSAqIFNldCBvcmlnIG1hYyBhZGRyZXNzIGJh
+Y2sgdG8gdGhlIHJldmVyc2VkIHZlcnNpb24uCi0JCSAqIFRoaXMgZmxhZyB3aWxsIGJlIGNsZWFy
+ZWQgZHVyaW5nIGxvdyBwb3dlciB0cmFuc2l0aW9uLgotCQkgKiBUaGVyZWZvcmUsIHdlIHNob3Vs
+ZCBhbHdheXMgcHV0IGJhY2sgdGhlIHJldmVyc2VkIGFkZHJlc3MuCi0JCSAqLwotCQlucC0+b3Jp
+Z19tYWNbMF0gPSAoZGV2LT5kZXZfYWRkcls1XSA8PCAwKSArIChkZXYtPmRldl9hZGRyWzRdIDw8
+IDgpICsKLQkJCShkZXYtPmRldl9hZGRyWzNdIDw8IDE2KSArIChkZXYtPmRldl9hZGRyWzJdIDw8
+IDI0KTsKLQkJbnAtPm9yaWdfbWFjWzFdID0gKGRldi0+ZGV2X2FkZHJbMV0gPDwgMCkgKyAoZGV2
+LT5kZXZfYWRkclswXSA8PCA4KTsKIAl9IGVsc2UgewogCQkvKiBuZWVkIHRvIHJldmVyc2UgbWFj
+IGFkZHJlc3MgdG8gY29ycmVjdCBvcmRlciAqLwogCQlkZXYtPmRldl9hZGRyWzBdID0gKG5wLT5v
+cmlnX21hY1sxXSA+PiAgOCkgJiAweGZmOwpAQCAtNTY3MCw4ICs1NjY3LDYgQEAgc3RhdGljIGlu
+dCBfX2RldmluaXQgbnZfcHJvYmUoc3RydWN0IHBjaQogCQlkZXYtPmRldl9hZGRyWzNdID0gKG5w
+LT5vcmlnX21hY1swXSA+PiAxNikgJiAweGZmOwogCQlkZXYtPmRldl9hZGRyWzRdID0gKG5wLT5v
+cmlnX21hY1swXSA+PiAgOCkgJiAweGZmOwogCQlkZXYtPmRldl9hZGRyWzVdID0gKG5wLT5vcmln
+X21hY1swXSA+PiAgMCkgJiAweGZmOwotCQl3cml0ZWwodHhyZWd8TlZSRUdfVFJBTlNNSVRQT0xM
+X01BQ19BRERSX1JFViwgYmFzZSArIE52UmVnVHJhbnNtaXRQb2xsKTsKLQkJcHJpbnRrKEtFUk5f
+REVCVUcgIm52X3Byb2JlOiBzZXQgd29ya2Fyb3VuZCBiaXQgZm9yIHJldmVyc2VkIG1hYyBhZGRy
+XG4iKTsKIAl9CiAJbWVtY3B5KGRldi0+cGVybV9hZGRyLCBkZXYtPmRldl9hZGRyLCBkZXYtPmFk
+ZHJfbGVuKTsKIApAQCAtNTkyMywxNCArNTkxOCwzMSBAQCBzdGF0aWMgdm9pZCBudl9yZXN0b3Jl
+X21hY19hZGRyKHN0cnVjdCBwCiB7CiAJc3RydWN0IG5ldF9kZXZpY2UgKmRldiA9IHBjaV9nZXRf
+ZHJ2ZGF0YShwY2lfZGV2KTsKIAlzdHJ1Y3QgZmVfcHJpdiAqbnAgPSBuZXRkZXZfcHJpdihkZXYp
+OwotCXU4IF9faW9tZW0gKmJhc2UgPSBnZXRfaHdiYXNlKGRldik7CisJdTggX19pb21lbSAqYmFz
+ZTsKKwl1MzIgdHhyZWc7CisKKwlpZiAobnAtPm9yaWdfbWFjX3N0YXR1cyA9PSAtMSkKKwkJcmV0
+dXJuOworCisJYmFzZSA9IGdldF9od2Jhc2UoZGV2KTsKKwl0eHJlZyA9IHJlYWRsKGJhc2UgKyBO
+dlJlZ1RyYW5zbWl0UG9sbCk7CisJaWYgKG5wLT5vcmlnX21hY19zdGF0dXMgPT0gMSkgeworCQkv
+KgorCQkgKiBTZXQgb3JpZyBtYWMgYWRkcmVzcyBiYWNrIHRvIHRoZSByZXZlcnNlZCB2ZXJzaW9u
+LgorCQkgKiBUaGlzIGZsYWcgd2lsbCBiZSBjbGVhcmVkIGR1cmluZyBsb3cgcG93ZXIgdHJhbnNp
+dGlvbi4KKwkJICogVGhlcmVmb3JlLCBzZXQgdGhhdCBiaXQgZG9uJ3QgY29uZnVzZSBvdGhlci4u
+LgorCQkgKi8KKwkJd3JpdGVsKHR4cmVnIHwgTlZSRUdfVFJBTlNNSVRQT0xMX01BQ19BRERSX1JF
+ViwKKwkJICAgICAgIGJhc2UgKyBOdlJlZ1RyYW5zbWl0UG9sbCk7CisJCXJldHVybjsKKwl9CiAK
+IAkvKiBzcGVjaWFsIG9wOiB3cml0ZSBiYWNrIHRoZSBtaXNvcmRlcmVkIE1BQyBhZGRyZXNzIC0g
+b3RoZXJ3aXNlCiAJICogdGhlIG5leHQgbnZfcHJvYmUgd291bGQgc2VlIGEgd3JvbmcgYWRkcmVz
+cy4KIAkgKi8KIAl3cml0ZWwobnAtPm9yaWdfbWFjWzBdLCBiYXNlICsgTnZSZWdNYWNBZGRyQSk7
+CiAJd3JpdGVsKG5wLT5vcmlnX21hY1sxXSwgYmFzZSArIE52UmVnTWFjQWRkckIpOwotCXdyaXRl
+bChyZWFkbChiYXNlICsgTnZSZWdUcmFuc21pdFBvbGwpICYgfk5WUkVHX1RSQU5TTUlUUE9MTF9N
+QUNfQUREUl9SRVYsCisJd3JpdGVsKHR4cmVnICYgfk5WUkVHX1RSQU5TTUlUUE9MTF9NQUNfQURE
+Ul9SRVYsCiAJICAgICAgIGJhc2UgKyBOdlJlZ1RyYW5zbWl0UG9sbCk7CiB9CiAK
+--000e0cd22ab099a5150461af166c--
