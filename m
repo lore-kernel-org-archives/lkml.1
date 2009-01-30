@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZA3Jlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZA3JmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbZA3Jlp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 04:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZA3Jld
+	id S1755388AbZA3JmR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 04:42:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZA3Jl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 04:41:33 -0500
-Received: from dallas.jonmasters.org ([72.29.103.172]:36260 "EHLO
-	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751023AbZA3Jlc (ORCPT
+	Fri, 30 Jan 2009 04:41:59 -0500
+Received: from xc.sipsolutions.net ([83.246.72.84]:36445 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751368AbZA3Jl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 04:41:32 -0500
-Subject: Re: Is there a way to set the order of initialization of different
-	 systems ?
-From: Jon Masters <jonathan@jonmasters.org>
-To: George Kumar <grgkumar4@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <5f695cd0901300103o31cb92f4o9feb8c598465617c@mail.gmail.com>
-References: <5f695cd0901300103o31cb92f4o9feb8c598465617c@mail.gmail.com>
-Content-Type: text/plain
-Organization: World Organi[sz]ation of Broken Dreams
-Date: Fri, 30 Jan 2009 04:41:26 -0500
-Message-Id: <1233308486.3937.113.camel@perihelion.bos.jonmasters.org>
+	Fri, 30 Jan 2009 04:41:58 -0500
+Subject: Re: [PATCH] w35und: fix registration with wlan stack
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Sandro Bonazzola <sandro.bonazzola@gmail.com>,
+       kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Bruno Randolf <br1@einfach.org>
+In-Reply-To: <20090130093846.GC9495@atrey.karlin.mff.cuni.cz>
+References: <497F5FEA.7020203@gmail.com> <20090127200602.GA16444@elf.ucw.cz>
+	 <4980B2DD.307@gmail.com> <4980BB9A.2020309@cs.helsinki.fi>
+	 <4980C028.2030709@gmail.com> <4980C035.4070105@cs.helsinki.fi>
+	 <4980DB5D.6010906@gmail.com> <20090130090525.GA1997@elf.ucw.cz>
+	 <1233306825.13655.28.camel@penberg-laptop>
+	 <1233306980.4161.19.camel@johannes.local>
+	 <20090130093846.GC9495@atrey.karlin.mff.cuni.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-D9ODfc8eHNVXZUYtAPf6"
+Date: Fri, 30 Jan 2009 10:41:51 +0100
+Message-Id: <1233308511.4161.23.camel@johannes.local>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 74.92.29.237
-X-SA-Exim-Mail-From: jonathan@jonmasters.org
-X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 01:03 -0800, George Kumar wrote:
 
-> I would like to explore if there is a way so that I can set the order
-> of initialization of different kernel sub systems. The main reason I
-> would like to do this is because I have a network driver built
-> statically in the kernel which wants to download firmware from the
-> disk, but the IDE subsystem and root FS is not mounted yet so it
-> basically hangs for a minute waiting to dowload firmware and then
-> proceeds with the boot sequence. If I could ensure that IDE subsys is
-> initialized and root FS is mounted before networking is initialized,
-> this problem probably will not occur.
+--=-D9ODfc8eHNVXZUYtAPf6
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This is why we have initrds and similar. What you want is already done
-quite successfully by a number of implementations in which the driver
-will load, and cause a uevent to be emitted as it seeks firmware that
-will be supplied to it. There's absolutely no reason for your driver to
-be reading the firmware files directly from disk when we have
-infrastructure like request_firmware around.
+On Fri, 2009-01-30 at 10:38 +0100, Pavel Machek wrote:
 
-LWN wrote this article back in 2003: http://lwn.net/Articles/32997/
+> > > >  	dev->channel_change_time =3D 1000;
+> > > > +	dev->max_signal =3D 100;
+> > >=20
+> > > And the IEEE80211_HW_SIGNAL_UNSPEC and ->max_signal from commit
+> > > 566bfe5a8bcde13188a356f77666f8115813cf31 ("mac80211: use hardware fla=
+gs
+> > > for signal/noise units"). Lets cc Bruno.
+> >=20
+> > Seems reasonable, though does it would be good to see if it can do DBM,
+> > which we very very much prefer.
+>=20
+> Well, currenlty it reports all zeros...
 
-Jon.
+In that case you shouldn't do this patch to avoid userspace getting
+bogus values.
 
+johannes
+
+--=-D9ODfc8eHNVXZUYtAPf6
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJgstbAAoJEKVg1VMiehFY0noP/0vFnVs2QGmDbTXLQQEBkQ/w
+VX5hhDLErqHmpiUGU318iubus0T/FtdCw2FzAiPYJjGBq4NQQpCz2ZhfZKCK/5Mo
+FkQtgKsAn9ppQYMzAEeYOwNFwQo6AO41Bm64vPLor4je9aMGJdl16TbIZgFGiaQS
+UXeg7FkSwqs96Or1EmRtpu2DjsiM7FxILlCkBKli1FdmdHepYlAvsEGMW/wqdxA5
+6u5qSz7c2yBateCbkCzYnMNvPDClj3fOvn6W67naiK8x2MMpfgRc4uF+T/diU2QU
+cduivh2dD5moLWLUG4RhYeDXoXpr6m2GgZeyS9Saeek5F3XvmvHVYrEjuL4KwjTC
+6zOyzMTduvc8xWqpl6OV8ftkNwLL2Wvw+JxiJMkGXP+E+cuTIq7WE8w5MZrTu82G
+hQGXAMbzU3K5a9W2Wxkv9lr+PrG1amyp/ye9m8hZMo1VQJc3PWSs6ufYxXvnw43I
+sH+h90lCrhxowchd7UliL7WiL0FE7CkiJ/HnGaKALxDir1a6VqMfJeVH13j+lC4G
+oCzPYVp+FRvIjawHDHCLyQuxJqpVfB19jr3fTrROcfcjKa59ShAqgCdhO6Z8ybjy
+3VYVO8ofcjS7N8N8T76R08ceFrBzRVA/4FkGTs8PpKEj95sE5GOzOn+i/vfS/tHs
+oKapp8q9JXiq5jo36R+N
+=jKgQ
+-----END PGP SIGNATURE-----
+
+--=-D9ODfc8eHNVXZUYtAPf6--
 
