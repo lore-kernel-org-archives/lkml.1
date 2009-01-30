@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbZA3B4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbZA3CJT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbZA3B4K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 20:56:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZA3Bz4
+	id S1758083AbZA3CJT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 21:09:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbZA3CJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 20:55:56 -0500
-Received: from ozlabs.org ([203.10.76.45]:53919 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751773AbZA3Bzz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 20:55:55 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH -v2] use per cpu data for single cpu ipi calls
-Date: Fri, 30 Jan 2009 12:25:48 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
+	Thu, 29 Jan 2009 21:09:03 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39726 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752470AbZA3CJC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 21:09:02 -0500
+Date: Thu, 29 Jan 2009 18:08:30 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Maksim Yevmenkin <maksim.yevmenkin@gmail.com>
+cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>, jens.axboe@oracle.com
-References: <alpine.DEB.1.10.0901281029150.25359@gandalf.stny.rr.com> <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
+       Greg Kroah-Hartman <gregkh@suse.de>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+  file segments
+In-Reply-To: <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>  <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>  <1233259410.2315.75.camel@lts-notebook>  <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain> 
+ <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain> <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901301225.48979.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 January 2009 04:38:23 Linus Torvalds wrote:
-> 
-> On Thu, 29 Jan 2009, Steven Rostedt wrote:
-> > 
-> > Actually, we are locking against the destination CPU.
-> 
-> Oh.
-> 
-> THAT'S JUST INCOMPETENT.
-> 
-> What the *fuck* is the point of having per-CPU data, and then using it for 
-> the wrong CPU?
 
-Maybe we made it too easy to declare and use per-cpu data?
 
-Could we use an nr_cpu_ids array?  Yes, it needs alloc at boot somewhere, but
-it avoids collateral damage to other percpu data (and please don't suggest DEFINE_PER_CPU_SHARED_ALIGNED: that's just antisocial).
+On Thu, 29 Jan 2009, Maksim Yevmenkin wrote:
+> 
+> Just to confirm. This patch also appear to fix the immediate issue for us.
 
-Thanks,
-Rusty.
+Ok, I ended up committing it.
+
+I didn't do the whole "Cc: stable@kernel.org" thing, because maybe the 
+non-cleanup version is less controversial for stable, but I decided that 
+there's no way I don't want the cleanup done in mainline kernel, and if we 
+end up needing a few VM_IO's added, I think it's worth it. Even after -rc3 
+(since I suspend we won't actually need them).
+
+		Linus
