@@ -1,101 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZA3Jzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZA3J7R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754511AbZA3Jzu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 04:55:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZA3Jzm
+	id S1753597AbZA3J7R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 04:59:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZA3J7G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 04:55:42 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:63682 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbZA3Jzk (ORCPT
+	Fri, 30 Jan 2009 04:59:06 -0500
+Received: from wf-out-1314.google.com ([209.85.200.169]:50050 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751562AbZA3J7F (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 04:55:40 -0500
+	Fri, 30 Jan 2009 04:59:05 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=WZnUEJvRsnBzyQXat6w9aDUBIlRto2A/tRnjDmOAEyRKTOb/e3YfuTBB9i4aP0r0vS
-         nW3jmAQSFL/+jGDyzEelUAfJQCV6GusblFAjEApdpsTLsz0T3lwAwC1ZTkh7LVstq5sn
-         bCTB0Eg6cWo8lhq3GcGd4rYaoH4b7Uk4RTMV4=
+        b=nb0DTu9C5LsOZCs9On8xcPjNmB8I0Fg9tPZP/B04gfwtvUBPZSe2ZGNYffrCV3d+Jy
+         QnEGkrScgeCoav98m8gqom0YM4mV1WzzmiBbfzb3Bvfs0RU7mKyfBPJZWUgTh+gZFGeL
+         e7AAIAGdoFlTDXDCDgePaVTwEp8/ppxTvHAMg=
 MIME-Version: 1.0
-In-Reply-To: <793692118a2f4bdd17326e8bed6c9792.squirrel@newgolddream.dyndns.info>
-References: <1233186456.6734.16.camel@localhost.localdomain>
-	 <1233187069.6734.21.camel@localhost.localdomain>
-	 <20090129031341.GD31096@linux-sh.org>
-	 <3ca9ec7a13c1a13ea7be6c37bbdfdb0c.squirrel@newgolddream.dyndns.info>
-	 <793692118a2f4bdd17326e8bed6c9792.squirrel@newgolddream.dyndns.info>
-Date: Fri, 30 Jan 2009 09:55:38 +0000
-Message-ID: <8b67d60901300155n66f86d4ch875d01cd1620409e@mail.gmail.com>
-Subject: Re: [PATCH RFC] sh: maple: Add support for SEGA Dreamcast VMU and 
-	clean up maple bus driver (1/3)
-From: Adrian McMenamin <lkmladrian@gmail.com>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: Paul Mundt <lethal@linux-sh.org>, Greg KH <greg@kroah.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       dwmw2 <dwmw2@infradead.org>, linux-sh <linux-sh@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>
+In-Reply-To: <20090129210435.4ca393c4@infradead.org>
+References: <1233282702-6274-1-git-send-email-tom.leiming@gmail.com>
+	 <20090129210435.4ca393c4@infradead.org>
+Date: Fri, 30 Jan 2009 17:59:04 +0800
+Message-ID: <d82e647a0901300159g79680ed4h778ebb591861578c@mail.gmail.com>
+Subject: Re: [PATCH] driver core: remove polling for driver_probe_done(v2)
+From: Ming Lei <tom.leiming@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: kay.sievers@vrfy.org, greg@kroah.com, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/29 Adrian McMenamin <adrian@newgolddream.dyndns.info>:
-> On Thu, January 29, 2009 4:43 pm, Adrian McMenamin wrote:
->> On Thu, January 29, 2009 3:13 am, Paul Mundt wrote:
-
->>>>
->>> Please do not abuse P2SEGADDR in this fashion. No new code should be
->>> using P2SEGADDR anyways. maple is particularly abusive in this case
->>> since
->>> it bounces back and forth between P2SEGADDR and PHYSADDR to try and
->>> ignore the fact cache flushing has to be handled.
->>>
->>> You may also wish to consider ioremap/ioremap_nocache().
->>>
->>
->> Can I just use dma_cache_sync before each dma run and then use the P1
->> address space?
->>
+2009/1/30 Arjan van de Ven <arjan@infradead.org>:
+> On Fri, 30 Jan 2009 10:31:42 +0800
+> tom.leiming@gmail.com wrote:
 >
-> After the dma run I mean - the cache is flushed before the run - but not
-> after.
+>> From: Ming Lei <tom.leiming@gmail.com>
+>>
+>> This patch renames driver_probe_done to driver_wait_probe_done,
+>> and make it wait on condition of probing done to remove
+>> polling for it in fs initialization. Also add
+>> driver_wait_probe_done_and_dev_appear(name) to allow callers
+>> to wait until all probing is done AND until the device @name
+>> exists.
+>
+>>  /**
+>> + * driver_wait_probe_done_and_dev_appear
+>> + * wait until the probe sequence is finished _and_ the dev @name
+>> appears.
+>
+> Hi,
+>
+> sorry to be the bad guy, but I think you turned the "either one" into a
+> "both".... so this isn't going to work ;(
+
+IMHO, it will msleep if either one is ture, so we turn this into
+return( not sleep) if both are false.
+( eg, A||B->C   <=>  ~C->~A&&~B )   :-)
+
+           while (driver_probe_done() != 0 ||
+                  (ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
+                  msleep(100);
+ here:
+      driver_probe_done() == 0  &&  name_to_dev_t(saved_root_name)
+
+===>
+
+driver_wait_probe_done_and_dev_appear(name)
+{
+         if (driver_probe_done() == 0 &&
+                  (ROOT_DEV = name_to_dev_t(saved_root_name)))
+                  return;
+         else
+                  schedule();
+}
+
+Thanks!
+
+>
+> unless I'm just too tired and miss something subtle, but I am pretty
+> sure DeMorgan does not work this way :)
+>
+>
+> --
+> Arjan van de Ven        Intel Open Source Technology Centre
+> For development, discussion and tips for power savings,
+> visit http://www.lesswatts.org
 >
 
 
-So I have done this:
 
-Removing P2SEGADDR call and flushing caches
----
-
-diff --git a/drivers/sh/maple/maple.c b/drivers/sh/maple/maple.c
-index 4d9b8b3..5dca308 100644
---- a/drivers/sh/maple/maple.c
-+++ b/drivers/sh/maple/maple.c
-@@ -186,7 +186,7 @@ static struct mapleq *maple_allocq(struct
-maple_device *mdev)
- 	mq->recvbuf = kmem_cache_zalloc(maple_queue_cache, GFP_KERNEL);
- 	if (!mq->recvbuf)
- 		goto failed_p2;
--	mq->recvbuf->buf = (void *)P2SEGADDR(&((mq->recvbuf->bufx)[0]));
-+	mq->recvbuf->buf = &((mq->recvbuf->bufx)[0]);
-
- 	return mq;
-
-@@ -639,9 +639,11 @@ static void maple_dma_handler(struct work_struct *work)
- 	ctrl_outl(0, MAPLE_ENABLE);
- 	if (!list_empty(&maple_sentq)) {
- 		list_for_each_entry_safe(mq, nmq, &maple_sentq, list) {
-+			mdev = mq->dev;
- 			recvbuf = mq->recvbuf->buf;
-+			dma_cache_sync(&mdev->dev, recvbuf, 0x400,
-+				DMA_FROM_DEVICE);
- 			code = recvbuf[0];
--			mdev = mq->dev;
- 			kfree(mq->sendbuf);
- 			list_del_init(&mq->list);
- 			switch (code) {
-
-
-Seems to work...
+-- 
+Lei Ming
