@@ -1,92 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZA3MtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZA3Mxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbZA3MtV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 07:49:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752480AbZA3MtL
+	id S1754825AbZA3Mxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 07:53:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbZA3Mx2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 07:49:11 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57696 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752439AbZA3MtJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 07:49:09 -0500
-Subject: Re: [PATCH -v3] use per cpu data for single cpu ipi calls
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <20090130123858.GQ30821@kernel.dk>
-References: <1233218954.7835.11.camel@twins>
-	 <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain>
-	 <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
-	 <1233253380.4495.123.camel@laptop>
-	 <alpine.LFD.2.00.0901291030510.3123@localhost.localdomain>
-	 <1233254680.4495.126.camel@laptop> <20090130112310.GI30821@kernel.dk>
-	 <1233318733.4495.174.camel@laptop>  <20090130123858.GQ30821@kernel.dk>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 13:48:51 +0100
-Message-Id: <1233319731.4495.177.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Jan 2009 07:53:28 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35410 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751805AbZA3Mx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 07:53:28 -0500
+Date: Fri, 30 Jan 2009 13:50:58 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@lst.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Vitaliy Gusev <vgusev@openvz.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
+Message-ID: <20090130125058.GA26931@redhat.com>
+References: <20090130123358.GA26216@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090130123358.GA26216@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 13:38 +0100, Jens Axboe wrote:
+On 01/30, Oleg Nesterov wrote:
+>
+> With this patch kthread() allocates all neccesary data (struct kthread)
+> on its own stack, globals kthread_stop_xxx are deleted. ->vfork_done
+> is used as a pointer into "struct kthread", this means kthread_stop()
+> can easily wait for kthread's exit.
 
-> >  		if (!wait) {
-> > +			/*
-> > +			 * We are calling a function on a single CPU
-> > +			 * and we are not going to wait for it to finish.
-> > +			 * We first try to allocate the data, but if we
-> > +			 * fail, we fall back to use a per cpu data to pass
-> > +			 * the information to that CPU. Since all callers
-> > +			 * of this code will use the same data, we must
-> > +			 * synchronize the callers to prevent a new caller
-> > +			 * from corrupting the data before the callee
-> > +			 * can access it.
-> > +			 *
-> > +			 * The CSD_FLAG_LOCK is used to let us know when
-> > +			 * the IPI handler is done with the data.
-> > +			 * The first caller will set it, and the callee
-> > +			 * will clear it. The next caller must wait for
-> > +			 * it to clear before we set it again. This
-> > +			 * will make sure the callee is done with the
-> > +			 * data before a new caller will use it.
-> > +			 * We use spinlocks to manage the callers.
-> > +			 */
-> 
-> That last sentence appears stale now, since there's no locking involved
-> for the per-cpu csd.
+To simplify the review, please see the code with the patch applied.
 
-Gah, I edited that, and generated the patch using
+Oleg.
 
-# git diff --stat -p 4f4b6c1a94a8735bbdc030a2911cf395495645b6.. kernel/smp.c | xclip
+struct kthread {
+	int should_stop;
+	struct completion exited;
+};
 
-on Ingo's tip/master. However it seems such a diff does not include
-non-commited changes, even though a regular git diff does:
+#define to_kthread(tsk)	\
+	container_of((tsk)->vfork_done, struct kthread, exited)
 
-# git diff kernel/smp.c
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 9eead6c..bbedbb7 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -251,7 +251,6 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
-                         * it to clear before we set it again. This
-                         * will make sure the callee is done with the
-                         * data before a new caller will use it.
--                        * We use spinlocks to manage the callers.
-                         */
-                        data = kmalloc(sizeof(*data), GFP_ATOMIC);
-                        if (data)
+int kthread_should_stop(void)
+{
+	return to_kthread(current)->should_stop;
+}
 
-What is the recommended way to do such a diff?
+static int kthread(void *_create)
+{
+	/* Copy data: it's on kthread's stack */
+	struct kthread_create_info *create = _create;
+	int (*threadfn)(void *data) = create->threadfn;
+	void *data = create->data;
+	struct kthread self;
+	int ret;
+
+	self.should_stop = 0;
+	init_completion(&self.exited);
+	current->vfork_done = &self.exited;
+
+	/* OK, tell user we're spawned, wait for stop or wakeup */
+	__set_current_state(TASK_UNINTERRUPTIBLE);
+	create->result = current;
+	complete(&create->done);
+	schedule();
+
+	ret = -EINTR;
+	if (!self.should_stop)
+		ret = threadfn(data);
+
+	/* we can't just return, we must preserve "self" on stack */
+	do_exit(ret);
+}
+
+int kthread_stop(struct task_struct *k)
+{
+	struct kthread *kthread;
+	int ret;
+
+	trace_sched_kthread_stop(k);
+	get_task_struct(k);
+
+	kthread = to_kthread(k);
+	barrier(); /* it might have exited */
+	if (k->vfork_done != NULL) {
+		kthread->should_stop = 1;
+		wake_up_process(k);
+		wait_for_completion(&kthread->exited);
+	}
+	ret = k->exit_code;
+
+	put_task_struct(k);
+	trace_sched_kthread_stop_ret(ret);
+
+	return ret;
+}
 
