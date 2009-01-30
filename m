@@ -1,63 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZA3HmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbZA3Hqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbZA3HmL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 02:42:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZA3Hl4
+	id S1753408AbZA3Hqc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 02:46:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZA3HqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 02:41:56 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:44688 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751069AbZA3Hl4 (ORCPT
+	Fri, 30 Jan 2009 02:46:24 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:33313 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751069AbZA3HqX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 02:41:56 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 29 Jan 2009 23:41:53 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 1/2] epoll fix own poll()
-In-Reply-To: <200901300329.35641.pisa@cmp.felk.cvut.cz>
-Message-ID: <alpine.DEB.1.10.0901292339480.16141@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com> <alpine.DEB.1.10.0901291030390.15448@alien.or.mcafeemobile.com> <20090129103715.2d3a8274.akpm@linux-foundation.org> <200901300329.35641.pisa@cmp.felk.cvut.cz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Fri, 30 Jan 2009 02:46:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=n/xhaePv1dioum3TvCFso7/XnXzvnMxq9N386SZXj7qQoScK8Y48Zyn5tvNllyo7rT
+         CH8w40hen+TDUE4ry8eOEVkoa6pbcqt9TSSwDpmBrE6fU7wSLjKXS+PEjR6EnaeTwqHv
+         yDACOdEUkcGv7RZDFxj9STL2MY0pDcQvEyWgI=
+Date: Fri, 30 Jan 2009 09:46:45 +0200
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -next/mmotm/resend] kmemtrace: fix printk formats
+Message-ID: <20090130074645.GA5218@localhost>
+References: <200901291030.n0TAUhRI003046@imap1.linux-foundation.org> <4981E86F.60909@oracle.com> <Pine.LNX.4.64.0901292234520.17617@anakin> <49822479.9030908@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49822479.9030908@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009, Pavel Pisa wrote:
-
-> epoll_wait() unconditionally calls  ep_poll(), the "rdllist" is not empty
-> (cheked by previous ep_eventpoll_poll() call), so ep_send_events()
-> has to be called. It moves all events from "rdllist" onto  "txlist"
-> and reports events confirmed by individual poll() calls to user.
-> There could be non signaling events in the "rdlist" left there from
-> previous scan for level triggering events or in case, that condition
-> is reset by some other intervention before  ep_eventpoll_poll().
-> All this is not problem yet, it would result in one abundant call to
-> epoll_wait() which returns 0. No problem. The EPOLLET events
-> are moved from "rdlist", others (level triggered events) signalling
-> are queued on "rdlist" again. If userspace does its duty, they would
-> be removed during next call. This all seems to suggests, that one
-> abundant epoll_wait() would get things back on the right path.
-> All critical processing (moving between lists) seems to be under
-> held of spinlock, so possibility for bugs is low. I have not yet analyzed
-> overflow list which complicates things.
+On Thu, Jan 29, 2009 at 01:49:45PM -0800, Randy Dunlap wrote:
+> Geert Uytterhoeven wrote:
+> > 
+> > %4zu?
 > 
-> I am not clever enough, to see, where is the problem, that situation
-> is not stabilized. Can you teach me Davide, please?
+> Ugh, yes.  Thanks.
+> Here's the updated patch.
+> 
+> -- 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> Fix kmemtrace printk warnings:
+> 
+> kernel/trace/kmemtrace.c:142: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
+> kernel/trace/kmemtrace.c:147: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc:      Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> ---
+>  kernel/trace/kmemtrace.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- linux-next-20090123.orig/kernel/trace/kmemtrace.c
+> +++ linux-next-20090123/kernel/trace/kmemtrace.c
+> @@ -139,12 +139,12 @@ kmemtrace_print_alloc_compress(struct tr
+>  		return TRACE_TYPE_PARTIAL_LINE;
+>  
+>  	/* Requested */
+> -	ret = trace_seq_printf(s, "%4ld   ", entry->bytes_req);
+> +	ret = trace_seq_printf(s, "%4zu   ", entry->bytes_req);
+>  	if (!ret)
+>  		return TRACE_TYPE_PARTIAL_LINE;
+>  
+>  	/* Allocated */
+> -	ret = trace_seq_printf(s, "%4ld   ", entry->bytes_alloc);
+> +	ret = trace_seq_printf(s, "%4zu   ", entry->bytes_alloc);
+>  	if (!ret)
+>  		return TRACE_TYPE_PARTIAL_LINE;
+>
 
-Sorry, I missed part of the email. Yes, if revents is zero in the 
-send-lood, I don't see how files can be added back to the ready-list.
-Please, create a very small test program that exhibit such behaviour ...
+I didn't notice this either, thanks.
+
+Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 
 
-
-- Davide
-
+	Eduard
 
