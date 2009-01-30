@@ -1,51 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755682AbZA3EoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbZA3Eo6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755682AbZA3EoI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 23:44:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbZA3Enp
+	id S1758492AbZA3Eo6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 23:44:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZA3Eot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 23:43:45 -0500
-Received: from ozlabs.org ([203.10.76.45]:36695 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755331AbZA3Eno (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 23:43:44 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: circular locking dependency on shutdown
-Date: Fri, 30 Jan 2009 15:13:35 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Peter Zijlstra <peterz@infradead.org>, cpufreq@vger.kernel.org
-References: <1233255049.4067.12.camel@johannes.local>
-In-Reply-To: <1233255049.4067.12.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 29 Jan 2009 23:44:49 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56373 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751367AbZA3Eos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 23:44:48 -0500
+Date: Thu, 29 Jan 2009 20:44:03 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Dave Airlie <airlied@gmail.com>, kerolasa@gmail.com, kerolasa@iki.fi,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
+       Dave Airlie <airlied@linux.ie>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: Re: PROBLEM: kernel BUG at drivers/gpu/drm/drm_fops.c:146!
+Message-Id: <20090129204403.5d9e4b38.akpm@linux-foundation.org>
+In-Reply-To: <200901291950.18724.jbarnes@virtuousgeek.org>
+References: <a6f8318b0901210358w7cced8e9yab86c487b3587d75@mail.gmail.com>
+	<20090129172010.f25fe0ad.akpm@linux-foundation.org>
+	<21d7e9970901291743q4f0a9393yc5c24afb50013ff3@mail.gmail.com>
+	<200901291950.18724.jbarnes@virtuousgeek.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901301513.36002.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 January 2009 05:20:49 Johannes Berg wrote:
-> Hi,
+On Thu, 29 Jan 2009 19:50:17 -0800 Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+
+> On Thursday, January 29, 2009 5:43 pm Dave Airlie wrote:
+> > On Fri, Jan 30, 2009 at 11:20 AM, Andrew Morton
+> > > hm, I'm a bit surprised to see the drm code using `struct
+> > > address_space' and read_mapping_page() and unmap_mapping_range() and
+> > > such.  I thought those only worked with regular files and pagecache :)
+> > >
+> > > Is it possible to briefly explain what's going on there?
+> > >
+> > > What instance of address_space_operations does ->dev_mapping actually
+> > > point at?
+> >
+> > Okay a bit tired and headache coming on but I'll try, maybe jbarnes
+> > can help out,
+> >
+> > We need to provide mappings to userspace that are backed by memory
+> > that can move around behind the mappings.
+> >
+> > So userspace wants a mapping for a GEM object via the AGP/GTT aperture
+> > instead of directly to the backing pages.
+> > Now as the GEM object is backed by shmem we can't use the shmem file
+> > descriptor we have to tie the mapping to without
+> > hacking up the shmem mmap functionality which seemed like a bad plan.
+> >
+> > So GEM uses the device inode to setup the mappings on. We just use a
+> > simple linear allocator to split up the device inodes address space
+> > and assign chunks to handles for different objects. The userspace app
+> > then uses the handle via mmap to get access to the VMAs. Now when GEM
+> > wants to move that object out of the GTT or to another area of the GTT
+> > we need some way to invalidate it, so we use unmap_mapping_range
+> > which destroys all the mappings for the object in all the VMA for all
+> > the processes mapping it currently
+> >
+> > GEM's read_mapping_page is distinct from this and is to do with the
+> > shmem interfaceing.
+> >
+> > Not sure if this explains it or just make it worse.
 > 
-> Every time I shut down my machine with a 2.6.29-rc2 kernel, I get a
-> lockdep report that scrolls off.
-...
-> halt is trying to acquire lock
-> 	(&per_cpu(cpu_policy_rwsem, cpu)){---}
+> Sounds right to me.  The offsets are just handles, not real file objects or 
+> backing store addresses.  We use them to take advantage of all the inode 
+> address mapping helpers, since they track stuff for us.
 > 
-> but task is already holding lock
-> 	(&cpu_hotplug.lock){--..}
+> That said, unmap_mapping_range may not be the best way to do this; basically 
+> we need a way to invalidate a given processes' mapping of a GTT range (which 
+> in turn is backed by real RAM).  If there's some other way we should be doing 
+> this I'm all ears.
 
-Hi Johannes,
+Well, we'd need to call in the big guns on this one - I've already
+stirred Hugh ;)
 
-   This looks much like the work_on_cpu()-getting-hotplug-lock problem which caused us to stop work_on_cpu doing that.  -rc3 has that fix; any chance of a re-test?
+unmap_mapping_range() is basically a truncate thing - it shoots down
+all mappings of a range of a *file*.  Across all processes in the
+machine which map that file.
 
-Thanks,
-Rusty.
+If that isn't what you want to do (and it sounds that way) then you'd
+want to use something which is mm_struct (or vma) centric, rather than
+file-centric.  zap_page_range(), methinks.
+
