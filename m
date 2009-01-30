@@ -1,111 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752758AbZA3Ieg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZA3IfX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752758AbZA3Ieg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 03:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZA3Ie1
+	id S1753565AbZA3IfX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 03:35:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZA3IfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 03:34:27 -0500
-Received: from casper.infradead.org ([85.118.1.10]:40636 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750973AbZA3Ie0 (ORCPT
+	Fri, 30 Jan 2009 03:35:08 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41503 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750973AbZA3IfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 03:34:26 -0500
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent
- VM_LOCKED file segments
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>
-	 <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>
-	 <1233259410.2315.75.camel@lts-notebook>
-	 <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
-	 <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 09:34:10 +0100
-Message-Id: <1233304450.4495.147.camel@laptop>
+	Fri, 30 Jan 2009 03:35:06 -0500
+Date: Fri, 30 Jan 2009 00:35:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Huang Weiyi <weiyi.huang@gmail.com>
+Subject: Re: [PATCH 1/1] atmel-ssc: fix misuse of dev_dbg when requested ssc
+ instance is not found
+Message-Id: <20090130003501.ed47dae2.akpm@linux-foundation.org>
+In-Reply-To: <20090130092025.618fa78f@hcegtvedt>
+References: <1232369876-19428-1-git-send-email-hans-christian.egtvedt@atmel.com>
+	<20090129174655.1f440f3e@hcegtvedt>
+	<20090129155042.e0ea148d.akpm@linux-foundation.org>
+	<20090130092025.618fa78f@hcegtvedt>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-29 at 12:48 -0800, Linus Torvalds wrote:
-> I still want somebody else to look at and think about it, though.
+On Fri, 30 Jan 2009 09:20:25 +0100 Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com> wrote:
+
+> > (Suitable cc's added - this was why your patch got lost)
+> > 
 > 
->                 Linus
-> 
-> ---
->  mm/mmap.c |   26 ++++++--------------------
->  1 files changed, 6 insertions(+), 20 deletions(-)
-> 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index 8d95902..d3fa10a 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -1134,16 +1134,11 @@ munmap_back:
->         }
->  
->         /*
-> -        * Can we just expand an old private anonymous mapping?
-> -        * The VM_SHARED test is necessary because shmem_zero_setup
-> -        * will create the file object for a shared anonymous map below.
-> +        * Can we just expand an old mapping?
->          */
-> -       if (!file && !(vm_flags & VM_SHARED)) {
-> -               vma = vma_merge(mm, prev, addr, addr + len, vm_flags,
-> -                                       NULL, NULL, pgoff, NULL);
-> -               if (vma)
-> -                       goto out;
-> -       }
-> +       vma = vma_merge(mm, prev, addr, addr + len, vm_flags, NULL, file, pgoff, NULL);
-> +       if (vma)
-> +               goto out;
+> AFAICT the lkml is the place for the drivers/misc stuff. Should I be
+> looking in another file than MAINTAINERS?
 
-You've made checkpatch unhappy ;-)
+Lots of drivers aren't mentioned in MAINTAINERS.  It is pretty
+important to cc the relevant maintainer if poss.  `git whatchanged' is
+one way.  Or a bit of inspired guessing (atmel == Haavard, for example).
 
-So we don't bother with anonymous only, always attempt the merge.
-
-> @@ -1206,17 +1201,8 @@ munmap_back:
->         if (vma_wants_writenotify(vma))
->                 vma->vm_page_prot = vm_get_page_prot(vm_flags & ~VM_SHARED);
->  
-> -       if (file && vma_merge(mm, prev, addr, vma->vm_end,
-> -                       vma->vm_flags, NULL, file, pgoff, vma_policy(vma))) {
-> -               mpol_put(vma_policy(vma));
-> -               kmem_cache_free(vm_area_cachep, vma);
-> -               fput(file);
-> -               if (vm_flags & VM_EXECUTABLE)
-> -                       removed_exe_file_vma(mm);
-> -       } else {
-> -               vma_link(mm, vma, prev, rb_link, rb_parent);
-> -               file = vma->vm_file;
-> -       }
-> +       vma_link(mm, vma, prev, rb_link, rb_parent);
-> +       file = vma->vm_file;
-
-And here we don't bother merging because that would have been done
-before. Assuming ->mmap() doesn't go wild, in which case it ought to
-have set a VM_SPECIAL bit anyway to discourage merging.
-
-[ And even if it didn't, failing to merge shouldn't be a problem, as
-minimizing the vmas is an optimization, not a strict requirement
-afaik. ]
-
-The obvious glaring difference is the vma_policy() cruft. But staring at
-the code a bit I can't see how the new vma can have acquired a vm_policy
-here, so it ought to not matter.
-
-Looks ok to my eyes, so I guess:
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+But the easy way is to cc me - I'll route the thing in the appropriate
+direction.
 
