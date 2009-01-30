@@ -1,149 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbZA3XGO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZA3XGq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757236AbZA3XGO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 18:06:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZA3XF7
+	id S1757499AbZA3XGq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 18:06:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZA3XGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 18:05:59 -0500
-Received: from mga14.intel.com ([143.182.124.37]:53063 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753483AbZA3XF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 18:05:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,354,1231142400"; 
-   d="scan'208";a="105569550"
-Subject: [PATCH] atmel-mci: fix initialization of dma slave data
-To: hskinnemoen@atmel.com
-From: Dan Williams <dan.j.williams@intel.com>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, kernel@avr32linux.org,
-       linux-kernel@vger.kernel.org
-Date: Fri, 30 Jan 2009 16:05:57 -0700
-Message-ID: <20090130230248.2402.65405.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGit/0.14.3.289.g7daff
+	Fri, 30 Jan 2009 18:06:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52875 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753483AbZA3XGe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 18:06:34 -0500
+Date: Fri, 30 Jan 2009 15:06:30 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Parag Warudkar <parag.lkml@gmail.com>
+cc: Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <alpine.DEB.2.00.0901301743410.4989@parag-desktop>
+Message-ID: <alpine.LFD.2.00.0901301506120.3150@localhost.localdomain>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net> <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
+ <20090129222247.GA13861@xw6200.broadcom.net> <alpine.DEB.2.00.0901291730030.5149@parag-desktop> <20090130184030.GA14933@xw6200.broadcom.net> <alpine.DEB.2.00.0901301743410.4989@parag-desktop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The conversion of atmel-mci to dma_request_channel missed the initialization
-of the channel dma_slave information.  dma_request_channel, along with the
-filter_fn, find the channel with the proper capabilities, then it is up to the
-driver to update the dw_dma_chan with its slave data.
 
-Reported-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
-Haavard,
+On Fri, 30 Jan 2009, Parag Warudkar wrote:
+> 
+> [  245.924484] eth0: PCI_COMMAND reg = 0x406 (bit 1 is on)
+> [  245.924487] eth0: Reg value at offset 0x0 is 0xffffffff
+> [  247.317971] tg3: eth0: No firmware running.
+> [  258.710634] ADDRCONF(NETDEV_UP): eth0: link is not ready
+> ^^^ Post-Suspend
+> 
+> So it looks like the memory space IO is enabled before and after suspend.
+> The device/vendor id goes 0xffffffff after resume - just like before.
+> Does that one matter? (Firmware may be looking at it?) 
 
-I do not have any conflicting dmaengine patches so feel free to carry
-this through the avr32 tree.
+One thing strikes me - are there any bridges between the host (CPU) and 
+that tg3 device?
 
-Regards,
-Dan
+Because we obviously have two people who say that their tg3 suspend/resume 
+works fine, so the tg3 driver is obviously not _totally_ broken. So I'm 
+wondering if there is something funny in between the CPU and the tg3, like 
+a hotplug bridge that needs magic to wake up properly.
 
- drivers/dma/dw_dmac_regs.h   |   24 ------------------------
- drivers/mmc/host/atmel-mci.c |    1 +
- include/linux/dw_dmac.h      |   33 +++++++++++++++++++++++++++++++++
- 3 files changed, 34 insertions(+), 24 deletions(-)
+Because clearly the PCI config space addresses are working fine, but the 
+thing is, while PCI config space accesses are routed by the device number 
+(and the bridges notion of secondary bridging), the PCI memory space 
+routing is based on address. So a PCI bridge can easily get one right (in 
+fact, it's really hard to get config space accesses wrong without the 
+bridges being _totally_ screwed up), while not routing the other at all.
 
-diff --git a/drivers/dma/dw_dmac_regs.h b/drivers/dma/dw_dmac_regs.h
-index 00fdd18..10ffa5c 100644
---- a/drivers/dma/dw_dmac_regs.h
-+++ b/drivers/dma/dw_dmac_regs.h
-@@ -126,24 +126,6 @@ struct dw_dma_regs {
- 
- #define DW_REGLEN		0x400
- 
--struct dw_dma_chan {
--	struct dma_chan		chan;
--	void __iomem		*ch_regs;
--	u8			mask;
--
--	spinlock_t		lock;
--
--	/* these other elements are all protected by lock */
--	dma_cookie_t		completed;
--	struct list_head	active_list;
--	struct list_head	queue;
--	struct list_head	free_list;
--
--	struct dw_dma_slave	*dws;
--
--	unsigned int		descs_allocated;
--};
--
- static inline struct dw_dma_chan_regs __iomem *
- __dwc_regs(struct dw_dma_chan *dwc)
- {
-@@ -155,12 +137,6 @@ __dwc_regs(struct dw_dma_chan *dwc)
- #define channel_writel(dwc, name, val) \
- 	__raw_writel((val), &(__dwc_regs(dwc)->name))
- 
--static inline struct dw_dma_chan *to_dw_dma_chan(struct dma_chan *chan)
--{
--	return container_of(chan, struct dw_dma_chan, chan);
--}
--
--
- struct dw_dma {
- 	struct dma_device	dma;
- 	void __iomem		*regs;
-diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
-index 76bfe16..2a81d46 100644
---- a/drivers/mmc/host/atmel-mci.c
-+++ b/drivers/mmc/host/atmel-mci.c
-@@ -1618,6 +1618,7 @@ static int __init atmci_probe(struct platform_device *pdev)
- 		dma_cap_zero(mask);
- 		dma_cap_set(DMA_SLAVE, mask);
- 		host->dma.chan = dma_request_channel(mask, filter, dws);
-+		set_dw_dma_slave(host->dma.chan, dws);
- 	}
- 	if (!host->dma.chan)
- 		dev_notice(&pdev->dev, "DMA not available, using PIO\n");
-diff --git a/include/linux/dw_dmac.h b/include/linux/dw_dmac.h
-index d797dde..799b6ef 100644
---- a/include/linux/dw_dmac.h
-+++ b/include/linux/dw_dmac.h
-@@ -54,6 +54,39 @@ struct dw_dma_slave {
- 	u32			cfg_lo;
- };
- 
-+struct dw_dma_chan {
-+	struct dma_chan		chan;
-+	void __iomem		*ch_regs;
-+	u8			mask;
-+
-+	spinlock_t		lock;
-+
-+	/* these other elements are all protected by lock */
-+	dma_cookie_t		completed;
-+	struct list_head	active_list;
-+	struct list_head	queue;
-+	struct list_head	free_list;
-+
-+	struct dw_dma_slave	*dws;
-+
-+	unsigned int		descs_allocated;
-+};
-+
-+static inline struct dw_dma_chan *to_dw_dma_chan(struct dma_chan *chan)
-+{
-+	return container_of(chan, struct dw_dma_chan, chan);
-+}
-+
-+static inline void set_dw_dma_slave(struct dma_chan *chan, struct dw_dma_slave *dws)
-+{
-+	if (chan) {
-+		struct dw_dma_chan *dwc = to_dw_dma_chan(chan);
-+
-+		dwc->dws = dws;
-+	}
-+}
-+
-+
- /* Platform-configurable bits in CFG_HI */
- #define DWC_CFGH_FCMODE		(1 << 0)
- #define DWC_CFGH_FIFO_MODE	(1 << 1)
+So just do that "lspci -vvxxx" for the whole box, before and after, and 
+send us the "before" and the "diff -u before after" thing, and maybe that 
+shows something interesting. Because some bridge chip being confused would 
+also explain why a total re-init of the whole tg3 chip by a driver unload 
+and reload doesn't seem to help.
 
+		Linus
