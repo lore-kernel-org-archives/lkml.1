@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbZA3Vmm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZA3Vrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756770AbZA3Vmm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 16:42:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbZA3Vmb
+	id S1756587AbZA3Vrw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 16:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbZA3Vrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 16:42:31 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42155
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753502AbZA3Vma (ORCPT
+	Fri, 30 Jan 2009 16:47:43 -0500
+Received: from corsair.crowder-design.com ([207.44.208.58]:56994 "EHLO
+	corsair.crowder-design.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753175AbZA3Vrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 16:42:30 -0500
-Date: Fri, 30 Jan 2009 13:42:27 -0800 (PST)
-Message-Id: <20090130.134227.123379239.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090127074048.GA4197@ff.dom.local>
-References: <20090126212130.GA4338@ioremap.net>
-	<20090126.221056.174077798.davem@davemloft.net>
-	<20090127074048.GA4197@ff.dom.local>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 30 Jan 2009 16:47:42 -0500
+X-Greylist: delayed 2156 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Jan 2009 16:47:42 EST
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging
+	adjacent	VM_LOCKED file segments
+From: Will Crowder <will@crowder-design.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>, Greg KH <gregkh@suse.de>,
+       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1233349152.908.56.camel@lts-notebook>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>
+	 <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>
+	 <1233259410.2315.75.camel@lts-notebook>
+	 <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
+	 <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>
+	 <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>
+	 <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
+	 <20090130055639.GA30950@suse.de>
+	 <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
+	 <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>
+	 <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain>
+	 <1233345190.908.36.camel@lts-notebook>  <498368D2.6090307@oracle.com>
+	 <1233349152.908.56.camel@lts-notebook>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 13:11:03 -0800
+Message-Id: <1233349863.5557.335.camel@enterprise.crowder-design.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.0.2 (2.0.2-41.el4) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Tue, 27 Jan 2009 07:40:48 +0000
+What, no ".linux" TLD?  :-)  Oh well...in time, time...
 
-> I think the main problem is to respect put_page() more, and maybe you
-> mean to add this to your allocator too, but using slab pages for this
-> looks a bit complex to me, but I can miss something.
+Will Crowder
 
-Hmmm, Jarek's comments here made me realize that we might be
-able to do some hack with cooperation with SLAB.
+On Fri, 2009-01-30 at 15:59 -0500, Lee Schermerhorn wrote:
+> On Fri, 2009-01-30 at 12:53 -0800, Randy Dunlap wrote:
+> > Lee Schermerhorn wrote:
+> > 
+> > > I tried this patch atop 29-rc3 + your patch from yesterday with my
+> > > simple test program at http://free.linux/hp.com/~lts/Tests/mmap_lock.c. 
+> 
+> D'oh!  that's ".hp.com"  
+> 
+> > Is that URL correct?  I can't find/access it.
+> 
+> Sorry, should have cut and pasted, like here:
+> 
+> 	http://free.linux.hp.com/~lts/Tests/mmap_lock.c
+> 
+> 
+> Lee
+> 
 
-Basically the idea is that if the page count of a SLAB page
-is greater than one, SLAB will not use that page for new
-allocations.
-
-It's cheesy and the SLAB developers will likely barf at the
-idea, but it would certainly work.
-
-Back to real life, I think long term the thing to do is to just do the
-cached page allocator thing we'll be doing after Jarek's socket page
-patch is integrated, and for best performance the driver has to
-receive it's data into pages, only explicitly pulling the ethernet
-header into the linear area, like NIU does.
