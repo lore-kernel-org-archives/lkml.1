@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756139AbZA3SlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbZA3Sml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756139AbZA3SlY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 13:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753687AbZA3Sky
+	id S1755883AbZA3Sml (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 13:42:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751716AbZA3Smc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 13:40:54 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:49772 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753525AbZA3Skx (ORCPT
+	Fri, 30 Jan 2009 13:42:32 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1865 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751411AbZA3Smc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 13:40:53 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 30 Jan 2009 10:40:51 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 1/2] epoll fix own poll()
-In-Reply-To: <200901301042.05333.pisa@cmp.felk.cvut.cz>
-Message-ID: <alpine.DEB.1.10.0901301034370.31459@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com> <200901300329.35641.pisa@cmp.felk.cvut.cz> <alpine.DEB.1.10.0901292339480.16141@alien.or.mcafeemobile.com> <200901301042.05333.pisa@cmp.felk.cvut.cz>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 Jan 2009 13:42:32 -0500
+From: Mark Brown <broonie@sirena.org.uk>
+To: David Brownell <dbrownell@users.sourceforge.net>,
+       Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org, Mark Brown <broonie@sirena.org.uk>
+Date: Fri, 30 Jan 2009 18:42:17 +0000
+Message-Id: <1233340937-7679-1-git-send-email-broonie@sirena.org.uk>
+X-Mailer: git-send-email 1.5.6.3
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [PATCH] mfd: Fix TWL4030 build on some ARM variants
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009, Pavel Pisa wrote:
+Many ARM platforms do not provide a mach/cpu.h so rather than guarding
+the use of that header with CONFIG_ARM guard it with the guards used
+when testing for the OMAP variants in the body of the code.
 
-> I have seen the reason exactly when I have sent the e-mail
-> and switched computer off at the night.
-> 
-> The reason is simple and it is caused by debugging print in each
-> loop in my application and by way how poll concept is implemented
-> in the kernel.
+Signed-off-by: Mark Brown <broonie@sirena.org.uk>
+---
+ drivers/mfd/twl4030-core.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Yes, this is a known thing. Like I already told you yesterday, calling it 
-a "spurious" event. So you code *is* generating a spurios event to the 
-tty, with a write.
-Unfortunately this is how Linux poll subsystem works. But things can be 
-improved, w/out any revolution.
-I already have patches to send Andrew-ward, that (gradually) uses the 
-wakeup "key" to report event that really happened, during the wakeup call. 
-This will allow the epoll callback to avoid epoll waiters wakeups, when 
-events do not match the interest mask.
-
-
-- Davide
+diff --git a/drivers/mfd/twl4030-core.c b/drivers/mfd/twl4030-core.c
+index e7ab003..68826f1 100644
+--- a/drivers/mfd/twl4030-core.c
++++ b/drivers/mfd/twl4030-core.c
+@@ -38,7 +38,7 @@
+ #include <linux/i2c.h>
+ #include <linux/i2c/twl4030.h>
+ 
+-#ifdef CONFIG_ARM
++#if defined(CONFIG_ARCH_OMAP2) || defined(CONFIG_ARCH_OMAP3)
+ #include <mach/cpu.h>
+ #endif
+ 
+-- 
+1.5.6.3
 
