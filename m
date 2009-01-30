@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbZA3AIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759742AbZA3AJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760221AbZA3AIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 19:08:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758418AbZA3AIT
+	id S1759742AbZA3AJp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 19:09:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbZA3AJg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 19:08:19 -0500
-Received: from tundra.namei.org ([65.99.196.166]:1374 "EHLO tundra.namei.org"
+	Thu, 29 Jan 2009 19:09:36 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57747 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757921AbZA3AIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 19:08:18 -0500
-Date: Fri, 30 Jan 2009 11:07:03 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       "<David Safford" <safford@watson.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/6] integrity: IMA as an integrity service provider
-In-Reply-To: <eae67eb66b76df32f0e95c4cda33fd6271567c94.1233262163.git.zohar@linux.vnet.ibm.com>
-Message-ID: <alpine.LRH.1.10.0901301032080.29870@tundra.namei.org>
-References: <cover.1233262162.git.zohar@linux.vnet.ibm.com> <eae67eb66b76df32f0e95c4cda33fd6271567c94.1233262163.git.zohar@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1754837AbZA3AJg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 19:09:36 -0500
+Date: Fri, 30 Jan 2009 01:09:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: allow 8 more cpus could be used
+Message-ID: <20090130000916.GA332@elte.hu>
+References: <49822B1D.9070708@kernel.org> <20090129224236.GD1465@elte.hu> <49823166.4010702@oracle.com> <20090129231259.GB29611@elte.hu> <49823869.4010406@oracle.com> <20090129232207.GC30601@elte.hu> <49823AD7.3000502@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49823AD7.3000502@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009, Mimi Zohar wrote:
 
-> +++ b/security/integrity/ima/Kconfig
-> @@ -0,0 +1,49 @@
-> +# IBM Integrity Measurement Architecture
-> +#
-> +config IMA
-> +	bool "Integrity Measurement Architecture(IMA)"
-> +	depends on ACPI
-> +	select SECURITYFS
-> +	select CRYPTO
-> +	select CRYPTO_HMAC
-> +	select CRYPTO_MD5
-> +	select CRYPTO_SHA1
-> +	select TCG_TPM
-> +	select TCG_TIS
-> +	help
-> +	  The Trusted Computing Group(TCG) runtime Integrity
-> +	  Measurement Architecture(IMA) maintains a list of hash
-> +	  values of executables and other sensitive system files,
-> +	  as they are read or executed. If an attacker manages
-> +	  to change the contents of an important system file
-> +	  being measured, we can tell.
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-Out of interest, do you know if the TCG has analyzed their use of SHA-1 
-in light of various attacks on the algorithm over the last few years?
+> Ingo Molnar wrote:
+> > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > 
+> >> Ingo Molnar wrote:
+> >>> * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> >>>
+> >>>> Ingo Molnar wrote:
+> >>>>> * Yinghai Lu <yinghai@kernel.org> wrote:
+> >>>>>
+> >>>>>> Impact: fix left out MARCO
+> >>>>>>
+> >>>>>> X86_PC will be always enabled. so need to check if we have bigsmp 
+> >>>>>> support built in before cut off more than 8 cpus.
+> >>>>> ah, that's a leftover reference to X86_PC. It can now be removed, together 
+> >>>>> with the Kconfig X86_PC option.
+> >>>>>
+> >>>>>> -#if defined(CONFIG_X86_PC) && defined(CONFIG_X86_32)
+> >>>>>> +#if defined(CONFIG_X86_PC) && !defined(CONFIG_X86_BIGSMP)
+> >>>>>>  	if (def_to_bigsmp && nr_cpu_ids > 8) {
+> >>>>>>  		unsigned int cpu;
+> >>>>>>  		unsigned nr;
+> >>>>> Could you please send a patch that removes both X86_PC and X86_BIGSMP - 
+> >>>>> and removes the above cutoff code too, so that it will be built-in all the 
+> >>>>> time?
+> >>>> and at what cost, please?
+> >>> the size difference between a bigsmp and a normal-smp x86 defconfig kernel 
+> >>> is 0.011%. Zero difference on a UP kernel. (And UP is what most of the 
+> >>> ultra-embedded systems are using)
+> >> That's static size?  how about cpu and apic table space?
+> > 
+> > What do you mean? What is your point and what is your exact question?
+> 
+> There used to be large CPU and APIC tables (depending on the MAX number 
+> of these devices that are supported in a kernel).  Are those gone?
 
-The IETF has published analysis and recommendations relating to the use of 
-SHA-1 (and other cryptographic hashes) with IP protocols:
+ah, ok. No, there's no such dependency on CONFIG_X86_BIGSMP. The total 
+size difference is around 900 bytes on the defconfig kernel - and that 
+includes the APIC tables too.
 
-http://www.ietf.org/rfc/rfc4894.txt
-http://www.ietf.org/rfc/rfc4270.txt
+> If not, then I agree with YH and CONFIG_BIGSMP is still needed/wanted by 
+> small systems.
 
-It would be useful to know if similar analysis has been performed for TPM.
+It's not a size issue - but we can still keep the option.
 
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+	Ingo
