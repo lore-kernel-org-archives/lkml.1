@@ -1,113 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759092AbZA3BQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759546AbZA3BRj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759092AbZA3BQc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 20:16:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZA3BQY
+	id S1759546AbZA3BRj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 20:17:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbZA3BRa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 20:16:24 -0500
-Received: from ozlabs.org ([203.10.76.45]:40078 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751644AbZA3BQX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 20:16:23 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] lguest fixes
-Date: Fri, 30 Jan 2009 11:46:14 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Atsushi SAKAI <sakaia@jp.fujitsu.com>,
-       Tim Ansell <mithro@mithis.com>, Mark Wallis <mwallis@serialmonkey.com>
+	Thu, 29 Jan 2009 20:17:30 -0500
+Received: from rv-out-0506.google.com ([209.85.198.234]:58050 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753951AbZA3BR3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 20:17:29 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=V4dgs+aIeR+Pg6iQZmkkF8j2k1kkwtkr02/3mYRCfKidQUebSfncEAVgdVFN700jTc
+         Benalr40DUOk9H/WftZvSIrlCVe2klrUHTAiBaQCtLKtG07eEMFMgHxqhdhrJP8FDAVB
+         SRFONsZdZfBsRXbMy2wU7qGgYXv9b/nlZY8kg=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+In-Reply-To: <21d7e9970901291706t17fc3d9aq753f90db75396639@mail.gmail.com>
+References: <a6f8318b0901210358w7cced8e9yab86c487b3587d75@mail.gmail.com>
+	 <a6f8318b0901210427o33af879byd352adaf5fde1c29@mail.gmail.com>
+	 <20090129163032.f97901c5.akpm@linux-foundation.org>
+	 <21d7e9970901291706t17fc3d9aq753f90db75396639@mail.gmail.com>
+Date: Thu, 29 Jan 2009 17:17:28 -0800
+Message-ID: <91705d080901291717r74ace12ex7cba426f7879b333@mail.gmail.com>
+Subject: Re: PROBLEM: kernel BUG at drivers/gpu/drm/drm_fops.c:146!
+From: Dan Nicholson <dbn.lists@gmail.com>
+To: Dave Airlie <airlied@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Dave Airlie <airlied@linux.ie>,
+       linux-kernel@vger.kernel.org, kerolasa@iki.fi,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
+       dri-devel@lists.sourceforge.net, kerolasa@gmail.com
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901301146.15493.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 18e352e4a73465349711a9324767e1b2453383e2:
-  Linus Torvalds (1):
-        Linux 2.6.29-rc3
+On Thu, Jan 29, 2009 at 5:06 PM, Dave Airlie <airlied@gmail.com> wrote:
+> On Fri, Jan 30, 2009 at 10:30 AM, Andrew Morton
+> <akpm@linux-foundation.org> wrote:
+>> (cc's added)
+>>
+>> On Wed, 21 Jan 2009 13:27:48 +0100
+>> Sami Kerola <kerolasa@iki.fi> wrote:
+>>
+>>> I compiled the Torvalds git kernel 2.6.29-rc2-00013 and I got an oops.
+>>> The oops happens when ever X starts. Initially I was booting with run
+>>> level 5 and it hung. I tried to use run level to 3 and an operating
+>>> system started just fine. When I type startx the hung happen again.
+>>> Please let me know if you need some more information besides oops from
+>>> messages file and lspci output.
+>>>
+>>>
+>>> Jan 21 08:53:58 lelux kernel: ------------[ cut here ]------------
+>>> Jan 21 08:53:58 lelux kernel: kernel BUG at drivers/gpu/drm/drm_fops.c:146!
+>>
+>> I assume that 2.6.28 didn't do this?
+>
+> This is a userspace race between udev and libdrm, I'm not sure we can do
+> anything in the kernel other than BUG, maybe we should just WARN instead.
+>
+> Basically, libdrm creates devices nodes, the initial drm opening gets that, udev
+> comes along when the module is loaded and re-creates the device node,
+> when AIGLX opens the device
+> it can't figure out wtf just happened, as the inode->i_mapping we use
+> to store the GEM device mmap ranges is different.
+>
+> I think building libdrm with --enable-udev is the correct answer, and
+> maybe switching this to a WARN so it doesn't blow up.
 
-are available in the git repository at:
+Hi Dave,
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-for-linus.git master
+I really think libdrm should have --enable-udev on by default for
+linux. The number of people not using udev for managing their devices
+is surely in the minority now. What do you think?
 
-Atsushi SAKAI (1):
-      lguest: typos fix
-
-Mark Wallis (1):
-      lguest: Fix a memory leak with the lg object during launcher close
-
-Tim 'mithro' Ansell (1):
-      lguest: disable the FORTIFY for lguest.
-
- Documentation/lguest/Makefile |    2 +-
- arch/x86/lguest/boot.c        |    4 ++--
- drivers/lguest/core.c         |    2 +-
- drivers/lguest/lguest_user.c  |    5 ++---
- 4 files changed, 6 insertions(+), 7 deletions(-)
-
-diff --git a/Documentation/lguest/Makefile b/Documentation/lguest/Makefile
-index 725eef8..1f4f9e8 100644
---- a/Documentation/lguest/Makefile
-+++ b/Documentation/lguest/Makefile
-@@ -1,5 +1,5 @@
- # This creates the demonstration utility "lguest" which runs a Linux guest.
--CFLAGS:=-Wall -Wmissing-declarations -Wmissing-prototypes -O3 -I../../include -I../../arch/x86/include
-+CFLAGS:=-Wall -Wmissing-declarations -Wmissing-prototypes -O3 -I../../include -I../../arch/x86/include -U_FORTIFY_SOURCE
- LDLIBS:=-lz
- 
- all: lguest
-diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
-index a7ed208..92f1c6f 100644
---- a/arch/x86/lguest/boot.c
-+++ b/arch/x86/lguest/boot.c
-@@ -931,7 +931,7 @@ static void lguest_restart(char *reason)
-  * that we can fit comfortably.
-  *
-  * First we need assembly templates of each of the patchable Guest operations,
-- * and these are in lguest_asm.S. */
-+ * and these are in i386_head.S. */
- 
- /*G:060 We construct a table from the assembler templates: */
- static const struct lguest_insns
-@@ -1093,7 +1093,7 @@ __init void lguest_init(void)
- 	acpi_ht = 0;
- #endif
- 
--	/* We set the perferred console to "hvc".  This is the "hypervisor
-+	/* We set the preferred console to "hvc".  This is the "hypervisor
- 	 * virtual console" driver written by the PowerPC people, which we also
- 	 * adapted for lguest's use. */
- 	add_preferred_console("hvc", 0, NULL);
-diff --git a/drivers/lguest/core.c b/drivers/lguest/core.c
-index 90663e0..60156df 100644
---- a/drivers/lguest/core.c
-+++ b/drivers/lguest/core.c
-@@ -224,7 +224,7 @@ int run_guest(struct lg_cpu *cpu, unsigned long __user *user)
- 			break;
- 
- 		/* If the Guest asked to be stopped, we sleep.  The Guest's
--		 * clock timer or LHCALL_BREAK from the Waker will wake us. */
-+		 * clock timer or LHREQ_BREAK from the Waker will wake us. */
- 		if (cpu->halted) {
- 			set_current_state(TASK_INTERRUPTIBLE);
- 			schedule();
-diff --git a/drivers/lguest/lguest_user.c b/drivers/lguest/lguest_user.c
-index 34bc017..b8ee103 100644
---- a/drivers/lguest/lguest_user.c
-+++ b/drivers/lguest/lguest_user.c
-@@ -307,9 +307,8 @@ static int close(struct inode *inode, struct file *file)
- 	 * kmalloc()ed string, either of which is ok to hand to kfree(). */
- 	if (!IS_ERR(lg->dead))
- 		kfree(lg->dead);
--	/* We clear the entire structure, which also marks it as free for the
--	 * next user. */
--	memset(lg, 0, sizeof(*lg));
-+	/* Free the memory allocated to the lguest_struct */
-+	kfree(lg);
- 	/* Release lock and exit. */
- 	mutex_unlock(&lguest_lock);
- 
+--
+Dan
