@@ -1,63 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZA3GES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZA3GKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753400AbZA3GES (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 01:04:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbZA3GEE
+	id S1752542AbZA3GKX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 01:10:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751411AbZA3GKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 01:04:04 -0500
-Received: from ozlabs.org ([203.10.76.45]:43006 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751411AbZA3GEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 01:04:01 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Date: Fri, 30 Jan 2009 16:33:53 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
-       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com> <200901291213.32959.rusty@rustcorp.com.au> <20090128181205.3b15fa4a.akpm@linux-foundation.org>
-In-Reply-To: <20090128181205.3b15fa4a.akpm@linux-foundation.org>
+	Fri, 30 Jan 2009 01:10:06 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:57257 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750870AbZA3GKE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 01:10:04 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=jgL5189TWAOnVORthzUIuZHFSjBgtSsYoF0kcCGr4GIeazq4iQZt0ov8scsaAbkwl
+	D69rmzmPsyrGwdddCoSAw==
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <m1bptp8pkk.fsf@fess.ebiederm.org>
+References: <Pine.LNX.4.64.0901162229420.12858@kitami.corp.google.com>
+	 <20090124181924.d633523c.akpm@linux-foundation.org>
+	 <20090125120818.GA4454@x200.localdomain>
+	 <m1r62obev3.fsf@fess.ebiederm.org>
+	 <Pine.LNX.4.64.0901291719520.26444@kitami.corp.google.com>
+	 <m1bptp8pkk.fsf@fess.ebiederm.org>
+Date: Thu, 29 Jan 2009 22:09:55 -0800
+Message-ID: <ed628a920901292209y4df66fabk26942422a135af0a@mail.gmail.com>
+Subject: Re: Migration of kernel interfaces to seq_files breaks pread() 
+	consumers
+From: Paul Turner <pjt@google.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901301633.54013.rusty@rustcorp.com.au>
+X-GMailtapped-By: 172.25.146.18
+X-GMailtapped: pjt
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 January 2009 12:42:05 Andrew Morton wrote:
-> On Thu, 29 Jan 2009 12:13:32 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
-> > On Thursday 29 January 2009 06:14:40 Andrew Morton wrote:
-> > > It's vulnerable to the same deadlock, I think?  Suppose we have:
-> > ...
-> > > - A calls work_on_cpu() and takes woc_mutex.
-> > > 
-> > > - Before function_which_takes_L() has started to execute, task B takes L
-> > >   then calls work_on_cpu() and task B blocks on woc_mutex.
-> > > 
-> > > - Now function_which_takes_L() runs, and blocks on L
-> > 
-> > Agreed, but now it's a fairly simple case.  Both sides have to take lock L, and both have to call work_on_cpu.
-> > 
-> > Workqueues are more generic and widespread, and an amazing amount of stuff gets called from them.  That's why I felt uncomfortable with removing the one known problematic caller.
-> > 
-> 
-> hm.  it's a bit of a timebomb.
-> 
-> y'know, the original way in which acpi-cpufreq did this is starting to
-> look attractive.  Migrate self to that CPU then just call the dang
-> function.  Slow, but no deadlocks (I think)?
+On Thu, Jan 29, 2009 at 7:01 PM, Eric W. Biederman
+<ebiederm@xmission.com> wrote:
+> Paul Turner <pjt@google.com> writes:
+>>
+>> Thanks Eric,
+>>
+>> Moving the position into the seq_file structure is much cleaner.  Basic
+>> tests seem to work ok.
+>
+> Thanks.
+>
+>> Few comments:
+>> - seq_open needs its fmode opened up to take advantage of this [patch
+>> below]
+>
+> Good point.
+> Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+>
+>
+>> - There's still the inherent problem of reads peturbing other reads (both
+>> read and pread).  Our applications should be ok with this, however it does
+>> deviate from the supposedly thread-safe pread semantics.
+>
+> I don't see this not being thread safe.
+>
+> If the data that is returned is stable.  We should not see anything
+> changing.  Otherwise it is all bets are off in any case.
+>
 
-Just buggy.  What random thread was it mugging?  If there's any path where
-it's not a kthread, what if userspace does the same thing at the same time?
-We risk running on the wrong cpu, *then* overriding userspace when we restore
-it.
+With just reads you had stability on the record level at least.
+Concurrent reads/seeks on a file made it obvious where things weren't
+thread safe.
 
-In general these cpumask games are a bad idea.
+Obviously userspace doing stupid things isn't a kernel problem but it
+could become one in the future if a previously safe concurrent pread
+interface is migrated to use seqfile.
 
-Rusty.
+> Because seq_read happens under m->lock I don't see how there will
+> be anything thread unsafe.
+>
+> The position that changes is just an internal implementation detail to
+> keep track of which data that we have cached.
+
+I'm only referring to unstable records since every time we seek we
+trash the cache.
+
+>
+>>
+>> - Paul
+>>
+>> ---
+>>  fs/seq_file.c |    2 --
+>>  1 files changed, 0 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/fs/seq_file.c b/fs/seq_file.c
+>> index cd63d69..aa3621f 100644
+>> --- a/fs/seq_file.c
+>> +++ b/fs/seq_file.c
+>> @@ -48,8 +48,6 @@ int seq_open(struct file *file, const struct seq_operations
+>> *op)
+>>        */
+>>       file->f_version = 0;
+>>
+>> -     /* SEQ files support lseek, but not pread/pwrite */
+>> -     file->f_mode &= ~(FMODE_PREAD | FMODE_PWRITE);
+>>       return 0;
+>>  }
+>>  EXPORT_SYMBOL(seq_open);
+>> --
+>> 1.5.4.5
+>
