@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbZA3F7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753400AbZA3GES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754989AbZA3F7O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 00:59:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZA3F67
+	id S1753400AbZA3GES (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 01:04:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbZA3GEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 00:58:59 -0500
-Received: from mx2.suse.de ([195.135.220.15]:35563 "EHLO mx2.suse.de"
+	Fri, 30 Jan 2009 01:04:04 -0500
+Received: from ozlabs.org ([203.10.76.45]:43006 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751092AbZA3F66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 00:58:58 -0500
-Date: Thu, 29 Jan 2009 21:56:39 -0800
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent
-	VM_LOCKED file segments
-Message-ID: <20090130055639.GA30950@suse.de>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com> <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain> <1233259410.2315.75.camel@lts-notebook> <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain> <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain> <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com> <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
+	id S1751411AbZA3GEB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 01:04:01 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Date: Fri, 30 Jan 2009 16:33:53 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20090116191108.135927000@polaris-admin.engr.sgi.com> <200901291213.32959.rusty@rustcorp.com.au> <20090128181205.3b15fa4a.akpm@linux-foundation.org>
+In-Reply-To: <20090128181205.3b15fa4a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200901301633.54013.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 06:08:30PM -0800, Linus Torvalds wrote:
+On Thursday 29 January 2009 12:42:05 Andrew Morton wrote:
+> On Thu, 29 Jan 2009 12:13:32 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> 
-> On Thu, 29 Jan 2009, Maksim Yevmenkin wrote:
+> > On Thursday 29 January 2009 06:14:40 Andrew Morton wrote:
+> > > It's vulnerable to the same deadlock, I think?  Suppose we have:
+> > ...
+> > > - A calls work_on_cpu() and takes woc_mutex.
+> > > 
+> > > - Before function_which_takes_L() has started to execute, task B takes L
+> > >   then calls work_on_cpu() and task B blocks on woc_mutex.
+> > > 
+> > > - Now function_which_takes_L() runs, and blocks on L
 > > 
-> > Just to confirm. This patch also appear to fix the immediate issue for us.
+> > Agreed, but now it's a fairly simple case.  Both sides have to take lock L, and both have to call work_on_cpu.
+> > 
+> > Workqueues are more generic and widespread, and an amazing amount of stuff gets called from them.  That's why I felt uncomfortable with removing the one known problematic caller.
+> > 
 > 
-> Ok, I ended up committing it.
+> hm.  it's a bit of a timebomb.
 > 
-> I didn't do the whole "Cc: stable@kernel.org" thing, because maybe the 
-> non-cleanup version is less controversial for stable, but I decided that 
-> there's no way I don't want the cleanup done in mainline kernel, and if we 
-> end up needing a few VM_IO's added, I think it's worth it. Even after -rc3 
-> (since I suspend we won't actually need them).
+> y'know, the original way in which acpi-cpufreq did this is starting to
+> look attractive.  Migrate self to that CPU then just call the dang
+> function.  Slow, but no deadlocks (I think)?
 
-Which version was the "non-cleanup" version that should be added to the
-stable trees?
+Just buggy.  What random thread was it mugging?  If there's any path where
+it's not a kthread, what if userspace does the same thing at the same time?
+We risk running on the wrong cpu, *then* overriding userspace when we restore
+it.
 
-The commit you did make, de33c8db5910cda599899dd431cc30d7c1018cbf,
-seemed pretty "tiny" to me.
+In general these cpumask games are a bad idea.
 
-confused,
-
-greg k-h
+Rusty.
