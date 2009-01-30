@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754002AbZA3Jvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754549AbZA3JxH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754002AbZA3Jvx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 04:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750870AbZA3Jvp
+	id S1754549AbZA3JxH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 04:53:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZA3Jwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 04:51:45 -0500
-Received: from relay.atmel.no ([80.232.32.139]:60461 "EHLO relay.atmel.no"
+	Fri, 30 Jan 2009 04:52:55 -0500
+Received: from relay.atmel.no ([80.232.32.139]:56512 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751987AbZA3Jvo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 04:51:44 -0500
-Date: Fri, 30 Jan 2009 10:50:57 +0100
-From: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       kay.sievers@vrfy.org, weiyi.huang@gmail.com,
-       Andrew Victor <avictor.za@gmail.com>
+	id S1752048AbZA3Jwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 04:52:54 -0500
+X-Greylist: delayed 1536 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Jan 2009 04:52:54 EST
+Date: Fri, 30 Jan 2009 10:26:54 +0100
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dbrownell@users.sourceforge.net, kay.sievers@vrfy.org,
+       weiyi.huang@gmail.com, Andrew Victor <avictor.za@gmail.com>
 Subject: Re: [PATCH 1/1] atmel-ssc: fix misuse of dev_dbg when requested ssc
  instance is not found
-Message-ID: <20090130105057.7d0acaec@hcegtvedt>
-In-Reply-To: <20090130013628.4672215d.akpm@linux-foundation.org>
+Message-ID: <20090130102654.10e4aafc@hskinnemoen-d830>
+In-Reply-To: <1232369876-19428-1-git-send-email-hans-christian.egtvedt@atmel.com>
 References: <1232369876-19428-1-git-send-email-hans-christian.egtvedt@atmel.com>
-	<20090130102654.10e4aafc@hskinnemoen-d830>
-	<20090130013628.4672215d.akpm@linux-foundation.org>
-Organization: Atmel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009 01:36:28 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+[CCs added]
 
-> On Fri, 30 Jan 2009 10:26:54 +0100 Haavard Skinnemoen
-> <haavard.skinnemoen@atmel.com> wrote:
+Hans-Christian Egtvedt wrote:
+> This patch replaces the dev_dbg(...) with a pr_err since the ssc pointer
+> is not valid when the id is not found in the list.
 > 
-> > [CCs added]
-> > 
-> > Hans-Christian Egtvedt wrote:
-> > > This patch replaces the dev_dbg(...) with a pr_err since the ssc
-> > > pointer is not valid when the id is not found in the list.
-> > > 
-> > > Signed-off-by: Hans-Christian Egtvedt
-> > > <hans-christian.egtvedt@atmel.com>
-> > 
-> > Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-> > 
-> > ...or should I just apply it to the avr32 tree?
-> > 
+> Signed-off-by: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
+
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+
+...or should I just apply it to the avr32 tree?
+
+Haavard
+
+> ---
+>  drivers/misc/atmel-ssc.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> Is OK, I tossed into onto my 2.6.29 pile.
-> 
-> Should it be backported to 2.6.28.x or earlier?
-> 
-
-It shoud apply clean to 2.6.28.x as well, but this bug will only
-trigger when a user of the SSC peripheral tries to request a SSC which
-is already requested or not added to the list at all. So in most cases
-bad platform drivers setup, configuration error or bad code.
-
-In kernel 2.6.29-rc3 there are three users:
-
-1 sound/soc/atmel/sam9g20_wm8731.c        274 ssc = ssc_request(0);
-2 sound/soc/atmel/playpaq_wm8510.c        399 ssc = ssc_request(0);
-3 sound/spi/at73c213.c                    980 chip->ssc = ssc_request(board->ssc_id);
-
-The two first are a bit suspicious since they hard code id 0.
-
-My 0.02 € is to get it in for 2.6.29, but fine to leave out for earlier
-kernels.
-
--- 
-Best regards,
-Hans-Christian Egtvedt
+> diff --git a/drivers/misc/atmel-ssc.c b/drivers/misc/atmel-ssc.c
+> index 6b35874..6cff1bb 100644
+> --- a/drivers/misc/atmel-ssc.c
+> +++ b/drivers/misc/atmel-ssc.c
+> @@ -35,7 +35,7 @@ struct ssc_device *ssc_request(unsigned int ssc_num)
+>  
+>  	if (!ssc_valid) {
+>  		spin_unlock(&user_lock);
+> -		dev_dbg(&ssc->pdev->dev, "could not find requested device\n");
+> +		pr_err("ssc: ssc%d platform device is missing\n", ssc_num);
+>  		return ERR_PTR(-ENODEV);
+>  	}
+>  
