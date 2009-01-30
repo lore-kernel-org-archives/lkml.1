@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZA3X6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZAaAAX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbZA3X6O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 18:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbZA3X5z
+	id S1757057AbZAaAAX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 19:00:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbZAaAAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 18:57:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47043 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753173AbZA3X5y (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 18:57:54 -0500
-Date: Fri, 30 Jan 2009 15:57:06 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
+	Fri, 30 Jan 2009 19:00:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50923 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753173AbZAaAAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 19:00:01 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Parag Warudkar <parag.lkml@gmail.com>
-cc: Matt Carlson <mcarlson@broadcom.com>,
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+Date: Sat, 31 Jan 2009 00:59:16 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Carlson <mcarlson@broadcom.com>,
        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        "David S. Miller" <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901301506120.3150@localhost.localdomain> <alpine.DEB.2.00.0901301826490.5027@parag-desktop>
 In-Reply-To: <alpine.DEB.2.00.0901301826490.5027@parag-desktop>
-Message-ID: <alpine.LFD.2.00.0901301551460.3150@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net> <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
- <20090129222247.GA13861@xw6200.broadcom.net> <alpine.DEB.2.00.0901291730030.5149@parag-desktop> <20090130184030.GA14933@xw6200.broadcom.net> <alpine.DEB.2.00.0901301743410.4989@parag-desktop> <alpine.LFD.2.00.0901301506120.3150@localhost.localdomain>
- <alpine.DEB.2.00.0901301826490.5027@parag-desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901310059.17746.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 30 Jan 2009, Parag Warudkar wrote:
+On Saturday 31 January 2009, Parag Warudkar wrote:
+> 
+> On Fri, 30 Jan 2009, Linus Torvalds wrote:
+> 
+> > 
+> > Because we obviously have two people who say that their tg3 suspend/resume 
+> > works fine, so the tg3 driver is obviously not _totally_ broken. So I'm 
+> > wondering if there is something funny in between the CPU and the tg3, like 
+> > a hotplug bridge that needs magic to wake up properly.
+> > 
+> > Because clearly the PCI config space addresses are working fine, but the 
+> > thing is, while PCI config space accesses are routed by the device number 
+> > (and the bridges notion of secondary bridging), the PCI memory space 
+> > routing is based on address. So a PCI bridge can easily get one right (in 
+> > fact, it's really hard to get config space accesses wrong without the 
+> > bridges being _totally_ screwed up), while not routing the other at all.
+> > 
+> > So just do that "lspci -vvxxx" for the whole box, before and after, and 
+> > send us the "before" and the "diff -u before after" thing, and maybe that 
+> > shows something interesting. Because some bridge chip being confused would 
+> > also explain why a total re-init of the whole tg3 chip by a driver unload 
+> > and reload doesn't seem to help.
 > 
 > Totally worth having this problem from a "getting an opportunity to 
 > understand" standpoint. This confirms my long standing suspicion that bugs 
 > in Linux kernel are merely a handiwork of few clever people to get more 
 > people to understand and contribute :)
-
-Heh. I wish. But if that's the end result, we've done something good.
-
-> Any how  here is the pre-suspend lspci -vvxxx output followed by diff -u -
-
-Bingo.
-
-> diff -u lspci-pre-suspend lspci-post-suspend
 > 
-> --- lspci-pre-suspend	2009-01-30 18:19:50.752275695 -0500
-> +++ lspci-post-suspend	2009-01-30 18:20:52.629779008 -0500
+> Any how  here is the pre-suspend lspci -vvxxx output followed by diff -u -
+> 
+
+[--snip--]
+
+I think this is what we're looking for:
+
+> @@ -472,7 +472,7 @@
+>  f0: 00 00 00 00 00 00 00 00 80 0f 01 00 00 00 00 00
 >  
 >  00:1c.0 PCI bridge: Intel Corporation 631xESB/632xESB/3100 Chipset PCI Express Root Port 1 (rev 09)
 > -	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
@@ -59,17 +77,9 @@ Bingo.
 >  	Latency: 0, Cache Line Size: 64 bytes
 >  	Bus: primary=00, secondary=0e, subordinate=0e, sec-latency=0
 
-We've disabled IO and MEM behind this bridge - the one that bridges to 
-secondary bus 0x0e.
+and the PCIe port driver may be at fault.
 
-And your tg3 device? It's at 0000:0e:00.0. Yeah. Exactly the bus that 
-we've disabled IO and MEM for.
+Can you try to remove the pci_save_state(dev) from pcie_port_suspend_late()
+and see if that helps?
 
-In other words, it was never your tg3 suspend/resume that was buggy. It 
-was the suspend/resume for the PCI-E port driver. In fact, I think it's 
-_exactly_ the issue I just emailed out about.
-
-I bet Rafael can whip up a patch in a minute. I have too much of a 
-headache right now to look at my screen for a while, so I'll take a break.
-
-			Linus
+Rafael
