@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbZA3PNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754920AbZA3PRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466AbZA3PNh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 10:13:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbZA3PN3
+	id S1754920AbZA3PRe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 10:17:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751090AbZA3PRZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 10:13:29 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43662 "EHLO mx3.mail.elte.hu"
+	Fri, 30 Jan 2009 10:17:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53919 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750824AbZA3PN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 10:13:28 -0500
-Date: Fri, 30 Jan 2009 16:12:51 +0100
+	id S1750930AbZA3PRZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 10:17:25 -0500
+Date: Fri, 30 Jan 2009 16:17:01 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -next/mmotm/resend] kmemtrace: fix printk formats
-Message-ID: <20090130151251.GC27549@elte.hu>
-References: <200901291030.n0TAUhRI003046@imap1.linux-foundation.org> <4981E86F.60909@oracle.com> <Pine.LNX.4.64.0901292234520.17617@anakin> <49822479.9030908@oracle.com> <20090130074645.GA5218@localhost>
+To: Rusty Russell <rusty@rustcorp.com.au>, Dave Jones <davej@redhat.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] x86/powernow: fix cpus_allowed brokage when acpi=off
+Message-ID: <20090130151701.GD27549@elte.hu>
+References: <498136FC.2020206@kernel.org> <200901301210.48352.rusty@rustcorp.com.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090130074645.GA5218@localhost>
+In-Reply-To: <200901301210.48352.rusty@rustcorp.com.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,52 +40,48 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
+* Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> On Thu, Jan 29, 2009 at 01:49:45PM -0800, Randy Dunlap wrote:
-> > Geert Uytterhoeven wrote:
-> > > 
-> > > %4zu?
+> On Thursday 29 January 2009 15:26:28 Yinghai Lu wrote:
 > > 
-> > Ugh, yes.  Thanks.
-> > Here's the updated patch.
-> > 
-> > -- 
-> > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > 
-> > Fix kmemtrace printk warnings:
-> > 
-> > kernel/trace/kmemtrace.c:142: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
-> > kernel/trace/kmemtrace.c:147: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
-> > 
-> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > cc:      Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > ---
-> >  kernel/trace/kmemtrace.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > --- linux-next-20090123.orig/kernel/trace/kmemtrace.c
-> > +++ linux-next-20090123/kernel/trace/kmemtrace.c
-> > @@ -139,12 +139,12 @@ kmemtrace_print_alloc_compress(struct tr
-> >  		return TRACE_TYPE_PARTIAL_LINE;
-> >  
-> >  	/* Requested */
-> > -	ret = trace_seq_printf(s, "%4ld   ", entry->bytes_req);
-> > +	ret = trace_seq_printf(s, "%4zu   ", entry->bytes_req);
-> >  	if (!ret)
-> >  		return TRACE_TYPE_PARTIAL_LINE;
-> >  
-> >  	/* Allocated */
-> > -	ret = trace_seq_printf(s, "%4ld   ", entry->bytes_alloc);
-> > +	ret = trace_seq_printf(s, "%4zu   ", entry->bytes_alloc);
-> >  	if (!ret)
-> >  		return TRACE_TYPE_PARTIAL_LINE;
-> >
+> > Impact: fix current->cpus_allowed overwriting.
+> ...
+> > caused by
+> > | commit 2fdf66b491ac706657946442789ec644cc317e1a
+> > | Author: Rusty Russell <rusty@rustcorp.com.au>
+> > | Date:   Wed Dec 31 18:08:47 2008 -0800
+> > |
+> > |    cpumask: convert shared_cpu_map in acpi_processor* structs to cpumask_var_t
 > 
-> I didn't notice this either, thanks.
+> Hi Yinghai!
 > 
-> Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+>    Indeed; Mike, that contained a bad conversion of 
+> arch/x86/kernel/cpu/cpufreq/powernow-k8.c.
+> 
+>    This patch reverts the bad change (this code should still be converted
+> to work_on_cpu of course, but that's a bigger change).
+> 
+>    Yinghai, as far as I can tell your other fixes are independent (and
+> were a problem before this commit, yes?).  Can you re-submit them on top
+> of this patch (which is for Ingo, but against latest Linus).
+> 
+> Subject: cpumask: fix powernow-k8: partial revert of 2fdf66b491ac706657946442789ec644cc317e1a
+> 
+> Impact: fix powernow-k8 when acpi=off (or other error).
+> 
+> There was a spurious change introduced into powernow-k8 in this patch:
+> the cause if that we try to "restore" the cpus_allowed we never saved.
+> 
+> See lkml "[PATCH] x86/powernow: fix cpus_allowed brokage when
+> acpi=off" from Yinghai for the bug report.
+> 
+> Cc: Mike Travis <travis@sgi.com>
+> Cc: Yinghai Lu <yinghai@kernel.org>
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Applied to tip/tracing/kmemtrace, thanks!
+applied to tip/x86/urgent, thanks guys!
+
+Dave, is it fine if we send the fix to Linus via this route - or would you 
+like to do it yourself?
 
 	Ingo
