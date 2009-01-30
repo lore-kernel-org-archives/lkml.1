@@ -1,94 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758492AbZA3Eo6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbZA3EqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758492AbZA3Eo6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 23:44:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZA3Eot
+	id S1758895AbZA3EqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 23:46:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZA3EqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 23:44:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56373 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751367AbZA3Eos (ORCPT
+	Thu, 29 Jan 2009 23:46:12 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47355 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbZA3EqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 23:44:48 -0500
-Date: Thu, 29 Jan 2009 20:44:03 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Dave Airlie <airlied@gmail.com>, kerolasa@gmail.com, kerolasa@iki.fi,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
-       Dave Airlie <airlied@linux.ie>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: PROBLEM: kernel BUG at drivers/gpu/drm/drm_fops.c:146!
-Message-Id: <20090129204403.5d9e4b38.akpm@linux-foundation.org>
-In-Reply-To: <200901291950.18724.jbarnes@virtuousgeek.org>
-References: <a6f8318b0901210358w7cced8e9yab86c487b3587d75@mail.gmail.com>
-	<20090129172010.f25fe0ad.akpm@linux-foundation.org>
-	<21d7e9970901291743q4f0a9393yc5c24afb50013ff3@mail.gmail.com>
-	<200901291950.18724.jbarnes@virtuousgeek.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 29 Jan 2009 23:46:11 -0500
+Message-ID: <4982860E.2060605@zytor.com>
+Date: Thu, 29 Jan 2009 20:46:06 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jonathan Campbell <jon@nerdgrounds.com>
+CC: "Peter W. Morreale" <pmorreale@novell.com>, devel@driverdev.osuosl.org,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
+References: <497E4531.20800@nerdgrounds.com> <497E4919.60907@zytor.com>	 <497E4C5E.2030201@nerdgrounds.com> <1233248649.7191.130.camel@hermosa.site> <4981E7BD.3040507@nerdgrounds.com> <4981E99F.30001@zytor.com> <498271DF.6090406@nerdgrounds.com>
+In-Reply-To: <498271DF.6090406@nerdgrounds.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 19:50:17 -0800 Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-
-> On Thursday, January 29, 2009 5:43 pm Dave Airlie wrote:
-> > On Fri, Jan 30, 2009 at 11:20 AM, Andrew Morton
-> > > hm, I'm a bit surprised to see the drm code using `struct
-> > > address_space' and read_mapping_page() and unmap_mapping_range() and
-> > > such.  I thought those only worked with regular files and pagecache :)
-> > >
-> > > Is it possible to briefly explain what's going on there?
-> > >
-> > > What instance of address_space_operations does ->dev_mapping actually
-> > > point at?
-> >
-> > Okay a bit tired and headache coming on but I'll try, maybe jbarnes
-> > can help out,
-> >
-> > We need to provide mappings to userspace that are backed by memory
-> > that can move around behind the mappings.
-> >
-> > So userspace wants a mapping for a GEM object via the AGP/GTT aperture
-> > instead of directly to the backing pages.
-> > Now as the GEM object is backed by shmem we can't use the shmem file
-> > descriptor we have to tie the mapping to without
-> > hacking up the shmem mmap functionality which seemed like a bad plan.
-> >
-> > So GEM uses the device inode to setup the mappings on. We just use a
-> > simple linear allocator to split up the device inodes address space
-> > and assign chunks to handles for different objects. The userspace app
-> > then uses the handle via mmap to get access to the VMAs. Now when GEM
-> > wants to move that object out of the GTT or to another area of the GTT
-> > we need some way to invalidate it, so we use unmap_mapping_range
-> > which destroys all the mappings for the object in all the VMA for all
-> > the processes mapping it currently
-> >
-> > GEM's read_mapping_page is distinct from this and is to do with the
-> > shmem interfaceing.
-> >
-> > Not sure if this explains it or just make it worse.
+Jonathan Campbell wrote:
+> I don't really see the similarity between the MTD subsystem and dividing
+> vram up by files. Video cards don't have "erase blocks". And MTD is not
+> a filesystem. And the onboard memory mtd driver (map system RAM) only
+> handles one fixed region determined at load time.
 > 
-> Sounds right to me.  The offsets are just handles, not real file objects or 
-> backing store addresses.  We use them to take advantage of all the inode 
-> address mapping helpers, since they track stuff for us.
+> Vramfs on the other hand determines what resources to use at mount time.
+> It supports multiple mounts, one per PCI device, if you want the
+> combined VRAM of two VGA cards in your system.
 > 
-> That said, unmap_mapping_range may not be the best way to do this; basically 
-> we need a way to invalidate a given processes' mapping of a GTT range (which 
-> in turn is backed by real RAM).  If there's some other way we should be doing 
-> this I'm all ears.
+> I don't think vramfs would fit well into the MTD subsystem.
 
-Well, we'd need to call in the big guns on this one - I've already
-stirred Hugh ;)
+Think about it this way: it is a continuum of facilities.  Why is VRAM
+different than, say, external DRAM that can only be accessed via a DMA
+engine?  Now swap the DRAM with NAND flash and perform the same exercise.
 
-unmap_mapping_range() is basically a truncate thing - it shoots down
-all mappings of a range of a *file*.  Across all processes in the
-machine which map that file.
+Perhaps the most important reason is that you want to be able to use
+this as backing store for swap.  Currently the mm doesn't handle swap
+which is much faster than filesystems very well, but that should be
+possible to address.
 
-If that isn't what you want to do (and it sounds that way) then you'd
-want to use something which is mm_struct (or vma) centric, rather than
-file-centric.  zap_page_range(), methinks.
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
