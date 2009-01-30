@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbZA3Vt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZA3VyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756802AbZA3Vt3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 16:49:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbZA3VtS
+	id S1756786AbZA3VyV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 16:54:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZA3VyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 16:49:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37354 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753006AbZA3VtS (ORCPT
+	Fri, 30 Jan 2009 16:54:12 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48017
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755134AbZA3VyL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 16:49:18 -0500
-Date: Fri, 30 Jan 2009 13:47:36 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: hch@lst.de, ebiederm@xmission.com, mingo@elte.hu, xemul@openvz.org,
-       rusty@rustcorp.com.au, vgusev@openvz.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
-Message-Id: <20090130134736.ce5910aa.akpm@linux-foundation.org>
-In-Reply-To: <20090130123358.GA26216@redhat.com>
-References: <20090130123358.GA26216@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 30 Jan 2009 16:54:11 -0500
+Date: Fri, 30 Jan 2009 13:54:09 -0800 (PST)
+Message-Id: <20090130.135409.180077287.davem@davemloft.net>
+To: mingo@elte.hu
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: x86's nmi_hz wrt. oprofile's nmi_timer_int.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090130150125.GF31009@elte.hu>
+References: <20090129.155852.161923905.davem@davemloft.net>
+	<20090130150125.GF31009@elte.hu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009 13:33:58 +0100
-Oleg Nesterov <oleg@redhat.com> wrote:
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 30 Jan 2009 16:01:25 +0100
 
->  int kthread_stop(struct task_struct *k)
->  {
-> +	struct kthread *kthread;
->  	int ret;
->  
-> -	mutex_lock(&kthread_stop_lock);
-> -
-> -	/* It could exit after stop_info.k set, but before wake_up_process. */
-> -	get_task_struct(k);
-> -
->  	trace_sched_kthread_stop(k);
-> +	get_task_struct(k);
->  
-> -	/* Must init completion *before* thread sees kthread_stop_info.k */
-> -	init_completion(&kthread_stop_info.done);
-> -	smp_wmb();
-> +	kthread = to_kthread(k);
-> +	barrier(); /* it might have exited */
+> 
+> * David Miller <davem@davemloft.net> wrote:
+> 
+> > While working on an NMI watchdog implementation on sparc64 I noticed 
+> > what seems to be a peculiar behavior of the NMI timer int oprofile 
+> > support on x86.
+> > 
+> > When the NMI watchdog tests itself at boot timer we start with nmi_hz 
+> > equal to HZ.
+> > 
+> > After the NMI watchdog self-test passes, nmi_hz is reduced down to '1'.
+> > 
+> > The NMI timer int oprofile support simply uses DIE_NMI notifiers for 
+> > it's implementation.  But I don't see anything in the code of 
+> > arch/x86/oprofile/nmi_timer_int.c nor the NMI watchdog infrastructure 
+> > which will re-adjust nmi_hz back to HZ or something similar.
+> > 
+> > Am I missing something?
+> 
+> Reducing it to 1 HZ was kind of a performance hack: running NMIs at HZ 
+> needlessly interrupts the CPU HZ times a second. It's more than enough to 
+> have 1 nmi-watchdog tick per second to notice deadlocks that take longer 
+> than 5 seconds.
 
-Why the change from smp_wmb() to plain old barrier()?
+For the NMI watchdog's purposes I understand the intent, and this
+is perfectly fine.
+
+The problem is that it stays at '1' when oprofile starts using the NMI
+watchdog, and we certainly want more than one oprofile tick per second
+:-)
