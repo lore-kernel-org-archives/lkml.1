@@ -1,141 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZA3Wpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbZA3Wu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbZA3Wpu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 17:45:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756775AbZA3WpB
+	id S1756918AbZA3Wu7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 17:50:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754207AbZA3Wus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 17:45:01 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:2284 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756677AbZA3Wo7 (ORCPT
+	Fri, 30 Jan 2009 17:50:48 -0500
+Received: from rn-out-0910.google.com ([64.233.170.189]:35732 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752325AbZA3Wuq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 17:44:59 -0500
-From: Myron Stowe <myron.stowe@hp.com>
-Subject: [PATCH 2/2] ACPICA: 80 column adherence (no functional change)
-To: lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       myron.stowe@hp.com, Myron Stowe <myron.stowe@hp.com>
-Date: Fri, 30 Jan 2009 15:44:58 -0700
-Message-ID: <20090130224458.24329.8120.stgit@bob.kio>
-In-Reply-To: <20090130223832.24329.5434.stgit@bob.kio>
-References: <20090130223832.24329.5434.stgit@bob.kio>
-User-Agent: StGIT/0.14.3.215.gff3d
+	Fri, 30 Jan 2009 17:50:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version:content-type;
+        b=KqZbkefSq6+rMnzecV8M4aPMu0c5PmFAlSNVT6P2Fv5nrBj+2+9KYCuzcZX2nsZn0J
+         ReC0nDal86wPx7w3GD0ugP0md+IfA2Zi5a85ttoqgxNqdrE+Ry90WLXzyJvdqdHPdiOe
+         JtVHUgGMqKAFU8OkpRPNuey4R0Ke6KJdrrx3o=
+Date: Fri, 30 Jan 2009 17:50:36 -0500 (EST)
+From: Parag Warudkar <parag.lkml@gmail.com>
+X-X-Sender: parag@parag-desktop
+To: Matt Carlson <mcarlson@broadcom.com>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <20090130184030.GA14933@xw6200.broadcom.net>
+Message-ID: <alpine.DEB.2.00.0901301743410.4989@parag-desktop>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net> <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
+ <20090129222247.GA13861@xw6200.broadcom.net> <alpine.DEB.2.00.0901291730030.5149@parag-desktop> <20090130184030.GA14933@xw6200.broadcom.net>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch modifies a file derived from ACPI CA and as such formatting
-may come directly from the CA code or indirectly from some type of parsing
-of the original CA code.  As such, non-functional formatting changes may be
-counter productive.  If this is the case then feel free to ignore this
-component of the patch series.
 
 
-This modification may be used under either the GPL or the BSD-style
-license used for Intel ACPI CA code.
+On Fri, 30 Jan 2009, Matt Carlson wrote:
 
-Signed-off-by: Myron Stowe <myron.stowe@hp.com>
----
+> 
+> If the PCI_COMMAND message doesn't match, then it means that the
+> PCI_COMMAND register isn't getting restored for some reason.  If they do
+> On Thu, Jan 29, 2009 at 02:35:44PM -0800, Parag Warudkar wrote:
+> > 
+> > 
+> > On Thu, 29 Jan 2009, Matt Carlson wrote:
+> > 
+> > > FWIW, I can suspend and resume using the latest linux-2.6 kernel
+> > > on a machine with a similar chip here.  The problem doesn't seem to
+> > > affect all Broadcom devices.
+> > 
+> > It is failing for me on HP xw6600 workstation, if that helps in any way.
+> > 
+> > Parag
+> 
+> O.K.  Let's test some more assumptions.  Can you apply the following
+> patch and observe the system logs when the device is first loaded and
+> again after resume.  The patch looks at the pci command register to
+> verify that memory space IO is indeed enabled.  (It should be.)  This is
+> all that should be needed for MMIO to work.
+> On Thu, Jan 29, 2009 at 02:35:44PM -0800, Parag Warudkar wrote:
+> > 
+> > 
+> > On Thu, 29 Jan 2009, Matt Carlson wrote:
 
- drivers/acpi/acpica/tbutils.c |   36 +++++++++++++++++++++++++-----------
- 1 files changed, 25 insertions(+), 11 deletions(-)
+> O.K.  Let's test some more assumptions.  Can you apply the following
+> patch and observe the system logs when the device is first loaded and
+> again after resume.  The patch looks at the pci command register to
+> verify that memory space IO is indeed enabled.  (It should be.)  This is
+> all that should be needed for MMIO to work.
+> match, then something else in the system is not getting restored
+> correctly.
+> 
+Here is the output after applying the patch (fresh boot btw) -
 
-diff --git a/drivers/acpi/acpica/tbutils.c b/drivers/acpi/acpica/tbutils.c
-index 22ce489..e5c24b8 100644
---- a/drivers/acpi/acpica/tbutils.c
-+++ b/drivers/acpi/acpica/tbutils.c
-@@ -179,7 +179,10 @@ acpi_tb_print_table_header(acpi_physical_address address,
- 
- 	if (ACPI_COMPARE_NAME(header->signature, ACPI_SIG_FACS)) {
- 
--		/* FACS only has signature and length fields of common table header */
-+		/*
-+		 * FACS only has signature and length fields of common table
-+		 * header
-+		 */
- 
- 		ACPI_INFO((AE_INFO, "%4.4s %08lX, %04X",
- 			   header->signature, (unsigned long)address,
-@@ -379,14 +382,18 @@ acpi_tb_get_root_table_entry(u8 *table_entry, u32 table_entry_size)
- 	} else {
- 		/*
- 		 * 32-bit platform, XSDT: Truncate 64-bit to 32-bit and return
--		 * 64-bit platform, XSDT: Move (unaligned) 64-bit to local, return 64-bit
-+		 * 64-bit platform, XSDT: Move (unaligned) 64-bit to local,
-+		 * return 64-bit
- 		 */
- 		ACPI_MOVE_64_TO_64(&address64, table_entry);
- 
- #if ACPI_MACHINE_WIDTH == 32
- 		if (address64 > ACPI_UINT32_MAX) {
- 
--			/* Will truncate 64-bit address to 32 bits, issue warning */
-+			/*
-+			 * Will truncate 64-bit address to 32 bits, issue
-+			 * warning
-+			 */
- 
- 			ACPI_WARNING((AE_INFO,
- 				      "64-bit Physical Address in XSDT is too large (%8.8X%8.8X), truncating",
-@@ -448,9 +455,9 @@ acpi_tb_parse_root_table(acpi_physical_address rsdp_address, u8 flags)
- 	if (rsdp->revision > 1 && rsdp->xsdt_physical_address
- 			&& !acpi_rsdt_forced) {
- 		/*
--		 * Root table is an XSDT (64-bit physical addresses). We must use the
--		 * XSDT if the revision is > 1 and the XSDT pointer is present, as per
--		 * the ACPI specification.
-+		 * Root table is an XSDT (64-bit physical addresses). We must
-+		 * use the XSDT if the revision is > 1 and the XSDT pointer
-+		 * is present, as per * the ACPI specification.
- 		 */
- 		address = (acpi_physical_address) rsdp->xsdt_physical_address;
- 		table_entry_size = sizeof(u64);
-@@ -487,7 +494,7 @@ acpi_tb_parse_root_table(acpi_physical_address rsdp_address, u8 flags)
- 
- 	acpi_tb_print_table_header(address, table);
- 
--	/* Get the length of the full table, verify length and map entire table */
-+	/* Get the length of the full table, verify len, and map entire table */
- 
- 	length = table->length;
- 	acpi_os_unmap_memory(table, sizeof(struct acpi_table_header));
-@@ -518,8 +525,9 @@ acpi_tb_parse_root_table(acpi_physical_address rsdp_address, u8 flags)
- 		    sizeof(struct acpi_table_header)) / table_entry_size);
- 
- 	/*
--	 * First two entries in the table array are reserved for the DSDT and FACS,
--	 * which are not actually present in the RSDT/XSDT - they come from the FADT
-+	 * First two entries in the table array are reserved for the DSDT and
-+	 * FACS, * which are not actually present in the RSDT/XSDT - they come
-+	 * from the FADT
- 	 */
- 	table_entry =
- 	    ACPI_CAST_PTR(u8, table) + sizeof(struct acpi_table_header);
-@@ -532,7 +540,10 @@ acpi_tb_parse_root_table(acpi_physical_address rsdp_address, u8 flags)
- 		if (acpi_gbl_root_table_list.count >=
- 		    acpi_gbl_root_table_list.size) {
- 
--			/* There is no more room in the root table array, attempt resize */
-+			/*
-+			 * There is no more room in the root table array,
-+			 * attempt resize
-+			 */
- 
- 			status = acpi_tb_resize_root_table_list();
- 			if (ACPI_FAILURE(status)) {
-@@ -545,7 +556,10 @@ acpi_tb_parse_root_table(acpi_physical_address rsdp_address, u8 flags)
- 			}
- 		}
- 
--		/* Get the table physical address (32-bit for RSDT, 64-bit for XSDT) */
-+		/*
-+		 * Get the table physical address (32-bit for RSDT,
-+		 * 64-bit for XSDT)
-+		 */
- 
- 		acpi_gbl_root_table_list.tables[acpi_gbl_root_table_list.count].
- 		    address =
+[   29.698877] eth0: PCI_COMMAND reg = 0x406 (bit 1 is on)
+[   29.698880] eth0: Reg value at offset 0x0 is 0x167b14e4
+[   29.758169] ADDRCONF(NETDEV_UP): eth0: link is not ready
+[   31.295087] tg3: eth0: Link is up at 100 Mbps, full duplex.
+[   31.295090] tg3: eth0: Flow control is off for TX and off for RX.
+[   31.297574] ADDRCONF(NETDEV_CHANGE): eth0: link becomes ready
+[   41.872007] eth0: no IPv6 routers present
+^^^ Pre-Suspend
 
+[  245.924484] eth0: PCI_COMMAND reg = 0x406 (bit 1 is on)
+[  245.924487] eth0: Reg value at offset 0x0 is 0xffffffff
+[  247.317971] tg3: eth0: No firmware running.
+[  258.710634] ADDRCONF(NETDEV_UP): eth0: link is not ready
+^^^ Post-Suspend
+
+So it looks like the memory space IO is enabled before and after suspend.
+The device/vendor id goes 0xffffffff after resume - just like before.
+Does that one matter? (Firmware may be looking at it?) 
+
+> 
+> diff --git a/drivers/net/tg3.c b/drivers/net/tg3.c
+> index 8b3f846..67bb29f 100644
+> --- a/drivers/net/tg3.c
+> +++ b/drivers/net/tg3.c
+> @@ -7225,8 +7225,17 @@ static int tg3_reset_hw(struct tg3 *tp, int reset_phy)
+>   */
+>  static int tg3_init_hw(struct tg3 *tp, int reset_phy)
+>  {
+> +	u16 cmd;
+> +
+>  	tg3_switch_clocks(tp);
+>  
+> +	pci_read_config_word(tp->pdev, PCI_COMMAND, &cmd);
+> +
+> +	printk(KERN_NOTICE "%s: PCI_COMMAND reg = 0x%x (bit 1 is %s)\n",
+> +	       tp->dev->name, cmd, (cmd & PCI_COMMAND_MEMORY) ? "on" : "off");
+> +	printk(KERN_NOTICE "%s: Reg value at offset 0x0 is 0x%x\n",
+> +	       tp->dev->name, tr32(0x0));
+> +
+>  	tw32(TG3PCI_MEM_WIN_BASE_ADDR, 0);
+>  
+>  	return tg3_reset_hw(tp, reset_phy);
+> 
+> 
