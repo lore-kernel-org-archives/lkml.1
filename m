@@ -1,142 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZA3C3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZA3CcI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZA3C3y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 21:29:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751328AbZA3C3q
+	id S1755880AbZA3CcI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 21:32:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZA3Cbz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 21:29:46 -0500
-Received: from viefep17-int.chello.at ([62.179.121.37]:24626 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZA3C3p (ORCPT
+	Thu, 29 Jan 2009 21:31:55 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:57259 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbZA3Cby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 21:29:45 -0500
-X-SourceIP: 62.24.72.246
-From: Pavel Pisa <pisa@cmp.felk.cvut.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 1/2] epoll fix own poll()
-Date: Fri, 30 Jan 2009 03:29:35 +0100
-User-Agent: KMail/1.9.9
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.DEB.1.10.0901271251310.20262@alien.or.mcafeemobile.com> <alpine.DEB.1.10.0901291030390.15448@alien.or.mcafeemobile.com> <20090129103715.2d3a8274.akpm@linux-foundation.org>
-In-Reply-To: <20090129103715.2d3a8274.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901300329.35641.pisa@cmp.felk.cvut.cz>
+	Thu, 29 Jan 2009 21:31:54 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=jNrVTs7idFr7dJVxk/ETLNXTfT5ZlZ1XqURTKglcwJJVXr/86QIPTF7NKCUcJn/Ztm
+         6iv+AjVJFWPqdGyts4LG76DZrlhb9usk5d762/ifcVoqsgw0BEnUP6igBDypkYRajL4R
+         QkXLtMydDNaBwmfDf3GCDjvpM9NT7DntquxNw=
+From: tom.leiming@gmail.com
+To: kay.sievers@vrfy.org, greg@kroah.com
+Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
+       Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH] driver core: remove polling for driver_probe_done(v2)
+Date: Fri, 30 Jan 2009 10:31:42 +0800
+Message-Id: <1233282702-6274-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 January 2009 19:37:15 Andrew Morton wrote:
-> On Thu, 29 Jan 2009 10:32:38 -0800 (PST) Davide Libenzi <davidel@xmailserver.org> wrote:
-> > On Thu, 29 Jan 2009, Andrew Morton wrote:
-> > > But which kernel version are you looking to get this merged into?
-> >
-> > The limit reworking one, ASAP. The epoll poll fix, dunno.
-> > I'd like to see it staged in your tree for a bit. How much timeframe
-> > difference are we looking at, from .29 to .30?
->
-> The usual - 2.5 months(ish)
->
-> What is the impact of the bug which this patch fixes?
+From: Ming Lei <tom.leiming@gmail.com>
 
-Hello Andrew and Davide
+This patch renames driver_probe_done to driver_wait_probe_done,
+and make it wait on condition of probing done to remove
+polling for it in fs initialization. Also add
+driver_wait_probe_done_and_dev_appear(name) to allow callers
+to wait until all probing is done AND until the device @name
+exists.
 
-the problem is caused by epoll used in another event waiting mechanism.
-In my problem appeared only for epoll cascaded to epoll and slight
-changes in code resulted in problem vanishing. It is probably timing
-sensitive. Davide analyzed, that it can appear even for cascading of
-epoll into other mechanisms - poll, select etc.
+Removing polling in fs initialization may lead to a faster boot.
 
-The situations which could result in the problem
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+---
+ drivers/base/dd.c      |   26 +++++++++++++++++++-------
+ include/linux/device.h |    3 ++-
+ init/do_mounts.c       |    9 ++++-----
+ init/do_mounts_md.c    |    5 +++--
+ 4 files changed, 28 insertions(+), 15 deletions(-)
 
-The idea to cascade epoll into other mechanisms comes to mind
-in many cases. When I have been working on my event processing
-solution and finding how to live in peace with GLIB (and through it with
-Qt) I have found, that others have headed same direction.
-The concept to cover more corresponding sources under one FD
-is promissing to sole other task too (prioritization found
-in Mikhail Zabaluev's GPollSet implementation for GLIB for example).
-
-There is my personal feeling about problem severity:
-
-The severity is increased by fact, that epoll cascading is documented
-and in fact offered as feature by epoll manpage. That there exists
-more attempts to use it. The problem in typical case appears
-as random stuck of userspace code in busyloop without any
-error indication from system calls.
-
-  do {
-      select/poll/epoll_wait on epfd
-      /* above line returns imediately because epoll->poll() indicates ready event*/
-      if there is event on epfd {
-         epoll_wait ( epfd, timeout = 0) /* to find which event is ready */
-         /* but no ready event is reported and cycle starts again */
-      }
-  } while(1)
-
-So if there exists applications using epoll, they could waste sometimes
-most of CPU time without without any visible error indication. 
-The most critical problem is, that even epoll_wait() on epoll set, which
-reports falsely ready condition, doe not clear that state for outer
-loop and event waiting mechanism. So in theory, some patch with
-smaller scale and impact which only ensures, that event is not falsely
-reported even after epoll_wait() call would be enough to save system
-from busyloop load. The false wakeup and wasted call to epoll_wait ()
-with no event returned is not so big problem.
-
-On the other hand, most of today applications are based on GLIB (poll),
-Qt (for pure Qt select) or libevent (not cascaded poll/epoll), which all are
-not prone to this problem. Even for my intended use, my code can
-work without cascading and if cascading is required, then standard
-poll and  then moving of events triggers into GLIB loop is enough
-for 10 to 100 FDs. So actual real severity is not so high.
-
-I am happy that Davide has found fix to the problem, but even if the
-fix gets into 2.6.29 there would be older kernels for years there
-and use of epoll cascading would be problem. So I see as most
-important, that information about problem is known and does not
-surprise others. It would be great, if there is found safe way,
-how to ensure even without fix to revive from ill situation
-by some userspace action on older kernels.
-I do not see yet, why call to epoll_wait() does not to clean
-"rdllist" on unpatched kernel. 
-
-epoll_wait() unconditionally calls  ep_poll(), the "rdllist" is not empty
-(cheked by previous ep_eventpoll_poll() call), so ep_send_events()
-has to be called. It moves all events from "rdllist" onto  "txlist"
-and reports events confirmed by individual poll() calls to user.
-There could be non signaling events in the "rdlist" left there from
-previous scan for level triggering events or in case, that condition
-is reset by some other intervention before  ep_eventpoll_poll().
-All this is not problem yet, it would result in one abundant call to
-epoll_wait() which returns 0. No problem. The EPOLLET events
-are moved from "rdlist", others (level triggered events) signalling
-are queued on "rdlist" again. If userspace does its duty, they would
-be removed during next call. This all seems to suggests, that one
-abundant epoll_wait() would get things back on the right path.
-All critical processing (moving between lists) seems to be under
-held of spinlock, so possibility for bugs is low. I have not yet analyzed
-overflow list which complicates things.
-
-I am not clever enough, to see, where is the problem, that situation
-is not stabilized. Can you teach me Davide, please?
-
-Thanks again much for help,
-
-                                  Pavel
-
-
-
-
-
-
-
-
-
-
-
+diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+index 9b721d3..ab8c30f 100644
+--- a/drivers/base/dd.c
++++ b/drivers/base/dd.c
+@@ -21,6 +21,7 @@
+ #include <linux/module.h>
+ #include <linux/kthread.h>
+ #include <linux/wait.h>
++#include <linux/mount.h>
+ 
+ #include "base.h"
+ #include "power/power.h"
+@@ -153,21 +154,32 @@ done:
+ }
+ 
+ /**
+- * driver_probe_done
+- * Determine if the probe sequence is finished or not.
++ * driver_probe_wait_done
++ * wait until the probe sequence is finished.
+  *
+- * Should somehow figure out how to use a semaphore, not an atomic variable...
+  */
+-int driver_probe_done(void)
++void driver_wait_probe_done(void)
+ {
+ 	pr_debug("%s: probe_count = %d\n", __func__,
+ 		 atomic_read(&probe_count));
+-	if (atomic_read(&probe_count))
+-		return -EBUSY;
+-	return 0;
++
++	wait_event(probe_waitqueue, atomic_read(&probe_count) == 0);
+ }
+ 
+ /**
++ * driver_wait_probe_done_and_dev_appear
++ * wait until the probe sequence is finished _and_ the dev @name appears.
++ *
++ */
++void driver_wait_probe_done_and_dev_appear(char *name)
++{
++	pr_debug("%s: probe_count = %d\n", __func__,
++		 atomic_read(&probe_count));
++
++	wait_event(probe_waitqueue, (atomic_read(&probe_count) == 0) &&
++		  name_to_dev_t(name));
++}
++/**
+  * driver_probe_device - attempt to bind device & driver together
+  * @drv: driver to bind a device to
+  * @dev: device to try to bind to the driver
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 45e5b19..7e2e138 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -146,7 +146,8 @@ extern struct device_driver *get_driver(struct device_driver *drv);
+ extern void put_driver(struct device_driver *drv);
+ extern struct device_driver *driver_find(const char *name,
+ 					 struct bus_type *bus);
+-extern int driver_probe_done(void);
++extern void driver_wait_probe_done(void);
++extern void driver_wait_probe_done_and_dev_appear(char *name);
+ 
+ /* sysfs interface for exporting driver attributes */
+ 
+diff --git a/init/do_mounts.c b/init/do_mounts.c
+index 708105e..1bf34fc 100644
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -371,8 +371,8 @@ void __init prepare_namespace(void)
+ 	}
+ 
+ 	/* wait for the known devices to complete their probing */
+-	while (driver_probe_done() != 0)
+-		msleep(100);
++	driver_wait_probe_done();
++
+ 	async_synchronize_full();
+ 
+ 	md_run_setup();
+@@ -396,9 +396,8 @@ void __init prepare_namespace(void)
+ 	if ((ROOT_DEV == 0) && root_wait) {
+ 		printk(KERN_INFO "Waiting for root device %s...\n",
+ 			saved_root_name);
+-		while (driver_probe_done() != 0 ||
+-			(ROOT_DEV = name_to_dev_t(saved_root_name)) == 0)
+-			msleep(100);
++		driver_wait_probe_done_and_dev_appear(saved_root_name);
++		ROOT_DEV = name_to_dev_t(saved_root_name);
+ 	}
+ 
+ 	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
+diff --git a/init/do_mounts_md.c b/init/do_mounts_md.c
+index ff95e31..bcea03b 100644
+--- a/init/do_mounts_md.c
++++ b/init/do_mounts_md.c
+@@ -281,8 +281,9 @@ static void __init autodetect_raid(void)
+ 	 */
+ 	printk(KERN_INFO "md: Waiting for all devices to be available before autodetect\n");
+ 	printk(KERN_INFO "md: If you don't use raid, use raid=noautodetect\n");
+-	while (driver_probe_done() < 0)
+-		msleep(100);
++
++	driver_wait_probe_done();
++
+ 	fd = sys_open("/dev/md0", 0, 0);
+ 	if (fd >= 0) {
+ 		sys_ioctl(fd, RAID_AUTORUN, raid_autopart);
+-- 
+1.6.0
 
