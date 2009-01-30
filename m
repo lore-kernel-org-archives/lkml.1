@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755667AbZA3PBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZA3PDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755667AbZA3PBp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 10:01:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZA3PBh
+	id S1756112AbZA3PDR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 10:03:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZA3PDE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 10:01:37 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34559 "EHLO mx2.mail.elte.hu"
+	Fri, 30 Jan 2009 10:03:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43523 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752296AbZA3PBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 10:01:36 -0500
-Date: Fri, 30 Jan 2009 16:01:25 +0100
+	id S1752309AbZA3PDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 10:03:03 -0500
+Date: Fri, 30 Jan 2009 16:02:57 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: x86's nmi_hz wrt. oprofile's nmi_timer_int.c
-Message-ID: <20090130150125.GF31009@elte.hu>
-References: <20090129.155852.161923905.davem@davemloft.net>
+To: Cliff Wickman <cpw@sgi.com>
+Cc: linux-kernel@vger.kernel.org, tj@kernel.org
+Subject: Re: [PATCH] x86: UV fix uv_flush_send_and_wait
+Message-ID: <20090130150257.GA27549@elte.hu>
+References: <E1LSeXm-0007ck-9j@eag09.americas.sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090129.155852.161923905.davem@davemloft.net>
+In-Reply-To: <E1LSeXm-0007ck-9j@eag09.americas.sgi.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,30 +34,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+* Cliff Wickman <cpw@sgi.com> wrote:
 
-> While working on an NMI watchdog implementation on sparc64 I noticed 
-> what seems to be a peculiar behavior of the NMI timer int oprofile 
-> support on x86.
+> From: Cliff Wickman <cpw@sgi.com>
 > 
-> When the NMI watchdog tests itself at boot timer we start with nmi_hz 
-> equal to HZ.
+> uv_flush_send_and_wait() should return a pointer if the broadcast
+> remote tlb shootdown requests fail. That causes the conventional IPI
+> method of shootdown to be used.
 > 
-> After the NMI watchdog self-test passes, nmi_hz is reduced down to '1'.
+> Diffed against 2.6.29-rc2
+>   (Ingo's tree)
 > 
-> The NMI timer int oprofile support simply uses DIE_NMI notifiers for 
-> it's implementation.  But I don't see anything in the code of 
-> arch/x86/oprofile/nmi_timer_int.c nor the NMI watchdog infrastructure 
-> which will re-adjust nmi_hz back to HZ or something similar.
-> 
-> Am I missing something?
+> Signed-off-by: Cliff Wickman <cpw@sgi.com>
+> ---
+>  arch/x86/kernel/tlb_uv.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Reducing it to 1 HZ was kind of a performance hack: running NMIs at HZ 
-needlessly interrupts the CPU HZ times a second. It's more than enough to 
-have 1 nmi-watchdog tick per second to notice deadlocks that take longer 
-than 5 seconds.
-
-Can you see a problem with that approach, or was this just a question 
-about why it's reduced to 1 Hz?
+Applied to tip/x86/urgnet, thanks Cliff!
 
 	Ingo
