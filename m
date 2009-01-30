@@ -1,73 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZA3XYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbZA3X2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbZA3XYX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 18:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZA3XYO
+	id S1757405AbZA3X2E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 18:28:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754937AbZA3X1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 18:24:14 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38680 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752989AbZA3XYN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 18:24:13 -0500
-Date: Fri, 30 Jan 2009 15:23:30 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan Opmeer <arjan@opmeer.net>
-Cc: apw@canonical.com, patrakov@gmail.com, dmitry.torokhov@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: elantech touchpad driver miss-recognising logitech mice
-Message-Id: <20090130152330.4ff2cbb2.akpm@linux-foundation.org>
-In-Reply-To: <20090126162303.GA11618@adopmeer.homeip.net>
-References: <20090126150821.GC31179@shadowen.org>
-	<20090126162303.GA11618@adopmeer.homeip.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Jan 2009 18:27:49 -0500
+Received: from mail.gmx.net ([213.165.64.20]:48468 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753872AbZA3X1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 18:27:48 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX1+y+gpy+YayDhVvQ2BjASMcG9KVRKE3CcHDLrVdhX
+	PAZg9Pe7IbnxMg
+Date: Sat, 31 Jan 2009 00:27:48 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Dan Williams <dan.j.williams@intel.com>
+cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, maciej.sosnowski@intel.com,
+       hskinnemoen@atmel.com, nicolas.ferre@atmel.com
+Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and 
+ private channels
+In-Reply-To: <e9c3a7c20901301513v74953d7aj8533d05cddfa510@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0901310026200.4617@axis700.grange>
+References: <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com> 
+ <Pine.LNX.4.64.0812021642120.5663@axis700.grange> 
+ <e9c3a7c20812020916ud0b426cvd0764f23a97973ad@mail.gmail.com> 
+ <20090131.020300.82352947.anemo@mba.ocn.ne.jp>
+ <e9c3a7c20901301513v74953d7aj8533d05cddfa510@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 17:23:03 +0100
-Arjan Opmeer <arjan@opmeer.net> wrote:
+On Fri, 30 Jan 2009, Dan Williams wrote:
 
+> On Fri, Jan 30, 2009 at 10:03 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
+> > I'm writing a new dma driver.  My DMAC has multiple channels and only
+> > one channel is capable for generic memcpy and other channels have
+> > fixed role.
+> >
+> > Does new framework allow dma driver make only one channel public?
 > 
-> On Mon, Jan 26, 2009 at 03:08:21PM +0000, Andy Whitcroft wrote:
-> > 
-> > Failing that I did build a modified patch (below) based on that from the
-> > thread plus the suggested improvements.  This has been tested by people
-> > with the Logitech mice successfully, and also by people with elantech
-> > touchpads who report no regressions.
+> Yes, if the driver registers a dma_device for each channel.
 > 
-> Good! This means the suggested fix is working :)
+> > Or should I register two dma_device for DMA_MEMCPY and DMA_SLAVE?
+> > Could you give me some advice?
 > 
-> However, my original proposal:
+> Register multiple dma_devices, the public one with a DMA_MEMCPY, and
+> the fixed role devices with DMA_PRIVATE, DMA_MEMCPY, and DMA_SLAVE
+> capabilities.
 > 
->    http://patchwork.kernel.org/patch/595/
-> 
-> also removed printing the version query result in elantech_init() to keep
-> the amount of log messages the same.
-> 
-> > If there is no later patches then perhaps you could test this one, and
-> > then I can push it upstream.
-> 
-> Dmitry suggested moving the Elantech detection down in psmouse_extensions()
-> in psmouse-base.c to make the mouse detection less chatty:
-> 
->    http://lkml.org/lkml/2009/1/20/55
-> 
-> However, Alexander pointed out he did not move it far enough down:
-> 
->    http://lkml.org/lkml/2009/1/22/18
-> 
-> It should have been moved all the way down below the call to
-> im_explorer_detect() for him to not see the extra Elantech detection noise.
-> 
-> Now, it is Dmitry's call again to determine whether he really wants to move
-> the call to elantech_detect() that far down or can live with the extra log
-> messages... :)
-> 
+> DMA_PRIVATE ensures that a channel is never considered for public consumption.
 
-blah.  Please propose a final patch for me to stash away, lest the
-issue get forgotten about.
+Maybe just two dma-devices would suffice: one with the public memcpy 
+channel, and one with the rest private slave channels?
 
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
