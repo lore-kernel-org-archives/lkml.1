@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757499AbZA3XGq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbZA3XHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757499AbZA3XGq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 18:06:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZA3XGf
+	id S1757612AbZA3XHR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 18:07:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbZA3XG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 18:06:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52875 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753483AbZA3XGe (ORCPT
+	Fri, 30 Jan 2009 18:06:59 -0500
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:47054 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753575AbZA3XG7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 18:06:34 -0500
-Date: Fri, 30 Jan 2009 15:06:30 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <alpine.DEB.2.00.0901301743410.4989@parag-desktop>
-Message-ID: <alpine.LFD.2.00.0901301506120.3150@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net> <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
- <20090129222247.GA13861@xw6200.broadcom.net> <alpine.DEB.2.00.0901291730030.5149@parag-desktop> <20090130184030.GA14933@xw6200.broadcom.net> <alpine.DEB.2.00.0901301743410.4989@parag-desktop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 30 Jan 2009 18:06:59 -0500
+Date: Sat, 31 Jan 2009 00:06:33 +0100
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Frank Rowand <frank.rowand@am.sony.com>
+Cc: Steven Rostedt <srostedt@redhat.com>, avorontsov@ru.mvista.com,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       linux-rt-users@vger.kernel.org, Uwe Kleine-Koenig <ukl@pengutronix.de>
+Subject: Re: 2.6.28-rt on PowerPC
+Message-ID: <20090130230633.GG32026@pengutronix.de>
+References: <20090129213429.GA29014@oksana.dev.rtsoft.ru> <1233270043.3833.57.camel@localhost.localdomain> <49823A13.50703@am.sony.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <49823A13.50703@am.sony.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 00:04:46 up 11 days, 12:36,  7 users,  load average: 0.00, 0.00,
+	0.00
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:219:66ff:fe5b:d0e3
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Frank,
 
-On Fri, 30 Jan 2009, Parag Warudkar wrote:
+On Thu, Jan 29, 2009 at 03:21:55PM -0800, Frank Rowand wrote:
+> > Thanks! I have not yet had the chance to apply any arch patches yet. I
+> > do plan on doing so after getting the code mostly working on x86.
 > 
-> [  245.924484] eth0: PCI_COMMAND reg = 0x406 (bit 1 is on)
-> [  245.924487] eth0: Reg value at offset 0x0 is 0xffffffff
-> [  247.317971] tg3: eth0: No firmware running.
-> [  258.710634] ADDRCONF(NETDEV_UP): eth0: link is not ready
-> ^^^ Post-Suspend
-> 
-> So it looks like the memory space IO is enabled before and after suspend.
-> The device/vendor id goes 0xffffffff after resume - just like before.
-> Does that one matter? (Firmware may be looking at it?) 
+> Your email can at an opportune time for me...  I was starting to try
+> 2.6.28-rt on ARM and quickly came to the conclusion that the arch
+> patches weren't the focus yet.  But I'm currently side-tracked with
+> getting my board to even boot a vanilla 2.6.28 kernel first.  Do
+> you expect to get to the arches in the next week or two?  If not,
+> I may head down that path for ARM myself.
 
-One thing strikes me - are there any bridges between the host (CPU) and 
-that tg3 device?
+Uwe has collected some patches for ARM here:
+http://thread.gmane.org/gmane.linux.ports.arm.kernel/52108/focus=787937
 
-Because we obviously have two people who say that their tg3 suspend/resume 
-works fine, so the tg3 driver is obviously not _totally_ broken. So I'm 
-wondering if there is something funny in between the CPU and the tg3, like 
-a hotplug bridge that needs magic to wake up properly.
+You might want to try them before starting, in order to avoid duplicate
+work.
 
-Because clearly the PCI config space addresses are working fine, but the 
-thing is, while PCI config space accesses are routed by the device number 
-(and the bridges notion of secondary bridging), the PCI memory space 
-routing is based on address. So a PCI bridge can easily get one right (in 
-fact, it's really hard to get config space accesses wrong without the 
-bridges being _totally_ screwed up), while not routing the other at all.
-
-So just do that "lspci -vvxxx" for the whole box, before and after, and 
-send us the "before" and the "diff -u before after" thing, and maybe that 
-shows something interesting. Because some bridge chip being confused would 
-also explain why a total re-init of the whole tg3 chip by a driver unload 
-and reload doesn't seem to help.
-
-		Linus
+rsc
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
