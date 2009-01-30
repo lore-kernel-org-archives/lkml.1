@@ -1,49 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753626AbZA3F02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752733AbZA3Frw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753626AbZA3F02 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 00:26:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbZA3F0U
+	id S1752733AbZA3Frw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 00:47:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751367AbZA3Frn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 00:26:20 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:39938 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750784AbZA3F0T (ORCPT
+	Fri, 30 Jan 2009 00:47:43 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:42355 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750955AbZA3Frm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 00:26:19 -0500
-Message-ID: <49828F4E.40208@zytor.com>
-Date: Thu, 29 Jan 2009 21:25:34 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 30 Jan 2009 00:47:42 -0500
+Date: Thu, 29 Jan 2009 22:47:40 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH C 06/13] OMAP3 clock: DPLLs should enter bypass if new
+ rate is sys_ck
+In-Reply-To: <20090129123936.GA16644@n2100.arm.linux.org.uk>
+Message-ID: <alpine.DEB.2.00.0901292244211.26985@utopia.booyaka.com>
+References: <20090128190724.12092.22239.stgit@localhost.localdomain> <20090128190823.12092.2638.stgit@localhost.localdomain> <20090129123936.GA16644@n2100.arm.linux.org.uk>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Willy Tarreau <w@1wt.eu>
-CC: Jonathan Campbell <jon@nerdgrounds.com>,
-       "Peter W. Morreale" <pmorreale@novell.com>, devel@driverdev.osuosl.org,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
-References: <497E4531.20800@nerdgrounds.com> <497E4919.60907@zytor.com> <497E4C5E.2030201@nerdgrounds.com> <1233248649.7191.130.camel@hermosa.site> <4981E7BD.3040507@nerdgrounds.com> <4981E99F.30001@zytor.com> <498271DF.6090406@nerdgrounds.com> <4982860E.2060605@zytor.com> <20090130052007.GM5038@1wt.eu>
-In-Reply-To: <20090130052007.GM5038@1wt.eu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Willy Tarreau wrote:
-> 
-> Also, MTD allows you to map *part* of the VRAM. On my laptop, I only
-> map 56 MB out of the 64 MB of VRAM, which still allows me to use the
-> VGA normally. And BTW, I map this VRAM as a fast swap memory.
-> 
-> In fact, I see little use to the VRAMFS for the average user. Still
-> it might have been a nice coding exercice for Jonathan.
-> 
+Hello Russell,
 
-Also, the idea of using the DMA engine on the video card rather than
-just doing PIO references is an excellent one.
+this E-mail responds to your comments on patches C 04 through C 08.  
+My understanding is that you'd like me to:
 
-	-hpa
+1. Compress patches C 04 through C 09;
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+2. Modify omap3_noncore_dpll_enable() to move the "if (!ret)
+   clk->rate = rate" outside and below the conditional;
+
+3. Remove some of the blank lines before and after braces in C 06;
+
+4. Modify the DPLL bypass clock handling to change the DPLL's clk->parent,
+   rather than return the bypass clock rate.
+
+The above all make sense to me, and #4, if it works in practice, should be 
+a significant improvement over the existing code.
+
+If this is what you're looking for, I'll send a compressed, modified 
+patch.  Would you like it to be based on the codebase post C 03, or 
+against another commit?
+
+regards,
+
+- Paul
 
