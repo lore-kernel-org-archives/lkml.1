@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZA3Ueq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZA3Uk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbZA3Ueq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 15:34:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbZA3Uei
+	id S1756144AbZA3Uk7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 15:40:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbZA3Ukv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 15:34:38 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35091 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754216AbZA3Uei (ORCPT
+	Fri, 30 Jan 2009 15:40:51 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:60239 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754635AbZA3Uku (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 15:34:38 -0500
-Date: Fri, 30 Jan 2009 20:33:46 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg KH <gregkh@suse.de>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
- file segments
-In-Reply-To: <1233345190.908.36.camel@lts-notebook>
-Message-ID: <Pine.LNX.4.64.0901302026530.13686@blonde.anvils>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com> 
- <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain> 
- <1233259410.2315.75.camel@lts-notebook>  <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
-  <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain> 
- <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com> 
- <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain> 
- <20090130055639.GA30950@suse.de>  <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
-  <Pine.LNX.4.64.0901301724010.1563@blonde.anvils> 
- <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain>
- <1233345190.908.36.camel@lts-notebook>
+	Fri, 30 Jan 2009 15:40:50 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [git pull V2] headers_check fixes
+Date: Fri, 30 Jan 2009 21:40:36 +0100
+User-Agent: KMail/1.9.9
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1233342254.21493.8.camel@localhost.localdomain> <20090130192627.GA32705@elte.hu>
+In-Reply-To: <20090130192627.GA32705@elte.hu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901302140.37432.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+HVkpwgbjcqXJpSovNlJBYEL92qM9WUf7MO4/
+ +0KTPIADZwpr2a8r9WpVvvjxDdBdmem/DJmwTL+/DjZmBtNjAD
+ bsMm+bz7SqEI28Eluy0hg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009, Lee Schermerhorn wrote:
+On Friday 30 January 2009, Ingo Molnar wrote:
+> Sam, would you mind to remove the CONFIG_* warnings from headers_check, 
+> and get that commit to Linus ASAP? (or we can put it into this branch too, 
+> if you prefer it that way)
 > 
-> I tried this patch atop 29-rc3 + your patch from yesterday with my
-> simple test program at http://free.linux/hp.com/~lts/Tests/mmap_lock.c. 
-> 
-> The test program shows the /proc/<pid>/maps before and after the mmap
-> and attempted merge.  It's not merging:
-> 
-> 7fd20a668000-7fd20a66a000 rw-p 7fd20a668000 00:00 0 
-> 7fd20a68a000-7fd20a68b000 r--s 00000000 68:23 6608852                    /tmp/tmpfVx1SFL (deleted)
-> 7fd20a68b000-7fd20a68c000 r--s 00001000 68:23 6608852                    /tmp/tmpfVx1SFL (deleted)
-> 7fd20a68c000-7fd20a690000 rw-p 7fd20a68c000 00:00 0 
+> Those warnings wont be worked around in the headers and that check litters 
+> the CONFIG_HEADER_CHECK=y build with warnings right now and make it 
+> impossible to reach a warning-free build.
 
-Some testing - now that's a great idea!  Good spotting.
+I double-checked the remaining CONFIG_* warnings in this version to make sure
+that we are not dropping any warnings about actual bugs. There are a few places
+where the kernel exports more than it should, but there is a lot more of that
+without warnings, so that's fine.
 
-> 
-> Ad hoc instrumentation shows that it's the VM_ACCOUNT flag that is
-> different between the existing file segment and the one attempting the
-> merge:
-> 
-> is_mergeable_vma: !mergable: vma flags:  0x80020f9:0x1020f9
->                                            |         |-VM_ACCOUNT
->                                            +-----------VM_CAN_NONLINEAR
+The only places that believe to be bugs that needs fixing are in
+<linux/kvm.h> and <asm-x86/ptrace-abi.h>. Avi has a patch for kvm.h
+that in the kvm tree.
 
-Sorry, I should have noticed that: VM_ACCOUNT was certainly on my
-mind as a flag that gives trouble when merging vmas, but I'd
-misconvinced myself that it wasn't a problem in this case.
+Below, you can find a patch for the remaining problem.
 
-> 
-> So happens, I'm mapping with MAP_SHARED, so the VM_ACCOUNT flag gets
-> cleared later in mmap_region().  Comments say that this is for checking
-> memory availability during shmem_file_setup().  Maybe we can move the
-> temporary setting of VM_ACCOUNT until just before the call to
-> shmem_zero_setup()?
+	Arnd <><
+---
 
-Please let me think on that - we can live with the status quo for
-the moment.  I need to remind myself why I used that peculiar way
-of conveying info from mmap.c to shmem.c: the right answer may be
-just to pass another arg to shmem_zero_setup and shmem_file_setup.
+Subject: x86: export PTRACE_BTS interfaces to user space
 
-Hugh
+The definitions for PTRACE_BTS_* are inside of #ifdef CONFIG_X86_PTRACE_BTS,
+which means that they are invisible to user space. Remove the #ifdef so
+that the interface becomes visible.
+
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+
+--- a/arch/x86/include/asm/ptrace-abi.h
++++ b/arch/x86/include/asm/ptrace-abi.h
+@@ -80,8 +80,6 @@
+ 
+ #define PTRACE_SINGLEBLOCK	33	/* resume execution until next branch */
+ 
+-#ifdef CONFIG_X86_PTRACE_BTS
+-
+ #ifndef __ASSEMBLY__
+ #include <linux/types.h>
+ 
+@@ -140,6 +138,5 @@ struct ptrace_bts_config {
+    BTS records are read from oldest to newest.
+    Returns number of BTS records drained.
+ */
+-#endif /* CONFIG_X86_PTRACE_BTS */
+ 
+ #endif /* _ASM_X86_PTRACE_ABI_H */
