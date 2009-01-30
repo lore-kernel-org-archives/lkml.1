@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbZA3XN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZA3XOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757365AbZA3XN4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 18:13:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbZA3XNV
+	id S1757911AbZA3XOi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 18:14:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZA3XO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 18:13:21 -0500
-Received: from rn-out-0910.google.com ([64.233.170.187]:33320 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756597AbZA3XNR (ORCPT
+	Fri, 30 Jan 2009 18:14:29 -0500
+Received: from mo-p00-ob.rzone.de ([81.169.146.162]:14652 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752325AbZA3XO3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 18:13:17 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=bi6REtI57hI4ZpVDyap6BzFqLCcz9AzLdvhbmKZutDezH8W8djPSshY+6T4IaaOw4e
-         6vF5FTKQ6TuJL3wFdH/FRAtdMVQ62wdvYjlmvEfgxlfvazNHKE+smfDdiEo7ueLRhGxz
-         E6EzgL3KaO8deiMx0r+UskPWebTVr5BtmNzQ8=
-Date: Fri, 30 Jan 2009 18:13:06 -0500 (EST)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-desktop
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <200901302354.27497.rjw@sisk.pl>
-Message-ID: <alpine.DEB.2.00.0901301811530.4994@parag-desktop>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901300110.56533.rjw@sisk.pl> <alpine.DEB.2.00.0901301730230.6574@parag-desktop> <200901302354.27497.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 30 Jan 2009 18:14:29 -0500
+X-RZG-CLASS-ID: mo00
+X-RZG-AUTH: :O2kGeEG7b/pS1EW8QnKjhhg/vO4pzqdNytm2/tv3UCjfco8bJsX/GzAObRbmhgZo
+From: Michael Heimpold <michael@heimpold.de>
+To: hskinnemoen@atmel.com
+Subject: [PATCH] atmel_spi: Fix handling of chipselect after SPI transfer
+Date: Sat, 31 Jan 2009 00:14:41 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901310014.41327.michael@heimpold.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+According to include/linux/spi/spi.h chipselect should stay active after a SPI
+transfer or after a SPI message unless modified by
+spi_transfer.cs_change != 0.
 
+The current atmel driver passes this field to atmel_spi_msg_done as a
+parameter with oppositional meaning: "cs_change" -> "stay" (see
+atmel_spi_interrupt).
 
-On Fri, 30 Jan 2009, Rafael J. Wysocki wrote:
+This patch fixes this behavoir by adapting the called function and its
+callers. IMHO this solution is better than an one line fix of inverting the
+function's argument as the meaning of the field remains throughout
+the hole stack.
 
-> On Friday 30 January 2009, Parag Warudkar wrote:
-> > 
-> > On Fri, 30 Jan 2009, Rafael J. Wysocki wrote:
-> > 
-> > > 
-> > > I still am interested if it makes any difference for Parag.
-> > 
-> > No difference - tg3 is still dead after resume.
-> 
-> Thanks for testing.
-> 
-> Well, I'm not sure if tg3 is at fault, really.
-> 
-> What happens if you unload tg3 before suspend and load it back after the
-> resume?
+Signed-off-by: Michael Heimpold <mhei@heimpold.de>
 
-This time it fails with different error on loading after suspend/resume 
-cycle -
+---
+ drivers/spi/atmel_spi.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
- 1196.873608] tg3 0000:0e:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-[ 1196.873620] tg3 0000:0e:00.0: setting latency timer to 64
-[ 1196.880017] tg3 0000:0e:00.0: PME# disabled
-[ 1196.996270] tg3: (0000:0e:00.0) phy probe failed, err -19
-[ 1197.508033] tg3: Problem fetching invariants of chip, aborting.
-[ 1197.508048] tg3 0000:0e:00.0: PCI INT A disabled
+diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
+index 8abae4a..6b8c020 100644
+--- a/drivers/spi/atmel_spi.c
++++ b/drivers/spi/atmel_spi.c
+@@ -351,9 +351,9 @@ static void atmel_spi_dma_unmap_xfer(struct spi_master *master,
  
-Parag
+ static void
+ atmel_spi_msg_done(struct spi_master *master, struct atmel_spi *as,
+-		struct spi_message *msg, int status, int stay)
++		struct spi_message *msg, int status, int cs_change)
+ {
+-	if (!stay || status < 0)
++	if (cs_change || status < 0)
+ 		cs_deactivate(as, msg->spi);
+ 	else
+ 		as->stay = msg->spi;
+@@ -448,7 +448,7 @@ atmel_spi_interrupt(int irq, void *dev_id)
+ 		/* Clear any overrun happening while cleaning up */
+ 		spi_readl(as, SR);
+ 
+-		atmel_spi_msg_done(master, as, msg, -EIO, 0);
++		atmel_spi_msg_done(master, as, msg, -EIO, 1);
+ 	} else if (pending & (SPI_BIT(RXBUFF) | SPI_BIT(ENDRX))) {
+ 		ret = IRQ_HANDLED;
+ 
+-- 
+1.5.4.3
+
