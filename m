@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbZA3RDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZA3RFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753638AbZA3RDT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 12:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbZA3RDB
+	id S1754116AbZA3RFp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 12:05:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751824AbZA3RFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 12:03:01 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:56152 "EHLO smtp.mba.ocn.ne.jp"
+	Fri, 30 Jan 2009 12:05:37 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53773 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750949AbZA3RDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 12:03:00 -0500
-Date: Sat, 31 Jan 2009 02:03:00 +0900 (JST)
-Message-Id: <20090131.020300.82352947.anemo@mba.ocn.ne.jp>
-To: dan.j.williams@intel.com
-Cc: g.liakhovetski@gmx.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, maciej.sosnowski@intel.com,
-       hskinnemoen@atmel.com, nicolas.ferre@atmel.com
-Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and
- private channels
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <e9c3a7c20812020916ud0b426cvd0764f23a97973ad@mail.gmail.com>
-References: <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com>
-	<Pine.LNX.4.64.0812021642120.5663@axis700.grange>
-	<e9c3a7c20812020916ud0b426cvd0764f23a97973ad@mail.gmail.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	id S1751698AbZA3RFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 12:05:36 -0500
+Message-ID: <49833350.1020809@kernel.org>
+Date: Sat, 31 Jan 2009 02:05:20 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: #tj-percpu has been rebased
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 30 Jan 2009 17:05:15 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2 Dec 2008 10:16:05 -0700, "Dan Williams" <dan.j.williams@intel.com> wrote:
-> > I think, there is a problem with your dma_request_channel() /
-> > private_candidate() implementation: your current version only tries one
-> > channel from a dma device list, which matched capabilities. If this
-> > channel is not accepted by the client, you do not try other channels from
-> > this device and just go to the next one...
-> 
-> Which dma driver are you using?  The dmaengine code assumes that all
-> channels on a device are equal.  It sounds like there are differences
-> between peer-channels on the device in this case.  If the driver
-> registers a device per channel that should give the flexibility you
-> want.
+Hello,
 
-I'm writing a new dma driver.  My DMAC has multiple channels and only
-one channel is capable for generic memcpy and other channels have
-fixed role.
+tj-percpu has been rebased.  Sorry, the previous tree was discarded
+because it was missing several patches in the middle but rebasing on
+top of new misc/tj-percpu shouldn't be too difficult.  What have
+happened are...
 
-Does new framework allow dma driver make only one channel public?
-Or should I register two dma_device for DMA_MEMCPY and DMA_SLAVE?
-Could you give me some advice?
+* Rebased on top of the current 2.6/master[1].
 
----
-Atsushi Nemoto
+* hardirq unification patches restored.
+
+* linker bug fix and xen fix patches applied.
+
+* misc/tj-cpus4096 created as tip/cpus4096 + uv_flush_tlb_others()
+  cleanup patch (w/ Cliff Wickman's fixes folded in) and got merged
+  into misc/tj-percpu.
+
+* misc/tj-stackprotector created as tip/stackprotector^ + three
+  patches.  The back tracked commit is merge with the previous
+  core/percpu.  misc/tj-stackprotector got merged into misc/tj-percpu.
+
+So, all in all, the rebase is complete.  No patch is lost but on
+hindsight it should really have been done by pulling in 2.6/master.
+The end result is the same anyway sans slightly simpler merge tree and
+it definitely doesn't feel like it's worth the trouble.  Well, what's
+done is done.  Please keep sending patches.
+
+The git vector is as always...
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+
+Thanks.
+
+-- 
+tejun
+
+[1] f2257b70b0f9b2fe8f2afd83fc6798dca75930b8
