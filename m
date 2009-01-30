@@ -1,116 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZA3UaS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756162AbZA3Ubp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756044AbZA3UaS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 15:30:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754441AbZA3UaF
+	id S1756162AbZA3Ubp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 15:31:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbZA3Ubh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 15:30:05 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:36359 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754356AbZA3UaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 15:30:01 -0500
-Subject: Re: [RFC] Dynamic Tick and Deferrable Timer Support
-From: john stultz <johnstul@us.ibm.com>
-To: Jon Hunter <jon-hunter@ti.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <49834F30.3040706@ti.com>
-References: <CF7665F795A4BE438425FE728CEACFA302F2436B52@dlee01.ent.ti.com>
-	 <20090114221624.76ee8aa4.akpm@linux-foundation.org>
-	 <7B4574D56E4ADF438756313E9A172A872CB8232E@dlee01.ent.ti.com>
-	 <7E82351C108FA840AB1866AC776AEC46471B9452@orsmsx505.amr.corp.intel.com>
-	 <7B4574D56E4ADF438756313E9A172A872CB82749@dlee01.ent.ti.com>
-	 <1233081369.28350.68.camel@jamoon.sc.intel.com>
-	 <7E82351C108FA840AB1866AC776AEC464723835C@orsmsx505.amr.corp.intel.com>
-	 <4981D957.8040409@ti.com>
-	 <1f1b08da0901290936k71d016fcme81f04ca16029a7c@mail.gmail.com>
-	 <49834F30.3040706@ti.com>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 12:29:56 -0800
-Message-Id: <1233347396.8861.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Jan 2009 15:31:37 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51176 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752998AbZA3Ubh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 15:31:37 -0500
+Date: Fri, 30 Jan 2009 12:31:13 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: Hugh Dickins <hugh@veritas.com>, Greg KH <gregkh@suse.de>,
+       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+ file segments
+In-Reply-To: <1233345190.908.36.camel@lts-notebook>
+Message-ID: <alpine.LFD.2.00.0901301159500.3150@localhost.localdomain>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>  <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>  <1233259410.2315.75.camel@lts-notebook>  <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain> 
+ <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>  <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>  <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>  <20090130055639.GA30950@suse.de>  <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
+  <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>  <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain> <1233345190.908.36.camel@lts-notebook>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 13:04 -0600, Jon Hunter wrote:
-> john stultz wrote:
-> > As an aside, there are some further hardware limitations in the
-> > timekeeping core that limit the amount of time the hardware can sleep.
-> > For instance, the acpi_pm clocksource wraps every 2.5 seconds or so,
-> > so we have to wake up periodically to sample it to avoid wrapping
-> > issues.
-> > 
-> > Just to be able to deal with all the different hardware out there, the
-> > timekeeping core expects to wake up twice a second to do this
-> > sampling. It may be possible to push this out if you are using other
-> > clocksources (HPET/TSC), but if sleeps for longer then a second are a
-> > needed feature, we probably will need some infrastructure in the
-> > timekeeping core that can be queried to make sure its safe.
+
+
+On Fri, 30 Jan 2009, Lee Schermerhorn wrote:
+>
+> Ad hoc instrumentation shows that it's the VM_ACCOUNT flag that is
+> different between the existing file segment and the one attempting the
+> merge:
+
+Gaah. I looked at VM_ACCOUNT, since it looked like a prime example of the 
+same VM_CAN_NONLINEAR thing and was thinking that I should just add it to 
+the "ok to merge" flags, but decided after a quick look that we do all the 
+VM_ACCOUNT handling before we call vma_merge, so I just left it at that. 
+
+But apparently we _do_ do some VM_ACCOUNT stuff afterwards.
+
+> is_mergeable_vma: !mergable: vma flags:  0x80020f9:0x1020f9
+>                                            |         |-VM_ACCOUNT
+>                                            +-----------VM_CAN_NONLINEAR
 > 
-> The variable "max_delta_ns" is used by the dynamic tick to govern the 
-> maximum time a given device can sleep. Hence, this variable should be 
-> configured as necessary for the device you are using. Therefore, if your 
-> device has a timer that will wrap every 2.5 seconds, then for this 
-> device the "max_delta_ns" should be configure so that it does not exceed 
-> this time.
-> 
-> So what I was proposing is that for devices that have timers that would 
-> allow you to sleep beyond ~2.15 seconds (current max imposed by the 
-> clockevent_delta2ns function), why not increase the dynamic range (make 
-> this a 64-bit variable) or base (ie. from nanoseconds to milliseconds) 
-> to permit longer sleep times for devices that can support them? This 
-> should not have any negative impact on devices that cannot support such 
-> long sleep times.
+> So happens, I'm mapping with MAP_SHARED, so the VM_ACCOUNT flag gets
+> cleared later in mmap_region().  Comments say that this is for checking
+> memory availability during shmem_file_setup().  Maybe we can move the
+> temporary setting of VM_ACCOUNT until just before the call to
+> shmem_zero_setup()?
 
-No objection to max_delta_ns being increased, but whatever code manages
-it will probably need to query the timekeeping core in some fashion to
-make sure the timer hardware max isn't larger then the clocksource
-hardware max. I've provided a rough sketch at what the timekeeping code
-would probably look like below.
+Yeah, that would probably fix it, and looks like the right thing to do. 
 
-> So far I have not encountered any issues with doing this. Let me know if 
-> this does or does not address your concerns.
+It all looks pretty confused wrong to set the whole VM_ACCOUNT flag for a 
+file-backed file AT ALL in the first place, but the code knows that it 
+won't matter for a shared file, and will be cleared again later.
 
-There may be some other issues here, such as NTP over-correction issues
-(for instance: ntp trying to correct for a 1us offset over the next
-second, but ends up applying it for 10 seconds) if we defer for a really
-long time. But at that point, we might as well suspend to ram, like the
-OLPC does.
+So it plays these temporary games with vm_flags, and it didn't matter 
+because of how we used to call "vma_merge()" either early only for the 
+anonymous memory case (that had VM_ACCOUNT stable and didn't have that 
+temporary case at all) or much later (after having undone the temporary 
+flag setting) for files.
 
-thanks
--john
+Why do we pass in that "accountable" flag, btw? It's only ever set to 0 by 
+a MAP_PRIVATE mapping that hits is_file_hugepages() (see do_mmap_pgoff), 
+and we could just do that decision all inside mmap_region(). So the flag 
+doesn't really seem to have any real meaning, and is just passed around 
+for some odd historical reason?
 
-
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index 900f1b6..2cf9ebd 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -265,6 +265,21 @@ int timekeeping_valid_for_hres(void)
- 	return ret;
- }
- 
-+
-+u64 timekeeping_max_deferment(void)
-+{
-+	u64 max_nsecs
-+	do {
-+		seq = read_seqbegin(&xtime_lock);
-+
-+		max_nsecs = cyc2ns(clock, clock->mask);
-+
-+	} while (read_seqretry(&xtime_lock, seq));
-+
-+	return max_nsecs; /* XXX maybe reduce by some amount to be safe? */
-+}
-+
-+
- /**
-  * read_persistent_clock -  Return time in seconds from the persistent clock.
-  *
-
-
+			Linus
