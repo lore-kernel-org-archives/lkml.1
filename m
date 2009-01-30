@@ -1,140 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbZA3Pw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753859AbZA3Pzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753140AbZA3Pw7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 10:52:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751751AbZA3Pwv
+	id S1753859AbZA3Pzs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 10:55:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZA3Pzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 10:52:51 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:65099 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751651AbZA3Pwv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 10:52:51 -0500
-Date: Sat, 31 Jan 2009 00:52:50 +0900 (JST)
-Message-Id: <20090131.005250.95064457.anemo@mba.ocn.ne.jp>
-To: matthias@kaehlcke.net
-Cc: akpm@linux-foundation.org, David.Woodhouse@intel.com, vapier.adi@gmail.com,
-       linux-mtd@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [BUG] physmap_flash_probe() frees memory still in use
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20090130134317.GV9390@traven>
-References: <20090130134317.GV9390@traven>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Jan 2009 10:55:40 -0500
+Received: from iolanthe.rowland.org ([192.131.102.54]:38066 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751368AbZA3Pzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 10:55:40 -0500
+Date: Fri, 30 Jan 2009 10:55:39 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, <mingo@elte.hu>,
+       <richardj_moore@uk.ibm.com>, <naren@linux.vnet.ibm.com>
+Subject: Re: [RFC Patch 1/10] Introducing generic hardware breakpoint handler
+ interfaces
+In-Reply-To: <20090130111914.GB13814@in.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0901301044540.2466-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009 14:43:18 +0100, Matthias Kaehlcke <matthias@kaehlcke.net> wrote:
-> as i reported earlier in this month
-> (http://lkml.org/lkml/2009/1/12/141) MTD partition names are screwed
-> up in 2.6.29-rcX.
+On Fri, 30 Jan 2009, K.Prasad wrote:
+
+> > A few RCU-related questions below.
+> > 
+> > 							Thanx, Paul
+
+Paul, you've got to learn to trim your replies!  It's not nice to have
+to skim over hundreds and hundreds lines of quoted text while searching
+for your interpolated comments.  In fact, the phrase "needle in a 
+haystack" springs to mind...
+
+
+> > > +	thr_kbpdata = chbi->cur_kbpdata;
+> > > +	barrier();
+> > 
+> > Couldn't the above two lines instead be:
+> > 
+> > 	thr_kbpdata = ACCESS_ONCE(chbi->cur_kbpdata);
+> > 
+> > This would prevent the pointer aliasing, but would make it very clear
+> > exactly how the compiler was to be restricted.
 > 
-> commit 176bf2e0f10ecf1d20a97db3bd5bb2e6ba0b5668 deals with a memory
-> leak and frees the pointer array of mtd_partition after the call to
-> add_mtd_partitions(). the problem is that mtd_table[x]->name still
-> points to the freed memory.
+> Ok. Using a barrier() could be an overkill. I will change it.
 
-Oh Yes, I had missed that point.  And looking at physmap driver again,
-I found that del_mtd_partition() and del_mtd_device() are abused.
-Though these APIs are robust enough, deleting right things in right
-order would be better.
+IIRC, the original code above was written before ACCESS_ONCE came into
+being.  But I could be wrong about that...
 
-Could you test this patch?  I cannot test it until Monday.
+> > > +/*
+> > > + * Tell all CPUs to update their debug registers.
+> > > + *
+> > > + * The caller must hold hw_breakpoint_mutex.
+> > > + */
+> > > +static void update_all_cpus(void)
+> > > +{
+> > > +	/* We don't need to use any sort of memory barrier.  The IPI
+> > > +	 * carried out by on_each_cpu() includes its own barriers.
+> > > +	 */
+> > > +	on_each_cpu(update_this_cpu, NULL, 0);
+> > > +	synchronize_rcu();
+> > 
+> > Don't we need the rcu_read_lock() / rcu_read_unlock() pair from
+> > load_debug_registers() to move down into update_this_cpu() in order
+> > for this to be guaranteed to work?  As the code reads now, the
+> > update_this_cpu() calls running on other CPUs are not running under
+> > RCU protection, right?
 
+Maybe I'm misunderstanding the question.  update_this_cpu() is called
+from only two places: on_each_cpu() as shown above, and
+load_debug_registers().  It seems clear that contexts resulting from
+on_each_cpu() don't need RCU protection, because on_each_cpu() won't
+return until those routines have completed.
 
-------------------------------------------------------
-Subject: [MTD] physmap: Fix wrong free and del_mtd_{partition,device}
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+This leaves only contexts resulting from load_debug_registers().  But
+the first thing load_debug_registers() does is disable local
+interrupts, thus blocking IPI delivery.  Hence any simultaneous
+on_each_cpu() won't complete until after load_debug_registers() is
+done.
 
-commit 176bf2e0f10ecf1d20a97db3bd5bb2e6ba0b5668 deals with a memory
-leak and frees the pointer array of mtd_partition after the call to
-add_mtd_partitions(). the problem is that mtd_table[x]->name still
-points to the freed memory.
+So there doesn't seem to be any need for RCU protection in
+update_this_cpu().
 
-Aldo physmap_flash_remove() should call del_mtd_partitions() or
-del_mtd_device() only once.
+> Yes, indeed. With the current implementation, there's a possibility of
+> two instances of update_this_cpu() function executing - one with an
+> rcu_read_lock() taken (when called from load_debug_registers) while the
+> other without (when invoked through update_all_cpus()).
 
-Reported-by: Matthias Kaehlcke <matthias@kaehlcke.net>
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
-diff --git a/drivers/mtd/maps/physmap.c b/drivers/mtd/maps/physmap.c
-index 8774366..4b122e7 100644
---- a/drivers/mtd/maps/physmap.c
-+++ b/drivers/mtd/maps/physmap.c
-@@ -29,6 +29,7 @@ struct physmap_flash_info {
- 	struct map_info		map[MAX_RESOURCES];
- #ifdef CONFIG_MTD_PARTITIONS
- 	int			nr_parts;
-+	struct mtd_partition	*parts;
- #endif
- };
- 
-@@ -45,25 +46,26 @@ static int physmap_flash_remove(struct platform_device *dev)
- 
- 	physmap_data = dev->dev.platform_data;
- 
--#ifdef CONFIG_MTD_CONCAT
--	if (info->cmtd != info->mtd[0]) {
-+#ifdef CONFIG_MTD_PARTITIONS
-+	if (info->nr_parts) {
-+		del_mtd_partitions(info->cmtd);
-+		kfree(info->parts);
-+	} else if (physmap_data->nr_parts)
-+		del_mtd_partitions(info->cmtd);
-+	else
- 		del_mtd_device(info->cmtd);
-+#else
-+	del_mtd_device(info->cmtd);
-+#endif
-+
-+#ifdef CONFIG_MTD_CONCAT
-+	if (info->cmtd != info->mtd[0])
- 		mtd_concat_destroy(info->cmtd);
--	}
- #endif
- 
- 	for (i = 0; i < MAX_RESOURCES; i++) {
--		if (info->mtd[i] != NULL) {
--#ifdef CONFIG_MTD_PARTITIONS
--			if (info->nr_parts || physmap_data->nr_parts)
--				del_mtd_partitions(info->mtd[i]);
--			else
--				del_mtd_device(info->mtd[i]);
--#else
--			del_mtd_device(info->mtd[i]);
--#endif
-+		if (info->mtd[i] != NULL)
- 			map_destroy(info->mtd[i]);
--		}
- 	}
- 	return 0;
- }
-@@ -86,9 +88,6 @@ static int physmap_flash_probe(struct platform_device *dev)
- 	int err = 0;
- 	int i;
- 	int devices_found = 0;
--#ifdef CONFIG_MTD_PARTITIONS
--	struct mtd_partition *parts;
--#endif
- 
- 	physmap_data = dev->dev.platform_data;
- 	if (physmap_data == NULL)
-@@ -167,10 +166,11 @@ static int physmap_flash_probe(struct platform_device *dev)
- 		goto err_out;
- 
- #ifdef CONFIG_MTD_PARTITIONS
--	err = parse_mtd_partitions(info->cmtd, part_probe_types, &parts, 0);
-+	err = parse_mtd_partitions(info->cmtd, part_probe_types,
-+				&info->parts, 0);
- 	if (err > 0) {
--		add_mtd_partitions(info->cmtd, parts, err);
--		kfree(parts);
-+		add_mtd_partitions(info->cmtd, info->parts, err);
-+		info->nr_parts = err;
- 		return 0;
- 	}
- 
+No, this isn't possible unless I have misunderstood the nature of
+IPIs.  Isn't is true that calling local_irq_save() will block delivery
+of IPIs?
+
+Alan Stern
+
