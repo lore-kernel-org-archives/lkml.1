@@ -1,90 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZA3Uk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbZA3UoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbZA3Uk7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 15:40:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbZA3Ukv
+	id S1756329AbZA3UoK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 15:44:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbZA3Unx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 15:40:51 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:60239 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754635AbZA3Uku (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 15:40:50 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [git pull V2] headers_check fixes
-Date: Fri, 30 Jan 2009 21:40:36 +0100
-User-Agent: KMail/1.9.9
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1233342254.21493.8.camel@localhost.localdomain> <20090130192627.GA32705@elte.hu>
-In-Reply-To: <20090130192627.GA32705@elte.hu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 30 Jan 2009 15:43:53 -0500
+Received: from hera.kernel.org ([140.211.167.34]:48242 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752511AbZA3Unw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 15:43:52 -0500
+Message-ID: <498365E7.5010609@kernel.org>
+Date: Fri, 30 Jan 2009 12:41:11 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Mike Travis <travis@sgi.com>
+Subject: [PATCH] x86/powernow: dont emit warning when acpi=off
+References: <498136FC.2020206@kernel.org> <200901301210.48352.rusty@rustcorp.com.au> <20090130151701.GD27549@elte.hu> <20090130160431.GA12130@redhat.com>
+In-Reply-To: <20090130160431.GA12130@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901302140.37432.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+HVkpwgbjcqXJpSovNlJBYEL92qM9WUf7MO4/
- +0KTPIADZwpr2a8r9WpVvvjxDdBdmem/DJmwTL+/DjZmBtNjAD
- bsMm+bz7SqEI28Eluy0hg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 January 2009, Ingo Molnar wrote:
-> Sam, would you mind to remove the CONFIG_* warnings from headers_check, 
-> and get that commit to Linus ASAP? (or we can put it into this branch too, 
-> if you prefer it that way)
-> 
-> Those warnings wont be worked around in the headers and that check litters 
-> the CONFIG_HEADER_CHECK=y build with warnings right now and make it 
-> impossible to reach a warning-free build.
 
-I double-checked the remaining CONFIG_* warnings in this version to make sure
-that we are not dropping any warnings about actual bugs. There are a few places
-where the kernel exports more than it should, but there is a lot more of that
-without warnings, so that's fine.
 
-The only places that believe to be bugs that needs fixing are in
-<linux/kvm.h> and <asm-x86/ptrace-abi.h>. Avi has a patch for kvm.h
-that in the kvm tree.
+Impact: cleanup
 
-Below, you can find a patch for the remaining problem.
+remove some wrong warning when acpi is disabled.
+and don't call exit_acpi if _PSS is not found.
 
-	Arnd <><
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
 ---
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   53 ++++++++++++++++--------------
+ 1 file changed, 29 insertions(+), 24 deletions(-)
 
-Subject: x86: export PTRACE_BTS interfaces to user space
-
-The definitions for PTRACE_BTS_* are inside of #ifdef CONFIG_X86_PTRACE_BTS,
-which means that they are invisible to user space. Remove the #ifdef so
-that the interface becomes visible.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
---- a/arch/x86/include/asm/ptrace-abi.h
-+++ b/arch/x86/include/asm/ptrace-abi.h
-@@ -80,8 +80,6 @@
+Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
++++ linux-2.6/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+@@ -1124,6 +1124,7 @@ static int powernowk8_verify(struct cpuf
+ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+ {
+ 	struct powernow_k8_data *data;
++	int k8_cpu_acpi_inited = 0;
+ 	cpumask_t oldmask;
+ 	int rc;
  
- #define PTRACE_SINGLEBLOCK	33	/* resume execution until next branch */
+@@ -1142,39 +1143,41 @@ static int __cpuinit powernowk8_cpu_init
+ 	data->cpu = pol->cpu;
+ 	data->currpstate = HW_PSTATE_INVALID;
  
--#ifdef CONFIG_X86_PTRACE_BTS
+-	if (powernow_k8_cpu_init_acpi(data)) {
++	if (!powernow_k8_cpu_init_acpi(data)) {
++		 k8_cpu_acpi_inited = 1;
++	} else {
+ 		/*
+ 		 * Use the PSB BIOS structure. This is only availabe on
+ 		 * an UP version, and is deprecated by AMD.
+ 		 */
+ 		if (num_online_cpus() != 1) {
++			if (!acpi_disabled) {
+ #ifndef CONFIG_ACPI_PROCESSOR
+-			printk(KERN_ERR PFX "ACPI Processor support is required "
+-			       "for SMP systems but is absent. Please load the "
+-			       "ACPI Processor module before starting this "
+-			       "driver.\n");
++				printk(KERN_ERR PFX "ACPI Processor support is required "
++				       "for SMP systems but is absent. Please load the "
++				       "ACPI Processor module before starting this "
++				       "driver.\n");
+ #else
+-			printk(KERN_ERR FW_BUG PFX "Your BIOS does not provide"
+-			       " ACPI _PSS objects in a way that Linux "
+-			       "understands. Please report this to the Linux "
+-			       "ACPI maintainers and complain to your BIOS "
+-			       "vendor.\n");
++				printk(KERN_ERR FW_BUG PFX "Your BIOS does not provide"
++				       " ACPI _PSS objects in a way that Linux "
++				       "understands. Please report this to the Linux "
++				       "ACPI maintainers and complain to your BIOS "
++				       "vendor.\n");
+ #endif
+-			kfree(data);
+-			return -ENODEV;
++			}
++			goto early_out;
+ 		}
+ 		if (pol->cpu != 0) {
+-			printk(KERN_ERR FW_BUG PFX "No ACPI _PSS objects for "
+-			       "CPU other than CPU0. Complain to your BIOS "
+-			       "vendor.\n");
+-			kfree(data);
+-			return -ENODEV;
++			if (!acpi_disabled) {
++				printk(KERN_ERR FW_BUG PFX "No ACPI _PSS objects for "
++				       "CPU other than CPU0. Complain to your BIOS "
++				       "vendor.\n");
++			}
++			goto early_out;
+ 		}
+ 		rc = find_psb_table(data);
+-		if (rc) {
+-			kfree(data);
+-			return -ENODEV;
+-		}
++		if (rc)
++			goto early_out;
+ 	}
+ 
+ 	/* only run on specific CPU from here on */
+@@ -1220,7 +1223,8 @@ static int __cpuinit powernowk8_cpu_init
+ 	/* min/max the cpu is capable of */
+ 	if (cpufreq_frequency_table_cpuinfo(pol, data->powernow_table)) {
+ 		printk(KERN_ERR FW_BUG PFX "invalid powernow_table\n");
+-		powernow_k8_cpu_exit_acpi(data);
++		if (k8_cpu_acpi_inited)
++			powernow_k8_cpu_exit_acpi(data);
+ 		kfree(data->powernow_table);
+ 		kfree(data);
+ 		return -EINVAL;
+@@ -1240,8 +1244,9 @@ static int __cpuinit powernowk8_cpu_init
+ 
+ err_out:
+ 	set_cpus_allowed_ptr(current, &oldmask);
+-	powernow_k8_cpu_exit_acpi(data);
 -
- #ifndef __ASSEMBLY__
- #include <linux/types.h>
- 
-@@ -140,6 +138,5 @@ struct ptrace_bts_config {
-    BTS records are read from oldest to newest.
-    Returns number of BTS records drained.
- */
--#endif /* CONFIG_X86_PTRACE_BTS */
- 
- #endif /* _ASM_X86_PTRACE_ABI_H */
++	if (k8_cpu_acpi_inited)
++		powernow_k8_cpu_exit_acpi(data);
++early_out:
+ 	kfree(data);
+ 	return -ENODEV;
+ }
