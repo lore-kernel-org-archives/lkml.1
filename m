@@ -1,40 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757992AbZA3Bpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760160AbZA3Br3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757992AbZA3Bpz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 20:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZA3Bps
+	id S1760160AbZA3Br3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 20:47:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752666AbZA3BrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 20:45:48 -0500
-Received: from ozlabs.org ([203.10.76.45]:50629 "EHLO ozlabs.org"
+	Thu, 29 Jan 2009 20:47:21 -0500
+Received: from hera.kernel.org ([140.211.167.34]:41966 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752184AbZA3Bpr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 20:45:47 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Mark McLoughlin <markmc@redhat.com>
-Subject: Re: [PATCH] virtio-pci: do not oops on config change if driver not loaded
-Date: Fri, 30 Jan 2009 12:15:40 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, qemu-devel@nongnu.org
-References: <1233243136-8028-1-git-send-email-markmc@redhat.com>
-In-Reply-To: <1233243136-8028-1-git-send-email-markmc@redhat.com>
+	id S1751702AbZA3BrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 20:47:21 -0500
+Message-ID: <49825B90.8050400@kernel.org>
+Date: Thu, 29 Jan 2009 17:44:48 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>,
+       "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] x86/powernow: fix cpus_allowed brokage when acpi=off
+References: <498136FC.2020206@kernel.org> <200901301210.48352.rusty@rustcorp.com.au>
+In-Reply-To: <200901301210.48352.rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901301215.40312.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 January 2009 02:02:16 Mark McLoughlin wrote:
-> The host really shouldn't be notifying us of config changes
-> before the device status is VIRTIO_CONFIG_S_DRIVER or
-> VIRTIO_CONFIG_S_DRIVER_OK.
+Rusty Russell wrote:
+> On Thursday 29 January 2009 15:26:28 Yinghai Lu wrote:
+>> Impact: fix current->cpus_allowed overwriting.
+> ...
+>> caused by
+>> | commit 2fdf66b491ac706657946442789ec644cc317e1a
+>> | Author: Rusty Russell <rusty@rustcorp.com.au>
+>> | Date:   Wed Dec 31 18:08:47 2008 -0800
+>> |
+>> |    cpumask: convert shared_cpu_map in acpi_processor* structs to cpumask_var_t
 > 
-> However, if we do happen to be interrupted while we're not
-> attached to a driver, we really shouldn't oops.
+> Hi Yinghai!
+> 
+>    Indeed; Mike, that contained a bad conversion of 
+> arch/x86/kernel/cpu/cpufreq/powernow-k8.c.
+> 
+>    This patch reverts the bad change (this code should still be converted
+> to work_on_cpu of course, but that's a bigger change).
+> 
+>    Yinghai, as far as I can tell your other fixes are independent (and
+> were a problem before this commit, yes?).  Can you re-submit them on top
+> of this patch (which is for Ingo, but against latest Linus).
 
-Thanks, applied!
+no problem, after ingo pick your patch in tip/master, i will have another patch.
 
-Rusty.
+YH
+
+> 
+> Subject: cpumask: fix powernow-k8: partial revert of 2fdf66b491ac706657946442789ec644cc317e1a
+> 
+> Impact: fix powernow-k8 when acpi=off (or other error).
+> 
+> There was a spurious change introduced into powernow-k8 in this patch:
+> the cause if that we try to "restore" the cpus_allowed we never saved.
+> 
+> See lkml "[PATCH] x86/powernow: fix cpus_allowed brokage when
+> acpi=off" from Yinghai for the bug report.
+> 
