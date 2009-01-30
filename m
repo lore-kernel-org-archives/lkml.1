@@ -1,85 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZA3Rbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbZA3Rmf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754136AbZA3Rbk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 12:31:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZA3Rbb
+	id S1754281AbZA3Rmf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 12:42:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751905AbZA3Rm1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 12:31:31 -0500
-Received: from mga11.intel.com ([192.55.52.93]:60410 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751896AbZA3Rba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 12:31:30 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,352,1231142400"; 
-   d="scan'208";a="661449813"
-Subject: Re: cpufreq on demand governor sampling rate restricted to HZ even
-	on NO_HZ kernels
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: Thomas Renninger <trenn@suse.de>
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <200901301559.15170.trenn@suse.de>
-References: <200901301559.15170.trenn@suse.de>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 09:28:16 -0800
-Message-Id: <1233336496.13694.49.camel@jamoon.sc.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 30 Jan 2009 12:42:27 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45360 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbZA3Rm0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 12:42:26 -0500
+Date: Fri, 30 Jan 2009 17:40:24 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Greg KH <gregkh@suse.de>, Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+ file segments
+In-Reply-To: <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>
+ <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>
+ <1233259410.2315.75.camel@lts-notebook> <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
+ <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>
+ <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>
+ <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
+ <20090130055639.GA30950@suse.de> <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 06:59 -0800, Thomas Renninger wrote:
-> Hi,
+On Fri, 30 Jan 2009, Linus Torvalds wrote:
+> On Thu, 29 Jan 2009, Greg KH wrote:
+> > 
+> > Which version was the "non-cleanup" version that should be added to the
+> > stable trees?
 > 
-> depending on HZ set to:
+> There were two different versions:
 > 
-> 100
-> 250
-> 1000
+> 	From: Andrew Morton <akpm@linux-foundation.org>
+> 	Subject: Re: possible bug in mmap_region() in linux-2.6.28 kernel
+> 	Message-Id: <20090128134350.034ac6a7.akpm@linux-foundation.org>
 > 
-> the ondemand governor is currently limited to poll the CPU load
-> and adjust the frequency (sampling rate sysfs variable) every:
+> 	From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+> 	Subject: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED file segments
+> 	Message-Id: <1233259410.2315.75.camel@lts-notebook>
 > 
-> 200ms
-> 80ms
-> 20ms
+> and I'm actually not at all sure which one should go into stable (or if we 
+> should just pick the same one that went into mainline). 
 > 
-> This limitation does not consider NO_HZ which looks wrong?
-> If this is correct, can someone give me a pointer, I'd like
-> to understand why.
+...
 > 
+> But none of the above really changes the fact that the patch I committed 
+> to mainline was really quite fundamentally more invasive than either of 
+> the "simple" patches. All three patches are small, with mine arguably the 
+> smallest of the lot, but mine actually changed semantics, while Andrew's 
+> and Lee's patch literally only fix the invalid pointer use.
+> 
+> I'll leave it to others to decide which one goes into -stable. I 
+> personally don't really think it matters. I argue above that mine is 
+> pretty safe and thus perfectly fine even for -stable, but reality has a 
+> habit of sometimes disagreeing with me. Dang.
 
-That is wrong. ondemand sampling_rate should not limit the sampling rate
-based on HZ when NO_HZ is configured. The idle statistics is not limited
-by HZ rate with NO_HZ, as we will have idle microaccounting.
+I'd say one of the non-cleanup versions for -stable
+(but I've not compared them to see which one is better).
 
-> If NO_HZ can/should go down to 20ms polling and more (current
-> CPUs are able to switch fast enough, so that the ondemand governor
-> would calculate the default polling interval below 80ms for them),
-> this would hurt in respect of C-states at some point.
-> 
-> For performance reasons, one wants to poll as much as possible, for
-> powersaving reasons (C-states), one wants to poll as seldom as
-> possible.
-> 
-> I wonder whether it makes sense to dynamically adjust the polling
-> interval (e.g. by a hint (and initial wakeup) from the scheduler or
-> taking C-states into account) to:
->   - increase the sampling rate, e.g. based on context switching
->     activity
->   - lower sampling rate when the system is idle (to gain
->     full C-state efficiency)
-> Or in what other way deep C-states could be taken into account
-> in respect of ondemand polling?
-> 
+I'm still working my way through all the ->mmap methods to check
+their safety with regard to yesterday's change (there are about
+ten times as many as the last time I looked).  So far there's only
+one driver mmap I want to go back and recheck, the vast majority
+are as good today as they were the day before, but ...
 
-ondemand polling uses deferrable timer and hence will not be called
-frequently on a totally idle CPU. The main reason we did not do the
-dynamic sampling_rate is because it increases the ondemand response time
-with a sudden increase of load, which is not liked by most workloads.
+... what I think you have done is break the vma merging on
+ordinary files: because of that irritating VM_CAN_NONLINEAR
+flag which generic_file_mmap() and some others add in.
 
-Thanks,
-Venki
+To break the merging won't cause anyone much trouble,
+but is a slight regression we should fix.
 
+I'd have been very upset not to find something ;)
+
+Hugh
