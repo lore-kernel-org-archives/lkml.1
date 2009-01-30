@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZA3Vrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756802AbZA3Vt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756587AbZA3Vrw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 16:47:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbZA3Vrn
+	id S1756802AbZA3Vt3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 16:49:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbZA3VtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 16:47:43 -0500
-Received: from corsair.crowder-design.com ([207.44.208.58]:56994 "EHLO
-	corsair.crowder-design.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753175AbZA3Vrm (ORCPT
+	Fri, 30 Jan 2009 16:49:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37354 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753006AbZA3VtS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 16:47:42 -0500
-X-Greylist: delayed 2156 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Jan 2009 16:47:42 EST
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging
-	adjacent	VM_LOCKED file segments
-From: Will Crowder <will@crowder-design.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>, Greg KH <gregkh@suse.de>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1233349152.908.56.camel@lts-notebook>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>
-	 <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>
-	 <1233259410.2315.75.camel@lts-notebook>
-	 <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
-	 <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>
-	 <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>
-	 <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
-	 <20090130055639.GA30950@suse.de>
-	 <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
-	 <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>
-	 <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain>
-	 <1233345190.908.36.camel@lts-notebook>  <498368D2.6090307@oracle.com>
-	 <1233349152.908.56.camel@lts-notebook>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 13:11:03 -0800
-Message-Id: <1233349863.5557.335.camel@enterprise.crowder-design.com>
+	Fri, 30 Jan 2009 16:49:18 -0500
+Date: Fri, 30 Jan 2009 13:47:36 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: hch@lst.de, ebiederm@xmission.com, mingo@elte.hu, xemul@openvz.org,
+       rusty@rustcorp.com.au, vgusev@openvz.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
+Message-Id: <20090130134736.ce5910aa.akpm@linux-foundation.org>
+In-Reply-To: <20090130123358.GA26216@redhat.com>
+References: <20090130123358.GA26216@redhat.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-41.el4) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What, no ".linux" TLD?  :-)  Oh well...in time, time...
+On Fri, 30 Jan 2009 13:33:58 +0100
+Oleg Nesterov <oleg@redhat.com> wrote:
 
-Will Crowder
+>  int kthread_stop(struct task_struct *k)
+>  {
+> +	struct kthread *kthread;
+>  	int ret;
+>  
+> -	mutex_lock(&kthread_stop_lock);
+> -
+> -	/* It could exit after stop_info.k set, but before wake_up_process. */
+> -	get_task_struct(k);
+> -
+>  	trace_sched_kthread_stop(k);
+> +	get_task_struct(k);
+>  
+> -	/* Must init completion *before* thread sees kthread_stop_info.k */
+> -	init_completion(&kthread_stop_info.done);
+> -	smp_wmb();
+> +	kthread = to_kthread(k);
+> +	barrier(); /* it might have exited */
 
-On Fri, 2009-01-30 at 15:59 -0500, Lee Schermerhorn wrote:
-> On Fri, 2009-01-30 at 12:53 -0800, Randy Dunlap wrote:
-> > Lee Schermerhorn wrote:
-> > 
-> > > I tried this patch atop 29-rc3 + your patch from yesterday with my
-> > > simple test program at http://free.linux/hp.com/~lts/Tests/mmap_lock.c. 
-> 
-> D'oh!  that's ".hp.com"  
-> 
-> > Is that URL correct?  I can't find/access it.
-> 
-> Sorry, should have cut and pasted, like here:
-> 
-> 	http://free.linux.hp.com/~lts/Tests/mmap_lock.c
-> 
-> 
-> Lee
-> 
-
+Why the change from smp_wmb() to plain old barrier()?
