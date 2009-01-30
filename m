@@ -1,77 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZA3XOi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbZA3XQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757911AbZA3XOi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 18:14:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZA3XO3
+	id S1757857AbZA3XQV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 18:16:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZA3XQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 18:14:29 -0500
-Received: from mo-p00-ob.rzone.de ([81.169.146.162]:14652 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752325AbZA3XO3 (ORCPT
+	Fri, 30 Jan 2009 18:16:12 -0500
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:17311 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921AbZA3XQM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 18:14:29 -0500
-X-RZG-CLASS-ID: mo00
-X-RZG-AUTH: :O2kGeEG7b/pS1EW8QnKjhhg/vO4pzqdNytm2/tv3UCjfco8bJsX/GzAObRbmhgZo
-From: Michael Heimpold <michael@heimpold.de>
-To: hskinnemoen@atmel.com
-Subject: [PATCH] atmel_spi: Fix handling of chipselect after SPI transfer
-Date: Sat, 31 Jan 2009 00:14:41 +0100
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org
+	Fri, 30 Jan 2009 18:16:12 -0500
+Date: Sat, 31 Jan 2009 00:16:08 +0100 (CET)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Riccardo Manfrin <riccardomanfrin@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Can't see my posts
+In-Reply-To: <498164DD.6040907@gmail.com>
+Message-ID: <alpine.LNX.2.00.0901310012430.18155@swampdragon.chaosbits.net>
+References: <498164DD.6040907@gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901310014.41327.michael@heimpold.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to include/linux/spi/spi.h chipselect should stay active after a SPI
-transfer or after a SPI message unless modified by
-spi_transfer.cs_change != 0.
+On Thu, 29 Jan 2009, Riccardo Manfrin wrote:
 
-The current atmel driver passes this field to atmel_spi_msg_done as a
-parameter with oppositional meaning: "cs_change" -> "stay" (see
-atmel_spi_interrupt).
+> Hello there,
+> I'm trying to post on linux.kernel and I can't see my messages.. am I
+> being censured ?
+> Thanks
+> 
+This message certainly made it to my mailbox via the list.
+I can also see this mail at sites that archive the list:
+http://lkml.org/lkml/2009/1/29/198
+http://lkml.indiana.edu/hypermail/linux/kernel/0901.3/01947.html
 
-This patch fixes this behavoir by adapting the called function and its
-callers. IMHO this solution is better than an one line fix of inverting the
-function's argument as the meaning of the field remains throughout
-the hole stack.
+So no, you are certainly not being censored.
 
-Signed-off-by: Michael Heimpold <mhei@heimpold.de>
+If you don't get your mails yourself it could be that you are not 
+subscribed to the list. 
+See http://vger.kernel.org/vger-lists.html#linux-kernel
 
----
- drivers/spi/atmel_spi.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
-index 8abae4a..6b8c020 100644
---- a/drivers/spi/atmel_spi.c
-+++ b/drivers/spi/atmel_spi.c
-@@ -351,9 +351,9 @@ static void atmel_spi_dma_unmap_xfer(struct spi_master *master,
- 
- static void
- atmel_spi_msg_done(struct spi_master *master, struct atmel_spi *as,
--		struct spi_message *msg, int status, int stay)
-+		struct spi_message *msg, int status, int cs_change)
- {
--	if (!stay || status < 0)
-+	if (cs_change || status < 0)
- 		cs_deactivate(as, msg->spi);
- 	else
- 		as->stay = msg->spi;
-@@ -448,7 +448,7 @@ atmel_spi_interrupt(int irq, void *dev_id)
- 		/* Clear any overrun happening while cleaning up */
- 		spi_readl(as, SR);
- 
--		atmel_spi_msg_done(master, as, msg, -EIO, 0);
-+		atmel_spi_msg_done(master, as, msg, -EIO, 1);
- 	} else if (pending & (SPI_BIT(RXBUFF) | SPI_BIT(ENDRX))) {
- 		ret = IRQ_HANDLED;
- 
 -- 
-1.5.4.3
+Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+Plain text mails only, please      http://www.expita.com/nomime.html
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
 
