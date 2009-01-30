@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755188AbZA3Quj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755883AbZA3QvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755188AbZA3Quj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 11:50:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZA3Qua
+	id S1755883AbZA3QvN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 11:51:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752543AbZA3Qu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 11:50:30 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:28121 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752530AbZA3Qua (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 11:50:30 -0500
-Message-ID: <49832F8A.9030504@oracle.com>
-Date: Fri, 30 Jan 2009 08:49:14 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 30 Jan 2009 11:50:57 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:49005 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752384AbZA3Qu4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 11:50:56 -0500
+Date: Fri, 30 Jan 2009 10:50:54 -0600
+From: Martin Hicks <mort@sgi.com>
+To: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       heukelum@mailshack.com
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: push old stack address on irqstack for unwinder
+Message-ID: <20090130165053.GE7872@alcatraz.americas.sgi.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
- file segments
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>  <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>  <1233259410.2315.75.camel@lts-notebook>  <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>  <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain> <1233304450.4495.147.camel@laptop> <alpine.LFD.2.00.0901300844020.3150@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901300844020.3150@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010205.49832F90.00CB:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Fri, 30 Jan 2009, Peter Zijlstra wrote:
->>> +       vma = vma_merge(mm, prev, addr, addr + len, vm_flags, NULL, file, pgoff, NULL);
->>> +       if (vma)
->>> +               goto out;
->> You've made checkpatch unhappy ;-)
-> 
-> Yeah, we need to fix that piece of crud.
-> 
-> checkpatch, that is.
 
-It's just advisory, fwiw.
+Hi,
 
-> I think "git grep" is more important than the "ooh, I have a tiny d*ck, 
-> everybody else should have one too" argument against larger terminals.
+KDB was using this information.  Could this be pushed towards 2.6.29 please?
 
-and fix the Documentation/CodingStyle recommendations?
+This re-adds the old stack pointer to the top of the irqstack to help
+with unwinding.  It was removed in commit d99015b1abbad743aa049b439c1e1dede6d0fa49
+as part of the save_args out-of-line work.
 
--- 
-~Randy
+Signed-off-by: Martin Hicks <mort@sgi.com>
+---
+ arch/x86/kernel/entry_64.S |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index e28c7a9..a134621 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -346,6 +346,7 @@ ENTRY(save_args)
+ 	popq_cfi %rax			/* move return address... */
+ 	mov %gs:pda_irqstackptr,%rsp
+ 	EMPTY_FRAME 0
++	pushq_cfi %rbp			/* backlink for unwinder */
+ 	pushq_cfi %rax			/* ... to the new stack */
+ 	/*
+ 	 * We entered an interrupt context - irqs are off:
+
+
