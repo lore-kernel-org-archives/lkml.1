@@ -1,58 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbZA3WEB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756770AbZA3WFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757104AbZA3WEB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 17:04:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754696AbZA3WDt
+	id S1756770AbZA3WFr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 17:05:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbZA3WFj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 17:03:49 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57766
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753004AbZA3WDt (ORCPT
+	Fri, 30 Jan 2009 17:05:39 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:54186 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753343AbZA3WFi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 17:03:49 -0500
-Date: Fri, 30 Jan 2009 14:03:46 -0800 (PST)
-Message-Id: <20090130.140346.159984249.davem@davemloft.net>
-To: w@1wt.eu
-Cc: jarkao2@gmail.com, zbr@ioremap.net, herbert@gondor.apana.org.au,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090130215920.GC31355@1wt.eu>
-References: <20090127074048.GA4197@ff.dom.local>
-	<20090130.134227.123379239.davem@davemloft.net>
-	<20090130215920.GC31355@1wt.eu>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 30 Jan 2009 17:05:38 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=RxfrCnrURkMYWXaWqsBBHdz40RrpUKOx2aeKULAY4YjR6LX9gzCm51332URG9MHsrM
+         37eVL242XI6op6hRZt0AYUzelK1YgilVBj0y+hlmirPsVzr9jRcrZsdoKwAqaV6U0qIi
+         Y66gQVGFIGny6x9VKRjM8wR6lQlv44Pq/nqlU=
+MIME-Version: 1.0
+Date: Fri, 30 Jan 2009 14:05:36 -0800
+Message-ID: <23986fd90901301405r462563c1o5a28e18f4dd63e34@mail.gmail.com>
+Subject: Fibre Channel without SCSI?
+From: "Patrick J. LoPresti" <lopresti@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Willy Tarreau <w@1wt.eu>
-Date: Fri, 30 Jan 2009 22:59:20 +0100
+I am interested in experimenting with Fibre Channel at a low level
+(layer FC-2), preferably using off-the-shelf hardware.
 
-> On Fri, Jan 30, 2009 at 01:42:27PM -0800, David Miller wrote:
-> > It's cheesy and the SLAB developers will likely barf at the
-> > idea, but it would certainly work.
-> 
-> Maybe that would be enough as a definitive fix for a stable
-> release, so that we can go on with deeper changes in newer
-> versions ?
+But as near as I can tell browsing the Linux source, Fibre Channel and
+SCSI seem to be joined at the hip.
 
-Such a check could have performance ramifications, I wouldn't
-risk it and already I intend to push Jarek's page allocator
-splice fix back to -stable eventually.
+Questions:
 
-> > Back to real life, I think long term the thing to do is to just do the
-> > cached page allocator thing we'll be doing after Jarek's socket page
-> > patch is integrated, and for best performance the driver has to
-> > receive it's data into pages, only explicitly pulling the ethernet
-> > header into the linear area, like NIU does.
-> 
-> Are there NICs out there able to do that themselves or does the
-> driver need to rely on complex hacks in order to achieve this ?
+- Is there a user-space interface to access the raw Fibre Channel
+protocol via an ordinary HBA?
 
-Any NIC, even the dumbest ones, can be made to receive into pages.
+- If not, are the kernel internals such that doing this from kernel
+space would be relatively straightorward?
+
+- Or is this just a bad idea?
+
+Again, my goal is to bypass the SCSI protocol entirely.  Put another
+way, I want to implement my own upper-level protocol on top of FC-2,
+but without having to re-write an entire HBA driver.
+
+Any pointers (however brief) or redirection to a more appropriate
+forum would be appreciated.
+
+Thank you!
+
+ - Pat
