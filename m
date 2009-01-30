@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbZA3Efv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbZA3EiT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757334AbZA3Efv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 23:35:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZA3Efn
+	id S1758090AbZA3EiT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 23:38:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752050AbZA3EiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 23:35:43 -0500
-Received: from cpsmtpo-eml03.KPNXCHANGE.COM ([213.75.38.152]:5426 "EHLO
-	cpsmtpo-eml03.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753905AbZA3Efm (ORCPT
+	Thu, 29 Jan 2009 23:38:06 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60361 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751367AbZA3EiF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 23:35:42 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: Regression from 2.6.26: Hibernation (possibly suspend) broken on Toshiba R500 (bisected)
-Date: Fri, 30 Jan 2009 05:35:37 +0100
-User-Agent: KMail/1.9.9
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Greg KH <greg@kroah.com>,
-       jbarnes@virtuousgeek.org, lenb@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, tiwai@suse.de,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <200812020320.31876.rjw@sisk.pl> <200901281300.40171.elendil@planet.nl> <20090129141111.GN24391@elte.hu>
-In-Reply-To: <20090129141111.GN24391@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 29 Jan 2009 23:38:05 -0500
+Date: Thu, 29 Jan 2009 20:37:56 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Risto Suominen <risto.suominen@gmail.com>, Alex Kern <alex.kern@gmx.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] atyfb: fix distorted image on PowerMacs
+Message-Id: <20090129203756.780aba28.akpm@linux-foundation.org>
+In-Reply-To: <1233286970.18767.19.camel@pasglop>
+References: <46e1c7760901221022p697f1689ubf03c909cdf1b99b@mail.gmail.com>
+	<1233286970.18767.19.camel@pasglop>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901300535.39420.elendil@planet.nl>
-X-OriginalArrivalTime: 30 Jan 2009 04:35:39.0842 (UTC) FILETIME=[34259A20:01C98294]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 January 2009, Ingo Molnar wrote:
-> > Quick revival of this old thread with good news.
-> > The "APIC error on CPU1" message is now gone!
->
-> that was an old mystery!
->
-> So enabling interrupts too early (possibly before the lapic, the hpet
-> or both are initialized properly?) can generate an APIC error message?
+On Fri, 30 Jan 2009 14:42:50 +1100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-I'm not really sure what change has caused the error to disappear. I could 
-do some investigation, but fear we may have had too many changes (and 
-broken suspend between them) to accurately pinpoint it.
+> On Thu, 2009-01-22 at 20:22 +0200, Risto Suominen wrote:
+> > Since the complete re-write in 2.6.10, some PowerMacs (At least PowerMac 5500
+> > and PowerMac G3 Beige rev A) with ATI Mach64 chip have suffered from unstable
+> > columns in their framebuffer image. This seems to depend on a value (4) read
+> > from PLL_EXT_CNTL register, which leads to incorrect DSP config parameters to
+> > be written to the chip. This patch uses a value calculated by aty_init_pll_ct
+> > instead, as a starting point.
+> > 
+> > Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
+> > ---
+> > The testing is done on kernel version 2.6.18.
+> 
+> This also fixes my oooold wallstreet powerbook.
+> 
+> Andrew, do you mind if I include that in the powerpc tree ?
 
-> > With current git head I get:
-> >    ACPI: Waking up from system sleep state S3
-> >    ACPI: EC: non-query interrupt received, switching to interrupt
-> > mode
->
-> i started getting those messages too - but earlier in the cycle, during
-> one of the ACPI merges i think.
+Go wild.
 
-I get the same message during a normal boot and in roughly the same place: 
-shortly after CPU1 is enabled and CPUs attaching to sched-domains. So I'm 
-happy with Alexey's comment that this is normal.
+Please don't to forget to add 'Cc: <stable@kernel.org>' to the changelog
+if you consider a backport to be appropriate.
