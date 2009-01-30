@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZA3PLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbZA3PNh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756631AbZA3PLe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 10:11:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752048AbZA3PLZ
+	id S1754466AbZA3PNh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 10:13:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750949AbZA3PN3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 10:11:25 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56129 "EHLO mx2.redhat.com"
+	Fri, 30 Jan 2009 10:13:29 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43662 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751411AbZA3PLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 10:11:25 -0500
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH RFT 7/7] firewire: sbp2: add workarounds for 2nd and 3rd generation iPods
-Date: Fri, 30 Jan 2009 10:16:04 -0500
-User-Agent: KMail/1.10.4 (Linux/2.6.27.9-159.fc10.x86_64; KDE/4.1.4; x86_64; ; )
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Kristian =?iso-8859-1?q?H=F8gsberg?= <krh@bitplanet.net>
-References: <Pine.LNX.4.44L0.0901291536020.2394-100000@iolanthe.rowland.org> <49821F99.4070108@s5r6.in-berlin.de>
-In-Reply-To: <49821F99.4070108@s5r6.in-berlin.de>
+	id S1750824AbZA3PN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 10:13:28 -0500
+Date: Fri, 30 Jan 2009 16:12:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -next/mmotm/resend] kmemtrace: fix printk formats
+Message-ID: <20090130151251.GC27549@elte.hu>
+References: <200901291030.n0TAUhRI003046@imap1.linux-foundation.org> <4981E86F.60909@oracle.com> <Pine.LNX.4.64.0901292234520.17617@anakin> <49822479.9030908@oracle.com> <20090130074645.GA5218@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200901301016.05012.jarod@redhat.com>
+In-Reply-To: <20090130074645.GA5218@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 January 2009 16:28:57 Stefan Richter wrote:
-> Alan Stern wrote:
-> > On Thu, 29 Jan 2009, Stefan Richter wrote:
-> >> Obviously they changed something in Ubuntu 8.10 which suddenly made 3rd
-> >> gen iPods vulnerable too.  If the report is accurate, then this is /not/
-> >> the READ CAPACITY 10 issue where device's capacity report is off by one.
-> >> (The reported capacity without workaround is an even number and thus
-> >> possibly correct.)
+
+* Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
+
+> On Thu, Jan 29, 2009 at 01:49:45PM -0800, Randy Dunlap wrote:
+> > Geert Uytterhoeven wrote:
+> > > 
+> > > %4zu?
 > > 
-> > Don't make that assumption.  One of the small number of devices which 
-> > really did have an odd number of sectors was an early iPod.
+> > Ugh, yes.  Thanks.
+> > Here's the updated patch.
+> > 
+> > -- 
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Fix kmemtrace printk warnings:
+> > 
+> > kernel/trace/kmemtrace.c:142: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
+> > kernel/trace/kmemtrace.c:147: warning: format '%4ld' expects type 'long int', but argument 3 has type 'size_t'
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > cc:      Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> > ---
+> >  kernel/trace/kmemtrace.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > --- linux-next-20090123.orig/kernel/trace/kmemtrace.c
+> > +++ linux-next-20090123/kernel/trace/kmemtrace.c
+> > @@ -139,12 +139,12 @@ kmemtrace_print_alloc_compress(struct tr
+> >  		return TRACE_TYPE_PARTIAL_LINE;
+> >  
+> >  	/* Requested */
+> > -	ret = trace_seq_printf(s, "%4ld   ", entry->bytes_req);
+> > +	ret = trace_seq_printf(s, "%4zu   ", entry->bytes_req);
+> >  	if (!ret)
+> >  		return TRACE_TYPE_PARTIAL_LINE;
+> >  
+> >  	/* Allocated */
+> > -	ret = trace_seq_printf(s, "%4ld   ", entry->bytes_alloc);
+> > +	ret = trace_seq_printf(s, "%4zu   ", entry->bytes_alloc);
+> >  	if (!ret)
+> >  		return TRACE_TYPE_PARTIAL_LINE;
+> >
 > 
-> Ah, interesting.
+> I didn't notice this either, thanks.
 > 
-> (Jarod, didn't you see OS X report the same size on that 3rd gen. iPod
-> as Linux without quirk flag, or did I dream this?  In any case this
-> could of course simply mean that OS X uses a wrongly reported size...)
+> Acked-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 
-I don't think I looked at the 3rd-gen iPod's reported size under OS X,
-the place I saw OS X size matching Linux size sans-quirk-flag was with
-a 20GB 4th-gen iPod. I can certainly check the 3rd-gen too though.
+Applied to tip/tracing/kmemtrace, thanks!
 
-
--- 
-Jarod Wilson
-jarod@redhat.com
+	Ingo
