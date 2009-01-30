@@ -1,71 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753878AbZA3II7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753086AbZA3IQu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753878AbZA3II7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 03:08:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZA3IIk
+	id S1753086AbZA3IQu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 03:16:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZA3IQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 03:08:40 -0500
-Received: from rv-out-0506.google.com ([209.85.198.239]:28656 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751907AbZA3IIi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 03:08:38 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=thJ8JnDQ3EiqlgBgbN15lTC1hbaPvhxrIxGHguOzSF8ghdMBip2YxkcEYY+gIAu4s8
-         Pwo7tckDGmleef7WHyUp6+pN+PczcLuzdFV/f+ILzqJajWlAAvqvW3+5UXGX5fuYXyav
-         sgU31YlAKUMogWZHCNJnVhOUMxe/VDxKJKNG8=
-MIME-Version: 1.0
-In-Reply-To: <74ae4f6a0901291405o6b615399vaa033abfbeac3a06@mail.gmail.com>
-References: <74ae4f6a0901291402j19575c87g418bee66ba9f3519@mail.gmail.com>
-	 <74ae4f6a0901291405o6b615399vaa033abfbeac3a06@mail.gmail.com>
-Date: Fri, 30 Jan 2009 00:08:36 -0800
-Message-ID: <86802c440901300008x7d2c465cne6c21e4c54e78c3b@mail.gmail.com>
-Subject: Re: x86_64 IOAPIC
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: SUJIT V <sujit.linux@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 30 Jan 2009 03:16:41 -0500
+Received: from mout.perfora.net ([74.208.4.195]:60335 "EHLO mout.perfora.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbZA3IQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 03:16:40 -0500
+Subject: Re: scheduler nice 19 versus 'idle' behavior / static low-priority
+	scheduling
+From: Nathanael Hoyle <nhoyle@hoyletech.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <1233302349.17301.27.camel@localhost>
+References: <1233294584.28741.2.camel@localhost>
+	 <alpine.LSU.2.00.0901300710200.999@fbirervta.pbzchgretzou.qr>
+	 <1233297635.17301.11.camel@localhost>
+	 <alpine.LSU.2.00.0901300818580.28427@fbirervta.pbzchgretzou.qr>
+	 <1233302349.17301.27.camel@localhost>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 03:16:36 -0500
+Message-Id: <1233303396.17301.30.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18KEGLO92KWImHjk9spXGCHTgiwJ7zWtjoU0W+
+ XAjNn8vevuA9kt5F5MNX+A5eCO+Knk0LD8j6eAzWt7VOLDc3Wq
+ TSTVoxVph3nhkjYuA+M4FGCl2L6gfga
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 2:05 PM, SUJIT V <sujit.linux@gmail.com> wrote:
-> Forgot to mention that we are not using the irqbalance utility.
->
-> So which part of the kernel io_apic code is doing the irq balancing
-> which we see in /proc/interrupt.
->
-> Thanks
->
->
-> On Thu, Jan 29, 2009 at 2:02 PM, SUJIT V <sujit.linux@gmail.com> wrote:
->> Hi,
->>    We have a IBM Qauadcore 8 CPU system running x86_64 linux 2.6.23.
->> We were doing some performance test. (disk & network).
->> The eth0 IRQ is pinned to CPU0.  The aacraid interrupt has not been
->> assigned any smp affinity.
->>
->> On the system we see in (/proc/interrupts) that when the eth0
->> interrupt rate is high, the aacraid interrupt counter for CPU0 does
->> not increase as much compared to aacraid interrupts handled by other
->> CPUs .
->> This shows that IOAPIC is doing some load balancing.
->>
->> I wanted to check the code which is doing this load balancing. I
->> checked the file arch/x86_64/kernel/io_apic.c. I could not find any
->> irq balancing stuff out there.
->> I went through some archived discussions about the x86_64 ioapic irq
->> balancing. Most of the discussions were about using irqbalance
->> utility.
->>
->>
->> Could some one point me to the relevant piece of io_apic code ?
+On Fri, 2009-01-30 at 02:59 -0500, Nathanael Hoyle wrote:
+> On Fri, 2009-01-30 at 08:21 +0100, Jan Engelhardt wrote:
+> > On Friday 2009-01-30 07:40, Nathanael Hoyle wrote:
+> > >On Fri, 2009-01-30 at 07:16 +0100, Jan Engelhardt wrote:
+> > >
+> > >The one discussion I saw referencing SCHED_BATCH seemed to imply that it
+> > >was a non-standard kernel patch by Con Kolivas in one of his -ck
+> > >variants that never made it into mainline and is not being maintained.
+> > >Is this inaccurate?
+> > 
+> > The presence of SCHED_BATCH in linux/sched.h tells me it is available
+> > (on the other hand, SCHED_ISO, also from -ck, is only listed as a comment.)
+> > 
+> 
+> Fair enough. I should have re-checked recent sources after your mention
+> rather than going on the old thread I found.
+> 
+> > >I was unfamiliar with SCHED_IDLE. Having done a little Googling now, I
+> > >finally find reference to the man page for sched_setscheduler(2). This
+> > >appears that it is likely what I wanted.
+> > >
+> > >I think the information I had been able to find was somehwat out of
+> > >date.
+> > 
+> > The manpage does say it, but if your local distro does not 
+> > mention SCHED_BATCH/SCHED_IDLE, then that's a pretty sad distro.
+> > 
+> > The doc in sched_setschedule seems complete to me as of man-pages 3.13.
+> > 
+> > >Is there currently a standardized userspace tool to use to run a command
+> > >in order to alter its scheduling class? Obviously writing one would be
+> > >trivial, but didn't know if something like:
+> > 
+> > man chrt
+> 
+> The latest version of man chrt that I can find implies that it handles
+> SCHED_BATCH but not SCHED_IDLE. To that end, if anyone else is
+> interested, I have thrown together the above-suggested 'runidle' which
+> will invoke the passed command using the SCHED_IDLE scheduler; it's
+> nothing fancy.
+> 
+> I am running foldingathome under it at the moment, and it seems to be
+> improving the situation somewhat, but I still need/want to test with
+> Mike's referenced patches.
+> 
 
-you are using logical flat mode. and target_cpus and smp_affinity are 0xff.
-aka irq is broadcast to all cpus.
+<snipped old version, because of a fixed goof, and this has better
+formatting for mail client>
 
-YH
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
+#include <sched.h>
+#include <linux/sched.h>
+
+extern char **environ;
+
+int
+main(int argc, char **argv) {
+  struct sched_param sp;
+  sp.sched_priority = 0;
+
+  if(argc<2) {
+    perror("Must specify at least one argument: the path to " \
+      "the program to execute. Additional arguments may be " \
+      "specified which will be passed to the called program.");
+    return EXIT_FAILURE;
+  }
+
+  if(sched_setscheduler(0, SCHED_IDLE, &sp) == -1) {
+    perror("Failed to alter scheduling class!");
+    return EXIT_FAILURE;
+  }
+
+  if(argc==2) {
+    if(execve(argv[1], NULL, environ) == -1) {
+      perror("Failed to execve target!");
+    }
+  } else {
+    if(execve(argv[1], argv+1, environ) == -1) {
+      perror("Failed to execve target!");
+    }
+  }
+
+  /* should be unreachable */
+  return EXIT_FAILURE;
+}
+
+> -Nathanael
+
