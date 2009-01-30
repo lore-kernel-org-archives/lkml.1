@@ -1,77 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZA3Mf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752497AbZA3Mfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753940AbZA3Mf0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 07:35:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZA3MfM
+	id S1752497AbZA3Mfo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 07:35:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZA3Mfb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 07:35:12 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37611 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751376AbZA3MfL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 07:35:11 -0500
-Date: Fri, 30 Jan 2009 10:34:46 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/ftrace: better manage the context info for
-	events
-Message-ID: <20090130123446.GQ627@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4982c159.190c660a.7424.ffffabf9@mx.google.com>
+	Fri, 30 Jan 2009 07:35:31 -0500
+Received: from wf-out-1314.google.com ([209.85.200.171]:56542 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754149AbZA3Mf2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 07:35:28 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Flw3kOlR2czFHHiKhXmLBkx7e42jj+2Aru0RWvC1PlGeGoS0QBdzGM9O/hXLvioJxz
+         gWLNbkRtJURGWA/ab8UPuE4PwNaEsYPuwFnPkn6QrFXJnoayGGsCQ2FhH72I9ozCrgEj
+         s4u8mhRvArR3jnZqohrin/ck+g/y1Zz2pcOmI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4982c159.190c660a.7424.ffffabf9@mx.google.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Fri, 30 Jan 2009 18:05:27 +0530
+Message-ID: <8bf247760901300435s56024125o9aae1a112196c9a1@mail.gmail.com>
+Subject: SMC911X driver Suspend-Resume Failures
+From: Sriram V <vshrirama@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-pm@lists.linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Jan 30, 2009 at 12:59:05AM -0800, Frederic Weisbecker escreveu:
-> Impact: make trace_event more convenient for tracers
-> 
-> All tracers (for the moment) that use the struct trace_event want to have
-> the context info printed before their own output: the pid/cmdline, cpu, and timestamp.
-> 
-> But some other tracers that want to implement their trace_event callbacks will
-> not necessary need these information or they may want to format them as they want.
-> 
-> This patch adds a new default-enabled trace option: TRACE_ITER_CONTEXT_INFO
-> When disabled through:
-> 
-> echo nocontext-info > /debugfs/tracing/trace_options
-> 
-> The pid, cpu and timestamps headers will not be printed.
-> 
-> IE with the sched_switch tracer with context-info (default):
-> 
->             bash-2935  [001]   100.356561:   2935:120:S ==> [001]     0:140:R <idle>
->           <idle>-0     [000]   100.412804:      0:140:R   + [000]    11:115:S events/0
->           <idle>-0     [000]   100.412816:      0:140:R ==> [000]    11:115:R events/0
->         events/0-11    [000]   100.412829:     11:115:S ==> [000]     0:140:R <idle>
-> 
-> Without context-info:
-> 
->   2935:120:S ==> [001]     0:140:R <idle>
->      0:140:R   + [000]    11:115:S events/0
->      0:140:R ==> [000]    11:115:R events/0
->     11:115:S ==> [000]     0:140:R <idle>
-> 
-> A tracer can disable it at runtime by clearing the bit TRACE_ITER_CONTEXT_INFO in trace_flags.
-> 
-> Moreover, two callbacks have been added inside trace_event:
-> _ context_info() which let a tracer override the format of the context info
-> _ lat_context_info() which do the same with the latency_trace file
-> 
-> If they are not defined, the usual way of printing the context info will be used.
+Hi,
+   I am using 2.6.28 and am testing PM on my arm target. I am using
+smc911x.c driver.
+   I get the error when i try to resume from suspend:
 
-Please wait a bit, I'm trying to use it and the first thing I notice was
-that I need the trace_iterator in the context callback, to get the
-timestamp.
+   has anyone seen this error before.
 
-- Arnaldo
+Regards,
+sriram
+
+
+CPU: 0    Not tainted  (2.6.28-omap1-00248-g3fd6c57-dirty #22)
+PC is at rt_cache_flush+0x80/0xb8
+LR is at rt_cache_flush+0x7c/0xb8
+pc : [<c01dd728>]    lr : [<c01dd724>]    psr: a0000013
+sp : cf829ea0  ip : cf829ea0  fp : cf829ebc
+r10: 00000000  r9 : 00000000  r8 : 00000004
+r7 : 00000000  r6 : 0000027f  r5 : cf828000  r4 : 80000000
+r3 : 00000000  r2 : cf828000  r1 : c01dcf24  r0 : 80000000
+Flags: NzCv  IRQs on  FIQs on  Mode SVC_32  ISA ARM  Segment kernel
+Control: 10c5387d  Table: 8f990018  DAC: 00000017
+Process events/0 (pid: 5, stack limit = 0xcf8282e8)
+Stack: (0xcf829ea0 to 0xcf82a000)
+9ea0: c031f5fc fffffffa 00000000 cf888800 cf829ed4 cf829ec0 c020a5d4 c01dd6b4
+9ec0: c031f5fc fffffffa cf829efc cf829ed8 c0069720 c020a550 cf888800 00000002
+9ee0: 00000000 00000000 00000000 00000000 cf829f14 cf829f00 c0069824 c00696f8
+9f00: 00000000 00000000 cf829f2c cf829f18 c006984c c0069814 00000000 cf888800
+9f20: cf829f3c cf829f30 c01c9d38 c0069838 cf829f54 cf829f40 c01ca200 c01c9d28
+9f40: cf888800 00000002 cf829f74 cf829f58 c01d5534 c01ca1e4 cf801940 cf828000
+9f60: c01d557c cf801940 cf829f84 cf829f78 c01d55a8 c01d53f4 cf829fa4 cf829f88
+9f80: c006183c c01d5588 cf829fb8 cf81e880 cf828000 cf801940 cf829fdc cf829fa8
+9fa0: c00623d8 c00617a4 00000000 00000000 cf81e880 c006563c cf829fb8 cf829fb8
+9fc0: cf801940 c00622e8 00000000 00000000 cf829ff4 cf829fe0 c006516c c00622f4
+9fe0: 00000000 00000000 00000000 cf829ff8 c00549f0 c0065124 00000000 00000000
+Backtrace:
+[<c01dd6a8>] (rt_cache_flush+0x0/0xb8) from [<c020a5d4>]
+(fib_netdev_event+0x90/0x9c)
+ r7:cf888800 r6:00000000 r5:fffffffa r4:c031f5fc
+[<c020a544>] (fib_netdev_event+0x0/0x9c) from [<c0069720>]
+(notifier_call_chain+0x34/0x78)
+ r5:fffffffa r4:c031f5fc
+[<c00696ec>] (notifier_call_chain+0x0/0x78) from [<c0069824>]
+(__raw_notifier_call_chain+0x1c/0x24)
+ r9:00000000 r8:00000000 r7:00000000 r6:00000000 r5:00000002
+r4:cf888800
+[<c0069808>] (__raw_notifier_call_chain+0x0/0x24) from [<c006984c>]
+(raw_notifier_call_chain+0x20/0x28)
+[<c006982c>] (raw_notifier_call_chain+0x0/0x28) from [<c01c9d38>]
+(call_netdevice_notifiers+0x1c/0x24)
+[<c01c9d1c>] (call_netdevice_notifiers+0x0/0x24) from [<c01ca200>]
+(netdev_state_change+0x28/0x3c)
+[<c01ca1d8>] (netdev_state_change+0x0/0x3c) from [<c01d5534>]
+(__linkwatch_run_queue+0x14c/0x194)
+ r5:00000002 r4:cf888800
+[<c01d53e8>] (__linkwatch_run_queue+0x0/0x194) from [<c01d55a8>]
+(linkwatch_event+0x2c/0x3c)
+ r7:cf801940 r6:c01d557c r5:cf828000 r4:cf801940
+[<c01d557c>] (linkwatch_event+0x0/0x3c) from [<c006183c>]
+(run_workqueue+0xa4/0x120)
+[<c0061798>] (run_workqueue+0x0/0x120) from [<c00623d8>]
+(worker_thread+0xf0/0x104)
+ r7:cf801940 r6:cf828000 r5:cf81e880 r4:cf829fb8
+[<c00622e8>] (worker_thread+0x0/0x104) from [<c006516c>] (kthread+0x54/0x80)
+ r7:00000000 r6:00000000 r5:c00622e8 r4:cf801940
+[<c0065118>] (kthread+0x0/0x80) from [<c00549f0>] (do_exit+0x0/0x6ac)
+ r5:00000000 r4:00000000
+Code: e7924106 e7823106 ebf9e679 ea000001 (e5944084)
+---[ end trace 5d3b9d1bfba9fc73 ]---
+eth0: link up, 100Mbps, full-duplex, lpa 0x05E1
+nfs: server 192.168.13.144 not responding, still trying
