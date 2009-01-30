@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZA3NId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZA3NKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873AbZA3NId (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 08:08:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZA3NIT
+	id S1755496AbZA3NKc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 08:10:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZA3NKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 08:08:19 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:4798 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754914AbZA3NIS (ORCPT
+	Fri, 30 Jan 2009 08:10:23 -0500
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:54761 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752254AbZA3NKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 08:08:18 -0500
-Date: Fri, 30 Jan 2009 12:54:08 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Hans-Christian Egtvedt <hans-christian.egtvedt@atmel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net,
-       kay.sievers@vrfy.org, weiyi.huang@gmail.com,
-       Andrew Victor <avictor.za@gmail.com>
-Subject: Re: [PATCH 1/1] atmel-ssc: fix misuse of dev_dbg when requested ssc instance is not found
-Message-ID: <20090130125408.GE18825@sirena.org.uk>
-References: <1232369876-19428-1-git-send-email-hans-christian.egtvedt@atmel.com> <20090130102654.10e4aafc@hskinnemoen-d830> <20090130013628.4672215d.akpm@linux-foundation.org> <20090130105057.7d0acaec@hcegtvedt>
+	Fri, 30 Jan 2009 08:10:22 -0500
+Message-ID: <4982FC39.7080308@euromail.se>
+Date: Fri, 30 Jan 2009 14:10:17 +0100
+From: Henrik Rydberg <rydberg@euromail.se>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090130105057.7d0acaec@hcegtvedt>
-X-Cookie: Hackers of the world, unite!
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: Joon Young Shim <dofmind@gmail.com>
+CC: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/6] input: Add a detailed multi-touch finger data report
+ 	protocol (rev2)
+References: <1233138229-12489-1-git-send-email-rydberg@euromail.se>	 <1233138229-12489-2-git-send-email-rydberg@euromail.se>	 <1233138229-12489-3-git-send-email-rydberg@euromail.se>	 <1233138229-12489-4-git-send-email-rydberg@euromail.se>	 <1233138229-12489-5-git-send-email-rydberg@euromail.se>	 <1233138229-12489-6-git-send-email-rydberg@euromail.se>	 <1233138229-12489-7-git-send-email-rydberg@euromail.se> <4e1455be0901292210t793c942cg5776079ecc99080e@mail.gmail.com>
+In-Reply-To: <4e1455be0901292210t793c942cg5776079ecc99080e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: 83.248.192.132
+X-Scan-Result: No virus found in message 1LSt8V-00005g-41.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1LSt8V-00005g-41 24cf89511a659f99ddfd1bbb90d7cd20
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 30, 2009 at 10:50:57AM +0100, Hans-Christian Egtvedt wrote:
+Joon Young Shim wrote:
+> 2009/1/28 Henrik Rydberg <rydberg@euromail.se>:
+[snip]
+> 
+> Hi Henrik,
+> 
+> Sorry for multiple posts.
+> 
+> I want to know how calculates touch coordinates at user space using a
+> set of ABS_MT.
+> If i do dual touch, can i get correct two coordinates through ABS_MT report?
 
-> 1 sound/soc/atmel/sam9g20_wm8731.c        274 ssc = ssc_request(0);
-> 2 sound/soc/atmel/playpaq_wm8510.c        399 ssc = ssc_request(0);
-> 3 sound/spi/at73c213.c                    980 chip->ssc = ssc_request(board->ssc_id);
+The coordinates for the two fingers are sent from the driver in sequence
+as two separate finger packets. What then happens with it depends on the
+kind of application. For normal desktop usage, the packets are read from
+the input device by the multitouch X driver (a modified version of the
+synaptics driver), which does finger matching and transforms the
+messages into gestures, reported as X events. It is of course also
+possible to read the input device directly. It goes without saying that
+further development is needed before the multitouch X driver hits the
+repos, but none of this can really become reality without basic support
+in the kernel.
 
-> The two first are a bit suspicious since they hard code id 0.
-
-They are ASoC board drivers so are already entirely specific to one
-board (or family of boards).
+Henrik
