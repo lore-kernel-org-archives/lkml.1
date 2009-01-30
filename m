@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753397AbZA3IgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753206AbZA3InK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753397AbZA3IgE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 03:36:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752443AbZA3Ifg
+	id S1753206AbZA3InK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 03:43:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZA3Imz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 03:35:36 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:49796 "EHLO
+	Fri, 30 Jan 2009 03:42:55 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:53236 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752296AbZA3Iff (ORCPT
+	with ESMTP id S1750973AbZA3Imy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 03:35:35 -0500
-Date: Fri, 30 Jan 2009 01:35:33 -0700 (MST)
+	Fri, 30 Jan 2009 03:42:54 -0500
+Date: Fri, 30 Jan 2009 01:42:52 -0700 (MST)
 From: Paul Walmsley <paul@pwsan.com>
 To: Russell King - ARM Linux <linux@arm.linux.org.uk>
 cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
        linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
-In-Reply-To: <20090129220608.GJ18233@n2100.arm.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0901300122530.26985@utopia.booyaka.com>
-References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk>
+Subject: Re: [PATCH E 08/14] OMAP clock: move rate recalc, propagation code
+ up to plat-omap/clock.c
+In-Reply-To: <20090129174153.GH18233@n2100.arm.linux.org.uk>
+Message-ID: <alpine.DEB.2.00.0901300135560.26985@utopia.booyaka.com>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192748.29333.5856.stgit@localhost.localdomain> <20090129174153.GH18233@n2100.arm.linux.org.uk>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -26,49 +27,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Russell, 
+
 On Thu, 29 Jan 2009, Russell King - ARM Linux wrote:
 
-> On Thu, Jan 29, 2009 at 03:14:01PM +0000, Russell King - ARM Linux wrote:
-> > On Wed, Jan 28, 2009 at 12:27:59PM -0700, Paul Walmsley wrote:
-> > > The price paid is additional runtime memory consumption - 8 bytes per
-> > > clock and 16 bytes per child clock - roughly 4.5KiB on OMAP3.
-> > 
-> > For OMAP3, that's 222 struct clks of which 182 are children, and indeed
-> > 222 * 8 + 182 * 16 gives about 4.5K.  On OMAP2, it's 140 and 136,
-> > giving 140 * 8 + 136 * 16 = 3.3K.
-> > 
-> > Moving struct clk_child into struct clk means that its clk and flags
-> > members can be deleted, making it 8 bytes in size - effectively just
-> > the list_head.  We need a list_head for the 'children' as you have it.
-> > So, that works out as 16 bytes per clock.  That gives 3.5K on OMAP3
-> > and 2.2K on OMAP2.
-> > 
-> > So, by taking that alternative approach, not only do you end up using
-> > less memory, but you also don't have to have the overhead of your
-> > custom memory bookkeeping.
-> > 
-> > The other change I'd suggest is that you have one function which deals
-> > with setting the parent of a clock:
-> > 
-> > void clk_reparent(struct clk *child, struct clk *parent)
-> > {
-> > 	list_del_init(&child->sibling);
-> > 	if (parent)
-> > 		list_add(&child->sibling, &parent->children);
-> > 	child->parent = parent;
-> > 
-> > 	/* now do the debugfs renaming to reattach the child
-> > 	   to the proper parent */
-> > }
-> > 
-> > which is a lot simpler than your omap_clk_add_child() and omap_clk_del_child().
-> > 
-> > These should be in the _core_ OMAP clock code, not just in the OMAP2
-> > clock code.  OMAP1 has child clocks as well as OMAP2.
+> On Wed, Jan 28, 2009 at 12:27:51PM -0700, Paul Walmsley wrote:
+> > Previously the individual clock recalculation functions handled their
+> > own rate recalculation.  This can be handled in the clk_set_rate(),
+> > clk_set_parent(), and recalculate_root_clocks() functions in
+> > plat-omap/clock.c.  Removes duplicate code and clarifies the role of the
+> > recalc functions.
 > 
-> And here is my version of this patch:
+> I must say that this commit looks very much like a combination of
+> my commits from November:
+> 
+> [ARM] omap: move clock propagation into core omap clock code
+> [ARM] omap: remove unnecessary calls to propagate_rate()
+> [ARM] omap: move propagate_rate() calls into generic omap clock code
+> 
+> which do basically the same thing a little more efficiently, and an
+> additional patch from you to call ->recalc after set_rate or
+> reparenting a clock.
+> 
+> So I think I can drop everything from this apart from the additional
+> recalc calls, and the removal of those omap2_dpllcore_recalc() calls.
+> 
+> Please confirm my suspicions.
 
-Thanks, I'll take a closer look at this later today.
+I haven't looked closely at your above three patches for this, but plan to 
+do so later today.
+
+Regarding provenance, the patches that I sent you were developed 
+independently, for clock notifier support.  Ultimately, I have no personal 
+attachment as to whose patches for this go in, if all technical aspects 
+are equal.
 
 
 - Paul
