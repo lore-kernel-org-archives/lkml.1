@@ -1,53 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbZA3SFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbZA3SPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbZA3SFX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 13:05:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZA3SFH
+	id S1754774AbZA3SPS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 13:15:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752708AbZA3SPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 13:05:07 -0500
-Received: from moutng.kundenserver.de ([212.227.17.8]:62156 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZA3SFG (ORCPT
+	Fri, 30 Jan 2009 13:15:04 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46660 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752255AbZA3SPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 13:05:06 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Narendra Prasad Madanapalli <narendramind@gmail.com>
-Subject: Re: [PATCH 1/1] x86: syscalls: sys_setrlimit64/sys_getrlimit64 calls  to provide FSIZE limits > 2^32-1
-Date: Fri, 30 Jan 2009 19:04:51 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       torvalds@osdl.org, linux-api@vger.kernel.org,
-       mtk.manpages@googlemail.com
-References: <200901231759.n0NHxKA3009104@eng-pool-55.spikesource.com> <497E595F.2010708@gmail.com> <85e5430e0901300957x64951d6at2a79c5cb1ee88e97@mail.gmail.com>
-In-Reply-To: <85e5430e0901300957x64951d6at2a79c5cb1ee88e97@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 30 Jan 2009 13:15:02 -0500
+Date: Fri, 30 Jan 2009 10:14:26 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Hugh Dickins <hugh@veritas.com>
+cc: Greg KH <gregkh@suse.de>, Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+ file segments
+In-Reply-To: <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>
+Message-ID: <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com> <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain> <1233259410.2315.75.camel@lts-notebook> <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain>
+ <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain> <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com> <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain> <20090130055639.GA30950@suse.de> <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
+ <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901301904.52328.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19ENRlVDvO742M0xZd2T93EMLl/bZbjB1KJ5xN
- CGCs+2fe13U5GuHhNT6u//aYjcR9O4bCu27BJFcMBJ/BjIoHWp
- 143uSjyVYINqQpOJ0IG0w==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 January 2009, Narendra Prasad Madanapalli wrote:
-> Can you provide me more information on how to port these system calls
-> to 32-on-64 kernel.
 
-Your interface has compatible calling conventions between 32 and 64
-bit user programs, so for x86, all you need to do is to add them to
-arch/x86/ia32/ia32entry.S in the same way as you did for
-arch/x86/kernel/syscall_table_32.S.
-For the other architectures, the respective maintainers will take
-care of this if your patch gets accepted. Unfortunately, each
-architecture has a different way of adding the compat system
-calls.
 
-	Arnd <><
+On Fri, 30 Jan 2009, Hugh Dickins wrote:
+> 
+> ... what I think you have done is break the vma merging on
+> ordinary files: because of that irritating VM_CAN_NONLINEAR
+> flag which generic_file_mmap() and some others add in.
+
+Ahh. Yes. VM_CAN_NONLINEAR is a "reverse flag", ie unlike the other flags 
+it's to some degree about being extra _normal_, not about being odd. Most 
+special flags tend to disable the VM from doing some clever thing, this 
+one enables it.
+
+> To break the merging won't cause anyone much trouble,
+> but is a slight regression we should fix.
+
+Yeah. Just masking it off when comparing is probably the simplest option. 
+Make it a separate #define just for readability. There might be other 
+flags like this in the future.
+
+> I'd have been very upset not to find something ;)
+
+Yay for you ;)
+
+And yes, this is the kind of thing that probably does mean that we're 
+better off with the no-semantic-changes patches in -stable.
+
+		Linus
+
+---
+ mm/mmap.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
+
+diff --git a/mm/mmap.c b/mm/mmap.c
+index d3fa10a..c581df1 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -658,6 +658,9 @@ again:			remove_next = 1 + (end > next->vm_end);
+ 	validate_mm(mm);
+ }
+ 
++/* Flags that can be inherited from an existing mapping when merging */
++#define VM_MERGEABLE_FLAGS (VM_CAN_NONLINEAR)
++
+ /*
+  * If the vma has a ->close operation then the driver probably needs to release
+  * per-vma resources, so we don't attempt to merge those.
+@@ -665,7 +668,7 @@ again:			remove_next = 1 + (end > next->vm_end);
+ static inline int is_mergeable_vma(struct vm_area_struct *vma,
+ 			struct file *file, unsigned long vm_flags)
+ {
+-	if (vma->vm_flags != vm_flags)
++	if ((vma->vm_flags ^ vm_flags) & ~VM_MERGEABLE_FLAGS)
+ 		return 0;
+ 	if (vma->vm_file != file)
+ 		return 0;
