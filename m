@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZA3JGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754763AbZA3JN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754736AbZA3JGg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 04:06:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZA3JFd
+	id S1754763AbZA3JN0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 04:13:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZA3JNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 04:05:33 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52264 "EHLO
+	Fri, 30 Jan 2009 04:13:06 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53749 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754837AbZA3JFa (ORCPT
+	with ESMTP id S1752384AbZA3JNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 04:05:30 -0500
-Date: Fri, 30 Jan 2009 10:05:25 +0100
+	Fri, 30 Jan 2009 04:13:05 -0500
+Date: Fri, 30 Jan 2009 10:13:04 +0100
 From: Pavel Machek <pavel@suse.cz>
-To: Sandro Bonazzola <sandro.bonazzola@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH] w35und: fix registration with wlan stack
-Message-ID: <20090130090525.GA1997@elf.ucw.cz>
-References: <497E1F3A.1060604@cs.helsinki.fi> <497E2EC4.5030302@gmail.com> <497E35A1.8080301@cs.helsinki.fi> <497F5FEA.7020203@gmail.com> <20090127200602.GA16444@elf.ucw.cz> <4980B2DD.307@gmail.com> <4980BB9A.2020309@cs.helsinki.fi> <4980C028.2030709@gmail.com> <4980C035.4070105@cs.helsinki.fi> <4980DB5D.6010906@gmail.com>
+To: Nigel Cunningham <ncunningham-lkml@crca.org.au>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Doug Thompson <norsk5@yahoo.com>, linux-mm@kvack.org,
+       bluesmoke-devel@lists.sourceforge.net
+Subject: Re: marching through all physical memory in software
+Message-ID: <20090130091304.GA9495@atrey.karlin.mff.cuni.cz>
+References: <497DD8E5.1040305@nortel.com> <20090126075957.69b64a2e@infradead.org> <497F5289.404@nortel.com> <m1vds0bj2j.fsf@fess.ebiederm.org> <20090128193813.GD1222@ucw.cz> <1233306324.11332.11.camel@nigel-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4980DB5D.6010906@gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1233306324.11332.11.camel@nigel-laptop>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Initialize few more fields in wireless device structure so that
-wireless core actually accepts our registration.
+> Hi.
+> 
+> On Wed, 2009-01-28 at 20:38 +0100, Pavel Machek wrote:
+> > You can do the scrubbing today by echo reboot > /sys/power/disk; echo
+> > disk > /sys/power/state :-)... or using uswsusp APIs.
+> 
+> That won't work. The RAM retains it's contents across a reboot, and even
+> for a little while after powering off.
 
-Signed-off-by: Pavel Machek <pavel@suse.cz>
+Yes, and the original goal was to rewrite all the memory with same
+contents so that parity errors don't accumulate. SO scrubbing here !=
+trying to clear it.
 
----
-commit 87290671d60a4f0e734f389a266b13d71c275ce4
-tree c8e312a3ef0b0d250c1e605ce86bff94c0254847
-parent e6de9be58f118cba6ccfef28830db701b8cc9f46
-author Pavel <pavel@suse.cz> Fri, 30 Jan 2009 09:08:36 +0100
-committer Pavel <pavel@suse.cz> Fri, 30 Jan 2009 09:08:36 +0100
-
- drivers/staging/winbond/wbusb.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
-index b003f9a..49f1bf0 100644
---- a/drivers/staging/winbond/wbusb.c
-+++ b/drivers/staging/winbond/wbusb.c
-@@ -369,9 +369,11 @@ static int wb35_probe(struct usb_interface *intf, const struct usb_device_id *id
- 	}
- 
- 	dev->extra_tx_headroom = 12;	/* FIXME */
--	dev->flags = 0;
-+	dev->flags = IEEE80211_HW_SIGNAL_UNSPEC;
-+	dev->wiphy->interface_modes = BIT(NL80211_IFTYPE_STATION);
- 
- 	dev->channel_change_time = 1000;
-+	dev->max_signal = 100;
- 	dev->queues = 1;
- 
- 	dev->wiphy->bands[IEEE80211_BAND_2GHZ] = &wbsoft_band_2GHz;
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
