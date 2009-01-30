@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbZA3DUp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbZA3D10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbZA3DUp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 22:20:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752372AbZA3DUh
+	id S1756796AbZA3D10 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 22:27:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZA3D1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 22:20:37 -0500
-Received: from omr6.networksolutionsemail.com ([205.178.146.56]:34076 "EHLO
-	omr6.networksolutionsemail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751508AbZA3DUg (ORCPT
+	Thu, 29 Jan 2009 22:27:18 -0500
+Received: from mail.parknet.ad.jp ([210.171.162.6]:55998 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751768AbZA3D1S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 22:20:36 -0500
-Message-ID: <498271DF.6090406@nerdgrounds.com>
-Date: Thu, 29 Jan 2009 19:19:59 -0800
-From: Jonathan Campbell <jon@nerdgrounds.com>
-User-Agent: Thunderbird 2.0.0.18 (Windows/20081105)
+	Thu, 29 Jan 2009 22:27:18 -0500
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: A B <spinflipper4@yahoo.co.uk>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: Fat64 / exFat fs and Linux
+References: <54747.12003.qm@web25801.mail.ukl.yahoo.com>
+	<871vul3g14.fsf@devron.myhome.or.jp> <49822E2A.3020601@zytor.com>
+	<957266.96237.qm@web25805.mail.ukl.yahoo.com>
+Date: Fri, 30 Jan 2009 12:27:12 +0900
+In-Reply-To: <957266.96237.qm@web25805.mail.ukl.yahoo.com> (A. B.'s message of
+	"Fri, 30 Jan 2009 00:31:08 +0000 (GMT)")
+Message-ID: <87bptp1njj.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "Peter W. Morreale" <pmorreale@novell.com>, devel@driverdev.osuosl.org,
-       Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: Vramfs: filesystem driver to utilize extra RAM on VGA devices
-References: <497E4531.20800@nerdgrounds.com> <497E4919.60907@zytor.com>	 <497E4C5E.2030201@nerdgrounds.com> <1233248649.7191.130.camel@hermosa.site> <4981E7BD.3040507@nerdgrounds.com> <4981E99F.30001@zytor.com>
-In-Reply-To: <4981E99F.30001@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't really see the similarity between the MTD subsystem and dividing 
-vram up by files. Video cards don't have "erase blocks". And MTD is not 
-a filesystem. And the onboard memory mtd driver (map system RAM) only 
-handles one fixed region determined at load time.
+A B <spinflipper4@yahoo.co.uk> writes:
 
-Vramfs on the other hand determines what resources to use at mount time. 
-It supports multiple mounts, one per PCI device, if you want the 
-combined VRAM of two VGA cards in your system.
+>> Ok, I've put the patchset to,
+>> 
+>>     http://userweb.kernel.org/~hirofumi/exfat/exfat.tar.gz
+>> 
+>> exfat/series is patch order to apply, and exfat/patches/* is patches.
+>> 
+>> It would be temporary place, well, anyway, this is my lastest version.
+>> 
+>
+> Thanks for the code, I patched it into 2.6.28.2 and tried it on a 128MB USB
+> volume filled with many files. The driver correctly read 73% of the files.
+> Impressive. Looking at the others, they seemed to have what I would call
+> 'alignment problems'.
+>
+> md5sum: WARNING: 1008 of 3842 computed checksums did NOT match
 
-I don't think vramfs would fit well into the MTD subsystem.
-> Jonathan Campbell wrote:
->   
->> Every VGA device connected to the PCI bus has resources that are known
->> to the Linux kernel. One of the memory resources is the video RAM
->> (always the largest prefetchable resource listed), with the base and
->> length known to the PCI subsystem. So, all vramfs needs on mount is the
->> PCI device, and the mountpoint, and it can dole it out to userspace.
->> Reading and writing is handled with ioremap(). mmap() is handled by
->> directly mmaping() that VRAM into user-space (just like /dev/fb0). Files
->> are recorded in system memory as a list of entities with a starting
->> block and length, so no fragmentation is possible.
->>
->> No communication with the GPU is needed to do this, it's possible to use
->> VRAM this way even on devices that nobody in the system knows how to
->> talk to.
->>     
->
-> There still seems to be quite a bit of overlap between this and the MTD
-> subsystem...
->
-> 	-hpa
->
->   
+Thanks for testing. I see. What is the 'alignment problems'? Well,
+anyway, can I get the disk image of USB, or are there any way to
+reproduce it in my machine?
 
+Or can you dump with hacked userland command (this can be buggy)?
+
+	http://userweb.kernel.org/~hirofumi/exfat/exfat-userland.tar.gz
+
+$ tar xzf exfat-userland.tar.gz
+$ cd exfat-userland
+$ make
+$ ./exfat /path/to/exfat_device > exfat.dump
+
+And please send exfat.dump.
+
+Well, if you can debug it with this userland command, it would be
+helpful. :)
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
