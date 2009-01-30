@@ -1,62 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZA3XNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757365AbZA3XN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756386AbZA3XNl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 18:13:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756425AbZA3XNP
+	id S1757365AbZA3XN4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 18:13:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757248AbZA3XNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 18:13:15 -0500
-Received: from wa-out-1112.google.com ([209.85.146.179]:8770 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755684AbZA3XNN (ORCPT
+	Fri, 30 Jan 2009 18:13:21 -0500
+Received: from rn-out-0910.google.com ([64.233.170.187]:33320 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756597AbZA3XNR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 18:13:13 -0500
+	Fri, 30 Jan 2009 18:13:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=MEx6X6/568ebYRTBtrB8o5oxOQyHPmCKh+t/3lo+5+5ZekDjCTGjdsHiRcvvphimCN
-         RkUAFoMIHD520kvqmULcUeayl+jXY3z1exJ4TFISJxQlCEiMjREA9CC5dxlK/EFumQdz
-         HeCxrTL90zmMs8v7CvTY0EXSuNz3YWeo+6ths=
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version:content-type;
+        b=bi6REtI57hI4ZpVDyap6BzFqLCcz9AzLdvhbmKZutDezH8W8djPSshY+6T4IaaOw4e
+         6vF5FTKQ6TuJL3wFdH/FRAtdMVQ62wdvYjlmvEfgxlfvazNHKE+smfDdiEo7ueLRhGxz
+         E6EzgL3KaO8deiMx0r+UskPWebTVr5BtmNzQ8=
+Date: Fri, 30 Jan 2009 18:13:06 -0500 (EST)
+From: Parag Warudkar <parag.lkml@gmail.com>
+X-X-Sender: parag@parag-desktop
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Matt Carlson <mcarlson@broadcom.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <200901302354.27497.rjw@sisk.pl>
+Message-ID: <alpine.DEB.2.00.0901301811530.4994@parag-desktop>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901300110.56533.rjw@sisk.pl> <alpine.DEB.2.00.0901301730230.6574@parag-desktop> <200901302354.27497.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090131.020300.82352947.anemo@mba.ocn.ne.jp>
-References: <20081114213453.32354.53002.stgit@dwillia2-linux.ch.intel.com>
-	 <Pine.LNX.4.64.0812021642120.5663@axis700.grange>
-	 <e9c3a7c20812020916ud0b426cvd0764f23a97973ad@mail.gmail.com>
-	 <20090131.020300.82352947.anemo@mba.ocn.ne.jp>
-Date: Fri, 30 Jan 2009 16:13:12 -0700
-X-Google-Sender-Auth: a585d30bc38f890a
-Message-ID: <e9c3a7c20901301513v74953d7aj8533d05cddfa510@mail.gmail.com>
-Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and 
-	private channels
-From: Dan Williams <dan.j.williams@intel.com>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: g.liakhovetski@gmx.de, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, maciej.sosnowski@intel.com,
-       hskinnemoen@atmel.com, nicolas.ferre@atmel.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 30, 2009 at 10:03 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> I'm writing a new dma driver.  My DMAC has multiple channels and only
-> one channel is capable for generic memcpy and other channels have
-> fixed role.
->
-> Does new framework allow dma driver make only one channel public?
 
-Yes, if the driver registers a dma_device for each channel.
 
-> Or should I register two dma_device for DMA_MEMCPY and DMA_SLAVE?
-> Could you give me some advice?
+On Fri, 30 Jan 2009, Rafael J. Wysocki wrote:
 
-Register multiple dma_devices, the public one with a DMA_MEMCPY, and
-the fixed role devices with DMA_PRIVATE, DMA_MEMCPY, and DMA_SLAVE
-capabilities.
+> On Friday 30 January 2009, Parag Warudkar wrote:
+> > 
+> > On Fri, 30 Jan 2009, Rafael J. Wysocki wrote:
+> > 
+> > > 
+> > > I still am interested if it makes any difference for Parag.
+> > 
+> > No difference - tg3 is still dead after resume.
+> 
+> Thanks for testing.
+> 
+> Well, I'm not sure if tg3 is at fault, really.
+> 
+> What happens if you unload tg3 before suspend and load it back after the
+> resume?
 
-DMA_PRIVATE ensures that a channel is never considered for public consumption.
+This time it fails with different error on loading after suspend/resume 
+cycle -
 
---
-Dan
+ 1196.873608] tg3 0000:0e:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+[ 1196.873620] tg3 0000:0e:00.0: setting latency timer to 64
+[ 1196.880017] tg3 0000:0e:00.0: PME# disabled
+[ 1196.996270] tg3: (0000:0e:00.0) phy probe failed, err -19
+[ 1197.508033] tg3: Problem fetching invariants of chip, aborting.
+[ 1197.508048] tg3 0000:0e:00.0: PCI INT A disabled
+ 
+Parag
