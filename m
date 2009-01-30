@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757747AbZA3Xda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758057AbZA3Xdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757747AbZA3Xda (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 18:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbZA3XdS
+	id S1758057AbZA3Xdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 18:33:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756847AbZA3Xdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 18:33:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41170 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753457AbZA3XdR (ORCPT
+	Fri, 30 Jan 2009 18:33:35 -0500
+Received: from rv-out-0506.google.com ([209.85.198.232]:42512 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754870AbZA3Xde (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 18:33:17 -0500
-Date: Fri, 30 Jan 2009 15:33:13 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <alpine.LFD.2.00.0901301506120.3150@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0901301532330.3150@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901281636270.3123@localhost.localdomain> <alpine.DEB.2.00.0901282049040.5026@parag-desktop> <20090129184215.GA13459@xw6200.broadcom.net> <alpine.DEB.2.00.0901291700130.5149@parag-desktop>
- <20090129222247.GA13861@xw6200.broadcom.net> <alpine.DEB.2.00.0901291730030.5149@parag-desktop> <20090130184030.GA14933@xw6200.broadcom.net> <alpine.DEB.2.00.0901301743410.4989@parag-desktop> <alpine.LFD.2.00.0901301506120.3150@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 Jan 2009 18:33:34 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=references:message-id:from:to:in-reply-to:content-type
+         :content-transfer-encoding:x-mailer:mime-version:subject:date:cc;
+        b=sA8YyKitzw2N4zJxZEHct3c822fb8ascDb6rVng5pBXf+K7qqGvbyfccxYKvAWLsd/
+         4rtviRdS0aeM4Znkd9QZrlCXU7nkV0Ed83uXDgbSv+pb9aU6rsGay81r7Ax9hLI2K5CK
+         8mcJzfwk35rFtJr1c3XeatGQ3SE3D8WQb/upw=
+References: <4983553A.2010804@gmail.com> <20090130225908.GB17950@uranus.ravnborg.org>
+Message-Id: <BAA203A3-A9F2-4CB4-89E1-D32083572241@gmail.com>
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20090130225908.GB17950@uranus.ravnborg.org>
+Content-Type: text/plain;
+	charset=us-ascii;
+	format=flowed
+Content-Transfer-Encoding: 7bit
+X-Mailer: iPhone Mail (5H11)
+Mime-Version: 1.0 (iPhone Mail 5H11)
+Subject: Re: headers check garble latest git
+Date: Fri, 30 Jan 2009 15:33:28 -0800
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Cool;
+
+Regards;
+
+justin P. Mattock
 
 
-On Fri, 30 Jan 2009, Linus Torvalds wrote:
-> 
-> So just do that "lspci -vvxxx" for the whole box, before and after, and 
-> send us the "before" and the "diff -u before after" thing, and maybe that 
-> shows something interesting. Because some bridge chip being confused would 
-> also explain why a total re-init of the whole tg3 chip by a driver unload 
-> and reload doesn't seem to help.
 
-It might also be instructive to see the same thing for a working kernel. I 
-assume plain 2.6.28 works for you?
+On Jan 30, 2009, at 2:59 PM, Sam Ravnborg <sam@ravnborg.org> wrote:
 
-			Linus
+> On Fri, Jan 30, 2009 at 11:30:02AM -0800, Justin P. Mattock wrote:
+>> when compiling the kernel I see lots
+>> of this:
+>
+> Jaswinder has fixed the relvant warnings already - patchs are heading
+> towards mainline. The final patch kills the check again as it turned
+> out to be too agressive.
+>
+>    Sam
