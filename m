@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbZA3JEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbZA3JF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbZA3JEh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 04:04:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZA3JD7
+	id S1753201AbZA3JF3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 04:05:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZA3JFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 04:03:59 -0500
-Received: from yw-out-2324.google.com ([74.125.46.29]:63212 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbZA3JD6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 04:03:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=aYidULqOarTYzT5rBbGBvgKd1p1wRwthR9d1aoi0cmFfpESZQmtPqkJ23gpcwa5z0N
-         u74YZvBGbxd0CvBK/HIhiASsE7zzYuANx0/CdZKSwlD9cUu14uoghDKEzIZ3Aqf3DkyU
-         bvSlkLqHS5LTb16eX/2BkpU0IHe8Ts3GiSGq0=
-MIME-Version: 1.0
-Date: Fri, 30 Jan 2009 01:03:56 -0800
-Message-ID: <5f695cd0901300103o31cb92f4o9feb8c598465617c@mail.gmail.com>
-Subject: Is there a way to set the order of initialization of different 
-	systems ?
-From: George Kumar <grgkumar4@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 30 Jan 2009 04:05:06 -0500
+Received: from mail.crca.org.au ([67.207.131.56]:53658 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752311AbZA3JFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 04:05:04 -0500
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: marching through all physical memory in software
+From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
+Reply-To: ncunningham-lkml@crca.org.au
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Chris Friesen <cfriesen@nortel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       Doug Thompson <norsk5@yahoo.com>, linux-mm@kvack.org,
+       bluesmoke-devel@lists.sourceforge.net
+In-Reply-To: <20090128193813.GD1222@ucw.cz>
+References: <497DD8E5.1040305@nortel.com>
+	 <20090126075957.69b64a2e@infradead.org> <497F5289.404@nortel.com>
+	 <m1vds0bj2j.fsf@fess.ebiederm.org>  <20090128193813.GD1222@ucw.cz>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 20:05:24 +1100
+Message-Id: <1233306324.11332.11.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi.
 
-I would like to explore if there is a way so that I can set the order
-of initialization of different kernel sub systems. The main reason I
-would like to do this is because I have a network driver built
-statically in the kernel which wants to download firmware from the
-disk, but the IDE subsystem and root FS is not mounted yet so it
-basically hangs for a minute waiting to dowload firmware and then
-proceeds with the boot sequence. If I could ensure that IDE subsys is
-initialized and root FS is mounted before networking is initialized,
-this problem probably will not occur.
+On Wed, 2009-01-28 at 20:38 +0100, Pavel Machek wrote:
+> You can do the scrubbing today by echo reboot > /sys/power/disk; echo
+> disk > /sys/power/state :-)... or using uswsusp APIs.
 
-Thanks.
-George.
+That won't work. The RAM retains it's contents across a reboot, and even
+for a little while after powering off.
+
+Regards,
+
+Nigel
+
