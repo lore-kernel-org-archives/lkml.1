@@ -1,82 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755194AbZA3Mjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755076AbZA3Mk4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755194AbZA3Mjg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 07:39:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751812AbZA3Mj2
+	id S1755076AbZA3Mk4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 07:40:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752127AbZA3Mks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 07:39:28 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:45609 "EHLO mx2.redhat.com"
+	Fri, 30 Jan 2009 07:40:48 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:14003 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751805AbZA3Mj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 07:39:27 -0500
-Date: Fri, 30 Jan 2009 10:39:16 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/ftrace: better manage the context info for
-	events
-Message-ID: <20090130123916.GR627@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <4982c159.190c660a.7424.ffffabf9@mx.google.com> <20090130123446.GQ627@ghostprotocols.net>
+	id S1752194AbZA3Mks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 07:40:48 -0500
+Date: Fri, 30 Jan 2009 13:38:58 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH -v3] use per cpu data for single cpu ipi calls
+Message-ID: <20090130123858.GQ30821@kernel.dk>
+References: <1233218954.7835.11.camel@twins> <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain> <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain> <1233253380.4495.123.camel@laptop> <alpine.LFD.2.00.0901291030510.3123@localhost.localdomain> <1233254680.4495.126.camel@laptop> <20090130112310.GI30821@kernel.dk> <1233318733.4495.174.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090130123446.GQ627@ghostprotocols.net>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1233318733.4495.174.camel@laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Fri, Jan 30, 2009 at 10:34:46AM -0200, Arnaldo Carvalho de Melo escreveu:
-> Em Fri, Jan 30, 2009 at 12:59:05AM -0800, Frederic Weisbecker escreveu:
-> > Impact: make trace_event more convenient for tracers
-> > 
-> > All tracers (for the moment) that use the struct trace_event want to have
-> > the context info printed before their own output: the pid/cmdline, cpu, and timestamp.
-> > 
-> > But some other tracers that want to implement their trace_event callbacks will
-> > not necessary need these information or they may want to format them as they want.
-> > 
-> > This patch adds a new default-enabled trace option: TRACE_ITER_CONTEXT_INFO
-> > When disabled through:
-> > 
-> > echo nocontext-info > /debugfs/tracing/trace_options
-> > 
-> > The pid, cpu and timestamps headers will not be printed.
-> > 
-> > IE with the sched_switch tracer with context-info (default):
-> > 
-> >             bash-2935  [001]   100.356561:   2935:120:S ==> [001]     0:140:R <idle>
-> >           <idle>-0     [000]   100.412804:      0:140:R   + [000]    11:115:S events/0
-> >           <idle>-0     [000]   100.412816:      0:140:R ==> [000]    11:115:R events/0
-> >         events/0-11    [000]   100.412829:     11:115:S ==> [000]     0:140:R <idle>
-> > 
-> > Without context-info:
-> > 
-> >   2935:120:S ==> [001]     0:140:R <idle>
-> >      0:140:R   + [000]    11:115:S events/0
-> >      0:140:R ==> [000]    11:115:R events/0
-> >     11:115:S ==> [000]     0:140:R <idle>
-> > 
-> > A tracer can disable it at runtime by clearing the bit TRACE_ITER_CONTEXT_INFO in trace_flags.
-> > 
-> > Moreover, two callbacks have been added inside trace_event:
-> > _ context_info() which let a tracer override the format of the context info
-> > _ lat_context_info() which do the same with the latency_trace file
-> > 
-> > If they are not defined, the usual way of printing the context info will be used.
+On Fri, Jan 30 2009, Peter Zijlstra wrote:
+> On Fri, 2009-01-30 at 12:23 +0100, Jens Axboe wrote:
 > 
-> Please wait a bit, I'm trying to use it and the first thing I notice was
-> that I need the trace_iterator in the context callback, to get the
-> timestamp.
+> > Peter, can you post a final complete patch for review and acks?
+> 
+> Sure,
 
-Sorry, false alarm, the iterator is there, I was trying to build the
-whole binary trace record in the trace_event->bin(), but its not
-possible, so I'll do it in two function calls context + trace.
+Looks good, you can add my acked-by to that. One small comment:
 
-- Arnaldo
+>  		if (!wait) {
+> +			/*
+> +			 * We are calling a function on a single CPU
+> +			 * and we are not going to wait for it to finish.
+> +			 * We first try to allocate the data, but if we
+> +			 * fail, we fall back to use a per cpu data to pass
+> +			 * the information to that CPU. Since all callers
+> +			 * of this code will use the same data, we must
+> +			 * synchronize the callers to prevent a new caller
+> +			 * from corrupting the data before the callee
+> +			 * can access it.
+> +			 *
+> +			 * The CSD_FLAG_LOCK is used to let us know when
+> +			 * the IPI handler is done with the data.
+> +			 * The first caller will set it, and the callee
+> +			 * will clear it. The next caller must wait for
+> +			 * it to clear before we set it again. This
+> +			 * will make sure the callee is done with the
+> +			 * data before a new caller will use it.
+> +			 * We use spinlocks to manage the callers.
+> +			 */
+
+That last sentence appears stale now, since there's no locking involved
+for the per-cpu csd.
+
+-- 
+Jens Axboe
+
