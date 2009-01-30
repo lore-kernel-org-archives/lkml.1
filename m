@@ -1,49 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbZA3IHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753297AbZA3IIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbZA3IHy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 03:07:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbZA3IHp
+	id S1753297AbZA3IIq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 03:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZA3IIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 03:07:45 -0500
-Received: from mail.gmx.net ([213.165.64.20]:51507 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751300AbZA3IHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 03:07:45 -0500
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18nHfYfulwnpUyBJsLMMqguk4pSlXIChMYAjqcg4m
-	sfTE+crDWZ8cOV
-Subject: Re: scheduler nice 19 versus 'idle' behavior / static low-priority
-	scheduling
-From: Mike Galbraith <efault@gmx.de>
-To: Nathanael Hoyle <nhoyle@hoyletech.com>
-Cc: Jan Engelhardt <jengelh@medozas.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <1233302349.17301.27.camel@localhost>
-References: <1233294584.28741.2.camel@localhost>
-	 <alpine.LSU.2.00.0901300710200.999@fbirervta.pbzchgretzou.qr>
-	 <1233297635.17301.11.camel@localhost>
-	 <alpine.LSU.2.00.0901300818580.28427@fbirervta.pbzchgretzou.qr>
-	 <1233302349.17301.27.camel@localhost>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 09:07:41 +0100
-Message-Id: <1233302861.6061.14.camel@marge.simson.net>
+	Fri, 30 Jan 2009 03:08:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53560 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751521AbZA3IIf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 03:08:35 -0500
+Date: Fri, 30 Jan 2009 00:07:58 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sam Ruby <rubys@intertwingly.net>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
+Message-Id: <20090130000758.1dff0113.akpm@linux-foundation.org>
+In-Reply-To: <4978767D.4060700@intertwingly.net>
+References: <4978767D.4060700@intertwingly.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.68
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 02:59 -0500, Nathanael Hoyle wrote:
+On Thu, 22 Jan 2009 08:37:01 -0500 Sam Ruby <rubys@intertwingly.net> wrote:
 
-> I am running foldingathome under it at the moment, and it seems to be
-> improving the situation somewhat, but I still need/want to test with
-> Mike's referenced patches.
+> Hardware summary: http://tinyurl.com/ap79ra
+> APIC details: http://intertwingly.net/stories/2009/01/22/
+> Note acpidump.err: Wrong checksum for OEMB!
+> 
+> Messages on boot using Intrepid, Jaunty Alpha 3, or Fedora 10:
+> 
+> [    0.296001] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> [    0.296001] Kernel panic - not syncing: IO-APIC + timer doesn't work! 
+>   Boot with apic=debug and send a report.  Then try booting with the 
+> 'noapic' option.
+> [    0.296001]
+> 
+> Able to get past this issue using "noapic", at which point things mostly 
+> work,
 
-You will most definitely encounter evilness running SCHED_IDLE tasks in
-a kernel without the SCHED_IDLE fixes.
+Join the ever-growing noapic club :(
 
-	-Mike
+I assume this is an ACPI problem.  Or at least, a BIOS problem which
+ACPI can solve for us.
+
+> but rsync of large iso images result in corrupt files.  Able to 
+> copy those same files using Vista on the same machine, or using Hardy on 
+> another machine.  This problem may not be related to the above, but it 
+> seems plausible to me that this might be an interrupt issue.
+
+Yes, it might be unrelated.  There are no kernel messages when it happens?
+
+> memtest86+ runs clean.
+> 
+> Quite willing to invest time in installing kernels or distributions on 
+> fresh hard drives, run tests, obtain debug information, and report back.
+> 
+> More background here: http://intertwingly.net/blog/2009/01/20/noAPIC
+> 
+> Not subscribed, but will actively monitor the web archives for this 
+> mailing list for the next several days.
+
+It'd be best to raise a report against ACPI?BIOS (I think) at
+bugzilla.kernel.org, please.
+
+If any previous kernel version worked OK, please be sure to note that.
+
+Thanks.
 
