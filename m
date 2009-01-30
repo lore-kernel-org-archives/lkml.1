@@ -1,55 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756721AbZA3V5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbZA3V7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756721AbZA3V5u (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 16:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZA3V5m
+	id S1756989AbZA3V7g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 16:59:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZA3V71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 16:57:42 -0500
-Received: from slimlogic.co.uk ([89.16.172.20]:54953 "EHLO slimlogic.co.uk"
+	Fri, 30 Jan 2009 16:59:27 -0500
+Received: from ozlabs.org ([203.10.76.45]:60489 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753934AbZA3V5m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 16:57:42 -0500
-Subject: [GIT PULL] regulator fixes
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 30 Jan 2009 21:57:38 +0000
-Message-Id: <1233352658.6774.33.camel@vega.slimlogic.co.uk>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1752989AbZA3V70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 16:59:26 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Date: Sat, 31 Jan 2009 08:29:15 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
+       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20090116191108.135927000@polaris-admin.engr.sgi.com> <200901301633.54013.rusty@rustcorp.com.au> <20090129223042.47dc42a1.akpm@linux-foundation.org>
+In-Reply-To: <20090129223042.47dc42a1.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901310829.17099.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Friday 30 January 2009 17:00:42 Andrew Morton wrote:
+> On Fri, 30 Jan 2009 16:33:53 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> 
+> > On Thursday 29 January 2009 12:42:05 Andrew Morton wrote:
+> > > On Thu, 29 Jan 2009 12:13:32 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > 
+> > > > On Thursday 29 January 2009 06:14:40 Andrew Morton wrote:
+> > > > > It's vulnerable to the same deadlock, I think?  Suppose we have:
+> > > > ...
+> > > > > - A calls work_on_cpu() and takes woc_mutex.
+> > > > > 
+> > > > > - Before function_which_takes_L() has started to execute, task B takes L
+> > > > >   then calls work_on_cpu() and task B blocks on woc_mutex.
+> > > > > 
+> > > > > - Now function_which_takes_L() runs, and blocks on L
+> > > > 
+> > > > Agreed, but now it's a fairly simple case.  Both sides have to take lock L, and both have to call work_on_cpu.
+> > > > 
+> > > > Workqueues are more generic and widespread, and an amazing amount of stuff gets called from them.  That's why I felt uncomfortable with removing the one known problematic caller.
+> > > > 
+> > > 
+> > > hm.  it's a bit of a timebomb.
+> > > 
+> > > y'know, the original way in which acpi-cpufreq did this is starting to
+> > > look attractive.  Migrate self to that CPU then just call the dang
+> > > function.  Slow, but no deadlocks (I think)?
+> > 
+> > Just buggy.  What random thread was it mugging?  If there's any path where
+> > it's not a kthread, what if userspace does the same thing at the same time?
+> > We risk running on the wrong cpu, *then* overriding userspace when we restore
+> > it.
+> 
+> hm, Ok, not unficable but not pleasant.
+> 
+> > In general these cpumask games are a bad idea.
+> 
+> So we still don't have any non-buggy proposal.
 
-Please pull the following two regulator fixes.
+I disagree about the avoiding-workqueue one being buggy.  The same logic
+applies to any simple callback function.
 
-Thanks
-
-Liam
-
----
-
-The following changes since commit 33bfad54b58cf05cfe6678c3ec9235d4bc8db4c2:
-  Linus Torvalds (1):
-        Allow opportunistic merging of VM_CAN_NONLINEAR areas
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git for-linus
-
-Philipp Zabel (1):
-      regulator: move bq24022 init back to module_init instead of subsys_initcall
-
-Roel Kluin (1):
-      leds: Fix bounds checking of wm8350->pmic.led
-
- drivers/regulator/bq24022.c          |    6 +-----
- drivers/regulator/wm8350-regulator.c |    2 +-
- 2 files changed, 2 insertions(+), 6 deletions(-)
-
-
+Rusty.
