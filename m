@@ -1,29 +1,33 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753461AbZA3KGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753653AbZA3KLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753461AbZA3KGP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 05:06:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZA3KF7
+	id S1753653AbZA3KLm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 05:11:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZA3KLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 05:05:59 -0500
-Received: from mtagate4.uk.ibm.com ([195.212.29.137]:50666 "EHLO
-	mtagate4.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750992AbZA3KF6 (ORCPT
+	Fri, 30 Jan 2009 05:11:33 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36431 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750992AbZA3KLb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 05:05:58 -0500
-Date: Fri, 30 Jan 2009 11:05:55 +0100
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: tom.leiming@gmail.com
-Cc: kay.sievers@vrfy.org, greg@kroah.com, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [PATCH] driver core: remove polling for driver_probe_done(v2)
-Message-ID: <20090130110555.116f747a@gondolin>
-In-Reply-To: <1233282702-6274-1-git-send-email-tom.leiming@gmail.com>
-References: <1233282702-6274-1-git-send-email-tom.leiming@gmail.com>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+	Fri, 30 Jan 2009 05:11:31 -0500
+Date: Fri, 30 Jan 2009 10:11:34 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Switching from (deprecated) IDE driver -> SATA (PATA support)
+Message-ID: <20090130101134.1bb4d3b2@lxorguk.ukuu.org.uk>
+In-Reply-To: <498240B7.6010500@tmr.com>
+References: <alpine.DEB.1.10.0901250553430.2441@p34.internal.lan>
+	<200901252027.43376.bzolnier@gmail.com>
+	<alpine.DEB.1.10.0901251612310.16676@p34.internal.lan>
+	<200901252239.26268.bzolnier@gmail.com>
+	<498240B7.6010500@tmr.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,28 +35,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009 10:31:42 +0800,
-tom.leiming@gmail.com wrote:
+> > However if you need we can bring support for HPT34x hardware back. :)
+> 
+> I don't think "bring it back" is enough, it had some major issues as I recall. I 
+> actually have a pile of these, but not running any recent kernel.
 
+And me - I've spent some time trying to dig deeper into the DMA on the
+HPT343 but there isn't any useful documentation and Andre didn't have any
+immediate insights (other than a slightly less than printable review of
+his opinion of the device)
 
->  /**
-> + * driver_wait_probe_done_and_dev_appear
-> + * wait until the probe sequence is finished _and_ the dev @name appears.
-> + *
-> + */
-> +void driver_wait_probe_done_and_dev_appear(char *name)
-> +{
-> +	pr_debug("%s: probe_count = %d\n", __func__,
-> +		 atomic_read(&probe_count));
-> +
-> +	wait_event(probe_waitqueue, (atomic_read(&probe_count) == 0) &&
-> +		  name_to_dev_t(name));
+In PIO its pretty solid, but for the original 343 at least DMA is still a
+bit of a mystery that might not be solved without a bus analyser - for
+one it completes DMA transfers but they don't seem to arrive in the
+location specified in the PRD, even if you try obvious errata type things
+like 64K alignment.
 
-probe_waitqueue is only woken at the end of really_probe(), not when
-whatever needs to be done to make the device available is done...
+Unfortunately if the errata is something gross like flipping bits in PRD
+addresses we aren't going to be able to figure it out.
 
-> +}
-> +/**
->   * driver_probe_device - attempt to bind device & driver together
->   * @drv: driver to bind a device to
->   * @dev: device to try to bind to the driver
+Alan
