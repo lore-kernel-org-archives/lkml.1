@@ -1,131 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZA3JbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbZA3JcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbZA3JbQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 04:31:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZA3JbA
+	id S1754648AbZA3JcE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 04:32:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752335AbZA3Jbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 04:31:00 -0500
-Received: from relay.gothnet.se ([82.193.160.251]:12536 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751500AbZA3Ja6 (ORCPT
+	Fri, 30 Jan 2009 04:31:45 -0500
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:40016 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752056AbZA3Jbm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 04:30:58 -0500
-X-Greylist: delayed 972 seconds by postgrey-1.27 at vger.kernel.org; Fri, 30 Jan 2009 04:30:57 EST
-Message-ID: <4982C4D3.4040704@shipmail.org>
-Date: Fri, 30 Jan 2009 10:13:55 +0100
-From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>, Dave Airlie <airlied@linux.ie>,
-       linux-kernel@vger.kernel.org, kerolasa@iki.fi,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       Dickins <hugh@veritas.com>, dri-devel@lists.sourceforge.net,
-       kerolasa@gmail.com
-Subject: Re: PROBLEM: kernel BUG at drivers/gpu/drm/drm_fops.c:146!
-References: <a6f8318b0901210358w7cced8e9yab86c487b3587d75@mail.gmail.com>	<20090129172010.f25fe0ad.akpm@linux-foundation.org>	<21d7e9970901291743q4f0a9393yc5c24afb50013ff3@mail.gmail.com>	<200901291950.18724.jbarnes@virtuousgeek.org> <20090129204403.5d9e4b38.akpm@linux-foundation.org>
-In-Reply-To: <20090129204403.5d9e4b38.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 30 Jan 2009 04:31:42 -0500
+X-YMail-OSG: wSIcvnwVM1lX1jzcznmgGV6VFVDstFGYT8cB0EuZCEA2dC8PxqCZZoXO6vyjHIzLe3PGSRylrlItCfGoPIfkFKWYXRTHoP0G4mw5KdW2jQab7vEd61EvfAPhlsFs.v1PZ1hFPmFNKcOX_MQf.MDy4qbpQ_flRO6RZD.ehdMYuBfA1lwSgxdhTF1BACe.
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH] [Target_Core_Mod/PERSISTENT_RESERVATION]: Add PRIN SA
+	READ_FULL_STATUS and LIO-Target iSCSI support
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Cc: Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Andrew Morton <akpm@osdl.org>, Christoph Hellwig <hch@lst.de>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Rafiu Fakunle <rafiu@openfiler.com>,
+       "Ross S. W. Walker" <rswwalker@gmail.com>,
+       Arne Redlich <agr@powerkom-dd.de>,
+       Ming Zhang <blackmagic02881@gmail.com>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 01:30:34 -0800
+Message-Id: <1233307834.6442.248.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-BitDefender-Scanner: Mail not scanned due to license constraints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 29 Jan 2009 19:50:17 -0800 Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
->
->   
->> On Thursday, January 29, 2009 5:43 pm Dave Airlie wrote:
->>     
->>> On Fri, Jan 30, 2009 at 11:20 AM, Andrew Morton
->>>       
->>>> hm, I'm a bit surprised to see the drm code using `struct
->>>> address_space' and read_mapping_page() and unmap_mapping_range() and
->>>> such.  I thought those only worked with regular files and pagecache :)
->>>>
->>>> Is it possible to briefly explain what's going on there?
->>>>
->>>> What instance of address_space_operations does ->dev_mapping actually
->>>> point at?
->>>>         
->>> Okay a bit tired and headache coming on but I'll try, maybe jbarnes
->>> can help out,
->>>
->>> We need to provide mappings to userspace that are backed by memory
->>> that can move around behind the mappings.
->>>
->>> So userspace wants a mapping for a GEM object via the AGP/GTT aperture
->>> instead of directly to the backing pages.
->>> Now as the GEM object is backed by shmem we can't use the shmem file
->>> descriptor we have to tie the mapping to without
->>> hacking up the shmem mmap functionality which seemed like a bad plan.
->>>
->>> So GEM uses the device inode to setup the mappings on. We just use a
->>> simple linear allocator to split up the device inodes address space
->>> and assign chunks to handles for different objects. The userspace app
->>> then uses the handle via mmap to get access to the VMAs. Now when GEM
->>> wants to move that object out of the GTT or to another area of the GTT
->>> we need some way to invalidate it, so we use unmap_mapping_range
->>> which destroys all the mappings for the object in all the VMA for all
->>> the processes mapping it currently
->>>
->>> GEM's read_mapping_page is distinct from this and is to do with the
->>> shmem interfaceing.
->>>
->>> Not sure if this explains it or just make it worse.
->>>       
->> Sounds right to me.  The offsets are just handles, not real file objects or 
->> backing store addresses.  We use them to take advantage of all the inode 
->> address mapping helpers, since they track stuff for us.
->>
->> That said, unmap_mapping_range may not be the best way to do this; basically 
->> we need a way to invalidate a given processes' mapping of a GTT range (which 
->> in turn is backed by real RAM).  If there's some other way we should be doing 
->> this I'm all ears.
->>     
->
-> Well, we'd need to call in the big guns on this one - I've already
-> stirred Hugh ;)
->
-> unmap_mapping_range() is basically a truncate thing - it shoots down
-> all mappings of a range of a *file*.  Across all processes in the
-> machine which map that file.
->
-> If that isn't what you want to do (and it sounds that way) then you'd
-> want to use something which is mm_struct (or vma) centric, rather than
-> file-centric.  zap_page_range(), methinks.
->
->   
-I guess I was the one starting to use this function, so some explanation:
+Greetings All,
 
-When the drm device is used to provide address space for buffers, 
-user-space actually see it as a file with a distinct offset where 
-buffers are laid out in a linear fashion, To access a certain buffer you 
-need to lseek() to the correct offset and then read() write() or, the 
-more common use, mmap / munmap.
+This patch series adds support for PERSISTENT_RESERVE_IN Service Action
+READ_FULL_STATUS for Target_Core_Mod/ConfigFS, and adds SPC-4 iSCSI TransportID
+support to LIO-Target v3.0.
 
-When looking through its implementation, unmap_mapping_range() seemed to 
-do exactly the thing I wanted, namely to kill all user-space mappings of 
-all vmas of all processes mapping a part of the device address space. 
-And it saves us from storing a list of all vmas mapping the device 
-within the drm device.
+Here is what an active running SPC-3 compliant PERSISTENT RESERVATION setup looks
+like using the PRIN SA READ_FULL_STATUS functionality with 2x active registrations
+(debian w/ all_tg_pt=1 and opensuse w/ all_tg_pt=0 registrations) and an active
+reservation held (debian IQN):
 
-What makes usage of unmap_mapping_range() on a device node with a well 
-defined offset-to-data mapping different from using it on a file?
+*) From Linux/iSCSI Initiators side using sg_persisnt from sg3_utils:
 
-/Thomas
-> ------------------------------------------------------------------------------
-> This SF.net email is sponsored by:
-> SourcForge Community
-> SourceForge wants to tell your story.
-> http://p.sf.net/sfu/sf-spreadtheword
-> --
-> _______________________________________________
-> Dri-devel mailing list
-> Dri-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/dri-devel
->   
+opensuse:~ # sg_persist -in --read-full-status -v /dev/sdb
+    Persistent Reservation In cmd: 5e 03 00 00 00 00 00 20 00 00 
+  PR generation=0x2
+    Key=0x5678efff
+      All target ports bit set
+      << Reservation holder >>
+      scope: LU_SCOPE,  type: Write Exclusive
+      Transport Id of initiator:
+        iSCSI world wide unique port id: iqn.1993-08.org.debian:01:2dadf92d0ef
+    Key=0x1234ffff
+      All target ports bit clear
+      Relative port address: 0x1
+      not reservation holder
+      Transport Id of initiator:
+        iSCSI world wide unique port id: iqn.1996-04.de.suse:01:1661f9ee7b5
 
+*) From Target_Core_Mod/ConfigFS for a Target_Core_Mod/IBLOCK struct block_device
+   attached to LIO-Target v3.0 iSCSI Target ports:
+
+target:~# cat /sys/kernel/config/target/core/iblock_0/lvm_test0/pr/*
+SPC-3 Reservation: iSCSI Initiator: iqn.1993-08.org.debian:01:2dadf92d0ef
+SPC-3 Reservation: All Target Ports registration
+0x00000002
+SPC-3 Reservation: iSCSI Target Node Endpoint: iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0
+SPC-3 Reservation: Portal Identifer Tag: 1 Logical Unit: 0
+SPC-3 PR Registrations:
+iSCSI Node: iqn.1993-08.org.debian:01:2dadf92d0ef Key: 0x000000005678efff PRgen: 0x00000000
+iSCSI Node: iqn.1996-04.de.suse:01:1661f9ee7b5 Key: 0x000000001234ffff PRgen: 0x00000001
+SPC-3 Reservation Type: Write Exclusive Access
+SPC3_PERSISTENT_RESERVATIONS
+
+Comments folks..?
+
+--nab
+
+[PATCH 1/4] [Target_Core_Mod/PERSISTENT_RESERVATION]: Change logic for all_tg_pt=[1,0]
+[PATCH 2/4] [Target_Core_Mod/ConfigFS]: Add res_pr_holder_tg_port attribute
+[PATCH 3/4] [Target_Core_Mod/PERSISTENT_RESERVATION]: Add support for PRIN SA READ_FULL_STATUS
+[PATCH 4/4] [LIO-Target/PERSISTENT-RESERVATION]: Add support for iSCSI Transport IDs
+
+remote: Counting objects: 35, done.
+remote: Compressing objects: 100% (25/25), done.
+remote: Total 25 (delta 21), reused 0 (delta 0)
+Unpacking objects: 100% (25/25), done.
+>From /pub/scm/linux/kernel/git/nab/lio-core-2.6
+ * branch            master     -> FETCH_HEAD
+Updating ab56467..df84268
+Fast forward
+ drivers/lio-core/iscsi_target_configfs.c  |    2 +
+ drivers/lio-core/iscsi_target_tpg.c       |  142 ++++++++++++++++++++++++-
+ drivers/lio-core/iscsi_target_tpg.h       |    4 +-
+ drivers/lio-core/target_core_base.h       |    4 +-
+ drivers/lio-core/target_core_configfs.c   |   76 +++++++++----
+ drivers/lio-core/target_core_fabric_ops.h |    4 +-
+ drivers/lio-core/target_core_pr.c         |  166 ++++++++++++++++++++++++----
+ 7 files changed, 346 insertions(+), 52 deletions(-)
 
 
