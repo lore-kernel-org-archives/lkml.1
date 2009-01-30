@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbZA3Exi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752439AbZA3FE5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbZA3Exi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 23:53:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZA3Exa
+	id S1752439AbZA3FE5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 00:04:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751023AbZA3FEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 23:53:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37766 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751344AbZA3Ex3 (ORCPT
+	Fri, 30 Jan 2009 00:04:48 -0500
+Received: from casper.infradead.org ([85.118.1.10]:33848 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750977AbZA3FEs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 23:53:29 -0500
-Date: Thu, 29 Jan 2009 20:49:52 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Hugh Dickins <hugh@veritas.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
- file segments
-In-Reply-To: <1233290620.2315.113.camel@lts-notebook>
-Message-ID: <alpine.LFD.2.00.0901292047400.3150@localhost.localdomain>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>  <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>  <1233259410.2315.75.camel@lts-notebook>  <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain> 
- <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>  <Pine.LNX.4.64.0901292200220.17808@blonde.anvils>  <alpine.LFD.2.00.0901291448360.3054@localhost.localdomain> <1233290620.2315.113.camel@lts-notebook>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 Jan 2009 00:04:48 -0500
+Date: Thu, 29 Jan 2009 21:04:35 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: tom.leiming@gmail.com
+Cc: kay.sievers@vrfy.org, greg@kroah.com, linux-kernel@vger.kernel.org,
+       Ming Lei <tom.leiming@gmail.com>
+Subject: Re: [PATCH] driver core: remove polling for driver_probe_done(v2)
+Message-ID: <20090129210435.4ca393c4@infradead.org>
+In-Reply-To: <1233282702-6274-1-git-send-email-tom.leiming@gmail.com>
+References: <1233282702-6274-1-git-send-email-tom.leiming@gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 30 Jan 2009 10:31:42 +0800
+tom.leiming@gmail.com wrote:
 
-
-On Thu, 29 Jan 2009, Lee Schermerhorn wrote:
+> From: Ming Lei <tom.leiming@gmail.com>
 > 
-> Just want to note that install_special_mappings()--used for, e.g., the
-> vdso--sets VM_DONTEXPAND [one of the VM_SPECIAL flags] which, if we want
-> to prevent merging, makes a lot of sense to me.
+> This patch renames driver_probe_done to driver_wait_probe_done,
+> and make it wait on condition of probing done to remove
+> polling for it in fs initialization. Also add
+> driver_wait_probe_done_and_dev_appear(name) to allow callers
+> to wait until all probing is done AND until the device @name
+> exists.
 
-Yes. VM_DONTEXPAND in many ways really fits the "don't merge" thing, 
-because the whole mremap() VM expansion thing is really equivalent to this 
-explicit merge.
+>  /**
+> + * driver_wait_probe_done_and_dev_appear
+> + * wait until the probe sequence is finished _and_ the dev @name
+> appears.
 
-> It appears that get_user_pages() will balk at addresses in vmas with 
-> VM_IO [and VM_PFNMAP] which might not be what one wants.  For example, 
-> you can't pre-populate the ptes via make_pages_present() with this flag.
+Hi,
 
-Well, anybody who plays games with vm_pgoff really _should_ be VM_IO. I 
-don't see any real reason for it except for having a very special IO 
-mapping. Of course, you quite possibly _also_ want VM_DONTEXPAND.
+sorry to be the bad guy, but I think you turned the "either one" into a
+"both".... so this isn't going to work ;(
 
-		Linus
+unless I'm just too tired and miss something subtle, but I am pretty
+sure DeMorgan does not work this way :)
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
