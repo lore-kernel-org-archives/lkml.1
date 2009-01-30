@@ -1,69 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZA3Gbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbZA3Gks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbZA3Gbn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 01:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZA3Gbf
+	id S1752548AbZA3Gks (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 01:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751117AbZA3Gkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 01:31:35 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54408 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751069AbZA3Gbe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 01:31:34 -0500
-Date: Thu, 29 Jan 2009 22:30:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@redhat.com>,
-       Dave Jones <davej@redhat.com>, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090129223042.47dc42a1.akpm@linux-foundation.org>
-In-Reply-To: <200901301633.54013.rusty@rustcorp.com.au>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<200901291213.32959.rusty@rustcorp.com.au>
-	<20090128181205.3b15fa4a.akpm@linux-foundation.org>
-	<200901301633.54013.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Fri, 30 Jan 2009 01:40:40 -0500
+Received: from mout.perfora.net ([74.208.4.195]:53021 "EHLO mout.perfora.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751025AbZA3Gkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 01:40:39 -0500
+Subject: Re: scheduler nice 19 versus 'idle' behavior / static low-priority
+	scheduling
+From: Nathanael Hoyle <nhoyle@hoyletech.com>
+To: Jan Engelhardt <jengelh@medozas.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LSU.2.00.0901300710200.999@fbirervta.pbzchgretzou.qr>
+References: <1233294584.28741.2.camel@localhost>
+	 <alpine.LSU.2.00.0901300710200.999@fbirervta.pbzchgretzou.qr>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 01:40:35 -0500
+Message-Id: <1233297635.17301.11.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1+5dWNi87E2gkpu6QzmsAknJEDGcjX3wTU3RcZ
+ D9qSTp7B/GmKIBN09Z4LavxpsoK7TomXXH5vl/2IzD5GgMH3CW
+ 0KztMD5o+yOMm36I5H4QwgBeRVdYhMn
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 30 Jan 2009 16:33:53 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> On Thursday 29 January 2009 12:42:05 Andrew Morton wrote:
-> > On Thu, 29 Jan 2009 12:13:32 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > 
-> > > On Thursday 29 January 2009 06:14:40 Andrew Morton wrote:
-> > > > It's vulnerable to the same deadlock, I think?  Suppose we have:
-> > > ...
-> > > > - A calls work_on_cpu() and takes woc_mutex.
-> > > > 
-> > > > - Before function_which_takes_L() has started to execute, task B takes L
-> > > >   then calls work_on_cpu() and task B blocks on woc_mutex.
-> > > > 
-> > > > - Now function_which_takes_L() runs, and blocks on L
-> > > 
-> > > Agreed, but now it's a fairly simple case.  Both sides have to take lock L, and both have to call work_on_cpu.
-> > > 
-> > > Workqueues are more generic and widespread, and an amazing amount of stuff gets called from them.  That's why I felt uncomfortable with removing the one known problematic caller.
-> > > 
-> > 
-> > hm.  it's a bit of a timebomb.
-> > 
-> > y'know, the original way in which acpi-cpufreq did this is starting to
-> > look attractive.  Migrate self to that CPU then just call the dang
-> > function.  Slow, but no deadlocks (I think)?
+On Fri, 2009-01-30 at 07:16 +0100, Jan Engelhardt wrote:
+> On Friday 2009-01-30 06:49, Nathanael Hoyle wrote:
+> >
+> >I have done a bit of research on how the kernel scheduler works, and
+> >why I am seeing this behavior. I had previously, apparently
+> >ignorantly, equated 'nice 19' with being akin to Microsoft Windows'
+> >'idle' thread priority, and assumed it would never steal CPU cycles
+> >from a process with a higher(lower, depending on nomenclature)
+> >priority. [...]
+> >
+> >One[...] is to alter the semantics of nice 19 such that it does not
+> >boost. Since this would break existing assumptions and code, I do
+> >not think it is feasible. [...] Finally, new scheduling classes
+> >could be introduced[...]
 > 
-> Just buggy.  What random thread was it mugging?  If there's any path where
-> it's not a kthread, what if userspace does the same thing at the same time?
-> We risk running on the wrong cpu, *then* overriding userspace when we restore
-> it.
+> Surprise. There is already SCHED_BATCH (intended for computing tasks
+> as I gathered) and SCHED_IDLE (for idle stuff).
+> 
 
-hm, Ok, not unficable but not pleasant.
+The one discussion I saw referencing SCHED_BATCH seemed to imply that it
+was a non-standard kernel patch by Con Kolivas in one of his -ck
+variants that never made it into mainline and is not being maintained.
+Is this inaccurate?
 
-> In general these cpumask games are a bad idea.
+I was unfamiliar with SCHED_IDLE. Having done a little Googling now, I
+finally find reference to the man page for sched_setscheduler(2). This
+appears that it is likely what I wanted.
 
-So we still don't have any non-buggy proposal.
+I think the information I had been able to find was somehwat out of
+date. It had indicated that the only static priority levels were the
+realtime ones.
+
+Is there currently a standardized userspace tool to use to run a command
+in order to alter its scheduling class? Obviously writing one would be
+trivial, but didn't know if something like:
+
+$ runidle ./foldingathome
+
+would be available.
+
+Thanks for your helpful reply.
+
+> 
+> 
+> >Please make the obvious substitution to my email address in order to 
+> >bypass the spam-killer.
+> 
+> (Obviously this is not obvious... there are no 'nospam' keywords or 
+> similar in it that could be removed.)
+
+I made a failed attempt to post earlier in the evening, which included
+the address 'nhoyle@no-damn-spam.hoyletech.com'. When that one didn't
+make it to the list (though I'm unsure it had to do with the address I
+used) I retried with the clean address.  I forgot to remove the note at
+the bottom of the posting.
+
+Sincerely,
+Nathanael Hoyle
+
