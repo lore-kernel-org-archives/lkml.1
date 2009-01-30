@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZA3Ji5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZA3Jlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZA3Ji5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 04:38:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZA3Jis
+	id S1754542AbZA3Jlp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 04:41:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZA3Jld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 04:38:48 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35563 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752371AbZA3Jir (ORCPT
+	Fri, 30 Jan 2009 04:41:33 -0500
+Received: from dallas.jonmasters.org ([72.29.103.172]:36260 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751023AbZA3Jlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 04:38:47 -0500
-Date: Fri, 30 Jan 2009 10:38:46 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Sandro Bonazzola <sandro.bonazzola@gmail.com>,
-       kernel list <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Bruno Randolf <br1@einfach.org>
-Subject: Re: [PATCH] w35und: fix registration with wlan stack
-Message-ID: <20090130093846.GC9495@atrey.karlin.mff.cuni.cz>
-References: <497F5FEA.7020203@gmail.com> <20090127200602.GA16444@elf.ucw.cz> <4980B2DD.307@gmail.com> <4980BB9A.2020309@cs.helsinki.fi> <4980C028.2030709@gmail.com> <4980C035.4070105@cs.helsinki.fi> <4980DB5D.6010906@gmail.com> <20090130090525.GA1997@elf.ucw.cz> <1233306825.13655.28.camel@penberg-laptop> <1233306980.4161.19.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233306980.4161.19.camel@johannes.local>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 30 Jan 2009 04:41:32 -0500
+Subject: Re: Is there a way to set the order of initialization of different
+	 systems ?
+From: Jon Masters <jonathan@jonmasters.org>
+To: George Kumar <grgkumar4@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <5f695cd0901300103o31cb92f4o9feb8c598465617c@mail.gmail.com>
+References: <5f695cd0901300103o31cb92f4o9feb8c598465617c@mail.gmail.com>
+Content-Type: text/plain
+Organization: World Organi[sz]ation of Broken Dreams
+Date: Fri, 30 Jan 2009 04:41:26 -0500
+Message-Id: <1233308486.3937.113.camel@perihelion.bos.jonmasters.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 74.92.29.237
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 2009-01-30 at 11:13 +0200, Pekka Enberg wrote:
-> 
-> 
-> > >  	dev->extra_tx_headroom = 12;	/* FIXME */
-> > > -	dev->flags = 0;
-> > > +	dev->flags = IEEE80211_HW_SIGNAL_UNSPEC;
-> > > +	dev->wiphy->interface_modes = BIT(NL80211_IFTYPE_STATION);
-> > 
-> > The wiphy->interface_modes thing is probably fall-out from commit
-> > 8dffff216fcac4f79078478085e86d68db64922e ("mac80211: only create default
-> > STA interface if supported"). I'm cc'ing Johannes.
-> 
-> Yes. That looks reasonable, though it means you'll only support STA, not
-> ad-hoc.
+On Fri, 2009-01-30 at 01:03 -0800, George Kumar wrote:
 
-Ok. The driver is very basic for now (can only do channel 1), so we
-certainly have bigger problems than ad-hoc.
+> I would like to explore if there is a way so that I can set the order
+> of initialization of different kernel sub systems. The main reason I
+> would like to do this is because I have a network driver built
+> statically in the kernel which wants to download firmware from the
+> disk, but the IDE subsystem and root FS is not mounted yet so it
+> basically hangs for a minute waiting to dowload firmware and then
+> proceeds with the boot sequence. If I could ensure that IDE subsys is
+> initialized and root FS is mounted before networking is initialized,
+> this problem probably will not occur.
 
-> > >  	dev->channel_change_time = 1000;
-> > > +	dev->max_signal = 100;
-> > 
-> > And the IEEE80211_HW_SIGNAL_UNSPEC and ->max_signal from commit
-> > 566bfe5a8bcde13188a356f77666f8115813cf31 ("mac80211: use hardware flags
-> > for signal/noise units"). Lets cc Bruno.
-> 
-> Seems reasonable, though does it would be good to see if it can do DBM,
-> which we very very much prefer.
+This is why we have initrds and similar. What you want is already done
+quite successfully by a number of implementations in which the driver
+will load, and cause a uevent to be emitted as it seeks firmware that
+will be supplied to it. There's absolutely no reason for your driver to
+be reading the firmware files directly from disk when we have
+infrastructure like request_firmware around.
 
-Well, currenlty it reports all zeros...
-									Pavel
+LWN wrote this article back in 2003: http://lwn.net/Articles/32997/
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jon.
+
+
