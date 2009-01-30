@@ -1,69 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756662AbZA3W2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZA3W2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756662AbZA3W2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 17:28:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751893AbZA3W2L
+	id S1757249AbZA3W2r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 17:28:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZA3W2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 17:28:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42573 "EHLO
+	Fri, 30 Jan 2009 17:28:35 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36685 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751142AbZA3W2K (ORCPT
+	by vger.kernel.org with ESMTP id S1751893AbZA3W2e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 17:28:10 -0500
-Date: Fri, 30 Jan 2009 14:27:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Hugh Dickins <hugh@veritas.com>, Greg KH <gregkh@suse.de>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mikos Szeredi <miklos@szeredi.hu>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
- file segments
-In-Reply-To: <1233351412.908.69.camel@lts-notebook>
-Message-ID: <alpine.LFD.2.00.0901301426390.3150@localhost.localdomain>
-References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com>  <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain>  <1233259410.2315.75.camel@lts-notebook>  <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain> 
- <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain>  <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com>  <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>  <20090130055639.GA30950@suse.de>  <alpine.LFD.2.00.0901300811260.3150@localhost.localdomain>
-  <Pine.LNX.4.64.0901301724010.1563@blonde.anvils>  <alpine.LFD.2.00.0901300946360.3150@localhost.localdomain>  <1233345190.908.36.camel@lts-notebook>  <alpine.LFD.2.00.0901301159500.3150@localhost.localdomain>  <Pine.LNX.4.64.0901302048360.18677@blonde.anvils>
- <1233351412.908.69.camel@lts-notebook>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 30 Jan 2009 17:28:34 -0500
+Date: Fri, 30 Jan 2009 14:28:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Erickson <gerickson@nuovations.com>
+Cc: linux-kernel@vger.kernel.org, wd@denx.de
+Subject: Re: [RFC] Add Alternative Log Buffer Support for printk Messages
+Message-Id: <20090130142825.e63ee797.akpm@linux-foundation.org>
+In-Reply-To: <C5A8B8CD.143B5%gerickson@nuovations.com>
+References: <20090130115108.592ba38d.akpm@linux-foundation.org>
+	<C5A8B8CD.143B5%gerickson@nuovations.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 30 Jan 2009 14:01:49 -0800
+Grant Erickson <gerickson@nuovations.com> wrote:
 
-On Fri, 30 Jan 2009, Lee Schermerhorn wrote:
+> Your summary is precisely the intent. As I
+> mentioned in check-in notice, this isn't my work per se, but a fix of prior
+> unsubmitted work. Consequently, I can only speculate on the original
+> implementation choices of the primary authors (Yuri Tikhonov
+> <yur@emcraft.com> on behalf of Denx from what I can ascertain from GIT
+> logs). I've added Wolfgang in the event he can add background where
+> appropriate.
 > 
-> I just verified that adding VM_ACCOUNT to VM_MERGEABLE does allow the
-> merge to happen with the test program.  And the system didn't come
-> crashing down around me.  But, I wouldn't trust that simple test as the
-> last word.  A short run of a stress load I use held up/still running,
-> but I can't tell whether it's merging as expected there.   
+> I believe this to be a useful feature for the embedded system space;
+> however, I am not wedded in any way to the current implementation and am
+> happy to evolve it as needed to meet the needs of key stakeholders.
+> 
+> > Why not just copy the external buffer's contents into the normal buffer during
+> > bootup?  ie: printk("%s", external_buffer).
+> 
+> Again, conjecturing, I suspect the goal was to ensure that the boot messages
+> appear on the console or in the syslog before kernel messages of that
+> particular boot cycle. Depending on the board and architecture in question,
+> the kernel log buffer may have several messages in it by the time the log
+> coalescing code runs. For example, on the board I tested this on:
+> 
+>     # dmesg
+>     U-Boot 1.3.3 (Jan  9 2009 - 10:24:45)
+>     POST memory PASSED
+>     POST ecc PASSED
+>     POST cache PASSED
+>     POST ethernet PASSED
+>     Using Kilauea machine description
+>     log_buf=fdffc000
+>     Linux version 2.6.27.7 (gerickson@ubuntu-fusion) (gcc version 4.0.0
+> (DENX ELDK 4.1 4.0.0)) #1 Fri Jan 9 10:30:30 PST 2009
 
-Just ignoring VM_ACCOUNT for merging is not the right thing to do. It 
-probably works in practice for just about everything, but at least in 
-theory it does mean that mmap() can stop honoring MAP_NORESERVE.
+It shouldn't be too hard to cook up some way of copying some data into
+th log buffer before the kernel itself has put anything in there, if
+that's all which is needed.
 
-Admittedly the circumstances where that happens are unlikely, and nobody 
-probably even really uses MAP_NORESERVE in the first place, so I doubt you 
-can ever see it as a real issue, but it's still technically wrong to merge 
-vma's that can differ in VM_ACCOUNT.
 
-Now, the particular test you have, VM_ACCOUNT differs only during that 
-temporary window, and the vma's really do end up with the same VM_ACCOUNT 
-state in the end, so merging them is correct, but if you were to privately 
-map the same file (or private anonymous map) with the same permissions 
-next to each other so that they -could- merge, but use MAP_NORESERVE on 
-one and not on the other, then they shouldn't merge.
+something similar to this?
 
-So VM_ACCOUNT does matter - just barely - for merging, and we just happen 
-to currently hit it too much due to a very odd internal reason.
+ include/linux/kernel.h |    2 ++
+ init/main.c            |    6 ++++++
+ kernel/printk.c        |    8 ++++++++
+ 3 files changed, 16 insertions(+)
 
-		Linus
+diff -puN init/main.c~a init/main.c
+--- a/init/main.c~a
++++ a/init/main.c
+@@ -535,11 +535,17 @@ void __init __weak thread_info_cache_ini
+ {
+ }
+ 
++void __init __weak arch_copy_boot_messages(void)
++{
++}
++
+ asmlinkage void __init start_kernel(void)
+ {
+ 	char * command_line;
+ 	extern struct kernel_param __start___param[], __stop___param[];
+ 
++	arch_copy_boot_messages();
++
+ 	smp_setup_processor_id();
+ 
+ 	/*
+diff -puN kernel/printk.c~a kernel/printk.c
+--- a/kernel/printk.c~a
++++ a/kernel/printk.c
+@@ -493,6 +493,14 @@ static void emit_log_char(char c)
+ 		logged_chars++;
+ }
+ 
++void emit_log_string(const char *s)
++{
++	spin_lock_irqsave(&logbuf_lock);
++	while (*s)
++		emit_log_char(*s++);
++	spin_unlock_irqsave(&logbuf_lock);
++}
++
+ /*
+  * Zap console related locks when oopsing. Only zap at most once
+  * every 10 seconds, to leave time for slow consoles to print a
+diff -puN include/linux/kernel.h~a include/linux/kernel.h
+--- a/include/linux/kernel.h~a
++++ a/include/linux/kernel.h
+@@ -257,6 +257,8 @@ static inline bool printk_timed_ratelimi
+ 
+ extern int printk_needs_cpu(int cpu);
+ extern void printk_tick(void);
++extern void __init arch_copy_boot_messages(void);
++extern void emit_log_string(const char *s);
+ 
+ extern void asmlinkage __attribute__((format(printf, 1, 2)))
+ 	early_printk(const char *fmt, ...);
+_
+
