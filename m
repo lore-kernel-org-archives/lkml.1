@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbZA3AIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760221AbZA3AIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758365AbZA3AIT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 19:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbZA3AID
+	id S1760221AbZA3AIu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 19:08:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758418AbZA3AIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 19:08:03 -0500
-Received: from main.gmane.org ([80.91.229.2]:36860 "EHLO ciao.gmane.org"
+	Thu, 29 Jan 2009 19:08:19 -0500
+Received: from tundra.namei.org ([65.99.196.166]:1374 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754389AbZA3AIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 19:08:02 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: Seagate disk freeze for 30 seconds then comes back (RecovComm
- 10B8B)
-Date: Thu, 29 Jan 2009 19:07:48 -0500
-Message-ID: <498244D4.4060903@tmr.com>
-References: <alpine.LFD.2.00.0901271739400.2013@mail.embedromix.ro> <20090128153141.GC26064@csclub.uwaterloo.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-Cc: linux-ide@vger.kernel.org
-X-Gmane-NNTP-Posting-Host: pool-68-236-142-151.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
-In-Reply-To: <20090128153141.GC26064@csclub.uwaterloo.ca>
-Cc: linux-kernel@vger.kernel.org
+	id S1757921AbZA3AIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 19:08:18 -0500
+Date: Fri, 30 Jan 2009 11:07:03 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       "<David Safford" <safford@watson.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 2/6] integrity: IMA as an integrity service provider
+In-Reply-To: <eae67eb66b76df32f0e95c4cda33fd6271567c94.1233262163.git.zohar@linux.vnet.ibm.com>
+Message-ID: <alpine.LRH.1.10.0901301032080.29870@tundra.namei.org>
+References: <cover.1233262162.git.zohar@linux.vnet.ibm.com> <eae67eb66b76df32f0e95c4cda33fd6271567c94.1233262163.git.zohar@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
-> On Wed, Jan 28, 2009 at 11:30:42AM +0200, Catalin(ux) M. BOIE wrote:
->> I have a ST9160821AS drive, firmware 3.BHE, and I experience some seldom 
->> problems with it. It is in a HP 6715s HP laptop, kernel 2.6.27.5.
->>
->> The error message is:
->> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x80002 action 0x6 frozen
->> ata1: SError: { RecovComm 10B8B }
->> ata1.00: cmd ca/00:f8:11:b8:38/00:00:00:00:00/ec tag 0 dma 126976 out
->> res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
->> ata1.00: status: { DRDY }
->> ata1: hard resetting link
->> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
->> ata1.00: SB600 AHCI: limiting to 255 sectors per cmd
->> ata1.00: SB600 AHCI: limiting to 255 sectors per cmd
->> ata1.00: configured for UDMA/100
->> ata1: EH complete
->> sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
->> sd 0:0:0:0: [sda] Write Protect is off
->> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
->> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
->> support DPO or FUA
->>
->> When it happens, the system freezes for around 30 seconds.
->>
->> Seagate told me that there is no firmware update for this drive.
->>
->> Please, let me know if it is a software issue.
-> 
-> This sounds like a very widely known and discussed firmware problem.  It
-> happens with Linux, Windows, and Mac OS X, as well as various NAS boxes.
-> It is seagate's fault.  Of course I had only seen it mentioned for the
-> 500GB, 750GB, 1TB and 1.5TB drives.  Somehow yours seems like it should
-> be a different series, but then again why should a firmware bug not be
-> duplicated on all their drives.
-> 
-Would you expect that firmware would be shared between old tech laptop drives 
-and desktop/server drives? Particularly since the laptop drive was built before 
-any of the 7200.11 drives?
+On Thu, 29 Jan 2009, Mimi Zohar wrote:
 
-I think this is a very unlikely part of the problem. Certainly the drive might 
-be dying or other hardware issue.
+> +++ b/security/integrity/ima/Kconfig
+> @@ -0,0 +1,49 @@
+> +# IBM Integrity Measurement Architecture
+> +#
+> +config IMA
+> +	bool "Integrity Measurement Architecture(IMA)"
+> +	depends on ACPI
+> +	select SECURITYFS
+> +	select CRYPTO
+> +	select CRYPTO_HMAC
+> +	select CRYPTO_MD5
+> +	select CRYPTO_SHA1
+> +	select TCG_TPM
+> +	select TCG_TIS
+> +	help
+> +	  The Trusted Computing Group(TCG) runtime Integrity
+> +	  Measurement Architecture(IMA) maintains a list of hash
+> +	  values of executables and other sensitive system files,
+> +	  as they are read or executed. If an attacker manages
+> +	  to change the contents of an important system file
+> +	  being measured, we can tell.
 
-> One discussion is here: http://techreport.com/discussions.x/15863
-> 
-> Seriously annoying for raid users of course when a drive falls out of
-> the raid for no good reason.
-> 
-> 
-> I seem to recall some people had found that if you disabled some part of
-> the drive caching the problem seemed to go away (as did a lot of the
-> drive's performance of course).
-> 
+Out of interest, do you know if the TCG has analyzed their use of SHA-1 
+in light of various attacks on the algorithm over the last few years?
+
+The IETF has published analysis and recommendations relating to the use of 
+SHA-1 (and other cryptographic hashes) with IP protocols:
+
+http://www.ietf.org/rfc/rfc4894.txt
+http://www.ietf.org/rfc/rfc4270.txt
+
+It would be useful to know if similar analysis has been performed for TPM.
 
 
+- James
 -- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
-
+James Morris
+<jmorris@namei.org>
