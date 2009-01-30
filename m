@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759440AbZA3AAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758365AbZA3AIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759440AbZA3AAt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 19:00:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZA3AAl
+	id S1758365AbZA3AIT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 19:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754514AbZA3AID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 19:00:41 -0500
-Received: from outbound-wa4.frontbridge.com ([216.32.181.16]:29326 "EHLO
-	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752905AbZA3AAk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 19:00:40 -0500
-X-BigFish: VPS-25(zz1432R98dR1805Mzzzzz2fh6bh62h)
-X-Spam-TCS-SCL: 1:0
-Message-ID: <49824308.6020209@am.sony.com>
-Date: Thu, 29 Jan 2009 16:00:08 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
-Subject: Re: PS3: replace bus_id usage
-References: <20090126173019.GA12010@kroah.com>
-In-Reply-To: <20090126173019.GA12010@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset="ISO-8859-1"
+	Thu, 29 Jan 2009 19:08:03 -0500
+Received: from main.gmane.org ([80.91.229.2]:36860 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754389AbZA3AIC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 19:08:02 -0500
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: Seagate disk freeze for 30 seconds then comes back (RecovComm
+ 10B8B)
+Date: Thu, 29 Jan 2009 19:07:48 -0500
+Message-ID: <498244D4.4060903@tmr.com>
+References: <alpine.LFD.2.00.0901271739400.2013@mail.embedromix.ro> <20090128153141.GC26064@csclub.uwaterloo.ca>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Jan 2009 00:00:08.0809 (UTC) FILETIME=[B6E22590:01C9826D]
-X-SEL-encryption-scan: scanned
+X-Complaints-To: usenet@ger.gmane.org
+Cc: linux-ide@vger.kernel.org
+X-Gmane-NNTP-Posting-Host: pool-68-236-142-151.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
+In-Reply-To: <20090128153141.GC26064@csclub.uwaterloo.ca>
+Cc: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> From: Greg Kroah-Hartman <gregkh@suse.de>
+Lennart Sorensen wrote:
+> On Wed, Jan 28, 2009 at 11:30:42AM +0200, Catalin(ux) M. BOIE wrote:
+>> I have a ST9160821AS drive, firmware 3.BHE, and I experience some seldom 
+>> problems with it. It is in a HP 6715s HP laptop, kernel 2.6.27.5.
+>>
+>> The error message is:
+>> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x80002 action 0x6 frozen
+>> ata1: SError: { RecovComm 10B8B }
+>> ata1.00: cmd ca/00:f8:11:b8:38/00:00:00:00:00/ec tag 0 dma 126976 out
+>> res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4 (timeout)
+>> ata1.00: status: { DRDY }
+>> ata1: hard resetting link
+>> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+>> ata1.00: SB600 AHCI: limiting to 255 sectors per cmd
+>> ata1.00: SB600 AHCI: limiting to 255 sectors per cmd
+>> ata1.00: configured for UDMA/100
+>> ata1: EH complete
+>> sd 0:0:0:0: [sda] 312581808 512-byte hardware sectors (160042 MB)
+>> sd 0:0:0:0: [sda] Write Protect is off
+>> sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
+>> sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't 
+>> support DPO or FUA
+>>
+>> When it happens, the system freezes for around 30 seconds.
+>>
+>> Seagate told me that there is no firmware update for this drive.
+>>
+>> Please, let me know if it is a software issue.
 > 
-> These simple debug statments should be using dev_dbg() instead of
-> accessing bus_id directly (or they should use device_name).
+> This sounds like a very widely known and discussed firmware problem.  It
+> happens with Linux, Windows, and Mac OS X, as well as various NAS boxes.
+> It is seagate's fault.  Of course I had only seen it mentioned for the
+> 500GB, 750GB, 1TB and 1.5TB drives.  Somehow yours seems like it should
+> be a different series, but then again why should a firmware bug not be
+> duplicated on all their drives.
 > 
-> As bus_id is going away, this patch is necessary.
-> 
-> Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-> Cc: Kay Sievers <kay.sievers@vrfy.org>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> ---
-> 
-> This fixes a built-breakage in linux-next.  I'll be glad to keep this in
-> my tree if you don't want to take it in yours, just let me know.
-> 
->  arch/powerpc/platforms/ps3/system-bus.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+Would you expect that firmware would be shared between old tech laptop drives 
+and desktop/server drives? Particularly since the laptop drive was built before 
+any of the 7200.11 drives?
 
-This looks OK.  Greg, please merge it through your tree.
+I think this is a very unlikely part of the problem. Certainly the drive might 
+be dying or other hardware issue.
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> One discussion is here: http://techreport.com/discussions.x/15863
+> 
+> Seriously annoying for raid users of course when a drive falls out of
+> the raid for no good reason.
+> 
+> 
+> I seem to recall some people had found that if you disabled some part of
+> the drive caching the problem seemed to go away (as did a lot of the
+> drive's performance of course).
+> 
 
+
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
