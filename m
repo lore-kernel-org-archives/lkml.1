@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756034AbZA3O5d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755659AbZA3O70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756034AbZA3O5d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 09:57:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbZA3O5V
+	id S1755659AbZA3O70 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 09:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbZA3O7S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 09:57:21 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:60323 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752048AbZA3O5U (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 09:57:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
-         :user-agent:mime-version:content-type;
-        b=gC8IW7wDAiV+b008lnRrXLQR1el/DycNgcS5IaPLaL7lQAQkUaQ7RubY4P+g5mkdDs
-         XP+iPMiZP6ofluVzx9e7UAGHxk5Do1hi8J7QZ3CZ4yeaZbp1hybv3jhr8kMgbd2JJWEr
-         UbxAIJHej0wP12JXY6LWZTUZp1pVlgISDqBWI=
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       Dai Haruki <dai.haruki@freescale.com>,
-       Andy Fleming <afleming@freescale.com>
-Subject: Re: [BUG BISECTED] boot hangs while bringing up gianfar ethernet
-References: <20090129194145.GA4647@ovro.caltech.edu>
-From: Peter Korsgaard <jacmet@sunsite.dk>
-Date: Fri, 30 Jan 2009 15:57:15 +0100
-In-Reply-To: <20090129194145.GA4647@ovro.caltech.edu> (Ira Snyder's message of "Thu\, 29 Jan 2009 11\:41\:45 -0800")
-Message-ID: <87bpton8ok.fsf@macbook.be.48ers.dk>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 30 Jan 2009 09:59:18 -0500
+Received: from cantor.suse.de ([195.135.220.2]:35788 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751631AbZA3O7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 09:59:17 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: cpufreq@vger.kernel.org
+Subject: cpufreq on demand governor sampling rate restricted to HZ even on NO_HZ kernels
+Date: Fri, 30 Jan 2009 15:59:13 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.11-HEAD_20090116074536_2c57617f-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, venkatesh.pallipadi@intel.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200901301559.15170.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "Ira" == Ira Snyder <iws@ovro.caltech.edu> writes:
+Hi,
 
- Ira> Hello,
+depending on HZ set to:
 
- Ira> I'm working on a Freescale MPC8349EMDS board. I have been
- Ira> booting it over NFS for a long time now. I try to run the latest
- Ira> git kernels to find possible problems.
+100
+250
+1000
 
- Ira> Recently, I haven't been able to boot over NFS anymore. When the machine
- Ira> tries to bring up the ethernet interface, it just hangs forever. There
- Ira> are no softlockup warnings, the machine has locked up completely.
+the ondemand governor is currently limited to poll the CPU load
+and adjust the frequency (sampling rate sysfs variable) every:
 
-FYI, I'm seeing the same here (with a mpc8347) with all 2.6.29-rcX,
-but I didn't have time to track it down yet.
+200ms
+80ms
+20ms
 
--- 
-Bye, Peter Korsgaard
+This limitation does not consider NO_HZ which looks wrong?
+If this is correct, can someone give me a pointer, I'd like
+to understand why.
+
+If NO_HZ can/should go down to 20ms polling and more (current
+CPUs are able to switch fast enough, so that the ondemand governor
+would calculate the default polling interval below 80ms for them),
+this would hurt in respect of C-states at some point.
+
+For performance reasons, one wants to poll as much as possible, for
+powersaving reasons (C-states), one wants to poll as seldom as
+possible.
+
+I wonder whether it makes sense to dynamically adjust the polling
+interval (e.g. by a hint (and initial wakeup) from the scheduler or
+taking C-states into account) to:
+  - increase the sampling rate, e.g. based on context switching
+    activity
+  - lower sampling rate when the system is idle (to gain
+    full C-state efficiency)
+Or in what other way deep C-states could be taken into account
+in respect of ondemand polling?
+
+Thanks,
+
+     Thomas
+
