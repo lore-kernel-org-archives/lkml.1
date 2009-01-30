@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757563AbZA3Dlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbZA3Dnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757563AbZA3Dlc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 29 Jan 2009 22:41:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbZA3DlX
+	id S1758908AbZA3Dnl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 29 Jan 2009 22:43:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZA3Dne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 29 Jan 2009 22:41:23 -0500
-Received: from mga05.intel.com ([192.55.52.89]:51038 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751022AbZA3DlX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 29 Jan 2009 22:41:23 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,348,1231142400"; 
-   d="scan'208";a="426690426"
-From: Inaky Perez-Gonzalez <inaky@linux.intel.com>
-Organization: Intel Corporation
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH] wimax: fix build issue when debugfs is disabled
-Date: Thu, 29 Jan 2009 19:41:15 -0800
-User-Agent: KMail/1.9.9
-Cc: randy.dunlap@oracle.com, wimax@linuxwimax.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       toralf.foerster@gmx.de
-References: <200901291346.16906.inaky@linux.intel.com> <498228D1.7000105@oracle.com> <20090129.171921.70358850.davem@davemloft.net>
-In-Reply-To: <20090129.171921.70358850.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200901291941.16074.inaky@linux.intel.com>
+	Thu, 29 Jan 2009 22:43:34 -0500
+Received: from gate.crashing.org ([63.228.1.57]:40127 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751022AbZA3Dnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 29 Jan 2009 22:43:33 -0500
+Subject: Re: [PATCH] atyfb: fix distorted image on PowerMacs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Risto Suominen <risto.suominen@gmail.com>
+Cc: Alex Kern <alex.kern@gmx.de>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <46e1c7760901221022p697f1689ubf03c909cdf1b99b@mail.gmail.com>
+References: <46e1c7760901221022p697f1689ubf03c909cdf1b99b@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 30 Jan 2009 14:42:50 +1100
+Message-Id: <1233286970.18767.19.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 29 January 2009, David Miller wrote:
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> Date: Thu, 29 Jan 2009 14:08:17 -0800
->
-> > Inaky Perez-Gonzalez wrote:
-> > > As reported by Toralf Förster and Randy Dunlap.
-> > >
-> > > - http://linuxwimax.org/pipermail/wimax/2009-January/000460.html
-> > >
-> > > - http://lkml.org/lkml/2009/1/29/279
-> >
-> > Thanks.  That one builds.
->
-> Applied, thanks everyone.
->
-> Inaky, please CC: netdev on your patches in the future.  Otherwise
-> they don't get remembered in patchwork and this screws up my entire
-> workflow :-/
+On Thu, 2009-01-22 at 20:22 +0200, Risto Suominen wrote:
+> Since the complete re-write in 2.6.10, some PowerMacs (At least PowerMac 5500
+> and PowerMac G3 Beige rev A) with ATI Mach64 chip have suffered from unstable
+> columns in their framebuffer image. This seems to depend on a value (4) read
+> from PLL_EXT_CNTL register, which leads to incorrect DSP config parameters to
+> be written to the chip. This patch uses a value calculated by aty_init_pll_ct
+> instead, as a starting point.
+> 
+> Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
+> ---
+> The testing is done on kernel version 2.6.18.
 
-I will do -- sorry for the oversight.
+This also fixes my oooold wallstreet powerbook.
 
--- 
-Inaky
+Andrew, do you mind if I include that in the powerpc tree ?
+
+Cheers,
+Ben.
+
+> --- a/drivers/video/aty/mach64_ct.c.org	2006-09-20 06:42:06.000000000 +0300
+> +++ b/drivers/video/aty/mach64_ct.c	2009-01-22 14:28:13.000000000 +0200
+> @@ -7,6 +7,7 @@
+>  #include <linux/delay.h>
+>  #include <asm/io.h>
+>  #include <video/mach64.h>
+> +#include <asm/machdep.h>
+>  #include "atyfb.h"
+> 
+>  #undef DEBUG
+> @@ -536,6 +537,14 @@ static int __init aty_init_pll_ct(const
+>  	pll->ct.xclk_post_div_real = postdividers[xpost_div];
+>  	pll->ct.mclk_fb_div = q * pll->ct.xclk_post_div_real / 8;
+> 
+> +#ifdef CONFIG_PPC
+> +	if (machine_is(powermac)) {
+> +		/* Override PLL_EXT_CNTL & 0x07. */
+> +		pll->ct.xclk_post_div = xpost_div;
+> +		pll->ct.xclk_ref_div = 1;
+> +	}
+> +#endif
+> +
+>  #ifdef DEBUG
+>  	pllmclk = (1000000 * pll->ct.mclk_fb_mult * pll->ct.mclk_fb_div) /
+>  			(par->ref_clk_per * pll->ct.pll_ref_div);
+
