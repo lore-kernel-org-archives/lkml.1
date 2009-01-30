@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755971AbZA3KUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756546AbZA3KVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755971AbZA3KUy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 05:20:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZA3KR5
+	id S1756546AbZA3KVU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 05:21:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbZA3KR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 05:17:57 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:54388 "EHLO
+	Fri, 30 Jan 2009 05:17:58 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:54392 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754834AbZA3KRw (ORCPT
+	with ESMTP id S1754711AbZA3KRw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 30 Jan 2009 05:17:52 -0500
 From: Andi Kleen <andi@firstfloor.org>
 To: mingo@elte.hu
 Cc: linux-kernel@vger.kernel.org, lnxninja@linux.vnet.ibm.com,
        Andi Kleen <ak@linux.intel.com>
-Subject: [PATCH] Remove setup_portio_remap
-Date: Fri, 30 Jan 2009 11:17:14 +0100
-Message-Id: <1233310639-27916-9-git-send-email-andi@firstfloor.org>
+Subject: [PATCH] Remove multi_timer_check
+Date: Fri, 30 Jan 2009 11:17:13 +0100
+Message-Id: <1233310639-27916-8-git-send-email-andi@firstfloor.org>
 X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1233310639-27916-8-git-send-email-andi@firstfloor.org>
+In-Reply-To: <1233310639-27916-7-git-send-email-andi@firstfloor.org>
 References: <1233310639-27916-1-git-send-email-andi@firstfloor.org>
  <1233310639-27916-2-git-send-email-andi@firstfloor.org>
  <1233310639-27916-3-git-send-email-andi@firstfloor.org>
@@ -26,7 +26,6 @@ References: <1233310639-27916-1-git-send-email-andi@firstfloor.org>
  <1233310639-27916-5-git-send-email-andi@firstfloor.org>
  <1233310639-27916-6-git-send-email-andi@firstfloor.org>
  <1233310639-27916-7-git-send-email-andi@firstfloor.org>
- <1233310639-27916-8-git-send-email-andi@firstfloor.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -44,174 +43,175 @@ Signed-off-by: Andi Kleen <ak@linux.intel.com>
  arch/x86/kernel/genx2apic_cluster.c |    1 -
  arch/x86/kernel/genx2apic_phys.c    |    1 -
  arch/x86/kernel/genx2apic_uv_x.c    |    1 -
- arch/x86/kernel/numaq_32.c          |   14 --------------
+ arch/x86/kernel/io_apic.c           |    8 --------
+ arch/x86/kernel/numaq_32.c          |   10 ----------
  arch/x86/kernel/probe_32.c          |    1 -
- arch/x86/kernel/smpboot.c           |    3 ---
  arch/x86/kernel/summit_32.c         |    1 -
- 11 files changed, 0 insertions(+), 27 deletions(-)
+ 11 files changed, 0 insertions(+), 28 deletions(-)
 
 diff --git a/arch/x86/include/asm/genapic.h b/arch/x86/include/asm/genapic.h
-index 6197803..988e1bc 100644
+index 07bab93..6197803 100644
 --- a/arch/x86/include/asm/genapic.h
 +++ b/arch/x86/include/asm/genapic.h
-@@ -44,7 +44,6 @@ struct genapic {
+@@ -40,7 +40,6 @@ struct genapic {
+ 	physid_mask_t (*ioapic_phys_id_map)(physid_mask_t map);
+ 
+ 	void (*setup_apic_routing)(void);
+-	int (*multi_timer_check)(int apic, int irq);
+ 	int (*apicid_to_node)(int logical_apicid);
  	int (*cpu_to_logical_apicid)(int cpu);
  	int (*cpu_present_to_apicid)(int mps_cpu);
- 	physid_mask_t (*apicid_to_cpu_present)(int phys_apicid);
--	void (*setup_portio_remap)(void);
- 	int (*check_phys_apicid_present)(int boot_cpu_physical_apicid);
- 	void (*enable_apic_mode)(void);
- 	int (*phys_pkg_id)(int cpuid_apic, int index_msb);
 diff --git a/arch/x86/kernel/bigsmp_32.c b/arch/x86/kernel/bigsmp_32.c
-index 9c1e464..e3d31ae 100644
+index 85d72ee..9c1e464 100644
 --- a/arch/x86/kernel/bigsmp_32.c
 +++ b/arch/x86/kernel/bigsmp_32.c
-@@ -232,7 +232,6 @@ struct genapic apic_bigsmp = {
+@@ -228,7 +228,6 @@ struct genapic apic_bigsmp = {
+ 
+ 	.ioapic_phys_id_map		= bigsmp_ioapic_phys_id_map,
+ 	.setup_apic_routing		= bigsmp_setup_apic_routing,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= bigsmp_apicid_to_node,
  	.cpu_to_logical_apicid		= bigsmp_cpu_to_logical_apicid,
  	.cpu_present_to_apicid		= bigsmp_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= bigsmp_apicid_to_cpu_present,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= bigsmp_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= bigsmp_phys_pkg_id,
 diff --git a/arch/x86/kernel/es7000_32.c b/arch/x86/kernel/es7000_32.c
-index 5e1c4aa..b50f0f5 100644
+index 770205b..5e1c4aa 100644
 --- a/arch/x86/kernel/es7000_32.c
 +++ b/arch/x86/kernel/es7000_32.c
-@@ -768,7 +768,6 @@ struct genapic apic_es7000 = {
+@@ -764,7 +764,6 @@ struct genapic apic_es7000 = {
+ 
+ 	.ioapic_phys_id_map		= es7000_ioapic_phys_id_map,
+ 	.setup_apic_routing		= es7000_setup_apic_routing,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= es7000_apicid_to_node,
  	.cpu_to_logical_apicid		= es7000_cpu_to_logical_apicid,
  	.cpu_present_to_apicid		= es7000_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= es7000_apicid_to_cpu_present,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= es7000_check_phys_apicid_present,
- 	.enable_apic_mode		= es7000_enable_apic_mode,
- 	.phys_pkg_id			= es7000_phys_pkg_id,
 diff --git a/arch/x86/kernel/genapic_flat_64.c b/arch/x86/kernel/genapic_flat_64.c
-index 6a00ea8..d85b7fc 100644
+index b42e724..6a00ea8 100644
 --- a/arch/x86/kernel/genapic_flat_64.c
 +++ b/arch/x86/kernel/genapic_flat_64.c
-@@ -202,7 +202,6 @@ struct genapic apic_flat =  {
+@@ -198,7 +198,6 @@ struct genapic apic_flat =  {
+ 
+ 	.ioapic_phys_id_map		= NULL,
+ 	.setup_apic_routing		= NULL,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= NULL,
  	.cpu_to_logical_apicid		= NULL,
  	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= NULL,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= flat_phys_pkg_id,
-@@ -344,7 +343,6 @@ struct genapic apic_physflat =  {
+@@ -341,7 +340,6 @@ struct genapic apic_physflat =  {
+ 
+ 	.ioapic_phys_id_map		= NULL,
+ 	.setup_apic_routing		= NULL,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= NULL,
  	.cpu_to_logical_apicid		= NULL,
  	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= NULL,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= flat_phys_pkg_id,
 diff --git a/arch/x86/kernel/genx2apic_cluster.c b/arch/x86/kernel/genx2apic_cluster.c
-index 7e01834..9fc9582 100644
+index 6cccd3a..7e01834 100644
 --- a/arch/x86/kernel/genx2apic_cluster.c
 +++ b/arch/x86/kernel/genx2apic_cluster.c
-@@ -207,7 +207,6 @@ struct genapic apic_x2apic_cluster = {
+@@ -203,7 +203,6 @@ struct genapic apic_x2apic_cluster = {
+ 
+ 	.ioapic_phys_id_map		= NULL,
+ 	.setup_apic_routing		= NULL,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= NULL,
  	.cpu_to_logical_apicid		= NULL,
  	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= NULL,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= x2apic_cluster_phys_pkg_id,
 diff --git a/arch/x86/kernel/genx2apic_phys.c b/arch/x86/kernel/genx2apic_phys.c
-index b92d60b..04fb617 100644
+index 17ff29a..b92d60b 100644
 --- a/arch/x86/kernel/genx2apic_phys.c
 +++ b/arch/x86/kernel/genx2apic_phys.c
-@@ -193,7 +193,6 @@ struct genapic apic_x2apic_phys = {
+@@ -189,7 +189,6 @@ struct genapic apic_x2apic_phys = {
+ 
+ 	.ioapic_phys_id_map		= NULL,
+ 	.setup_apic_routing		= NULL,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= NULL,
  	.cpu_to_logical_apicid		= NULL,
  	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= NULL,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= x2apic_phys_pkg_id,
 diff --git a/arch/x86/kernel/genx2apic_uv_x.c b/arch/x86/kernel/genx2apic_uv_x.c
-index 6394b0e..ac0e23b 100644
+index d46531d..6394b0e 100644
 --- a/arch/x86/kernel/genx2apic_uv_x.c
 +++ b/arch/x86/kernel/genx2apic_uv_x.c
-@@ -266,7 +266,6 @@ struct genapic apic_x2apic_uv_x = {
+@@ -262,7 +262,6 @@ struct genapic apic_x2apic_uv_x = {
+ 
+ 	.ioapic_phys_id_map		= NULL,
+ 	.setup_apic_routing		= NULL,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= NULL,
  	.cpu_to_logical_apicid		= NULL,
  	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= NULL,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= uv_phys_pkg_id,
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index 3378ffb..9a3e66f 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -1602,14 +1602,6 @@ static void __init setup_IO_APIC_irqs(void)
+ 
+ 			irq = pin_2_irq(idx, apic_id, pin);
+ 
+-			/*
+-			 * Skip the timer IRQ if there's a quirk handler
+-			 * installed and if it returns 1:
+-			 */
+-			if (apic->multi_timer_check &&
+-					apic->multi_timer_check(apic_id, irq))
+-				continue;
+-
+ 			desc = irq_to_desc_alloc_cpu(irq, cpu);
+ 			if (!desc) {
+ 				printk(KERN_INFO "can not get irq_desc for %d\n", irq);
 diff --git a/arch/x86/kernel/numaq_32.c b/arch/x86/kernel/numaq_32.c
-index 73ce5ef..9c9b3c7 100644
+index 07954d1..73ce5ef 100644
 --- a/arch/x86/kernel/numaq_32.c
 +++ b/arch/x86/kernel/numaq_32.c
-@@ -510,19 +510,6 @@ static void numaq_vector_allocation_domain(int cpu, cpumask_t *retmask)
- 	*retmask = (cpumask_t){ { [0] = APIC_ALL_CPUS, } };
+@@ -415,15 +415,6 @@ static inline void numaq_setup_apic_routing(void)
+ 		"NUMA-Q", nr_ioapics);
  }
  
--static void numaq_setup_portio_remap(void)
+-/*
+- * Skip adding the timer int on secondary nodes, which causes
+- * a small but painful rift in the time-space continuum.
+- */
+-static inline int numaq_multi_timer_check(int apic, int irq)
 -{
--	int num_quads = num_online_nodes();
--
--	if (num_quads <= 1)
--       		return;
--
--	printk("Remapping cross-quad port I/O for %d quads\n", num_quads);
--	xquad_portio = ioremap(XQUAD_PORTIO_BASE, num_quads*XQUAD_PORTIO_QUAD);
--	printk("xquad_portio vaddr 0x%08lx, len %08lx\n",
--		(u_long) xquad_portio, (u_long) num_quads*XQUAD_PORTIO_QUAD);
+-	return apic != 0 && irq == 0;
 -}
 -
- struct genapic apic_numaq = {
+ static inline physid_mask_t numaq_ioapic_phys_id_map(physid_mask_t phys_map)
+ {
+ 	/* We don't have a good way to do this yet - hack */
+@@ -554,7 +545,6 @@ struct genapic apic_numaq = {
  
- 	.name				= "NUMAQ",
-@@ -549,7 +536,6 @@ struct genapic apic_numaq = {
+ 	.ioapic_phys_id_map		= numaq_ioapic_phys_id_map,
+ 	.setup_apic_routing		= numaq_setup_apic_routing,
+-	.multi_timer_check		= numaq_multi_timer_check,
+ 	.apicid_to_node			= numaq_apicid_to_node,
  	.cpu_to_logical_apicid		= numaq_cpu_to_logical_apicid,
  	.cpu_present_to_apicid		= numaq_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= numaq_apicid_to_cpu_present,
--	.setup_portio_remap		= numaq_setup_portio_remap,
- 	.check_phys_apicid_present	= numaq_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= numaq_phys_pkg_id,
 diff --git a/arch/x86/kernel/probe_32.c b/arch/x86/kernel/probe_32.c
-index c296fb4..905295e 100644
+index e96b6b2..c296fb4 100644
 --- a/arch/x86/kernel/probe_32.c
 +++ b/arch/x86/kernel/probe_32.c
-@@ -98,7 +98,6 @@ struct genapic apic_default = {
+@@ -94,7 +94,6 @@ struct genapic apic_default = {
+ 
+ 	.ioapic_phys_id_map		= default_ioapic_phys_id_map,
+ 	.setup_apic_routing		= default_setup_apic_routing,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= default_apicid_to_node,
  	.cpu_to_logical_apicid		= default_cpu_to_logical_apicid,
  	.cpu_present_to_apicid		= default_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= default_apicid_to_cpu_present,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= default_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= default_phys_pkg_id,
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index a04b219..f479bba 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -1120,9 +1120,6 @@ void __init native_smp_prepare_cpus(unsigned int max_cpus)
- 
- 	map_cpu_to_logical_apicid();
- 
--	if (apic->setup_portio_remap)
--		apic->setup_portio_remap();
--
- 	smpboot_setup_io_apic();
- 	/*
- 	 * Set up local APIC timer on boot CPU.
 diff --git a/arch/x86/kernel/summit_32.c b/arch/x86/kernel/summit_32.c
-index dbb7206..f0dde1c 100644
+index 7b7eeb6..dbb7206 100644
 --- a/arch/x86/kernel/summit_32.c
 +++ b/arch/x86/kernel/summit_32.c
-@@ -568,7 +568,6 @@ struct genapic apic_summit = {
+@@ -564,7 +564,6 @@ struct genapic apic_summit = {
+ 
+ 	.ioapic_phys_id_map		= summit_ioapic_phys_id_map,
+ 	.setup_apic_routing		= summit_setup_apic_routing,
+-	.multi_timer_check		= NULL,
+ 	.apicid_to_node			= summit_apicid_to_node,
  	.cpu_to_logical_apicid		= summit_cpu_to_logical_apicid,
  	.cpu_present_to_apicid		= summit_cpu_present_to_apicid,
- 	.apicid_to_cpu_present		= summit_apicid_to_cpu_present,
--	.setup_portio_remap		= NULL,
- 	.check_phys_apicid_present	= summit_check_phys_apicid_present,
- 	.enable_apic_mode		= NULL,
- 	.phys_pkg_id			= summit_phys_pkg_id,
 -- 
 1.5.6.5
 
