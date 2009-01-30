@@ -1,91 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbZA3M4D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755353AbZA3M5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbZA3M4D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 07:56:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752201AbZA3Mzx
+	id S1755353AbZA3M5i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 07:57:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbZA3M5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 07:55:53 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:65349 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752173AbZA3Mzw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 07:55:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=jmwiGB/uwneRfpIqeiEgpzCEAaEh9sueszwXNusFd4wtTLiYvT7a8zRCMIIwkd0ian
-         v3ppgMHSiYvaIDCZsHhaBZlq6Maw43HiyFUw80c/mQEd8PRVax7wTIxX7B/RHWucAck0
-         EVzwcPw+C+Utju1TkCe5YOmpHiWj0+cJ1G+Tk=
+	Fri, 30 Jan 2009 07:57:31 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:18343 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752412AbZA3M5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 07:57:30 -0500
+Date: Fri, 30 Jan 2009 13:55:40 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH -v3] use per cpu data for single cpu ipi calls
+Message-ID: <20090130125540.GS30821@kernel.dk>
+References: <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain> <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain> <1233253380.4495.123.camel@laptop> <alpine.LFD.2.00.0901291030510.3123@localhost.localdomain> <1233254680.4495.126.camel@laptop> <20090130112310.GI30821@kernel.dk> <1233318733.4495.174.camel@laptop> <20090130123858.GQ30821@kernel.dk> <1233319731.4495.177.camel@laptop>
 MIME-Version: 1.0
-In-Reply-To: <20090130123916.GR627@ghostprotocols.net>
-References: <4982c159.190c660a.7424.ffffabf9@mx.google.com>
-	 <20090130123446.GQ627@ghostprotocols.net>
-	 <20090130123916.GR627@ghostprotocols.net>
-Date: Fri, 30 Jan 2009 13:55:50 +0100
-Message-ID: <c62985530901300455h55695931nb67936e0e5b54aeb@mail.gmail.com>
-Subject: Re: [PATCH] tracing/ftrace: better manage the context info for events
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233319731.4495.177.camel@laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/1/30 Arnaldo Carvalho de Melo <acme@ghostprotocols.net>:
-> Em Fri, Jan 30, 2009 at 10:34:46AM -0200, Arnaldo Carvalho de Melo escreveu:
->> Em Fri, Jan 30, 2009 at 12:59:05AM -0800, Frederic Weisbecker escreveu:
->> > Impact: make trace_event more convenient for tracers
->> >
->> > All tracers (for the moment) that use the struct trace_event want to have
->> > the context info printed before their own output: the pid/cmdline, cpu, and timestamp.
->> >
->> > But some other tracers that want to implement their trace_event callbacks will
->> > not necessary need these information or they may want to format them as they want.
->> >
->> > This patch adds a new default-enabled trace option: TRACE_ITER_CONTEXT_INFO
->> > When disabled through:
->> >
->> > echo nocontext-info > /debugfs/tracing/trace_options
->> >
->> > The pid, cpu and timestamps headers will not be printed.
->> >
->> > IE with the sched_switch tracer with context-info (default):
->> >
->> >             bash-2935  [001]   100.356561:   2935:120:S ==> [001]     0:140:R <idle>
->> >           <idle>-0     [000]   100.412804:      0:140:R   + [000]    11:115:S events/0
->> >           <idle>-0     [000]   100.412816:      0:140:R ==> [000]    11:115:R events/0
->> >         events/0-11    [000]   100.412829:     11:115:S ==> [000]     0:140:R <idle>
->> >
->> > Without context-info:
->> >
->> >   2935:120:S ==> [001]     0:140:R <idle>
->> >      0:140:R   + [000]    11:115:S events/0
->> >      0:140:R ==> [000]    11:115:R events/0
->> >     11:115:S ==> [000]     0:140:R <idle>
->> >
->> > A tracer can disable it at runtime by clearing the bit TRACE_ITER_CONTEXT_INFO in trace_flags.
->> >
->> > Moreover, two callbacks have been added inside trace_event:
->> > _ context_info() which let a tracer override the format of the context info
->> > _ lat_context_info() which do the same with the latency_trace file
->> >
->> > If they are not defined, the usual way of printing the context info will be used.
->>
->> Please wait a bit, I'm trying to use it and the first thing I notice was
->> that I need the trace_iterator in the context callback, to get the
->> timestamp.
->
-> Sorry, false alarm, the iterator is there, I was trying to build the
-> whole binary trace record in the trace_event->bin(), but its not
-> possible, so I'll do it in two function calls context + trace.
->
-> - Arnaldo
->
+On Fri, Jan 30 2009, Peter Zijlstra wrote:
+> On Fri, 2009-01-30 at 13:38 +0100, Jens Axboe wrote:
+> 
+> > >  		if (!wait) {
+> > > +			/*
+> > > +			 * We are calling a function on a single CPU
+> > > +			 * and we are not going to wait for it to finish.
+> > > +			 * We first try to allocate the data, but if we
+> > > +			 * fail, we fall back to use a per cpu data to pass
+> > > +			 * the information to that CPU. Since all callers
+> > > +			 * of this code will use the same data, we must
+> > > +			 * synchronize the callers to prevent a new caller
+> > > +			 * from corrupting the data before the callee
+> > > +			 * can access it.
+> > > +			 *
+> > > +			 * The CSD_FLAG_LOCK is used to let us know when
+> > > +			 * the IPI handler is done with the data.
+> > > +			 * The first caller will set it, and the callee
+> > > +			 * will clear it. The next caller must wait for
+> > > +			 * it to clear before we set it again. This
+> > > +			 * will make sure the callee is done with the
+> > > +			 * data before a new caller will use it.
+> > > +			 * We use spinlocks to manage the callers.
+> > > +			 */
+> > 
+> > That last sentence appears stale now, since there's no locking involved
+> > for the per-cpu csd.
+> 
+> Gah, I edited that, and generated the patch using
+> 
+> # git diff --stat -p 4f4b6c1a94a8735bbdc030a2911cf395495645b6.. kernel/smp.c | xclip
+> 
+> on Ingo's tip/master. However it seems such a diff does not include
+> non-commited changes, even though a regular git diff does:
+> 
+> # git diff kernel/smp.c
+> diff --git a/kernel/smp.c b/kernel/smp.c
+> index 9eead6c..bbedbb7 100644
+> --- a/kernel/smp.c
+> +++ b/kernel/smp.c
+> @@ -251,7 +251,6 @@ int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+>                          * it to clear before we set it again. This
+>                          * will make sure the callee is done with the
+>                          * data before a new caller will use it.
+> -                        * We use spinlocks to manage the callers.
+>                          */
+>                         data = kmalloc(sizeof(*data), GFP_ATOMIC);
+>                         if (data)
+> 
+> What is the recommended way to do such a diff?
 
-Do you need the trace_iterator from one of your event print callback?
-Such as in bin() ?
+Drop the .. and it should work. Don't ask me why :-)
+
+-- 
+Jens Axboe
+
