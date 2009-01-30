@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754633AbZA3F5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754989AbZA3F7O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754633AbZA3F5f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 00:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZA3F51
+	id S1754989AbZA3F7O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 00:59:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZA3F67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 00:57:27 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:40056 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbZA3F50 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 00:57:26 -0500
-Date: Thu, 29 Jan 2009 22:57:24 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org
-Subject: Re: [PATCH A 01/10] OMAP2/3: Add non-CORE DPLL rate set code and M,
- N programming
-In-Reply-To: <20090129142303.GA18233@n2100.arm.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0901292255530.26985@utopia.booyaka.com>
-References: <20090128020447.7244.80496.stgit@localhost.localdomain> <20090128021243.7244.6362.stgit@localhost.localdomain> <20090129142303.GA18233@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 30 Jan 2009 00:58:59 -0500
+Received: from mx2.suse.de ([195.135.220.15]:35563 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751092AbZA3F66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 00:58:58 -0500
+Date: Thu, 29 Jan 2009 21:56:39 -0800
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent
+	VM_LOCKED file segments
+Message-ID: <20090130055639.GA30950@suse.de>
+References: <bb4a86c70901281151w4300605r3882461cd6e9774a@mail.gmail.com> <alpine.LFD.2.00.0901281316450.3123@localhost.localdomain> <1233259410.2315.75.camel@lts-notebook> <alpine.LFD.2.00.0901291228250.3123@localhost.localdomain> <alpine.LFD.2.00.0901291245170.3054@localhost.localdomain> <bb4a86c70901291447k5c5e90cfg34877b745825f5e2@mail.gmail.com> <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901291806340.3054@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009, Russell King - ARM Linux wrote:
-
-> On Tue, Jan 27, 2009 at 07:12:47PM -0700, Paul Walmsley wrote:
-> > +/* Non-CORE DPLL rate set code */
-> > +
-> > +/*
-> > + * omap3_noncore_dpll_program - set non-core DPLL M,N values directly
-> > + * @clk: struct clk * of DPLL to set
-> > + * @m: DPLL multiplier to set
-> > + * @n: DPLL divider to set
-> > + * @freqsel: FREQSEL value to set
-> > + *
-> > + * Program the DPLL with the supplied M, N values, and wait for the DPLL to
-> > + * lock..  Returns -EINVAL upon error, or 0 upon success.
-> > + */
-> > +static int omap3_noncore_dpll_program(struct clk *clk, u16 m, u8 n, u16 freqsel)
-> > +{
-> > +	struct dpll_data *dd;
-> > +	u32 v;
-> > +
-> > +	if (!clk)
-> > +		return -EINVAL;
-> > +
-> > +	dd = clk->dpll_data;
-> > +	if (!dd)
-> > +		return -EINVAL;
+On Thu, Jan 29, 2009 at 06:08:30PM -0800, Linus Torvalds wrote:
 > 
-> Final point... this is only called from the function below, which also
-> checks that clk and clk->dpll_data are both non-NULL.  So these checks
-> are unnecessary.
+> 
+> On Thu, 29 Jan 2009, Maksim Yevmenkin wrote:
+> > 
+> > Just to confirm. This patch also appear to fix the immediate issue for us.
+> 
+> Ok, I ended up committing it.
+> 
+> I didn't do the whole "Cc: stable@kernel.org" thing, because maybe the 
+> non-cleanup version is less controversial for stable, but I decided that 
+> there's no way I don't want the cleanup done in mainline kernel, and if we 
+> end up needing a few VM_IO's added, I think it's worth it. Even after -rc3 
+> (since I suspend we won't actually need them).
 
-Okay.  Do you want to take care of that in your merged version of this 
-patch, or would you like me to send an updated version, along with that 
-custom dpll4 set_rate function?
+Which version was the "non-cleanup" version that should be added to the
+stable trees?
 
+The commit you did make, de33c8db5910cda599899dd431cc30d7c1018cbf,
+seemed pretty "tiny" to me.
 
-- Paul
+confused,
+
+greg k-h
