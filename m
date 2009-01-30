@@ -1,40 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZA3QQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZA3QWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbZA3QQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 11:16:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZA3QQ1
+	id S1753834AbZA3QWO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 11:22:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZA3QV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 11:16:27 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36943 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbZA3QQ1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 11:16:27 -0500
-Subject: Re: [PATCH -v3] use per cpu data for single cpu ipi calls
-From: Peter Zijlstra <peterz@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0901300800350.3150@localhost.localdomain>
-References: <alpine.DEB.1.10.0901281916400.9203@gandalf.stny.rr.com>
-	 <20090128173039.cbc29e81.akpm@linux-foundation.org>
-	 <1233218954.7835.11.camel@twins>
-	 <alpine.DEB.1.10.0901290958170.13065@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain>
-	 <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com>
-	 <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain>
-	 <1233253380.4495.123.camel@laptop>
-	 <alpine.LFD.2.00.0901291030510.3123@localhost.localdomain>
-	 <1233254680.4495.126.camel@laptop>  <20090130112310.GI30821@kernel.dk>
-	 <1233318733.4495.174.camel@laptop>
-	 <alpine.LFD.2.00.0901300800350.3150@localhost.localdomain>
+	Fri, 30 Jan 2009 11:21:59 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:34892 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751921AbZA3QV6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 11:21:58 -0500
+Subject: [PATCH 1/1] Add enable_ms to jsm driver
+From: Paul Larson <pl@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@linux-foundation.org, Scott.Kilau@digi.com
 Content-Type: text/plain
-Date: Fri, 30 Jan 2009 17:16:10 +0100
-Message-Id: <1233332170.4495.200.camel@laptop>
+Date: Fri, 30 Jan 2009 10:21:49 -0600
+Message-Id: <1233332509.8792.4.camel@plap>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -42,36 +23,42 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 08:04 -0800, Linus Torvalds wrote:
 
-> My only question is whetherr we might even drop the kmalloc() some day: 
-> I suspect that the CSD_FLAG_LOCK is essentially never a contention point, 
-> and the cost (and occasional synchronization) of kmalloc() quite possibly 
-> overwhelms any theoretical scaling ability.
+This fixes a crash observed when non-existant enable_ms function is
+called for jsm driver.
 
-IIRC the recent SL*B numbers posted showed that a kmalloc could be as
-cheap as ~100 cycles or something. IPIs are sadly still a bit more
-expensive.
+Signed-off-by: Scott Kilau <Scott.Kilau@digi.com>
+Signed-off-by: Paul Larson <pl@linux.vnet.ibm.com>
+---
+ drivers/serial/jsm/jsm_tty.c |    6 ++++++
+ 1 files changed, 6 insertions(+), 0 deletions(-)
 
-> If another CPU hasn't even received its IPI before the same CPU sends the 
-> next one, I'm not sure we _want_ to send one, in fact.
+diff --git a/drivers/serial/jsm/jsm_tty.c b/drivers/serial/jsm/jsm_tty.c
+index 3547558..324c74d 100644
+--- a/drivers/serial/jsm/jsm_tty.c
++++ b/drivers/serial/jsm/jsm_tty.c
+@@ -161,6 +161,11 @@ static void jsm_tty_stop_rx(struct uart_port *port)
+ 	channel->ch_bd->bd_ops->disable_receiver(channel);
+ }
+ 
++static void jsm_tty_enable_ms(struct uart_port *port)
++{
++	/* Nothing needed */
++}
++
+ static void jsm_tty_break(struct uart_port *port, int break_state)
+ {
+ 	unsigned long lock_flags;
+@@ -345,6 +350,7 @@ static struct uart_ops jsm_ops = {
+ 	.start_tx	= jsm_tty_start_tx,
+ 	.send_xchar	= jsm_tty_send_xchar,
+ 	.stop_rx	= jsm_tty_stop_rx,
++	.enable_ms	= jsm_tty_enable_ms,
+ 	.break_ctl	= jsm_tty_break,
+ 	.startup	= jsm_tty_open,
+ 	.shutdown	= jsm_tty_close,
+-- 
 
-I think the intent was to re-route IO-completion interrupts to whatever
-cpu/node issued the IO with the idea that that cpu/node has the page
-hottest etc. and transferring the completion is cheaper than bouncing
-the page.
 
-Since that would be relaying hardware interrupts, there's nothing much
-you can do about the rate, or something, that's up to the firmware on
-$$$ scsi thing.
 
-But Jens already said that that path was using the __ variant and
-providing its own csds, the kmalloc isn't needed there, so it might all
-be moot.
-
-> But that's a secondary issue, and isn't a correctness thing, just a "do we 
-> really need three different allocations?" musing..
-
-Nick, Jens, I was under the presumption that the kmalloc was needed for
-something other than failing to deadlock, happen to remember what?
 
