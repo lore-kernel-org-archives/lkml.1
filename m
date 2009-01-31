@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZAaDCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759166AbZAaDCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbZAaDCO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:02:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZAaCrY
+	id S1759166AbZAaDCe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:02:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZAaCr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:24 -0500
-Received: from kroah.org ([198.145.64.141]:55234 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:26 -0500
+Received: from kroah.org ([198.145.64.141]:55246 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756576AbZAaCrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:15 -0500
-Date: Fri, 30 Jan 2009 18:42:31 -0800
+	id S1756634AbZAaCrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:16 -0500
+Date: Fri, 30 Jan 2009 18:42:33 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 09/43] sysfs: fix problems with binary files
-Message-ID: <20090131024231.GJ12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 10/43] x86: fix page attribute corruption with cpa()
+Message-ID: <20090131024233.GK12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sysfs-fix-problems-with-binary-files.patch"
+Content-Disposition: inline; filename="x86-fix-page-attribute-corruption-with-cpa.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,43 +41,130 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Greg Kroah-Hartman <gregkh@suse.de>
+From: Suresh Siddha <suresh.b.siddha@intel.com>
 
-commit 4503efd0891c40e30928afb4b23dc3f99c62a6b2 upstream.
+commit a1e46212a410793d575718818e81ddc442a65283 upstream.
 
-Some sysfs binary files don't like having 0 passed to them as a size.
-Fix this up at the root by just returning to the vfs if userspace asks
-us for a zero sized buffer.
+Impact: fix sporadic slowdowns and warning messages
 
-Thanks to Pavel Roskin for pointing this out.
+This patch fixes a performance issue reported by Linus on his
+Nehalem system. While Linus reverted the PAT patch (commit
+58dab916dfb57328d50deb0aa9b3fc92efa248ff) which exposed the issue,
+existing cpa() code can potentially still cause wrong(page attribute
+corruption) behavior.
 
-Reported-by: Pavel Roskin <proski@gnu.org>
+This patch also fixes the "WARNING: at arch/x86/mm/pageattr.c:560" that
+various people reported.
+
+In 64bit kernel, kernel identity mapping might have holes depending
+on the available memory and how e820 reports the address range
+covering the RAM, ACPI, PCI reserved regions. If there is a 2MB/1GB hole
+in the address range that is not listed by e820 entries, kernel identity
+mapping will have a corresponding hole in its 1-1 identity mapping.
+
+If cpa() happens on the kernel identity mapping which falls into these holes,
+existing code fails like this:
+
+	__change_page_attr_set_clr()
+		__change_page_attr()
+			returns 0 because of if (!kpte). But doesn't
+			set cpa->numpages and cpa->pfn.
+		cpa_process_alias()
+			uses uninitialized cpa->pfn (random value)
+			which can potentially lead to changing the page
+			attribute of kernel text/data, kernel identity
+			mapping of RAM pages etc. oops!
+
+This bug was easily exposed by another PAT patch which was doing
+cpa() more often on kernel identity mapping holes (physical range between
+max_low_pfn_mapped and 4GB), where in here it was setting the
+cache disable attribute(PCD) for kernel identity mappings aswell.
+
+Fix cpa() to handle the kernel identity mapping holes. Retain
+the WARN() for cpa() calls to other not present address ranges
+(kernel-text/data, ioremap() addresses)
+
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/sysfs/bin.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/x86/mm/pageattr.c |   49 ++++++++++++++++++++++++++++++++++---------------
+ 1 file changed, 34 insertions(+), 15 deletions(-)
 
---- a/fs/sysfs/bin.c
-+++ b/fs/sysfs/bin.c
-@@ -63,6 +63,9 @@ read(struct file *file, char __user *use
- 	int count = min_t(size_t, bytes, PAGE_SIZE);
- 	char *temp;
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -534,6 +534,36 @@ out_unlock:
+ 	return 0;
+ }
  
-+	if (!bytes)
++static int __cpa_process_fault(struct cpa_data *cpa, unsigned long vaddr,
++			       int primary)
++{
++	/*
++	 * Ignore all non primary paths.
++	 */
++	if (!primary)
 +		return 0;
 +
- 	if (size) {
- 		if (offs > size)
- 			return 0;
-@@ -131,6 +134,9 @@ static ssize_t write(struct file *file, 
- 	int count = min_t(size_t, bytes, PAGE_SIZE);
- 	char *temp;
- 
-+	if (!bytes)
++	/*
++	 * Ignore the NULL PTE for kernel identity mapping, as it is expected
++	 * to have holes.
++	 * Also set numpages to '1' indicating that we processed cpa req for
++	 * one virtual address page and its pfn. TBD: numpages can be set based
++	 * on the initial value and the level returned by lookup_address().
++	 */
++	if (within(vaddr, PAGE_OFFSET,
++		   PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT))) {
++		cpa->numpages = 1;
++		cpa->pfn = __pa(vaddr) >> PAGE_SHIFT;
 +		return 0;
++	} else {
++		WARN(1, KERN_WARNING "CPA: called for zero pte. "
++			"vaddr = %lx cpa->vaddr = %lx\n", vaddr,
++			*cpa->vaddr);
 +
- 	if (size) {
- 		if (offs > size)
- 			return 0;
++		return -EFAULT;
++	}
++}
++
+ static int __change_page_attr(struct cpa_data *cpa, int primary)
+ {
+ 	unsigned long address;
+@@ -549,17 +579,11 @@ static int __change_page_attr(struct cpa
+ repeat:
+ 	kpte = lookup_address(address, &level);
+ 	if (!kpte)
+-		return 0;
++		return __cpa_process_fault(cpa, address, primary);
+ 
+ 	old_pte = *kpte;
+-	if (!pte_val(old_pte)) {
+-		if (!primary)
+-			return 0;
+-		WARN(1, KERN_WARNING "CPA: called for zero pte. "
+-		       "vaddr = %lx cpa->vaddr = %lx\n", address,
+-		       *cpa->vaddr);
+-		return -EINVAL;
+-	}
++	if (!pte_val(old_pte))
++		return __cpa_process_fault(cpa, address, primary);
+ 
+ 	if (level == PG_LEVEL_4K) {
+ 		pte_t new_pte;
+@@ -657,12 +681,7 @@ static int cpa_process_alias(struct cpa_
+ 		vaddr = *cpa->vaddr;
+ 
+ 	if (!(within(vaddr, PAGE_OFFSET,
+-		    PAGE_OFFSET + (max_low_pfn_mapped << PAGE_SHIFT))
+-#ifdef CONFIG_X86_64
+-		|| within(vaddr, PAGE_OFFSET + (1UL<<32),
+-		    PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT))
+-#endif
+-	)) {
++		    PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT)))) {
+ 
+ 		alias_cpa = *cpa;
+ 		temp_cpa_vaddr = (unsigned long) __va(cpa->pfn << PAGE_SHIFT);
 
