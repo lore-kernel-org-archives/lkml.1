@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZAaCx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbZAaCw5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZAaCx3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:53:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbZAaCqz
+	id S1759382AbZAaCw5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:52:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbZAaCqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:55 -0500
-Received: from kroah.org ([198.145.64.141]:54890 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:54 -0500
+Received: from kroah.org ([198.145.64.141]:54882 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754994AbZAaCqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:51 -0500
-Date: Fri, 30 Jan 2009 18:40:20 -0800
+	id S1754957AbZAaCqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:50 -0500
+Date: Fri, 30 Jan 2009 18:40:18 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Luke Yelavich <themuso@ubuntu.com>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 18/32] ALSA: hda - add another MacBook Pro 4, 1 subsystem ID
-Message-ID: <20090131024020.GS12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Pete Zaitcev <zaitcev@redhat.com>
+Subject: [patch 17/32] USB: usbmon: Implement compat_ioctl
+Message-ID: <20090131024018.GR12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-add-another-macbook-pro-4-1-subsystem-id.patch"
+Content-Disposition: inline; filename="usb-usbmon-implement-compat_ioctl.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,29 +39,174 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Luke Yelavich <themuso@ubuntu.com>
+From: Pete Zaitcev <zaitcev@redhat.com>
 
-commit 2a88464ceb1bda2571f88902fd8068a6168e3f7b upstream.
+commit 7abce6bedc118eb39fe177c2c26be5d008505c14 upstream.
 
-Add another MacBook Pro 4,1 SSID (106b:3800). It seems that latter revisions,
-(at least mine), have different IDs to earlier revisions.
+Running a 32-bit usbmon(8) on 2.6.28-rc9 produces the following:
+ioctl32(usbmon:28563): Unknown cmd fd(3) cmd(400c9206){t:ffffff92;sz:12} arg(ffd3f458) on /dev/usbmon0
 
-Signed-off-by: Luke Yelavich <themuso@ubuntu.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+It happens because the compatibility mode was implemented for 2.6.18
+and not updated for the fsops.compat_ioctl API.
+
+This patch relocates the pieces from under #ifdef CONFIG_COMPAT into
+compat_ioctl with no other changes except one new whitespace.
+
+Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_realtek.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/usb/mon/mon_bin.c |  105 ++++++++++++++++++++++++++++------------------
+ 1 file changed, 66 insertions(+), 39 deletions(-)
 
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -6631,6 +6631,7 @@ static int patch_alc882(struct hda_codec
- 		case 0x106b00a1: /* Macbook (might be wrong - PCI SSID?) */
- 		case 0x106b2c00: /* Macbook Pro rev3 */
- 		case 0x106b3600: /* Macbook 3.1 */
-+		case 0x106b3800: /* MacbookPro4,1 - latter revision */
- 			board_config = ALC885_MBP3;
- 			break;
- 		default:
+--- a/drivers/usb/mon/mon_bin.c
++++ b/drivers/usb/mon/mon_bin.c
+@@ -37,6 +37,7 @@
+ #define MON_IOCX_GET   _IOW(MON_IOC_MAGIC, 6, struct mon_bin_get)
+ #define MON_IOCX_MFETCH _IOWR(MON_IOC_MAGIC, 7, struct mon_bin_mfetch)
+ #define MON_IOCH_MFLUSH _IO(MON_IOC_MAGIC, 8)
++
+ #ifdef CONFIG_COMPAT
+ #define MON_IOCX_GET32 _IOW(MON_IOC_MAGIC, 6, struct mon_bin_get32)
+ #define MON_IOCX_MFETCH32 _IOWR(MON_IOC_MAGIC, 7, struct mon_bin_mfetch32)
+@@ -921,21 +922,6 @@ static int mon_bin_ioctl(struct inode *i
+ 		}
+ 		break;
+ 
+-#ifdef CONFIG_COMPAT
+-	case MON_IOCX_GET32: {
+-		struct mon_bin_get32 getb;
+-
+-		if (copy_from_user(&getb, (void __user *)arg,
+-					    sizeof(struct mon_bin_get32)))
+-			return -EFAULT;
+-
+-		ret = mon_bin_get_event(file, rp,
+-		    compat_ptr(getb.hdr32), compat_ptr(getb.data32),
+-		    getb.alloc32);
+-		}
+-		break;
+-#endif
+-
+ 	case MON_IOCX_MFETCH:
+ 		{
+ 		struct mon_bin_mfetch mfetch;
+@@ -962,7 +948,57 @@ static int mon_bin_ioctl(struct inode *i
+ 		}
+ 		break;
+ 
++	case MON_IOCG_STATS: {
++		struct mon_bin_stats __user *sp;
++		unsigned int nevents;
++		unsigned int ndropped;
++
++		spin_lock_irqsave(&rp->b_lock, flags);
++		ndropped = rp->cnt_lost;
++		rp->cnt_lost = 0;
++		spin_unlock_irqrestore(&rp->b_lock, flags);
++		nevents = mon_bin_queued(rp);
++
++		sp = (struct mon_bin_stats __user *)arg;
++		if (put_user(rp->cnt_lost, &sp->dropped))
++			return -EFAULT;
++		if (put_user(nevents, &sp->queued))
++			return -EFAULT;
++
++		}
++		break;
++
++	default:
++		return -ENOTTY;
++	}
++
++	return ret;
++}
++
+ #ifdef CONFIG_COMPAT
++static long mon_bin_compat_ioctl(struct file *file,
++    unsigned int cmd, unsigned long arg)
++{
++	struct mon_reader_bin *rp = file->private_data;
++	int ret;
++
++	switch (cmd) {
++
++	case MON_IOCX_GET32: {
++		struct mon_bin_get32 getb;
++
++		if (copy_from_user(&getb, (void __user *)arg,
++					    sizeof(struct mon_bin_get32)))
++			return -EFAULT;
++
++		ret = mon_bin_get_event(file, rp,
++		    compat_ptr(getb.hdr32), compat_ptr(getb.data32),
++		    getb.alloc32);
++		if (ret < 0)
++			return ret;
++		}
++		return 0;
++
+ 	case MON_IOCX_MFETCH32:
+ 		{
+ 		struct mon_bin_mfetch32 mfetch;
+@@ -986,37 +1022,25 @@ static int mon_bin_ioctl(struct inode *i
+ 			return ret;
+ 		if (put_user(ret, &uptr->nfetch32))
+ 			return -EFAULT;
+-		ret = 0;
+ 		}
+-		break;
+-#endif
+-
+-	case MON_IOCG_STATS: {
+-		struct mon_bin_stats __user *sp;
+-		unsigned int nevents;
+-		unsigned int ndropped;
+-
+-		spin_lock_irqsave(&rp->b_lock, flags);
+-		ndropped = rp->cnt_lost;
+-		rp->cnt_lost = 0;
+-		spin_unlock_irqrestore(&rp->b_lock, flags);
+-		nevents = mon_bin_queued(rp);
++		return 0;
+ 
+-		sp = (struct mon_bin_stats __user *)arg;
+-		if (put_user(rp->cnt_lost, &sp->dropped))
+-			return -EFAULT;
+-		if (put_user(nevents, &sp->queued))
+-			return -EFAULT;
++	case MON_IOCG_STATS:
++		return mon_bin_ioctl(NULL, file, cmd,
++					    (unsigned long) compat_ptr(arg));
+ 
+-		}
+-		break;
++	case MON_IOCQ_URB_LEN:
++	case MON_IOCQ_RING_SIZE:
++	case MON_IOCT_RING_SIZE:
++	case MON_IOCH_MFLUSH:
++		return mon_bin_ioctl(NULL, file, cmd, arg);
+ 
+ 	default:
+-		return -ENOTTY;
++		;
+ 	}
+-
+-	return ret;
++	return -ENOTTY;
+ }
++#endif /* CONFIG_COMPAT */
+ 
+ static unsigned int
+ mon_bin_poll(struct file *file, struct poll_table_struct *wait)
+@@ -1094,6 +1118,9 @@ static const struct file_operations mon_
+ 	/* .write =	mon_text_write, */
+ 	.poll =		mon_bin_poll,
+ 	.ioctl =	mon_bin_ioctl,
++#ifdef CONFIG_COMPAT
++	.compat_ioctl =	mon_bin_compat_ioctl,
++#endif
+ 	.release =	mon_bin_release,
+ 	.mmap =		mon_bin_mmap,
+ };
 
