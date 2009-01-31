@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZAaMQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZAaMSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZAaMQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 07:16:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZAaMQS
+	id S1753469AbZAaMSV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 07:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751746AbZAaMSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 07:16:18 -0500
-Received: from ozlabs.org ([203.10.76.45]:44935 "EHLO ozlabs.org"
+	Sat, 31 Jan 2009 07:18:04 -0500
+Received: from mba.ocn.ne.jp ([122.1.235.107]:55173 "EHLO smtp.mba.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751216AbZAaMQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 07:16:17 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
-Date: Sat, 31 Jan 2009 22:46:07 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Vitaliy Gusev <vgusev@openvz.org>, linux-kernel@vger.kernel.org
-References: <20090130123358.GA26216@redhat.com> <20090130125058.GA26931@redhat.com>
-In-Reply-To: <20090130125058.GA26931@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1751216AbZAaMSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 07:18:01 -0500
+Date: Sat, 31 Jan 2009 21:18:02 +0900 (JST)
+Message-Id: <20090131.211802.75185523.anemo@mba.ocn.ne.jp>
+To: g.liakhovetski@gmx.de
+Cc: dan.j.williams@intel.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, maciej.sosnowski@intel.com,
+       hskinnemoen@atmel.com, nicolas.ferre@atmel.com
+Subject: Re: [PATCH 07/13] dmaengine: introduce dma_request_channel and
+ private channels
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <Pine.LNX.4.64.0901310026200.4617@axis700.grange>
+References: <20090131.020300.82352947.anemo@mba.ocn.ne.jp>
+	<e9c3a7c20901301513v74953d7aj8533d05cddfa510@mail.gmail.com>
+	<Pine.LNX.4.64.0901310026200.4617@axis700.grange>
+X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
+X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
+X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901312246.07737.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 January 2009 23:20:58 Oleg Nesterov wrote:
-> On 01/30, Oleg Nesterov wrote:
-> >
-> > With this patch kthread() allocates all neccesary data (struct kthread)
-> > on its own stack, globals kthread_stop_xxx are deleted. ->vfork_done
-> > is used as a pointer into "struct kthread", this means kthread_stop()
-> > can easily wait for kthread's exit.
+On Sat, 31 Jan 2009 00:27:48 +0100 (CET), Guennadi Liakhovetski <g.liakhovetski@gmx.de> wrote:
+> > Register multiple dma_devices, the public one with a DMA_MEMCPY, and
+> > the fixed role devices with DMA_PRIVATE, DMA_MEMCPY, and DMA_SLAVE
+> > capabilities.
+> > 
+> > DMA_PRIVATE ensures that a channel is never considered for public consumption.
 > 
-> To simplify the review, please see the code with the patch applied.
+> Maybe just two dma-devices would suffice: one with the public memcpy 
+> channel, and one with the rest private slave channels?
 
-Hmm, I thought about using the parent-child relationship and fairly normal
-wait() semantics, but this looks simpler.
+Thank you, I will try this.
 
-> struct kthread {
-> 	int should_stop;
-> 	struct completion exited;
-> };
-
-Mildly prefer bool in new code.
-
-> #define to_kthread(tsk)	\
-> 	container_of((tsk)->vfork_done, struct kthread, exited)
-
-This needs a comment.  Especially since to_xxx(yyy) is usually simply a
-container_of(yyy, xxx, member).  This one is special.
-
-> int kthread_stop(struct task_struct *k)
-> {
-> 	struct kthread *kthread;
-> 	int ret;
-> 
-> 	trace_sched_kthread_stop(k);
-> 	get_task_struct(k);
-> 
-> 	kthread = to_kthread(k);
-> 	barrier(); /* it might have exited */
-> 	if (k->vfork_done != NULL) {
-> 		kthread->should_stop = 1;
-> 		wake_up_process(k);
-> 		wait_for_completion(&kthread->exited);
-> 	}
-> 	ret = k->exit_code;
-
-I don't think this works.  How does do_exit() preserve a stack var, other
-than for a few cycles longer?  Sure, the vfork_done will be OK, but this code
-here will not be.  I think you'd need a get_task_struct(current) before the
-do_exit(ret) (the case where the kthread fn calls do_exit() is fine: you're
-not allowed to call kthread stop on such threads).
-
-In which case using vfork_done is really just a convenience pointer inside
-struct task_struct to stash the struct kthread.  And that's horribly ugly, which is why I stuck with a simple global.  Changing to a linked-list of things to stop would avoid the deadlock you mentioned where a kthread stops another kthread.
-
-Thanks,
-Rusty.
+---
+Atsushi Nemoto
