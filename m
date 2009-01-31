@@ -1,31 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZAaNnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZAaNrH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752786AbZAaNnl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 08:43:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZAaNnd
+	id S1753788AbZAaNrH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 08:47:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZAaNqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 08:43:33 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:54621 "EHLO
+	Sat, 31 Jan 2009 08:46:55 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:53042 "EHLO
 	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751928AbZAaNnc (ORCPT
+	by vger.kernel.org with ESMTP id S1752147AbZAaNqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 08:43:32 -0500
-X-Sasl-enc: shE+IG56ijMNTfxTxUqpa8xVKqhF8PggneqIg0FwQY4w 1233409410
-Date: Sat, 31 Jan 2009 11:43:27 -0200
+	Sat, 31 Jan 2009 08:46:55 -0500
+X-Sasl-enc: zrUCpA5uC6EWIXioEo4F5LsUnXc/eEkVJgvSZzbz77tT 1233409614
+Date: Sat, 31 Jan 2009 11:46:51 -0200
 From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Tim Small <tim@buttersideup.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, ncunningham-lkml@crca.org.au,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Chris Friesen <cfriesen@nortel.com>, Pavel Machek <pavel@suse.cz>,
-       Doug Thompson <norsk5@yahoo.com>, bluesmoke-devel@lists.sourceforge.net,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: marching through all physical memory in software
-Message-ID: <20090131134327.GB28763@khazad-dum.debian.net>
-References: <715599.77204.qm@web50111.mail.re2.yahoo.com> <m1wscc7fop.fsf@fess.ebiederm.org> <49836114.1090209@buttersideup.com> <m1iqnw1676.fsf@fess.ebiederm.org> <4984489C.8020309@buttersideup.com>
+To: Manfred Wassmann <tux.wassmann@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Spurious Filesystem corruption with ext3 + large (<400GB) hw
+	RAID partition + SMP
+Message-ID: <20090131134651.GC28763@khazad-dum.debian.net>
+References: <6bd94bae0901310536l2cd42fa1off60ee066fa0096b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4984489C.8020309@buttersideup.com>
+In-Reply-To: <6bd94bae0901310536l2cd42fa1off60ee066fa0096b@mail.gmail.com>
 X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
 	1CDB 0FE3
 User-Agent: Mutt/1.5.18 (2008-05-17)
@@ -33,66 +30,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009, Tim Small wrote:
-> Eric W. Biederman wrote:
-> > At the point we are talking about software scrubbing it makes sense to assume
-> > a least common denominator memory controller, one that does not do automatic
-> > write-back of the corrected value, as all of the recent memory controllers
-> > do scrubbing in hardware.
-> >   
-> 
-> I was just trying to clarify the distinction between the two processes 
-> which have similar names, but aren't (IMO) actually that similar:
-> 
-> "Software Scrubbing"
-> 
-> Triggering a read, and subsequent rewrite of a particular RAM location 
-> which has suffered a correctable ECC error(s) i.e. hardware detects an 
-> error, then the OS takes care of the rewrite to "scrub" the error in the 
-> case that the hardware doesn't handle this automatically.
-> 
-> This should be a very-occasional error-path process, and performance is 
-> probably not critical..
-> 
-> 
-> "Background Scrubbing"
-> 
-> . This is a poor name, IMO (scrub infers some kind of write to me), 
-> which applies to a process whereby you ensure that the ECC check-bits 
-> are verified periodically for the whole of physical RAM, so that single 
-> bit errors in a given ECC block don't accumulate and turn into 
-> uncorrectable errors.  It may also lead to improved data collection for 
-> some failure modes.  Again, many memory controllers implement this 
-> feature in hardware, so we shouldn't do it twice where this is supported.
+On Sat, 31 Jan 2009, Manfred Wassmann wrote:
+> I'm experiencing spurious filesystem corruption problems with ext3 on
+> a partition larger than 400 GB on a hardware SATA RAID.
 
-It is implined in the background scrubbing, that if a background scrub
-page read causes an ECC correctable error to be flagged, the normal
-"fix through scrub" behaviour of the memory controller will be
-triggered (possibly, the software scrubbing described above).
+Please describe the SATA RAID hardware in a bit more detail.  Which
+SATA controller does it use?
 
-And if an uncorretable error is detected during the scrub, we have to
-do something about it as well.  And that won't be that easy: locate
-whatever process is using that page, and so something smart to it...
-or do some emergency evasive actions if it is one of the kernel's data
-scructures, etc.
+Also, have you made sure it is not caused by bad memory?
 
-So, as you said, "background scrubbing" and "software scrubbing" really are
-very different things, and one has to expect that background scrubbing will
-eventually trigger software scrubbing, major system emergency handling
-(uncorrectable errors in kernel memory) or minor system emergency
-handling (uncorrectable errors in process memory).
+> The problems first occured on an Intel dual core system with a custom
+> installation DVD which uses a 32 bit 2.6.26 kernel with SMP enabled
+> and a 4GB memory limit. The problems occured only randomly but it was
+> possible to reproduce them reliably with a standard Ubunu installation
+> disk using a 2.6.27-7 kernel (apparently also 32bit SMP kernel w 4GB
+> limit).
+> When installing Ubuntu a message appears in the kernel log stating:
+> "EXT3-fs error (device sda6): ext3_vlid_block_bitmap: Invalid block
+> bitmap - block_group = 3076, block = <some large number>"
+> This message is the first indication of any problem, the filesystem is
+> then remounted readonly and the installation stops understandably.
+> 
+> The problem does only occur with an ext3 filesystem, installation
+> using an xfs filesystem completes without error.
+> 
+> Furthermore with the installation from my custom installation DVD
+> succeeded, which installs a prebuild Debian etch system featuring a 64
+> bit monolithic 2.6.26 kernel, i was able to stress the system to its
+> limits using the stress and dbench programs without any sign of
+> filesystem corruption.
+> 
+> As XFS does substantially outperform ext3 under the given
+> circumstances I'm going to use that but if someone wants to
+> investigate the problem and needs further details I'll do my very best
+> ;-)
 
-> There is (AFAIK) no need to do any writes here, and in fact doing so is 
-
-One might want the possibility of doing inconditional writes, because
-it helps with memory bitrot on crappy hardware where the refresh
-cycles aren't enough to avoid bitrot.  But you definately won't want
-it most of the time.
-
-You can also implement software-based ECC using a background scrubber
-and setting aside pages to store the ECC information.  Now, THAT is
-probably not worth bothering with due to the performance impact, but
-who knows...
+Be careful.  XFS might not trigger the problem as readly, but it could
+still be there and you can suffer data loss.
 
 -- 
   "One disk to rule them all, One disk to find them. One disk to bring
