@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbZAaDIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760123AbZAaDIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762012AbZAaDIg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:08:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbZAaCrm
+	id S1760123AbZAaDIw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:08:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757314AbZAaCrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:42 -0500
-Received: from kroah.org ([198.145.64.141]:55464 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:43 -0500
+Received: from kroah.org ([198.145.64.141]:55477 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752998AbZAaCrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:33 -0500
-Date: Fri, 30 Jan 2009 18:43:06 -0800
+	id S1752921AbZAaCre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:34 -0500
+Date: Fri, 30 Jan 2009 18:43:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 26/43] ext3: Add sanity check to make_indexed_dir
-Message-ID: <20090131024306.GA12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 27/43] rtl8187: Fix error in setting OFDM power settings
+	for RTL8187L
+Message-ID: <20090131024309.GB12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ext3-add-sanity-check-to-make_indexed_dir.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="rtl8187-fix-error-in-setting-ofdm-power-settings-for-rtl8187l.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,67 +42,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Theodore Ts'o <tytso@mit.edu>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-commit a21102b55c4f8dfd3adb4a15a34cd62237b46039 upstream.
+commit eb83bbf57429ab80f49b413e3e44d3b19c3fdc5a upstream.
 
-Make sure the rec_len field in the '..' entry is sane, lest we overrun
-the directory block and cause a kernel oops on a purposefully
-corrupted filesystem.
+After reports of poor performance, a review of the latest vendor driver
+(rtl8187_linux_26.1025.0328.2007) for RTL8187L devices was undertaken.
 
-This fixes a bug related to a bug originally reported by Sami Liedes
-for ext4 at:
+A difference was found in the code used to index the OFDM power tables. When
+the Linux driver was changed, my unit works at a much greater range than
+before. I think this fixes Bugzilla #12380 and has been tested by at least
+two other users.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12430
-
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Tested-by: Martín Ernesto Barreyro <barreyromartin@gmail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ext3/namei.c |   20 ++++++++++++++------
- 1 file changed, 14 insertions(+), 6 deletions(-)
+ drivers/net/wireless/rtl8187_rtl8225.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
---- a/fs/ext3/namei.c
-+++ b/fs/ext3/namei.c
-@@ -1357,7 +1357,7 @@ static int make_indexed_dir(handle_t *ha
- 	struct fake_dirent *fde;
+--- a/drivers/net/wireless/rtl8187_rtl8225.c
++++ b/drivers/net/wireless/rtl8187_rtl8225.c
+@@ -287,7 +287,10 @@ static void rtl8225_rf_set_tx_power(stru
+ 	ofdm_power = priv->channels[channel - 1].hw_value >> 4;
  
- 	blocksize =  dir->i_sb->s_blocksize;
--	dxtrace(printk("Creating index\n"));
-+	dxtrace(printk(KERN_DEBUG "Creating index: inode %lu\n", dir->i_ino));
- 	retval = ext3_journal_get_write_access(handle, bh);
- 	if (retval) {
- 		ext3_std_error(dir->i_sb, retval);
-@@ -1366,6 +1366,19 @@ static int make_indexed_dir(handle_t *ha
- 	}
- 	root = (struct dx_root *) bh->b_data;
+ 	cck_power = min(cck_power, (u8)11);
+-	ofdm_power = min(ofdm_power, (u8)35);
++	if (ofdm_power > (u8)15)
++		ofdm_power = 25;
++	else
++		ofdm_power += 10;
  
-+	/* The 0th block becomes the root, move the dirents out */
-+	fde = &root->dotdot;
-+	de = (struct ext3_dir_entry_2 *)((char *)fde +
-+			ext3_rec_len_from_disk(fde->rec_len));
-+	if ((char *) de >= (((char *) root) + blocksize)) {
-+		ext3_error(dir->i_sb, __func__,
-+			   "invalid rec_len for '..' in inode %lu",
-+			   dir->i_ino);
-+		brelse(bh);
-+		return -EIO;
-+	}
-+	len = ((char *) root) + blocksize - (char *) de;
-+
- 	bh2 = ext3_append (handle, dir, &block, &retval);
- 	if (!(bh2)) {
- 		brelse(bh);
-@@ -1374,11 +1387,6 @@ static int make_indexed_dir(handle_t *ha
- 	EXT3_I(dir)->i_flags |= EXT3_INDEX_FL;
- 	data1 = bh2->b_data;
+ 	rtl818x_iowrite8(priv, &priv->map->TX_GAIN_CCK,
+ 			 rtl8225_tx_gain_cck_ofdm[cck_power / 6] >> 1);
+@@ -540,7 +543,10 @@ static void rtl8225z2_rf_set_tx_power(st
+ 	cck_power += priv->txpwr_base & 0xF;
+ 	cck_power = min(cck_power, (u8)35);
  
--	/* The 0th block becomes the root, move the dirents out */
--	fde = &root->dotdot;
--	de = (struct ext3_dir_entry_2 *)((char *)fde +
--			ext3_rec_len_from_disk(fde->rec_len));
--	len = ((char *) root) + blocksize - (char *) de;
- 	memcpy (data1, de, len);
- 	de = (struct ext3_dir_entry_2 *) data1;
- 	top = data1 + len;
+-	ofdm_power = min(ofdm_power, (u8)15);
++	if (ofdm_power > (u8)15)
++		ofdm_power = 25;
++	else
++		ofdm_power += 10;
+ 	ofdm_power += priv->txpwr_base >> 4;
+ 	ofdm_power = min(ofdm_power, (u8)35);
+ 
 
