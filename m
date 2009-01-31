@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762377AbZAaDLc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762501AbZAaDLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762377AbZAaDLc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:11:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757412AbZAaCrt
+	id S1762501AbZAaDLu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:11:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757434AbZAaCru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:49 -0500
-Received: from kroah.org ([198.145.64.141]:55583 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:50 -0500
+Received: from kroah.org ([198.145.64.141]:55608 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757257AbZAaCrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:41 -0500
-Date: Fri, 30 Jan 2009 18:44:44 -0800
+	id S1755016AbZAaCrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:42 -0500
+Date: Fri, 30 Jan 2009 18:44:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Luke Yelavich <themuso@ubuntu.com>,
+       alan@lxorguk.ukuu.org.uk, Joerg Schirottke <master@kanotix.com>,
        Takashi Iwai <tiwai@suse.de>
-Subject: [patch 34/43] ALSA: hda - add another MacBook Pro 4, 1 subsystem ID
-Message-ID: <20090131024444.GI12368@kroah.com>
+Subject: [patch 35/43] ALSA: hda - Add quirk for HP DV6700 laptop
+Message-ID: <20090131024446.GJ12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-add-another-macbook-pro-4-1-subsystem-id.patch"
+Content-Disposition: inline; filename="alsa-hda-add-quirk-for-hp-dv6700-laptop.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,29 +40,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Luke Yelavich <themuso@ubuntu.com>
+From: Joerg Schirottke <master@kanotix.com>
 
-commit 2a88464ceb1bda2571f88902fd8068a6168e3f7b upstream.
+commit aa9d823bb347fb66cb07f98c686be8bb85cb6a74 upstream.
 
-Add another MacBook Pro 4,1 SSID (106b:3800). It seems that latter revisions,
-(at least mine), have different IDs to earlier revisions.
+Added the matching model=laptop for HP DV6700 laptop.
 
-Signed-off-by: Luke Yelavich <themuso@ubuntu.com>
+Signed-off-by: Joerg Schirottke <master@kanotix.com>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_realtek.c |    1 +
+ sound/pci/hda/patch_conexant.c |    1 +
  1 file changed, 1 insertion(+)
 
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -6780,6 +6780,7 @@ static int patch_alc882(struct hda_codec
- 		case 0x106b00a4: /* MacbookPro4,1 */
- 		case 0x106b2c00: /* Macbook Pro rev3 */
- 		case 0x106b3600: /* Macbook 3.1 */
-+		case 0x106b3800: /* MacbookPro4,1 - latter revision */
- 			board_config = ALC885_MBP3;
- 			break;
- 		default:
+--- a/sound/pci/hda/patch_conexant.c
++++ b/sound/pci/hda/patch_conexant.c
+@@ -1470,6 +1470,7 @@ static struct snd_pci_quirk cxt5047_cfg_
+ 	SND_PCI_QUIRK(0x103c, 0x30a5, "HP DV5200T/DV8000T", CXT5047_LAPTOP_HP),
+ 	SND_PCI_QUIRK(0x103c, 0x30b2, "HP DV2000T/DV3000T", CXT5047_LAPTOP),
+ 	SND_PCI_QUIRK(0x103c, 0x30b5, "HP DV2000Z", CXT5047_LAPTOP),
++	SND_PCI_QUIRK(0x103c, 0x30cf, "HP DV6700", CXT5047_LAPTOP),
+ 	SND_PCI_QUIRK(0x1179, 0xff31, "Toshiba P100", CXT5047_LAPTOP_EAPD),
+ 	{}
+ };
 
