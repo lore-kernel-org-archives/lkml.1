@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbZAaC5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbZAaC5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760241AbZAaC5k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:57:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZAaCrJ
+	id S1759357AbZAaC5V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:57:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZAaCrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:09 -0500
-Received: from kroah.org ([198.145.64.141]:55070 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:08 -0500
+Received: from kroah.org ([198.145.64.141]:55046 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752391AbZAaCrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755912AbZAaCrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 30 Jan 2009 21:47:03 -0500
-Date: Fri, 30 Jan 2009 18:40:52 -0800
+Date: Fri, 30 Jan 2009 18:40:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: [patch 30/32] rtl8187: Fix error in setting OFDM power settings
-	for RTL8187L
-Message-ID: <20090131024052.GE12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 29/32] sound: virtuoso: do not overwrite EEPROM on Xonar
+	D2/D2X
+Message-ID: <20090131024050.GD12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline; filename="rtl8187-fix-error-in-setting-ofdm-power-settings-for-rtl8187l.patch"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="sound-virtuoso-do-not-overwrite-eeprom-on-xonar-d2-d2x.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,51 +41,96 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Larry Finger <Larry.Finger@lwfinger.net>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit eb83bbf57429ab80f49b413e3e44d3b19c3fdc5a upstream.
+commit 7e86c0e6850504ec9516b953f316a47277825e33 upstream.
 
-After reports of poor performance, a review of the latest vendor driver
-(rtl8187_linux_26.1025.0328.2007) for RTL8187L devices was undertaken.
+On the Asus Xonar D2 and D2X models, the SPI chip select signal for the
+fourth DAC shares its pin with the serial clock for the EEPROM that
+contains the PCI subdevice ID values.  It appears that when DAC
+registers are written and some other unknown conditions occur (probably
+noise on the EEPROM's chip select line), the EEPROM gets overwritten
+with garbage, which makes it impossible to properly detect the card
+later.
 
-A difference was found in the code used to index the OFDM power tables. When
-the Linux driver was changed, my unit works at a much greater range than
-before. I think this fixes Bugzilla #12380 and has been tested by at least
-two other users.
+Therefore, we better avoid DAC register writes and make sure that the
+driver works with the DAC's registers' default values.  Consequently,
+the sample format is now I2S instead of left-justified (no user-visible
+change), and the DAC's volume/mute registers cannot be used anymore
+(volume changes are now done by the software volume plugin).
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
-Tested-by: Martín Ernesto Barreyro <barreyromartin@gmail.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rtl8187_rtl8225.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ sound/pci/oxygen/virtuoso.c |   22 +++++++++++++++-------
+ 1 file changed, 15 insertions(+), 7 deletions(-)
 
---- a/drivers/net/wireless/rtl8187_rtl8225.c
-+++ b/drivers/net/wireless/rtl8187_rtl8225.c
-@@ -287,7 +287,10 @@ static void rtl8225_rf_set_tx_power(stru
- 	ofdm_power = priv->channels[channel - 1].hw_value >> 4;
+--- a/sound/pci/oxygen/virtuoso.c
++++ b/sound/pci/oxygen/virtuoso.c
+@@ -26,7 +26,7 @@
+  * SPI 0 -> 1st PCM1796 (front)
+  * SPI 1 -> 2nd PCM1796 (surround)
+  * SPI 2 -> 3rd PCM1796 (center/LFE)
+- * SPI 4 -> 4th PCM1796 (back)
++ * SPI 4 -> 4th PCM1796 (back) and EEPROM self-destruct (do not use!)
+  *
+  * GPIO 2 -> M0 of CS5381
+  * GPIO 3 -> M1 of CS5381
+@@ -142,6 +142,12 @@ struct xonar_data {
+ static void pcm1796_write(struct oxygen *chip, unsigned int codec,
+ 			  u8 reg, u8 value)
+ {
++	/*
++	 * We don't want to do writes on SPI 4 because the EEPROM, which shares
++	 * the same pin, might get confused and broken.  We'd better take care
++	 * that the driver works with the default register values ...
++	 */
++#if 0
+ 	/* maps ALSA channel pair number to SPI output */
+ 	static const u8 codec_map[4] = {
+ 		0, 1, 2, 4
+@@ -152,6 +158,7 @@ static void pcm1796_write(struct oxygen 
+ 			 (codec_map[codec] << OXYGEN_SPI_CODEC_SHIFT) |
+ 			 OXYGEN_SPI_CEN_LATCH_CLOCK_HI,
+ 			 (reg << 8) | value);
++#endif
+ }
  
- 	cck_power = min(cck_power, (u8)11);
--	ofdm_power = min(ofdm_power, (u8)35);
-+	if (ofdm_power > (u8)15)
-+		ofdm_power = 25;
-+	else
-+		ofdm_power += 10;
+ static void cs4398_write(struct oxygen *chip, u8 reg, u8 value)
+@@ -539,6 +546,9 @@ static const DECLARE_TLV_DB_SCALE(cs4362
  
- 	rtl818x_iowrite8(priv, &priv->map->TX_GAIN_CCK,
- 			 rtl8225_tx_gain_cck_ofdm[cck_power / 6] >> 1);
-@@ -540,7 +543,10 @@ static void rtl8225z2_rf_set_tx_power(st
- 	cck_power += priv->txpwr_base & 0xF;
- 	cck_power = min(cck_power, (u8)35);
- 
--	ofdm_power = min(ofdm_power, (u8)15);
-+	if (ofdm_power > (u8)15)
-+		ofdm_power = 25;
-+	else
-+		ofdm_power += 10;
- 	ofdm_power += priv->txpwr_base >> 4;
- 	ofdm_power = min(ofdm_power, (u8)35);
- 
+ static int xonar_d2_control_filter(struct snd_kcontrol_new *template)
+ {
++	if (!strncmp(template->name, "Master Playback ", 16))
++		/* disable volume/mute because they would require SPI writes */
++		return 1;
+ 	if (!strncmp(template->name, "CD Capture ", 11))
+ 		/* CD in is actually connected to the video in pin */
+ 		template->private_value ^= AC97_CD ^ AC97_VIDEO;
+@@ -588,9 +598,8 @@ static const struct oxygen_model xonar_m
+ 		.dac_volume_min = 0x0f,
+ 		.dac_volume_max = 0xff,
+ 		.misc_flags = OXYGEN_MISC_MIDI,
+-		.function_flags = OXYGEN_FUNCTION_SPI |
+-				  OXYGEN_FUNCTION_ENABLE_SPI_4_5,
+-		.dac_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
++		.function_flags = OXYGEN_FUNCTION_SPI,
++		.dac_i2s_format = OXYGEN_I2S_FORMAT_I2S,
+ 		.adc_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
+ 	},
+ 	[MODEL_D2X] = {
+@@ -619,9 +628,8 @@ static const struct oxygen_model xonar_m
+ 		.dac_volume_min = 0x0f,
+ 		.dac_volume_max = 0xff,
+ 		.misc_flags = OXYGEN_MISC_MIDI,
+-		.function_flags = OXYGEN_FUNCTION_SPI |
+-				  OXYGEN_FUNCTION_ENABLE_SPI_4_5,
+-		.dac_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
++		.function_flags = OXYGEN_FUNCTION_SPI,
++		.dac_i2s_format = OXYGEN_I2S_FORMAT_I2S,
+ 		.adc_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
+ 	},
+ 	[MODEL_D1] = {
 
