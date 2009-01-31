@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755915AbZAaDJQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbZAaDJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755915AbZAaDJQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:09:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbZAaCro
+	id S1762148AbZAaDJj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:09:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754879AbZAaCrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:44 -0500
-Received: from kroah.org ([198.145.64.141]:55496 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:45 -0500
+Received: from kroah.org ([198.145.64.141]:55504 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757017AbZAaCrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:35 -0500
-Date: Fri, 30 Jan 2009 18:44:20 -0800
+	id S1757068AbZAaCrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:36 -0500
+Date: Fri, 30 Jan 2009 18:44:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Davide Libenzi <davidel@xmailserver.org>,
-       Michael Kerrisk <mtk.manpages@googlemail.com>,
-       Bron Gondwana <brong@fastmail.fm>
-Subject: [patch 28/43] epoll: drop max_user_instances and rely only on
-	max_user_watches
-Message-ID: <20090131024420.GC12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Magnus Damm <damm@igel.co.jp>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 29/43] gpiolib: fix request related issue
+Message-ID: <20090131024422.GD12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="epoll-drop-max_user_instances-and-rely-only-on-max_user_watches.patch"
+Content-Disposition: inline; filename="gpiolib-fix-request-related-issue.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,114 +40,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Davide Libenzi <davidel@xmailserver.org>
+From: Magnus Damm <damm@igel.co.jp>
 
-commit 9df04e1f25effde823a600e755b51475d438f56b upstream.
+commit 7460db567bbca76bf087d1694d792a1a96bdaa26 upstream.
 
-Linus suggested to put limits where the money is, and max_user_watches
-already does that w/out the need of max_user_instances.  That has the
-advantage to mitigate the potential DoS while allowing pretty generous
-default behavior.
+Fix request-already-requested handling in gpio_request().
 
-Allowing top 4% of low memory (per user) to be allocated in epoll watches,
-we have:
-
-LOMEM    MAX_WATCHES (per user)
-512MB    ~178000
-1GB      ~356000
-2GB      ~712000
-
-A box with 512MB of lomem, will meet some challenge in hitting 180K
-watches, socket buffers math teaches us.  No more max_user_instances
-limits then.
-
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-Cc: Willy Tarreau <w@1wt.eu>
-Cc: Michael Kerrisk <mtk.manpages@googlemail.com>
-Cc: Bron Gondwana <brong@fastmail.fm>
+Signed-off-by: Magnus Damm <damm@igel.co.jp>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/eventpoll.c        |   22 ++++------------------
- include/linux/sched.h |    1 -
- 2 files changed, 4 insertions(+), 19 deletions(-)
+ drivers/gpio/gpiolib.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -234,8 +234,6 @@ struct ep_pqueue {
- /*
-  * Configuration options available inside /proc/sys/fs/epoll/
-  */
--/* Maximum number of epoll devices, per user */
--static int max_user_instances __read_mostly;
- /* Maximum number of epoll watched descriptors, per user */
- static int max_user_watches __read_mostly;
+--- a/drivers/gpio/gpiolib.c
++++ b/drivers/gpio/gpiolib.c
+@@ -789,6 +789,7 @@ int gpio_request(unsigned gpio, const ch
+ 	} else {
+ 		status = -EBUSY;
+ 		module_put(chip->owner);
++		goto done;
+ 	}
  
-@@ -261,14 +259,6 @@ static int zero;
- 
- ctl_table epoll_table[] = {
- 	{
--		.procname	= "max_user_instances",
--		.data		= &max_user_instances,
--		.maxlen		= sizeof(int),
--		.mode		= 0644,
--		.proc_handler	= &proc_dointvec_minmax,
--		.extra1		= &zero,
--	},
--	{
- 		.procname	= "max_user_watches",
- 		.data		= &max_user_watches,
- 		.maxlen		= sizeof(int),
-@@ -491,7 +481,6 @@ static void ep_free(struct eventpoll *ep
- 
- 	mutex_unlock(&epmutex);
- 	mutex_destroy(&ep->mtx);
--	atomic_dec(&ep->user->epoll_devs);
- 	free_uid(ep->user);
- 	kfree(ep);
- }
-@@ -581,10 +570,6 @@ static int ep_alloc(struct eventpoll **p
- 	struct eventpoll *ep;
- 
- 	user = get_current_user();
--	error = -EMFILE;
--	if (unlikely(atomic_read(&user->epoll_devs) >=
--			max_user_instances))
--		goto free_uid;
- 	error = -ENOMEM;
- 	ep = kzalloc(sizeof(*ep), GFP_KERNEL);
- 	if (unlikely(!ep))
-@@ -1141,7 +1126,6 @@ SYSCALL_DEFINE1(epoll_create1, int, flag
- 			      flags & O_CLOEXEC);
- 	if (fd < 0)
- 		ep_free(ep);
--	atomic_inc(&ep->user->epoll_devs);
- 
- error_return:
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d) = %d\n",
-@@ -1366,8 +1350,10 @@ static int __init eventpoll_init(void)
- 	struct sysinfo si;
- 
- 	si_meminfo(&si);
--	max_user_instances = 128;
--	max_user_watches = (((si.totalram - si.totalhigh) / 32) << PAGE_SHIFT) /
-+	/*
-+	 * Allows top 4% of lomem to be allocated for epoll watches (per user).
-+	 */
-+	max_user_watches = (((si.totalram - si.totalhigh) / 25) << PAGE_SHIFT) /
- 		EP_ITEM_COST;
- 
- 	/* Initialize the structure used to perform safe poll wait head wake ups */
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -631,7 +631,6 @@ struct user_struct {
- 	atomic_t inotify_devs;	/* How many inotify devs does this user have opened? */
- #endif
- #ifdef CONFIG_EPOLL
--	atomic_t epoll_devs;	/* The number of epoll descriptors currently open */
- 	atomic_t epoll_watches;	/* The number of file descriptors currently watched */
- #endif
- #ifdef CONFIG_POSIX_MQUEUE
+ 	if (chip->request) {
 
