@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZAaCqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbZAaCrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754779AbZAaCqr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:46:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZAaCqd
+	id S1756283AbZAaCrL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:47:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZAaCqf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:33 -0500
-Received: from kroah.org ([198.145.64.141]:54659 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:35 -0500
+Received: from kroah.org ([198.145.64.141]:54685 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752284AbZAaCqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:32 -0500
-Date: Fri, 30 Jan 2009 18:39:06 -0800
+	id S1752391AbZAaCqd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:33 -0500
+Date: Fri, 30 Jan 2009 18:39:25 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,83 +22,75 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/32] 2.6.27-stable review
-Message-ID: <20090131023906.GA12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>
+Subject: [patch 01/32] fuse: destroy bdi on umount
+Message-ID: <20090131023925.GB12147@kroah.com>
+References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="fuse-destroy-bdi-on-umount.patch"
+In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-This is the start of the stable review cycle for the 2.6.27.14 release.
-There are 32 patches in this series, all will be posted as a response
-to this one.  If anyone has any issues with these being applied, please
-let us know.  If anyone is a maintainer of the proper subsystem, and
-wants to add a Signed-off-by: line to the patch, please respond with it.
+------------------
 
-Note, there still are some more .28 patches pending for the -stable
-releases, but I wanted to get this release out now to fix the major
-problems that have recently been found.
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-If you have sent patches to be included in .28, and you don't see them
-here, please feel free to just drop stable@kernel.org a message with the
-git commit ids to make sure they end up in the next release.
+commit 26c3679101dbccc054dcf370143941844ba70531 upstream.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+If a fuse filesystem is unmounted but the device file descriptor
+remains open and a new mount reuses the old device number, then the
+mount fails with EEXIST and the following warning is printed in the
+kernel log:
 
-Responses should be made by Monday, February 2, 00:00:00 UTC.  Anything
-received after that time might be too late.
+  WARNING: at fs/sysfs/dir.c:462 sysfs_add_one+0x35/0x3d()
+  sysfs: duplicate filename '0:15' can not be created
 
-The whole patch series can be found in one patch at:
-        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.14-rc1.gz
-and the diffstat can be found below.
+The cause is that the bdi belonging to the fuse filesystem was
+destoryed only after the device file was released.  Fix this by
+calling bdi_destroy() from fuse_put_super() instead.
 
-thanks,
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-greg k-h
+---
+ fs/fuse/dev.c   |    3 ++-
+ fs/fuse/inode.c |    2 +-
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
+--- a/fs/fuse/dev.c
++++ b/fs/fuse/dev.c
+@@ -281,7 +281,8 @@ static void request_end(struct fuse_conn
+ 			fc->blocked = 0;
+ 			wake_up_all(&fc->blocked_waitq);
+ 		}
+-		if (fc->num_background == FUSE_CONGESTION_THRESHOLD) {
++		if (fc->num_background == FUSE_CONGESTION_THRESHOLD &&
++		    fc->connected) {
+ 			clear_bdi_congested(&fc->bdi, READ);
+ 			clear_bdi_congested(&fc->bdi, WRITE);
+ 		}
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -292,6 +292,7 @@ static void fuse_put_super(struct super_
+ 	list_del(&fc->entry);
+ 	fuse_ctl_remove_conn(fc);
+ 	mutex_unlock(&fuse_mutex);
++	bdi_destroy(&fc->bdi);
+ 	fuse_conn_put(fc);
+ }
+ 
+@@ -531,7 +532,6 @@ void fuse_conn_put(struct fuse_conn *fc)
+ 		if (fc->destroy_req)
+ 			fuse_request_free(fc->destroy_req);
+ 		mutex_destroy(&fc->inst_mutex);
+-		bdi_destroy(&fc->bdi);
+ 		kfree(fc);
+ 	}
+ }
 
- Makefile                               |    2 +-
- arch/alpha/kernel/irq_srm.c            |    2 +
- crypto/authenc.c                       |   24 ++++--
- crypto/ccm.c                           |    2 +
- drivers/ata/pata_via.c                 |   22 ++++-
- drivers/ide/pci/it821x.c               |   12 +++
- drivers/misc/sgi-xp/xpc_sn2.c          |   19 +++--
- drivers/misc/sgi-xp/xpc_uv.c           |    2 +-
- drivers/net/bnx2x_main.c               |    3 +
- drivers/net/wireless/rtl8187_dev.c     |    1 +
- drivers/net/wireless/rtl8187_rtl8225.c |   10 ++-
- drivers/pci/hotplug/pciehp_core.c      |    4 +-
- drivers/serial/8250_pci.c              |    3 +
- drivers/usb/core/devio.c               |   20 +++--
- drivers/usb/core/inode.c               |    1 -
- drivers/usb/core/usb.h                 |    1 -
- drivers/usb/mon/mon_bin.c              |  105 ++++++++++++++++---------
- drivers/usb/storage/unusual_devs.h     |    6 ++
- fs/eventpoll.c                         |   22 +----
- fs/ext3/namei.c                        |   20 ++++--
- fs/fuse/dev.c                          |    3 +-
- fs/fuse/file.c                         |    2 +-
- fs/fuse/inode.c                        |   10 ++-
- fs/inotify_user.c                      |  135 +++++++++++++++++--------------
- fs/sysfs/bin.c                         |    6 ++
- include/asm-x86/pgalloc.h              |    1 +
- include/linux/Kbuild                   |    1 +
- include/linux/pci_ids.h                |    6 ++
- include/linux/sched.h                  |    1 -
- kernel/relay.c                         |    4 +-
- net/mac80211/tx.c                      |    4 +-
- net/sunrpc/rpcb_clnt.c                 |   40 ++++++++--
- sound/pci/hda/patch_conexant.c         |    1 +
- sound/pci/hda/patch_realtek.c          |    1 +
- sound/pci/hda/patch_sigmatel.c         |    2 +
- sound/pci/oxygen/virtuoso.c            |   22 ++++--
- 36 files changed, 336 insertions(+), 184 deletions(-)
