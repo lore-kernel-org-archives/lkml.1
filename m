@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759528AbZAaCyI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758674AbZAaCxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759528AbZAaCyI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:54:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbZAaCq5
+	id S1758674AbZAaCxp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:53:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZAaCq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:57 -0500
-Received: from kroah.org ([198.145.64.141]:54914 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:56 -0500
+Received: from kroah.org ([198.145.64.141]:54904 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755117AbZAaCqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:53 -0500
-Date: Fri, 30 Jan 2009 18:40:24 -0800
+	id S1752284AbZAaCqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:52 -0500
+Date: Fri, 30 Jan 2009 18:40:22 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 20/32] ALSA: hda - Fix PCM reference NID for STAC/IDT
-	analog outputs
-Message-ID: <20090131024024.GU12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Joerg Schirottke <master@kanotix.com>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 19/32] ALSA: hda - Add quirk for HP DV6700 laptop
+Message-ID: <20090131024022.GT12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-fix-pcm-reference-nid-for-stac-idt-analog-outputs.patch"
+Content-Disposition: inline; filename="alsa-hda-add-quirk-for-hp-dv6700-laptop.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,33 +40,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Joerg Schirottke <master@kanotix.com>
 
-commit 00a602db1ce9d61319d6f769dee206ec85f19bda upstream.
+commit aa9d823bb347fb66cb07f98c686be8bb85cb6a74 upstream.
 
-The reference NID for the analog outputs of STAC/IDT codecs is set
-to a fixed number 0x02.  But this isn't always correct and in many
-codecs it points to a non-existing NID.
+Added the matching model=laptop for HP DV6700 laptop.
 
-This patch fixes the initialization of the PCM reference NID taken
-from the actually probed DAC list.
-
+Signed-off-by: Joerg Schirottke <master@kanotix.com>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_sigmatel.c |    2 ++
- 1 file changed, 2 insertions(+)
+ sound/pci/hda/patch_conexant.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/sound/pci/hda/patch_sigmatel.c
-+++ b/sound/pci/hda/patch_sigmatel.c
-@@ -2048,6 +2048,8 @@ static int stac92xx_build_pcms(struct hd
- 
- 	info->name = "STAC92xx Analog";
- 	info->stream[SNDRV_PCM_STREAM_PLAYBACK] = stac92xx_pcm_analog_playback;
-+	info->stream[SNDRV_PCM_STREAM_PLAYBACK].nid =
-+		spec->multiout.dac_nids[0];
- 	info->stream[SNDRV_PCM_STREAM_CAPTURE] = stac92xx_pcm_analog_capture;
- 	info->stream[SNDRV_PCM_STREAM_CAPTURE].nid = spec->adc_nids[0];
- 	info->stream[SNDRV_PCM_STREAM_CAPTURE].substreams = spec->num_adcs;
+--- a/sound/pci/hda/patch_conexant.c
++++ b/sound/pci/hda/patch_conexant.c
+@@ -1470,6 +1470,7 @@ static struct snd_pci_quirk cxt5047_cfg_
+ 	SND_PCI_QUIRK(0x103c, 0x30a5, "HP DV5200T/DV8000T", CXT5047_LAPTOP_HP),
+ 	SND_PCI_QUIRK(0x103c, 0x30b2, "HP DV2000T/DV3000T", CXT5047_LAPTOP),
+ 	SND_PCI_QUIRK(0x103c, 0x30b5, "HP DV2000Z", CXT5047_LAPTOP),
++	SND_PCI_QUIRK(0x103c, 0x30cf, "HP DV6700", CXT5047_LAPTOP),
+ 	SND_PCI_QUIRK(0x1179, 0xff31, "Toshiba P100", CXT5047_LAPTOP_EAPD),
+ 	{}
+ };
 
