@@ -1,50 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755326AbZAaOwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbZAaPFD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755326AbZAaOwq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 09:52:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZAaOwc
+	id S1754238AbZAaPFD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 10:05:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752165AbZAaPEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 09:52:32 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:54516 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752677AbZAaOwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 09:52:31 -0500
-Date: Sat, 31 Jan 2009 23:52:30 +0900 (JST)
-Message-Id: <20090131.235230.90118475.anemo@mba.ocn.ne.jp>
-To: dan.j.williams@intel.com
-Cc: hskinnemoen@atmel.com, kernel@avr32linux.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] atmel-mci: fix initialization of dma slave data
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <20090131.210651.126573837.anemo@mba.ocn.ne.jp>
-References: <20090130230248.2402.65405.stgit@dwillia2-linux.ch.intel.com>
-	<20090131.210651.126573837.anemo@mba.ocn.ne.jp>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sat, 31 Jan 2009 10:04:53 -0500
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:53273 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752187AbZAaPEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 10:04:52 -0500
+Subject: Re: [PATCH] voyager: fix cpu bootmaps
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200901312327.50684.rusty@rustcorp.com.au>
+References: <1233340317.3248.39.camel@localhost.localdomain>
+	 <200901312327.50684.rusty@rustcorp.com.au>
+Content-Type: text/plain
+Date: Sat, 31 Jan 2009 09:04:53 -0600
+Message-Id: <1233414293.3541.20.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009 21:06:51 +0900 (JST), Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> > The conversion of atmel-mci to dma_request_channel missed the initialization
-> > of the channel dma_slave information.  dma_request_channel, along with the
-> > filter_fn, find the channel with the proper capabilities, then it is up to the
-> > driver to update the dw_dma_chan with its slave data.
+On Sat, 2009-01-31 at 23:27 +1030, Rusty Russell wrote:
+> On Saturday 31 January 2009 05:01:57 James Bottomley wrote:
+> > commit 98a79d6a50181ca1ecf7400eda01d5dc1bc0dbf0
+> > Author: Rusty Russell <rusty@rustcorp.com.au>
+> > Date:   Sat Dec 13 21:19:41 2008 +1030
 > > 
-> > Reported-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-> > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> >     cpumask: centralize cpu_online_map and cpu_possible_map
+> > 
+> > Broke voyager largely because it currently initialises the
+> > possible_map by copying, which isn't possible in the new scheme.  Fix
+> > this by using init_cpu_possible() instead and tidy up other of the
+> > cpumask declarations which now have global variables.
+> > 
+> > Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+> > ---
+> >  arch/x86/mach-voyager/voyager_smp.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/mach-voyager/voyager_smp.c b/arch/x86/mach-voyager/voyager_smp.c
+> > index 9840b7e..dcc07d5 100644
+> > --- a/arch/x86/mach-voyager/voyager_smp.c
+> > +++ b/arch/x86/mach-voyager/voyager_smp.c
+> > @@ -378,7 +378,7 @@ void __init find_smp_config(void)
+> >  	cpus_addr(phys_cpu_present_map)[0] |=
+> >  	    voyager_extended_cmos_read(VOYAGER_PROCESSOR_PRESENT_MASK +
+> >  				       3) << 24;
+> > -	cpu_possible_map = phys_cpu_present_map;
+> > +	init_cpu_possible(&phys_cpu_present_map);
+> >  	printk("VOYAGER SMP: phys_cpu_present_map = 0x%lx\n",
+> >  	       cpus_addr(phys_cpu_present_map)[0]);
+> >  	/* Here we set up the VIC to enable SMP */
 > 
-> Thanks.  This patch disclose struct dw_dma_chan to its client.  But
-> the struct seems too private for me.  Maybe we need some generic
-> method to pass slave information?  Any idea or plan?
+> Strange, the assignment should still work, even though this new method is
+> preferred.
 
-Also, it seems too late to initialize dwc->dws after returning from
-dma_request_channel().  The alloc_chan_resources routine of dw_dmac
-driver needs dmc->dws and it is called from dma_request_channel() via
-dma_chan_get().
+I know, it's weird ... it's like the compiler is copying to the lvalue
+but then discarding the result somehow ... with the direct assignment,
+we end up with nothing in cpu_possible_bits, then the smp alternatives
+switch to UP and all hell breaks loose when multiple CPUs are brought
+up.
 
----
-Atsushi Nemoto
+I think the problem is that cpu_possible_mask isn't an alias for
+cpu_possible_bits, so when I update the former directly it breaks the
+correspondence set up in kernel/cpu.c ... your declaration of it as
+*const looks to be causing the compiler to do this.
+
+Thus, I think direct assignment to cpu_possible_map (and hence
+cpu_possible_mask) should be forbidden.
+
+> How do your patches normally get upstream?  I'd normally just fwd this to
+> Ingo...
+> 
+> Sorry I broke your platform...
+
+That's OK ... Voyager is one of those platforms that tends to come off
+worst on updates, so I'm used to sweeping up around it.
+
+James
+
+
