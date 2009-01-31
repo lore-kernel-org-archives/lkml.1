@@ -1,115 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755314AbZAaA1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754602AbZAaA2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755314AbZAaA1t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 19:27:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZAaA1l
+	id S1754602AbZAaA2s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 19:28:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbZAaA2h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 19:27:41 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:62471 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbZAaA1k convert rfc822-to-8bit (ORCPT
+	Fri, 30 Jan 2009 19:28:37 -0500
+Received: from yw-out-2324.google.com ([74.125.46.31]:1690 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752230AbZAaA2g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 19:27:40 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] kbuild: drop check for CONFIG_ in headers_check
-Date: Sat, 31 Jan 2009 01:27:02 +0100
-User-Agent: KMail/1.9.9
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+	Fri, 30 Jan 2009 19:28:36 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version:content-type;
+        b=G0ypGhpVOje7GvH+NN7fkaJIBM6K3f9nUxGGQpEFc5o8+exYrjTEWRDYK9eERzpzZK
+         A8LgP3808jDZ0pTWvIaPcZoAUkg9fz67mxC9FIO3fui9m8+9TLk7WMzEFdrJS0TJuktK
+         kHWqvo3EvKlo7ue1VPn5D2Y9WFvsWVjt/OJzw=
+Date: Fri, 30 Jan 2009 19:28:25 -0500 (EST)
+From: Parag Warudkar <parag.lkml@gmail.com>
+X-X-Sender: parag@parag-desktop
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1233342254.21493.8.camel@localhost.localdomain> <20090130225642.GA17950@uranus.ravnborg.org> <20090130234012.GF4922@elte.hu>
-In-Reply-To: <20090130234012.GF4922@elte.hu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+       Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <200901310059.17746.rjw@sisk.pl>
+Message-ID: <alpine.DEB.2.00.0901301924550.5056@parag-desktop>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901301506120.3150@localhost.localdomain> <alpine.DEB.2.00.0901301826490.5027@parag-desktop> <200901310059.17746.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200901310127.03142.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19eQQfUHT8cH/k6vd37YUfc0kSZBUga1YkxNcL
- 1N3nj5CXvZvjLktrXJuNCEEHukGKLF9tu3HkJukdKvobN+50eN
- Zq+uulTkWVAEr7JAPmGfQ==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 January 2009, Ingo Molnar wrote:
-> Jaswinder, i think we now have a realistic chance to reach a zero baseline 
-> with these warnings, for v2.6.29. Here are the remaining warnings (summed 
-> up per file) on x86 (after Sam's patch):
+
+
+On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
+
+> >  00:1c.0 PCI bridge: Intel Corporation 631xESB/632xESB/3100 Chipset PCI Express Root Port 1 (rev 09)
+> > -	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
+> > +	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
+> >  	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+> >  	Latency: 0, Cache Line Size: 64 bytes
+> >  	Bus: primary=00, secondary=0e, subordinate=0e, sec-latency=0
 > 
->      17 /dev/shm/tip/usr/include/linux/reiserfs_fs.h
->      12 /dev/shm/tip/usr/include/linux/soundcard.h
->       3 /dev/shm/tip/usr/include/linux/nubus.h
->       2 /dev/shm/tip/usr/include/linux/in6.h
->       1 /dev/shm/tip/usr/include/mtd/jffs2-user.h
->       1 /dev/shm/tip/usr/include/linux/socket.h
->       1 /dev/shm/tip/usr/include/linux/coda_psdev.h
->       1 /dev/shm/tip/usr/include/linux/bsg.h
+> and the PCIe port driver may be at fault.
+> 
+> Can you try to remove the pci_save_state(dev) from pcie_port_suspend_late()
+> and see if that helps?
 > 
 
-Ah, that doesn't look too bad. On a related subject, was there ever a
-conclusion about whether we want to support __KERNEL_STRICT_NAMES in
-every header? When that is set, headers cannot use most of the standard
-types (dev_t, mode_t, off_t, pid_t, suseconds_t, timer_t, uid_t, gid_t,
-loff_t, time_t, clock_t, caddr_t, pgoff_t, {u_,u,}int{8,16,32,64}_6})
-but have to use the __kernel_* versions of that.
+I assume you meant pcie_portdrv_suspend_late in 
+drivers/pci/pcie/portdrv_pci.c - that one did not go well.
 
-It doesn't seem hard to fix, but I'm not sure if it needs to be touched.
-If we decide to fix it, it's easy enough to do during headers_install,
-or once for the whole tree. The __kernel_* types need this patch:
+With that change machine refuses to suspend (comes back after attempting) 
+and my keyboard goes dead.
 
- asm-generic/fcntl.h               |   12 ++++++------
- asm-generic/siginfo.h             |   14 +++++++-------
- linux/agpgart.h                   |   14 +++++++-------
- linux/cn_proc.h                   |   20 ++++++++++----------
- linux/cyclades.h                  |    6 +++---
- linux/dvb/video.h                 |    2 +-
- linux/if_pppol2tp.h               |    2 +-
- linux/mroute6.h                   |    2 +-
- linux/netfilter_ipv4/ipt_owner.h  |    8 ++++----
- linux/netfilter_ipv6/ip6t_owner.h |    8 ++++----
- linux/ppp_defs.h                  |    4 ++--
- linux/suspend_ioctls.h            |    4 ++--
- linux/xfrm.h                      |    2 +-
- mtd/mtd-abi.h                     |    4 ++--
- sound/asound.h                    |    4 ++--
- 14 files changed, 52 insertions(+), 52 deletions(-)
-
-The int types are a lot more:
- drm/drm.h               |   18 ++--
- drm/drm_mode.h          |  148 ++++++++++++++--------------
- drm/i915_drm.h          |  138 +++++++++++++-------------
- drm/mga_drm.h           |   16 ++--
- drm/radeon_drm.h        |    2 +-
- drm/via_drm.h           |   40 ++++----
- linux/atmlec.h          |    4 +-
- linux/atmmpc.h          |   44 +++++-----
- linux/cm4000_cs.h       |    8 +-
- linux/dlm_netlink.h     |   16 ++--
- linux/dm-ioctl.h        |   42 ++++----
- linux/dvb/audio.h       |    2 +-
- linux/dvb/video.h       |   22 ++--
- linux/if_arcnet.h       |   26 +++---
- linux/ip_vs.h           |   26 +++---
- linux/ivtvfb.h          |    2 +-
- linux/jffs2.h           |   26 +++---
- linux/matroxfb.h        |    2 +-
- linux/pfkeyv2.h         |  242 +++++++++++++++++++++++-----------------------
- linux/selinux_netlink.h |    4 +-
- linux/suspend_ioctls.h  |    2 +-
- mtd/inftl-user.h        |   36 ++++----
- mtd/jffs2-user.h        |    4 +-
- mtd/mtd-abi.h           |   64 ++++++------
- mtd/nftl-user.h         |   30 +++---
- mtd/ubi-user.h          |   70 +++++++-------
- sound/asound.h          |    2 +-
- sound/emu10k1.h         |    8 +-
- 29 files changed, 523 insertions(+), 523 deletions(-)
+Parag
