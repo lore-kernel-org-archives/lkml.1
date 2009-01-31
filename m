@@ -1,56 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbZAaD54@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbZAaEBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbZAaD54 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:57:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZAaD5s
+	id S1755583AbZAaEBY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 23:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZAaEBQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 22:57:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51897 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751025AbZAaD5s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 22:57:48 -0500
-Date: Fri, 30 Jan 2009 19:57:28 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>
-Subject: Re: [patch 3/7] epoll keyed wakeups - introduce key-aware wakeup
- macros
-In-Reply-To: <20090131033035.GA26640@elte.hu>
-Message-ID: <alpine.LFD.2.00.0901301953280.3150@localhost.localdomain>
-References: <send-serie.davidel@xmailserver.org.16376.1233372317.3> <20090131033035.GA26640@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 30 Jan 2009 23:01:16 -0500
+Received: from THUNK.ORG ([69.25.196.29]:53647 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751025AbZAaEBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 23:01:15 -0500
+Date: Fri, 30 Jan 2009 19:09:17 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: Alex Buell <alex.buell@munted.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Fw: 2.6.27 & ext4 strangeness
+Message-ID: <20090131000917.GB27950@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Alex Buell <alex.buell@munted.org.uk>, linux-kernel@vger.kernel.org
+References: <20090130194702.5a2ca774@lithium.local.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090130194702.5a2ca774@lithium.local.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 31 Jan 2009, Ingo Molnar wrote:
+On Fri, Jan 30, 2009 at 07:47:02PM +0000, Alex Buell wrote:
 > 
-> Would be nice to see the kernel image size increase due to this change 
-> (which gives a good measure about how much of an issue this is).
+> As this has happened three times in the last 24 hours, I thought I'd
+> report this. Whenever my laptop locks up, I have to powercycle. After
+> rebooting, and fsck.ext4 reports a clean filesystem, often I get a 'no
+> space on device' error even though I have plenty of disk space left.
+> Another reboot with a forced fsck.ext4 cures this, every time. This only
+> happens with ext4 filesystems used as the root filesystem. 
 
-Ingo, I don't think you have looked at that header file for a while.
+If you can reproduce this, can you send me the output of "df /; df -i
+/; dumpe2fs /dev/XXX" (where XXX is your root device) before you
+reboot and force an fsck?  And then can you send me the output of "df
+/ ; df -i /; dumpe2fs /dev/XXX" after the 2nd reboot and forced fsck.
+I've never seen anything like this, so I don't know what to make of it.
 
-It's already doing that, Davide just changed the names a bit:
+It also would be interesting to see if you can reproduce it running a
+kernel from the ext4-stable branch of the ext4 tree:
 
-	#define wake_up_interruptible(x)        __wake_up(x, TASK_INTERRUPTIBLE, 1, NULL)
+   git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
+   http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
 
-and the extra parameter is already there in the caller.
+This has all of the ext4 fixes that is in the latest mainline, based
+on the 2.6.28 kernel.
 
-(Yeah, Davide did add it to __wake_up_locked and __wake_up_sync, but those 
-are really not the common cases).
+Thanks for reporting your observations,
 
-Sure, we can change those #define's to be actual functions (and perhaps 
-not export the low-level __wake_up() functions at all), since it's true 
-that it would probably shrink the kernel size, but that is really a 
-totally independent issue from the whole epoll wakeups thing.
-
-		Linus
+							- Ted
