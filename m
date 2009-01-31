@@ -1,74 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754207AbZAaCke@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754779AbZAaCqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754207AbZAaCke (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:40:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752383AbZAaCkX
+	id S1754779AbZAaCqr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:46:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZAaCqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:40:23 -0500
-Received: from an-out-0708.google.com ([209.85.132.247]:29590 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751839AbZAaCkW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:40:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=QSHM2DWkvGOpfL+Wq0g9bQJtAsS/Ojm4itN0vG0xEMUa6FHTU74Wm7Vd8Die7lVTBY
-         j8yBxRmV5EH1wfKCHDhrlxvFChG0XDSApmFc/JHCbiEslBRRCzIRmMdiYFhhPtv9NCKv
-         dw81RfN+h0PWnP5BKhd+9A+kTPUrbHt90f6Dg=
-Date: Fri, 30 Jan 2009 21:40:15 -0500 (EST)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-desktop
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Parag Warudkar <parag.lkml@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <alpine.LFD.2.00.0901301820080.3150@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0901302136470.5643@parag-desktop>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901310059.17746.rjw@sisk.pl> <alpine.DEB.2.00.0901301924550.5056@parag-desktop> <200901310138.51214.rjw@sisk.pl> <alpine.DEB.2.00.0901302016170.5643@parag-desktop>
- <alpine.LFD.2.00.0901301741380.3150@localhost.localdomain> <alpine.DEB.2.00.0901302051390.5643@parag-desktop> <alpine.LFD.2.00.0901301820080.3150@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 30 Jan 2009 21:46:33 -0500
+Received: from kroah.org ([198.145.64.141]:54659 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752284AbZAaCqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:32 -0500
+Date: Fri, 30 Jan 2009 18:39:06 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/32] 2.6.27-stable review
+Message-ID: <20090131023906.GA12147@kroah.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+This is the start of the stable review cycle for the 2.6.27.14 release.
+There are 32 patches in this series, all will be posted as a response
+to this one.  If anyone has any issues with these being applied, please
+let us know.  If anyone is a maintainer of the proper subsystem, and
+wants to add a Signed-off-by: line to the patch, please respond with it.
 
-On Fri, 30 Jan 2009, Linus Torvalds wrote:
+Note, there still are some more .28 patches pending for the -stable
+releases, but I wanted to get this release out now to fix the major
+problems that have recently been found.
 
-> If you can try the patch I just sent out, and use that as a base for 
-> trying to track down why the heck the legacy code doesn't work, that would 
-> be great. It might fix it (assuming my guess about "restore_state while in 
-> PCI_D3 doesn't work" was correct), but quite frankly, it's equally 
-> possible that it just makes things worse. But it would be really 
-> interesting to hear..
+If you have sent patches to be included in .28, and you don't see them
+here, please feel free to just drop stable@kernel.org a message with the
+git commit ids to make sure they end up in the next release.
 
-Sure - will do.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-> 
-> Your machine does seem to be interesting, in that not only does it have a 
-> PCI-E bridge in it (the eeepc I was playing around with at LCA does not), 
-> but judging by the lost config state I also suspect that it actually loses 
-> power during STR.
+Responses should be made by Monday, February 2, 00:00:00 UTC.  Anything
+received after that time might be too late.
 
-Not sure what the significance of eeepc is in this case - mine being a 
-standard Intel 5400 chipset I would have thought that's the last 
-place to look for interesting things!
- 
-> Which is not at all necessarily a given - I suspect it depends on just how 
-> the power rails are set up on the motherboard. The fact that PCI-E bridges 
-> have apparently worked for others implies that your problems don't happen 
-> for everybody, and may relate to that issue.
+The whole patch series can be found in one patch at:
+        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.14-rc1.gz
+and the diffstat can be found below.
 
-Do we know this for sure that PCI-E bridges + Suspend have worked for 
-others - In this thread at least I think people reported tg3 worked but not 
-necessarily with a PCI-E bridge.
+thanks,
 
-Parag
+greg k-h
+
+
+ Makefile                               |    2 +-
+ arch/alpha/kernel/irq_srm.c            |    2 +
+ crypto/authenc.c                       |   24 ++++--
+ crypto/ccm.c                           |    2 +
+ drivers/ata/pata_via.c                 |   22 ++++-
+ drivers/ide/pci/it821x.c               |   12 +++
+ drivers/misc/sgi-xp/xpc_sn2.c          |   19 +++--
+ drivers/misc/sgi-xp/xpc_uv.c           |    2 +-
+ drivers/net/bnx2x_main.c               |    3 +
+ drivers/net/wireless/rtl8187_dev.c     |    1 +
+ drivers/net/wireless/rtl8187_rtl8225.c |   10 ++-
+ drivers/pci/hotplug/pciehp_core.c      |    4 +-
+ drivers/serial/8250_pci.c              |    3 +
+ drivers/usb/core/devio.c               |   20 +++--
+ drivers/usb/core/inode.c               |    1 -
+ drivers/usb/core/usb.h                 |    1 -
+ drivers/usb/mon/mon_bin.c              |  105 ++++++++++++++++---------
+ drivers/usb/storage/unusual_devs.h     |    6 ++
+ fs/eventpoll.c                         |   22 +----
+ fs/ext3/namei.c                        |   20 ++++--
+ fs/fuse/dev.c                          |    3 +-
+ fs/fuse/file.c                         |    2 +-
+ fs/fuse/inode.c                        |   10 ++-
+ fs/inotify_user.c                      |  135 +++++++++++++++++--------------
+ fs/sysfs/bin.c                         |    6 ++
+ include/asm-x86/pgalloc.h              |    1 +
+ include/linux/Kbuild                   |    1 +
+ include/linux/pci_ids.h                |    6 ++
+ include/linux/sched.h                  |    1 -
+ kernel/relay.c                         |    4 +-
+ net/mac80211/tx.c                      |    4 +-
+ net/sunrpc/rpcb_clnt.c                 |   40 ++++++++--
+ sound/pci/hda/patch_conexant.c         |    1 +
+ sound/pci/hda/patch_realtek.c          |    1 +
+ sound/pci/hda/patch_sigmatel.c         |    2 +
+ sound/pci/oxygen/virtuoso.c            |   22 ++++--
+ 36 files changed, 336 insertions(+), 184 deletions(-)
