@@ -1,42 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZAaLmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753514AbZAaLpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbZAaLmr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 06:42:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751896AbZAaLmi
+	id S1753514AbZAaLpb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 06:45:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbZAaLpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 06:42:38 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:34080 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbZAaLmh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 06:42:37 -0500
-Date: Sat, 31 Jan 2009 11:42:26 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Paul Walmsley <paul@pwsan.com>
-Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-       Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-Subject: Re: [PATCH F 12/12] OMAP2/3 McBSP: add temporary clockdomain fix for McBSP virtual clocks
-Message-ID: <20090131114226.GE1394@n2100.arm.linux.org.uk>
-References: <20090128193326.2396.9437.stgit@localhost.localdomain> <20090128193531.2396.91172.stgit@localhost.localdomain>
-Mime-Version: 1.0
+	Sat, 31 Jan 2009 06:45:23 -0500
+Received: from 8bytes.org ([88.198.83.132]:50721 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750984AbZAaLpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 06:45:22 -0500
+Date: Sat, 31 Jan 2009 12:45:20 +0100
+From: Joerg Roedel <joro@8bytes.org>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: Roger Larsson <roger.larsson@e-gatan.se>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Robert Love <rml@tech9.net>,
+       Pavel Machek <pavel@ucw.cz>
+Subject: Re: PROBLEM: in_atomic() misuse all over the place
+Message-ID: <20090131114520.GA26910@8bytes.org>
+References: <200901280010.37633.roger.larsson@e-gatan.se> <497FA2D0.1090605@shaw.ca>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090128193531.2396.91172.stgit@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <497FA2D0.1090605@shaw.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 12:35:33PM -0700, Paul Walmsley wrote:
-> The McBSP driver uses virtual clocks to handle enabling and disabling
-> its hardware clocks.  These virtual clocks have no associated
-> clockdomain. After commit 60b8b431e47d8c5b8c02a2e4fa9af388aae20790,
-> this prevents the McBSP clocks from registering correctly.
-> Resolve this for the short term by using virt_opp_clkdm for these clocks.
-> These McBSP virtual clocks should be removed, but such a fix would require
-> significant changes to the McBSP drivers that would require testing on
-> OMAP1, 2, and 3 platforms.
+On Tue, Jan 27, 2009 at 06:12:00PM -0600, Robert Hancock wrote:
+> I would think that the code that's using it for this purpose should be 
+> changed to do things differently, such as by changing the functions 
+> using it to make their caller pass in the proper GFP mask. I don't think 
+> it was ever intended to be used to select allocation behavior like this, 
+> only for debug warning checks and such.. Getting rid of in_atomic() and 
+> creating a in_atomic_warn() that just raises a warning if called 
+> atomically, might be the best long-term solution.
 
-With either my clkdev patches or the spinlock fixing for mcbsp, this patch
-seems to be redundant.
+I also made the mistake of using in_atomic() wrong in one of my last
+patch sets. In my case this was pointed out by the reviewers. Is there
+some documentation in the kernel tree how and when in_atomic() is used
+right? If not I think its worth writing a little file that explains the
+important details about the correct use of in_atomic() :-)
+
+Joerg
+
