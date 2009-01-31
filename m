@@ -1,64 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753515AbZAaVfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZAaVnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753515AbZAaVfc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 16:35:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbZAaVfY
+	id S1753320AbZAaVnY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 16:43:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbZAaVnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 16:35:24 -0500
-Received: from fifo99.com ([67.223.236.141]:50358 "EHLO fifo99.com"
+	Sat, 31 Jan 2009 16:43:09 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54555 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751361AbZAaVfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 16:35:24 -0500
-Subject: Re: checkpatch.pl is getting too slow
-From: Daniel Walker <dwalker@fifo99.com>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090131210220.GA25811@shadowen.org>
-References: <20090131185507.GA3280@kroah.com>
-	 <20090131210220.GA25811@shadowen.org>
-Content-Type: text/plain
-Date: Sat, 31 Jan 2009 13:35:19 -0800
-Message-Id: <1233437719.5903.33.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751466AbZAaVnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 16:43:08 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: What should PCI core do during suspend-resume? (was: Re: 2.6.29-rc3: tg3 dead after resume)
+Date: Sat, 31 Jan 2009 22:42:16 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901301714080.3150@localhost.localdomain> <200901312208.20850.rjw@sisk.pl>
+In-Reply-To: <200901312208.20850.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901312242.17273.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-31 at 21:02 +0000, Andy Whitcroft wrote:
-> On Sat, Jan 31, 2009 at 10:55:07AM -0800, Greg KH wrote:
-> > Hi Andy,
+On Saturday 31 January 2009, Rafael J. Wysocki wrote:
+> On Saturday 31 January 2009, Linus Torvalds wrote:
 > > 
-> > I've noticed that checkpatch.pl is getting slower and slower when run on
-> > a whole file, but yesterday I realized that it now is pretty much
-> > unusable:
+> > On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > Can you test the patch below, please?
 > > 
-> > $ time ./scripts/checkpatch.pl --file drivers/staging/uc2322/aten2011.c
+> > Rafael, you're making this _way_ too difficult.
 > > 
-> > <snip>
-> > total: 168 errors, 126 warnings, 3939 lines checked
-> > 
-> > drivers/staging/uc2322/aten2011.c has style problems, please review.  If any of these errors
-> > are false positives report them to the maintainer, see
-> > CHECKPATCH in MAINTAINERS.
-> > 
-> > real	8m7.924s
-> > user	8m7.058s
-> > sys	0m0.116s
+> > Don't make it use the new PM infrastructure, because that one is certainly 
+> > broken: pci_pm_default_suspend_generic() is total crap.
 > 
-> That is scarey indeed.  Something is very wrong in there if it went back
-> to a more reasonable 10's of seconds with a few patches.  I will have a
-> look at the file you attached and see what I can find.
+> Oh my.  I beg to differ.
 > 
-> Thanks for the heads up.
+> > It's saving the disabled state. No WAY is that correct.
+> 
+> So why does it work, actually?
+> 
+> > That "pci_disable_enabled_device()" should be removed, but even then 
+> > that's wrong, because if the driver suspend disabled it, you're now 
+> > (again) saving the disabled state.
+> > 
+> > But all of that is only called if you use the new PM infrastructure. So 
+> > the thing is, when you're trying to move the PCI-E drive to the new pm 
+> > infrastructure, you're making things _worse_.
+> 
+> I don't really think so (see below).
+> 
+> > The legacy PM infrastructure at least does the whole
+> > 
+> > 	pci_dev->state_saved = false;
+> > 	i = drv->suspend(pci_dev, state);
+> > 	..
+> > 	if (pci_dev->state_saved)
+> > 		goto Fixup;
+> > 
+> > thing, which will avoid overwriting the state if it was already saved.
+> > 
+> > HOWEVER. The problem here (I think) is that PCI-E actually does the state 
+> > save late, so it won't ever see the "state_saved" in the early ->suspend. 
+> > I think a patch like the one below at least simplifies this all, and lets 
+> > the PCI layer itself do all the core restore stuff.
+> > 
+> > The new PM infrastructure gets this totally wrong, and
+> >  (a) disables the device before saving state
+> 
+> pci_disable_device() does really only one thing: it clears the bus master bit.
+> Yes, it also calls pcibios_disable_device(), but on x86 this is a NOP.
+> 
+> I don't think it is SO bad, is it?
+> 
+> > and
+> >  (b) overwrites the (now corrupted) saved state that the driver perhaps 
+> >      already saved, after the driver may even have put it to sleep.
+> 
+> The driver using the new model is not supposed to save the state and power
+> off the device.  Still, it's probably a good idea not to trust the drivers. :-)
+> 
+> > So let's not use the new PM infrastructure - I don't think it's ready yet.
+> >
+> > Let's start simplifying first. Start off by getting rid of the 
+> > suspend_early/resume_late, since the PCI layer now does it for us.
+> > 
+> > I don't see why we don't resume with IO/MEM on, though. The legacy suspend 
+> > sequence shouldn't disable them, afaik.
+> 
+> No, it shouldn't.
+> 
+> However, the patch below actually may help and it really is not too different
+> from my "new infrastructure" patch.  It leaves the pcie_portdrv_restore_config()
+> in the PCIe port driver's ->resume(), but that shouldn't change things,
+> pci_enable_device() in there shouldn't do anything and the bus master bit
+> should already be set.
+> 
+> The "new infrastracture" patch makes pci_disable_enabled_device() be called in
+> the suspend code path, but that only disables the bus master bit, and
+> pci_reenable_device() be called in the resume code path, but that only sets the
+> bus master bit back again.
 
-The way your doing updates makes bisecting this code way too difficult..
-I bisected this down to the commit for version 0.15 , but if you had all
-the 0.15 patches as discrete git commits I could have actually found the
-specific patch causing the problem ..
+I should have said "in this particular case", because it actually makes a
+difference for devices using interrupt pins.  Namely, pcibios_enable_device()
+additionally enables PCI resources (that may make a difference, but everything
+should have been restored already) and sets up an interrupt link for the
+device.  If the link has been set up already, which often is the case, it
+increases a reference count and exits.
 
-Could you start doing one fix or change per git commit?
+Now, this reference count is not used for anything, but it was supposed to be
+used for disabling the interrupt links that are no longer needed.  This
+mechanism is currently disabled, but if we enable it at one point (which may
+be necessary to fix suspend-resume on some boxes), it won't work if
+the "enable" calls are not balanced with "disable" ones.  IOW, for every
+pcibios_enable_device() call there should be a complementary
+pcibios_disable_device() call.  That's why I decided to put the
+disable/enable things into the PCI core's suspend/resume code paths (also,
+because pci_reenable_device() has been already there for driverless devices).
+This might not be the right choice, but I don't really think it does break
+things.
 
-Daniel
+Anyway, from what I can tell reading your messages in this thread so far,
+you seem to want the PCI core to:
+(1) save the state of devices during suspend (avoid doing that if the driver has
+    already saved the state),
+(2) put devices into D0 during resume (early),
+(3) restore the state of devices during resume (early).
+Still, you don't want the core to disable devices during suspend and to enable
+(or reenable) them during resume.
 
+What about putting devices into low power states?  [Note that ACPI may be
+necessary for this purpose.]
+
+What about devices with no drivers and/or without suspend/resume support?
+Do you want them to be disabled during suspend and enabled during resume by
+the core?  [I guess you do, they have no interrupt handlers that may break
+after all.]
+
+Thanks,
+Rafael
