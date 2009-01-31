@@ -1,72 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753492AbZAaFwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZAaF5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753492AbZAaFwS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 00:52:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZAaFwF
+	id S1752984AbZAaF5S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 00:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751142AbZAaF5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 00:52:05 -0500
-Received: from ti-out-0910.google.com ([209.85.142.190]:36442 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbZAaFwC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 00:52:02 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=Xtq3DkOmF0SEYTRGFk1yXKzYPK9zACeAaTfWl+jusG6GWW7nGjrGTkX17fUoX5itMO
-         tU/k5N0HknyActsj7ZlwTvptoKHzIkDtwh/bSmudApVq0SwswTSPBD/Ra3SE2g51/t+9
-         N9JHD56QQv67EKfLeAYx/lZOtUit8nVx1stNs=
-Message-ID: <4983E6D3.6010409@gmail.com>
-Date: Sat, 31 Jan 2009 13:51:15 +0800
-From: Dave Young <hidave.darkstar@gmail.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081010)
-MIME-Version: 1.0
-To: linux-bluetooth@vger.kernel.org, linux-kernel@vger.kernel.org,
-       marcel@holtmann.org, davem@davemloft.net
-Subject: [PATCH] bluetooth: CONFIG_DEBUG_LOCK_ALLOC ifdefs remove
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 31 Jan 2009 00:57:06 -0500
+Received: from movementarian.org ([79.99.65.163]:40655 "EHLO movementarian.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750826AbZAaF5F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 00:57:05 -0500
+X-Greylist: delayed 3563 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Jan 2009 00:57:04 EST
+Date: Fri, 30 Jan 2009 23:57:33 -0500
+From: wli@movementarian.org
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 3/7] epoll keyed wakeups - introduce key-aware wakeup macros
+Message-ID: <20090131045733.GA26410@movementarian.org>
+References: <send-serie.davidel@xmailserver.org.16376.1233372317.3> <alpine.LFD.2.00.0901301949110.3150@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0901301949110.3150@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Jan 30, 2009 at 07:49:26PM -0800, Linus Torvalds wrote:
+> But even more I dislike the notion of this being a "key". It's not. It's 
+> about poll events, nothing more. So renaming it to "_key()" in no way 
+> helps.
+> Yes, _internally_ we send that "void *key" around, and then leave it to 
+> lower levels to agree about how it is used, but at the level _you_ then 
+> use it, that is no longer the case. When you do a 
+> 	kwake_up_interruptible(&tty->write_wait, POLLOUT);
+> that has _nothing_ to do with "keys" any more. So the 'k' prefix is wrong 
+> and really odd-looking, but a '_key' postfix wouldn't be much better 
+> either. Because when you pass in POLLOUT, you're not using it as a key, 
+> you are very much using it as a poll-specific thing.
+> So the naming should match that. I suspect a '_poll' postfix (or a 'poll_' 
+> prefix would work and make sense.
 
-Due to lockdep changes the CONFIG_DEBUG_LOCK_ALLOC ifdef is not needed now, just remove it here.
+The filtered wakeup code uses some notion of a key already. There, the
+key is to route wakeups to recipients associated with the correct
+object. Here, the objects are known in advance. The wakeup is to give
+them some particular message in which they may not necessarily be
+interested. Names indicative of that (e.g. *_msg/msg_*) would clarify
+the distinction between it and the filtered wakeup code used for pages.
 
-The following commit fixed the !lockdep build warnings:
-
-commit e8f6fbf62de37cbc2e179176ac7010d5f4396b67
-Author: Ingo Molnar <mingo@elte.hu>
-Date:   Wed Nov 12 01:38:36 2008 +0000
-
-    lockdep: include/linux/lockdep.h - fix warning in net/bluetooth/af_bluetooth.c
-
-Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
----
-net/bluetooth/af_bluetooth.c |    6 ------
-1 file changed, 6 deletions(-)
-
-diff -uprN a/net/bluetooth/af_bluetooth.c b/net/bluetooth/af_bluetooth.c
---- a/net/bluetooth/af_bluetooth.c	2009-01-31 13:38:45.000000000 +0800
-+++ b/net/bluetooth/af_bluetooth.c	2009-01-31 13:38:58.000000000 +0800
-@@ -48,7 +48,6 @@
- static struct net_proto_family *bt_proto[BT_MAX_PROTO];
- static DEFINE_RWLOCK(bt_proto_lock);
- 
--#ifdef CONFIG_DEBUG_LOCK_ALLOC
- static struct lock_class_key bt_lock_key[BT_MAX_PROTO];
- static const char *bt_key_strings[BT_MAX_PROTO] = {
- 	"sk_lock-AF_BLUETOOTH-BTPROTO_L2CAP",
-@@ -86,11 +85,6 @@ static inline void bt_sock_reclassify_lo
- 			bt_slock_key_strings[proto], &bt_slock_key[proto],
- 				bt_key_strings[proto], &bt_lock_key[proto]);
- }
--#else
--static inline void bt_sock_reclassify_lock(struct socket *sock, int proto)
--{
--}
--#endif
- 
- int bt_sock_register(int proto, struct net_proto_family *ops)
- {
+-- wli
