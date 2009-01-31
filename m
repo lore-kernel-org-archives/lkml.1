@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbZAaWUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbZAaWrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbZAaWUG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 17:20:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbZAaWTz
+	id S1753326AbZAaWrT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 17:47:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752324AbZAaWrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 17:19:55 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55102 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbZAaWTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 17:19:55 -0500
-Date: Sat, 31 Jan 2009 23:19:39 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Alexey Zaytsev <alexey.zaytsev@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20090131221939.GD29364@elte.hu>
-References: <20090130230936.GA7549@elte.hu> <1233421901.4787.27.camel@laptop> <1233422632.4787.31.camel@laptop> <f19298770901310949m7aabf7bcp219ae4cc5d1b363b@mail.gmail.com> <1233425327.4787.35.camel@laptop> <20090131212106.6e2e05b0@lxorguk.ukuu.org.uk>
+	Sat, 31 Jan 2009 17:47:05 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:46037 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbZAaWrE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 17:47:04 -0500
+Message-ID: <4984D40B.70203@zytor.com>
+Date: Sat, 31 Jan 2009 14:43:23 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090131212106.6e2e05b0@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ravikiran Thirumalai <kiran@scalemp.com>
+Subject: Re: [PATCH 0 of 7] x86/paravirt: optimise pvop calls and register
+ use
+References: <patchbomb.1233182100@abulafia.goop.org> <49815764.6040809@kernel.org> <49817C26.2020503@goop.org> <4983DBC9.5080701@kernel.org> <4983FAB9.2010004@goop.org>
+In-Reply-To: <4983FAB9.2010004@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> On Sat, 31 Jan 2009 19:08:47 +0100
-> Peter Zijlstra <peterz@infradead.org> wrote:
+Jeremy Fitzhardinge wrote:
 > 
-> > On Sat, 2009-01-31 at 20:49 +0300, Alexey Zaytsev wrote:
-> > > 
-> > > And answering an earlier question, this happens only on i386 and only
-> > > with 4K stacks because x86_64 dosn't have a separate softirq stack,
-> > > so the preempt count diring the soft irq is at least IRQ_EXIT_OFFSET.
-> > 
-> > What do the other 30 odd architectures that Linux supports do? Is i386 
-> > 4k really the _only_ with separate softirq stacks?
+> Thanks.  I have a couple of additional fixes.  Also, did you pick up
+> those other two io.h patches I mailed you the other day?
 > 
-> x86-64 and some of the other platforms could do with IRQ stacks but that 
-> is another story.
 
-64-bit x86 already has IRQ stacks [16K large, per CPU], separate from the 
-8K syscall/process stack.
+Haven't yet, but it's on the TODO list for today (Friday got a bit busy.)
 
-The question here is that on 64-bit hardirqs and softirqs share the same 
-stack (it's large enough). On 32-bit we have them separated.
+	-hpa
 
-	Ingo
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
