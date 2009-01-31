@@ -1,79 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZAaIHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZAaIkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbZAaIHY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 03:07:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750853AbZAaIHK
+	id S1753432AbZAaIkf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 03:40:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZAaIkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 03:07:10 -0500
-Received: from n61.bullet.mail.sp1.yahoo.com ([98.136.44.37]:39342 "HELO
-	n61.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750840AbZAaIHJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 03:07:09 -0500
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 626461.16714.bm@omp112.mail.gq1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=ymail.com;
-  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
-  b=e+UeU7fa7bGEsUxpgstHt3Tie2T4ncbNc+Uhr2rJiph4AliCUdQ5ocm5n3GD0vL2X1oqTc9kaxkPWaO6A0mTp0iPHmKwePLICkhC/+Yx4E1EuExer97aYq+8ruA1UmKrVaMcVvGbZ4R53EtCuXT+7/P78i5itADRmtlGnNJv4zc=;
-X-YMail-OSG: 99nxAdUVM1nOfuvOIlLkxhPQcUFHyLkfBmF1ehT9Ko1nH8FOsha6PEVj56pOqWl3OkObo3RXes7apLApx8AN8Q5nn2OVhIz6v51QRXyEzvN4SG9_yVOeak5dQyyq3r8v5x9W4NDxMmx5APrabJXksq8QEGMA
-X-Mailer: YahooMailWebService/0.7.260.1
-Date: Sat, 31 Jan 2009 00:06:03 -0800 (PST)
-From: Andrew Watts <akwatts@ymail.com>
-Reply-To: akwatts@ymail.com
-Subject: Re: Thermal problems with newer kernels
-To: linux-kernel@vger.kernel.org
-Cc: Robert Hancock <hancockr@shaw.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <453325.71214.qm@web111009.mail.gq1.yahoo.com>
+	Sat, 31 Jan 2009 03:40:25 -0500
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:48743 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbZAaIkY (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 03:40:24 -0500
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Holger Macht <hmacht@suse.de>,
+       linux-acpi@vger.kernel.org
+Subject: Re: mmotm 2009-01-28-02-17 uploaded - docking station issues.
+In-Reply-To: Your message of "Fri, 30 Jan 2009 21:03:52 PST."
+             <20090130210352.cf9e4d7f.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org> <20830.1233246343@turing-police.cc.vt.edu>
+            <20090130210352.cf9e4d7f.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1233391214_3882P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 31 Jan 2009 03:40:14 -0500
+Message-ID: <4126.1233391214@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
->Andrew Watts wrote:
->> Dear Kernel Gurus:
->>
->> Below is a problem that I am unable to explain along with relevant(?) in
->> fo. Please leti me know if I should provide additional debugging
->> information. Thanks in advance for your assistance!
->>
->> -Andy
->>
->> [1] Problem: HP Pavilion zv5000 laptop idle temp is 17 degrees higher
->> when running most recent kernels (57C versus 40C).
->>
->> [2] Brief Description
->>
->> Newer kernels (noticed starting with 2.6.27.3 but could have started any
->> time past 2.6.26.7) result in a much higher idle CPU temp. Physical
->> temperature reading of exhaust from primary cooling fan and the regular
->> triggering of secondary cooling fan confirms this (it is not a readout
->> scaling issue). The kernels and temps below:
->>
->> 2.6.26.7     Idle temp 40C
->> 2.6.27.3     Idle temp 57C
->> 2.6.28       Idle temp 57C
->>
->> The only third party kernel module installed that is not part of the
->> official kernel source is: madwifi-ng. However, the problem occurs even
->> when this module is not loaded.
->>
->> The .config file used for the newer kernels was imported from the
->> working 2.6.26.7 .config file.
+--==_Exmh_1233391214_3882P
+Content-Type: text/plain; charset=us-ascii
+
+On Fri, 30 Jan 2009 21:03:52 PST, Andrew Morton said:
+> On Thu, 29 Jan 2009 11:25:43 -0500 Valdis.Kletnieks@vt.edu wrote:
+> 
+> > On Wed, 28 Jan 2009 02:19:09 PST, akpm@linux-foundation.org said:
+> > > The mm-of-the-moment snapshot 2009-01-28-02-17 has been uploaded to
+> > >    http://userweb.kernel.org/~akpm/mmotm/
+
+> > % ls -l /sys/devices/platform/dock.0/docked
+> > -r--r--r-- 1 root root 4096 2009-01-29 10:49 /sys/devices/platform/dock.0/docked
+> > % cat /sys/devices/platform/dock.0/docked
+> > =F1=DEcat: write error: Bad address
+> >
+> > strace of the cat shows:
+> >
+> > open("/sys/devices/platform/dock.0/docked", O_RDONLY) = 3
+> > fstat(3, {st_mode=S_IFREG|0444, st_size=4096, ...}) = 0
+> > read(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 4096) = 1812586496
+
+> > Under 2.6.29-rc2-mmotm0116, this would return either "0" or "1", not 4K
+> > of nulls.
+
+> Is it due to
 >
->CPU frequency scaling not working perhaps? What's your dmesg output from
->bootup look like? Is the acpi-cpufreq driver being loaded?
+> acpi-dock-dont-eval-_sta-on-every-show_docked-sysfs-read.patch
 
-I thought I had checked this but...the problem goes away with "nolapic" (i
-had configured lapic into previous kernels, even though a uniprocessor,
-because it solved minor IRQ issues). Broken HP APIC? I fixed the IRQ issue
-by forcing IRQ balancing. Interesting that this starts with 2.6.27.x.
+Bingo. Reverting that patch and the sysfs-read-simplified.patch fixed it.
 
-Many thanks for your response.
+So obviously something in there doesn't agree with the innards of my laptop -
 
+Dell Latitude D820, BIOS is A09 (current), if that helps anybody...
 
+--==_Exmh_1233391214_3882P
+Content-Type: application/pgp-signature
 
-      
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
+iD8DBQFJhA5ucC3lWbTT17ARAt6iAKDovhSrQQvSJ4k/VbIRhZ4cVeAWoQCfR1KO
+k+G8xjuIeCxrCGsaG26/ZL0=
+=86Nx
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1233391214_3882P--
