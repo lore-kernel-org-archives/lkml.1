@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbZAaAEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbZAaAIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167AbZAaAEG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 19:04:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbZAaADw
+	id S1756727AbZAaAIX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 19:08:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZAaAIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 19:03:52 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42960 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754388AbZAaADv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 19:03:51 -0500
-Date: Fri, 30 Jan 2009 16:03:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: roger.larsson@e-gatan.se, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rml@tech9.net, pavel@ucw.cz, netdev@vger.kernel.org
-Subject: Re: PROBLEM: in_atomic() misuse all over the place
-Message-Id: <20090130160316.7e53ef99.akpm@linux-foundation.org>
-In-Reply-To: <87pri7k4id.fsf@basil.nowhere.org>
-References: <200901280010.37633.roger.larsson@e-gatan.se>
-	<87pri7k4id.fsf@basil.nowhere.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 30 Jan 2009 19:08:12 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:50946 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752230AbZAaAIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 19:08:11 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+Date: Sat, 31 Jan 2009 01:07:47 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901310031.37660.rjw@sisk.pl> <alpine.LFD.2.00.0901301541290.3150@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901301541290.3150@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901310107.48623.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 28 Jan 2009 13:18:50 +0100
-Andi Kleen <andi@firstfloor.org> wrote:
-
-> > file:  include/net/sock.h
-> >
-> >    static inline gfp_t gfp_any(void)
-> >    {
-> >      return in_atomic() ? GFP_ATOMIC : GFP_KERNEL;
-> >    }
+On Saturday 31 January 2009, Linus Torvalds wrote:
 > 
-> That's typically for softirq vs non softirq, which is important
-> for the network stack.
+> On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
+> > 
+> > I wonder if this change makes any difference:
+> > 
+> > --- linux-2.6.orig/drivers/pci/pci-driver.c
+> > +++ linux-2.6/drivers/pci/pci-driver.c
+> > @@ -501,6 +501,9 @@ static int pci_pm_suspend(struct device
+> >  	if (pci_has_legacy_pm_support(pci_dev))
+> >  		return pci_legacy_suspend(dev, PMSG_SUSPEND);
+> >  
+> > +	if (!drv || !drv->pm)
+> > +		return 0;
+> > +
+> >  	if (drv && drv->pm && drv->pm->suspend) {
+> >  		error = drv->pm->suspend(dev);
+> >  		suspend_report_result(drv->pm->suspend, error);
 > 
+> I don't think that's right. Now you don't end up calling 
+> pci_pm_default_suspend_generic() at all, and this no pci_save_state().
+> 
+> But I think it could easily be the call to pci_disable_enabled_device(). 
+> It does that
+> 
+> 	if (atomic_read(&dev->enable_cnt))
+> 		do_pci_disable_device(dev);
+> 
+> and that ends up disabling PCI_COMMAND_MASTER and then calling 
+> pcibios_disable_device().
+> 
+> Any device we have ever done pci_enable_device() on would trigger this, 
+> which includes PCIE bridges, for example. And while the pcie driver does 
+> that
+> 
+> 	pcie_portdrv_restore_config ->
+> 		pci_enable_device(dev);
+> 
+> thing to re-enable it, that's a no-op since the enable_count is already 
+> non-zero.
+> 
+> And we do try to restore it (pci_restore_standard_config() will call 
+> pci_restore_state()), but since we've done the 
+> pci_disable_enabled_device() _before_ we did the pci_save_state(), we now 
+> restore a non-working setup. 
+> 
+> I think. The rules are too damn subtle there.  Rafael, can you look around 
+> a bit?
 
-There's a bit of a problem here.  If someone accidentally uses
-gfp_any() inside a spinlock, it will do a sleeping allocation on
-non-preempt kernels and will do an atomic allocation on preemptible
-kernels, so we won't get to see the warning which would allow us to fix
-the bug.
+Sure, I'm looking at it right now.
 
-Would using irq_count() work?  If so, that would fix this up.
+Rafael
