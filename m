@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbZAaCvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758164AbZAaCvj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757999AbZAaCvT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:51:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbZAaCqp
+	id S1758164AbZAaCvj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:51:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbZAaCqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:45 -0500
-Received: from kroah.org ([198.145.64.141]:54826 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:47 -0500
+Received: from kroah.org ([198.145.64.141]:54838 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754515AbZAaCqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:44 -0500
-Date: Fri, 30 Jan 2009 18:40:07 -0800
+	id S1754697AbZAaCqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:45 -0500
+Date: Fri, 30 Jan 2009 18:40:09 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Flavio Leitner <fleitner@redhat.com>,
-       Alan Cox <alan@redhat.com>
-Subject: [patch 12/32] serial_8250: support for Sealevel Systems Model 7803
-	COMM+8
-Message-ID: <20090131024007.GM12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 13/32] SUNRPC: Fix a memory leak in rpcb_getport_async
+Message-ID: <20090131024009.GN12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="serial_8250-support-for-sealevel-systems-model-7803-comm-8.patch"
+Content-Disposition: inline; filename="sunrpc-fix-a-memory-leak-in-rpcb_getport_async.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,42 +39,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Flavio Leitner <fleitner@redhat.com>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit e65f0f8271b1b0452334e5da37fd35413a000de4 upstream.
+commit 96165e2b7c4e2c82a0b60c766d4a2036444c21a0 upstream.
 
-Add support for Sealevel Systems Model 7803 COMM+8
-
-Signed-off-by: Flavio Leitner <fleitner@redhat.com>
-Signed-off-by: Alan Cox <alan@redhat.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/8250_pci.c |    3 +++
- include/linux/pci_ids.h   |    1 +
- 2 files changed, 4 insertions(+)
+ net/sunrpc/rpcb_clnt.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -2190,6 +2190,9 @@ static struct pci_device_id serial_pci_t
- 	{	PCI_VENDOR_ID_SEALEVEL, PCI_DEVICE_ID_SEALEVEL_COMM8,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_b2_8_115200 },
-+	{	PCI_VENDOR_ID_SEALEVEL, PCI_DEVICE_ID_SEALEVEL_7803,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_b2_8_460800 },
- 	{	PCI_VENDOR_ID_SEALEVEL, PCI_DEVICE_ID_SEALEVEL_UCOMM8,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_b2_8_115200 },
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1784,6 +1784,7 @@
- #define PCI_DEVICE_ID_SEALEVEL_UCOMM232	0x7202
- #define PCI_DEVICE_ID_SEALEVEL_COMM4	0x7401
- #define PCI_DEVICE_ID_SEALEVEL_COMM8	0x7801
-+#define PCI_DEVICE_ID_SEALEVEL_7803	0x7803
- #define PCI_DEVICE_ID_SEALEVEL_UCOMM8	0x7804
+--- a/net/sunrpc/rpcb_clnt.c
++++ b/net/sunrpc/rpcb_clnt.c
+@@ -558,7 +558,7 @@ void rpcb_getport_async(struct rpc_task 
+ 		status = -ENOMEM;
+ 		dprintk("RPC: %5u %s: no memory available\n",
+ 			task->tk_pid, __func__);
+-		goto bailout_nofree;
++		goto bailout_release_client;
+ 	}
+ 	map->r_prog = clnt->cl_prog;
+ 	map->r_vers = clnt->cl_vers;
+@@ -583,6 +583,8 @@ void rpcb_getport_async(struct rpc_task 
+ 	task->tk_xprt->stat.bind_count++;
+ 	return;
  
- #define PCI_VENDOR_ID_HYPERCOPE		0x1365
++bailout_release_client:
++	rpc_release_client(rpcb_clnt);
+ bailout_nofree:
+ 	rpcb_wake_rpcbind_waiters(xprt, status);
+ 	task->tk_status = status;
 
