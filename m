@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754845AbZAaCzC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbZAaC5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754845AbZAaCzC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:55:02 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbZAaCq7
+	id S1760241AbZAaC5k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:57:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZAaCrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:59 -0500
-Received: from kroah.org ([198.145.64.141]:54958 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:09 -0500
+Received: from kroah.org ([198.145.64.141]:55070 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755388AbZAaCq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:56 -0500
-Date: Fri, 30 Jan 2009 18:40:31 -0800
+	id S1752391AbZAaCrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:03 -0500
+Date: Fri, 30 Jan 2009 18:40:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jarod Wilson <jarod@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 23/32] crypto: ccm - Fix handling of null assoc data
-Message-ID: <20090131024031.GX12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 30/32] rtl8187: Fix error in setting OFDM power settings
+	for RTL8187L
+Message-ID: <20090131024052.GE12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="crypto-ccm-fix-handling-of-null-assoc-data.patch"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline; filename="rtl8187-fix-error-in-setting-ofdm-power-settings-for-rtl8187l.patch"
+Content-Transfer-Encoding: 8bit
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,84 +42,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jarod Wilson <jarod@redhat.com>
+From: Larry Finger <Larry.Finger@lwfinger.net>
 
-commit 516280e735b034216de97eb7ba080ec6acbfc58f upstream.
+commit eb83bbf57429ab80f49b413e3e44d3b19c3fdc5a upstream.
 
-Its a valid use case to have null associated data in a ccm vector, but
-this case isn't being handled properly right now.
+After reports of poor performance, a review of the latest vendor driver
+(rtl8187_linux_26.1025.0328.2007) for RTL8187L devices was undertaken.
 
-The following ccm decryption/verification test vector, using the
-rfc4309 implementation regularly triggers a panic, as will any
-other vector with null assoc data:
+A difference was found in the code used to index the OFDM power tables. When
+the Linux driver was changed, my unit works at a much greater range than
+before. I think this fixes Bugzilla #12380 and has been tested by at least
+two other users.
 
-* key: ab2f8a74b71cd2b1ff802e487d82f8b9
-* iv: c6fb7d800d13abd8a6b2d8
-* Associated Data: [NULL]
-* Tag Length: 8
-* input: d5e8939fc7892e2b
-
-The resulting panic looks like so:
-
-Unable to handle kernel paging request at ffff810064ddaec0 RIP:
- [<ffffffff8864c4d7>] :ccm:get_data_to_compute+0x1a6/0x1d6
-PGD 8063 PUD 0
-Oops: 0002 [1] SMP
-last sysfs file: /module/libata/version
-CPU 0
-Modules linked in: crypto_tester_kmod(U) seqiv krng ansi_cprng chainiv rng ctr aes_generic aes_x86_64 ccm cryptomgr testmgr_cipher testmgr aead crypto_blkcipher crypto_a
-lgapi des ipv6 xfrm_nalgo crypto_api autofs4 hidp l2cap bluetooth nfs lockd fscache nfs_acl sunrpc ip_conntrack_netbios_ns ipt_REJECT xt_state ip_conntrack nfnetlink xt_
-tcpudp iptable_filter ip_tables x_tables dm_mirror dm_log dm_multipath scsi_dh dm_mod video hwmon backlight sbs i2c_ec button battery asus_acpi acpi_memhotplug ac lp sg
-snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss joydev snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ide_cd snd_pcm floppy parport_p
-c shpchp e752x_edac snd_timer e1000 i2c_i801 edac_mc snd soundcore snd_page_alloc i2c_core cdrom parport serio_raw pcspkr ata_piix libata sd_mod scsi_mod ext3 jbd uhci_h
-cd ohci_hcd ehci_hcd
-Pid: 12844, comm: crypto-tester Tainted: G      2.6.18-128.el5.fips1 #1
-RIP: 0010:[<ffffffff8864c4d7>]  [<ffffffff8864c4d7>] :ccm:get_data_to_compute+0x1a6/0x1d6
-RSP: 0018:ffff8100134434e8  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffff8100104898b0 RCX: ffffffffab6aea10
-RDX: 0000000000000010 RSI: ffff8100104898c0 RDI: ffff810064ddaec0
-RBP: 0000000000000000 R08: ffff8100104898b0 R09: 0000000000000000
-R10: ffff8100103bac84 R11: ffff8100104898b0 R12: ffff810010489858
-R13: ffff8100104898b0 R14: ffff8100103bac00 R15: 0000000000000000
-FS:  00002ab881adfd30(0000) GS:ffffffff803ac000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffff810064ddaec0 CR3: 0000000012a88000 CR4: 00000000000006e0
-Process crypto-tester (pid: 12844, threadinfo ffff810013442000, task ffff81003d165860)
-Stack:  ffff8100103bac00 ffff8100104898e8 ffff8100134436f8 ffffffff00000000
- 0000000000000000 ffff8100104898b0 0000000000000000 ffff810010489858
- 0000000000000000 ffff8100103bac00 ffff8100134436f8 ffffffff8864c634
-Call Trace:
- [<ffffffff8864c634>] :ccm:crypto_ccm_auth+0x12d/0x140
- [<ffffffff8864cf73>] :ccm:crypto_ccm_decrypt+0x161/0x23a
- [<ffffffff88633643>] :crypto_tester_kmod:cavs_test_rfc4309_ccm+0x4a5/0x559
-[...]
-
-The above is from a RHEL5-based kernel, but upstream is susceptible too.
-
-The fix is trivial: in crypto/ccm.c:crypto_ccm_auth(), pctx->ilen contains
-whatever was in memory when pctx was allocated if assoclen is 0. The tested
-fix is to simply add an else clause setting pctx->ilen to 0 for the
-assoclen == 0 case, so that get_data_to_compute() doesn't try doing
-things its not supposed to.
-
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+Tested-by: Martín Ernesto Barreyro <barreyromartin@gmail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- crypto/ccm.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/net/wireless/rtl8187_rtl8225.c |   10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
---- a/crypto/ccm.c
-+++ b/crypto/ccm.c
-@@ -266,6 +266,8 @@ static int crypto_ccm_auth(struct aead_r
- 	if (assoclen) {
- 		pctx->ilen = format_adata(idata, assoclen);
- 		get_data_to_compute(cipher, pctx, req->assoc, req->assoclen);
-+	} else {
-+		pctx->ilen = 0;
- 	}
+--- a/drivers/net/wireless/rtl8187_rtl8225.c
++++ b/drivers/net/wireless/rtl8187_rtl8225.c
+@@ -287,7 +287,10 @@ static void rtl8225_rf_set_tx_power(stru
+ 	ofdm_power = priv->channels[channel - 1].hw_value >> 4;
  
- 	/* compute plaintext into mac */
+ 	cck_power = min(cck_power, (u8)11);
+-	ofdm_power = min(ofdm_power, (u8)35);
++	if (ofdm_power > (u8)15)
++		ofdm_power = 25;
++	else
++		ofdm_power += 10;
+ 
+ 	rtl818x_iowrite8(priv, &priv->map->TX_GAIN_CCK,
+ 			 rtl8225_tx_gain_cck_ofdm[cck_power / 6] >> 1);
+@@ -540,7 +543,10 @@ static void rtl8225z2_rf_set_tx_power(st
+ 	cck_power += priv->txpwr_base & 0xF;
+ 	cck_power = min(cck_power, (u8)35);
+ 
+-	ofdm_power = min(ofdm_power, (u8)15);
++	if (ofdm_power > (u8)15)
++		ofdm_power = 25;
++	else
++		ofdm_power += 10;
+ 	ofdm_power += priv->txpwr_base >> 4;
+ 	ofdm_power = min(ofdm_power, (u8)35);
+ 
 
