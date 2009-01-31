@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759382AbZAaCw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759083AbZAaCv5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759382AbZAaCw5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:52:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755291AbZAaCqy
+	id S1759083AbZAaCv5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:51:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbZAaCqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:54 -0500
-Received: from kroah.org ([198.145.64.141]:54882 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:48 -0500
+Received: from kroah.org ([198.145.64.141]:54848 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754957AbZAaCqu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:50 -0500
-Date: Fri, 30 Jan 2009 18:40:18 -0800
+	id S1754747AbZAaCqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:46 -0500
+Date: Fri, 30 Jan 2009 18:40:11 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Pete Zaitcev <zaitcev@redhat.com>
-Subject: [patch 17/32] USB: usbmon: Implement compat_ioctl
-Message-ID: <20090131024018.GR12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 14/32] SUNRPC: Fix autobind on cloned rpc clients
+Message-ID: <20090131024011.GO12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-usbmon-implement-compat_ioctl.patch"
+Content-Disposition: inline; filename="sunrpc-fix-autobind-on-cloned-rpc-clients.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,174 +39,99 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Pete Zaitcev <zaitcev@redhat.com>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit 7abce6bedc118eb39fe177c2c26be5d008505c14 upstream.
+commit 9a4bd29fe8f6d3f015fe1c8e5450eb62cfebfcc9 upstream.
 
-Running a 32-bit usbmon(8) on 2.6.28-rc9 produces the following:
-ioctl32(usbmon:28563): Unknown cmd fd(3) cmd(400c9206){t:ffffff92;sz:12} arg(ffd3f458) on /dev/usbmon0
+Despite the fact that cloned rpc clients won't have the cl_autobind flag
+set, they may still find themselves calling rpcb_getport_async(). For this
+to happen, it suffices for a _parent_ rpc_clnt to use autobinding, in which
+case any clone may find itself triggering the !xprt_bound() case in
+call_bind().
 
-It happens because the compatibility mode was implemented for 2.6.18
-and not updated for the fsops.compat_ioctl API.
+The correct fix for this is to walk back up the tree of cloned rpc clients,
+in order to find the parent that 'owns' the transport, either because it
+has clnt->cl_autobind set, or because it originally created the
+transport...
 
-This patch relocates the pieces from under #ifdef CONFIG_COMPAT into
-compat_ioctl with no other changes except one new whitespace.
-
-Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/mon/mon_bin.c |  105 ++++++++++++++++++++++++++++------------------
- 1 file changed, 66 insertions(+), 39 deletions(-)
+ net/sunrpc/rpcb_clnt.c |   36 +++++++++++++++++++++++++++++-------
+ 1 file changed, 29 insertions(+), 7 deletions(-)
 
---- a/drivers/usb/mon/mon_bin.c
-+++ b/drivers/usb/mon/mon_bin.c
-@@ -37,6 +37,7 @@
- #define MON_IOCX_GET   _IOW(MON_IOC_MAGIC, 6, struct mon_bin_get)
- #define MON_IOCX_MFETCH _IOWR(MON_IOC_MAGIC, 7, struct mon_bin_mfetch)
- #define MON_IOCH_MFLUSH _IO(MON_IOC_MAGIC, 8)
-+
- #ifdef CONFIG_COMPAT
- #define MON_IOCX_GET32 _IOW(MON_IOC_MAGIC, 6, struct mon_bin_get32)
- #define MON_IOCX_MFETCH32 _IOWR(MON_IOC_MAGIC, 7, struct mon_bin_mfetch32)
-@@ -921,21 +922,6 @@ static int mon_bin_ioctl(struct inode *i
- 		}
- 		break;
+--- a/net/sunrpc/rpcb_clnt.c
++++ b/net/sunrpc/rpcb_clnt.c
+@@ -469,6 +469,28 @@ static struct rpc_task *rpcb_call_async(
+ 	return rpc_run_task(&task_setup_data);
+ }
  
--#ifdef CONFIG_COMPAT
--	case MON_IOCX_GET32: {
--		struct mon_bin_get32 getb;
--
--		if (copy_from_user(&getb, (void __user *)arg,
--					    sizeof(struct mon_bin_get32)))
--			return -EFAULT;
--
--		ret = mon_bin_get_event(file, rp,
--		    compat_ptr(getb.hdr32), compat_ptr(getb.data32),
--		    getb.alloc32);
--		}
--		break;
--#endif
--
- 	case MON_IOCX_MFETCH:
- 		{
- 		struct mon_bin_mfetch mfetch;
-@@ -962,7 +948,57 @@ static int mon_bin_ioctl(struct inode *i
- 		}
- 		break;
- 
-+	case MON_IOCG_STATS: {
-+		struct mon_bin_stats __user *sp;
-+		unsigned int nevents;
-+		unsigned int ndropped;
++/*
++ * In the case where rpc clients have been cloned, we want to make
++ * sure that we use the program number/version etc of the actual
++ * owner of the xprt. To do so, we walk back up the tree of parents
++ * to find whoever created the transport and/or whoever has the
++ * autobind flag set.
++ */
++static struct rpc_clnt *rpcb_find_transport_owner(struct rpc_clnt *clnt)
++{
++	struct rpc_clnt *parent = clnt->cl_parent;
 +
-+		spin_lock_irqsave(&rp->b_lock, flags);
-+		ndropped = rp->cnt_lost;
-+		rp->cnt_lost = 0;
-+		spin_unlock_irqrestore(&rp->b_lock, flags);
-+		nevents = mon_bin_queued(rp);
-+
-+		sp = (struct mon_bin_stats __user *)arg;
-+		if (put_user(rp->cnt_lost, &sp->dropped))
-+			return -EFAULT;
-+		if (put_user(nevents, &sp->queued))
-+			return -EFAULT;
-+
-+		}
-+		break;
-+
-+	default:
-+		return -ENOTTY;
++	while (parent != clnt) {
++		if (parent->cl_xprt != clnt->cl_xprt)
++			break;
++		if (clnt->cl_autobind)
++			break;
++		clnt = parent;
++		parent = parent->cl_parent;
 +	}
-+
-+	return ret;
++	return clnt;
 +}
 +
- #ifdef CONFIG_COMPAT
-+static long mon_bin_compat_ioctl(struct file *file,
-+    unsigned int cmd, unsigned long arg)
-+{
-+	struct mon_reader_bin *rp = file->private_data;
-+	int ret;
+ /**
+  * rpcb_getport_async - obtain the port for a given RPC service on a given host
+  * @task: task that is waiting for portmapper request
+@@ -478,10 +500,10 @@ static struct rpc_task *rpcb_call_async(
+  */
+ void rpcb_getport_async(struct rpc_task *task)
+ {
+-	struct rpc_clnt *clnt = task->tk_client;
++	struct rpc_clnt *clnt;
+ 	struct rpc_procinfo *proc;
+ 	u32 bind_version;
+-	struct rpc_xprt *xprt = task->tk_xprt;
++	struct rpc_xprt *xprt;
+ 	struct rpc_clnt	*rpcb_clnt;
+ 	static struct rpcbind_args *map;
+ 	struct rpc_task	*child;
+@@ -490,13 +512,13 @@ void rpcb_getport_async(struct rpc_task 
+ 	size_t salen;
+ 	int status;
+ 
++	clnt = rpcb_find_transport_owner(task->tk_client);
++	xprt = clnt->cl_xprt;
 +
-+	switch (cmd) {
-+
-+	case MON_IOCX_GET32: {
-+		struct mon_bin_get32 getb;
-+
-+		if (copy_from_user(&getb, (void __user *)arg,
-+					    sizeof(struct mon_bin_get32)))
-+			return -EFAULT;
-+
-+		ret = mon_bin_get_event(file, rp,
-+		    compat_ptr(getb.hdr32), compat_ptr(getb.data32),
-+		    getb.alloc32);
-+		if (ret < 0)
-+			return ret;
-+		}
-+		return 0;
-+
- 	case MON_IOCX_MFETCH32:
- 		{
- 		struct mon_bin_mfetch32 mfetch;
-@@ -986,37 +1022,25 @@ static int mon_bin_ioctl(struct inode *i
- 			return ret;
- 		if (put_user(ret, &uptr->nfetch32))
- 			return -EFAULT;
--		ret = 0;
- 		}
--		break;
--#endif
+ 	dprintk("RPC: %5u %s(%s, %u, %u, %d)\n",
+ 		task->tk_pid, __func__,
+ 		clnt->cl_server, clnt->cl_prog, clnt->cl_vers, xprt->prot);
+ 
+-	/* Autobind on cloned rpc clients is discouraged */
+-	BUG_ON(clnt->cl_parent != clnt);
 -
--	case MON_IOCG_STATS: {
--		struct mon_bin_stats __user *sp;
--		unsigned int nevents;
--		unsigned int ndropped;
--
--		spin_lock_irqsave(&rp->b_lock, flags);
--		ndropped = rp->cnt_lost;
--		rp->cnt_lost = 0;
--		spin_unlock_irqrestore(&rp->b_lock, flags);
--		nevents = mon_bin_queued(rp);
-+		return 0;
- 
--		sp = (struct mon_bin_stats __user *)arg;
--		if (put_user(rp->cnt_lost, &sp->dropped))
--			return -EFAULT;
--		if (put_user(nevents, &sp->queued))
--			return -EFAULT;
-+	case MON_IOCG_STATS:
-+		return mon_bin_ioctl(NULL, file, cmd,
-+					    (unsigned long) compat_ptr(arg));
- 
--		}
--		break;
-+	case MON_IOCQ_URB_LEN:
-+	case MON_IOCQ_RING_SIZE:
-+	case MON_IOCT_RING_SIZE:
-+	case MON_IOCH_MFLUSH:
-+		return mon_bin_ioctl(NULL, file, cmd, arg);
- 
- 	default:
--		return -ENOTTY;
-+		;
+ 	/* Put self on the wait queue to ensure we get notified if
+ 	 * some other task is already attempting to bind the port */
+ 	rpc_sleep_on(&xprt->binding, task, NULL);
+@@ -578,9 +600,9 @@ void rpcb_getport_async(struct rpc_task 
+ 			task->tk_pid, __func__);
+ 		return;
  	}
--
--	return ret;
-+	return -ENOTTY;
- }
-+#endif /* CONFIG_COMPAT */
+-	rpc_put_task(child);
  
- static unsigned int
- mon_bin_poll(struct file *file, struct poll_table_struct *wait)
-@@ -1094,6 +1118,9 @@ static const struct file_operations mon_
- 	/* .write =	mon_text_write, */
- 	.poll =		mon_bin_poll,
- 	.ioctl =	mon_bin_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl =	mon_bin_compat_ioctl,
-+#endif
- 	.release =	mon_bin_release,
- 	.mmap =		mon_bin_mmap,
- };
+-	task->tk_xprt->stat.bind_count++;
++	xprt->stat.bind_count++;
++	rpc_put_task(child);
+ 	return;
+ 
+ bailout_release_client:
 
