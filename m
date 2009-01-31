@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbZAaDKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbZAaDLK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762303AbZAaDKr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:10:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbZAaCrs
+	id S1760009AbZAaDLK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:11:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZAaCrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:48 -0500
-Received: from kroah.org ([198.145.64.141]:55552 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:49 -0500
+Received: from kroah.org ([198.145.64.141]:55572 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754158AbZAaCrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:39 -0500
-Date: Fri, 30 Jan 2009 18:44:39 -0800
+	id S1756905AbZAaCrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:40 -0500
+Date: Fri, 30 Jan 2009 18:44:41 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 32/43] include/linux: Add bsg.h to the Kernel exported
-	headers
-Message-ID: <20090131024439.GG12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 33/43] ALSA: hda - Fix PCM reference NID for STAC/IDT
+	analog outputs
+Message-ID: <20090131024441.GH12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="include-linux-add-bsg.h-to-the-kernel-exported-headers.patch"
+Content-Disposition: inline; filename="alsa-hda-fix-pcm-reference-nid-for-stac-idt-analog-outputs.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,39 +40,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Boaz Harrosh <bharrosh@panasas.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit a229fc61ef0ee3c30fd193beee0eeb87410227f1 upstream.
+commit 00a602db1ce9d61319d6f769dee206ec85f19bda upstream.
 
-bsg.h in current form is perfectly suitable for user-mode
-consumption. It is needed together with scsi/sg.h for applications
-that want to interface with the bsg driver.
+The reference NID for the analog outputs of STAC/IDT codecs is set
+to a fixed number 0x02.  But this isn't always correct and in many
+codecs it points to a non-existing NID.
 
-Currently the few projects that use it would copy it over into
-the projects. But that is not acceptable for projects that need
-to provide source and devel packages for distros.
+This patch fixes the initialization of the PCM reference NID taken
+from the actually probed DAC list.
 
-This should also be submitted to stable 2.6.28 and 2.6.27 since bsg had
-a stable API since these Kernels and distro users will need the header
-for these kernels a swell
-
-Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
-Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/Kbuild |    1 +
- 1 file changed, 1 insertion(+)
+ sound/pci/hda/patch_sigmatel.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -41,6 +41,7 @@ header-y += baycom.h
- header-y += bfs_fs.h
- header-y += blkpg.h
- header-y += bpqether.h
-+header-y += bsg.h
- header-y += can.h
- header-y += cdk.h
- header-y += chio.h
+--- a/sound/pci/hda/patch_sigmatel.c
++++ b/sound/pci/hda/patch_sigmatel.c
+@@ -2428,6 +2428,8 @@ static int stac92xx_build_pcms(struct hd
+ 
+ 	info->name = "STAC92xx Analog";
+ 	info->stream[SNDRV_PCM_STREAM_PLAYBACK] = stac92xx_pcm_analog_playback;
++	info->stream[SNDRV_PCM_STREAM_PLAYBACK].nid =
++		spec->multiout.dac_nids[0];
+ 	info->stream[SNDRV_PCM_STREAM_CAPTURE] = stac92xx_pcm_analog_capture;
+ 	info->stream[SNDRV_PCM_STREAM_CAPTURE].nid = spec->adc_nids[0];
+ 	info->stream[SNDRV_PCM_STREAM_CAPTURE].substreams = spec->num_adcs;
 
