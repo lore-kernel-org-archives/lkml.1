@@ -1,85 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757057AbZAaAAX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbZAaAEG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757057AbZAaAAX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 19:00:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbZAaAAF
+	id S1757167AbZAaAEG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 19:04:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbZAaADw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 19:00:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50923 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753173AbZAaAAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 19:00:01 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Parag Warudkar <parag.lkml@gmail.com>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-Date: Sat, 31 Jan 2009 00:59:16 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901301506120.3150@localhost.localdomain> <alpine.DEB.2.00.0901301826490.5027@parag-desktop>
-In-Reply-To: <alpine.DEB.2.00.0901301826490.5027@parag-desktop>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 30 Jan 2009 19:03:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42960 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754388AbZAaADv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 19:03:51 -0500
+Date: Fri, 30 Jan 2009 16:03:16 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: roger.larsson@e-gatan.se, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       rml@tech9.net, pavel@ucw.cz, netdev@vger.kernel.org
+Subject: Re: PROBLEM: in_atomic() misuse all over the place
+Message-Id: <20090130160316.7e53ef99.akpm@linux-foundation.org>
+In-Reply-To: <87pri7k4id.fsf@basil.nowhere.org>
+References: <200901280010.37633.roger.larsson@e-gatan.se>
+	<87pri7k4id.fsf@basil.nowhere.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901310059.17746.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 January 2009, Parag Warudkar wrote:
+On Wed, 28 Jan 2009 13:18:50 +0100
+Andi Kleen <andi@firstfloor.org> wrote:
+
+> > file:  include/net/sock.h
+> >
+> >    static inline gfp_t gfp_any(void)
+> >    {
+> >      return in_atomic() ? GFP_ATOMIC : GFP_KERNEL;
+> >    }
 > 
-> On Fri, 30 Jan 2009, Linus Torvalds wrote:
-> 
-> > 
-> > Because we obviously have two people who say that their tg3 suspend/resume 
-> > works fine, so the tg3 driver is obviously not _totally_ broken. So I'm 
-> > wondering if there is something funny in between the CPU and the tg3, like 
-> > a hotplug bridge that needs magic to wake up properly.
-> > 
-> > Because clearly the PCI config space addresses are working fine, but the 
-> > thing is, while PCI config space accesses are routed by the device number 
-> > (and the bridges notion of secondary bridging), the PCI memory space 
-> > routing is based on address. So a PCI bridge can easily get one right (in 
-> > fact, it's really hard to get config space accesses wrong without the 
-> > bridges being _totally_ screwed up), while not routing the other at all.
-> > 
-> > So just do that "lspci -vvxxx" for the whole box, before and after, and 
-> > send us the "before" and the "diff -u before after" thing, and maybe that 
-> > shows something interesting. Because some bridge chip being confused would 
-> > also explain why a total re-init of the whole tg3 chip by a driver unload 
-> > and reload doesn't seem to help.
-> 
-> Totally worth having this problem from a "getting an opportunity to 
-> understand" standpoint. This confirms my long standing suspicion that bugs 
-> in Linux kernel are merely a handiwork of few clever people to get more 
-> people to understand and contribute :)
-> 
-> Any how  here is the pre-suspend lspci -vvxxx output followed by diff -u -
+> That's typically for softirq vs non softirq, which is important
+> for the network stack.
 > 
 
-[--snip--]
+There's a bit of a problem here.  If someone accidentally uses
+gfp_any() inside a spinlock, it will do a sleeping allocation on
+non-preempt kernels and will do an atomic allocation on preemptible
+kernels, so we won't get to see the warning which would allow us to fix
+the bug.
 
-I think this is what we're looking for:
-
-> @@ -472,7 +472,7 @@
->  f0: 00 00 00 00 00 00 00 00 80 0f 01 00 00 00 00 00
->  
->  00:1c.0 PCI bridge: Intel Corporation 631xESB/632xESB/3100 Chipset PCI Express Root Port 1 (rev 09)
-> -	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
-> +	Control: I/O- Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR+ FastB2B- DisINTx+
->  	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
->  	Latency: 0, Cache Line Size: 64 bytes
->  	Bus: primary=00, secondary=0e, subordinate=0e, sec-latency=0
-
-and the PCIe port driver may be at fault.
-
-Can you try to remove the pci_save_state(dev) from pcie_port_suspend_late()
-and see if that helps?
-
-Rafael
+Would using irq_count() work?  If so, that would fix this up.
