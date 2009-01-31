@@ -1,46 +1,33 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753208AbZAaH4q (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 31 Jan 2009 02:56:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750840AbZAaH4g
+	id S1753584AbZAaMkE (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sat, 31 Jan 2009 07:40:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZAaMjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 02:56:36 -0500
-Received: from omr2.bezeqint.net ([192.115.104.10]:37796 "EHLO
-	omr2.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbZAaH4g (ORCPT
+	Sat, 31 Jan 2009 07:39:52 -0500
+Received: from simmts12.bellnexxia.net ([206.47.199.141]:56482 "EHLO
+	simmts12-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751746AbZAaMjw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 02:56:36 -0500
-X-Mirapoint-IP-Reputation: reputation=good-1,
-	source=Fixed,
-	refid=n/a,
-	actions=tag
-From: CLAIMS ANNIVERSARY PROMO <claims@googlelotto.com>
-Subject: Online Google Promo 2009
-Reply-To: fhenson01@aol.com
-X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
+	Sat, 31 Jan 2009 07:39:52 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsB7AEfQg0nOL8eg/2dsb2JhbACBSSWJDoFjFgKwFZAKBoMm
+X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
+X-Originating-IP: [201.17.6.199]
+From: Jason Loan Investment <jlefaive@sympatico.ca>
+Reply-To: jasonmillercorp@googlemail.com
+To: <info@loan.co.uk>
+Subject: Loan  Application
+Date: Sat, 31 Jan 2009 7:39:45 -0500
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090131095557.FEB12518@mas25.bezeqint.net>
-Date: Sat, 31 Jan 2009 09:55:57 +0200 (IST)
-X-Junkmail: UCE(50)
-X-Junkmail-Status: score=50/45, host=mr11.bezeqint.net
-X-Junkmail-SD-Raw: score=bulk(0),
-	refid=str=0001.0A0B0206.49840429.00C2,ss=3,pt=DBB_65835,fgs=0,
-	ip=192.115.104.155,
-	so=2008-09-22 23:22:13,
-	dmn=5.7.1/2008-09-02,
-	mode=single engine
-X-Junkmail-IWF: false
-To: undisclosed-recipients:;
+Message-Id: <20090131123945.SYTR1599.simmts12-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753208AbZAaH4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753584AbZAaMkE@vger.kernel.org>
 
-Your E-mail has Won in our End Of Year Online Anniversary
-Promotion.SEND WINNING DETAILS:Computer Generated Profile
-Numbers (CGPN):7-22-71-00-66-12,Ticket number:00869575733664
-Serial numbers:/BTD/8070447706/06 Lucky
-numbers:12-12-23-35-40-41(12)To:Mr.Francis Henson
-Email:fhenson01@aol.com Thanks For Using Google.
+We give loan at 3%,Any interested person,irrespective of your country,Contact us now;jasonmcop@yahoo.com.hk with Names:Address,Amount Required,Duration Of Loan. 
+Regards,
+Jason Miller Corporations
 
