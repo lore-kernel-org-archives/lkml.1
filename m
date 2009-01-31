@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754776AbZAaQop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbZAaQvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754776AbZAaQop (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 11:44:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbZAaQog
+	id S1754792AbZAaQvc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 11:51:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZAaQvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 11:44:36 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38197 "EHLO mx3.mail.elte.hu"
+	Sat, 31 Jan 2009 11:51:23 -0500
+Received: from agrajag.mansr.com ([78.86.181.102]:46616 "EHLO mail.mansr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752487AbZAaQog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 11:44:36 -0500
-Date: Sat, 31 Jan 2009 17:44:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       hskinnemoen@atmel.com, cooloney@kernel.org, tony.luck@intel.com,
-       ralf@linux-mips.org, dhowells@redhat.com, matthew@wil.cx,
-       chris@zankel.net, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull -tip] headers_check fixes for other architectures
-Message-ID: <20090131164410.GA11189@elte.hu>
-References: <1233385816.17794.16.camel@localhost.localdomain>
+	id S1752447AbZAaQvW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 11:51:22 -0500
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>,
+       Paul Walmsley <paul@pwsan.com>, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
+       Tony Lindgren <tony@atomide.com>,
+       Tomi Valkeinen <tomi.valkeinen@nokia.com>
+Subject: Re: [PATCH D 01/11] OMAP: Add clk_get_parent() for OMAP2/3
+References: <20090128191638.16688.33452.stgit@localhost.localdomain>
+	<20090128191807.16688.91255.stgit@localhost.localdomain>
+	<20090129110043.GE12627@n2100.arm.linux.org.uk>
+	<alpine.DEB.2.00.0901292327090.26985@utopia.booyaka.com>
+	<20090131142344.GM1394@n2100.arm.linux.org.uk>
+	<yw1xhc3f5xb9.fsf@thrashbarg.mansr.com>
+	<20090131152620.GN1394@n2100.arm.linux.org.uk>
+	<yw1x4ozf5vtw.fsf@thrashbarg.mansr.com>
+	<20090131155631.GO1394@n2100.arm.linux.org.uk>
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Date: Sat, 31 Jan 2009 16:51:20 +0000
+In-Reply-To: <20090131155631.GO1394@n2100.arm.linux.org.uk> (Russell King's message of "Sat, 31 Jan 2009 15:56:31 +0000")
+Message-ID: <yw1xvdrv4dx3.fsf@thrashbarg.mansr.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.22 (Instant Classic, linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233385816.17794.16.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> On Sat, Jan 31, 2009 at 03:39:07PM +0000, Måns Rullgård wrote:
+>> Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
+>> 
+>> > On Sat, Jan 31, 2009 at 03:07:06PM +0000, Måns Rullgård wrote:
+>> >> Russell King - ARM Linux <linux@arm.linux.org.uk> writes:
+>> >> > Great, thanks.  However, I'd forgotten that one of my patches
+>> >> > completely removes clk_get_parent() since it's unused by any
+>> >> > code in OMAP at present.
+>> >> >
+>> >> > What was the reasoning behind making this work?
+>> >> 
+>> >> It is needed for the omapfb/dss driver to set an optimal rate for
+>> >> dpll4_m4_ck.
+>> >
+>> > I assume this isn't merged yet?  Where can I see what it's doing?
+>> 
+>> The new DSS driver by Tomi Valkeinen uses it.  Patches have been
+>> posted to the linux-omap list.
+>
+> Can't find them.  Found the DSS patches posted on the 12th but they don't
+> use clk_get_parent().
+>
+> So, I repeat.  Where can I see where this function is used?
 
-> These are clean patches, I did not included anything which leads to any
-> confusion or conflicts. I hope maintainers do not mind if these patches
-> go to mainstream via Ingo's -tip along with other headers_check fixes.
-> 
-> Ingo please pull:
-> The following changes since commit 83c21698257b3bbd96926480b26eaffb5a8c3946:
->   Ingo Molnar (1):
->         Merge branch 'x86/apic'
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
+I have the patches applied in my git tree:
+http://git.mansr.com/?p=linux-omap;a=blob;f=arch/arm/plat-omap/dss/dispc.c;h=e6954637b113c66cb6a0ee8c7c4c3993d170b4a3;hb=HEAD#l1494
 
-looks good, but could you please do this like you did the previous one: 
-i.e. against your previous tree which was against Linus's tree?
-
-The tree you did above includes a ton of other in-work trees that are in 
--tip, which orders your fixes to after those trees - i.e. to somewhere in 
-the late 2.6.30 merge cycle.
-
-So it's better to keep these separate. You can do this by basing your tree 
-on tip:core/header-fixes:
-
-   git checkout -b my-new-tree tip/core/header-fixes
-
-That will give you a base of your previous tree (in a Git friendly way), 
-plus Sam's fix.
-
-Then you can git-cherry-pick all your new commits into that new tree, and 
-send a pull request if you are happy with it. Likewise, you can probably 
-achieve the same (with a lot less work) by doing this in your master 
-branch above:
-
-   git rebase --onto tip/core/header-fixes tip/master
-
-(this assumes you have -tip set up as a remote repository.)
-
-	Ingo
+-- 
+Måns Rullgård
+mans@mansr.com
