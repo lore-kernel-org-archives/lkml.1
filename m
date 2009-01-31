@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757491AbZAaDOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760452AbZAaDPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757491AbZAaDOv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757541AbZAaCr5
+	id S1760452AbZAaDPL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:15:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758526AbZAaC5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:57 -0500
-Received: from kroah.org ([198.145.64.141]:55720 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757453AbZAaCru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:50 -0500
-Date: Fri, 30 Jan 2009 18:45:03 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 43/43] relay: fix lock imbalance in relay_late_setup_files
-Message-ID: <20090131024503.GR12368@kroah.com>
-References: <20090131022548.656772939@mini.kroah.org>
+	Fri, 30 Jan 2009 21:57:50 -0500
+Received: from rtr.ca ([76.10.145.34]:56096 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760286AbZAaC5t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:57:49 -0500
+Message-ID: <4983BE2B.90805@rtr.ca>
+Date: Fri, 30 Jan 2009 21:57:47 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="relay-fix-lock-imbalance-in-relay_late_setup_files.patch"
-In-Reply-To: <20090131024158.GA12368@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: stable@kernel.org
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org
+Subject: For -stable: sata_mv: fix 8-port timeouts on 508x/6081 chips
+References: <20090131023906.GA12147@kroah.com>
+In-Reply-To: <20090131023906.GA12147@kroah.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+commit b0bccb18bc523d1d5060d25958f12438062829a9
+Author: Mark Lord <liml@rtr.ca>
+Date:   Mon Jan 19 18:04:37 2009 -0500
 
-------------------
+    sata_mv: fix 8-port timeouts on 508x/6081 chips
+    
+    Fix a longstanding bug for the 8-port Marvell Sata controllers (508x/6081),
+    where accesses to the upper 4 ports would cause lost-interrupts / timeouts
+    for the lower 4-ports.  With this patch, the 6081 boards should finally be
+    reliable enough for mainstream use with Linux.
+    
+    Signed-off-by: Mark Lord <mlord@pobox.com>
+    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
-From: Jiri Slaby <jirislaby@gmail.com>
 
-commit b786c6a98ef6fa81114ba7b9fbfc0d67060775e3 upstream.
+This should be backported to all -stable kernels.
 
-One fail path in relay_late_setup_files() omits
-mutex_unlock(&relay_channels_mutex);
-Add it.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -663,8 +663,10 @@ int relay_late_setup_files(struct rchan *chan,
- 
- 	mutex_lock(&relay_channels_mutex);
- 	/* Is chan already set up? */
--	if (unlikely(chan->has_base_filename))
-+	if (unlikely(chan->has_base_filename)) {
-+		mutex_unlock(&relay_channels_mutex);
- 		return -EEXIST;
-+	}
- 	chan->has_base_filename = 1;
- 	chan->parent = parent;
- 	curr_cpu = get_cpu();
-
+Cheers
