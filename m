@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbZAaCy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758617AbZAaC60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758647AbZAaCy1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:54:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755545AbZAaCq6
+	id S1758617AbZAaC60 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:58:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271AbZAaCrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:58 -0500
-Received: from kroah.org ([198.145.64.141]:54925 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:11 -0500
+Received: from kroah.org ([198.145.64.141]:55090 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755234AbZAaCqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:54 -0500
-Date: Fri, 30 Jan 2009 18:40:26 -0800
+	id S1755769AbZAaCrF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:05 -0500
+Date: Fri, 30 Jan 2009 18:40:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Larson <pl@linux.vnet.ibm.com>,
-       Eilon Greenstein <eilong@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 21/32] bnx2x: Block nvram access when the device is inactive
-Message-ID: <20090131024026.GV12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 32/32] relay: fix lock imbalance in relay_late_setup_files
+Message-ID: <20090131024056.GG12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bnx2x-block-nvram-access-when-the-device-is-inactive.patch"
+Content-Disposition: inline; filename="relay-fix-lock-imbalance-in-relay_late_setup_files.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,32 +40,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eilon Greenstein <eilong@broadcom.com>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit 2add3acb11a26cc14b54669433ae6ace6406cbf2 upstream.
+commit b786c6a98ef6fa81114ba7b9fbfc0d67060775e3 upstream.
 
-Don't dump eeprom when bnx2x adapter is down.  Running ethtool -e causes an eeh
-without it when the device is down
+One fail path in relay_late_setup_files() omits
+mutex_unlock(&relay_channels_mutex);
+Add it.
 
-Signed-off-by: Paul Larson <pl@linux.vnet.ibm.com>
-Signed-off-by: Eilon Greenstein <eilong@broadcom.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/bnx2x_main.c |    3 +++
- 1 file changed, 3 insertions(+)
+ kernel/relay.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/net/bnx2x_main.c
-+++ b/drivers/net/bnx2x_main.c
-@@ -8078,6 +8078,9 @@ static int bnx2x_get_eeprom(struct net_d
- 	struct bnx2x *bp = netdev_priv(dev);
- 	int rc;
+--- a/kernel/relay.c
++++ b/kernel/relay.c
+@@ -664,8 +664,10 @@ int relay_late_setup_files(struct rchan 
  
-+	if (!netif_running(dev))
-+		return -EAGAIN;
-+
- 	DP(BNX2X_MSG_NVM, "ethtool_eeprom: cmd %d\n"
- 	   DP_LEVEL "  magic 0x%x  offset 0x%x (%d)  len 0x%x (%d)\n",
- 	   eeprom->cmd, eeprom->magic, eeprom->offset, eeprom->offset,
+ 	mutex_lock(&relay_channels_mutex);
+ 	/* Is chan already set up? */
+-	if (unlikely(chan->has_base_filename))
++	if (unlikely(chan->has_base_filename)) {
++		mutex_unlock(&relay_channels_mutex);
+ 		return -EEXIST;
++	}
+ 	chan->has_base_filename = 1;
+ 	chan->parent = parent;
+ 	curr_cpu = get_cpu();
 
