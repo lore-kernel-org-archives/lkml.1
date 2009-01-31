@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760239AbZAaDEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753231AbZAaDEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760239AbZAaDEW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:04:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755359AbZAaCrc
+	id S1753231AbZAaDEj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:04:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756925AbZAaCrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:32 -0500
-Received: from kroah.org ([198.145.64.141]:55311 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:33 -0500
+Received: from kroah.org ([198.145.64.141]:55328 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756719AbZAaCrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753181AbZAaCrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 30 Jan 2009 21:47:22 -0500
-Date: Fri, 30 Jan 2009 18:42:44 -0800
+Date: Fri, 30 Jan 2009 18:42:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Oliver Neukum <oneukum@suse.de>
-Subject: [patch 15/43] USB: storage: add unusual devs entry
-Message-ID: <20090131024244.GP12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Richard Henderson <rth@twiddle.net>,
+       Tobias Klausmann <klausman@schwarzvogel.de>
+Subject: [patch 16/43] alpha: nautilus - fix compile failure with gcc-4.3
+Message-ID: <20090131024246.GQ12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-storage-add-unusual-devs-entry.patch"
+Content-Disposition: inline; filename="alpha-nautilus-fix-compile-failure-with-gcc-4.3.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,32 +41,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Oliver Neukum <oliver@neukum.org>
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
-commit b90de8aea36ae6fe8050a6e91b031369c4f251b2 upstream.
+commit 70b66cbfd3316b792a855cb9a2574e85f1a63d0f upstream.
 
-This adds an unusual devs entry for 2116:0320
+init_srm_irq() deals with irq's #16 and above, but size of irq_desc
+array on nautilus and some other system types is 16. So gcc-4.3
+complains that "array subscript is above array bounds", even though
+this function is never called on those systems.
 
-Signed-off-by: Oliver Neukum <oneukum@suse.de>
+This adds a check for NR_IRQS <= 16, which effectively optimizes
+init_srm_irq() code away on problematic platforms.
+
+Thanks to Daniel Drake <dsd@gentoo.org> for detailed analysis
+of the problem.
+
+Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Richard Henderson <rth@twiddle.net>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Tobias Klausmann <klausman@schwarzvogel.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/alpha/kernel/irq_srm.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1970,6 +1970,12 @@ UNUSUAL_DEV(  0x19d2, 0x2000, 0x0000, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_IGNORE_DEVICE),
+--- a/arch/alpha/kernel/irq_srm.c
++++ b/arch/alpha/kernel/irq_srm.c
+@@ -63,6 +63,8 @@ init_srm_irqs(long max, unsigned long ig
+ {
+ 	long i;
  
-+UNUSUAL_DEV( 0x2116, 0x0320, 0x0001, 0x0001,
-+		"ST",
-+		"2A",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		US_FL_FIX_CAPACITY),
-+
- /* patch submitted by Davide Perini <perini.davide@dpsoftware.org>
-  * and Renato Perini <rperini@email.it>
-  */
++	if (NR_IRQS <= 16)
++		return;
+ 	for (i = 16; i < max; ++i) {
+ 		if (i < 64 && ((ignore_mask >> i) & 1))
+ 			continue;
 
