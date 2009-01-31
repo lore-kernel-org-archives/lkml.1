@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbZAaNuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753739AbZAaOIZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754405AbZAaNuN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 08:50:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZAaNt7
+	id S1753739AbZAaOIZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 09:08:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZAaOIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 08:49:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36672 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750953AbZAaNt6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 08:49:58 -0500
-Date: Sat, 31 Jan 2009 14:49:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH] sched_rt: don't use first_cpu on cpumask created with
-	cpumask_and.
-Message-ID: <20090131134947.GA23973@elte.hu>
-References: <200901312321.25344.rusty@rustcorp.com.au>
-MIME-Version: 1.0
+	Sat, 31 Jan 2009 09:08:15 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:54759 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751896AbZAaOIP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 09:08:15 -0500
+Date: Sat, 31 Jan 2009 14:08:04 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Paul Walmsley <paul@pwsan.com>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH F 06/12] OMAP2/3 clock: every clock must have a clkdm
+Message-ID: <20090131140804.GH1394@n2100.arm.linux.org.uk>
+References: <20090128193326.2396.9437.stgit@localhost.localdomain> <20090128193512.2396.75340.stgit@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901312321.25344.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090128193512.2396.75340.stgit@localhost.localdomain>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Jan 28, 2009 at 12:35:15PM -0700, Paul Walmsley wrote:
+> Every OMAP2/3 clock must now have an assigned clockdomain, so we can
+> remove the checks from clk_enable()/clk_disable().  Instead, verify
+> that the clockdomain is present only at clock init time via the
+> arch_clock clk_register() hook.
 
-* Rusty Russell <rusty@rustcorp.com.au> wrote:
+I don't see the point of requiring all clocks to have a clockdomain field.
+Given that we have virtual clocks, it is quite reasonable for some clocks
+not to have a clock domain associated with them.
 
-> Ingo, please apply to tip/urgent.
-> 
-> cpumask_and() only initializes nr_cpu_ids bits, so the (deprecated)
-> first_cpu() might find one of those uninitialized bits if nr_cpu_ids
-> is less than NR_CPUS (as it can be for CONFIG_CPUMASK_OFFSTACK).
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  kernel/sched_rt.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-
-Applied to tip/sched/urgent, thanks Rusty!
-
-Also, Git sorted out the same-content merge with this commit in cpus4096 
-just fine:
-
-  d38b223: cpumask: reduce stack usage in find_lowest_rq
-
-(this commit is where you backported it from i suspect?)
-
-	Ingo
+The overhead for avoiding this requirement isn't that great, and I feel
+that there's little benefit from this change.
