@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbZAaFsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZAaFuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752776AbZAaFsh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 00:48:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbZAaFs3
+	id S1753352AbZAaFuv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 00:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751216AbZAaFul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 00:48:29 -0500
-Received: from hera.kernel.org ([140.211.167.34]:46201 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750891AbZAaFs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 00:48:28 -0500
-Message-ID: <4983E5D3.3040100@kernel.org>
-Date: Sat, 31 Jan 2009 14:46:59 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Rusty Russell <rusty@rustcorp.com.au>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-Subject: Re: #tj-percpu has been rebased
-References: <49833350.1020809@kernel.org>
-In-Reply-To: <49833350.1020809@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Sat, 31 Jan 2009 00:50:41 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53740 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751142AbZAaFuj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 00:50:39 -0500
+Date: Fri, 30 Jan 2009 21:49:33 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: roger.larsson@e-gatan.se, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       rml@tech9.net, pavel@ucw.cz, netdev@vger.kernel.org
+Subject: Re: PROBLEM: in_atomic() misuse all over the place
+Message-Id: <20090130214933.1b91ea3e.akpm@linux-foundation.org>
+In-Reply-To: <20090131055508.GD18453@one.firstfloor.org>
+References: <200901280010.37633.roger.larsson@e-gatan.se>
+	<87pri7k4id.fsf@basil.nowhere.org>
+	<20090130160316.7e53ef99.akpm@linux-foundation.org>
+	<20090131055508.GD18453@one.firstfloor.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 31 Jan 2009 05:47:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, again.
+On Sat, 31 Jan 2009 06:55:08 +0100 Andi Kleen <andi@firstfloor.org> wrote:
 
-Please disregard the previous two rebased trees.  There has been a
-major communication misunderstanding between Ingo and me leading to
-the rebased branches.  Here is yet another, hopefully final, merged
-tree which builds on top of tip/core/percpu and took only about ten
-minutes as opposed to hours.  :-)
+> > There's a bit of a problem here.  If someone accidentally uses
+> > gfp_any() inside a spinlock, it will do a sleeping allocation on
+> > non-preempt kernels and will do an atomic allocation on preemptible
+> > kernels, so we won't get to see the warning which would allow us to fix
+> > the bug.
+> 
+> Yes exporting the function to drivers is dangerous I agree because
+> it's easy to abuse.
+> 
+> > Would using irq_count() work?  If so, that would fix this up.
+> 
+> There's nothing that works reliably to detect spinlocks on non
+> preempt kernels.
 
-* Three xen fix related patches merged.  Later threes conflicted in
-  non-minor way.  Requested refresh.
+Hang on.  You said
 
-* Cliff Wickman's UV flush fix patch revived and merged.
+  That's typically for softirq vs non softirq, which is important for
+  the network stack.
 
-* Pull in linus#master[1].
+that's what in_softirq() does.
 
-Anyways, please pull from
+Now, if networking is indeed using in_atomic() to detect
+are-we-inside-a-spinlock then networking is buggy.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+If networking is _not_ doing that then we can safely switch it to
+in_sortirq() or in_interrupt().  And this would reenable the bug
+detection which networking's use of in_atomic() accidentally
+suppressed.
 
-The commit ID should be da2c0b021cde94866f1e492f940aad29e8f61258.
 
-Sorry about the mess but this one should be the safe one to post
-patches against.
-
-Thanks.
-
--- 
-tejun
-
-[1] 33bfad54b58cf05cfe6678c3ec9235d4bc8db4c2
