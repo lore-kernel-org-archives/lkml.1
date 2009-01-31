@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755888AbZAaDIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762012AbZAaDIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755888AbZAaDIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbZAaCrl
+	id S1762012AbZAaDIg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbZAaCrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:41 -0500
-Received: from kroah.org ([198.145.64.141]:55452 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:42 -0500
+Received: from kroah.org ([198.145.64.141]:55464 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752496AbZAaCrc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:32 -0500
-Date: Fri, 30 Jan 2009 18:43:04 -0800
+	id S1752998AbZAaCrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:33 -0500
+Date: Fri, 30 Jan 2009 18:43:06 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Larson <pl@linux.vnet.ibm.com>,
-       Eilon Greenstein <eilong@broadcom.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 25/43] bnx2x: Block nvram access when the device is inactive
-Message-ID: <20090131024304.GZ12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 26/43] ext3: Add sanity check to make_indexed_dir
+Message-ID: <20090131024306.GA12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="bnx2x-block-nvram-access-when-the-device-is-inactive.patch"
+Content-Disposition: inline; filename="ext3-add-sanity-check-to-make_indexed_dir.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,32 +39,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eilon Greenstein <eilong@broadcom.com>
+From: Theodore Ts'o <tytso@mit.edu>
 
-commit 2add3acb11a26cc14b54669433ae6ace6406cbf2 upstream.
+commit a21102b55c4f8dfd3adb4a15a34cd62237b46039 upstream.
 
-Don't dump eeprom when bnx2x adapter is down.  Running ethtool -e causes an eeh
-without it when the device is down
+Make sure the rec_len field in the '..' entry is sane, lest we overrun
+the directory block and cause a kernel oops on a purposefully
+corrupted filesystem.
 
-Signed-off-by: Paul Larson <pl@linux.vnet.ibm.com>
-Signed-off-by: Eilon Greenstein <eilong@broadcom.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+This fixes a bug related to a bug originally reported by Sami Liedes
+for ext4 at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=12430
+
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/bnx2x_main.c |    3 +++
- 1 file changed, 3 insertions(+)
+ fs/ext3/namei.c |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
---- a/drivers/net/bnx2x_main.c
-+++ b/drivers/net/bnx2x_main.c
-@@ -8079,6 +8079,9 @@ static int bnx2x_get_eeprom(struct net_d
- 	struct bnx2x *bp = netdev_priv(dev);
- 	int rc;
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1357,7 +1357,7 @@ static int make_indexed_dir(handle_t *ha
+ 	struct fake_dirent *fde;
  
-+	if (!netif_running(dev))
-+		return -EAGAIN;
+ 	blocksize =  dir->i_sb->s_blocksize;
+-	dxtrace(printk("Creating index\n"));
++	dxtrace(printk(KERN_DEBUG "Creating index: inode %lu\n", dir->i_ino));
+ 	retval = ext3_journal_get_write_access(handle, bh);
+ 	if (retval) {
+ 		ext3_std_error(dir->i_sb, retval);
+@@ -1366,6 +1366,19 @@ static int make_indexed_dir(handle_t *ha
+ 	}
+ 	root = (struct dx_root *) bh->b_data;
+ 
++	/* The 0th block becomes the root, move the dirents out */
++	fde = &root->dotdot;
++	de = (struct ext3_dir_entry_2 *)((char *)fde +
++			ext3_rec_len_from_disk(fde->rec_len));
++	if ((char *) de >= (((char *) root) + blocksize)) {
++		ext3_error(dir->i_sb, __func__,
++			   "invalid rec_len for '..' in inode %lu",
++			   dir->i_ino);
++		brelse(bh);
++		return -EIO;
++	}
++	len = ((char *) root) + blocksize - (char *) de;
 +
- 	DP(BNX2X_MSG_NVM, "ethtool_eeprom: cmd %d\n"
- 	   DP_LEVEL "  magic 0x%x  offset 0x%x (%d)  len 0x%x (%d)\n",
- 	   eeprom->cmd, eeprom->magic, eeprom->offset, eeprom->offset,
+ 	bh2 = ext3_append (handle, dir, &block, &retval);
+ 	if (!(bh2)) {
+ 		brelse(bh);
+@@ -1374,11 +1387,6 @@ static int make_indexed_dir(handle_t *ha
+ 	EXT3_I(dir)->i_flags |= EXT3_INDEX_FL;
+ 	data1 = bh2->b_data;
+ 
+-	/* The 0th block becomes the root, move the dirents out */
+-	fde = &root->dotdot;
+-	de = (struct ext3_dir_entry_2 *)((char *)fde +
+-			ext3_rec_len_from_disk(fde->rec_len));
+-	len = ((char *) root) + blocksize - (char *) de;
+ 	memcpy (data1, de, len);
+ 	de = (struct ext3_dir_entry_2 *) data1;
+ 	top = data1 + len;
 
