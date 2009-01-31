@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759357AbZAaC5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757582AbZAaCr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759357AbZAaC5V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:57:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZAaCrI
+	id S1757582AbZAaCr7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752830AbZAaCqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:08 -0500
-Received: from kroah.org ([198.145.64.141]:55046 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:36 -0500
+Received: from kroah.org ([198.145.64.141]:54719 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755912AbZAaCrD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:03 -0500
-Date: Fri, 30 Jan 2009 18:40:50 -0800
+	id S1752676AbZAaCqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:35 -0500
+Date: Fri, 30 Jan 2009 18:39:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Clemens Ladisch <clemens@ladisch.de>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 29/32] sound: virtuoso: do not overwrite EEPROM on Xonar
-	D2/D2X
-Message-ID: <20090131024050.GD12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Dan Carpenter <error27@gmail.com>,
+       Miklos Szeredi <mszeredi@suse.cz>
+Subject: [patch 03/32] fuse: fix NULL deref in fuse_file_alloc()
+Message-ID: <20090131023932.GD12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sound-virtuoso-do-not-overwrite-eeprom-on-xonar-d2-d2x.patch"
+Content-Disposition: inline; filename="fuse-fix-null-deref-in-fuse_file_alloc.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,96 +40,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Clemens Ladisch <clemens@ladisch.de>
+From: Dan Carpenter <error27@gmail.com>
 
-commit 7e86c0e6850504ec9516b953f316a47277825e33 upstream.
+commit bb875b38dc5e343bdb696b2eab8233e4d195e208 upstream.
 
-On the Asus Xonar D2 and D2X models, the SPI chip select signal for the
-fourth DAC shares its pin with the serial clock for the EEPROM that
-contains the PCI subdevice ID values.  It appears that when DAC
-registers are written and some other unknown conditions occur (probably
-noise on the EEPROM's chip select line), the EEPROM gets overwritten
-with garbage, which makes it impossible to properly detect the card
-later.
+ff is set to NULL and then dereferenced on line 65.  Compile tested only.
 
-Therefore, we better avoid DAC register writes and make sure that the
-driver works with the DAC's registers' default values.  Consequently,
-the sample format is now I2S instead of left-justified (no user-visible
-change), and the DAC's volume/mute registers cannot be used anymore
-(volume changes are now done by the software volume plugin).
-
-Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Signed-off-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/oxygen/virtuoso.c |   22 +++++++++++++++-------
- 1 file changed, 15 insertions(+), 7 deletions(-)
+ fs/fuse/file.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/sound/pci/oxygen/virtuoso.c
-+++ b/sound/pci/oxygen/virtuoso.c
-@@ -26,7 +26,7 @@
-  * SPI 0 -> 1st PCM1796 (front)
-  * SPI 1 -> 2nd PCM1796 (surround)
-  * SPI 2 -> 3rd PCM1796 (center/LFE)
-- * SPI 4 -> 4th PCM1796 (back)
-+ * SPI 4 -> 4th PCM1796 (back) and EEPROM self-destruct (do not use!)
-  *
-  * GPIO 2 -> M0 of CS5381
-  * GPIO 3 -> M1 of CS5381
-@@ -142,6 +142,12 @@ struct xonar_data {
- static void pcm1796_write(struct oxygen *chip, unsigned int codec,
- 			  u8 reg, u8 value)
- {
-+	/*
-+	 * We don't want to do writes on SPI 4 because the EEPROM, which shares
-+	 * the same pin, might get confused and broken.  We'd better take care
-+	 * that the driver works with the default register values ...
-+	 */
-+#if 0
- 	/* maps ALSA channel pair number to SPI output */
- 	static const u8 codec_map[4] = {
- 		0, 1, 2, 4
-@@ -152,6 +158,7 @@ static void pcm1796_write(struct oxygen 
- 			 (codec_map[codec] << OXYGEN_SPI_CODEC_SHIFT) |
- 			 OXYGEN_SPI_CEN_LATCH_CLOCK_HI,
- 			 (reg << 8) | value);
-+#endif
- }
- 
- static void cs4398_write(struct oxygen *chip, u8 reg, u8 value)
-@@ -539,6 +546,9 @@ static const DECLARE_TLV_DB_SCALE(cs4362
- 
- static int xonar_d2_control_filter(struct snd_kcontrol_new *template)
- {
-+	if (!strncmp(template->name, "Master Playback ", 16))
-+		/* disable volume/mute because they would require SPI writes */
-+		return 1;
- 	if (!strncmp(template->name, "CD Capture ", 11))
- 		/* CD in is actually connected to the video in pin */
- 		template->private_value ^= AC97_CD ^ AC97_VIDEO;
-@@ -588,9 +598,8 @@ static const struct oxygen_model xonar_m
- 		.dac_volume_min = 0x0f,
- 		.dac_volume_max = 0xff,
- 		.misc_flags = OXYGEN_MISC_MIDI,
--		.function_flags = OXYGEN_FUNCTION_SPI |
--				  OXYGEN_FUNCTION_ENABLE_SPI_4_5,
--		.dac_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
-+		.function_flags = OXYGEN_FUNCTION_SPI,
-+		.dac_i2s_format = OXYGEN_I2S_FORMAT_I2S,
- 		.adc_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
- 	},
- 	[MODEL_D2X] = {
-@@ -619,9 +628,8 @@ static const struct oxygen_model xonar_m
- 		.dac_volume_min = 0x0f,
- 		.dac_volume_max = 0xff,
- 		.misc_flags = OXYGEN_MISC_MIDI,
--		.function_flags = OXYGEN_FUNCTION_SPI |
--				  OXYGEN_FUNCTION_ENABLE_SPI_4_5,
--		.dac_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
-+		.function_flags = OXYGEN_FUNCTION_SPI,
-+		.dac_i2s_format = OXYGEN_I2S_FORMAT_I2S,
- 		.adc_i2s_format = OXYGEN_I2S_FORMAT_LJUST,
- 	},
- 	[MODEL_D1] = {
+--- a/fs/fuse/file.c
++++ b/fs/fuse/file.c
+@@ -54,7 +54,7 @@ struct fuse_file *fuse_file_alloc(void)
+ 		ff->reserved_req = fuse_request_alloc();
+ 		if (!ff->reserved_req) {
+ 			kfree(ff);
+-			ff = NULL;
++			return NULL;
+ 		} else {
+ 			INIT_LIST_HEAD(&ff->write_entry);
+ 			atomic_set(&ff->count, 0);
 
