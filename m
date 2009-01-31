@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756379AbZAaCrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbZAaCso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756379AbZAaCrj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZAaCqf
+	id S1758103AbZAaCso (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:48:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZAaCqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:35 -0500
-Received: from kroah.org ([198.145.64.141]:54700 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:39 -0500
+Received: from kroah.org ([198.145.64.141]:54740 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752548AbZAaCqe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:34 -0500
-Date: Fri, 30 Jan 2009 18:39:30 -0800
+	id S1752975AbZAaCqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:37 -0500
+Date: Fri, 30 Jan 2009 18:39:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>
-Subject: [patch 02/32] fuse: fix missing fput on error
-Message-ID: <20090131023930.GC12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Brian Cavagnolo <brian@cozybit.com>,
+       Andrey Yurovsky <andrey@cozybit.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 05/32] mac80211: decrement ref count to netdev after
+	launching mesh discovery
+Message-ID: <20090131023949.GF12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fuse-fix-missing-fput-on-error.patch"
+Content-Disposition: inline; filename="mac80211-decrement-ref-count-to-netdev-after-launching-mesh-discovery.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,39 +43,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+From: Brian Cavagnolo <brian@cozybit.com>
 
-commit 3ddf1e7f57237ac7c5d5bfb7058f1ea4f970b661 upstream.
+commit 5dc306f3bd1d4cfdf79df39221b3036eab1ddcf3 upstream.
 
-Fix the leaking file reference if allocation or initialization of
-fuse_conn failed.
+After launching mesh discovery in tx path, reference count was not being
+decremented.  This was preventing module unload.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: Brian Cavagnolo <brian@cozybit.com>
+Signed-off-by: Andrey Yurovsky <andrey@cozybit.com>
+Acked-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/fuse/inode.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+ net/mac80211/tx.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -832,12 +832,16 @@ static int fuse_fill_super(struct super_
- 	if (!file)
- 		return -EINVAL;
- 
--	if (file->f_op != &fuse_dev_operations)
-+	if (file->f_op != &fuse_dev_operations) {
-+		fput(file);
- 		return -EINVAL;
-+	}
- 
- 	fc = new_conn(sb);
--	if (!fc)
-+	if (!fc) {
-+		fput(file);
- 		return -ENOMEM;
-+	}
- 
- 	fc->flags = d.flags;
- 	fc->user_id = d.user_id;
+--- a/net/mac80211/tx.c
++++ b/net/mac80211/tx.c
+@@ -1335,8 +1335,10 @@ int ieee80211_master_start_xmit(struct s
+ 			if (is_multicast_ether_addr(hdr->addr3))
+ 				memcpy(hdr->addr1, hdr->addr3, ETH_ALEN);
+ 			else
+-				if (mesh_nexthop_lookup(skb, odev))
++				if (mesh_nexthop_lookup(skb, odev)) {
++					dev_put(odev);
+ 					return  0;
++				}
+ 			if (memcmp(odev->dev_addr, hdr->addr4, ETH_ALEN) != 0)
+ 				IEEE80211_IFSTA_MESH_CTR_INC(&osdata->u.sta,
+ 							     fwded_frames);
 
