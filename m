@@ -1,151 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753320AbZAaVnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbZAaVoD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753320AbZAaVnY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 16:43:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbZAaVnJ
+	id S1752998AbZAaVoD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 16:44:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZAaVnw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 16:43:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54555 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751466AbZAaVnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 16:43:08 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: What should PCI core do during suspend-resume? (was: Re: 2.6.29-rc3: tg3 dead after resume)
-Date: Sat, 31 Jan 2009 22:42:16 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901301714080.3150@localhost.localdomain> <200901312208.20850.rjw@sisk.pl>
-In-Reply-To: <200901312208.20850.rjw@sisk.pl>
+	Sat, 31 Jan 2009 16:43:52 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:38234 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751948AbZAaVnv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 16:43:51 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FMPG6Fvs0CU+SGEDlIze+N/4Hn1zgbBcD8OGAnWPBcJ+J7kGy0L6Et0Ee+hXuxF7q1
+         y25Jt0RhJ+zr4t/Jhyl6R+0GYfaUNANPlUUi/PsY8UYGpHpBKEpJdCaUiaw3FJWjazKF
+         KFv3W5iABu9hpU906CVGUjiAGPEy/B9Wm27Io=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <20090131175432.GA7635@elte.hu>
+References: <20090130230936.GA7549@elte.hu> <1233421901.4787.27.camel@laptop>
+	 <1233422632.4787.31.camel@laptop>
+	 <f19298770901310949m7aabf7bcp219ae4cc5d1b363b@mail.gmail.com>
+	 <20090131175432.GA7635@elte.hu>
+Date: Sun, 1 Feb 2009 00:43:49 +0300
+Message-ID: <f19298770901311343u6c6f16d9u7ddcc5cda27bbf33@mail.gmail.com>
+Subject: Re: [git pull] scheduler fixes
+From: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901312242.17273.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 January 2009, Rafael J. Wysocki wrote:
-> On Saturday 31 January 2009, Linus Torvalds wrote:
-> > 
-> > On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > Can you test the patch below, please?
-> > 
-> > Rafael, you're making this _way_ too difficult.
-> > 
-> > Don't make it use the new PM infrastructure, because that one is certainly 
-> > broken: pci_pm_default_suspend_generic() is total crap.
-> 
-> Oh my.  I beg to differ.
-> 
-> > It's saving the disabled state. No WAY is that correct.
-> 
-> So why does it work, actually?
-> 
-> > That "pci_disable_enabled_device()" should be removed, but even then 
-> > that's wrong, because if the driver suspend disabled it, you're now 
-> > (again) saving the disabled state.
-> > 
-> > But all of that is only called if you use the new PM infrastructure. So 
-> > the thing is, when you're trying to move the PCI-E drive to the new pm 
-> > infrastructure, you're making things _worse_.
-> 
-> I don't really think so (see below).
-> 
-> > The legacy PM infrastructure at least does the whole
-> > 
-> > 	pci_dev->state_saved = false;
-> > 	i = drv->suspend(pci_dev, state);
-> > 	..
-> > 	if (pci_dev->state_saved)
-> > 		goto Fixup;
-> > 
-> > thing, which will avoid overwriting the state if it was already saved.
-> > 
-> > HOWEVER. The problem here (I think) is that PCI-E actually does the state 
-> > save late, so it won't ever see the "state_saved" in the early ->suspend. 
-> > I think a patch like the one below at least simplifies this all, and lets 
-> > the PCI layer itself do all the core restore stuff.
-> > 
-> > The new PM infrastructure gets this totally wrong, and
-> >  (a) disables the device before saving state
-> 
-> pci_disable_device() does really only one thing: it clears the bus master bit.
-> Yes, it also calls pcibios_disable_device(), but on x86 this is a NOP.
-> 
-> I don't think it is SO bad, is it?
-> 
-> > and
-> >  (b) overwrites the (now corrupted) saved state that the driver perhaps 
-> >      already saved, after the driver may even have put it to sleep.
-> 
-> The driver using the new model is not supposed to save the state and power
-> off the device.  Still, it's probably a good idea not to trust the drivers. :-)
-> 
-> > So let's not use the new PM infrastructure - I don't think it's ready yet.
-> >
-> > Let's start simplifying first. Start off by getting rid of the 
-> > suspend_early/resume_late, since the PCI layer now does it for us.
-> > 
-> > I don't see why we don't resume with IO/MEM on, though. The legacy suspend 
-> > sequence shouldn't disable them, afaik.
-> 
-> No, it shouldn't.
-> 
-> However, the patch below actually may help and it really is not too different
-> from my "new infrastructure" patch.  It leaves the pcie_portdrv_restore_config()
-> in the PCIe port driver's ->resume(), but that shouldn't change things,
-> pci_enable_device() in there shouldn't do anything and the bus master bit
-> should already be set.
-> 
-> The "new infrastracture" patch makes pci_disable_enabled_device() be called in
-> the suspend code path, but that only disables the bus master bit, and
-> pci_reenable_device() be called in the resume code path, but that only sets the
-> bus master bit back again.
+On Sat, Jan 31, 2009 at 20:54, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> * Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+>
+>> On Sat, Jan 31, 2009 at 20:23, Peter Zijlstra <peterz@infradead.org> wrote:
+>> > On Sat, 2009-01-31 at 18:11 +0100, Peter Zijlstra wrote:
+>> >> > diff --git a/kernel/sched.c b/kernel/sched.c
+>> >> > index 52bbf1c..5686bb5 100644
+>> >> > --- a/kernel/sched.c
+>> >> > +++ b/kernel/sched.c
+>> >> > @@ -4440,7 +4450,7 @@ void __kprobes sub_preempt_count(int val)
+>> >> >       /*
+>> >> >        * Underflow?
+>> >> >        */
+>> >> > -     if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
+>> >> > +       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
+>> >> >               return;
+>> >> >       /*
+>> >> >        * Is the spinlock portion underflowing?
+>> >
+>> > Since the commit msg of 01e3eb8 says:
+>> >
+>> >    kernel_locked() is not a valid test in IRQ context (we update the
+>> >    BKL's ->lock_depth and the preempt count separately and non-atomicalyy),
+>> >    so we cannot put it into the generic preempt debugging checks which
+>> >    can run in IRQ contexts too.
+>> >
+>>
+>> Is the comment actually valid? From arch/x86/kernel/irq_32.c:
+>> do_softirq() actually does
+>>                 curctx = current_thread_info();
+>>                 irqctx = softirq_ctx[smp_processor_id()];
+>>                 irqctx->tinfo.task = curctx->task;
+>>
+>> and so does execute_on_irq_stack().
+>> So kernel_locked() should be valid. It corresponds to the thread
+>> that is being interrupted.
+>>
+>> And answering an earlier question, this happens only on i386 and only
+>> with 4K stacks because x86_64 dosn't have a separate softirq stack,
+>> so the preempt count diring the soft irq is at least IRQ_EXIT_OFFSET.
+>>
+>> (If I understood the things correctly)
+>
+> Correct, on 64-bit we use the hardirq stack for softirqs too:
 
-I should have said "in this particular case", because it actually makes a
-difference for devices using interrupt pins.  Namely, pcibios_enable_device()
-additionally enables PCI resources (that may make a difference, but everything
-should have been restored already) and sets up an interrupt link for the
-device.  If the link has been set up already, which often is the case, it
-increases a reference count and exits.
-
-Now, this reference count is not used for anything, but it was supposed to be
-used for disabling the interrupt links that are no longer needed.  This
-mechanism is currently disabled, but if we enable it at one point (which may
-be necessary to fix suspend-resume on some boxes), it won't work if
-the "enable" calls are not balanced with "disable" ones.  IOW, for every
-pcibios_enable_device() call there should be a complementary
-pcibios_disable_device() call.  That's why I decided to put the
-disable/enable things into the PCI core's suspend/resume code paths (also,
-because pci_reenable_device() has been already there for driverless devices).
-This might not be the right choice, but I don't really think it does break
-things.
-
-Anyway, from what I can tell reading your messages in this thread so far,
-you seem to want the PCI core to:
-(1) save the state of devices during suspend (avoid doing that if the driver has
-    already saved the state),
-(2) put devices into D0 during resume (early),
-(3) restore the state of devices during resume (early).
-Still, you don't want the core to disable devices during suspend and to enable
-(or reenable) them during resume.
-
-What about putting devices into low power states?  [Note that ACPI may be
-necessary for this purpose.]
-
-What about devices with no drivers and/or without suspend/resume support?
-Do you want them to be disabled during suspend and enabled during resume by
-the core?  [I guess you do, they have no interrupt handlers that may break
-after all.]
-
-Thanks,
-Rafael
+Is there actually a reason for a separate softirq stack on i386-4K, or
+any other architecture?
