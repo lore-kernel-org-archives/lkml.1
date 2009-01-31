@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZAaEpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752141AbZAaFER@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754695AbZAaEpS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 23:45:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZAaEpE
+	id S1752141AbZAaFER (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 00:04:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750765AbZAaFEA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 23:45:04 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48238 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751698AbZAaEpD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 23:45:03 -0500
-Date: Fri, 30 Jan 2009 23:44:54 -0500
-From: Kyle McMartin <kyle@redhat.com>
-To: Bhavesh Davda <bhavesh@vmware.com>
-Cc: "David.Woodhouse@intel.com" <David.Woodhouse@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] intel-iommu: intel_iommu_domain_alloc should check
-	'dmar_disabled'
-Message-ID: <20090131044454.GA5184@bombadil.infradead.org>
-Reply-To: kyle@infradead.org
-References: <AF9CD7A487028E428749836D21102612201D323DBB@PA-EXMBX02.vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <AF9CD7A487028E428749836D21102612201D323DBB@PA-EXMBX02.vmware.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 31 Jan 2009 00:04:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38284 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750715AbZAaFD7 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 00:03:59 -0500
+Date: Fri, 30 Jan 2009 21:03:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org, Holger Macht <hmacht@suse.de>,
+       linux-acpi@vger.kernel.org
+Subject: Re: mmotm 2009-01-28-02-17 uploaded - docking station issues.
+Message-Id: <20090130210352.cf9e4d7f.akpm@linux-foundation.org>
+In-Reply-To: <20830.1233246343@turing-police.cc.vt.edu>
+References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org>
+	<20830.1233246343@turing-police.cc.vt.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 16, 2009 at 03:54:12PM -0800, Bhavesh Davda wrote:
+On Thu, 29 Jan 2009 11:25:43 -0500 Valdis.Kletnieks@vt.edu wrote:
+
+> On Wed, 28 Jan 2009 02:19:09 PST, akpm@linux-foundation.org said:
+> > The mm-of-the-moment snapshot 2009-01-28-02-17 has been uploaded to
+> > 
+> >    http://userweb.kernel.org/~akpm/mmotm/
 > 
-> intel_iommu_domain_alloc() will try and iommu_alloc_domain(iommu),
-> which calls alloc_domain_mem() to allocate out of 'iommu_domain_cache'.
-> Unfortunately iommu_domain_cache will not be created if booted with
-> "intel_iommu=off", i.e. dmar_disabled = 1.
+> % ls -l /sys/devices/platform/dock.0/docked
+> -r--r--r-- 1 root root 4096 2009-01-29 10:49 /sys/devices/platform/dock.0/docked
+> % cat /sys/devices/platform/dock.0/docked
+> ñÞcat: write error: Bad address
+> 
+> strace of the cat shows:
+> 
+> open("/sys/devices/platform/dock.0/docked", O_RDONLY) = 3
+> fstat(3, {st_mode=S_IFREG|0444, st_size=4096, ...}) = 0
+> read(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 4096) = 1812586496
+> 
+> Under 2.6.29-rc2-mmotm0116, this would return either "0" or "1", not 4K
+> of nulls.
 > 
 
-Hi Bhavesh,
+Is it due to 
 
-What's the callchain that can result in intel_iommu_domain_alloc
-being called? It looks like most possible callsites are checking
-intel_iommu_found, which will be 0 since we check dmar_disabled before
-calling init_dmars to enumerate the iommus.
+acpi-dock-dont-eval-_sta-on-every-show_docked-sysfs-read.patch
 
-(I'm looking at 2.6.28.y right now, is there an interim between when you
- stumbled upon this two weeks ago and git head where it's no longer an
- issue? I guess it probably got missed due to folks travelling for LCA.)
+and/or
 
-regards, Kyle
+acpi-dock-dont-eval-_sta-on-every-show_docked-sysfs-read-simplification.patch
+
+?
