@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbZAaCu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758112AbZAaCtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758717AbZAaCu2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:50:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZAaCqo
+	id S1758112AbZAaCtB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:49:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753151AbZAaCqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:44 -0500
-Received: from kroah.org ([198.145.64.141]:54800 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:39 -0500
+Received: from kroah.org ([198.145.64.141]:54750 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753776AbZAaCqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:42 -0500
-Date: Fri, 30 Jan 2009 18:40:02 -0800
+	id S1753089AbZAaCqi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:38 -0500
+Date: Fri, 30 Jan 2009 18:39:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Joseph Chan <josephchan@via.com.tw>,
-       Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 10/32] libata: pata_via: support VX855, future chips whose
-	IDE controller use 0x0571
-Message-ID: <20090131024002.GK12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 06/32] sysfs: fix problems with binary files
+Message-ID: <20090131023952.GG12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="libata-pata_via-support-vx855-future-chips-whose-ide-controller-use-0x0571.patch"
+Content-Disposition: inline; filename="sysfs-fix-problems-with-binary-files.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,121 +39,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: JosephChan@via.com.tw <JosephChan@via.com.tw>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit e4d866cdea24543ee16ce6d07d80c513e86ba983 upstream.
+commit 4503efd0891c40e30928afb4b23dc3f99c62a6b2 upstream.
 
-It supports VX855 and future chips whose IDE controller uses PCI ID 0x0571.
+Some sysfs binary files don't like having 0 passed to them as a size.
+Fix this up at the root by just returning to the vfs if userspace asks
+us for a zero sized buffer.
 
-Signed-off-by: Joseph Chan <josephchan@via.com.tw>
-Acked-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Thanks to Pavel Roskin for pointing this out.
+
+Reported-by: Pavel Roskin <proski@gnu.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/pata_via.c  |   22 +++++++++++++++++-----
- include/linux/pci_ids.h |    4 ++++
- 2 files changed, 21 insertions(+), 5 deletions(-)
+ fs/sysfs/bin.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/drivers/ata/pata_via.c
-+++ b/drivers/ata/pata_via.c
-@@ -87,6 +87,10 @@ enum {
- 	VIA_SATA_PATA	= 0x800, /* SATA/PATA combined configuration */
- };
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -62,6 +62,9 @@ read(struct file *file, char __user *use
+ 	loff_t offs = *off;
+ 	int count = min_t(size_t, bytes, PAGE_SIZE);
  
-+enum {
-+	VIA_IDFLAG_SINGLE = (1 << 0), /* single channel controller) */
-+};
++	if (!bytes)
++		return 0;
 +
- /*
-  * VIA SouthBridge chips.
-  */
-@@ -98,8 +102,12 @@ static const struct via_isa_bridge {
- 	u8 rev_max;
- 	u16 flags;
- } via_isa_bridges[] = {
-+	{ "vx855",	PCI_DEVICE_ID_VIA_VX855,    0x00, 0x2f,
-+	  VIA_UDMA_133 | VIA_BAD_AST | VIA_SATA_PATA },
- 	{ "vx800",	PCI_DEVICE_ID_VIA_VX800,    0x00, 0x2f, VIA_UDMA_133 |
- 	VIA_BAD_AST | VIA_SATA_PATA },
-+	{ "vt8261",	PCI_DEVICE_ID_VIA_8261,     0x00, 0x2f,
-+	  VIA_UDMA_133 | VIA_BAD_AST },
- 	{ "vt8237s",	PCI_DEVICE_ID_VIA_8237S,    0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST },
- 	{ "vt8251",	PCI_DEVICE_ID_VIA_8251,     0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST },
- 	{ "cx700",	PCI_DEVICE_ID_VIA_CX700,    0x00, 0x2f, VIA_UDMA_133 | VIA_BAD_AST | VIA_SATA_PATA },
-@@ -123,6 +131,8 @@ static const struct via_isa_bridge {
- 	{ "vt82c586",	PCI_DEVICE_ID_VIA_82C586_0, 0x00, 0x0f, VIA_UDMA_NONE | VIA_SET_FIFO },
- 	{ "vt82c576",	PCI_DEVICE_ID_VIA_82C576,   0x00, 0x2f, VIA_UDMA_NONE | VIA_SET_FIFO | VIA_NO_UNMASK },
- 	{ "vt82c576",	PCI_DEVICE_ID_VIA_82C576,   0x00, 0x2f, VIA_UDMA_NONE | VIA_SET_FIFO | VIA_NO_UNMASK | VIA_BAD_ID },
-+	{ "vtxxxx",	PCI_DEVICE_ID_VIA_ANON,    0x00, 0x2f,
-+	  VIA_UDMA_133 | VIA_BAD_AST },
- 	{ NULL }
- };
+ 	if (size) {
+ 		if (offs > size)
+ 			return 0;
+@@ -119,6 +122,9 @@ static ssize_t write(struct file *file, 
+ 	loff_t offs = *off;
+ 	int count = min_t(size_t, bytes, PAGE_SIZE);
  
-@@ -461,6 +471,7 @@ static int via_init_one(struct pci_dev *
- 	static int printed_version;
- 	u8 enable;
- 	u32 timing;
-+	unsigned long flags = id->driver_data;
- 	int rc;
- 
- 	if (!printed_version++)
-@@ -470,9 +481,13 @@ static int via_init_one(struct pci_dev *
- 	if (rc)
- 		return rc;
- 
-+	if (flags & VIA_IDFLAG_SINGLE)
-+		ppi[1] = &ata_dummy_port_info;
++	if (!bytes)
++		return 0;
 +
- 	/* To find out how the IDE will behave and what features we
- 	   actually have to look at the bridge not the IDE controller */
--	for (config = via_isa_bridges; config->id; config++)
-+	for (config = via_isa_bridges; config->id != PCI_DEVICE_ID_VIA_ANON;
-+	     config++)
- 		if ((isa = pci_get_device(PCI_VENDOR_ID_VIA +
- 			!!(config->flags & VIA_BAD_ID),
- 			config->id, NULL))) {
-@@ -483,10 +498,6 @@ static int via_init_one(struct pci_dev *
- 			pci_dev_put(isa);
- 		}
- 
--	if (!config->id) {
--		printk(KERN_WARNING "via: Unknown VIA SouthBridge, disabling.\n");
--		return -ENODEV;
--	}
- 	pci_dev_put(isa);
- 
- 	if (!(config->flags & VIA_NO_ENABLES)) {
-@@ -588,6 +599,7 @@ static const struct pci_device_id via[] 
- 	{ PCI_VDEVICE(VIA, 0x1571), },
- 	{ PCI_VDEVICE(VIA, 0x3164), },
- 	{ PCI_VDEVICE(VIA, 0x5324), },
-+	{ PCI_VDEVICE(VIA, 0xC409), VIA_IDFLAG_SINGLE },
- 
- 	{ },
- };
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1346,6 +1346,7 @@
- #define PCI_DEVICE_ID_VIA_8783_0	0x3208
- #define PCI_DEVICE_ID_VIA_8237		0x3227
- #define PCI_DEVICE_ID_VIA_8251		0x3287
-+#define PCI_DEVICE_ID_VIA_8261		0x3402
- #define PCI_DEVICE_ID_VIA_8237A		0x3337
- #define PCI_DEVICE_ID_VIA_8237S		0x3372
- #define PCI_DEVICE_ID_VIA_SATA_EIDE	0x5324
-@@ -1355,10 +1356,13 @@
- #define PCI_DEVICE_ID_VIA_CX700		0x8324
- #define PCI_DEVICE_ID_VIA_CX700_IDE	0x0581
- #define PCI_DEVICE_ID_VIA_VX800		0x8353
-+#define PCI_DEVICE_ID_VIA_VX855		0x8409
- #define PCI_DEVICE_ID_VIA_8371_1	0x8391
- #define PCI_DEVICE_ID_VIA_82C598_1	0x8598
- #define PCI_DEVICE_ID_VIA_838X_1	0xB188
- #define PCI_DEVICE_ID_VIA_83_87XX_1	0xB198
-+#define PCI_DEVICE_ID_VIA_C409_IDE	0XC409
-+#define PCI_DEVICE_ID_VIA_ANON		0xFFFF
- 
- #define PCI_VENDOR_ID_SIEMENS           0x110A
- #define PCI_DEVICE_ID_SIEMENS_DSCC4     0x2102
+ 	if (size) {
+ 		if (offs > size)
+ 			return 0;
 
