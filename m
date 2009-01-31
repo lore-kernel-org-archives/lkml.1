@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755106AbZAaUZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZAaUbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755106AbZAaUZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 15:25:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZAaUZP
+	id S1754206AbZAaUbT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 15:31:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZAaUbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 15:25:15 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:58871 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbZAaUZO (ORCPT
+	Sat, 31 Jan 2009 15:31:08 -0500
+Received: from rcsinet11.oracle.com ([148.87.113.123]:22488 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752321AbZAaUbG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 15:25:14 -0500
-Message-ID: <4984B384.3050509@zytor.com>
-Date: Sat, 31 Jan 2009 12:24:36 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 31 Jan 2009 15:31:06 -0500
+Message-ID: <4984B4FC.60107@oracle.com>
+Date: Sat, 31 Jan 2009 12:30:52 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-CC: Harvey Harrison <harvey.harrison@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] x86: do not expose CONFIG_BSWAP to userspace
-References: <20090127222825.GA27097@elte.hu>  <alpine.LFD.2.00.0901271441280.3123@localhost.localdomain>  <1233106614.3256.6.camel@localhost.localdomain>  <200901281337.52294.arnd@arndb.de>  <49809A65.2090501@kernel.org>  <1233170532.6717.49.camel@brick>  <alpine.LFD.2.00.0901281141510.3123@localhost.localdomain>  <1233172994.6717.56.camel@brick>  <4980CD51.70601@zytor.com>  <1233179884.6717.59.camel@brick>  <4980D913.3000505@zytor.com> <1233182314.6717.66.camel@brick> <alpine.LFD.1.10.0901311842140.16187@ftp.linux-mips.org>
-In-Reply-To: <alpine.LFD.1.10.0901311842140.16187@ftp.linux-mips.org>
-Content-Type: text/plain; charset=UTF-8
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mmotm/fold] sysrq: emergency thaw only if CONFIG_BLOCK enabled
+References: <200901310909.n0V99XIZ021497@imap1.linux-foundation.org>
+In-Reply-To: <200901310909.n0V99XIZ021497@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4984B4FE.02CF:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Maciej W. Rozycki wrote:
-> On Wed, 28 Jan 2009, Harvey Harrison wrote:
-> 
->> Well, that's unfortunate, how about we just export the BSWAP version
->> unconditionally and hope pure i386 just goes away someday?
-> 
->  Or just emulate it alongside CMPXCHG and XADD? ;)
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-That would work unless someone actually cares about 386 or 486 in the
-embedded space.  I think at least 486EX is still used as an embedded
-platform.
+sysrq's new emergency_thaw_all() is only available when CONFIG_BLOCK=y:
 
-The kernel can obviously provide this service (although it slows down
-the #UD handler), but anyone who actually cares about these chips would
-not really want them.
+drivers/char/sysrq.c:351: error: implicit declaration of function 'emergency_thaw_all'
 
-At some point, we may want to ask ourselves how long keeping 386 support
-(with it's broken WP handling) alive.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ drivers/char/sysrq.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+--- mmotm-2009-0131-0108.orig/drivers/char/sysrq.c
++++ mmotm-2009-0131-0108/drivers/char/sysrq.c
+@@ -346,6 +346,7 @@ static struct sysrq_key_op sysrq_moom_op
+ 	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
+ };
+ 
++#ifdef CONFIG_BLOCK
+ static void sysrq_handle_thaw(int key, struct tty_struct *tty)
+ {
+ 	emergency_thaw_all();
+@@ -356,6 +357,7 @@ static struct sysrq_key_op sysrq_thaw_op
+ 	.action_msg	= "Emergency Thaw of all frozen filesystems",
+ 	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
+ };
++#endif
+ 
+ static void sysrq_handle_kill(int key, struct tty_struct *tty)
+ {
+@@ -409,7 +411,11 @@ static struct sysrq_key_op *sysrq_key_ta
+ 	NULL,				/* g */
+ 	NULL,				/* h - reserved for help */
+ 	&sysrq_kill_op,			/* i */
++#ifdef CONFIG_BLOCK
+ 	&sysrq_thaw_op,			/* j */
++#else
++	NULL,				/* j */
++#endif
+ 	&sysrq_SAK_op,			/* k */
+ #ifdef CONFIG_SMP
+ 	&sysrq_showallcpus_op,		/* l */
