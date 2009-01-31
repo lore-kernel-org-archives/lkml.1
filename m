@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762247AbZAaDKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbZAaDKr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762247AbZAaDKY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:10:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757369AbZAaCrr
+	id S1762303AbZAaDKr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:10:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbZAaCrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:47 -0500
-Received: from kroah.org ([198.145.64.141]:55542 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:48 -0500
+Received: from kroah.org ([198.145.64.141]:55552 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757193AbZAaCri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:38 -0500
-Date: Fri, 30 Jan 2009 18:44:27 -0800
+	id S1754158AbZAaCrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:39 -0500
+Date: Fri, 30 Jan 2009 18:44:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Robin Holt <holt@sgi.com>,
-       Dean Nelson <dcn@sgi.com>
-Subject: [patch 31/43] sgi-xpc: ensure flags are updated before bte_copy
-Message-ID: <20090131024427.GF12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Boaz Harrosh <bharrosh@panasas.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 32/43] include/linux: Add bsg.h to the Kernel exported
+	headers
+Message-ID: <20090131024439.GG12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sgi-xpc-ensure-flags-are-updated-before-bte_copy.patch"
+Content-Disposition: inline; filename="include-linux-add-bsg.h-to-the-kernel-exported-headers.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,79 +42,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Robin Holt <holt@sgi.com>
+From: Boaz Harrosh <bharrosh@panasas.com>
 
-commit 69b3bb65fa97a1e8563518dbbc35cd57beefb2d4 upstream.
+commit a229fc61ef0ee3c30fd193beee0eeb87410227f1 upstream.
 
-The clearing of the msg->flags needs a barrier between it and the notify
-of the channel threads that the messages are cleaned and ready for use.
+bsg.h in current form is perfectly suitable for user-mode
+consumption. It is needed together with scsi/sg.h for applications
+that want to interface with the bsg driver.
 
-Signed-off-by: Robin Holt <holt@sgi.com>
-Signed-off-by: Dean Nelson <dcn@sgi.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Currently the few projects that use it would copy it over into
+the projects. But that is not acceptable for projects that need
+to provide source and devel packages for distros.
+
+This should also be submitted to stable 2.6.28 and 2.6.27 since bsg had
+a stable API since these Kernels and distro users will need the header
+for these kernels a swell
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/sgi-xp/xpc_sn2.c |    9 +++++----
- drivers/misc/sgi-xp/xpc_uv.c  |    2 +-
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ include/linux/Kbuild |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/misc/sgi-xp/xpc_sn2.c
-+++ b/drivers/misc/sgi-xp/xpc_sn2.c
-@@ -1841,6 +1841,7 @@ xpc_process_msg_chctl_flags_sn2(struct x
- 		 */
- 		xpc_clear_remote_msgqueue_flags_sn2(ch);
- 
-+		smp_wmb(); /* ensure flags have been cleared before bte_copy */
- 		ch_sn2->w_remote_GP.put = ch_sn2->remote_GP.put;
- 
- 		dev_dbg(xpc_chan, "w_remote_GP.put changed to %ld, partid=%d, "
-@@ -1939,7 +1940,7 @@ xpc_get_deliverable_payload_sn2(struct x
- 			break;
- 
- 		get = ch_sn2->w_local_GP.get;
--		rmb();	/* guarantee that .get loads before .put */
-+		smp_rmb();	/* guarantee that .get loads before .put */
- 		if (get == ch_sn2->w_remote_GP.put)
- 			break;
- 
-@@ -2060,7 +2061,7 @@ xpc_allocate_msg_sn2(struct xpc_channel 
- 	while (1) {
- 
- 		put = ch_sn2->w_local_GP.put;
--		rmb();	/* guarantee that .put loads before .get */
-+		smp_rmb();	/* guarantee that .put loads before .get */
- 		if (put - ch_sn2->w_remote_GP.get < ch->local_nentries) {
- 
- 			/* There are available message entries. We need to try
-@@ -2193,7 +2194,7 @@ xpc_send_payload_sn2(struct xpc_channel 
- 	 * The preceding store of msg->flags must occur before the following
- 	 * load of local_GP->put.
- 	 */
--	mb();
-+	smp_mb();
- 
- 	/* see if the message is next in line to be sent, if so send it */
- 
-@@ -2294,7 +2295,7 @@ xpc_received_payload_sn2(struct xpc_chan
- 	 * The preceding store of msg->flags must occur before the following
- 	 * load of local_GP->get.
- 	 */
--	mb();
-+	smp_mb();
- 
- 	/*
- 	 * See if this message is next in line to be acknowledged as having
---- a/drivers/misc/sgi-xp/xpc_uv.c
-+++ b/drivers/misc/sgi-xp/xpc_uv.c
-@@ -1238,7 +1238,7 @@ xpc_send_payload_uv(struct xpc_channel *
- 		atomic_inc(&ch->n_to_notify);
- 
- 		msg_slot->key = key;
--		wmb(); /* a non-NULL func must hit memory after the key */
-+		smp_wmb(); /* a non-NULL func must hit memory after the key */
- 		msg_slot->func = func;
- 
- 		if (ch->flags & XPC_C_DISCONNECTING) {
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -41,6 +41,7 @@ header-y += baycom.h
+ header-y += bfs_fs.h
+ header-y += blkpg.h
+ header-y += bpqether.h
++header-y += bsg.h
+ header-y += can.h
+ header-y += cdk.h
+ header-y += chio.h
 
