@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZAaCs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758390AbZAaCtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbZAaCs1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZAaCqi
+	id S1758390AbZAaCtX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:49:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbZAaCqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:38 -0500
-Received: from kroah.org ([198.145.64.141]:54731 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:40 -0500
+Received: from kroah.org ([198.145.64.141]:54762 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752676AbZAaCqg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:36 -0500
-Date: Fri, 30 Jan 2009 18:39:34 -0800
+	id S1753168AbZAaCqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:39 -0500
+Date: Fri, 30 Jan 2009 18:39:55 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, John McCutchan <ttb@tentacle.dhs.org>,
-       Robert Love <rlove@google.com>, Vegard Nossum <vegard.nossum@gmail.com>
-Subject: [patch 04/32] inotify: clean up inotify_read and fix locking
-	problems
-Message-ID: <20090131023934.GE12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Peter Zijlstra <a.p.zijlsta@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 07/32] x86, mm: fix pte_free()
+Message-ID: <20090131023955.GH12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="inotify-clean-up-inotify_read-and-fix-locking-problems.patch"
+Content-Disposition: inline; filename="x86-mm-fix-pte_free.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,224 +40,73 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Vegard Nossum <vegard.nossum@gmail.com>
+From: Peter Zijlstra <peterz@infradead.org>
 
-commit 3632dee2f8b8a9720329f29eeaa4ec4669a3aff8 upstream.
+commit 42ef73fe134732b2e91c0326df5fd568da17c4b2 upstream.
 
-If userspace supplies an invalid pointer to a read() of an inotify
-instance, the inotify device's event list mutex is unlocked twice.
-This causes an unbalance which effectively leaves the data structure
-unprotected, and we can trigger oopses by accessing the inotify
-instance from different tasks concurrently.
+On -rt we were seeing spurious bad page states like:
 
-The best fix (contributed largely by Linus) is a total rewrite
-of the function in question:
+Bad page state in process 'firefox'
+page:c1bc2380 flags:0x40000000 mapping:c1bc2390 mapcount:0 count:0
+Trying to fix it up, but a reboot is needed
+Backtrace:
+Pid: 503, comm: firefox Not tainted 2.6.26.8-rt13 #3
+[<c043d0f3>] ? printk+0x14/0x19
+[<c0272d4e>] bad_page+0x4e/0x79
+[<c0273831>] free_hot_cold_page+0x5b/0x1d3
+[<c02739f6>] free_hot_page+0xf/0x11
+[<c0273a18>] __free_pages+0x20/0x2b
+[<c027d170>] __pte_alloc+0x87/0x91
+[<c027d25e>] handle_mm_fault+0xe4/0x733
+[<c043f680>] ? rt_mutex_down_read_trylock+0x57/0x63
+[<c043f680>] ? rt_mutex_down_read_trylock+0x57/0x63
+[<c0218875>] do_page_fault+0x36f/0x88a
 
-On Thu, Jan 22, 2009 at 7:05 AM, Linus Torvalds wrote:
-> The thing to notice is that:
->
->  - locking is done in just one place, and there is no question about it
->   not having an unlock.
->
->  - that whole double-while(1)-loop thing is gone.
->
->  - use multiple functions to make nesting and error handling sane
->
->  - do error testing after doing the things you always need to do, ie do
->   this:
->
->        mutex_lock(..)
->        ret = function_call();
->        mutex_unlock(..)
->
->        .. test ret here ..
->
->   instead of doing conditional exits with unlocking or freeing.
->
-> So if the code is written in this way, it may still be buggy, but at least
-> it's not buggy because of subtle "forgot to unlock" or "forgot to free"
-> issues.
->
-> This _always_ unlocks if it locked, and it always frees if it got a
-> non-error kevent.
+This is the case where a concurrent fault already installed the PTE and
+we get to free the newly allocated one.
 
-Cc: John McCutchan <ttb@tentacle.dhs.org>
-Cc: Robert Love <rlove@google.com>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+This is due to pgtable_page_ctor() doing the spin_lock_init(&page->ptl)
+which is overlaid with the {private, mapping} struct.
+
+union {
+    struct {
+        unsigned long private;
+        struct address_space *mapping;
+    };
+    spinlock_t ptl;
+    struct kmem_cache *slab;
+    struct page *first_page;
+};
+
+Normally the spinlock is small enough to not stomp on page->mapping, but
+PREEMPT_RT=y has huge 'spin'locks.
+
+But lockdep kernels should also be able to trigger this splat, as the
+lock tracking code grows the spinlock to cover page->mapping.
+
+The obvious fix is calling pgtable_page_dtor() like the regular pte free
+path __pte_free_tlb() does.
+
+It seems all architectures except x86 and nm10300 already do this, and
+nm10300 doesn't seem to use pgtable_page_ctor(), which suggests it
+doesn't do SMP or simply doesnt do MMU at all or something.
+
+Signed-off-by: Peter Zijlstra <a.p.zijlsta@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/inotify_user.c |  135 +++++++++++++++++++++++++++++-------------------------
- 1 file changed, 74 insertions(+), 61 deletions(-)
+ include/asm-x86/pgalloc.h |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/fs/inotify_user.c
-+++ b/fs/inotify_user.c
-@@ -427,10 +427,61 @@ static unsigned int inotify_poll(struct 
- 	return ret;
- }
+--- a/include/asm-x86/pgalloc.h
++++ b/include/asm-x86/pgalloc.h
+@@ -42,6 +42,7 @@ static inline void pte_free_kernel(struc
  
-+/*
-+ * Get an inotify_kernel_event if one exists and is small
-+ * enough to fit in "count". Return an error pointer if
-+ * not large enough.
-+ *
-+ * Called with the device ev_mutex held.
-+ */
-+static struct inotify_kernel_event *get_one_event(struct inotify_device *dev,
-+						  size_t count)
-+{
-+	size_t event_size = sizeof(struct inotify_event);
-+	struct inotify_kernel_event *kevent;
-+
-+	if (list_empty(&dev->events))
-+		return NULL;
-+
-+	kevent = inotify_dev_get_event(dev);
-+	if (kevent->name)
-+		event_size += kevent->event.len;
-+
-+	if (event_size > count)
-+		return ERR_PTR(-EINVAL);
-+
-+	remove_kevent(dev, kevent);
-+	return kevent;
-+}
-+
-+/*
-+ * Copy an event to user space, returning how much we copied.
-+ *
-+ * We already checked that the event size is smaller than the
-+ * buffer we had in "get_one_event()" above.
-+ */
-+static ssize_t copy_event_to_user(struct inotify_kernel_event *kevent,
-+				  char __user *buf)
-+{
-+	size_t event_size = sizeof(struct inotify_event);
-+
-+	if (copy_to_user(buf, &kevent->event, event_size))
-+		return -EFAULT;
-+
-+	if (kevent->name) {
-+		buf += event_size;
-+
-+		if (copy_to_user(buf, kevent->name, kevent->event.len))
-+			return -EFAULT;
-+
-+		event_size += kevent->event.len;
-+	}
-+	return event_size;
-+}
-+
- static ssize_t inotify_read(struct file *file, char __user *buf,
- 			    size_t count, loff_t *pos)
+ static inline void pte_free(struct mm_struct *mm, struct page *pte)
  {
--	size_t event_size = sizeof (struct inotify_event);
- 	struct inotify_device *dev;
- 	char __user *start;
- 	int ret;
-@@ -440,81 +491,43 @@ static ssize_t inotify_read(struct file 
- 	dev = file->private_data;
- 
- 	while (1) {
-+		struct inotify_kernel_event *kevent;
- 
- 		prepare_to_wait(&dev->wq, &wait, TASK_INTERRUPTIBLE);
- 
- 		mutex_lock(&dev->ev_mutex);
--		if (!list_empty(&dev->events)) {
--			ret = 0;
--			break;
--		}
-+		kevent = get_one_event(dev, count);
- 		mutex_unlock(&dev->ev_mutex);
- 
--		if (file->f_flags & O_NONBLOCK) {
--			ret = -EAGAIN;
--			break;
--		}
--
--		if (signal_pending(current)) {
--			ret = -EINTR;
--			break;
-+		if (kevent) {
-+			ret = PTR_ERR(kevent);
-+			if (IS_ERR(kevent))
-+				break;
-+			ret = copy_event_to_user(kevent, buf);
-+			free_kevent(kevent);
-+			if (ret < 0)
-+				break;
-+			buf += ret;
-+			count -= ret;
-+			continue;
- 		}
- 
--		schedule();
--	}
--
--	finish_wait(&dev->wq, &wait);
--	if (ret)
--		return ret;
--
--	while (1) {
--		struct inotify_kernel_event *kevent;
--
--		ret = buf - start;
--		if (list_empty(&dev->events))
-+		ret = -EAGAIN;
-+		if (file->f_flags & O_NONBLOCK)
- 			break;
--
--		kevent = inotify_dev_get_event(dev);
--		if (event_size + kevent->event.len > count) {
--			if (ret == 0 && count > 0) {
--				/*
--				 * could not get a single event because we
--				 * didn't have enough buffer space.
--				 */
--				ret = -EINVAL;
--			}
-+		ret = -EINTR;
-+		if (signal_pending(current))
- 			break;
--		}
--		remove_kevent(dev, kevent);
- 
--		/*
--		 * Must perform the copy_to_user outside the mutex in order
--		 * to avoid a lock order reversal with mmap_sem.
--		 */
--		mutex_unlock(&dev->ev_mutex);
--
--		if (copy_to_user(buf, &kevent->event, event_size)) {
--			ret = -EFAULT;
-+		if (start != buf)
- 			break;
--		}
--		buf += event_size;
--		count -= event_size;
--
--		if (kevent->name) {
--			if (copy_to_user(buf, kevent->name, kevent->event.len)){
--				ret = -EFAULT;
--				break;
--			}
--			buf += kevent->event.len;
--			count -= kevent->event.len;
--		}
- 
--		free_kevent(kevent);
--
--		mutex_lock(&dev->ev_mutex);
-+		schedule();
- 	}
--	mutex_unlock(&dev->ev_mutex);
- 
-+	finish_wait(&dev->wq, &wait);
-+	if (start != buf && ret != -EFAULT)
-+		ret = buf - start;
- 	return ret;
++	pgtable_page_dtor(pte);
+ 	__free_page(pte);
  }
  
 
