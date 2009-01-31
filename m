@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754149AbZAaWPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbZAaWUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754149AbZAaWPl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 17:15:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752424AbZAaWPc
+	id S1754229AbZAaWUG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 17:20:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752626AbZAaWTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 17:15:32 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54732 "EHLO mx2.mail.elte.hu"
+	Sat, 31 Jan 2009 17:19:55 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55102 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750856AbZAaWPb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 17:15:31 -0500
-Date: Sat, 31 Jan 2009 23:15:14 +0100
+	id S1752346AbZAaWTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 17:19:55 -0500
+Date: Sat, 31 Jan 2009 23:19:39 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Cc: Peter Zijlstra <peterz@infradead.org>,
+       Alexey Zaytsev <alexey.zaytsev@gmail.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Nick Piggin <npiggin@suse.de>
 Subject: Re: [git pull] scheduler fixes
-Message-ID: <20090131221514.GB29364@elte.hu>
-References: <20090130230936.GA7549@elte.hu> <1233421901.4787.27.camel@laptop> <1233422632.4787.31.camel@laptop> <f19298770901310949m7aabf7bcp219ae4cc5d1b363b@mail.gmail.com> <20090131175432.GA7635@elte.hu> <f19298770901311343u6c6f16d9u7ddcc5cda27bbf33@mail.gmail.com>
+Message-ID: <20090131221939.GD29364@elte.hu>
+References: <20090130230936.GA7549@elte.hu> <1233421901.4787.27.camel@laptop> <1233422632.4787.31.camel@laptop> <f19298770901310949m7aabf7bcp219ae4cc5d1b363b@mail.gmail.com> <1233425327.4787.35.camel@laptop> <20090131212106.6e2e05b0@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <f19298770901311343u6c6f16d9u7ddcc5cda27bbf33@mail.gmail.com>
+In-Reply-To: <20090131212106.6e2e05b0@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,62 +38,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> On Sat, Jan 31, 2009 at 20:54, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > * Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
-> >
-> >> On Sat, Jan 31, 2009 at 20:23, Peter Zijlstra <peterz@infradead.org> wrote:
-> >> > On Sat, 2009-01-31 at 18:11 +0100, Peter Zijlstra wrote:
-> >> >> > diff --git a/kernel/sched.c b/kernel/sched.c
-> >> >> > index 52bbf1c..5686bb5 100644
-> >> >> > --- a/kernel/sched.c
-> >> >> > +++ b/kernel/sched.c
-> >> >> > @@ -4440,7 +4450,7 @@ void __kprobes sub_preempt_count(int val)
-> >> >> >       /*
-> >> >> >        * Underflow?
-> >> >> >        */
-> >> >> > -     if (DEBUG_LOCKS_WARN_ON(val > preempt_count()))
-> >> >> > +       if (DEBUG_LOCKS_WARN_ON(val > preempt_count() - (!!kernel_locked())))
-> >> >> >               return;
-> >> >> >       /*
-> >> >> >        * Is the spinlock portion underflowing?
-> >> >
-> >> > Since the commit msg of 01e3eb8 says:
-> >> >
-> >> >    kernel_locked() is not a valid test in IRQ context (we update the
-> >> >    BKL's ->lock_depth and the preempt count separately and non-atomicalyy),
-> >> >    so we cannot put it into the generic preempt debugging checks which
-> >> >    can run in IRQ contexts too.
-> >> >
-> >>
-> >> Is the comment actually valid? From arch/x86/kernel/irq_32.c:
-> >> do_softirq() actually does
-> >>                 curctx = current_thread_info();
-> >>                 irqctx = softirq_ctx[smp_processor_id()];
-> >>                 irqctx->tinfo.task = curctx->task;
-> >>
-> >> and so does execute_on_irq_stack().
-> >> So kernel_locked() should be valid. It corresponds to the thread
-> >> that is being interrupted.
-> >>
-> >> And answering an earlier question, this happens only on i386 and only
-> >> with 4K stacks because x86_64 dosn't have a separate softirq stack,
-> >> so the preempt count diring the soft irq is at least IRQ_EXIT_OFFSET.
-> >>
-> >> (If I understood the things correctly)
-> >
-> > Correct, on 64-bit we use the hardirq stack for softirqs too:
+> On Sat, 31 Jan 2009 19:08:47 +0100
+> Peter Zijlstra <peterz@infradead.org> wrote:
 > 
-> Is there actually a reason for a separate softirq stack on i386-4K, or 
-> any other architecture?
+> > On Sat, 2009-01-31 at 20:49 +0300, Alexey Zaytsev wrote:
+> > > 
+> > > And answering an earlier question, this happens only on i386 and only
+> > > with 4K stacks because x86_64 dosn't have a separate softirq stack,
+> > > so the preempt count diring the soft irq is at least IRQ_EXIT_OFFSET.
+> > 
+> > What do the other 30 odd architectures that Linux supports do? Is i386 
+> > 4k really the _only_ with separate softirq stacks?
+> 
+> x86-64 and some of the other platforms could do with IRQ stacks but that 
+> is another story.
 
-Yes - it's just 4K so we have separate stacks for hardirqs, softirqs and 
-for normal syscall activities. On 64-bit the IRQ stack is 16K - so it can 
-embedd a softirq just fine.
+64-bit x86 already has IRQ stacks [16K large, per CPU], separate from the 
+8K syscall/process stack.
 
-Anyway, changing any detail there is a highly critical change not to be 
-changed so late in the -rc cycles.
+The question here is that on 64-bit hardirqs and softirqs share the same 
+stack (it's large enough). On 32-bit we have them separated.
 
 	Ingo
