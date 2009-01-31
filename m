@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZAaSMQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbZAaSNx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754978AbZAaSMQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 13:12:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZAaSMA
+	id S1755219AbZAaSNx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 13:13:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZAaSNn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 13:12:00 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:43121 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbZAaSL7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 13:11:59 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=vwfJcsTYfZiT+4Z0GUK6js5AVqWZYSFIuq36KYLuJuypVJ9RV4eCfVsTbHxIFTx5E9
-         3xX+D3WZa5w5cRg6op42m9ZDelIPVM7e0eGFnMfwYJm4PhtGFnSsQxo1ml/4IOt7I9XR
-         ymSSh6gm6tUha1+Iw+4w1daZrkrok2NVvdLV0=
-Message-ID: <4984946B.5000205@gmail.com>
-Date: Sat, 31 Jan 2009 19:11:55 +0100
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Sat, 31 Jan 2009 13:13:43 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54019 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751392AbZAaSNm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 13:13:42 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: Q: state of pci express hotplug
+Date: Sat, 31 Jan 2009 19:13:00 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       Alex Chiang <achiang@hp.com>, djwong@us.ibm.com,
+       Trent Piepho <xyzzy@speakeasy.org>, linux-kernel@vger.kernel.org
+References: <m1fxj06js8.fsf@fess.ebiederm.org>
+In-Reply-To: <m1fxj06js8.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Andrey Borzenkov <arvidjaar@mail.ru>,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-fbdev-devel] [2.6.29-rc2] fb_mmap: circular locking dependency
- on hibernation
-References: <200901272137.57757.arvidjaar@mail.ru> <Pine.LNX.4.64.0901291009220.13600@anakin> <200901300716.06137.arvidjaar@mail.ru> <498485E0.4080501@gmail.com> <Pine.LNX.4.64.0901311843450.21273@anakin>
-In-Reply-To: <Pine.LNX.4.64.0901311843450.21273@anakin>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200901311913.00752.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-01-31 18:44, Geert Uytterhoeven wrote:
-> On Sat, 31 Jan 2009, Andrea Righi wrote:
->> On 2009-01-30 05:15, Andrey Borzenkov wrote:
->>> On 29 of January 2009 12:10:11 Geert Uytterhoeven wrote:
->>>> On Tue, 27 Jan 2009, Andrey Borzenkov wrote:
->> fbcon: avoid circular locking dependency between fb_info->lock and mm->mmap_sem
->>
->> In fbcon notifier the handler for FB_EVENT_SET_CONSOLE_MAP doesn't need
->> to hold fb_info->lock.
->>
->> Simply unlock it before calling set_con2fb_map(), that could try to
->> acquire mm->mmap_sem to avoid a circular locking dependency with
->> fb_mmap() (that acquires mm->mmap_sem -> fb_info-lock).
+Hi Eric,
+
+On Saturday 31 January 2009, Eric W. Biederman wrote:
 > 
-> However, set_con2fb_map() accesses the array of fb_info pointers
-> registered_fb[], which seems to be a bit unsafe now the BKL is no longer held.
+> Trying to use the current pciehp code, on real hardware in an 
+> interesting topology (more later) I'm not finding it very satisfactory
+> at all.  I am up to at least three show stopper bugs and the code
+> is not doing what I really need it to do, so I am looking at a significant
+> rewrite patch effort to make this code usable.
+> 
+> Am I unique in thinking there is a lot that needs to be done?
+> Is there current work in progress to make the pci hotplug work better?
+> 
+> I would like to avoid duplicate work if I can.
 
-mmmh.. not sure about that, registered_fb[] was never accessed with
-fb_info->lock held, see register/unregister_framebuffer().
+I've recently send some fixes against the PCIe port driver which is used by
+PCIe hotplug.  In particular, there's a fix that should make the thing work
+with MSI-X.
 
-But maybe this is another issue, and anyway, the array and also
-num_registered_fb don't seem to be protected at all...
+Are your fixes specific to the hotplug driver or do they also affect the PCIe
+port driver?
 
--Andrea
+Rafael
