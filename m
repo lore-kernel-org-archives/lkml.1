@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762601AbZAaDMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbZAaDMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762601AbZAaDMh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:12:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757478AbZAaCrw
+	id S1759941AbZAaDMz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:12:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757494AbZAaCrx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:52 -0500
-Received: from kroah.org ([198.145.64.141]:55623 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:53 -0500
+Received: from kroah.org ([198.145.64.141]:55650 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757340AbZAaCro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:44 -0500
-Date: Fri, 30 Jan 2009 18:44:51 -0800
+	id S1756491AbZAaCrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:46 -0500
+Date: Fri, 30 Jan 2009 18:44:53 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jarod Wilson <jarod@redhat.com>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [patch 37/43] crypto: ccm - Fix handling of null assoc data
-Message-ID: <20090131024451.GL12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, tvignaud@mandriva.com
+Subject: [patch 38/43] x86, pat: fix reserve_memtype() for legacy 1MB range
+Message-ID: <20090131024453.GM12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="crypto-ccm-fix-handling-of-null-assoc-data.patch"
+Content-Disposition: inline; filename="fix_reserve_memtype_1MB.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,84 +41,88 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jarod Wilson <jarod@redhat.com>
+From: Suresh Siddha <suresh.b.siddha@intel.com>
 
-commit 516280e735b034216de97eb7ba080ec6acbfc58f upstream.
+commit 5cca0cf15a94417f49625ce52e23589eed0a1675 upstream
+ 
+Thierry Vignaud reported:
+> http://bugzilla.kernel.org/show_bug.cgi?id=12372
+>
+> On P4 with an SiS motherboard (video card is a SiS 651)
+> X server fails to start with error:
+> xf86MapVidMem: Could not mmap framebuffer (0x00000000,0x2000) (Invalid
+> argument)
 
-Its a valid use case to have null associated data in a ccm vector, but
-this case isn't being handled properly right now.
+Here X is trying to map first 8KB of memory using /dev/mem. Existing
+code treats first 0-4KB of memory as non-RAM and 4KB-8KB as RAM. Recent
+code changes don't allow to map memory with different attributes
+at the same time.
 
-The following ccm decryption/verification test vector, using the
-rfc4309 implementation regularly triggers a panic, as will any
-other vector with null assoc data:
+Fix this by treating the first 1MB legacy region as special and always
+track the attribute requests with in this region using linear linked
+list (and don't bother if the range is RAM or non-RAM or mixed)
 
-* key: ab2f8a74b71cd2b1ff802e487d82f8b9
-* iv: c6fb7d800d13abd8a6b2d8
-* Associated Data: [NULL]
-* Tag Length: 8
-* input: d5e8939fc7892e2b
-
-The resulting panic looks like so:
-
-Unable to handle kernel paging request at ffff810064ddaec0 RIP:
- [<ffffffff8864c4d7>] :ccm:get_data_to_compute+0x1a6/0x1d6
-PGD 8063 PUD 0
-Oops: 0002 [1] SMP
-last sysfs file: /module/libata/version
-CPU 0
-Modules linked in: crypto_tester_kmod(U) seqiv krng ansi_cprng chainiv rng ctr aes_generic aes_x86_64 ccm cryptomgr testmgr_cipher testmgr aead crypto_blkcipher crypto_a
-lgapi des ipv6 xfrm_nalgo crypto_api autofs4 hidp l2cap bluetooth nfs lockd fscache nfs_acl sunrpc ip_conntrack_netbios_ns ipt_REJECT xt_state ip_conntrack nfnetlink xt_
-tcpudp iptable_filter ip_tables x_tables dm_mirror dm_log dm_multipath scsi_dh dm_mod video hwmon backlight sbs i2c_ec button battery asus_acpi acpi_memhotplug ac lp sg
-snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss joydev snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss ide_cd snd_pcm floppy parport_p
-c shpchp e752x_edac snd_timer e1000 i2c_i801 edac_mc snd soundcore snd_page_alloc i2c_core cdrom parport serio_raw pcspkr ata_piix libata sd_mod scsi_mod ext3 jbd uhci_h
-cd ohci_hcd ehci_hcd
-Pid: 12844, comm: crypto-tester Tainted: G      2.6.18-128.el5.fips1 #1
-RIP: 0010:[<ffffffff8864c4d7>]  [<ffffffff8864c4d7>] :ccm:get_data_to_compute+0x1a6/0x1d6
-RSP: 0018:ffff8100134434e8  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffff8100104898b0 RCX: ffffffffab6aea10
-RDX: 0000000000000010 RSI: ffff8100104898c0 RDI: ffff810064ddaec0
-RBP: 0000000000000000 R08: ffff8100104898b0 R09: 0000000000000000
-R10: ffff8100103bac84 R11: ffff8100104898b0 R12: ffff810010489858
-R13: ffff8100104898b0 R14: ffff8100103bac00 R15: 0000000000000000
-FS:  00002ab881adfd30(0000) GS:ffffffff803ac000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: ffff810064ddaec0 CR3: 0000000012a88000 CR4: 00000000000006e0
-Process crypto-tester (pid: 12844, threadinfo ffff810013442000, task ffff81003d165860)
-Stack:  ffff8100103bac00 ffff8100104898e8 ffff8100134436f8 ffffffff00000000
- 0000000000000000 ffff8100104898b0 0000000000000000 ffff810010489858
- 0000000000000000 ffff8100103bac00 ffff8100134436f8 ffffffff8864c634
-Call Trace:
- [<ffffffff8864c634>] :ccm:crypto_ccm_auth+0x12d/0x140
- [<ffffffff8864cf73>] :ccm:crypto_ccm_decrypt+0x161/0x23a
- [<ffffffff88633643>] :crypto_tester_kmod:cavs_test_rfc4309_ccm+0x4a5/0x559
-[...]
-
-The above is from a RHEL5-based kernel, but upstream is susceptible too.
-
-The fix is trivial: in crypto/ccm.c:crypto_ccm_auth(), pctx->ilen contains
-whatever was in memory when pctx was allocated if assoclen is 0. The tested
-fix is to simply add an else clause setting pctx->ilen to 0 for the
-assoclen == 0 case, so that get_data_to_compute() doesn't try doing
-things its not supposed to.
-
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+Reported-and-tested-by: Thierry Vignaud <tvignaud@mandriva.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- crypto/ccm.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/mm/pat.c |   37 +++++++++++++++++++++++++++----------
+ 1 file changed, 27 insertions(+), 10 deletions(-)
 
---- a/crypto/ccm.c
-+++ b/crypto/ccm.c
-@@ -266,6 +266,8 @@ static int crypto_ccm_auth(struct aead_r
- 	if (assoclen) {
- 		pctx->ilen = format_adata(idata, assoclen);
- 		get_data_to_compute(cipher, pctx, req->assoc, req->assoclen);
-+	} else {
-+		pctx->ilen = 0;
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -333,11 +333,20 @@ int reserve_memtype(u64 start, u64 end, 
+ 					      req_type & _PAGE_CACHE_MASK);
  	}
  
- 	/* compute plaintext into mac */
+-	is_range_ram = pagerange_is_ram(start, end);
+-	if (is_range_ram == 1)
+-		return reserve_ram_pages_type(start, end, req_type, new_type);
+-	else if (is_range_ram < 0)
+-		return -EINVAL;
++	/*
++	 * For legacy reasons, some parts of the physical address range in the
++	 * legacy 1MB region is treated as non-RAM (even when listed as RAM in
++	 * the e820 tables).  So we will track the memory attributes of this
++	 * legacy 1MB region using the linear memtype_list always.
++	 */
++	if (end >= ISA_END_ADDRESS) {
++		is_range_ram = pagerange_is_ram(start, end);
++		if (is_range_ram == 1)
++			return reserve_ram_pages_type(start, end, req_type,
++						      new_type);
++		else if (is_range_ram < 0)
++			return -EINVAL;
++	}
+ 
+ 	new  = kmalloc(sizeof(struct memtype), GFP_KERNEL);
+ 	if (!new)
+@@ -437,11 +446,19 @@ int free_memtype(u64 start, u64 end)
+ 	if (is_ISA_range(start, end - 1))
+ 		return 0;
+ 
+-	is_range_ram = pagerange_is_ram(start, end);
+-	if (is_range_ram == 1)
+-		return free_ram_pages_type(start, end);
+-	else if (is_range_ram < 0)
+-		return -EINVAL;
++	/*
++	 * For legacy reasons, some parts of the physical address range in the
++	 * legacy 1MB region is treated as non-RAM (even when listed as RAM in
++	 * the e820 tables).  So we will track the memory attributes of this
++	 * legacy 1MB region using the linear memtype_list always.
++	 */
++	if (end >= ISA_END_ADDRESS) {
++		is_range_ram = pagerange_is_ram(start, end);
++		if (is_range_ram == 1)
++			return free_ram_pages_type(start, end);
++		else if (is_range_ram < 0)
++			return -EINVAL;
++	}
+ 
+ 	spin_lock(&memtype_lock);
+ 	list_for_each_entry(entry, &memtype_list, nd) {
 
