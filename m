@@ -1,65 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752548AbZAaFSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752707AbZAaFZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752548AbZAaFSS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 00:18:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750844AbZAaFSH
+	id S1752707AbZAaFZy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 00:25:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751016AbZAaFZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 00:18:07 -0500
-Received: from yw-out-2324.google.com ([74.125.46.28]:51205 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750840AbZAaFSE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 00:18:04 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=TRWtPG+hhil1YA/BaCoOQAWpIn29G9FNU9PxpcmN+hgD/MopK/bh6VnWAALFJCPN/G
-         e65ugisiNFuJJ69c+raU+4Blzk+bTw7AaTwo4AdMkvHvZUHdDPY/KXOBxbFdfpZnt6j3
-         VCiN2iqWMGEqscYo9zxKRMZUOn4b+eHo+EOQ0=
-Message-ID: <4983DF0A.6030402@gmail.com>
-Date: Fri, 30 Jan 2009 23:18:02 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Bartosz SKOWRON <getxsick@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: libata - anomaly performance with NCQ
-References: <77887e110901301623u746535f2q7dcc37cd40d2cc56@mail.gmail.com> <4983A446.5080809@shaw.ca> <77887e110901301725p64f5ab4fk341a9bfaf6715a7b@mail.gmail.com>
-In-Reply-To: <77887e110901301725p64f5ab4fk341a9bfaf6715a7b@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 31 Jan 2009 00:25:44 -0500
+Received: from THUNK.ORG ([69.25.196.29]:43104 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750851AbZAaFZm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 00:25:42 -0500
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Ext4 tree backports for 2.6.27.13 and 2.6.28.2
+From: "Theodore Ts'o" <tytso@mit.edu>
+Phone: (781) 391-3464
+Message-Id: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
+Date: Sat, 31 Jan 2009 00:25:39 -0500
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartosz SKOWRON wrote:
-> On Sat, Jan 31, 2009 at 2:07 AM, Robert Hancock <hancockr@shaw.ca> wrote:
-> 
->>> 1) cause the title contains "with hdparm"...does it mean that
->>> physically the performance is OK and only hdparm shows something
->>> wrong?
->> Well, hdparm is a fairly crude benchmark but there's likely at least some
->> impact in other usage.
-> 
-> It's not an answer for my question. So, should I check with other
-> benchmarks? I thought that this's issue is investigated and the answer
-> is common. Do you recommend any "not crude" benchmarks? :)
+I've updated the ext4 backport branches on the ext4 git tree:
 
-bonnie++ is one I've used, I'm sure there are others.. Of course, what 
-do you compare the results to..
+   git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
+   http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
 
-> 
-> 
->>> 2) there is an information about upgrading firmware. as far as i know
->>> Seagate doesn't publish firmwares. So the only way is to contact
->>> seagate support, send the hdd and wait for the new one?
->> I think Seagate can provide firmware updaters for the user to use, but
->> normally only if you contact support I think.
-> 
-> I will send the email cause there is no phone line for my country.
-> BTW. upgrade firmware == damage data?
+The for-stable branch is branched off of 2.6.28.2, and has a candidate
+set of patches to be included in the next stable release.  The
+for-stable-2.6.27 branch is branched off of 2.6.27.13.  
 
-It shouldn't, but some people with the recent 7200.11 drives that did 
-firmware upgrades reported it bricked the drive, so backing up the data 
-first would definitely be a good idea..
+I'm more confident with the 2.6.28 stable candidate than the 2.6.27
+stable candidates at the moment, but given that we just missed the
+2.6.27.14 and 2.6.28.3 release cycles, that should give us plenty of
+time to test the patches.
+
+						- Ted
+
+
+mainline 2.6.28  2.6.27
+    commit-description
+-------------------------------------------------------------------------
+f99b2589 99186e9 50137b9b
+    ext4: Add support for non-native signed/unsigned htree hash algorithms
+
+2a21e37e a24d2c3 c6ee3785
+    ext4: tone down ext4_da_writepages warnings
+
+791b7f08 09dd336 20a5992c
+    ext4: Fix the delalloc writepages to allocate blocks at the right offset.
+
+565a9617 98da3f7 8fac34d1
+    ext4: avoid ext4_error when mounting a fs with a single bg
+
+ff7ef329 d77464d a3d3507c
+    ext4: Widen type of ext4_sb_info.s_mb_maxs[]
+
+fd98496f 956559e d0c7cd8e
+    jbd2: Add barrier not supported test to journal_wait_on_commit_record
+
+032115fc faa39cf 672ccd67
+    ext4: Don't overwrite allocation_context ac_status
+
+e21675d4 f45872d 44e83b40
+    ext4: Add blocks added during resize to bitmap
+
+920313a7 36a926a de7c44e7
+    ext4: Use EXT4_GROUP_INFO_NEED_INIT_BIT during resize
+
+c3a326a6 34bb72b d0bbe797
+    ext4: cleanup mballoc header files
+
+c894058d -----   71ae3e25
+    ext4: Use an rbtree for tracking blocks freed during transaction.
+
+7a2fcbf7 cbf340c c71f2a67
+    ext4: don't use blocks freed but not yet committed in buddy cache init
+    
+e8134b27 8e5ffb2 0d047b2d
+    ext4: Fix race between read_block_bitmap() and mark_diskspace_used()
+
+39341867 2298c89 78114d26
+    ext4: Fix the race between read_inode_bitmap() and ext4_new_inode()
+
+e97fcd95 469496b b04246c8
+    jbd2: Add BH_JBDPrivateStart
+
+2ccb5fb9 bfb49c0 bf79ca1d
+    ext4: Use new buffer_head flag to check uninit group bitmaps initialization
+
+648f5879 08d0947 ba08e9a6
+    ext4: mark the blocks/inode bitmap beyond end of group as used
+
+8556e8f3 18d5cb0 fd3bd090
+    ext4: Don't allow new groups to be added during block allocation
+
+29eaf024 a38467c fb8c1296
+    ext4: Init the complete page while building buddy cache
+
+0087d9fb 462dbdb -----
+    ext4: Fix s_dirty_blocks_counter if block allocation failed with nodelalloc
+
+4ec11028 c457db2 850eb20e
+    ext4: Add sanity checks for the superblock before mounting the filesystem
+
+06a279d6 cd676b5 713e7106
+    ext4: only use i_size_high for regular files
+
+e6b8bc09 4a81724 312eaf17
+    ext4: Add sanity check to make_indexed_dir
+
+a21102b5 1b1872b 0f30c439
+    ext3: Add sanity check to make_indexed_dir
+
+08ec8c38 a062e44 2ea34131
+    jbd2: On a __journal_expect() assertion failure printk "JBD2", not "EXT3-fs"
+
+fdff73f0 e041093 b86f4c8d
+    ext4: Initialize the new group descriptor when resizing the filesystem
+
