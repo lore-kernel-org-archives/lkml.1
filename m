@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753140AbZAaLTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZAaLkA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753140AbZAaLTS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 06:19:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbZAaLTG
+	id S1752839AbZAaLkA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 06:40:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZAaLjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 06:19:06 -0500
-Received: from nn7.de ([85.214.94.156]:38374 "EHLO nn7.de"
+	Sat, 31 Jan 2009 06:39:52 -0500
+Received: from ozlabs.org ([203.10.76.45]:56045 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbZAaLTF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 06:19:05 -0500
-Subject: Re: 2.6.29-rc3+git macbook pro1,1 garbled display on resume
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: "Justin P\. Mattock" <justinmattock@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <4983F365.40701@gmail.com>
-References: <1233348609.3707.6.camel@localhost>  <4983F365.40701@gmail.com>
-Content-Type: text/plain
+	id S1750984AbZAaLjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 06:39:51 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [PATCH 2/4] kthreads: simplify the startup synchronization
+Date: Sat, 31 Jan 2009 22:09:40 +1030
+User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
+       Vitaliy Gusev <vgusev@openvz.org>, linux-kernel@vger.kernel.org
+References: <20090130123354.GA26213@redhat.com>
+In-Reply-To: <20090130123354.GA26213@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Date: Sat, 31 Jan 2009 12:18:59 +0100
-Message-Id: <1233400739.4140.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Disposition: inline
+Message-Id: <200901312209.41548.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-01-30 at 22:44 -0800, Justin P. Mattock wrote:
-> Soeren Sonnenburg wrote:
-> > Hi,
-> >
-> > the macbook pro suspends just fine, but even though the machine returns
-> > to X I see on resume some random garbled output but can still move the
-> > mouse cursor (which is OK!) and using the keyboard successfully adjust
-> > the brightness of the display.
-[...]
-> Same here with jaunty i.g.
-> one week it worked then the next it didn't.
-> maybe disabling hotplug with xorg.conf
-> might make the keys work.
+On Friday 30 January 2009 23:03:54 Oleg Nesterov wrote:
+> We use two completions two create the kernel thread, this is a bit ugly.
+> kthread() wakes up create_kthread() via ->started, then create_kthread()
+> wakes up the caller kthread_create() via ->done. But kthread() does not
+> need to wait for kthread(), it can just return. Instead kthread() itself
+> can wake up the caller of kthread_create().
+> 
+> Kill kthread_create_info->started, ->done is enough. This improves the
+> scalability a bit and sijmplifies the code.
+> 
+> The only problem if kernel_thread() fails, in that case create_kthread()
+> must do complete(&create->done).
+> 
+> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-I recognized that everything seems to work just fine *on console only*.
-At least I could suspend and resume via s2ram >3 times in a row.
+Nice!  I'll apply this one after the minor respin of 1/4.
 
-What also worked was to just start plain X (no window manager or
-anything) and suspend/resume then. However with compiz running I am
-seeing the garbage/hang on resume.
-
-Are you by chance to having an ATI card + use a compositing window
-manager?
-
-Soeren
+Thanks,
+Rusty.
