@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZAaUc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZAaUpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755292AbZAaUc4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 15:32:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZAaUcs
+	id S1754087AbZAaUpg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 15:45:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZAaUp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 15:32:48 -0500
-Received: from rcsinet11.oracle.com ([148.87.113.123]:22801 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbZAaUcr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 15:32:47 -0500
-Message-ID: <4984B55A.7060503@oracle.com>
-Date: Sat, 31 Jan 2009 12:32:26 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH -mmotm/fold] UV: fix header struct usage
-References: <200901310909.n0V99XIZ021497@imap1.linux-foundation.org>
-In-Reply-To: <200901310909.n0V99XIZ021497@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 31 Jan 2009 15:45:26 -0500
+Received: from fifo99.com ([67.223.236.141]:33344 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752189AbZAaUpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 15:45:25 -0500
+X-Greylist: delayed 609 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Jan 2009 15:45:25 EST
+Subject: Re: [PATCH] net: variables reach -1, but 0 tested
+From: Daniel Walker <dwalker@fifo99.com>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <498429AE.1080404@gmail.com>
+References: <498429AE.1080404@gmail.com>
+Content-Type: text/plain
+Date: Sat, 31 Jan 2009 12:35:12 -0800
+Message-Id: <1233434112.5903.28.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4984B55D.011E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Sat, 2009-01-31 at 11:36 +0100, Roel Kluin wrote:
 
-Fix uv.h struct usage:
+>  
+> -	while (limit--) {
+> +	while (--limit) {
+>  		val = phy_read(phy, MII_BMCR);
+>  		if (val >= 0 && (val & BMCR_RESET) == 0)
+>  			break;
 
-arch/x86/include/asm/uv/uv.h:16: warning: 'struct mm_struct' declared inside parameter list
-arch/x86/include/asm/uv/uv.h:16: warning: its scope is only this definition or declaration, which is probably not what you want
+It looks like these are checked for <= to 0 , are these changes strictly
+nessesary?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86/include/asm/uv/uv.h |    3 +++
- 1 file changed, 3 insertions(+)
+>  
+>  	/* make sure EEPROM has finished loading before setting GPIO_CFG */
+>  	timeout=1000;
+> -	while ( timeout-- && (SMC_GET_E2P_CMD(lp) & E2P_CMD_EPC_BUSY_)) {
+> +	while ( --timeout && (SMC_GET_E2P_CMD(lp) & E2P_CMD_EPC_BUSY_)) {
+>  		udelay(10);
 
---- mmotm-2009-0131-0108.orig/arch/x86/include/asm/uv/uv.h
-+++ mmotm-2009-0131-0108/arch/x86/include/asm/uv/uv.h
-@@ -3,6 +3,9 @@
- 
- enum uv_system_type {UV_NONE, UV_LEGACY_APIC, UV_X2APIC, UV_NON_UNIQUE_APIC};
- 
-+struct cpumask;
-+struct mm_struct;
-+
- #ifdef CONFIG_X86_UV
- 
- extern enum uv_system_type get_uv_system_type(void);
+If your doing "timeOut" to "timeout" below may as well drop the space
+above after the "(" ..
+
+
+Daniel
+
