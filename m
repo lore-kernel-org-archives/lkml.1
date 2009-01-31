@@ -1,86 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbZAaNZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZAaN3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704AbZAaNZF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 08:25:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZAaNYz
+	id S1753846AbZAaN3A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 08:29:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZAaN2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 08:24:55 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:18258 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752068AbZAaNYy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 08:24:54 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=EZMP5ptRG0gxpkpqjZxPofIo9sxfL3zshEf4WjtUJ2sl9Ml1pL1X1ilf/fgfbc65Yy
-         dPqfZRZlEPSh85g85pGuSrnjHRpeUR0LG8eteK9Ow6a1rcVNojYhlTiI18b6Kuo2gHXw
-         WDXUH4S70rztyMC63ZNtBs/etX72ZjW2E4Rcc=
-Message-ID: <49845124.9080206@gmail.com>
-Date: Sat, 31 Jan 2009 05:24:52 -0800
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+	Sat, 31 Jan 2009 08:28:52 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44891 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752051AbZAaN2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 08:28:51 -0500
+Date: Sat, 31 Jan 2009 14:28:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
+Subject: Re: #tj-percpu has been rebased
+Message-ID: <20090131132828.GA17271@elte.hu>
+References: <49833350.1020809@kernel.org> <4983E5D3.3040100@kernel.org>
 MIME-Version: 1.0
-To: Soeren Sonnenburg <kernel@nn7.de>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>, xdg@lists.freedesktop.org
-Subject: Re: 2.6.29-rc3+git macbook pro1,1 garbled display on resume
-References: <1233348609.3707.6.camel@localhost>  <4983F365.40701@gmail.com> <1233400739.4140.3.camel@localhost>
-In-Reply-To: <1233400739.4140.3.camel@localhost>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4983E5D3.3040100@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Soeren Sonnenburg wrote:
-> On Fri, 2009-01-30 at 22:44 -0800, Justin P. Mattock wrote:
->   
->> Soeren Sonnenburg wrote:
->>     
->>> Hi,
->>>
->>> the macbook pro suspends just fine, but even though the machine returns
->>> to X I see on resume some random garbled output but can still move the
->>> mouse cursor (which is OK!) and using the keyboard successfully adjust
->>> the brightness of the display.
->>>       
-> [...]
->   
->> Same here with jaunty i.g.
->> one week it worked then the next it didn't.
->> maybe disabling hotplug with xorg.conf
->> might make the keys work.
->>     
->
-> I recognized that everything seems to work just fine *on console only*.
-> At least I could suspend and resume via s2ram >3 times in a row.
->
-> What also worked was to just start plain X (no window manager or
-> anything) and suspend/resume then. However with compiz running I am
-> seeing the garbage/hang on resume.
->
-> Are you by chance to having an ATI card + use a compositing window
-> manager?
->
-> Soeren
->
->   
-At the moment I don't have compiz manager
-running, only fluxbox. But after thinking,
-I did experience this(choppy screen)when using kexec,
-i.g. starting a new kernel from a terminal inside the xserver
-did create a messed up screen. Then(ctl+alt+del)disabling
-the xserver, made things work the way they were supposed too.
 
-I am running radeon on a macbook pro. If I can remember
-at the time I was using kexec I did have radeon.(I'll try and reproduce 
-this though).
-In any case I think this is an xserver issue not a kernel(but thats just 
-a guess).
-I added a cc (hopefully it's the right one);
+* Tejun Heo <tj@kernel.org> wrote:
 
-regards;
+> Hello, again.
+> 
+> Please disregard the previous two rebased trees.  There has been a
+> major communication misunderstanding between Ingo and me leading to
+> the rebased branches.  Here is yet another, hopefully final, merged
+> tree which builds on top of tip/core/percpu and took only about ten
+> minutes as opposed to hours.  :-)
+> 
+> * Three xen fix related patches merged.  Later threes conflicted in
+>   non-minor way.  Requested refresh.
+> 
+> * Cliff Wickman's UV flush fix patch revived and merged.
+> 
+> * Pull in linus#master[1].
+> 
+> Anyways, please pull from
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+> 
+> The commit ID should be da2c0b021cde94866f1e492f940aad29e8f61258.
+> 
+> Sorry about the mess but this one should be the safe one to post
+> patches against.
 
-Justin P. Mattock
+Very nice - pulled into tip/core/percpu, thanks Tejun!
 
+	Ingo
