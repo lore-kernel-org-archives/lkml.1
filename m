@@ -1,50 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbZAaHW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZAaHeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753776AbZAaHW2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 02:22:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZAaHWU
+	id S1752551AbZAaHeX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 02:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZAaHeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 02:22:20 -0500
-Received: from gw.goop.org ([64.81.55.164]:39744 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751409AbZAaHWT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 02:22:19 -0500
-Message-ID: <4983FC29.9040907@goop.org>
-Date: Fri, 30 Jan 2009 23:22:17 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Brian Gerst <brgerst@gmail.com>
-Subject: Re: [PATCH 3/3] xen: use direct ops on 64-bit
-References: <4983AC8A.6050501@goop.org> <4983E313.4070902@gmail.com>
-In-Reply-To: <4983E313.4070902@gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 31 Jan 2009 02:34:13 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57209 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750765AbZAaHeN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 02:34:13 -0500
+Subject: 2.6.26.8-rt15
+From: Steven Rostedt <rostedt@goodmis.org>
+To: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <srostedt@redhat.com>
+Content-Type: text/plain
+Date: Sat, 31 Jan 2009 02:34:10 -0500
+Message-Id: <1233387250.922.52.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Jeremy Fitzhardinge wrote:
->   
->> Enable the use of the direct vcpu-access operations on 64-bit.
->>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->>     
->
-> Hmmm... these three patches conflict with the previous two patches.
-> I'll soon send out a new tree.  Can you please wait a bit and refresh
-> the patches?
+We are pleased to announce the 2.6.26.8-rt15 tree which can be
+downloaded from the following location:
 
-Sorry about that; I had to do a fair amount of hacking to get things 
-going in the end.  I mailed out those other patches prematurely after 
-"testing" them with the wrong kernel.
+  http://rt.et.redhat.com/download/
 
-I'll send updated fixes when I see your changes appear in tip.git.
+Information on the RT patch can be found at:
 
-    J
+  http://rt.wiki.kernel.org/index.php/Main_Page
+
+Changes since 2.6.26.6-rt14
+
+ - x86, mm: fix pte_free()  (Peter Zijlstra)
+
+ - hrtimer: prevent negative expiry value after clack_was_set
+ 		(Thomas Gleixner)
+
+ - Fixed confusing Kconfig label of WAKEUP_LATENCY_HIST
+	 	(Carsten Emde)
+
+ - x86: remove redundant local_irq_enable in handle_singal
+		(Carsten Emde)
+
+ - trace: warn if irqs already enabled in irqs_off latency check
+		(Carsten Emde)
+
+to build the 2.6.26.8-rt15 tree, the following patches should be applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.26.tar.bz2
+  http://kernel.org/pub/linux/kernel/v2.6/patch-2.6.26.8.bz2
+  http://rt.et.redhat.com/download/patch-2.6.26.8-rt15.bz2
+
+
+And like always, my RT version of Matt Mackall's ketchup will get this
+for you nicely:
+
+  http://people.redhat.com/srostedt/rt/tools/ketchup-0.9.8-rt3
+
+
+The broken out patches are also available.
+
+***************************************************************
+***************************************************************
+******  COMING SOON !!! COMING SOON !!! COMING SOON !!! *******
+******  COMING SOON !!! COMING SOON !!! COMING SOON !!! *******
+***************************************************************
+***************************************************************
+
+The RT git tree is almost ready!  It is currently based off of 2.6.28,
+until it becomes a little more stable. You can down load it now from the
+git repo:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-rt.git
+
+It boots on x86_64. A few more patches still need to be applied, but the
+majority of them have been incorporated. Work on the non x86 archs also
+needs to be done.
+
+Once the git tree is pretty stable I will release a 2.6.28-rt1 patch,
+make a v2.6.28-rt branch and then go right in sync with the mainline
+tree.
+
+Feel free to download it now and give it a try. And you can send me any
+crashes that you see.
+
+
+-- Steve
+
+
+
