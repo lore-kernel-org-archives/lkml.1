@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbZAaDtw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZAaDvY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697AbZAaDtw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:49:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZAaDtn
+	id S1755435AbZAaDvY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:51:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZAaDvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 22:49:43 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47562 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750779AbZAaDtn (ORCPT
+	Fri, 30 Jan 2009 22:51:16 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:40371 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750779AbZAaDvQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 22:49:43 -0500
-Date: Fri, 30 Jan 2009 19:49:26 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Davide Libenzi <davidel@xmailserver.org>
+	Fri, 30 Jan 2009 22:51:16 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 30 Jan 2009 19:50:56 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ingo Molnar <mingo@elte.hu>
 cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Miller <davem@davemloft.net>
 Subject: Re: [patch 3/7] epoll keyed wakeups - introduce key-aware wakeup
  macros
-In-Reply-To: <send-serie.davidel@xmailserver.org.16376.1233372317.3>
-Message-ID: <alpine.LFD.2.00.0901301949110.3150@localhost.localdomain>
-References: <send-serie.davidel@xmailserver.org.16376.1233372317.3>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+In-Reply-To: <20090131033035.GA26640@elte.hu>
+Message-ID: <alpine.DEB.1.10.0901301950020.31741@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.16376.1233372317.3> <20090131033035.GA26640@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 31 Jan 2009, Ingo Molnar wrote:
+
+> 
+> * Davide Libenzi <davidel@xmailserver.org> wrote:
+> 
+> > +#define wake_up(x)			kwake_up(x, NULL)
+> > +#define wake_up_nr(x, nr)		kwake_up_nr(x, nr, NULL)
+> > +#define wake_up_all(x)			kwake_up_all(x, NULL)
+> > +#define wake_up_locked(x)		kwake_up_locked(x, NULL)
+> > +
+> > +#define wake_up_interruptible(x)	kwake_up_interruptible(x, NULL)
+> > +#define wake_up_interruptible_nr(x, nr)	kwake_up_interruptible_nr(x, nr, NULL)
+> > +#define wake_up_interruptible_all(x)	kwake_up_interruptible_all(x, NULL)
+> > +#define wake_up_interruptible_sync(x)	kwake_up_interruptible_sync(x, NULL)
+> 
+> i like the patchset - nice work!
+> 
+> One minor worry i have: these wakeup calls are _very_ common in the 
+> kernel, and this patch adds an extra parameter to it that is unused (NULL) 
+> in 99% of the cases.
+> 
+> Would be nice to see the kernel image size increase due to this change 
+> (which gives a good measure about how much of an issue this is).
+> 
+> If it's of any worrying level, it might make sense to keep the original 
+> functions untouched, and introduce a second entry point that has one more 
+> parameter. Ok?
+
+Fine by me. Any preference for names?
 
 
-On Fri, 30 Jan 2009, Davide Libenzi wrote:
->
-> The following patch introduces new kwake_* macros that accepts an
-> extra key parameter to be specified in the wakeup.
 
-I really hate the naming.
+- Davide
 
-> I chose to add an initial 'k' to the original names, instead of adding
-> a whole "_key", since the name of some of those macros is becoming
-> awfully long. No problem in using the "_key" naming, if others feel it.
-> Comments?
 
-That whole "kwake" thing makes me just think mis-spelling, so it does need 
-to change. 
-
-But even more I dislike the notion of this being a "key". It's not. It's 
-about poll events, nothing more. So renaming it to "_key()" in no way 
-helps.
-
-Yes, _internally_ we send that "void *key" around, and then leave it to 
-lower levels to agree about how it is used, but at the level _you_ then 
-use it, that is no longer the case. When you do a 
-
-	kwake_up_interruptible(&tty->write_wait, POLLOUT);
-
-that has _nothing_ to do with "keys" any more. So the 'k' prefix is wrong 
-and really odd-looking, but a '_key' postfix wouldn't be much better 
-either. Because when you pass in POLLOUT, you're not using it as a key, 
-you are very much using it as a poll-specific thing.
-
-So the naming should match that. I suspect a '_poll' postfix (or a 'poll_' 
-prefix would work and make sense.
-
-So apart from that hating, I think the internal implementation and the use 
-of the existing 'key' parameter is fairly sane. The only downside is that 
-we've now really used up that key thing for something very epoll-specific, 
-but I don't see any better use for it, so I guess that's not a big 
-downside.
-
-Oh, and numbers, please. How big of a win is this, really? Preferably with 
-something that really uses epoll for something real.
-
-		Linus
