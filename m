@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759946AbZAaDBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZAaDCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759946AbZAaDBt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:01:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756479AbZAaCrX
+	id S1760948AbZAaDCO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:02:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753445AbZAaCrY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:23 -0500
-Received: from kroah.org ([198.145.64.141]:55227 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:24 -0500
+Received: from kroah.org ([198.145.64.141]:55234 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756510AbZAaCrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:14 -0500
-Date: Fri, 30 Jan 2009 18:42:29 -0800
+	id S1756576AbZAaCrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:15 -0500
+Date: Fri, 30 Jan 2009 18:42:31 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Bastien ROUCARIES <roucaries.bastien@gmail.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>
-Subject: [patch 08/43] klist.c: bit 0 in pointer cant be used as flag
-Message-ID: <20090131024229.GI12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 09/43] sysfs: fix problems with binary files
+Message-ID: <20090131024231.GJ12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="klist.c-bit-0-in-pointer-can-t-be-used-as-flag.patch"
+Content-Disposition: inline; filename="sysfs-fix-problems-with-binary-files.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,71 +39,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit c0e69a5bbc6fc74184aa043aadb9a53bc58f953b upstream.
+commit 4503efd0891c40e30928afb4b23dc3f99c62a6b2 upstream.
 
-The commit a1ed5b0cffe4b16a93a6a3390e8cee0fbef94f86
-(klist: don't iterate over deleted entries) introduces use of the
-low bit in a pointer to indicate if the knode is dead or not,
-assuming that this bit is always free.
+Some sysfs binary files don't like having 0 passed to them as a size.
+Fix this up at the root by just returning to the vfs if userspace asks
+us for a zero sized buffer.
 
-This is not true for all architectures, CRIS for example may align data
-on byte borders.
+Thanks to Pavel Roskin for pointing this out.
 
-The result is a bunch of warnings on bootup, devices not being
-added correctly etc, reported by Hinko Kocevar <hinko.kocevar@cetrtapot.si>:
-
-------------[ cut here ]------------
-WARNING: at lib/klist.c:62 ()
-Modules linked in:
-
-Stack from c1fe1cf0:
-       c01cc7f4 c1fe1d11 c000eb4e c000e4de 00000000 00000000 c1f4f78f c1f50c2d
-       c01d008c c1fdd1a0 c1fdd1a0 c1fe1d38 c0192954 c1fe0000 00000000 c1fe1dc0
-       00000002 7fffffff c1fe1da8 c0192d50 c1fe1dc0 00000002 7fffffff c1ff9fcc
-Call Trace: [<c000eb4e>] [<c000e4de>] [<c0192954>] [<c0192d50>] [<c001d49e>] [<c000b688>] [<c0192a3c>]
-       [<c000b63e>] [<c000b63e>] [<c001a542>] [<c00b55b0>] [<c00411c0>] [<c00b559c>] [<c01918e6>] [<c0191988>]
-       [<c01919d0>] [<c00cd9c8>] [<c00cdd6a>] [<c0034178>] [<c000409a>] [<c0015576>] [<c0029130>] [<c0029078>]
-       [<c0029170>] [<c0012336>] [<c00b4076>] [<c00b4770>] [<c006d6e4>] [<c006d974>] [<c006dca0>] [<c0028d6c>]
-       [<c0028e12>] [<c0006424>] <4>---[ end trace 4eaa2a86a8e2da22 ]---
-------------[ cut here ]------------
-Repeat ad nauseam.
-
-Wed, Jan 14, 2009 at 12:11:32AM +0100, Bastien ROUCARIES wrote:
-> Perhaps using a pointerhackalign trick on this structure where
-> #define pointerhackalign(x) __attribute__ ((aligned (x)))
-> and declare
-> struct klist_node {
-> ...
-> }  pointerhackalign(2);
->
-> Because  __attribute__ ((aligned (x))) could only increase alignment
-> it will safe to do that and serve as documentation purpose :)
-
-That works, but we need to do it not for the struct klist_node,
-but for the struct we insert into the void * in klist_node,
-which is struct klist.
-
-Reported-by: Hinko Kocevar <hinko.kocevar@cetrtapot.si
-Cc: Bastien ROUCARIES <roucaries.bastien@gmail.com>
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Reported-by: Pavel Roskin <proski@gnu.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/klist.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/sysfs/bin.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/include/linux/klist.h
-+++ b/include/linux/klist.h
-@@ -23,7 +23,7 @@ struct klist {
- 	struct list_head	k_list;
- 	void			(*get)(struct klist_node *);
- 	void			(*put)(struct klist_node *);
--};
-+} __attribute__ ((aligned (4)));
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -63,6 +63,9 @@ read(struct file *file, char __user *use
+ 	int count = min_t(size_t, bytes, PAGE_SIZE);
+ 	char *temp;
  
- #define KLIST_INIT(_name, _get, _put)					\
- 	{ .k_lock	= __SPIN_LOCK_UNLOCKED(_name.k_lock),		\
++	if (!bytes)
++		return 0;
++
+ 	if (size) {
+ 		if (offs > size)
+ 			return 0;
+@@ -131,6 +134,9 @@ static ssize_t write(struct file *file, 
+ 	int count = min_t(size_t, bytes, PAGE_SIZE);
+ 	char *temp;
+ 
++	if (!bytes)
++		return 0;
++
+ 	if (size) {
+ 		if (offs > size)
+ 			return 0;
 
