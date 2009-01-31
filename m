@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754697AbZAaIxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754090AbZAaI70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754697AbZAaIxV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 03:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZAaIxJ
+	id S1754090AbZAaI70 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 03:59:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751149AbZAaI7O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 03:53:09 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44157 "EHLO
+	Sat, 31 Jan 2009 03:59:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49730 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751572AbZAaIxI (ORCPT
+	by vger.kernel.org with ESMTP id S1751033AbZAaI7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 03:53:08 -0500
-Date: Sat, 31 Jan 2009 00:52:51 -0800
+	Sat, 31 Jan 2009 03:59:13 -0500
+Date: Sat, 31 Jan 2009 00:58:15 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: linux-kernel@vger.kernel.org, Holger Macht <hmacht@suse.de>,
-       linux-acpi@vger.kernel.org
-Subject: Re: mmotm 2009-01-28-02-17 uploaded - docking station issues.
-Message-Id: <20090131005251.56dee38e.akpm@linux-foundation.org>
-In-Reply-To: <4126.1233391214@turing-police.cc.vt.edu>
-References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org>
-	<20830.1233246343@turing-police.cc.vt.edu>
-	<20090130210352.cf9e4d7f.akpm@linux-foundation.org>
-	<4126.1233391214@turing-police.cc.vt.edu>
+To: David Miller <davem@davemloft.net>
+Cc: andi@firstfloor.org, roger.larsson@e-gatan.se,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, rml@tech9.net,
+       pavel@ucw.cz, netdev@vger.kernel.org
+Subject: Re: PROBLEM: in_atomic() misuse all over the place
+Message-Id: <20090131005815.5b662a50.akpm@linux-foundation.org>
+In-Reply-To: <20090131.004843.127193545.davem@davemloft.net>
+References: <20090130160316.7e53ef99.akpm@linux-foundation.org>
+	<20090131055508.GD18453@one.firstfloor.org>
+	<20090130214933.1b91ea3e.akpm@linux-foundation.org>
+	<20090131.004843.127193545.davem@davemloft.net>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,41 +31,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009 03:40:14 -0500 Valdis.Kletnieks@vt.edu wrote:
+On Sat, 31 Jan 2009 00:48:43 -0800 (PST) David Miller <davem@davemloft.net> wrote:
 
-> On Fri, 30 Jan 2009 21:03:52 PST, Andrew Morton said:
-> > On Thu, 29 Jan 2009 11:25:43 -0500 Valdis.Kletnieks@vt.edu wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Fri, 30 Jan 2009 21:49:33 -0800
+> 
+> > Hang on.  You said
 > > 
-> > > On Wed, 28 Jan 2009 02:19:09 PST, akpm@linux-foundation.org said:
-> > > > The mm-of-the-moment snapshot 2009-01-28-02-17 has been uploaded to
-> > > >    http://userweb.kernel.org/~akpm/mmotm/
+> >   That's typically for softirq vs non softirq, which is important for
+> >   the network stack.
+> > 
+> > that's what in_softirq() does.
+> > 
+> > Now, if networking is indeed using in_atomic() to detect
+> > are-we-inside-a-spinlock then networking is buggy.
+> > 
+> > If networking is _not_ doing that then we can safely switch it to
+> > in_sortirq() or in_interrupt().  And this would reenable the bug
+> > detection which networking's use of in_atomic() accidentally
+> > suppressed.
 > 
-> > > % ls -l /sys/devices/platform/dock.0/docked
-> > > -r--r--r-- 1 root root 4096 2009-01-29 10:49 /sys/devices/platform/dock.0/docked
-> > > % cat /sys/devices/platform/dock.0/docked
-> > > =F1=DEcat: write error: Bad address
-> > >
-> > > strace of the cat shows:
-> > >
-> > > open("/sys/devices/platform/dock.0/docked", O_RDONLY) = 3
-> > > fstat(3, {st_mode=S_IFREG|0444, st_size=4096, ...}) = 0
-> > > read(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 4096) = 1812586496
+> I think this is a reasonable conclusion, looking at the
+> gfp_any() users.
 > 
-> > > Under 2.6.29-rc2-mmotm0116, this would return either "0" or "1", not 4K
-> > > of nulls.
-> 
-> > Is it due to
-> >
-> > acpi-dock-dont-eval-_sta-on-every-show_docked-sysfs-read.patch
-> 
-> Bingo. Reverting that patch and the sysfs-read-simplified.patch fixed it.
-> 
-> So obviously something in there doesn't agree with the innards of my laptop -
-> 
+> Feel free to change it to use in_softirq() and see what
+> explodes in -mm.  Report to me your findings :-)
 
-urgh,
-acpi-dock-dont-eval-_sta-on-every-show_docked-sysfs-read-simplification.patch
-is completely wrong (return value) and the insane warning storm which
-kernel builds create hid that from me.
+I don't get much network coverage in my testing...
 
-I dropped it.
+I went for in_interrupt(), which is in_softirq()||in_hardirq().  I
+guess that was a bit of a cop-out if the design decision is that this
+is purely for are-we-in-softirq decision making.
+
+I'll set it to in_softirq() and shall see what happens..
