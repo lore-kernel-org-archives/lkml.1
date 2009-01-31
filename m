@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753704AbZAaByz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753538AbZAaCQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753704AbZAaByz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 20:54:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZAaByn
+	id S1753538AbZAaCQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:16:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZAaCQu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 20:54:43 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:13448 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbZAaByn (ORCPT
+	Fri, 30 Jan 2009 21:16:50 -0500
+Received: from homer.mvista.com ([63.81.120.158]:57484 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751387AbZAaCQu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 20:54:43 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=ODZegbg7CHZAgTClAFAgXf75lm0thTE0deL/1hjtmca8nxTQnYQmEqQkMHfjt2t8Aw
-         2ODf+JfU3bjyReCq2aZ6uVouAFl70QHMGh5seID4rYvIf86i2OVvxF2PzQeY/kDecFsK
-         xvGSfOlTNJtO4Gn6uuxv51dHpMK8EdCQtrwbM=
-Date: Fri, 30 Jan 2009 20:54:38 -0500 (EST)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-desktop
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Parag Warudkar <parag.lkml@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <alpine.LFD.2.00.0901301741380.3150@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0901302051390.5643@parag-desktop>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901310059.17746.rjw@sisk.pl> <alpine.DEB.2.00.0901301924550.5056@parag-desktop> <200901310138.51214.rjw@sisk.pl> <alpine.DEB.2.00.0901302016170.5643@parag-desktop>
- <alpine.LFD.2.00.0901301741380.3150@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 30 Jan 2009 21:16:50 -0500
+Message-ID: <4983B48E.3070605@ct.jp.nec.com>
+Date: Fri, 30 Jan 2009 18:16:46 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86: uaccess: use errret as error value in __put_user_size()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 
+Impact: cleanup
 
-On Fri, 30 Jan 2009, Linus Torvalds wrote:
+In __put_user_size() macro errret is used for error value.
+But if size is 8, errret isn't passed to__put_user_asm_u64().
+This behavior is inconsistent.
 
-> 
-> 
-> On Fri, 30 Jan 2009, Parag Warudkar wrote:
-> > 
-> > Excellent! This patch works - tg3 comes back and gets link after resume.
-> 
-> I still think the patch isn't very good. See my previous email. 
+Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+---
+ arch/x86/include/asm/uaccess.h |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-Ok - I will run with it temporarily and will do what I can to track down 
-what was wrong with the legacy PM.
-
-Thanks!
-Parag
+diff --git a/arch/x86/include/asm/uaccess.h b/arch/x86/include/asm/uaccess.h
+index b9a2415..b685ece 100644
+--- a/arch/x86/include/asm/uaccess.h
++++ b/arch/x86/include/asm/uaccess.h
+@@ -186,7 +186,7 @@ extern int __get_user_bad(void);
+ 
+ 
+ #ifdef CONFIG_X86_32
+-#define __put_user_asm_u64(x, addr, err)				\
++#define __put_user_asm_u64(x, addr, err, errret)			\
+ 	asm volatile("1:	movl %%eax,0(%2)\n"			\
+ 		     "2:	movl %%edx,4(%2)\n"			\
+ 		     "3:\n"						\
+@@ -197,7 +197,7 @@ extern int __get_user_bad(void);
+ 		     _ASM_EXTABLE(1b, 4b)				\
+ 		     _ASM_EXTABLE(2b, 4b)				\
+ 		     : "=r" (err)					\
+-		     : "A" (x), "r" (addr), "i" (-EFAULT), "0" (err))
++		     : "A" (x), "r" (addr), "i" (errret), "0" (err))
+ 
+ #define __put_user_asm_ex_u64(x, addr)					\
+ 	asm volatile("1:	movl %%eax,0(%1)\n"			\
+@@ -211,8 +211,8 @@ extern int __get_user_bad(void);
+ 	asm volatile("call __put_user_8" : "=a" (__ret_pu)	\
+ 		     : "A" ((typeof(*(ptr)))(x)), "c" (ptr) : "ebx")
+ #else
+-#define __put_user_asm_u64(x, ptr, retval) \
+-	__put_user_asm(x, ptr, retval, "q", "", "Zr", -EFAULT)
++#define __put_user_asm_u64(x, ptr, retval, errret) \
++	__put_user_asm(x, ptr, retval, "q", "", "Zr", errret)
+ #define __put_user_asm_ex_u64(x, addr)	\
+ 	__put_user_asm_ex(x, addr, "q", "", "Zr")
+ #define __put_user_x8(x, ptr, __ret_pu) __put_user_x(8, x, ptr, __ret_pu)
+@@ -289,7 +289,8 @@ do {									\
+ 		__put_user_asm(x, ptr, retval, "l", "k", "ir", errret);	\
+ 		break;							\
+ 	case 8:								\
+-		__put_user_asm_u64((__typeof__(*ptr))(x), ptr, retval);	\
++		__put_user_asm_u64((__typeof__(*ptr))(x), ptr, retval,	\
++				   errret);				\
+ 		break;							\
+ 	default:							\
+ 		__put_user_bad();					\
+-- 
+1.6.0.4
 
