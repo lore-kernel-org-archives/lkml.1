@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754828AbZAaQ5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbZAaRAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754828AbZAaQ5f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 11:57:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZAaQ5Z
+	id S1754972AbZAaRAe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 12:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZAaRA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 11:57:25 -0500
-Received: from h155.mvista.com ([63.81.120.155]:36927 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752447AbZAaQ5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 11:57:24 -0500
-Message-ID: <498482ED.9090800@ru.mvista.com>
-Date: Sat, 31 Jan 2009 19:57:17 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sat, 31 Jan 2009 12:00:26 -0500
+Received: from gw.goop.org ([64.81.55.164]:48093 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752464AbZAaRA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 12:00:26 -0500
+Message-ID: <498483A8.30101@goop.org>
+Date: Sat, 31 Jan 2009 09:00:24 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Hugh Dickins <hugh@veritas.com>, Jeff Garzik <jgarzik@redhat.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29-rc libata sff 32bit PIO regression
-References: <Pine.LNX.4.64.0901211322010.15945@blonde.anvils>	<20090126191151.18b094e6@lxorguk.ukuu.org.uk>	<49846A36.5000708@ru.mvista.com> <20090131160601.5159579d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090131160601.5159579d@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ravikiran Thirumalai <kiran@scalemp.com>
+Subject: Re: [PATCH 0 of 7] x86/paravirt: optimise pvop calls and register
+ use
+References: <patchbomb.1233182100@abulafia.goop.org> <49815764.6040809@kernel.org> <49817C26.2020503@goop.org> <4983DBC9.5080701@kernel.org> <20090131161240.GA3014@elte.hu>
+In-Reply-To: <20090131161240.GA3014@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Alan Cox wrote:
-
->>> +	if (pdev->device == PCI_DEVICE_ID_AMD_VIPER_7411) /* FIFO is broken */
->>> +		fifo = 0;
->>> +
->>> +	/* On the later chips the read prefetch bits become no-op bits */
->>> +	pci_read_config_byte(pdev, 0x41, &r);
->>> +	r &= ~fifobit[ap->port_no];
->>>   
->>>       
->>   Why not:
->>
->>        r &= ~fifo;
->>     
+Ingo Molnar wrote:
+> there's some build trouble on VMI:
 >
-> Because then it wouldn't clear the bits if they were set already and we
-> wanted them off!
+> arch/x86/kernel/vmi_32.c: In function ‘activate_vmi’:
+> arch/x86/kernel/vmi_32.c:673: error: incompatible types in assignment
+> arch/x86/kernel/vmi_32.c:673: error: incompatible types in assignment
+> arch/x86/kernel/vmi_32.c:674: error: incompatible types in assignment
+> arch/x86/kernel/vmi_32.c:674: error: incompatible types in assignment
+> arch/x86/kernel/vmi_32.c:675: error: incompatible types in assignment
+> arch/x86/kernel/vmi_32.c:675: error: incompatible types in assignment
+> arch/x86/kernel/vmi_32.c:676: error: incompatible types in assignment
+> arch/x86/kernel/vmi_32.c:676: error: incompatible types in assignment
 >   
 
-   Ah, missed the modification of 'fifo'... :-<
+Yes.  I sent a couple of fix patches last night, which included a fix 
+for this.
 
-MBR, Sergei
+    J
+
+Subject: x86/vmi: fix interrupt enable/disable/save/restore calling convention.
+
+Zach says:
+> Enable/Disable have no clobbers at all.
+> Save clobbers only return value, %eax
+> Restore also clobbers nothing.
+
+This is precisely compatible with the calling convention, so we can
+just call them directly without wrapping.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/kernel/vmi_32.c |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
+
+===================================================================
+--- a/arch/x86/kernel/vmi_32.c
++++ b/arch/x86/kernel/vmi_32.c
+@@ -670,10 +670,11 @@
+ 	para_fill(pv_mmu_ops.write_cr2, SetCR2);
+ 	para_fill(pv_mmu_ops.write_cr3, SetCR3);
+ 	para_fill(pv_cpu_ops.write_cr4, SetCR4);
+-	para_fill(pv_irq_ops.save_fl, GetInterruptMask);
+-	para_fill(pv_irq_ops.restore_fl, SetInterruptMask);
+-	para_fill(pv_irq_ops.irq_disable, DisableInterrupts);
+-	para_fill(pv_irq_ops.irq_enable, EnableInterrupts);
++
++	para_fill(pv_irq_ops.save_fl.func, GetInterruptMask);
++	para_fill(pv_irq_ops.restore_fl.func, SetInterruptMask);
++	para_fill(pv_irq_ops.irq_disable.func, DisableInterrupts);
++	para_fill(pv_irq_ops.irq_enable.func, EnableInterrupts);
+ 
+ 	para_fill(pv_cpu_ops.wbinvd, WBINVD);
+ 	para_fill(pv_cpu_ops.read_tsc, RDTSC);
 
 
