@@ -1,135 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZAaVrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754616AbZAaV5r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbZAaVrv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 16:47:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZAaVrj
+	id S1754616AbZAaV5r (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 16:57:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZAaV5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 16:47:39 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48966 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751502AbZAaVri (ORCPT
+	Sat, 31 Jan 2009 16:57:39 -0500
+Received: from mail-bw0-f12.google.com ([209.85.218.12]:38674 "EHLO
+	mail-bw0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750856AbZAaV5j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 16:47:38 -0500
-Date: Sat, 31 Jan 2009 13:47:22 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <200901312208.20850.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0901311318570.4064@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901310138.51214.rjw@sisk.pl> <alpine.LFD.2.00.0901301714080.3150@localhost.localdomain> <200901312208.20850.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 31 Jan 2009 16:57:39 -0500
+X-Greylist: delayed 41820 seconds by postgrey-1.27 at vger.kernel.org; Sat, 31 Jan 2009 16:57:38 EST
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=Ojz+RCyfBsQi/T+/QaQgTYoF4cQMTMoklUYGLfeFbmMEOiMVzYROm7xM2xNLycrGuw
+         E0g8xhRVeiL2PN6HJQnFmFt7DbCQJr5PBWi6mxsQJTpSrMr/tQ8k9Lml6pmwg7SXbobk
+         fP7sHOXjRzWQrQVzHcosnsLpz9DzdyLG8RPd0=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 31 Jan 2009 22:57:36 +0100
+Message-ID: <541298b90901311357o593a4339t46a44e8933bb1a6b@mail.gmail.com>
+Subject: processes/threads monitor
+From: Angelo Borsotti <angelo.borsotti@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+
+I wish to be personally CC'ed the answers/comments posted to the list
+in response to this posting
 
 
-On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
-> > 
-> > Don't make it use the new PM infrastructure, because that one is certainly 
-> > broken: pci_pm_default_suspend_generic() is total crap.
-> 
-> Oh my.  I beg to differ.
+In 2004, a thread appeared in the mailing list, stating the need for
+some means to
+monitor processes and threads. Patches were proposed, and alternatives solutions
+hinted. However, the thread ended with no final solution to the problem.
+I would like to bring the problem up again.
 
-Imagine that you're a bridge. Imagine what this does to any device 
-_behind_ you. Any device that plans to still do something at suspend_late 
-time, to be specific.
+The need occurs on Linux installations in which there are some process
+control applications,
+or some continuous sever applications that need some resilience
+towards process failures.
+When a process providing an essential service terminates, come
+"process monitor" would
+create it again, restoring the service automatically (and without the
+need for human intervention).
+Traditionally this has been implemented in a very inefficient way by
+having some process
+reading periodically the list of running processes (e.g. by execing
+"ps") and checking if the
+processes providing essential service are still there.
+This is clearly very inefficient, and all the more, it needs to be
+executed repeatedly polling
+processes.
+A much more efficient solution would be for the process monitor to be
+allowed to wait
+for the termination of any processes/threads belonging to a specified list.
+Note that this would mean waiting for one among several events to occur.
 
-> > It's saving the disabled state. No WAY is that correct.
-> 
-> So why does it work, actually?
+Are there any solution to this?
 
-And I suspect it simply doesn't. And since almost nobody uses the new PM 
-state, you just don't see it.
-
-But as to why it fixes Parag's case - I think that's because the new PM 
-resume does more than the legacy resume does, so it ends up re-enabling 
-things anyway. It does it too late, but it doesn't matter in this case (no 
-shared irq issues with the only device behind the pci-e bridge).
-
-> > But all of that is only called if you use the new PM infrastructure. So 
-> > the thing is, when you're trying to move the PCI-E drive to the new pm 
-> > infrastructure, you're making things _worse_.
-> 
-> I don't really think so (see below).
-
-See above. I think you really haven't thought the new PM code through.
-
-> pci_disable_device() does really only one thing: it clears the bus master bit.
-> Yes, it also calls pcibios_disable_device(), but on x86 this is a NOP.
-> 
-> I don't think it is SO bad, is it?
-
-It's bad. It means that DMA won't work across such a bridge. Yes, it is 
-probably bridge-dependent, and I know for a fact that at least some Intel 
-bridges just hard-code the busmaster bit to 1 (at a minimum the host 
-bridges do, I'm not sure about others), but I also know for a fact that 
-some other bridges _will_ stop DMA to devices behind them if the BM bit is 
-clear.
-
-But more importantly: Why do you do it? What's the upside? I don't see it. 
-There's a known downside - you're saving state that is something else than 
-what the driver really expects. 
-
-So I think clearing bus-master is a huge bug on a bridge, but I think that 
-on normal devices it's just pointless.
-
-> The driver using the new model is not supposed to save the state and power
-> off the device.  Still, it's probably a good idea not to trust the drivers. :-)
-
-How about devices that have magic power-down sequences? For example, a 
-quick grep shows that USB on a PPC PMAC has a special "disable ASIC clocks 
-for USB" thing after it puts the USB controller to sleep.
-
-That was literally the _first_ driver I looked at. Admittedly because I 
-knew that USB host controllers tend to be more aware of all the issues 
-than most random drivers, but still...
-
-I agree that the new model should turn off devices by default, but the 
-thing is, it should also allow drivers that really know better to do magic 
-things.
-
-Of course, we can say that such devices should just continue to use the 
-legacy model, but I thought that the long-term plan was to just replace 
-it. And if you do, you need to allow for drivers that do special things 
-due to known motherboard- or chip-specific "issues" (aka "PCI extensions" 
-aka "hardware bugs").
-
-And yes, I suspect that the magic PPC USB clock thing could maybe be 
-rewritten as a system device, so there are other alternatives here, but I 
-do suspect that it will be very painful if the new PM layer _forces_ a 
-very specific model on drivers that they can't modify at all.
-
-> > I don't see why we don't resume with IO/MEM on, though. The legacy suspend 
-> > sequence shouldn't disable them, afaik.
-> 
-> No, it shouldn't.
-> 
-> However, the patch below actually may help and it really is not too different
-> from my "new infrastructure" patch.  It leaves the pcie_portdrv_restore_config()
-> in the PCIe port driver's ->resume(), but that shouldn't change things,
-> pci_enable_device() in there shouldn't do anything and the bus master bit
-> should already be set.
-
-I absolutely agree with this patch. I'd just not expect it to make a 
-difference (except for the "cleanup factor"). I think it's worth applying, 
-and _if_ it makes a difference for Parag it's very interesting indeed.
-
-> The "new infrastracture" patch makes pci_disable_enabled_device() be called in
-> the suspend code path, but that only disables the bus master bit, and
-> pci_reenable_device() be called in the resume code path, but that only sets the
-> bus master bit back again.  So, they are almost the same and I'd be surprised
-> if your patch didn't help.
-
-Hmm. We'll see. I'm a bit doubtful. But we'll see..
-
-		Linus
+-Angelo Borsotti
