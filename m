@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755999AbZAaBHI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZAaBHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755999AbZAaBHI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 20:07:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753285AbZAaBG4
+	id S1757329AbZAaBHi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 20:07:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754170AbZAaBHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 20:06:56 -0500
-Received: from moutng.kundenserver.de ([212.227.126.177]:55280 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752846AbZAaBG4 (ORCPT
+	Fri, 30 Jan 2009 20:07:21 -0500
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:53011 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756385AbZAaBHU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 20:06:56 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] kbuild: drop check for CONFIG_ in headers_check
-Date: Sat, 31 Jan 2009 02:06:40 +0100
-User-Agent: KMail/1.9.9
-Cc: Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1233342254.21493.8.camel@localhost.localdomain> <200901310127.03142.arnd@arndb.de> <20090131004111.GB13709@elte.hu>
-In-Reply-To: <20090131004111.GB13709@elte.hu>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Fri, 30 Jan 2009 20:07:20 -0500
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=0 a=VwQbUJbxAAAA:8 a=LX5mF77iWnzTCaBOVZ8A:9 a=UBUhSmw45EAA6y72ZMwA:7 a=1OooVtODaukeqjxCXH1kSaib-VsA:4 a=bTQ0lUVTahoA:10 a=HeHm-OZDlfkA:10
+Message-ID: <4983A446.5080809@shaw.ca>
+Date: Fri, 30 Jan 2009 19:07:18 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Newsgroups: gmane.linux.kernel
+To: Bartosz SKOWRON <getxsick@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: libata - anomaly performance with NCQ
+References: <77887e110901301623u746535f2q7dcc37cd40d2cc56@mail.gmail.com>
+In-Reply-To: <77887e110901301623u746535f2q7dcc37cd40d2cc56@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901310206.41053.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18j+x0W7YOprhlv7V9eAJ41ZeSz9vrBux6Uwh1
- x1lU0VVbFUyPoXM+BGvktog1uN5h35SWeZOr4rw6usSaqAmg0j
- Rrg3fnCJdgQtK7yVGpWWQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 January 2009, Ingo Molnar wrote:
-> hm, that looks quite ugly and unnatural. Could the usr/* exporting scripts 
-> convert these types automatically to the __kernel_* versions?
+Bartosz SKOWRON wrote:
+> Hi,
+> 
+> here is a problem:
+> http://ata.wiki.kernel.org/index.php/Known_issues#Seagate_harddrive_performance_anomaly_with_hdparm
+> 
+> and my disk is affected by this one as well.
+> it's ST9320421AS and you can add it to the list
+> 
+> And 2 questions:
+> 1) cause the title contains "with hdparm"...does it mean that
+> physically the performance is OK and only hdparm shows something
+> wrong?
 
-It's possible, but there are some minor complications, e.g. linux/coda.h has
-its own magic code that would likely break in the process, so it needs
-to be skipped. Some other files conditionally include <sys/types.h> or
-<stdint.h> in user space and would break in a similar way.
+Well, hdparm is a fairly crude benchmark but there's likely at least 
+some impact in other usage.
 
-For the __kernel_ types, we have 87 instances in the tree, and 53 more that
-would have to change. For the int types, there are over 4000 instances
-of the correct __u32 style and about 800 that use the u_int32_t or
-uint32_t style, most of them in netfilter and linux/pfkeyv2.h.
+> 2) there is an information about upgrading firmware. as far as i know
+> Seagate doesn't publish firmwares. So the only way is to contact
+> seagate support, send the hdd and wait for the new one?
 
-I'd probably leave at least the drm, netfilter and mtd headers alone,
-as they are known to be working and consistently use the stdint.h types.
-
-	Arnd <><
+I think Seagate can provide firmware updaters for the user to use, but 
+normally only if you contact support I think.
