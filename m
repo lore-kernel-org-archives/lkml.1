@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZAaAfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbZAaAgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755388AbZAaAfp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 19:35:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZAaAfd
+	id S1753333AbZAaAgH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 19:36:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbZAaAfr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 19:35:33 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:51020 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751347AbZAaAfc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 19:35:32 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-Date: Sat, 31 Jan 2009 01:34:46 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901310031.37660.rjw@sisk.pl> <alpine.LFD.2.00.0901301541290.3150@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901301541290.3150@localhost.localdomain>
+	Fri, 30 Jan 2009 19:35:47 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47617 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755634AbZAaAfq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 19:35:46 -0500
+Message-ID: <49839CC8.7060502@zytor.com>
+Date: Fri, 30 Jan 2009 16:35:20 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Martin Hicks <mort@sgi.com>
+CC: tglx@linutronix.de, mingo@redhat.com, heukelum@mailshack.com,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: push old stack address on irqstack for unwinder
+References: <20090130165053.GE7872@alcatraz.americas.sgi.com> <49838F39.6060603@zytor.com>
+In-Reply-To: <49838F39.6060603@zytor.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901310134.47657.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 January 2009, Linus Torvalds wrote:
+H. Peter Anvin wrote:
+> Martin Hicks wrote:
+>> Hi,
+>>
+>> KDB was using this information.  Could this be pushed towards 2.6.29 
+>> please?
+>>
+>> This re-adds the old stack pointer to the top of the irqstack to help
+>> with unwinding.  It was removed in commit 
+>> d99015b1abbad743aa049b439c1e1dede6d0fa49
+>> as part of the save_args out-of-line work.
+>>
 > 
-> On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
-> > 
-> > I wonder if this change makes any difference:
-> > 
-> > --- linux-2.6.orig/drivers/pci/pci-driver.c
-> > +++ linux-2.6/drivers/pci/pci-driver.c
-> > @@ -501,6 +501,9 @@ static int pci_pm_suspend(struct device
-> >  	if (pci_has_legacy_pm_support(pci_dev))
-> >  		return pci_legacy_suspend(dev, PMSG_SUSPEND);
-> >  
-> > +	if (!drv || !drv->pm)
-> > +		return 0;
-> > +
-> >  	if (drv && drv->pm && drv->pm->suspend) {
-> >  		error = drv->pm->suspend(dev);
-> >  		suspend_report_result(drv->pm->suspend, error);
+> This bothers me... why should we add even a single instruction to what 
+> is arguably the single hottest path in the kernel to support an 
+> out-of-tree debugger, especially if kgdb (which is in-tree) doesn't need 
+> it?
 > 
-> I don't think that's right. Now you don't end up calling 
-> pci_pm_default_suspend_generic() at all, and this no pci_save_state().
+> What does kgdb do differently (or is kgdb broken too)?
 > 
-> But I think it could easily be the call to pci_disable_enabled_device(). 
-> It does that
-> 
-> 	if (atomic_read(&dev->enable_cnt))
-> 		do_pci_disable_device(dev);
-> 
-> and that ends up disabling PCI_COMMAND_MASTER and then calling 
-> pcibios_disable_device().
 
-pci_disable_enabled_device() is not called for the PCIe port driver, because
-it has the legacy PM support.
+Thinking about it some more, I think this makes sense under
 
-What happens is
+#ifdef CONFIG_FRAME_POINTER
 
-pci_pm_suspend(port) ->
- 		pci_legacy_suspend(port) ->
- 		 		pcie_portdrv_suspend(port) [this doesn't save the state]
- 		 		pci_save_state(port)
+... since if we're not building with frame pointers, this is pretty 
+pointless, and if we are, we're adding these all over the place anyway.
 
-and then, with interrupts off
+Does this work for you?  Let me know and I'll get it in if so.
 
-pci_pm_suspend_noirq(port) ->
- 		pci_legacy_suspend_late(port) ->
- 		 		pcie_portdrv_suspend_late(port) ->
- 		 		 		pci_save_state(port)
-
-and I suspect this last pci_save_state() breaks things.  I'm not sure why,
-though.
-
-Thanks,
-Rafael
+	-hpa
