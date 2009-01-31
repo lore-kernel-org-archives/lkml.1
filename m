@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761291AbZAaDDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761357AbZAaDD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761291AbZAaDDh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:03:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbZAaCra
+	id S1761357AbZAaDD5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:03:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756716AbZAaCra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 30 Jan 2009 21:47:30 -0500
-Received: from kroah.org ([198.145.64.141]:55287 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:55295 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756679AbZAaCrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:19 -0500
-Date: Fri, 30 Jan 2009 18:42:40 -0800
+	id S1756723AbZAaCrU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:20 -0500
+Date: Fri, 30 Jan 2009 18:42:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Pete Zaitcev <zaitcev@redhat.com>
-Subject: [patch 13/43] USB: usbmon: Implement compat_ioctl
-Message-ID: <20090131024240.GN12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 14/43] USB: fix char-device disconnect handling
+Message-ID: <20090131024242.GO12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-usbmon-implement-compat_ioctl.patch"
+Content-Disposition: inline; filename="usb-fix-char-device-disconnect-handling.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,174 +39,123 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Pete Zaitcev <zaitcev@redhat.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 7abce6bedc118eb39fe177c2c26be5d008505c14 upstream.
+commit 501950d846218ed80a776d2aae5aed9c8b92e778 upstream.
 
-Running a 32-bit usbmon(8) on 2.6.28-rc9 produces the following:
-ioctl32(usbmon:28563): Unknown cmd fd(3) cmd(400c9206){t:ffffff92;sz:12} arg(ffd3f458) on /dev/usbmon0
+This patch (as1198) fixes a conceptual bug: Somewhere along the line
+we managed to confuse USB class devices with USB char devices.  As a
+result, the code to send a disconnect signal to userspace would not be
+built if both CONFIG_USB_DEVICE_CLASS and CONFIG_USB_DEVICEFS were
+disabled.
 
-It happens because the compatibility mode was implemented for 2.6.18
-and not updated for the fsops.compat_ioctl API.
+The usb_fs_classdev_common_remove() routine has been renamed to
+usbdev_remove() and it is now called whenever any USB device is
+removed, not just when a class device is unregistered.  The notifier
+registration and unregistration calls are no longer conditionally
+compiled.  And since the common removal code will always be called as
+part of the char device interface, there's no need to call it again as
+part of the usbfs interface; thus the invocation of
+usb_fs_classdev_common_remove() has been taken out of
+usbfs_remove_device().
 
-This patch relocates the pieces from under #ifdef CONFIG_COMPAT into
-compat_ioctl with no other changes except one new whitespace.
-
-Signed-off-by: Pete Zaitcev <zaitcev@redhat.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-by: Alon Bar-Lev <alon.barlev@gmail.com>
+Tested-by: Alon Bar-Lev <alon.barlev@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/mon/mon_bin.c |  105 ++++++++++++++++++++++++++++------------------
- 1 file changed, 66 insertions(+), 39 deletions(-)
+ drivers/usb/core/devio.c |   20 ++++++++++++--------
+ drivers/usb/core/inode.c |    1 -
+ drivers/usb/core/usb.h   |    1 -
+ 3 files changed, 12 insertions(+), 10 deletions(-)
 
---- a/drivers/usb/mon/mon_bin.c
-+++ b/drivers/usb/mon/mon_bin.c
-@@ -37,6 +37,7 @@
- #define MON_IOCX_GET   _IOW(MON_IOC_MAGIC, 6, struct mon_bin_get)
- #define MON_IOCX_MFETCH _IOWR(MON_IOC_MAGIC, 7, struct mon_bin_mfetch)
- #define MON_IOCH_MFLUSH _IO(MON_IOC_MAGIC, 8)
-+
- #ifdef CONFIG_COMPAT
- #define MON_IOCX_GET32 _IOW(MON_IOC_MAGIC, 6, struct mon_bin_get32)
- #define MON_IOCX_MFETCH32 _IOWR(MON_IOC_MAGIC, 7, struct mon_bin_mfetch32)
-@@ -921,21 +922,6 @@ static int mon_bin_ioctl(struct inode *i
- 		}
- 		break;
- 
--#ifdef CONFIG_COMPAT
--	case MON_IOCX_GET32: {
--		struct mon_bin_get32 getb;
--
--		if (copy_from_user(&getb, (void __user *)arg,
--					    sizeof(struct mon_bin_get32)))
--			return -EFAULT;
--
--		ret = mon_bin_get_event(file, rp,
--		    compat_ptr(getb.hdr32), compat_ptr(getb.data32),
--		    getb.alloc32);
--		}
--		break;
--#endif
--
- 	case MON_IOCX_MFETCH:
- 		{
- 		struct mon_bin_mfetch mfetch;
-@@ -962,7 +948,57 @@ static int mon_bin_ioctl(struct inode *i
- 		}
- 		break;
- 
-+	case MON_IOCG_STATS: {
-+		struct mon_bin_stats __user *sp;
-+		unsigned int nevents;
-+		unsigned int ndropped;
-+
-+		spin_lock_irqsave(&rp->b_lock, flags);
-+		ndropped = rp->cnt_lost;
-+		rp->cnt_lost = 0;
-+		spin_unlock_irqrestore(&rp->b_lock, flags);
-+		nevents = mon_bin_queued(rp);
-+
-+		sp = (struct mon_bin_stats __user *)arg;
-+		if (put_user(rp->cnt_lost, &sp->dropped))
-+			return -EFAULT;
-+		if (put_user(nevents, &sp->queued))
-+			return -EFAULT;
-+
-+		}
-+		break;
-+
-+	default:
-+		return -ENOTTY;
-+	}
-+
-+	return ret;
-+}
-+
- #ifdef CONFIG_COMPAT
-+static long mon_bin_compat_ioctl(struct file *file,
-+    unsigned int cmd, unsigned long arg)
-+{
-+	struct mon_reader_bin *rp = file->private_data;
-+	int ret;
-+
-+	switch (cmd) {
-+
-+	case MON_IOCX_GET32: {
-+		struct mon_bin_get32 getb;
-+
-+		if (copy_from_user(&getb, (void __user *)arg,
-+					    sizeof(struct mon_bin_get32)))
-+			return -EFAULT;
-+
-+		ret = mon_bin_get_event(file, rp,
-+		    compat_ptr(getb.hdr32), compat_ptr(getb.data32),
-+		    getb.alloc32);
-+		if (ret < 0)
-+			return ret;
-+		}
-+		return 0;
-+
- 	case MON_IOCX_MFETCH32:
- 		{
- 		struct mon_bin_mfetch32 mfetch;
-@@ -986,37 +1022,25 @@ static int mon_bin_ioctl(struct inode *i
- 			return ret;
- 		if (put_user(ret, &uptr->nfetch32))
- 			return -EFAULT;
--		ret = 0;
- 		}
--		break;
--#endif
--
--	case MON_IOCG_STATS: {
--		struct mon_bin_stats __user *sp;
--		unsigned int nevents;
--		unsigned int ndropped;
--
--		spin_lock_irqsave(&rp->b_lock, flags);
--		ndropped = rp->cnt_lost;
--		rp->cnt_lost = 0;
--		spin_unlock_irqrestore(&rp->b_lock, flags);
--		nevents = mon_bin_queued(rp);
-+		return 0;
- 
--		sp = (struct mon_bin_stats __user *)arg;
--		if (put_user(rp->cnt_lost, &sp->dropped))
--			return -EFAULT;
--		if (put_user(nevents, &sp->queued))
--			return -EFAULT;
-+	case MON_IOCG_STATS:
-+		return mon_bin_ioctl(NULL, file, cmd,
-+					    (unsigned long) compat_ptr(arg));
- 
--		}
--		break;
-+	case MON_IOCQ_URB_LEN:
-+	case MON_IOCQ_RING_SIZE:
-+	case MON_IOCT_RING_SIZE:
-+	case MON_IOCH_MFLUSH:
-+		return mon_bin_ioctl(NULL, file, cmd, arg);
- 
- 	default:
--		return -ENOTTY;
-+		;
- 	}
--
--	return ret;
-+	return -ENOTTY;
- }
-+#endif /* CONFIG_COMPAT */
- 
- static unsigned int
- mon_bin_poll(struct file *file, struct poll_table_struct *wait)
-@@ -1094,6 +1118,9 @@ static const struct file_operations mon_
- 	/* .write =	mon_text_write, */
- 	.poll =		mon_bin_poll,
- 	.ioctl =	mon_bin_ioctl,
-+#ifdef CONFIG_COMPAT
-+	.compat_ioctl =	mon_bin_compat_ioctl,
-+#endif
- 	.release =	mon_bin_release,
- 	.mmap =		mon_bin_mmap,
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -1703,7 +1703,7 @@ const struct file_operations usbdev_file
+ 	.release =	usbdev_release,
  };
+ 
+-void usb_fs_classdev_common_remove(struct usb_device *udev)
++static void usbdev_remove(struct usb_device *udev)
+ {
+ 	struct dev_state *ps;
+ 	struct siginfo sinfo;
+@@ -1745,10 +1745,15 @@ static void usb_classdev_remove(struct u
+ {
+ 	if (dev->usb_classdev)
+ 		device_unregister(dev->usb_classdev);
+-	usb_fs_classdev_common_remove(dev);
+ }
+ 
+-static int usb_classdev_notify(struct notifier_block *self,
++#else
++#define usb_classdev_add(dev)		0
++#define usb_classdev_remove(dev)	do {} while (0)
++
++#endif
++
++static int usbdev_notify(struct notifier_block *self,
+ 			       unsigned long action, void *dev)
+ {
+ 	switch (action) {
+@@ -1758,15 +1763,15 @@ static int usb_classdev_notify(struct no
+ 		break;
+ 	case USB_DEVICE_REMOVE:
+ 		usb_classdev_remove(dev);
++		usbdev_remove(dev);
+ 		break;
+ 	}
+ 	return NOTIFY_OK;
+ }
+ 
+ static struct notifier_block usbdev_nb = {
+-	.notifier_call = 	usb_classdev_notify,
++	.notifier_call = 	usbdev_notify,
+ };
+-#endif
+ 
+ static struct cdev usb_device_cdev;
+ 
+@@ -1801,9 +1806,8 @@ int __init usb_devio_init(void)
+ 	 * to /sys/dev
+ 	 */
+ 	usb_classdev_class->dev_kobj = NULL;
+-
+-	usb_register_notify(&usbdev_nb);
+ #endif
++	usb_register_notify(&usbdev_nb);
+ out:
+ 	return retval;
+ 
+@@ -1814,8 +1818,8 @@ error_cdev:
+ 
+ void usb_devio_cleanup(void)
+ {
+-#ifdef CONFIG_USB_DEVICE_CLASS
+ 	usb_unregister_notify(&usbdev_nb);
++#ifdef CONFIG_USB_DEVICE_CLASS
+ 	class_destroy(usb_classdev_class);
+ #endif
+ 	cdev_del(&usb_device_cdev);
+--- a/drivers/usb/core/inode.c
++++ b/drivers/usb/core/inode.c
+@@ -718,7 +718,6 @@ static void usbfs_remove_device(struct u
+ 		fs_remove_file (dev->usbfs_dentry);
+ 		dev->usbfs_dentry = NULL;
+ 	}
+-	usb_fs_classdev_common_remove(dev);
+ }
+ 
+ static int usbfs_notify(struct notifier_block *self, unsigned long action, void *dev)
+--- a/drivers/usb/core/usb.h
++++ b/drivers/usb/core/usb.h
+@@ -148,7 +148,6 @@ extern struct usb_driver usbfs_driver;
+ extern const struct file_operations usbfs_devices_fops;
+ extern const struct file_operations usbdev_file_operations;
+ extern void usbfs_conn_disc_event(void);
+-extern void usb_fs_classdev_common_remove(struct usb_device *udev);
+ 
+ extern int usb_devio_init(void);
+ extern void usb_devio_cleanup(void);
 
