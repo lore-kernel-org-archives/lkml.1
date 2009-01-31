@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbZAaCt7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759919AbZAaCz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758649AbZAaCt7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:49:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZAaCqn
+	id S1759919AbZAaCz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:55:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755908AbZAaCrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:43 -0500
-Received: from kroah.org ([198.145.64.141]:54794 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:03 -0500
+Received: from kroah.org ([198.145.64.141]:54983 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753463AbZAaCql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:41 -0500
-Date: Fri, 30 Jan 2009 18:39:59 -0800
+	id S1752538AbZAaCq6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:58 -0500
+Date: Fri, 30 Jan 2009 18:40:42 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Brandon Philips <bphilips@suse.de>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [patch 09/32] it821x: Add ultra_mask quirk for Vortex86SX
-Message-ID: <20090131023959.GJ12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 25/32] ext3: Add sanity check to make_indexed_dir
+Message-ID: <20090131024042.GZ12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="it821x-add-ultra_mask-quirk-for-vortex86sx.patch"
+Content-Disposition: inline; filename="ext3-add-sanity-check-to-make_indexed_dir.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,84 +39,67 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Brandon Philips <brandon@ifup.org>
+From: Theodore Ts'o <tytso@mit.edu>
 
-commit b94b898f3107046b5c97c556e23529283ea5eadd upstream.
+commit a21102b55c4f8dfd3adb4a15a34cd62237b46039 upstream.
 
-On Vortex86SX with IDE controller revision 0x11 ultra DMA must be
-disabled. This patch was tested by DMP and seems to work.
+Make sure the rec_len field in the '..' entry is sane, lest we overrun
+the directory block and cause a kernel oops on a purposefully
+corrupted filesystem.
 
-It is a cleaned up version of their older Kernel patch:
- http://www.dmp.com.tw/tech/vortex86sx/patch-2.6.24-DMP.gz
+This fixes a bug related to a bug originally reported by Sami Liedes
+for ext4 at:
 
-Tested-by: Shawn Lin <shawn@dmp.com.tw>
-Signed-off-by: Brandon Philips <bphilips@suse.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+http://bugzilla.kernel.org/show_bug.cgi?id=12430
+
+Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ide/pci/it821x.c |   12 ++++++++++++
- include/linux/pci_ids.h  |    1 +
- 2 files changed, 13 insertions(+)
+ fs/ext3/namei.c |   20 ++++++++++++++------
+ 1 file changed, 14 insertions(+), 6 deletions(-)
 
---- a/drivers/ide/pci/it821x.c
-+++ b/drivers/ide/pci/it821x.c
-@@ -69,6 +69,8 @@
+--- a/fs/ext3/namei.c
++++ b/fs/ext3/namei.c
+@@ -1374,7 +1374,7 @@ static int make_indexed_dir(handle_t *ha
+ 	struct fake_dirent *fde;
  
- #define DRV_NAME "it821x"
- 
-+#define QUIRK_VORTEX86 1
-+
- struct it821x_dev
- {
- 	unsigned int smart:1,		/* Are we in smart raid mode */
-@@ -80,6 +82,7 @@ struct it821x_dev
- 	u16	pio[2];			/* Cached PIO values */
- 	u16	mwdma[2];		/* Cached MWDMA values */
- 	u16	udma[2];		/* Cached UDMA values (per drive) */
-+	u16	quirks;
- };
- 
- #define ATA_66		0
-@@ -586,6 +589,12 @@ static void __devinit init_hwif_it821x(i
- 
- 	hwif->ultra_mask = ATA_UDMA6;
- 	hwif->mwdma_mask = ATA_MWDMA2;
-+
-+	/* Vortex86SX quirk: prevent Ultra-DMA mode to fix BadCRC issue */
-+	if (idev->quirks & QUIRK_VORTEX86) {
-+		if (dev->revision == 0x11)
-+			hwif->ultra_mask = 0;
-+	}
- }
- 
- static void __devinit it8212_disable_raid(struct pci_dev *dev)
-@@ -658,6 +667,8 @@ static int __devinit it821x_init_one(str
- 		return -ENOMEM;
+ 	blocksize =  dir->i_sb->s_blocksize;
+-	dxtrace(printk("Creating index\n"));
++	dxtrace(printk(KERN_DEBUG "Creating index: inode %lu\n", dir->i_ino));
+ 	retval = ext3_journal_get_write_access(handle, bh);
+ 	if (retval) {
+ 		ext3_std_error(dir->i_sb, retval);
+@@ -1383,6 +1383,19 @@ static int make_indexed_dir(handle_t *ha
  	}
+ 	root = (struct dx_root *) bh->b_data;
  
-+	itdevs->quirks = id->driver_data;
++	/* The 0th block becomes the root, move the dirents out */
++	fde = &root->dotdot;
++	de = (struct ext3_dir_entry_2 *)((char *)fde +
++			ext3_rec_len_from_disk(fde->rec_len));
++	if ((char *) de >= (((char *) root) + blocksize)) {
++		ext3_error(dir->i_sb, __func__,
++			   "invalid rec_len for '..' in inode %lu",
++			   dir->i_ino);
++		brelse(bh);
++		return -EIO;
++	}
++	len = ((char *) root) + blocksize - (char *) de;
 +
- 	rc = ide_pci_init_one(dev, &it821x_chipset, itdevs);
- 	if (rc)
- 		kfree(itdevs);
-@@ -677,6 +688,7 @@ static void __devexit it821x_remove(stru
- static const struct pci_device_id it821x_pci_tbl[] = {
- 	{ PCI_VDEVICE(ITE, PCI_DEVICE_ID_ITE_8211), 0 },
- 	{ PCI_VDEVICE(ITE, PCI_DEVICE_ID_ITE_8212), 0 },
-+	{ PCI_VDEVICE(RDC, PCI_DEVICE_ID_RDC_D1010), QUIRK_VORTEX86 },
- 	{ 0, },
- };
+ 	bh2 = ext3_append (handle, dir, &block, &retval);
+ 	if (!(bh2)) {
+ 		brelse(bh);
+@@ -1391,11 +1404,6 @@ static int make_indexed_dir(handle_t *ha
+ 	EXT3_I(dir)->i_flags |= EXT3_INDEX_FL;
+ 	data1 = bh2->b_data;
  
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2148,6 +2148,7 @@
- #define PCI_DEVICE_ID_RDC_R6040		0x6040
- #define PCI_DEVICE_ID_RDC_R6060		0x6060
- #define PCI_DEVICE_ID_RDC_R6061		0x6061
-+#define PCI_DEVICE_ID_RDC_D1010		0x1010
- 
- #define PCI_VENDOR_ID_LENOVO		0x17aa
- 
+-	/* The 0th block becomes the root, move the dirents out */
+-	fde = &root->dotdot;
+-	de = (struct ext3_dir_entry_2 *)((char *)fde +
+-			ext3_rec_len_from_disk(fde->rec_len));
+-	len = ((char *) root) + blocksize - (char *) de;
+ 	memcpy (data1, de, len);
+ 	de = (struct ext3_dir_entry_2 *) data1;
+ 	top = data1 + len;
 
