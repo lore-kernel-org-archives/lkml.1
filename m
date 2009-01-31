@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756727AbZAaAIX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbZAaAXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756727AbZAaAIX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 19:08:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZAaAIM
+	id S1755838AbZAaAXj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 19:23:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbZAaAXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 19:08:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:50946 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752230AbZAaAIL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 19:08:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-Date: Sat, 31 Jan 2009 01:07:47 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901310031.37660.rjw@sisk.pl> <alpine.LFD.2.00.0901301541290.3150@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901301541290.3150@localhost.localdomain>
+	Fri, 30 Jan 2009 19:23:30 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:59800 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbZAaAXa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 19:23:30 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=VifOAh2P2A1fSknTK0Oe7UHgKZN9FIL5yjeA02mjWqVrmW31EeYp5dWnWpNKQrbGc+
+         T/zb4hNnpTbM8nNqUbAY5q1ehHw9tyHevDqus2BU8JrJgWc7Zs2Q44u/vjqQWhTMofZp
+         WpWG2+LCvUJ6zTlH5QHVr2JGFW52EmM/3zeQk=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Date: Sat, 31 Jan 2009 01:23:28 +0100
+Message-ID: <77887e110901301623u746535f2q7dcc37cd40d2cc56@mail.gmail.com>
+Subject: libata - anomaly performance with NCQ
+From: Bartosz SKOWRON <getxsick@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200901310107.48623.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 31 January 2009, Linus Torvalds wrote:
-> 
-> On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
-> > 
-> > I wonder if this change makes any difference:
-> > 
-> > --- linux-2.6.orig/drivers/pci/pci-driver.c
-> > +++ linux-2.6/drivers/pci/pci-driver.c
-> > @@ -501,6 +501,9 @@ static int pci_pm_suspend(struct device
-> >  	if (pci_has_legacy_pm_support(pci_dev))
-> >  		return pci_legacy_suspend(dev, PMSG_SUSPEND);
-> >  
-> > +	if (!drv || !drv->pm)
-> > +		return 0;
-> > +
-> >  	if (drv && drv->pm && drv->pm->suspend) {
-> >  		error = drv->pm->suspend(dev);
-> >  		suspend_report_result(drv->pm->suspend, error);
-> 
-> I don't think that's right. Now you don't end up calling 
-> pci_pm_default_suspend_generic() at all, and this no pci_save_state().
-> 
-> But I think it could easily be the call to pci_disable_enabled_device(). 
-> It does that
-> 
-> 	if (atomic_read(&dev->enable_cnt))
-> 		do_pci_disable_device(dev);
-> 
-> and that ends up disabling PCI_COMMAND_MASTER and then calling 
-> pcibios_disable_device().
-> 
-> Any device we have ever done pci_enable_device() on would trigger this, 
-> which includes PCIE bridges, for example. And while the pcie driver does 
-> that
-> 
-> 	pcie_portdrv_restore_config ->
-> 		pci_enable_device(dev);
-> 
-> thing to re-enable it, that's a no-op since the enable_count is already 
-> non-zero.
-> 
-> And we do try to restore it (pci_restore_standard_config() will call 
-> pci_restore_state()), but since we've done the 
-> pci_disable_enabled_device() _before_ we did the pci_save_state(), we now 
-> restore a non-working setup. 
-> 
-> I think. The rules are too damn subtle there.  Rafael, can you look around 
-> a bit?
+Hi,
 
-Sure, I'm looking at it right now.
+here is a problem:
+http://ata.wiki.kernel.org/index.php/Known_issues#Seagate_harddrive_performance_anomaly_with_hdparm
 
-Rafael
+and my disk is affected by this one as well.
+it's ST9320421AS and you can add it to the list
+
+And 2 questions:
+1) cause the title contains "with hdparm"...does it mean that
+physically the performance is OK and only hdparm shows something
+wrong?
+2) there is an information about upgrading firmware. as far as i know
+Seagate doesn't publish firmwares. So the only way is to contact
+seagate support, send the hdd and wait for the new one?
+
+bart.
