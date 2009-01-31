@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754388AbZAaAkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZAaAld@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754388AbZAaAkA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 19:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756726AbZAaAjf
+	id S1756717AbZAaAld (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 19:41:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZAaAlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 19:39:35 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39077 "EHLO mx2.mail.elte.hu"
+	Fri, 30 Jan 2009 19:41:25 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53658 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756642AbZAaAjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 19:39:33 -0500
-Date: Sat, 31 Jan 2009 01:39:21 +0100
+	id S1752137AbZAaAlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 19:41:24 -0500
+Date: Sat, 31 Jan 2009 01:41:11 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Martin Hicks <mort@sgi.com>, tglx@linutronix.de, mingo@redhat.com,
-       heukelum@mailshack.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: push old stack address on irqstack for unwinder
-Message-ID: <20090131003921.GA13709@elte.hu>
-References: <20090130165053.GE7872@alcatraz.americas.sgi.com> <49838F39.6060603@zytor.com> <49839CC8.7060502@zytor.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] kbuild: drop check for CONFIG_ in headers_check
+Message-ID: <20090131004111.GB13709@elte.hu>
+References: <1233342254.21493.8.camel@localhost.localdomain> <20090130225642.GA17950@uranus.ravnborg.org> <20090130234012.GF4922@elte.hu> <200901310127.03142.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <49839CC8.7060502@zytor.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200901310127.03142.arnd@arndb.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,47 +40,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+* Arnd Bergmann <arnd@arndb.de> wrote:
 
-> H. Peter Anvin wrote:
->> Martin Hicks wrote:
->>> Hi,
->>>
->>> KDB was using this information.  Could this be pushed towards 2.6.29  
->>> please?
->>>
->>> This re-adds the old stack pointer to the top of the irqstack to help
->>> with unwinding.  It was removed in commit  
->>> d99015b1abbad743aa049b439c1e1dede6d0fa49
->>> as part of the save_args out-of-line work.
->>>
->>
->> This bothers me... why should we add even a single instruction to what  
->> is arguably the single hottest path in the kernel to support an  
->> out-of-tree debugger, especially if kgdb (which is in-tree) doesn't 
->> need it?
->>
->> What does kgdb do differently (or is kgdb broken too)?
->>
->
-> Thinking about it some more, I think this makes sense under
->
-> #ifdef CONFIG_FRAME_POINTER
->
-> ... since if we're not building with frame pointers, this is pretty  
-> pointless, and if we are, we're adding these all over the place anyway.
->
-> Does this work for you?  Let me know and I'll get it in if so.
+> On Saturday 31 January 2009, Ingo Molnar wrote:
+> > Jaswinder, i think we now have a realistic chance to reach a zero baseline 
+> > with these warnings, for v2.6.29. Here are the remaining warnings (summed 
+> > up per file) on x86 (after Sam's patch):
+> > 
+> >      17 /dev/shm/tip/usr/include/linux/reiserfs_fs.h
+> >      12 /dev/shm/tip/usr/include/linux/soundcard.h
+> >       3 /dev/shm/tip/usr/include/linux/nubus.h
+> >       2 /dev/shm/tip/usr/include/linux/in6.h
+> >       1 /dev/shm/tip/usr/include/mtd/jffs2-user.h
+> >       1 /dev/shm/tip/usr/include/linux/socket.h
+> >       1 /dev/shm/tip/usr/include/linux/coda_psdev.h
+> >       1 /dev/shm/tip/usr/include/linux/bsg.h
+> > 
+> 
+> Ah, that doesn't look too bad. On a related subject, was there ever a 
+> conclusion about whether we want to support __KERNEL_STRICT_NAMES in 
+> every header? When that is set, headers cannot use most of the standard 
+> types (dev_t, mode_t, off_t, pid_t, suseconds_t, timer_t, uid_t, gid_t, 
+> loff_t, time_t, clock_t, caddr_t, pgoff_t, {u_,u,}int{8,16,32,64}_6}) 
+> but have to use the __kernel_* versions of that.
 
-Would be nice to have an #ifdef-less primitive for this - something like:
-
-	pushq_frame %rbp
-
-and a matching:
-
-	popq_frame %rbp
-
-for those cases that need it (this one doesnt as we dont pop out of the 
-stack).
+hm, that looks quite ugly and unnatural. Could the usr/* exporting scripts 
+convert these types automatically to the __kernel_* versions?
 
 	Ingo
