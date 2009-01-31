@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760615AbZAaC7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755547AbZAaCzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760615AbZAaC7E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756483AbZAaCrN
+	id S1755547AbZAaCzg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:55:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755888AbZAaCrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:13 -0500
-Received: from kroah.org ([198.145.64.141]:55119 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:01 -0500
+Received: from kroah.org ([198.145.64.141]:54969 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756073AbZAaCrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:07 -0500
-Date: Fri, 30 Jan 2009 18:42:14 -0800
+	id S1755506AbZAaCq5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:57 -0500
+Date: Fri, 30 Jan 2009 18:40:39 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,84 +22,134 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andrey Yurovsky <andrey@cozybit.com>,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Bob Copeland <me@bobcopeland.com>
-Subject: [patch 01/43] ath5k: fix mesh point operation
-Message-ID: <20090131024214.GB12368@kroah.com>
-References: <20090131022548.656772939@mini.kroah.org>
+       alan@lxorguk.ukuu.org.uk, Davide Libenzi <davidel@xmailserver.org>,
+       Michael Kerrisk <mtk.manpages@googlemail.com>,
+       Bron Gondwana <brong@fastmail.fm>
+Subject: [patch 24/32] epoll: drop max_user_instances and rely only on
+	max_user_watches
+Message-ID: <20090131024039.GY12147@kroah.com>
+References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ath5k-fix-mesh-point-operation.patch"
-In-Reply-To: <20090131024158.GA12368@kroah.com>
+Content-Disposition: inline; filename="epoll-drop-max_user_instances-and-rely-only-on-max_user_watches.patch"
+In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Andrey Yurovsky <andrey@cozybit.com>
+From: Davide Libenzi <davidel@xmailserver.org>
 
-commit b706e65b40417e03c2451bb3f92488f3736843fa upstream.
+commit 9df04e1f25effde823a600e755b51475d438f56b upstream.
 
-This patch fixes mesh point operation (thanks to YanBo for pointing
-out the problem): make mesh point interfaces start beaconing when
-they come up and configure the RX filter in mesh mode so that mesh
-beacons and action frames are received.  Add mesh point to the check
-in ath5k_add_interface.  Tested with multiple AR5211 cards.
+Linus suggested to put limits where the money is, and max_user_watches
+already does that w/out the need of max_user_instances.  That has the
+advantage to mitigate the potential DoS while allowing pretty generous
+default behavior.
 
-Signed-off-by: Andrey Yurovsky <andrey@cozybit.com>
-Acked-by: Nick Kossifidis <mickflemm@gmail.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Cc: Bob Copeland <me@bobcopeland.com>
+Allowing top 4% of low memory (per user) to be allocated in epoll watches,
+we have:
+
+LOMEM    MAX_WATCHES (per user)
+512MB    ~178000
+1GB      ~356000
+2GB      ~712000
+
+A box with 512MB of lomem, will meet some challenge in hitting 180K
+watches, socket buffers math teaches us.  No more max_user_instances
+limits then.
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+Cc: Willy Tarreau <w@1wt.eu>
+Cc: Michael Kerrisk <mtk.manpages@googlemail.com>
+Cc: Bron Gondwana <brong@fastmail.fm>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath5k/base.c |   10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ fs/eventpoll.c        |   22 ++++------------------
+ include/linux/sched.h |    1 -
+ 2 files changed, 4 insertions(+), 19 deletions(-)
 
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -2157,7 +2157,8 @@ ath5k_beacon_config(struct ath5k_softc *
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -234,8 +234,6 @@ struct ep_pqueue {
+ /*
+  * Configuration options available inside /proc/sys/fs/epoll/
+  */
+-/* Maximum number of epoll devices, per user */
+-static int max_user_instances __read_mostly;
+ /* Maximum number of epoll watched descriptors, per user */
+ static int max_user_watches __read_mostly;
  
- 	if (sc->opmode == NL80211_IFTYPE_STATION) {
- 		sc->imask |= AR5K_INT_BMISS;
--	} else if (sc->opmode == NL80211_IFTYPE_ADHOC) {
-+	} else if (sc->opmode == NL80211_IFTYPE_ADHOC ||
-+		   sc->opmode == NL80211_IFTYPE_MESH_POINT) {
- 		/*
- 		 * In IBSS mode we use a self-linked tx descriptor and let the
- 		 * hardware send the beacons automatically. We have to load it
-@@ -2748,6 +2749,7 @@ static int ath5k_add_interface(struct ie
- 	switch (conf->type) {
- 	case NL80211_IFTYPE_STATION:
- 	case NL80211_IFTYPE_ADHOC:
-+	case NL80211_IFTYPE_MESH_POINT:
- 	case NL80211_IFTYPE_MONITOR:
- 		sc->opmode = conf->type;
- 		break;
-@@ -2819,7 +2821,8 @@ ath5k_config_interface(struct ieee80211_
- 	}
+@@ -261,14 +259,6 @@ static int zero;
  
- 	if (conf->changed & IEEE80211_IFCC_BEACON &&
--	    vif->type == NL80211_IFTYPE_ADHOC) {
-+	    (vif->type == NL80211_IFTYPE_ADHOC ||
-+	     vif->type == NL80211_IFTYPE_MESH_POINT)) {
- 		struct sk_buff *beacon = ieee80211_beacon_get(hw, vif);
- 		if (!beacon) {
- 			ret = -ENOMEM;
-@@ -2951,6 +2954,9 @@ static void ath5k_configure_filter(struc
- 		sc->opmode == NL80211_IFTYPE_ADHOC) {
- 		rfilt |= AR5K_RX_FILTER_BEACON;
- 	}
-+	if (sc->opmode == NL80211_IFTYPE_MESH_POINT)
-+		rfilt |= AR5K_RX_FILTER_CONTROL | AR5K_RX_FILTER_BEACON |
-+			AR5K_RX_FILTER_PROBEREQ | AR5K_RX_FILTER_PROM;
+ ctl_table epoll_table[] = {
+ 	{
+-		.procname	= "max_user_instances",
+-		.data		= &max_user_instances,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec_minmax,
+-		.extra1		= &zero,
+-	},
+-	{
+ 		.procname	= "max_user_watches",
+ 		.data		= &max_user_watches,
+ 		.maxlen		= sizeof(int),
+@@ -491,7 +481,6 @@ static void ep_free(struct eventpoll *ep
  
- 	/* Set filters */
- 	ath5k_hw_set_rx_filter(ah,rfilt);
+ 	mutex_unlock(&epmutex);
+ 	mutex_destroy(&ep->mtx);
+-	atomic_dec(&ep->user->epoll_devs);
+ 	free_uid(ep->user);
+ 	kfree(ep);
+ }
+@@ -581,10 +570,6 @@ static int ep_alloc(struct eventpoll **p
+ 	struct eventpoll *ep;
+ 
+ 	user = get_current_user();
+-	error = -EMFILE;
+-	if (unlikely(atomic_read(&user->epoll_devs) >=
+-			max_user_instances))
+-		goto free_uid;
+ 	error = -ENOMEM;
+ 	ep = kzalloc(sizeof(*ep), GFP_KERNEL);
+ 	if (unlikely(!ep))
+@@ -1137,7 +1122,6 @@ SYSCALL_DEFINE1(epoll_create1, int, flag
+ 			      flags & O_CLOEXEC);
+ 	if (fd < 0)
+ 		ep_free(ep);
+-	atomic_inc(&ep->user->epoll_devs);
+ 
+ error_return:
+ 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d) = %d\n",
+@@ -1362,8 +1346,10 @@ static int __init eventpoll_init(void)
+ 	struct sysinfo si;
+ 
+ 	si_meminfo(&si);
+-	max_user_instances = 128;
+-	max_user_watches = (((si.totalram - si.totalhigh) / 32) << PAGE_SHIFT) /
++	/*
++	 * Allows top 4% of lomem to be allocated for epoll watches (per user).
++	 */
++	max_user_watches = (((si.totalram - si.totalhigh) / 25) << PAGE_SHIFT) /
+ 		EP_ITEM_COST;
+ 
+ 	/* Initialize the structure used to perform safe poll wait head wake ups */
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -588,7 +588,6 @@ struct user_struct {
+ 	atomic_t inotify_devs;	/* How many inotify devs does this user have opened? */
+ #endif
+ #ifdef CONFIG_EPOLL
+-	atomic_t epoll_devs;	/* The number of epoll descriptors currently open */
+ 	atomic_t epoll_watches;	/* The number of file descriptors currently watched */
+ #endif
+ #ifdef CONFIG_POSIX_MQUEUE
 
