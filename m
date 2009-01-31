@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZAaIkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753474AbZAaIq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZAaIkf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 03:40:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751290AbZAaIkZ
+	id S1753474AbZAaIq2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 03:46:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751085AbZAaIqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 03:40:25 -0500
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:48743 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751096AbZAaIkY (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 03:40:24 -0500
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Holger Macht <hmacht@suse.de>,
-       linux-acpi@vger.kernel.org
-Subject: Re: mmotm 2009-01-28-02-17 uploaded - docking station issues.
-In-Reply-To: Your message of "Fri, 30 Jan 2009 21:03:52 PST."
-             <20090130210352.cf9e4d7f.akpm@linux-foundation.org>
-From: Valdis.Kletnieks@vt.edu
-References: <200901281019.n0SAJ9C6013727@imap1.linux-foundation.org> <20830.1233246343@turing-police.cc.vt.edu>
-            <20090130210352.cf9e4d7f.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1233391214_3882P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 31 Jan 2009 03:40:14 -0500
-Message-ID: <4126.1233391214@turing-police.cc.vt.edu>
+	Sat, 31 Jan 2009 03:46:19 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:27201 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750953AbZAaIqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 03:46:19 -0500
+Date: Sat, 31 Jan 2009 09:44:27 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, npiggin@suse.de,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH -v3] use per cpu data for single cpu ipi calls
+Message-ID: <20090131084426.GU30821@kernel.dk>
+References: <alpine.LFD.2.00.0901290912320.3123@localhost.localdomain> <alpine.DEB.1.10.0901291232570.27527@gandalf.stny.rr.com> <alpine.LFD.2.00.0901290959540.3123@localhost.localdomain> <1233253380.4495.123.camel@laptop> <alpine.LFD.2.00.0901291030510.3123@localhost.localdomain> <1233254680.4495.126.camel@laptop> <20090130112310.GI30821@kernel.dk> <1233318733.4495.174.camel@laptop> <alpine.LFD.2.00.0901300800350.3150@localhost.localdomain> <1233332170.4495.200.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233332170.4495.200.camel@laptop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1233391214_3882P
-Content-Type: text/plain; charset=us-ascii
-
-On Fri, 30 Jan 2009 21:03:52 PST, Andrew Morton said:
-> On Thu, 29 Jan 2009 11:25:43 -0500 Valdis.Kletnieks@vt.edu wrote:
+On Fri, Jan 30 2009, Peter Zijlstra wrote:
+> > If another CPU hasn't even received its IPI before the same CPU sends the 
+> > next one, I'm not sure we _want_ to send one, in fact.
 > 
-> > On Wed, 28 Jan 2009 02:19:09 PST, akpm@linux-foundation.org said:
-> > > The mm-of-the-moment snapshot 2009-01-28-02-17 has been uploaded to
-> > >    http://userweb.kernel.org/~akpm/mmotm/
+> I think the intent was to re-route IO-completion interrupts to whatever
+> cpu/node issued the IO with the idea that that cpu/node has the page
+> hottest etc. and transferring the completion is cheaper than bouncing
+> the page.
 
-> > % ls -l /sys/devices/platform/dock.0/docked
-> > -r--r--r-- 1 root root 4096 2009-01-29 10:49 /sys/devices/platform/dock.0/docked
-> > % cat /sys/devices/platform/dock.0/docked
-> > =F1=DEcat: write error: Bad address
-> >
-> > strace of the cat shows:
-> >
-> > open("/sys/devices/platform/dock.0/docked", O_RDONLY) = 3
-> > fstat(3, {st_mode=S_IFREG|0444, st_size=4096, ...}) = 0
-> > read(3, "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"..., 4096) = 1812586496
+Correct
 
-> > Under 2.6.29-rc2-mmotm0116, this would return either "0" or "1", not 4K
-> > of nulls.
+> Since that would be relaying hardware interrupts, there's nothing much
+> you can do about the rate, or something, that's up to the firmware on
+> $$$ scsi thing.
+> 
+> But Jens already said that that path was using the __ variant and
+> providing its own csds, the kmalloc isn't needed there, so it might all
+> be moot.
 
-> Is it due to
->
-> acpi-dock-dont-eval-_sta-on-every-show_docked-sysfs-read.patch
+In fact the block layer already does attempt to do what Linus describes.
+We queue the events for the target cpu, and then do:
 
-Bingo. Reverting that patch and the sysfs-read-simplified.patch fixed it.
+        local_irq_save(flags);
+        list = &__get_cpu_var(blk_cpu_done);
+        list_add_tail(&rq->csd.list, list);
 
-So obviously something in there doesn't agree with the innards of my laptop -
+        if (list->next == &rq->csd.list)
+                raise_softirq_irqoff(BLOCK_SOFTIRQ);
 
-Dell Latitude D820, BIOS is A09 (current), if that helps anybody...
+thus only triggering a new softirq interrupt, if the preceeding one
+hasn't run already. So this is done for the block layer
+trigger_softirq() part, but could be provided by the lower layer as well
+instead.
 
---==_Exmh_1233391214_3882P
-Content-Type: application/pgp-signature
+> > But that's a secondary issue, and isn't a correctness thing, just a "do we 
+> > really need three different allocations?" musing..
+> 
+> Nick, Jens, I was under the presumption that the kmalloc was needed for
+> something other than failing to deadlock, happen to remember what?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
+As far as I remember, it was just the way to allocate memory for the
+non-wait case. The per-cpu single csd will limit you to a single pending
+entry on the cpu queue, you could have more (like the block layer will
+do) and get a nice batching effect for ipi busy workloads instead of a
+1:1 mapping between work and ipi's fired.
 
-iD8DBQFJhA5ucC3lWbTT17ARAt6iAKDovhSrQQvSJ4k/VbIRhZ4cVeAWoQCfR1KO
-k+G8xjuIeCxrCGsaG26/ZL0=
-=86Nx
------END PGP SIGNATURE-----
+-- 
+Jens Axboe
 
---==_Exmh_1233391214_3882P--
