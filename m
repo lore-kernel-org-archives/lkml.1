@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752096AbZAaFjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752776AbZAaFsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752096AbZAaFjV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 00:39:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbZAaFjJ
+	id S1752776AbZAaFsh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 00:48:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750720AbZAaFs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 00:39:09 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52271 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751016AbZAaFjI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 00:39:08 -0500
-Date: Sat, 31 Jan 2009 06:55:08 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <andi@firstfloor.org>, roger.larsson@e-gatan.se,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, rml@tech9.net,
-       pavel@ucw.cz, netdev@vger.kernel.org
-Subject: Re: PROBLEM: in_atomic() misuse all over the place
-Message-ID: <20090131055508.GD18453@one.firstfloor.org>
-References: <200901280010.37633.roger.larsson@e-gatan.se> <87pri7k4id.fsf@basil.nowhere.org> <20090130160316.7e53ef99.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090130160316.7e53ef99.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 31 Jan 2009 00:48:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:46201 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750891AbZAaFs2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 00:48:28 -0500
+Message-ID: <4983E5D3.3040100@kernel.org>
+Date: Sat, 31 Jan 2009 14:46:59 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, x86@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
+Subject: Re: #tj-percpu has been rebased
+References: <49833350.1020809@kernel.org>
+In-Reply-To: <49833350.1020809@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 31 Jan 2009 05:47:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> There's a bit of a problem here.  If someone accidentally uses
-> gfp_any() inside a spinlock, it will do a sleeping allocation on
-> non-preempt kernels and will do an atomic allocation on preemptible
-> kernels, so we won't get to see the warning which would allow us to fix
-> the bug.
+Hello, again.
 
-Yes exporting the function to drivers is dangerous I agree because
-it's easy to abuse.
+Please disregard the previous two rebased trees.  There has been a
+major communication misunderstanding between Ingo and me leading to
+the rebased branches.  Here is yet another, hopefully final, merged
+tree which builds on top of tip/core/percpu and took only about ten
+minutes as opposed to hours.  :-)
 
-> Would using irq_count() work?  If so, that would fix this up.
+* Three xen fix related patches merged.  Later threes conflicted in
+  non-minor way.  Requested refresh.
 
-There's nothing that works reliably to detect spinlocks on non
-preempt kernels.
+* Cliff Wickman's UV flush fix patch revived and merged.
 
--Andi
+* Pull in linus#master[1].
+
+Anyways, please pull from
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+
+The commit ID should be da2c0b021cde94866f1e492f940aad29e8f61258.
+
+Sorry about the mess but this one should be the safe one to post
+patches against.
+
+Thanks.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+tejun
+
+[1] 33bfad54b58cf05cfe6678c3ec9235d4bc8db4c2
