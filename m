@@ -1,87 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751574AbZAaRpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754889AbZAaRqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751574AbZAaRpH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 12:45:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751148AbZAaRoz
+	id S1754889AbZAaRqT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 12:46:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751188AbZAaRqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 12:44:55 -0500
-Received: from winston.telenet-ops.be ([195.130.137.75]:33714 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750856AbZAaRoy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 12:44:54 -0500
-Date: Sat, 31 Jan 2009 18:44:45 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Andrea Righi <righi.andrea@gmail.com>
-cc: Andrey Borzenkov <arvidjaar@mail.ru>,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-fbdev-devel] [2.6.29-rc2] fb_mmap: circular locking
- dependency on hibernation
-In-Reply-To: <498485E0.4080501@gmail.com>
-Message-ID: <Pine.LNX.4.64.0901311843450.21273@anakin>
-References: <200901272137.57757.arvidjaar@mail.ru> <Pine.LNX.4.64.0901291009220.13600@anakin>
- <200901300716.06137.arvidjaar@mail.ru> <498485E0.4080501@gmail.com>
+	Sat, 31 Jan 2009 12:46:08 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:34382 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750856AbZAaRqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 12:46:07 -0500
+Date: Sat, 31 Jan 2009 11:45:59 -0600
+From: Martin Hicks <mort@sgi.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, tglx@linutronix.de, mingo@redhat.com,
+       heukelum@mailshack.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       kdb@sgi.com
+Subject: Re: [PATCH] x86: push old stack address on irqstack for unwinder
+Message-ID: <20090131174559.GI7872@alcatraz.americas.sgi.com>
+References: <20090130165053.GE7872@alcatraz.americas.sgi.com> <49838F39.6060603@zytor.com> <49839CC8.7060502@zytor.com> <20090131003921.GA13709@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090131003921.GA13709@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009, Andrea Righi wrote:
-> On 2009-01-30 05:15, Andrey Borzenkov wrote:
-> > On 29 of January 2009 12:10:11 Geert Uytterhoeven wrote:
-> >> On Tue, 27 Jan 2009, Andrey Borzenkov wrote:
-> fbcon: avoid circular locking dependency between fb_info->lock and mm->mmap_sem
+
+On Sat, Jan 31, 2009 at 01:39:21AM +0100, Ingo Molnar wrote:
 > 
-> In fbcon notifier the handler for FB_EVENT_SET_CONSOLE_MAP doesn't need
-> to hold fb_info->lock.
+> * H. Peter Anvin <hpa@zytor.com> wrote:
 > 
-> Simply unlock it before calling set_con2fb_map(), that could try to
-> acquire mm->mmap_sem to avoid a circular locking dependency with
-> fb_mmap() (that acquires mm->mmap_sem -> fb_info-lock).
+> > H. Peter Anvin wrote:
+> >> Martin Hicks wrote:
+> >>> Hi,
+> >>>
+> >>> KDB was using this information.  Could this be pushed towards 2.6.29  
+> >>> please?
+> >>>
+> >>> This re-adds the old stack pointer to the top of the irqstack to help
+> >>> with unwinding.  It was removed in commit  
+> >>> d99015b1abbad743aa049b439c1e1dede6d0fa49
+> >>> as part of the save_args out-of-line work.
+> >>>
+> >>
+> >> This bothers me... why should we add even a single instruction to what  
+> >> is arguably the single hottest path in the kernel to support an  
+> >> out-of-tree debugger, especially if kgdb (which is in-tree) doesn't 
+> >> need it?
+> >>
+> >> What does kgdb do differently (or is kgdb broken too)?
+> >>
 
-However, set_con2fb_map() accesses the array of fb_info pointers
-registered_fb[], which seems to be a bit unsafe now the BKL is no longer held.
+I was searching around, trying to find out if there was another way for
+kdb to do this, and I think removing the backlink is breaking other
+stuff also.  dump_trace() in dumpstack_64.S is using the same trick as
+KDB to trace out of the interrupt stack:
 
-> Reported-by: Andrey Borzenkov <arvidjaar@mail.ru>
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  drivers/video/console/fbcon.c |    6 ++++++
->  1 files changed, 6 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-> index 1657b96..81fc2f7 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -3169,9 +3169,15 @@ static int fbcon_event_notify(struct notifier_block *self,
->  		ret = fbcon_fb_unregistered(info);
->  		break;
->  	case FB_EVENT_SET_CONSOLE_MAP:
-> +		/*
-> +		 * XXX: info is not used here, we can unlock it to avoid
-> +		 * circular locking with &current->mm->mmap_sem in fb_mmap().
-> +		 */
-> +		unlock_fb_info(info);
->  		con2fb = event->data;
->  		ret = set_con2fb_map(con2fb->console - 1,
->  				     con2fb->framebuffer, 1);
-> +		lock_fb_info(info);
->  		break;
->  	case FB_EVENT_GET_CONSOLE_MAP:
->  		con2fb = event->data;
-> 
+            /*
+             * We link to the next stack (which would be
+             * the process stack normally) the last
+             * pointer (index -1 to end) in the IRQ stack:
+             */
+            stack = (unsigned long *) (irqstack_end[-1]);
+            irqstack_end = NULL;
+            ops->stack(data, "EOI");
+            continue;
 
-Gr{oetje,eeting}s,
 
-						Geert
+mh
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
