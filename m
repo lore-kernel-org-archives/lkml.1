@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbZAaVV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZAaV2V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754635AbZAaVV2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 16:21:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZAaVVU
+	id S1754048AbZAaV2V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 16:28:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZAaV2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 16:21:20 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54679 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752335AbZAaVVT (ORCPT
+	Sat, 31 Jan 2009 16:28:12 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58490 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752206AbZAaV2M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 16:21:19 -0500
-Date: Sat, 31 Jan 2009 21:21:06 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [git pull] scheduler fixes
-Message-ID: <20090131212106.6e2e05b0@lxorguk.ukuu.org.uk>
-In-Reply-To: <1233425327.4787.35.camel@laptop>
-References: <20090130230936.GA7549@elte.hu>
-	<1233421901.4787.27.camel@laptop>
-	<1233422632.4787.31.camel@laptop>
-	<f19298770901310949m7aabf7bcp219ae4cc5d1b363b@mail.gmail.com>
-	<1233425327.4787.35.camel@laptop>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 31 Jan 2009 16:28:12 -0500
+Date: Sat, 31 Jan 2009 22:27:55 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Tim Small <tim@buttersideup.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       ncunningham-lkml@crca.org.au, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Chris Friesen <cfriesen@nortel.com>,
+       Doug Thompson <norsk5@yahoo.com>, bluesmoke-devel@lists.sourceforge.net,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: marching through all physical memory in software
+Message-ID: <20090131212754.GA15243@elf.ucw.cz>
+References: <715599.77204.qm@web50111.mail.re2.yahoo.com> <m1wscc7fop.fsf@fess.ebiederm.org> <49836114.1090209@buttersideup.com> <m1iqnw1676.fsf@fess.ebiederm.org> <4984489C.8020309@buttersideup.com> <20090131134327.GB28763@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090131134327.GB28763@khazad-dum.debian.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009 19:08:47 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
+Hi!
 
-> On Sat, 2009-01-31 at 20:49 +0300, Alexey Zaytsev wrote:
-> > 
-> > And answering an earlier question, this happens only on i386 and only
-> > with 4K stacks because x86_64 dosn't have a separate softirq stack,
-> > so the preempt count diring the soft irq is at least IRQ_EXIT_OFFSET.
+> And if an uncorretable error is detected during the scrub, we have to
+> do something about it as well.  And that won't be that easy: locate
+> whatever process is using that page, and so something smart to it...
+> or do some emergency evasive actions if it is one of the kernel's data
+> scructures, etc.
 > 
-> What do the other 30 odd architectures that Linux supports do? Is i386
-> 4k really the _only_ with separate softirq stacks?
+> So, as you said, "background scrubbing" and "software scrubbing" really are
+> very different things, and one has to expect that background scrubbing will
+> eventually trigger software scrubbing, major system emergency handling
+> (uncorrectable errors in kernel memory) or minor system emergency
+> handling (uncorrectable errors in process memory).
+> 
+> > There is (AFAIK) no need to do any writes here, and in fact doing so is 
+> 
+> One might want the possibility of doing inconditional writes, because
+> it helps with memory bitrot on crappy hardware where the refresh
+> cycles aren't enough to avoid bitrot.  But you definately won't want
+> it most of the time.
+> 
+> You can also implement software-based ECC using a background scrubber
+> and setting aside pages to store the ECC information.  Now, THAT is
+> probably not worth bothering with due to the performance impact, but
+> who knows...
 
-x86-64 and some of the other platforms could do with IRQ stacks but that
-is another story.
+Actually, that would be quite cool. a) I suspect memory in  my zaurus
+bitrots and b) bitroting memory over s2ram is apprently quite common.
+
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
