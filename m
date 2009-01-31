@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762501AbZAaDLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761119AbZAaDMP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762501AbZAaDLu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 22:11:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757434AbZAaCru
+	id S1761119AbZAaDMP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 22:12:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757441AbZAaCrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:47:50 -0500
-Received: from kroah.org ([198.145.64.141]:55608 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:47:51 -0500
+Received: from kroah.org ([198.145.64.141]:55620 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755016AbZAaCrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:47:42 -0500
-Date: Fri, 30 Jan 2009 18:44:46 -0800
+	id S1757319AbZAaCrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:47:43 -0500
+Date: Fri, 30 Jan 2009 18:44:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Joerg Schirottke <master@kanotix.com>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 35/43] ALSA: hda - Add quirk for HP DV6700 laptop
-Message-ID: <20090131024446.GJ12368@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [patch 36/43] crypto: authenc - Fix zero-length IV crash
+Message-ID: <20090131024448.GK12368@kroah.com>
 References: <20090131022548.656772939@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="alsa-hda-add-quirk-for-hp-dv6700-laptop.patch"
+Content-Disposition: inline; filename="crypto-authenc-fix-zero-length-iv-crash.patch"
 In-Reply-To: <20090131024158.GA12368@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,28 +39,68 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Joerg Schirottke <master@kanotix.com>
+From: Herbert Xu <herbert@gondor.apana.org.au>
 
-commit aa9d823bb347fb66cb07f98c686be8bb85cb6a74 upstream.
+commit 29b37f42127f7da511560a40ea74f5047da40c13 upstream.
 
-Added the matching model=laptop for HP DV6700 laptop.
+As it is if an algorithm with a zero-length IV is used (e.g.,
+NULL encryption) with authenc, authenc may generate an SG entry
+of length zero, which will trigger a BUG check in the hash layer.
 
-Signed-off-by: Joerg Schirottke <master@kanotix.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+This patch fixes it by skipping the IV SG generation if the IV
+size is zero.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_conexant.c |    1 +
- 1 file changed, 1 insertion(+)
+ crypto/authenc.c |   24 +++++++++++++++---------
+ 1 file changed, 15 insertions(+), 9 deletions(-)
 
---- a/sound/pci/hda/patch_conexant.c
-+++ b/sound/pci/hda/patch_conexant.c
-@@ -1470,6 +1470,7 @@ static struct snd_pci_quirk cxt5047_cfg_
- 	SND_PCI_QUIRK(0x103c, 0x30a5, "HP DV5200T/DV8000T", CXT5047_LAPTOP_HP),
- 	SND_PCI_QUIRK(0x103c, 0x30b2, "HP DV2000T/DV3000T", CXT5047_LAPTOP),
- 	SND_PCI_QUIRK(0x103c, 0x30b5, "HP DV2000Z", CXT5047_LAPTOP),
-+	SND_PCI_QUIRK(0x103c, 0x30cf, "HP DV6700", CXT5047_LAPTOP),
- 	SND_PCI_QUIRK(0x1179, 0xff31, "Toshiba P100", CXT5047_LAPTOP_EAPD),
- 	{}
- };
+--- a/crypto/authenc.c
++++ b/crypto/authenc.c
+@@ -157,16 +157,19 @@ static int crypto_authenc_genicv(struct 
+ 	dstp = sg_page(dst);
+ 	vdst = PageHighMem(dstp) ? NULL : page_address(dstp) + dst->offset;
+ 
+-	sg_init_table(cipher, 2);
+-	sg_set_buf(cipher, iv, ivsize);
+-	authenc_chain(cipher, dst, vdst == iv + ivsize);
++	if (ivsize) {
++		sg_init_table(cipher, 2);
++		sg_set_buf(cipher, iv, ivsize);
++		authenc_chain(cipher, dst, vdst == iv + ivsize);
++		dst = cipher;
++	}
+ 
+ 	cryptlen = req->cryptlen + ivsize;
+-	hash = crypto_authenc_hash(req, flags, cipher, cryptlen);
++	hash = crypto_authenc_hash(req, flags, dst, cryptlen);
+ 	if (IS_ERR(hash))
+ 		return PTR_ERR(hash);
+ 
+-	scatterwalk_map_and_copy(hash, cipher, cryptlen,
++	scatterwalk_map_and_copy(hash, dst, cryptlen,
+ 				 crypto_aead_authsize(authenc), 1);
+ 	return 0;
+ }
+@@ -284,11 +287,14 @@ static int crypto_authenc_iverify(struct
+ 	srcp = sg_page(src);
+ 	vsrc = PageHighMem(srcp) ? NULL : page_address(srcp) + src->offset;
+ 
+-	sg_init_table(cipher, 2);
+-	sg_set_buf(cipher, iv, ivsize);
+-	authenc_chain(cipher, src, vsrc == iv + ivsize);
++	if (ivsize) {
++		sg_init_table(cipher, 2);
++		sg_set_buf(cipher, iv, ivsize);
++		authenc_chain(cipher, src, vsrc == iv + ivsize);
++		src = cipher;
++	}
+ 
+-	return crypto_authenc_verify(req, cipher, cryptlen + ivsize);
++	return crypto_authenc_verify(req, src, cryptlen + ivsize);
+ }
+ 
+ static int crypto_authenc_decrypt(struct aead_request *req)
 
