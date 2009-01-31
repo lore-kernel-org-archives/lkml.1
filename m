@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759194AbZAaCwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZAaCx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759194AbZAaCwV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 21:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbZAaCqu
+	id S1756786AbZAaCx3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 21:53:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751839AbZAaCqz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 21:46:50 -0500
-Received: from kroah.org ([198.145.64.141]:54861 "EHLO coco.kroah.org"
+	Fri, 30 Jan 2009 21:46:55 -0500
+Received: from kroah.org ([198.145.64.141]:54890 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754819AbZAaCqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 21:46:48 -0500
-Date: Fri, 30 Jan 2009 18:40:14 -0800
+	id S1754994AbZAaCqv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 30 Jan 2009 21:46:51 -0500
+Date: Fri, 30 Jan 2009 18:40:20 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 15/32] USB: fix char-device disconnect handling
-Message-ID: <20090131024014.GP12147@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Luke Yelavich <themuso@ubuntu.com>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 18/32] ALSA: hda - add another MacBook Pro 4, 1 subsystem ID
+Message-ID: <20090131024020.GS12147@kroah.com>
 References: <20090131023411.032399235@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="usb-fix-char-device-disconnect-handling.patch"
+Content-Disposition: inline; filename="alsa-hda-add-another-macbook-pro-4-1-subsystem-id.patch"
 In-Reply-To: <20090131023906.GA12147@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,123 +40,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Luke Yelavich <themuso@ubuntu.com>
 
-commit 501950d846218ed80a776d2aae5aed9c8b92e778 upstream.
+commit 2a88464ceb1bda2571f88902fd8068a6168e3f7b upstream.
 
-This patch (as1198) fixes a conceptual bug: Somewhere along the line
-we managed to confuse USB class devices with USB char devices.  As a
-result, the code to send a disconnect signal to userspace would not be
-built if both CONFIG_USB_DEVICE_CLASS and CONFIG_USB_DEVICEFS were
-disabled.
+Add another MacBook Pro 4,1 SSID (106b:3800). It seems that latter revisions,
+(at least mine), have different IDs to earlier revisions.
 
-The usb_fs_classdev_common_remove() routine has been renamed to
-usbdev_remove() and it is now called whenever any USB device is
-removed, not just when a class device is unregistered.  The notifier
-registration and unregistration calls are no longer conditionally
-compiled.  And since the common removal code will always be called as
-part of the char device interface, there's no need to call it again as
-part of the usbfs interface; thus the invocation of
-usb_fs_classdev_common_remove() has been taken out of
-usbfs_remove_device().
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-by: Alon Bar-Lev <alon.barlev@gmail.com>
-Tested-by: Alon Bar-Lev <alon.barlev@gmail.com>
+Signed-off-by: Luke Yelavich <themuso@ubuntu.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/core/devio.c |   20 ++++++++++++--------
- drivers/usb/core/inode.c |    1 -
- drivers/usb/core/usb.h   |    1 -
- 3 files changed, 12 insertions(+), 10 deletions(-)
+ sound/pci/hda/patch_realtek.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/usb/core/devio.c
-+++ b/drivers/usb/core/devio.c
-@@ -1700,7 +1700,7 @@ const struct file_operations usbdev_file
- 	.release =	usbdev_release,
- };
- 
--void usb_fs_classdev_common_remove(struct usb_device *udev)
-+static void usbdev_remove(struct usb_device *udev)
- {
- 	struct dev_state *ps;
- 	struct siginfo sinfo;
-@@ -1742,10 +1742,15 @@ static void usb_classdev_remove(struct u
- {
- 	if (dev->usb_classdev)
- 		device_unregister(dev->usb_classdev);
--	usb_fs_classdev_common_remove(dev);
- }
- 
--static int usb_classdev_notify(struct notifier_block *self,
-+#else
-+#define usb_classdev_add(dev)		0
-+#define usb_classdev_remove(dev)	do {} while (0)
-+
-+#endif
-+
-+static int usbdev_notify(struct notifier_block *self,
- 			       unsigned long action, void *dev)
- {
- 	switch (action) {
-@@ -1755,15 +1760,15 @@ static int usb_classdev_notify(struct no
- 		break;
- 	case USB_DEVICE_REMOVE:
- 		usb_classdev_remove(dev);
-+		usbdev_remove(dev);
- 		break;
- 	}
- 	return NOTIFY_OK;
- }
- 
- static struct notifier_block usbdev_nb = {
--	.notifier_call = 	usb_classdev_notify,
-+	.notifier_call = 	usbdev_notify,
- };
--#endif
- 
- static struct cdev usb_device_cdev;
- 
-@@ -1797,9 +1802,8 @@ int __init usb_devio_init(void)
- 	 * to /sys/dev
- 	 */
- 	usb_classdev_class->dev_kobj = NULL;
--
--	usb_register_notify(&usbdev_nb);
- #endif
-+	usb_register_notify(&usbdev_nb);
- out:
- 	return retval;
- 
-@@ -1810,8 +1814,8 @@ error_cdev:
- 
- void usb_devio_cleanup(void)
- {
--#ifdef CONFIG_USB_DEVICE_CLASS
- 	usb_unregister_notify(&usbdev_nb);
-+#ifdef CONFIG_USB_DEVICE_CLASS
- 	class_destroy(usb_classdev_class);
- #endif
- 	cdev_del(&usb_device_cdev);
---- a/drivers/usb/core/inode.c
-+++ b/drivers/usb/core/inode.c
-@@ -716,7 +716,6 @@ static void usbfs_remove_device(struct u
- 		fs_remove_file (dev->usbfs_dentry);
- 		dev->usbfs_dentry = NULL;
- 	}
--	usb_fs_classdev_common_remove(dev);
- }
- 
- static int usbfs_notify(struct notifier_block *self, unsigned long action, void *dev)
---- a/drivers/usb/core/usb.h
-+++ b/drivers/usb/core/usb.h
-@@ -145,7 +145,6 @@ extern struct usb_driver usbfs_driver;
- extern const struct file_operations usbfs_devices_fops;
- extern const struct file_operations usbdev_file_operations;
- extern void usbfs_conn_disc_event(void);
--extern void usb_fs_classdev_common_remove(struct usb_device *udev);
- 
- extern int usb_devio_init(void);
- extern void usb_devio_cleanup(void);
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -6631,6 +6631,7 @@ static int patch_alc882(struct hda_codec
+ 		case 0x106b00a1: /* Macbook (might be wrong - PCI SSID?) */
+ 		case 0x106b2c00: /* Macbook Pro rev3 */
+ 		case 0x106b3600: /* Macbook 3.1 */
++		case 0x106b3800: /* MacbookPro4,1 - latter revision */
+ 			board_config = ALC885_MBP3;
+ 			break;
+ 		default:
 
