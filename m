@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZAaEbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754695AbZAaEpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754694AbZAaEbA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 30 Jan 2009 23:31:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751329AbZAaEav
+	id S1754695AbZAaEpS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 30 Jan 2009 23:45:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751957AbZAaEpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 30 Jan 2009 23:30:51 -0500
-Received: from qmta10.emeryville.ca.mail.comcast.net ([76.96.30.17]:59723 "EHLO
-	QMTA10.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751025AbZAaEau (ORCPT
+	Fri, 30 Jan 2009 23:45:04 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:48238 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751698AbZAaEpD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 30 Jan 2009 23:30:50 -0500
-Date: Fri, 30 Jan 2009 20:29:59 -0800
-From: Dmitry Torokhov <dtor@mail.ru>
-To: Richard Atterer <atterer@debian.org>
-Cc: linux-kernel@vger.kernel.org, vojtech@ucw.cz, linux-input@vger.kernel.org,
-       rubini@vision.unipv.it, jkosina@suse.cz
-Subject: Re: [PATCH 2.6.28] mousedev: Allow devices to be excluded from
-	/dev/input/mice
-Message-ID: <20090131042959.GA3529@dtor-d630.eng.vmware.com>
-References: <20090130120456.GA20461@arbonne.lan>
+	Fri, 30 Jan 2009 23:45:03 -0500
+Date: Fri, 30 Jan 2009 23:44:54 -0500
+From: Kyle McMartin <kyle@redhat.com>
+To: Bhavesh Davda <bhavesh@vmware.com>
+Cc: "David.Woodhouse@intel.com" <David.Woodhouse@intel.com>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] intel-iommu: intel_iommu_domain_alloc should check
+	'dmar_disabled'
+Message-ID: <20090131044454.GA5184@bombadil.infradead.org>
+Reply-To: kyle@infradead.org
+References: <AF9CD7A487028E428749836D21102612201D323DBB@PA-EXMBX02.vmware.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090130120456.GA20461@arbonne.lan>
-X-KMail-Identity: 252080433
-X-KMail-Transport: Mailhub
-User-Agent: KMail/1.10.4 (Linux/2.6.27.12-170.2.5.fc10.x86_64; KDE/4.1.4;
-	x86_64; ; )
-X-KMail-Link-Message: 237665
-X-KMail-Link-Type: reply
-X-KMail-SignatureActionEnabled: false
-X-KMail-EncryptActionEnabled: false
-X-KMail-CryptoMessageFormat: 15
-X-KMail-Recipients: Richard Atterer <atterer@debian.org>,
-	linux-kernel@vger.kernel.org, vojtech@ucw.cz,
-	linux-input@vger.kernel.org, rubini@ipvvis.unipv.it, jkosina@suse.cz
+In-Reply-To: <AF9CD7A487028E428749836D21102612201D323DBB@PA-EXMBX02.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Richard,
+On Fri, Jan 16, 2009 at 03:54:12PM -0800, Bhavesh Davda wrote:
+> 
+> intel_iommu_domain_alloc() will try and iommu_alloc_domain(iommu),
+> which calls alloc_domain_mem() to allocate out of 'iommu_domain_cache'.
+> Unfortunately iommu_domain_cache will not be created if booted with
+> "intel_iommu=off", i.e. dmar_disabled = 1.
+> 
 
-On Friday 30 January 2009 04:04:56 Richard Atterer wrote:
-> From: Richard Atterer <atterer@debian.org>
->
-> Allow devices to be excluded from /dev/input/mice
->
-> This patch adds an "ignoreid=0x1234:0x5678" parameter to the mousedev
-> module. If a mouse matches the given device ID(s), its movement and button
-> presses will not be relayed via /dev/input/mice.
->
+Hi Bhavesh,
 
-Thank you for the patch, however I don't think that it is the right solution.
+What's the callchain that can result in intel_iommu_domain_alloc
+being called? It looks like most possible callsites are checking
+intel_iommu_found, which will be 0 since we check dmar_disabled before
+calling init_dmars to enumerate the iommus.
 
-> Why is this needed? In my case, I'm using some mice as sensors (robotic
-> application, more or less), so their movement should not influence the
-> mouse pointer at all.
+(I'm looking at 2.6.28.y right now, is there an interim between when you
+ stumbled upon this two weeks ago and git head where it's no longer an
+ issue? I guess it probably got missed due to folks travelling for LCA.)
 
-I think this is the case where EVIOCGRAB use is warranted then.
-
-> I could simply specify only my main mouse in
-> xorg.conf rather than /dev/input/mice. However, /dev/input/mice is the only
-> way to allow hot-plugging of mice with X.
->
-
-The newer X does support input hotplug pretty well actually.
-
-> This feature could also be used to disable non-working/buggy touchpads in
-> laptops.
->
-
-You can already do that by unbinding serio and usb devices from their 
-respective drivers, no need to modify mousedev.
-
--- 
-Dmitry
+regards, Kyle
