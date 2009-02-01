@@ -1,231 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZBAJhe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZBAJse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753352AbZBAJhe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 04:37:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZBAJhX
+	id S1753340AbZBAJse (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 04:48:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZBAJsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 04:37:23 -0500
-Received: from mga01.intel.com ([192.55.52.88]:32309 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752612AbZBAJhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 04:37:19 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,359,1231142400"; 
-   d="asc'?scan'208";a="661757006"
-Subject: Re: [RFC] per-CPU cryptd thread implementation based on workqueue
-From: Huang Ying <ying.huang@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20090123230706.4c8ae0ea.akpm@linux-foundation.org>
-References: <1232075437.13948.12.camel@yhuang-dev.sh.intel.com>
-	 <20090116033105.GB10390@gondor.apana.org.au>
-	 <1232591537.6101.3.camel@yhuang-dev.sh.intel.com>
-	 <20090123230706.4c8ae0ea.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-k1DWqKDwWs+H5IFg47i5"
-Date: Sun, 01 Feb 2009 17:37:06 +0800
-Message-Id: <1233481026.19806.12.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Sun, 1 Feb 2009 04:48:23 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:1470 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752531AbZBAJsW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 04:48:22 -0500
+Message-ID: <49856FE6.8020601@panasas.com>
+Date: Sun, 01 Feb 2009 11:48:22 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, Ankit Jain <me@ankitjain.org>,
+       viro@zeniv.linux.org.uk, hch@infradead.org,
+       linux-fsdevel@vger.kernel.org, mfasheh@suse.com, joel.becker@oracle.com,
+       ocfs2-devel@oss.oracle.com, linux-kernel@vger.kernel.org,
+       xfs-masters@oss.sgi.com, xfs@oss.sgi.com
+Subject: Re: [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility
+ with legacy xfs ioctls
+References: <4980C71F.1010804@ankitjain.org> <200901310138.34164.arnd@arndb.de> <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de>
+In-Reply-To: <200901310248.42820.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Feb 2009 09:48:19.0811 (UTC) FILETIME=[36C93330:01C98452]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Arnd Bergmann wrote:
+> On Saturday 31 January 2009, Andrew Morton wrote:
+>> Is this written in a standard somewhere?  Is it guaranteed?
+> 
+> Alignment is defined in the architecture psABI documents. 
+> Unfortunately, many of them were written before the 'long long'
+> type became part of the C standard, so it's not strictly guaranteed.
+> AFAICT, the alignment of __u64 on x86 is the same as the alignment
+> of 'double' by convention.
+> 
+> However, the problem is well-understood: x86 is the only one
+> that has a problem in 32/64 bit compat mode. m68k has similar
+> issues with 16/32 bit integers, but those don't apply here.
+> 
+>> If some (perhaps non-gcc) compiler were to lay this out differently
+>> (perhaps with suitable command-line options) then that's liveable
+>> with - as long as the kernel never changes the layout.  Of course
+>> it would be better to avoid this if poss.
+> 
+> If a compiler was using irregular structure alignment, all sorts of
+> library interfaces would break. The kernel ABI is only a small part
+> of the problem then.
+> 
+>> The other potential issue with a structure like this is that there's a
+>> risk that it will lead us to copy four bytes of uninitialised kernel
+>> memory out to userspace.
+>>
+>> IOW, it seems a generally bad idea to rely upon compiler-added padding
+>> for this sort of thing.
+> 
+> Agreed in general, but the whole point of this particular patch was to
+> provide compatibility with an interface that has been part of XFS for
+> many years.
+> Linux already has a better interface for new users (sys_fallocate), so
+> changing the patch would not be helpful and not provide any advantage.
+> 
+> There is also no leak of uninitialized data here, because this structure
+> is only read, never written.
+> 
+> 	Arnd <><
+Arnd Bergmann wrote:
+> +struct space_resv {
+> +	__s16		l_type;
+> +	__s16		l_whence;
+> +	__s64		l_start;
+> +	__s64		l_len;		/* len == 0 means until end of file */
+> +	__s32		l_sysid;
+> +	__u32		l_pid;
+> +	__s32		l_pad[4];	/* reserve area			    */
+> +};
 
---=-k1DWqKDwWs+H5IFg47i5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+What about telling the compiler exactly what you said above, just
+to be sure we all mean the same thing. (And as documentation for new
+comers):
 
-Sorry for my late. Last week is Chinese new year holiday.
++struct space_resv_64 {
++	__s16		l_type;
++	__s16		l_whence;
++	__u32		reserved;
++	__s64		l_start;
++	__s64		l_len;		/* len == 0 means until end of file */
++	__s32		l_sysid;
++	__u32		l_pid;
++	__s32		l_pad[4];	/* reserve area			    */
++} __packed;
 
-On Sat, 2009-01-24 at 15:07 +0800, Andrew Morton wrote:
-> On Thu, 22 Jan 2009 10:32:17 +0800 Huang Ying <ying.huang@intel.com> wrot=
-e:
->=20
-> > Use dedicate workqueue for crypto
-> >=20
-> > - A dedicated workqueue named kcrypto_wq is created.
-> >=20
-> > - chainiv uses kcrypto_wq instead of keventd_wq.
-> >=20
-> > - For cryptd, struct cryptd_queue is defined to be a per-CPU queue,
-> >   which holds one struct cryptd_cpu_queue for each CPU. In struct
-> >   cryptd_cpu_queue, a struct crypto_queue holds all requests for the
-> >   CPU, a struct work_struct is used to run all requests for the CPU.
-> >=20
->=20
-> Please always prefer to include performance measurements when proposing
-> a performance-enhancing patch.  Otherwise we have no basis upon which
-> to evaluate the patch's worth.
+And define another one for x86_32
 
-I will setup a testing to measure the performance gain.
-
-> > +++ b/crypto/crypto_wq.c
-> > @@ -0,0 +1,39 @@
-> > +/*
-> > + * Workqueue for crypto subsystem
-> > + *
-> > + * Copyright (c) 2009 Intel Corp.
-> > + *   Author: Huang Ying <ying.huang@intel.com>
-> > + *
-> > + * This program is free software; you can redistribute it and/or modif=
-y it
-> > + * under the terms of the GNU General Public License as published by t=
-he Free
-> > + * Software Foundation; either version 2 of the License, or (at your o=
-ption)
-> > + * any later version.
-> > + *
-> > + */
-> > +
-> > +#include <linux/workqueue.h>
-> > +#include <crypto/algapi.h>
-> > +#include <crypto/crypto_wq.h>
-> > +
-> > +struct workqueue_struct *kcrypto_wq;
-> > +EXPORT_SYMBOL_GPL(kcrypto_wq);
-> > +
-> > +static int __init crypto_wq_init(void)
-> > +{
-> > +	kcrypto_wq =3D create_workqueue("crypto");
-> > +	if (unlikely(!kcrypto_wq))
-> > +		return -ENOMEM;
-> > +	return 0;
-> > +}
-> > +
-> > +static void __exit crypto_wq_exit(void)
-> > +{
-> > +	if (likely(kcrypto_wq))
-> > +		destroy_workqueue(kcrypto_wq);
->=20
-> I don't believe that it is possible to get here with kcrypto_wq=3D=3DNULL=
-.
-
-Yes. I will fix this.
-
-> >
-> > ...
-> >
-> > +int cryptd_enqueue_request(struct cryptd_queue *queue,
-> > +			   struct crypto_async_request *request)
-> > +{
-> > +	int cpu, err, queued;
-> > +	struct cryptd_cpu_queue *cpu_queue;
-> > +
-> > +	cpu =3D get_cpu();
-> > +	cpu_queue =3D per_cpu_ptr(queue->cpu_queue, cpu);
-> > +	spin_lock_bh(&cpu_queue->lock);
-> > +	err =3D crypto_enqueue_request(&cpu_queue->queue, request);
-> > +	spin_unlock_bh(&cpu_queue->lock);
-> > +	/* INUSE should be set after queue->qlen assigned, but
-> > +	 * spin_unlock_bh imply a memory barrior already */
-> > +	if (!test_and_set_bit_lock(CRYPTD_STATE_INUSE, &cpu_queue->state)) {
-> > +		queued =3D queue_work(kcrypto_wq, &cpu_queue->work);
-> > +		BUG_ON(!queued);
-> > +	}
->=20
-> Do we actually need to use CRYPTD_STATE_INUSE here?  The
-> WORK_STRUCT_PENDING handling in the workqueue does basically the same
-> thing?
-
-Yes. It is not necessary, I will fix this.
-
-> > +	put_cpu();
-> > +
-> > +	return err;
-> > +}
-> > +
-> > +int cryptd_tfm_in_queue(struct cryptd_queue *queue, struct crypto_tfm =
-*tfm)
->=20
-> Did this need to have global scope?
-
-It should be static. I will fix this.
-
-> > +{
-> > +	int cpu, in_queue;
-> > +	struct cryptd_cpu_queue *cpu_queue;
-> > +
-> > +	for_each_possible_cpu(cpu) {
-> > +		cpu_queue =3D per_cpu_ptr(queue->cpu_queue, cpu);
-> > +		spin_lock_bh(&cpu_queue->lock);
-> > +		in_queue =3D crypto_tfm_in_queue(&cpu_queue->queue, tfm);
-> > +		spin_unlock_bh(&cpu_queue->lock);
-> > +		if (in_queue)
-> > +			return 1;
-> > +	}
-> > +	return 0;
-> > +}
->=20
-> Did you consider using for_each_online_cpu() and implementing CPU
-> hotplug?  There might be situations where the number of possible CPUs
-> is much greater than the number of online CPUs.
-
-For cryptd_queue_init() and cryptd_queue_fini(), I think
-for_each_possible_cpu() is sufficient and simpler. Because they are only
-need to be executed once and in slow path. For cryptd_in_queue,
-for_each_online_cpu() can be used.
-
-> > +static void cryptd_queue_work_done(struct cryptd_cpu_queue *cpu_queue)
-> > +{
-> > +	int queued;
-> > +
-> > +	if (!cpu_queue->queue.qlen) {
-> > +		clear_bit_unlock(CRYPTD_STATE_INUSE, &cpu_queue->state);
-> > +		/* queue.qlen must be checked after INUSE bit cleared */
-> > +		smp_mb();
-> > +		if (!cpu_queue->queue.qlen ||
-> > +		    test_and_set_bit_lock(CRYPTD_STATE_INUSE,
-> > +					  &cpu_queue->state))
-> > +			return;
-> > +	}
-> > +
-> > +	queued =3D queue_work(kcrypto_wq, &cpu_queue->work);
-> > +	BUG_ON(!queued);
-> > +}
->=20
-> It is unclear (to me) why this code is using the special "locked"
-> bitops.  This should be explained in a code comment.
->=20
-> It isn't immediately clear (to me) what this function does, what its
-> role is in the overall scheme.  It wouldn't hurt at all to put a nice
-> comment over non-trivial functions explaining such things.
-
-This function is used for CRYPTD_STATE_INUSE logic, because
-CRYPTD_STATE_INUSE is not needed, this function is not needed too. Just
-calling queue_work() at end of cryptd_queue_work() is sufficient.
-
-> > +static void cryptd_queue_work(struct work_struct *work)
-> > +{
-> > +	struct cryptd_cpu_queue *cpu_queue =3D
-> > +		container_of(work, struct cryptd_cpu_queue, work);
->=20
-> You could just do
->=20
-> 	struct cryptd_cpu_queue *cpu_queue;
->=20
-> 	cpu_queue =3D container_of(work, struct cryptd_cpu_queue, work);
->=20
-> rather than uglifying the code to fit in 80-cols.
-
-OK. I will fix this.
-
-Best Regards,
-Huang Ying
-
-
---=-k1DWqKDwWs+H5IFg47i5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmFbUAACgkQKhFGF+eHlpj/zACeMyxUi6wCHd9ckIxg+7HvFugY
-OlsAoKx2z26wKgXQgEEryrM2/mQHoc1u
-=atP6
------END PGP SIGNATURE-----
-
---=-k1DWqKDwWs+H5IFg47i5--
-
+Boaz
