@@ -1,112 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754038AbZBAKYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZBAKjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754038AbZBAKYR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:24:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZBAKYF
+	id S1753792AbZBAKjw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 05:39:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbZBAKjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:24:05 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59464 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752569AbZBAKYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:24:03 -0500
-Date: Sun, 1 Feb 2009 11:21:17 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Vitaliy Gusev <vgusev@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
-Message-ID: <20090201102117.GA5728@redhat.com>
-References: <20090130123358.GA26216@redhat.com> <20090130125058.GA26931@redhat.com> <200901312246.07737.rusty@rustcorp.com.au>
+	Sun, 1 Feb 2009 05:39:40 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:28615 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752777AbZBAKjj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 05:39:39 -0500
+Message-ID: <49857BEB.30404@panasas.com>
+Date: Sun, 01 Feb 2009 12:39:39 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901312246.07737.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Ankit Jain <me@ankitjain.org>, viro@zeniv.linux.org.uk,
+       hch@infradead.org, linux-fsdevel@vger.kernel.org, mfasheh@suse.com,
+       joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
+Subject: Re: [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility
+ with legacy xfs ioctls
+References: <4980C71F.1010804@ankitjain.org> <200901310138.34164.arnd@arndb.de> <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de> <49856FE6.8020601@panasas.com> <Pine.LNX.4.64.0902011104320.20875@anakin>
+In-Reply-To: <Pine.LNX.4.64.0902011104320.20875@anakin>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 01 Feb 2009 10:39:37.0283 (UTC) FILETIME=[611A2930:01C98459]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/31, Rusty Russell wrote:
->
-> On Friday 30 January 2009 23:20:58 Oleg Nesterov wrote:
-> > On 01/30, Oleg Nesterov wrote:
-> > >
-> > > With this patch kthread() allocates all neccesary data (struct kthread)
-> > > on its own stack, globals kthread_stop_xxx are deleted. ->vfork_done
-> > > is used as a pointer into "struct kthread", this means kthread_stop()
-> > > can easily wait for kthread's exit.
+Geert Uytterhoeven wrote:
+> On Sun, 1 Feb 2009, Boaz Harrosh wrote:
+>> Arnd Bergmann wrote:
+>>> On Saturday 31 January 2009, Andrew Morton wrote:
+>>>> Is this written in a standard somewhere?  Is it guaranteed?
+>>> Alignment is defined in the architecture psABI documents. 
+>>> Unfortunately, many of them were written before the 'long long'
+>>> type became part of the C standard, so it's not strictly guaranteed.
+>>> AFAICT, the alignment of __u64 on x86 is the same as the alignment
+>>> of 'double' by convention.
+>>>
+>>> However, the problem is well-understood: x86 is the only one
+>>> that has a problem in 32/64 bit compat mode. m68k has similar
+>>> issues with 16/32 bit integers, but those don't apply here.
+>>>
+>>>> If some (perhaps non-gcc) compiler were to lay this out differently
+>>>> (perhaps with suitable command-line options) then that's liveable
+>>>> with - as long as the kernel never changes the layout.  Of course
+>>>> it would be better to avoid this if poss.
+>>> If a compiler was using irregular structure alignment, all sorts of
+>>> library interfaces would break. The kernel ABI is only a small part
+>>> of the problem then.
+>>>
+>>>> The other potential issue with a structure like this is that there's a
+>>>> risk that it will lead us to copy four bytes of uninitialised kernel
+>>>> memory out to userspace.
+>>>>
+>>>> IOW, it seems a generally bad idea to rely upon compiler-added padding
+>>>> for this sort of thing.
+>>> Agreed in general, but the whole point of this particular patch was to
+>>> provide compatibility with an interface that has been part of XFS for
+>>> many years.
+>>> Linux already has a better interface for new users (sys_fallocate), so
+>>> changing the patch would not be helpful and not provide any advantage.
+>>>
+>>> There is also no leak of uninitialized data here, because this structure
+>>> is only read, never written.
+>>>
+>>> 	Arnd <><
+>> Arnd Bergmann wrote:
+>>> +struct space_resv {
+>>> +	__s16		l_type;
+>>> +	__s16		l_whence;
+>>> +	__s64		l_start;
+>>> +	__s64		l_len;		/* len == 0 means until end of file */
+>>> +	__s32		l_sysid;
+>>> +	__u32		l_pid;
+>>> +	__s32		l_pad[4];	/* reserve area			    */
+>>> +};
+>> What about telling the compiler exactly what you said above, just
+>> to be sure we all mean the same thing. (And as documentation for new
+>> comers):
+>>
+>> +struct space_resv_64 {
+>> +	__s16		l_type;
+>> +	__s16		l_whence;
+>> +	__u32		reserved;
+>> +	__s64		l_start;
+>> +	__s64		l_len;		/* len == 0 means until end of file */
+>> +	__s32		l_sysid;
+>> +	__u32		l_pid;
+>> +	__s32		l_pad[4];	/* reserve area			    */
+>> +} __packed;
 > 
-> > struct kthread {
-> > 	int should_stop;
-> > 	struct completion exited;
-> > };
+> Because the compiler will assume all fields are always unaligned and will use very
+> suboptimal code to access them?
 > 
-> Mildly prefer bool in new code.
-
-OK, and
-
-> > #define to_kthread(tsk)	\
-> > 	container_of((tsk)->vfork_done, struct kthread, exited)
+> Gr{oetje,eeting}s,
 > 
-> This needs a comment.  Especially since to_xxx(yyy) is usually simply a
-> container_of(yyy, xxx, member).  This one is special.
+> 						Geert
+> 
 
-OK, I'll send the cleanup patch.
+This discussion comes up every once in a while. I'm using an old FC7 compiler
+(gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-27)) And tests show that when the layout
+of a structure is exactly the same the "__packed" on structure declarations does
+nothing. It only starts to affect when there are real differences in alignment.
+Also tests with gcc 3.4.x showed the same effect.
 
-> > int kthread_stop(struct task_struct *k)
-> > {
-> > 	struct kthread *kthread;
-> > 	int ret;
-> >
-> > 	trace_sched_kthread_stop(k);
-> > 	get_task_struct(k);
-> >
-> > 	kthread = to_kthread(k);
-> > 	barrier(); /* it might have exited */
-> > 	if (k->vfork_done != NULL) {
-> > 		kthread->should_stop = 1;
-> > 		wake_up_process(k);
-> > 		wait_for_completion(&kthread->exited);
-> > 	}
-> > 	ret = k->exit_code;
->
-> I don't think this works.  How does do_exit() preserve a stack var, other
-> than for a few cycles longer?  Sure, the vfork_done will be OK, but this code
-> here will not be.  I think you'd need a get_task_struct(current) before the
-> do_exit(ret)
+On previous discussions no one could come forward and say what compiler version
+breaks when __packed is applied on structure definition. I'm afraid your statement
+above is a myth.
 
-I think this works ;)
-
-This stack frame can't disappear until __put_task_struct()->...->free_thread_info().
-So, if you have a reference to task_struct, then it it is safe to dereference
-to_kthread(task).
-
-Before this patch, kthread_stop() can only be used when we know that kthread
-must not exit by its own. And with this patch we are safe in this case, note
-that kthread_stop() does get_task_struct() before it sets ->should_stop = 1.
-And this also pins the memory pointed by to_kthread().
-
-> (the case where the kthread fn calls do_exit() is fine: you're
-> not allowed to call kthread stop on such threads).
-
-This was not allowed, but now this is fine. Please look at the 4/4 patch.
-But, in that case you must pin the task_struct after kthread_create(),
-otherwise (with or without this patch) you just can't use this task_struct
-in any way.
-
-> In which case using vfork_done is really just a convenience pointer inside
-> struct task_struct to stash the struct kthread.  And that's horribly ugly,
-> which is why I stuck with a simple global.  Changing to a linked-list of things
-> to stop would avoid the deadlock you mentioned where a kthread stops another
-> kthread.
-
-Well, this patch overloads ->vfork_done, and I agree this is a bit ugly.
-But what you suggest (if I undestand correctly) is more complex, and doesn't
-have any advantages, imho.
-
-What do you think?
-
-Oleg.
-
+Boaz
