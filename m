@@ -1,72 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZBAUA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbZBAUEf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755978AbZBAUA7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 15:00:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZBAUAv
+	id S1756030AbZBAUEf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 15:04:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbZBAUEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 15:00:51 -0500
-Received: from relay1.ptmail.sapo.pt ([212.55.154.21]:41099 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1752064AbZBAUAu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 15:00:50 -0500
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Feb 2009 15:00:50 EST
-X-AntiVirus: PTMail-AV 0.3-0.92.0
-Date: Sun, 1 Feb 2009 19:52:59 +0000
-From: Luis Henriques <henrix@sapo.pt>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [BUG -rt] scheduling while atomic in -rt git tree
-Message-ID: <20090201195259.GB5383@hades.domain.com>
+	Sun, 1 Feb 2009 15:04:25 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:47023 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752837AbZBAUEY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 15:04:24 -0500
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+Date: Sun, 01 Feb 2009 12:04:23 -0800
+Subject: [patch 0/6] epoll keyed wakeups v2 - introduction
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.13601.1233518663.0>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+The follwing patch set introduces wakeup hints for some of the most
+popular (from epoll POV) devices, so that epoll code can avoid spurious
+wakeups on its waiters.
+The problem with epoll is that the callback-based wakeups do not, ATM,
+carry any information about the events the wakeup is related to.
+So the only choice epoll has (not being able to call f_op->poll() from
+inside the callback), is to add the file* to a ready-list and resolve
+the real events later on, at epoll_wait() (or its own f_op->poll()) time.
+This can cause spurious wakeups, since the wake_up() itself might be
+for an event the caller is not interested into.
+The rate of these spurious wakeup can be pretty high in case of many
+network sockets being monitored.
+By allowing devices to report the events the wakeups refer to (at least
+the two major classes - POLLIN/POLLOUT), we are able to spare useless
+wakeups by proper handling inside the epoll's poll callback.
+Epoll will have in any case to call f_op->poll() on the file* later on,
+since the change to be done in order to have the full event set sent
+via wakeup, is too invasive for the way our f_op->poll() system works
+(the full event set is calculated inside the poll function - there are
+too many of them to even start thinking the change - also poll/select
+would need change too).
+Epoll is changed in a way that both devices which send event hints, and
+the ones that don't, are correctly handled. The former will gain some
+efficiency though.
+As a general rule for devices, would be to add an event mask by using
+key-aware wakeup macros, when making up poll wait queues.
+I tested it (together with the epoll's poll fix patch Andrew has in -mm)
+and wakeups for the supported devices are correctly filtered.
+Test program available here:
 
-I am using an x86_64 and getting the following log while executing the master in
-the -rt git tree:
+http://www.xmailserver.org/epoll_test.c
 
-[   28.182621] BUG: scheduling while atomic: sirq-net-rx/0/8/0x00000101, CPU#0
-[   28.182744] Modules linked in: parport_pc ppdev parport ipv6 powernow_k8
-cpufreq_stats cpufreq_conservative cpufreq_ondemand freq_table cpufreq_powersave
-cpufreq_userspace af_packet sbp2 loop joydev arc4 snd_hda_intel ecb snd_pcm
-snd_page_alloc uvcvideo snd_hwdep ath5k snd_seq compat_ioctl32 mac80211 psmouse
-snd_timer videodev snd_seq_device k8temp v4l1_compat led_class snd soundcore
-cfg80211 rfkill input_polldev battery video output ac button evdev ext3 jbd
-mbcache sg sr_mod cdrom ide_pci_generic ide_core ata_generic sd_mod pata_acpi
-ohci1394 ahci ehci_hcd pata_atiixp ohci_hcd ieee1394 libata usbcore scsi_mod
-r8169 mii thermal processor fan
-[   28.186632] Pid: 8, comm: sirq-net-rx/0 Tainted: G        W
-2.6.28-rt-00209-g82e0a07 #1
-[   28.186747] Call Trace:
-[   28.186831]  [<ffffffff80455cb4>] ? netif_receive_skb+0x2c4/0x590
-[   28.186938]  [<ffffffff80242795>] __schedule_bug+0x85/0x90
-[   28.187033]  [<ffffffff804ead38>] thread_return+0x142/0x70a
-[   28.187127]  [<ffffffff8020c3c8>] ? ftrace_call+0x5/0x2b
-[   28.187218]  [<ffffffff8024f42f>] ksoftirqd+0x1df/0x270
-[   28.187306]  [<ffffffff8024f250>] ? ksoftirqd+0x0/0x270
-[   28.187395]  [<ffffffff802621de>] kthread+0x4e/0x90
-[   28.187481]  [<ffffffff8020d639>] child_rip+0xa/0x11
-[   28.187569]  [<ffffffff802408d9>] ? finish_task_switch+0x59/0x130
-[   28.187663]  [<ffffffff804ed1ab>] ? _spin_unlock_irq+0x1b/0x40
-[   28.187753]  [<ffffffff8020cb25>] ? restore_args+0x0/0x30
-[   28.187842]  [<ffffffff80262190>] ? kthread+0x0/0x90
-[   28.187929]  [<ffffffff8020d62f>] ? child_rip+0x0/0x11
-[   28.188034] ---------------------------
-[   28.188111] | preempt count: 00000101 ]
-[   28.188189] | 2-level deep critical section nesting:
-[   28.188272] ----------------------------------------
-[   28.188356] .. [<ffffffff804a9c16>] .... icmp_send+0xc6/0x6a0
-[   28.188497] .....[<ffffffff804a9c16>] ..   ( <= icmp_send+0xc6/0x6a0)
-[   28.188639] .. [<ffffffff804ea7ac>] .... schedule+0x2c/0x476
-[   28.188777] .....[<ffffffff8024f42f>] ..   ( <= ksoftirqd+0x1df/0x270)
-[   28.188918] 
+ChangeLog / v2:
 
-Can also provide my config file if needed.
+- No more kwake*() but *_poll()
 
--- 
-Luis Henriques
+- Do not add extra parameter to _locked() and _sync(), but create two
+  new functions
+
+- Actually make epoll used _poll() wakeups too for its own waiters
+
+
+PS: Andrew, those are directly based over the bits you already have
+    in -mm.
+
+
+- Davide
+
+
