@@ -1,117 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZBAKjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZBAKkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbZBAKjw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:39:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbZBAKjk
+	id S1754455AbZBAKkY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 05:40:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZBAKkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:39:40 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:28615 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752777AbZBAKjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:39:39 -0500
-Message-ID: <49857BEB.30404@panasas.com>
-Date: Sun, 01 Feb 2009 12:39:39 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Sun, 1 Feb 2009 05:40:07 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33144 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752827AbZBAKkF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 05:40:05 -0500
+Date: Sun, 1 Feb 2009 11:39:36 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       hskinnemoen@atmel.com, cooloney@kernel.org, tony.luck@intel.com,
+       ralf@linux-mips.org, dhowells@redhat.com, matthew@wil.cx,
+       chris@zankel.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+Message-ID: <20090201103936.GA30157@elte.hu>
+References: <1233385816.17794.16.camel@localhost.localdomain> <20090131164410.GA11189@elte.hu> <1233469811.5846.14.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Ankit Jain <me@ankitjain.org>, viro@zeniv.linux.org.uk,
-       hch@infradead.org, linux-fsdevel@vger.kernel.org, mfasheh@suse.com,
-       joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
-Subject: Re: [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility
- with legacy xfs ioctls
-References: <4980C71F.1010804@ankitjain.org> <200901310138.34164.arnd@arndb.de> <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de> <49856FE6.8020601@panasas.com> <Pine.LNX.4.64.0902011104320.20875@anakin>
-In-Reply-To: <Pine.LNX.4.64.0902011104320.20875@anakin>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Feb 2009 10:39:37.0283 (UTC) FILETIME=[611A2930:01C98459]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233469811.5846.14.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Sun, 1 Feb 2009, Boaz Harrosh wrote:
->> Arnd Bergmann wrote:
->>> On Saturday 31 January 2009, Andrew Morton wrote:
->>>> Is this written in a standard somewhere?  Is it guaranteed?
->>> Alignment is defined in the architecture psABI documents. 
->>> Unfortunately, many of them were written before the 'long long'
->>> type became part of the C standard, so it's not strictly guaranteed.
->>> AFAICT, the alignment of __u64 on x86 is the same as the alignment
->>> of 'double' by convention.
->>>
->>> However, the problem is well-understood: x86 is the only one
->>> that has a problem in 32/64 bit compat mode. m68k has similar
->>> issues with 16/32 bit integers, but those don't apply here.
->>>
->>>> If some (perhaps non-gcc) compiler were to lay this out differently
->>>> (perhaps with suitable command-line options) then that's liveable
->>>> with - as long as the kernel never changes the layout.  Of course
->>>> it would be better to avoid this if poss.
->>> If a compiler was using irregular structure alignment, all sorts of
->>> library interfaces would break. The kernel ABI is only a small part
->>> of the problem then.
->>>
->>>> The other potential issue with a structure like this is that there's a
->>>> risk that it will lead us to copy four bytes of uninitialised kernel
->>>> memory out to userspace.
->>>>
->>>> IOW, it seems a generally bad idea to rely upon compiler-added padding
->>>> for this sort of thing.
->>> Agreed in general, but the whole point of this particular patch was to
->>> provide compatibility with an interface that has been part of XFS for
->>> many years.
->>> Linux already has a better interface for new users (sys_fallocate), so
->>> changing the patch would not be helpful and not provide any advantage.
->>>
->>> There is also no leak of uninitialized data here, because this structure
->>> is only read, never written.
->>>
->>> 	Arnd <><
->> Arnd Bergmann wrote:
->>> +struct space_resv {
->>> +	__s16		l_type;
->>> +	__s16		l_whence;
->>> +	__s64		l_start;
->>> +	__s64		l_len;		/* len == 0 means until end of file */
->>> +	__s32		l_sysid;
->>> +	__u32		l_pid;
->>> +	__s32		l_pad[4];	/* reserve area			    */
->>> +};
->> What about telling the compiler exactly what you said above, just
->> to be sure we all mean the same thing. (And as documentation for new
->> comers):
->>
->> +struct space_resv_64 {
->> +	__s16		l_type;
->> +	__s16		l_whence;
->> +	__u32		reserved;
->> +	__s64		l_start;
->> +	__s64		l_len;		/* len == 0 means until end of file */
->> +	__s32		l_sysid;
->> +	__u32		l_pid;
->> +	__s32		l_pad[4];	/* reserve area			    */
->> +} __packed;
-> 
-> Because the compiler will assume all fields are always unaligned and will use very
-> suboptimal code to access them?
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
 
-This discussion comes up every once in a while. I'm using an old FC7 compiler
-(gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-27)) And tests show that when the layout
-of a structure is exactly the same the "__packed" on structure declarations does
-nothing. It only starts to affect when there are real differences in alignment.
-Also tests with gcc 3.4.x showed the same effect.
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-On previous discussions no one could come forward and say what compiler version
-breaks when __packed is applied on structure definition. I'm afraid your statement
-above is a myth.
+> On Sat, 2009-01-31 at 17:44 +0100, Ingo Molnar wrote:
+> 
+> > Then you can git-cherry-pick all your new commits into that new tree, and 
+> > send a pull request if you are happy with it. Likewise, you can probably 
+> > achieve the same (with a lot less work) by doing this in your master 
+> > branch above:
+> 
+> The following changes since commit 7e3fa56141175026136b392fd026d5d07c49720e:
+>   Sam Ravnborg (1):
+>         kbuild: drop check for CONFIG_ in headers_check
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
+> 
+> Jaswinder Singh Rajput (27):
+>       headers_check fix: alpha, statfs.h
+>       headers_check fix: alpha, swab.h
+>       headers_check fix: arm, a.out.h
+>       headers_check fix: arm, setup.h
+>       headers_check fix: arm, swab.h
+>       headers_check fix: avr32, swab.h
+>       headers_check fix: blackfin, swab.h
+>       headers_check fix: frv, swab.h
+>       headers_check fix: h8300, swab.h
+>       headers_check fix: ia64, fpu.h
+>       headers_check fix: ia64, gcc_intrin.h
+>       headers_check fix: ia64, intrinsics.h
+>       headers_check fix: ia64, kvm.h
+>       headers_check fix: ia64, swab.h
+>       headers_check fix: m32r, swab.h
+>       headers_check fix: mips, sigcontext.h
+>       headers_check fix: mips, swab.h
+>       headers_check fix: mn10300, swab.h
+>       headers_check fix: parisc, pdc.h
+>       headers_check fix: parisc, swab.h
+>       headers_check fix: powerpc, bootx.h
+>       headers_check fix: powerpc, elf.h
+>       headers_check fix: powerpc, kvm.h
+>       headers_check fix: powerpc, ps3fb.h
+>       headers_check fix: powerpc, spu_info.h
+>       headers_check fix: powerpc, swab.h
+>       headers_check fix: xtensa, swab.h
+> 
+>  arch/alpha/include/asm/statfs.h     |    2 ++
+>  arch/alpha/include/asm/swab.h       |    2 +-
+>  arch/arm/include/asm/a.out.h        |    2 +-
+>  arch/arm/include/asm/setup.h        |    2 +-
+>  arch/arm/include/asm/swab.h         |    2 +-
+>  arch/avr32/include/asm/swab.h       |    2 +-
+>  arch/blackfin/include/asm/swab.h    |    2 +-
+>  arch/h8300/include/asm/swab.h       |    2 +-
+>  arch/ia64/include/asm/fpu.h         |    2 +-
+>  arch/ia64/include/asm/gcc_intrin.h  |    1 +
+>  arch/ia64/include/asm/intrinsics.h  |    1 +
+>  arch/ia64/include/asm/kvm.h         |    3 +--
+>  arch/ia64/include/asm/swab.h        |    2 +-
+>  arch/mips/include/asm/sigcontext.h  |    1 +
+>  arch/mips/include/asm/swab.h        |    2 +-
+>  arch/parisc/include/asm/pdc.h       |    3 ++-
+>  arch/parisc/include/asm/swab.h      |    2 +-
+>  arch/powerpc/include/asm/bootx.h    |    2 +-
+>  arch/powerpc/include/asm/elf.h      |    2 +-
+>  arch/powerpc/include/asm/kvm.h      |    2 +-
+>  arch/powerpc/include/asm/ps3fb.h    |    1 +
+>  arch/powerpc/include/asm/spu_info.h |    3 ++-
+>  arch/powerpc/include/asm/swab.h     |    2 +-
+>  arch/xtensa/include/asm/swab.h      |    2 +-
+>  include/asm-frv/swab.h              |    2 +-
+>  include/asm-m32r/swab.h             |    2 +-
+>  include/asm-mn10300/swab.h          |    2 +-
+>  27 files changed, 30 insertions(+), 23 deletions(-)
+> 
+> These patches fixes 41 headers_check warnings as shown in first email.
 
-Boaz
+Pulled into tip/core/header-fixes, thanks Jaswinder!
+
+	Ingo
