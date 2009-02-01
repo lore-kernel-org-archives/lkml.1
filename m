@@ -1,72 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbZBABU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZBABVf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbZBABU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 20:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZBABUJ
+	id S1755588AbZBABVf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 20:21:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZBABV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 20:20:09 -0500
-Received: from casper.infradead.org ([85.118.1.10]:36183 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbZBABUI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 20:20:08 -0500
-Date: Sat, 31 Jan 2009 17:20:05 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Parag Warudkar <parag.lkml@gmail.com>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: What should PCI core do during suspend-resume? (was: Re:
- 2.6.29-rc3: tg3 dead after resume)
-Message-ID: <20090131172005.4f107d9e@infradead.org>
-In-Reply-To: <alpine.LFD.2.00.0901311652500.3067@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
-	<alpine.LFD.2.00.0901311516360.2978@localhost.localdomain>
-	<alpine.LFD.2.00.0901311534340.3067@localhost.localdomain>
-	<200902010136.55375.rjw@sisk.pl>
-	<alpine.LFD.2.00.0901311652500.3067@localhost.localdomain>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 31 Jan 2009 20:21:28 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60508 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752068AbZBABV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 20:21:27 -0500
+Message-ID: <4984F8BF.8020903@kernel.org>
+Date: Sat, 31 Jan 2009 17:19:59 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Eric Paris <eparis@redhat.com>, mingo@redhat.com
+CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com
+Subject: Re: irq_desc_lock_class is held when it is freed
+References: <1233437601.11984.41.camel@localhost.localdomain>	 <4984D59F.4030700@kernel.org> <1233450323.19217.0.camel@localhost.localdomain>
+In-Reply-To: <1233450323.19217.0.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009 17:06:47 -0800 (PST)
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
+Eric Paris wrote:
+> On Sat, 2009-01-31 at 14:50 -0800, Yinghai Lu wrote:
+>> Eric Paris wrote:
+>>> I have an hp dl785g5 which is unable to successfully run
+>>> 2.6.29-0.66.rc3.fc11.x86_64 or 2.6.29-rc2-next-20090126.  During bootup
+>>> (early in userspace daemons starting) I get the below BUG, which quickly
+>>> renders the machine dead.  I assume it is because sparse_irq_lock never
+>>> gets released when the BUG kills that task.  But maybe it dies for some
+>>> other reason, but the machine is dead, gotta hit the vitual power
+>>> button.
+>>>
+>>> setting CONFIG_NUMA_MIGRATE_IRQ_DESC=n allowed me to successfully boot
+>>> the linux-next kernel.  2.6.28 booted and worked fine (although it
+>>> doesn't have this config option, so that isn't surprising.)
+>>>
+>>> attached you will find the linux-next config and dmesg output from the
+>>> machine in question when booted using linux-next WITHOUT the
+>>> MIGRATE_IRQ_DESC.  The only difference between the working and broken
+>>> config is if CONFIG_NUMA_MIGRATE_IRQ_DESC is set or not.
+>>>
+>>> Please if there is anything I can collect, test, or do, don't hesitate
+>>> to let me know.
+>>>
+>> it seems there is some merge problem... also there could be another problem...
+>>
+>> please check
+>>
+>> diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+>> index 6c02c25..610ce0a 100644
+>> --- a/arch/x86/kernel/io_apic.c
+>> +++ b/arch/x86/kernel/io_apic.c
+>> @@ -2511,14 +2511,15 @@ static void irq_complete_move(struct irq_desc **descp)
+>>  
+>>  	vector = ~get_irq_regs()->orig_ax;
+>>  	me = smp_processor_id();
+>> +
+>> +	if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain)) {
+>>  #ifdef CONFIG_NUMA_MIGRATE_IRQ_DESC
+>>  		*descp = desc = move_irq_desc(desc, me);
+>>  		/* get the new one */
+>>  		cfg = desc->chip_data;
+>>  #endif
+>> -
+>> -	if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain))
+>>  		send_cleanup_vector(cfg);
+>> +	}
+>>  }
+>>  #else
+>>  static inline void irq_complete_move(struct irq_desc **descp) {}
 > 
-> 
-> On Sun, 1 Feb 2009, Rafael J. Wysocki wrote:
-> > 
-> > All this leads to the conclusion that we should put devices into
-> > low power states with interrupts off and this seems to imply that
-> > we'll need to make the AML interpreter allow us to run AML with
-> > interrupts off.
-> 
-> How many devices actually have the _PS3 method (or whatever it is
-> that we end up executing)? We might be able to simply flag it, and
-> say "ok, if we have a _PS3 method, we'll have to suspend early,
-> otherwise we can leave it for a late suspend".
+> Looks like I got the same thing.....
 > 
 
-in this area there's a pet pieve of mine, or rather something that
-shows up on kerneloops.org quite a bit:
-There are several PCI quirks that get run with irqs off, but they are
-just the "normal" boot time quirks, and when they get run there, they
-can sleep. Some of them do things like call ioremap() and the like....
-from memory some of the asus and via quirks come to mind...
+and
 
+[PATCH] x86: fix lock status with numa_migrate_irq_desc
 
+Impact: make the lock state consistent
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+adjust lock sequence...
+
+Reported-by: Eric Paris <eparis@redhat.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ kernel/irq/numa_migrate.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: linux-2.6/kernel/irq/numa_migrate.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/numa_migrate.c
++++ linux-2.6/kernel/irq/numa_migrate.c
+@@ -78,7 +78,7 @@ static struct irq_desc *__real_move_irq_
+ 	desc = irq_desc_ptrs[irq];
+ 
+ 	if (desc && old_desc != desc)
+-			goto out_unlock;
++		goto out_unlock;
+ 
+ 	node = cpu_to_node(cpu);
+ 	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
+@@ -97,10 +97,14 @@ static struct irq_desc *__real_move_irq_
+ 	}
+ 
+ 	irq_desc_ptrs[irq] = desc;
++	spin_unlock_irqrestore(&sparse_irq_lock, flags);
+ 
+ 	/* free the old one */
+ 	free_one_irq_desc(old_desc, desc);
++	spin_unlock(&old_desc->lock);
+ 	kfree(old_desc);
++	spin_lock(&desc->lock);
++	return desc;
+ 
+ out_unlock:
+ 	spin_unlock_irqrestore(&sparse_irq_lock, flags);
