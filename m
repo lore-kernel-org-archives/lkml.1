@@ -1,97 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbZBAUPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756259AbZBAUhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbZBAUPq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 15:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZBAUPg
+	id S1756259AbZBAUhX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 15:37:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750930AbZBAUhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 15:15:36 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51896 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753268AbZBAUPf (ORCPT
+	Sun, 1 Feb 2009 15:37:09 -0500
+Received: from qb-out-0506.google.com ([72.14.204.227]:63340 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753188AbZBAUhI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 15:15:35 -0500
-Date: Sun, 1 Feb 2009 15:15:34 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Luis Henriques <henrix@sapo.pt>
-cc: linux-rt-users <linux-rt-users@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [BUG -rt] scheduling while atomic in -rt git tree
-In-Reply-To: <20090201195259.GB5383@hades.domain.com>
-Message-ID: <alpine.DEB.1.10.0902011512360.30993@gandalf.stny.rr.com>
-References: <20090201195259.GB5383@hades.domain.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 1 Feb 2009 15:37:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=fIA0XKKh3fCSYFuMr0ifAL6pH8E/DnWnRExrtM6LFdOD+OPxexi5ndMMDSYNMmMPE6
+         nXEaGd5XK3lHvIhrQSGKnu50HLvHwno1/JLJ+D5gEtBt6h25PRoe2S3cqdfzxpug6jUM
+         C2kxCQbYZm1nNm81REEMObEnHtrnyKjwlL9YY=
+Message-ID: <498607EF.5070705@gmail.com>
+Date: Sun, 01 Feb 2009 14:37:03 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Newsgroups: gmane.linux.kernel
+To: George Kumar <grgkumar4@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Killing a kernel thread from user space ?
+References: <5f695cd0902011059g518cc6d4of00b8e1e00fe67c5@mail.gmail.com>
+In-Reply-To: <5f695cd0902011059g518cc6d4of00b8e1e00fe67c5@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Thanks, but I'm going to bring the -rt tree back to making all 
-local_bh_disable into nops, and then investigate all the areas that might 
-need a true bh disable, and do preempt_disable for rt.
-
-This is the major cause of these scheduling while atomic bugs. Any time 
-you see a '| preempt count: 00000101 ]' where you have the 0xff00 bits 
-set, is a local_bh_disable bug.
-
-Right now I'm investigating a bug that I get with the local_bh_disable as 
-nops, and this is why I have not released it yet.
-
-The old -rt trees had local_bh_disable as a nop.
-
--- Steve
-
-
-On Sun, 1 Feb 2009, Luis Henriques wrote:
-
+George Kumar wrote:
 > Hi,
 > 
-> I am using an x86_64 and getting the following log while executing the master in
-> the -rt git tree:
-> 
-> [   28.182621] BUG: scheduling while atomic: sirq-net-rx/0/8/0x00000101, CPU#0
-> [   28.182744] Modules linked in: parport_pc ppdev parport ipv6 powernow_k8
-> cpufreq_stats cpufreq_conservative cpufreq_ondemand freq_table cpufreq_powersave
-> cpufreq_userspace af_packet sbp2 loop joydev arc4 snd_hda_intel ecb snd_pcm
-> snd_page_alloc uvcvideo snd_hwdep ath5k snd_seq compat_ioctl32 mac80211 psmouse
-> snd_timer videodev snd_seq_device k8temp v4l1_compat led_class snd soundcore
-> cfg80211 rfkill input_polldev battery video output ac button evdev ext3 jbd
-> mbcache sg sr_mod cdrom ide_pci_generic ide_core ata_generic sd_mod pata_acpi
-> ohci1394 ahci ehci_hcd pata_atiixp ohci_hcd ieee1394 libata usbcore scsi_mod
-> r8169 mii thermal processor fan
-> [   28.186632] Pid: 8, comm: sirq-net-rx/0 Tainted: G        W
-> 2.6.28-rt-00209-g82e0a07 #1
-> [   28.186747] Call Trace:
-> [   28.186831]  [<ffffffff80455cb4>] ? netif_receive_skb+0x2c4/0x590
-> [   28.186938]  [<ffffffff80242795>] __schedule_bug+0x85/0x90
-> [   28.187033]  [<ffffffff804ead38>] thread_return+0x142/0x70a
-> [   28.187127]  [<ffffffff8020c3c8>] ? ftrace_call+0x5/0x2b
-> [   28.187218]  [<ffffffff8024f42f>] ksoftirqd+0x1df/0x270
-> [   28.187306]  [<ffffffff8024f250>] ? ksoftirqd+0x0/0x270
-> [   28.187395]  [<ffffffff802621de>] kthread+0x4e/0x90
-> [   28.187481]  [<ffffffff8020d639>] child_rip+0xa/0x11
-> [   28.187569]  [<ffffffff802408d9>] ? finish_task_switch+0x59/0x130
-> [   28.187663]  [<ffffffff804ed1ab>] ? _spin_unlock_irq+0x1b/0x40
-> [   28.187753]  [<ffffffff8020cb25>] ? restore_args+0x0/0x30
-> [   28.187842]  [<ffffffff80262190>] ? kthread+0x0/0x90
-> [   28.187929]  [<ffffffff8020d62f>] ? child_rip+0x0/0x11
-> [   28.188034] ---------------------------
-> [   28.188111] | preempt count: 00000101 ]
-> [   28.188189] | 2-level deep critical section nesting:
-> [   28.188272] ----------------------------------------
-> [   28.188356] .. [<ffffffff804a9c16>] .... icmp_send+0xc6/0x6a0
-> [   28.188497] .....[<ffffffff804a9c16>] ..   ( <= icmp_send+0xc6/0x6a0)
-> [   28.188639] .. [<ffffffff804ea7ac>] .... schedule+0x2c/0x476
-> [   28.188777] .....[<ffffffff8024f42f>] ..   ( <= ksoftirqd+0x1df/0x270)
-> [   28.188918] 
-> 
-> Can also provide my config file if needed.
-> 
-> -- 
-> Luis Henriques
-> 
-> 
+> Is it possible to kill a kernel thread from user space. Don't ask me
+> why do I need to do this. This is purely an experimental exercise, I
+> am not doing it because I am working on a practical problem. Thing is
+> that I wrote a kernel module and now it is hung in a kernel thread
+> somewhere doing udelay(), fortunately since I am on preemptible kernel
+>  my machine is not frozen,
+> but still I saw that doing a kill -9 on this process has no effect.
+> How about if I insert another kernel module and kill this busywait
+> thread from inside the kernel space. In effect how do you execute
+> "kill -9" from one kernel thread to misbehaving kernel thread.
+
+You can't, really. Kernel threads (or any kernel code) can't be 
+interrupted by signals, except where they are explicitly coded so that 
+they can be (breaking out of a loop due to signal_pending(), etc.)
