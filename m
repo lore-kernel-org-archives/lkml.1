@@ -1,123 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755588AbZBABVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZBABZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755588AbZBABVf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 20:21:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZBABV2
+	id S1755489AbZBABZN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 20:25:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZBABY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 20:21:28 -0500
-Received: from hera.kernel.org ([140.211.167.34]:60508 "EHLO hera.kernel.org"
+	Sat, 31 Jan 2009 20:24:57 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55009 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752068AbZBABV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 20:21:27 -0500
-Message-ID: <4984F8BF.8020903@kernel.org>
-Date: Sat, 31 Jan 2009 17:19:59 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751644AbZBABY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 20:24:56 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: What should PCI core do during suspend-resume? (was: Re: 2.6.29-rc3: tg3 dead after resume)
+Date: Sun, 1 Feb 2009 02:24:18 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200902010136.55375.rjw@sisk.pl> <alpine.LFD.2.00.0901311652500.3067@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901311652500.3067@localhost.localdomain>
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>, mingo@redhat.com
-CC: linux-kernel@vger.kernel.org, tglx@linutronix.de, hpa@zytor.com
-Subject: Re: irq_desc_lock_class is held when it is freed
-References: <1233437601.11984.41.camel@localhost.localdomain>	 <4984D59F.4030700@kernel.org> <1233450323.19217.0.camel@localhost.localdomain>
-In-Reply-To: <1233450323.19217.0.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902010224.19755.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris wrote:
-> On Sat, 2009-01-31 at 14:50 -0800, Yinghai Lu wrote:
->> Eric Paris wrote:
->>> I have an hp dl785g5 which is unable to successfully run
->>> 2.6.29-0.66.rc3.fc11.x86_64 or 2.6.29-rc2-next-20090126.  During bootup
->>> (early in userspace daemons starting) I get the below BUG, which quickly
->>> renders the machine dead.  I assume it is because sparse_irq_lock never
->>> gets released when the BUG kills that task.  But maybe it dies for some
->>> other reason, but the machine is dead, gotta hit the vitual power
->>> button.
->>>
->>> setting CONFIG_NUMA_MIGRATE_IRQ_DESC=n allowed me to successfully boot
->>> the linux-next kernel.  2.6.28 booted and worked fine (although it
->>> doesn't have this config option, so that isn't surprising.)
->>>
->>> attached you will find the linux-next config and dmesg output from the
->>> machine in question when booted using linux-next WITHOUT the
->>> MIGRATE_IRQ_DESC.  The only difference between the working and broken
->>> config is if CONFIG_NUMA_MIGRATE_IRQ_DESC is set or not.
->>>
->>> Please if there is anything I can collect, test, or do, don't hesitate
->>> to let me know.
->>>
->> it seems there is some merge problem... also there could be another problem...
->>
->> please check
->>
->> diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
->> index 6c02c25..610ce0a 100644
->> --- a/arch/x86/kernel/io_apic.c
->> +++ b/arch/x86/kernel/io_apic.c
->> @@ -2511,14 +2511,15 @@ static void irq_complete_move(struct irq_desc **descp)
->>  
->>  	vector = ~get_irq_regs()->orig_ax;
->>  	me = smp_processor_id();
->> +
->> +	if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain)) {
->>  #ifdef CONFIG_NUMA_MIGRATE_IRQ_DESC
->>  		*descp = desc = move_irq_desc(desc, me);
->>  		/* get the new one */
->>  		cfg = desc->chip_data;
->>  #endif
->> -
->> -	if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain))
->>  		send_cleanup_vector(cfg);
->> +	}
->>  }
->>  #else
->>  static inline void irq_complete_move(struct irq_desc **descp) {}
+On Sunday 01 February 2009, Linus Torvalds wrote:
 > 
-> Looks like I got the same thing.....
+> On Sun, 1 Feb 2009, Rafael J. Wysocki wrote:
+> > 
+> > All this leads to the conclusion that we should put devices into low power
+> > states with interrupts off and this seems to imply that we'll need to make the
+> > AML interpreter allow us to run AML with interrupts off.
 > 
+> How many devices actually have the _PS3 method (or whatever it is that we 
+> end up executing)? We might be able to simply flag it, and say "ok, if we 
+> have a _PS3 method, we'll have to suspend early, otherwise we can leave it 
+> for a late suspend".
 
-and
+That seems doable at first sight, although I think we should take D1 and D2
+into account too (the ACPI rules may be that for S3, ie. suspend to RAM, given
+device should be put into D2, for example).  We have a function for checking
+if device is power-manageable by ACPI.
 
-[PATCH] x86: fix lock status with numa_migrate_irq_desc
+Still, in that case, should the rule be that if the device is power-manageable
+by ACPI, the PCI core is supposed to put it into a low power state (using ACPI)
+with interrupts on and if the device is not power-manageable by ACPI, the
+PCI core is supposed to put it into a low power state using the native PM?
 
-Impact: make the lock state consistent
+> Definitely not perfect, but perhaps a way to get the safe thing on 99% of 
+> all cases, and have to live with the horrid ACPI rules on some things.
 
-adjust lock sequence...
+They are not that uncommon AFAICS.  On all of my boxes there are devices
+power-manageable by ACPI.  Usually they are USB controllers and network
+adapters, but sometimes it happens to sound cards too.
 
-Reported-by: Eric Paris <eparis@redhat.com>
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> I thought the _DSW thing is common for setting up wakeup, but _PSx is not. 
+> But I have not looked at many ACPI tables in my life. I try to active 
+> avoid it if I at all humanly can.
 
----
- kernel/irq/numa_migrate.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+Usually, we need to use ACPI to set up wake-up and then use ACPI to put the
+device into a low power state.  Otherwise, the wake-up may not work.
 
-Index: linux-2.6/kernel/irq/numa_migrate.c
-===================================================================
---- linux-2.6.orig/kernel/irq/numa_migrate.c
-+++ linux-2.6/kernel/irq/numa_migrate.c
-@@ -78,7 +78,7 @@ static struct irq_desc *__real_move_irq_
- 	desc = irq_desc_ptrs[irq];
- 
- 	if (desc && old_desc != desc)
--			goto out_unlock;
-+		goto out_unlock;
- 
- 	node = cpu_to_node(cpu);
- 	desc = kzalloc_node(sizeof(*desc), GFP_ATOMIC, node);
-@@ -97,10 +97,14 @@ static struct irq_desc *__real_move_irq_
- 	}
- 
- 	irq_desc_ptrs[irq] = desc;
-+	spin_unlock_irqrestore(&sparse_irq_lock, flags);
- 
- 	/* free the old one */
- 	free_one_irq_desc(old_desc, desc);
-+	spin_unlock(&old_desc->lock);
- 	kfree(old_desc);
-+	spin_lock(&desc->lock);
-+	return desc;
- 
- out_unlock:
- 	spin_unlock_irqrestore(&sparse_irq_lock, flags);
+Thanks,
+Rafael
