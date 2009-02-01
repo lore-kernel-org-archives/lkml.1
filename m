@@ -1,179 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753228AbZBAJZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753352AbZBAJhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753228AbZBAJZI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 04:25:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZBAJYt
+	id S1753352AbZBAJhe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 04:37:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZBAJhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 04:24:49 -0500
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:62826 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbZBAJYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 04:24:42 -0500
-Message-ID: <49856A54.1020105@freemail.hu>
-Date: Sun, 01 Feb 2009 10:24:36 +0100
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
-MIME-Version: 1.0
-To: Jean-Francois Moine <moinejf@free.fr>
-CC: video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Linux 2.6.28 + Trust 610 LCD PowerC@m Zoom, webcam mode?
-Content-Type: multipart/mixed;
- boundary="------------090204010807050502050303"
-X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32712; Body=3 Fuz1=3
-	Fuz2=3
+	Sun, 1 Feb 2009 04:37:23 -0500
+Received: from mga01.intel.com ([192.55.52.88]:32309 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752612AbZBAJhT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 04:37:19 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,359,1231142400"; 
+   d="asc'?scan'208";a="661757006"
+Subject: Re: [RFC] per-CPU cryptd thread implementation based on workqueue
+From: Huang Ying <ying.huang@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090123230706.4c8ae0ea.akpm@linux-foundation.org>
+References: <1232075437.13948.12.camel@yhuang-dev.sh.intel.com>
+	 <20090116033105.GB10390@gondor.apana.org.au>
+	 <1232591537.6101.3.camel@yhuang-dev.sh.intel.com>
+	 <20090123230706.4c8ae0ea.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-k1DWqKDwWs+H5IFg47i5"
+Date: Sun, 01 Feb 2009 17:37:06 +0800
+Message-Id: <1233481026.19806.12.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090204010807050502050303
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
 
-Hello Jean-Francois,
+--=-k1DWqKDwWs+H5IFg47i5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I have a Trust 610 LCD PowerC@m Zoom camera which can operate in webcam mode
-also (USB ID=06d6:0031). I tried to use it together with Linux 2.6.28 and with
-xawtv-3.95.dfsg.1 and with gqcam 0.9.1. The /dev/video0 appeared, but no usable
-picture was visible.
+Sorry for my late. Last week is Chinese new year holiday.
 
-However, I downloaded http://mxhaard.free.fr/spca50x/Download/gspcav1-20071224.tar.gz
-and applied the attached patch (which might be incorrect for some aspects).
-So I was able to compile the module and both xawtv and gqcam showed the good
-picture.
+On Sat, 2009-01-24 at 15:07 +0800, Andrew Morton wrote:
+> On Thu, 22 Jan 2009 10:32:17 +0800 Huang Ying <ying.huang@intel.com> wrot=
+e:
+>=20
+> > Use dedicate workqueue for crypto
+> >=20
+> > - A dedicated workqueue named kcrypto_wq is created.
+> >=20
+> > - chainiv uses kcrypto_wq instead of keventd_wq.
+> >=20
+> > - For cryptd, struct cryptd_queue is defined to be a per-CPU queue,
+> >   which holds one struct cryptd_cpu_queue for each CPU. In struct
+> >   cryptd_cpu_queue, a struct crypto_queue holds all requests for the
+> >   CPU, a struct work_struct is used to run all requests for the CPU.
+> >=20
+>=20
+> Please always prefer to include performance measurements when proposing
+> a performance-enhancing patch.  Otherwise we have no basis upon which
+> to evaluate the patch's worth.
 
-Do you have any idea why the gspcav1 diver is working and the one which is included
-in Linux 2.6.28 not?
+I will setup a testing to measure the performance gain.
 
-Here is the output of v4l-info with the patched working gspcav1 driver:
-$ v4l-info
+> > +++ b/crypto/crypto_wq.c
+> > @@ -0,0 +1,39 @@
+> > +/*
+> > + * Workqueue for crypto subsystem
+> > + *
+> > + * Copyright (c) 2009 Intel Corp.
+> > + *   Author: Huang Ying <ying.huang@intel.com>
+> > + *
+> > + * This program is free software; you can redistribute it and/or modif=
+y it
+> > + * under the terms of the GNU General Public License as published by t=
+he Free
+> > + * Software Foundation; either version 2 of the License, or (at your o=
+ption)
+> > + * any later version.
+> > + *
+> > + */
+> > +
+> > +#include <linux/workqueue.h>
+> > +#include <crypto/algapi.h>
+> > +#include <crypto/crypto_wq.h>
+> > +
+> > +struct workqueue_struct *kcrypto_wq;
+> > +EXPORT_SYMBOL_GPL(kcrypto_wq);
+> > +
+> > +static int __init crypto_wq_init(void)
+> > +{
+> > +	kcrypto_wq =3D create_workqueue("crypto");
+> > +	if (unlikely(!kcrypto_wq))
+> > +		return -ENOMEM;
+> > +	return 0;
+> > +}
+> > +
+> > +static void __exit crypto_wq_exit(void)
+> > +{
+> > +	if (likely(kcrypto_wq))
+> > +		destroy_workqueue(kcrypto_wq);
+>=20
+> I don't believe that it is possible to get here with kcrypto_wq=3D=3DNULL=
+.
 
-### video4linux device info [/dev/video0] ###
-general info
-    VIDIOCGCAP
-        name                    : "Trust 610 LCD PowerC@m Zoom"
-        type                    : 0x1 [CAPTURE]
-        channels                : 1
-        audios                  : 0
-        maxwidth                : 464
-        maxheight               : 480
-        minwidth                : 176
-        minheight               : 144
+Yes. I will fix this.
 
-channels
-    VIDIOCGCHAN(0)
-        channel                 : 0
-        name                    : "SPCA533"
-        tuners                  : 0
-        flags                   : 0x0 []
-        type                    : CAMERA
-        norm                    : 0
+> >
+> > ...
+> >
+> > +int cryptd_enqueue_request(struct cryptd_queue *queue,
+> > +			   struct crypto_async_request *request)
+> > +{
+> > +	int cpu, err, queued;
+> > +	struct cryptd_cpu_queue *cpu_queue;
+> > +
+> > +	cpu =3D get_cpu();
+> > +	cpu_queue =3D per_cpu_ptr(queue->cpu_queue, cpu);
+> > +	spin_lock_bh(&cpu_queue->lock);
+> > +	err =3D crypto_enqueue_request(&cpu_queue->queue, request);
+> > +	spin_unlock_bh(&cpu_queue->lock);
+> > +	/* INUSE should be set after queue->qlen assigned, but
+> > +	 * spin_unlock_bh imply a memory barrior already */
+> > +	if (!test_and_set_bit_lock(CRYPTD_STATE_INUSE, &cpu_queue->state)) {
+> > +		queued =3D queue_work(kcrypto_wq, &cpu_queue->work);
+> > +		BUG_ON(!queued);
+> > +	}
+>=20
+> Do we actually need to use CRYPTD_STATE_INUSE here?  The
+> WORK_STRUCT_PENDING handling in the workqueue does basically the same
+> thing?
 
-tuner
-ioctl VIDIOCGTUNER: Invalid argument
+Yes. It is not necessary, I will fix this.
 
-audio
-ioctl VIDIOCGAUDIO: Invalid argument
+> > +	put_cpu();
+> > +
+> > +	return err;
+> > +}
+> > +
+> > +int cryptd_tfm_in_queue(struct cryptd_queue *queue, struct crypto_tfm =
+*tfm)
+>=20
+> Did this need to have global scope?
 
-picture
-    VIDIOCGPICT
-        brightness              : 32768
-        hue                     : 0
-        colour                  : 4096
-        contrast                : 8192
-        whiteness               : 0
-        depth                   : 24
-        palette                 : RGB24
+It should be static. I will fix this.
 
-buffer
-    VIDIOCGFBUF
-        base                    : (nil)
-        height                  : 0
-        width                   : 0
-        depth                   : 0
-        bytesperline            : 0
+> > +{
+> > +	int cpu, in_queue;
+> > +	struct cryptd_cpu_queue *cpu_queue;
+> > +
+> > +	for_each_possible_cpu(cpu) {
+> > +		cpu_queue =3D per_cpu_ptr(queue->cpu_queue, cpu);
+> > +		spin_lock_bh(&cpu_queue->lock);
+> > +		in_queue =3D crypto_tfm_in_queue(&cpu_queue->queue, tfm);
+> > +		spin_unlock_bh(&cpu_queue->lock);
+> > +		if (in_queue)
+> > +			return 1;
+> > +	}
+> > +	return 0;
+> > +}
+>=20
+> Did you consider using for_each_online_cpu() and implementing CPU
+> hotplug?  There might be situations where the number of possible CPUs
+> is much greater than the number of online CPUs.
 
-window
-    VIDIOCGWIN
-        x                       : 0
-        y                       : 0
-        width                   : 384
-        height                  : 288
-        chromakey               : 0
-        flags                   : 0
+For cryptd_queue_init() and cryptd_queue_fini(), I think
+for_each_possible_cpu() is sufficient and simpler. Because they are only
+need to be executed once and in slow path. For cryptd_in_queue,
+for_each_online_cpu() can be used.
+
+> > +static void cryptd_queue_work_done(struct cryptd_cpu_queue *cpu_queue)
+> > +{
+> > +	int queued;
+> > +
+> > +	if (!cpu_queue->queue.qlen) {
+> > +		clear_bit_unlock(CRYPTD_STATE_INUSE, &cpu_queue->state);
+> > +		/* queue.qlen must be checked after INUSE bit cleared */
+> > +		smp_mb();
+> > +		if (!cpu_queue->queue.qlen ||
+> > +		    test_and_set_bit_lock(CRYPTD_STATE_INUSE,
+> > +					  &cpu_queue->state))
+> > +			return;
+> > +	}
+> > +
+> > +	queued =3D queue_work(kcrypto_wq, &cpu_queue->work);
+> > +	BUG_ON(!queued);
+> > +}
+>=20
+> It is unclear (to me) why this code is using the special "locked"
+> bitops.  This should be explained in a code comment.
+>=20
+> It isn't immediately clear (to me) what this function does, what its
+> role is in the overall scheme.  It wouldn't hurt at all to put a nice
+> comment over non-trivial functions explaining such things.
+
+This function is used for CRYPTD_STATE_INUSE logic, because
+CRYPTD_STATE_INUSE is not needed, this function is not needed too. Just
+calling queue_work() at end of cryptd_queue_work() is sufficient.
+
+> > +static void cryptd_queue_work(struct work_struct *work)
+> > +{
+> > +	struct cryptd_cpu_queue *cpu_queue =3D
+> > +		container_of(work, struct cryptd_cpu_queue, work);
+>=20
+> You could just do
+>=20
+> 	struct cryptd_cpu_queue *cpu_queue;
+>=20
+> 	cpu_queue =3D container_of(work, struct cryptd_cpu_queue, work);
+>=20
+> rather than uglifying the code to fit in 80-cols.
+
+OK. I will fix this.
+
+Best Regards,
+Huang Ying
 
 
+--=-k1DWqKDwWs+H5IFg47i5
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Regards,
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-	Márton Németh
+iEYEABECAAYFAkmFbUAACgkQKhFGF+eHlpj/zACeMyxUi6wCHd9ckIxg+7HvFugY
+OlsAoKx2z26wKgXQgEEryrM2/mQHoc1u
+=atP6
+-----END PGP SIGNATURE-----
 
---------------090204010807050502050303
-Content-Type: text/x-diff;
- name="gspcav1_Trust_610_LCD_PowerC@m_Zoom-2.6.28.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="gspcav1_Trust_610_LCD_PowerC@m_Zoom-2.6.28.patch"
+--=-k1DWqKDwWs+H5IFg47i5--
 
-diff -upr gspcav1-20071224.orig/gspca_core.c gspcav1-20071224/gspca_core.c
---- gspcav1-20071224.orig/gspca_core.c	2007-12-24 17:56:47.000000000 +0100
-+++ gspcav1-20071224/gspca_core.c	2009-02-01 09:59:56.000000000 +0100
-@@ -51,10 +51,11 @@ static const char gspca_version[] = GSPC
- #include <linux/pagemap.h>
- #include <linux/usb.h>
- #include <asm/io.h>
--#include <asm/semaphore.h>
-+#include <linux/semaphore.h>
- #include <asm/page.h>
- #include <asm/uaccess.h>
- #include <asm/atomic.h>
-+#include <media/v4l2-ioctl.h>
- /* only on 2.6.x */
- #include <linux/jiffies.h>
- #include <linux/param.h>
-@@ -2606,9 +2607,7 @@ static struct file_operations spca5xx_fo
- 	.llseek = no_llseek,
- };
- static struct video_device spca50x_template = {
--	.owner = THIS_MODULE,
- 	.name = "GSPCA USB Camera",
--	.type = VID_TYPE_CAPTURE,
- #if LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,23)	
- 	.hardware = VID_HARDWARE_GSPCA,
- #endif
-@@ -2765,24 +2764,7 @@ static DEVICE_ATTR(pictsetting, S_IRUGO,
- static int
- spca50x_create_sysfs(struct video_device *vdev)
- {
--	int rc = 0;
--	rc = video_device_create_file(vdev, &dev_attr_stream_id);
--	if (rc)
--		goto err_stream_id;
--	rc = video_device_create_file(vdev, &dev_attr_model);
--	if (rc)
--		goto err_model;
--	rc = video_device_create_file(vdev, &dev_attr_pictsetting);
--	if (rc)
--		goto err_pictsetting;
- 	return 0;
--      err_pictsetting:
--	video_device_remove_file(vdev, &dev_attr_pictsetting);
--      err_model:
--	video_device_remove_file(vdev, &dev_attr_model);
--      err_stream_id:
--	video_device_remove_file(vdev, &dev_attr_stream_id);
--	return rc;
- }
- #endif 
- 
-@@ -4298,7 +4280,6 @@ spca5xx_probe(struct usb_interface *intf
- 	if (!spca50x->vdev)
- 		goto error;
- 	memcpy(spca50x->vdev, &spca50x_template, sizeof (spca50x_template));
--	spca50x->vdev->dev = &dev->dev;
- 	video_set_drvdata(spca50x->vdev, spca50x);
- 	PDEBUG(2, "setting video device = %p, spca50x = %p", spca50x->vdev,
- 	       spca50x);
-
---------------090204010807050502050303--
