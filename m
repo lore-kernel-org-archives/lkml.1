@@ -1,119 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbZBAUGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbZBAUME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbZBAUGe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 15:06:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756230AbZBAUEm
+	id S1756021AbZBAUME (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 15:12:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752894AbZBAULx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 15:04:42 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:47060 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756192AbZBAUEk (ORCPT
+	Sun, 1 Feb 2009 15:11:53 -0500
+Received: from yw-out-2324.google.com ([74.125.46.30]:10597 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbZBAULw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 15:04:40 -0500
-X-AuthUser: davidel@xmailserver.org
-From: Davide Libenzi <davidel@xmailserver.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>
-Date: Sun, 01 Feb 2009 12:04:23 -0800
-Subject: [patch 6/6] epoll keyed wakeups v2 - make tty use keyed wakeups
+	Sun, 1 Feb 2009 15:11:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=bm3k4zankrYqcFSYlnjRB8jY+PxHj47MhLeFITYqfyRXmFYSc03AVJQPHMHIiOHOsK
+         EVZSKaR6W6XSKNrr8SsXGWEhC7u4bB5HqVHagMWLZPxQV4FZqQJeUTyMnennf1H84QIP
+         +zNn5wNiHLPSHCsk/FvBVZdI3xu9u9V7AWwrk=
+Message-ID: <49860206.2050709@gmail.com>
+Date: Sun, 01 Feb 2009 14:11:50 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.13601.1233518666.6>
+To: Philippe De Muyter <phdm@macqel.be>
+CC: linux-kernel@vger.kernel.org, abelay@mit.edu, bjorn.helgaas@hp.com
+Subject: Re: [BUG] pnpbios breaks floppy support
+References: <20090131212915.GA19276@frolo.macqel> <49854A71.500@gmail.com> <20090201131801.GA326@frolo.macqel>
+In-Reply-To: <20090201131801.GA326@frolo.macqel>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch introduces keyed event wakeups inside the TTY code.
+Philippe De Muyter wrote:
+> On Sun, Feb 01, 2009 at 01:08:33AM -0600, Robert Hancock wrote:
+>> Philippe De Muyter wrote:
+>>> Hello linux experts,
+>>> Today I tried to upgrade a PC's kernel from 2.6.11 to 2.6.22, and
+>>> I saw some strange messages when booting :
+>>> 	Floppy drive(s): fd0 is 1.44M
+>>> 	floppy0: Floppy io-port 0x03f2 in use
+>>> Previously, I had :
+>>> 	Floppy drive(s): fd0 is 1.44M
+>>> 	FDC 0 is a post-1991 82077
+>>> Needless to say, my floppy hardware works perfectly, and my floppy
+>>> was usable with the old kernel, while the floppy is now inaccessible
+>>> with the new kernel.  Even /dev/fd0 does not exist anymore.
+>>> Searching for a cause to that problem, I saw the following messages
+>>> before the floppy probe in the new kernel :
+>>> 	PnPBIOS: Scanning system for PnP BIOS support...
+>>> 	PnPBIOS: Found PnP BIOS installation structure at 0xc00fd5e0
+>>> 	PnPBIOS: PnP BIOS version 1.0, entry 0xf0000:0x5ba3, dseg 0xf0000
+>>> 	PnPBIOS: 17 nodes reported by PnP BIOS; 17 recorded by driver
+>>> 	[...]
+>>> 	pnp: 00:07: ioport range 0x3f0-0x3f1 has been reserved
+>>> 	pnp: 00:07: ioport range 0x3f3-0x3f3 has been reserved
+>>> 	[...]
+>>> Searching the web and the outdated pnp kernel documentation, I
+>>> finally found an option to add to my kernel parameters line :
+>>> 	pnpbios=off
+>>> Now my floppy works again, but I am not really satisfied.
+>>> What do I loose with the 'pnpbios=off' option ?
+>>> Isn't there a smoother option to allow pnpbios but avoiding to reserve
+>>> floppy's io-ports ?
+>>> Should I modify rather /drivers/block/floppy.c or /drivers/pnp/*.c
+>>> to make pnpbios and floppy driver coexist peacefully ? And is there
+>>> an example of such modifications for other standard peripherals ?
+>> Presumably the problem is that your BIOS marks the IO ports used by the 
+>> floppy controller as reserved which prevents the floppy driver from binding 
+>> to them. (2.6.11 probably was before we even processed PnP reserved 
+>> regions.)
+>>
+>> I think we now have handling for the case where the reservations overlap 
+>> PCI devices, but I think it's the first I've heard of them overlapping the 
+>> floppy IO ports..
+> 
+> I should have added that, when started with pnpbios enabled, 
+> I have found the following in /sys/devices/pnp0/ :
+> 
+> 	$ cat 00:03/id
+> 	PNP0700
+> 	$ cat 00:03/resources 
+> 	state = active
+> 	io 0x3f4-0x3f5
+> 	io 0x3f2-0x3f2
+> 	irq 6
+> 	dma 2
+> 	$ cat 00:03/options
+> 	port 0x3f4-0x3f4, align 0x0, size 0x2, 16-bit address decoding
+> 	port 0x3f2-0x3f2, align 0x0, size 0x1, 16-bit address decoding
+> 	irq 6 High-Edge
+> 	dma 2 8-bit compatible
+> 
+> AFAIK, PNP0700 is the pnp id for the standard floppy disk,
+> and the resources and options files describe the expected io-ports
+> of the floppy disk, so this does not seem to be an error in the bios.
 
-
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-
-
-- Davide
-
-
----
- drivers/char/tty_io.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
-
-Index: linux-2.6.mod/drivers/char/tty_io.c
-===================================================================
---- linux-2.6.mod.orig/drivers/char/tty_io.c	2009-01-31 14:55:13.000000000 -0800
-+++ linux-2.6.mod/drivers/char/tty_io.c	2009-01-31 15:36:43.000000000 -0800
-@@ -464,7 +464,7 @@ void tty_wakeup(struct tty_struct *tty)
- 			tty_ldisc_deref(ld);
- 		}
- 	}
--	wake_up_interruptible(&tty->write_wait);
-+	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
- }
- 
- EXPORT_SYMBOL_GPL(tty_wakeup);
-@@ -587,8 +587,8 @@ static void do_tty_hangup(struct work_st
- 	 * FIXME: Once we trust the LDISC code better we can wait here for
- 	 * ldisc completion and fix the driver call race
- 	 */
--	wake_up_interruptible(&tty->write_wait);
--	wake_up_interruptible(&tty->read_wait);
-+	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
-+	wake_up_interruptible_poll(&tty->read_wait, POLLIN);
- 	/*
- 	 * Shutdown the current line discipline, and reset it to
- 	 * N_TTY.
-@@ -879,7 +879,7 @@ void stop_tty(struct tty_struct *tty)
- 	if (tty->link && tty->link->packet) {
- 		tty->ctrl_status &= ~TIOCPKT_START;
- 		tty->ctrl_status |= TIOCPKT_STOP;
--		wake_up_interruptible(&tty->link->read_wait);
-+		wake_up_interruptible_poll(&tty->link->read_wait, POLLIN);
- 	}
- 	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
- 	if (tty->ops->stop)
-@@ -913,7 +913,7 @@ void start_tty(struct tty_struct *tty)
- 	if (tty->link && tty->link->packet) {
- 		tty->ctrl_status &= ~TIOCPKT_STOP;
- 		tty->ctrl_status |= TIOCPKT_START;
--		wake_up_interruptible(&tty->link->read_wait);
-+		wake_up_interruptible_poll(&tty->link->read_wait, POLLIN);
- 	}
- 	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
- 	if (tty->ops->start)
-@@ -970,7 +970,7 @@ static ssize_t tty_read(struct file *fil
- void tty_write_unlock(struct tty_struct *tty)
- {
- 	mutex_unlock(&tty->atomic_write_lock);
--	wake_up_interruptible(&tty->write_wait);
-+	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
- }
- 
- int tty_write_lock(struct tty_struct *tty, int ndelay)
-@@ -1623,21 +1623,21 @@ void tty_release_dev(struct file *filp)
- 
- 		if (tty_closing) {
- 			if (waitqueue_active(&tty->read_wait)) {
--				wake_up(&tty->read_wait);
-+				wake_up_poll(&tty->read_wait, POLLIN);
- 				do_sleep++;
- 			}
- 			if (waitqueue_active(&tty->write_wait)) {
--				wake_up(&tty->write_wait);
-+				wake_up_poll(&tty->write_wait, POLLOUT);
- 				do_sleep++;
- 			}
- 		}
- 		if (o_tty_closing) {
- 			if (waitqueue_active(&o_tty->read_wait)) {
--				wake_up(&o_tty->read_wait);
-+				wake_up_poll(&o_tty->read_wait, POLLIN);
- 				do_sleep++;
- 			}
- 			if (waitqueue_active(&o_tty->write_wait)) {
--				wake_up(&o_tty->write_wait);
-+				wake_up_poll(&o_tty->write_wait, POLLOUT);
- 				do_sleep++;
- 			}
- 		}
-
+There's likely another resource with id of PNP0C01 or PNP0C02 
+(Motherboard resources) which contains that same IO port range.
