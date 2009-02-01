@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZBAQ56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754349AbZBAREi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754312AbZBAQ56 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 11:57:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbZBAQ5r
+	id S1754349AbZBAREi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 12:04:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZBAREa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 11:57:47 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:30481 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752204AbZBAQ5q (ORCPT
+	Sun, 1 Feb 2009 12:04:30 -0500
+Received: from casper.infradead.org ([85.118.1.10]:48325 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752513AbZBARE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 11:57:46 -0500
-Message-ID: <4985D48A.6090007@panasas.com>
-Date: Sun, 01 Feb 2009 18:57:46 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Eric Sandeen <sandeen@sandeen.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Arnd Bergmann <arnd@arndb.de>, mfasheh@suse.com, joel.becker@oracle.com,
-       linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com,
-       viro@zeniv.linux.org.uk, Ankit Jain <me@ankitjain.org>,
-       linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [xfs-masters] [PATCH] fs: Add new pre-allocation ioctls to vfs
- for compatibility with legacy xfs ioctls
-References: <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de> <49856FE6.8020601@panasas.com> <Pine.LNX.4.64.0902011104320.20875@anakin> <49857BEB.30404@panasas.com> <Pine.LNX.4.64.0902011151180.20875@anakin> <4985966D.8040402@panasas.com> <4985C1B0.8060905@sandeen.net> <4985CCFA.4070008@panasas.com> <4985CF66.6090409@sandeen.net> <20090201164130.GA32276@infradead.org>
-In-Reply-To: <20090201164130.GA32276@infradead.org>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 1 Feb 2009 12:04:29 -0500
+Date: Sun, 1 Feb 2009 09:04:29 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC][PATCH] create workqueue threads only when needed
+Message-ID: <20090201090429.0c7e1362@infradead.org>
+In-Reply-To: <4985CC57.7090800@s5r6.in-berlin.de>
+References: <20090127001708.GA4815@nowhere>
+	<20090126163015.7f879b18@infradead.org>
+	<20090131180347.GC5884@nowhere>
+	<20090131101502.7ce8e7af@infradead.org>
+	<20090131182843.GD5884@nowhere>
+	<4985CC57.7090800@s5r6.in-berlin.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Feb 2009 16:57:44.0507 (UTC) FILETIME=[33BDD0B0:01C9848E]
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> The structures have been defined exactly like that in XFS (and ocfs2)
-> before, and there are similar cases in other ioctls handlers.
-> 
-> If anyone feels like changing this in some way feel free to wade through
-> the endless discussions about the pros and cons for it, but I think
-> doing it in context of this patch is not helpful.
+On Sun, 01 Feb 2009 17:22:47 +0100
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-OK so ia64 gcc is broken in regard to __attribute__((packed(1))),
-and it should not be used.
-But clearly the programmer, Like in this patch exactly, should spell
-out the hole created by padding and spell that hole out and call it
-__Padding. The porgrammer thought about it, identified there is an hole,
-please don't drop this information on the floor. Put it in the code so I 
-don't have to break my head on it.
-
-> Arnd Bergmann wrote:
->> > +struct space_resv {
->> > +	__s16		l_type;
->> > +	__s16		l_whence;
->> > +	__s64		l_start;
->> > +	__s64		l_len;		/* len == 0 means until end of file */
->> > +	__s32		l_sysid;
->> > +	__u32		l_pid;
->> > +	__s32		l_pad[4];	/* reserve area			    */
->> > +};
+> > I don't know, most of those I've looked on are not documented about
+> > the reason for a private workqueue. I guess most of them can use
+> > the usual kevent.
 > 
-> What about telling the compiler exactly what you said above, just
-> to be sure we all mean the same thing. (And as documentation for new
-> comers):
+> I have stuff in drivers/firewire/ done in a private workqueue and some
+> in the shared workqueue which I will eventually move either into
+> short-lived ad hoc created kthreads /or/ preferably into a thread pool
+> implementation --- if such a thing will have found its way into the
+> kernel when I have time for my project.
 > 
-> +struct space_resv_64 {
-> +	__s16		l_type;
-> +	__s16		l_whence;
-> +	__u32		reserved;
-change that to
-	__u32		__padding_hole;
-> +	__s64		l_start;
-> +	__s64		l_len;		/* len == 0 means until end of file */
-> +	__s32		l_sysid;
-> +	__u32		l_pid;
-> +	__s32		l_pad[4];	/* reserve area			    */
-> +} __packed;
-Drop the evil __packed but show me the padding
+> I need to get callers of scsi_add_device and scsi_remove_device out of
+> the picture.
 
-Thanks
-Boaz
+what are the requirements for you to do this?
+
+right now, the async calls are "fire and forget... but you can wait for
+completion". The "price" is that the code needs to allocate a little
+bit of memory for management overhead. The second price then is that 
+if this allocation fails, the code needs to run "in context".
+
+Would this be a problem?
+
+I can add a variant of the API where you pass in some memory of your
+own, which then does not fail. (but also won't get freed automatically
+etc)
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
