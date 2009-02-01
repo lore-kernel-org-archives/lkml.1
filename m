@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZBATSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755290AbZBAT0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755538AbZBATSl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 14:18:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZBATSa
+	id S1755290AbZBAT0w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 14:26:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZBAT0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 14:18:30 -0500
-Received: from mx38.mail.ru ([194.67.23.16]:58343 "EHLO mx38.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751264AbZBATS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 14:18:29 -0500
-X-Greylist: delayed 98302 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Feb 2009 14:18:29 EST
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-Subject: Re: 2.6.29-rc: unable to compile e100 firmware into kernel
-Date: Sun, 1 Feb 2009 22:18:16 +0300
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc3-1avb; KDE/4.2.0; i686; ; )
-Cc: linux-kbuild@vger.kernel.org, netdev@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-References: <200901311900.00851.arvidjaar@mail.ru> <4807377b0902011105l29e846c3r140212ac654efb93@mail.gmail.com>
-In-Reply-To: <4807377b0902011105l29e846c3r140212ac654efb93@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4379491.qMzcQLHoWd";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200902012218.20481.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+	Sun, 1 Feb 2009 14:26:41 -0500
+Received: from fk-out-0910.google.com ([209.85.128.191]:3657 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752504AbZBAT0k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 14:26:40 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=O0SIkXqIwJScmsXwQocGWuV0vCAfOkiBGKuM0Piwn0+JerAS1vXgJHJeN7f23TTw8b
+         whe7aqbrFJstIxd3qMNd5PtMWrnDf/cpkqnqqUaFlHKel2Al39aoiGfO7QFGDXtVawdR
+         AmV9tvFZ5NMKaL1Pt1vekKj8yjrOo5+Un8ITs=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Borislav Petkov <petkovbb@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Sun, 01 Feb 2009 20:27:32 +0100
+Message-Id: <20090201192732.1592.76435.sendpatchset@localhost.localdomain>
+Subject: [PATCH 0/8] ide: remove ->end_request method
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4379491.qMzcQLHoWd
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On 1 of February 2009 22:05:43 Jesse Brandeburg wrote:
-> On Sat, Jan 31, 2009 at 7:59 AM, Andrey Borzenkov <arvidjaar@mail.ru>=20
-wrote:
-> > {pts/2}% LC_ALL=3DC make -C ~/src/linux-git
-> > O=3D$HOME/build/linux-2.6.29 make: Entering directory
-> > `/home/bor/src/linux-git'
-> >  Using /home/bor/src/linux-git as source for kernel
-> > ln -fsn /home/bor/src/linux-git source
->
-> I think (seem to recall something on the list) there have been
-> multiple people reporting the make O=3D option doesn't work with
-> CONFIG_FIRMWARE_IN_KERNEL, but what does the
-> CONFIG_PREVENT_FIRMWARE_BUILD=3Dy option do?  If it does what it
-> appears to by its title, looks like you might need to set that to =3Dn
+by-product of some other WIP...
 
-Does not work. Besides, even with CONFIG_PREVENT_FIRMWARE_BUILD=3Dy=20
-firmware is built and installed under /lib/firmware when=20
-CONFIG_FIRMWARE_IN_KERNEL is not set. It is just that it does not help=20
-with netconsole :(
+on top of "[PATCH 00/15] weekly IDE updates" patchset
+[ http://marc.info/?l=linux-kernel&m=123351051303529&w=2 ]
 
-
---nextPart4379491.qMzcQLHoWd
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmF9XwACgkQR6LMutpd94yMZwCeKme3vq7+0UnO7wfx6Jr0A9fP
-4NEAnA4VR1bcIWGNEun2MfU/NytZbU8D
-=oWC+
------END PGP SIGNATURE-----
-
---nextPart4379491.qMzcQLHoWd--
+diffstat:
+ drivers/ide/ide-atapi.c    |   17 +++--
+ drivers/ide/ide-cd.c       |    1 
+ drivers/ide/ide-disk.c     |    1 
+ drivers/ide/ide-floppy.c   |  130 ++++++++++++++++-----------------------------
+ drivers/ide/ide-gd.c       |    6 --
+ drivers/ide/ide-gd.h       |    2 
+ drivers/ide/ide-io.c       |   21 ++++---
+ drivers/ide/ide-tape.c     |  124 ++++++++++++++----------------------------
+ drivers/ide/ide-taskfile.c |   16 +----
+ include/linux/ide.h        |   16 +++--
+ 10 files changed, 127 insertions(+), 207 deletions(-)
