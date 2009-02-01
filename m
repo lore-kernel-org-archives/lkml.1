@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbZBAWcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756528AbZBAWce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755238AbZBAWcT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 17:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZBAWcH
+	id S1756528AbZBAWce (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 17:32:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755268AbZBAWcU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 17:32:07 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:54616 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751911AbZBAWcH (ORCPT
+	Sun, 1 Feb 2009 17:32:20 -0500
+Received: from wa-out-1112.google.com ([209.85.146.182]:18170 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755133AbZBAWcT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 17:32:07 -0500
-Message-ID: <498622DA.9080106@freemail.hu>
-Date: Sun, 01 Feb 2009 23:31:54 +0100
-From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Sun, 1 Feb 2009 17:32:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=T/ipjJ+Okhq93SyBYvV28Lek29qMc2Gcw8ziqS8uOeg5R3xK9gJvAZfRQut/2tSvb3
+         YNl3HmKP4UfXCw9oC/GVajldcpKtCYEk0dCnuYOZKBsVvjqeHEUiZfiNQDJ2y3++KTf+
+         Mll6R19HRxarzdLyhmpo+lVPUb6HF09UzOlyo=
 MIME-Version: 1.0
-To: linux-media@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>
-Subject: [PATCH] DAB: fix typo
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32710; Body=3 Fuz1=3
-	Fuz2=3
+Date: Sun, 1 Feb 2009 14:32:18 -0800
+Message-ID: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com>
+Subject: main thread pthread_exit/sys_exit bug!
+From: Kaz Kylheku <kkylheku@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+Basically, if you call pthread_exit from the main thread of a process, and keep
+other threads running, the behavior is ugly.
 
-Fix typo in "DAB adapters" section in Kconfig.
+I logged this initially as a bug against glibc, but then resolved it
+with a kernel patch against linux 2.6.26:
 
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.29-rc3/drivers/media/Kconfig.orig	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6.29-rc3/drivers/media/Kconfig	2009-02-01 13:30:54.000000000 +0100
-@@ -117,7 +117,7 @@ source "drivers/media/dvb/Kconfig"
- config DAB
- 	boolean "DAB adapters"
- 	---help---
--	  Allow selecting support for for Digital Audio Broadcasting (DAB)
-+	  Allow selecting support for Digital Audio Broadcasting (DAB)
- 	  Receiver adapters.
+Please see:
 
- if DAB
+http://sources.redhat.com/bugzilla/show_bug.cgi?id=9804
+
+I've known about this for some time, first having reproduced it on 2.6.17;
+finally got around to fixing it.
+
+When the main thread of a POSIX threads process calls pthread_exit, the process
+should stick around until all the other threads do the same, or until one of
+them calls _exit or exit, or until the process terminates abnormally.  During
+this time, it would be nice if the process behaved normally: if it did not
+appear defunct in the process list and if POSIX job control was possible on it.
+
+An easy way to achieve this is to insert a wait into the top of sys_exit, so
+that do_exit is not called unless all the other threads have terminated.  This
+is another special case like do_group_exit. In the group exit, we zap the other
+threads. In this case, we must not zap the other threads, but neither should we
+fall through do_exit and become defunct!
+
+The patch involves a controversial move: returning -ERESTARTSYS from sys_exit.
+This is because the main thread may be stuck in sys_exit and have to respond to
+a signal, and then go back to sys_exit. It appears to be working fine.
