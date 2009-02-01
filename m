@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZBAKwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbZBAKxt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbZBAKwQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:52:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZBAKwA
+	id S1754103AbZBAKxt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 05:53:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZBAKxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:52:00 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:59042 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752503AbZBAKv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:51:59 -0500
-Date: Sun, 1 Feb 2009 11:49:19 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: hch@lst.de, ebiederm@xmission.com, mingo@elte.hu, xemul@openvz.org,
-       rusty@rustcorp.com.au, vgusev@openvz.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
-Message-ID: <20090201104919.GC5728@redhat.com>
-References: <20090130123358.GA26216@redhat.com> <20090130134736.ce5910aa.akpm@linux-foundation.org>
+	Sun, 1 Feb 2009 05:53:40 -0500
+Received: from ti-out-0910.google.com ([209.85.142.184]:19381 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752503AbZBAKxj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 05:53:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject
+         :content-type:content-transfer-encoding;
+        b=SdaDq1T8FZZcrMdCGCEeheHOIX4y50PDz9xtXBoq0KiLhI94ls58Ow5xrSAQJ/9w4p
+         n5V1Q/i7aPFswgYNUKYejNgDwtPclyWILswelLrB0caXZJ1D5A2d91YZSC9P8kxwfdRl
+         3nySwuzTKX9UfAJ62cvSpEcrJwdSqe+bBLUMY=
+Message-ID: <49857F23.3090208@gmail.com>
+Date: Sun, 01 Feb 2009 18:53:23 +0800
+From: Dave Young <hidave.darkstar@gmail.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081010)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090130134736.ce5910aa.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: wgreathouse@smva.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] usb-serial : fix the nousb oops
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/30, Andrew Morton wrote:
->
-> On Fri, 30 Jan 2009 13:33:58 +0100
-> Oleg Nesterov <oleg@redhat.com> wrote:
-> 
-> >  int kthread_stop(struct task_struct *k)
-> >  {
-> > +	struct kthread *kthread;
-> >  	int ret;
-> >  
-> > -	mutex_lock(&kthread_stop_lock);
-> > -
-> > -	/* It could exit after stop_info.k set, but before wake_up_process. */
-> > -	get_task_struct(k);
-> > -
-> >  	trace_sched_kthread_stop(k);
-> > +	get_task_struct(k);
-> >  
-> > -	/* Must init completion *before* thread sees kthread_stop_info.k */
-> > -	init_completion(&kthread_stop_info.done);
-> > -	smp_wmb();
-> > +	kthread = to_kthread(k);
-> > +	barrier(); /* it might have exited */
-> 
-> Why the change from smp_wmb() to plain old barrier()?
 
-These 2 barriers have nothing to do with each other.
+In case with "nousb" booting, serial drivers will trigger kernel oops.
 
-Before this patch, smp_wmb() was needed to make sure kthread sees the
-initialized &kthread_stop_info.done if it sees kthread_should_stop().
+Here add usb_disabled() check in usb_serial_init and usb_serial_register
 
-After the patch, this barrier() tells the compiler it must not move
-"kthread = to_kthread(k)" down, under the "if (k->vfork_done)" check.
-Because k->vfork_done is "volatile", it can be changed under us.
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+---
+drivers/usb/serial/usb-serial.c |    6 ++++++
+1 file changed, 6 insertions(+)
 
-But, once we got the k->vfork_done != NULL we can use it safely, even
-if the task exits in parallel. Because we have a reference to task_struct,
-and thus to tsk->stack.
-
-Oleg.
-
+diff -uprN a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
+--- a/drivers/usb/serial/usb-serial.c	2009-02-01 13:11:11.000000000 +0800
++++ b/drivers/usb/serial/usb-serial.c	2009-02-01 13:24:32.000000000 +0800
+@@ -1113,6 +1113,9 @@ static int __init usb_serial_init(void)
+ 	int i;
+ 	int result;
+ 
++	if (usb_disabled())
++		return -ENODEV;
++
+ 	usb_serial_tty_driver = alloc_tty_driver(SERIAL_TTY_MINORS);
+ 	if (!usb_serial_tty_driver)
+ 		return -ENOMEM;
+@@ -1230,6 +1233,9 @@ int usb_serial_register(struct usb_seria
+ 	/* must be called with BKL held */
+ 	int retval;
+ 
++	if (usb_disabled())
++		return -ENODEV;
++
+ 	fixup_generic(driver);
+ 
+ 	if (!driver->description)
