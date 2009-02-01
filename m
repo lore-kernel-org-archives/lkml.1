@@ -1,256 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZBAA1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbZBAAct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753265AbZBAA1f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 19:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZBAA10
+	id S1753417AbZBAAct (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 19:32:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbZBAAci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 19:27:26 -0500
-Received: from fg-out-1718.google.com ([72.14.220.154]:57033 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751797AbZBAA1Z (ORCPT
+	Sat, 31 Jan 2009 19:32:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53370 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751517AbZBAAch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 19:27:25 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:to:cc:subject;
-        b=YKjpfzDcbtEjWxtpPQaqn82OaGjZmNiTWtgNPyhhaUD322i1k6nEBoZrOy5G+obxAq
-         GWNJ2mjEmQoYReZwZodSPF24zUP4hFpecl2Vm3cdTnou521dqcpnqRGcJgaeEPD8zuQf
-         0eW+O9dDXB3shyIgv7IQMdba1HLvJC+ux/vZs=
-Message-ID: <4984ec6a.0637560a.3217.4534@mx.google.com>
-Date: Sat, 31 Jan 2009 16:27:22 -0800 (PST)
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: dmitry.torokhov@gmail.com, dtor@mail.ru,
+	Sat, 31 Jan 2009 19:32:37 -0500
+Date: Sat, 31 Jan 2009 16:32:31 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
-       <fweisbec@gmail.com>
-Subject: [PATCH v2] psmouse: run kpsmoused only while needed
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <200902010111.08433.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0901311623520.3067@localhost.localdomain>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901312346.35265.rjw@sisk.pl> <alpine.LFD.2.00.0901311450550.2978@localhost.localdomain> <200902010111.08433.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While looking at the workqueue tracer, I noticed that kpsmoused receives
-rarely (if not never) events.
-
-Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
-workqueue. But resync are rare. While reading an old discussion, it seems
-that usual workqueue events can't be used for that purpose because resync
-can take too much time and could delay the other works in queue.
-
-But if you have built psmouse driver, this workqueue will always be present
-whether you have a ps/2 port or not. And its events are rare.
-
-To avoid this pointless task, this patch makes the kpsmoused a kernel
-thread only created on the fly when a resync is needed. Once the resync is done,
-this thread will die. So you will almost never see it, and it will not be
-an inactive task anymore.
-
-This thread is created through a usual workqueue event (because we can't create
-it from interrupt).
-
-Changes in V2:
-
-_ fix the "resync" mispelled in the patch and the changelog
-_ don't schedule more than one resync in case of concurrent interrupts
-_ if resync_pending is not cleared after a few time before disconnect, print a warning.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- drivers/input/mouse/psmouse-base.c |   86 ++++++++++++++++++++++++------------
- drivers/input/mouse/psmouse.h      |    5 ++-
- 2 files changed, 61 insertions(+), 30 deletions(-)
-
-diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
-index f8f86de..fc4490e 100644
---- a/drivers/input/mouse/psmouse-base.c
-+++ b/drivers/input/mouse/psmouse-base.c
-@@ -20,6 +20,7 @@
- #include <linux/init.h>
- #include <linux/libps2.h>
- #include <linux/mutex.h>
-+#include <linux/kthread.h>
- 
- #include "psmouse.h"
- #include "synaptics.h"
-@@ -104,8 +105,6 @@ static struct attribute_group psmouse_attribute_group = {
-  */
- static DEFINE_MUTEX(psmouse_mutex);
- 
--static struct workqueue_struct *kpsmoused_wq;
--
- struct psmouse_protocol {
- 	enum psmouse_type type;
- 	const char *name;
-@@ -203,11 +202,6 @@ static psmouse_ret_t psmouse_process_byte(struct psmouse *psmouse)
- 	return PSMOUSE_FULL_PACKET;
- }
- 
--void psmouse_queue_work(struct psmouse *psmouse, struct delayed_work *work,
--		unsigned long delay)
--{
--	queue_delayed_work(kpsmoused_wq, work, delay);
--}
- 
- /*
-  * __psmouse_set_state() sets new psmouse state and resets all flags.
-@@ -313,7 +307,10 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
- 		       psmouse->name, psmouse->phys, psmouse->pktcnt);
- 		psmouse->badbyte = psmouse->packet[0];
- 		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
--		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
-+		if (atomic_inc_return(&psmouse->resync_pending) == 1)
-+			schedule_work(&psmouse->resync_work);
-+		else
-+			atomic_dec(&psmouse->resync_pending);
- 		goto out;
- 	}
- 
-@@ -350,7 +347,11 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
- 	    time_after(jiffies, psmouse->last + psmouse->resync_time * HZ)) {
- 		psmouse->badbyte = psmouse->packet[0];
- 		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
--		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
-+
-+		if (atomic_inc_return(&psmouse->resync_pending) == 1)
-+			schedule_work(&psmouse->resync_work);
-+		else
-+			atomic_dec(&psmouse->resync_pending);
- 		goto out;
- 	}
- 
-@@ -979,13 +980,16 @@ static int psmouse_poll(struct psmouse *psmouse)
- 
- 
- /*
-- * psmouse_resync() attempts to re-validate current protocol.
-+ * psmouse_resync_thread() attempts to re-validate current protocol.
-+ * This thread is created on the fly when needed because its job can take too
-+ * much time on events workqueues, and the resync is rare enough to avoid
-+ * the need of a private workqueue.
-  */
- 
--static void psmouse_resync(struct work_struct *work)
-+static int psmouse_resync_thread(void *v)
- {
--	struct psmouse *parent = NULL, *psmouse =
--		container_of(work, struct psmouse, resync_work.work);
-+	struct psmouse *psmouse = v;
-+	struct psmouse *parent = NULL;
- 	struct serio *serio = psmouse->ps2dev.serio;
- 	psmouse_ret_t rc = PSMOUSE_GOOD_DATA;
- 	int failed = 0, enabled = 0;
-@@ -1072,6 +1076,30 @@ static void psmouse_resync(struct work_struct *work)
- 		psmouse_activate(parent);
-  out:
- 	mutex_unlock(&psmouse_mutex);
-+
-+	/*
-+	 * While disconnecting, the driver wants to be sure all resync are done
-+	 */
-+	atomic_dec(&psmouse->resync_pending);
-+	wake_up(&psmouse->resync_pending_queue);
-+	return 0;
-+}
-+
-+/* Launch the resync thread */
-+static void psmouse_resync_thread_helper(struct work_struct *work)
-+{
-+	struct task_struct *t;
-+	struct psmouse *psmouse;
-+
-+	psmouse = container_of(work, struct psmouse, resync_work);
-+
-+	t = kthread_run(psmouse_resync_thread, psmouse, "kpsmoused");
-+	if (t == ERR_PTR(-ENOMEM)) {
-+		printk(KERN_WARNING "psmouse.c: failed to create kpsmoused"
-+				    " thread\n");
-+		atomic_dec(&psmouse->resync_pending);
-+		wake_up(&psmouse->resync_pending_queue);
-+	}
- }
- 
- /*
-@@ -1120,6 +1148,8 @@ static void psmouse_cleanup(struct serio *serio)
- static void psmouse_disconnect(struct serio *serio)
- {
- 	struct psmouse *psmouse, *parent = NULL;
-+	long timeout;
-+	DEFINE_WAIT(wait);
- 
- 	psmouse = serio_get_drvdata(serio);
- 
-@@ -1131,7 +1161,17 @@ static void psmouse_disconnect(struct serio *serio)
- 
- 	/* make sure we don't have a resync in progress */
- 	mutex_unlock(&psmouse_mutex);
--	flush_workqueue(kpsmoused_wq);
-+
-+	prepare_to_wait(&psmouse->resync_pending_queue, &wait,
-+				TASK_UNINTERRUPTIBLE);
-+	/* 4 seconds are more than enough to ensure a resync is completed */
-+	if (atomic_read(&psmouse->resync_pending)) {
-+		timeout = schedule_timeout(HZ * 4);
-+		if (!timeout)
-+			WARN_ON(1);
-+	}
-+	finish_wait(&psmouse->resync_pending_queue, &wait);
-+
- 	mutex_lock(&psmouse_mutex);
- 
- 	if (serio->parent && serio->id.type == SERIO_PS_PSTHRU) {
-@@ -1244,7 +1284,8 @@ static int psmouse_connect(struct serio *serio, struct serio_driver *drv)
- 		goto err_free;
- 
- 	ps2_init(&psmouse->ps2dev, serio);
--	INIT_DELAYED_WORK(&psmouse->resync_work, psmouse_resync);
-+	INIT_WORK(&psmouse->resync_work, psmouse_resync_thread_helper);
-+	init_waitqueue_head(&psmouse->resync_pending_queue);
- 	psmouse->dev = input_dev;
- 	snprintf(psmouse->phys, sizeof(psmouse->phys), "%s/input0", serio->phys);
- 
-@@ -1647,25 +1688,12 @@ static int psmouse_get_maxproto(char *buffer, struct kernel_param *kp)
- 
- static int __init psmouse_init(void)
- {
--	int err;
--
--	kpsmoused_wq = create_singlethread_workqueue("kpsmoused");
--	if (!kpsmoused_wq) {
--		printk(KERN_ERR "psmouse: failed to create kpsmoused workqueue\n");
--		return -ENOMEM;
--	}
--
--	err = serio_register_driver(&psmouse_drv);
--	if (err)
--		destroy_workqueue(kpsmoused_wq);
--
--	return err;
-+	return serio_register_driver(&psmouse_drv);
- }
- 
- static void __exit psmouse_exit(void)
- {
- 	serio_unregister_driver(&psmouse_drv);
--	destroy_workqueue(kpsmoused_wq);
- }
- 
- module_init(psmouse_init);
-diff --git a/drivers/input/mouse/psmouse.h b/drivers/input/mouse/psmouse.h
-index 54ed267..dfb9b8c 100644
---- a/drivers/input/mouse/psmouse.h
-+++ b/drivers/input/mouse/psmouse.h
-@@ -39,7 +39,10 @@ struct psmouse {
- 	void *private;
- 	struct input_dev *dev;
- 	struct ps2dev ps2dev;
--	struct delayed_work resync_work;
-+	struct work_struct resync_work;
-+	/* help to wait for mouse resync jobs before disconnect */
-+	atomic_t resync_pending;
-+	wait_queue_head_t resync_pending_queue;
- 	char *vendor;
- 	char *name;
- 	unsigned char packet[8];
--- 
-1.6.1
 
 
+On Sun, 1 Feb 2009, Rafael J. Wysocki wrote:
+> > The problems happen on purely the suspend path. How the f*ck do you know 
+> > that the drivers behind the bridge don't do everything at 'suspend_late' 
+> > time, and expect to be working up until that time?
+> 
+> DMA from suspend_late?  Come on.
+
+Rafael. Stop being a total idiot.
+
+Read what I wrote.
+
+I'm saying that the driver may not do anything at all at suspend() time, 
+and leaves everything until suspend_late. Then, at suspend_late(), it 
+finally really shuts down.
+
+That's actually a very reasonable thing to do in some circumstances. It 
+simplifies everything, in particular all interrupt handling, since the 
+device is now fully live all the way while interrupts can happen.
+
+For a USB host controller, for example, it really could make sense to do 
+that - just leave all the core host controller stuff running, and the only 
+thing the "suspend()" callback does is to send the commands to the actual 
+devices, it doesn't necessarily touch the host controller itself at all.
+
+Then, at suspend_late time, you just clear the "running" bit in the 
+controller (and perhaps not even that - because you want to still push 
+things out for debugging). End result: you never actually had to shut 
+anything down at all, and you could (for example) still run a USB serial 
+port console all the way to shutdown.
+
+And yes, I wanted to do basically exactly that when I was debugging some 
+issues a year or two ago.
+
+See? The device and driver may be totally alive over a ->suspend() call. 
+And that means that the bridge CANNOT KNOW that it's ok to shut down DMA. 
+Because DMA may be the only way the device communicates (again: USB 
+actually works that way).
+
+So dammit, just admit that you were wrong, instead of continually sending 
+these _idiotic_ replies. That "turn off bus mastering" was bogus and 
+idiotic, and had no real cause. Ok to just admit it already?
+
+		Linus
