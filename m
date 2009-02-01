@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZBAKlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZBAKwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbZBAKlG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:41:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752906AbZBAKky
+	id S1753932AbZBAKwQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 05:52:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752647AbZBAKwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:40:54 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:50527 "EHLO mx2.redhat.com"
+	Sun, 1 Feb 2009 05:52:00 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:59042 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752881AbZBAKkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:40:53 -0500
-Date: Sun, 1 Feb 2009 11:38:17 +0100
+	id S1752503AbZBAKv7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 05:51:59 -0500
+Date: Sun, 1 Feb 2009 11:49:19 +0100
 From: Oleg Nesterov <oleg@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>,
-       Vitaliy Gusev <vgusev@openvz.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/4] kthreads: move sched-realeted initialization from
-	kthreadd context
-Message-ID: <20090201103817.GB5728@redhat.com>
-References: <20090130123350.GA26206@redhat.com> <200901312117.17082.rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: hch@lst.de, ebiederm@xmission.com, mingo@elte.hu, xemul@openvz.org,
+       rusty@rustcorp.com.au, vgusev@openvz.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
+Message-ID: <20090201104919.GC5728@redhat.com>
+References: <20090130123358.GA26216@redhat.com> <20090130134736.ce5910aa.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200901312117.17082.rusty@rustcorp.com.au>
+In-Reply-To: <20090130134736.ce5910aa.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 01/31, Rusty Russell wrote:
+On 01/30, Andrew Morton wrote:
 >
-> On Friday 30 January 2009 23:03:50 Oleg Nesterov wrote:
-> > (on top of kthread-dont-looking-for-a-task-in-create_kthread-2.patch)
->
-> Hi Oleg,
->
->    Thanks for the cc: Vitaliy, I never saw that patch.  I've included it in my queue now.
->
-> As to this patch, it seems marginal.  I've never been convinced that we should
-> be trying to rescue root if they choose to set kthreadd's prio anyway,
+> On Fri, 30 Jan 2009 13:33:58 +0100
+> Oleg Nesterov <oleg@redhat.com> wrote:
+> 
+> >  int kthread_stop(struct task_struct *k)
+> >  {
+> > +	struct kthread *kthread;
+> >  	int ret;
+> >  
+> > -	mutex_lock(&kthread_stop_lock);
+> > -
+> > -	/* It could exit after stop_info.k set, but before wake_up_process. */
+> > -	get_task_struct(k);
+> > -
+> >  	trace_sched_kthread_stop(k);
+> > +	get_task_struct(k);
+> >  
+> > -	/* Must init completion *before* thread sees kthread_stop_info.k */
+> > -	init_completion(&kthread_stop_info.done);
+> > -	smp_wmb();
+> > +	kthread = to_kthread(k);
+> > +	barrier(); /* it might have exited */
+> 
+> Why the change from smp_wmb() to plain old barrier()?
 
-I agree. Personally, I never understood this too. But if we want to
-remove this code we need the separate discussion, so I just moved it
-to the caller's context.
+These 2 barriers have nothing to do with each other.
 
-> but I'm also wondering why we care about kthread_create scalability!
+Before this patch, smp_wmb() was needed to make sure kthread sees the
+initialized &kthread_stop_info.done if it sees kthread_should_stop().
 
-It is always better to speedup things and to decrease the latency ;)
+After the patch, this barrier() tells the compiler it must not move
+"kthread = to_kthread(k)" down, under the "if (k->vfork_done)" check.
+Because k->vfork_done is "volatile", it can be changed under us.
 
-But I also think this and the next patch make the code simpler and
-more clean. Now the only thing create_kthread() does is a plain fork()
-and nothing else, this is imho good.
-
-> Still, I'm happy to apply it with one change:
->
-> > +		/*
-> > +		 * root may have changed our (kthreadd's) priority or CPU mask.
-> > +		 * The kernel thread should not inherit these properties.
-> > +		 */
-> > +		sched_setscheduler_nocheck(create.result, SCHED_NORMAL, &param);
-> > +		set_user_nice(create.result, KTHREAD_NICE_LEVEL);
-> > +		set_cpus_allowed_ptr(create.result, CPU_MASK_ALL_PTR);
->
-> cpu_all_mask is the non-deprecated replacement for CPU_MASK_ALL_PTR.
-
-Great, thanks.
-
-(btw, I thought about avoiding CPU_MASK_ALL_PTR too, but I didn't
- dare to mix 2 different things in one patch).
+But, once we got the k->vfork_done != NULL we can use it safely, even
+if the task exits in parallel. Because we have a reference to task_struct,
+and thus to tsk->stack.
 
 Oleg.
 
