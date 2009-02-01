@@ -1,105 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbZAaX5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZBAAMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753201AbZAaX5i (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 18:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZAaX5a
+	id S1753339AbZBAAMV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 19:12:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZBAAME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 18:57:30 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:28785 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751848AbZAaX53 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 18:57:29 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAORzhEl5LJ2q/2dsb2JhbADHX4QUBg
-X-IronPort-AV: E=Sophos;i="4.37,357,1231075800"; 
-   d="scan'208";a="307530372"
-Date: Sun, 1 Feb 2009 10:57:25 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: spurious -ENOSPC on XFS
-Message-ID: <20090131235725.GA24173@disturbed>
-Mail-Followup-To: Mikulas Patocka <mpatocka@redhat.com>,
-	Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-	linux-kernel@vger.kernel.org
-References: <20090113214949.GN8071@disturbed> <Pine.LNX.4.64.0901132324070.16396@hs20-bc2-1.build.redhat.com> <20090118173144.GA1999@infradead.org> <Pine.LNX.4.64.0901201430250.4603@hs20-bc2-1.build.redhat.com> <20090120232422.GF10158@disturbed> <20090122205913.GA30859@infradead.org> <20090122224347.GA18751@infradead.org> <Pine.LNX.4.64.0901231509010.5179@hs20-bc2-1.build.redhat.com> <20090124071249.GF32390@disturbed> <Pine.LNX.4.64.0901291136050.19368@hs20-bc2-1.build.redhat.com>
+	Sat, 31 Jan 2009 19:12:04 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:54829 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752203AbZBAAMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 19:12:03 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+Date: Sun, 1 Feb 2009 01:11:07 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
+Cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901312346.35265.rjw@sisk.pl> <alpine.LFD.2.00.0901311450550.2978@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0901311450550.2978@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0901291136050.19368@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902010111.08433.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 11:39:00AM -0500, Mikulas Patocka wrote:
-> On Sat, 24 Jan 2009, Dave Chinner wrote:
-> > On Fri, Jan 23, 2009 at 03:14:30PM -0500, Mikulas Patocka wrote:
-> > > If I placed
-> > > xfs_sync_inodes(ip->i_mount, SYNC_DELWRI);
-> > > xfs_sync_inodes(ip->i_mount, SYNC_DELWRI | SYNC_IOWAIT);
-> > > directly to xfs_flush_device, I got lock dependency warning (though not a 
-> > > real deadlock).
-> > 
-> > Same reason memory reclaim gives lockdep warnings on XFS - we're
-> > recursing into operations that take inode locks while we currently
-> > hold an inode lock.  However, it shouldn't deadlock because
-> > we should ever try to take the iolock on the inode that we current
-> > hold it on.
-> > 
-> > > So synchronous flushing definitely needs some thinking and lock 
-> > > rearchitecting.
-> > 
-> > No, not at all. At most the grabbing of the iolock in
-> > xfs_sync_inodes_ag() needs to become a trylock....
+On Sunday 01 February 2009, Linus Torvalds wrote:
 > 
-> You are wrong, the comments in the code are right. It really
-> deadlocks if it is modified to use synchronous wait for the end of
-> the flush and if the flush is done with xfs_sync_inodes:
+> On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
+> > 
+> > But many drivers have an analogous code sequence in their PM callbacks and
+> > I've tested it with several drivers on my test boxes.  It's never failed for me.
 > 
-> xfssyncd      D 0000000000606808     0  4819      2
-> Call Trace:
->  [0000000000606788] rwsem_down_failed_common+0x1ac/0x1d8
->  [0000000000606808] rwsem_down_read_failed+0x24/0x34
->  [0000000000606848] __down_read+0x30/0x40
->  [0000000000468a64] down_read_nested+0x48/0x58
->  [00000000100e6cc8] xfs_ilock+0x48/0x8c [xfs]
->  [000000001011018c] xfs_sync_inodes_ag+0x17c/0x2dc [xfs]
->  [000000001011034c] xfs_sync_inodes+0x60/0xc4 [xfs]
->  [00000000101103c4] xfs_flush_device_work+0x14/0x2c [xfs]
->  [000000001010ff1c] xfssyncd+0x110/0x174 [xfs]
->  [000000000046556c] kthread+0x54/0x88
->  [000000000042b2a0] kernel_thread+0x3c/0x54
->  [00000000004653b8] kthreadd+0xac/0x160
+> Rafael!
+> 
+> Read what I write. Twice.
 
-So it is stuck:
+You didn't give me a chance by removing it. ;-)
 
-127                 /*
-128                  * If we have to flush data or wait for I/O completion
-129                  * we need to hold the iolock.
-130                  */
-131                 if ((flags & SYNC_DELWRI) && VN_DIRTY(inode)) {
-132     >>>>>>>>            xfs_ilock(ip, XFS_IOLOCK_SHARED);
-133                         lock_flags |= XFS_IOLOCK_SHARED;
-134                         error = xfs_flush_pages(ip, 0, -1, fflag, FI_NONE);
-135                         if (flags & SYNC_IOWAIT)
-136                                 xfs_ioend_wait(ip);
-137                 }
+> Here it is again: "Imagine that you're a bridge."
+> 
+> Stop the idiocy of just ignoring what I write, and talking about something 
+> else.
+> 
+> Bridges are special.
 
-Given that we are stuck on the iolock in xfs_sync_inodes_ag(), I
-suspect you should re-read my comments above about "lock
-re-architecting" ;).
+[Confused] Yes, they are.
 
-If you make the xfs_ilock() there xfs_ilock_nowait() and avoid data
-writeback if we don't get the lock the deadlock goes away, right?
+And yes, I agreed that the bus master bit shouldn't be cleared for them.  Which
+does not necessarily imply that clearing that bit will always lead to problems
+in practice.
 
-BTW, can you post the patch you are working on?
+> > > But as to why it fixes Parag's case - I think that's because the new PM 
+> > > resume does more than the legacy resume does, so it ends up re-enabling 
+> > > things anyway. It does it too late, but it doesn't matter in this case (no 
+> > > shared irq issues with the only device behind the pci-e bridge).
+> > 
+> > Still, the 2.6.28 resume didn't do the "reenable device" thing and it worked.
+> > 
+> > I think in the Parag's case the problem is the "double restore".
+> 
+> It's possible. Still, it really shouldn't matter.
+> 
+> Or at least, it shouldn't matter, as long as what you restore is sane. 
+> You're just going to rewrite the same data, after all.
 
-Cheers,
+Yes, but I suspect the device is misbehaving due to some timing issues.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+With devices that behave totally correctly the current code doesn't appear to
+cause problems.
+
+> That's why I was trying to see if the IO/MEM bits got cleared in the save 
+> image for some reason.
+
+Well, we never clear them.
+
+> > > See above. I think you really haven't thought the new PM code through.
+> > 
+> > Yes, I have, but my experience apparently doesn't match yours.
+> 
+> The problem is that you're looking at some individual devices, and saying 
+> "it works for them, so it must work for everybody".
+
+Look.  I have only a limited set of data from devices that have been tested.
+On the other hand I have some pieces of documentation that are sometimes not
+very clear.  I try to use the data and the docs I have to figure out how things
+actually work.
+
+That's why the cases like the Parag's one are so important.  They allow me to
+verify assumptions.
+
+So no, I don't say "it must work for everybody", but I have to assume
+_something_ if I don't know that _for_ _sure_.  I sometimes make wrong
+assumptions, which is a consequence of the fact that I can only use a limited
+set of data to verify my observations.
+
+And please note, we still don't know for sure why the Parag's box actually
+fails.  We have some theories that may or may not be correct, but that's it.
+
+> Add to that the fact that you apparently _still_ haven't figured out the
+> difference between bridges and regular devices, and that most most
+> motherboards probably keep the PCI bridges powered anyway, and...
+
+[Confused again] Why are you talking about keeping bridges powered?
+ 
+> And yes, I realize that this is how PM under Linux has worked for a long 
+> time. But it's what I think we should get away from. It's why I pushed so 
+> hard to get the whole interrupt handling sane and stable. 
+> 
+> The argument that "it works for a lot of machines" IS NOT AN ARGUMENT, 
+> Rafael! Stop using it as such.
+>
+> We know that 2.6.28 suspend/resume works for a lot of laptops. Even 
+> possibly _most_ laptops. But it was still broken. We want to get _away_ 
+> from that.
+
+Working on many (different) systems is a good indication of what is and what
+is not going to work in general.  It obviously doesn't imply correctness,
+though.
+
+> > DMA will only not work until the ->resume sets the bus master bit, which
+> > happes before the ->resume of any device behind the bridge runs.
+> 
+> Read my emails. THIS ISN'T EVEN A RESUME-TIME PROBLEM!
+> 
+> The problems happen on purely the suspend path. How the f*ck do you know 
+> that the drivers behind the bridge don't do everything at 'suspend_late' 
+> time, and expect to be working up until that time?
+
+DMA from suspend_late?  Come on.
+
+> Here's a big hint: YOU DO NOT KNOW. YOU MUST NOT TURN OFF THE BRIDGE AT 
+> SUSPEND TIME!
+> 
+> I'm getting really fed up with you here. You're not even listening. And 
+> you are _definitely_ not doing any "deep thinking" here.
+
+Why are you shouting at me?  Did you read my reply to your other message?
+How many times do I have to tell you I AGREE THAT I SHOULD NOT TURN OFF THE
+BUS MASTER BIT FOR BRIDGES so that you actually get it?
+
+> > > How about devices that have magic power-down sequences? For example, a 
+> > > quick grep shows that USB on a PPC PMAC has a special "disable ASIC clocks 
+> > > for USB" thing after it puts the USB controller to sleep.
+> > 
+> > This is exceptional, from what I can tell.
+> 
+> So?
+> 
+> Irrelevant. We want to handle the exceptional case too. And we generally 
+> want to handle them _automatically, rather than by:
+> 
+> > We may need an "override default resume" flag for such drivers.
+> 
+> .. why? Wouldn't it be a hell of a lot nicer if the PCI layer just did 
+> things right automatically. 
+> 
+> Which the legacy layer already does. It sees "ok, the driver did it's own 
+> pci_save_state(), I'm not going to do it for it".
+> 
+> THAT is robust. And simple. Wouldn't you agree?
+> 
+> So why not do the same in the new one? Why do you want to make the new 
+> interfaces _inferior_ to the old ones?
+
+On suspend we have two things to do:
+- save the state
+- put the device into a low power state
+
+The state_saved flag can be used to see if the driver has saved the state.
+
+What about powering off?  Are we going to assume that if the driver has saved
+the state of the device, the core should not put the device into a low power
+state?
+
+Rafael
