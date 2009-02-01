@@ -1,40 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbZBAJF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbZBAJRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753058AbZBAJF2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 04:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZBAJFA
+	id S1753130AbZBAJRh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 04:17:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZBAJRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 04:05:00 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35213
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751673AbZBAJE6 (ORCPT
+	Sun, 1 Feb 2009 04:17:23 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:60124 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbZBAJRW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 04:04:58 -0500
-Date: Sun, 01 Feb 2009 01:04:55 -0800 (PST)
-Message-Id: <20090201.010455.124561041.davem@davemloft.net>
-To: jeremy@goop.org
-Cc: jeff@garzik.org, shemminger@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
-Subject: Re: [PATCH] net: add ARP notify option for devices
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4981FA36.2000301@goop.org>
-References: <4981FA36.2000301@goop.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 1 Feb 2009 04:17:22 -0500
+Subject: Re: hackbench [pthread mode] regression with 2.6.29-rc3
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lin Ming <ming.m.lin@intel.com>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1233476961.13659.12.camel@minggr.sh.intel.com>
+References: <1233473426.2604.13.camel@ymzhang>
+	 <d3f22a0902010026q1db36381j36cb1c9803d48431@mail.gmail.com>
+	 <1233476961.13659.12.camel@minggr.sh.intel.com>
+Content-Type: text/plain
+Date: Sun, 01 Feb 2009 10:17:16 +0100
+Message-Id: <1233479836.4787.63.camel@laptop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-Date: Thu, 29 Jan 2009 10:49:26 -0800
-
-> This adds another inet device option to enable gratuitous ARP
-> when device is brought up or address change. This is handy for
-> clusters or virtualization.
+On Sun, 2009-02-01 at 16:29 +0800, Lin Ming wrote:
+> > Bisect located below patch.
+> > commit 490dea45d00f01847ebebd007685d564aaf2cd98
+> > Author: Peter Zijlstra <peterz@infradead.org>
+> > Date:   Mon Nov 24 17:06:57 2008 +0100
+> > 
+> >    itimers: remove the per-cpu-ish-ness
+> > 
+> >    Either we bounce once cacheline per cpu per tick, yielding n^2 bounces
+> >    or we just bounce a single..
+> > 
+> >    Also, using per-cpu allocations for the thread-groups complicates the
+> >    per-cpu allocator in that its currently aimed to be a fixed sized
+> >    allocator and the only possible extention to that would be vmap based,
+> >    which is seriously constrained on 32 bit archs.
+> > 
+> > 
+> > After above patch is reverted, hackbench result is restored.
 > 
-> Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> oltp has ~3% regression with 2.6.29-rc3 on 4core*2p stokley machine.
+> After above patch reverted, the regression disappeared.
 
-I'm fine with this, applied, thanks.
+*sigh*, did they gain anything with introduction of the per-cpu crap?
+
+f06febc96ba8e0af80bcc3eaec0a109e88275fac
+5ce73a4a5a4893a1aa4cdeed1b1a5a6de42c43b6
+bb34d92f643086d546b49cef680f6f305ed84414
+ad133ba3dc283300e5b62b5b7211d2f39fbf6ee7
+ce394471d13bf071939a9a0b48c64c297676d233
+
+
+
