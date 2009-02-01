@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754526AbZBARVn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbZBARYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754526AbZBARVn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 12:21:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbZBARVd
+	id S1755100AbZBARYb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 12:24:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZBARYQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 12:21:33 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33205 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167AbZBARVd (ORCPT
+	Sun, 1 Feb 2009 12:24:16 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:51302 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752709AbZBARYO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 12:21:33 -0500
-Date: Sun, 1 Feb 2009 17:20:18 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
-       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull -tip] headers_check fixes for other architectures
-Message-ID: <20090201172018.GB21913@n2100.arm.linux.org.uk>
-References: <1233385816.17794.16.camel@localhost.localdomain> <20090131164410.GA11189@elte.hu> <1233469811.5846.14.camel@localhost.localdomain> <20090201103936.GA30157@elte.hu> <20090201164915.GA29264@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 1 Feb 2009 12:24:14 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=gmZXxmEuJTMQGMdq2TPl7FtPJyAzxyNPu4+2pxAAiC3Y/3t53QIYRtNdKwmUwu7S4n
+         QBdYgY1KrSGxoHZdmPLolKEw7Yc++67SSUkqS+rE/YqtoT0/TPum0IG7OJStiis5jAJ9
+         /xanBgfXVK77+RnNOAQR2FJAGivjRA0TU34oA=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: petkovbb@gmail.com
+Subject: Re: [PATCH 1/3] ide-cd: use ide_drive_t's rq in cdrom_queue_request_sense
+Date: Sun, 1 Feb 2009 17:04:50 +0100
+User-Agent: KMail/1.10.4 (Linux/2.6.29-rc2-next-20090126; KDE/4.1.4; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+References: <1233002440-4325-1-git-send-email-petkovbb@gmail.com> <200901271607.10869.bzolnier@gmail.com> <9ea470500901270847m40264331le1092dc1589ec9de@mail.gmail.com>
+In-Reply-To: <9ea470500901270847m40264331le1092dc1589ec9de@mail.gmail.com>
+MIME-Version: 1.0
 Content-Disposition: inline
-In-Reply-To: <20090201164915.GA29264@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200902011704.51726.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 01, 2009 at 05:49:15PM +0100, Ingo Molnar wrote:
+On Tuesday 27 January 2009, Borislav Petkov wrote:
+> On Tue, Jan 27, 2009 at 4:07 PM, Bartlomiej Zolnierkiewicz
+> <bzolnier@gmail.com> wrote:
+> > On Monday 26 January 2009, Borislav Petkov wrote:
+> >> There should be no functionality change resulting from this patch.
+> >>
+> >> Suggested-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> >> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> >> ---
+> >>  drivers/ide/ide-cd.c |    2 +-
+> >>  1 files changed, 1 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+> >> index d3d5fb6..3907466 100644
+> >> --- a/drivers/ide/ide-cd.c
+> >> +++ b/drivers/ide/ide-cd.c
+> >> @@ -207,7 +207,7 @@ static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
+> >>                                     struct request *failed_command)
+> >>  {
+> >>       struct cdrom_info *info         = drive->driver_data;
+> >> -     struct request *rq              = &info->request_sense_request;
+> >> +     struct request *rq              = &drive->request_sense_rq;
+> >
+> > Don't we want to also remove now unused ->request_sense_request?
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> sure we do :)
 > 
-> > > These patches fixes 41 headers_check warnings as shown in first email.
-> > 
-> > Pulled into tip/core/header-fixes, thanks Jaswinder!
+> --
+> From: Borislav Petkov <petkovbb@gmail.com>
+> Date: Tue, 27 Jan 2009 17:42:28 +0100
+> Subject: [PATCH 1/3] ide-cd: use ide_drive_t's rq in cdrom_queue_request_sense
 > 
-> These are the remaining ones on x86:
+> There should be no functionality change resulting from this patch.
 > 
->      17 /dev/shm/tip/usr/include/linux/reiserfs_fs.h
->      12 /dev/shm/tip/usr/include/linux/soundcard.h
->       6 /dev/shm/tip/usr/include/asm/setup.h
->       3 /dev/shm/tip/usr/include/linux/nubus.h
->       2 /dev/shm/tip/usr/include/linux/in6.h
->       1 /dev/shm/tip/usr/include/mtd/jffs2-user.h
->       1 /dev/shm/tip/usr/include/linux/socket.h
->       1 /dev/shm/tip/usr/include/linux/coda_psdev.h
->       1 /dev/shm/tip/usr/include/asm/prctl.h
-> 
-> They are all of the "extern's make no sense in userspace" type. What was the 
-> verdict, are they worth touching, or should we turn off this warning in 
-> 'make headers_check'?
+> Suggested-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 
-Ah, not a case of new-cc's added.  A case of the rare event of non-spam
-eminating from hera.kernel.org falling foul of my manual local blacklist.
-
-I'd appreciate it if someone could point me at the original patches
-being discussed.
+applied
