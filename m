@@ -1,89 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZBAK7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbZBALTW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZBAK7U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:59:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZBAK7I
+	id S1753970AbZBALTW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 06:19:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbZBALTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:59:08 -0500
-Received: from harold.telenet-ops.be ([195.130.133.65]:38310 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752984AbZBAK7H (ORCPT
+	Sun, 1 Feb 2009 06:19:13 -0500
+Received: from mail-bw0-f12.google.com ([209.85.218.12]:55553 "EHLO
+	mail-bw0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753028AbZBALTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:59:07 -0500
-X-Greylist: delayed 3222 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Feb 2009 05:59:07 EST
-Date: Sun, 1 Feb 2009 11:59:04 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Ankit Jain <me@ankitjain.org>, viro@zeniv.linux.org.uk,
-       hch@infradead.org, linux-fsdevel@vger.kernel.org, mfasheh@suse.com,
-       joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
-Subject: Re: [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility
- with legacy xfs ioctls
-In-Reply-To: <49857BEB.30404@panasas.com>
-Message-ID: <Pine.LNX.4.64.0902011151180.20875@anakin>
-References: <4980C71F.1010804@ankitjain.org> <200901310138.34164.arnd@arndb.de>
- <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de>
- <49856FE6.8020601@panasas.com> <Pine.LNX.4.64.0902011104320.20875@anakin>
- <49857BEB.30404@panasas.com>
+	Sun, 1 Feb 2009 06:19:12 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ncjY4SY4H87kB8/hd/uBvdDVh11Wl22cqIUbNenndFCrJ4gLZvch4/fRl9ioPQcz+C
+         SB1pQLs/GkffXHxyT+Udh3r72nwkD6ETJU50Xgi9Rcsx/E5noVfOTIzaOylrG21cIB9F
+         EDIBiAZUONPd3zDEDmiAoKW62/IxpQY5x+EnY=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090129141929.GP24391@elte.hu>
+References: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com>
+	 <Pine.LNX.4.64.0901221658550.14302@blonde.anvils>
+	 <8c5a844a0901221500m7af8ff45v169b6523ad9d7ad3@mail.gmail.com>
+	 <20090122231358.GA27033@elte.hu>
+	 <8c5a844a0901230310h7aa1ec83h60817de2b36212d8@mail.gmail.com>
+	 <8c5a844a0901281331w4cea7ab2y305d5a1af96e313e@mail.gmail.com>
+	 <20090129141929.GP24391@elte.hu>
+Date: Sun, 1 Feb 2009 13:19:10 +0200
+Message-ID: <8c5a844a0902010319t20b853d0t6c156ecc84543f30@mail.gmail.com>
+Subject: Re: [PATCH 2.6.28 1/2] memory: improve find_vma
+From: Daniel Lowengrub <lowdanie@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Feb 2009, Boaz Harrosh wrote:
-> Geert Uytterhoeven wrote:
-> > On Sun, 1 Feb 2009, Boaz Harrosh wrote:
-> >> Arnd Bergmann wrote:
-> >>> +struct space_resv {
-> >>> +	__s16		l_type;
-> >>> +	__s16		l_whence;
-> >>> +	__s64		l_start;
-> >>> +	__s64		l_len;		/* len == 0 means until end of file */
-> >>> +	__s32		l_sysid;
-> >>> +	__u32		l_pid;
-> >>> +	__s32		l_pad[4];	/* reserve area			    */
-> >>> +};
-> >> What about telling the compiler exactly what you said above, just
-> >> to be sure we all mean the same thing. (And as documentation for new
-> >> comers):
-> >>
-> >> +struct space_resv_64 {
-> >> +	__s16		l_type;
-> >> +	__s16		l_whence;
-> >> +	__u32		reserved;
-> >> +	__s64		l_start;
-> >> +	__s64		l_len;		/* len == 0 means until end of file */
-> >> +	__s32		l_sysid;
-> >> +	__u32		l_pid;
-> >> +	__s32		l_pad[4];	/* reserve area			    */
-> >> +} __packed;
-> > 
-> > Because the compiler will assume all fields are always unaligned and will use very
-> > suboptimal code to access them?
-> 
-> This discussion comes up every once in a while. I'm using an old FC7 compiler
-> (gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-27)) And tests show that when the layout
-> of a structure is exactly the same the "__packed" on structure declarations does
-> nothing. It only starts to affect when there are real differences in alignment.
-> Also tests with gcc 3.4.x showed the same effect.
-> 
-> On previous discussions no one could come forward and say what compiler version
-> breaks when __packed is applied on structure definition. I'm afraid your statement
-> above is a myth.
-
-FC7, targeting ia32? Sure, ia32 has no alignment restrictions.
-Try e.g. MIPS.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+On 1/29/09, Ingo Molnar <mingo@elte.hu> wrote:
+> Here's an mmap performance tester:
+>
+>    http://redhat.com/~mingo/misc/mmap-perf.c
+>
+> maybe that shows a systematic effect. If you've got a Core2 based
+> test-system then you could try perfstat as well, for much more precise
+> instruction counts. (can give you more info about how to do that if you
+> have such a test-system.)
+>
+>        Ingo
+>
+I compiled mmap-perf.c an ran it with ./mmap-perf 1 (not as root, does
+that matter?).  As obvious from the code, the output that I got was
+the final state of the /proc/[self]/maps file.  How does this
+information tell me about performance?  Anyhow, here're the first 10
+lines of the [heap] part of the output using the standard kernel:
+0965b000-0967c000 rw-p 0965b000 00:00 0          [heap]
+86007000-86009000 rw-p 86007000 00:00 0
+86009000-8600a000 ---p 86009000 00:00 0
+86018000-8601b000 rw-p 86018000 00:00 0
+8601c000-86023000 -w-p 8601c000 00:00 0
+86023000-86026000 rw-p 86023000 00:00 0
+86026000-86029000 r--p 86026000 00:00 0
+8603e000-86040000 rw-p 8603e000 00:00 0
+86048000-8604c000 r--p 86048000 00:00 0
+8604f000-86054000 ---p 8604f000 00:00 0
+and here're the first 10 lines of the output with the patch applied:
+09596000-095b7000 rw-p 09596000 00:00 0          [heap]
+860ab000-860ad000 rw-p 860ab000 00:00 0
+860ad000-860ae000 ---p 860ad000 00:00 0
+860bc000-860bf000 rw-p 860bc000 00:00 0
+860c0000-860c7000 -w-p 860c0000 00:00 0
+860c7000-860ca000 rw-p 860c7000 00:00 0
+860ca000-860cd000 r--p 860ca000 00:00 0
+860e2000-860e4000 rw-p 860e2000 00:00 0
+860ec000-860f0000 r--p 860ec000 00:00 0
+860f3000-860f8000 ---p 860f3000 00:00 0
+I can't see how this can show performance differences but I'm not sure
+what other
+part of the output is relevant.  Should I run it with some other options?
+Thanks,
+Daniel
