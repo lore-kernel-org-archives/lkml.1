@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753416AbZBAPxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZBAPxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753416AbZBAPxb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 10:53:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZBAPxX
+	id S1754610AbZBAPxr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 10:53:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbZBAPxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 10:53:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:44602 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751870AbZBAPxW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 10:53:22 -0500
-Subject: [PATCH -tip] x86: irqinit_32.c fix compilation warning
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sun, 01 Feb 2009 21:22:54 +0530
-Message-Id: <1233503574.5737.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 1 Feb 2009 10:53:35 -0500
+Received: from kroah.org ([198.145.64.141]:60301 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752064AbZBAPxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 10:53:34 -0500
+Date: Sun, 1 Feb 2009 07:51:17 -0800
+From: Greg KH <greg@kroah.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: wgreathouse@smva.com, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] usb-serial : fix the nousb oops
+Message-ID: <20090201155117.GA10018@kroah.com>
+References: <49857F23.3090208@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49857F23.3090208@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Feb 01, 2009 at 06:53:23PM +0800, Dave Young wrote:
+> 
+> In case with "nousb" booting, serial drivers will trigger kernel oops.
 
-Fix:
-  arch/x86/kernel/irqinit_32.c:124: warning: 'smp_intr_init' defined but not used
+They will?  What is the oops message?
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/irqinit_32.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+> Here add usb_disabled() check in usb_serial_init and usb_serial_register
 
-diff --git a/arch/x86/kernel/irqinit_32.c b/arch/x86/kernel/irqinit_32.c
-index ddf3eb7..09cc049 100644
---- a/arch/x86/kernel/irqinit_32.c
-+++ b/arch/x86/kernel/irqinit_32.c
-@@ -120,9 +120,10 @@ int vector_used_by_percpu_irq(unsigned int vector)
- 	return 0;
- }
- 
-+#ifdef CONFIG_X86_LOCAL_APIC
- static void __init smp_intr_init(void)
- {
--#if defined(CONFIG_X86_LOCAL_APIC) && defined(CONFIG_SMP)
-+#ifdef CONFIG_SMP
- 	/*
- 	 * The reschedule interrupt is a CPU-to-CPU reschedule-helper
- 	 * IPI, driven by wakeup.
-@@ -151,6 +152,7 @@ static void __init smp_intr_init(void)
- 	set_bit(IRQ_MOVE_CLEANUP_VECTOR, used_vectors);
- #endif
- }
-+#endif
- 
- static void __init apic_intr_init(void)
- {
--- 
-1.6.1
+This is odd, is it something new?  Why is usb-serial the only driver
+that needs such a thing?
 
+confused,
 
-
+greg k-h
