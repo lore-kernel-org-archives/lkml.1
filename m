@@ -1,65 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbZBAC4s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbZBAC5E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbZBAC4s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 21:56:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZBAC43
+	id S1755180AbZBAC5E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 21:57:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZBAC4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 21:56:29 -0500
-Received: from hera.kernel.org ([140.211.167.34]:34840 "EHLO hera.kernel.org"
+	Sat, 31 Jan 2009 21:56:32 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34839 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752369AbZBAC42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752068AbZBAC42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 31 Jan 2009 21:56:28 -0500
 From: Tejun Heo <tj@kernel.org>
 To: jeff@garzik.org, linux-ide@vger.kernel.org, jens.axboe@oracle.com,
        linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        James.Bottomley@HansenPartnership.com, Mauelshagen@RedHat.com,
        dm-devel@RedHat.com
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 2/3] scsi: add scsi_device->alt_capacity
-Date: Sun,  1 Feb 2009 11:55:50 +0900
-Message-Id: <1233456951-992-3-git-send-email-tj@kernel.org>
+Subject: [PATCHSET] block,scsi,libata: implement alt_size
+Date: Sun,  1 Feb 2009 11:55:48 +0900
+Message-Id: <1233456951-992-1-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1233456951-992-1-git-send-email-tj@kernel.org>
-References: <1233456951-992-1-git-send-email-tj@kernel.org>
 X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 01 Feb 2009 02:56:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add scsi_device->alt_capacity and let sd pass it over to genhd.  This
-is to allow SCSI low level drivers to configure alt_capacity via
-slave_configure().
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
----
+Hello,
+
+This patchset implements alt_size, which is a size hint to the users
+of a block device.  It's primarily to communicate the BIOS (HPA) size
+on ATA devices to userland, so that dmraid can consider it when trying
+to figure out BIOS raid layout.  This is critical as dmraid can be
+tricked into assemblying the wrong raid when fed with the unlocked
+size and if the disk content is right (or, rather, wrong) and good
+number of distros are shipping with ignore_hpa=1 as default.
+
+This patch contains the following three patches.
+
+  0001-block-add-alt_size.patch
+  0002-scsi-add-scsi_device-alt_capacity.patch
+  0003-libata-export-HPA-size-as-alt_size.patch
+
+Without the above three patches, I get the following on my nv RAID-0
+if HPA unlocking is turned on.
+
+  # ~/work/dmraid/tools/dmraid -a y
+  RAID set "nvidia_djgdjigi" was activated
+  # mount /dev/dm-0 /mnt/tmp
+  mount: wrong fs type, bad option, bad superblock on /dev/dm-0,
+	 missing codepage or helper program, or other error
+	 In some cases useful info is found in syslog - try
+	 dmesg | tail  or so
+
+With the above three patches and modified dmraid,
+
+  ck804:~/os/work/build # ~/work/dmraid/tools/dmraid -a y -v -v -v
+  ...
+  NOTICE: /dev/sdb: using BIOS sectors 234439535
+  RAID set "nvidia_djgdjigi" was activated
+  ...
+  ck804:~/os/work/build # mount /dev/dm-0 /mnt/tmp
+  ck804:~/os/work/build # umount /dev/dm-0
+
+Any ideas on through which tree this should be pushed?  I'll post
+dmraid patches as a reply to this thread for reference.
+
+Thanks.
+
+This patchset is against the current linus#master[1] and contains the
+following changes.
+
+ block/genhd.c              |   26 ++++++++++++++++++++++++++
+ drivers/ata/libata-core.c  |    2 ++
+ drivers/ata/libata-scsi.c  |    2 ++
  drivers/scsi/sd.c          |    1 +
+ include/linux/genhd.h      |   13 ++++++++++++-
+ include/linux/libata.h     |    1 +
  include/scsi/scsi_device.h |    1 +
- 2 files changed, 2 insertions(+), 0 deletions(-)
+ 7 files changed, 45 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index d57566b..b83d850 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -1751,6 +1751,7 @@ static int sd_revalidate_disk(struct gendisk *disk)
- 	blk_queue_ordered(sdkp->disk->queue, ordered, sd_prepare_flush);
- 
- 	set_capacity(disk, sdkp->capacity);
-+	set_alt_capacity(disk, sdp->alt_capacity);
- 	kfree(buffer);
- 
-  out:
-diff --git a/include/scsi/scsi_device.h b/include/scsi/scsi_device.h
-index 01a4c58..55be54a 100644
---- a/include/scsi/scsi_device.h
-+++ b/include/scsi/scsi_device.h
-@@ -92,6 +92,7 @@ struct scsi_device {
- 	unsigned int manufacturer;	/* Manufacturer of device, for using 
- 					 * vendor-specific cmd's */
- 	unsigned sector_size;	/* size in bytes */
-+	size_t alt_capacity;	/* alternative capacity, used by sd */
- 
- 	void *hostdata;		/* available to low-level driver */
- 	char type;
--- 
-1.6.0.2
+--
+tejun
 
+[1] 45c82b5a770be66845687a7d027c8b52946d59af
