@@ -1,44 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754992AbZBABz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbZBACxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754992AbZBABz5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 20:55:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZBABzt
+	id S1753438AbZBACxY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 21:53:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752279AbZBACxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 20:55:49 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:37524 "EHLO mx2.redhat.com"
+	Sat, 31 Jan 2009 21:53:12 -0500
+Received: from mga09.intel.com ([134.134.136.24]:18857 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752137AbZBABzs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 20:55:48 -0500
-Subject: Re: irq_desc_lock_class is held when it is freed
-From: Eric Paris <eparis@redhat.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       hpa@zytor.com
-In-Reply-To: <4984F8BF.8020903@kernel.org>
-References: <1233437601.11984.41.camel@localhost.localdomain>
-	 <4984D59F.4030700@kernel.org>
-	 <1233450323.19217.0.camel@localhost.localdomain>
-	 <4984F8BF.8020903@kernel.org>
-Content-Type: text/plain
-Date: Sat, 31 Jan 2009 20:55:39 -0500
-Message-Id: <1233453339.19217.3.camel@localhost.localdomain>
+	id S1752068AbZBACxK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 21:53:10 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,357,1231142400"; 
+   d="scan'208";a="486172170"
+Subject: Re: Mainline kernel OLTP performance update
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Matthew Wilcox <matthew@wil.cx>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>, matthew.r.wilcox@intel.com,
+       chinang.ma@intel.com, linux-kernel@vger.kernel.org,
+       sharad.c.tripathi@intel.com, arjan@linux.intel.com,
+       suresh.b.siddha@intel.com, harita.chilukuri@intel.com,
+       douglas.w.styner@intel.com, peter.xihong.wang@intel.com,
+       hubert.nueckel@intel.com, chris.mason@oracle.com, srostedt@redhat.com,
+       linux-scsi@vger.kernel.org, andrew.vasquez@qlogic.com,
+       anirban.chakraborty@qlogic.com, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.DEB.1.10.0901261235270.1908@qirst.com>
+References: <BC02C49EEB98354DBA7F5DD76F2A9E800317003CB0@azsmsx501.amr.corp.intel.com>
+	 <200901161503.13730.nickpiggin@yahoo.com.au>
+	 <20090115201210.ca1a9542.akpm@linux-foundation.org>
+	 <200901161746.25205.nickpiggin@yahoo.com.au>
+	 <20090116065546.GJ31013@parisc-linux.org>
+	 <1232092430.11429.52.camel@ymzhang>  <87sknjeemn.fsf@basil.nowhere.org>
+	 <1232428583.11429.83.camel@ymzhang>
+	 <alpine.DEB.1.10.0901211852060.18367@qirst.com>
+	 <1232613395.11429.122.camel@ymzhang>
+	 <1232615707.14549.6.camel@penberg-laptop>
+	 <1232616517.11429.129.camel@ymzhang>
+	 <1232617672.14549.25.camel@penberg-laptop>
+	 <1232679773.11429.155.camel@ymzhang>  <4979692B.3050703@cs.helsinki.fi>
+	 <1232697998.6094.17.camel@penberg-laptop>
+	 <1232699401.11429.163.camel@ymzhang>
+	 <1232703989.6094.29.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0901231020030.21692@qirst.com>
+	 <1232765728.11429.193.camel@ymzhang>
+	 <alpine.DEB.1.10.0901261235270.1908@qirst.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Sun, 01 Feb 2009 10:52:56 +0800
+Message-Id: <1233456777.2604.2.camel@ymzhang>
 Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-31 at 17:19 -0800, Yinghai Lu wrote:
-> [PATCH] x86: fix lock status with numa_migrate_irq_desc
+On Mon, 2009-01-26 at 12:36 -0500, Christoph Lameter wrote:
+> On Sat, 24 Jan 2009, Zhang, Yanmin wrote:
 > 
-> Impact: make the lock state consistent
+> > But when trying to increased it to 4, I got:
+> > [root@lkp-st02-x8664 slab]# echo "3">kmalloc-8192/order
+> > [root@lkp-st02-x8664 slab]# echo "4">kmalloc-8192/order
+> > -bash: echo: write error: Invalid argument
 > 
-> adjust lock sequence...
+> This is because 4 is more than the maximum allowed order. You can
+> reconfigure that by setting
 > 
-> Reported-by: Eric Paris <eparis@redhat.com>
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> slub_max_order=5
+> 
+> or so on boot.
+With ﻿slub_max_order=5, the default order of﻿ kmalloc-8192 becomes
+5. I tested it with netperf UDP-U-4k and the result difference from
+SLAB/SLQB is less than 1% which is really fluctuation.
 
-Well it booted and isn't complaining, so:
-
-Tested-by: Eric Paris <eparis@redhat.com>
 
