@@ -1,184 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753339AbZBAAMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753265AbZBAA1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753339AbZBAAMV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 19:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZBAAME
+	id S1753265AbZBAA1f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 19:27:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZBAA10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 19:12:04 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:54829 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752203AbZBAAMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 19:12:03 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-Date: Sun, 1 Feb 2009 01:11:07 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.29-rc2-tst; KDE/4.1.3; x86_64; ; )
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
+	Sat, 31 Jan 2009 19:27:26 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:57033 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751797AbZBAA1Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 19:27:25 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:to:cc:subject;
+        b=YKjpfzDcbtEjWxtpPQaqn82OaGjZmNiTWtgNPyhhaUD322i1k6nEBoZrOy5G+obxAq
+         GWNJ2mjEmQoYReZwZodSPF24zUP4hFpecl2Vm3cdTnou521dqcpnqRGcJgaeEPD8zuQf
+         0eW+O9dDXB3shyIgv7IQMdba1HLvJC+ux/vZs=
+Message-ID: <4984ec6a.0637560a.3217.4534@mx.google.com>
+Date: Sat, 31 Jan 2009 16:27:22 -0800 (PST)
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: dmitry.torokhov@gmail.com, dtor@mail.ru,
        Andrew Morton <akpm@linux-foundation.org>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200901312346.35265.rjw@sisk.pl> <alpine.LFD.2.00.0901311450550.2978@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0901311450550.2978@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902010111.08433.rjw@sisk.pl>
+Cc: linux-kernel@vger.kernel.org, linux-input@vger.kernel.org,
+       <fweisbec@gmail.com>
+Subject: [PATCH v2] psmouse: run kpsmoused only while needed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 February 2009, Linus Torvalds wrote:
-> 
-> On Sat, 31 Jan 2009, Rafael J. Wysocki wrote:
-> > 
-> > But many drivers have an analogous code sequence in their PM callbacks and
-> > I've tested it with several drivers on my test boxes.  It's never failed for me.
-> 
-> Rafael!
-> 
-> Read what I write. Twice.
+While looking at the workqueue tracer, I noticed that kpsmoused receives
+rarely (if not never) events.
 
-You didn't give me a chance by removing it. ;-)
+Currently, when a mouse has to resync, it uses the kpsmoused singlethreaded
+workqueue. But resync are rare. While reading an old discussion, it seems
+that usual workqueue events can't be used for that purpose because resync
+can take too much time and could delay the other works in queue.
 
-> Here it is again: "Imagine that you're a bridge."
-> 
-> Stop the idiocy of just ignoring what I write, and talking about something 
-> else.
-> 
-> Bridges are special.
+But if you have built psmouse driver, this workqueue will always be present
+whether you have a ps/2 port or not. And its events are rare.
 
-[Confused] Yes, they are.
+To avoid this pointless task, this patch makes the kpsmoused a kernel
+thread only created on the fly when a resync is needed. Once the resync is done,
+this thread will die. So you will almost never see it, and it will not be
+an inactive task anymore.
 
-And yes, I agreed that the bus master bit shouldn't be cleared for them.  Which
-does not necessarily imply that clearing that bit will always lead to problems
-in practice.
+This thread is created through a usual workqueue event (because we can't create
+it from interrupt).
 
-> > > But as to why it fixes Parag's case - I think that's because the new PM 
-> > > resume does more than the legacy resume does, so it ends up re-enabling 
-> > > things anyway. It does it too late, but it doesn't matter in this case (no 
-> > > shared irq issues with the only device behind the pci-e bridge).
-> > 
-> > Still, the 2.6.28 resume didn't do the "reenable device" thing and it worked.
-> > 
-> > I think in the Parag's case the problem is the "double restore".
-> 
-> It's possible. Still, it really shouldn't matter.
-> 
-> Or at least, it shouldn't matter, as long as what you restore is sane. 
-> You're just going to rewrite the same data, after all.
+Changes in V2:
 
-Yes, but I suspect the device is misbehaving due to some timing issues.
+_ fix the "resync" mispelled in the patch and the changelog
+_ don't schedule more than one resync in case of concurrent interrupts
+_ if resync_pending is not cleared after a few time before disconnect, print a warning.
 
-With devices that behave totally correctly the current code doesn't appear to
-cause problems.
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ drivers/input/mouse/psmouse-base.c |   86 ++++++++++++++++++++++++------------
+ drivers/input/mouse/psmouse.h      |    5 ++-
+ 2 files changed, 61 insertions(+), 30 deletions(-)
 
-> That's why I was trying to see if the IO/MEM bits got cleared in the save 
-> image for some reason.
-
-Well, we never clear them.
-
-> > > See above. I think you really haven't thought the new PM code through.
-> > 
-> > Yes, I have, but my experience apparently doesn't match yours.
-> 
-> The problem is that you're looking at some individual devices, and saying 
-> "it works for them, so it must work for everybody".
-
-Look.  I have only a limited set of data from devices that have been tested.
-On the other hand I have some pieces of documentation that are sometimes not
-very clear.  I try to use the data and the docs I have to figure out how things
-actually work.
-
-That's why the cases like the Parag's one are so important.  They allow me to
-verify assumptions.
-
-So no, I don't say "it must work for everybody", but I have to assume
-_something_ if I don't know that _for_ _sure_.  I sometimes make wrong
-assumptions, which is a consequence of the fact that I can only use a limited
-set of data to verify my observations.
-
-And please note, we still don't know for sure why the Parag's box actually
-fails.  We have some theories that may or may not be correct, but that's it.
-
-> Add to that the fact that you apparently _still_ haven't figured out the
-> difference between bridges and regular devices, and that most most
-> motherboards probably keep the PCI bridges powered anyway, and...
-
-[Confused again] Why are you talking about keeping bridges powered?
+diff --git a/drivers/input/mouse/psmouse-base.c b/drivers/input/mouse/psmouse-base.c
+index f8f86de..fc4490e 100644
+--- a/drivers/input/mouse/psmouse-base.c
++++ b/drivers/input/mouse/psmouse-base.c
+@@ -20,6 +20,7 @@
+ #include <linux/init.h>
+ #include <linux/libps2.h>
+ #include <linux/mutex.h>
++#include <linux/kthread.h>
  
-> And yes, I realize that this is how PM under Linux has worked for a long 
-> time. But it's what I think we should get away from. It's why I pushed so 
-> hard to get the whole interrupt handling sane and stable. 
-> 
-> The argument that "it works for a lot of machines" IS NOT AN ARGUMENT, 
-> Rafael! Stop using it as such.
->
-> We know that 2.6.28 suspend/resume works for a lot of laptops. Even 
-> possibly _most_ laptops. But it was still broken. We want to get _away_ 
-> from that.
+ #include "psmouse.h"
+ #include "synaptics.h"
+@@ -104,8 +105,6 @@ static struct attribute_group psmouse_attribute_group = {
+  */
+ static DEFINE_MUTEX(psmouse_mutex);
+ 
+-static struct workqueue_struct *kpsmoused_wq;
+-
+ struct psmouse_protocol {
+ 	enum psmouse_type type;
+ 	const char *name;
+@@ -203,11 +202,6 @@ static psmouse_ret_t psmouse_process_byte(struct psmouse *psmouse)
+ 	return PSMOUSE_FULL_PACKET;
+ }
+ 
+-void psmouse_queue_work(struct psmouse *psmouse, struct delayed_work *work,
+-		unsigned long delay)
+-{
+-	queue_delayed_work(kpsmoused_wq, work, delay);
+-}
+ 
+ /*
+  * __psmouse_set_state() sets new psmouse state and resets all flags.
+@@ -313,7 +307,10 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
+ 		       psmouse->name, psmouse->phys, psmouse->pktcnt);
+ 		psmouse->badbyte = psmouse->packet[0];
+ 		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
+-		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
++		if (atomic_inc_return(&psmouse->resync_pending) == 1)
++			schedule_work(&psmouse->resync_work);
++		else
++			atomic_dec(&psmouse->resync_pending);
+ 		goto out;
+ 	}
+ 
+@@ -350,7 +347,11 @@ static irqreturn_t psmouse_interrupt(struct serio *serio,
+ 	    time_after(jiffies, psmouse->last + psmouse->resync_time * HZ)) {
+ 		psmouse->badbyte = psmouse->packet[0];
+ 		__psmouse_set_state(psmouse, PSMOUSE_RESYNCING);
+-		psmouse_queue_work(psmouse, &psmouse->resync_work, 0);
++
++		if (atomic_inc_return(&psmouse->resync_pending) == 1)
++			schedule_work(&psmouse->resync_work);
++		else
++			atomic_dec(&psmouse->resync_pending);
+ 		goto out;
+ 	}
+ 
+@@ -979,13 +980,16 @@ static int psmouse_poll(struct psmouse *psmouse)
+ 
+ 
+ /*
+- * psmouse_resync() attempts to re-validate current protocol.
++ * psmouse_resync_thread() attempts to re-validate current protocol.
++ * This thread is created on the fly when needed because its job can take too
++ * much time on events workqueues, and the resync is rare enough to avoid
++ * the need of a private workqueue.
+  */
+ 
+-static void psmouse_resync(struct work_struct *work)
++static int psmouse_resync_thread(void *v)
+ {
+-	struct psmouse *parent = NULL, *psmouse =
+-		container_of(work, struct psmouse, resync_work.work);
++	struct psmouse *psmouse = v;
++	struct psmouse *parent = NULL;
+ 	struct serio *serio = psmouse->ps2dev.serio;
+ 	psmouse_ret_t rc = PSMOUSE_GOOD_DATA;
+ 	int failed = 0, enabled = 0;
+@@ -1072,6 +1076,30 @@ static void psmouse_resync(struct work_struct *work)
+ 		psmouse_activate(parent);
+  out:
+ 	mutex_unlock(&psmouse_mutex);
++
++	/*
++	 * While disconnecting, the driver wants to be sure all resync are done
++	 */
++	atomic_dec(&psmouse->resync_pending);
++	wake_up(&psmouse->resync_pending_queue);
++	return 0;
++}
++
++/* Launch the resync thread */
++static void psmouse_resync_thread_helper(struct work_struct *work)
++{
++	struct task_struct *t;
++	struct psmouse *psmouse;
++
++	psmouse = container_of(work, struct psmouse, resync_work);
++
++	t = kthread_run(psmouse_resync_thread, psmouse, "kpsmoused");
++	if (t == ERR_PTR(-ENOMEM)) {
++		printk(KERN_WARNING "psmouse.c: failed to create kpsmoused"
++				    " thread\n");
++		atomic_dec(&psmouse->resync_pending);
++		wake_up(&psmouse->resync_pending_queue);
++	}
+ }
+ 
+ /*
+@@ -1120,6 +1148,8 @@ static void psmouse_cleanup(struct serio *serio)
+ static void psmouse_disconnect(struct serio *serio)
+ {
+ 	struct psmouse *psmouse, *parent = NULL;
++	long timeout;
++	DEFINE_WAIT(wait);
+ 
+ 	psmouse = serio_get_drvdata(serio);
+ 
+@@ -1131,7 +1161,17 @@ static void psmouse_disconnect(struct serio *serio)
+ 
+ 	/* make sure we don't have a resync in progress */
+ 	mutex_unlock(&psmouse_mutex);
+-	flush_workqueue(kpsmoused_wq);
++
++	prepare_to_wait(&psmouse->resync_pending_queue, &wait,
++				TASK_UNINTERRUPTIBLE);
++	/* 4 seconds are more than enough to ensure a resync is completed */
++	if (atomic_read(&psmouse->resync_pending)) {
++		timeout = schedule_timeout(HZ * 4);
++		if (!timeout)
++			WARN_ON(1);
++	}
++	finish_wait(&psmouse->resync_pending_queue, &wait);
++
+ 	mutex_lock(&psmouse_mutex);
+ 
+ 	if (serio->parent && serio->id.type == SERIO_PS_PSTHRU) {
+@@ -1244,7 +1284,8 @@ static int psmouse_connect(struct serio *serio, struct serio_driver *drv)
+ 		goto err_free;
+ 
+ 	ps2_init(&psmouse->ps2dev, serio);
+-	INIT_DELAYED_WORK(&psmouse->resync_work, psmouse_resync);
++	INIT_WORK(&psmouse->resync_work, psmouse_resync_thread_helper);
++	init_waitqueue_head(&psmouse->resync_pending_queue);
+ 	psmouse->dev = input_dev;
+ 	snprintf(psmouse->phys, sizeof(psmouse->phys), "%s/input0", serio->phys);
+ 
+@@ -1647,25 +1688,12 @@ static int psmouse_get_maxproto(char *buffer, struct kernel_param *kp)
+ 
+ static int __init psmouse_init(void)
+ {
+-	int err;
+-
+-	kpsmoused_wq = create_singlethread_workqueue("kpsmoused");
+-	if (!kpsmoused_wq) {
+-		printk(KERN_ERR "psmouse: failed to create kpsmoused workqueue\n");
+-		return -ENOMEM;
+-	}
+-
+-	err = serio_register_driver(&psmouse_drv);
+-	if (err)
+-		destroy_workqueue(kpsmoused_wq);
+-
+-	return err;
++	return serio_register_driver(&psmouse_drv);
+ }
+ 
+ static void __exit psmouse_exit(void)
+ {
+ 	serio_unregister_driver(&psmouse_drv);
+-	destroy_workqueue(kpsmoused_wq);
+ }
+ 
+ module_init(psmouse_init);
+diff --git a/drivers/input/mouse/psmouse.h b/drivers/input/mouse/psmouse.h
+index 54ed267..dfb9b8c 100644
+--- a/drivers/input/mouse/psmouse.h
++++ b/drivers/input/mouse/psmouse.h
+@@ -39,7 +39,10 @@ struct psmouse {
+ 	void *private;
+ 	struct input_dev *dev;
+ 	struct ps2dev ps2dev;
+-	struct delayed_work resync_work;
++	struct work_struct resync_work;
++	/* help to wait for mouse resync jobs before disconnect */
++	atomic_t resync_pending;
++	wait_queue_head_t resync_pending_queue;
+ 	char *vendor;
+ 	char *name;
+ 	unsigned char packet[8];
+-- 
+1.6.1
 
-Working on many (different) systems is a good indication of what is and what
-is not going to work in general.  It obviously doesn't imply correctness,
-though.
 
-> > DMA will only not work until the ->resume sets the bus master bit, which
-> > happes before the ->resume of any device behind the bridge runs.
-> 
-> Read my emails. THIS ISN'T EVEN A RESUME-TIME PROBLEM!
-> 
-> The problems happen on purely the suspend path. How the f*ck do you know 
-> that the drivers behind the bridge don't do everything at 'suspend_late' 
-> time, and expect to be working up until that time?
-
-DMA from suspend_late?  Come on.
-
-> Here's a big hint: YOU DO NOT KNOW. YOU MUST NOT TURN OFF THE BRIDGE AT 
-> SUSPEND TIME!
-> 
-> I'm getting really fed up with you here. You're not even listening. And 
-> you are _definitely_ not doing any "deep thinking" here.
-
-Why are you shouting at me?  Did you read my reply to your other message?
-How many times do I have to tell you I AGREE THAT I SHOULD NOT TURN OFF THE
-BUS MASTER BIT FOR BRIDGES so that you actually get it?
-
-> > > How about devices that have magic power-down sequences? For example, a 
-> > > quick grep shows that USB on a PPC PMAC has a special "disable ASIC clocks 
-> > > for USB" thing after it puts the USB controller to sleep.
-> > 
-> > This is exceptional, from what I can tell.
-> 
-> So?
-> 
-> Irrelevant. We want to handle the exceptional case too. And we generally 
-> want to handle them _automatically, rather than by:
-> 
-> > We may need an "override default resume" flag for such drivers.
-> 
-> .. why? Wouldn't it be a hell of a lot nicer if the PCI layer just did 
-> things right automatically. 
-> 
-> Which the legacy layer already does. It sees "ok, the driver did it's own 
-> pci_save_state(), I'm not going to do it for it".
-> 
-> THAT is robust. And simple. Wouldn't you agree?
-> 
-> So why not do the same in the new one? Why do you want to make the new 
-> interfaces _inferior_ to the old ones?
-
-On suspend we have two things to do:
-- save the state
-- put the device into a low power state
-
-The state_saved flag can be used to see if the driver has saved the state.
-
-What about powering off?  Are we going to assume that if the driver has saved
-the state of the device, the core should not put the device into a low power
-state?
-
-Rafael
