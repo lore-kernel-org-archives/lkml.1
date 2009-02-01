@@ -1,68 +1,36 @@
-Return-Path: <linux-kernel-owner+akpm=40linux-foundation.org-S1755562AbZBZLLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbZBZLLj (ORCPT <rfc822;akpm@linux-foundation.org>);
-	Thu, 26 Feb 2009 06:11:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753410AbZBZLL2
+	id S1752838AbZBAHeT (ORCPT <rfc822;ralf@linux-mips.org>);
+	Sun, 1 Feb 2009 02:34:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZBAHeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Feb 2009 06:11:28 -0500
-Received: from groundworkingserver.serversidedirect.net ([78.159.100.205]:60714
-	"EHLO serversidedirect.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753399AbZBZLL1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Feb 2009 06:11:27 -0500
-X-Greylist: delayed 18913 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Feb 2009 06:11:27 EST
-Date: Wed, 25 Feb 2009 20:15:20 -0500
-To: esr@snark.thyrsus.com, bongoplayer@gmail.com, phsieh80@gmail.com,
-        tomb@panix.com, linux-kernel@vger.kernel.org, alexv223344@mail.ru,
-        URIA531@gmx.de
-From: confirm <confirm@torcida.com.ru>
-Subject: Your Photos
-Message-ID: <50b47d0389da8560f4b9c2c47e04caf1@medical.com>
-X-Priority: 3
-X-Mailer: Cerberus Helpdesk v. 2.6.1 Release (http://www.cerberusweb.com)
+	Sun, 1 Feb 2009 02:34:05 -0500
+Received: from [88.252.229.235] ([88.252.229.235]:3479 "HELO
+	user-9474994af4.local" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with SMTP id S1751281AbZBAHeE convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 02:34:04 -0500
+X-Greylist: delayed 86089 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Feb 2009 02:34:03 EST
+Reply-To: mealumat@honmaksan.com.tr
+Message-ID: <a5cdd6d5c831d6ae590221b931e0a44d@honmaksan.com.tr>
+From: "mealumat" <mealumat@honmaksan.com.tr>
+To: <linux-kernel@vger.kernel.org>
+Subject: MACHINE INDUSTRY
+Date: Sun, 1 Feb 2009 09:32:47 +0200
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7BIT
 Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1752838AbZBAHeT@vger.kernel.org>
 
+HONMAKSAN MACHINE INDUSTRY TRADE CO.
 
-www.oxycodon.net
-
-Oxycodone is in a group of drugs called narcotic pain relievers. 
-It is similar to morphine.
-
-Oxycodone is used to treat moderate to severe pain. The extended-release 
-form of this medication is for around-the-clock treatment of pain. It is 
-not for treating pain just after a surgery unless you were already taking 
-oxycodone before the surgery.
-
-You can get OXYCODONE 40mg, 80mg for cheapest price on the WEB!
-www.oxycodon.net
-
-NO RX REQUIRED, FAST & DISCREET SHIPPING, PLAIN PACKAGE.
-
-
-
-
-
-
-
-gospodi skolko esch ne sdelano a skolko esch predstoit ne sdelat
-v zhene - mudrost v pive - sila v vode - mikroby
-seychas vy posmotrite opasnyy povtor golevogo momenta
-kogda my slishkom mnogoe hotim izmenit my slishkom mnogomu izmenyaem
-esli vasha zhena - kdlad to vam prichitaetsya 25 procentov
-ya pu tolko v dvuh sluchayah kogda est ogurcy i kogda ih net
-luchshiy poryadok tot chto na poryadok vyshe
-shtirlic strelyal iz dvuh avtomatov po ocheredi ochered zametno redela  
-beg po grablyam - kak vid sporta
-iz okna dulo shtirlic podoshel k oknu dulo ischezlo  
-mudrost - eto ne morschiny a izviliny
-nashemu narodu uzhe stolko obeschano a emu vs malo
-horosho voshlo
-iz zavetov papy karlo - nastrogat detey neslozhno mudreno narubit kapusty dlya nih
-horonite dengi v sberegatelnom banke
+Address : KOSB. T.Ziyaeddin Cad. 
+ 13. Sk. No. 39   KONYA  / TURKEY
+Tel : 0090 332 239 04 01 (PBX)
+Fax : 0090 332 239 12 68
+Web : http://www.honmaksan.com.tr
+E-mail : bilgi@honmaksan.com.tr
 
 
