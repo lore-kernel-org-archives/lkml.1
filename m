@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZBCNQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbZBAGGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbZBCNQT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 08:16:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZBCNQG
+	id S1752468AbZBAGGR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 01:06:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751264AbZBAGGB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 08:16:06 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43076 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbZBCNQE (ORCPT
+	Sun, 1 Feb 2009 01:06:01 -0500
+Received: from ti-out-0910.google.com ([209.85.142.186]:4505 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751221AbZBAGGA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 08:16:04 -0500
-Date: Fri, 30 Jan 2009 21:37:12 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, "H. Peter Anvin" <hpa@kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: [PATCH] x86: do not expose CONFIG_BSWAP to userspace
-Message-ID: <20090130203712.GB1253@ucw.cz>
-References: <1233106614.3256.6.camel@localhost.localdomain> <200901281337.52294.arnd@arndb.de> <49809A65.2090501@kernel.org> <1233170532.6717.49.camel@brick> <alpine.LFD.2.00.0901281141510.3123@localhost.localdomain> <1233172994.6717.56.camel@brick> <4980CD51.70601@zytor.com> <1233179884.6717.59.camel@brick> <alpine.LFD.2.00.0901281411490.3123@localhost.localdomain> <1233182444.6717.68.camel@brick>
+	Sun, 1 Feb 2009 01:06:00 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:cc:message-id:mime-version:content-type
+         :content-transfer-encoding:x-mailer;
+        b=eR6JYHhRRUILdsL504yER88750lHgyueSzJgo/Y2Sb6fivlnSHaHr+JwP9w5/CkNRA
+         /G1pyW4+izWwWPwr63+SkcIlBw0VXOmHrwBe5iEvIKfefU9C4yndQ0SpuRQnX7tS7/JA
+         5vJSdkczskZ/AzMl4WScYnEs/T0sLI17pa5ps=
+Date: Sun, 01 Feb 2009 14:05:53 +0800
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: gregkh@suse.de
+Subject: staging: remove duplicated #include's
+Cc: linux-kernel@vger.kernel.org
+Message-Id: <20090201140429.6002.WEIYI.HUANG@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233182444.6717.68.camel@brick>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.24.02 [en]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-01-28 14:40:44, Harvey Harrison wrote:
-> On Wed, 2009-01-28 at 14:13 -0800, Linus Torvalds wrote:
-> > 
-> > On Wed, 28 Jan 2009, Harvey Harrison wrote:
-> > >
-> > > Use ifdef __i486__ to ensure the BSWAP instruction is available
-> > > on 32-bit x86.
-> > > 
-> > > Signed-off-by: Harvey Harrison <harvey.harrison@gmail.com>
-> > > ---
-> > > HPA,
-> > > 
-> > > I'm afraid my knowledge of gcc compiler flags for various models is
-> > > lacking, I used i486 as suggested, just wanted to make sure I understood
-> > > you corectly.
-> > 
-> > I really don't think this works.
-> > 
-> > Try this:
-> > 
-> > 	cpp -dM -m32 -march=pentium t.c | grep i486
-> > 
-> > and see the marked absense of __i486__ anywhere.
-> > 
-> > At least CONFIG_X86_BSWAP gives the right behaviour for the kernel.
-> 
-> You're right, it doesn't work.  Perhaps just exporting the bswap version
-> all the time and i386-only people can worry about patching it out?
+Removed duplicated #include's in drivers/staging/altpciechdma/altpciechdma.c.
 
-And break i386 in a nasty way? Please don't.
-									Pavel
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
 
+diff --git a/drivers/staging/altpciechdma/altpciechdma.c b/drivers/staging/altpciechdma/altpciechdma.c
+index f516140..3e04a62 100644
+--- a/drivers/staging/altpciechdma/altpciechdma.c
++++ b/drivers/staging/altpciechdma/altpciechdma.c
+@@ -46,7 +46,6 @@
+ #include <linux/cdev.h>
+ #include <linux/delay.h>
+ #include <linux/dma-mapping.h>
+-#include <linux/delay.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+ #include <linux/io.h>
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
