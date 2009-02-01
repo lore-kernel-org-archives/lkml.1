@@ -1,56 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZBAB0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZBAB1K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbZBAB0N (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 20:26:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZBABZ5
+	id S1755704AbZBAB1K (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 20:27:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZBAB04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 20:25:57 -0500
-Received: from out4.smtp.messagingengine.com ([66.111.4.28]:60821 "EHLO
-	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751644AbZBABZ5 (ORCPT
+	Sat, 31 Jan 2009 20:26:56 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:60446 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751644AbZBAB0z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 20:25:57 -0500
-X-Sasl-enc: MOh19ATa1o4NAkoVTfJrWvTBB/KCGp85EPx471sl4x1R 1233451555
-Date: Sat, 31 Jan 2009 23:25:53 -0200
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Pavel Machek <pavel@suse.cz>
-Cc: Tim Small <tim@buttersideup.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       ncunningham-lkml@crca.org.au, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Chris Friesen <cfriesen@nortel.com>,
-       Doug Thompson <norsk5@yahoo.com>, bluesmoke-devel@lists.sourceforge.net,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: marching through all physical memory in software
-Message-ID: <20090201012553.GB22841@khazad-dum.debian.net>
-References: <715599.77204.qm@web50111.mail.re2.yahoo.com> <m1wscc7fop.fsf@fess.ebiederm.org> <49836114.1090209@buttersideup.com> <m1iqnw1676.fsf@fess.ebiederm.org> <4984489C.8020309@buttersideup.com> <20090131134327.GB28763@khazad-dum.debian.net> <20090131212754.GA15243@elf.ucw.cz>
+	Sat, 31 Jan 2009 20:26:55 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:reply-to:in-reply-to:references:date:message-id
+         :subject:from:to:cc:content-type:content-transfer-encoding;
+        b=eoNYgF+++vpD8psXrb+SgqbbcwIuH7CEuepxe6j0hxT61sDXtikj2r9zHLk2FJwutO
+         8QWibRcRZi0F4wEZi7q4UitnN9XSuRu6LgBOzF4kQQsvmKznMIlDz0v68lX/9Nyl9m78
+         pYcomrnc87QHrUChZ+nZHumBvDdUqhVRu30b8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090131212754.GA15243@elf.ucw.cz>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
-	1CDB 0FE3
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Reply-To: mtk.manpages@gmail.com
+In-Reply-To: <alpine.DEB.1.10.0901291053580.15448@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0901282010250.21401@alien.or.mcafeemobile.com>
+	 <20090129005716.6dd51929.akpm@linux-foundation.org>
+	 <cfd18e0f0901290203r139cb5bfgc02a0dcb1347aba8@mail.gmail.com>
+	 <alpine.DEB.1.10.0901291053580.15448@alien.or.mcafeemobile.com>
+Date: Sun, 1 Feb 2009 14:26:53 +1300
+Message-ID: <cfd18e0f0901311726n439d3034qa87f3ab31acd4858@mail.gmail.com>
+Subject: Re: [patch] drop epoll max_user_instances and rely only on 
+	max_user_watches
+From: Michael Kerrisk <mtk.manpages@googlemail.com>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>,
+       Bron Gondwana <brong@fastmail.fm>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009, Pavel Machek wrote:
-> > You can also implement software-based ECC using a background scrubber
-> > and setting aside pages to store the ECC information.  Now, THAT is
-> > probably not worth bothering with due to the performance impact, but
-> > who knows...
-> 
-> Actually, that would be quite cool. a) I suspect memory in  my zaurus
-> bitrots and b) bitroting memory over s2ram is apprently quite common.
+Hi Davide,
 
-Well, software-based ECC for s2ram (calculate right before s2ram,
-check-and-fix right after waking up) is certainly doable and a LOT
-easier than my crazy idea of sofware-based generic ECC (which requires
-some sort of trick to detect pages that were written to, so that you
-can update their ECC information)...
+On Fri, Jan 30, 2009 at 7:54 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
+> On Thu, 29 Jan 2009, Michael Kerrisk wrote:
+>
+>> Since max_user_instances was added in 2.6.28, and this is an ABI
+>> change, I suggest this should go into .29-rc, so that
+>> max_user_instances spends as little time in the wild as possible.
+>
+> Agreed, like I already told Andrew. Sorry Michael for the double change to
+> the man page :/
+
+So is the right change to the epoll(7) page (see
+http://www.kernel.org/doc/man-pages/online/pages/man7/epoll.7.html )
+to simply remive the text on max_user_instances:
+
+       /proc/sys/fs/epoll/max_user_instances (since Linux 2.6.28)
+              This  specifies  an  upper  limit on the number of epoll
+              instances that can be created per real user ID.
+
+Or are other changes also required?
+
+Cheers,
+
+Michael
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Michael Kerrisk
+Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
+git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
+man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
+Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
