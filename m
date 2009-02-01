@@ -1,113 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZBAKFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZBAKHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbZBAKFe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:05:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZBAKFZ
+	id S1754031AbZBAKHm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 05:07:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZBAKHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:05:25 -0500
-Received: from harold.telenet-ops.be ([195.130.133.65]:55567 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbZBAKFZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:05:25 -0500
-Date: Sun, 1 Feb 2009 11:05:17 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Ankit Jain <me@ankitjain.org>, viro@zeniv.linux.org.uk,
-       hch@infradead.org, linux-fsdevel@vger.kernel.org, mfasheh@suse.com,
-       joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
-Subject: Re: [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility
- with legacy xfs ioctls
-In-Reply-To: <49856FE6.8020601@panasas.com>
-Message-ID: <Pine.LNX.4.64.0902011104320.20875@anakin>
-References: <4980C71F.1010804@ankitjain.org> <200901310138.34164.arnd@arndb.de>
- <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de>
- <49856FE6.8020601@panasas.com>
+	Sun, 1 Feb 2009 05:07:34 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36817 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752812AbZBAKHd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 05:07:33 -0500
+Date: Sun, 1 Feb 2009 11:07:21 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Dave Jones <davej@redhat.com>, x86@kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: Add cache descriptors for Intel Core i7
+Message-ID: <20090201100721.GA23610@elte.hu>
+References: <20090201011214.GA6043@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090201011214.GA6043@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Feb 2009, Boaz Harrosh wrote:
-> Arnd Bergmann wrote:
-> > On Saturday 31 January 2009, Andrew Morton wrote:
-> >> Is this written in a standard somewhere?  Is it guaranteed?
-> > 
-> > Alignment is defined in the architecture psABI documents. 
-> > Unfortunately, many of them were written before the 'long long'
-> > type became part of the C standard, so it's not strictly guaranteed.
-> > AFAICT, the alignment of __u64 on x86 is the same as the alignment
-> > of 'double' by convention.
-> > 
-> > However, the problem is well-understood: x86 is the only one
-> > that has a problem in 32/64 bit compat mode. m68k has similar
-> > issues with 16/32 bit integers, but those don't apply here.
-> > 
-> >> If some (perhaps non-gcc) compiler were to lay this out differently
-> >> (perhaps with suitable command-line options) then that's liveable
-> >> with - as long as the kernel never changes the layout.  Of course
-> >> it would be better to avoid this if poss.
-> > 
-> > If a compiler was using irregular structure alignment, all sorts of
-> > library interfaces would break. The kernel ABI is only a small part
-> > of the problem then.
-> > 
-> >> The other potential issue with a structure like this is that there's a
-> >> risk that it will lead us to copy four bytes of uninitialised kernel
-> >> memory out to userspace.
-> >>
-> >> IOW, it seems a generally bad idea to rely upon compiler-added padding
-> >> for this sort of thing.
-> > 
-> > Agreed in general, but the whole point of this particular patch was to
-> > provide compatibility with an interface that has been part of XFS for
-> > many years.
-> > Linux already has a better interface for new users (sys_fallocate), so
-> > changing the patch would not be helpful and not provide any advantage.
-> > 
-> > There is also no leak of uninitialized data here, because this structure
-> > is only read, never written.
-> > 
-> > 	Arnd <><
-> Arnd Bergmann wrote:
-> > +struct space_resv {
-> > +	__s16		l_type;
-> > +	__s16		l_whence;
-> > +	__s64		l_start;
-> > +	__s64		l_len;		/* len == 0 means until end of file */
-> > +	__s32		l_sysid;
-> > +	__u32		l_pid;
-> > +	__s32		l_pad[4];	/* reserve area			    */
-> > +};
+
+* Dave Jones <davej@redhat.com> wrote:
+
+> Signed-off-by: Dave Jones <davej@redhat.com>
 > 
-> What about telling the compiler exactly what you said above, just
-> to be sure we all mean the same thing. (And as documentation for new
-> comers):
-> 
-> +struct space_resv_64 {
-> +	__s16		l_type;
-> +	__s16		l_whence;
-> +	__u32		reserved;
-> +	__s64		l_start;
-> +	__s64		l_len;		/* len == 0 means until end of file */
-> +	__s32		l_sysid;
-> +	__u32		l_pid;
-> +	__s32		l_pad[4];	/* reserve area			    */
-> +} __packed;
+> --- linux-2.6.28.noarch/arch/x86/kernel/cpu/intel_cacheinfo.c~	2009-01-31 20:04:32.000000000 -0500
+> +++ linux-2.6.28.noarch/arch/x86/kernel/cpu/intel_cacheinfo.c	2009-01-31 20:10:22.000000000 -0500
+> @@ -36,8 +36,11 @@ static struct _cache_table cache_table[]
+>  {
+>  	{ 0x06, LVL_1_INST, 8 },	/* 4-way set assoc, 32 byte line size */
+>  	{ 0x08, LVL_1_INST, 16 },	/* 4-way set assoc, 32 byte line size */
+> +	{ 0x09, LVL_1_INST, 32 },	/* 4-way set assoc, 64 byte line size */
 
-Because the compiler will assume all fields are always unaligned and will use very
-suboptimal code to access them?
+Applied to tip/x86/urgent, thanks Dave!
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+	Ingo
