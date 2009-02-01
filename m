@@ -1,20 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755998AbZBABOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbZBABU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755998AbZBABOM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 20:14:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZBABNz
+	id S1755305AbZBABU1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 20:20:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZBABUJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 20:13:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45824 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752744AbZBABNy (ORCPT
+	Sat, 31 Jan 2009 20:20:09 -0500
+Received: from casper.infradead.org ([85.118.1.10]:36183 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbZBABUI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 20:13:54 -0500
-Date: Sat, 31 Jan 2009 17:13:40 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Parag Warudkar <parag.lkml@gmail.com>,
+	Sat, 31 Jan 2009 20:20:08 -0500
+Date: Sat, 31 Jan 2009 17:20:05 -0800
+From: Arjan van de Ven <arjan@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Parag Warudkar <parag.lkml@gmail.com>,
        Matt Carlson <mcarlson@broadcom.com>,
        "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -22,33 +21,52 @@ cc: Parag Warudkar <parag.lkml@gmail.com>,
        Andrew Morton <akpm@linux-foundation.org>
 Subject: Re: What should PCI core do during suspend-resume? (was: Re:
  2.6.29-rc3: tg3 dead after resume)
+Message-ID: <20090131172005.4f107d9e@infradead.org>
 In-Reply-To: <alpine.LFD.2.00.0901311652500.3067@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0901311709140.3067@localhost.localdomain>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <alpine.LFD.2.00.0901311516360.2978@localhost.localdomain> <alpine.LFD.2.00.0901311534340.3067@localhost.localdomain> <200902010136.55375.rjw@sisk.pl>
- <alpine.LFD.2.00.0901311652500.3067@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop>
+	<alpine.LFD.2.00.0901311516360.2978@localhost.localdomain>
+	<alpine.LFD.2.00.0901311534340.3067@localhost.localdomain>
+	<200902010136.55375.rjw@sisk.pl>
+	<alpine.LFD.2.00.0901311652500.3067@localhost.localdomain>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 31 Jan 2009 17:06:47 -0800 (PST)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-
-On Sat, 31 Jan 2009, Linus Torvalds wrote:
 > 
-> I thought the _DSW thing is common for setting up wakeup, but _PSx is not. 
-> But I have not looked at many ACPI tables in my life. I try to active 
-> avoid it if I at all humanly can.
+> 
+> On Sun, 1 Feb 2009, Rafael J. Wysocki wrote:
+> > 
+> > All this leads to the conclusion that we should put devices into
+> > low power states with interrupts off and this seems to imply that
+> > we'll need to make the AML interpreter allow us to run AML with
+> > interrupts off.
+> 
+> How many devices actually have the _PS3 method (or whatever it is
+> that we end up executing)? We might be able to simply flag it, and
+> say "ok, if we have a _PS3 method, we'll have to suspend early,
+> otherwise we can leave it for a late suspend".
+> 
 
-Doing a quick grep on my laptop seems to confirm that. No actual _PSx 
-things found in any acpi tables at all that I can see.
+in this area there's a pet pieve of mine, or rather something that
+shows up on kerneloops.org quite a bit:
+There are several PCI quirks that get run with irqs off, but they are
+just the "normal" boot time quirks, and when they get run there, they
+can sleep. Some of them do things like call ioremap() and the like....
+from memory some of the asus and via quirks come to mind...
 
-And on a mac mini, there are _PS3 entries that _look_ like they are 
-connected to the IDE controller and the realtime clock, but it looks like 
-they don't happen for the PCI devices.
 
-But again - I may have screwed that up. ACPI tables are not my favourite 
-data structure.
 
-		Linus
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
