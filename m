@@ -1,76 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbZBARYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZBARbx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755100AbZBARYb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 12:24:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZBARYQ
+	id S1754689AbZBARbx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 12:31:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZBARbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 12:24:16 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:51302 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752709AbZBARYO (ORCPT
+	Sun, 1 Feb 2009 12:31:44 -0500
+Received: from wa-out-1112.google.com ([209.85.146.176]:43370 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752338AbZBARbn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 12:24:14 -0500
+	Sun, 1 Feb 2009 12:31:43 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=gmZXxmEuJTMQGMdq2TPl7FtPJyAzxyNPu4+2pxAAiC3Y/3t53QIYRtNdKwmUwu7S4n
-         QBdYgY1KrSGxoHZdmPLolKEw7Yc++67SSUkqS+rE/YqtoT0/TPum0IG7OJStiis5jAJ9
-         /xanBgfXVK77+RnNOAQR2FJAGivjRA0TU34oA=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: petkovbb@gmail.com
-Subject: Re: [PATCH 1/3] ide-cd: use ide_drive_t's rq in cdrom_queue_request_sense
-Date: Sun, 1 Feb 2009 17:04:50 +0100
-User-Agent: KMail/1.10.4 (Linux/2.6.29-rc2-next-20090126; KDE/4.1.4; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-References: <1233002440-4325-1-git-send-email-petkovbb@gmail.com> <200901271607.10869.bzolnier@gmail.com> <9ea470500901270847m40264331le1092dc1589ec9de@mail.gmail.com>
-In-Reply-To: <9ea470500901270847m40264331le1092dc1589ec9de@mail.gmail.com>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lNSxi1Y0BLvOZBKEnNpi1HRsb3MEaveeAQSo0fI7pfiP7dNvfBD0RV5kZoY1N3Zirn
+         wmgtoMSfZWhNOxEBm92uK1y4+lvTaOPySbeja51dAzJwear3c/04BW4yIomE3Pbi0kIQ
+         +Ni0nNzZJbxpo7UHby8HHZuNLX6Pkbo4m+PQM=
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200902011704.51726.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <20090201172018.GB21913@n2100.arm.linux.org.uk>
+References: <1233385816.17794.16.camel@localhost.localdomain>
+	 <20090131164410.GA11189@elte.hu>
+	 <1233469811.5846.14.camel@localhost.localdomain>
+	 <20090201103936.GA30157@elte.hu> <20090201164915.GA29264@elte.hu>
+	 <20090201172018.GB21913@n2100.arm.linux.org.uk>
+Date: Sun, 1 Feb 2009 23:01:41 +0530
+Message-ID: <3f9a31f40902010931p24cbfabekec442078914e3d6e@mail.gmail.com>
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+From: Jaswinder Singh Rajput <jaswinderlinux@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009, Borislav Petkov wrote:
-> On Tue, Jan 27, 2009 at 4:07 PM, Bartlomiej Zolnierkiewicz
-> <bzolnier@gmail.com> wrote:
-> > On Monday 26 January 2009, Borislav Petkov wrote:
-> >> There should be no functionality change resulting from this patch.
-> >>
-> >> Suggested-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> >> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> >> ---
-> >>  drivers/ide/ide-cd.c |    2 +-
-> >>  1 files changed, 1 insertions(+), 1 deletions(-)
-> >>
-> >> diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-> >> index d3d5fb6..3907466 100644
-> >> --- a/drivers/ide/ide-cd.c
-> >> +++ b/drivers/ide/ide-cd.c
-> >> @@ -207,7 +207,7 @@ static void cdrom_queue_request_sense(ide_drive_t *drive, void *sense,
-> >>                                     struct request *failed_command)
-> >>  {
-> >>       struct cdrom_info *info         = drive->driver_data;
-> >> -     struct request *rq              = &info->request_sense_request;
-> >> +     struct request *rq              = &drive->request_sense_rq;
-> >
-> > Don't we want to also remove now unused ->request_sense_request?
-> 
-> sure we do :)
-> 
-> --
-> From: Borislav Petkov <petkovbb@gmail.com>
-> Date: Tue, 27 Jan 2009 17:42:28 +0100
-> Subject: [PATCH 1/3] ide-cd: use ide_drive_t's rq in cdrom_queue_request_sense
-> 
-> There should be no functionality change resulting from this patch.
-> 
-> Suggested-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+On Sun, Feb 1, 2009 at 10:50 PM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Sun, Feb 01, 2009 at 05:49:15PM +0100, Ingo Molnar wrote:
+>>
+>> * Ingo Molnar <mingo@elte.hu> wrote:
+>>
+>> > > These patches fixes 41 headers_check warnings as shown in first email.
+>> >
+>> > Pulled into tip/core/header-fixes, thanks Jaswinder!
+>>
+>> These are the remaining ones on x86:
+>>
+>>      17 /dev/shm/tip/usr/include/linux/reiserfs_fs.h
+>>      12 /dev/shm/tip/usr/include/linux/soundcard.h
+>>       6 /dev/shm/tip/usr/include/asm/setup.h
+>>       3 /dev/shm/tip/usr/include/linux/nubus.h
+>>       2 /dev/shm/tip/usr/include/linux/in6.h
+>>       1 /dev/shm/tip/usr/include/mtd/jffs2-user.h
+>>       1 /dev/shm/tip/usr/include/linux/socket.h
+>>       1 /dev/shm/tip/usr/include/linux/coda_psdev.h
+>>       1 /dev/shm/tip/usr/include/asm/prctl.h
+>>
+>> They are all of the "extern's make no sense in userspace" type. What was the
+>> verdict, are they worth touching, or should we turn off this warning in
+>> 'make headers_check'?
+>
+> Ah, not a case of new-cc's added.  A case of the rare event of non-spam
+> eminating from hera.kernel.org falling foul of my manual local blacklist.
+>
+> I'd appreciate it if someone could point me at the original patches
+> being discussed.
 
-applied
+I am sorry, if you did not received the email but you was in CC list:
+
+Ingo Molnar <mingo@elte.hu>,
+Linus Torvalds <torvalds@linux-foundation.org>,
+Sam Ravnborg <sam@ravnborg.org>,
+Andrew Morton <akpm@linux-foundation.org>,
+Russell King - ARM Linux <linux@arm.linux.org.uk>,
+hskinnemoen@atmel.com,
+cooloney@kernel.org,
+tony.luck@intel.com,
+ralf@linux-mips.org,
+dhowells@redhat.com,
+matthew@wil.cx,
+chris@zankel.net,
+LKML <linux-kernel@vger.kernel.org>
+
+Arms bits are :
+
+These are clean patches, I did not included anything which leads to any
+confusion or conflicts. I hope maintainers do not mind if these patches
+go to mainstream via Ingo's -tip along with other headers_check fixes.
+
+Jaswinder Singh Rajput (3):
+     headers_check fix: arm, a.out.h
+     headers_check fix: arm, setup.h
+     headers_check fix: arm, swab.h
+
+diff --git a/arch/arm/include/asm/a.out.h b/arch/arm/include/asm/a.out.h
+index 79489fd..083894b 100644
+--- a/arch/arm/include/asm/a.out.h
++++ b/arch/arm/include/asm/a.out.h
+@@ -2,7 +2,7 @@
+ #define __ARM_A_OUT_H__
+
+ #include <linux/personality.h>
+-#include <asm/types.h>
++#include <linux/types.h>
+
+ struct exec
+ {
+diff --git a/arch/arm/include/asm/setup.h b/arch/arm/include/asm/setup.h
+index f2cd18a..ee1304f 100644
+--- a/arch/arm/include/asm/setup.h
++++ b/arch/arm/include/asm/setup.h
+@@ -14,7 +14,7 @@
+ #ifndef __ASMARM_SETUP_H
+ #define __ASMARM_SETUP_H
+
+-#include <asm/types.h>
++#include <linux/types.h>
+
+ #define COMMAND_LINE_SIZE 1024
+
+diff --git a/arch/arm/include/asm/swab.h b/arch/arm/include/asm/swab.h
+index 27a689b..ca2bf2f 100644
+--- a/arch/arm/include/asm/swab.h
++++ b/arch/arm/include/asm/swab.h
+@@ -16,7 +16,7 @@
+ #define __ASM_ARM_SWAB_H
+
+ #include <linux/compiler.h>
+-#include <asm/types.h>
++#include <linux/types.h>
+
+ #if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
+ #  define __SWAB_64_THRU_32__
+
+Thanks,
+--
+JSR
