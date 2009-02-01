@@ -1,51 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbZBAVkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756728AbZBAVmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757367AbZBAVkt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 16:40:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755746AbZBAVj2
+	id S1756728AbZBAVmK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 16:42:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751466AbZBAVl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 16:39:28 -0500
-Received: from smtp.wellnetcz.com ([212.24.148.102]:59984 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755332AbZBAVj1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 16:39:27 -0500
-From: Jiri Slaby <jirislaby@gmail.com>
-To: alan@lxorguk.ukuu.org.uk
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] TTY: tty_io, lookup retval fixup
-Date: Sun,  1 Feb 2009 22:39:16 +0100
-Message-Id: <1233524356-10994-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.1.2
+	Sun, 1 Feb 2009 16:41:56 -0500
+Received: from gate.crashing.org ([63.228.1.57]:57794 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751419AbZBAVlz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 16:41:55 -0500
+Subject: Re: [RFC][PATCH] create workqueue threads only when needed
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>
+In-Reply-To: <20090131182843.GD5884@nowhere>
+References: <20090127001708.GA4815@nowhere>
+	 <20090126163015.7f879b18@infradead.org> <20090131180347.GC5884@nowhere>
+	 <20090131101502.7ce8e7af@infradead.org>  <20090131182843.GD5884@nowhere>
+Content-Type: text/plain
+Date: Mon, 02 Feb 2009 08:37:41 +1100
+Message-Id: <1233524261.18767.60.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sure we fail on NULL return value possibly returned by pty
-master lookup.
 
-Convert NULL to ERR_PTR(-ENODEV), since NULL is not captured by
-IS_ERR() in __tty_open.
+> I don't know, most of those I've looked on are not documented about the reason
+> for a private workqueue. I guess most of them can use the usual kevent.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- drivers/char/tty_io.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+The main problem with kevent is that it gets clogged up.
 
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index ff92099..2c14dd8 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1217,7 +1217,8 @@ static struct tty_struct *tty_driver_lookup_tty(struct tty_driver *driver,
- 	struct tty_struct *tty;
- 
- 	if (driver->ops->lookup)
--		return driver->ops->lookup(driver, inode, idx);
-+		return driver->ops->lookup(driver, inode, idx) ? :
-+			ERR_PTR(-ENODEV);
- 
- 	tty = driver->ttys[idx];
- 	return tty;
--- 
-1.6.1.2
+That's were thread pools kick in ... tried using Dave Howells slow
+work ?
+
+Cheers,
+Ben.
+
 
