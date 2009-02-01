@@ -1,69 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZBABar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZBABlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbZBABar (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 20:30:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbZBABaj
+	id S1755255AbZBABlM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 20:41:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZBABk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 20:30:39 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:40395 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752546AbZBABaj (ORCPT
+	Sat, 31 Jan 2009 20:40:56 -0500
+Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:15891 "EHLO
+	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752129AbZBABk4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 20:30:39 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 31 Jan 2009 17:30:21 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: mtk.manpages@gmail.com
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Willy Tarreau <w@1wt.eu>,
-       Bron Gondwana <brong@fastmail.fm>
-Subject: Re: [patch] drop epoll max_user_instances and rely only on 
- max_user_watches
-In-Reply-To: <cfd18e0f0901311726n439d3034qa87f3ab31acd4858@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0901311728220.18888@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0901282010250.21401@alien.or.mcafeemobile.com>  <20090129005716.6dd51929.akpm@linux-foundation.org>  <cfd18e0f0901290203r139cb5bfgc02a0dcb1347aba8@mail.gmail.com>  <alpine.DEB.1.10.0901291053580.15448@alien.or.mcafeemobile.com>
- <cfd18e0f0901311726n439d3034qa87f3ab31acd4858@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 31 Jan 2009 20:40:56 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAHuMhEl5LJ2q/2dsb2JhbADIDoQUBg
+X-IronPort-AV: E=Sophos;i="4.37,357,1231075800"; 
+   d="scan'208";a="307562403"
+Date: Sun, 1 Feb 2009 12:40:50 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Sesterhenn <snakebyte@gmx.de>,
+       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: Warning and BUG with btrfs and corrupted image
+Message-ID: <20090201014050.GD24173@disturbed>
+Mail-Followup-To: Pavel Machek <pavel@suse.cz>,
+	Christoph Hellwig <hch@infradead.org>,
+	Eric Sesterhenn <snakebyte@gmx.de>,
+	Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+	linux-btrfs@vger.kernel.org
+References: <20090113144307.GF16333@alice> <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice> <20090120101119.GB10158@disturbed> <20090120101503.GC17377@alice> <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org> <20090120222019.GB2320@elf.ucw.cz> <20090121040042.GI10158@disturbed> <20090126162711.GA2083@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090126162711.GA2083@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Feb 2009, Michael Kerrisk wrote:
-
-> Hi Davide,
+On Mon, Jan 26, 2009 at 05:27:11PM +0100, Pavel Machek wrote:
+> On Wed 2009-01-21 15:00:42, Dave Chinner wrote:
+> > On Tue, Jan 20, 2009 at 11:20:19PM +0100, Pavel Machek wrote:
+> > > On Tue 2009-01-20 08:28:29, Christoph Hellwig wrote:
+> > > > I think that was the issue with the debug builds.  If you do this
+> > > > testing always do it without CONFIG_XFS_DEBUG set as with that option
+> > > > we intentionally panic on detected disk corruptions.
+> > > 
+> > > Uhuh, *_DEBUG options are not supposed to make kernel less
+> > > stable/robust. Should that crashing functionality be guarded with
+> > > command line option or something? ext2 has errors=panic mount
+> > > option...
+> > 
+> > No, it's a debugging option that is described as:
+> > 
+> > 	"Say N unless you are an XFS developer, or you play one on TV."
+> > 
+> > Seriously, if you aren't trying to develop XFS stuff then *don't turn it
+> > on*.
 > 
-> On Fri, Jan 30, 2009 at 7:54 AM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > On Thu, 29 Jan 2009, Michael Kerrisk wrote:
-> >
-> >> Since max_user_instances was added in 2.6.28, and this is an ABI
-> >> change, I suggest this should go into .29-rc, so that
-> >> max_user_instances spends as little time in the wild as possible.
-> >
-> > Agreed, like I already told Andrew. Sorry Michael for the double change to
-> > the man page :/
-> 
-> So is the right change to the epoll(7) page (see
-> http://www.kernel.org/doc/man-pages/online/pages/man7/epoll.7.html )
-> to simply remive the text on max_user_instances:
-> 
->        /proc/sys/fs/epoll/max_user_instances (since Linux 2.6.28)
->               This  specifies  an  upper  limit on the number of epoll
->               instances that can be created per real user ID.
-> 
-> Or are other changes also required?
+> What about this, then?
 
-Yes. Plus, max_user_watches, instead of being 1/32 of lowmem, it's 4%. 
-Just a detail.
+....
+
+> +	  Turning this option on will result in kernel panicking any time
+> +	  it detects on-disk corruption.
+
+Thin end of a wedge. There's a couple of thousand conditions that
+CONFIG_XFS_DEBUG introduces kernel panics on:
+
+$ grep -r ASSERT fs/xfs |wc -l
+2095
 
 
+CONFIG_*_DEBUG means include *debug* code there to help developers,
+including adding additional failure tests into the kernel. Besides,
+which bit of "don't turn it on unless you are an XFS developer"
+don't you understand?
 
-- Davide
+Cheers,
 
-
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
