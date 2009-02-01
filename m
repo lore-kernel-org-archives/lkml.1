@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbZBAUEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752547AbZBAUEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbZBAUEf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 15:04:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753178AbZBAUEZ
+	id S1752547AbZBAUEu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 15:04:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZBAUE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 15:04:25 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:47023 "EHLO
+	Sun, 1 Feb 2009 15:04:26 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:47026 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752837AbZBAUEY (ORCPT
+	with ESMTP id S1753104AbZBAUEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 15:04:24 -0500
+	Sun, 1 Feb 2009 15:04:25 -0500
 X-AuthUser: davidel@xmailserver.org
 From: Davide Libenzi <davidel@xmailserver.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
@@ -18,60 +18,106 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
        David Miller <davem@davemloft.net>
 Date: Sun, 01 Feb 2009 12:04:23 -0800
-Subject: [patch 0/6] epoll keyed wakeups v2 - introduction
+Subject: [patch 1/6] epoll keyed wakeups v2 - add __wake_up_locked_key() and __wake_up_sync_key()
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.13601.1233518663.0>
+Message-ID: <send-serie.davidel@xmailserver.org.13601.1233518664.1>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The follwing patch set introduces wakeup hints for some of the most
-popular (from epoll POV) devices, so that epoll code can avoid spurious
-wakeups on its waiters.
-The problem with epoll is that the callback-based wakeups do not, ATM,
-carry any information about the events the wakeup is related to.
-So the only choice epoll has (not being able to call f_op->poll() from
-inside the callback), is to add the file* to a ready-list and resolve
-the real events later on, at epoll_wait() (or its own f_op->poll()) time.
-This can cause spurious wakeups, since the wake_up() itself might be
-for an event the caller is not interested into.
-The rate of these spurious wakeup can be pretty high in case of many
-network sockets being monitored.
-By allowing devices to report the events the wakeups refer to (at least
-the two major classes - POLLIN/POLLOUT), we are able to spare useless
-wakeups by proper handling inside the epoll's poll callback.
-Epoll will have in any case to call f_op->poll() on the file* later on,
-since the change to be done in order to have the full event set sent
-via wakeup, is too invasive for the way our f_op->poll() system works
-(the full event set is calculated inside the poll function - there are
-too many of them to even start thinking the change - also poll/select
-would need change too).
-Epoll is changed in a way that both devices which send event hints, and
-the ones that don't, are correctly handled. The former will gain some
-efficiency though.
-As a general rule for devices, would be to add an event mask by using
-key-aware wakeup macros, when making up poll wait queues.
-I tested it (together with the epoll's poll fix patch Andrew has in -mm)
-and wakeups for the supported devices are correctly filtered.
-Test program available here:
-
-http://www.xmailserver.org/epoll_test.c
-
-ChangeLog / v2:
-
-- No more kwake*() but *_poll()
-
-- Do not add extra parameter to _locked() and _sync(), but create two
-  new functions
-
-- Actually make epoll used _poll() wakeups too for its own waiters
+Nothing revolutionary here. Just using the available "key" that our
+wakeup core already support.  The __wake_up_locked_key() was no brainer,
+since both __wake_up_locked() and __wake_up_locked_key() are thin
+wrappers around __wake_up_common().
+The __wake_up_sync() function had a body, so the choice was between
+borrowing the body for __wake_up_sync_key() and calling it from
+__wake_up_sync(), or make an inline and calling it from both. I chose
+the former since in most archs it all resolves to "mov $0, REG; jmp ADDR".
 
 
-PS: Andrew, those are directly based over the bits you already have
-    in -mm.
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
 - Davide
 
+
+---
+ include/linux/wait.h |    7 +++++--
+ kernel/sched.c       |   23 +++++++++++++++++++----
+ 2 files changed, 24 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.mod/include/linux/wait.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/wait.h	2009-01-31 14:55:14.000000000 -0800
++++ linux-2.6.mod/include/linux/wait.h	2009-01-31 15:08:09.000000000 -0800
+@@ -133,8 +133,11 @@ static inline void __remove_wait_queue(w
+ }
+ 
+ void __wake_up(wait_queue_head_t *q, unsigned int mode, int nr, void *key);
+-extern void __wake_up_locked(wait_queue_head_t *q, unsigned int mode);
+-extern void __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr);
++void __wake_up_locked_key(wait_queue_head_t *q, unsigned int mode, void *key);
++void __wake_up_sync_key(wait_queue_head_t *q, unsigned int mode, int nr,
++			void *key);
++void __wake_up_locked(wait_queue_head_t *q, unsigned int mode);
++void __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr);
+ void __wake_up_bit(wait_queue_head_t *, void *, int);
+ int __wait_on_bit(wait_queue_head_t *, struct wait_bit_queue *, int (*)(void *), unsigned);
+ int __wait_on_bit_lock(wait_queue_head_t *, struct wait_bit_queue *, int (*)(void *), unsigned);
+Index: linux-2.6.mod/kernel/sched.c
+===================================================================
+--- linux-2.6.mod.orig/kernel/sched.c	2009-01-31 14:55:14.000000000 -0800
++++ linux-2.6.mod/kernel/sched.c	2009-01-31 15:22:02.000000000 -0800
+@@ -4727,11 +4727,17 @@ void __wake_up_locked(wait_queue_head_t 
+ 	__wake_up_common(q, mode, 1, 0, NULL);
+ }
+ 
++void __wake_up_locked_key(wait_queue_head_t *q, unsigned int mode, void *key)
++{
++	__wake_up_common(q, mode, 1, 0, key);
++}
++
+ /**
+- * __wake_up_sync - wake up threads blocked on a waitqueue.
++ * __wake_up_sync_key - wake up threads blocked on a waitqueue.
+  * @q: the waitqueue
+  * @mode: which threads
+  * @nr_exclusive: how many wake-one or wake-many threads to wake up
++ * @key: opaque value to be passed to wakeup targets
+  *
+  * The sync wakeup differs that the waker knows that it will schedule
+  * away soon, so while the target thread will be woken up, it will not
+@@ -4740,8 +4746,8 @@ void __wake_up_locked(wait_queue_head_t 
+  *
+  * On UP it can prevent extra preemption.
+  */
+-void
+-__wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr_exclusive)
++void __wake_up_sync_key(wait_queue_head_t *q, unsigned int mode,
++			int nr_exclusive, void *key)
+ {
+ 	unsigned long flags;
+ 	int sync = 1;
+@@ -4753,9 +4759,18 @@ __wake_up_sync(wait_queue_head_t *q, uns
+ 		sync = 0;
+ 
+ 	spin_lock_irqsave(&q->lock, flags);
+-	__wake_up_common(q, mode, nr_exclusive, sync, NULL);
++	__wake_up_common(q, mode, nr_exclusive, sync, key);
+ 	spin_unlock_irqrestore(&q->lock, flags);
+ }
++EXPORT_SYMBOL_GPL(__wake_up_sync_key);
++
++/*
++ * __wake_up_sync - see __wake_up_sync_key()
++ */
++void __wake_up_sync(wait_queue_head_t *q, unsigned int mode, int nr_exclusive)
++{
++	__wake_up_sync_key(q, mode, nr_exclusive, NULL);
++}
+ EXPORT_SYMBOL_GPL(__wake_up_sync);	/* For internal use only */
+ 
+ /**
 
