@@ -1,77 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbZBAKWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbZBAKXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753445AbZBAKWT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:22:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752618AbZBAKWL
+	id S1754133AbZBAKXA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 05:23:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752672AbZBAKWw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:22:11 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:49115 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbZBAKWK (ORCPT
+	Sun, 1 Feb 2009 05:22:52 -0500
+Received: from smtp1.stealer.net ([88.198.224.204]:43019 "EHLO
+	smtp1.stealer.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752569AbZBAKWv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:22:10 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 1 Feb 2009 11:21:55 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [Bug 12592] New: fw_card_add adds card to the list even on enable
- failure
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org, Petr Vandrovec <petr@vandrovec.name>
-In-Reply-To: <49857750.2010109@s5r6.in-berlin.de>
-Message-ID: <tkrat.cc7cd908ac358f35@s5r6.in-berlin.de>
-References: <bug-12592-4803@http.bugzilla.kernel.org/>
- <49857750.2010109@s5r6.in-berlin.de>
+	Sun, 1 Feb 2009 05:22:51 -0500
+Date: Sun, 1 Feb 2009 11:22:40 +0100 (CET)
+From: Sven Wegener <sven.wegener@stealer.net>
+To: Peter Zijlstra <peterz@infradead.org>
+cc: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Chinner <david@fromorbit.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mm: Fix dirty_bytes/dirty_background_bytes sysctls on
+ 64bit arches
+In-Reply-To: <1233479979.4787.64.camel@laptop>
+Message-ID: <alpine.LNX.2.00.0902011036470.6140@titan.stealer.net>
+References: <alpine.DEB.2.00.0811230228070.11384@chino.kir.corp.google.com>  <alpine.DEB.2.00.0811230228530.11384@chino.kir.corp.google.com>  <alpine.LNX.2.00.0902010218350.6140@titan.stealer.net> <1233479979.4787.64.camel@laptop>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+Organization: STEALER.net
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Score: 0.1
+X-Spam-Bar: /
+X-Spam-Report: Scanned by SpamAssassin 3.2.1-gr1 2007-05-02 on smtp1.stealer.net at Sun, 01 Feb 2009 10:22:49 +0000
+	Bayes: 0.4703 Tokens: new, 168; hammy, 4; neutral, 3; spammy, 2.
+	AutoLearn: no
+	*  0.1 RDNS_NONE Delivered to trusted network by a host with no rDNS
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4703]
+X-Spam-Signature: 68be8d562db371d0f1236eb7cac1a70228fec232
+X-DomainKey-Status: no signature
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Date: Sun,  1 Feb 2009 01:29:35 -0800 (PST)
-From: Petr Vandrovec <petr@vandrovec.name>
-Subject: firewire: core: Remove card from list of cards when enable fails
+On Sun, 1 Feb 2009, Peter Zijlstra wrote:
 
-Signed-off-by: Petr Vandrovec <petr@vandrovec.name>
+> On Sun, 2009-02-01 at 02:22 +0100, Sven Wegener wrote:
+> > We need to pass an unsigned long as the minimum, because it gets casted
+> > to an unsigned long in the sysctl handler. If we pass an int, we'll
+> > access four more bytes on 64bit arches, resulting in a random minimum
+> > value.
+> 
+> If that's so, how can any of those other limit values still be good?
 
-After a controller initialization failure, addition of another card got
-stuck due to card_list corruption.
+The problem here is that we use proc_doulongvec_minmax(), which expects an 
+unsigned long. Most other sysctls use the dointvec versions and are safe, 
+as long as they pass an int. If they pass a char or a short, they're 
+subject to the same problem.
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/fw-card.c |    9 ++++++++-
- 1 file changed, 8 insertions(+), 1 deletion(-)
+The other sysctls in sysctl.c that use proc_doulongvec_minmax() don't pass 
+a min/max value. The others in the kernel I checked do the same or pass a 
+proper unsigned long.
 
-Index: linux/drivers/firewire/fw-card.c
-===================================================================
---- linux.orig/drivers/firewire/fw-card.c
-+++ linux/drivers/firewire/fw-card.c
-@@ -412,6 +412,7 @@ fw_card_add(struct fw_card *card,
- {
- 	u32 *config_rom;
- 	size_t length;
-+	int err;
- 
- 	card->max_receive = max_receive;
- 	card->link_speed = link_speed;
-@@ -422,7 +423,13 @@ fw_card_add(struct fw_card *card,
- 	list_add_tail(&card->link, &card_list);
- 	mutex_unlock(&card_mutex);
- 
--	return card->driver->enable(card, config_rom, length);
-+	err = card->driver->enable(card, config_rom, length);
-+	if (err < 0) {
-+		mutex_lock(&card_mutex);
-+		list_del(&card->link);
-+		mutex_unlock(&card_mutex);
-+	}
-+	return err;
- }
- EXPORT_SYMBOL(fw_card_add);
- 
-
--- 
-Stefan Richter
--=====-==--= --=- ----=
-http://arcgraph.de/sr/
-
+Sven
