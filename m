@@ -1,74 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754015AbZBAKEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZBAKFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754015AbZBAKEg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:04:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZBAKE1
+	id S1754158AbZBAKFe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 05:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZBAKFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:04:27 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39595 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752618AbZBAKE0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:04:26 -0500
-Date: Sun, 1 Feb 2009 11:04:10 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: hackbench [pthread mode] regression with 2.6.29-rc3
-Message-ID: <20090201100410.GA22903@elte.hu>
-References: <1233473426.2604.13.camel@ymzhang> <d3f22a0902010026q1db36381j36cb1c9803d48431@mail.gmail.com> <1233476961.13659.12.camel@minggr.sh.intel.com> <1233479836.4787.63.camel@laptop> <1233482239.4787.65.camel@laptop>
+	Sun, 1 Feb 2009 05:05:25 -0500
+Received: from harold.telenet-ops.be ([195.130.133.65]:55567 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752812AbZBAKFZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 05:05:25 -0500
+Date: Sun, 1 Feb 2009 11:05:17 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Ankit Jain <me@ankitjain.org>, viro@zeniv.linux.org.uk,
+       hch@infradead.org, linux-fsdevel@vger.kernel.org, mfasheh@suse.com,
+       joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
+Subject: Re: [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility
+ with legacy xfs ioctls
+In-Reply-To: <49856FE6.8020601@panasas.com>
+Message-ID: <Pine.LNX.4.64.0902011104320.20875@anakin>
+References: <4980C71F.1010804@ankitjain.org> <200901310138.34164.arnd@arndb.de>
+ <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de>
+ <49856FE6.8020601@panasas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233482239.4787.65.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Sun, 2009-02-01 at 10:17 +0100, Peter Zijlstra wrote:
-> > On Sun, 2009-02-01 at 16:29 +0800, Lin Ming wrote:
-> > > > Bisect located below patch.
-> > > > commit 490dea45d00f01847ebebd007685d564aaf2cd98
-> > > > Author: Peter Zijlstra <peterz@infradead.org>
-> > > > Date:   Mon Nov 24 17:06:57 2008 +0100
-> > > > 
-> > > >    itimers: remove the per-cpu-ish-ness
-> > > > 
-> > > >    Either we bounce once cacheline per cpu per tick, yielding n^2 bounces
-> > > >    or we just bounce a single..
-> > > > 
-> > > >    Also, using per-cpu allocations for the thread-groups complicates the
-> > > >    per-cpu allocator in that its currently aimed to be a fixed sized
-> > > >    allocator and the only possible extention to that would be vmap based,
-> > > >    which is seriously constrained on 32 bit archs.
-> > > > 
-> > > > 
-> > > > After above patch is reverted, hackbench result is restored.
-> > > 
-> > > oltp has ~3% regression with 2.6.29-rc3 on 4core*2p stokley machine.
-> > > After above patch reverted, the regression disappeared.
+On Sun, 1 Feb 2009, Boaz Harrosh wrote:
+> Arnd Bergmann wrote:
+> > On Saturday 31 January 2009, Andrew Morton wrote:
+> >> Is this written in a standard somewhere?  Is it guaranteed?
 > > 
-> > *sigh*, did they gain anything with introduction of the per-cpu crap?
+> > Alignment is defined in the architecture psABI documents. 
+> > Unfortunately, many of them were written before the 'long long'
+> > type became part of the C standard, so it's not strictly guaranteed.
+> > AFAICT, the alignment of __u64 on x86 is the same as the alignment
+> > of 'double' by convention.
+> > 
+> > However, the problem is well-understood: x86 is the only one
+> > that has a problem in 32/64 bit compat mode. m68k has similar
+> > issues with 16/32 bit integers, but those don't apply here.
+> > 
+> >> If some (perhaps non-gcc) compiler were to lay this out differently
+> >> (perhaps with suitable command-line options) then that's liveable
+> >> with - as long as the kernel never changes the layout.  Of course
+> >> it would be better to avoid this if poss.
+> > 
+> > If a compiler was using irregular structure alignment, all sorts of
+> > library interfaces would break. The kernel ABI is only a small part
+> > of the problem then.
+> > 
+> >> The other potential issue with a structure like this is that there's a
+> >> risk that it will lead us to copy four bytes of uninitialised kernel
+> >> memory out to userspace.
+> >>
+> >> IOW, it seems a generally bad idea to rely upon compiler-added padding
+> >> for this sort of thing.
+> > 
+> > Agreed in general, but the whole point of this particular patch was to
+> > provide compatibility with an interface that has been part of XFS for
+> > many years.
+> > Linux already has a better interface for new users (sys_fallocate), so
+> > changing the patch would not be helpful and not provide any advantage.
+> > 
+> > There is also no leak of uninitialized data here, because this structure
+> > is only read, never written.
+> > 
+> > 	Arnd <><
+> Arnd Bergmann wrote:
+> > +struct space_resv {
+> > +	__s16		l_type;
+> > +	__s16		l_whence;
+> > +	__s64		l_start;
+> > +	__s64		l_len;		/* len == 0 means until end of file */
+> > +	__s32		l_sysid;
+> > +	__u32		l_pid;
+> > +	__s32		l_pad[4];	/* reserve area			    */
+> > +};
 > 
-> No it wouldn't have, I just missed something obvious,.. :-(
+> What about telling the compiler exactly what you said above, just
+> to be sure we all mean the same thing. (And as documentation for new
+> comers):
 > 
-> I wish we never merged that crap...
+> +struct space_resv_64 {
+> +	__s16		l_type;
+> +	__s16		l_whence;
+> +	__u32		reserved;
+> +	__s64		l_start;
+> +	__s64		l_len;		/* len == 0 means until end of file */
+> +	__s32		l_sysid;
+> +	__u32		l_pid;
+> +	__s32		l_pad[4];	/* reserve area			    */
+> +} __packed;
 
-oh, it certainly had its use: it highlighted that we have crappy 
-threading+timers code (on hackbench_pth) since the beginning of the Linux 
-SMP times.
+Because the compiler will assume all fields are always unaligned and will use very
+suboptimal code to access them?
 
-	Ingo
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
