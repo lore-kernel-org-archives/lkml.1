@@ -1,106 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753288AbZBAMc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbZBAMqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753288AbZBAMc7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 07:32:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751814AbZBAMct
+	id S1753417AbZBAMqS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 07:46:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752393AbZBAMqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 07:32:49 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:4548 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750914AbZBAMcs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 07:32:48 -0500
-Message-ID: <4985966D.8040402@panasas.com>
-Date: Sun, 01 Feb 2009 14:32:45 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Sun, 1 Feb 2009 07:46:04 -0500
+Received: from web25803.mail.ukl.yahoo.com ([217.12.10.188]:38069 "HELO
+	web25803.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752301AbZBAMqD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 07:46:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.uk;
+  h=X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=o7y/wxo2ro45Fg6+gR8zx931ptUou9MSebjmqjLboA/42wGAw6H6/7ZOCEdHCYslmBNTv4HjhNL5mEhcEAlFVUgfyoGdSe6S8Wv6n2l4gG//SOQiv03ZDrz39MVODAdd6PlDPb/XmjyIsHERSmHONdtkeFS65ZJVKjSdL+iRu9o=;
+X-YMail-OSG: hjojkuoVM1nek0_ui1n_ez1FYVTnRS1kzxNkQokmrFHR0_vklwSKcQDCLrxu8agqDsw3EJLzHH4uEQXraCh2kXzzlxLFt0D1Hk9KOq_KPEI3QQt.iHokyRyUNMjZtNcmv4zYUPmLlRzBe69S3rx_pPgIL0LZNH3_rUNHEI_LV6klqAbiNsa0Tou0m77jxtBLN5l4S.QrZrr7tO3Gab_qsoCo7Z3EyzG2
+X-Mailer: YahooMailRC/1155.45 YahooMailWebService/0.7.260.1
+References: <54747.12003.qm@web25801.mail.ukl.yahoo.com> <871vul3g14.fsf@devron.myhome.or.jp> <49822E2A.3020601@zytor.com> <957266.96237.qm@web25805.mail.ukl.yahoo.com> <87bptp1njj.fsf@devron.myhome.or.jp> <87bptouoid.fsf@devron.myhome.or.jp>
+Date: Sun, 1 Feb 2009 12:46:00 +0000 (GMT)
+From: A B <spinflipper4@yahoo.co.uk>
+Subject: Re: Fat64 / exFat fs and Linux
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Ankit Jain <me@ankitjain.org>, viro@zeniv.linux.org.uk,
-       hch@infradead.org, linux-fsdevel@vger.kernel.org, mfasheh@suse.com,
-       joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
-       linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
-Subject: Re: [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility
- with legacy xfs ioctls
-References: <4980C71F.1010804@ankitjain.org> <200901310138.34164.arnd@arndb.de> <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de> <49856FE6.8020601@panasas.com> <Pine.LNX.4.64.0902011104320.20875@anakin> <49857BEB.30404@panasas.com> <Pine.LNX.4.64.0902011151180.20875@anakin>
-In-Reply-To: <Pine.LNX.4.64.0902011151180.20875@anakin>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Feb 2009 12:32:46.0061 (UTC) FILETIME=[2F8779D0:01C98469]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Message-ID: <473359.26476.qm@web25803.mail.ukl.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Sun, 1 Feb 2009, Boaz Harrosh wrote:
->> Geert Uytterhoeven wrote:
->>> On Sun, 1 Feb 2009, Boaz Harrosh wrote:
->>>> Arnd Bergmann wrote:
->>>>> +struct space_resv {
->>>>> +	__s16		l_type;
->>>>> +	__s16		l_whence;
->>>>> +	__s64		l_start;
->>>>> +	__s64		l_len;		/* len == 0 means until end of file */
->>>>> +	__s32		l_sysid;
->>>>> +	__u32		l_pid;
->>>>> +	__s32		l_pad[4];	/* reserve area			    */
->>>>> +};
->>>> What about telling the compiler exactly what you said above, just
->>>> to be sure we all mean the same thing. (And as documentation for new
->>>> comers):
->>>>
->>>> +struct space_resv_64 {
->>>> +	__s16		l_type;
->>>> +	__s16		l_whence;
->>>> +	__u32		reserved;
->>>> +	__s64		l_start;
->>>> +	__s64		l_len;		/* len == 0 means until end of file */
->>>> +	__s32		l_sysid;
->>>> +	__u32		l_pid;
->>>> +	__s32		l_pad[4];	/* reserve area			    */
->>>> +} __packed;
->>> Because the compiler will assume all fields are always unaligned and will use very
->>> suboptimal code to access them?
->> This discussion comes up every once in a while. I'm using an old FC7 compiler
->> (gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-27)) And tests show that when the layout
->> of a structure is exactly the same the "__packed" on structure declarations does
->> nothing. It only starts to affect when there are real differences in alignment.
->> Also tests with gcc 3.4.x showed the same effect.
->>
->> On previous discussions no one could come forward and say what compiler version
->> breaks when __packed is applied on structure definition. I'm afraid your statement
->> above is a myth.
-> 
-> FC7, targeting ia32? Sure, ia32 has no alignment restrictions.
-> Try e.g. MIPS.
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
 
-I don't understand
+> I've updated the tarballs to fix the bug he found. If someone tried old
+> tarballs, please download new tarballs and try.
+> 
+>     http://userweb.kernel.org/~hirofumi/exfat/exfat.tar.gz
+> 
+> Thanks.
+> -- 
+> OGAWA Hirofumi 
 
-if you have a structure like
-struct foo {
-	u32 one;
-	u32 two;
-};
-vs
-struct foo_packed {
-	u32 one;
-	u32 two;
-} __packed;
+I have tried the updates and it fixes all the problems I found initially.
+I tried it on a larger volume as well with files >4GB ('messed up' by copying
+many large files to it on XP at the same time) and it works well. (File
+integrity checked using md5sum).
 
-Just adding an __attribute__((packed)) to it clearly does not change
-the layout of the structure. Are you saying the __attribute__((packed))
-is an hint to the compiler that foo_packed might be used unaligned. This
-is just brain-dead, because I can use an unaligned pointer to foo just as
-I can to foo_packed. Otherwise there is no difference what-so-ever between
-the two. I have to see it to believe. It is totally the wrong hint in the
-wrong place taking away valuable meaning of saying "please don't use padding
-holes in this structure"
+I would like to see this exfat read-only driver included in a future linux kernel.
 
-Sorry for been so slow, I just don't get it.
-Boaz
+Thanks again for the replies and the prompt fixes!
+Cheers,
+Max
+
+
+
+      
