@@ -1,100 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZBAA6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZBABFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754577AbZBAA6S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 31 Jan 2009 19:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZBAA6F
+	id S1755869AbZBABFo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 31 Jan 2009 20:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZBABFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 31 Jan 2009 19:58:05 -0500
-Received: from fifo99.com ([67.223.236.141]:47714 "EHLO fifo99.com"
+	Sat, 31 Jan 2009 20:05:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48542 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752693AbZBAA6E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 31 Jan 2009 19:58:04 -0500
-Subject: Re: checkpatch.pl is getting too slow
-From: Daniel Walker <dwalker@fifo99.com>
-To: Andy Whitcroft <apw@canonical.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090131210220.GA25811@shadowen.org>
-References: <20090131185507.GA3280@kroah.com>
-	 <20090131210220.GA25811@shadowen.org>
+	id S1755377AbZBABFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 31 Jan 2009 20:05:35 -0500
+Subject: Re: irq_desc_lock_class is held when it is freed
+From: Eric Paris <eparis@redhat.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com
+In-Reply-To: <4984D59F.4030700@kernel.org>
+References: <1233437601.11984.41.camel@localhost.localdomain>
+	 <4984D59F.4030700@kernel.org>
 Content-Type: text/plain
-Date: Sat, 31 Jan 2009 16:57:57 -0800
-Message-Id: <1233449877.5903.48.camel@desktop>
+Date: Sat, 31 Jan 2009 20:05:22 -0500
+Message-Id: <1233450323.19217.0.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-31 at 21:02 +0000, Andy Whitcroft wrote:
-> On Sat, Jan 31, 2009 at 10:55:07AM -0800, Greg KH wrote:
-> > Hi Andy,
+On Sat, 2009-01-31 at 14:50 -0800, Yinghai Lu wrote:
+> Eric Paris wrote:
+> > I have an hp dl785g5 which is unable to successfully run
+> > 2.6.29-0.66.rc3.fc11.x86_64 or 2.6.29-rc2-next-20090126.  During bootup
+> > (early in userspace daemons starting) I get the below BUG, which quickly
+> > renders the machine dead.  I assume it is because sparse_irq_lock never
+> > gets released when the BUG kills that task.  But maybe it dies for some
+> > other reason, but the machine is dead, gotta hit the vitual power
+> > button.
 > > 
-> > I've noticed that checkpatch.pl is getting slower and slower when run on
-> > a whole file, but yesterday I realized that it now is pretty much
-> > unusable:
+> > setting CONFIG_NUMA_MIGRATE_IRQ_DESC=n allowed me to successfully boot
+> > the linux-next kernel.  2.6.28 booted and worked fine (although it
+> > doesn't have this config option, so that isn't surprising.)
 > > 
-> > $ time ./scripts/checkpatch.pl --file drivers/staging/uc2322/aten2011.c
+> > attached you will find the linux-next config and dmesg output from the
+> > machine in question when booted using linux-next WITHOUT the
+> > MIGRATE_IRQ_DESC.  The only difference between the working and broken
+> > config is if CONFIG_NUMA_MIGRATE_IRQ_DESC is set or not.
 > > 
-> > <snip>
-> > total: 168 errors, 126 warnings, 3939 lines checked
+> > Please if there is anything I can collect, test, or do, don't hesitate
+> > to let me know.
 > > 
-> > drivers/staging/uc2322/aten2011.c has style problems, please review.  If any of these errors
-> > are false positives report them to the maintainer, see
-> > CHECKPATCH in MAINTAINERS.
-> > 
-> > real	8m7.924s
-> > user	8m7.058s
-> > sys	0m0.116s
+> it seems there is some merge problem... also there could be another problem...
 > 
-> That is scarey indeed.  Something is very wrong in there if it went back
-> to a more reasonable 10's of seconds with a few patches.  I will have a
-> look at the file you attached and see what I can find.
+> please check
 > 
-> Thanks for the heads up.
+> diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+> index 6c02c25..610ce0a 100644
+> --- a/arch/x86/kernel/io_apic.c
+> +++ b/arch/x86/kernel/io_apic.c
+> @@ -2511,14 +2511,15 @@ static void irq_complete_move(struct irq_desc **descp)
+>  
+>  	vector = ~get_irq_regs()->orig_ax;
+>  	me = smp_processor_id();
+> +
+> +	if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain)) {
+>  #ifdef CONFIG_NUMA_MIGRATE_IRQ_DESC
+>  		*descp = desc = move_irq_desc(desc, me);
+>  		/* get the new one */
+>  		cfg = desc->chip_data;
+>  #endif
+> -
+> -	if (vector == cfg->vector && cpumask_test_cpu(me, cfg->domain))
+>  		send_cleanup_vector(cfg);
+> +	}
+>  }
+>  #else
+>  static inline void irq_complete_move(struct irq_desc **descp) {}
 
-After some debugging it looks like it takes a long time to processes
-lines similar to,
+Looks like I got the same thing.....
 
-/*************************************
- * Bit definitions for each register *
- *************************************/
-#define LCR_BITS_5              0x00    /* 5 bits/char */
-#define LCR_BITS_6              0x01    /* 6 bits/char */
-#define LCR_BITS_7              0x02    /* 7 bits/char */
-#define LCR_BITS_8              0x03    /* 8 bits/char */
-#define LCR_BITS_MASK           0x03    /* Mask for bits/char field */
+Starting Avahi daemon... [  OK  ]
 
+=========================
+[ BUG: held lock freed! ]
+-------------------------
+swapper/0 is freeing memory ffff88042c2196d0-ffff88042c2198cf, with a lock still held there!
+ (&irq_desc_lock_class){++..}, at: [<ffffffff81093218>] handle_fasteoi_irq+0xa9/0xd4
+2 locks held by swapper/0:
+ #0:  (&irq_desc_lock_class){++..}, at: [<ffffffff81093218>] handle_fasteoi_irq+0xa9/0xd4
+ #1:  (sparse_irq_lock){+...}, at: [<ffffffff810940a1>] move_irq_desc+0x69/0x1dc
 
-There's a section in the code which has several of these. The processing
-slows down when this expression matches repeatedly,
+stack backtrace:
+Pid: 0, comm: swapper Not tainted 2.6.29-rc2-next-20090126 #2
+Call Trace:
+ <IRQ>  [<ffffffff8106b973>] debug_check_no_locks_freed+0x10d/0x14e
+ [<ffffffff810d2f87>] kfree+0x99/0x117
+ [<ffffffff810941e7>] ? move_irq_desc+0x1af/0x1dc
+ [<ffffffff810941e7>] move_irq_desc+0x1af/0x1dc
+ [<ffffffff810241dc>] irq_complete_move+0x7c/0x8c
+ [<ffffffff8102490c>] ack_apic_level+0x22/0x74
+ [<ffffffff81093218>] ? handle_fasteoi_irq+0xa9/0xd4
+ [<ffffffff81093229>] handle_fasteoi_irq+0xba/0xd4
+ [<ffffffff81013b15>] do_IRQ+0xd5/0x140
+ [<ffffffff81011e13>] ret_from_intr+0x0/0x2e
+ <EOI> <6>bnx2: eth0 NIC Copper Link is Up, 1000 Mbps full duplex
 
-# Check for potential 'bare' types
-                my ($stat, $cond, $line_nr_next, $remain_next, $off_next);
-                if ($realcnt && $line =~ /.\s*\S/) {
-                        ($stat, $cond, $line_nr_next, $remain_next, $off_next) =
-                                ctx_statement_block($linenr, $realcnt, 0);
-
-and ctx_statement_block will process $realcnt lines trying to find a
-complete block, and it has no concept of "define" so it just keep
-processing until it's concept of a block ending.. That happens on each
-"define" line in the file, which I think accounts for all the overhead.
-
-I added the following temporary work around, which speeds things up
-considerably. Just forcing it to only process one line at most.
-
-diff --git a/scripts/checkpatch.pl b/scripts/checkpatch.pl
-index 45eb0ae..787423a 100755
---- a/scripts/checkpatch.pl
-+++ b/scripts/checkpatch.pl
-@@ -1357,7 +1357,7 @@ sub process {
- 		my ($stat, $cond, $line_nr_next, $remain_next, $off_next);
- 		if ($realcnt && $line =~ /.\s*\S/) {
- 			($stat, $cond, $line_nr_next, $remain_next, $off_next) =
--				ctx_statement_block($linenr, $realcnt, 0);
-+				ctx_statement_block($linenr, 1, 0);
- 			$stat =~ s/\n./\n /g;
- 			$cond =~ s/\n./\n /g;
- 
 
 
