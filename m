@@ -1,151 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757375AbZBAT3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZBATsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757375AbZBAT3k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 14:29:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbZBAT1r
+	id S1755343AbZBATsn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 14:48:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZBATsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 14:27:47 -0500
-Received: from mu-out-0910.google.com ([209.85.134.191]:21944 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756517AbZBAT1p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 14:27:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=Fs0hCVO3MmAY1FetM9H0GAFzHLiOS27pmdz0SN13JZCWusBd1ZGA3iELvtjBULSx1T
-         jq097Ppr6INqPR14NnER8DTcXj/duiQSuz0VuYFIl7bswiS2eDIKDMJepfrZBEd+yHH0
-         h50/y+V1Lb5Jsdt3Vk1ZnoLepawGNVEtqN8gU=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Borislav Petkov <petkovbb@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Sun, 01 Feb 2009 20:28:38 +0100
-Message-Id: <20090201192838.1592.16234.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090201192732.1592.76435.sendpatchset@localhost.localdomain>
-References: <20090201192732.1592.76435.sendpatchset@localhost.localdomain>
-Subject: [PATCH 8/8] ide: return request status from ->pc_callback method
+	Sun, 1 Feb 2009 14:48:35 -0500
+Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:34160 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1751571AbZBATse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 14:48:34 -0500
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Sun, 1 Feb 2009 19:47:19 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH -rt] Trivial changes to mm/page_alloc.c in -rt git tree
+Message-ID: <20090201194719.GA5383@hades.domain.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: return request status from ->pc_callback method
+Some trivial changes in function drain_zone_pages, in -rt tree.
 
-Make ->pc_callback method return request status and then move
-the request completion from ->pc_callback to ide_pc_intr().
+Invocations to functions get_cpu_lock_cpu_irqsave/restore in function
+drain_zone_pages missing the ';' character.
 
-There should be no functional changes caused by this patch.
-
-Cc: Borislav Petkov <petkovbb@gmail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 ---
- drivers/ide/ide-atapi.c  |   12 +++++++++++-
- drivers/ide/ide-floppy.c |   12 ++++--------
- drivers/ide/ide-tape.c   |   10 ++--------
- include/linux/ide.h      |    2 +-
- 4 files changed, 18 insertions(+), 18 deletions(-)
+ mm/page_alloc.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: b/drivers/ide/ide-atapi.c
-===================================================================
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -345,6 +345,8 @@ static ide_startstop_t ide_pc_intr(ide_d
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 238e192..3b18a12 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -889,14 +889,14 @@ void drain_zone_pages(int cpu, struct zone *zone, struct per_cpu_pages *pcp)
+ 	unsigned long flags;
+ 	int to_drain;
  
- 	/* No more interrupts */
- 	if ((stat & ATA_DRQ) == 0) {
-+		int uptodate;
-+
- 		debug_log("Packet command completed, %d bytes transferred\n",
- 			  pc->xferred);
- 
-@@ -383,7 +385,15 @@ static ide_startstop_t ide_pc_intr(ide_d
- 			dsc = 1;
- 
- 		/* Command finished - Call the callback function */
--		drive->pc_callback(drive, dsc);
-+		uptodate = drive->pc_callback(drive, dsc);
-+
-+		if (uptodate == 0)
-+			drive->failed_pc = NULL;
-+
-+		if (blk_special_request(rq))
-+			ide_complete_rq(drive, 0);
-+		else
-+			ide_end_request(drive, uptodate, 0);
- 
- 		return ide_stopped;
- 	}
-Index: b/drivers/ide/ide-floppy.c
-===================================================================
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -71,7 +71,7 @@ static void idefloppy_update_buffers(ide
- 		ide_end_request(drive, 1, 0);
+-	get_cpu_lock_cpu_irqsave(zone, cpu, flags)
++	get_cpu_lock_cpu_irqsave(zone, cpu, flags);
+ 	if (pcp->count >= pcp->batch)
+ 		to_drain = pcp->batch;
+ 	else
+ 		to_drain = pcp->count;
+ 	free_pages_bulk(zone, to_drain, &pcp->list, 0);
+ 	pcp->count -= to_drain;
+-	put_cpu_lock_irqrestore(zone, cpu, flags)
++	put_cpu_lock_irqrestore(zone, cpu, flags);
  }
+ #endif
  
--static void ide_floppy_callback(ide_drive_t *drive, int dsc)
-+static int ide_floppy_callback(ide_drive_t *drive, int dsc)
- {
- 	struct ide_disk_obj *floppy = drive->driver_data;
- 	struct ide_atapi_pc *pc = drive->pc;
-@@ -108,14 +108,10 @@ static void ide_floppy_callback(ide_driv
- 			       "Aborting request!\n");
- 	}
- 
--	if (uptodate == 0)
--		drive->failed_pc = NULL;
--
--	if (blk_special_request(rq)) {
-+	if (blk_special_request(rq))
- 		rq->errors = uptodate ? 0 : IDE_DRV_ERROR_GENERAL;
--		ide_complete_rq(drive, 0);
--	} else
--		ide_end_request(drive, uptodate, 0);
-+
-+	return uptodate;
- }
- 
- static void ide_floppy_report_error(struct ide_disk_obj *floppy,
-Index: b/drivers/ide/ide-tape.c
-===================================================================
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -463,7 +463,7 @@ static void ide_tape_kfree_buffer(idetap
- 
- static void ide_tape_handle_dsc(ide_drive_t *);
- 
--static void ide_tape_callback(ide_drive_t *drive, int dsc)
-+static int ide_tape_callback(ide_drive_t *drive, int dsc)
- {
- 	idetape_tape_t *tape = drive->driver_data;
- 	struct ide_atapi_pc *pc = drive->pc;
-@@ -530,13 +530,7 @@ static void ide_tape_callback(ide_drive_
- 
- 	rq->errors = err;
- 
--	if (uptodate == 0)
--		drive->failed_pc = NULL;
--
--	if (blk_special_request(rq))
--		ide_complete_rq(drive, 0);
--	else
--		ide_end_request(drive, uptodate, 0);
-+	return uptodate;
- }
- 
- /*
-Index: b/include/linux/ide.h
-===================================================================
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -619,7 +619,7 @@ struct ide_drive_s {
- 	struct ide_atapi_pc *failed_pc;
- 
- 	/* callback for packet commands */
--	void (*pc_callback)(struct ide_drive_s *, int);
-+	int  (*pc_callback)(struct ide_drive_s *, int);
- 
- 	void (*pc_update_buffers)(struct ide_drive_s *, struct ide_atapi_pc *);
- 	int  (*pc_io_buffers)(struct ide_drive_s *, struct ide_atapi_pc *,
+-- 
+1.5.6.5
+
