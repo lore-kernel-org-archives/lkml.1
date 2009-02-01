@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbZBAJ5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZBAJ6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753923AbZBAJ5i (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 04:57:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZBAJ50
+	id S1753846AbZBAJ6X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 04:58:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752729AbZBAJ6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 04:57:26 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:48645 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753413AbZBAJ5Y (ORCPT
+	Sun, 1 Feb 2009 04:58:10 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47425
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752691AbZBAJ6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 04:57:24 -0500
-Subject: Re: hackbench [pthread mode] regression with 2.6.29-rc3
-From: Peter Zijlstra <peterz@infradead.org>
-To: Lin Ming <ming.m.lin@intel.com>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <1233479836.4787.63.camel@laptop>
-References: <1233473426.2604.13.camel@ymzhang>
-	 <d3f22a0902010026q1db36381j36cb1c9803d48431@mail.gmail.com>
-	 <1233476961.13659.12.camel@minggr.sh.intel.com>
-	 <1233479836.4787.63.camel@laptop>
-Content-Type: text/plain
-Date: Sun, 01 Feb 2009 10:57:19 +0100
-Message-Id: <1233482239.4787.65.camel@laptop>
+	Sun, 1 Feb 2009 04:58:09 -0500
+Date: Sun, 01 Feb 2009 01:58:05 -0800 (PST)
+Message-Id: <20090201.015805.28182673.davem@davemloft.net>
+To: dwalker@fifo99.com
+Cc: roel.kluin@gmail.com, netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: variables reach -1, but 0 tested
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1233434112.5903.28.camel@desktop>
+References: <498429AE.1080404@gmail.com>
+	<1233434112.5903.28.camel@desktop>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-02-01 at 10:17 +0100, Peter Zijlstra wrote:
-> On Sun, 2009-02-01 at 16:29 +0800, Lin Ming wrote:
-> > > Bisect located below patch.
-> > > commit 490dea45d00f01847ebebd007685d564aaf2cd98
-> > > Author: Peter Zijlstra <peterz@infradead.org>
-> > > Date:   Mon Nov 24 17:06:57 2008 +0100
-> > > 
-> > >    itimers: remove the per-cpu-ish-ness
-> > > 
-> > >    Either we bounce once cacheline per cpu per tick, yielding n^2 bounces
-> > >    or we just bounce a single..
-> > > 
-> > >    Also, using per-cpu allocations for the thread-groups complicates the
-> > >    per-cpu allocator in that its currently aimed to be a fixed sized
-> > >    allocator and the only possible extention to that would be vmap based,
-> > >    which is seriously constrained on 32 bit archs.
-> > > 
-> > > 
-> > > After above patch is reverted, hackbench result is restored.
-> > 
-> > oltp has ~3% regression with 2.6.29-rc3 on 4core*2p stokley machine.
-> > After above patch reverted, the regression disappeared.
+From: Daniel Walker <dwalker@fifo99.com>
+Date: Sat, 31 Jan 2009 12:35:12 -0800
+
+> On Sat, 2009-01-31 at 11:36 +0100, Roel Kluin wrote:
 > 
-> *sigh*, did they gain anything with introduction of the per-cpu crap?
+> >  
+> > -	while (limit--) {
+> > +	while (--limit) {
+> >  		val = phy_read(phy, MII_BMCR);
+> >  		if (val >= 0 && (val & BMCR_RESET) == 0)
+> >  			break;
+> 
+> It looks like these are checked for <= to 0 , are these changes strictly
+> nessesary?
 
-No it wouldn't have, I just missed something obvious,.. :-(
+Agreed.
 
-I wish we never merged that crap...
+I'd like to apply these fixes to net-2.6 but I can't if there
+are spurious cases in here.
 
+I'm dropping this patch for now.
