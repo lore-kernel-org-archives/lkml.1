@@ -1,59 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbZBAK5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZBAK7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754488AbZBAK5h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 05:57:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753146AbZBAK53
+	id S1754656AbZBAK7U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 05:59:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZBAK7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 05:57:29 -0500
-Received: from ozlabs.org ([203.10.76.45]:49270 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753144AbZBAK52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 05:57:28 -0500
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] sched_rt: don't use first_cpu on cpumask created with cpumask_and.
-Date: Sun, 1 Feb 2009 21:27:16 +1030
-User-Agent: KMail/1.10.3 (Linux/2.6.27-9-generic; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, Mike Travis <travis@sgi.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-References: <200901312321.25344.rusty@rustcorp.com.au> <20090131134947.GA23973@elte.hu>
-In-Reply-To: <20090131134947.GA23973@elte.hu>
+	Sun, 1 Feb 2009 05:59:08 -0500
+Received: from harold.telenet-ops.be ([195.130.133.65]:38310 "EHLO
+	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752984AbZBAK7H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 05:59:07 -0500
+X-Greylist: delayed 3222 seconds by postgrey-1.27 at vger.kernel.org; Sun, 01 Feb 2009 05:59:07 EST
+Date: Sun, 1 Feb 2009 11:59:04 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+cc: Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Ankit Jain <me@ankitjain.org>, viro@zeniv.linux.org.uk,
+       hch@infradead.org, linux-fsdevel@vger.kernel.org, mfasheh@suse.com,
+       joel.becker@oracle.com, ocfs2-devel@oss.oracle.com,
+       linux-kernel@vger.kernel.org, xfs-masters@oss.sgi.com, xfs@oss.sgi.com
+Subject: Re: [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility
+ with legacy xfs ioctls
+In-Reply-To: <49857BEB.30404@panasas.com>
+Message-ID: <Pine.LNX.4.64.0902011151180.20875@anakin>
+References: <4980C71F.1010804@ankitjain.org> <200901310138.34164.arnd@arndb.de>
+ <20090130171423.f99c88d0.akpm@linux-foundation.org> <200901310248.42820.arnd@arndb.de>
+ <49856FE6.8020601@panasas.com> <Pine.LNX.4.64.0902011104320.20875@anakin>
+ <49857BEB.30404@panasas.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902012127.17150.rusty@rustcorp.com.au>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 01 February 2009 00:19:47 Ingo Molnar wrote:
-> 
-> * Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
-> > Ingo, please apply to tip/urgent.
+On Sun, 1 Feb 2009, Boaz Harrosh wrote:
+> Geert Uytterhoeven wrote:
+> > On Sun, 1 Feb 2009, Boaz Harrosh wrote:
+> >> Arnd Bergmann wrote:
+> >>> +struct space_resv {
+> >>> +	__s16		l_type;
+> >>> +	__s16		l_whence;
+> >>> +	__s64		l_start;
+> >>> +	__s64		l_len;		/* len == 0 means until end of file */
+> >>> +	__s32		l_sysid;
+> >>> +	__u32		l_pid;
+> >>> +	__s32		l_pad[4];	/* reserve area			    */
+> >>> +};
+> >> What about telling the compiler exactly what you said above, just
+> >> to be sure we all mean the same thing. (And as documentation for new
+> >> comers):
+> >>
+> >> +struct space_resv_64 {
+> >> +	__s16		l_type;
+> >> +	__s16		l_whence;
+> >> +	__u32		reserved;
+> >> +	__s64		l_start;
+> >> +	__s64		l_len;		/* len == 0 means until end of file */
+> >> +	__s32		l_sysid;
+> >> +	__u32		l_pid;
+> >> +	__s32		l_pad[4];	/* reserve area			    */
+> >> +} __packed;
 > > 
-> > cpumask_and() only initializes nr_cpu_ids bits, so the (deprecated)
-> > first_cpu() might find one of those uninitialized bits if nr_cpu_ids
-> > is less than NR_CPUS (as it can be for CONFIG_CPUMASK_OFFSTACK).
-> > 
-> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> > ---
-> >  kernel/sched_rt.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > Because the compiler will assume all fields are always unaligned and will use very
+> > suboptimal code to access them?
 > 
-> Applied to tip/sched/urgent, thanks Rusty!
+> This discussion comes up every once in a while. I'm using an old FC7 compiler
+> (gcc (GCC) 4.1.2 20070925 (Red Hat 4.1.2-27)) And tests show that when the layout
+> of a structure is exactly the same the "__packed" on structure declarations does
+> nothing. It only starts to affect when there are real differences in alignment.
+> Also tests with gcc 3.4.x showed the same effect.
 > 
-> Also, Git sorted out the same-content merge with this commit in cpus4096 
-> just fine:
-> 
->   d38b223: cpumask: reduce stack usage in find_lowest_rq
-> 
-> (this commit is where you backported it from i suspect?)
+> On previous discussions no one could come forward and say what compiler version
+> breaks when __packed is applied on structure definition. I'm afraid your statement
+> above is a myth.
 
-No, this was a clean audit on current Linus' tree.  I wanted to make sure that
-what Linus had worked...
+FC7, targeting ia32? Sure, ia32 has no alignment restrictions.
+Try e.g. MIPS.
 
-Thanks,
-Rusty.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
