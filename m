@@ -1,57 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbZBAHav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbZBAIOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752701AbZBAHav (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 02:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751333AbZBAHan
+	id S1752777AbZBAIOa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 03:14:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbZBAIOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 02:30:43 -0500
-Received: from mga12.intel.com ([143.182.124.36]:23021 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751281AbZBAHam (ORCPT
+	Sun, 1 Feb 2009 03:14:19 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52887
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751440AbZBAIOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 02:30:42 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,359,1231142400"; 
-   d="scan'208";a="105813539"
-Subject: hackbench [pthread mode] regression with 2.6.29-rc3
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Date: Sun, 01 Feb 2009 15:30:26 +0800
-Message-Id: <1233473426.2604.13.camel@ymzhang>
+	Sun, 1 Feb 2009 03:14:18 -0500
+Date: Sun, 01 Feb 2009 00:14:15 -0800 (PST)
+Message-Id: <20090201.001415.201448053.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: patrick.ohly@intel.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: hardware time stamping with optional structs in data area
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090128090821.GA15770@gondor.apana.org.au>
+References: <1233069837.24438.54.camel@pohly-MOBL>
+	<20090128090821.GA15770@gondor.apana.org.au>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Comparing with 2.6.29-rc2's result, hackbench [pthread mode] result is increased about
-50%~100% with 2.6.29-rc3 on my 4 qual-core process tigerton machine and 4 qual-core
-Montvale Itanium mahchine. The smaller result, the better performance.
-﻿
-Command to run hackbench:
-#./hackbench 100 thread 2000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Wed, 28 Jan 2009 20:08:21 +1100
 
-Bisect located below patch.
-commit 490dea45d00f01847ebebd007685d564aaf2cd98
-Author: Peter Zijlstra <peterz@infradead.org>
-Date:   Mon Nov 24 17:06:57 2008 +0100
+> Patrick Ohly <patrick.ohly@intel.com> wrote:
+> >
+> > True - at this time. But what if this extension mechanism turns out to
+> > be useful and we end up with more optional structures? I was hoping that
+> > this might be the case and thus tried to make it easy to add more
+> > structures.
+> 
+> You're putting the extension in the skb->end area, right?
+> 
+> How big are the time stamps? If they're not that big, why don't
+> we put it into the shinfo structure itself? For the common case,
+> we have plenty of space due to kmalloc padding anyway.
 
-    itimers: remove the per-cpu-ish-ness
+I did some thinking about this, and for the time being
+I think we should stick all of these new pieces of
+timestamp information in the skb shared info structure
+and unconditionally.
 
-    Either we bounce once cacheline per cpu per tick, yielding n^2 bounces
-    or we just bounce a single..
+Use unions where possible, but besides that don't try to
+be clever at all.  We'll try to optimize this later.
 
-    Also, using per-cpu allocations for the thread-groups complicates the
-    per-cpu allocator in that its currently aimed to be a fixed sized
-    allocator and the only possible extention to that would be vmap based,
-    which is seriously constrained on 32 bit archs.
+So you can therefore get rid of all of this conditional sizing and
+other complexity, which is distracting from what the patch is actually
+doing.  As a result I expect patch #2 to shrink to basically nothing :)
+Patch #4 should also become unnecessary, etc. etc.
 
+Other than that, I went over the patches again, and here is some other
+feedback:
 
-After above patch is reverted, hackbench result is restored.
+1) Please kill the SO_TIMESTAMPING/SCM_TIMESTAMPING/SIOCHWTSTAMP
+   fallback definition in linux/net_tstamp.h
 
-yanmin
+   We don't do things like that.  The SIOCHWTSTAMP one was using
+   __kernel__ (lowercase) instead of __KERNEL__ so it wouldn't
+   work anyways :-)
 
+2) Please fix up some coding style issues.  For example, when you have
+   a multiline conditional as you do in sock_recv_timestamp(), format
+   it like this:
 
+	if (a ||
+	    b ||
+	    c)
+
+   instead of the two tab thing you're doing on the lines after the
+   first one in the conditional.  There are many cases of this, so
+   please go over all of your patches and review for this.
+
+   The sock_tx_timestamp() declaration has similar issues.  Make the
+   arguments on the subsequent lines start right after the openning
+   parenthesis on the first line.
+
+   Please don't use braces for a basic block composed of only one
+   line, it's just wasted space, for example:
+
+	if (sock_flag(sk, SOCK_TIMESTAMPING_TX_HARDWARE)) {
+		shtx->hardware = 1;
+	}
+
+   should be just:
+
+	if (sock_flag(sk, SOCK_TIMESTAMPING_TX_HARDWARE))
+		shtx->hardware = 1;
+
+   I could go on and on, but that's pointless, just read
+   Documentation/CodingStyle and use checkpatch.pl output as a
+   further guide.
+
+3) In the debug check added by patch #6 please use a construct such as
+   WARN_ON() or WARN_ON_ONCE(), it can even be embedded in a
+   conditional.
+
+4) Please get patches #9 and #11 on a fresh review on linux-kernel
+   with the timer maintainers CC:'d.  Once they ACK, get a figure on
+   how we can arrange the merge of these changes.
+
+   Just like you I think we have to merge this in via the net tree
+   since the only user we have is this hwtstamp networking stuff.  So
+   please express that and try to get the timer folk's blessing on
+   that.
+
+5) Finally, try to put the driver patches at the end so that they
+   finish the patch series and the driver maintainer ACK'ing can
+   be handled seperately and won't hold up the infrastructure patches.
+
+Otherwise this stuff looks good, please keep working on this stuff!
