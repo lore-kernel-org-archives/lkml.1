@@ -1,185 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759338AbZBCAF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZBCAHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759338AbZBCAF2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:05:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbZBCAFS
+	id S1759274AbZBCAHQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:07:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZBCAHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:05:18 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:24994 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753416AbZBCAFR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:05:17 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:content-transfer-encoding:in-reply-to:
-	x-operating-system:user-agent:x-gmailtapped-by:x-gmailtapped;
-	b=rjGK/YebfDzHI6XMoY35y/2QqE8RpVpdgQJ1dGQAwU/hDbH0Vg/waDaQj4Znsa2Wa
-	+u8NdLKMv/d3l5xeQisxA==
-Date: Mon, 2 Feb 2009 16:05:05 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org
-Cc: rientjes@google.com, mbligh@google.com, thockin@google.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2 v2] softlockup: check all tasks in hung_task
-Message-ID: <20090203000505.GA10316@google.com>
+	Mon, 2 Feb 2009 19:07:00 -0500
+Received: from kroah.org ([198.145.64.141]:34883 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753638AbZBCAG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 19:06:59 -0500
+Date: Mon, 2 Feb 2009 15:57:14 -0800
+From: Greg KH <greg@kroah.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Brian Rogers <brian@xyzw.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jan Engelhardt <jengelh@medozas.de>, Ingo Molnar <mingo@elte.hu>,
+       Nathanael Hoyle <nhoyle@hoyletech.com>, stable <stable@kernel.org>
+Subject: Re: [stable] scheduler nice 19 versus 'idle' behavior / static
+	low-priority scheduling
+Message-ID: <20090202235714.GE32075@kroah.com>
+References: <1233294584.28741.2.camel@localhost> <alpine.LSU.2.00.0901300710200.999@fbirervta.pbzchgretzou.qr> <1233297635.17301.11.camel@localhost> <alpine.LSU.2.00.0901300818580.28427@fbirervta.pbzchgretzou.qr> <1233302349.17301.27.camel@localhost> <1233302861.6061.14.camel@marge.simson.net> <49837B32.3010206@xyzw.org> <1233380284.5636.5.camel@marge.simson.net> <1233392893.5863.25.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1233429757.4787.40.camel@laptop>
-X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
-User-Agent: Mutt/1.5.11
-X-GMailtapped-By: 172.28.16.148
-X-GMailtapped: msb
+In-Reply-To: <1233392893.5863.25.camel@marge.simson.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jan 31, 2009 at 11:22 AM, Peter Zijlstra <peterz@infradead.org> wro=
-te:
-> On Fri, 2009-01-30 at 12:49 -0800, Mandeep Singh Baines wrote:
+On Sat, Jan 31, 2009 at 10:08:13AM +0100, Mike Galbraith wrote:
+> On Sat, 2009-01-31 at 06:38 +0100, Mike Galbraith wrote:
+> > On Fri, 2009-01-30 at 14:12 -0800, Brian Rogers wrote:
+> > > Mike Galbraith wrote:
+> > > > On Fri, 2009-01-30 at 02:59 -0500, Nathanael Hoyle wrote:
+> > > >   
+> > > >> I am running foldingathome under it at the moment, and it seems to be
+> > > >> improving the situation somewhat, but I still need/want to test with
+> > > >> Mike's referenced patches.
+> > > >>     
+> > > > You will most definitely encounter evilness running SCHED_IDLE tasks in
+> > > > a kernel without the SCHED_IDLE fixes.
+> > > >   
+> > > Speaking of SCHED_IDLE fixes, is 
+> > > 6bc912b71b6f33b041cfde93ca3f019cbaa852bc going to be put into the next 
+> > > stable 2.6.28 release? Without it on 2.6.28.2, I can still produce 
+> > > minutes-long freezes with BOINC or other idle processes.
+> > > 
+> > > With the above commit on top of 2.6.28.2 and also 
+> > > cce7ade803699463ecc62a065ca522004f7ccb3d, the problem is solved, though 
+> > > I assume cce7ad isn't actually required to fix that, and I can test that 
+> > > if desired.
+> > 
+> > I think they both should go to stable, but dunno if they're headed that
+> > direction or not.
+> > 
+> > One way to find out, CCs added.
+> 
+> For those who may want to run SCHED_IDLE tasks in .27, I've integrated
+> and lightly tested the fixes required to do so.  One additional commit
+> was needed to get SCHED_IDLE vs nice 19 working right, namely f9c0b09.
+> Without that, SCHED_IDLE tasks received more CPU than nice 19 tasks.
+> 
+> Since .27 is in long-term maintenance, I'd integrate into stable, but
+> that's not my decision.  Anyone who applies the below to their stable
+> kernel gets to keep all the pieces should something break ;-)
 
-<snip>
+I'm going to hold off and not do this, as it seems too risky.
 
->> +static void check_hung_rcu_refresh(struct task_struct *g, struct task_s=
-truct *t)
->> +{
->> +     get_task_struct(g);
->> +     get_task_struct(t);
->> +     rcu_read_unlock();
->> +     if (need_resched())
->> +             schedule();
->
-> won't a simple cond_resched(), do?
->
+But thanks for the pointers, perhaps someone else will want to do this
+for their distro kernels if they have problems with this.
 
-Yes, it will. Thanks Peter!
+thanks,
 
->> +     rcu_read_lock();
->> +     put_task_struct(t);
->> +     put_task_struct(g);
->> +}
->> +
->>  /*
->>   * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
->>   * a really long time (120 seconds). If that happens, print out
->> @@ -129,8 +148,13 @@ static void check_hung_uninterruptible_tasks(unsign=
-ed long timeout)
->>
->>       rcu_read_lock();
->>       do_each_thread(g, t) {
->> -             if (!--max_count)
->> -                     goto unlock;
->> +             if (sysctl_hung_task_check_count && !(max_count--)) {
->> +                     max_count =3D sysctl_hung_task_check_count;
->> +                     check_hung_rcu_refresh(g, t);
->> +                     /* Exit if t or g was unhashed during refresh. */
->> +                     if (t->state =3D=3D TASK_DEAD || g->state =3D=3D T=
-ASK_DEAD)
->> +                             goto unlock;
->> +             }
->
-> Its all a bit ugly, but I suppose there's no way around that.
-
-Yeah, need to guarantee that next of t and g isn't pointing to a freed
-task_struct. If the t or g has not been unlinked, then its guaranteed that
-the next fields are valid.
-
-If the state is != TASK_DEAD then its guaranteed that the task hasn't been
-unlinked. I guess that's the shakiest assumption in the chain. If the code were
-ever changed to set the state to TASK_DEAD after unlinking ...
-
-<snip>
-
-Here's v2 of this patch. The only thing that's changed is the cond_resched().
-
----
-Instead of checking only hung_task_check_count tasks, all tasks are checked.
-hung_task_check_count is still used to put an upper bound on the critical
-section. Every hung_task_check_count checks, the critical section is
-refreshed. Keeping the critical section small minimizes time preemption is
-disabled and keeps rcu grace periods small.
-
-To prevent following a stale pointer, get_task_struct is called on g and t.
-To verify that g and t have not been unhashed while outside the critical
-section, the task states are checked.
-
-The design was proposed by Frédéric Weisbecker.
-
-Frédéric Weisbecker (fweisbec@gmail.com) wrote:
->
-> Instead of having this arbitrary limit of tasks, why not just
-> lurk the need_resched() and then schedule if it needs too.
->
-> I know that sounds a bit racy, because you will have to release the
-> tasklist_lock and
-> a lot of things can happen in the task list until you become resched.
-> But you can do a get_task_struct() on g and t before your thread is
-> going to sleep and then put them
-> when it is awaken.
-> Perhaps some tasks will disappear or be appended in the list before g
-> and t, but that doesn't really matter:
-> if they disappear, they didn't lockup, and if they were appended, they
-> are not enough cold to be analyzed :-)
->
-> This way you can drop the arbitrary limit of task number given by the user....
->
-> Frederic.
->
-
-Signed-off-by: Mandeep Singh Baines <msb@google.com>
----
- kernel/hung_task.c |   27 +++++++++++++++++++++++++--
- 1 files changed, 25 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index a841db3..464c96e 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -109,6 +109,24 @@ static void check_hung_task(struct task_struct *t, unsigned long now,
- 		panic("hung_task: blocked tasks");
- }
- 
-+ /*
-+  * To avoid extending the RCU grace period for an unbounded amount of time,
-+  * periodically exit the critical section and enter a new one.
-+  *
-+  * For preemptible RCU it is sufficient to call rcu_read_unlock in order
-+  * exit the grace period. For classic RCU, a reschedule is required.
-+  */
-+static void check_hung_rcu_refresh(struct task_struct *g, struct task_struct *t)
-+{
-+	get_task_struct(g);
-+	get_task_struct(t);
-+	rcu_read_unlock();
-+	cond_resched();
-+	rcu_read_lock();
-+	put_task_struct(t);
-+	put_task_struct(g);
-+}
-+
- /*
-  * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
-  * a really long time (120 seconds). If that happens, print out
-@@ -129,8 +147,13 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
- 
- 	rcu_read_lock();
- 	do_each_thread(g, t) {
--		if (!--max_count)
--			goto unlock;
-+		if (sysctl_hung_task_check_count && !(max_count--)) {
-+			max_count = sysctl_hung_task_check_count;
-+			check_hung_rcu_refresh(g, t);
-+			/* Exit if t or g was unhashed during refresh. */
-+			if (t->state == TASK_DEAD || g->state == TASK_DEAD)
-+				goto unlock;
-+		}
- 		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
- 		if (t->state == TASK_UNINTERRUPTIBLE)
- 			check_hung_task(t, now, timeout);
--- 
-1.5.4.5
-
+greg k-h
