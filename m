@@ -1,43 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZBBKkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbZBBLAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbZBBKkU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 05:40:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZBBKkI
+	id S1754016AbZBBLAc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 06:00:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZBBLAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 05:40:08 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:35783 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbZBBKkH (ORCPT
+	Mon, 2 Feb 2009 06:00:23 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:1336 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900AbZBBLAW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 05:40:07 -0500
-Subject: Re: [BUG??] Deadlock between kswapd and
- sys_inotify_add_watch(lockdep  report)
-From: Peter Zijlstra <peterz@infradead.org>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>, linux kernel <linux-kernel@vger.kernel.org>,
-       linux mm <linux-mm@kvack.org>
-In-Reply-To: <28c262360902020225w6419089ft2dda30da9dfb32a9@mail.gmail.com>
-References: <20090202101735.GA12757@barrios-desktop>
-	 <28c262360902020225w6419089ft2dda30da9dfb32a9@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 02 Feb 2009 11:40:02 +0100
-Message-Id: <1233571202.4787.124.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 06:00:22 -0500
+Date: Mon, 2 Feb 2009 11:00:17 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: sameo@openedhand.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] mfd: Improve diagnostics for WM8350 ID register probe
+Message-ID: <20090202110013.GA16510@sirena.org.uk>
+References: <1232727516-5049-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1232727516-5049-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1232727516-5049-3-git-send-email-broonie@opensource.wolfsonmicro.com> <20090130121009.6de9f11c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090130121009.6de9f11c.akpm@linux-foundation.org>
+X-Cookie: Goes (Went) over like a lead balloon.
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 19:25 +0900, MinChan Kim wrote:
-> But, I am not sure whether it's real bug or not.
+On Fri, Jan 30, 2009 at 12:10:09PM -0800, Andrew Morton wrote:
 
-Me neither, inode life-times are tricky, but on first sight it looks
-real enough.
+> Reading a bunch of bytes into a u16 looks a bit fishy from the endianness
+> point of view?
 
-> I always suffer from reading lockdep report's result. :(
-> It would be better to have a document about lockdep report analysis.
-
-I've never found them hard to read, so I'm afraid you'll have to be more
-explicit about what is unclear to you.
-
+Hrm, yeah.  I'll send a patch for this.  Shouldn't be an issue in
+practice since this is a primary PMIC and is unlikely to be used to
+power anything with the wrong endianness.
