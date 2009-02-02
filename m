@@ -1,47 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbZBBRWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZBBRYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753655AbZBBRWy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 12:22:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755893AbZBBRWS
+	id S1758166AbZBBRYA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 12:24:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758057AbZBBRXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 12:22:18 -0500
-Received: from mx2.suse.de ([195.135.220.15]:50400 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753212AbZBBRWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 12:22:14 -0500
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
-To: Luca Tettamanti <kronos.it@gmail.com>
-Subject: [PATCH 1/2] RFC: ACPI: Interface for ACPI drivers to place quirk code which gets executed early
-Date: Mon, 2 Feb 2009 18:22:10 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.13-HEAD_20090130075504_71baee03-default; KDE/4.1.3; x86_64; ; )
-Cc: Jean Delvare <khali@linux-fr.org>, Hans de Goede <hdegoede@redhat.com>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Len Brown <lenb@kernel.org>
-References: <20090125210520.GA12963@dreamland.darkstar.lan> <20090202101103.1208c035@hyperion.delvare> <68676e00902020338o7326ff7dx4efadf94ed534acf@mail.gmail.com>
-In-Reply-To: <68676e00902020338o7326ff7dx4efadf94ed534acf@mail.gmail.com>
+	Mon, 2 Feb 2009 12:23:44 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:46612 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758048AbZBBRXm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 12:23:42 -0500
+Date: Mon, 2 Feb 2009 12:23:41 -0500
+To: Nathanael Hoyle <nhoyle@hoyletech.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: scheduler nice 19 versus 'idle' behavior / static low-priority scheduling
+Message-ID: <20090202172341.GD26064@csclub.uwaterloo.ca>
+References: <1233294584.28741.2.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902021822.11906.trenn@suse.de>
+In-Reply-To: <1233294584.28741.2.camel@localhost>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha id n12HNfwM000745
 
-Hi,
-On Monday 02 February 2009 12:38:24 Luca Tettamanti wrote:> On Mon, Feb 2, 2009 at 10:11 AM, Jean Delvare <khali@linux-fr.org> wrote:> > On Sun, 1 Feb 2009 22:22:43 +0100, Luca Tettamanti wrote:> >> --- a/drivers/acpi/osl.c> >> +++ b/drivers/acpi/osl.c> >> @@ -1063,7 +1063,10 @@ __setup("acpi_wake_gpes_always_on",> >> acpi_wake_gpes_always_on_setup); * in arbitrary AML code and can> >> interfere with legacy drivers. * acpi_enforce_resources= can be set to:> >>   *> >> - *   - strict           (2)> >> + *   - auto             (2)> >> + *     -> detect possible conflicts with ACPI drivers and switch to> >> + *     strict if needed, otherwise act like lax> >> + *   - strict           (3)> >>   *     -> further driver trying to access the resources will not load> >>   *   - lax (default)    (1)> >>   *     -> further driver trying to access the resources will load, but> >> you @@ -1073,11 +1076,12 @@ __setup("acpi_wake_gpes_always_on",> >> acpi_wake_gpes_always_on_setup); *     -> ACPI Operation Region> >> resources will not be registered *> >>   */> >> -#define ENFORCE_RESOURCES_STRICT 2> >> +#define ENFORCE_RESOURCES_STRICT 3> >> +#define ENFORCE_RESOURCES_AUTO   2> >>  #define ENFORCE_RESOURCES_LAX    1> >>  #define ENFORCE_RESOURCES_NO     0> >> > I don't see any reason to change ENFORCE_RESOURCES_STRICT from 2 to 3.> > Just add ENFORCE_RESOURCES_AUTO as 3 and that's it, makes your patch> > smaller.>> There's an unspoken reason ;-) The options are ordered by> "strictness", I was experimenting with an API to export the parameter,> in order to move the code to a separate quirk file. Since it's not> relevant in this patch I'll back out the change.
-I am still running an fsck as I filled up the fs I worked on to 100%, whichtakes hours for the 300G partition. I hope I didn't mess up something, dueto the full fs, but I do not want to wait until tomorrow, you already mightwant to have a look at this.
-These two patches are tested on a ASUS machine and worked as expected,but probably may still need some cleanup.
-There is the problem that the quirks are not executed for deviceswhich are not present. But this is due to the poor ACPI hotplug design,which hopefully will be reworked at some time.
-Both are against Len's latest ACPI git test branch.
-Len, if you like these, tell me and I am going to make themcheck_patch clean and I will send them again.
-Thanks,
-    Thomas
----
-ACPI: Interface for ACPI drivers to place quirk code which gets executed early
-Some ACPI drivers need ACPI namespace info before the driver is actuallyloaded.Best examples are legacy vs ACPI driver competitors like ATK0110 vs hwmondrivers and the generic ACPI video driver vs laptop drivers.There may also pop up other examples in the future where this interface willbecome convenient.
-Signed-off-by: Thomas Renninger <trenn@suse.de>
-diff --git a/drivers/acpi/Makefile b/drivers/acpi/Makefileindex 65d90c7..498cc6f 100644--- a/drivers/acpi/Makefile+++ b/drivers/acpi/Makefile@@ -59,3 +59,4 @@ obj-$(CONFIG_ACPI_HOTPLUG_MEMORY)	+= acpi_memhotplug.o obj-$(CONFIG_ACPI_PROCFS_POWER)	+= cm_sbs.o obj-$(CONFIG_ACPI_SBS)		+= sbshc.o obj-$(CONFIG_ACPI_SBS)		+= sbs.o+obj-y                           += quirks.o\ No newline at end of filediff --git a/drivers/acpi/acpi.h b/drivers/acpi/acpi.hnew file mode 100644index 0000000..95e29ca--- /dev/null+++ b/drivers/acpi/acpi.h@@ -0,0 +1,8 @@+#ifndef _LINUX_LOCAL_ACPI_H+#define _LINUX_LOCAL_ACPI_H++#include <linux/init.h>++void __init acpi_device_quirks(void);++#endif /* _LINUX_LOCAL_ACPI_H */diff --git a/drivers/acpi/quirks.c b/drivers/acpi/quirks.cnew file mode 100644index 0000000..844480e--- /dev/null+++ b/drivers/acpi/quirks.c@@ -0,0 +1,73 @@+/*+ *  Copyright (c) 2008 Thomas Renninger <trenn@suse.de>+ *+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+ *+ *  This program is free software; you can redistribute it and/or modify+ *  it under the terms of the GNU General Public License as published by+ *  the Free Software Foundation; either version 2 of the License, or+ *  (at your option) any later version.+ *+ *  This program is distributed in the hope that it will be useful,+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the+ *  GNU General Public License for more details.+ *+ *  You should have received a copy of the GNU General Public License+ *  along with this program; if not, write to the Free Software+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA+ *+ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~+ */++#include <linux/mod_devicetable.h>+#include <acpi/acpi_bus.h>+#include "acpi.h"++struct acpi_device_fixup {+	const char *hid;+	int (*fixup_cb)(struct acpi_device*);+};++/*+ * Add a callback here if your module needs to process code after the ACPI+ * core has parsed the DSDT and initialized all devices, but the code must+ * be processed before module load time.+ * Good candiates are ACPI vs legacy driver decisions which must be made+ * before the driver is loaded.+ */+const struct acpi_device_fixup __initdata fixup_table[] = {+};++static acpi_status __init+acpi_device_quirks_callback(acpi_handle handle,+			    u32 level, void *ctxt, void **retv)+{+	acpi_status status;+	struct acpi_device *dev;+	struct acpi_device_id dev_id;+	int x, ret;++	status = acpi_bus_get_device(handle, &dev);+	if (ACPI_FAILURE(status))+		return AE_OK;++	for (x = 0; x < ARRAY_SIZE(fixup_table); x++) {+		memcpy(&dev_id.id, fixup_table[x].hid, ACPI_ID_LEN);+		if (!acpi_match_device_ids(dev, &dev_id)) {+			ret = fixup_table[x].fixup_cb(dev);+			if (ret)+				printk (KERN_ERR "Fixup failed for device: "+					"%s\n", fixup_table[x].hid);+		}+	}+	return AE_OK;+}++void __init acpi_device_quirks(void) {++	acpi_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,+			    ACPI_UINT32_MAX,+			    acpi_device_quirks_callback,+			    NULL, NULL);+}diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.cindex c54d7b6..1c25747 100644--- a/drivers/acpi/scan.c+++ b/drivers/acpi/scan.c@@ -10,6 +10,7 @@ #include <linux/kthread.h>  #include <acpi/acpi_drivers.h>+#include "acpi.h"  #define _COMPONENT		ACPI_BUS_COMPONENT ACPI_MODULE_NAME("scan");@@ -1562,6 +1563,8 @@ static int __init acpi_scan_init(void)  	if (result) 		acpi_device_unregister(acpi_root, ACPI_BUS_REMOVAL_NORMAL);+	else+		acpi_device_quirks();        Done: 	return result; ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+On Fri, Jan 30, 2009 at 12:49:44AM -0500, Nathanael Hoyle wrote:
+> All (though perhaps of special interest to a few such as Ingo, Peter,
+> and David),
+> 
+> I am posting regarding an issue I have been dealing with recently,
+> though this post is not really a request for troubleshooting.  Instead
+> I'd like to ramble for just a moment about my understanding of the
+> current 2.6 scheduler, describe the behavior I'm seeing, and discuss a
+> couple of the architectural solutions I've considered, as well as pose
+> the question whether anyone else views this as a general-case problem
+> worthy of being addressed, or whether this is something that gets
+> ignored by and large. It is my hope that this is not too off-topic for
+> this group.
+> 
+> First, let me explain the issue I encountered. I am running a relatively
+> powerful system for a home desktop, an Intel Core 2 Quad Q9450 with 4 GB
+> of RAM. If it matters for the discussion, it also has 4 drives in an
+> mdraid raid-5 array, and decent I/O throughput.  In normal circumstances
+> it is quite responsive as a desktop (kde 3.5.4 atm).  It is further a
+> very carefully configured kernel build, including only those things
+> which I truly need, and excluding everything else. I often use it to
+> watch DVD movies, and have had no trouble with performance in general.
+> 
+> Recently I installed the Folding@Home client, which many of you may be
+> familiar with, intended to utilize spare CPU cycles to perform protein
+> folding simulations in order to further medical research.  It is not a
+> multi-threaded client at this point, so it simply runs four instances on
+> my system, since it has four cores.  It is configured to run at
+> nice-level 19.
+
+I too have seen this behaviour on my quad core Q6600 mythtv box, and I
+too run folding@home on it and have a 4 drive raid5.
+
+> Because it is heavily optimized, and needs little external data to
+> perform its work, it spends almost all of its time cpu-bound, with
+> little to no io-wait or blocking on network calls, etc.  I had been
+> using it for about a week with no real difficulty until I went to watch
+> another DVD and found that the video was slightly stuttery/jerky so long
+> as foldingathome was running in the background.  Once I shut it down,
+> the video playback resumed its normal smooth form.
+> 
+> There are a couple simple solutions to this:
+> 
+> Substantially boosting the process priority of the mplayer process also
+> returns the video to smooth playback, but this is undesirable in that it
+> requires manual intervention each time, and root privileges. It fails to
+> achieve what I want, which is for the foldingathome computation to not
+> interfere with anything else I may try to do. I want my compiles to be
+> as *exactly* as fast as they were without it as possible, etc.
+> 
+> Stopping foldingathome before I do something performance sensitive is
+> also possible, but again smacks of workaround rather than solution. The
+> scheduler should be able to resolve the goal without me stopping the
+> other work.
+> 
+> I have done a bit of research on how the kernel scheduler works, and why
+> I am seeing this behavior.  I had previously, apparently ignorantly,
+> equated 'nice 19' with being akin to Microsoft Windows' 'idle' thread
+> priority, and assumed it would never steal CPU cycles from a process
+> with a higher(lower, depending on nomenclature) priority.
+> 
+> It is my current understanding that when mplayer is running (also
+> typically CPU bound, occassionally it becomes I/O bound briefly), one of
+> the instances of foldingathome, which is sharing the CPU (core) with
+> mplayer starts getting starved, and the scheduler dynamically rewards it
+> with up to four additional priority levels based on the time remaining
+> in its quantum which it was not allowed to execute for.
+> 
+> At this point, when mplayer blocks for just a moment, say to page in the
+> data for the next video frame, foldingathome gets scheduled again, and
+> gets to run for at least MIN_TIMESLICE (plus, due to the lack of kernel
+> pre-emptibility, possibly longer).  It appears that it takes too long to
+> switch back to mplayer and the result is the stuttering picture I
+> observe.
+> 
+> I have tried adjusting CONFIG_HZ_xxx from 300 (where I had it) to 1000,
+> and noted some improvement, but not complete remedy.
+> 
+> In my prior searching on this, I found only one poster with the same
+> essential problem (from 2004, and regarding distributed.net in the
+> background, which is essentially the same problem).  The only technical
+> answer given him was to perhaps try tuning the MIN_TIMESLICE value
+> downward.  It is my understanding that this parameter is relatively
+> important in order to avoid cache thrashing, and I do not wish to alter
+> it and have not so far.
+> 
+> Given all of the above, I am unconvinced that I see a good overall
+> solution.  However, one thing that seems to me a glaring weakness of the
+> scheduler is that only realtime priority threads can be given static
+> priorities.  What I really want for foldingathome, and similar tasks, is
+> static, low priority. Something that would not boost up, no matter how
+> well behaved it was or how much it had been starved, or how close to the
+> same memory segments the needed code was.
+> 
+> I think that there are probably (at least) three approaches here. One I
+> consider unnacceptable at the outset, which is to alter the semantics of
+> nice 19 such that it does not boost. Since this would break existing
+> assumptions and code, I do not think it is feasible.
+> 
+> Secondly, one could add additional nice levels which would correspond to
+> new static priorities below the bottom of the current user ones.  This
+> should not interfere with the O(1) scheduler implementation as I
+> understand it, because current I believe 5 32-bit words are used to flag
+> the queue usage, and 140 priorities leaves 20 more bits available for
+> new priorities. This has its own problems however, in that existing
+> tools which examine process priorities could break on priorities outside
+> the known 'nice' range of -20 to 19.
+> 
+> Finally, new scheduling classes could be introduced, together with new
+> system calls so that applications could select a different scheduling
+> class at startup. In this way, applications could volunteer to use a
+> scheduling class which never received dynamic 'reward' boosts that would
+> raise their priorities.  I believe Solaris has done this since Solaris
+> 9, with the 'FX' scheduling class.
+> 
+> Stepping back:
+> 
+> 1) Is my problem 'expected' based on others' understanding of the
+> current design of the scheduler, or do I have a one-off problem to
+> troubleshoot here?
+> 
+> 2) Am I overlooking obvious alternative (but clean) fixes?
+> 
+> 3) Does anyone else see the need for static, but low process priorities?
+> 
+> 4) What is the view of introducing a new scheduler class to handle this?
+> 
+> I welcome any further feedback on this.  I will try to follow replies
+> on-list, but would appreciate being CC'd off-list as well.  Please make
+> the obvious substitution to my email address in order to bypass the
+> spam-killer.
+
+Well I haven't looked into it myself, but I can certainly confirm that
+the current bahaviour is downright awful with this particular mix of
+processes.
+
+-- 
+Len Sorensen
