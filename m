@@ -1,119 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZBBNzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZBBOJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753864AbZBBNzx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 08:55:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZBBNzp
+	id S1753551AbZBBOJJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 09:09:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZBBOI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 08:55:45 -0500
-Received: from casper.infradead.org ([85.118.1.10]:40605 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752301AbZBBNzo (ORCPT
+	Mon, 2 Feb 2009 09:08:56 -0500
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:36450 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752422AbZBBOIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 08:55:44 -0500
-Subject: Re: [BUG??] Deadlock between kswapd and
- sys_inotify_add_watch(lockdep  report)
-From: Peter Zijlstra <peterz@infradead.org>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: Nick Piggin <npiggin@suse.de>, linux kernel <linux-kernel@vger.kernel.org>,
-       linux mm <linux-mm@kvack.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <28c262360902020543we62e394kb21c16f599824552@mail.gmail.com>
-References: <20090202101735.GA12757@barrios-desktop>
-	 <28c262360902020225w6419089ft2dda30da9dfb32a9@mail.gmail.com>
-	 <1233571202.4787.124.camel@laptop> <20090202112721.GA13532@barrios-desktop>
-	 <1233575085.4787.140.camel@laptop> <20090202115627.GB13532@barrios-desktop>
-	 <1233580147.4787.207.camel@laptop>
-	 <28c262360902020543we62e394kb21c16f599824552@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 02 Feb 2009 14:55:37 +0100
-Message-Id: <1233582937.4787.217.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 09:08:55 -0500
+Date: Mon, 2 Feb 2009 19:38:49 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [-mm patch] Show memcg information during OOM
+Message-ID: <20090202140849.GB918@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090202125240.GA918@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090202125240.GA918@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 22:43 +0900, MinChan Kim wrote:
-> On Mon, Feb 2, 2009 at 10:09 PM, Peter Zijlstra <peterz@infradead.org> wrote:
-> > On Mon, 2009-02-02 at 20:56 +0900, MinChan Kim wrote:
-> >> Thanks for kind explanation. :)
-> >> Unfortunately, I still have a question. :(
-> >
-> > No problem :-)
-> >
-> >> > > I think if reclaim context which have GFP_FS already have lock A and then
-> >> > > do pageout, if writepage need the lock A, we have to catch such a case.
-> >> > > I thought Nick's patch's goal catchs such a case.
-> >> >
-> >> > Correct, it exactly does that.
-> >>
-> >> But, I think such a case can be caught by lockdep of recursive detection
-> >> which is existed long time ago by making you.
-> >
-> > (Ingo wrote that code)
-> >
-> >> what's difference Nick's patch and recursive lockdep ?
-> >
-> > Very good question indeed. Every time I started to write an answer I
-> > realize its wrong.
-> >
-> > The below is half the answer:
-> >
-> > /*
-> >  * Check whether we are holding such a class already.
-> >  *
-> >  * (Note that this has to be done separately, because the graph cannot
-> >  * detect such classes of deadlocks.)
-> >  *
-> >  * Returns: 0 on deadlock detected, 1 on OK, 2 on recursive read
-> >  */
-> > static int
-> > check_deadlock(struct task_struct *curr, struct held_lock *next,
-> >               struct lockdep_map *next_instance, int read)
-> >
-> > So in order for the reclaim report to trigger we have to actually hit
-> > that code path that has the recursion in it. The reclaim context
-> > annotation by Nick ensures we detect such cases without having to do
-> > that.
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-02-02 18:22:40]:
+
+> Hi, All,
 > 
-> In my case and Nick's patch's example hit code path that has the
-> recursion in it.
-> then reported it.
+> I found the following patch useful while debugging the memory
+> controller. It adds additional information if memcg invoked the OOM.
 > 
-> Do I miss something ?
-
-I'm not sure I fully understand your question, but let me try and
-explain more clearly.
-
-Without Nick's patch you'd have to hit the following path:
-
-  mutex_lock()  <--- inotify_mutex
-  inotify_inode_is_dead()
-  dentry_iput()
-  d_kill()
-  __shrink_dcache_sb()
-  shrink_dcache_memory()
-  shrink_slab()
-  try_to_free_page() <-- direct reclaim
-  alloc_pages()
-  alloc_slab_page()
-  allocate_slab()
-  new_slab()
-  __slab_alloc()
-  kmem_cache_alloc()
-  idr_pre_get()
-  inotify_handle_get_wd()
-  inotify_add_watch() <-- inotify_mutex
-  sys_inotify_add_watch()
-  syscall_call
-
-before the recursive check would actually produce a warning.
-
-This path is very unlikely, as it would have to enter direct reclaim
-from exactly the right allocation.
-
-With Nick's patch, we get notified about this possibility without ever
-having had to actually hit this.
+> Comments, Suggestions?
+>
 
 
+Description: Add RSS and swap to OOM output from memcg
 
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+This patch displays memcg values like failcnt, usage and limit
+when an OOM occurs due to memcg.
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ include/linux/memcontrol.h |    5 +++++
+ mm/memcontrol.c            |   16 ++++++++++++++++
+ mm/oom_kill.c              |    1 +
+ 3 files changed, 22 insertions(+), 0 deletions(-)
+
+
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index 326f45c..2ce1737 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -104,6 +104,7 @@ struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
+ 						      struct zone *zone);
+ struct zone_reclaim_stat*
+ mem_cgroup_get_reclaim_stat_from_page(struct page *page);
++extern void mem_cgroup_print_mem_info(struct mem_cgroup *memcg);
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ extern int do_swap_account;
+@@ -270,6 +271,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
+ 	return NULL;
+ }
+ 
++void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
++{
++}
++
+ #endif /* CONFIG_CGROUP_MEM_CONT */
+ 
+ #endif /* _LINUX_MEMCONTROL_H */
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 8e4be9c..d134a1d 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -813,6 +813,22 @@ bool mem_cgroup_oom_called(struct task_struct *task)
+ 	rcu_read_unlock();
+ 	return ret;
+ }
++
++void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
++{
++	printk(KERN_WARNING "Memory cgroups's name %s\n",
++		memcg->css.cgroup->dentry->d_name.name);
++	printk(KERN_WARNING "Memory cgroup RSS : usage %llu, limit %llu"
++		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
++		res_counter_read_u64(&memcg->res, RES_LIMIT),
++		res_counter_read_u64(&memcg->res, RES_FAILCNT));
++	printk(KERN_WARNING "Memory cgroup swap: usage %llu, limit %llu "
++		"failcnt %llu\n",
++		res_counter_read_u64(&memcg->memsw, RES_USAGE),
++		res_counter_read_u64(&memcg->memsw, RES_LIMIT),
++		res_counter_read_u64(&memcg->memsw, RES_FAILCNT));
++}
++
+ /*
+  * Unlike exported interface, "oom" parameter is added. if oom==true,
+  * oom-killer can be invoked.
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index d3b9bac..b8e53ae 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 			current->comm, gfp_mask, order, current->oomkilladj);
+ 		task_lock(current);
+ 		cpuset_print_task_mems_allowed(current);
++		mem_cgroup_print_mem_info(mem);
+ 		task_unlock(current);
+ 		dump_stack();
+ 		show_mem();
+
+-- 
+	Balbir
