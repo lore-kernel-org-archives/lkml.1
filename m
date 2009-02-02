@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757144AbZBBSVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbZBBSVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757144AbZBBSVE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 13:21:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbZBBSUT
+	id S1758539AbZBBSVm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 13:21:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbZBBSUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 13:20:19 -0500
-Received: from vena.lwn.net ([206.168.112.25]:53478 "EHLO vena.lwn.net"
+	Mon, 2 Feb 2009 13:20:23 -0500
+Received: from vena.lwn.net ([206.168.112.25]:53500 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753331AbZBBSUO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 13:20:14 -0500
+	id S1753754AbZBBSUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 13:20:15 -0500
 From: Jonathan Corbet <corbet@lwn.net>
 To: linux-kernel@vger.kernel.org
 Cc: Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@redhat.com>,
@@ -18,9 +18,9 @@ Cc: Andi Kleen <andi@firstfloor.org>, Oleg Nesterov <oleg@redhat.com>,
        David Miller <davem@davemloft.net>, Christoph Hellwig <hch@lst.de>,
        linux-api@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, Jonathan Corbet <corbet@lwn.net>
-Subject: [PATCH 2/4] Convert epoll to a bitlock
-Date: Mon,  2 Feb 2009 11:20:09 -0700
-Message-Id: <1233598811-6871-3-git-send-email-corbet@lwn.net>
+Subject: [PATCH 4/4] Rationalize fasync return values
+Date: Mon,  2 Feb 2009 11:20:11 -0700
+Message-Id: <1233598811-6871-5-git-send-email-corbet@lwn.net>
 X-Mailer: git-send-email 1.6.1.1
 In-Reply-To: <1233598811-6871-1-git-send-email-corbet@lwn.net>
 References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
@@ -28,126 +28,364 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matt Mackall suggested converting epoll's ep_lock to a bitlock as a way of
-saving space in struct file.  This patch makes that change.
+Most fasync implementations do something like:
+
+     return fasync_helper(...);
+
+But fasync_helper() will return a positive value at times - a feature used
+in at least one place.  Thus, a number of other drivers do:
+
+     err = fasync_helper(...);
+     if (err < 0)
+             return err;
+     return 0;
+
+In the interests of consistency and more concise code, it makes sense to
+map positive return values onto zero where ->fasync() is called.
 
 Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- fs/eventpoll.c              |   13 ++++++++-----
- fs/fcntl.c                  |    2 +-
- include/asm-generic/fcntl.h |    4 ++++
- include/linux/eventpoll.h   |    2 +-
- include/linux/fs.h          |    1 -
- 5 files changed, 14 insertions(+), 8 deletions(-)
+ drivers/char/sonypi.c              |    7 +------
+ drivers/gpu/drm/drm_fops.c         |    6 +-----
+ drivers/hid/usbhid/hiddev.c        |    5 +----
+ drivers/ieee1394/dv1394.c          |    6 +-----
+ drivers/input/evdev.c              |    5 +----
+ drivers/input/joydev.c             |    5 +----
+ drivers/input/mousedev.c           |    5 +----
+ drivers/input/serio/serio_raw.c    |    4 +---
+ drivers/net/wan/cosa.c             |    4 ++--
+ drivers/platform/x86/sony-laptop.c |    7 +------
+ drivers/scsi/sg.c                  |    4 +---
+ fs/fcntl.c                         |    2 ++
+ fs/ioctl.c                         |    2 +-
+ fs/pipe.c                          |   17 +++--------------
+ sound/core/control.c               |    7 ++-----
+ sound/core/pcm_native.c            |    4 +---
+ sound/core/timer.c                 |    6 +-----
+ 17 files changed, 22 insertions(+), 74 deletions(-)
 
-diff --git a/fs/eventpoll.c b/fs/eventpoll.c
-index ba2f9ec..95fae01 100644
---- a/fs/eventpoll.c
-+++ b/fs/eventpoll.c
-@@ -25,6 +25,7 @@
- #include <linux/list.h>
- #include <linux/hash.h>
- #include <linux/spinlock.h>
-+#include <linux/bit_spinlock.h>
- #include <linux/syscalls.h>
- #include <linux/rbtree.h>
- #include <linux/wait.h>
-@@ -427,10 +428,10 @@ static int ep_remove(struct eventpoll *ep, struct epitem *epi)
- 	ep_unregister_pollwait(ep, epi);
+diff --git a/drivers/char/sonypi.c b/drivers/char/sonypi.c
+index f437443..fd3dced 100644
+--- a/drivers/char/sonypi.c
++++ b/drivers/char/sonypi.c
+@@ -888,12 +888,7 @@ found:
  
- 	/* Remove the current item from the list of epoll hooks */
--	spin_lock(&file->f_ep_lock);
-+	bit_spin_lock(NR_EPOLL_FILE_LOCK, &file->f_flags);
- 	if (ep_is_linked(&epi->fllink))
- 		list_del_init(&epi->fllink);
--	spin_unlock(&file->f_ep_lock);
-+	bit_spin_unlock(NR_EPOLL_FILE_LOCK, &file->f_flags);
- 
- 	rb_erase(&epi->rbn, &ep->rbr);
- 
-@@ -549,7 +550,7 @@ void eventpoll_release_file(struct file *file)
- 	struct epitem *epi;
- 
- 	/*
--	 * We don't want to get "file->f_ep_lock" because it is not
-+	 * We don't want to get EPOLL_FILE_LOCK because it is not
- 	 * necessary. It is not necessary because we're in the "struct file"
- 	 * cleanup path, and this means that noone is using this file anymore.
- 	 * So, for example, epoll_ctl() cannot hit here sicne if we reach this
-@@ -558,6 +559,8 @@ void eventpoll_release_file(struct file *file)
- 	 * will correctly serialize the operation. We do need to acquire
- 	 * "ep->mtx" after "epmutex" because ep_remove() requires it when called
- 	 * from anywhere but ep_free().
-+	 *
-+	 * Besides, ep_remove() takes the lock.
- 	 */
- 	mutex_lock(&epmutex);
- 
-@@ -800,9 +803,9 @@ static int ep_insert(struct eventpoll *ep, struct epoll_event *event,
- 		goto error_unregister;
- 
- 	/* Add the current item to the list of active epoll hook for this file */
--	spin_lock(&tfile->f_ep_lock);
-+	bit_spin_lock(NR_EPOLL_FILE_LOCK, &tfile->f_flags);
- 	list_add_tail(&epi->fllink, &tfile->f_ep_links);
--	spin_unlock(&tfile->f_ep_lock);
-+	bit_spin_unlock(NR_EPOLL_FILE_LOCK, &tfile->f_flags);
- 
- 	/*
- 	 * Add the current item to the RB tree. All RB tree operations are
-diff --git a/fs/fcntl.c b/fs/fcntl.c
-index 3affd3e..756119e 100644
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -299,7 +299,7 @@ static long do_fcntl(int fd, unsigned int cmd, unsigned long arg,
- 		set_close_on_exec(fd, arg & FD_CLOEXEC);
- 		break;
- 	case F_GETFL:
--		err = filp->f_flags;
-+		err = filp->f_flags & ~EPOLL_FILE_LOCK;
- 		break;
- 	case F_SETFL:
- 		err = setfl(fd, filp, arg);
-diff --git a/include/asm-generic/fcntl.h b/include/asm-generic/fcntl.h
-index 41e9f88..d56a513 100644
---- a/include/asm-generic/fcntl.h
-+++ b/include/asm-generic/fcntl.h
-@@ -62,6 +62,10 @@
- #define NR_O_NDELAY	NR_O_NONBLOCK
- #endif
- 
-+/* Use bit 31 for epoll locking */
-+#define NR_EPOLL_FILE_LOCK 31
-+#define EPOLL_FILE_LOCK (1 << NR_EPOLL_FILE_LOCK)
-+
- #define F_DUPFD		0	/* dup */
- #define F_GETFD		1	/* get close_on_exec */
- #define F_SETFD		2	/* set/clear close_on_exec */
-diff --git a/include/linux/eventpoll.h b/include/linux/eventpoll.h
-index f1e1d3c..7b5c58a 100644
---- a/include/linux/eventpoll.h
-+++ b/include/linux/eventpoll.h
-@@ -61,7 +61,7 @@ struct file;
- static inline void eventpoll_init_file(struct file *file)
+ static int sonypi_misc_fasync(int fd, struct file *filp, int on)
  {
- 	INIT_LIST_HEAD(&file->f_ep_links);
--	spin_lock_init(&file->f_ep_lock);
-+	clear_bit(NR_EPOLL_FILE_LOCK, &file->f_flags);
+-	int retval;
+-
+-	retval = fasync_helper(fd, filp, on, &sonypi_device.fifo_async);
+-	if (retval < 0)
+-		return retval;
+-	return 0;
++	return fasync_helper(fd, filp, on, &sonypi_device.fifo_async);
+ }
+ 
+ static int sonypi_misc_release(struct inode *inode, struct file *file)
+diff --git a/drivers/gpu/drm/drm_fops.c b/drivers/gpu/drm/drm_fops.c
+index b06a537..9ec9d5d 100644
+--- a/drivers/gpu/drm/drm_fops.c
++++ b/drivers/gpu/drm/drm_fops.c
+@@ -337,14 +337,10 @@ int drm_fasync(int fd, struct file *filp, int on)
+ {
+ 	struct drm_file *priv = filp->private_data;
+ 	struct drm_device *dev = priv->minor->dev;
+-	int retcode;
+ 
+ 	DRM_DEBUG("fd = %d, device = 0x%lx\n", fd,
+ 		  (long)old_encode_dev(priv->minor->device));
+-	retcode = fasync_helper(fd, filp, on, &dev->buf_async);
+-	if (retcode < 0)
+-		return retcode;
+-	return 0;
++	return fasync_helper(fd, filp, on, &dev->buf_async);
+ }
+ EXPORT_SYMBOL(drm_fasync);
+ 
+diff --git a/drivers/hid/usbhid/hiddev.c b/drivers/hid/usbhid/hiddev.c
+index d73eea3..55828da 100644
+--- a/drivers/hid/usbhid/hiddev.c
++++ b/drivers/hid/usbhid/hiddev.c
+@@ -227,12 +227,9 @@ void hiddev_report_event(struct hid_device *hid, struct hid_report *report)
+  */
+ static int hiddev_fasync(int fd, struct file *file, int on)
+ {
+-	int retval;
+ 	struct hiddev_list *list = file->private_data;
+ 
+-	retval = fasync_helper(fd, file, on, &list->fasync);
+-
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &list->fasync);
  }
  
  
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 9d7cb0e..ecd9a5b 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -865,7 +865,6 @@ struct file {
- #ifdef CONFIG_EPOLL
- 	/* Used by fs/eventpoll.c to link all the hooks to this file */
- 	struct list_head	f_ep_links;
--	spinlock_t		f_ep_lock;
- #endif /* #ifdef CONFIG_EPOLL */
- 	struct address_space	*f_mapping;
- #ifdef CONFIG_DEBUG_WRITECOUNT
+diff --git a/drivers/ieee1394/dv1394.c b/drivers/ieee1394/dv1394.c
+index a329e6b..22e5487 100644
+--- a/drivers/ieee1394/dv1394.c
++++ b/drivers/ieee1394/dv1394.c
+@@ -1325,11 +1325,7 @@ static int dv1394_fasync(int fd, struct file *file, int on)
+ 
+ 	struct video_card *video = file_to_video_card(file);
+ 
+-	int retval = fasync_helper(fd, file, on, &video->fasync);
+-
+-	if (retval < 0)
+-		return retval;
+-        return 0;
++	return fasync_helper(fd, file, on, &video->fasync);
+ }
+ 
+ static ssize_t dv1394_write(struct file *file, const char __user *buffer, size_t count, loff_t *ppos)
+diff --git a/drivers/input/evdev.c b/drivers/input/evdev.c
+index ed8baa0..7a7a026 100644
+--- a/drivers/input/evdev.c
++++ b/drivers/input/evdev.c
+@@ -94,11 +94,8 @@ static void evdev_event(struct input_handle *handle,
+ static int evdev_fasync(int fd, struct file *file, int on)
+ {
+ 	struct evdev_client *client = file->private_data;
+-	int retval;
+-
+-	retval = fasync_helper(fd, file, on, &client->fasync);
+ 
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &client->fasync);
+ }
+ 
+ static int evdev_flush(struct file *file, fl_owner_t id)
+diff --git a/drivers/input/joydev.c b/drivers/input/joydev.c
+index 6f23662..4224f01 100644
+--- a/drivers/input/joydev.c
++++ b/drivers/input/joydev.c
+@@ -159,12 +159,9 @@ static void joydev_event(struct input_handle *handle,
+ 
+ static int joydev_fasync(int fd, struct file *file, int on)
+ {
+-	int retval;
+ 	struct joydev_client *client = file->private_data;
+ 
+-	retval = fasync_helper(fd, file, on, &client->fasync);
+-
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &client->fasync);
+ }
+ 
+ static void joydev_free(struct device *dev)
+diff --git a/drivers/input/mousedev.c b/drivers/input/mousedev.c
+index ef99a7e..17fd6d4 100644
+--- a/drivers/input/mousedev.c
++++ b/drivers/input/mousedev.c
+@@ -403,12 +403,9 @@ static void mousedev_event(struct input_handle *handle,
+ 
+ static int mousedev_fasync(int fd, struct file *file, int on)
+ {
+-	int retval;
+ 	struct mousedev_client *client = file->private_data;
+ 
+-	retval = fasync_helper(fd, file, on, &client->fasync);
+-
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &client->fasync);
+ }
+ 
+ static void mousedev_free(struct device *dev)
+diff --git a/drivers/input/serio/serio_raw.c b/drivers/input/serio/serio_raw.c
+index 06bbd0e..b03009b 100644
+--- a/drivers/input/serio/serio_raw.c
++++ b/drivers/input/serio/serio_raw.c
+@@ -58,10 +58,8 @@ static unsigned int serio_raw_no;
+ static int serio_raw_fasync(int fd, struct file *file, int on)
+ {
+ 	struct serio_raw_list *list = file->private_data;
+-	int retval;
+ 
+-	retval = fasync_helper(fd, file, on, &list->fasync);
+-	return retval < 0 ? retval : 0;
++	return fasync_helper(fd, file, on, &list->fasync);
+ }
+ 
+ static struct serio_raw *serio_raw_locate(int minor)
+diff --git a/drivers/net/wan/cosa.c b/drivers/net/wan/cosa.c
+index d80b72e..ce753e9 100644
+--- a/drivers/net/wan/cosa.c
++++ b/drivers/net/wan/cosa.c
+@@ -993,8 +993,8 @@ static struct fasync_struct *fasync[256] = { NULL, };
+ static int cosa_fasync(struct inode *inode, struct file *file, int on)
+ {
+         int port = iminor(inode);
+-        int rv = fasync_helper(inode, file, on, &fasync[port]);
+-        return rv < 0 ? rv : 0;
++
++	return fasync_helper(inode, file, on, &fasync[port]);
+ }
+ #endif
+ 
+diff --git a/drivers/platform/x86/sony-laptop.c b/drivers/platform/x86/sony-laptop.c
+index 537959d..bc8996c 100644
+--- a/drivers/platform/x86/sony-laptop.c
++++ b/drivers/platform/x86/sony-laptop.c
+@@ -1917,12 +1917,7 @@ static struct sonypi_compat_s sonypi_compat = {
+ 
+ static int sonypi_misc_fasync(int fd, struct file *filp, int on)
+ {
+-	int retval;
+-
+-	retval = fasync_helper(fd, filp, on, &sonypi_compat.fifo_async);
+-	if (retval < 0)
+-		return retval;
+-	return 0;
++	return fasync_helper(fd, filp, on, &sonypi_compat.fifo_async);
+ }
+ 
+ static int sonypi_misc_release(struct inode *inode, struct file *file)
+diff --git a/drivers/scsi/sg.c b/drivers/scsi/sg.c
+index 8f0bd3f..b656cde 100644
+--- a/drivers/scsi/sg.c
++++ b/drivers/scsi/sg.c
+@@ -1154,7 +1154,6 @@ sg_poll(struct file *filp, poll_table * wait)
+ static int
+ sg_fasync(int fd, struct file *filp, int mode)
+ {
+-	int retval;
+ 	Sg_device *sdp;
+ 	Sg_fd *sfp;
+ 
+@@ -1163,8 +1162,7 @@ sg_fasync(int fd, struct file *filp, int mode)
+ 	SCSI_LOG_TIMEOUT(3, printk("sg_fasync: %s, mode=%d\n",
+ 				   sdp->disk->disk_name, mode));
+ 
+-	retval = fasync_helper(fd, filp, mode, &sfp->async_qp);
+-	return (retval < 0) ? retval : 0;
++	return fasync_helper(fd, filp, mode, &sfp->async_qp);
+ }
+ 
+ static int
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index 7b641d9..7a74571 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -192,6 +192,8 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
+ 		error = filp->f_op->fasync(fd, filp, (arg & FASYNC) != 0);
+ 		if (error < 0)
+ 			goto out;
++		if (error > 0)
++			error = 0;
+ 	}
+ 	/*
+ 	 * Now that we use bitops we have to tweak each bit individually.
+diff --git a/fs/ioctl.c b/fs/ioctl.c
+index bc32cb2..fcfd0e6 100644
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -432,7 +432,7 @@ static int ioctl_fioasync(unsigned int fd, struct file *filp,
+ 		else
+ 			error = -ENOTTY;
+ 	}
+-	return error;
++	return error < 0 ? error : 0;
+ }
+ 
+ static int ioctl_fsfreeze(struct file *filp)
+diff --git a/fs/pipe.c b/fs/pipe.c
+index 3a48ba5..900de67 100644
+--- a/fs/pipe.c
++++ b/fs/pipe.c
+@@ -667,10 +667,7 @@ pipe_read_fasync(int fd, struct file *filp, int on)
+ 	retval = fasync_helper(fd, filp, on, &inode->i_pipe->fasync_readers);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	if (retval < 0)
+-		return retval;
+-
+-	return 0;
++	return retval;
+ }
+ 
+ 
+@@ -684,10 +681,7 @@ pipe_write_fasync(int fd, struct file *filp, int on)
+ 	retval = fasync_helper(fd, filp, on, &inode->i_pipe->fasync_writers);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+-	if (retval < 0)
+-		return retval;
+-
+-	return 0;
++	return retval;
+ }
+ 
+ 
+@@ -701,16 +695,11 @@ pipe_rdwr_fasync(int fd, struct file *filp, int on)
+ 	mutex_lock(&inode->i_mutex);
+ 
+ 	retval = fasync_helper(fd, filp, on, &pipe->fasync_readers);
+-
+ 	if (retval >= 0)
+ 		retval = fasync_helper(fd, filp, on, &pipe->fasync_writers);
+ 
+ 	mutex_unlock(&inode->i_mutex);
+-
+-	if (retval < 0)
+-		return retval;
+-
+-	return 0;
++	return retval;
+ }
+ 
+ 
+diff --git a/sound/core/control.c b/sound/core/control.c
+index 636b3b5..4b20fa2 100644
+--- a/sound/core/control.c
++++ b/sound/core/control.c
+@@ -1373,12 +1373,9 @@ EXPORT_SYMBOL(snd_ctl_unregister_ioctl_compat);
+ static int snd_ctl_fasync(int fd, struct file * file, int on)
+ {
+ 	struct snd_ctl_file *ctl;
+-	int err;
++
+ 	ctl = file->private_data;
+-	err = fasync_helper(fd, file, on, &ctl->fasync);
+-	if (err < 0)
+-		return err;
+-	return 0;
++	return fasync_helper(fd, file, on, &ctl->fasync);
+ }
+ 
+ /*
+diff --git a/sound/core/pcm_native.c b/sound/core/pcm_native.c
+index a789efc..a75c194 100644
+--- a/sound/core/pcm_native.c
++++ b/sound/core/pcm_native.c
+@@ -3246,9 +3246,7 @@ static int snd_pcm_fasync(int fd, struct file * file, int on)
+ 	err = fasync_helper(fd, file, on, &runtime->fasync);
+ out:
+ 	unlock_kernel();
+-	if (err < 0)
+-		return err;
+-	return 0;
++	return err;
+ }
+ 
+ /*
+diff --git a/sound/core/timer.c b/sound/core/timer.c
+index 7965320..3f0050d 100644
+--- a/sound/core/timer.c
++++ b/sound/core/timer.c
+@@ -1825,13 +1825,9 @@ static long snd_timer_user_ioctl(struct file *file, unsigned int cmd,
+ static int snd_timer_user_fasync(int fd, struct file * file, int on)
+ {
+ 	struct snd_timer_user *tu;
+-	int err;
+ 
+ 	tu = file->private_data;
+-	err = fasync_helper(fd, file, on, &tu->fasync);
+-        if (err < 0)
+-		return err;
+-	return 0;
++	return fasync_helper(fd, file, on, &tu->fasync);
+ }
+ 
+ static ssize_t snd_timer_user_read(struct file *file, char __user *buffer,
 -- 
 1.6.1.1
 
