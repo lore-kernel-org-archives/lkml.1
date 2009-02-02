@@ -1,71 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZBBPu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZBBP6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756211AbZBBPu0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 10:50:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZBBPuK
+	id S1755520AbZBBP6o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 10:58:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752513AbZBBP6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 10:50:10 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:52293 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752137AbZBBPuJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 10:50:09 -0500
-Date: Mon, 2 Feb 2009 18:50:04 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Greg KH <greg@kroah.com>
-Cc: Kumar Gala <galak@kernel.crashing.org>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       linux-usb@vger.kernel.org,
-       linux-kernel Kernel <linux-kernel@vger.kernel.org>,
-       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 0/6] USB: Fixes for fsl_qe_udc driver
-Message-ID: <20090202155004.GA6764@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20081225141402.GA30689@oksana.dev.rtsoft.ru> <F4CBCB9E-5C58-4F9B-B0B2-623C81DF1339@kernel.crashing.org> <20090107045341.GA15842@kroah.com> <3983606C-7DC0-4D3D-B523-4EE5C2BCB80E@kernel.crashing.org> <20090113164001.GA14370@kroah.com>
+	Mon, 2 Feb 2009 10:58:35 -0500
+Received: from styx.suse.cz ([82.119.242.94]:40443 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752453AbZBBP6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 10:58:34 -0500
+Date: Mon, 2 Feb 2009 16:58:33 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Niels de Vos <niels.devos@wincor-nixdorf.com>
+cc: trivial@kernel.org, linux-kernel@vger.kernel.org,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH (trivial)] MTD: remove EOL from MODULE_DESCRIPTION
+In-Reply-To: <4982D1A3.4070706@wincor-nixdorf.com>
+Message-ID: <alpine.LNX.1.10.0902021657480.11630@jikos.suse.cz>
+References: <4982D1A3.4070706@wincor-nixdorf.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20090113164001.GA14370@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 13, 2009 at 08:40:01AM -0800, Greg KH wrote:
-> On Tue, Jan 13, 2009 at 09:49:39AM -0600, Kumar Gala wrote:
-> > On Jan 6, 2009, at 10:53 PM, Greg KH wrote:
-> >> On Tue, Jan 06, 2009 at 10:44:13PM -0600, Kumar Gala wrote:
-> >>> On Dec 25, 2008, at 8:14 AM, Anton Vorontsov wrote:
-> >>>> Hi all,
-> >>>>
-> >>>> Just resending some fixes that seem to be lost...
-> >>>
-> >>> Greg,
-> >>>
-> >>> What happened w/this patch set?
-> >>
-> >> As it was sent during the hollidays (on Christmas day at that), it's
-> >> still in my "to-review" queue.  I'll get to it in a few days after I
-> >> resync the USB tree with Linus.
-> >
-> > Any update on the review of these 6 patches?
+On Fri, 30 Jan 2009, Niels de Vos wrote:
+
+> There is no need to have a "\n" on a MODULE_DESCRIPTION, remove it.
 > 
-> It's in my queue, been busy with "real work" for a bit right now,
-> sorry...
+> Signed-off-by: Niels de Vos <niels.devos@wincor-nixdorf.com>
+> 
+> ---
+> diff --git a/drivers/mtd/nand/diskonchip.c b/drivers/mtd/nand/diskonchip.c
+> index e4226e0..e51c1ed 100644
+> --- a/drivers/mtd/nand/diskonchip.c
+> +++ b/drivers/mtd/nand/diskonchip.c
+> @@ -1773,4 +1773,4 @@ module_exit(cleanup_nanddoc);
+>  
+>  MODULE_LICENSE("GPL");
+>  MODULE_AUTHOR("David Woodhouse <dwmw2@infradead.org>");
+> -MODULE_DESCRIPTION("M-Systems DiskOnChip 2000, Millennium and Millennium Plus device driver\n");
+> +MODULE_DESCRIPTION("M-Systems DiskOnChip 2000, Millennium and Millennium Plus device driver");
 
-Hello Greg,
-
-Can you please look into these patches? I think they all are 2.6.29
-material, since the QE UDC driver is barely usable w/o these fixes.
-
-Thanks,
-
-p.s. And thank you for merging the FHCI driver!
+I don't see this in dwmw2's mtd tree, so I have applied it to trivial 
+tree.
 
 -- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Jiri Kosina
+SUSE Labs
