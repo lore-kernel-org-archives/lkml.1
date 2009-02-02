@@ -1,164 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbZBBX1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbZBBX3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758498AbZBBX1q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 18:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbZBBX1h
+	id S1758755AbZBBX3T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 18:29:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZBBX3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 18:27:37 -0500
-Received: from ti-out-0910.google.com ([209.85.142.191]:55142 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbZBBX1h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 18:27:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TiJoP05G9CA63pAApRcl+oE6jcknGJQwTsRIcMHwd5sQXWLific6KfFZBkGW+PnPwb
-         9ASmZyvo2MutDc+i2/9ZuLCAZqIeXeGxUfqI/LpUBOEa6TzV9sogoVWend3W/X6SJXId
-         oaNecT4m8yHzl7FeDeG16CfsVquwjyAvoyVwI=
-Date: Tue, 3 Feb 2009 08:27:19 +0900
-From: MinChan Kim <minchan.kim@gmail.com>
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Cc: linux mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH] fix mlocked page counter mismatch
-Message-ID: <20090202232719.GC13532@barrios-desktop>
-References: <20090202061622.GA13286@barrios-desktop> <1233594995.17895.144.camel@lts-notebook>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233594995.17895.144.camel@lts-notebook>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 2 Feb 2009 18:29:06 -0500
+Received: from sh.osrg.net ([192.16.179.4]:39684 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753266AbZBBX3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 18:29:05 -0500
+Date: Tue, 3 Feb 2009 08:28:46 +0900
+To: y-goto@jp.fujitsu.com
+Cc: fujita.tomonori@lab.ntt.co.jp, mingo@elte.hu, tony.luck@intel.com,
+       linux-kernel@vger.kernel.org, linux-ia64@vger.kernel.org
+Subject: Re: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non
+ DMA_64BIT_MASK devices
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090130184210.4A8E.E1E9C6FF@jp.fujitsu.com>
+References: <20090130073511.F48F.E1E9C6FF@jp.fujitsu.com>
+	<20090130083654U.fujita.tomonori@lab.ntt.co.jp>
+	<20090130184210.4A8E.E1E9C6FF@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090203082825J.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 03 Feb 2009 08:28:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 12:16:35PM -0500, Lee Schermerhorn wrote:
-> On Mon, 2009-02-02 at 15:16 +0900, MinChan Kim wrote:
-> > When I tested following program, I found that mlocked counter 
-> > is strange. 
-> > It couldn't free some mlocked pages of test program.
+On Fri, 30 Jan 2009 20:24:13 +0900
+Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+
+> > > swiotlb_dma_ops is set by pci_swiotlb_init().
+> > > However, it seems to be not called when CONFIG_IA64_DIG/Generic configuration.
 > > 
-> > It is caused that try_to_unmap_file don't check real 
-> > page mapping in vmas. 
-> > That's because goal of address_space for file is to find all processes 
-> > into which the file's specific interval is mapped. 
-> > What I mean is that it's not related page but file's interval.
+> > You are talking about setting dma_ops to swiotlb_dma_ops?
 > > 
-> > Even if the page isn't really mapping at the vma, it returns 
-> > SWAP_MLOCK since the vma have VM_LOCKED, then calls 
-> > try_to_mlock_page. After all, mlocked counter is increased again. 
-> > 
-> > This patch is based on 2.6.28-rc2-mm1.
-> > 
-> > -- my test program --
-> > 
-> > #include <stdio.h>
-> > #include <sys/mman.h>
-> > int main()
-> > {
-> >         mlockall(MCL_CURRENT);
-> >         return 0;
-> > }
-> > 
-> > -- before --
-> > 
-> > root@barrios-target-linux:~# cat /proc/meminfo | egrep 'Mlo|Unev'
-> > Unevictable:           0 kB
-> > Mlocked:               0 kB
-> > 
-> > -- after --
-> > 
-> > root@barrios-target-linux:~# cat /proc/meminfo | egrep 'Mlo|Unev'
-> > Unevictable:           8 kB
-> > Mlocked:               8 kB
-> > 
-> > 
-> > --
-> > 
-> > diff --git a/mm/rmap.c b/mm/rmap.c
-> > index 1099394..9ba1fdf 100644
-> > --- a/mm/rmap.c
-> > +++ b/mm/rmap.c
-> > @@ -1073,6 +1073,9 @@ static int try_to_unmap_file(struct page *page, int unlock, int migration)
-> >  	unsigned long max_nl_size = 0;
-> >  	unsigned int mapcount;
-> >  	unsigned int mlocked = 0;
-> > +	unsigned long address;
-> > +	pte_t *pte;
-> > +	spinlock_t *ptl;
-> >  
-> >  	if (MLOCK_PAGES && unlikely(unlock))
-> >  		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
-> > @@ -1089,6 +1092,13 @@ static int try_to_unmap_file(struct page *page, int unlock, int migration)
-> >  				goto out;
-> >  		}
-> >  		if (ret == SWAP_MLOCK) {
-> > +     address = vma_address(page, vma);
-> > +     if (address != -EFAULT) {
-> > +       pte = page_check_address(page, vma->vm_mm, address, &ptl, 0);
-> > +       if (!pte)
-> > +            continue; 
-> > +       pte_unmap_unlock(pte, ptl);
-> > +     } 
-> >  			mlocked = try_to_mlock_page(page, vma);
-> >  			if (mlocked)
-> >  				break;  /* stop if actually mlocked page */
+> > I think that swiotlb_dma_init() also sets dma_ops to swiotlb_dma_ops.
 > 
-> Hi, MinChan:
+> Certainly.
+> I overlooked the 7th patch of your unifying dma_ops patch set.
+> ia64_swiotlb_alloc_coherent was called when I tested again.
+> I'm sorry.
 > 
->    Interestingly, Rik had addressed this [simpler patch below] way back
-> when he added the page_mapped_in_vma() function.  I asked him whether
-
-
-> the rb tree shouldn't have filtered any vmas that didn't have the page
-> mapped.  He agreed and removed the check from try_to_unmap_file().
-> Guess I can be very convincing, even when I'm wrong [happening a lot
-> lately].  Of course, in this instance, the rb-tree filtering only works
-> for shared, page-cache pages.  The problem uncovered by your test case
-
-It's not rb-tree but priority tree. ;-)
-
-> is with a COWed anon page in a file-backed vma.  Yes, the vma 'maps' the
-> virtual address range containing the page in question, but since it's a
-> private COWed anon page, it isn't necessarily "mapped" in the VM_LOCKED
-> vma's mm's page table.  We need the check...
-
-Indeed!
-
+> However, GFP_DMA is still always on in ia64_swiotlb_alloc_coherent()
+> regardless of the value of dev->coherent_dma_mask.
 > 
-> I've added the variant below [CURRENTLY UNTESTED] to my test tree.
-> 
-> Lee
-> 
-> [intentionally omitted sign off, until tested.]
+> After following patch applied, GFP_DMA is set correctly by your patch.
+> Am I still overlooking other your patch?
 
-I shouldn't forgot page_mapped_in_vma.
-However, It looks good to me. 
-Thank you for testing. 
+No, you are not. We need the following change. Somehow I thought that
+I already made this change.
 
+Can you resend this to Ingo with the proper description and
+Signed-off-by (you can add my Acked-by if you like)?
+
+Thanks,
+
+
+> Bye.
 > 
 > 
-> Index: linux-2.6.29-rc3/mm/rmap.c
+> 
+> ---
+>  arch/ia64/include/asm/dma-mapping.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: dma_fix_test/arch/ia64/include/asm/dma-mapping.h
 > ===================================================================
-> --- linux-2.6.29-rc3.orig/mm/rmap.c	2009-01-30 14:13:56.000000000 -0500
-> +++ linux-2.6.29-rc3/mm/rmap.c	2009-02-02 11:27:11.000000000 -0500
-> @@ -1072,7 +1072,8 @@ static int try_to_unmap_file(struct page
->  	spin_lock(&mapping->i_mmap_lock);
->  	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
->  		if (MLOCK_PAGES && unlikely(unlock)) {
-> -			if (!(vma->vm_flags & VM_LOCKED))
-> +			if (!((vma->vm_flags & VM_LOCKED) &&
-> +			      page_mapped_in_vma(page, vma)))
->  				continue;	/* must visit all vmas */
->  			ret = SWAP_MLOCK;
->  		} else {
+> --- dma_fix_test.orig/arch/ia64/include/asm/dma-mapping.h       2009-01-30 19:36:33.000000000 +0900
+> +++ dma_fix_test/arch/ia64/include/asm/dma-mapping.h    2009-01-30 20:20:06.000000000 +0900
+> @@ -71,7 +71,7 @@ static inline void *dma_alloc_coherent(s
+>                                        dma_addr_t *daddr, gfp_t gfp)
+>  {
+>         struct dma_mapping_ops *ops = platform_dma_get_ops(dev);
+> -       return ops->alloc_coherent(dev, size, daddr, gfp | GFP_DMA);
+> +       return ops->alloc_coherent(dev, size, daddr, gfp);
+>  }
 > 
-
--- 
-Kinds Regards
-MinChan Kim
-
+>  static inline void dma_free_coherent(struct device *dev, size_t size,
+> 
+> 
+> -- 
+> Yasunori Goto 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
