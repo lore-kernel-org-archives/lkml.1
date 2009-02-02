@@ -1,65 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZBBIoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754899AbZBBIqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbZBBIoW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 03:44:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZBBIoI
+	id S1754899AbZBBIqA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 03:46:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZBBIpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 03:44:08 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:17155 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbZBBIoF (ORCPT
+	Mon, 2 Feb 2009 03:45:50 -0500
+Received: from nelson.telenet-ops.be ([195.130.133.66]:35733 "EHLO
+	nelson.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbZBBIpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 03:44:05 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=iNMhTJ3JB5M7qiISChsp4PMoD6awz+zdnI3oZw/AlQF7N+fl/URTrwJPO5u7SIVAxE
-         qVcmdrMqV/hVWArZDm2mGdHHOnHclIn5xE9JchxYg7/nRUgRqJ8Nhl2Jv5jxDtKvj7h4
-         1CLu3t1/PW5lgnYAZC6RAssfpkUhZ7rT/rmS0=
-Date: Mon, 2 Feb 2009 08:43:58 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090202084358.GB4129@ff.dom.local>
-References: <20090130.134227.123379239.davem@davemloft.net> <20090130221604.GD11381@gondor.apana.org.au> <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net>
+	Mon, 2 Feb 2009 03:45:49 -0500
+Date: Mon, 2 Feb 2009 09:45:43 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+cc: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
+       Eric Sandeen <sandeen@sandeen.net>, mfasheh@suse.com,
+       joel.becker@oracle.com, linux-kernel@vger.kernel.org,
+       xfs-masters@oss.sgi.com, viro@zeniv.linux.org.uk,
+       Ankit Jain <me@ankitjain.org>, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [xfs-masters] [PATCH] fs: Add new pre-allocation ioctls to vfs
+ for compatibility with legacy xfs ioctls
+In-Reply-To: <4986AEE8.5040609@panasas.com>
+Message-ID: <Pine.LNX.4.64.0902020942230.11930@anakin>
+References: <20090130171423.f99c88d0.akpm@linux-foundation.org>
+ <20090201164130.GA32276@infradead.org> <4985D48A.6090007@panasas.com>
+ <200902020131.04203.arnd@arndb.de> <4986AEE8.5040609@panasas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090202.001854.261399333.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 12:18:54AM -0800, David Miller wrote:
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Mon, 2 Feb 2009 08:08:55 +0000
-> 
-> > On Sat, Jan 31, 2009 at 09:16:04AM +1100, Herbert Xu wrote:
-> > > On Fri, Jan 30, 2009 at 01:42:27PM -0800, David Miller wrote:
-> > ...
-> > > > Back to real life, I think long term the thing to do is to just do the
-> > > > cached page allocator thing we'll be doing after Jarek's socket page
-> > > > patch is integrated, and for best performance the driver has to
-> > > > receive it's data into pages, only explicitly pulling the ethernet
-> > > > header into the linear area, like NIU does.
-> > > 
-> > > Yes that sounds like the way to go.
+On Mon, 2 Feb 2009, Boaz Harrosh wrote:
+> Arnd Bergmann wrote:
+> > On Sunday 01 February 2009, Boaz Harrosh wrote:
+> >> Christoph Hellwig wrote:
+> >>> The structures have been defined exactly like that in XFS (and ocfs2)
+> >>> before, and there are similar cases in other ioctls handlers.
+> >>>
+> >>> If anyone feels like changing this in some way feel free to wade through
+> >>> the endless discussions about the pros and cons for it, but I think
+> >>> doing it in context of this patch is not helpful.
+> >> OK so ia64 gcc is broken in regard to __attribute__((packed(1))),
+> >> and it should not be used.
 > > 
-> > Looks like a lot of changes in drivers, plus: would it work with jumbo
-> > frames? I wonder why the linear area can't be allocated as paged, and
-> > freed with put_page() instead of kfree(skb->head) in skb_release_data().
+> > No, the compiler is correct, it has to generate more complex code
+> > if it cannot assume that data is naturally aligned and the architecture
+> > does not support unaligned loads. If you don't understand this, please
+> > at least read the list archives about the last five times this came up
+> > before claiming that the compiler is broken.
+> > 
 > 
-> Allocating 4096 or 8192 bytes for a 1500 byte frame is wasteful.
+> Wrong!! Sorry, you guys don't listen.
+> I'm talking of the case where the structures are EXACTLY the same anyway
+> you look at them. sizeof(foo) == sizeof(foo_packed) and 
+> offsetof(foo_memmber) == offsetof(foo_packed_member) for every member of
+> the structure. foo && foo_packed are declared exactly the same but with
+> __attribute__((packed(1))) applied to the later.
+> 
+> THEN in ia64 case the compiler is brain dead, because it relates
+> "unalignment" to packed(1) which are two different things.
 
-I mean allocating chunks of cached pages similarly to sk_sndmsg_page
-way. I guess the similar problem is to be worked out in any case. But
-it seems doing it on the linear area requires less changes in other
-places.
+The natural alignment of a structure is max(alignment(member)), for all
+members. With __attribute__((packed)), the natural alignment of the structure
+is 1, so the compiler cannot assume anything.
 
-Jarek P.
+While the ints in the structure may still be at offsets 0, 4, 8, and so on,
+this doesn't say anything about their actual memory addresses, as the struct
+base address itself may be unaligned.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
