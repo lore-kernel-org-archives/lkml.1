@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbZBBUSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZBBUW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757692AbZBBUSh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 15:18:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZBBUS3
+	id S1757065AbZBBUW5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 15:22:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZBBUWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 15:18:29 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54390 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753331AbZBBUS2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 15:18:28 -0500
-Message-ID: <498754EF.8090604@redhat.com>
-Date: Mon, 02 Feb 2009 12:17:51 -0800
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 2 Feb 2009 15:22:47 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:56037 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753087AbZBBUWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 15:22:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Obcoa/Ul2VJXg4zHuEjmPNSOYfSE3e62uUT14+ecOXjCi/8q+mV3SyYQaXrNPuSt7B
+         fg6fOqiyJ9x301FBpX5fDf0+kogX0pU/fPmWCnjv1G7KnPgxNvqRWDhEsY2e44bsqJw2
+         QGl7+b6dzfEceDHqqxfw9t1xXB46zba1Z1KNs=
+Date: Mon, 2 Feb 2009 21:22:46 +0100
+From: Luca Tettamanti <kronos.it@gmail.com>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Jean Delvare <khali@linux-fr.org>, Hans de Goede <hdegoede@redhat.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/2] RFC: ACPI: Interface for ACPI drivers to place
+	quirk code which gets executed early
+Message-ID: <20090202202246.GA9023@dreamland.darkstar.lan>
+References: <20090125210520.GA12963@dreamland.darkstar.lan> <20090202101103.1208c035@hyperion.delvare> <68676e00902020338o7326ff7dx4efadf94ed534acf@mail.gmail.com> <200902021822.11906.trenn@suse.de>
 MIME-Version: 1.0
-To: Oleg Nesterov <oleg@redhat.com>
-CC: Kaz Kylheku <kkylheku@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: main thread pthread_exit/sys_exit bug!
-References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com> <20090201174159.4a52e15c.akpm@linux-foundation.org> <20090202064509.GA20237@redhat.com> <3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com> <20090202165606.GA13346@redhat.com>
-In-Reply-To: <20090202165606.GA13346@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200902021822.11906.trenn@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Il Mon, Feb 02, 2009 at 06:22:10PM +0100, Thomas Renninger ha scritto: 
+> These two patches are tested on a ASUS machine and worked as expected,
+> but probably may still need some cleanup.
 
-Oleg Nesterov wrote:
-> I am worried this patch can confuse the user-space. Because, when
-> the main thread does sys_exit(), the user-space has all rights
-> to assume it exits ;) But with this patch the main thread will
-> continue to handle the signals until the while group exits, I'm
-> afraid libpthread.so won't be happy.
+I'd keep the DMI+HID approach since it's more flexible:
+- (AFAICS) Thinkpads have different methods for hwmon depending on the
+  model and no fixed HID
+- With DMI it would be possible to include ASUS motherboards (ATK w/
+  hwmon) but exclude ASUS laptops (ATK w/o hwmon).
 
-I haven't looked at the patch nor tried it.
+> diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
+> index c54d7b6..1c25747 100644
+> --- a/drivers/acpi/scan.c
+> +++ b/drivers/acpi/scan.c
+> @@ -10,6 +10,7 @@
+>  #include <linux/kthread.h>
+>  
+>  #include <acpi/acpi_drivers.h>
+> +#include "acpi.h"
+>  
+>  #define _COMPONENT		ACPI_BUS_COMPONENT
+>  ACPI_MODULE_NAME("scan");
+> @@ -1562,6 +1563,8 @@ static int __init acpi_scan_init(void)
+>  
+>  	if (result)
+>  		acpi_device_unregister(acpi_root, ACPI_BUS_REMOVAL_NORMAL);
+> +	else
+> +		acpi_device_quirks();
 
-If the patch changes the behavior that the main thread, after calling
-sys_exit, still react to signals sent to this thread or to the process
-as a whole, then the patch is wrong.  The userlevel context of the
-thread is not usable anymore.  It will have run all kinds of
-destructors.  The current behavior is AFAIK that the main thread won't
-react to any signal anymore.  That is absolutely required.
+Hum, it's not immediatly clear why you put that call in the else
+branch. Maybe put:
 
-- --
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+if (!result)
+        acpi_device_quirks();
 
-iEYEARECAAYFAkmHVO8ACgkQ2ijCOnn/RHTJvwCgodxkT+mg0tmrnlhf/IP8hUQc
-RYIAn0YC7pTjPHHZa7kmvYSyu/Zw5IIT
-=ehdX
------END PGP SIGNATURE-----
+before the cleanup?
+
+Luca
+-- 
+"La mia teoria scientifica preferita e` quella secondo la quale gli 
+ anelli di Saturno sarebbero interamente composti dai bagagli andati 
+ persi nei viaggi aerei." -- Mark Russel
