@@ -1,103 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZBBRWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbZBBRWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757270AbZBBRWZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 12:22:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZBBRWH
+	id S1752749AbZBBRWk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 12:22:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753347AbZBBRWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 12:22:07 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:5190 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbZBBRWD (ORCPT
+	Mon, 2 Feb 2009 12:22:15 -0500
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:29943 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753185AbZBBRWN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 12:22:03 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oa+0A2TIHBVn28kk9V2vlKmwd9Yhg1014oSgC4LKeUXfalq37weje1xD/qyoxuSEwe
-         qYxZREyomIoujnaAL5zbOjs5x7wPYNfKYLbJIp5+jrlN5N/coZyJprDHGUuqbWVqZUzF
-         sZtqASAdcbZ1E90v5NPHxaKR8G+pD+lhGNysI=
-Date: Mon, 2 Feb 2009 20:21:59 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [git-pull -tip] fix headers_check warnings
-Message-ID: <20090202172159.GA7479@localhost>
-References: <1233593765.3244.14.camel@localhost.localdomain>
+	Mon, 2 Feb 2009 12:22:13 -0500
+X-Greylist: delayed 579 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Feb 2009 12:22:13 EST
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233593765.3244.14.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: multipart/mixed;
+	boundary="----_=_NextPart_001_01C98559.6FF8B34E"
+Subject: [PATCH] libata: change drive ready wait after hard reset to 5s
+Date: Mon, 2 Feb 2009 11:12:33 -0600
+Message-ID: <DFEF91B22ED07447AB6AA4B237F913F9021859A8@ausx3mpc125.aus.amer.dell.com>
+In-Reply-To: <1233456951-992-4-git-send-email-tj@kernel.org>
+X-MS-Has-Attach: yes
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] libata: change drive ready wait after hard reset to 5s
+Thread-Index: AcmEGMaJ2daiPnxFR5+tDW9ts3O/TQBPnUHQ
+References: <1233456951-992-1-git-send-email-tj@kernel.org> <1233456951-992-4-git-send-email-tj@kernel.org>
+From: <Stuart_Hayes@Dell.com>
+To: <jeff@garzik.org>, <linux-scsi@vger.kernel.org>,
+       <James.Bottomley@HansenPartnership.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>,
+       <Mario_Limonciello@Dell.com>
+X-OriginalArrivalTime: 02 Feb 2009 17:12:33.0496 (UTC) FILETIME=[70088580:01C98559]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jaswinder Singh Rajput - Mon, Feb 02, 2009 at 10:26:05PM +0530]
-| Ingo,
-| 
-| The following changes since commit 1ff8f739c7cc4eaa89b6ba986494f458ff7bdbef:
-|   Jaswinder Singh Rajput (1):
-|         headers_check fix: xtensa, swab.h
-| 
-| are available in the git repository at:
-| 
-|   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tipclean.git core/header-fixes
-| 
-| Jaswinder Singh Rajput (7):
-|       headers_check fix: linux/coda_psdev.h
-|       headers_check fix: linux/in6.h
-|       headers_check fix: linux/nubus.h
-|       headers_check fix: linux/socket.h
-|       headers_check fix: linux/reinserfs_fs.h
-|       headers_check fix: x86, prctl.h
-|       headers_check fix: x86, setup.h
-| 
-|  arch/x86/include/asm/prctl.h |    6 +++-
-|  arch/x86/include/asm/setup.h |   45 ++++++++++++++++++++---------------------
-|  include/linux/coda_psdev.h   |   15 ++++++-------
-|  include/linux/in6.h          |    2 +-
-|  include/linux/nubus.h        |    2 +
-|  include/linux/reiserfs_fs.h  |    8 +++++++
-|  include/linux/socket.h       |    6 +++-
-|  7 files changed, 48 insertions(+), 36 deletions(-)
-| 
-...
-| 
-| Complete diff:
-| diff --git a/arch/x86/include/asm/prctl.h b/arch/x86/include/asm/prctl.h
-| index a889464..fdbeb85 100644
-| --- a/arch/x86/include/asm/prctl.h
-| +++ b/arch/x86/include/asm/prctl.h
-| @@ -6,8 +6,10 @@
-|  #define ARCH_GET_FS 0x1003
-|  #define ARCH_GET_GS 0x1004
-|  
-| -#ifdef CONFIG_X86_64
-| +#ifdef __KERNEL__
-| +# ifdef CONFIG_X86_64
-|  extern long sys_arch_prctl(int, unsigned long);
-| -#endif /* CONFIG_X86_64 */
-| +# endif /* CONFIG_X86_64 */
-| +#endif /* __KERNEL__ */
-| 
-...
+This is a multi-part message in MIME format.
 
-Hi Jaswinder,
+------_=_NextPart_001_01C98559.6FF8B34E
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-it seems we have a clash here :) I thought this part
-was just dropped out
 
-	http://lkml.org/lkml/2009/1/14/461
+This fixes problems during resume with drives that take longer than 1s
+to be ready.  The ATA-6 spec appears to allow 5 seconds for a drive to
+be ready.
 
-and Peter had been applying it on tip:x86/header-fixes
+On one affected system, this patch changes "PM: resume devices took..."
+message from 17 seconds to 4 seconds, and gets rid of a lot of ugly
+timeout/error messages.
 
-	http://lkml.org/lkml/2009/1/14/549
+Without this patch, the libata code moves on after 1s, tries to send a
+soft reset (which the drive doesn't see because it isn't ready) which
+also times out, then an IDENTIFY command is sent to the drive which
+times out, and finally the error handler will try to send another hard
+reset which will finally get things working.
 
-but maybe it's just lost...
+Sorry to send as an attachment, but my mail server will wrap text.
 
-		-- Cyrill --
+
+Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
+
+
+------_=_NextPart_001_01C98559.6FF8B34E
+Content-Type: application/octet-stream;
+	name="sata_wait5s_on_resume.patch"
+Content-Transfer-Encoding: base64
+Content-Description: sata_wait5s_on_resume.patch
+Content-Disposition: attachment;
+	filename="sata_wait5s_on_resume.patch"
+
+LS0tIGxpbnV4LTIuNi4yOC4yL2luY2x1ZGUvbGludXgvbGliYXRhLmgub3JpZwkyMDA5LTAxLTI0
+IDE4OjQyOjA3LjAwMDAwMDAwMCAtMDYwMAorKysgbGludXgtMi42LjI4LjIvaW5jbHVkZS9saW51
+eC9saWJhdGEuaAkyMDA5LTAyLTAyIDEwOjM2OjMwLjAwMDAwMDAwMCAtMDYwMApAQCAtMjcxLDcg
+KzI3MSw3IEBAIGVudW0gewogCSAqIGFkdmlzZWQgdG8gd2FpdCBvbmx5IGZvciB0aGUgZm9sbG93
+aW5nIGR1cmF0aW9uIGJlZm9yZQogCSAqIGRvaW5nIFNSU1QuCiAJICovCi0JQVRBX1RNT1VUX1BN
+UF9TUlNUX1dBSVQJPSAxMDAwLAorCUFUQV9UTU9VVF9QTVBfU1JTVF9XQUlUCT0gNTAwMCwKIAog
+CS8qIEFUQSBidXMgc3RhdGVzICovCiAJQlVTX1VOS05PV04JCT0gMCwK
+
+------_=_NextPart_001_01C98559.6FF8B34E--
