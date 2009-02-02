@@ -1,59 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757399AbZBBVMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbZBBVN3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757399AbZBBVMf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 16:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753579AbZBBVMY
+	id S1758379AbZBBVN3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 16:13:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZBBVNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 16:12:24 -0500
-Received: from srv5.dvmed.net ([207.36.208.214]:52616 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753502AbZBBVMX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 16:12:23 -0500
-Message-ID: <498761B1.5040805@garzik.org>
-Date: Mon, 02 Feb 2009 16:12:17 -0500
-From: Jeff Garzik <jeff@garzik.org>
+	Mon, 2 Feb 2009 16:13:18 -0500
+Received: from marvin.heresymail.org ([87.106.62.5]:57523 "EHLO
+	marvin.heresymail.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753579AbZBBVNR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 16:13:17 -0500
+Message-ID: <498761E7.3080006@walrond.org>
+Date: Mon, 02 Feb 2009 21:13:11 +0000
+From: Andrew Walrond <andrew@walrond.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Pasi_K=E4rkk=E4inen?= <pasik@iki.fi>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix sata_sil compilation error with libata debug enabled
- (2.6.29-rcX)
-References: <20090202194714.GN15052@edu.joroinen.fi>
-In-Reply-To: <20090202194714.GN15052@edu.joroinen.fi>
+To: David Miller <davem@davemloft.net>
+CC: jengelh@medozas.de, sam@ravnborg.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.28 headers break kbd and net-tools userspace builds
+References: <20090128.122924.106238702.davem@davemloft.net>	<alpine.LSU.2.00.0901300510310.22910@fbirervta.pbzchgretzou.qr>	<4986CC6D.4090904@walrond.org> <20090202.120507.152093960.davem@davemloft.net>
+In-Reply-To: <20090202.120507.152093960.davem@davemloft.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pasi Kärkkäinen wrote:
-> Hello!
-> 
-> I tried compiling 2.6.29-rc1 and 2.6.29-rc3 with libata debugging enabled
-> and got the following error:
-> 
->   CC [M]  drivers/ata/sata_sil.o
-> drivers/ata/sata_sil.c: In function 'sil_fill_sg':
-> drivers/ata/sata_sil.c:327: error: 'pi' undeclared (first use in this function)
-> drivers/ata/sata_sil.c:327: error: (Each undeclared identifier is reported only once
-> drivers/ata/sata_sil.c:327: error: for each function it appears in.)
-> make[2]: *** [drivers/ata/sata_sil.o] Error 1
-> make[1]: *** [drivers/ata] Error 2
-> make: *** [drivers] Error 2
-> 
-> include/linux/libata.h has the following enabled:
-> 
-> #define ATA_DEBUG
-> #define ATA_VERBOSE_DEBUG
-> #define ATA_IRQ_TRAP
-> 
-> The attached patch fixes the compilation.. I'm not sure if it's the correct
-> fix, but looking at the code it seems correct.. or at least makes the
-> code compile for me :)
+David Miller wrote:
+>
+> There isn't anything we can really do about these cases.
+>
+> No matter what we do, we break the userland build in one way or
+> another.
+>   
+What exactly is the purpose of the kernel headers? Are there some 
+definitions in the kernel headers that will never be available from 
+glibc? Is it perhaps possible to work towards exporting kernel headers 
+for the sole purpose of building glibc, and all other packages should be 
+able to build against glibc's headers?
 
-Thanks!  Queued...
-
-
+Andrew Walrond
