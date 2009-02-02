@@ -1,61 +1,43 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246AbZBBNCN (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 2 Feb 2009 08:02:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbZBBNB5
+	id S1754673AbZBBOMp (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 2 Feb 2009 09:12:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZBBOMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 08:01:57 -0500
-Received: from olc-15.verat.net ([62.108.127.41]:40455 "EHLO olc-15.verat.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753228AbZBBNB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 08:01:56 -0500
-Message-ID: <9413.41.220.75.3.1233579714.squirrel@webmail.verat.net>
-Date: Mon, 2 Feb 2009 14:01:54 +0100 (CET)
-Subject: =?iso-8859-1?Q?Kj=E6re_uio.no_konto_Bruker?=
-From: "Universitetet i Oslo Help Desk" <helpdesk@uio.no>
-Reply-To: desk.help500@gmail.com
-User-Agent: SquirrelMail/1.4.13
+	Mon, 2 Feb 2009 09:12:31 -0500
+Received: from omr2.bezeqint.net ([192.115.104.10]:43384 "EHLO
+	omr2.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752294AbZBBOMa convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 09:12:30 -0500
+From: Siemens New Year Promo Draw <info@lely.co.uk>
+Subject: Confirm Reciept
+Reply-To: agt_bwilliams01@live.com
+X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090202160928.FOW11355@mas26.bezeqint.net>
+Date: Mon,  2 Feb 2009 16:09:28 +0200 (IST)
+X-Mirapoint-IP-Reputation: reputation=good-1,
+	source=Fixed,
+	refid=n/a,
+	actions=tag
+X-Junkmail-Status: score=10/50, host=mr2.bezeqint.net
+X-Junkmail-SD-Raw: score=unknown,
+	refid=str=0001.0A0B0207.4986FF4A.0471,ss=1,fgs=0,
+	ip=192.115.104.156,
+	so=2008-08-01 02:07:42,
+	dmn=5.7.1/2008-09-02,
+	mode=single engine
+X-Junkmail-IWF: false
 To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757246AbZBBNCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1754673AbZBBOMp@vger.kernel.org>
 
-Kjære uio.no konto Bruker,
-
-Det vil være en generell oppgradering i systemet mellom Februray 2 til 20
-2009.
-På grunn av anonym registrering av uio.no kontoer og antall
-av sovende kontoer, vil vi kjøre denne oppgraderingen for å fastslå
-nøyaktige antallet abonnenter vi har i dag.
-
-Du blir bedt om å logge deg inn på uio.no og bekrefte hvis
-Kontoen er fortsatt gyldig og sender umiddelbart den folowing:
-
-Brukernavn: :................................( Obligatorisk)
-Passord :...................................( Obligatorisk)
-Fødselsdato :..............................( Valgfritt)
-Staten :........................................( Valgfritt)
-
-Før du sender kontoopplysningene dine til oss, er du råd til å logge inn i
-denne
-Koblingen nedenfor: https://webmail.uio.no/src/login.php
-
-Merk at hvis kontoen din gjøre Login sende oss detaljene eller det betyr
-det har vært deleted.Sorry for inconvinences dette kan føre til at du
-vi bare prøver å kontrollere at du ikke mister informasjon i regnskapet.
-
-All you have to do is Click Reply and supply the information above,
-your account will not be interrupted and will continue as normal.
-
-Thanks for your attention to this request. Once again We apologize for any
-inconveniences. Warning!!! Account users that refuse to update their account
-after 5 Days of receiving this warning, user will lose his/her account
-permanently.
-
-2009© Universitetet i Oslo (uio.no)
-
+The sum of £750,000,00 GBP was won by your E-MAIL ID IN OUR 
+SIEMENS PROMO, Do get back to this office with your infor via 
+(agt_bwilliams01@live.com) 
+Name:           Conntry:          Sex:         Age:       
+Addres:
