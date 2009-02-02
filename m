@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZBBPtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756211AbZBBPu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbZBBPtS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 10:49:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZBBPtG
+	id S1756211AbZBBPu0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 10:50:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZBBPuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 10:49:06 -0500
-Received: from acsinet11.oracle.com ([141.146.126.233]:40341 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752137AbZBBPtF (ORCPT
+	Mon, 2 Feb 2009 10:50:10 -0500
+Received: from rtsoft3.corbina.net ([85.21.88.6]:52293 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752137AbZBBPuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 10:49:05 -0500
-Subject: Re: [RFC v7] wait: prevent exclusive waiter starvation
-From: Chris Mason <chris.mason@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>, stable@kernel.org
-In-Reply-To: <1233239675.10354.18.camel@think.oraclecorp.com>
-References: <20090123095904.GA22890@cmpxchg.org>
-	 <20090123113541.GB12684@redhat.com> <20090123133050.GA19226@redhat.com>
-	 <20090126215957.GA3889@cmpxchg.org> <20090127032359.GA17359@redhat.com>
-	 <20090127193434.GA19673@cmpxchg.org> <20090127200544.GA28843@redhat.com>
-	 <20090128091453.GA22036@cmpxchg.org> <20090129044227.GA5231@redhat.com>
-	 <20090128233734.81d8004a.akpm@linux-foundation.org>
-	 <20090129083108.GA27495@redhat.com>
-	 <20090129011143.884e5573.akpm@linux-foundation.org>
-	 <1233239675.10354.18.camel@think.oraclecorp.com>
-Content-Type: text/plain
-Date: Mon, 02 Feb 2009 10:47:47 -0500
-Message-Id: <1233589667.18113.24.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.498715AB.02D8:SCFSTAT928724,ss=1,fgs=0
+	Mon, 2 Feb 2009 10:50:09 -0500
+Date: Mon, 2 Feb 2009 18:50:04 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Greg KH <greg@kroah.com>
+Cc: Kumar Gala <galak@kernel.crashing.org>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       linux-usb@vger.kernel.org,
+       linux-kernel Kernel <linux-kernel@vger.kernel.org>,
+       linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 0/6] USB: Fixes for fsl_qe_udc driver
+Message-ID: <20090202155004.GA6764@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20081225141402.GA30689@oksana.dev.rtsoft.ru> <F4CBCB9E-5C58-4F9B-B0B2-623C81DF1339@kernel.crashing.org> <20090107045341.GA15842@kroah.com> <3983606C-7DC0-4D3D-B523-4EE5C2BCB80E@kernel.crashing.org> <20090113164001.GA14370@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <20090113164001.GA14370@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-01-29 at 09:34 -0500, Chris Mason wrote:
-
-> > > > So I think we're saying that
-> > > > lock_page_killable-avoid-lost-wakeups.patch actually did fix the bug?
-> > > 
-> > > I think yes,
-> > > 
+On Tue, Jan 13, 2009 at 08:40:01AM -0800, Greg KH wrote:
+> On Tue, Jan 13, 2009 at 09:49:39AM -0600, Kumar Gala wrote:
+> > On Jan 6, 2009, at 10:53 PM, Greg KH wrote:
+> >> On Tue, Jan 06, 2009 at 10:44:13PM -0600, Kumar Gala wrote:
+> >>> On Dec 25, 2008, at 8:14 AM, Anton Vorontsov wrote:
+> >>>> Hi all,
+> >>>>
+> >>>> Just resending some fixes that seem to be lost...
+> >>>
+> >>> Greg,
+> >>>
+> >>> What happened w/this patch set?
+> >>
+> >> As it was sent during the hollidays (on Christmas day at that), it's
+> >> still in my "to-review" queue.  I'll get to it in a few days after I
+> >> resync the USB tree with Linus.
+> >
+> > Any update on the review of these 6 patches?
 > 
-> Our test case that was able to reliably trigger the bug was fixed by
-> lock_page_killable-avoid-lost-wakeups.patch.
-> 
-> I'll ask them to test v7 as well.  The run takes about a day, so
-> confirmation will take a bit.
+> It's in my queue, been busy with "real work" for a bit right now,
+> sorry...
 
-v7 went through a total of 5 runs and passed all of them.  Unpatched we
-would fail after one run, so I think this does fix it.
+Hello Greg,
 
--chris
+Can you please look into these patches? I think they all are 2.6.29
+material, since the QE UDC driver is barely usable w/o these fixes.
 
+Thanks,
 
+p.s. And thank you for merging the FHCI driver!
 
-
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
