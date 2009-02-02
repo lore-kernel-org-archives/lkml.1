@@ -1,75 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZBBXOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZBBXTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbZBBXOv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 18:14:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZBBXOn
+	id S1756100AbZBBXTd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 18:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbZBBXTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 18:14:43 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42778
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752855AbZBBXOm (ORCPT
+	Mon, 2 Feb 2009 18:19:18 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35708 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752673AbZBBXTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 18:14:42 -0500
-Date: Mon, 02 Feb 2009 15:14:39 -0800 (PST)
-Message-Id: <20090202.151439.124517945.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com
-Subject: Re: x86's nmi_hz wrt. oprofile's nmi_timer_int.c
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090130.135409.180077287.davem@davemloft.net>
-References: <20090129.155852.161923905.davem@davemloft.net>
-	<20090130150125.GF31009@elte.hu>
-	<20090130.135409.180077287.davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Mon, 2 Feb 2009 18:19:17 -0500
+Date: Mon, 2 Feb 2009 15:18:52 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: matthew@wil.cx, gregkh@suse.de, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, seokmann.ju@qlogic.com
+Subject: Re: slab error in verify_redzone_free() badness...
+Message-Id: <20090202151852.de39952b.akpm@linux-foundation.org>
+In-Reply-To: <20090129225532.GA37589@plap4-2.local>
+References: <20090129225532.GA37589@plap4-2.local>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Fri, 30 Jan 2009 13:54:09 -0800 (PST)
+On Thu, 29 Jan 2009 14:55:32 -0800
+Andrew Vasquez <andrew.vasquez@qlogic.com> wrote:
 
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Fri, 30 Jan 2009 16:01:25 +0100
+> Matthew,
 > 
-> > 
-> > * David Miller <davem@davemloft.net> wrote:
-> > 
-> > Reducing it to 1 HZ was kind of a performance hack: running NMIs at HZ 
-> > needlessly interrupts the CPU HZ times a second. It's more than enough to 
-> > have 1 nmi-watchdog tick per second to notice deadlocks that take longer 
-> > than 5 seconds.
+> During some NPIV regression tests with .29-rc3, we are seeing some
+> slab-corruption during vport tear-down:
 > 
-> For the NMI watchdog's purposes I understand the intent, and this
-> is perfectly fine.
+> 	# create vport off fc-host1
+> 	$ echo "2001567890abcdab:2001ef12345678ab" > /sys/class/fc_host/host1/vport_create
+> 	# delete vport
+> 	$ echo "2001567890abcdab:2001ef12345678ab" > /sys/class/fc_host/host1/vport_delete
 > 
-> The problem is that it stays at '1' when oprofile starts using the NMI
-> watchdog, and we certainly want more than one oprofile tick per second
-> :-)
+> Here's the backtrace:
+> 
+> 	[  263.337035] slab error in verify_redzone_free(): cache `size-2048': memory outside object was overwritten
+> 	[  263.340213] Pid: 7623, comm: bash Tainted: G   M       2.6.28 #32
+> 	[  263.340213] Call Trace:
+> 	[  263.340213]  [<ffffffff8027afd7>] __slab_error+0x1c/0x25
+> 	[  263.340213]  [<ffffffff8027b43b>] cache_free_debugcheck+0x165/0x210
+> 	[  263.340213]  [<ffffffff8027b672>] kfree+0x6b/0xc3
+> 	[  263.340213]  [<ffffffff803947bb>] device_release+0x1a/0x6a
+> 	[  263.340213]  [<ffffffff8032db9c>] kobject_release+0x33/0x63
+> 	[  263.340213]  [<ffffffff8032db69>] kobject_release+0x0/0x63
+> 	[  263.340213]  [<ffffffff8032e98e>] kref_put+0x32/0x6c
+> 	[  263.340213]  [<ffffffffa002b73b>] qla24xx_vport_delete+0xc7/0x14f [qla2xxx]
+> 	[  263.340213]  [<ffffffffa000061c>] fc_vport_terminate+0x81/0x1bb [scsi_transport_fc]
+> 	[  263.340213]  [<ffffffffa0002a67>] store_fc_host_vport_delete+0x111/0x121 [scsi_transport_fc]
+> 	[  263.340213]  [<ffffffff802bebea>] sysfs_write_file+0xb3/0x114
+> 	[  263.340213]  [<ffffffff802803a3>] vfs_write+0xac/0x147
+> 	[  263.340213]  [<ffffffff80280921>] sys_write+0x45/0x73
+> 	[  263.340213]  [<ffffffff8020b45b>] system_call_fastpath+0x16/0x1b
+> 	[  263.340213] ffff88007ddaad98: redzone 1:0xd84156c5635688c0, redzone 2:0x0.
+> 
+> We've bisected the problem down to:
+> 
+> 	commit 210272a28465a7a31bcd580d2f9529f924965aa5
+> 	Author: Matthew Wilcox <matthew@wil.cx>
+> 	Date:   Thu Oct 16 14:57:54 2008 -0600
+> 
+> 	    driver core: Remove completion from struct klist_node
+> 
+> 	    Removing the completion from klist_node reduces its size from 64 bytes
+> 	    to 28 on x86-64.  To maintain the semantics of klist_remove(), we add
+> 	    a single list of klist nodes which are pending deletion and scan them.
+> 
+> 	    Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> 	    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> 
+> At first glance the changes look fairly straight-forward...  Reverting
+> the problem commit (currently off .29-rc3) appears to clean up the
+> slab-badness.
+> 
+> Thoughts?
 
-Just making sure you understand the problem, here is the
-sequence of events:
+I'd be suspecting a bug in the caller.
 
-1) At bootup, the NMI watchdog is tested.
+Try setting CONFIG_DEBUG_PAGEALLOC, and use slab.c (not slub).  slab
+will perform page unmapping for those 2k-sized slabs.  I don't know
+whether slub does that.
 
-   It is tested with nmi_hz=HZ
+All being well, you'll get a nice oops at the site of the improper
+reference.
 
-2) If the test passes, nmi_hz is reduced down to '1'
-
-As I stated, everything up to this point is fine.  Next:
-
-3) oprofile initializes and if we choose to use the NMI
-   timer for oprofile profiling it is implemented using
-   a simple DIE_NMI notifier.
-
-   However, nmi_hz is still just '1' which means that oprofile
-   will only receive one sample per-second.  And this is definitely
-   not what we want.
-
-Somehow the code in arch/x86/oprofile/nmi_timer_int.c needs to
-have an interface into the NMI watchdog core so that it can
-increase nmi_hz back up to "HZ" when the NMI timer profiling is
-enabled and back down to "1" when such profiling stops.
