@@ -1,745 +1,255 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757541AbZBBRhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756864AbZBBRo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757541AbZBBRhG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 12:37:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZBBRgz
+	id S1756864AbZBBRo0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 12:44:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZBBRoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 12:36:55 -0500
-Received: from mx7.mail.ru ([194.67.23.27]:15777 "EHLO mx7.mail.ru"
+	Mon, 2 Feb 2009 12:44:17 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:42852 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596AbZBBRgx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 12:36:53 -0500
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: righi.andrea@gmail.com
-Subject: Re: [Linux-fbdev-devel] [2.6.29-rc2] fb_mmap: circular locking dependency on hibernation
-Date: Mon, 2 Feb 2009 20:36:33 +0300
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc3-1avb; KDE/4.2.0; i686; ; )
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-References: <200901272137.57757.arvidjaar@mail.ru> <200902011015.45562.arvidjaar@mail.ru> <49862722.7020109@gmail.com>
-In-Reply-To: <49862722.7020109@gmail.com>
+	id S1752596AbZBBRoQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 12:44:16 -0500
+Date: Mon, 2 Feb 2009 12:36:40 -0500 (EST)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Dave Chinner <david@fromorbit.com>
+cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: spurious -ENOSPC on XFS
+In-Reply-To: <20090131235725.GA24173@disturbed>
+Message-ID: <Pine.LNX.4.64.0902021214310.15622@hs20-bc2-1.build.redhat.com>
+References: <20090113214949.GN8071@disturbed>
+ <Pine.LNX.4.64.0901132324070.16396@hs20-bc2-1.build.redhat.com>
+ <20090118173144.GA1999@infradead.org> <Pine.LNX.4.64.0901201430250.4603@hs20-bc2-1.build.redhat.com>
+ <20090120232422.GF10158@disturbed> <20090122205913.GA30859@infradead.org>
+ <20090122224347.GA18751@infradead.org> <Pine.LNX.4.64.0901231509010.5179@hs20-bc2-1.build.redhat.com>
+ <20090124071249.GF32390@disturbed> <Pine.LNX.4.64.0901291136050.19368@hs20-bc2-1.build.redhat.com>
+ <20090131235725.GA24173@disturbed>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3192967.kViZCv1g60";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200902022036.42805.arvidjaar@mail.ru>
-X-Spam: Not detected
-X-Mras: Ok
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3192967.kViZCv1g60
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
-
-On 2 of February 2009 01:50:10 Andrea Righi wrote:
-> On 2009-02-01 08:15, Andrey Borzenkov wrote:
-> > On 31 of January 2009 20:09:52 Andrea Righi wrote:
-> >> On 2009-01-30 05:15, Andrey Borzenkov wrote:
-> >>> On 29 of January 2009 12:10:11 Geert Uytterhoeven wrote:
-> >>>> On Tue, 27 Jan 2009, Andrey Borzenkov wrote:
-> >>>>> I do not know if this is new; I usually do not hibernate at all
-> >>>>> and was testing another driver actually. I do not remember such
-> >>>>> issues in 2.6.28 though. Dmesg follows; config attached.
-> >>>>>
-> >>>>> [11715.652498]
-> >>>>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D
-> >>>>> [11715.652520] [ INFO: possible circular locking dependency
-> >>>>> detected ] [11715.652534] 2.6.29-rc2-1avb #11
-> >>>>> [11715.652541]
-> >>>>> -------------------------------------------------------
-> >>>>> [11715.652550] s2disk/25519 is trying to acquire lock:
-> >>>>> [11715.652562]  (&fb_info->lock){--..}, at: [<c0223017>]
-> >>>>> fb_mmap+0x97/0x170 [11715.652623]
-> >>>>> [11715.652625] but task is already holding lock:
-> >>>>> [11715.652632]  (&mm->mmap_sem){----}, at: [<c010639e>]
-> >>>>> sys_mmap2+0x8e/0xc0 [11715.652669]
-> >>>>> [11715.652671] which lock already depends on the new lock.
-> >>>>> [11715.652675]
-> >>>>> [11715.652681]
-> >>>>> [11715.652683] the existing dependency chain (in reverse order)
-> >>>>> is: [11715.652691]
-> >>>>> [11715.652693] -> #1 (&mm->mmap_sem){----}:
-> >>>>> [11715.652707]        [<c0144ecf>] __lock_acquire+0x129f/0x1930
-> >>>>> [11715.652730]        [<c01455bc>] lock_acquire+0x5c/0x80
-> >>>>> [11715.652742]        [<c0181e57>] might_fault+0x77/0xa0
-> >>>>> [11715.652764]        [<c0209325>] copy_from_user+0x35/0x130
-> >>>>> [11715.652782]        [<c0223ef5>] fb_ioctl+0x1d5/0x3f0
-> >>>>> [11715.652797]        [<c01a51d0>] vfs_ioctl+0x20/0x80
-> >>>>> [11715.652832]        [<c01a53e2>] do_vfs_ioctl+0x72/0x570
-> >>>>> [11715.652845]        [<c01a5919>] sys_ioctl+0x39/0x70
-> >>>>> [11715.652857]        [<c0103371>] sysenter_do_call+0x12/0x31
-> >>>>> [11715.652870]        [<ffffffff>] 0xffffffff
-> >>>>> [11715.652973]
-> >>>>> [11715.652975] -> #0 (&fb_info->lock){--..}:
-> >>>>> [11715.652988]        [<c014503c>] __lock_acquire+0x140c/0x1930
-> >>>>> [11715.653000]        [<c01455bc>] lock_acquire+0x5c/0x80
-> >>>>> [11715.653011]        [<c030761a>] mutex_lock_nested+0xba/0x2f0
-> >>>>> [11715.653032]        [<c0223017>] fb_mmap+0x97/0x170
-> >>>>> [11715.653044]        [<c0188996>] mmap_region+0x1d6/0x530
-> >>>>> [11715.653067]        [<c0188ec3>] do_mmap_pgoff+0x1d3/0x2f0
-> >>>>> [11715.653079]        [<c01063bd>] sys_mmap2+0xad/0xc0
-> >>>>> [11715.653091]        [<c0103371>] sysenter_do_call+0x12/0x31
-> >>>>> [11715.653102]        [<ffffffff>] 0xffffffff
-> >>>>> [11715.653116]
-> >>>>> [11715.653119] other info that might help us debug this:
-> >>>>> [11715.653122]
-> >>>>> [11715.653130] 1 lock held by s2disk/25519:
-> >>>>> [11715.653137]  #0:  (&mm->mmap_sem){----}, at: [<c010639e>]
-> >>>>> sys_mmap2+0x8e/0xc0
-> >>>>> [11715.653156]
-> >>>>> [11715.653158] stack backtrace:
-> >>>>> [11715.653170] Pid: 25519, comm: s2disk Not tainted
-> >>>>> 2.6.29-rc2-1avb #11 [11715.653179] Call Trace:
-> >>>>> [11715.653190]  [<c0306248>] ? printk+0x18/0x20
-> >>>>> [11715.653202]  [<c01437df>] print_circular_bug_tail+0xcf/0xe0
-> >>>>> [11715.653213]  [<c014503c>] __lock_acquire+0x140c/0x1930
-> >>>>> [11715.653224]  [<c014328b>] ? trace_hardirqs_on+0xb/0x10
-> >>>>> [11715.653242]  [<c0309125>] ?
-> >>>>> _spin_unlock_irqrestore+0x35/0x60 [11715.653254]  [<c0140dc5>]
-> >>>>> ? lock_release_holdtime+0x35/0x210 [11715.653265]  [<c01455bc>]
-> >>>>> lock_acquire+0x5c/0x80
-> >>>>> [11715.653277]  [<c0223017>] ? fb_mmap+0x97/0x170
-> >>>>> [11715.653287]  [<c030761a>] mutex_lock_nested+0xba/0x2f0
-> >>>>> [11715.653298]  [<c0223017>] ? fb_mmap+0x97/0x170
-> >>>>> [11715.653309]  [<c0223017>] ? fb_mmap+0x97/0x170
-> >>>>> [11715.653335]  [<c019514d>] ? kmem_cache_alloc+0xad/0x100
-> >>>>> [11715.653347]  [<c0223017>] fb_mmap+0x97/0x170
-> >>>>> [11715.653358]  [<c0188996>] mmap_region+0x1d6/0x530
-> >>>>> [11715.653371]  [<c0186a9d>] ?
-> >>>>> arch_get_unmapped_area_topdown+0x10d/0x170 [11715.653383]
-> >>>>> [<c0188ec3>] do_mmap_pgoff+0x1d3/0x2f0
-> >>>>> [11715.653395]  [<c01063bd>] sys_mmap2+0xad/0xc0
-> >>>>> [11715.653406]  [<c0103371>] sysenter_do_call+0x12/0x31
-> >>>>
-> >>>> Is this fixed by http://patchwork.kernel.org/patch/3259/?
-> >>>
-> >>> No. It just makes stack a bit more deep :)
-> >>>
-> >>> [  408.267429]
-> >>> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D [
-> >>> 408.267448] [ INFO: possible circular locking dependency detected
-> >>> ] [  408.267462] 2.6.29-rc3-1avb #14
-> >>> [  408.267469]
-> >>> ------------------------------------------------------- [
-> >>> 408.267478] s2disk/5695 is trying to acquire lock:
-> >>> [  408.267487]  (&fb_info->lock){--..}, at: [<c02235e7>]
-> >>> fb_mmap+0x97/0x170
-> >>> [  408.267544]
-> >>> [  408.267546] but task is already holding lock:
-> >>> [  408.267553]  (&mm->mmap_sem){----}, at: [<c010639e>]
-> >>> sys_mmap2+0x8e/0xc0
-> >>> [  408.267591]
-> >>> [  408.267593] which lock already depends on the new lock.
-> >>> [  408.267596]
-> >>> [  408.267603]
-> >>> [  408.267604] the existing dependency chain (in reverse order)
-> >>> is: [  408.267612]
-> >>> [  408.267614] -> #3 (&mm->mmap_sem){----}:
-> >>> [  408.267628]        [<c014520f>] __lock_acquire+0x129f/0x1930
-> >>> [  408.267650]        [<c01458fc>] lock_acquire+0x5c/0x80
-> >>> [  408.267661]        [<c0182117>] might_fault+0x77/0xa0
-> >>> [  408.267683]        [<c0209916>] copy_to_user+0x36/0x120
-> >>> [  408.267699]        [<c01a60f7>] filldir+0x97/0xe0
-> >>> [  408.267735]        [<c01de339>] sysfs_readdir+0x129/0x220
-> >>> [  408.267751]        [<c01a62a6>] vfs_readdir+0x86/0xa0
-> >>> [  408.267763]        [<c01a63e8>] sys_getdents+0x68/0xc0
-> >>> [  408.267775]        [<c010344a>] syscall_call+0x7/0xb
-> >>> [  408.267787]        [<ffffffff>] 0xffffffff
-> >>> [  408.267862]
-> >>> [  408.267864] -> #2 (sysfs_mutex){--..}:
-> >>> [  408.267877]        [<c014520f>] __lock_acquire+0x129f/0x1930
-> >>> [  408.267889]        [<c01458fc>] lock_acquire+0x5c/0x80
-> >>> [  408.267899]        [<c0307f3a>] mutex_lock_nested+0xba/0x2f0
-> >>> [  408.267921]        [<c01de6cc>] sysfs_addrm_start+0x2c/0xc0
-> >>> [  408.267933]        [<c01dec80>] create_dir+0x40/0x90
-> >>> [  408.267944]        [<c01decfb>] sysfs_create_dir+0x2b/0x50
-> >>> [  408.267955]        [<c02036bc>]
-> >>> kobject_add_internal+0xbc/0x1b0 [  408.267984]      =20
-> >>> [<c0203881>] kobject_add_varg+0x31/0x50 [  408.267996]      =20
-> >>> [<c02038fc>] kobject_add+0x2c/0x60 [  408.268008]      =20
-> >>> [<c0273448>] device_add+0xa8/0x550 [  408.268041]      =20
-> >>> [<c0273902>] device_register+0x12/0x20 [  408.268053]      =20
-> >>> [<c02739bb>] device_create_vargs+0xab/0xc0 [  408.268065]      =20
-> >>> [<c02739f8>] device_create+0x28/0x30 [  408.268077]      =20
-> >>> [<c026cc6d>] register_con_driver+0xed/0x130 [  408.268090]      =20
-> >>> [<c026e18b>] take_over_console+0x1b/0x50 [  408.268102]      =20
-> >>> [<c023052d>] fbcon_takeover+0x5d/0xb0 [  408.268125]      =20
-> >>> [<c02311a0>] fbcon_event_notify+0x820/0x900 [  408.268137]      =20
-> >>> [<c030c3b3>] notifier_call_chain+0x53/0xa0 [  408.268161]      =20
-> >>> [<c0138ab4>]
-> >>> __blocking_notifier_call_chain+0x44/0x60
-> >>> [  408.268184]        [<c0138aea>]
-> >>> blocking_notifier_call_chain+0x1a/0x20
-> >>> [  408.268197]        [<c0222f81>]
-> >>> fb_notifier_call_chain+0x11/0x20 [  408.268209]      =20
-> >>> [<c0223f08>] register_framebuffer+0x168/0x220 [  408.268223]    =20
-> >>>   [<c0414ba2>] vesafb_probe+0x542/0x783 [  408.268250]      =20
-> >>> [<c02765af>] platform_drv_probe+0xf/0x20 [  408.268269]      =20
-> >>> [<c02757c7>] driver_probe_device+0x87/0x1b0 [  408.268281]      =20
-> >>> [<c0275988>] __device_attach+0x8/0x10 [  408.268291]      =20
-> >>> [<c0274e0b>] bus_for_each_drv+0x5b/0x80 [  408.268308]      =20
-> >>> [<c0275a36>] device_attach+0x76/0x80 [  408.268319]      =20
-> >>> [<c0274c27>] bus_attach_device+0x47/0x70 [  408.268331]      =20
-> >>> [<c02736c3>] device_add+0x323/0x550 [  408.268342]      =20
-> >>> [<c0276f85>] platform_device_add+0x175/0x1c0 [  408.268358]     =20
-> >>>  [<c0414e7d>] vesafb_init+0x9a/0x1ec [  408.268370]      =20
-> >>> [<c010111a>] do_one_initcall+0x2a/0x160 [  408.268382]      =20
-> >>> [<c04004d5>] kernel_init+0x83/0xd5 [  408.268411]      =20
-> >>> [<c0103a77>] kernel_thread_helper+0x7/0x10 [  408.268423]      =20
-> >>> [<ffffffff>] 0xffffffff
-> >>> [  408.268436]
-> >>> [  408.268438] -> #1 ((fb_notifier_list).rwsem){----}:
-> >>> [  408.268451]        [<c014520f>] __lock_acquire+0x129f/0x1930
-> >>> [  408.268463]        [<c01458fc>] lock_acquire+0x5c/0x80
-> >>> [  408.268474]        [<c0308879>] down_read+0x49/0x90
-> >>> [  408.268484]        [<c0138a9a>]
-> >>> __blocking_notifier_call_chain+0x2a/0x60
-> >>> [  408.268497]        [<c0138aea>]
-> >>> blocking_notifier_call_chain+0x1a/0x20
-> >>> [  408.268509]        [<c0222f81>]
-> >>> fb_notifier_call_chain+0x11/0x20 [  408.268521]      =20
-> >>> [<c022459e>] do_fb_ioctl+0x2ae/0x5d0 [  408.268533]      =20
-> >>> [<c02248dd>] fb_ioctl+0x1d/0x20
-> >>> [  408.268545]        [<c01a54b0>] vfs_ioctl+0x20/0x80
-> >>> [  408.268558]        [<c01a56c2>] do_vfs_ioctl+0x72/0x570
-> >>> [  408.268570]        [<c01a5bf9>] sys_ioctl+0x39/0x70
-> >>> [  408.268581]        [<c0103371>] sysenter_do_call+0x12/0x31
-> >>> [  408.268592]        [<ffffffff>] 0xffffffff
-> >>> [  408.268623]
-> >>> [  408.268625] -> #0 (&fb_info->lock){--..}:
-> >>> [  408.268638]        [<c014537c>] __lock_acquire+0x140c/0x1930
-> >>> [  408.268649]        [<c01458fc>] lock_acquire+0x5c/0x80
-> >>> [  408.268661]        [<c0307f3a>] mutex_lock_nested+0xba/0x2f0
-> >>> [  408.268672]        [<c02235e7>] fb_mmap+0x97/0x170
-> >>> [  408.268684]        [<c0188c76>] mmap_region+0x1d6/0x530
-> >>> [  408.268706]        [<c01891a3>] do_mmap_pgoff+0x1d3/0x2f0
-> >>> [  408.268718]        [<c01063bd>] sys_mmap2+0xad/0xc0
-> >>> [  408.268729]        [<c0103371>] sysenter_do_call+0x12/0x31
-> >>> [  408.268740]        [<ffffffff>] 0xffffffff
-> >>> [  408.268752]
-> >>> [  408.268754] other info that might help us debug this:
-> >>> [  408.268758]
-> >>> [  408.268767] 1 lock held by s2disk/5695:
-> >>> [  408.268773]  #0:  (&mm->mmap_sem){----}, at: [<c010639e>]
-> >>> sys_mmap2+0x8e/0xc0
-> >>> [  408.268792]
-> >>> [  408.268794] stack backtrace:
-> >>> [  408.268805] Pid: 5695, comm: s2disk Not tainted
-> >>> 2.6.29-rc3-1avb #14 [  408.268814] Call Trace:
-> >>> [  408.268825]  [<c0306b68>] ? printk+0x18/0x20
-> >>> [  408.268836]  [<c0143b1f>] print_circular_bug_tail+0xcf/0xe0
-> >>> [  408.268847]  [<c014537c>] __lock_acquire+0x140c/0x1930
-> >>> [  408.268862]  [<c01487f0>] ? futex_wait+0x170/0x450
-> >>> [  408.268881]  [<c011826c>] ? try_to_wake_up+0x10c/0x120
-> >>> [  408.268894]  [<c0309a45>] ? _spin_unlock_irqrestore+0x35/0x60
-> >>> [  408.268906]  [<c0141105>] ? lock_release_holdtime+0x35/0x210
-> >>> [  408.268917]  [<c01458fc>] lock_acquire+0x5c/0x80
-> >>> [  408.268928]  [<c02235e7>] ? fb_mmap+0x97/0x170
-> >>> [  408.268939]  [<c0307f3a>] mutex_lock_nested+0xba/0x2f0
-> >>> [  408.268950]  [<c02235e7>] ? fb_mmap+0x97/0x170
-> >>> [  408.268961]  [<c02235e7>] ? fb_mmap+0x97/0x170
-> >>> [  408.268987]  [<c019542d>] ? kmem_cache_alloc+0xad/0x100
-> >>> [  408.268999]  [<c02235e7>] fb_mmap+0x97/0x170
-> >>> [  408.269010]  [<c0188c76>] mmap_region+0x1d6/0x530
-> >>> [  408.269023]  [<c0186d7d>] ?
-> >>> arch_get_unmapped_area_topdown+0x10d/0x170
-> >>> [  408.269035]  [<c01891a3>] do_mmap_pgoff+0x1d3/0x2f0
-> >>> [  408.269047]  [<c01063bd>] sys_mmap2+0xad/0xc0
-> >>> [  408.269058]  [<c0103371>] sysenter_do_call+0x12/0x31
-> >>
-> >> Anyway, looking at this trace in detail, it seems that in the
-> >> fbcon notifier the FB_EVENT_SET_CONSOLE_MAP handler doesn't use
-> >> fb_info at all.
-> >>
-> >> So, just for this particular case, we could unlock fb_info->lock
-> >> before calling the routine that might acquire mm->mmap_sem, and
-> >> avoid the circular locking dependency.
-> >>
-> >> Any chance to do a test with the following patch?
-> >
-> > Step by step ... :)
-> >
-> > With both patches applied:
-> >
-> > [  113.949848]
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D [=20
-> > 113.950054] [ INFO: possible circular locking dependency detected ]
-> > [  113.950054] 2.6.29-rc3-1avb #16
-> > [  113.950054]
-> > ------------------------------------------------------- [=20
-> > 113.950054] s2disk/4168 is trying to acquire lock:
-> > [  113.950054]  (&fb_info->lock){--..}, at: [<c0230c56>]
-> > fbcon_event_notify+0x2d6/0x950
-> > [  113.950054]
-> > [  113.950054] but task is already holding lock:
-> > [  113.950054]  ((fb_notifier_list).rwsem){----}, at: [<c0138a9a>]
-> > __blocking_notifier_call_chain+0x2a/0x60
-> > [  113.950054]
-> > [  113.950054] which lock already depends on the new lock.
-> > [  113.950054]
-> > [  113.950054]
-> > [  113.950054] the existing dependency chain (in reverse order) is:
-> > [  113.950054]
-> > [  113.950054] -> #1 ((fb_notifier_list).rwsem){----}:
-> > [  113.950054]        [<c014520f>] __lock_acquire+0x129f/0x1930
-> > [  113.950054]        [<c01458fc>] lock_acquire+0x5c/0x80
-> > [  113.950054]        [<c03088c9>] down_read+0x49/0x90
-> > [  113.950054]        [<c0138a9a>]
-> > __blocking_notifier_call_chain+0x2a/0x60 [  113.950054]      =20
-> > [<c0138aea>] blocking_notifier_call_chain+0x1a/0x20 [  113.950054]=20
-> >       [<c0222f81>] fb_notifier_call_chain+0x11/0x20 [  113.950054]=20
-> >       [<c022459e>] do_fb_ioctl+0x2ae/0x5d0 [  113.950054]      =20
-> > [<c02248dd>] fb_ioctl+0x1d/0x20
-> > [  113.950054]        [<c01a54b0>] vfs_ioctl+0x20/0x80
-> > [  113.950054]        [<c01a56c2>] do_vfs_ioctl+0x72/0x570
-> > [  113.950054]        [<c01a5bf9>] sys_ioctl+0x39/0x70
-> > [  113.950054]        [<c0103371>] sysenter_do_call+0x12/0x31
-> > [  113.950054]        [<ffffffff>] 0xffffffff
-> > [  113.950054]
-> > [  113.950054] -> #0 (&fb_info->lock){--..}:
-> > [  113.950054]        [<c014537c>] __lock_acquire+0x140c/0x1930
-> > [  113.950054]        [<c01458fc>] lock_acquire+0x5c/0x80
-> > [  113.950054]        [<c0307f8a>] mutex_lock_nested+0xba/0x2f0
-> > [  113.950054]        [<c0230c56>] fbcon_event_notify+0x2d6/0x950
-> > [  113.950054]        [<c030c403>] notifier_call_chain+0x53/0xa0
-> > [  113.950054]        [<c0138ab4>]
-> > __blocking_notifier_call_chain+0x44/0x60 [  113.950054]      =20
-> > [<c0138aea>] blocking_notifier_call_chain+0x1a/0x20 [  113.950054]=20
-> >       [<c0222f81>] fb_notifier_call_chain+0x11/0x20 [  113.950054]=20
-> >       [<c02246ca>] do_fb_ioctl+0x3da/0x5d0 [  113.950054]      =20
-> > [<c02248dd>] fb_ioctl+0x1d/0x20
-> > [  113.950054]        [<c01a54b0>] vfs_ioctl+0x20/0x80
-> > [  113.950054]        [<c01a56c2>] do_vfs_ioctl+0x72/0x570
-> > [  113.950054]        [<c01a5bf9>] sys_ioctl+0x39/0x70
-> > [  113.950054]        [<c0103371>] sysenter_do_call+0x12/0x31
-> > [  113.950054]        [<ffffffff>] 0xffffffff
-> > [  113.950054]
-> > [  113.950054] other info that might help us debug this:
-> > [  113.950054]
-> > [  113.950054] 1 lock held by s2disk/4168:
-> > [  113.950054]  #0:  ((fb_notifier_list).rwsem){----}, at:
-> > [<c0138a9a>] __blocking_notifier_call_chain+0x2a/0x60
-> > [  113.950054]
-> > [  113.950054] stack backtrace:
-> > [  113.950054] Pid: 4168, comm: s2disk Not tainted 2.6.29-rc3-1avb
-> > #16 [  113.950054] Call Trace:
-> > [  113.950054]  [<c0306bb8>] ? printk+0x18/0x20
-> > [  113.950054]  [<c0143b1f>] print_circular_bug_tail+0xcf/0xe0
-> > [  113.950054]  [<c014537c>] __lock_acquire+0x140c/0x1930
-> > [  113.950054]  [<c0141105>] ? lock_release_holdtime+0x35/0x210
-> > [  113.950054]  [<c0143992>] ? check_noncircular+0x92/0x150
-> > [  113.950054]  [<c01463ce>] ? lock_release_non_nested+0x16e/0x2a0
-> > [  113.950054]  [<c0138a9a>] ?
-> > __blocking_notifier_call_chain+0x2a/0x60 [  113.950054]=20
-> > [<c01458fc>] lock_acquire+0x5c/0x80
-> > [  113.950054]  [<c0230c56>] ? fbcon_event_notify+0x2d6/0x950
-> > [  113.950054]  [<c0307f8a>] mutex_lock_nested+0xba/0x2f0
-> > [  113.950054]  [<c0230c56>] ? fbcon_event_notify+0x2d6/0x950
-> > [  113.950054]  [<c0230c56>] ? fbcon_event_notify+0x2d6/0x950
-> > [  113.950054]  [<c0230c56>] fbcon_event_notify+0x2d6/0x950
-> > [  113.950054]  [<c010b9ab>] ? save_stack_trace+0x2b/0x50
-> > [  113.950054]  [<c014185c>] ? save_trace+0x3c/0xa0
-> > [  113.950054]  [<c01418fd>] ? add_lock_to_list+0x3d/0xb0
-> > [  113.950054]  [<c0141105>] ? lock_release_holdtime+0x35/0x210
-> > [  113.950054]  [<c01462fd>] ? lock_release_non_nested+0x9d/0x2a0
-> > [  113.950054]  [<c0138a9a>] ?
-> > __blocking_notifier_call_chain+0x2a/0x60 [  113.950054]=20
-> > [<c030c403>] notifier_call_chain+0x53/0xa0 [  113.950054]=20
-> > [<c03088e5>] ? down_read+0x65/0x90
-> > [  113.950054]  [<c0138ab4>]
-> > __blocking_notifier_call_chain+0x44/0x60 [  113.950054]=20
-> > [<c0138aea>] blocking_notifier_call_chain+0x1a/0x20 [  113.950054]=20
-> > [<c0222f81>] fb_notifier_call_chain+0x11/0x20 [  113.950054]=20
-> > [<c02246ca>] do_fb_ioctl+0x3da/0x5d0
-> > [  113.950054]  [<c01820e6>] ? might_fault+0x46/0xa0
-> > [  113.950054]  [<c01820e6>] ? might_fault+0x46/0xa0
-> > [  113.950054]  [<c0182131>] ? might_fault+0x91/0xa0
-> > [  113.950054]  [<c01820e6>] ? might_fault+0x46/0xa0
-> > [  113.950054]  [<c0141105>] ? lock_release_holdtime+0x35/0x210
-> > [  113.950054]  [<c01462fd>] ? lock_release_non_nested+0x9d/0x2a0
-> > [  113.950054]  [<c01820e6>] ? might_fault+0x46/0xa0
-> > [  113.950054]  [<c01820e6>] ? might_fault+0x46/0xa0
-> > [  113.950054]  [<c0182131>] ? might_fault+0x91/0xa0
-> > [  113.950054]  [<c01820e6>] ? might_fault+0x46/0xa0
-> > [  113.950054]  [<c0209916>] ? copy_to_user+0x36/0x120
-> > [  113.950054]  [<c02248c0>] ? fb_ioctl+0x0/0x20
-> > [  113.950054]  [<c02248dd>] fb_ioctl+0x1d/0x20
-> > [  113.950054]  [<c01a54b0>] vfs_ioctl+0x20/0x80
-> > [  113.950054]  [<c01a56c2>] do_vfs_ioctl+0x72/0x570
-> > [  113.950054]  [<c019c762>] ? sys_fstat64+0x22/0x30
-> > [  113.950054]  [<c01a2180>] ? __link_path_walk+0x240/0xd40
-> > [  113.950054]  [<c010339f>] ? sysenter_exit+0xf/0x16
-> > [  113.950054]  [<c01a5bf9>] sys_ioctl+0x39/0x70
-> > [  113.950054]  [<c0103371>] sysenter_do_call+0x12/0x31
-> > [  117.846986] Syncing filesystems ... done.
-> >
-> > In case it helps - suspend to RAM does not exhibit this issue.
->
-> Another attempt... ignore the previous patch=20
-
-Actually it was om top of previous patch
-
-> and try to apply this
-> one on top of "fbmem: copy_from/to_user() with mutex held (v3)".
->
-> Thanks a lot for the tests!
->
-
-I hope you do not think I'm doing this on purpose? :)
-
-[  241.668005] =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-[  241.668044] [ INFO: possible circular locking dependency detected ]
-[  241.668068] 2.6.29-rc3-1avb #17
-[  241.668080] -------------------------------------------------------
-[  241.668100] s2disk/4219 is trying to acquire lock:
-[  241.668118]  (&fb_info->lock){--..}, at: [<c02235e7>]=20
-fb_mmap+0x97/0x170
-[  241.668188]
-[  241.668190] but task is already holding lock:
-[  241.668207]  (&mm->mmap_sem){----}, at: [<c010639e>]=20
-sys_mmap2+0x8e/0xc0
-[  241.668256]
-[  241.668258] which lock already depends on the new lock.
-[  241.668262]
-[  241.668282]
-[  241.668284] the existing dependency chain (in reverse order) is:
-[  241.668305]
-[  241.668307] -> #2 (&mm->mmap_sem){----}:
-[  241.668331]        [<c014520f>] __lock_acquire+0x129f/0x1930
-[  241.668362]        [<c01458fc>] lock_acquire+0x5c/0x80
-[  241.668382]        [<c0182117>] might_fault+0x77/0xa0
-[  241.668413]        [<c0209916>] copy_to_user+0x36/0x120
-[  241.668439]        [<c01a60f7>] filldir+0x97/0xe0
-[  241.668482]        [<c01de339>] sysfs_readdir+0x129/0x220
-[  241.668508]        [<c01a62a6>] vfs_readdir+0x86/0xa0
-[  241.668529]        [<c01a63e8>] sys_getdents+0x68/0xc0
-[  241.668549]        [<c010344a>] syscall_call+0x7/0xb
-[  241.668570]        [<ffffffff>] 0xffffffff
-[  241.668650]
-[  241.668653] -> #1 (sysfs_mutex){--..}:
-[  241.668676]        [<c014520f>] __lock_acquire+0x129f/0x1930
-[  241.668698]        [<c01458fc>] lock_acquire+0x5c/0x80
-[  241.668718]        [<c030820a>] mutex_lock_nested+0xba/0x2f0
-[  241.668749]        [<c01de6cc>] sysfs_addrm_start+0x2c/0xc0
-[  241.668771]        [<c01dec80>] create_dir+0x40/0x90
-[  241.668792]        [<c01decfb>] sysfs_create_dir+0x2b/0x50
-[  241.668812]        [<c02036bc>] kobject_add_internal+0xbc/0x1b0
-[  241.668853]        [<c0203881>] kobject_add_varg+0x31/0x50
-[  241.668874]        [<c02038fc>] kobject_add+0x2c/0x60
-[  241.668895]        [<c0273718>] device_add+0xa8/0x550
-[  241.668938]        [<c0273bd2>] device_register+0x12/0x20
-[  241.668960]        [<c0273c8b>] device_create_vargs+0xab/0xc0
-[  241.668982]        [<c0273cc8>] device_create+0x28/0x30
-[  241.669003]        [<c026cf3d>] register_con_driver+0xed/0x130
-[  241.669027]        [<c026e45b>] take_over_console+0x1b/0x50
-[  241.669049]        [<c02304dd>] fbcon_takeover+0x5d/0xb0
-[  241.669081]        [<c0231457>] fbcon_event_notify+0xb27/0xc20
-[  241.669104]        [<c030c683>] notifier_call_chain+0x53/0xa0
-[  241.669138]        [<c0138ab4>]=20
-__blocking_notifier_call_chain+0x44/0x60
-[  241.669218]        [<c0138aea>]=20
-blocking_notifier_call_chain+0x1a/0x20
-[  241.669246]        [<c0222f81>] fb_notifier_call_chain+0x11/0x20
-[  241.669276]        [<c0223f08>] register_framebuffer+0x168/0x220
-[  241.669305]        [<c0414ba2>] vesafb_probe+0x542/0x783
-[  241.669347]        [<c027687f>] platform_drv_probe+0xf/0x20
-[  241.669378]        [<c0275a97>] driver_probe_device+0x87/0x1b0
-[  241.669404]        [<c0275c58>] __device_attach+0x8/0x10
-[  241.669429]        [<c02750db>] bus_for_each_drv+0x5b/0x80
-[  241.669460]        [<c0275d06>] device_attach+0x76/0x80
-[  241.669484]        [<c0274ef7>] bus_attach_device+0x47/0x70
-[  241.669511]        [<c0273993>] device_add+0x323/0x550
-[  241.669536]        [<c0277255>] platform_device_add+0x175/0x1c0
-[  241.669567]        [<c0414e7d>] vesafb_init+0x9a/0x1ec
-[  241.669592]        [<c010111a>] do_one_initcall+0x2a/0x160
-[  241.669619]        [<c04004d5>] kernel_init+0x83/0xd5
-[  241.669661]        [<c0103a77>] kernel_thread_helper+0x7/0x10
-[  241.669688]        [<ffffffff>] 0xffffffff
-[  241.669737]
-[  241.669739] -> #0 (&fb_info->lock){--..}:
-[  241.669770]        [<c014537c>] __lock_acquire+0x140c/0x1930
-[  241.669797]        [<c01458fc>] lock_acquire+0x5c/0x80
-[  241.669821]        [<c030820a>] mutex_lock_nested+0xba/0x2f0
-[  241.669847]        [<c02235e7>] fb_mmap+0x97/0x170
-[  241.669872]        [<c0188c76>] mmap_region+0x1d6/0x530
-[  241.669908]        [<c01891a3>] do_mmap_pgoff+0x1d3/0x2f0
-[  241.669934]        [<c01063bd>] sys_mmap2+0xad/0xc0
-[  241.669959]        [<c0103371>] sysenter_do_call+0x12/0x31
-[  241.669984]        [<ffffffff>] 0xffffffff
-[  241.670009]
-[  241.670012] other info that might help us debug this:
-[  241.670015]
-[  241.670049] 1 lock held by s2disk/4219:
-[  241.670065]  #0:  (&mm->mmap_sem){----}, at: [<c010639e>]=20
-sys_mmap2+0x8e/0xc0
-[  241.670092]
-[  241.670092] stack backtrace:
-[  241.670092] Pid: 4219, comm: s2disk Not tainted 2.6.29-rc3-1avb #17
-[  241.670092] Call Trace:
-[  241.670092]  [<c0306e38>] ? printk+0x18/0x20
-[  241.670092]  [<c0143b1f>] print_circular_bug_tail+0xcf/0xe0
-[  241.670092]  [<c014537c>] __lock_acquire+0x140c/0x1930
-[  241.670092]  [<c01487f0>] ? futex_wait+0x170/0x450
-[  241.670092]  [<c011826c>] ? try_to_wake_up+0x10c/0x120
-[  241.670092]  [<c0309d15>] ? _spin_unlock_irqrestore+0x35/0x60
-[  241.670092]  [<c0141105>] ? lock_release_holdtime+0x35/0x210
-[  241.670092]  [<c01458fc>] lock_acquire+0x5c/0x80
-[  241.670092]  [<c02235e7>] ? fb_mmap+0x97/0x170
-[  241.670092]  [<c030820a>] mutex_lock_nested+0xba/0x2f0
-[  241.670092]  [<c02235e7>] ? fb_mmap+0x97/0x170
-[  241.670092]  [<c02235e7>] ? fb_mmap+0x97/0x170
-[  241.670092]  [<c019542d>] ? kmem_cache_alloc+0xad/0x100
-[  241.670092]  [<c02235e7>] fb_mmap+0x97/0x170
-[  241.670092]  [<c0188c76>] mmap_region+0x1d6/0x530
-[  241.670092]  [<c0186cfd>] ? arch_get_unmapped_area_topdown+0x8d/0x170
-[  241.670092]  [<c01891a3>] do_mmap_pgoff+0x1d3/0x2f0
-[  241.670092]  [<c01063bd>] sys_mmap2+0xad/0xc0
-[  241.670092]  [<c0103371>] sysenter_do_call+0x12/0x31
-[  244.217754] Syncing filesystems ... done.
-[  244.228175] Freezing user space processes ... (elapsed 0.00 seconds)=20
-done.
 
 
+On Sun, 1 Feb 2009, Dave Chinner wrote:
 
-> -Andrea
->
-> ---
-> fbmem: fix circular locking dependency pushing down fb_info->lock
->
-> Push down fb_info->lock into each framebuffer notifier callback to
-> avoid a circular locking dependency between fb_info->lock and
-> fb_notifier_list->rwsem.
->
-> Reported-by: Andrey Borzenkov <arvidjaar@mail.ru>
-> Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
-> ---
->  drivers/video/backlight/backlight.c |    3 ++
->  drivers/video/backlight/lcd.c       |    3 ++
->  drivers/video/console/fbcon.c       |   62
-> +++++++++++++++++++++++++++++++---- drivers/video/fbmem.c           =20
->   |    7 ----
->  4 files changed, 61 insertions(+), 14 deletions(-)
->
-> diff --git a/drivers/video/backlight/backlight.c
-> b/drivers/video/backlight/backlight.c index 157057c..dd37cbc 100644
-> --- a/drivers/video/backlight/backlight.c
-> +++ b/drivers/video/backlight/backlight.c
-> @@ -35,6 +35,8 @@ static int fb_notifier_callback(struct
-> notifier_block *self, return 0;
->
->  	bd =3D container_of(self, struct backlight_device, fb_notif);
-> +	if (!lock_fb_info(evdata->info))
-> +		return -ENODEV;
->  	mutex_lock(&bd->ops_lock);
->  	if (bd->ops)
->  		if (!bd->ops->check_fb ||
-> @@ -47,6 +49,7 @@ static int fb_notifier_callback(struct
-> notifier_block *self, backlight_update_status(bd);
->  		}
->  	mutex_unlock(&bd->ops_lock);
-> +	unlock_fb_info(evdata->info);
->  	return 0;
->  }
->
-> diff --git a/drivers/video/backlight/lcd.c
-> b/drivers/video/backlight/lcd.c index b644947..0bb13df 100644
-> --- a/drivers/video/backlight/lcd.c
-> +++ b/drivers/video/backlight/lcd.c
-> @@ -40,6 +40,8 @@ static int fb_notifier_callback(struct
-> notifier_block *self, if (!ld->ops)
->  		return 0;
->
-> +	if (!lock_fb_info(evdata->info))
-> +		return -ENODEV;
->  	mutex_lock(&ld->ops_lock);
->  	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
->  		if (event =3D=3D FB_EVENT_BLANK) {
-> @@ -51,6 +53,7 @@ static int fb_notifier_callback(struct
-> notifier_block *self, }
->  	}
->  	mutex_unlock(&ld->ops_lock);
-> +	unlock_fb_info(evdata->info);
->  	return 0;
->  }
->
-> diff --git a/drivers/video/console/fbcon.c
-> b/drivers/video/console/fbcon.c index 81fc2f7..7bc2a26 100644
-> --- a/drivers/video/console/fbcon.c
-> +++ b/drivers/video/console/fbcon.c
-> @@ -3144,57 +3144,105 @@ static int fbcon_event_notify(struct
-> notifier_block *self,
->
->  	switch(action) {
->  	case FB_EVENT_SUSPEND:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_suspended(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_RESUME:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_resumed(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_MODE_CHANGE:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_modechanged(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_MODE_CHANGE_ALL:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_set_all_vcs(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_MODE_DELETE:
->  		mode =3D event->data;
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		ret =3D fbcon_mode_deleted(info, mode);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_FB_UNBIND:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		ret =3D fbcon_fb_unbind(info->node);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_FB_REGISTERED:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		ret =3D fbcon_fb_registered(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_FB_UNREGISTERED:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		ret =3D fbcon_fb_unregistered(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_SET_CONSOLE_MAP:
-> -		/*
-> -		 * XXX: info is not used here, we can unlock it to avoid
-> -		 * circular locking with &current->mm->mmap_sem in fb_mmap().
-> -		 */
-> -		unlock_fb_info(info);
->  		con2fb =3D event->data;
->  		ret =3D set_con2fb_map(con2fb->console - 1,
->  				     con2fb->framebuffer, 1);
-> -		lock_fb_info(info);
->  		break;
->  	case FB_EVENT_GET_CONSOLE_MAP:
->  		con2fb =3D event->data;
->  		con2fb->framebuffer =3D con2fb_map[con2fb->console - 1];
->  		break;
->  	case FB_EVENT_BLANK:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_fb_blanked(info, *(int *)event->data);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_NEW_MODELIST:
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_new_modelist(info);
-> +		unlock_fb_info(info);
->  		break;
->  	case FB_EVENT_GET_REQ:
->  		caps =3D event->data;
-> +		if (!lock_fb_info(info)) {
-> +			ret =3D -ENODEV;
-> +			goto done;
-> +		}
->  		fbcon_get_requirement(info, caps);
-> +		unlock_fb_info(info);
->  		break;
->  	}
-> -
->  done:
->  	return ret;
->  }
-> diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> index cfd9dce..5cdee72 100644
-> --- a/drivers/video/fbmem.c
-> +++ b/drivers/video/fbmem.c
-> @@ -1086,12 +1086,8 @@ static long do_fb_ioctl(struct fb_info *info,
-> unsigned int cmd, return -EINVAL;
->  		con2fb.framebuffer =3D -1;
->  		event.data =3D &con2fb;
-> -
-> -		if (!lock_fb_info(info))
-> -			return -ENODEV;
->  		event.info =3D info;
->  		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
-> -		unlock_fb_info(info);
->
->  		ret =3D copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
->  		break;
-> @@ -1109,12 +1105,9 @@ static long do_fb_ioctl(struct fb_info *info,
-> unsigned int cmd, break;
->  		}
->  		event.data =3D &con2fb;
-> -		if (!lock_fb_info(info))
-> -			return -ENODEV;
->  		event.info =3D info;
->  		ret =3D fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP,
->  					      &event);
-> -		unlock_fb_info(info);
->  		break;
->  	case FBIOBLANK:
->  		if (!lock_fb_info(info))
+> On Thu, Jan 29, 2009 at 11:39:00AM -0500, Mikulas Patocka wrote:
+> > On Sat, 24 Jan 2009, Dave Chinner wrote:
+> > > On Fri, Jan 23, 2009 at 03:14:30PM -0500, Mikulas Patocka wrote:
+> > > > If I placed
+> > > > xfs_sync_inodes(ip->i_mount, SYNC_DELWRI);
+> > > > xfs_sync_inodes(ip->i_mount, SYNC_DELWRI | SYNC_IOWAIT);
+> > > > directly to xfs_flush_device, I got lock dependency warning (though not a 
+> > > > real deadlock).
+> > > 
+> > > Same reason memory reclaim gives lockdep warnings on XFS - we're
+> > > recursing into operations that take inode locks while we currently
+> > > hold an inode lock.  However, it shouldn't deadlock because
+> > > we should ever try to take the iolock on the inode that we current
+> > > hold it on.
+> > > 
+> > > > So synchronous flushing definitely needs some thinking and lock 
+> > > > rearchitecting.
+> > > 
+> > > No, not at all. At most the grabbing of the iolock in
+> > > xfs_sync_inodes_ag() needs to become a trylock....
+> > 
+> > You are wrong, the comments in the code are right. It really
+> > deadlocks if it is modified to use synchronous wait for the end of
+> > the flush and if the flush is done with xfs_sync_inodes:
+> > 
+> > xfssyncd      D 0000000000606808     0  4819      2
+> > Call Trace:
+> >  [0000000000606788] rwsem_down_failed_common+0x1ac/0x1d8
+> >  [0000000000606808] rwsem_down_read_failed+0x24/0x34
+> >  [0000000000606848] __down_read+0x30/0x40
+> >  [0000000000468a64] down_read_nested+0x48/0x58
+> >  [00000000100e6cc8] xfs_ilock+0x48/0x8c [xfs]
+> >  [000000001011018c] xfs_sync_inodes_ag+0x17c/0x2dc [xfs]
+> >  [000000001011034c] xfs_sync_inodes+0x60/0xc4 [xfs]
+> >  [00000000101103c4] xfs_flush_device_work+0x14/0x2c [xfs]
+> >  [000000001010ff1c] xfssyncd+0x110/0x174 [xfs]
+> >  [000000000046556c] kthread+0x54/0x88
+> >  [000000000042b2a0] kernel_thread+0x3c/0x54
+> >  [00000000004653b8] kthreadd+0xac/0x160
+> 
+> So it is stuck:
+> 
+> 127                 /*
+> 128                  * If we have to flush data or wait for I/O completion
+> 129                  * we need to hold the iolock.
+> 130                  */
+> 131                 if ((flags & SYNC_DELWRI) && VN_DIRTY(inode)) {
+> 132     >>>>>>>>            xfs_ilock(ip, XFS_IOLOCK_SHARED);
+> 133                         lock_flags |= XFS_IOLOCK_SHARED;
+> 134                         error = xfs_flush_pages(ip, 0, -1, fflag, FI_NONE);
+> 135                         if (flags & SYNC_IOWAIT)
+> 136                                 xfs_ioend_wait(ip);
+> 137                 }
+> 
+> Given that we are stuck on the iolock in xfs_sync_inodes_ag(), I
+> suspect you should re-read my comments above about "lock
+> re-architecting" ;).
+
+No, if you turn it into a trylock, it will randomly fail if any other 
+process is holding the lock for whatever reason. So you will still get 
+spurious -ENOSPCs, although with lower probability.
+
+> If you make the xfs_ilock() there xfs_ilock_nowait() and avoid data
+> writeback if we don't get the lock the deadlock goes away, right?
+
+But that premature ENOSPC possibility will still exist.
+
+The only right solution that I see is to drop this flushing code at all 
+(because it's unfixable), catch -ENOSPCs exactly before you are about to 
+return them to Linux VFS, flush at this point (you are not holding any 
+locks here) and retry.
+
+There seems to be more bugs with forgetting to flush delayed allocation 
+--- you should flush delayed allocation after *every* failed allocate 
+attempt, but the code flushes it only after failed delayed allocate 
+attempt --- i.e. nondelayed allocators, such as xfs_iomap_write_direct 
+(and maybe other places) will still return -ENOSPC without attempting to 
+flush other inodes with delayed allocation.
+
+Syncing should be really moved at the topmost place.
+
+Mikulas
+
+> BTW, can you post the patch you are working on?
+> 
+> Cheers,
+> 
+> Dave.
+
+This is what I tried: I turned that 500ms wait into a completion:
 
 
---nextPart3192967.kViZCv1g60
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+Use xfs_sync_inodes and not sync_blockdev. sync_blockdev writes dirty 
+metadata buffers, it doesn't touch inodes and pages at all.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Also, change that 500ms delay to a wait for completion, so that the
+behavior is not dependent on magic timeout values. XFS developers insist
+that it can't deadlock (I hope they're right).
 
-iEYEABECAAYFAkmHLyUACgkQR6LMutpd94zvswCfVReXI6ECcyzqsOJmbJroK66P
-gxcAoNRaVybEdfSh/wRHYDLQmm+7E7e6
-=Wm88
------END PGP SIGNATURE-----
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
 
---nextPart3192967.kViZCv1g60--
+---
+ fs/xfs/linux-2.6/xfs_sync.c |   25 +++++++++++++++++++------
+ fs/xfs/linux-2.6/xfs_sync.h |    1 +
+ 2 files changed, 20 insertions(+), 6 deletions(-)
+
+Index: linux-2.6.29-rc3-devel/fs/xfs/linux-2.6/xfs_sync.c
+===================================================================
+--- linux-2.6.29-rc3-devel.orig/fs/xfs/linux-2.6/xfs_sync.c	2009-01-29 15:49:25.000000000 +0100
++++ linux-2.6.29-rc3-devel/fs/xfs/linux-2.6/xfs_sync.c	2009-01-29 16:57:53.000000000 +0100
+@@ -389,12 +389,15 @@ xfs_quiesce_attr(
+  * - It saves on stack space, which is tight in certain situations
+  * - It can be used (with care) as a mechanism to avoid deadlocks.
+  * Flushing while allocating in a full filesystem requires both.
++ *
++ * Dave Chinner claims that the deadlock can't happen. -- mikulas
+  */
+ STATIC void
+ xfs_syncd_queue_work(
+ 	struct xfs_mount *mp,
+ 	void		*data,
+-	void		(*syncer)(struct xfs_mount *, void *))
++	void		(*syncer)(struct xfs_mount *, void *),
++	struct completion *completion)
+ {
+ 	struct bhv_vfs_sync_work *work;
+ 
+@@ -403,6 +406,7 @@ xfs_syncd_queue_work(
+ 	work->w_syncer = syncer;
+ 	work->w_data = data;
+ 	work->w_mount = mp;
++	work->w_completion = completion;
+ 	spin_lock(&mp->m_sync_lock);
+ 	list_add_tail(&work->w_list, &mp->m_sync_list);
+ 	spin_unlock(&mp->m_sync_lock);
+@@ -415,6 +419,7 @@ xfs_syncd_queue_work(
+  * has failed with ENOSPC and we are in the process of scratching our
+  * heads, looking about for more room...
+  */
++#if 0
+ STATIC void
+ xfs_flush_inode_work(
+ 	struct xfs_mount *mp,
+@@ -424,16 +429,20 @@ xfs_flush_inode_work(
+ 	filemap_flush(inode->i_mapping);
+ 	iput(inode);
+ }
++#endif
+ 
+ void
+ xfs_flush_inode(
+ 	xfs_inode_t	*ip)
+ {
++#if 0
+ 	struct inode	*inode = VFS_I(ip);
++	DECLARE_COMPLETION_ONSTACK(completion);
+ 
+ 	igrab(inode);
+-	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_inode_work);
+-	delay(msecs_to_jiffies(500));
++	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_inode_work, &completion);
++	wait_for_completion(&completion);
++#endif
+ }
+ 
+ /*
+@@ -446,7 +455,7 @@ xfs_flush_device_work(
+ 	void		*arg)
+ {
+ 	struct inode	*inode = arg;
+-	sync_blockdev(mp->m_super->s_bdev);
++	xfs_sync_inodes(mp, SYNC_DELWRI | SYNC_IOWAIT);
+ 	iput(inode);
+ }
+ 
+@@ -455,10 +464,11 @@ xfs_flush_device(
+ 	xfs_inode_t	*ip)
+ {
+ 	struct inode	*inode = VFS_I(ip);
++	DECLARE_COMPLETION_ONSTACK(completion);
+ 
+ 	igrab(inode);
+-	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_device_work);
+-	delay(msecs_to_jiffies(500));
++	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_device_work, &completion);
++	wait_for_completion(&completion);
+ 	xfs_log_force(ip->i_mount, (xfs_lsn_t)0, XFS_LOG_FORCE|XFS_LOG_SYNC);
+ }
+ 
+@@ -526,6 +536,8 @@ xfssyncd(
+ 		list_for_each_entry_safe(work, n, &tmp, w_list) {
+ 			(*work->w_syncer)(mp, work->w_data);
+ 			list_del(&work->w_list);
++			if (work->w_completion)
++				complete(work->w_completion);
+ 			if (work == &mp->m_sync_work)
+ 				continue;
+ 			kmem_free(work);
+@@ -541,6 +553,7 @@ xfs_syncd_init(
+ {
+ 	mp->m_sync_work.w_syncer = xfs_sync_worker;
+ 	mp->m_sync_work.w_mount = mp;
++	mp->m_sync_work.w_completion = NULL;
+ 	mp->m_sync_task = kthread_run(xfssyncd, mp, "xfssyncd");
+ 	if (IS_ERR(mp->m_sync_task))
+ 		return -PTR_ERR(mp->m_sync_task);
+Index: linux-2.6.29-rc3-devel/fs/xfs/linux-2.6/xfs_sync.h
+===================================================================
+--- linux-2.6.29-rc3-devel.orig/fs/xfs/linux-2.6/xfs_sync.h	2009-01-29 15:52:28.000000000 +0100
++++ linux-2.6.29-rc3-devel/fs/xfs/linux-2.6/xfs_sync.h	2009-01-29 15:52:56.000000000 +0100
+@@ -25,6 +25,7 @@ typedef struct bhv_vfs_sync_work {
+ 	struct xfs_mount	*w_mount;
+ 	void			*w_data;	/* syncer routine argument */
+ 	void			(*w_syncer)(struct xfs_mount *, void *);
++	struct completion	*w_completion;
+ } bhv_vfs_sync_work_t;
+ 
+ #define SYNC_ATTR		0x0001	/* sync attributes */
