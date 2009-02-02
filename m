@@ -1,70 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756492AbZBBMX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbZBBMYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756492AbZBBMX6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 07:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbZBBMXu
+	id S1757123AbZBBMYs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 07:24:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753140AbZBBMYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 07:23:50 -0500
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:50928 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbZBBMXt (ORCPT
+	Mon, 2 Feb 2009 07:24:40 -0500
+Received: from einhorn.in-berlin.de ([192.109.42.8]:47719 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbZBBMYj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 07:23:49 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Suresh B <suresh.b.siddha@intel.com>
-Subject: [PATCH v2] NOHZ: fix nohz on cpu unplug
-Date: Mon, 2 Feb 2009 13:23:43 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <200901301729.30284.borntraeger@de.ibm.com> <200902021058.45230.borntraeger@de.ibm.com>
-In-Reply-To: <200902021058.45230.borntraeger@de.ibm.com>
+	Mon, 2 Feb 2009 07:24:39 -0500
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Mon, 2 Feb 2009 13:24:34 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] async: use list_move_tail
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.5292a11a4eb9fe66@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902021323.44015.borntraeger@de.ibm.com>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After some testing, I think this patch is better:
-[PATCH] NOHZ: fix nohz on cpu unplug
-
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-
-After using cpu unplug I have seen one cpu with full ticks, even
-on a idle systems. It turns out that nohz.cpu_mask is not updated on
-cpu unplug. 
-In select_nohz_load_balancer we check if the system is completely
-idle to turn of load balancing. We compare cpu_online_map with
-nohz.cpu_mask.
-Since cpu_online_map is updated on cpu unplug, but nohz.cpu_mask is
-not, the check fails and the scheduler believes that we need an 
-"idle load balancer" even on a fully idle system. Since the ilb 
-cpu does not deactivate the timer tick this breaks NOHZ.
-
-This patch clear the nohz bits in the migration_call, a function that
-is already called by the cpu hotplug notifier.
-
-Opinions?
-
-Signed-off-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- kernel/sched.c |    1 +
- 1 file changed, 1 insertion(+)
+ kernel/async.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Index: kvm/kernel/sched.c
-===================================================================
---- kvm.orig/kernel/sched.c
-+++ kvm/kernel/sched.c
-@@ -6696,6 +6696,7 @@ migration_call(struct notifier_block *nf
- 		rq->idle->sched_class = &idle_sched_class;
- 		migrate_dead_tasks(cpu);
- 		spin_unlock_irq(&rq->lock);
-+		cpumask_clear_cpu(cpu, nohz.cpu_mask);
- 		cpuset_unlock();
- 		migrate_nr_uninterruptible(rq);
- 		BUG_ON(rq->nr_running != 0);
+diff --git a/kernel/async.c b/kernel/async.c
+index dd14fc5..c3baaa8 100644
+--- a/kernel/async.c
++++ b/kernel/async.c
+@@ -133,8 +133,7 @@ static void run_one_entry(void)
+ 	entry = list_first_entry(&async_pending, struct async_entry, list);
+ 
+ 	/* 2) move it to the running queue */
+-	list_del(&entry->list);
+-	list_add_tail(&entry->list, entry->running);
++	list_move_tail(&entry->list, entry->running);
+ 	spin_unlock_irqrestore(&async_lock, flags);
+ 
+ 	/* 3) run it (and print duration)*/
+-- 
+1.6.0.6
+
+
+-- 
+Stefan Richter
+-=====-==--= --=- ---=-
+http://arcgraph.de/sr/
+
