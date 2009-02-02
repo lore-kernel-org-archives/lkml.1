@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760134AbZBBVmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760209AbZBBVm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760134AbZBBVmn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 16:42:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759926AbZBBVlj
+	id S1760209AbZBBVm7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 16:42:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760035AbZBBVmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 16:41:39 -0500
-Received: from mail-bw0-f12.google.com ([209.85.218.12]:47527 "EHLO
-	mail-bw0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759418AbZBBVlh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 16:41:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=usPLuK9qmOdRu14d7zw21MsYwHDNWArSAjRYEGF5YkxcRNy9mK16sDDvZolpaYs+f4
-         NChRWA2Emht72oxO6gd2G1sHaEyKdLfh4akjA+DgR5CjHSfAymNxyOGx2D7xOawNt13g
-         6iuldTvwuGsXOhevt0rllFXIzyZUj6WqJhpMQ=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Mon, 02 Feb 2009 22:40:07 +0100
-Message-Id: <20090202214007.17960.23147.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090202213707.17960.61897.sendpatchset@localhost.localdomain>
-References: <20090202213707.17960.61897.sendpatchset@localhost.localdomain>
-Subject: [PATCH 12/14] ide: use ide_complete_cmd() for head unload commands
+	Mon, 2 Feb 2009 16:42:11 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:34014 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760033AbZBBVmI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 16:42:08 -0500
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] Resume from hibernation fails with pata_it821x RAID volume
+Date: Mon, 2 Feb 2009 22:41:59 +0100
+User-Agent: KMail/1.9.10
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 1297
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200902022242.01170.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: use ide_complete_cmd() for head unload commands
+Hello,
+hibernation didn't work for me since I started to use IT8212 controller. Now I 
+did some debugging (booting with no_console_suspend init=/bin/sh).
 
-Move handling of head unload commands from task_no_data_intr()
-to ide_complete_cmd() and then use ide_complete_cmd() also for
-head unload commands.
+Found that resume fails (2.6.28) with "serial number mismatch 'some 
+garbage' != 'some other garbage'" and "revalidation failed" messages. That's 
+because the controller firmware fills different serial number in the IDENTIFY 
+every boot.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/ide-io.c       |   11 +++++++++++
- drivers/ide/ide-taskfile.c |   13 +++----------
- 2 files changed, 14 insertions(+), 10 deletions(-)
+The patch below fixes the resume simply clearing the serial number. The proper 
+fix would be probably to fill in the serial number of the RAID volume 
+instead. I assume that there must be something like that stored on the drives 
+but I don't know where.
 
-Index: b/drivers/ide/ide-io.c
-===================================================================
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -146,12 +146,23 @@ EXPORT_SYMBOL_GPL(ide_end_dequeued_reque
- void ide_complete_cmd(ide_drive_t *drive, struct ide_cmd *cmd, u8 stat, u8 err)
- {
- 	struct ide_taskfile *tf = &cmd->tf;
-+	u8 tf_cmd = tf->command;
- 
- 	tf->error = err;
- 	tf->status = stat;
- 
- 	drive->hwif->tp_ops->tf_read(drive, cmd);
- 
-+	if ((cmd->tf_flags & IDE_TFLAG_CUSTOM_HANDLER) &&
-+	    tf_cmd == ATA_CMD_IDLEIMMEDIATE) {
-+		if (tf->lbal != 0xc4) {
-+			printk(KERN_ERR "%s: head unload failed!\n",
-+			       drive->name);
-+			ide_tf_dump(drive->name, tf);
-+		} else
-+			drive->dev_flags |= IDE_DFLAG_PARKED;
-+	}
-+
- 	if (cmd->tf_flags & IDE_TFLAG_DYN)
- 		kfree(cmd);
+
+Fix resume on pata_it821x RAID volume by clearing the serial number in 
+IDENTIFY data, which is otherwise different on each boot.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-2.6.28-orig/drivers/ata/pata_it821x.c	2009-01-02 17:18:36.000000000 +0100
++++ linux/drivers/ata/pata_it821x.c	2009-02-02 17:47:57.000000000 +0100
+@@ -561,6 +561,9 @@
+ 		id[83] |= 0x4400;	/* Word 83 is valid and LBA48 */
+ 		id[86] |= 0x0400;	/* LBA48 on */
+ 		id[ATA_ID_MAJOR_VER] |= 0x1F;
++		/* Clear the serial number because it's different each boot
++		   which breaks validation on resume */
++		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
+ 	}
+ 	return err_mask;
  }
-Index: b/drivers/ide/ide-taskfile.c
-===================================================================
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -146,22 +146,15 @@ static ide_startstop_t task_no_data_intr
- 		return ide_error(drive, "task_no_data_intr", stat);
- 	}
- 
--	if (custom && tf->command == ATA_CMD_IDLEIMMEDIATE) {
--		hwif->tp_ops->tf_read(drive, cmd);
--		if (tf->lbal != 0xc4) {
--			printk(KERN_ERR "%s: head unload failed!\n",
--			       drive->name);
--			ide_tf_dump(drive->name, tf);
--		} else
--			drive->dev_flags |= IDE_DFLAG_PARKED;
--	} else if (custom && tf->command == ATA_CMD_SET_MULTI)
-+	if (custom && tf->command == ATA_CMD_SET_MULTI)
- 		drive->mult_count = drive->mult_req;
- 
- 	if (custom == 0 || tf->command == ATA_CMD_IDLEIMMEDIATE) {
- 		struct request *rq = hwif->rq;
- 		u8 err = ide_read_error(drive);
- 
--		if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE)
-+		if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE ||
-+		    tf->command == ATA_CMD_IDLEIMMEDIATE)
- 			ide_complete_cmd(drive, cmd, stat, err);
- 		ide_complete_rq(drive, err);
- 	}
+
+
+-- 
+Ondrej Zary
