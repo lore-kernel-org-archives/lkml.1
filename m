@@ -1,141 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755776AbZBBORZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbZBBOSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755776AbZBBORZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 09:17:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZBBORQ
+	id S1756479AbZBBOSV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 09:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752600AbZBBOSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 09:17:16 -0500
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:35608 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752743AbZBBORP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 09:17:15 -0500
-Date: Mon, 2 Feb 2009 19:47:05 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM
-Message-ID: <20090202141705.GE918@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090202125240.GA918@balbir.in.ibm.com> <20090202215527.EC92.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 2 Feb 2009 09:18:07 -0500
+Received: from h155.mvista.com ([63.81.120.155]:15372 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752727AbZBBOSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 09:18:06 -0500
+Message-ID: <49870094.2010101@ru.mvista.com>
+Date: Mon, 02 Feb 2009 17:17:56 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090202215527.EC92.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Jeff Garzik <jgarzik@redhat.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Mikael Pettersson <mikpe@it.uu.se>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc libata sff 32bit PIO regression
+References: <Pine.LNX.4.64.0901211322010.15945@blonde.anvils> <20090126191151.18b094e6@lxorguk.ukuu.org.uk> <Pine.LNX.4.64.0902012050190.16351@blonde.anvils> <4986DDA9.6010903@ru.mvista.com> <Pine.LNX.4.64.0902021152220.17261@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0902021152220.17261@blonde.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-02-02 21:59:34]:
+Hello.
 
-> Hi
-> 
-> > +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
-> > +{
-> > +	printk(KERN_WARNING "Memory cgroups's name %s\n",
-> > +		memcg->css.cgroup->dentry->d_name.name);
-> > +	printk(KERN_WARNING "Memory cgroup RSS : usage %llu, limit %llu"
-> > +		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
-> > +		res_counter_read_u64(&memcg->res, RES_LIMIT),
-> > +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
-> > +	printk(KERN_WARNING "Memory cgroup swap: usage %llu, limit %llu "
-> > +		"failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
-> > +		res_counter_read_u64(&memcg->res, RES_LIMIT),
-> > +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
+Hugh Dickins wrote:
+
+>>> (though much more verbose: please simplify if you see a better way).
+>>>       
+>>   How about the following?
+>>
+>> 		unsigned char *tail = buf + buflen - slop;
+>> 		unsigned char pad[4];
+>>
+>> 		if (rw == READ) {
+>> 			if (slop <= 2)
+>> 				ioread16_rep(data_addr, pad, 1);
+>> 			else
+>> 				ioread32_rep(data_addr, pad, 1);
+>> 					memcpy(tail, pad, slop);
+>>     
 >
+> Too many tabs on the memcpy.
+>   
 
-Thanks! How does this look
+   Hey, this is not a patch, and I was using Thunderbird's msg editor -- 
+which isn;t really good to tabs. :-)
 
-Description: Add RSS and swap to OOM output from memcg
+>> 		} else {
+>> 			memcpy(pad, tail, slop);
+>> 			memset(pad + slop, 0, 4 - slop);
+>>     
+>
+> And we could make that line even more complicated!
+>   
 
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+   We could use memzero() but memset() should boil down to it anyway.
 
-This patch displays memcg values like failcnt, usage and limit
-when an OOM occurs due to memcg.
+> But I think unsigned char pad[4] = {0, 0, 0, 0} would be better.
+>   
 
-Thanks go out to Johannes Weiner <hannes@cmpxchg.org> and
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> for review.
+   Not really, we don't need to waste time initiazlizing it on reads -- 
+I hope you understand that it will require real code to write all those 
+zeros?). Besides, only {0} should be enough as other entries should be 
+implitly zeroed).
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+> Though Alan didn't have it initialized at all: I don't know if
+> that was oversight or superior knowledge.  In Alan's case, one
+> should usually assume the latter.
 
- include/linux/memcontrol.h |    5 +++++
- mm/memcontrol.c            |   19 +++++++++++++++++++
- mm/oom_kill.c              |    1 +
- 3 files changed, 25 insertions(+), 0 deletions(-)
+   These bytes can be anything actually as a device should just ignore them.
+
+>> 		if (slop <= 2)
+>> 				iowrite16_rep(data_addr, pad, 1);
+>> 			else
+>> 				iowrite32_rep(data_addr, pad, 1);
+>> 		}
+>>     
+>
+> Well, I don't know.
+
+   I do. :-)
+
+> I felt really pleased with using ioread16_rep
+> and the char array in my original patch, where slop might be 1 or 2
+> or 3; but once it comes down to always one single PIO op, I felt
+> it too lazy to be using the _rep form.
+>   
+
+   It should do the Right Thing WRT the byte reordering (which is a lack 
+thereof ;-) while your code had to muck with it explicitly. And of 
+course it's shorter -- because of that.
+
+> I really don't care, whatever works and best satisfies Alan.
+>   
+
+  I thought we should care about general user satisfaction, not just 
+Alan's... :-)
+
+>>> -	return words << 2;
+>>> +
+>>> +	return buflen + (buflen & 1);
+>>>   
+>>>       
+>>    return (buflen + 1) & ~1;
+>>
+>>   Well, I guess I could just have posted my own patch... :-)
+>>     
+>
+> Yes, do go ahead, I'm not desperate to get my name in there!
+>   
+
+   I'm not actually very enthusiastic in getting blamed for the 
+breakage, given the Alan's example. ;-)
+
+> Hugh
+>   
+
+MBR, Sergei
 
 
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 326f45c..2ce1737 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -104,6 +104,7 @@ struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
- 						      struct zone *zone);
- struct zone_reclaim_stat*
- mem_cgroup_get_reclaim_stat_from_page(struct page *page);
-+extern void mem_cgroup_print_mem_info(struct mem_cgroup *memcg);
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
- extern int do_swap_account;
-@@ -270,6 +271,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
- 	return NULL;
- }
- 
-+void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
-+{
-+}
-+
- #endif /* CONFIG_CGROUP_MEM_CONT */
- 
- #endif /* _LINUX_MEMCONTROL_H */
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 8e4be9c..954b0d5 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -813,6 +813,25 @@ bool mem_cgroup_oom_called(struct task_struct *task)
- 	rcu_read_unlock();
- 	return ret;
- }
-+
-+void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
-+{
-+	if (!memcg)
-+		return;
-+
-+	printk(KERN_WARNING "Memory cgroups's name %s\n",
-+		memcg->css.cgroup->dentry->d_name.name);
-+	printk(KERN_WARNING "Cgroup memory: usage %llu, limit %llu"
-+		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
-+		res_counter_read_u64(&memcg->res, RES_LIMIT),
-+		res_counter_read_u64(&memcg->res, RES_FAILCNT));
-+	printk(KERN_WARNING "Cgroup memory+swap: usage %llu, limit %llu "
-+		"failcnt %llu\n",
-+		res_counter_read_u64(&memcg->memsw, RES_USAGE),
-+		res_counter_read_u64(&memcg->memsw, RES_LIMIT),
-+		res_counter_read_u64(&memcg->memsw, RES_FAILCNT));
-+}
-+
- /*
-  * Unlike exported interface, "oom" parameter is added. if oom==true,
-  * oom-killer can be invoked.
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index d3b9bac..b8e53ae 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 			current->comm, gfp_mask, order, current->oomkilladj);
- 		task_lock(current);
- 		cpuset_print_task_mems_allowed(current);
-+		mem_cgroup_print_mem_info(mem);
- 		task_unlock(current);
- 		dump_stack();
- 		show_mem();
-
--- 
-	Balbir
