@@ -1,122 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752915AbZBBHKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZBBHM1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752915AbZBBHKc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 02:10:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBBHKX
+	id S1753173AbZBBHM1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 02:12:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZBBHMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 02:10:23 -0500
-Received: from rv-out-0506.google.com ([209.85.198.227]:4639 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751547AbZBBHKW (ORCPT
+	Mon, 2 Feb 2009 02:12:19 -0500
+Received: from mail01d.mail.t-online.hu ([84.2.42.6]:53858 "EHLO
+	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751791AbZBBHMS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 02:10:22 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=C7+037+QJRCUggoK5Yqf94qqe3h9o8l0boLuzJcEQl+53actb+XlkVGf9uX2Suvx6/
-         S5OgRg8/ELs29byoUr8CP2yHwravqDoZ/IQDUm6XixdAYQhBuCalwJ0eFOxLSIP2BP2B
-         MWQ9NNrFobpj0+MKb7MHOYXiqID9SQlHrv2IM=
+	Mon, 2 Feb 2009 02:12:18 -0500
+Message-ID: <49869CCE.9030906@freemail.hu>
+Date: Mon, 02 Feb 2009 08:12:14 +0100
+From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-In-Reply-To: <20090202064509.GA20237@redhat.com>
-References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com>
-	 <20090201174159.4a52e15c.akpm@linux-foundation.org>
-	 <20090202064509.GA20237@redhat.com>
-Date: Sun, 1 Feb 2009 23:10:21 -0800
-Message-ID: <3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com>
-Subject: Re: main thread pthread_exit/sys_exit bug!
-From: Kaz Kylheku <kkylheku@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>
+To: Jean-Francois Moine <moinejf@free.fr>
+CC: video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.28 + Trust 610 LCD PowerC@m Zoom, webcam mode?
+References: <49856A54.1020105@freemail.hu> <20090201152435.0e06e42e@free.fr>
+In-Reply-To: <20090201152435.0e06e42e@free.fr>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32710; Body=3 Fuz1=3
+	Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Feb 1, 2009 at 10:45 PM, Oleg Nesterov <oleg@redhat.com> wrote:
-> Kaz Kylheku wrote:
+Jean-Francois Moine wrote:
+> On Sun, 01 Feb 2009 10:24:36 +0100
+> Németh Márton <nm127@freemail.hu> wrote:
+>> Hello Jean-Francois,
+> 
+> Hello Márton,
+> 
+>> I have a Trust 610 LCD PowerC@m Zoom camera which can operate in
+>> webcam mode also (USB ID=06d6:0031). I tried to use it together with
+>> Linux 2.6.28 and with xawtv-3.95.dfsg.1 and with gqcam 0.9.1.
+>> The /dev/video0 appeared, but no usable picture was visible.
 >>
->> Basically, if you call pthread_exit from the main thread of a process, and keep
->> other threads running, the behavior is ugly.
->
-> Yes, known problem.
->
-> Please look at
->
->        [RFC,PATCH 3/3] do_wait: fix waiting for stopped group with dead leader
->        http://marc.info/?t=119713920000003
->
-> I'll try to re-do and re-send this patch this week.
+>> However, I downloaded
+>> http://mxhaard.free.fr/spca50x/Download/gspcav1-20071224.tar.gz and
+> 	[snip]
+>> Do you have any idea why the gspcav1 diver is working and the one
+>> which is included in Linux 2.6.28 not?
+> 
+> The gspcav1 is not maintained anymore.
+> 
+> It seems that your webcam has not been tested with gspcav2.
 
-I believe that my straight-forward fix is pretty much good to go. I
-checked into my distro, so we will see how it holds up.
+Yes, I found your status at page http://moinejf.free.fr/webcam.html .
 
-It's a bad idea to allow the main thread to terminate. It should stick
-around because it serves as a facade for the process as a whole. If
-the main thread is allowed to bail all the way through do_exit, who
-knows what kind of problems may show up because of that.
+> First, did you use the v4l library and its wrapper when running xawtv
+> and gqcam?
 
-What if one of my developers is working on a server which has called
-pthread_exit in the main thread, and wants to attach gdb to it? Will
-that work if the main thread (a.k.a group leader) is a defunct
-process?
+I don't really know, I just installed the xawtv package coming with Debian.
 
-I just tried this test case and it worked perfectly with my patch! gdb
-attached to the process by the pid of teh group leader. It correctly
-showed as that thread being stopped in __exit_thread. I can see the
-other threads, etc.
+> Then, have you tried my program svv?
 
-bash:~# /projects/sw/kaz/bug-repro-programs/pthread-exit &
-[1] 2093
-bash:~# gdb -p 2093
-GNU gdb 6.8
-Copyright (C) 2008 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-and "show warranty" for details.
-This GDB was configured as "mips64-linux".
-Attaching to process 2093
-Reading symbols from /projects/sw/kaz/bug-repro-programs/pthread-exit...done.
-Reading symbols from /lib32/libpthread.so.0...done.
-[Thread debugging using libthread_db enabled]
-[New Thread 0x2d46c4b0 (LWP 2098)]
-[New Thread 0x2cc6c4b0 (LWP 2097)]
-[New Thread 0x2c46c4b0 (LWP 2096)]
-[New Thread 0x2bc6c4b0 (LWP 2095)]
-[New Thread 0x2b46c4b0 (LWP 2094)]
-Loaded symbols for /lib32/libpthread.so.0
-Reading symbols from /lib32/libc.so.6...done.
-Loaded symbols for /lib32/libc.so.6
-Reading symbols from /lib32/ld.so.1...done.
-Loaded symbols for /lib32/ld.so.1
-Reading symbols from /lib32/libgcc_s.so.1...done.
-Loaded symbols for /lib32/libgcc_s.so.1
-0x2abd3da4 in __exit_thread () from /lib32/libc.so.6
-(gdb) where
-#0  0x2abd3da4 in __exit_thread () from /lib32/libc.so.6
-#1  0x2ab18ab0 in __libc_start_main (main=0x10000710 <main>, argc=1,
-    ubp_av=0x7fcd7524, init=<value optimized out>, fini=<value optimized out>,
-    rtld_fini=<value optimized out>, stack_end=<value optimized out>)
-    at libc-start.c:245
-#2  0x100005dc in _ftext ()
+I could get the Trust 610 LCD PowerC@m Zoom's webcam mode working with
+2.6.28 by doing the following steps:
+1. download and compile http://people.atrpms.net/~hdegoede/libv4l-0.5.8.tar.gz
+2. download and compile http://moinejf.free.fr/svv.c
+3. export LD_LIBRARY_PATH=./libv4l-0.5.8/libv4lconvert/
+4. run svv
 
-If I try this on an unpatched kernel that allows a main thread to bail
-through do_exit, this is what happens:
+I tested the following settings, all were working correctly:
+$ ./svv
+raw pixfmt: JPEG 464x480
+pixfmt: RGB3 464x480
+mmap method
+$ ./svv -m r
+raw pixfmt: JPEG 464x480
+pixfmt: RGB3 464x480
+read method
+$ ./svv -m u
+raw pixfmt: JPEG 464x480
+pixfmt: RGB3 464x480
+userptr method
 
-Attaching to process 14651
-ptrace: No such process.
-/root/14651: No such file or directory.
+What I recognised is that the gspcav1 with xawtv delivered pictures
+in resolution of 288x384, while the version in 2.6.28 in 464x480. I
+guess this is an improved resolution, but I don't know why the aspect
+ratio changed (288/384 = 3/4 = 0.75, 464/480 = 29/30 = 0.9667).
 
-I don't think that this is solved by any patch that allows the group
-leader to bail through do_exit. It's not just a problem of waiting on
-a dead group leader. If you want to maintain the illusion that the OS
-provides a process that contains threads, and the group leader is the
-representation of that process, then you have to keep that leader
-alive; the lifetime of that leader cannot be shorter than that of the
-process illusion.
+Thanks for your help!
 
-Patch:
+Regards,
 
-http://sourceware.org/bugzilla/attachment.cgi?id=3702
+	Márton Németh
+
+The output of v4l-info:
+
+### v4l2 device info [/dev/video0] ###
+general info
+    VIDIOC_QUERYCAP
+        driver                  : "sunplus"
+        card                    : "Trust 610 LCD POWERC@M ZOOM"
+        bus_info                : "0000:00:10.0"
+        version                 : 2.3.0
+        capabilities            : 0x5000001 [VIDEO_CAPTURE,READWRITE,STREAMING]
+
+standards
+
+inputs
+    VIDIOC_ENUMINPUT(0)
+        index                   : 0
+        name                    : "sunplus"
+        type                    : CAMERA
+        audioset                : 0
+        tuner                   : 0
+        std                     : 0x0 []
+        status                  : 0x0 []
+
+video capture
+    VIDIOC_ENUM_FMT(0,VIDEO_CAPTURE)
+        index                   : 0
+        type                    : VIDEO_CAPTURE
+        flags                   : 1
+        description             : "JPEG"
+        pixelformat             : 0x4745504a [JPEG]
+    VIDIOC_G_FMT(VIDEO_CAPTURE)
+        type                    : VIDEO_CAPTURE
+        fmt.pix.width           : 464
+        fmt.pix.height          : 480
+        fmt.pix.pixelformat     : 0x4745504a [JPEG]
+        fmt.pix.field           : NONE
+        fmt.pix.bytesperline    : 464
+        fmt.pix.sizeimage       : 84110
+        fmt.pix.colorspace      : JPEG
+        fmt.pix.priv            : 1
+
+controls
+    VIDIOC_QUERYCTRL(BASE+0)
+        id                      : 9963776
+        type                    : INTEGER
+        name                    : "Brightness"
+        minimum                 : 0
+        maximum                 : 255
+        step                    : 1
+        default_value           : 0
+        flags                   : 0
+    VIDIOC_QUERYCTRL(BASE+1)
+        id                      : 9963777
+        type                    : INTEGER
+        name                    : "Contrast"
+        minimum                 : 0
+        maximum                 : 255
+        step                    : 1
+        default_value           : 32
+        flags                   : 0
+    VIDIOC_QUERYCTRL(BASE+2)
+        id                      : 9963778
+        type                    : INTEGER
+        name                    : "Color"
+        minimum                 : 0
+        maximum                 : 255
+        step                    : 1
+        default_value           : 26
+        flags                   : 0
+
+### video4linux device info [/dev/video0] ###
+general info
+    VIDIOCGCAP
+        name                    : "Trust 610 LCD POWERC@M ZOOM"
+        type                    : 0x1 [CAPTURE]
+        channels                : 1
+        audios                  : 0
+        maxwidth                : 464
+        maxheight               : 480
+        minwidth                : 48
+        minheight               : 32
+
+channels
+    VIDIOCGCHAN(0)
+        channel                 : 0
+        name                    : "sunplus"
+        tuners                  : 0
+        flags                   : 0x0 []
+        type                    : CAMERA
+        norm                    : 0
+
+tuner
+ioctl VIDIOCGTUNER: Invalid argument
+
+audio
+ioctl VIDIOCGAUDIO: Invalid argument
+
+picture
+    VIDIOCGPICT
+        brightness              : 32896
+        hue                     : 0
+        colour                  : 6168
+        contrast                : 8224
+        whiteness               : 0
+        depth                   : 8
+        palette                 : unknown
+
+buffer
+ioctl VIDIOCGFBUF: Invalid argument
+
+window
+    VIDIOCGWIN
+        x                       : 0
+        y                       : 0
+        width                   : 464
+        height                  : 480
+        chromakey               : 0
+        flags                   : 0
+
+
