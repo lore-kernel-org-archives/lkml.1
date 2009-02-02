@@ -1,118 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756409AbZBBMxD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbZBBM4K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756409AbZBBMxD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 07:53:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbZBBMwx
+	id S1756985AbZBBM4K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 07:56:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZBBMz4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 07:52:53 -0500
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:51447 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbZBBMww (ORCPT
+	Mon, 2 Feb 2009 07:55:56 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:38794 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753139AbZBBMzz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 07:52:52 -0500
-Date: Mon, 2 Feb 2009 18:22:40 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [-mm patch] Show memcg information during OOM
-Message-ID: <20090202125240.GA918@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
+	Mon, 2 Feb 2009 07:55:55 -0500
+Date: Mon, 2 Feb 2009 12:54:15 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Greg KH <gregkh@suse.de>,
+       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mikos Szeredi <miklos@szeredi.hu>, Andy Whitcroft <apw@canonical.com>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+ file segments
+In-Reply-To: <20090202205515.EC89.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0902021215060.18750@blonde.anvils>
+References: <Pine.LNX.4.64.0901311216250.6763@blonde.anvils>
+ <alpine.LFD.2.00.0901311010460.3150@localhost.localdomain>
+ <20090202205515.EC89.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, All,
+On Mon, 2 Feb 2009, KOSAKI Motohiro wrote:
+> >  
+> > -	if (flags & MAP_NORESERVE)
+> > +	/*
+> > +	 * Set 'VM_NORESERVE' if we should not account for the
+> > +	 * memory use of this mapping. We only honor MAP_NORESERVE
+> > +	 * if we're allowed to overcommit memory.
+> > +	 */
+> > +	if ((flags & MAP_NORESERVE) && sysctl_overcommit_memory != OVERCOMMIT_NEVER)
+> 
+> I afraid this line a bit.
+> if following scenario happend, we can lost VM_NORESERVE?
+> 
+> 1. admin set overcommit_memory to "never"
+> 2. mmap
+> 3. admin set overcommit_memory to "guess"
 
-I found the following patch useful while debugging the memory
-controller. It adds additional information if memcg invoked the OOM.
+I still haven't reviewed it fully myself (and note that what
+Linus put in his tree is not identical to this posted patch),
+but I do believe this is okay.
 
-Comments, Suggestions?
+When admin changes overcommit_memory, we don't make a pass across
+every vma of every mm in the system, to adjust all the accounting
+of VM_NORESERVE areas; so I think it's quite reasonable to take
+VM_NORESERVE as reflecting the policy in force when that vma was
+created.  And nothing is displaying the VM_NORESERVE flag.
 
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Ah, you're actually thinking of
+4. mprotect
+with the original flags (!VM_WRITE) such that no VM_ACCOUNT was done,
+and now VM_WRITE is added and the accounting is done despite it having
+been mapped MAP_NORESERVE originally.  Whereas before Linus's change,
+VM_NORESERVE would have still exempted it.
 
-Description: Add RSS and swap to OOM output from memcg
+Well... I don't think I care!
 
-This patch displays memcg values like failcnt, usage and limit
-when an OOM occurs due to memcg.
+But I wonder what the hugetlb situation is: that
+	if (!accountable)
+		vm_flags |= VM_NORESERVE;
+looks suspicious to me, they look as if they're exempting all
+the hugetlb pages from its accounting, whereas !accountable was
+only supposed to exempt them from mmap_region()'s own accounting.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+Perhaps.  I'm still looking at other things,
+not given this the time it needs yet.
 
- include/linux/memcontrol.h |    5 +++++
- mm/memcontrol.c            |   15 +++++++++++++++
- mm/oom_kill.c              |    1 +
- 3 files changed, 21 insertions(+), 0 deletions(-)
-
-
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 326f45c..2ce1737 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -104,6 +104,7 @@ struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
- 						      struct zone *zone);
- struct zone_reclaim_stat*
- mem_cgroup_get_reclaim_stat_from_page(struct page *page);
-+extern void mem_cgroup_print_mem_info(struct mem_cgroup *memcg);
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
- extern int do_swap_account;
-@@ -270,6 +271,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
- 	return NULL;
- }
- 
-+void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
-+{
-+}
-+
- #endif /* CONFIG_CGROUP_MEM_CONT */
- 
- #endif /* _LINUX_MEMCONTROL_H */
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 8e4be9c..75eae85 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -813,6 +813,21 @@ bool mem_cgroup_oom_called(struct task_struct *task)
- 	rcu_read_unlock();
- 	return ret;
- }
-+
-+void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
-+{
-+	printk(KERN_WARNING "Memory cgroups's name %s\n",
-+		memcg->css.cgroup->dentry->d_name.name);
-+	printk(KERN_WARNING "Memory cgroup RSS : usage %llu, limit %llu"
-+		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
-+		res_counter_read_u64(&memcg->res, RES_LIMIT),
-+		res_counter_read_u64(&memcg->res, RES_FAILCNT));
-+	printk(KERN_WARNING "Memory cgroup swap: usage %llu, limit %llu "
-+		"failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
-+		res_counter_read_u64(&memcg->res, RES_LIMIT),
-+		res_counter_read_u64(&memcg->res, RES_FAILCNT));
-+}
-+
- /*
-  * Unlike exported interface, "oom" parameter is added. if oom==true,
-  * oom-killer can be invoked.
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index d3b9bac..b8e53ae 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 			current->comm, gfp_mask, order, current->oomkilladj);
- 		task_lock(current);
- 		cpuset_print_task_mems_allowed(current);
-+		mem_cgroup_print_mem_info(mem);
- 		task_unlock(current);
- 		dump_stack();
- 		show_mem();
-
--- 
-	Balbir
+Hugh
