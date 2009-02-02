@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZBBIB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753920AbZBBIJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbZBBIB5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 03:01:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZBBIBr
+	id S1753920AbZBBIJX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 03:09:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZBBIJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 03:01:47 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:41556 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751071AbZBBIBr (ORCPT
+	Mon, 2 Feb 2009 03:09:04 -0500
+Received: from fg-out-1718.google.com ([72.14.220.156]:4321 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751762AbZBBIJC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 03:01:47 -0500
-Date: Mon, 2 Feb 2009 01:01:45 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH F 10/12] OMAP2/3 clock: omap2_clk_enable(): fix logic
-In-Reply-To: <20090131105848.GC1394@n2100.arm.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0902020057560.888@utopia.booyaka.com>
-References: <20090128193326.2396.9437.stgit@localhost.localdomain> <20090128193525.2396.11744.stgit@localhost.localdomain> <20090131105848.GC1394@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 2 Feb 2009 03:09:02 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eW1/oYNYbgO5PlS64gEFNfMHEpMW9m5xPYC9gLFDHF9v9c4XFwYn+QK5kdQKNiQyVY
+         CfuvGvSuEFsfUZ6AYxAxv3sQDyZPeMGNxmw0//ASotp7l1o45wnaHYERQvLr47KL4uuV
+         zjuB+Qvp+ZTvrqtuHTUlqmordqVjcN0YOMpiw=
+Date: Mon, 2 Feb 2009 08:08:55 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090202080855.GA4129@ff.dom.local>
+References: <20090126212130.GA4338@ioremap.net> <20090126.221056.174077798.davem@davemloft.net> <20090127074048.GA4197@ff.dom.local> <20090130.134227.123379239.davem@davemloft.net> <20090130221604.GD11381@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090130221604.GD11381@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
-
-On Sat, 31 Jan 2009, Russell King - ARM Linux wrote:
-
-> On Wed, Jan 28, 2009 at 12:35:28PM -0700, Paul Walmsley wrote:
-> > Rearrange the parent clock enable status check code so it actually makes
-> > sense.  No functional change.
+On Sat, Jan 31, 2009 at 09:16:04AM +1100, Herbert Xu wrote:
+> On Fri, Jan 30, 2009 at 01:42:27PM -0800, David Miller wrote:
+...
+> > Back to real life, I think long term the thing to do is to just do the
+> > cached page allocator thing we'll be doing after Jarek's socket page
+> > patch is integrated, and for best performance the driver has to
+> > receive it's data into pages, only explicitly pulling the ethernet
+> > header into the linear area, like NIU does.
 > 
-> I don't think there's anything gained from introducing the additional
-> 'parent_ret' variable.
+> Yes that sounds like the way to go.
 
-I thought it made the code slightly easier to understand; but, am not 
-attached to it.  Please let me know if you'd like me to send a version of 
-the patch without it,
+Looks like a lot of changes in drivers, plus: would it work with jumbo
+frames? I wonder why the linear area can't be allocated as paged, and
+freed with put_page() instead of kfree(skb->head) in skb_release_data().
 
+Actually, at least for some time, there could be used both of these
+methods (on paged alloc failure) with some ifs in skb_release_data()
+and spd_fill_page() (to check if linear_to_page() is needed).
 
-- Paul
+Jarek P.
