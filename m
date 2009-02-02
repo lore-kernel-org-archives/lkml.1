@@ -1,63 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbZBBW2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757532AbZBBW3X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbZBBW2j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 17:28:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZBBW2a
+	id S1757532AbZBBW3X (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 17:29:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZBBW3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 17:28:30 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56319 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751598AbZBBW23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 17:28:29 -0500
-Date: Mon, 2 Feb 2009 14:26:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ed Swierk <eswierk@aristanetworks.com>
-Cc: a.zummo@towertech.it, rtc-linux@googlegroups.com, tglx@linutronix.de,
-       mingo@redhat.com, linux-kernel@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [PATCH] rtc: add rtc_systohc for ntp use
-Message-Id: <20090202142613.2ca84f52.akpm@linux-foundation.org>
-In-Reply-To: <1233018262.14510.111.camel@localhost.localdomain>
-References: <1233018262.14510.111.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 2 Feb 2009 17:29:06 -0500
+Received: from gate.crashing.org ([63.228.1.57]:42129 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752809AbZBBW3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 17:29:05 -0500
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>
+In-Reply-To: <200902022239.02453.rjw@sisk.pl>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
+	 <alpine.LFD.2.00.0902021241430.3247@localhost.localdomain>
+	 <alpine.LFD.2.00.0902021251130.3247@localhost.localdomain>
+	 <200902022239.02453.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 09:28:42 +1100
+Message-Id: <1233613722.18767.119.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 17:04:22 -0800
-Ed Swierk <eswierk@aristanetworks.com> wrote:
-
-> Following up to Alessandro's RFC of 10 Nov 2008, this patch implements
-> rtc_systohc() to update the configured rtc device (cmos, i2c, etc.) from
-> the ntp-synchronized system clock.  It changes the ntp update code to
-> call rtc_systohc() rather than update_persistent_clock() which (at least
-> on x86) always updates the cmos rtc.
+On Mon, 2009-02-02 at 22:39 +0100, Rafael J. Wysocki wrote:
+> Yes, which is why I thought it might be a good idea to make the AML interpreter
+> allow is to execute AML with interrupts off, so that we can put devices into
+> low power states and/or put them into D0 with interrupts off.
 > 
-> No attempt is made to compensate for the 500-ms delay imposed when
-> setting a cmos rtc chip.  If you actually have a cmos rtc you can stick
-> with the existing code, but at some point it would be nice to unify
-> these.
+> Then, we'll be able to make ACPI happy (up to some strange ordering
+> expectations of some insane BIOSes maybe) and fix the interrupts issue at
+> the same time.
+> 
+> The idea would be to have a special code path(s) where AML can be executed
+> with interrupts off and a couple of special entry points into the AML
+> interpreter for this purpose.
 
-I don't get this.  Do we not currently update the cmos clock in
-response to NTP controls?  Does the patch now alter this policy, by now
-updating the RTC?
+Right. That way, I can also use the same hooks for my clock gating and
+be confident they'll be called at the right time.
 
-IOW: what effect does this patch actually have upon the kernel?
+Now, we need some ACPI folks to tell us why this won't work :-)
 
+Ben.
 
-Please cc Roman on NTP changes.  Roman, please consider sending in a
-MAINTAINERS patch for this.
-
-
-Please use scripts/checkpatch.pl.
-
-Please fix the checkpatch warnings which this patch emits.
-
-When fixing the extern-declaration-in-C warning, please consider
-dropping the ifdefs around the rtc_systohc() declaration in the header
-file.  They're not really needed.
 
