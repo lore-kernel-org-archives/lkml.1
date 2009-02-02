@@ -1,65 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752875AbZBBL1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbZBBL2D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752875AbZBBL1o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 06:27:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZBBL1b
+	id S1756921AbZBBL2D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 06:28:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbZBBL1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 06:27:31 -0500
-Received: from mail-ew0-f21.google.com ([209.85.219.21]:41230 "EHLO
-	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756350AbZBBL1a (ORCPT
+	Mon, 2 Feb 2009 06:27:34 -0500
+Received: from ti-out-0910.google.com ([209.85.142.185]:60313 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756328AbZBBL1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 06:27:30 -0500
+	Mon, 2 Feb 2009 06:27:32 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=URtaMpqRoOi/QaPFfgZHCUPw8odp8jyplzpeDk8zoccYKuRcN34kxT5ifx6cxGH/wn
-         mzTs5fng5rXrnXOW+VFoMjFl0mP5zrisuxlpGu6wfCnQHqQQMvCcWfFiAk3+B6w5aQqE
-         ouJePopjRHj2Av6fD8hDSKKnqoYP2qix0JN+c=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=oU57L2gKQlJ1cGD8WCZXOK5chfI/t2mcfSfYBufDWh+fNz+WXlPTjkHoJZ66KCGLxG
+         Is9DgIxn7R3fM/8gsU6ZJyL3Vl7o13B2OkC2xBJbbhunMxzAo6PmP/A1Jh+mPVqB7uNB
+         AIvijaX9Pqq+XP0lljQq3oLrzCy7CskzVe4og=
+Date: Mon, 2 Feb 2009 20:27:21 +0900
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Nick Piggin <npiggin@suse.de>, linux kernel <linux-kernel@vger.kernel.org>,
+       linux mm <linux-mm@kvack.org>
+Subject: Re: [BUG??] Deadlock between kswapd and
+	sys_inotify_add_watch(lockdep  report)
+Message-ID: <20090202112721.GA13532@barrios-desktop>
+References: <20090202101735.GA12757@barrios-desktop> <28c262360902020225w6419089ft2dda30da9dfb32a9@mail.gmail.com> <1233571202.4787.124.camel@laptop>
 MIME-Version: 1.0
-Date: Mon, 2 Feb 2009 14:27:28 +0300
-Message-ID: <a4423d670902020327x61a1d9dehb1642b25ec7f82f1@mail.gmail.com>
-Subject: next-20090202: task kmemleak:763 blocked for more than 120 seconds.
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233571202.4787.124.camel@laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Mon, Feb 02, 2009 at 11:40:02AM +0100, Peter Zijlstra wrote:
+> On Mon, 2009-02-02 at 19:25 +0900, MinChan Kim wrote:
+> > But, I am not sure whether it's real bug or not.
+> 
+> Me neither, inode life-times are tricky, but on first sight it looks
+> real enough.
+> 
+> > I always suffer from reading lockdep report's result. :(
+> > It would be better to have a document about lockdep report analysis.
+> 
+> I've never found them hard to read, so I'm afraid you'll have to be more
+> explicit about what is unclear to you.
 
-It seems it is blocked forever.
+It's becuase not lockdep humble report but my poor knowledge. :(
+Could you elaborate please ?
 
-[ 1704.619898] INFO: task kmemleak:763 blocked for more than 120 seconds.
-[ 1704.697951] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
-disables this message.
-[ 1704.791613] kmemleak      D 0000000000000001  6008   763      2
-[ 1704.862460]  ffff88007d497e60 0000000000000046 ffff88007d497da0
-ffff88007d6a4000
-[ 1704.951037]  ffff88007d6a4000 0000000000004000 0000000000000002
-ffff88007d6a4000
-[ 1705.039609]  ffff88007d80a000 ffff88007d6a4398 0000000200000000
-00000001000758b5
-[ 1705.128202] Call Trace:
-[ 1705.157383]  [<ffffffff806379f2>] ? _spin_unlock_irqrestore+0x42/0x80
-[ 1705.234396]  [<ffffffff80634c86>] ? schedule_timeout+0x66/0xe0
-[ 1705.304137]  [<ffffffff80634a43>] schedule+0x13/0x40
-[ 1705.363483]  [<ffffffff80634c86>] schedule_timeout+0x66/0xe0
-[ 1705.431145]  [<ffffffff8024c7c0>] ? process_timeout+0x0/0x10
-[ 1705.498918]  [<ffffffff80634c81>] ? schedule_timeout+0x61/0xe0
-[ 1705.568663]  [<ffffffff80634d19>] schedule_timeout_uninterruptible+0x19/0x20
-[ 1705.652987]  [<ffffffff802c3830>] kmemleak_scan_thread+0x120/0x170
-[ 1705.726889]  [<ffffffff802c3710>] ? kmemleak_scan_thread+0x0/0x170
-[ 1705.800784]  [<ffffffff80258d66>] kthread+0x56/0x90
-[ 1705.859088]  [<ffffffff8020ce9a>] child_rip+0xa/0x20
-[ 1705.918441]  [<ffffffff80235489>] ? finish_task_switch+0x89/0x110
-[ 1705.991303]  [<ffffffff80637986>] ? _spin_unlock_irq+0x36/0x60
-[ 1706.061041]  [<ffffffff8020c880>] ? restore_args+0x0/0x30
-[ 1706.125584]  [<ffffffff80258d10>] ? kthread+0x0/0x90
-[ 1706.184917]  [<ffffffff8020ce90>] ? child_rip+0x0/0x20
-[ 1706.246334] no locks held by kmemleak/763.
+>[  331.718120] [ INFO: inconsistent lock state ]
+>[  331.718124] 2.6.28-rc2-mm1-lockdep #6
+>[  331.718126] ---------------------------------
+>[  331.718129] inconsistent {ov-reclaim-W} -> {in-reclaim-W} usage.
+                                         ^                 ^ 
+                                        write ?           write ?
+>
+>[  331.718133] kswapd0/218 [HC0[0]:SC0[0]:HE0:SE1] takes:
+                            ^^^^^^^^^^^^^^^^^^^^^^
+                            what means ? HC,SC,HE,SE
+>
+>[  331.718136]  (&inode->inotify_mutex){--..+.}, at: [<c01dba70>] inotify_inode_is_dead+0x20/0x90
+>             
+
+Is it related to recursive lock of inotify_mutex ?
+but, Subject means 'inconsistent {ov-reclaim-W} -> {in-reclaim-W}', 
+IOW, it's related to reclaim of GFP_FS. 
+What's relation inotify_mutex and reclaim of GFP_FS?
+
+I think if reclaim context which have GFP_FS already have lock A and then 
+do pageout, if writepage need the lock A, we have to catch such a case. 
+I thought Nick's patch's goal catchs such a case. 
+But My thought is likely worng. Such a case, the lock A will be holded recursive. 
+so It can be solved by recursive lockdep.
+
+I can't understand this. :(
+
+One more question is that what's difference between lock inversion and
+circular locking dependency ?
+
+>[  331.718148] {ov-reclaim-W} state was registered at:
+>[  331.718150]   [<c01532ee>] mark_held_locks+0x3e/0x90
+>[  331.718157]   [<c015338e>] lockdep_trace_alloc+0x4e/0x80
+>[  331.718162]   [<c01acee6>] kmem_cache_alloc+0x26/0xf0
+>[  331.718166]   [<c0243fa0>] idr_pre_get+0x50/0x70
+>[  331.718172]   [<c01db761>] inotify_handle_get_wd+0x21/0x60
+>[  331.718176]   [<c01dc012>] inotify_add_watch+0x52/0xe0
+>[  331.718181]   [<c01dcca8>] sys_inotify_add_watch+0x148/0x170
+>[  331.718185]   [<c0104032>] syscall_call+0x7/0xb
+>[  331.718190]   [<ffffffff>] 0xffffffff
+>[  331.718205] irq event stamp: 1288446
+>[  331.718207] hardirqs last  enabled at (1288445): [<c0179695>] call_rcu+0x75/0x90
+>[  331.718213] hardirqs last disabled at (1288446): [<c0370103>] mutex_lock_nested+0x53/0x2f0
+>[  331.718221] softirqs last  enabled at (1284622): [<c0132fa2>] __do_softirq+0x132/0x180
+>[  331.718226] softirqs last disabled at (1284617): [<c0133079>] do_softirq+0x89/0x90
+>[  331.718231]
+>[  331.718232] other info that might help us debug this:
+>[  331.718236] 2 locks held by kswapd0/218:
+>[  331.718238]  #0:  (shrinker_rwsem){----..}, at: [<c0192d65>] shrink_slab+0x25/0x1a0
+>[  331.718248]  #1:  (&type->s_umount_key#4){-----.}, at: [<c01c21fb>] shrink_dcache_memory+0xfb/0x1a0
+>[  331.718259]
+>[  331.718260] stack backtrace:
+>[  331.718263] Pid: 218, comm: kswapd0 Not tainted 2.6.28-rc2-mm1-lockdep #6
+>[  331.718266] Call Trace:
+>[  331.718272]  [<c0151726>] print_usage_bug+0x176/0x1c0
+>[  331.718276]  [<c0152d05>] mark_lock+0xb05/0x10b0
+>[  331.718282]  [<c018c0e9>] ? __free_pages_ok+0x349/0x450
+>[  331.718287]  [<c0155362>] __lock_acquire+0x602/0xa80
+>[  331.718291]  [<c01540ff>] ? validate_chain+0x3ef/0x1050
+>[  331.718296]  [<c0155851>] lock_acquire+0x71/0xa0
+>[  331.718300]  [<c01dba70>] ? inotify_inode_is_dead+0x20/0x90
+>[  331.718305]  [<c037014d>] mutex_lock_nested+0x9d/0x2f0
+>[  331.718310]  [<c01dba70>] ? inotify_inode_is_dead+0x20/0x90
+>[  331.718314]  [<c01dba70>] ? inotify_inode_is_dead+0x20/0x90
+>[  331.718318]  [<c01dba70>] inotify_inode_is_dead+0x20/0x90
+>[  331.718323]  [<c024e2d6>] ? _raw_spin_unlock+0x46/0x80
+>[  331.718328]  [<c01c1d14>] dentry_iput+0xa4/0xc0
+>[  331.718333]  [<c01c1dfb>] d_kill+0x3b/0x60
+>[  331.718337]  [<c01c1fe6>] __shrink_dcache_sb+0x1c6/0x2c0
+>[  331.718342]  [<c01c228d>] shrink_dcache_memory+0x18d/0x1a0
+>[  331.718347]  [<c0192e6b>] shrink_slab+0x12b/0x1a0
+>[  331.718351]  [<c01939ff>] kswapd+0x3af/0x5c0
+>[  331.718356]  [<c01910a0>] ? isolate_pages_global+0x0/0x220
+>[  331.718362]  [<c0142800>] ? autoremove_wake_function+0x0/0x40
+>[  331.718366]  [<c0193650>] ? kswapd+0x0/0x5c0
+>[  331.718371]  [<c01424f7>] kthread+0x47/0x80
+>[  331.718375]  [<c01424b0>] ? kthread+0x0/0x80
+>[  331.718380]  [<c01054f7>] kernel_thread_helper+0x7/0x10
+
+
+-- 
+Kinds Regards
+MinChan Kim
+
