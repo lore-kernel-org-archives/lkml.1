@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZBBWeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbZBBWe7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758110AbZBBWeT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 17:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752725AbZBBWeJ
+	id S1758762AbZBBWe7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 17:34:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZBBWet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 17:34:09 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35557 "EHLO ogre.sisk.pl"
+	Mon, 2 Feb 2009 17:34:49 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:59168 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751393AbZBBWeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 17:34:09 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-Date: Mon, 2 Feb 2009 23:33:50 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902022249.32452.rjw@sisk.pl> <alpine.LFD.2.00.0902021413040.3247@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902021413040.3247@localhost.localdomain>
+	id S1751393AbZBBWes (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 17:34:48 -0500
+Date: Mon, 2 Feb 2009 14:28:38 -0800
+From: Greg KH <gregkh@suse.de>
+To: Miles Lane <miles.lane@gmail.com>, linux-usb@vger.kernel.org
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at drivers/usb/storage/transport.c:584
+	last_sector_hacks+0x103/0x165 [usb_storage]()
+Message-ID: <20090202222838.GB14147@suse.de>
+References: <a44ae5cd0902021344q7cc1dcf7n8df03147f9115a42@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902022333.51017.rjw@sisk.pl>
+In-Reply-To: <a44ae5cd0902021344q7cc1dcf7n8df03147f9115a42@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 February 2009, Linus Torvalds wrote:
-> 
-> On Mon, 2 Feb 2009, Rafael J. Wysocki wrote:
-> > 
-> > I think it would be easier to make ACPI allow us to run AML with interrupts
-> > off.
-> 
-> Well, I'd agree, except I have this strong memory of us having known bugs 
-> with ACPI turning hard-interrupts on again. Similarly, it uses mutexes etc 
-> that simply don't work with interrupts off and/or may turn them on again 
-> thanks to scheduling.
-> 
-> "Fixing" that seems not very easy. ACPI has a bad habit of being _really_ 
-> hard to fix in this area.
-> 
-> I do agree that _if_ we can just fix ACPI, we wouldn't have these issues, 
-> and we should  just call it with interrupts disabled with our existing 
-> code. But my previous email was a "maybe we can do it like this" kind of 
-> thing, which might allow us to use ACPI with none of the irq-off issues.
+On Mon, Feb 02, 2009 at 04:44:08PM -0500, Miles Lane wrote:
+> scsi7 : SCSI emulation for USB Mass Storage devices
+> drivers/usb/core/inode.c: creating file '003'
+> usb-storage: device found at 3
+> usb-storage: waiting for device to settle before scanning
+> scsi 7:0:0:0: Direct-Access     SanDisk  Cruzer           7.01 PQ: 0 ANSI: 0 CCS
+> sd 7:0:0:0: [sdc] 15695871 512-byte hardware sectors: (8.03 GB/7.48 GiB)
+> sd 7:0:0:0: [sdc] Write Protect is off
+> sd 7:0:0:0: [sdc] Mode Sense: 45 00 00 08
+> sd 7:0:0:0: [sdc] Assuming drive cache: write through
+> sd 7:0:0:0: [sdc] 15695871 512-byte hardware sectors: (8.03 GB/7.48 GiB)
+> sd 7:0:0:0: [sdc] Write Protect is off
+> sd 7:0:0:0: [sdc] Mode Sense: 45 00 00 08
+> sd 7:0:0:0: [sdc] Assuming drive cache: write through
+>  sdc: sdc1
+> sd 7:0:0:0: [sdc] Attached SCSI removable disk
+> sd 7:0:0:0: Attached scsi generic sg4 type 0
+> scsi 7:0:0:1: CD-ROM            SanDisk  Cruzer           7.01 PQ: 0 ANSI: 0
+> sr2: scsi3-mmc drive: 48x/48x tray
+> sr 7:0:0:1: Attached scsi CD-ROM sr2
+> sr 7:0:0:1: Attached scsi generic sg5 type 5
+> usb-storage: device scan complete
+> usb 5-2:1.0: uevent
+> usb 5-2: uevent
+> usb 5-2:1.0: uevent
+> usb 5-2: uevent
+> ------------[ cut here ]------------
+> WARNING: at drivers/usb/storage/transport.c:584
+> last_sector_hacks+0x103/0x165 [usb_storage]()
+> Hardware name: MT6821
+> sdc: Successful last sector success at 15695870, device 0781:5406:0200
 
-Well, I think both will be difficult, this way or another. :-)
+Thanks, we'll be removing this warning soon.
 
-I'll have a look at the ACPI thing.
-
-Thanks,
-Rafael
+greg k-h
