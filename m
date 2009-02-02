@@ -1,147 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757184AbZBBXnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZBBXns@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757184AbZBBXnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 18:43:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZBBXnG
+	id S1758913AbZBBXns (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 18:43:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZBBXni
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 18:43:06 -0500
-Received: from liberdade.minaslivre.org ([72.232.18.203]:51655 "EHLO
-	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbZBBXnF (ORCPT
+	Mon, 2 Feb 2009 18:43:38 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33728 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbZBBXnh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 18:43:05 -0500
-Date: Mon, 2 Feb 2009 21:43:28 -0200
-From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: debian-devel@lists.debian.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: cgroup mount point
-Message-ID: <20090202234327.GW3643@vespa.holoscopio.com>
-Mail-Followup-To: Chris Friesen <cfriesen@nortel.com>,
-	debian-devel@lists.debian.org, linux-kernel@vger.kernel.org,
-	containers@lists.linux-foundation.org
-References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com> <498779C2.2060908@nortel.com>
+	Mon, 2 Feb 2009 18:43:37 -0500
+Date: Mon, 2 Feb 2009 17:47:02 -0600
+From: "Serge E. Hallyn" <serge@hallyn.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       "<David Safford" <safford@watson.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 6/6] Integrity: IMA file free imbalance
+Message-ID: <20090202234702.GD18452@hallyn.com>
+References: <cover.1233262162.git.zohar@linux.vnet.ibm.com> <f4247c49806840ee466b0726932de31679c46248.1233262163.git.zohar@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="nhYGnrYv1PEJ5gA2"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498779C2.2060908@nortel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <f4247c49806840ee466b0726932de31679c46248.1233262163.git.zohar@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Mimi Zohar (zohar@linux.vnet.ibm.com):
+> The number of calls to ima_path_check()/ima_file_free()
+> should be balanced.  An extra call to fput(), indicates
+> the file could have been accessed without first being
+> measured.
+> 
+> Although f_count is incremented/decremented in places other
+> than fget/fput, like fget_light/fput_light and get_file, the
+> current task must already hold a file refcnt.  The call to
+> __fput() is delayed until the refcnt becomes 0, resulting
+> in ima_file_free() flagging any changes.
+> 
+> - add hook to increment opencount for IPC shared memory(SYSV)
+>   and shmat files
+> 
+> Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
 
---nhYGnrYv1PEJ5gA2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+...
 
-On Mon, Feb 02, 2009 at 04:54:58PM -0600, Chris Friesen wrote:
-> Thadeu Lima de Souza Cascardo wrote:
->
->> Linux Documentation is not consistent and have some funny options. In
->> Documentation/cgroups/*, we have:
->
->> So, we have some more options now: /cgroups, /containers, /dev/cpuset,
->> /dev/cpuctl, /opt/cgroup, /opt/cpuset.
->>
->> I am copying the container and the kernel guys. Perhaps, we can find an
->> agreement (if we want to find one at all) and change all that
->> Documentation to get consistent.
->
-> I'd vote for "cgroups" or "containers", mounted at / or /sys/.
->
-> /opt feels more like where software should live, and /dev should be for =
-=20
-> devices rather than capabilities/management.  "cpuctl" and "cpuset" are =
-=20
-> subsets of the full capabilities of cgroups, so they're suboptimal as =20
-> far as naming.
->
-> Chris
+> diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
 
-Since the original post didn't go to lkml or lxc, here it is. Sorry d-d,
-but I want to keep it in the loop.
+...
 
-And I agree with Chris in regards that cpuctl and cpuset are not only
-what is provided under a cgroup mountpoint, so they are not very good
-options. I prefer cgroup over container, and I prefer the singular.
+> +static void opencount_get(struct file *file)
+> +{
+> +	struct inode *inode = file->f_dentry->d_inode;
+> +	struct ima_iint_cache *iint;
+> +
+> +	if (!ima_initialized || !S_ISREG(inode->i_mode))
+> +		return;
+> +	iint = ima_iint_find_insert_get(inode);
+> +	mutex_lock(&iint->mutex);
+> +	if (iint)
 
-However, I'd rather not see this in /sys/ for the reason stated below.
-But since we may end up agreeing on this with the kernel people, we
-would be safe not to clash with a /sys/cgroup. But I see no problems
-with /dev/cgroup/ but would also be glad to see /cgroup/ as the choice.
+Hey, I think you've got those two lines above mixed
+up a bit :)
 
+Very neat, though.
 
---
-Hello,
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-Some software I intend to package work with the new cgroup feature in
-Linux. I would like to open a discussion about what would be the better
-place to mount it and how/when to mount it.
+once that's fixed up.
 
-Some of the options are:
-
-
-/sys/cgroup
-/proc/cgroup
-
-These two would not be very wise, since some kernel change may create
-those two, and, then, we would hide them, at least. /proc/cgroups, for
-example, is already there.
-
-
-/cgroup
-
-The FHS says why we should not create a new subdirectory in the root
-filesystem:
-
-1) "It demands space on a root partition which the system administrator
-may want kept small and simple for either performance or security
-reasons."
-
-This does not apply here, since we do not require any storage for
-/cgroup, but for the directory entry itself.
-
-2) "It evades whatever discipline the system administrator may have set
-up for distributing standard file hierarchies across mountable volumes."
-
-Since /cgroup is totally local, I can't see why this will evade
-anything.
-
-procfs and sysfs are in the root filesystem too. So why not put /cgroup
-there?
-
-
-/dev/cgroup
-
-Many people have been using this. FHS says this "is the location for
-special and device files." What is not special about cgroup anyway?
-
-
-
-After deciding where to mount it, we may write some code for some of the
-init scripts to mount it. I think mountkernfs.sh may be a good place,
-since it also mounts /proc and /sys.
-
-Any opinions and comments appreciated.
-
-Regards,
-Cascardo.
---
-
---nhYGnrYv1PEJ5gA2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmHhR8ACgkQyTpryRcqtS1e9gCcDLYewviBz8+EPykCXoD+OIik
-DwcAnj3zSmGW02NAEFMd8VI8DNHJA4wq
-=T+ng
------END PGP SIGNATURE-----
-
---nhYGnrYv1PEJ5gA2--
+thanks,
+-serge
