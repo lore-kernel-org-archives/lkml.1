@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbZBBSaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbZBBScj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758340AbZBBSaZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 13:30:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbZBBSaB
+	id S1758197AbZBBScj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 13:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752903AbZBBSca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 13:30:01 -0500
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:36654 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753106AbZBBSaA (ORCPT
+	Mon, 2 Feb 2009 13:32:30 -0500
+Received: from outbound-mail-37.bluehost.com ([69.89.20.191]:51169 "HELO
+	outbound-mail-37.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752775AbZBBSc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 13:30:00 -0500
-Message-ID: <49873B99.3070405@nortel.com>
-Date: Mon, 02 Feb 2009 12:29:45 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 2 Feb 2009 13:32:29 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=uNJHCLw+SjCZKfyYDunxMk6FiwpW+5eKXCVHVziWhO7EjVvA9c65E5WN/LAGU//HaNbDW8wkj36qyXp/Ja25VcC70hV39Hvcxs/56YR4kg9pFR34OexS9ZgTELgXrGH+;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH 0/3] PCI PM: More refinements of suspend-resume framework
+Date: Mon, 2 Feb 2009 10:32:26 -0800
+User-Agent: KMail/1.9.10
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200902012229.27517.rjw@sisk.pl>
+In-Reply-To: <200902012229.27517.rjw@sisk.pl>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Doug Thompson <norsk5@yahoo.com>, ncunningham-lkml@crca.org.au,
-       Pavel Machek <pavel@suse.cz>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       bluesmoke-devel@lists.sourceforge.net
-Subject: Re: marching through all physical memory in software
-References: <715599.77204.qm@web50111.mail.re2.yahoo.com> <m1wscc7fop.fsf@fess.ebiederm.org>
-In-Reply-To: <m1wscc7fop.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2009 18:29:51.0511 (UTC) FILETIME=[3C817270:01C98564]
+Content-Disposition: inline
+Message-Id: <200902021032.26819.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+On Sunday, February 1, 2009 1:29 pm Rafael J. Wysocki wrote:
+> Hi,
+>
+> After the recent discussion with Linus, I have the following three fixes of
+> the PCI PM framework.
+>
+> The first patch fixes the bug that bridges (and PCIe ports) are disabled
+> during suspend, althouth they shouldn't.
+>
+> The second one makes the PCI PM core handle devices more carefully (details
+> in the changelog). [Note to Linus: devices are still put into low power
+> states with interrupts on after this patch.  Moving that to the late
+> suspend phase will be the next step.]
+>
+> The last patch makes the warning in pci_legacy_suspend() more useful.
 
-> Thinking about it.  We only care about memory the kernel is using so the memory
-> maps the BIOS supplies the kernel should be sufficient.  We have weird corner
-> cases like ACPI but not handling those in the first pass and getting
-> something working should be fine.
+Linus, do you want these as part of the next pull request?  If so, I'll check 
+them out, pull them in, and let them run the linux-next build gauntlet for a 
+day before sending them.  Otherwise I'll just send a pull request today with 
+the 8 or so fixes I have queued now.
 
-Agreed.
-
-The next question is who handles the conversion of the various different 
-arch-specific BIOS mappings to a standard format that we can feed to the 
-background "scrub" code.  Is this something that belongs in the edac 
-memory controller code, or would it live in /arch/foo somewhere?
-
-Chris
+-- 
+Jesse Barnes, Intel Open Source Technology Center
