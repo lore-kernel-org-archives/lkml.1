@@ -1,74 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbZBBTFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbZBBTH6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755073AbZBBTFW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 14:05:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZBBTFI
+	id S1755926AbZBBTH6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 14:07:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbZBBTHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 14:05:08 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:46017 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752701AbZBBTFH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 14:05:07 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=wAnx85uj+9rsbv0HHgqOnGkquWi9eDlpYRsi212T1v2qXCVL1rIKlldAbteBXtwTTZ
-         snTsffGi8PKl0kASIHMRzcZ4eMzLdCsclsff5CkNrkAPBcw/G6NDSdTJ4ScupEh9W020
-         V5DZ4lPs+CtQwLuIWyUppTe3rF0w4WtAwymYg=
+	Mon, 2 Feb 2009 14:07:46 -0500
+Received: from relay6.ptmail.sapo.pt ([212.55.154.26]:56678 "HELO sapo.pt"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752701AbZBBTHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 14:07:45 -0500
+X-AntiVirus: PTMail-AV 0.3-0.92.0
+Date: Mon, 2 Feb 2009 19:06:25 +0000
+From: Luis Henriques <henrix@sapo.pt>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, RT <linux-rt-users@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: 2.6.26.8-rt15
+Message-ID: <20090202190625.GA7742@hades.domain.com>
+References: <1233387250.922.52.camel@localhost.localdomain>
 MIME-Version: 1.0
-Date: Mon, 2 Feb 2009 11:05:06 -0800
-Message-ID: <438397970902021105x542ad227xe78005fa2a3432fb@mail.gmail.com>
-Subject: kgdb break point problem on 2.6.28.2
-From: Kallol Biswas <nucleodyne@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233387250.922.52.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-   I have setup kgdb over serial port and installed a few kernel modules.
-The module symbol has been added with the command:
+On Sat, Jan 31, 2009 at 02:34:10AM -0500, Steven Rostedt wrote:
+> We are pleased to announce the 2.6.26.8-rt15 tree which can be
+> downloaded from the following location:
+> 
+>   http://rt.et.redhat.com/download/
+> 
+> Information on the RT patch can be found at:
+> 
+>   http://rt.wiki.kernel.org/index.php/Main_Page
 
-add-symbol-file  <module.ko file> <start adddress from /proc/modules>
-(gdb) add-symbol-file /data/cxgb3toe-1.2/src/cxgb3/cxgb3.ko 0xf83dc000
-add symbol table from file "/data/cxgb3toe-1.2/src/cxgb3/cxgb3.ko" at
-	.text_addr = 0xf83dc000
-(gdb) rb cxgb3_.*
-Breakpoint 1 at 0xf83e1573: file
-/data/cxgb3toe-1.2/src/cxgb3/cxgb3_main.c, line 897.
-int cxgb3_filter_toe_mode(struct adapter *, int);
-Breakpoint 2 at 0x24: file /data/cxgb3toe-1.2/src/cxgb3/cxgb3_main.c, line 4778.
-static void cxgb3_cleanup_module(void);
-Breakpoint 3 at 0x1c70: file
-/data/cxgb3toe-1.2/src/cxgb3/cxgb3_main.c, line 4752.
+I'm having compilation issues with this new patch.  Here's the error I got:
 
-It seems that all the symbols are visible, can list and put break
-points in functions.
+In file included from
+/root/lmcorrei/linux/linux-2.6.26.8-rt15/kernel/sched.c:1701:
+/root/lmcorrei/linux/linux-2.6.26.8-rt15/kernel/sched_rt.c: In
+function 'inc_rt_tasks':
+/root/lmcorrei/linux/linux-2.6.26.8-rt15/kernel/sched_rt.c:434: error:
+'struct rq' has no member named 'online'
 
-However, if I hit continue, and when execution hits breakpoints
-following messages
-are displayed:
+Now, function in question has the following code:
 
-(gdb) c
-Warning:
-Cannot insert breakpoint 2.
-Error accessing memory address 0x24: Unknown error 18446744073709551615.
-Cannot insert breakpoint 3.
-Error accessing memory address 0x1c70: Unknown error 18446744073709551615.
-Cannot insert breakpoint 5.
-Error accessing memory address 0xdb0: Unknown error 18446744073709551615.
-Cannot insert breakpoint 6.
-Error accessing memory address 0x2095: Unknown error 18446744073709551615.
-Cannot insert breakpoint 15.
-Error accessing memory address 0x5a: Unknown error 18446744073709551615.
-Cannot insert breakpoint 16.
-Error accessing memory address 0x1cd2: Unknown error 18446744073709551615.
+static inline
+void inc_rt_tasks(struct sched_rt_entity *rt_se, struct rt_rq *rt_rq)
+{
+        WARN_ON(!rt_prio(rt_se_prio(rt_se)));
+        rt_rq->rt_nr_running++;
+#if defined CONFIG_SMP || defined CONFIG_RT_GROUP_SCHED
+        if (rt_se_prio(rt_se) < rt_rq->highest_prio) {
+                struct rq *rq = rq_of_rt_rq(rt_rq);
+                rt_rq->highest_prio = rt_se_prio(rt_se);
 
+                if (rq->online)
+                        cpupri_set(&rq->rd->cpupri, rq->cpu,
+                                   rt_se_prio(rt_se));
+        }
+#endif
 
-The ddd version is 3.3.10 and gdb version is 6.8.
+The issue is that the 'online' member is actually defined only if CONFIG_SMP is
+enabled and in my config I do not have it but I have CONFIG_RT_GROUP_SCHED.
 
-Any idea what mistake I have made?
+I am not sending any patch because I actually do not know what is the best way
+to solve this issue since I am not (yet!) a sched expert.  However, I forsee two
+possible solutions:
+
+ 1. Nest another #ifdef inside the first one, so that the code is only compiled
+    when CONFIG_SMP option is set (which will result in ugly code)
+ 2. Define 'online' member in structure outside of the CONFIG_SMP (which, I
+    believe, is not an optimal solution)
+
+Regards,
+-- 
+Luis Henriques
+
