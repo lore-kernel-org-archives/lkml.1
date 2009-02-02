@@ -1,158 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758647AbZBBWbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbZBBWcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758647AbZBBWbV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 17:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZBBWbB
+	id S1757968AbZBBWcj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 17:32:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZBBWcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 17:31:01 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38869 "EHLO mx2.redhat.com"
+	Mon, 2 Feb 2009 17:32:31 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35546 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596AbZBBWbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 17:31:00 -0500
-Date: Mon, 2 Feb 2009 20:30:40 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH tip 3/3] blkftrace: binary tracing, synthesizing old format
-Message-ID: <20090202223040.GD12082@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	id S1752725AbZBBWca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 17:32:30 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+Date: Mon, 2 Feb 2009 23:31:48 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902022239.02453.rjw@sisk.pl> <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902022331.49131.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: new feature
+On Monday 02 February 2009, Linus Torvalds wrote:
+> 
+> On Mon, 2 Feb 2009, Rafael J. Wysocki wrote:
+> > 
+> > Yes, which is why I thought it might be a good idea to make the AML interpreter
+> > allow is to execute AML with interrupts off, so that we can put devices into
+> > low power states and/or put them into D0 with interrupts off.
+> > 
+> > Then, we'll be able to make ACPI happy (up to some strange ordering
+> > expectations of some insane BIOSes maybe) and fix the interrupts issue at
+> > the same time.
+> > 
+> > The idea would be to have a special code path(s) where AML can be executed
+> > with interrupts off and a couple of special entry points into the AML
+> > interpreter for this purpose.
+> 
+> Well, I don't think anybody wants to (or necessarily has the ability) 
+> touch ACPI internals.
 
-With this and a blkrawverify modified not to verify the sequence numbers
-we can start using the userspace tools to verify that the data produced
-with the ftrace plugin works as expected.
+That need not be very difficult AFAICS.
 
-Example:
+> How about this kind of approach:
+> 
+>  - step#1: split "sysdev" device suspend/resume from the general 
+>    "device_power_on/off()" step
+> 
+>    Rationale: sysdev's include things like the actual interrupt controller 
+>    etc, and we almost certainly really do want to have hard interrupts 
+>    disabled over that whole thing. 
 
-[root@f10-1 ~]# echo 1 > /sys/block/sda/sda1/trace/enable
-[root@f10-1 ~]# echo bin > /d/tracing/trace_options
-[root@f10-1 ~]# echo blk > /d/tracing/current_tracer
-[root@f10-1 ~]# cat /d/tracing/trace_pipe > sda1.blktrace.0
-^C
-[root@f10-1 ~]# ./blkrawverify --noseq sda1
-Verifying sda1
-    CPU 0
-Wrote output to sda1.verify.out
-[root@f10-1 ~]# cat sda1.verify.out
+Fine by me.
 
----------------
-Verifying sda1
-    ---------------------
-    Summary for cpu 0:
-          1349 valid +          0 invalid (100.0%) processed
+>    I'm appending a suggested trivial patch for this.
 
-[root@f10-1 ~]#
+Looks correct.
 
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- block/blktrace.c |   40 +++++++++++++++++++++++++++++++++++++---
- 1 files changed, 37 insertions(+), 3 deletions(-)
+>  - step#2: make suspend/resume actually do the three phases:
+> 
+> 	a) existing device->suspend() (interrupts on, everything live)
+> 
+> 	b) disable_device_irq()'s: things are live, but device interrupts 
+> 	   are turned off by essentially looping over the irq_desc_ptr[] 
+> 	   table. 
 
-diff --git a/block/blktrace.c b/block/blktrace.c
-index 570cd3c..4f45b34 100644
---- a/block/blktrace.c
-+++ b/block/blktrace.c
-@@ -219,9 +219,16 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
- 		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
- 		t->sequence = ++(*sequence);
- 		t->time = ktime_to_ns(ktime_get());
--		t->cpu = cpu;
--		t->pid = pid;
- record_it:
-+		/*
-+ 		 * These two are not needed in ftrace as they are in the
-+ 		 * generic trace_entry, filled by tracing_generic_entry_update,
-+ 		 * but for the trace_event->bin() synthesizer benefit we do it
-+ 		 * here too.
-+ 		 */
-+ 		t->cpu = cpu;
-+ 		t->pid = pid;
-+
- 		t->sector = sector;
- 		t->bytes = bytes;
- 		t->action = what;
-@@ -1086,6 +1093,7 @@ static void blk_tracer_start(struct trace_array *tr)
- 		if (blk_register_tracepoints())
- 			atomic_dec(&blk_probes_ref);
- 	mutex_unlock(&blk_probe_mutex);
-+	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
- }
- 
- static int blk_tracer_init(struct trace_array *tr)
-@@ -1100,6 +1108,7 @@ static int blk_tracer_init(struct trace_array *tr)
- 
- static void blk_tracer_stop(struct trace_array *tr)
- {
-+	trace_flags |= TRACE_ITER_CONTEXT_INFO;
- 	mutex_lock(&blk_probe_mutex);
- 	if (atomic_dec_and_test(&blk_probes_ref))
- 		blk_unregister_tracepoints();
-@@ -1147,6 +1156,9 @@ static int blk_trace_event_print(struct trace_iterator *iter, int flags)
- 	const u16 what = t->action & ((1 << BLK_TC_SHIFT) - 1);
- 	int ret;
- 
-+	if (trace_print_context(iter))
-+		return TRACE_TYPE_PARTIAL_LINE;
-+
- 	if (unlikely(what == 0 || what > ARRAY_SIZE(what2act)))
- 		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
- 	else {
-@@ -1159,6 +1171,28 @@ static int blk_trace_event_print(struct trace_iterator *iter, int flags)
- 	return ret ? TRACE_TYPE_HANDLED : TRACE_TYPE_PARTIAL_LINE;
- }
- 
-+static int blk_trace_synthesize_old_trace(struct trace_iterator *iter)
-+{
-+	struct trace_seq *s = &iter->seq;
-+	struct blk_io_trace *t = (struct blk_io_trace *)iter->ent;
-+	const int offset = offsetof(struct blk_io_trace, sector);
-+	struct blk_io_trace old = {
-+		.magic	  = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION,
-+		.time     = ns2usecs(iter->ts),
-+	};
-+
-+	if (!trace_seq_putmem(s, &old, offset))
-+		return 0;
-+	return trace_seq_putmem(s, &t->sector,
-+				sizeof(old) - offset + t->pdu_len);
-+}
-+
-+static int blk_trace_event_print_binary(struct trace_iterator *iter, int flags)
-+{
-+	return blk_trace_synthesize_old_trace(iter) ?
-+			TRACE_TYPE_HANDLED : TRACE_TYPE_PARTIAL_LINE;
-+}
-+
- static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
- {
- 	const struct blk_io_trace *t;
-@@ -1200,7 +1234,7 @@ static struct trace_event trace_blk_event = {
- 	.latency_trace	= blk_trace_event_print,
- 	.raw		= trace_nop_print,
- 	.hex		= trace_nop_print,
--	.binary		= trace_nop_print,
-+	.binary		= blk_trace_event_print_binary,
- };
- 
- static int __init init_blk_tracer(void)
--- 
-1.6.0.6
+Well, do we actually need to turn off all device interrupts?
 
+Shared interrupts are the source of the problem, so perhaps we can
+only disable interrupts of devices that use interrupt pins at this point
+(MSI/MSI-X need not be disabled, for example, and the timer interrupts most
+probably too)?
+
+> 	c) existing device->suspend_late(). System is kind of live, but 
+> 	   all interrupts have been shut off at the source. But we really 
+> 	   could try to keep timers etc alive.
+> 
+> 	d) disable CPU interrupts.
+
+At what point do we disable the other CPUs?
+
+> 	e) sysdev_suspend(). This turns off the interrupt controller etc
+> 
+> 	*suspend cpu*
+> 
+>    and then do the resume in reverse order.
+> 
+> The reason step#1 is needed is just because we have that irq handling 
+> difference between the two. And if timers are running, we really can 
+> pretty much run all normal code (turning timers off does hurt anything 
+> that uses timeouts like msleep() or schedule_timeout()). Otherwise step#1 
+> isn't important in itself.
+> 
+> Hmm? It doesn't look too painful,
+
+Well, it means reworking the entire suspend sequence (again) or we will
+break assumptions made by some existing drivers (interrupts off during
+suspend_late and resume_early).  And that affects all drivers, not only PCI.
+
+> and it would mean that we could go back to a perfectly regular
+> pci_set_power_state() in the early-resume codepath.
+
+I first would like to understand what _exactly_ breaks on the iBook reported to
+have problems.
+
+Thanks,
+Rafael
