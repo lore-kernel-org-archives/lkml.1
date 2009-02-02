@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbZBBPOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbZBBPPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753970AbZBBPOd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 10:14:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZBBPOX
+	id S1755156AbZBBPPq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 10:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZBBPPh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 10:14:23 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:56610 "EHLO
+	Mon, 2 Feb 2009 10:15:37 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:32832 "EHLO
 	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751598AbZBBPOW (ORCPT
+	with ESMTP id S1751995AbZBBPPg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 10:14:22 -0500
+	Mon, 2 Feb 2009 10:15:36 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=at5ZBEbG47eqCZSrPSdA1v3X9J9PbbLc2YJo332tBkiMqEgR9BpUsJFi1JGtPt7U/Y
-         lFshAEqJJrvNS/9gTK/8HRPuI/vU417DpFA7NNGOQ0x7eRRkliNJ7MNqaYBe4byutox7
-         BpdyE7IcTl6DFe+ysgtSv4RnNwfI5AoG4HYZo=
+        b=usUl3/pJSSKilDYj9P9Afc1EKhQ8fyoLwwJagZOhR6h/PKDIww2MftEPWFGZQH3zV7
+         9MiK8OY5fEUBHe6Z5kIdp/3t2ZO6zIS+yMm9V9IvEga/jSNlTwl0Ni92gUn6ffO+jOzQ
+         Vpm1KA6yZbmHVI/abkmX0jx42LiBa4Q/E4pgI=
 MIME-Version: 1.0
 In-Reply-To: <tnxiqns28mm.fsf@pc1117.cambridge.arm.com>
 References: <a4423d670902020327x61a1d9dehb1642b25ec7f82f1@mail.gmail.com>
 	 <tnxiqns28mm.fsf@pc1117.cambridge.arm.com>
-Date: Mon, 2 Feb 2009 16:14:16 +0100
-Message-ID: <c62985530902020714i73a68b59t47f89bdb9971585b@mail.gmail.com>
+Date: Mon, 2 Feb 2009 16:15:33 +0100
+Message-ID: <c62985530902020715u73407d4dqe14c340de310c866@mail.gmail.com>
 Subject: Re: next-20090202: task kmemleak:763 blocked for more than 120 
 	seconds.
 From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
@@ -81,5 +81,5 @@ intentionally in a TASK_UNINTERRUPTIBLE state.
 Fixing it into kmemleak would not solve the problem in other tasks
 which do similar sleeps...
 
-Mandeep, if you want I can try something? Or perhaps you prefer to do
+Mandeep, if you agree I can try something? Or perhaps you prefer to do
 it yourself. As you wish.
