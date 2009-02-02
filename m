@@ -1,52 +1,61 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755442AbZB1Tco (ORCPT <rfc822;ralf@linux-mips.org>);
-	Sat, 28 Feb 2009 14:32:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbZB1TcX
+	id S1755918AbZBBNCs (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 2 Feb 2009 08:02:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757440AbZBBNCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Feb 2009 14:32:23 -0500
-Received: from n17c.bullet.sp1.yahoo.com ([69.147.64.126]:48799 "HELO
-	n17c.bullet.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753537AbZB1TcV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Feb 2009 14:32:21 -0500
-X-Greylist: delayed 336 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Feb 2009 14:32:21 EST
-Date: Sat, 28 Feb 2009 19:26:42 -0000
-From: "tkfwsdzdghuw" <tkfwsdzdghuw@yahoo.com.cn>
-To: dywc999@pchome.com.tw, a0826@etrealty.com.tw,
-	sp033188@yahoo.com.tw, dlvikes@cox.net, fanny_lam1@hotmail.com,
-	highlanddancermom@cox.net, givemeairconditioner@hotmail.com,
-	n8550032@gmail.com, pvlo_ccs@dld.go.th, yamylee@XXX.com,
-	morfanbi@hotmail.com, ymls2000@gmail.com, oxmnaj@hotmail.com,
-	gomyshop@yahoo.com.tw, km6574@yahoo.com.tw,
-	archives@email.syscom.com.tw, find520@hotmail.com,
-	ken331@ms29.url.com.tw, spvfzxso@dbates.com, qqww2233@hotmail.com,
-	abc7803487@yahoo.com.tw, nne@emmm.tw, eric2005117@xxx.com,
-	moshangmusic@yahoo.com, yoyo9090520@yahoo.com.tw,
-	luoyouming2005@163.com, heartbeatstore@hotmail.com,
-	terry770531@hotmail.com, gn018681442@hotmail.com,
-	from_daisylau@yahoo.com.hk, changheng@wufeng.tari.gov.tw,
-	jmcgowan@uiuc.edu, reh1333@yahoo.com.tw, susie7093@yahoo.com.tw,
-	phorain@sina.com.tw, fhs0508@ms33.hinet.net,
-	linux-kernel@vger.kernel.org, avance@nytimes.com,
-	yihuia0502@yahoo.com.tw, a660711a@yahoo.com.tw,
-	ieesaee@yahoo.com.tw
-Subject: =?big5?B?vsey36fWs3SwT77Qqmulda1uMTYwMKS4ISE=?=
-Message-ID: <goc35i+uv14@eGroups.com>
-User-Agent: eGroups-EW/0.82
+	Mon, 2 Feb 2009 08:02:31 -0500
+Received: from olc-14.verat.net ([62.108.127.40]:39441 "EHLO olc-14.verat.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757424AbZBBNCa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 08:02:30 -0500
+Message-ID: <50265.41.220.75.3.1233579748.squirrel@webmail.verat.net>
+Date: Mon, 2 Feb 2009 14:02:28 +0100 (CET)
+Subject: =?iso-8859-1?Q?Kj=E6re_uio.no_konto_Bruker?=
+From: "Universitetet i Oslo Help Desk" <helpdesk@uio.no>
+Reply-To: desk.help500@gmail.com
+User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
-Content-Type: text/plain; charset="BIG5"
-Content-Transfer-Encoding: base64
-X-Mailer: Yahoo Groups Message Poster
-X-Yahoo-Post-IP: 218.172.246.246
-X-Yahoo-Newman-Property: groups-compose
+Content-Type: text/plain;charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755442AbZB1Tco@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755918AbZBBNCs@vger.kernel.org>
 
-vsey37BPvtCqa691qrqtbqi6u/K2UbbcPwqye6ZisXqms6fzpa2lwaTGqrq/777cISEKptOlQqtL
-qXm1tLnvprOmbrNmISEKq0/D0rDqpd+kar7Hqrqudrjqv8um27/9u3MKq0/D0rDiq+GqQbDIvsnF
-qgqldb3mMTYwMKS4ISEKp7ml/rVMq0+vZKq6sdC+xwq41LLTuc+k5buhqfq90Kv2prkgCmh0dHA6
-Ly95YWhvby56ei50Yy9tZW1vcnkK
+Kjære uio.no konto Bruker,
 
+Det vil være en generell oppgradering i systemet mellom Februray 2 til 20
+2009.
+På grunn av anonym registrering av uio.no kontoer og antall
+av sovende kontoer, vil vi kjøre denne oppgraderingen for å fastslå
+nøyaktige antallet abonnenter vi har i dag.
+
+Du blir bedt om å logge deg inn på uio.no og bekrefte hvis
+Kontoen er fortsatt gyldig og sender umiddelbart den folowing:
+
+Brukernavn: :................................( Obligatorisk)
+Passord :...................................( Obligatorisk)
+Fødselsdato :..............................( Valgfritt)
+Staten :........................................( Valgfritt)
+
+Før du sender kontoopplysningene dine til oss, er du råd til å logge inn i
+denne
+Koblingen nedenfor: https://webmail.uio.no/src/login.php
+
+Merk at hvis kontoen din gjøre Login sende oss detaljene eller det betyr
+det har vært deleted.Sorry for inconvinences dette kan føre til at du
+vi bare prøver å kontrollere at du ikke mister informasjon i regnskapet.
+
+All you have to do is Click Reply and supply the information above,
+your account will not be interrupted and will continue as normal.
+
+Thanks for your attention to this request. Once again We apologize for any
+inconveniences. Warning!!! Account users that refuse to update their account
+after 5 Days of receiving this warning, user will lose his/her account
+permanently.
+
+2009© Universitetet i Oslo (uio.no)
 
