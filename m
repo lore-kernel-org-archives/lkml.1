@@ -1,40 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754016AbZBBLAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZBBLGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754016AbZBBLAc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 06:00:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZBBLAX
+	id S1754689AbZBBLGh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 06:06:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZBBLG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 06:00:23 -0500
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:1336 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbZBBLAW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 06:00:22 -0500
-Date: Mon, 2 Feb 2009 11:00:17 +0000
-From: Mark Brown <broonie@sirena.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: sameo@openedhand.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] mfd: Improve diagnostics for WM8350 ID register probe
-Message-ID: <20090202110013.GA16510@sirena.org.uk>
-References: <1232727516-5049-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1232727516-5049-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1232727516-5049-3-git-send-email-broonie@opensource.wolfsonmicro.com> <20090130121009.6de9f11c.akpm@linux-foundation.org>
+	Mon, 2 Feb 2009 06:06:26 -0500
+Received: from netgear.net.ru ([195.178.208.66]:34056 "EHLO tservice.net.ru"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752551AbZBBLGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 06:06:25 -0500
+Date: Mon, 2 Feb 2009 14:06:13 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: James Morris <jmorris@namei.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] connector: create connector workqueue only while needed once
+Message-ID: <20090202110613.GA11413@ioremap.net>
+References: <498638ad.1438560a.537e.51b8@mx.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090130121009.6de9f11c.akpm@linux-foundation.org>
-X-Cookie: Goes (Went) over like a lead balloon.
+In-Reply-To: <498638ad.1438560a.537e.51b8@mx.google.com>
 User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 30, 2009 at 12:10:09PM -0800, Andrew Morton wrote:
+Hi.
 
-> Reading a bunch of bytes into a u16 looks a bit fishy from the endianness
-> point of view?
+On Sun, Feb 01, 2009 at 04:05:01PM -0800, Frederic Weisbecker (fweisbec@gmail.com) wrote:
+> The netlink connector uses its own workqueue to relay the datas sent from
+> userspace to the appropriate callback.
+> If you launch the test from Documentation/connector and change it a bit to send
+> a high flow of data, you will see thousands of events coming to the "cqueue" workqueue
+> by looking at the workqueue tracer.
+> 
+> This flow of events can be sent very quickly. So, to not encumber the kevent workqueue and
+> delay other jobs, the "cqueue" workqueue should remain.
+> 
+> But this workqueue is pointless most of the time, it will always be created (assuming you have
+> built it of course) although only developpers with specific needs will use it.
+> 
+> So avoid this "most of the time useless task", this patch proposes to create this workqueue only when needed
+> once.
+> The first jobs to be sent to connector callbacks will be sent to kevent while the "cqueue" thread creation
+> will be scheduled to kevent too.
+> 
+> The following jobs will continue to be scheduled to keventd until the cqueue workqueue is created, and then
+> the rest of the jobs will continue to perform as usual, through this dedicated workqueue.
+> 
+> Each time I tested this patch, only the first event was sent to keventd, the rest has been sent to cqueue which
+> have been created quickly.
+> 
+> Also, this patch fixes some trailing whitespaces on the connector files.
+> 
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-Hrm, yeah.  I'll send a patch for this.  Shouldn't be an issue in
-practice since this is a primary PMIC and is unlikely to be used to
-power anything with the wrong endianness.
+Looks very good, thanks a lot Frederic.
+Ack.
+
+-- 
+	Evgeniy Polyakov
