@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755575AbZBBAgl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbZBBBMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755575AbZBBAgl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 19:36:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751748AbZBBAgd
+	id S1755119AbZBBBMe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 20:12:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZBBBM0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 19:36:33 -0500
-Received: from gate.crashing.org ([63.228.1.57]:45643 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbZBBAgc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 19:36:32 -0500
-Subject: Re: [PATCH] ftrace: On PowerPC we don't need frame pointers for
- CALLER_ADDRs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
-References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+	Sun, 1 Feb 2009 20:12:26 -0500
+Received: from mga07.intel.com ([143.182.124.22]:19377 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752192AbZBBBMZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 20:12:25 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,362,1231142400"; 
+   d="scan'208";a="105951946"
+Subject: Re: hackbench [pthread mode] regression with 2.6.29-rc3
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Lin Ming <ming.m.lin@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1233482239.4787.65.camel@laptop>
+References: <1233473426.2604.13.camel@ymzhang>
+	 <d3f22a0902010026q1db36381j36cb1c9803d48431@mail.gmail.com>
+	 <1233476961.13659.12.camel@minggr.sh.intel.com>
+	 <1233479836.4787.63.camel@laptop>  <1233482239.4787.65.camel@laptop>
 Content-Type: text/plain
-Date: Mon, 02 Feb 2009 11:35:19 +1100
-Message-Id: <1233534919.18767.69.camel@pasglop>
+Date: Mon, 02 Feb 2009 09:12:14 +0800
+Message-Id: <1233537134.2604.24.camel@ymzhang>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-01-31 at 22:06 +0300, Anton Vorontsov wrote:
-> According to this discussion:
+On Sun, 2009-02-01 at 10:57 +0100, Peter Zijlstra wrote:
+> On Sun, 2009-02-01 at 10:17 +0100, Peter Zijlstra wrote:
+> > On Sun, 2009-02-01 at 16:29 +0800, Lin Ming wrote:
+> > > > Bisect located below patch.
+> > > > commit 490dea45d00f01847ebebd007685d564aaf2cd98
+> > > > Author: Peter Zijlstra <peterz@infradead.org>
+> > > > Date:   Mon Nov 24 17:06:57 2008 +0100
+> > > > 
+> > > >    itimers: remove the per-cpu-ish-ness
+> > > > 
+> > > >    Either we bounce once cacheline per cpu per tick, yielding n^2 bounces
+> > > >    or we just bounce a single..
+> > > > 
+> > > >    Also, using per-cpu allocations for the thread-groups complicates the
+> > > >    per-cpu allocator in that its currently aimed to be a fixed sized
+> > > >    allocator and the only possible extention to that would be vmap based,
+> > > >    which is seriously constrained on 32 bit archs.
+> > > > 
+> > > > 
+> > > > After above patch is reverted, hackbench result is restored.
+> > > 
+> > > oltp has ~3% regression with 2.6.29-rc3 on 4core*2p stokley machine.
+> > > After above patch reverted, the regression disappeared.
+> > 
+> > *sigh*, did they gain anything with introduction of the per-cpu crap?
 > 
-> http://lkml.org/lkml/2008/7/25/338
-> http://lkml.org/lkml/2008/7/26/72
+> No it wouldn't have, I just missed something obvious,.. :-(
 > 
-> Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
-> makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
-> requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
-> tracing is completely useless on PowerPC:
+> I wish we never merged that crap...
+process timer (by setitimer) isn't good. Is per-cpu itimer to improve it?
 
-But we need them for -pg which ftrace uses no ? (ie, gcc forces you to
-have -fno-omit-frame-pointers with -fpg iirc).
+Prior to kernel 2.6.28, process timer implementation is poor. When the process timer
+is near to expire, threads will sum the time from all threads of the thread group
+over and over again. If there are thousands of threads, kernel might hang eventually.
+I ran into it a couple of months ago when I tried to enable specweb2005 (Apache+PHP
+thread mode).
 
-Now, regardless, I agree that on PPC, __builtin_return_address() should
-always work with our without that cruft, so we may as well apply that
-patch...
+So the per-cpu itimer could improve this situation when thread number is far bigger than
+cpu number. I didn't retry specweb2005 with 2.6.28.
 
-> [...]
->   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
->   <idle>-0       0X.h3    9us+: 0 (0)
->   <idle>-0       0X..3   72us : 0 (0)
->   <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
-> 
-> On PPC we can safely use __builtin_return_address(1..6) w/o frame
-> pointers, and with this patch the trace output looks OK:
-> 
-> [...]
->   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
->   <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
->   <idle>-0       0X..3   87us : cpu_idle (__got2_end)
->   <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
-> 
-> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> ---
-> 
-> Btw, on PowerPC tracing is also broken w/o "ring-buffer: fix alignment
-> problem" patch (currently collecting dust in the -tip tree, commit
-> 082605de5f82eb692cc90f7fda071cc01bb5ac34). Any chance the fix go into
-> Linus' tree, to not waste other people's time bisecting and debugging
-> the problem? ;-)
-> 
-> For google: tracing, regression, "ring-buffer: move some metadata
-> into buffer page", commit abc9b56d66fbd4d93302ef4bf6fa726e1b8255f9,
-> answer is here.
-> 
->  include/linux/ftrace.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-> index 9c5bc6b..13eba02 100644
-> --- a/include/linux/ftrace.h
-> +++ b/include/linux/ftrace.h
-> @@ -146,7 +146,7 @@ static inline void __ftrace_enabled_restore(int enabled)
->  #endif
->  }
->  
-> -#ifdef CONFIG_FRAME_POINTER
-> +#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
->  /* TODO: need to fix this for ARM */
->  # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
->  # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+-yanmin
+
 
