@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZBBRDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZBBRFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756787AbZBBRDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 12:03:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZBBRDH
+	id S1756614AbZBBRFo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 12:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZBBRFf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 12:03:07 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:46774 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752685AbZBBRDG (ORCPT
+	Mon, 2 Feb 2009 12:05:35 -0500
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:3399 "EHLO
+	SG2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbZBBRFe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 12:03:06 -0500
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk,
-       cornelia.huck@de.ibm.com
-References: <m13afch1sw.fsf@fess.ebiederm.org>
-	<m1k58nffqm.fsf@fess.ebiederm.org> <497964CC.8070004@kernel.org>
-	<20090127154437.9e7118f7.akpm@linux-foundation.org>
-	<497FAB17.3080607@kernel.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 02 Feb 2009 09:03:11 -0800
-In-Reply-To: <497FAB17.3080607@kernel.org> (Tejun Heo's message of "Wed\, 28 Jan 2009 09\:47\:19 +0900")
-Message-ID: <m1pri04vqo.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Mon, 2 Feb 2009 12:05:34 -0500
+X-BigFish: VPS-26(zz1432R98dR1805M936fMzzzzz32i6bh6di43j64h)
+X-Spam-TCS-SCL: 3:0
+X-WSS-ID: 0KEG7GO-02-A55-01
+Date: Mon, 2 Feb 2009 18:05:06 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Mark Hounschell <dmarkh@cfl.rr.com>
+CC: Mark Hounschell <markh@compro.net>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       john stultz <johnstul@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD
+	Phenom-II processor
+Message-ID: <20090202170506.GA19608@aftab>
+References: <20090120093732.GC3764@alberich.amd.com> <49763D49.7050907@compro.net> <49798F33.8070906@cfl.rr.com> <20090123130416.GA27616@alberich.amd.com> <497A48D5.9040904@cfl.rr.com> <497E0072.7000500@compro.net> <20090127163843.GA1628@aftab> <497FA725.7020503@cfl.rr.com> <497FA7F2.3060709@cfl.rr.com> <498416CE.4040101@cfl.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.180.49.163;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.180.49.163
-X-SA-Exim-Rcpt-To: tj@kernel.org, cornelia.huck@de.ibm.com, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, gregkh@suse.de, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Tejun Heo <tj@kernel.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] sysfs: Reference sysfs_dirent from sysfs inodes.
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <498416CE.4040101@cfl.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 02 Feb 2009 17:05:08.0524 (UTC) FILETIME=[66CF2EC0:01C98558]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo <tj@kernel.org> writes:
+On Sat, Jan 31, 2009 at 04:15:58AM -0500, Mark Hounschell wrote:
 
-> Andrew Morton wrote:
->> On Fri, 23 Jan 2009 15:33:48 +0900
->> Tejun Heo <tj@kernel.org> wrote:
->> 
->>> Eric W. Biederman wrote:
->>>> The sysfs_dirent serves as both an inode and a directory entry
->>>> for sysfs.  To prevent the sysfs inode numbers from being freed
->>>> prematurely hold a reference to sysfs_dirent from the sysfs inode.
->>>>
->>>> Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
->>> Thanks for working on this.  Can you please add a comment explaining
->>> it on top of sysfs_delete_inode()?
->> 
->> Like this?
->> 
->> --- a/fs/sysfs/inode.c~sysfs-reference-sysfs_dirent-from-sysfs-inodes-fix
->> +++ a/fs/sysfs/inode.c
->> @@ -215,6 +215,13 @@ struct inode * sysfs_get_inode(struct sy
->>  	return inode;
->>  }
->>  
->> +/*
->> + * The sysfs_dirent serves as both an inode and a directory entry for sysfs.
->> + * To prevent the sysfs inode numbers from being freed prematurely we take a
->> + * reference to sysfs_dirent from the sysfs inode.  A
->> + * super_operations.delete_inode() implementation is needed to drop that
->> + * reference upon inode destruction.
->> + */
->>  void sysfs_delete_inode(struct inode *inode)
->>  {
->>  	struct sysfs_dirent *sd  = inode->i_private;
->
-> Yeap, looks good to me.  :-)
+[..]
 
-Thanks guys.
+> 
+> So were you able to reproduce this with my .config. Has anyone booted a Hz=1000
+> kernel on an AMD Phenom-II? Is there something wrong with my .config? Is there
+> anything else I can do?
 
-Eric
+Hi,
+
+sorry for the delay - I've been busy last week and couldn't get to your
+problem. So, I couldn't reproduce the bug here with a Phenom II and your
+kernel config. However, we have a working theory, so can you please send
+me the output of
+
+xxd /sys/firmware/acpi/tables/APIC
+
+Also, can you boot a 64-bit, HZ1000 kernel on your machine?
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
