@@ -1,49 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbZBBRtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZBBRt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757219AbZBBRtm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 12:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZBBRte
+	id S1757686AbZBBRt7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 12:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbZBBRtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 12:49:34 -0500
-Received: from main.gmane.org ([80.91.229.2]:57599 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752890AbZBBRte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 12:49:34 -0500
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bryon Roche <kain@kain.org>
-Subject: Re: hackbench [pthread mode] regression with 2.6.29-rc3
-Date: Mon, 2 Feb 2009 17:49:18 +0000 (UTC)
-Message-ID: <gm7bmu$uo$1@ger.gmane.org>
-References: <1233473426.2604.13.camel@ymzhang>
-	<d3f22a0902010026q1db36381j36cb1c9803d48431@mail.gmail.com>
-	<1233476961.13659.12.camel@minggr.sh.intel.com>
-	<1233479836.4787.63.camel@laptop> <1233482239.4787.65.camel@laptop>
-	<1233537134.2604.24.camel@ymzhang> <1233564818.4787.107.camel@laptop>
-Mime-Version: 1.0
+	Mon, 2 Feb 2009 12:49:47 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:47489 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757321AbZBBRtp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 12:49:45 -0500
+Message-ID: <4987321A.1020404@zytor.com>
+Date: Mon, 02 Feb 2009 09:49:14 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org
+Subject: Re: [git-pull -tip] fix headers_check warnings
+References: <1233593765.3244.14.camel@localhost.localdomain>	 <20090202172159.GA7479@localhost> <1233595855.28370.1.camel@localhost.localdomain>
+In-Reply-To: <1233595855.28370.1.camel@localhost.localdomain>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: p548a3d9e.dip.t-dialin.net
-User-Agent: Pan/0.132 (Waxed in Black)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Feb 2009 09:53:38 +0100, Peter Zijlstra wrote:
-
-> On Mon, 2009-02-02 at 09:12 +0800, Zhang, Yanmin wrote:
+Jaswinder Singh Rajput wrote:
+>>
+>> Hi Jaswinder,
+>>
+>> it seems we have a clash here :) I thought this part
+>> was just dropped out
+>>
+>> 	http://lkml.org/lkml/2009/1/14/461
+>>
+>> and Peter had been applying it on tip:x86/header-fixes
+>>
+>> 	http://lkml.org/lkml/2009/1/14/549
+>>
+>> but maybe it's just lost...
 > 
-> I would rather go back to the old model where we iterate all threads,
-> and find a way to not make programs with too many threads for their own
-> good lock up the kernel, but instead get poor service.
+> No, you cannot remove sys_arch_prctl otherwise you will get sparse
+> warning like this:
+> 
+>   CHECK   arch/x86/kernel/process_64.c
+> arch/x86/kernel/process_64.c:833:6: warning: symbol 'sys_arch_prctl' was not declared. Should it be static?
+> 
 
-Now, there's an interesting question, what is the definition of too many
-threads for a program's own good?  When evaluating this, please assume 
-that you
-do actually have enough RAM to keep thread stacks/other userspace 
-threading
-resources in-core.
+Perhaps we can just move this prototype to <asm/syscalls.h>.
 
-/B
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
