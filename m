@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbZBBUjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbZBBUmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754332AbZBBUjl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 15:39:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbZBBUjb
+	id S1757447AbZBBUmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 15:42:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZBBUl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 15:39:31 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:58700 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753331AbZBBUja (ORCPT
+	Mon, 2 Feb 2009 15:41:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59473 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753316AbZBBUl6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 15:39:30 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bqc0sa4GVgS3ZNhyjnipmSSSnpLjde5FA2O5zyc5KXdD0yp/Xp+547j219mTsrC7g0
-         RNRXF9f+ZsFRKuSEBdGJutuLDX6cy+B1vqWcLJzcXtg8ryxw7f/cSYJ/GNPQvlzVGTC6
-         XltEg04tFKhEVb9GejMtAPvsaI2SGr4a5K3KY=
+	Mon, 2 Feb 2009 15:41:58 -0500
+Date: Mon, 2 Feb 2009 12:41:31 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Andreas Schwab <schwab@suse.de>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <1233606580.18767.93.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0902021236040.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <1233568479.18767.86.camel@pasglop>  <alpine.LFD.2.00.0902020902320.4704@localhost.localdomain> <1233606580.18767.93.camel@pasglop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <498754EF.8090604@redhat.com>
-References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com>
-	 <20090201174159.4a52e15c.akpm@linux-foundation.org>
-	 <20090202064509.GA20237@redhat.com>
-	 <3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com>
-	 <20090202165606.GA13346@redhat.com> <498754EF.8090604@redhat.com>
-Date: Mon, 2 Feb 2009 12:39:30 -0800
-Message-ID: <3f43f78b0902021239s21566f76hf7f59850b2dbf45a@mail.gmail.com>
-Subject: Re: main thread pthread_exit/sys_exit bug!
-From: Kaz Kylheku <kkylheku@gmail.com>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 2, 2009 at 12:17 PM, Ulrich Drepper <drepper@redhat.com> wrote:
-> The userlevel context of the
-> thread is not usable anymore.  It will have run all kinds of
-> destructors.  The current behavior is AFAIK that the main thread won't
-> react to any signal anymore.  That is absolutely required.
 
-Hey Ulrich,
 
-Thanks for articulating that requirement. I think it can be met by
-extending the patch a little bit. We can keep the main thread parked
-inside sys_exit /and/ get it not to react to signals internally, yet
-have the external behavior that the process reacts in the normal
-way to certain signals like SIGTSTP, SIGCONT, etc.
+On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
+> 
+> I'd rather hook it up inside pci_set_power_state()...
+
+Umm. But you already _have_ that. Look at platform_pci_set_power_state(). 
+It gets called before turning the device on (pci_raw_set_power_state(D0)) 
+and after turning the device off (pci_raw_set_power_state(D1+))
+
+Maybe you missed it? It's how ACPI does things.
+
+However, the issue you see is that pci_restore_standard_config() doesn't 
+call it, because at least with ACPI, the ACPI code simply isn't ready to 
+be called with interrupts off. So it looks like you may be looking at the 
+wrong thing, hmm?
+
+			Linus
