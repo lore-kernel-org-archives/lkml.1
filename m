@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbZBBUyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbZBBU4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758443AbZBBUyv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 15:54:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZBBUym
+	id S1758098AbZBBU4a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 15:56:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZBBU4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 15:54:42 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:35254 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753011AbZBBUyl (ORCPT
+	Mon, 2 Feb 2009 15:56:22 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55262 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753185AbZBBU4V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 15:54:41 -0500
-Date: Tue, 3 Feb 2009 02:24:34 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: David Rientjes <rientjes@google.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM
-Message-ID: <20090202205434.GI918@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090202125240.GA918@balbir.in.ibm.com> <20090202215527.EC92.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090202141705.GE918@balbir.in.ibm.com> <alpine.DEB.2.00.0902021235500.26971@chino.kir.corp.google.com>
+	Mon, 2 Feb 2009 15:56:21 -0500
+Date: Mon, 2 Feb 2009 12:55:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Andreas Schwab <schwab@suse.de>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <alpine.LFD.2.00.0902021241430.3247@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0902021251130.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <1233568479.18767.86.camel@pasglop>  <alpine.LFD.2.00.0902020902320.4704@localhost.localdomain> <1233606805.18767.97.camel@pasglop> <alpine.LFD.2.00.0902021241430.3247@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0902021235500.26971@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Rientjes <rientjes@google.com> [2009-02-02 12:37:54]:
 
-> On Mon, 2 Feb 2009, Balbir Singh wrote:
+
+On Mon, 2 Feb 2009, Linus Torvalds wrote:
 > 
-> 
-> I think you'd want a less critical log level for these messages such as 
-> KERN_INFO.
+> I suspect that we could possibly make ACPI happy by actually leaving 
+> interrupts "enabled" in the suspend-late (and early-resume) paths, but 
+> with all hardware interrupts actually turned off. But that's really just a 
+> "let's fool people by turning off interrupts a different way" thing - it 
+> in no way really changes any fundamental issues.
 
-David, I'd agree, but since we are under printk_ratelimit() and this
-is a not-so-common path, does the log level matter much? If it does, I
-don't mind using KERN_INFO.
+Btw, I do think that we can make ACPI happy regardless.
 
--- 
-	Balbir
+We quite commonly call into ACPI during the early boot sequence, when 
+interrupts are disabled for all the same reasons. We don't get the 
+"might_sleep()" warnings, simply because we have these kinds of checks:
+
+	..
+        if ((!in_atomic() && !irqs_disabled()) ||
+                    system_state != SYSTEM_RUNNING || oops_in_progress)
+		return;
+	..
+
+ie we know that "system_state != SYSTEM_RUNNING" is a special case where 
+things are allowed to do things that they aren't normally allowed to do.
+
+I suspect that late-suspend/early-resume is just exactly the same. It's a 
+boot, after all. Just let ACPI do its odd things, despite the fact that 
+interrupts are disabled. The fact that doing them while the system is 
+_running_ is invalid doesn't necessarily mean that it is invalid under 
+bootup or suspend/resume.
+
+We might even make it possible to have timers going, if we end up saying 
+"we'll mask all hardware interrupts _except_ for the timer". I'm not sure 
+that is necessarily something we can do portably, though..
+
+			Linus
