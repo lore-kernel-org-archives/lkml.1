@@ -1,93 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756100AbZBBXTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbZBBXTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756100AbZBBXTd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 18:19:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbZBBXTS
+	id S1759063AbZBBXTs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 18:19:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbZBBXT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 18:19:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35708 "EHLO
+	Mon, 2 Feb 2009 18:19:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42090 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752673AbZBBXTR (ORCPT
+	by vger.kernel.org with ESMTP id S1752913AbZBBXT1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 18:19:17 -0500
-Date: Mon, 2 Feb 2009 15:18:52 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: matthew@wil.cx, gregkh@suse.de, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, seokmann.ju@qlogic.com
-Subject: Re: slab error in verify_redzone_free() badness...
-Message-Id: <20090202151852.de39952b.akpm@linux-foundation.org>
-In-Reply-To: <20090129225532.GA37589@plap4-2.local>
-References: <20090129225532.GA37589@plap4-2.local>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 18:19:27 -0500
+Date: Mon, 2 Feb 2009 15:18:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <200902022331.49131.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0902021508340.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902022239.02453.rjw@sisk.pl> <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain> <200902022331.49131.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 29 Jan 2009 14:55:32 -0800
-Andrew Vasquez <andrew.vasquez@qlogic.com> wrote:
 
-> Matthew,
-> 
-> During some NPIV regression tests with .29-rc3, we are seeing some
-> slab-corruption during vport tear-down:
-> 
-> 	# create vport off fc-host1
-> 	$ echo "2001567890abcdab:2001ef12345678ab" > /sys/class/fc_host/host1/vport_create
-> 	# delete vport
-> 	$ echo "2001567890abcdab:2001ef12345678ab" > /sys/class/fc_host/host1/vport_delete
-> 
-> Here's the backtrace:
-> 
-> 	[  263.337035] slab error in verify_redzone_free(): cache `size-2048': memory outside object was overwritten
-> 	[  263.340213] Pid: 7623, comm: bash Tainted: G   M       2.6.28 #32
-> 	[  263.340213] Call Trace:
-> 	[  263.340213]  [<ffffffff8027afd7>] __slab_error+0x1c/0x25
-> 	[  263.340213]  [<ffffffff8027b43b>] cache_free_debugcheck+0x165/0x210
-> 	[  263.340213]  [<ffffffff8027b672>] kfree+0x6b/0xc3
-> 	[  263.340213]  [<ffffffff803947bb>] device_release+0x1a/0x6a
-> 	[  263.340213]  [<ffffffff8032db9c>] kobject_release+0x33/0x63
-> 	[  263.340213]  [<ffffffff8032db69>] kobject_release+0x0/0x63
-> 	[  263.340213]  [<ffffffff8032e98e>] kref_put+0x32/0x6c
-> 	[  263.340213]  [<ffffffffa002b73b>] qla24xx_vport_delete+0xc7/0x14f [qla2xxx]
-> 	[  263.340213]  [<ffffffffa000061c>] fc_vport_terminate+0x81/0x1bb [scsi_transport_fc]
-> 	[  263.340213]  [<ffffffffa0002a67>] store_fc_host_vport_delete+0x111/0x121 [scsi_transport_fc]
-> 	[  263.340213]  [<ffffffff802bebea>] sysfs_write_file+0xb3/0x114
-> 	[  263.340213]  [<ffffffff802803a3>] vfs_write+0xac/0x147
-> 	[  263.340213]  [<ffffffff80280921>] sys_write+0x45/0x73
-> 	[  263.340213]  [<ffffffff8020b45b>] system_call_fastpath+0x16/0x1b
-> 	[  263.340213] ffff88007ddaad98: redzone 1:0xd84156c5635688c0, redzone 2:0x0.
-> 
-> We've bisected the problem down to:
-> 
-> 	commit 210272a28465a7a31bcd580d2f9529f924965aa5
-> 	Author: Matthew Wilcox <matthew@wil.cx>
-> 	Date:   Thu Oct 16 14:57:54 2008 -0600
-> 
-> 	    driver core: Remove completion from struct klist_node
-> 
-> 	    Removing the completion from klist_node reduces its size from 64 bytes
-> 	    to 28 on x86-64.  To maintain the semantics of klist_remove(), we add
-> 	    a single list of klist nodes which are pending deletion and scan them.
-> 
-> 	    Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
-> 	    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> 
-> At first glance the changes look fairly straight-forward...  Reverting
-> the problem commit (currently off .29-rc3) appears to clean up the
-> slab-badness.
-> 
-> Thoughts?
 
-I'd be suspecting a bug in the caller.
+On Mon, 2 Feb 2009, Rafael J. Wysocki wrote:
+> > 
+> > 	b) disable_device_irq()'s: things are live, but device interrupts 
+> > 	   are turned off by essentially looping over the irq_desc_ptr[] 
+> > 	   table. 
+> 
+> Well, do we actually need to turn off all device interrupts?
+> 
+> Shared interrupts are the source of the problem, so perhaps we can
+> only disable interrupts of devices that use interrupt pins at this point
+> (MSI/MSI-X need not be disabled, for example, and the timer interrupts most
+> probably too)?
 
-Try setting CONFIG_DEBUG_PAGEALLOC, and use slab.c (not slub).  slab
-will perform page unmapping for those 2k-sized slabs.  I don't know
-whether slub does that.
+We could try that, yes.
 
-All being well, you'll get a nice oops at the site of the improper
-reference.
+> > 	d) disable CPU interrupts.
+> 
+> At what point do we disable the other CPUs?
 
+I left it out, because I don't much care or think it matters. So take your 
+pick. I'd suggest keeping the current setup, and literally just insert the 
+new point between "device_power_off()" and "sysdev_suspend()", with _zero_ 
+other changes.
+
+> Well, it means reworking the entire suspend sequence (again) or we will
+> break assumptions made by some existing drivers (interrupts off during
+> suspend_late and resume_early).  And that affects all drivers, not only PCI.
+
+No it doesn't.
+
+No changes AT ALL to the suspend sequence. We do everything in the same 
+order: look at my patch. The only difference is that instead of doing that 
+"cli" we do the "for_each_irq(disable_irq)" instead (and do the 'cli' a 
+bit later).
+
+ZERO effect on drivers. The calling convention is 100% the same as far as 
+the driver is concerned: ->suspend() is called with interrupts on and a 
+fully working machine, and ->suspend_late() called with interrupts off.
+
+The only difference is the _mechanism_ of turning interrupts off. NOTHING 
+else.
+
+> I first would like to understand what _exactly_ breaks on the iBook reported to
+> have problems.
+
+I bet it's code like the USB one:
+
+	int usb_hcd_pci_resume(struct pci_dev *dev)
+	{
+
+	#ifdef CONFIG_PPC_PMAC
+	        /* Reenable ASIC clocks for USB */
+	        if (machine_is(powermac)) {
+	                struct device_node *of_node;
+
+	                of_node = pci_device_to_OF_node(dev);
+	                if (of_node)
+	                        pmac_call_feature(PMAC_FTR_USB_ENABLE,
+	                                                of_node, 0, 1);
+	        }
+	#endif
+	..
+	        retval = pci_enable_device(dev);  
+
+and now pci_enable_device() calls pci_raw_set_power_state(), which does:
+
+	        if (dev->current_state == state) {
+	                /* we're already there */
+	                return 0;
+		} else ..
+
+which means that it doesn't actually _do_ anything, because it thinks that 
+'current_state' was already PCI_D0. But if the device was totally turned 
+off, that's wrong. 
+
+(background: pci_restore_standard_config() will have done 
+pci_raw_set_power_state(PCI_D0) with the device clocks off, which wouldn't 
+actualyl have _done_ anythign to the device, but then it does
+
+	dev->current_state = PCI_D0;
+
+Maybe the simplest thing to do migth be to replace that with a
+
+	pci_update_current_state(dev, PCI_D0);
+
+instead, to try to read back the state explicitly in 
+pci_restore_standard_config()).
+
+Best test:
+
+Ben, does this trivial patch make any difference for those powermacs?
+
+		Linus
+---
+ drivers/pci/pci.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index 17bd932..97e1c38 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -1419,7 +1419,7 @@ int pci_restore_standard_config(struct pci_dev *dev)
+ 		}
+ 	}
+ 
+-	dev->current_state = PCI_D0;
++	pci_update_current_state(dev, PCI_D0);
+ 
+ 	return 0;
+ }
