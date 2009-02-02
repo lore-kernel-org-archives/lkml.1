@@ -1,162 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZBBWzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbZBBW5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754206AbZBBWzp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 17:55:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbZBBWz1
+	id S1758135AbZBBW5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 17:57:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbZBBW5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 17:55:27 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44105 "EHLO mx2.redhat.com"
+	Mon, 2 Feb 2009 17:57:14 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35637 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756576AbZBBWzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 17:55:24 -0500
-Message-ID: <498779D6.7010304@redhat.com>
-Date: Mon, 02 Feb 2009 16:55:18 -0600
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1753201AbZBBW5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 17:57:13 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+Date: Mon, 2 Feb 2009 23:56:32 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <alpine.LFD.2.00.0902021413040.3247@localhost.localdomain> <200902022333.51017.rjw@sisk.pl>
+In-Reply-To: <200902022333.51017.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       t-sato@yk.jp.nec.com
-Subject: [PATCH V4] Allow SysRq emergency thaw to thaw frozen filesystems
-References: <496EB639.6090800@redhat.com>	<4970E087.8020308@redhat.com>	<4970E4FB.7040407@redhat.com> <20090130134009.02d4a576.akpm@linux-foundation.org>
-In-Reply-To: <20090130134009.02d4a576.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902022356.33094.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that the filesystem freeze operation has been elevated
-to the VFS, and is just an ioctl away, some sort of safety net
-for unintentionally frozen root filesystems may be in order.
+On Monday 02 February 2009, Rafael J. Wysocki wrote:
+> On Monday 02 February 2009, Linus Torvalds wrote:
+> > 
+> > On Mon, 2 Feb 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > I think it would be easier to make ACPI allow us to run AML with interrupts
+> > > off.
+> > 
+> > Well, I'd agree, except I have this strong memory of us having known bugs 
+> > with ACPI turning hard-interrupts on again. Similarly, it uses mutexes etc 
+> > that simply don't work with interrupts off and/or may turn them on again 
+> > thanks to scheduling.
+> > 
+> > "Fixing" that seems not very easy. ACPI has a bad habit of being _really_ 
+> > hard to fix in this area.
+> > 
+> > I do agree that _if_ we can just fix ACPI, we wouldn't have these issues, 
+> > and we should  just call it with interrupts disabled with our existing 
+> > code. But my previous email was a "maybe we can do it like this" kind of 
+> > thing, which might allow us to use ACPI with none of the irq-off issues.
+> 
+> Well, I think both will be difficult, this way or another. :-)
+> 
+> I'll have a look at the ACPI thing.
 
-The timeout thaw originally proposed did not get merged, but
-perhaps something like this would be useful in emergencies.
+Generally speaking, we'd need to run acpi_evaluate_object() with interrupts
+off.
 
-For example, freeze /path/to/mountpoint may freeze your
-root filesystem if you forgot that you had that unmounted.
+There are two apparent problems with that, from a quick look:
 
-I chose 'j' as the last remaining character other than 'h'
-which is sort of reserved for help (because help is generated
-on any unknown character).
+* The ACPI_MTX_INTERPRETER mutex needs to be acquired, but we know we won't
+  need that mutex with interrupts off, so presumably we can work around this.
 
-I've tested this on a non-root fs with multiple (nested) freezers,
-as well as on a system rendered unresponsive due to a frozen
-root fs.
-
-(this version fixes a couple small issues raised by Randy Dunlap)
-(and adds sb_lock locking I forgot, as akpm pointed out)
-(Randy's CONFIG_BLOCK fix should still apply over this)
+* Memory allocations with GFP_KERNEL are made, which is even worse, because
+  we really shouldn't do that during suspend _at_ _all_, even during the regular
+  ->suspend() with interrupts on, because there's not guarantee that swap will
+  will be available at that time.  So, for the sake of correctness, we should
+  get rid of the GFP_KERNEL from the ACPI code paths executed during
+  suspend-resume anyway.
 
 Thanks,
--Eric
-
-Signed-off-by: Eric Sandeen <sandeen@redhat.com>
----
-
-Index: linux-2.6/drivers/char/sysrq.c
-===================================================================
---- linux-2.6.orig/drivers/char/sysrq.c	2009-02-02 16:06:49.656638124 -0600
-+++ linux-2.6/drivers/char/sysrq.c	2009-02-02 16:12:01.570637732 -0600
-@@ -346,6 +346,17 @@ static struct sysrq_key_op sysrq_moom_op
- 	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
- };
- 
-+static void sysrq_handle_thaw(int key, struct tty_struct *tty)
-+{
-+	emergency_thaw_all();
-+}
-+static struct sysrq_key_op sysrq_thaw_op = {
-+	.handler	= sysrq_handle_thaw,
-+	.help_msg	= "thaw-filesystems(J)",
-+	.action_msg	= "Emergency Thaw of all frozen filesystems",
-+	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
-+};
-+
- static void sysrq_handle_kill(int key, struct tty_struct *tty)
- {
- 	send_sig_all(SIGKILL);
-@@ -396,9 +407,9 @@ static struct sysrq_key_op *sysrq_key_ta
- 	&sysrq_moom_op,			/* f */
- 	/* g: May be registered by ppc for kgdb */
- 	NULL,				/* g */
--	NULL,				/* h */
-+	NULL,				/* h - reserved for help */
- 	&sysrq_kill_op,			/* i */
--	NULL,				/* j */
-+	&sysrq_thaw_op,			/* j */
- 	&sysrq_SAK_op,			/* k */
- #ifdef CONFIG_SMP
- 	&sysrq_showallcpus_op,		/* l */
-Index: linux-2.6/fs/buffer.c
-===================================================================
---- linux-2.6.orig/fs/buffer.c	2009-02-02 16:06:49.656638124 -0600
-+++ linux-2.6/fs/buffer.c	2009-02-02 16:16:46.052574960 -0600
-@@ -258,6 +258,31 @@ struct super_block *freeze_bdev(struct b
- }
- EXPORT_SYMBOL(freeze_bdev);
- 
-+void do_thaw_all(unsigned long unused)
-+{
-+	struct super_block *sb;
-+	char b[BDEVNAME_SIZE];
-+
-+	spin_lock(&sb_lock);
-+	list_for_each_entry(sb, &super_blocks, s_list) {
-+		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
-+			printk(KERN_WARNING "Emergency Thaw on %s\n",
-+			       bdevname(sb->s_bdev, b));
-+	}
-+	spin_unlock(&sb_lock);
-+	printk(KERN_WARNING "Emergency Thaw complete\n");
-+}
-+
-+/**
-+ * emergency_thaw_all -- forcibly thaw every frozen filesystem
-+ *
-+ * Used for emergency unfreeze of all filesystems via SysRq
-+ */
-+void emergency_thaw_all(void)
-+{
-+	pdflush_operation(do_thaw_all, 0);
-+}
-+
- /**
-  * thaw_bdev  -- unlock filesystem
-  * @bdev:	blockdevice to unlock
-Index: linux-2.6/include/linux/buffer_head.h
-===================================================================
---- linux-2.6.orig/include/linux/buffer_head.h	2009-02-02 16:06:49.656638124 -0600
-+++ linux-2.6/include/linux/buffer_head.h	2009-02-02 16:12:01.601638741 -0600
-@@ -171,6 +171,7 @@ void __wait_on_buffer(struct buffer_head
- wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
- int fsync_bdev(struct block_device *);
- struct super_block *freeze_bdev(struct block_device *);
-+void emergency_thaw_all(void);
- int thaw_bdev(struct block_device *, struct super_block *);
- int fsync_super(struct super_block *);
- int fsync_no_super(struct block_device *);
-Index: linux-2.6/Documentation/sysrq.txt
-===================================================================
---- linux-2.6.orig/Documentation/sysrq.txt	2009-02-02 16:06:49.657638008 -0600
-+++ linux-2.6/Documentation/sysrq.txt	2009-02-02 16:12:01.618601264 -0600
-@@ -81,6 +81,8 @@ On all -  write a character to /proc/sys
- 
- 'i'     - Send a SIGKILL to all processes, except for init.
- 
-+'j'	- Forcibly "Just thaw it" - filesystems frozen by the FIFREEZE ioctl.
-+
- 'k'     - Secure Access Key (SAK) Kills all programs on the current virtual
-           console. NOTE: See important comments below in SAK section.
- 
-@@ -160,6 +162,9 @@ t'E'rm and k'I'll are useful if you have
- are unable to kill any other way, especially if it's spawning other
- processes.
- 
-+"'J'ust thaw it" is useful if your system becomes unresponsive due to a frozen
-+(probably root) filesystem via the FIFREEZE ioctl.
-+
- *  Sometimes SysRq seems to get 'stuck' after using it, what can I do?
- ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
- That happens to me, also. I've found that tapping shift, alt, and control
-
+Rafael
