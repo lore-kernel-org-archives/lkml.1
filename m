@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbZBBLjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZBBLm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbZBBLjr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 06:39:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752818AbZBBLjh
+	id S1756302AbZBBLm2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 06:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZBBLmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 06:39:37 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:57334 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbZBBLjg (ORCPT
+	Mon, 2 Feb 2009 06:42:19 -0500
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:4214 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752348AbZBBLmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 06:39:36 -0500
-Message-ID: <4986DB72.4070809@s5r6.in-berlin.de>
-Date: Mon, 02 Feb 2009 12:39:30 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+	Mon, 2 Feb 2009 06:42:19 -0500
+Date: Mon, 2 Feb 2009 11:42:16 +0000
+From: Mark Brown <broonie@sirena.org.uk>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: sameo@openedhand.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] mfd: Improve diagnostics for WM8350 ID register probe
+Message-ID: <20090202114215.GA19282@sirena.org.uk>
+References: <1232727516-5049-1-git-send-email-broonie@opensource.wolfsonmicro.com> <1232727516-5049-2-git-send-email-broonie@opensource.wolfsonmicro.com> <1232727516-5049-3-git-send-email-broonie@opensource.wolfsonmicro.com> <20090130121009.6de9f11c.akpm@linux-foundation.org> <20090202110013.GA16510@sirena.org.uk>
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC][PATCH] create workqueue threads only when needed
-References: <20090127001708.GA4815@nowhere> <4986B205.2040807@s5r6.in-berlin.de> <1233565528.18767.80.camel@pasglop> <200902021014.10203.oliver@neukum.org>
-In-Reply-To: <200902021014.10203.oliver@neukum.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090202110013.GA16510@sirena.org.uk>
+X-Cookie: Hackers of the world, unite!
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum wrote:
-> Am Monday 02 February 2009 10:05:28 schrieb Benjamin Herrenschmidt:
-[I wrote]
->> > Work which /may/ sleep longer, for example performs SCSI transactions,
->> > needs to go into a private workqueue or other kind of context.
->> 
->> Well, it's a bit silly to allocate a private workqueue with all it's
->> associated per CPU kernel threads for something as rare as resetting
->> your eth NIC ... or even SCSI error handling in fact.
-> 
-> How do you avoid a deadlock if SCSI error handling doesn't use
-> a dedicated workqueue?
+On Mon, Feb 02, 2009 at 11:00:17AM +0000, Mark Brown wrote:
+> On Fri, Jan 30, 2009 at 12:10:09PM -0800, Andrew Morton wrote:
 
-SCSI error handling happens in dedicated per-Scsi_Host threads.  These
-look like candidates for some kind of thread pool implementation too
-though (like Arjan's kernel/async.c), especially since a Scsi_Host
-instance is sometimes actually a per-target instance.
+> > Reading a bunch of bytes into a u16 looks a bit fishy from the endianness
+> > point of view?
 
-But I thought primarily about scsi_add_device and scsi_remove_device and
-friends.  Incidentally, device probing is exactly what Arjan's fastboot
-facility is targeting.  (Sometimes device shutdown is slow too and wants
-to be parallelized versus other bus event handling then.)
--- 
-Stefan Richter
--=====-==--= --=- ---=-
-http://arcgraph.de/sr/
+> Hrm, yeah.  I'll send a patch for this.  Shouldn't be an issue in
+> practice since this is a primary PMIC and is unlikely to be used to
+> power anything with the wrong endianness.
+
+...or not, the code is already OK.  The next block of code uses
+be16_to_cpu() on all the values before they're actually used.
