@@ -1,72 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbZBBCJn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbZBBCTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbZBBCJn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 21:09:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752907AbZBBCJe
+	id S1756174AbZBBCTc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 21:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZBBCTW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 21:09:34 -0500
-Received: from mail.crca.org.au ([67.207.131.56]:56652 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751748AbZBBCJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 21:09:34 -0500
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] [PATCH 3/3] PCI PM: Make warning in
- pci_legacy_suspend more useful
-From: Nigel Cunningham <ncunningham@crca.org.au>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200902012234.25165.rjw@sisk.pl>
-References: <200902012229.27517.rjw@sisk.pl>
-	 <200902012234.25165.rjw@sisk.pl>
-Content-Type: text/plain
-Organization: Christian Reformed Churches of Australia
-Date: Mon, 02 Feb 2009 13:10:01 +1100
-Message-Id: <1233540601.21871.10.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Sun, 1 Feb 2009 21:19:22 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59155 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751300AbZBBCTV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 1 Feb 2009 21:19:21 -0500
+Message-ID: <4986581F.7060704@jp.fujitsu.com>
+Date: Mon, 02 Feb 2009 11:19:11 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       Alex Chiang <achiang@hp.com>, djwong@us.ibm.com,
+       Trent Piepho <xyzzy@speakeasy.org>, linux-kernel@vger.kernel.org
+Subject: Re: Q: state of pci express hotplug
+References: <m1fxj06js8.fsf@fess.ebiederm.org>
+In-Reply-To: <m1fxj06js8.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again.
+Eric W. Biederman wrote:
+> Trying to use the current pciehp code, on real hardware in an 
+> interesting topology (more later) I'm not finding it very satisfactory
+> at all.  I am up to at least three show stopper bugs and the code
+> is not doing what I really need it to do, so I am looking at a significant
+> rewrite patch effort to make this code usable.
+>
 
-On Sun, 2009-02-01 at 22:34 +0100, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+I'd like to know details of the bugs. Could you please show the
+details of the bugs?
+
+> Am I unique in thinking there is a lot that needs to be done?
+> Is there current work in progress to make the pci hotplug work better?
 > 
-> The warning in pci_legacy_suspend() would be much more useful if it
-> printed the name of the function that did the wrong thing.  Make it
-> do so.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/pci/pci-driver.c |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/pci/pci-driver.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pci-driver.c
-> +++ linux-2.6/drivers/pci/pci-driver.c
-> @@ -365,7 +365,9 @@ static int pci_legacy_suspend(struct dev
->  		if (pci_dev->state_saved)
->  			goto Fixup;
->  
-> -		if (WARN_ON_ONCE(pci_dev->current_state != PCI_D0))
-> +		if (WARN_ONCE(pci_dev->current_state != PCI_D0,
-> +				"PCI PM: Device state not saved by %pF\n",
-> +				drv->suspend))
->  			goto Fixup;
->  	}
 
-Am I right in thinking that WARN_ONCE will only warn about the first
-driver that has the problem? If so, wouldn't it be better to make it
-warn about all drivers that have the problem, but only once per device?
+In my personal opinion, there are at least the following items need to
+be done for pciehp.
 
-Regards,
+o Possible bugs
+  -Current pcie_isr function (interrupt service routine of pciehp) has
+   a possibility to get into endless loop in the case that bits in Slot
+   Status register is set again immediately after cleared. According to
+   the past discussion in the pcihpd-discuss ML, this can happen on the
+   power fault detected bit on some platforms.
 
-Nigel
+  -Current pciehp disables software notification of adapter presence
+   changed event and MRL changed event when slot is turned off. Because
+   of this, there is no way to detect those events on empty slots in the
+   current pciehp implementation.
+
+o Missing Features
+  -Current pciehp doesn't support Data Link Layer State Changed event
+   software notification.
+  -No event notification mechanism to userland.
+  -When hot-removal request is initiated through the Attention Button
+   press, there is no chance to prepare hot-removal (unmount for example).
+  -Userland utilities.
+
+o Cleanups
+  -slot list is not needed because there is only one slot under the
+   switch downstream port.
+  -hpc_ops is redundant.
+  -some fields in the struct controller, struct slot are redundant.
+
+o Misc
+  -I don't think power fault management routines are well tested.
+  -I don't think EMI management routines are well tested.
+
+Thanks,
+Kenji Kaneshige
+
 
