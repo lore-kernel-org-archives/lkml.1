@@ -1,66 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758098AbZBBU4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbZBBU5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758098AbZBBU4a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 15:56:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZBBU4W
+	id S1758075AbZBBU5u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 15:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZBBU5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 15:56:22 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55262 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753185AbZBBU4V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 15:56:21 -0500
-Date: Mon, 2 Feb 2009 12:55:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andreas Schwab <schwab@suse.de>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-In-Reply-To: <alpine.LFD.2.00.0902021241430.3247@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902021251130.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <1233568479.18767.86.camel@pasglop>  <alpine.LFD.2.00.0902020902320.4704@localhost.localdomain> <1233606805.18767.97.camel@pasglop> <alpine.LFD.2.00.0902021241430.3247@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 2 Feb 2009 15:57:42 -0500
+Received: from mx2.suse.de ([195.135.220.15]:56688 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752166AbZBBU5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 15:57:41 -0500
+Message-ID: <49875DD9.8070209@suse.com>
+Date: Mon, 02 Feb 2009 15:55:53 -0500
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: david.altobelli@hp.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] increment hpilo version
+References: <20090123142529.GA5298@ldl.fc.hp.com>	<49874FE2.6030800@suse.com> <20090202121412.f9687c29.akpm@linux-foundation.org>
+In-Reply-To: <20090202121412.f9687c29.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-
-On Mon, 2 Feb 2009, Linus Torvalds wrote:
+Andrew Morton wrote:
+> On Mon, 02 Feb 2009 14:56:18 -0500
+> Jeff Mahoney <jeffm@suse.com> wrote:
 > 
-> I suspect that we could possibly make ACPI happy by actually leaving 
-> interrupts "enabled" in the suspend-late (and early-resume) paths, but 
-> with all hardware interrupts actually turned off. But that's really just a 
-> "let's fool people by turning off interrupts a different way" thing - it 
-> in no way really changes any fundamental issues.
+>> -----BEGIN PGP SIGNED MESSAGE-----
+>> Hash: SHA1
+>>
+>> David Altobelli wrote:
+>>> Bump hpilo module version to indicate that the open/close bug is fixed.
+>> Hi David -
+>>
+>> Was the open/close bug fixed in a differently than with your patch in
+>> "[PATCH] hpilo open/close fix" ? If not, the fix didn't make it into
+>> mainline, but this version bump did.
+> 
+> I'll be sending hpilo-open-close-fix.patch in the next batch, this week
+> some time.
 
-Btw, I do think that we can make ACPI happy regardless.
+Ok, thanks. I was just making sure it didn't get dropped by accident.
 
-We quite commonly call into ACPI during the early boot sequence, when 
-interrupts are disabled for all the same reasons. We don't get the 
-"might_sleep()" warnings, simply because we have these kinds of checks:
+- -Jeff
 
-	..
-        if ((!in_atomic() && !irqs_disabled()) ||
-                    system_state != SYSTEM_RUNNING || oops_in_progress)
-		return;
-	..
+> If you grab http://userweb.kernel.org/~akpm/mmotm/series you can see
+> what I have queued for 2.6.29.  Look for
+> 
+> #
+> # 2.6.29 queue:
+> #
+> 
+> and
+> 
+> #
+> # more 2.6.29 queue:
+> #
+> 
+> The first is soon-to-go stuff, the second is
+> to-go-after-a-bit-more-baking stuff.
+> 
+> 
+> Also,
+> 
+> #
+> # others:
+> #
+> 
+> is stuff which I think might be needed in 2.6.29 but which go via
+> subsystem maintainers trees.
+> 
+> The latter is not (yet) as lengthy as usual, but there's still quite a
+> bit of material:
+> 
+> 
+> acpi-kconfig-fix-acpi_container-module-name.patch
+> acpi-dock-dont-eval-_sta-on-every-show_docked-sysfs-read.patch
+> arm-at91-fix-nr_aic_irqs-undeclared.patch
+> drivers-ata-sata_silc-needs-dmih.patch
+> pata_amd-program-fifo.patch
+> pata_legacy-for-vlb-32bit-pio-dont-try-tricks-with-slop.patch
+> mfd-initialise-wm8350-interrupts-earlier.patch
+> mfd-mark-wm835x-usb_slv_500ma-bit-as-accessible.patch
+> mfd-pcf50633-terminate-i2c_device_id-list.patch
+> mtd-physmap-fix-wrong-free-and-del_mtd_partitiondevice.patch
+> net-dont-use-in_atomic-in-gfp_any.patch
+> documentation-connector-cn_testc-dont-use-gfp_any.patch
+> nommu-fix-a-number-of-issues-with-the-per-mm-vma-patch.patch
+> powerpc-fix-code-for-reserved-memory-spanning-across-nodes.patch
+> atmel_serial-might-lose-modem-status-change.patch
+> pipe_rdwr_fasync-fix-the-error-handling-to-prevent-the-leak-crash.patch
+> xtensa-fix-compilation-somewhat.patch
+> 
 
-ie we know that "system_state != SYSTEM_RUNNING" is a special case where 
-things are allowed to do things that they aren't normally allowed to do.
 
-I suspect that late-suspend/early-resume is just exactly the same. It's a 
-boot, after all. Just let ACPI do its odd things, despite the fact that 
-interrupts are disabled. The fact that doing them while the system is 
-_running_ is invalid doesn't necessarily mean that it is invalid under 
-bootup or suspend/resume.
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-We might even make it possible to have timers going, if we end up saying 
-"we'll mask all hardware interrupts _except_ for the timer". I'm not sure 
-that is necessarily something we can do portably, though..
-
-			Linus
+iEYEARECAAYFAkmHXdkACgkQLPWxlyuTD7IvsACeNszw/i/0eXWLzNn0+3JidfU/
+kLsAn0fz+nNC+lFUxhq5dsT5s37Tz0Al
+=yzFe
+-----END PGP SIGNATURE-----
