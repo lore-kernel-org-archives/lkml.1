@@ -1,90 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758250AbZBBUvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbZBBUvz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758250AbZBBUvf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 15:51:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753867AbZBBUvY
+	id S1755816AbZBBUvz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 15:51:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbZBBUvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 15:51:24 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39241 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753579AbZBBUvX (ORCPT
+	Mon, 2 Feb 2009 15:51:41 -0500
+Received: from mail2.shareable.org ([80.68.89.115]:43527 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753225AbZBBUvk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 15:51:23 -0500
-Date: Mon, 2 Feb 2009 12:50:45 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andreas Schwab <schwab@suse.de>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-In-Reply-To: <1233606805.18767.97.camel@pasglop>
-Message-ID: <alpine.LFD.2.00.0902021241430.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <1233568479.18767.86.camel@pasglop>  <alpine.LFD.2.00.0902020902320.4704@localhost.localdomain> <1233606805.18767.97.camel@pasglop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 2 Feb 2009 15:51:40 -0500
+Date: Mon, 2 Feb 2009 20:51:02 +0000
+From: Jamie Lokier <jamie@shareable.org>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, Arnd Bergmann <arnd@arndb.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       Eric Sandeen <sandeen@sandeen.net>, mfasheh@suse.com,
+       joel.becker@oracle.com, linux-kernel@vger.kernel.org,
+       xfs-masters@oss.sgi.com, viro@zeniv.linux.org.uk,
+       Ankit Jain <me@ankitjain.org>, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [xfs-masters] [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility with legacy xfs ioctls
+Message-ID: <20090202205102.GG28129@shareable.org>
+References: <20090130171423.f99c88d0.akpm@linux-foundation.org> <20090201164130.GA32276@infradead.org> <4985D48A.6090007@panasas.com> <200902020131.04203.arnd@arndb.de> <4986AEE8.5040609@panasas.com> <Pine.LNX.4.64.0902020942230.11930@anakin> <4986BE07.6090000@panasas.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4986BE07.6090000@panasas.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Boaz Harrosh wrote:
+> No the natural alignment is what it is, after the application of
+> __attribute__((packed(1))). In a well defined structure that is a no-opt.
+> But yes in ai64 the gcc programmers got lazy and did not make that analysis
+> after laying out the structure.
 
+No.  That's what you *want* packed to mean, but it doesn't mean that.
 
-On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
->
-> And won't you have a potential problem here if ACPI is doing clock
-> gating or turning off the whole power plane ? IE. If that happens, your
-> pci_restore_state() done early with interrupts off will fail as well...
+__attribute__ packed on a struct definition means to pack the
+structure _and_ set its assumed alignment to 1.
 
-Well, it won't fail any worse than it does anyway. 
+This is what the packed attribute historically means, and it cannot be
+changed without breaking existing code.
 
-> Since the root of that problem seems to be related to interrupts, maybe
-> the right approach is to have drivers disable it on suspend (ie,
-> disable_irq -> disabled at PIC level)
+If you want to remove padding from a structure, but still keep its
+natural alignment, you do it with two attributes together:
+__attribute__((packed, aligned(4))).  You have to choose the alignment
+you want in that case.
 
-No.
+GCC manual:
+     When used on a struct, or struct member, the `aligned' attribute
+     can only increase the alignment; in order to decrease it, the
+     `packed' attribute must be specified as well.  When used as part
+     of a typedef, the `aligned' attribute can both increase and
+     decrease alignment, and specifying the `packed' attribute will
+     generate a warning.
 
-We went through this, you apparently didn't follow it.
+It's a counterintuitive, because you must use
+__attribute__((aligned(1))) when declaring a variable to reduce its
+alignment, but you must use __attribute__((packed)) when declaring a
+struct type.  Doing it at the end of a struct typedef is a weird mix
+of semantics, so don't do that.
 
-You cannot disable_irq() at suspend/resume time, because that means that 
-when you have shared interrupts the device can no longer use interrupts in 
-those paths - because they may be disabled by totally different devices.
+By the way, this discussion is why the "-Wpacked" and "-Wpadding"
+options are available.
 
-And a lot of devices WILL NOT WORK without interrupts. Including 
-suspend/resume events. Think something as common as USB.
+> The base address can be unaligned even if the structure is aligned. In that
+> case you need the __atrubute__((aligned)) thingy.
 
-> It's not a trivial problem...
+No, because __attribute__((packed)) on a struct doesn't mean what you
+want it to mean.  Use __attribute((packed,aligned(4))) if that's what
+you want.
 
-That's the understatement of the year.
+> Please note that I gave up on the compiler and understand that the
+> use of __packed is dangerous in some cases, sigh. My standing point
+> is to make sure there are no guesses left, and a BUILD_BUG_ON to
+> make sure of that.
 
-The whole reason we want to do the two-phase commit thing where 
-"suspend()" starts the thing and "suspend_late()" finalizes things is 
-exactly all about these inter-connections and interrupts in particular.
+In this code, it's not a bug because it must be backward compatible
+with existing binary code.  "Fixing" the padding breaks
+compatibility, which is pointless for this patch.
 
-I suspect that we could possibly make ACPI happy by actually leaving 
-interrupts "enabled" in the suspend-late (and early-resume) paths, but 
-with all hardware interrupts actually turned off. But that's really just a 
-"let's fool people by turning off interrupts a different way" thing - it 
-in no way really changes any fundamental issues.
-
-Whether you use "disable_irq() over all interrupts" or "local_irq_save -> 
-local_irq_restore" really doesn't change anything. You cannot do this in a 
-single phase, because that means that you randomly disable interrupts too 
-early (or enable them too late) when drivers still _require_ them.
-
-So the only workable way to handle interrupts is one of two:
-
- - the two-phase thing we do. Do a first phase with interrupts enabled, 
-   then the actual low-level "turn off" with interrupts disabled (and the 
-   reverse on resume), so that device drivers never have to see the case 
-   of "interrupt happens with dead device", while still having the 
-   _guarantee_ that interrupts work for part of their suspend/resume 
-   cycle.
-
- - expecting all drivers to be perfect and handle interrupts correcly in
-   the driver.
-
-Quite frankly, I don't think the second one is workable. It may be the 
-optimal one in theory, but it's never worked for us in practice.
-
-		Linus
+-- Jamie
