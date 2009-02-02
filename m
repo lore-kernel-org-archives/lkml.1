@@ -1,64 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZBBLGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZBBL0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZBBLGh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 06:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZBBLG0
+	id S1755201AbZBBL0v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 06:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZBBL0m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 06:06:26 -0500
-Received: from netgear.net.ru ([195.178.208.66]:34056 "EHLO tservice.net.ru"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752551AbZBBLGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 06:06:25 -0500
-Date: Mon, 2 Feb 2009 14:06:13 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: James Morris <jmorris@namei.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] connector: create connector workqueue only while needed once
-Message-ID: <20090202110613.GA11413@ioremap.net>
-References: <498638ad.1438560a.537e.51b8@mx.google.com>
+	Mon, 2 Feb 2009 06:26:42 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:58377 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752676AbZBBL0l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 06:26:41 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Sww9fHhk+b4T1zG7eay1vG4fonmkxJVj27MthB++AV0KRwCRMfsogbk6b64XkY2R0y
+         4JrHUlzmbDJLI7DT/s2G8hQ3wuezs5E3+cS+fkwTDHLdza9EnP+1qHHshEYBs1d4809d
+         xOtk2LVRAIK+bkUzLO3M/UxVGADSN/P4a7WtA=
+Date: Mon, 2 Feb 2009 12:26:31 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC][PATCH] create workqueue threads only when needed
+Message-ID: <20090202112629.GA5757@nowhere>
+References: <20090127001708.GA4815@nowhere> <20090126163015.7f879b18@infradead.org> <20090131180347.GC5884@nowhere> <20090131101502.7ce8e7af@infradead.org> <20090131182843.GD5884@nowhere> <1233524261.18767.60.camel@pasglop> <20090202022414.GA5006@nowhere> <1233554443.18767.71.camel@pasglop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498638ad.1438560a.537e.51b8@mx.google.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1233554443.18767.71.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Mon, Feb 02, 2009 at 05:00:43PM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-02-02 at 03:24 +0100, Frederic Weisbecker wrote:
+> > On Mon, Feb 02, 2009 at 08:37:41AM +1100, Benjamin Herrenschmidt wrote:
+> > > 
+> > > > I don't know, most of those I've looked on are not documented about the reason
+> > > > for a private workqueue. I guess most of them can use the usual kevent.
+> > > 
+> > > The main problem with kevent is that it gets clogged up.
+> > 
+> > 
+> > I don't think so. Here is a snapshot of the workqueue tracer in my
+> > box currently:
+> 
+> That's not quite what I meant ... 
+> 
+> The main problem with keventd I'd say is that it's used in all sort of
+> exeptional code path (ie, driver reset path, error handling, etc...) for
+> things that will msleep happily for tenth milliseconds, that sort of
+> thing.
+> IE. It will be pretty responsive -in general- but can suffer form
+> horrible latencies every now and then.
 
-On Sun, Feb 01, 2009 at 04:05:01PM -0800, Frederic Weisbecker (fweisbec@gmail.com) wrote:
-> The netlink connector uses its own workqueue to relay the datas sent from
-> userspace to the appropriate callback.
-> If you launch the test from Documentation/connector and change it a bit to send
-> a high flow of data, you will see thousands of events coming to the "cqueue" workqueue
-> by looking at the workqueue tracer.
-> 
-> This flow of events can be sent very quickly. So, to not encumber the kevent workqueue and
-> delay other jobs, the "cqueue" workqueue should remain.
-> 
-> But this workqueue is pointless most of the time, it will always be created (assuming you have
-> built it of course) although only developpers with specific needs will use it.
-> 
-> So avoid this "most of the time useless task", this patch proposes to create this workqueue only when needed
-> once.
-> The first jobs to be sent to connector callbacks will be sent to kevent while the "cqueue" thread creation
-> will be scheduled to kevent too.
-> 
-> The following jobs will continue to be scheduled to keventd until the cqueue workqueue is created, and then
-> the rest of the jobs will continue to perform as usual, through this dedicated workqueue.
-> 
-> Each time I tested this patch, only the first event was sent to keventd, the rest has been sent to cqueue which
-> have been created quickly.
-> 
-> Also, this patch fixes some trailing whitespaces on the connector files.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 
-Looks very good, thanks a lot Frederic.
-Ack.
+So I think it should be reserved for small, quick jobs which don't sleep for
+too much time.
+I can improve the workqueue tracer to localize these callsites if needed. And
+why not warn on such cases if some kind of option is selected.
 
--- 
-	Evgeniy Polyakov
+ 
+> Cheers,
+> Ben.
+> 
+
