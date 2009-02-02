@@ -1,105 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755216AbZBBX6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758834AbZBCAA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755216AbZBBX6O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 18:58:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753812AbZBBX56
+	id S1758834AbZBCAA0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:00:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZBCAAM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 18:57:58 -0500
-Received: from mga14.intel.com ([143.182.124.37]:9854 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753417AbZBBX56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 18:57:58 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,368,1231142400"; 
-   d="scan'208";a="106331797"
-Subject: Re: [PATCH v2] NOHZ: fix nohz on cpu unplug
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: Suresh Siddha <suresh.b.siddha@intel.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <200902021323.44015.borntraeger@de.ibm.com>
-References: <200901301729.30284.borntraeger@de.ibm.com>
-	 <200902021058.45230.borntraeger@de.ibm.com>
-	 <200902021323.44015.borntraeger@de.ibm.com>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Mon, 02 Feb 2009 15:57:03 -0800
-Message-Id: <1233619023.16238.12.camel@vayu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.0 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 19:00:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60907 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752584AbZBCAAK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 19:00:10 -0500
+Date: Mon, 2 Feb 2009 15:59:44 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <200902030045.19416.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0902021551050.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902022331.49131.rjw@sisk.pl> <alpine.LFD.2.00.0902021508340.3247@localhost.localdomain> <200902030045.19416.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 04:23 -0800, Christian Borntraeger wrote:
-> After some testing, I think this patch is better:
-> [PATCH] NOHZ: fix nohz on cpu unplug
+
+
+On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
 > 
-> From: Christian Borntraeger <borntraeger@de.ibm.com>
+> So, perhaps we can just loop over the interrupt links and disable them all
+> at this point?
+
+Well, we could, but I think it's actually inferior. Why? Because timer 
+interrupts can come over those too.
+
+So we're really better off just looping over our own software irq_desc 
+arrays. That has the feature that 
+
+ (a) we can easily mark the individual irqs if we want to - in ways that 
+     we can never do if we end up looping over some hardware concept like 
+     the IO-APIC inputs. 
+
+     IOW, we can easily add a magic flag for registering a timer 
+     interrupt (in fact, I guess we already have IRQF_TIMER), but we can 
+     also expand on this in the future with other purely software 
+     interrupt flags - ie a driver that knows it is irq-safe could just 
+     tell us so, and we wouldn't need to disable that irq if there are 
+     only irq-safe drivers registered on it.
+
+ (b) it's portable, and handles re-sending the interrupts correctly 
+     (unlike just turning the interrupts off), and doesn't have any issues 
+     with worrying about polarity etc complicating issues.
+
+     Looping over the irq links is really quite hard. Sure, we can do the 
+     ACPI thing, but that's platform-specific, _and_ it's not actually 
+     guaranteed to hit everything anyway (ie it likely only disables the 
+     mapped ones, not necessarily at all directly connected ones - IDE 
+     and USB tend to be direct irq's because they are often on the same 
+     chip as the irq controller).
+
+> > @@ -1419,7 +1419,7 @@ int pci_restore_standard_config(struct pci_dev *dev)
+> > -	dev->current_state = PCI_D0;
+> > +	pci_update_current_state(dev, PCI_D0);
 > 
-> After using cpu unplug I have seen one cpu with full ticks, even
-> on a idle systems. It turns out that nohz.cpu_mask is not updated on
-> cpu unplug. 
-> In select_nohz_load_balancer we check if the system is completely
-> idle to turn of load balancing. We compare cpu_online_map with
-> nohz.cpu_mask.
-> Since cpu_online_map is updated on cpu unplug, but nohz.cpu_mask is
-> not, the check fails and the scheduler believes that we need an 
-> "idle load balancer" even on a fully idle system. Since the ilb 
-> cpu does not deactivate the timer tick this breaks NOHZ.
+> Good idea anyway.
+
+Yeah, it probably makes sense to do this regardless of any PPC issues. 
+Exactly because we don't call the platform code.
+
+> Or perhaps put
 > 
-> This patch clear the nohz bits in the migration_call, a function that
-> is already called by the cpu hotplug notifier.
+> current_state = PCI_UNKNOWN;
 > 
-> Opinions?
+> under that 'if (machine_is(powermac))' ?
 
-Hi,
+Yes. That would be ok, but in _theory_ ACPI could hit the same thing, and 
+then the pci_restore_standard_config() really needs to do that anyway.
 
-select_nohz_load_balancer() already takes care of one cpu offline
-scenario. It missed one more scenario leading to the issue you
-explained. We should take care of this in select_nohz_load_balancer().
-
-Does this patch fix the issue? Thanks.
-
----
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 96439a4..8a0419b 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4026,19 +4026,24 @@ int select_nohz_load_balancer(int stop_tick)
- 	int cpu = smp_processor_id();
- 
- 	if (stop_tick) {
--		cpumask_set_cpu(cpu, nohz.cpu_mask);
- 		cpu_rq(cpu)->in_nohz_recently = 1;
- 
--		/*
--		 * If we are going offline and still the leader, give up!
--		 */
--		if (!cpu_active(cpu) &&
--		    atomic_read(&nohz.load_balancer) == cpu) {
-+		if (!cpu_active(cpu) {
-+			if (atomic_read(&nohz.load_balancer) != cpu)
-+				return 0;
-+
-+			/*
-+			 * If we are going offline and still the leader,
-+			 * give up!
-+			 */
- 			if (atomic_cmpxchg(&nohz.load_balancer, cpu, -1) != cpu)
- 				BUG();
-+
- 			return 0;
- 		}
- 
-+		cpumask_set_cpu(cpu, nohz.cpu_mask);
-+
- 		/* time for ilb owner also to sleep */
- 		if (cpumask_weight(nohz.cpu_mask) == num_online_cpus()) {
- 			if (atomic_read(&nohz.load_balancer) == cpu)
-
-
+			Linus
