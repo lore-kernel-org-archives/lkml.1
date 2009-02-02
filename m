@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbZBBWt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbZBBWt7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758871AbZBBWt0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 17:49:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752809AbZBBWtS
+	id S1759219AbZBBWt7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 17:49:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZBBWtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 17:49:18 -0500
-Received: from gate.crashing.org ([63.228.1.57]:41959 "EHLO gate.crashing.org"
+	Mon, 2 Feb 2009 17:49:49 -0500
+Received: from tundra.namei.org ([65.99.196.166]:1164 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752596AbZBBWtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 17:49:17 -0500
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
-	 <alpine.LFD.2.00.0902021241430.3247@localhost.localdomain>
-	 <alpine.LFD.2.00.0902021251130.3247@localhost.localdomain>
-	 <200902022239.02453.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 09:48:47 +1100
-Message-Id: <1233614927.18767.121.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1752786AbZBBWtt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 17:49:49 -0500
+Date: Tue, 3 Feb 2009 09:47:38 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dave@linux.vnet.ibm.com, matthltc@us.ibm.com, zohar@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/2] TPM: refactoring and integrity
+In-Reply-To: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
+Message-ID: <alpine.LRH.1.10.0902030946070.19113@tundra.namei.org>
+References: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 14:05 -0800, Linus Torvalds wrote:
-> Well, I don't think anybody wants to (or necessarily has the ability) 
-> touch ACPI internals.
+On Mon, 2 Feb 2009, Rajiv Andrade wrote:
+
+> This patchset contains a refactoring patch and integrity one. The first addresses Matt Helsley and Dave Hansen's comments on replacing the data[] vectors by packed structures making the code easier to read and debug and also consolidates most of the tpm_show_* functions. The second one provides an interface to read and extend PCR values, which is widely used by IMA.
 > 
-Somebody has a rough idea of what underlying kernel support ACPI uses ?
-I know from discussions with Len that it's mostly mutexes... timers
-too ?
+> This version also addresses Matt Helsley's last observation on the timeout_t structure usage to access TPM_CAP_PROP_TIS_DURATION capability, now a new structure is being used, duration_t, whose fields now match exactly as defined in the TPM specification.
+> 
+> Rajiv Andrade (2):
+>   TPM: sysfs functions consolidation
+>   TPM: integrity interface
 
-It might end up being trivial to make it safe to call early with
-interrupts off with the trick you mentioned, since it's really just the
-same as boot as you mentioned.. ie, it's actually safe to take mutexes
-etc... since we -know- no other CPU is running and we aren't scheduling
-etc...
-
-Ben.
+Which kernel are these patches against?  They don't apply to either 
+security-testing or linus.
 
 
+-- 
+James Morris
+<jmorris@namei.org>
