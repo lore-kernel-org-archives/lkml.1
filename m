@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbZBBA1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZBBAcY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbZBBA1h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 19:27:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZBBA12
+	id S1755241AbZBBAcY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 19:32:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZBBAcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 19:27:28 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:60012 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbZBBA11 (ORCPT
+	Sun, 1 Feb 2009 19:32:12 -0500
+Received: from moutng.kundenserver.de ([212.227.17.8]:59093 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751466AbZBBAcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 19:27:27 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=pLpV/PBDcpSCwBf58NCfdlHqZF2NtVGLMIXRlJMjRrRciXrdo4idtKnvcQp1d9UQo
-	WSCOoNn4PnASmiKjDK9lA==
-Date: Sun, 1 Feb 2009 16:26:55 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Sven Wegener <sven.wegener@stealer.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: Peter Zijlstra <peterz@infradead.org>, Dave Chinner <david@fromorbit.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: Fix dirty_bytes/dirty_background_bytes sysctls on
- 64bit arches
-In-Reply-To: <alpine.LNX.2.00.0902010218350.6140@titan.stealer.net>
-Message-ID: <alpine.DEB.2.00.0902011618090.21172@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0811230228070.11384@chino.kir.corp.google.com> <alpine.DEB.2.00.0811230228530.11384@chino.kir.corp.google.com> <alpine.LNX.2.00.0902010218350.6140@titan.stealer.net>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sun, 1 Feb 2009 19:32:11 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [xfs-masters] [PATCH] fs: Add new pre-allocation ioctls to vfs for compatibility with legacy xfs ioctls
+Date: Mon, 2 Feb 2009 01:31:02 +0100
+User-Agent: KMail/1.9.9
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Sandeen <sandeen@sandeen.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, mfasheh@suse.com,
+       joel.becker@oracle.com, linux-kernel@vger.kernel.org,
+       xfs-masters@oss.sgi.com, viro@zeniv.linux.org.uk,
+       Ankit Jain <me@ankitjain.org>, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
+       ocfs2-devel@oss.oracle.com
+References: <20090130171423.f99c88d0.akpm@linux-foundation.org> <20090201164130.GA32276@infradead.org> <4985D48A.6090007@panasas.com>
+In-Reply-To: <4985D48A.6090007@panasas.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.25.146.77
-X-GMailtapped: rientjes
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902020131.04203.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19LENEbkDPjcCPKkPgRuw92wJp7KyPZJX4FYT0
+ g7mf4/RGEz0MTKetY1dOf//XL+bSE6kdc5DA+pddHfZPWHN4IU
+ IcovClN3zwIa1x/tUy/6Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 1 Feb 2009, Sven Wegener wrote:
-
-> We need to pass an unsigned long as the minimum, because it gets casted
-> to an unsigned long in the sysctl handler. If we pass an int, we'll
-> access four more bytes on 64bit arches, resulting in a random minimum
-> value.
+On Sunday 01 February 2009, Boaz Harrosh wrote:
+> Christoph Hellwig wrote:
+> > The structures have been defined exactly like that in XFS (and ocfs2)
+> > before, and there are similar cases in other ioctls handlers.
+> > 
+> > If anyone feels like changing this in some way feel free to wade through
+> > the endless discussions about the pros and cons for it, but I think
+> > doing it in context of this patch is not helpful.
 > 
-> Signed-off-by: Sven Wegener <sven.wegener@stealer.net>
+> OK so ia64 gcc is broken in regard to __attribute__((packed(1))),
+> and it should not be used.
 
-Acked-by: David Rientjes <rientjes@google.com>
+No, the compiler is correct, it has to generate more complex code
+if it cannot assume that data is naturally aligned and the architecture
+does not support unaligned loads. If you don't understand this, please
+at least read the list archives about the last five times this came up
+before claiming that the compiler is broken.
 
+> But clearly the programmer, Like in this patch exactly, should spell
+> out the hole created by padding and spell that hole out and call it
+> __Padding. The porgrammer thought about it, identified there is an hole,
+> please don't drop this information on the floor. Put it in the code so I 
+> don't have to break my head on it.
 
-You'll also need the following since vm_dirty_bytes is declared as an 
-unsigned long.  Andrew, can you queue Sven's fix for rc4 with this folded 
-into it?
+Again, you are missing the point. The patch has to leave out the padding
+and whatnot because the idea of the patch is to provide a
+backwards-compatible API for programs written against the legacy XFS
+API. The original definition of the interface was flawed, but unless you
+can travel back in time to complain about this in the initial submission
+of the XFS file system, you should not blame the entirely correct patch now.
 
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- mm/page-writeback.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -209,7 +209,7 @@ int dirty_bytes_handler(struct ctl_table *table, int write,
- 		struct file *filp, void __user *buffer, size_t *lenp,
- 		loff_t *ppos)
- {
--	int old_bytes = vm_dirty_bytes;
-+	unsigned long old_bytes = vm_dirty_bytes;
- 	int ret;
- 
- 	ret = proc_doulongvec_minmax(table, write, filp, buffer, lenp, ppos);
+	Arnd <><
