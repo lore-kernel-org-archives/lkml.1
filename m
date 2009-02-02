@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZBBT0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756419AbZBBT3D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZBBT0p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 14:26:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZBBT0h
+	id S1756419AbZBBT3D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 14:29:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753155AbZBBT2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 14:26:37 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:50518 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752775AbZBBT0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 14:26:36 -0500
-Date: Mon, 2 Feb 2009 20:26:32 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Adrian Hunter <ext-adrian.hunter@nokia.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MMC: Add Extended CSD as a device attribute
-Message-ID: <20090202202632.2267aa0a@mjolnir.drzeus.cx>
-In-Reply-To: <497D7F74.6050409@nokia.com>
-References: <496E1187.60305@nokia.com>
-	<20090115160527.4cdbe94b.akpm@linux-foundation.org>
-	<4970646E.5020404@nokia.com>
-	<20090124214543.60d7c939@mjolnir.drzeus.cx>
-	<497D7F74.6050409@nokia.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Mon, 2 Feb 2009 14:28:53 -0500
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:49294 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752775AbZBBT2w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 14:28:52 -0500
+Subject: Re: [PATCH] jfs: needs crc32_le
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090202112055.5ad37047.randy.dunlap@oracle.com>
+References: <20090202201637.28896d2f.sfr@canb.auug.org.au>
+	 <20090202112055.5ad37047.randy.dunlap@oracle.com>
+Content-Type: text/plain
+Date: Mon, 02 Feb 2009 13:28:45 -0600
+Message-Id: <1233602925.5943.1.camel@norville.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 26 Jan 2009 11:16:36 +0200
-Adrian Hunter <ext-adrian.hunter@nokia.com> wrote:
+On Mon, 2009-02-02 at 11:20 -0800, Randy Dunlap wrote:
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> JFS needs crc32_le(), so select its library config symbol:
+
+Thanks Randy.  I'll push this one right away.
+
+Shaggy
 
 > 
-> Yes it is mainly just debugging.  It was done as a device attribute for
-> consistency with the other card registers CID and CSD.
+> fs/built-in.o: In function `jfs_statfs':
+> super.c:(.text+0x7c8c0): undefined reference to `crc32_le'
+> super.c:(.text+0x7c8d5): undefined reference to `crc32_le'
 > 
-> Would you prefer #ifdef CONFIG_MMC_DEBUG or debugfs?
-
-debugfs if it's not too much trouble. Noone can claim they didn't
-understand it was only for debugging there. :)
-
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc: Dave Kleikamp <shaggy@austin.ibm.com>
+> ---
+>  fs/jfs/Kconfig |    1 +
+>  1 file changed, 1 insertion(+)
+> 
+> --- linux-next-20090202.orig/fs/jfs/Kconfig
+> +++ linux-next-20090202/fs/jfs/Kconfig
+> @@ -1,6 +1,7 @@
+>  config JFS_FS
+>  	tristate "JFS filesystem support"
+>  	select NLS
+> +	select CRC32
+>  	help
+>  	  This is a port of IBM's Journaled Filesystem .  More information is
+>  	  available in the file <file:Documentation/filesystems/jfs.txt>.
 -- 
-     -- Pierre Ossman
+David Kleikamp
+IBM Linux Technology Center
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
