@@ -1,56 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbZBBXZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758498AbZBBX1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbZBBXZc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 18:25:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753374AbZBBXZY
+	id S1758498AbZBBX1q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 18:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbZBBX1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 18:25:24 -0500
-Received: from wa-out-1112.google.com ([209.85.146.177]:16854 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752913AbZBBXZX convert rfc822-to-8bit (ORCPT
+	Mon, 2 Feb 2009 18:27:37 -0500
+Received: from ti-out-0910.google.com ([209.85.142.191]:55142 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbZBBX1h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 18:25:23 -0500
+	Mon, 2 Feb 2009 18:27:37 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=saWN1zUtyX/pofEv90rPo8QXXgIjWSa9wuawxvYFso/GNO94KBgSTJ6i3qXG90uusn
-         XfN9MTq0qcIPQZOaVpcH38G918WTAVSU0oC+BhNEmh4u/nH7i6i4270pzTqWsLkw/JLP
-         3hxiEPVn5BJq2u3IMjjHBUvOJEHXHE1v2GZlw=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=TiJoP05G9CA63pAApRcl+oE6jcknGJQwTsRIcMHwd5sQXWLific6KfFZBkGW+PnPwb
+         9ASmZyvo2MutDc+i2/9ZuLCAZqIeXeGxUfqI/LpUBOEa6TzV9sogoVWend3W/X6SJXId
+         oaNecT4m8yHzl7FeDeG16CfsVquwjyAvoyVwI=
+Date: Tue, 3 Feb 2009 08:27:19 +0900
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] fix mlocked page counter mismatch
+Message-ID: <20090202232719.GC13532@barrios-desktop>
+References: <20090202061622.GA13286@barrios-desktop> <1233594995.17895.144.camel@lts-notebook>
 MIME-Version: 1.0
-Date: Mon, 2 Feb 2009 18:25:22 -0500
-Message-ID: <a44ae5cd0902021525i28ba9e62jbb87624cc7f6b53d@mail.gmail.com>
-Subject: =?windows-1252?B?Mi42LjI5LXJjMy1naXQzIC0tIGRyaXZlcnMvbWVkaWEvdmlkZW8vY3g4OC9jeDg4LWkyYw==?=
-	=?windows-1252?B?LmM6MTIyOiBlcnJvcjogkXN0cnVjdCBjeDg4X2NvcmWSIGhhcyBubyBtZW1iZXIgbmFtZWQg?=
-	=?windows-1252?B?kWdhdGVfY3RybJI=?=
-From: Miles Lane <miles.lane@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       =?ISO-8859-1?Q?Toralf_F=F6rster?= <toralf@foerster.gmx.de>,
-       Gerd Knorr <kraxel@bytesex.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>, hverkuil@xs4all.nl,
-       awalls@radix.net
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233594995.17895.144.camel@lts-notebook>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My apologies if I have CCed anyone who I should not have.  I did not
-see a maintainer listed, so am trying the folks listed in the code as
-well as the V4L folks who are responsible for what may be a related
-driver (CX18).
+On Mon, Feb 02, 2009 at 12:16:35PM -0500, Lee Schermerhorn wrote:
+> On Mon, 2009-02-02 at 15:16 +0900, MinChan Kim wrote:
+> > When I tested following program, I found that mlocked counter 
+> > is strange. 
+> > It couldn't free some mlocked pages of test program.
+> > 
+> > It is caused that try_to_unmap_file don't check real 
+> > page mapping in vmas. 
+> > That's because goal of address_space for file is to find all processes 
+> > into which the file's specific interval is mapped. 
+> > What I mean is that it's not related page but file's interval.
+> > 
+> > Even if the page isn't really mapping at the vma, it returns 
+> > SWAP_MLOCK since the vma have VM_LOCKED, then calls 
+> > try_to_mlock_page. After all, mlocked counter is increased again. 
+> > 
+> > This patch is based on 2.6.28-rc2-mm1.
+> > 
+> > -- my test program --
+> > 
+> > #include <stdio.h>
+> > #include <sys/mman.h>
+> > int main()
+> > {
+> >         mlockall(MCL_CURRENT);
+> >         return 0;
+> > }
+> > 
+> > -- before --
+> > 
+> > root@barrios-target-linux:~# cat /proc/meminfo | egrep 'Mlo|Unev'
+> > Unevictable:           0 kB
+> > Mlocked:               0 kB
+> > 
+> > -- after --
+> > 
+> > root@barrios-target-linux:~# cat /proc/meminfo | egrep 'Mlo|Unev'
+> > Unevictable:           8 kB
+> > Mlocked:               8 kB
+> > 
+> > 
+> > --
+> > 
+> > diff --git a/mm/rmap.c b/mm/rmap.c
+> > index 1099394..9ba1fdf 100644
+> > --- a/mm/rmap.c
+> > +++ b/mm/rmap.c
+> > @@ -1073,6 +1073,9 @@ static int try_to_unmap_file(struct page *page, int unlock, int migration)
+> >  	unsigned long max_nl_size = 0;
+> >  	unsigned int mapcount;
+> >  	unsigned int mlocked = 0;
+> > +	unsigned long address;
+> > +	pte_t *pte;
+> > +	spinlock_t *ptl;
+> >  
+> >  	if (MLOCK_PAGES && unlikely(unlock))
+> >  		ret = SWAP_SUCCESS;	/* default for try_to_munlock() */
+> > @@ -1089,6 +1092,13 @@ static int try_to_unmap_file(struct page *page, int unlock, int migration)
+> >  				goto out;
+> >  		}
+> >  		if (ret == SWAP_MLOCK) {
+> > +     address = vma_address(page, vma);
+> > +     if (address != -EFAULT) {
+> > +       pte = page_check_address(page, vma->vm_mm, address, &ptl, 0);
+> > +       if (!pte)
+> > +            continue; 
+> > +       pte_unmap_unlock(pte, ptl);
+> > +     } 
+> >  			mlocked = try_to_mlock_page(page, vma);
+> >  			if (mlocked)
+> >  				break;  /* stop if actually mlocked page */
+> 
+> Hi, MinChan:
+> 
+>    Interestingly, Rik had addressed this [simpler patch below] way back
+> when he added the page_mapped_in_vma() function.  I asked him whether
 
-Previously reported by Toralf Förster for 2.6.29-rc3 ("Subject: Fwd:
-build issue #577 for v2.6.29-rc3"), 2009-01-29 13:08:09.
 
-  CC [M]  drivers/media/video/cx88/cx88-i2c.o
-drivers/media/video/cx88/cx88-i2c.c: In function 'cx88_call_i2c_clients':
-drivers/media/video/cx88/cx88-i2c.c:122: error: 'struct cx88_core' has
-no member named 'gate_ctrl'
-drivers/media/video/cx88/cx88-i2c.c:123: error: 'struct cx88_core' has
-no member named 'gate_ctrl'
-drivers/media/video/cx88/cx88-i2c.c:127: error: 'struct cx88_core' has
-no member named 'gate_ctrl'
-drivers/media/video/cx88/cx88-i2c.c:128: error: 'struct cx88_core' has
-no member named 'gate_ctrl'
-make[4]: *** [drivers/media/video/cx88/cx88-i2c.o] Error 1
+> the rb tree shouldn't have filtered any vmas that didn't have the page
+> mapped.  He agreed and removed the check from try_to_unmap_file().
+> Guess I can be very convincing, even when I'm wrong [happening a lot
+> lately].  Of course, in this instance, the rb-tree filtering only works
+> for shared, page-cache pages.  The problem uncovered by your test case
+
+It's not rb-tree but priority tree. ;-)
+
+> is with a COWed anon page in a file-backed vma.  Yes, the vma 'maps' the
+> virtual address range containing the page in question, but since it's a
+> private COWed anon page, it isn't necessarily "mapped" in the VM_LOCKED
+> vma's mm's page table.  We need the check...
+
+Indeed!
+
+> 
+> I've added the variant below [CURRENTLY UNTESTED] to my test tree.
+> 
+> Lee
+> 
+> [intentionally omitted sign off, until tested.]
+
+I shouldn't forgot page_mapped_in_vma.
+However, It looks good to me. 
+Thank you for testing. 
+
+> 
+> 
+> Index: linux-2.6.29-rc3/mm/rmap.c
+> ===================================================================
+> --- linux-2.6.29-rc3.orig/mm/rmap.c	2009-01-30 14:13:56.000000000 -0500
+> +++ linux-2.6.29-rc3/mm/rmap.c	2009-02-02 11:27:11.000000000 -0500
+> @@ -1072,7 +1072,8 @@ static int try_to_unmap_file(struct page
+>  	spin_lock(&mapping->i_mmap_lock);
+>  	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
+>  		if (MLOCK_PAGES && unlikely(unlock)) {
+> -			if (!(vma->vm_flags & VM_LOCKED))
+> +			if (!((vma->vm_flags & VM_LOCKED) &&
+> +			      page_mapped_in_vma(page, vma)))
+>  				continue;	/* must visit all vmas */
+>  			ret = SWAP_MLOCK;
+>  		} else {
+> 
+
+-- 
+Kinds Regards
+MinChan Kim
+
