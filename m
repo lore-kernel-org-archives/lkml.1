@@ -1,115 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758075AbZBBU5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbZBBVB1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758075AbZBBU5u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 15:57:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753159AbZBBU5m
+	id S1757481AbZBBVB1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 16:01:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZBBVBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 15:57:42 -0500
-Received: from mx2.suse.de ([195.135.220.15]:56688 "EHLO mx2.suse.de"
+	Mon, 2 Feb 2009 16:01:19 -0500
+Received: from gate.crashing.org ([63.228.1.57]:39558 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752166AbZBBU5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 15:57:41 -0500
-Message-ID: <49875DD9.8070209@suse.com>
-Date: Mon, 02 Feb 2009 15:55:53 -0500
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: david.altobelli@hp.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] increment hpilo version
-References: <20090123142529.GA5298@ldl.fc.hp.com>	<49874FE2.6030800@suse.com> <20090202121412.f9687c29.akpm@linux-foundation.org>
-In-Reply-To: <20090202121412.f9687c29.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1753189AbZBBVBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 16:01:18 -0500
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Andreas Schwab <schwab@suse.de>
+In-Reply-To: <alpine.LFD.2.00.0902021236040.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
+	 <1233568479.18767.86.camel@pasglop>
+	 <alpine.LFD.2.00.0902020902320.4704@localhost.localdomain>
+	 <1233606580.18767.93.camel@pasglop>
+	 <alpine.LFD.2.00.0902021236040.3247@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 08:00:37 +1100
+Message-Id: <1233608437.18767.106.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Mon, 2009-02-02 at 12:41 -0800, Linus Torvalds wrote:
+> 
+> On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
+> > 
+> > I'd rather hook it up inside pci_set_power_state()...
+> 
+> Umm. But you already _have_ that. Look at platform_pci_set_power_state(). 
+> It gets called before turning the device on (pci_raw_set_power_state(D0)) 
+> and after turning the device off (pci_raw_set_power_state(D1+))
+> 
+> Maybe you missed it? It's how ACPI does things.
 
-Andrew Morton wrote:
-> On Mon, 02 Feb 2009 14:56:18 -0500
-> Jeff Mahoney <jeffm@suse.com> wrote:
-> 
->> -----BEGIN PGP SIGNED MESSAGE-----
->> Hash: SHA1
->>
->> David Altobelli wrote:
->>> Bump hpilo module version to indicate that the open/close bug is fixed.
->> Hi David -
->>
->> Was the open/close bug fixed in a differently than with your patch in
->> "[PATCH] hpilo open/close fix" ? If not, the fix didn't make it into
->> mainline, but this version bump did.
-> 
-> I'll be sending hpilo-open-close-fix.patch in the next batch, this week
-> some time.
+I may well have, it didn't exist when my stuff was written.
 
-Ok, thanks. I was just making sure it didn't get dropped by accident.
+> However, the issue you see is that pci_restore_standard_config() doesn't 
+> call it, because at least with ACPI, the ACPI code simply isn't ready to 
+> be called with interrupts off. So it looks like you may be looking at the 
+> wrong thing, hmm?
 
-- -Jeff
+Well.. yes and no... I still don't see how it can be sane to whack config
+space back before the device has been turned back on. I wouldn't be surprised
+if some devices don't grok well their BARs being written while not in D0.
 
-> If you grab http://userweb.kernel.org/~akpm/mmotm/series you can see
-> what I have queued for 2.6.29.  Look for
-> 
-> #
-> # 2.6.29 queue:
-> #
-> 
-> and
-> 
-> #
-> # more 2.6.29 queue:
-> #
-> 
-> The first is soon-to-go stuff, the second is
-> to-go-after-a-bit-more-baking stuff.
-> 
-> 
-> Also,
-> 
-> #
-> # others:
-> #
-> 
-> is stuff which I think might be needed in 2.6.29 but which go via
-> subsystem maintainers trees.
-> 
-> The latter is not (yet) as lengthy as usual, but there's still quite a
-> bit of material:
-> 
-> 
-> acpi-kconfig-fix-acpi_container-module-name.patch
-> acpi-dock-dont-eval-_sta-on-every-show_docked-sysfs-read.patch
-> arm-at91-fix-nr_aic_irqs-undeclared.patch
-> drivers-ata-sata_silc-needs-dmih.patch
-> pata_amd-program-fifo.patch
-> pata_legacy-for-vlb-32bit-pio-dont-try-tricks-with-slop.patch
-> mfd-initialise-wm8350-interrupts-earlier.patch
-> mfd-mark-wm835x-usb_slv_500ma-bit-as-accessible.patch
-> mfd-pcf50633-terminate-i2c_device_id-list.patch
-> mtd-physmap-fix-wrong-free-and-del_mtd_partitiondevice.patch
-> net-dont-use-in_atomic-in-gfp_any.patch
-> documentation-connector-cn_testc-dont-use-gfp_any.patch
-> nommu-fix-a-number-of-issues-with-the-per-mm-vma-patch.patch
-> powerpc-fix-code-for-reserved-memory-spanning-across-nodes.patch
-> atmel_serial-might-lose-modem-status-change.patch
-> pipe_rdwr_fasync-fix-the-error-handling-to-prevent-the-leak-crash.patch
-> xtensa-fix-compilation-somewhat.patch
-> 
+I suppose I can always add another hook inside pci_restore_blah for my specific
+case but I can also very easily see that can of worms hitting even more badly
+in tight embedded environments such as handhelds, who use things like fine clock
+control a lot more extensively.
+
+In fact, even on x86, I'm not sure it's kosher to restore the config space
+before you called ACPI...
+
+Ben.
 
 
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkmHXdkACgkQLPWxlyuTD7IvsACeNszw/i/0eXWLzNn0+3JidfU/
-kLsAn0fz+nNC+lFUxhq5dsT5s37Tz0Al
-=yzFe
------END PGP SIGNATURE-----
