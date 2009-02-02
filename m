@@ -1,137 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756921AbZBBL2D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZBBL21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756921AbZBBL2D (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 06:28:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756403AbZBBL1e
+	id S1753485AbZBBL21 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 06:28:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756908AbZBBL15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 06:27:34 -0500
-Received: from ti-out-0910.google.com ([209.85.142.185]:60313 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756328AbZBBL1c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 06:27:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oU57L2gKQlJ1cGD8WCZXOK5chfI/t2mcfSfYBufDWh+fNz+WXlPTjkHoJZ66KCGLxG
-         Is9DgIxn7R3fM/8gsU6ZJyL3Vl7o13B2OkC2xBJbbhunMxzAo6PmP/A1Jh+mPVqB7uNB
-         AIvijaX9Pqq+XP0lljQq3oLrzCy7CskzVe4og=
-Date: Mon, 2 Feb 2009 20:27:21 +0900
-From: MinChan Kim <minchan.kim@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Nick Piggin <npiggin@suse.de>, linux kernel <linux-kernel@vger.kernel.org>,
-       linux mm <linux-mm@kvack.org>
-Subject: Re: [BUG??] Deadlock between kswapd and
-	sys_inotify_add_watch(lockdep  report)
-Message-ID: <20090202112721.GA13532@barrios-desktop>
-References: <20090202101735.GA12757@barrios-desktop> <28c262360902020225w6419089ft2dda30da9dfb32a9@mail.gmail.com> <1233571202.4787.124.camel@laptop>
+	Mon, 2 Feb 2009 06:27:57 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:21907 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756866AbZBBL14 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 06:27:56 -0500
+Date: Mon, 2 Feb 2009 12:26:01 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
+Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
+Message-ID: <20090202112600.GE30821@kernel.dk>
+References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal> <20090117190437.GZ30821@kernel.dk> <20090118211234.GA4913@Krystal> <20090119182654.GT30821@kernel.dk> <20090120021055.GA6990@Krystal> <20090120073709.GC30821@kernel.dk> <20090120122855.GF30821@kernel.dk> <20090202020811.GA19565@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1233571202.4787.124.camel@laptop>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090202020811.GA19565@Krystal>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 11:40:02AM +0100, Peter Zijlstra wrote:
-> On Mon, 2009-02-02 at 19:25 +0900, MinChan Kim wrote:
-> > But, I am not sure whether it's real bug or not.
+On Sun, Feb 01 2009, Mathieu Desnoyers wrote:
+> Hi Jens,
 > 
-> Me neither, inode life-times are tricky, but on first sight it looks
-> real enough.
+> I tried your patch at
 > 
-> > I always suffer from reading lockdep report's result. :(
-> > It would be better to have a document about lockdep report analysis.
+> http://bugzilla.kernel.org/attachment.cgi?id=20001
 > 
-> I've never found them hard to read, so I'm afraid you'll have to be more
-> explicit about what is unclear to you.
+> On a 2.6.29-rc3 kernel. I get the following OOPS just after I start
+> running the fio test. It happens after a few
+> 
+> cfq: moving ffff88043d4b42e0 to dispatch                         
+> cfq: moving ffff88043d4b4170 to dispatch                        
+> 
+> messages (~20).
+> 
+> Here is the oops :
+> 
+> ------------[ cut here ]------------
+> kernel BUG at block/cfq-iosched.c:650!
+> invalid opcode: 0000 [#1] PREEMPT SMP
+> LTT NESTING LEVEL : 0
+> last sysfs file: /sys/block/sda/stat
+> CPU 2
+> Modules linked in: loop ltt_tracer ltt_trace_control ltt_userspa]
+> Pid: 2934, comm: kjournald Not tainted 2.6.29-rc3 #3
+> RIP: 0010:[<ffffffff80419c2b>]  [<ffffffff80419c2b>] cfq_remove_0
+> RSP: 0018:ffff88043b167c20  EFLAGS: 00010046
+> RAX: 0000000000000000 RBX: ffff88043fd9e088 RCX: 0000000000000001
+> RDX: 0000000000000010 RSI: ffff88043887b590 RDI: ffff88043887b590
+> RBP: ffff88043b167c50 R08: 0000000000000002 R09: 0000000000000000
+> R10: 0000000000000000 R11: 0000000000000000 R12: ffff88043fd9e088
+> R13: ffff88043887b590 R14: ffff88043fc40200 R15: ffff88043fd9e088
+> FS:  0000000000000000(0000) GS:ffff88043e81a080(0000) knlGS:00000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00007f2a5f98b8c0 CR3: 000000043e8c4000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process kjournald (pid: 2934, threadinfo ffff88043b166000, task )
+> Stack:
+>  000000000000003b ffff88043887b590 ffff88043fd9e088 ffff88043e5a0
+>  ffff88043fc40200 ffff88002809ed50 ffff88043b167c80 ffffffff8041d
+>  0000000000000001 ffff88043887b590 ffffe2001b805138 ffff88043e5a0
+> Call Trace:
+>  [<ffffffff80419e4d>] cfq_dispatch_insert+0x3d/0x70
+>  [<ffffffff80419f2f>] cfq_wait_on_page+0xaf/0xc0
+>  [<ffffffff804098ed>] elv_wait_on_page+0x1d/0x20
+>  [<ffffffff8040d207>] blk_backing_dev_wop+0x17/0x50
+>  [<ffffffff80301872>] sync_buffer+0x52/0x80
+>  [<ffffffff806a33b2>] __wait_on_bit+0x62/0x90
+>  [<ffffffff80301820>] ? sync_buffer+0x0/0x80
+>  [<ffffffff80301820>] ? sync_buffer+0x0/0x80
+>  [<ffffffff806a3459>] out_of_line_wait_on_bit+0x79/0x90
+>  [<ffffffff8025a8a0>] ? wake_bit_function+0x0/0x50
+>  [<ffffffff80301769>] __wait_on_buffer+0xf9/0x130
+>  [<ffffffff80379acd>] journal_commit_transaction+0x72d/0x1650
+>  [<ffffffff806a5c87>] ? _spin_unlock_irqrestore+0x47/0x80
+>  [<ffffffff8024dd2f>] ? try_to_del_timer_sync+0x5f/0x70
+>  [<ffffffff8037e488>] kjournald+0xe8/0x250
+>  [<ffffffff8025a860>] ? autoremove_wake_function+0x0/0x40
+>  [<ffffffff8037e3a0>] ? kjournald+0x0/0x250
+>  [<ffffffff8025a38e>] kthread+0x4e/0x90
+>  [<ffffffff8025a340>] ? kthread+0x0/0x90
+>  [<ffffffff8020db2a>] child_rip+0xa/0x20
+>  [<ffffffff8020d480>] ? restore_args+0x0/0x30
+>  [<ffffffff8025a340>] ? kthread+0x0/0x90
+>  [<ffffffff8020db20>] ? child_rip+0x0/0x20
+> Code: 4d 89 6d 00 49 8b 9d c0 00 00 00 41 8b 45 48 4c 8b 73 08 2
+> RIP  [<ffffffff80419c2b>] cfq_remove_request+0x6b/0x250
+>  RSP <ffff88043b167c20>
+> ---[ end trace eab134a8bd405d05 ]---
+> 
+> It seems that the cfqq->queued[sync] counter should either be
+> incremented/decremented in the new cfq_wait_on_page, or that the fact
+> that the type of request (sync vs !sync) changes would not be taken care
+> of correctly. I have not looked at the code enough to find out exactly
+> what is happening, but I though you might have an idea of the cause.
 
-It's becuase not lockdep humble report but my poor knowledge. :(
-Could you elaborate please ?
+Just ignore the patch for now, I'm not going to be spending more time on
+it. It was just an attempt at a quick test, I don't think this approach
+is very feasible since it doesn't appear to be the root of the problem.
+In any case, were we to continue on this path, the accounting logic in
+CFQ would have to be adjusted for this new behaviour. Otherwise there's
+a big risk of giving great preference to async writeout once things get
+tight.
 
->[  331.718120] [ INFO: inconsistent lock state ]
->[  331.718124] 2.6.28-rc2-mm1-lockdep #6
->[  331.718126] ---------------------------------
->[  331.718129] inconsistent {ov-reclaim-W} -> {in-reclaim-W} usage.
-                                         ^                 ^ 
-                                        write ?           write ?
->
->[  331.718133] kswapd0/218 [HC0[0]:SC0[0]:HE0:SE1] takes:
-                            ^^^^^^^^^^^^^^^^^^^^^^
-                            what means ? HC,SC,HE,SE
->
->[  331.718136]  (&inode->inotify_mutex){--..+.}, at: [<c01dba70>] inotify_inode_is_dead+0x20/0x90
->             
-
-Is it related to recursive lock of inotify_mutex ?
-but, Subject means 'inconsistent {ov-reclaim-W} -> {in-reclaim-W}', 
-IOW, it's related to reclaim of GFP_FS. 
-What's relation inotify_mutex and reclaim of GFP_FS?
-
-I think if reclaim context which have GFP_FS already have lock A and then 
-do pageout, if writepage need the lock A, we have to catch such a case. 
-I thought Nick's patch's goal catchs such a case. 
-But My thought is likely worng. Such a case, the lock A will be holded recursive. 
-so It can be solved by recursive lockdep.
-
-I can't understand this. :(
-
-One more question is that what's difference between lock inversion and
-circular locking dependency ?
-
->[  331.718148] {ov-reclaim-W} state was registered at:
->[  331.718150]   [<c01532ee>] mark_held_locks+0x3e/0x90
->[  331.718157]   [<c015338e>] lockdep_trace_alloc+0x4e/0x80
->[  331.718162]   [<c01acee6>] kmem_cache_alloc+0x26/0xf0
->[  331.718166]   [<c0243fa0>] idr_pre_get+0x50/0x70
->[  331.718172]   [<c01db761>] inotify_handle_get_wd+0x21/0x60
->[  331.718176]   [<c01dc012>] inotify_add_watch+0x52/0xe0
->[  331.718181]   [<c01dcca8>] sys_inotify_add_watch+0x148/0x170
->[  331.718185]   [<c0104032>] syscall_call+0x7/0xb
->[  331.718190]   [<ffffffff>] 0xffffffff
->[  331.718205] irq event stamp: 1288446
->[  331.718207] hardirqs last  enabled at (1288445): [<c0179695>] call_rcu+0x75/0x90
->[  331.718213] hardirqs last disabled at (1288446): [<c0370103>] mutex_lock_nested+0x53/0x2f0
->[  331.718221] softirqs last  enabled at (1284622): [<c0132fa2>] __do_softirq+0x132/0x180
->[  331.718226] softirqs last disabled at (1284617): [<c0133079>] do_softirq+0x89/0x90
->[  331.718231]
->[  331.718232] other info that might help us debug this:
->[  331.718236] 2 locks held by kswapd0/218:
->[  331.718238]  #0:  (shrinker_rwsem){----..}, at: [<c0192d65>] shrink_slab+0x25/0x1a0
->[  331.718248]  #1:  (&type->s_umount_key#4){-----.}, at: [<c01c21fb>] shrink_dcache_memory+0xfb/0x1a0
->[  331.718259]
->[  331.718260] stack backtrace:
->[  331.718263] Pid: 218, comm: kswapd0 Not tainted 2.6.28-rc2-mm1-lockdep #6
->[  331.718266] Call Trace:
->[  331.718272]  [<c0151726>] print_usage_bug+0x176/0x1c0
->[  331.718276]  [<c0152d05>] mark_lock+0xb05/0x10b0
->[  331.718282]  [<c018c0e9>] ? __free_pages_ok+0x349/0x450
->[  331.718287]  [<c0155362>] __lock_acquire+0x602/0xa80
->[  331.718291]  [<c01540ff>] ? validate_chain+0x3ef/0x1050
->[  331.718296]  [<c0155851>] lock_acquire+0x71/0xa0
->[  331.718300]  [<c01dba70>] ? inotify_inode_is_dead+0x20/0x90
->[  331.718305]  [<c037014d>] mutex_lock_nested+0x9d/0x2f0
->[  331.718310]  [<c01dba70>] ? inotify_inode_is_dead+0x20/0x90
->[  331.718314]  [<c01dba70>] ? inotify_inode_is_dead+0x20/0x90
->[  331.718318]  [<c01dba70>] inotify_inode_is_dead+0x20/0x90
->[  331.718323]  [<c024e2d6>] ? _raw_spin_unlock+0x46/0x80
->[  331.718328]  [<c01c1d14>] dentry_iput+0xa4/0xc0
->[  331.718333]  [<c01c1dfb>] d_kill+0x3b/0x60
->[  331.718337]  [<c01c1fe6>] __shrink_dcache_sb+0x1c6/0x2c0
->[  331.718342]  [<c01c228d>] shrink_dcache_memory+0x18d/0x1a0
->[  331.718347]  [<c0192e6b>] shrink_slab+0x12b/0x1a0
->[  331.718351]  [<c01939ff>] kswapd+0x3af/0x5c0
->[  331.718356]  [<c01910a0>] ? isolate_pages_global+0x0/0x220
->[  331.718362]  [<c0142800>] ? autoremove_wake_function+0x0/0x40
->[  331.718366]  [<c0193650>] ? kswapd+0x0/0x5c0
->[  331.718371]  [<c01424f7>] kthread+0x47/0x80
->[  331.718375]  [<c01424b0>] ? kthread+0x0/0x80
->[  331.718380]  [<c01054f7>] kernel_thread_helper+0x7/0x10
-
+It's also working around the real problem for this specific issue, which
+is that you just don't want to have sync apps blocked waiting for async
+writeout in the first place.
 
 -- 
-Kinds Regards
-MinChan Kim
+Jens Axboe
 
