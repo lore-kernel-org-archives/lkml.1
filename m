@@ -1,116 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZBBVlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbZBBVmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760001AbZBBVlz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 16:41:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759751AbZBBVlM
+	id S1758532AbZBBVmY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 16:42:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759842AbZBBVl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 16:41:12 -0500
-Received: from mail-bw0-f12.google.com ([209.85.218.12]:47443 "EHLO
-	mail-bw0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759743AbZBBVlK (ORCPT
+	Mon, 2 Feb 2009 16:41:26 -0500
+Received: from liberdade.minaslivre.org ([72.232.18.203]:35461 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759830AbZBBVlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 16:41:10 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:in-reply-to:references:subject;
-        b=iDyyQQpaDYPcdfnsPXN1ESOxIJkhqbrx3DNZZG+JNwuB7XNmg1kArLMlurrFra4sl9
-         75k0pmOLpPrUQCGCcnN1ebSUpEKVkhPFGIa+x09EWQwJ6r28maMcTDnZksB/kyA74OK6
-         v/zqDqlCn72xv7OlKH5kQAXfs2bPlJLfrp1yI=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org
-Date: Mon, 02 Feb 2009 22:38:21 +0100
-Message-Id: <20090202213821.17960.40146.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090202213707.17960.61897.sendpatchset@localhost.localdomain>
-References: <20090202213707.17960.61897.sendpatchset@localhost.localdomain>
-Subject: [PATCH 10/14] ide: unify exit paths in task_pio_intr()
+	Mon, 2 Feb 2009 16:41:25 -0500
+Date: Mon, 2 Feb 2009 19:41:53 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
+To: debian-devel@lists.debian.org
+Cc: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+Subject: Re: cgroup mount point
+Message-ID: <20090202214153.GV3643@vespa.holoscopio.com>
+Mail-Followup-To: debian-devel@lists.debian.org,
+	linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
+References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="nYySOmuH/HDX6pKp"
+Content-Disposition: inline
+In-Reply-To: <20090202205246.GA28593@glandium.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] ide: unify exit paths in task_pio_intr()
 
-There should be no functional changes caused by this patch.
+--nYySOmuH/HDX6pKp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
-'goto' rules!
+On Mon, Feb 02, 2009 at 09:52:46PM +0100, Mike Hommey wrote:
+> On Mon, Feb 02, 2009 at 09:26:11PM +0100, Julien Cristau wrote:
+> > On Mon, 2009-02-02 at 18:00 -0200, Thadeu Lima de Souza Cascardo wrote:
+> > > Hello,
+> > >=20
+> > > Some software I intend to package work with the new cgroup feature in
+> > > Linux. I would like to open a discussion about what would be the bett=
+er
+> > > place to mount it and how/when to mount it.
+> >=20
+> > What do other distros use?
+>=20
+> Even better: what do the kernel folks want to do?
+>=20
+> Mike
 
- drivers/ide/ide-taskfile.c |   37 +++++++++++++++++--------------------
- 1 file changed, 17 insertions(+), 20 deletions(-)
+=46rom what I've seen, most of them are in the same phases as Debian, or,
+perhaps, behind. Fedora seems to plan that for Fedora 11, and they have
+some support in libvirt.
 
-Index: b/drivers/ide/ide-taskfile.c
-===================================================================
---- a/drivers/ide/ide-taskfile.c
-+++ b/drivers/ide/ide-taskfile.c
-@@ -322,35 +322,28 @@ static ide_startstop_t task_pio_intr(ide
- 	if (write == 0) {
- 		/* Error? */
- 		if (stat & ATA_ERR)
--			return task_error(drive, cmd, __func__, stat);
-+			goto out_err;
- 
- 		/* Didn't want any data? Odd. */
- 		if ((stat & ATA_DRQ) == 0) {
- 			/* Command all done? */
--			if (OK_STAT(stat, ATA_DRDY, ATA_BUSY)) {
--				ide_finish_cmd(drive, cmd, stat);
--				return ide_stopped;
--			}
-+			if (OK_STAT(stat, ATA_DRDY, ATA_BUSY))
-+				goto out_end;
- 
- 			/* Assume it was a spurious irq */
--			ide_set_handler(drive, &task_pio_intr, WAIT_WORSTCASE,
--					NULL);
--
--			return ide_started;
-+			goto out_wait;
- 		}
- 	} else {
- 		if (!OK_STAT(stat, DRIVE_READY, drive->bad_wstat))
--			return task_error(drive, cmd, __func__, stat);
-+			goto out_err;
- 
- 		/* Deal with unexpected ATA data phase. */
- 		if (((stat & ATA_DRQ) == 0) ^ (cmd->nleft == 0))
--			return task_error(drive, cmd, __func__, stat);
-+			goto out_err;
- 	}
- 
--	if (write && cmd->nleft == 0) {
--		ide_finish_cmd(drive, cmd, stat);
--		return ide_stopped;
--	}
-+	if (write && cmd->nleft == 0)
-+		goto out_end;
- 
- 	/* Still data left to transfer. */
- 	ide_pio_datablock(drive, cmd, write);
-@@ -359,15 +352,19 @@ static ide_startstop_t task_pio_intr(ide
- 	if (write == 0 && cmd->nleft == 0) {
- 		stat = wait_drive_not_busy(drive);
- 		if (!OK_STAT(stat, 0, BAD_STAT))
--			return task_error(drive, cmd, __func__, stat);
--		ide_finish_cmd(drive, cmd, stat);
--		return ide_stopped;
--	}
-+			goto out_err;
- 
-+		goto out_end;
-+	}
-+out_wait:
- 	/* Still data left to transfer. */
- 	ide_set_handler(drive, &task_pio_intr, WAIT_WORSTCASE, NULL);
--
- 	return ide_started;
-+out_end:
-+	ide_finish_cmd(drive, cmd, stat);
-+	return ide_stopped;
-+out_err:
-+	return task_error(drive, cmd, __func__, stat);
- }
- 
- static ide_startstop_t pre_task_out_intr(ide_drive_t *drive,
+Linux Documentation is not consistent and have some funny options. In
+Documentation/cgroups/*, we have:
+
+cgroups.txt:
+/dev/cgroup
+
+cpuacct.txt:
+/cgroups
+
+devices.txt:
+/cgroups
+
+memcg_test.txt:
+/opt/cgroup
+/opt/cpuset
+/cgroup
+
+memory.txt:
+/cgroups
+
+cpusets.txt:
+/dev/cpuset
+
+freezer-subsystem.txt:
+/containers
+
+There is also:
+
+Documentation/scheduler/sched-design-CFS.txt:
+/dev/cpuctl
+/cgroup
+
+Documentation/scheduler/sched-rt-group.txt:
+/cgroup
+
+Documentation/accounting/cgroupstats.txt:
+/cgroup
+
+
+So, we have some more options now: /cgroups, /containers, /dev/cpuset,
+/dev/cpuctl, /opt/cgroup, /opt/cpuset.
+
+I am copying the container and the kernel guys. Perhaps, we can find an
+agreement (if we want to find one at all) and change all that
+Documentation to get consistent.
+
+Regards,
+Cascardo.
+
+--nYySOmuH/HDX6pKp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmHaKEACgkQyTpryRcqtS0sqwCcDigmXRoVTC5Rwq6+O83uHA3O
+uP0An0TonymKQRNhtkBM+GxYaIPkHPR0
+=VqDr
+-----END PGP SIGNATURE-----
+
+--nYySOmuH/HDX6pKp--
