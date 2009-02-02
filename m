@@ -1,213 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753173AbZBBHM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753877AbZBBHNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753173AbZBBHM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 02:12:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZBBHMT
+	id S1753877AbZBBHNU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 02:13:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZBBHNF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 02:12:19 -0500
-Received: from mail01d.mail.t-online.hu ([84.2.42.6]:53858 "EHLO
-	mail01d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751791AbZBBHMS (ORCPT
+	Mon, 2 Feb 2009 02:13:05 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:53966 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751791AbZBBHNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 02:12:18 -0500
-Message-ID: <49869CCE.9030906@freemail.hu>
-Date: Mon, 02 Feb 2009 08:12:14 +0100
-From: =?ISO-8859-1?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Mon, 2 Feb 2009 02:13:04 -0500
+Date: Mon, 2 Feb 2009 00:13:02 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 08/14] OMAP clock: move rate recalc, propagation code
+ up to plat-omap/clock.c
+In-Reply-To: <alpine.DEB.2.00.0901300135560.26985@utopia.booyaka.com>
+Message-ID: <alpine.DEB.2.00.0902012355320.888@utopia.booyaka.com>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192748.29333.5856.stgit@localhost.localdomain> <20090129174153.GH18233@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901300135560.26985@utopia.booyaka.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jean-Francois Moine <moinejf@free.fr>
-CC: video4linux-list@redhat.com, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.28 + Trust 610 LCD PowerC@m Zoom, webcam mode?
-References: <49856A54.1020105@freemail.hu> <20090201152435.0e06e42e@free.fr>
-In-Reply-To: <20090201152435.0e06e42e@free.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail01d.mail.t-online.hu 32710; Body=3 Fuz1=3
-	Fuz2=3
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jean-Francois Moine wrote:
-> On Sun, 01 Feb 2009 10:24:36 +0100
-> Németh Márton <nm127@freemail.hu> wrote:
->> Hello Jean-Francois,
+Hello Russell,
+
+On Fri, 30 Jan 2009, Paul Walmsley wrote:
+
+> On Thu, 29 Jan 2009, Russell King - ARM Linux wrote:
 > 
-> Hello Márton,
+> > I must say that this commit looks very much like a combination of
+> > my commits from November:
+> > 
+> > [ARM] omap: move clock propagation into core omap clock code
+> > [ARM] omap: remove unnecessary calls to propagate_rate()
+> > [ARM] omap: move propagate_rate() calls into generic omap clock code
+> > 
+> > which do basically the same thing a little more efficiently, and an
+> > additional patch from you to call ->recalc after set_rate or
+> > reparenting a clock.
+> > 
+> > So I think I can drop everything from this apart from the additional
+> > recalc calls, and the removal of those omap2_dpllcore_recalc() calls.
+> > 
+> > Please confirm my suspicions.
 > 
->> I have a Trust 610 LCD PowerC@m Zoom camera which can operate in
->> webcam mode also (USB ID=06d6:0031). I tried to use it together with
->> Linux 2.6.28 and with xawtv-3.95.dfsg.1 and with gqcam 0.9.1.
->> The /dev/video0 appeared, but no usable picture was visible.
->>
->> However, I downloaded
->> http://mxhaard.free.fr/spca50x/Download/gspcav1-20071224.tar.gz and
-> 	[snip]
->> Do you have any idea why the gspcav1 diver is working and the one
->> which is included in Linux 2.6.28 not?
+> I haven't looked closely at your above three patches for this, but plan to 
+> do so later today.
 > 
-> The gspcav1 is not maintained anymore.
-> 
-> It seems that your webcam has not been tested with gspcav2.
+> Regarding provenance, the patches that I sent you were developed 
+> independently, for clock notifier support.  Ultimately, I have no personal 
+> attachment as to whose patches for this go in, if all technical aspects 
+> are equal.
 
-Yes, I found your status at page http://moinejf.free.fr/webcam.html .
+Based on a comparison of E 08 with the three omap-clks1 commits you 
+mentioned above, here are some differences that would merit further 
+attention.  Some of these you've mentioned in subsequent E-mails.
 
-> First, did you use the v4l library and its wrapper when running xawtv
-> and gqcam?
+If you use your patches, I would suggest making the following changes:
 
-I don't really know, I just installed the xawtv package coming with Debian.
+1. "remove unnecessary calls to propagate_rate()" should keep the 
+propagate_rate(&ck_dpll1) call in omap1_select_table_rate(), since this 
+function is only used by struct clk virtual_clk_mpu.  virtual_clk_mpu is 
+farther away from the root of the clock tree than struct clk ck_dpll1.
 
-> Then, have you tried my program svv?
+2. In plat-omap2/clock.c, clk_set_rate() and clk_set_parent() should call 
+propagate_rate() after recalc.
 
-I could get the Trust 610 LCD PowerC@m Zoom's webcam mode working with
-2.6.28 by doing the following steps:
-1. download and compile http://people.atrpms.net/~hdegoede/libv4l-0.5.8.tar.gz
-2. download and compile http://moinejf.free.fr/svv.c
-3. export LD_LIBRARY_PATH=./libv4l-0.5.8/libv4lconvert/
-4. run svv
-
-I tested the following settings, all were working correctly:
-$ ./svv
-raw pixfmt: JPEG 464x480
-pixfmt: RGB3 464x480
-mmap method
-$ ./svv -m r
-raw pixfmt: JPEG 464x480
-pixfmt: RGB3 464x480
-read method
-$ ./svv -m u
-raw pixfmt: JPEG 464x480
-pixfmt: RGB3 464x480
-userptr method
-
-What I recognised is that the gspcav1 with xawtv delivered pictures
-in resolution of 288x384, while the version in 2.6.28 in 464x480. I
-guess this is an improved resolution, but I don't know why the aspect
-ratio changed (288/384 = 3/4 = 0.75, 464/480 = 29/30 = 0.9667).
-
-Thanks for your help!
-
-Regards,
-
-	Márton Németh
-
-The output of v4l-info:
-
-### v4l2 device info [/dev/video0] ###
-general info
-    VIDIOC_QUERYCAP
-        driver                  : "sunplus"
-        card                    : "Trust 610 LCD POWERC@M ZOOM"
-        bus_info                : "0000:00:10.0"
-        version                 : 2.3.0
-        capabilities            : 0x5000001 [VIDEO_CAPTURE,READWRITE,STREAMING]
-
-standards
-
-inputs
-    VIDIOC_ENUMINPUT(0)
-        index                   : 0
-        name                    : "sunplus"
-        type                    : CAMERA
-        audioset                : 0
-        tuner                   : 0
-        std                     : 0x0 []
-        status                  : 0x0 []
-
-video capture
-    VIDIOC_ENUM_FMT(0,VIDEO_CAPTURE)
-        index                   : 0
-        type                    : VIDEO_CAPTURE
-        flags                   : 1
-        description             : "JPEG"
-        pixelformat             : 0x4745504a [JPEG]
-    VIDIOC_G_FMT(VIDEO_CAPTURE)
-        type                    : VIDEO_CAPTURE
-        fmt.pix.width           : 464
-        fmt.pix.height          : 480
-        fmt.pix.pixelformat     : 0x4745504a [JPEG]
-        fmt.pix.field           : NONE
-        fmt.pix.bytesperline    : 464
-        fmt.pix.sizeimage       : 84110
-        fmt.pix.colorspace      : JPEG
-        fmt.pix.priv            : 1
-
-controls
-    VIDIOC_QUERYCTRL(BASE+0)
-        id                      : 9963776
-        type                    : INTEGER
-        name                    : "Brightness"
-        minimum                 : 0
-        maximum                 : 255
-        step                    : 1
-        default_value           : 0
-        flags                   : 0
-    VIDIOC_QUERYCTRL(BASE+1)
-        id                      : 9963777
-        type                    : INTEGER
-        name                    : "Contrast"
-        minimum                 : 0
-        maximum                 : 255
-        step                    : 1
-        default_value           : 32
-        flags                   : 0
-    VIDIOC_QUERYCTRL(BASE+2)
-        id                      : 9963778
-        type                    : INTEGER
-        name                    : "Color"
-        minimum                 : 0
-        maximum                 : 255
-        step                    : 1
-        default_value           : 26
-        flags                   : 0
-
-### video4linux device info [/dev/video0] ###
-general info
-    VIDIOCGCAP
-        name                    : "Trust 610 LCD POWERC@M ZOOM"
-        type                    : 0x1 [CAPTURE]
-        channels                : 1
-        audios                  : 0
-        maxwidth                : 464
-        maxheight               : 480
-        minwidth                : 48
-        minheight               : 32
-
-channels
-    VIDIOCGCHAN(0)
-        channel                 : 0
-        name                    : "sunplus"
-        tuners                  : 0
-        flags                   : 0x0 []
-        type                    : CAMERA
-        norm                    : 0
-
-tuner
-ioctl VIDIOCGTUNER: Invalid argument
-
-audio
-ioctl VIDIOCGAUDIO: Invalid argument
-
-picture
-    VIDIOCGPICT
-        brightness              : 32896
-        hue                     : 0
-        colour                  : 6168
-        contrast                : 8224
-        whiteness               : 0
-        depth                   : 8
-        palette                 : unknown
-
-buffer
-ioctl VIDIOCGFBUF: Invalid argument
-
-window
-    VIDIOCGWIN
-        x                       : 0
-        y                       : 0
-        width                   : 464
-        height                  : 480
-        chromakey               : 0
-        flags                   : 0
+3. Several internal calls to *_recalc() functions can be dropped - 
+specifically, in omap2_reprogram_dpllcore(), omap2_select_table_rate(), 
+omap3_noncore_dpll_set_rate(), and omap3_core_dpll_m2_set_rate().
 
 
+If you merge E 08, I'd suggest the following changes:
+
+1. In clock24xx.c:omap2_clk_init(), your patches call propagate_rate() on 
+osc_ck and sys_ck immediately after recalcs, which looks like a good 
+idea to me.
+
+2. The mach-omap1/clock.c:omap1_clk_init() change to consolidate the two 
+propagate_rate(&ck_dpll1) calls also is good.
+
+
+Please let me know if you'd like any followup patches here.
+
+- Paul
