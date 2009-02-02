@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZBBIJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753767AbZBBITS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754708AbZBBIJj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 03:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZBBIJQ
+	id S1753767AbZBBITS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 03:19:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZBBIS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 03:09:16 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:48941 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752698AbZBBIJP (ORCPT
+	Mon, 2 Feb 2009 03:18:58 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52659
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751384AbZBBIS5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 03:09:15 -0500
-Date: Mon, 2 Feb 2009 01:09:14 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-       Eero Nurkkala <ext-eero.nurkkala@nokia.com>
-Subject: Re: [PATCH F 12/12] OMAP2/3 McBSP: add temporary clockdomain fix
- for McBSP virtual clocks
-In-Reply-To: <20090131114226.GE1394@n2100.arm.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0902020105370.888@utopia.booyaka.com>
-References: <20090128193326.2396.9437.stgit@localhost.localdomain> <20090128193531.2396.91172.stgit@localhost.localdomain> <20090131114226.GE1394@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 2 Feb 2009 03:18:57 -0500
+Date: Mon, 02 Feb 2009 00:18:54 -0800 (PST)
+Message-Id: <20090202.001854.261399333.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090202080855.GA4129@ff.dom.local>
+References: <20090130.134227.123379239.davem@davemloft.net>
+	<20090130221604.GD11381@gondor.apana.org.au>
+	<20090202080855.GA4129@ff.dom.local>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Mon, 2 Feb 2009 08:08:55 +0000
 
-On Sat, 31 Jan 2009, Russell King - ARM Linux wrote:
-
-> On Wed, Jan 28, 2009 at 12:35:33PM -0700, Paul Walmsley wrote:
-> > The McBSP driver uses virtual clocks to handle enabling and disabling
-> > its hardware clocks.  These virtual clocks have no associated
-> > clockdomain. After commit 60b8b431e47d8c5b8c02a2e4fa9af388aae20790,
-> > this prevents the McBSP clocks from registering correctly.
-> > Resolve this for the short term by using virt_opp_clkdm for these clocks.
-> > These McBSP virtual clocks should be removed, but such a fix would require
-> > significant changes to the McBSP drivers that would require testing on
-> > OMAP1, 2, and 3 platforms.
+> On Sat, Jan 31, 2009 at 09:16:04AM +1100, Herbert Xu wrote:
+> > On Fri, Jan 30, 2009 at 01:42:27PM -0800, David Miller wrote:
+> ...
+> > > Back to real life, I think long term the thing to do is to just do the
+> > > cached page allocator thing we'll be doing after Jarek's socket page
+> > > patch is integrated, and for best performance the driver has to
+> > > receive it's data into pages, only explicitly pulling the ethernet
+> > > header into the linear area, like NIU does.
+> > 
+> > Yes that sounds like the way to go.
 > 
-> With either my clkdev patches or the spinlock fixing for mcbsp, this patch
-> seems to be redundant.
+> Looks like a lot of changes in drivers, plus: would it work with jumbo
+> frames? I wonder why the linear area can't be allocated as paged, and
+> freed with put_page() instead of kfree(skb->head) in skb_release_data().
 
-Indeed.  It was included so the patch set would work if your tree didn't 
-have Stanley's McBSP patch applied; I don't think it's made it up to 
-mainline.
-
-
-- Paul
+Allocating 4096 or 8192 bytes for a 1500 byte frame is wasteful.
