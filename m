@@ -1,87 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753672AbZBBJeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753496AbZBBJlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753672AbZBBJeQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 04:34:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZBBJd7
+	id S1753496AbZBBJlT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 04:41:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBBJlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 04:33:59 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:18344 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751007AbZBBJd6 (ORCPT
+	Mon, 2 Feb 2009 04:41:01 -0500
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:40458 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751602AbZBBJk7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 04:33:58 -0500
-Message-ID: <4986BE07.6090000@panasas.com>
-Date: Mon, 02 Feb 2009 11:33:59 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
-MIME-Version: 1.0
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Christoph Hellwig <hch@infradead.org>,
-       Eric Sandeen <sandeen@sandeen.net>, mfasheh@suse.com,
-       joel.becker@oracle.com, linux-kernel@vger.kernel.org,
-       xfs-masters@oss.sgi.com, viro@zeniv.linux.org.uk,
-       Ankit Jain <me@ankitjain.org>, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [xfs-masters] [PATCH] fs: Add new pre-allocation ioctls to vfs
- for compatibility with legacy xfs ioctls
-References: <20090130171423.f99c88d0.akpm@linux-foundation.org> <20090201164130.GA32276@infradead.org> <4985D48A.6090007@panasas.com> <200902020131.04203.arnd@arndb.de> <4986AEE8.5040609@panasas.com> <Pine.LNX.4.64.0902020942230.11930@anakin>
-In-Reply-To: <Pine.LNX.4.64.0902020942230.11930@anakin>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 2 Feb 2009 04:40:59 -0500
+Date: Mon, 2 Feb 2009 11:40:56 +0200 (EET)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: torvalds@linux-foundation.org
+cc: akpm@linux-foundation.org, cl@linux-foundation.org, rientjes@google.com,
+       jeffm@suse.com, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] SLAB/SLUB fixes for 2.6.29-rc3
+Message-ID: <Pine.LNX.4.64.0902021137250.20661@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2009 09:33:56.0239 (UTC) FILETIME=[5E7851F0:01C98519]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Mon, 2 Feb 2009, Boaz Harrosh wrote:
->> Arnd Bergmann wrote:
->>> No, the compiler is correct, it has to generate more complex code
->>> if it cannot assume that data is naturally aligned and the architecture
->>> does not support unaligned loads. If you don't understand this, please
->>> at least read the list archives about the last five times this came up
->>> before claiming that the compiler is broken.
->>>
->> Wrong!! Sorry, you guys don't listen.
->> I'm talking of the case where the structures are EXACTLY the same anyway
->> you look at them. sizeof(foo) == sizeof(foo_packed) and 
->> offsetof(foo_memmber) == offsetof(foo_packed_member) for every member of
->> the structure. foo && foo_packed are declared exactly the same but with
->> __attribute__((packed(1))) applied to the later.
->>
->> THEN in ia64 case the compiler is brain dead, because it relates
->> "unalignment" to packed(1) which are two different things.
-> 
-> The natural alignment of a structure is max(alignment(member)), for all
-> members. With __attribute__((packed)), the natural alignment of the structure
-> is 1, so the compiler cannot assume anything.
-> 
+Hi Linus,
 
-No the natural alignment is what it is, after the application of
-__attribute__((packed(1))). In a well defined structure that is a no-opt.
-But yes in ai64 the gcc programmers got lazy and did not make that analysis
-after laying out the structure.
+Please pull the latest SLAB git tree from:
 
-> While the ints in the structure may still be at offsets 0, 4, 8, and so on,
-> this doesn't say anything about their actual memory addresses, as the struct
-> base address itself may be unaligned.
-> 
+  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6.git for-linus
 
-The base address can be unaligned even if the structure is aligned. In that
-case you need the __atrubute__((aligned)) thingy. It is true that if the sizeof(foo_packed)
-is though unaligned, the compiler will have to assume unalignment in array operations.
-but if the sizeof(foo_packed) is naturally aligned at the output then the compiler
-has all the needed information to know that even if I declared __packed, it calculated
-and knows that it is well aligned at the end.
+The branch has a build failure fix for SLAB by Jeff Mahoney and a small 
+off-by-one fixlet for SLUB by David Rientjes.
 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
+                Pekka
 
-Please note that I gave up on the compiler and understand that the use of __packed
-is dangerous in some cases, sigh. My standing point is to make sure there are no guesses
-left, and a BUILD_BUG_ON to make sure of that.
+David Rientjes (1):
+      slub: fix per cpu kmem_cache_cpu array memory leak
 
-Boaz
+Jeff Mahoney (1):
+      kmalloc: return NULL instead of link failure
+
+Pekka Enberg (1):
+      Merge branches 'topic/slab/fixes' and 'topic/slub/fixes' into for-linus
+
+ include/linux/slab_def.h |   10 ++--------
+ mm/slub.c                |    2 +-
+ 2 files changed, 3 insertions(+), 9 deletions(-)
+
+diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
+index 39c3a5e..6ca6a7b 100644
+--- a/include/linux/slab_def.h
++++ b/include/linux/slab_def.h
+@@ -43,10 +43,7 @@ static inline void *kmalloc(size_t size, gfp_t flags)
+ 			i++;
+ #include <linux/kmalloc_sizes.h>
+ #undef CACHE
+-		{
+-			extern void __you_cannot_kmalloc_that_much(void);
+-			__you_cannot_kmalloc_that_much();
+-		}
++		return NULL;
+ found:
+ #ifdef CONFIG_ZONE_DMA
+ 		if (flags & GFP_DMA)
+@@ -77,10 +74,7 @@ static inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ 			i++;
+ #include <linux/kmalloc_sizes.h>
+ #undef CACHE
+-		{
+-			extern void __you_cannot_kmalloc_that_much(void);
+-			__you_cannot_kmalloc_that_much();
+-		}
++		return NULL;
+ found:
+ #ifdef CONFIG_ZONE_DMA
+ 		if (flags & GFP_DMA)
+diff --git a/mm/slub.c b/mm/slub.c
+index 6392ae5..bdc9abb 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1996,7 +1996,7 @@ static struct kmem_cache_cpu *alloc_kmem_cache_cpu(struct kmem_cache *s,
+ static void free_kmem_cache_cpu(struct kmem_cache_cpu *c, int cpu)
+ {
+ 	if (c < per_cpu(kmem_cache_cpu, cpu) ||
+-			c > per_cpu(kmem_cache_cpu, cpu) + NR_KMEM_CACHE_CPU) {
++			c >= per_cpu(kmem_cache_cpu, cpu) + NR_KMEM_CACHE_CPU) {
+ 		kfree(c);
+ 		return;
+ 	}
