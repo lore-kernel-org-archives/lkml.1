@@ -1,143 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759063AbZBBXTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758504AbZBBXXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759063AbZBBXTs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 18:19:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754437AbZBBXT3
+	id S1758504AbZBBXXd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 18:23:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZBBXXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 18:19:29 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42090 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752913AbZBBXT1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 18:19:27 -0500
-Date: Mon, 2 Feb 2009 15:18:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Mon, 2 Feb 2009 18:23:23 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:35754 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752913AbZBBXXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 18:23:22 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+Date: Tue, 3 Feb 2009 00:22:38 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
        Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-In-Reply-To: <200902022331.49131.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0902021508340.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902022239.02453.rjw@sisk.pl> <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain> <200902022331.49131.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <alpine.LFD.2.00.0902021413040.3247@localhost.localdomain> <1233615423.18767.129.camel@pasglop>
+In-Reply-To: <1233615423.18767.129.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902030022.39396.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 2 Feb 2009, Rafael J. Wysocki wrote:
+On Monday 02 February 2009, Benjamin Herrenschmidt wrote:
+> On Mon, 2009-02-02 at 14:15 -0800, Linus Torvalds wrote:
 > > 
-> > 	b) disable_device_irq()'s: things are live, but device interrupts 
-> > 	   are turned off by essentially looping over the irq_desc_ptr[] 
-> > 	   table. 
+> > On Mon, 2 Feb 2009, Rafael J. Wysocki wrote:
+> > > 
+> > > I think it would be easier to make ACPI allow us to run AML with interrupts
+> > > off.
+> > 
+> > Well, I'd agree, except I have this strong memory of us having known bugs 
+> > with ACPI turning hard-interrupts on again. Similarly, it uses mutexes etc 
+> > that simply don't work with interrupts off and/or may turn them on again 
+> > thanks to scheduling.
+> > 
+> > "Fixing" that seems not very easy. ACPI has a bad habit of being _really_ 
+> > hard to fix in this area.
+> > 
+> > I do agree that _if_ we can just fix ACPI, we wouldn't have these issues, 
+> > and we should  just call it with interrupts disabled with our existing 
+> > code. But my previous email was a "maybe we can do it like this" kind of 
+> > thing, which might allow us to use ACPI with none of the irq-off issues.
 > 
-> Well, do we actually need to turn off all device interrupts?
+> Len, what's your take here ? How much of that stuff is burried deep and
+> how much is nicely split in a "helper" layer we could more easily fix ?
 > 
-> Shared interrupts are the source of the problem, so perhaps we can
-> only disable interrupts of devices that use interrupt pins at this point
-> (MSI/MSI-X need not be disabled, for example, and the timer interrupts most
-> probably too)?
-
-We could try that, yes.
-
-> > 	d) disable CPU interrupts.
+> I'm adding Ingo to the CC as he might have more ideas on how best to
+> just make the mutexes work & not complain rather than touching ACPI
+> itself... again, just like boot, might just be a matter of instructing
+> the mutexes/lockdep to shut up and ignore in_atomic() in those "special"
+> phases such as late suspend and early resume().
 > 
-> At what point do we disable the other CPUs?
+> That would help me for something else that broke recently too ... I have
+> a special "hook" in radeonfb that my arch calls to resume it -very-
+> early (interrupts off, I haven't even re-enabled the L2 cache). This is
+> very useful to help debugging problems at resume since without that you
+> basically don't see a thing and we have no serial port on most of these
+> machines.
+> 
+> However, that started breaking recently due to fb_set_suspend() calling
+> into various bits of infrastructure that is no longer safe to call in
+> atomic context.
+> 
+> Here too, in fact, those -would- be safe since it's mostly a matter of
+> teaching things like mutex of kmalloc that we are not in standard
+> SYSTEM_RUNNING state, and thus mutex can just pretty much ignore the
+> problem of being in atomic state and kmalloc/gfp could automatically
+> degrade to GFP_ATOMIC (*)
+> 
+> So it might just all be a matter of making might_sleep() shut up in
+> late suspend/early resume, and possibly msleep() silently turn into
+> mdelay or something like that. Just make sure we don't actually try to
+> schedule (and possibly BUG_ON if we actually end up blocking on a mutex,
+> we should not).
+> 
+> Len, do you think that would work with ACPI or it's more convoluted than
+> that ?
+> 
+> (*) There are reasons to think that kmalloc/gfp should both silently
+> turn into GFP_NOIO always while the suspend process is started, but
+> that's somewhat a different subject. Rafael, did we ever act on that ?
+> It's an old discussion we had but I don't know if we actually
+> implemented anything.
 
-I left it out, because I don't much care or think it matters. So take your 
-pick. I'd suggest keeping the current setup, and literally just insert the 
-new point between "device_power_off()" and "sysdev_suspend()", with _zero_ 
-other changes.
+We have the ->prepare(), ->complete() callbacks that, among other things,
+can be used for allocating and freeing memory with GFP_KERNEL safely.
 
-> Well, it means reworking the entire suspend sequence (again) or we will
-> break assumptions made by some existing drivers (interrupts off during
-> suspend_late and resume_early).  And that affects all drivers, not only PCI.
+> IE. Without that, afaik, a driver that hasn't suspend yet might end up
+> being blocked in some allocation somewhere due to an attempt to page
+> things out on to an already sleeping device. That driver might be in
+> such blockage while holding one of its internal mutexes or other thing
+> that will cause it's own suspend routine later on to screw up. etc etc
+> etc...
 
-No it doesn't.
+Yes, that's possible in theory, never observed in practice from what I can
+tell.
 
-No changes AT ALL to the suspend sequence. We do everything in the same 
-order: look at my patch. The only difference is that instead of doing that 
-"cli" we do the "for_each_irq(disable_irq)" instead (and do the 'cli' a 
-bit later).
+> In general, best to avoid having to teach drivers that in suspend-land,
+> non-atomic, allocations may block for ever. Better to make them all atomic
+> magically.
 
-ZERO effect on drivers. The calling convention is 100% the same as far as 
-the driver is concerned: ->suspend() is called with interrupts on and a 
-fully working machine, and ->suspend_late() called with interrupts off.
+Hm, atomic allocations may cause other problems to happen (ie. fail easily).
 
-The only difference is the _mechanism_ of turning interrupts off. NOTHING 
-else.
-
-> I first would like to understand what _exactly_ breaks on the iBook reported to
-> have problems.
-
-I bet it's code like the USB one:
-
-	int usb_hcd_pci_resume(struct pci_dev *dev)
-	{
-
-	#ifdef CONFIG_PPC_PMAC
-	        /* Reenable ASIC clocks for USB */
-	        if (machine_is(powermac)) {
-	                struct device_node *of_node;
-
-	                of_node = pci_device_to_OF_node(dev);
-	                if (of_node)
-	                        pmac_call_feature(PMAC_FTR_USB_ENABLE,
-	                                                of_node, 0, 1);
-	        }
-	#endif
-	..
-	        retval = pci_enable_device(dev);  
-
-and now pci_enable_device() calls pci_raw_set_power_state(), which does:
-
-	        if (dev->current_state == state) {
-	                /* we're already there */
-	                return 0;
-		} else ..
-
-which means that it doesn't actually _do_ anything, because it thinks that 
-'current_state' was already PCI_D0. But if the device was totally turned 
-off, that's wrong. 
-
-(background: pci_restore_standard_config() will have done 
-pci_raw_set_power_state(PCI_D0) with the device clocks off, which wouldn't 
-actualyl have _done_ anythign to the device, but then it does
-
-	dev->current_state = PCI_D0;
-
-Maybe the simplest thing to do migth be to replace that with a
-
-	pci_update_current_state(dev, PCI_D0);
-
-instead, to try to read back the state explicitly in 
-pci_restore_standard_config()).
-
-Best test:
-
-Ben, does this trivial patch make any difference for those powermacs?
-
-		Linus
----
- drivers/pci/pci.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 17bd932..97e1c38 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -1419,7 +1419,7 @@ int pci_restore_standard_config(struct pci_dev *dev)
- 		}
- 	}
- 
--	dev->current_state = PCI_D0;
-+	pci_update_current_state(dev, PCI_D0);
- 
- 	return 0;
- }
+Thanks,
+Rafael
