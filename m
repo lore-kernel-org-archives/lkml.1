@@ -1,82 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756174AbZBBCTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756625AbZBBCY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756174AbZBBCTc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 21:19:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZBBCTW
+	id S1756625AbZBBCY3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 21:24:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751300AbZBBCYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 21:19:22 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59155 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751300AbZBBCTV (ORCPT
+	Sun, 1 Feb 2009 21:24:20 -0500
+Received: from fg-out-1718.google.com ([72.14.220.158]:22114 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750715AbZBBCYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 21:19:21 -0500
-Message-ID: <4986581F.7060704@jp.fujitsu.com>
-Date: Mon, 02 Feb 2009 11:19:11 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 1 Feb 2009 21:24:19 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=m8gyikI/5bA39XQWz5Ww2/DJQ7tXjBurtT+j1+t0UYzEdnfbT0F7GQSuqXgaBWK+N8
+         09N0a0+Loq5GqoMYLV9iDgsQqXv5MAyeVnFWHCp2jKkkNmULFLV1Pz179Kb23+w2jC/y
+         T95WUB+/EWwuFpvlY1RzQyjy2XsEKLJ+34wkM=
+Date: Mon, 2 Feb 2009 03:24:15 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [RFC][PATCH] create workqueue threads only when needed
+Message-ID: <20090202022414.GA5006@nowhere>
+References: <20090127001708.GA4815@nowhere> <20090126163015.7f879b18@infradead.org> <20090131180347.GC5884@nowhere> <20090131101502.7ce8e7af@infradead.org> <20090131182843.GD5884@nowhere> <1233524261.18767.60.camel@pasglop>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
-       Alex Chiang <achiang@hp.com>, djwong@us.ibm.com,
-       Trent Piepho <xyzzy@speakeasy.org>, linux-kernel@vger.kernel.org
-Subject: Re: Q: state of pci express hotplug
-References: <m1fxj06js8.fsf@fess.ebiederm.org>
-In-Reply-To: <m1fxj06js8.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233524261.18767.60.camel@pasglop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Trying to use the current pciehp code, on real hardware in an 
-> interesting topology (more later) I'm not finding it very satisfactory
-> at all.  I am up to at least three show stopper bugs and the code
-> is not doing what I really need it to do, so I am looking at a significant
-> rewrite patch effort to make this code usable.
->
-
-I'd like to know details of the bugs. Could you please show the
-details of the bugs?
-
-> Am I unique in thinking there is a lot that needs to be done?
-> Is there current work in progress to make the pci hotplug work better?
+On Mon, Feb 02, 2009 at 08:37:41AM +1100, Benjamin Herrenschmidt wrote:
 > 
+> > I don't know, most of those I've looked on are not documented about the reason
+> > for a private workqueue. I guess most of them can use the usual kevent.
+> 
+> The main problem with kevent is that it gets clogged up.
 
-In my personal opinion, there are at least the following items need to
-be done for pciehp.
 
-o Possible bugs
-  -Current pcie_isr function (interrupt service routine of pciehp) has
-   a possibility to get into endless loop in the case that bits in Slot
-   Status register is set again immediately after cleared. According to
-   the past discussion in the pcihpd-discuss ML, this can happen on the
-   power fault detected bit on some platforms.
+I don't think so. Here is a snapshot of the workqueue tracer in my
+box currently:
 
-  -Current pciehp disables software notification of adapter presence
-   changed event and MRL changed event when slot is turned off. Because
-   of this, there is no way to detect those events on empty slots in the
-   current pciehp implementation.
+# CPU  INSERTED  EXECUTED   NAME
+# |      |         |          |
 
-o Missing Features
-  -Current pciehp doesn't support Data Link Layer State Changed event
-   software notification.
-  -No event notification mechanism to userland.
-  -When hot-removal request is initiated through the Attention Button
-   press, there is no chance to prepare hot-removal (unmount for example).
-  -Userland utilities.
+  1      0          0       hda0/1
+  1    589        589       reiserfs/1
+  1      0          0       scsi_tgtd/1
+  1      0          0       aio/1
+  1      0          0       ata/1
+  1    378        378       kblockd/1
+  1      0          0       kintegrityd/1
+  1      2          2       work_on_cpu/1
+  1   8706       8706       events/1
 
-o Cleanups
-  -slot list is not needed because there is only one slot under the
-   switch downstream port.
-  -hpc_ops is redundant.
-  -some fields in the struct controller, struct slot are redundant.
+  0  19994      19994       cqueue
+  0      0          0       hda0/0
+  0    501        501       reiserfs/0
+  0      0          0       scsi_tgtd/0
+  0      0          0       aio/0
+  0      0          0       ata_aux
+  0      0          0       ata/0
+  0      4          4       kacpi_notify
+  0     22         22       kacpid
+  0    379        379       kblockd/0
+  0      0          0       kintegrityd/0
+  0   1056       1056       khelper
+  0     15         15       work_on_cpu/0
+  0   9367       9367       events/0
+  0      0          0       cpuset
 
-o Misc
-  -I don't think power fault management routines are well tested.
-  -I don't think EMI management routines are well tested.
+And the result of uptime:
 
-Thanks,
-Kenji Kaneshige
+ 02:51:40 up  2:22,  6 users,  load average: 0.22, 0.34, 0.59
 
+So I have a total of 18073 works sent and performed by kevent for
+10300 seconds.
+
+An average of a bit less than 2 works on kevents per seconds is not about something
+clogged, especially since we are talking about small jobs, usually those which play
+the role of bottom halves and would have fit in a tasklet/softirq by the past.
+
+Now if you look at the other workqueues.
+Most of them don't do anything (more likely I don't do anything with them).
+
+Khelper can't be replaced since it performs slow works which may wait for userspace
+processes completion although I'm not sure it's still useful after the boot.
+
+cqueue is usually inactive but I raised a good number of events artificially on it, I
+just sent a patch to create its workqueue only when needed.
+
+And for the others, I don't know yet.
+
+ 
+> That's were thread pools kick in ... tried using Dave Howells slow
+> work ?
+
+
+I think it can be useful, as an example the kpsmoused workqueue receive rare
+and slow works of mouse resynchronisation.
+I wanted to convert it into a slow work created only on the fly.
+
+But..I don't find it. I've seen some patches about it but it doesn't seem
+to be merged.
+So I tried something else for kpsmoused: turn it into a thread created on the fly.
+
+But I think these slow works could be useful for such things.
+
+
+> Cheers,
+> Ben.
+> 
+> 
 
