@@ -1,103 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756711AbZBBL7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZBBMDa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756711AbZBBL7g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 06:59:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZBBL71
+	id S1756267AbZBBMDa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 07:03:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbZBBMDW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 06:59:27 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48573 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752348AbZBBL71 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 06:59:27 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED file segments
-Cc: kosaki.motohiro@jp.fujitsu.com, Hugh Dickins <hugh@veritas.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Greg KH <gregkh@suse.de>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mikos Szeredi <miklos@szeredi.hu>
-In-Reply-To: <alpine.LFD.2.00.0901311010460.3150@localhost.localdomain>
-References: <Pine.LNX.4.64.0901311216250.6763@blonde.anvils> <alpine.LFD.2.00.0901311010460.3150@localhost.localdomain>
-Message-Id: <20090202205515.EC89.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 2 Feb 2009 07:03:22 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:60602 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752348AbZBBMDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 07:03:21 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Nigel Cunningham <ncunningham@crca.org.au>
+Subject: Re: [linux-pm] [PATCH 3/3] PCI PM: Make warning in pci_legacy_suspend more useful
+Date: Mon, 2 Feb 2009 13:02:30 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200902012229.27517.rjw@sisk.pl> <200902012234.25165.rjw@sisk.pl> <1233540601.21871.10.camel@nigel-laptop>
+In-Reply-To: <1233540601.21871.10.camel@nigel-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon,  2 Feb 2009 20:59:23 +0900 (JST)
+Content-Disposition: inline
+Message-Id: <200902021302.31158.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-I went to trip for last three days and I returned today.
-I suprised this loooong thread now :)
-
-I have one comment.
-
-> TOTALLY UNTESTED. As usual. But the concept is pretty simple, and it 
-> actually removes a fair chunk of hacky code.  The only reason the diffstat 
-> output says that it adds more lines than it deletes is that I added more 
-> comments and made that helper inline function rather than make a complex 
-> conditional.
+On Monday 02 February 2009, Nigel Cunningham wrote:
+> Hi again.
 > 
-> Whaddaya think?
+> On Sun, 2009-02-01 at 22:34 +0100, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > The warning in pci_legacy_suspend() would be much more useful if it
+> > printed the name of the function that did the wrong thing.  Make it
+> > do so.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > ---
+> >  drivers/pci/pci-driver.c |    4 +++-
+> >  1 file changed, 3 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/drivers/pci/pci-driver.c
+> > ===================================================================
+> > --- linux-2.6.orig/drivers/pci/pci-driver.c
+> > +++ linux-2.6/drivers/pci/pci-driver.c
+> > @@ -365,7 +365,9 @@ static int pci_legacy_suspend(struct dev
+> >  		if (pci_dev->state_saved)
+> >  			goto Fixup;
+> >  
+> > -		if (WARN_ON_ONCE(pci_dev->current_state != PCI_D0))
+> > +		if (WARN_ONCE(pci_dev->current_state != PCI_D0,
+> > +				"PCI PM: Device state not saved by %pF\n",
+> > +				drv->suspend))
+> >  			goto Fixup;
+> >  	}
 > 
-> 		Linus
-> 
-> ---
->  mm/mmap.c  |   48 +++++++++++++++++++++++++-----------------------
->  mm/shmem.c |    2 +-
->  2 files changed, 26 insertions(+), 24 deletions(-)
-> 
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index c581df1..5fcaec3 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -1090,6 +1090,15 @@ int vma_wants_writenotify(struct vm_area_struct *vma)
->  		mapping_cap_account_dirty(vma->vm_file->f_mapping);
->  }
->  
-> +/*
-> + * We account for memory if it's a private writeable mapping,
-> + * and VM_NORESERVE wasn't set.
-> + */
-> +static inline int private_accountable_mapping(unsigned int vm_flags)
-> +{
-> +	return (vm_flags & (VM_NORESERVE | VM_SHARED | VM_WRITE)) == VM_WRITE;
-> +}
-> +
->  unsigned long mmap_region(struct file *file, unsigned long addr,
->  			  unsigned long len, unsigned long flags,
->  			  unsigned int vm_flags, unsigned long pgoff,
-> @@ -1117,23 +1126,24 @@ munmap_back:
->  	if (!may_expand_vm(mm, len >> PAGE_SHIFT))
->  		return -ENOMEM;
->  
-> -	if (flags & MAP_NORESERVE)
-> +	/*
-> +	 * Set 'VM_NORESERVE' if we should not account for the
-> +	 * memory use of this mapping. We only honor MAP_NORESERVE
-> +	 * if we're allowed to overcommit memory.
-> +	 */
-> +	if ((flags & MAP_NORESERVE) && sysctl_overcommit_memory != OVERCOMMIT_NEVER)
+> Am I right in thinking that WARN_ONCE will only warn about the first
+> driver that has the problem? If so, wouldn't it be better to make it
+> warn about all drivers that have the problem, but only once per device?
 
-I afraid this line a bit.
-if following scenario happend, we can lost VM_NORESERVE?
+That would be better, but I don't think we are going to see many of these
+anyway. :-)
 
-1. admin set overcommit_memory to "never"
-2. mmap
-3. admin set overcommit_memory to "guess"
-
-
-thanks.
-
-
-
-
+Thanks,
+Rafael
