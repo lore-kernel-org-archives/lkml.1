@@ -1,51 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756682AbZBBWzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754206AbZBBWzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756682AbZBBWzZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 17:55:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbZBBWzL
+	id S1754206AbZBBWzp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 17:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756816AbZBBWz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 17:55:11 -0500
-Received: from zcars04e.nortel.com ([47.129.242.56]:50996 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752725AbZBBWzK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 17:55:10 -0500
-Message-ID: <498779C2.2060908@nortel.com>
-Date: Mon, 02 Feb 2009 16:54:58 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Mon, 2 Feb 2009 17:55:27 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:44105 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756576AbZBBWzY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 17:55:24 -0500
+Message-ID: <498779D6.7010304@redhat.com>
+Date: Mon, 02 Feb 2009 16:55:18 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
-CC: debian-devel@lists.debian.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: cgroup mount point
-References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com>
-In-Reply-To: <20090202214153.GV3643@vespa.holoscopio.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       t-sato@yk.jp.nec.com
+Subject: [PATCH V4] Allow SysRq emergency thaw to thaw frozen filesystems
+References: <496EB639.6090800@redhat.com>	<4970E087.8020308@redhat.com>	<4970E4FB.7040407@redhat.com> <20090130134009.02d4a576.akpm@linux-foundation.org>
+In-Reply-To: <20090130134009.02d4a576.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2009 22:55:02.0585 (UTC) FILETIME=[483EAA90:01C98589]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thadeu Lima de Souza Cascardo wrote:
+Now that the filesystem freeze operation has been elevated
+to the VFS, and is just an ioctl away, some sort of safety net
+for unintentionally frozen root filesystems may be in order.
 
-> Linux Documentation is not consistent and have some funny options. In
-> Documentation/cgroups/*, we have:
+The timeout thaw originally proposed did not get merged, but
+perhaps something like this would be useful in emergencies.
 
-> So, we have some more options now: /cgroups, /containers, /dev/cpuset,
-> /dev/cpuctl, /opt/cgroup, /opt/cpuset.
-> 
-> I am copying the container and the kernel guys. Perhaps, we can find an
-> agreement (if we want to find one at all) and change all that
-> Documentation to get consistent.
+For example, freeze /path/to/mountpoint may freeze your
+root filesystem if you forgot that you had that unmounted.
 
-I'd vote for "cgroups" or "containers", mounted at / or /sys/.
+I chose 'j' as the last remaining character other than 'h'
+which is sort of reserved for help (because help is generated
+on any unknown character).
 
-/opt feels more like where software should live, and /dev should be for 
-devices rather than capabilities/management.  "cpuctl" and "cpuset" are 
-subsets of the full capabilities of cgroups, so they're suboptimal as 
-far as naming.
+I've tested this on a non-root fs with multiple (nested) freezers,
+as well as on a system rendered unresponsive due to a frozen
+root fs.
 
-Chris
+(this version fixes a couple small issues raised by Randy Dunlap)
+(and adds sb_lock locking I forgot, as akpm pointed out)
+(Randy's CONFIG_BLOCK fix should still apply over this)
+
+Thanks,
+-Eric
+
+Signed-off-by: Eric Sandeen <sandeen@redhat.com>
+---
+
+Index: linux-2.6/drivers/char/sysrq.c
+===================================================================
+--- linux-2.6.orig/drivers/char/sysrq.c	2009-02-02 16:06:49.656638124 -0600
++++ linux-2.6/drivers/char/sysrq.c	2009-02-02 16:12:01.570637732 -0600
+@@ -346,6 +346,17 @@ static struct sysrq_key_op sysrq_moom_op
+ 	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
+ };
+ 
++static void sysrq_handle_thaw(int key, struct tty_struct *tty)
++{
++	emergency_thaw_all();
++}
++static struct sysrq_key_op sysrq_thaw_op = {
++	.handler	= sysrq_handle_thaw,
++	.help_msg	= "thaw-filesystems(J)",
++	.action_msg	= "Emergency Thaw of all frozen filesystems",
++	.enable_mask	= SYSRQ_ENABLE_SIGNAL,
++};
++
+ static void sysrq_handle_kill(int key, struct tty_struct *tty)
+ {
+ 	send_sig_all(SIGKILL);
+@@ -396,9 +407,9 @@ static struct sysrq_key_op *sysrq_key_ta
+ 	&sysrq_moom_op,			/* f */
+ 	/* g: May be registered by ppc for kgdb */
+ 	NULL,				/* g */
+-	NULL,				/* h */
++	NULL,				/* h - reserved for help */
+ 	&sysrq_kill_op,			/* i */
+-	NULL,				/* j */
++	&sysrq_thaw_op,			/* j */
+ 	&sysrq_SAK_op,			/* k */
+ #ifdef CONFIG_SMP
+ 	&sysrq_showallcpus_op,		/* l */
+Index: linux-2.6/fs/buffer.c
+===================================================================
+--- linux-2.6.orig/fs/buffer.c	2009-02-02 16:06:49.656638124 -0600
++++ linux-2.6/fs/buffer.c	2009-02-02 16:16:46.052574960 -0600
+@@ -258,6 +258,31 @@ struct super_block *freeze_bdev(struct b
+ }
+ EXPORT_SYMBOL(freeze_bdev);
+ 
++void do_thaw_all(unsigned long unused)
++{
++	struct super_block *sb;
++	char b[BDEVNAME_SIZE];
++
++	spin_lock(&sb_lock);
++	list_for_each_entry(sb, &super_blocks, s_list) {
++		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
++			printk(KERN_WARNING "Emergency Thaw on %s\n",
++			       bdevname(sb->s_bdev, b));
++	}
++	spin_unlock(&sb_lock);
++	printk(KERN_WARNING "Emergency Thaw complete\n");
++}
++
++/**
++ * emergency_thaw_all -- forcibly thaw every frozen filesystem
++ *
++ * Used for emergency unfreeze of all filesystems via SysRq
++ */
++void emergency_thaw_all(void)
++{
++	pdflush_operation(do_thaw_all, 0);
++}
++
+ /**
+  * thaw_bdev  -- unlock filesystem
+  * @bdev:	blockdevice to unlock
+Index: linux-2.6/include/linux/buffer_head.h
+===================================================================
+--- linux-2.6.orig/include/linux/buffer_head.h	2009-02-02 16:06:49.656638124 -0600
++++ linux-2.6/include/linux/buffer_head.h	2009-02-02 16:12:01.601638741 -0600
+@@ -171,6 +171,7 @@ void __wait_on_buffer(struct buffer_head
+ wait_queue_head_t *bh_waitq_head(struct buffer_head *bh);
+ int fsync_bdev(struct block_device *);
+ struct super_block *freeze_bdev(struct block_device *);
++void emergency_thaw_all(void);
+ int thaw_bdev(struct block_device *, struct super_block *);
+ int fsync_super(struct super_block *);
+ int fsync_no_super(struct block_device *);
+Index: linux-2.6/Documentation/sysrq.txt
+===================================================================
+--- linux-2.6.orig/Documentation/sysrq.txt	2009-02-02 16:06:49.657638008 -0600
++++ linux-2.6/Documentation/sysrq.txt	2009-02-02 16:12:01.618601264 -0600
+@@ -81,6 +81,8 @@ On all -  write a character to /proc/sys
+ 
+ 'i'     - Send a SIGKILL to all processes, except for init.
+ 
++'j'	- Forcibly "Just thaw it" - filesystems frozen by the FIFREEZE ioctl.
++
+ 'k'     - Secure Access Key (SAK) Kills all programs on the current virtual
+           console. NOTE: See important comments below in SAK section.
+ 
+@@ -160,6 +162,9 @@ t'E'rm and k'I'll are useful if you have
+ are unable to kill any other way, especially if it's spawning other
+ processes.
+ 
++"'J'ust thaw it" is useful if your system becomes unresponsive due to a frozen
++(probably root) filesystem via the FIFREEZE ioctl.
++
+ *  Sometimes SysRq seems to get 'stuck' after using it, what can I do?
+ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ That happens to me, also. I've found that tapping shift, alt, and control
+
