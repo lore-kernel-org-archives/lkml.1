@@ -1,125 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZBBOJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZBBOKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753551AbZBBOJJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 09:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZBBOI4
+	id S1754159AbZBBOKS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 09:10:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbZBBOKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 09:08:56 -0500
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:36450 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752422AbZBBOIz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 09:08:55 -0500
-Date: Mon, 2 Feb 2009 19:38:49 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM
-Message-ID: <20090202140849.GB918@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090202125240.GA918@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090202125240.GA918@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 2 Feb 2009 09:10:04 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52748 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752503AbZBBOKC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 09:10:02 -0500
+Subject: Re: [PATCH] ftrace: On PowerPC we don't need frame pointers for
+	CALLER_ADDRs
+From: Steven Rostedt <srostedt@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1233534919.18767.69.camel@pasglop>
+References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+	 <1233534919.18767.69.camel@pasglop>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Mon, 02 Feb 2009 09:04:15 -0500
+Message-Id: <1233583455.16878.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-02-02 18:22:40]:
 
-> Hi, All,
+On Mon, 2009-02-02 at 11:35 +1100, Benjamin Herrenschmidt wrote:
+> On Sat, 2009-01-31 at 22:06 +0300, Anton Vorontsov wrote:
+> > According to this discussion:
+> > 
+> > http://lkml.org/lkml/2008/7/25/338
+> > http://lkml.org/lkml/2008/7/26/72
+> > 
+> > Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
+> > makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
+> > requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
+> > tracing is completely useless on PowerPC:
 > 
-> I found the following patch useful while debugging the memory
-> controller. It adds additional information if memcg invoked the OOM.
+> But we need them for -pg which ftrace uses no ? (ie, gcc forces you to
+> have -fno-omit-frame-pointers with -fpg iirc).
+
+Yes, ftrace function tracing requires -pg which requires FRAME_POINTER
+turned on.
+
 > 
-> Comments, Suggestions?
->
+> Now, regardless, I agree that on PPC, __builtin_return_address() should
+> always work with our without that cruft, so we may as well apply that
+> patch...
+> 
+> > [...]
+> >   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
+> >   <idle>-0       0X.h3    9us+: 0 (0)
+> >   <idle>-0       0X..3   72us : 0 (0)
+> >   <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
+> > 
+> > On PPC we can safely use __builtin_return_address(1..6) w/o frame
+> > pointers, and with this patch the trace output looks OK:
+> > 
+> > [...]
+> >   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
+> >   <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
+> >   <idle>-0       0X..3   87us : cpu_idle (__got2_end)
+> >   <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
+> > 
+> > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > ---
+> > 
+> > Btw, on PowerPC tracing is also broken w/o "ring-buffer: fix alignment
+> > problem" patch (currently collecting dust in the -tip tree, commit
+> > 082605de5f82eb692cc90f7fda071cc01bb5ac34). Any chance the fix go into
+> > Linus' tree, to not waste other people's time bisecting and debugging
+> > the problem? ;-)
+> > 
+> > For google: tracing, regression, "ring-buffer: move some metadata
+> > into buffer page", commit abc9b56d66fbd4d93302ef4bf6fa726e1b8255f9,
+> > answer is here.
+> > 
+> >  include/linux/ftrace.h |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+> > index 9c5bc6b..13eba02 100644
+> > --- a/include/linux/ftrace.h
+> > +++ b/include/linux/ftrace.h
+> > @@ -146,7 +146,7 @@ static inline void __ftrace_enabled_restore(int enabled)
+> >  #endif
+> >  }
+> >  
+> > -#ifdef CONFIG_FRAME_POINTER
+> > +#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
 
+Perhaps we should add a HAVE_NORMAL_FRAME_POINTERS in 
+arch/powerpc/Kconfig under PPC and then we can change the above line to:
 
-Description: Add RSS and swap to OOM output from memcg
+#if defined(CONFIG_FRAME_POINTERS) || \
+		defined(CONFIG_HAVE_NORMAL_FRAME_POINTERS)
 
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
+This way when another arch wants to belong to this, we do not need to
+have a list of archs here.
 
-This patch displays memcg values like failcnt, usage and limit
-when an OOM occurs due to memcg.
+-- Steve
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
+> >  /* TODO: need to fix this for ARM */
+> >  # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+> >  # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
+> 
 
- include/linux/memcontrol.h |    5 +++++
- mm/memcontrol.c            |   16 ++++++++++++++++
- mm/oom_kill.c              |    1 +
- 3 files changed, 22 insertions(+), 0 deletions(-)
-
-
-diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
-index 326f45c..2ce1737 100644
---- a/include/linux/memcontrol.h
-+++ b/include/linux/memcontrol.h
-@@ -104,6 +104,7 @@ struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
- 						      struct zone *zone);
- struct zone_reclaim_stat*
- mem_cgroup_get_reclaim_stat_from_page(struct page *page);
-+extern void mem_cgroup_print_mem_info(struct mem_cgroup *memcg);
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
- extern int do_swap_account;
-@@ -270,6 +271,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
- 	return NULL;
- }
- 
-+void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
-+{
-+}
-+
- #endif /* CONFIG_CGROUP_MEM_CONT */
- 
- #endif /* _LINUX_MEMCONTROL_H */
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 8e4be9c..d134a1d 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -813,6 +813,22 @@ bool mem_cgroup_oom_called(struct task_struct *task)
- 	rcu_read_unlock();
- 	return ret;
- }
-+
-+void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
-+{
-+	printk(KERN_WARNING "Memory cgroups's name %s\n",
-+		memcg->css.cgroup->dentry->d_name.name);
-+	printk(KERN_WARNING "Memory cgroup RSS : usage %llu, limit %llu"
-+		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
-+		res_counter_read_u64(&memcg->res, RES_LIMIT),
-+		res_counter_read_u64(&memcg->res, RES_FAILCNT));
-+	printk(KERN_WARNING "Memory cgroup swap: usage %llu, limit %llu "
-+		"failcnt %llu\n",
-+		res_counter_read_u64(&memcg->memsw, RES_USAGE),
-+		res_counter_read_u64(&memcg->memsw, RES_LIMIT),
-+		res_counter_read_u64(&memcg->memsw, RES_FAILCNT));
-+}
-+
- /*
-  * Unlike exported interface, "oom" parameter is added. if oom==true,
-  * oom-killer can be invoked.
-diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-index d3b9bac..b8e53ae 100644
---- a/mm/oom_kill.c
-+++ b/mm/oom_kill.c
-@@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
- 			current->comm, gfp_mask, order, current->oomkilladj);
- 		task_lock(current);
- 		cpuset_print_task_mems_allowed(current);
-+		mem_cgroup_print_mem_info(mem);
- 		task_unlock(current);
- 		dump_stack();
- 		show_mem();
-
--- 
-	Balbir
