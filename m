@@ -1,67 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757481AbZBBVB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758068AbZBBVFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757481AbZBBVB1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 16:01:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753515AbZBBVBT
+	id S1758068AbZBBVFe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 16:05:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZBBVF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 16:01:19 -0500
-Received: from gate.crashing.org ([63.228.1.57]:39558 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753189AbZBBVBS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 16:01:18 -0500
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Andreas Schwab <schwab@suse.de>
-In-Reply-To: <alpine.LFD.2.00.0902021236040.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
-	 <1233568479.18767.86.camel@pasglop>
-	 <alpine.LFD.2.00.0902020902320.4704@localhost.localdomain>
-	 <1233606580.18767.93.camel@pasglop>
-	 <alpine.LFD.2.00.0902021236040.3247@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 08:00:37 +1100
-Message-Id: <1233608437.18767.106.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 16:05:26 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:10390 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753438AbZBBVFZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 16:05:25 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=kx2krTCsjoR0ovnN1I8zIjNBm48ybTnQ3NfZ6y57HS3EkjLlH4Y9Ojmy20PiiauZZ
+	wXky7j6xhfXjYXfLD6NKw==
+Date: Mon, 2 Feb 2009 13:05:02 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [-mm patch] Show memcg information during OOM
+In-Reply-To: <20090202205434.GI918@balbir.in.ibm.com>
+Message-ID: <alpine.DEB.2.00.0902021256030.30674@chino.kir.corp.google.com>
+References: <20090202125240.GA918@balbir.in.ibm.com> <20090202215527.EC92.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090202141705.GE918@balbir.in.ibm.com> <alpine.DEB.2.00.0902021235500.26971@chino.kir.corp.google.com> <20090202205434.GI918@balbir.in.ibm.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.24.198.93
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 12:41 -0800, Linus Torvalds wrote:
+On Tue, 3 Feb 2009, Balbir Singh wrote:
+
+> David, I'd agree, but since we are under printk_ratelimit() and this
+> is a not-so-common path, does the log level matter much? If it does, I
+> don't mind using KERN_INFO.
 > 
-> On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
-> > 
-> > I'd rather hook it up inside pci_set_power_state()...
-> 
-> Umm. But you already _have_ that. Look at platform_pci_set_power_state(). 
-> It gets called before turning the device on (pci_raw_set_power_state(D0)) 
-> and after turning the device off (pci_raw_set_power_state(D1+))
-> 
-> Maybe you missed it? It's how ACPI does things.
 
-I may well have, it didn't exist when my stuff was written.
+It matters for parsing dmesg output; the only KERN_WARNING message from 
+the oom killer is normally the header.  There's a couple extra ones for 
+error conditions (that could certainly be changed to KERN_ERR), but only 
+in very rare circumstances.
 
-> However, the issue you see is that pci_restore_standard_config() doesn't 
-> call it, because at least with ACPI, the ACPI code simply isn't ready to 
-> be called with interrupts off. So it looks like you may be looking at the 
-> wrong thing, hmm?
+As defined by include/linux/kernel.h:
 
-Well.. yes and no... I still don't see how it can be sane to whack config
-space back before the device has been turned back on. I wouldn't be surprised
-if some devices don't grok well their BARs being written while not in D0.
+	#define KERN_WARNING	"<4>"	/* warning conditions			*/
+	...
+	#define KERN_INFO	"<6>"	/* informational			*/
 
-I suppose I can always add another hook inside pci_restore_blah for my specific
-case but I can also very easily see that can of worms hitting even more badly
-in tight embedded environments such as handhelds, who use things like fine clock
-control a lot more extensively.
+The meminfo you are printing falls under the "informational" category, no?
 
-In fact, even on x86, I'm not sure it's kosher to restore the config space
-before you called ACPI...
+While you're there, it might also be helpful to make another change 
+that would also help in parsing the output:
 
-Ben.
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 8e4be9c..954b0d5 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -813,6 +813,25 @@ bool mem_cgroup_oom_called(struct task_struct *task)
+>  	rcu_read_unlock();
+>  	return ret;
+>  }
+> +
+> +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
+> +{
+> +	if (!memcg)
+> +		return;
+> +
+> +	printk(KERN_WARNING "Memory cgroups's name %s\n",
+> +		memcg->css.cgroup->dentry->d_name.name);
 
+This should be "cgroup's", but I don't think you want to print this on a 
+line by itself since the only system-wide synchronization here is a 
+read-lock on tasklist_lock and there could be two separate memcg's that 
+are oom.
 
+So it's quite possible, though unlikely, that two seperate oom events 
+would have these messages merged together in the ring buffer, which would 
+make parsing impossible.
+
+I think you probably want to add the name to each line you print, such as:
+
+> +	printk(KERN_WARNING "Cgroup memory: usage %llu, limit %llu"
+> +		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
+> +		res_counter_read_u64(&memcg->res, RES_LIMIT),
+> +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
+
+	const char *name = memcg->css.cgroup->dentry->d_name.name;
+
+	printk(KERN_INFO "Cgroup %s memory: usage %llu, limit %llu"
+			" failcount %llu\n", name, ...);
+
+> +	printk(KERN_WARNING "Cgroup memory+swap: usage %llu, limit %llu "
+> +		"failcnt %llu\n",
+> +		res_counter_read_u64(&memcg->memsw, RES_USAGE),
+> +		res_counter_read_u64(&memcg->memsw, RES_LIMIT),
+> +		res_counter_read_u64(&memcg->memsw, RES_FAILCNT));
+
+and
+
+	printk(KERN_INFO "Cgroup %s memory+swap: usage %llu, limit %llu "
+		"failcnt %llu\n", name, ...);
+
+> +}
