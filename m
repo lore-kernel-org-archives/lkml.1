@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754685AbZBBTWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZBBTZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754685AbZBBTWI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 14:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZBBTVy
+	id S1755229AbZBBTZP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 14:25:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752900AbZBBTZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 14:21:54 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:52970 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752596AbZBBTVy (ORCPT
+	Mon, 2 Feb 2009 14:25:00 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43654 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752673AbZBBTZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 14:21:54 -0500
-Date: Mon, 2 Feb 2009 11:20:55 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, akpm <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Dave Kleikamp <shaggy@austin.ibm.com>
-Subject: [PATCH] jfs: needs crc32_le
-Message-Id: <20090202112055.5ad37047.randy.dunlap@oracle.com>
-In-Reply-To: <20090202201637.28896d2f.sfr@canb.auug.org.au>
-References: <20090202201637.28896d2f.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A09020B.4987479A.0201:SCFSTAT928724,ss=1,fgs=0
+	Mon, 2 Feb 2009 14:25:00 -0500
+Date: Mon, 2 Feb 2009 11:23:33 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mel Gorman <mel@csn.ul.ie>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Hugh Dickins <hugh@veritas.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Greg KH <gregkh@suse.de>,
+       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
+       Rik van Riel <riel@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Mikos Szeredi <miklos@szeredi.hu>, Andy Whitcroft <apw@canonical.com>
+Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED
+ file segments
+In-Reply-To: <20090202185810.GC9840@csn.ul.ie>
+Message-ID: <alpine.LFD.2.00.0902021121120.3247@localhost.localdomain>
+References: <20090202205515.EC89.KOSAKI.MOTOHIRO@jp.fujitsu.com> <Pine.LNX.4.64.0902021215060.18750@blonde.anvils> <20090202224410.EC95.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090202185810.GC9840@csn.ul.ie>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
 
-JFS needs crc32_le(), so select its library config symbol:
 
-fs/built-in.o: In function `jfs_statfs':
-super.c:(.text+0x7c8c0): undefined reference to `crc32_le'
-super.c:(.text+0x7c8d5): undefined reference to `crc32_le'
+On Mon, 2 Feb 2009, Mel Gorman wrote:
+>
+> Do not account for address space usage when making hugetlbfs mappings RW
+> 
+> hugetlbfs accounts for its address space usage separate from the VM
+> core. VM_ACCOUNT should not be set for its mappings but it is possible it gets
+> set if a user creates a RO hugetlbfs mapping MAP_NORESERVE and then calls
+> mprotect(). This patch stops VM_ACCOUNT being set for hugetlbfs mappings
+> during mprotect().
+> 
+> Credit goes to Kosaki Motohiro for spotting this.
+> 
+> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> 
+> diff --git a/mm/mprotect.c b/mm/mprotect.c
+> index abe2694..31ddc6a 100644
+> --- a/mm/mprotect.c
+> +++ b/mm/mprotect.c
+> @@ -153,7 +153,7 @@ mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
+>  	 * but (without finer accounting) cannot reduce our commit if we
+>  	 * make it unwritable again.
+>  	 */
+> -	if (newflags & VM_WRITE) {
+> +	if (newflags & VM_WRITE && !(vma->vm_flags & VM_HUGETLB)) {
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Dave Kleikamp <shaggy@austin.ibm.com>
----
- fs/jfs/Kconfig |    1 +
- 1 file changed, 1 insertion(+)
+Wouldn't it be _much_ nicer to just depend on that whole VM_NORESERVE 
+thing?
 
---- linux-next-20090202.orig/fs/jfs/Kconfig
-+++ linux-next-20090202/fs/jfs/Kconfig
-@@ -1,6 +1,7 @@
- config JFS_FS
- 	tristate "JFS filesystem support"
- 	select NLS
-+	select CRC32
- 	help
- 	  This is a port of IBM's Journaled Filesystem .  More information is
- 	  available in the file <file:Documentation/filesystems/jfs.txt>.
+Those hugetlb mappings _should_ have VM_NORESERVE on them, so the 
+following test:
+
+>  		if (!(oldflags & (VM_ACCOUNT|VM_WRITE|
+>  						VM_SHARED|VM_NORESERVE))) {
+>  			charged = nrpages;
+
+should do it all correctly.
+
+Why make up some ad-hoc testing, when we already have a flag for _exactly_ 
+this issue. That's what VM_NORESERVE means: don't apply VM_ACCOUNT.
+
+IOW, I don't see the point of this patch at all.
+
+And if there is some hugetlb path that doesn't set VM_NORESERVE, then fix 
+_that_ instead.
+
+			Linus
