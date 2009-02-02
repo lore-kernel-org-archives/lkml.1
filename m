@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZBBOpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753852AbZBBOtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449AbZBBOpp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 09:45:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752578AbZBBOpg
+	id S1753852AbZBBOtT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 09:49:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZBBOtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 09:45:36 -0500
-Received: from casper.infradead.org ([85.118.1.10]:42820 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752554AbZBBOpf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 09:45:35 -0500
-Date: Mon, 2 Feb 2009 06:45:25 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 2 Feb 2009 09:49:09 -0500
+Received: from fifo99.com ([67.223.236.141]:59632 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751393AbZBBOtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 09:49:08 -0500
+Subject: Re: [RFC][PATCH] create workqueue threads only when needed
+From: Daniel Walker <dwalker@fifo99.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
        Lai Jiangshan <laijs@cn.fujitsu.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC][PATCH] create workqueue threads only when needed
-Message-ID: <20090202064525.3df9db9f@infradead.org>
-In-Reply-To: <4986B684.5000506@s5r6.in-berlin.de>
+In-Reply-To: <20090127001708.GA4815@nowhere>
 References: <20090127001708.GA4815@nowhere>
-	<20090126163015.7f879b18@infradead.org>
-	<20090131180347.GC5884@nowhere>
-	<20090131101502.7ce8e7af@infradead.org>
-	<20090131182843.GD5884@nowhere>
-	<1233524261.18767.60.camel@pasglop>
-	<20090201211909.37c0780b@infradead.org>
-	<4986B684.5000506@s5r6.in-berlin.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
+Content-Type: text/plain
+Date: Mon, 02 Feb 2009 06:49:00 -0800
+Message-Id: <1233586140.5903.95.camel@desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Feb 2009 10:01:56 +0100
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+On Tue, 2009-01-27 at 01:17 +0100, Frederic Weisbecker wrote:
 
-> Arjan van de Ven wrote:
-> > On Mon, 02 Feb 2009 08:37:41 +1100
-> > Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >> That's were thread pools kick in ... tried using Dave Howells slow
-> >> work ?
-> > 
-> > async function calls are pretty much the same and actually in
-> > mainlinme. Dave Howells stuff in addition plays some extremely
-> > weird refcounting games that I cannot imagine anyone but him
-> > needing...
+> All of the workqueues with 0 work inserted do nothing. 
+> For several reasons:
 > 
-> I haven't looked at this particular slow-work implementation.  Do you
-> refer to some internal refcounting or to some refcounting as a service
-> for the API user?
+> _ Unneeded built drivers for my system that create workqueue(s) when they init
+> _ Services which need their own workqueue, for several reasons, but who receive
+>   very rare jobs (often never)
+> _ ...?
+> 
 
-the later. which I find a bit weird ;)
+Some of the workqueues you have on your system can be removed just by
+tuning your kernel config. It's more desirable to be able to remove the
+whole unused feature since that's all unused memory beyond just
+thread .. 
 
+Daniel
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
