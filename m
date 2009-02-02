@@ -1,38 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbZBBRYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZBBR13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757777AbZBBRYY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 12:24:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZBBRX4
+	id S1757457AbZBBR13 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 12:27:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbZBBR1S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 12:23:56 -0500
-Received: from e24smtp04.br.ibm.com ([32.104.18.25]:60304 "EHLO
-	e24smtp04.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758122AbZBBRXy (ORCPT
+	Mon, 2 Feb 2009 12:27:18 -0500
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:13555 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752551AbZBBR1R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 12:23:54 -0500
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, jmorris@namei.org, dave@linux.vnet.ibm.com,
-       matthltc@us.ibm.com, zohar@linux.vnet.ibm.com
-Subject: [PATCH 0/2] TPM: refactoring and integrity
-Date: Mon,  2 Feb 2009 15:23:42 -0200
-Message-Id: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.5.6.3
+	Mon, 2 Feb 2009 12:27:17 -0500
+X-Greylist: delayed 571 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Feb 2009 12:27:17 EST
+Message-ID: <49872AB9.1010807@dell.com>
+Date: Mon, 02 Feb 2009 11:17:45 -0600
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: "Hayes, Stuart" <Stuart_Hayes@dell.com>
+CC: jeff@garzik.org, linux-scsi@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH] libata: change drive ready wait after hard reset to 5s
+References: <1233456951-992-1-git-send-email-tj@kernel.org> <1233456951-992-4-git-send-email-tj@kernel.org> <DFEF91B22ED07447AB6AA4B237F913F9021859A8@ausx3mpc125.aus.amer.dell.com>
+In-Reply-To: <DFEF91B22ED07447AB6AA4B237F913F9021859A8@ausx3mpc125.aus.amer.dell.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig4287E325EF1638B221A646D9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patchset contains a refactoring patch and integrity one. The first addresses Matt Helsley and Dave Hansen's comments on replacing the data[] vectors by packed structures making the code easier to read and debug and also consolidates most of the tpm_show_* functions. The second one provides an interface to read and extend PCR values, which is widely used by IMA.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig4287E325EF1638B221A646D9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-This version also addresses Matt Helsley's last observation on the timeout_t structure usage to access TPM_CAP_PROP_TIS_DURATION capability, now a new structure is being used, duration_t, whose fields now match exactly as defined in the TPM specification.
+I believe this is the reference that Stuart refers to in the ATA-6 spec:
 
-Rajiv Andrade (2):
-  TPM: sysfs functions consolidation
-  TPM: integrity interface
+http://www.t10.org/t13/project/d1410r3a-ATA-ATAPI-6.pdf
 
- drivers/char/tpm/tpm.c |  528 ++++++++++++++++++++++--------------------------
- drivers/char/tpm/tpm.h |  142 +++++++++++++
- include/linux/tpm.h    |   35 ++++
- 3 files changed, 423 insertions(+), 282 deletions(-)
- create mode 100644 include/linux/tpm.h
+Here's the snippet, (p327):
 
+"
+Transition D0HR1:D0HR1: When the sample indicates that DASP- is negated
+and            less than 450 ms have
+elapsed since the negation of RESET-, then the device shall make a
+transition to the   D0HR1: Sample_DASP-
+state. When the sample indicates that DASP- is negated and greater than
+450 ms          but less than 5 s have
+elapsed since the negation of RESET-, then the device may make a
+transition to the     D0HR1: Sample_DASP-
+state.
+Transition D0HR1:D0HR3: When the sample indicates that DASP- is negated
+and 5 s have elapsed since the
+negation of RESET-, then the device shall clear bit 7 in the Error
+register and make a transition to the D0HR3:
+Set_status state. When the sample indicates that DASP- is negated and
+greater than 450 ms but less than 5 s
+have elapsed since the negation of RESET-, then the device may clear bit
+7 in the Error register and make a
+transition to the D0HR3: Set_status state.
+"
+
+Hayes, Stuart wrote:
+> This fixes problems during resume with drives that take longer than 1s
+> to be ready.  The ATA-6 spec appears to allow 5 seconds for a drive to
+> be ready.
+>
+> On one affected system, this patch changes "PM: resume devices took..."=
+
+> message from 17 seconds to 4 seconds, and gets rid of a lot of ugly
+> timeout/error messages.
+>
+> Without this patch, the libata code moves on after 1s, tries to send a
+> soft reset (which the drive doesn't see because it isn't ready) which
+> also times out, then an IDENTIFY command is sent to the drive which
+> times out, and finally the error handler will try to send another hard
+> reset which will finally get things working.
+>
+> Sorry to send as an attachment, but my mail server will wrap text.
+>
+>
+> Signed-off-by: Stuart Hayes <stuart_hayes@dell.com>
+>
+>  =20
+
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
+
+
+--------------enig4287E325EF1638B221A646D9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkmHKrkACgkQ2CrZjkA73Ys11ACeM9ibnvpj5ZZVyYhE7oHNqikJ
+4h4An0zmAdshbCGkcyEjZi9wvGNNkleR
+=8xrR
+-----END PGP SIGNATURE-----
+
+--------------enig4287E325EF1638B221A646D9--
