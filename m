@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754652AbZBBITp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZBBI3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754652AbZBBITp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 03:19:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZBBITg
+	id S1753367AbZBBI3l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 03:29:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZBBI33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 03:19:36 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:46196 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751584AbZBBITf (ORCPT
+	Mon, 2 Feb 2009 03:29:29 -0500
+Received: from gw-ca.panasas.com ([66.104.249.162]:8591 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751614AbZBBI32 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 03:19:35 -0500
-Subject: Re: [Bugme-new] [Bug 12562] New: High overhead while switching or
- synchronizing threads on different cores
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Thomas Pilarski <thomas.pi@arcor.de>
-Cc: Mike Galbraith <efault@gmx.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Gregory Haskins <ghaskins@novell.com>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1233560635.4126.18.camel@localhost.localdomain>
-References: <bug-12562-10286@http.bugzilla.kernel.org/>
-	 <20090128125604.94ed3fe0.akpm@linux-foundation.org>
-	 <1233181507.6988.14.camel@bugs-laptop>  <1233220048.7835.19.camel@twins>
-	 <1233223979.5294.41.camel@bugs-laptop>
-	 <1233224644.5294.52.camel@bugs-laptop>  <1233229028.4495.34.camel@laptop>
-	 <1233237934.11129.183.camel@bugs-laptop>
-	 <1233302270.6061.9.camel@marge.simson.net>
-	 <1233560635.4126.18.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 02 Feb 2009 09:19:23 +0100
-Message-Id: <1233562763.4787.71.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Mon, 2 Feb 2009 03:29:28 -0500
+Message-ID: <4986AEE8.5040609@panasas.com>
+Date: Mon, 02 Feb 2009 10:29:28 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Christoph Hellwig <hch@infradead.org>, Eric Sandeen <sandeen@sandeen.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, mfasheh@suse.com,
+       joel.becker@oracle.com, linux-kernel@vger.kernel.org,
+       xfs-masters@oss.sgi.com, viro@zeniv.linux.org.uk,
+       Ankit Jain <me@ankitjain.org>, linux-fsdevel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [xfs-masters] [PATCH] fs: Add new pre-allocation ioctls to vfs
+ for compatibility with legacy xfs ioctls
+References: <20090130171423.f99c88d0.akpm@linux-foundation.org> <20090201164130.GA32276@infradead.org> <4985D48A.6090007@panasas.com> <200902020131.04203.arnd@arndb.de>
+In-Reply-To: <200902020131.04203.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Feb 2009 08:29:25.0183 (UTC) FILETIME=[5B240CF0:01C98510]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 08:43 +0100, Thomas Pilarski wrote:
-> Am Freitag, den 30.01.2009, 08:57 +0100 schrieb Mike Galbraith:
-> > One of those "don't _ever_ do that" things?
+Arnd Bergmann wrote:
+> On Sunday 01 February 2009, Boaz Harrosh wrote:
+>> Christoph Hellwig wrote:
+>>> The structures have been defined exactly like that in XFS (and ocfs2)
+>>> before, and there are similar cases in other ioctls handlers.
+>>>
+>>> If anyone feels like changing this in some way feel free to wade through
+>>> the endless discussions about the pros and cons for it, but I think
+>>> doing it in context of this patch is not helpful.
+>> OK so ia64 gcc is broken in regard to __attribute__((packed(1))),
+>> and it should not be used.
 > 
-> I did not known random() uses a system call. It's rather unrealistic to
-> have five million system calls in a second. By adding a small loop with
-> some calculations near the random, the problem disappears too.
-> It is a unlucky chosen data generator.
+> No, the compiler is correct, it has to generate more complex code
+> if it cannot assume that data is naturally aligned and the architecture
+> does not support unaligned loads. If you don't understand this, please
+> at least read the list archives about the last five times this came up
+> before claiming that the compiler is broken.
+> 
 
-I suppose you'll have to go bug the glibc people about their random()
-implementation.
+Wrong!! Sorry, you guys don't listen.
+I'm talking of the case where the structures are EXACTLY the same anyway
+you look at them. sizeof(foo) == sizeof(foo_packed) and 
+offsetof(foo_memmber) == offsetof(foo_packed_member) for every member of
+the structure. foo && foo_packed are declared exactly the same but with
+__attribute__((packed(1))) applied to the later.
 
-If you really need random() to perform for your application (monte-carlo
-stuff?) You might be better off writing a PRNG with TLS state or
-something.
+THEN in ia64 case the compiler is brain dead, because it relates
+"unalignment" to packed(1) which are two different things.
 
+>> But clearly the programmer, Like in this patch exactly, should spell
+>> out the hole created by padding and spell that hole out and call it
+>> __Padding. The porgrammer thought about it, identified there is an hole,
+>> please don't drop this information on the floor. Put it in the code so I 
+>> don't have to break my head on it.
+> 
+> Again, you are missing the point. The patch has to leave out the padding
+> and whatnot because the idea of the patch is to provide a
+> backwards-compatible API for programs written against the legacy XFS
+> API. The original definition of the interface was flawed, but unless you
+> can travel back in time to complain about this in the initial submission
+> of the XFS file system, you should not blame the entirely correct patch now.
+> 
+
+Lets make a small test is: sizeof(orig_struct) == sizeof(my_struct)?
+offsetof(orig_any_memmber) == offsetof(my_any_memmber)?
+
+Yes because the padding is there if you shove it under the rug or expose
+it.
+
+What I'm saying is don't repeat the passed mistakes, spell out the exact
+structure layout. So it will compile the same for any <= 64bit machine.
+If the way a structure was defined in the passed, produced two or more
+memory representations, spell these out with different structure
+definitions and choose the one you need at compile time.
+
+Otherwise you have fixed nothing. You are just repeating the same
+passed mistake. And down the future some programmer will wish he add
+a time machine to go back and fix what we've done today. But bingo, he
+did and told me about it, and now it is time to fix that.
+
+> 	Arnd <><
+
+Don't let the compiler have the driver's sit. You do the driving, because
+he does not know where you want to go.
+
+Boaz
