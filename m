@@ -1,142 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758189AbZBBShQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbZBBShk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758189AbZBBShQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 13:37:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbZBBSg4
+	id S1758760AbZBBShk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 13:37:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZBBShC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 13:36:56 -0500
-Received: from mu-out-0910.google.com ([209.85.134.191]:10479 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755975AbZBBSgz (ORCPT
+	Mon, 2 Feb 2009 13:37:02 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:29413 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756084AbZBBSg5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 13:36:55 -0500
+	Mon, 2 Feb 2009 13:36:57 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=qbZOpPgIB2mkemkCIVrfSbeFzKQHiRCNC/s9X4oD0o5Ke1nHilHzmeOekG27lt3DAQ
-         nijhTlGsh6UBd0dKlVxcwapzpfpXxo7I7O+SBqoZqNB9FYoTvfdb4FRXOloziGJWQp1T
-         dkERHRKFv3pFH6b9UnInyLzWh3JakK35ksKAY=
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=i/Ncj+GvrPYfitq0odVOIAgB4NohrKgV9ucG9DcerZVu9MhFa5KDTL+1xb64Xnte46
+         6eKPaZfZPfi1LFSzCy87EmthfbQqRtiYLN4CJ1LuYws4fMgK/+mt4h7zi+GuuShPcuXU
+         aasuElhAM0rkxzN98nJRpjgKx7tbDMB9XE82s=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: "Daniel K." <daniel@cluded.net>
-Subject: Re: [PATCH 02/15] scc_pata: remove DECLARE_SCC_DEV() macro
-Date: Mon, 2 Feb 2009 19:26:44 +0100
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
+Date: Mon, 2 Feb 2009 19:27:25 +0100
 User-Agent: KMail/1.10.4 (Linux/2.6.29-rc2-next-20090126; KDE/4.1.4; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090201174909.19144.67767.sendpatchset@localhost.localdomain> <20090201174923.19144.28927.sendpatchset@localhost.localdomain> <49872324.9070908@cluded.net>
-In-Reply-To: <49872324.9070908@cluded.net>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Andy Whitcroft <apw@canonical.com>
+References: <20090201174909.19144.67767.sendpatchset@localhost.localdomain> <20090201174916.19144.11318.sendpatchset@localhost.localdomain> <Pine.LNX.4.64.0902020847410.11930@anakin>
+In-Reply-To: <Pine.LNX.4.64.0902020847410.11930@anakin>
 MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200902021927.25177.bzolnier@gmail.com>
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902021926.44921.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 February 2009, Daniel K. wrote:
-> Bartlomiej Zolnierkiewicz wrote:
-> > Index: b/drivers/ide/scc_pata.c
+On Monday 02 February 2009, Geert Uytterhoeven wrote:
+> On Sun, 1 Feb 2009, Bartlomiej Zolnierkiewicz wrote:
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] ide: include <asm/ide.h> only when needed
+> > 
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> >  drivers/ide/ide-io-std.c |    7 +++++++
+> >  drivers/ide/tx4938ide.c  |    2 ++
+> >  drivers/ide/tx4939ide.c  |    2 ++
+> >  include/linux/ide.h      |    7 -------
+> >  4 files changed, 11 insertions(+), 7 deletions(-)
+> > 
+> > Index: b/drivers/ide/ide-io-std.c
 > > ===================================================================
-> > --- a/drivers/ide/scc_pata.c
-> > +++ b/drivers/ide/scc_pata.c
-> > @@ -882,21 +882,16 @@ static const struct ide_dma_ops scc_dma_
-> >  	.dma_sff_read_status	= scc_dma_sff_read_status,
-> >  };
+> > --- a/drivers/ide/ide-io-std.c
+> > +++ b/drivers/ide/ide-io-std.c
+> > @@ -2,6 +2,13 @@
+> >  #include <linux/kernel.h>
+> >  #include <linux/ide.h>
 > >  
-> > -#define DECLARE_SCC_DEV(name_str)			\
-> > -  {							\
-> > -      .name		= name_str,			\
-> > -      .init_iops	= init_iops_scc,		\
-> > -      .init_dma		= scc_init_dma,			\
-> > -      .init_hwif	= init_hwif_scc,		\
-> > -      .tp_ops		= &scc_tp_ops,		\
-> > -      .port_ops		= &scc_port_ops,		\
-> > -      .dma_ops		= &scc_dma_ops,			\
-> > -      .host_flags	= IDE_HFLAG_SINGLE,		\
-> > -      .pio_mask		= ATA_PIO4,			\
-> > -  }
-> > -
-> >  static const struct ide_port_info scc_chipsets[] __devinitdata = {
-> > -	/* 0 */ DECLARE_SCC_DEV("sccIDE"),
-> > +	.name		= "sccIDE",
-> > +	.init_iops	= init_iops_scc,
-> > +	.init_dma	= scc_init_dma,
-> > +	.init_hwif	= init_hwif_scc,
-> > +	.tp_ops		= &scc_tp_ops,
-> > +	.port_ops	= &scc_port_ops,
-> > +	.dma_ops	= &scc_dma_ops,
-> > +	.host_flags	= IDE_HFLAG_SINGLE,
-> > +	.pio_mask	= ATA_PIO4,
-> >  };
-> >  
-> >  /**
+> > +#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_MIPS) || \
+> > +    defined(CONFIG_PARISC) || defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+> > +#include <asm/ide.h>
+> > +#else
+> > +#include <asm-generic/ide_iops.h>
+> > +#endif
+> > +
+> >  /*
+> >   *	Conventional PIO operations for ATA devices
+> >   */
+> > Index: b/drivers/ide/tx4938ide.c
+> > ===================================================================
+> > --- a/drivers/ide/tx4938ide.c
+> > +++ b/drivers/ide/tx4938ide.c
+> > @@ -15,6 +15,8 @@
+> >  #include <linux/init.h>
+> >  #include <linux/platform_device.h>
+> >  #include <linux/io.h>
+> > +
+> > +#include <asm/ide.h>
 > 
-> You're a few braces short here, aren't you?
+> Did you try checkpatch.pl?
 
-Good catch, thanks!
+Sure.
 
-> The braces in the #define, didn't get carried over in the change.
+This driver uses stuff from <asm-mips/ide.h>.
 
-Actually we may simplify the whole thing while at it.
+[ I guess I could put '-mips' there to silence warnings on tx493{8,9}.c,
+  however I don't know of the way to get rid of ide-io-std.c's one... ]
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] scc_pata: remove DECLARE_SCC_DEV() macro (v2)
+>     [...]
+> 
+> > Index: b/include/linux/ide.h
+> > ===================================================================
+> > --- a/include/linux/ide.h
+> > +++ b/include/linux/ide.h
+> > @@ -193,13 +193,6 @@ static inline void ide_std_init_ports(hw
+> >  	hw->io_ports.ctl_addr = ctl_addr;
+> >  }
+> >  
+> > -#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_MIPS) || \
+> > -    defined(CONFIG_PARISC) || defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+> > -#include <asm/ide.h>
+> > -#else
+> > -#include <asm-generic/ide_iops.h>
+> > -#endif
+> > -
+> >  #define MAX_HWIFS	10
+> >  
+> >  /*
+> 
+> As checkpatch.pl complains about any include of asm/*.h where the corresponding
+> linux/*.h exists, this `fix' is incompatible with it.
 
-v2:
-scc_chipsets[] -> scc_chipset fix (spotted by Daniel K.).
+checkpatch.pl gives false positives when it comes to some asm/*.h usages
 
-Cc: "Daniel K." <daniel@cluded.net>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/scc_pata.c |   27 +++++++++++----------------
- 1 file changed, 11 insertions(+), 16 deletions(-)
+This fix is such example -- it makes <asm/ide.h> pulled in only when really
+needed (ide-io-std.c and tx493{8,9}.c) instead of being pulled in indirectly
+by every file including <linux/ide.h>.
 
-Index: b/drivers/ide/scc_pata.c
-===================================================================
---- a/drivers/ide/scc_pata.c
-+++ b/drivers/ide/scc_pata.c
-@@ -882,21 +882,16 @@ static const struct ide_dma_ops scc_dma_
- 	.dma_sff_read_status	= scc_dma_sff_read_status,
- };
- 
--#define DECLARE_SCC_DEV(name_str)			\
--  {							\
--      .name		= name_str,			\
--      .init_iops	= init_iops_scc,		\
--      .init_dma		= scc_init_dma,			\
--      .init_hwif	= init_hwif_scc,		\
--      .tp_ops		= &scc_tp_ops,		\
--      .port_ops		= &scc_port_ops,		\
--      .dma_ops		= &scc_dma_ops,			\
--      .host_flags	= IDE_HFLAG_SINGLE,		\
--      .pio_mask		= ATA_PIO4,			\
--  }
--
--static const struct ide_port_info scc_chipsets[] __devinitdata = {
--	/* 0 */ DECLARE_SCC_DEV("sccIDE"),
-+static const struct ide_port_info scc_chipset __devinitdata = {
-+	.name		= "sccIDE",
-+	.init_iops	= init_iops_scc,
-+	.init_dma	= scc_init_dma,
-+	.init_hwif	= init_hwif_scc,
-+	.tp_ops		= &scc_tp_ops,
-+	.port_ops	= &scc_port_ops,
-+	.dma_ops	= &scc_dma_ops,
-+	.host_flags	= IDE_HFLAG_SINGLE,
-+	.pio_mask	= ATA_PIO4,
- };
- 
- /**
-@@ -910,7 +905,7 @@ static const struct ide_port_info scc_ch
- 
- static int __devinit scc_init_one(struct pci_dev *dev, const struct pci_device_id *id)
- {
--	return init_setup_scc(dev, &scc_chipsets[id->driver_data]);
-+	return init_setup_scc(dev, &scc_chipset);
- }
- 
- /**
+[ Long-term we want <asm/ide.h> removed but this is not possible yet so
+  I'm trying to limit its scope in the meantime... ]
 
+Thanks,
+Bart
