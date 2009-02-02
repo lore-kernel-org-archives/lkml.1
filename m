@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758804AbZBBVzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758526AbZBBV4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758804AbZBBVzv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 16:55:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757495AbZBBVzm
+	id S1758526AbZBBV4L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 16:56:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759007AbZBBVzx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 16:55:42 -0500
-Received: from gw.goop.org ([64.81.55.164]:42412 "EHLO mail.goop.org"
+	Mon, 2 Feb 2009 16:55:53 -0500
+Received: from gw.goop.org ([64.81.55.164]:42422 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753754AbZBBVzl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 16:55:41 -0500
-Message-ID: <49876BD3.5070804@goop.org>
-Date: Mon, 02 Feb 2009 13:55:31 -0800
+	id S1758776AbZBBVzv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 16:55:51 -0500
+Message-ID: <49876BDE.1060603@goop.org>
+Date: Mon, 02 Feb 2009 13:55:42 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
-CC: the arch/x86 maintainers <x86@kernel.org>, Tejun Heo <htejun@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>
-Subject: [PATCH 1/3] xen: setup percpu data pointers
+Subject: [PATCH 2/3] xen: make direct versions of irq_enable/disable/save/restore
+ to common code
 X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
@@ -26,89 +27,486 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to access percpu data fairly early, so set up the percpu
-registers as soon as possible.  We only need to load the appropriate
-segment register.  We already have a GDT, but its hard to change it
-early because we need to manipulate the pagetable to do so, and that
-hasn't been set up yet.
+Now that x86-64 has directly accessible percpu variables, it can also
+implement the direct versions of these operations, which operate on a
+vcpu_info structure directly embedded in the percpu area.
 
-Also, set the kernel stack when bringing up secondary CPUs.  If we
-don't they all end up sharing the same stack...
+In fact, the 64-bit versions are more or less identical, and so can be
+shared.  The only two differences are:
+ 1. xen_restore_fl_direct takes its argument in eax on 32-bit, and rdi on 64-bit.
+    Unfortunately it isn't possible to directly refer to the 2nd lsb of rdi directly
+    (as you can with %ah), so the code isn't quite as dense.
+ 2. check_events needs to variants to save different registers.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/enlighten.c |   16 ++++++++++++++++
- arch/x86/xen/smp.c       |    7 ++++++-
- arch/x86/xen/xen-ops.h   |    2 ++
- 3 files changed, 24 insertions(+), 1 deletion(-)
+ arch/x86/xen/Makefile     |    3 
+ arch/x86/xen/xen-asm.S    |  140 +++++++++++++++++++++++++++++++++++++++++++++
+ arch/x86/xen/xen-asm.h    |   12 +++
+ arch/x86/xen/xen-asm_32.S |  113 ++++--------------------------------
+ arch/x86/xen/xen-asm_64.S |  136 +------------------------------------------
+ 5 files changed, 171 insertions(+), 233 deletions(-)
 
-diff -r 42a1fb2574f0 arch/x86/xen/enlighten.c
---- a/arch/x86/xen/enlighten.c	Mon Feb 02 12:44:32 2009 -0800
-+++ b/arch/x86/xen/enlighten.c	Mon Feb 02 13:24:32 2009 -0800
-@@ -66,6 +66,8 @@
+===================================================================
+--- a/arch/x86/xen/Makefile
++++ b/arch/x86/xen/Makefile
+@@ -6,7 +6,8 @@
+ endif
  
- struct shared_info xen_dummy_shared_info;
+ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
+-			time.o xen-asm_$(BITS).o grant-table.o suspend.o
++			time.o xen-asm.o xen-asm_$(BITS).o \
++			grant-table.o suspend.o
  
-+void *xen_initial_gdt;
+ obj-$(CONFIG_SMP)		+= smp.o spinlock.o
+ obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
+\ No newline at end of file
+===================================================================
+--- /dev/null
++++ b/arch/x86/xen/xen-asm.S
+@@ -0,0 +1,140 @@
++/*
++	Asm versions of Xen pv-ops, suitable for either direct use or inlining.
++	The inline versions are the same as the direct-use versions, with the
++	pre- and post-amble chopped off.
++
++	This code is encoded for size rather than absolute efficiency,
++	with a view to being able to inline as much as possible.
++
++	We only bother with direct forms (ie, vcpu in percpu data) of
++	the operations here; the indirect forms are better handled in
++	C, since they're generally too large to inline anyway.
++ */
++
++#include <asm/asm-offsets.h>
++#include <asm/percpu.h>
++#include <asm/processor-flags.h>
++
++#include "xen-asm.h"
++
++/*
++	Enable events.  This clears the event mask and tests the pending
++	event status with one and operation.  If there are pending
++	events, then enter the hypervisor to get them handled.
++ */
++ENTRY(xen_irq_enable_direct)
++	/* Unmask events */
++	movb $0, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_mask
++
++	/* Preempt here doesn't matter because that will deal with
++	   any pending interrupts.  The pending check may end up being
++	   run on the wrong CPU, but that doesn't hurt. */
++
++	/* Test for pending */
++	testb $0xff, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_pending
++	jz 1f
++
++2:	call check_events
++1:
++ENDPATCH(xen_irq_enable_direct)
++	ret
++	ENDPROC(xen_irq_enable_direct)
++	RELOC(xen_irq_enable_direct, 2b+1)
++
++
++/*
++	Disabling events is simply a matter of making the event mask
++	non-zero.
++ */
++ENTRY(xen_irq_disable_direct)
++	movb $1, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_mask
++ENDPATCH(xen_irq_disable_direct)
++	ret
++	ENDPROC(xen_irq_disable_direct)
++	RELOC(xen_irq_disable_direct, 0)
++
++/*
++	(xen_)save_fl is used to get the current interrupt enable status.
++	Callers expect the status to be in X86_EFLAGS_IF, and other bits
++	may be set in the return value.  We take advantage of this by
++	making sure that X86_EFLAGS_IF has the right value (and other bits
++	in that byte are 0), but other bits in the return value are
++	undefined.  We need to toggle the state of the bit, because
++	Xen and x86 use opposite senses (mask vs enable).
++ */
++ENTRY(xen_save_fl_direct)
++	testb $0xff, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_mask
++	setz %ah
++	addb %ah,%ah
++ENDPATCH(xen_save_fl_direct)
++	ret
++	ENDPROC(xen_save_fl_direct)
++	RELOC(xen_save_fl_direct, 0)
++
++
++/*
++	In principle the caller should be passing us a value return
++	from xen_save_fl_direct, but for robustness sake we test only
++	the X86_EFLAGS_IF flag rather than the whole byte. After
++	setting the interrupt mask state, it checks for unmasked
++	pending events and enters the hypervisor to get them delivered
++	if so.
++ */
++ENTRY(xen_restore_fl_direct)
++#ifdef CONFIG_X86_64
++	testw $X86_EFLAGS_IF, %di
++#else
++	testb $X86_EFLAGS_IF>>8, %ah
++#endif
++	setz PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_mask
++	/* Preempt here doesn't matter because that will deal with
++	   any pending interrupts.  The pending check may end up being
++	   run on the wrong CPU, but that doesn't hurt. */
++
++	/* check for unmasked and pending */
++	cmpw $0x0001, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_pending
++	jz 1f
++2:	call check_events
++1:
++ENDPATCH(xen_restore_fl_direct)
++	ret
++	ENDPROC(xen_restore_fl_direct)
++	RELOC(xen_restore_fl_direct, 2b+1)
++
++
++/*
++	Force an event check by making a hypercall,
++	but preserve regs before making the call.
++ */
++check_events:
++#ifdef CONFIG_X86_32
++	push %eax
++	push %ecx
++	push %edx
++	call xen_force_evtchn_callback
++	pop %edx
++	pop %ecx
++	pop %eax
++#else
++	push %rax
++	push %rcx
++	push %rdx
++	push %rsi
++	push %rdi
++	push %r8
++	push %r9
++	push %r10
++	push %r11
++	call xen_force_evtchn_callback
++	pop %r11
++	pop %r10
++	pop %r9
++	pop %r8
++	pop %rdi
++	pop %rsi
++	pop %rdx
++	pop %rcx
++	pop %rax
++#endif
++	ret
++
+===================================================================
+--- /dev/null
++++ b/arch/x86/xen/xen-asm.h
+@@ -0,0 +1,12 @@
++#ifndef _XEN_XEN_ASM_H
++#define _XEN_XEN_ASM_H
++
++#include <linux/linkage.h>
++
++#define RELOC(x, v)	.globl x##_reloc; x##_reloc=v
++#define ENDPATCH(x)	.globl x##_end; x##_end=.
++
++/* Pseudo-flag used for virtual NMI, which we don't implement yet */
++#define XEN_EFLAGS_NMI	0x80000000
++
++#endif
+===================================================================
+--- a/arch/x86/xen/xen-asm_32.S
++++ b/arch/x86/xen/xen-asm_32.S
+@@ -11,101 +11,28 @@
+ 	generally too large to inline anyway.
+  */
+ 
+-#include <linux/linkage.h>
+-
+-#include <asm/asm-offsets.h>
++//#include <asm/asm-offsets.h>
+ #include <asm/thread_info.h>
+-#include <asm/percpu.h>
+ #include <asm/processor-flags.h>
+ #include <asm/segment.h>
+ 
+ #include <xen/interface/xen.h>
+ 
+-#define RELOC(x, v)	.globl x##_reloc; x##_reloc=v
+-#define ENDPATCH(x)	.globl x##_end; x##_end=.
+-
+-/* Pseudo-flag used for virtual NMI, which we don't implement yet */
+-#define XEN_EFLAGS_NMI	0x80000000
+-
++#include "xen-asm.h"
 +
  /*
-  * Point at some empty memory to start with. We map the real shared_info
-  * page as soon as fixmap is up and running.
-@@ -917,8 +919,19 @@
- 	have_vcpu_info_placement = 0;
- #endif
+-	Enable events.  This clears the event mask and tests the pending
+-	event status with one and operation.  If there are pending
+-	events, then enter the hypervisor to get them handled.
++	Force an event check by making a hypercall,
++	but preserve regs before making the call.
+  */
+-ENTRY(xen_irq_enable_direct)
+-	/* Unmask events */
+-	movb $0, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
+-
+-	/* Preempt here doesn't matter because that will deal with
+-	   any pending interrupts.  The pending check may end up being
+-	   run on the wrong CPU, but that doesn't hurt. */
+-
+-	/* Test for pending */
+-	testb $0xff, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
+-	jz 1f
+-
+-2:	call check_events
+-1:
+-ENDPATCH(xen_irq_enable_direct)
++check_events:
++	push %eax
++	push %ecx
++	push %edx
++	call xen_force_evtchn_callback
++	pop %edx
++	pop %ecx
++	pop %eax
+ 	ret
+-	ENDPROC(xen_irq_enable_direct)
+-	RELOC(xen_irq_enable_direct, 2b+1)
+-
+-
+-/*
+-	Disabling events is simply a matter of making the event mask
+-	non-zero.
+- */
+-ENTRY(xen_irq_disable_direct)
+-	movb $1, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
+-ENDPATCH(xen_irq_disable_direct)
+-	ret
+-	ENDPROC(xen_irq_disable_direct)
+-	RELOC(xen_irq_disable_direct, 0)
+-
+-/*
+-	(xen_)save_fl is used to get the current interrupt enable status.
+-	Callers expect the status to be in X86_EFLAGS_IF, and other bits
+-	may be set in the return value.  We take advantage of this by
+-	making sure that X86_EFLAGS_IF has the right value (and other bits
+-	in that byte are 0), but other bits in the return value are
+-	undefined.  We need to toggle the state of the bit, because
+-	Xen and x86 use opposite senses (mask vs enable).
+- */
+-ENTRY(xen_save_fl_direct)
+-	testb $0xff, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
+-	setz %ah
+-	addb %ah,%ah
+-ENDPATCH(xen_save_fl_direct)
+-	ret
+-	ENDPROC(xen_save_fl_direct)
+-	RELOC(xen_save_fl_direct, 0)
+-
+-
+-/*
+-	In principle the caller should be passing us a value return
+-	from xen_save_fl_direct, but for robustness sake we test only
+-	the X86_EFLAGS_IF flag rather than the whole byte. After
+-	setting the interrupt mask state, it checks for unmasked
+-	pending events and enters the hypervisor to get them delivered
+-	if so.
+- */
+-ENTRY(xen_restore_fl_direct)
+-	testb $X86_EFLAGS_IF>>8, %ah
+-	setz PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
+-	/* Preempt here doesn't matter because that will deal with
+-	   any pending interrupts.  The pending check may end up being
+-	   run on the wrong CPU, but that doesn't hurt. */
+-
+-	/* check for unmasked and pending */
+-	cmpw $0x0001, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
+-	jz 1f
+-2:	call check_events
+-1:
+-ENDPATCH(xen_restore_fl_direct)
+-	ret
+-	ENDPROC(xen_restore_fl_direct)
+-	RELOC(xen_restore_fl_direct, 2b+1)
  
--	/* setup percpu state */
-+#ifdef CONFIG_X86_64
-+	/*
-+	 * Setup percpu state.  We only need to do this for 64-bit
-+	 * because 32-bit already has %fs set properly.
-+	 */
- 	load_percpu_segment(0);
-+#endif
-+	/*
-+	 * The only reliable way to retain the initial address of the
-+	 * percpu gdt_page is to remember it here, so we can go and
-+	 * mark it RW later, when the initial percpu area is freed.
-+	 */
-+	xen_initial_gdt = &per_cpu(gdt_page, 0);
+ /*
+ 	We can't use sysexit directly, because we're not running in ring0.
+@@ -289,17 +216,3 @@
+ 	lea 4(%edi),%esp		/* point esp to new frame */
+ 2:	jmp xen_do_upcall
  
- 	xen_smp_init();
+-
+-/*
+-	Force an event check by making a hypercall,
+-	but preserve regs before making the call.
+- */
+-check_events:
+-	push %eax
+-	push %ecx
+-	push %edx
+-	call xen_force_evtchn_callback
+-	pop %edx
+-	pop %ecx
+-	pop %eax
+-	ret
+===================================================================
+--- a/arch/x86/xen/xen-asm_64.S
++++ b/arch/x86/xen/xen-asm_64.S
+@@ -11,143 +11,15 @@
+ 	generally too large to inline anyway.
+  */
  
-diff -r 42a1fb2574f0 arch/x86/xen/smp.c
---- a/arch/x86/xen/smp.c	Mon Feb 02 12:44:32 2009 -0800
-+++ b/arch/x86/xen/smp.c	Mon Feb 02 13:24:32 2009 -0800
-@@ -170,8 +170,7 @@
+-#include <linux/linkage.h>
+-
+-#include <asm/asm-offsets.h>
++#include <asm/errno.h>
++#include <asm/percpu.h>
+ #include <asm/processor-flags.h>
+-#include <asm/errno.h>
+ #include <asm/segment.h>
+-#include <asm/percpu.h>
  
- 	/* We've switched to the "real" per-cpu gdt, so make sure the
- 	   old memory can be recycled */
--	make_lowmem_page_readwrite(__per_cpu_load +
--				   (unsigned long)&per_cpu_var(gdt_page));
-+	make_lowmem_page_readwrite(xen_initial_gdt);
+ #include <xen/interface/xen.h>
  
- 	xen_setup_vcpu_info_placement();
- }
-@@ -287,6 +286,9 @@
- 	irq_ctx_init(cpu);
- #else
- 	clear_tsk_thread_flag(idle, TIF_FORK);
-+	per_cpu(kernel_stack, cpu) =
-+		(unsigned long)task_stack_page(idle) -
-+		KERNEL_STACK_OFFSET + THREAD_SIZE;
- #endif
- 	xen_setup_timer(cpu);
- 	xen_init_lock_cpu(cpu);
-diff -r 42a1fb2574f0 arch/x86/xen/xen-ops.h
---- a/arch/x86/xen/xen-ops.h	Mon Feb 02 12:44:32 2009 -0800
-+++ b/arch/x86/xen/xen-ops.h	Mon Feb 02 13:24:32 2009 -0800
-@@ -10,6 +10,8 @@
- extern const char xen_hypervisor_callback[];
- extern const char xen_failsafe_callback[];
- 
-+extern void *xen_initial_gdt;
+-#define RELOC(x, v)	.globl x##_reloc; x##_reloc=v
+-#define ENDPATCH(x)	.globl x##_end; x##_end=.
+-
+-/* Pseudo-flag used for virtual NMI, which we don't implement yet */
+-#define XEN_EFLAGS_NMI	0x80000000
+-
+-#if 1
+-/*
+-	FIXME: x86_64 now can support direct access to percpu variables
+-	via a segment override.  Update xen accordingly.
+- */
+-#define BUG			ud2a
+-#endif
+-
+-/*
+-	Enable events.  This clears the event mask and tests the pending
+-	event status with one and operation.  If there are pending
+-	events, then enter the hypervisor to get them handled.
+- */
+-ENTRY(xen_irq_enable_direct)
+-	BUG
+-
+-	/* Unmask events */
+-	movb $0, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_mask
+-
+-	/* Preempt here doesn't matter because that will deal with
+-	   any pending interrupts.  The pending check may end up being
+-	   run on the wrong CPU, but that doesn't hurt. */
+-
+-	/* Test for pending */
+-	testb $0xff, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_pending
+-	jz 1f
+-
+-2:	call check_events
+-1:
+-ENDPATCH(xen_irq_enable_direct)
+-	ret
+-	ENDPROC(xen_irq_enable_direct)
+-	RELOC(xen_irq_enable_direct, 2b+1)
+-
+-/*
+-	Disabling events is simply a matter of making the event mask
+-	non-zero.
+- */
+-ENTRY(xen_irq_disable_direct)
+-	BUG
+-
+-	movb $1, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_mask
+-ENDPATCH(xen_irq_disable_direct)
+-	ret
+-	ENDPROC(xen_irq_disable_direct)
+-	RELOC(xen_irq_disable_direct, 0)
+-
+-/*
+-	(xen_)save_fl is used to get the current interrupt enable status.
+-	Callers expect the status to be in X86_EFLAGS_IF, and other bits
+-	may be set in the return value.  We take advantage of this by
+-	making sure that X86_EFLAGS_IF has the right value (and other bits
+-	in that byte are 0), but other bits in the return value are
+-	undefined.  We need to toggle the state of the bit, because
+-	Xen and x86 use opposite senses (mask vs enable).
+- */
+-ENTRY(xen_save_fl_direct)
+-	BUG
+-
+-	testb $0xff, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_mask
+-	setz %ah
+-	addb %ah,%ah
+-ENDPATCH(xen_save_fl_direct)
+-	ret
+-	ENDPROC(xen_save_fl_direct)
+-	RELOC(xen_save_fl_direct, 0)
+-
+-/*
+-	In principle the caller should be passing us a value return
+-	from xen_save_fl_direct, but for robustness sake we test only
+-	the X86_EFLAGS_IF flag rather than the whole byte. After
+-	setting the interrupt mask state, it checks for unmasked
+-	pending events and enters the hypervisor to get them delivered
+-	if so.
+- */
+-ENTRY(xen_restore_fl_direct)
+-	BUG
+-
+-	testb $X86_EFLAGS_IF>>8, %ah
+-	setz PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_mask
+-	/* Preempt here doesn't matter because that will deal with
+-	   any pending interrupts.  The pending check may end up being
+-	   run on the wrong CPU, but that doesn't hurt. */
+-
+-	/* check for unmasked and pending */
+-	cmpw $0x0001, PER_CPU_VAR(xen_vcpu_info) + XEN_vcpu_info_pending
+-	jz 1f
+-2:	call check_events
+-1:
+-ENDPATCH(xen_restore_fl_direct)
+-	ret
+-	ENDPROC(xen_restore_fl_direct)
+-	RELOC(xen_restore_fl_direct, 2b+1)
+-
+-
+-/*
+-	Force an event check by making a hypercall,
+-	but preserve regs before making the call.
+- */
+-check_events:
+-	push %rax
+-	push %rcx
+-	push %rdx
+-	push %rsi
+-	push %rdi
+-	push %r8
+-	push %r9
+-	push %r10
+-	push %r11
+-	call xen_force_evtchn_callback
+-	pop %r11
+-	pop %r10
+-	pop %r9
+-	pop %r8
+-	pop %rdi
+-	pop %rsi
+-	pop %rdx
+-	pop %rcx
+-	pop %rax
+-	ret
+-
++#include "xen-asm.h"
 +
- struct trap_info;
- void xen_copy_trap_info(struct trap_info *traps);
- 
+ ENTRY(xen_adjust_exception_frame)
+ 	mov 8+0(%rsp),%rcx
+ 	mov 8+8(%rsp),%r11
 
 
