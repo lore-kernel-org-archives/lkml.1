@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbZBBPPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbZBBPQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbZBBPPq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 10:15:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZBBPPh
+	id S1756387AbZBBPQS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 10:16:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZBBPP4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 10:15:37 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:32832 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751995AbZBBPPg (ORCPT
+	Mon, 2 Feb 2009 10:15:56 -0500
+Received: from mail.embedromix.ro ([82.78.144.6]:49701 "EHLO
+	mail.embedromix.ro" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755832AbZBBPPz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 10:15:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=usUl3/pJSSKilDYj9P9Afc1EKhQ8fyoLwwJagZOhR6h/PKDIww2MftEPWFGZQH3zV7
-         9MiK8OY5fEUBHe6Z5kIdp/3t2ZO6zIS+yMm9V9IvEga/jSNlTwl0Ni92gUn6ffO+jOzQ
-         Vpm1KA6yZbmHVI/abkmX0jx42LiBa4Q/E4pgI=
+	Mon, 2 Feb 2009 10:15:55 -0500
+Date: Mon, 2 Feb 2009 17:15:40 +0200 (EET)
+From: "Catalin(ux) M. BOIE" <catab@embedromix.ro>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: Bill Davidsen <davidsen@tmr.com>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Seagate disk freeze for 30 seconds then comes back (RecovComm
+ 10B8B)
+In-Reply-To: <20090130212115.GB26062@csclub.uwaterloo.ca>
+Message-ID: <alpine.LFD.2.00.0902021714430.5093@mail.embedromix.ro>
+References: <alpine.LFD.2.00.0901271739400.2013@mail.embedromix.ro> <20090128153141.GC26064@csclub.uwaterloo.ca> <498244D4.4060903@tmr.com> <20090130212115.GB26062@csclub.uwaterloo.ca>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <tnxiqns28mm.fsf@pc1117.cambridge.arm.com>
-References: <a4423d670902020327x61a1d9dehb1642b25ec7f82f1@mail.gmail.com>
-	 <tnxiqns28mm.fsf@pc1117.cambridge.arm.com>
-Date: Mon, 2 Feb 2009 16:15:33 +0100
-Message-ID: <c62985530902020715u73407d4dqe14c340de310c866@mail.gmail.com>
-Subject: Re: next-20090202: task kmemleak:763 blocked for more than 120 
-	seconds.
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Mandeep Singh Baines <msb@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/2 Catalin Marinas <catalin.marinas@arm.com>:
-> Alexander Beregalov <a.beregalov@gmail.com> wrote:
->> It seems it is blocked forever.
->
-> Scanning the full memory may take a lot of time, depending on the
-> amount of RAM and the number of objects allocated. It is not unlikely
-> to take more than 120 seconds on some loaded systems. However, it
-> should call schedule() periodically to let other tasks run. Is your
-> system unresponsive during this?
->
->> [ 1704.619898] INFO: task kmemleak:763 blocked for more than 120 seconds.
->> [ 1704.697951] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
->> disables this message.
->> [ 1704.791613] kmemleak      D 0000000000000001  6008   763      2
-> [...]
->> [ 1706.246334] no locks held by kmemleak/763.
->
-> It looks like the kmemleak thread is in the TASK_UNINTERUPTIBLE state.
-> This happens when it calls schedule_timeout_uninterruptible() to sleep
-> between scans. It probably took more than 120 to scan the memory and
-> hence the report.
->
-> It doesn't look like a problem, only that the watchdog thread checks
-> for uninterruptible tasks. I can try to make it sleep with
-> TASK_INTERRUPTIBLE to avoid the message.
->
-> Thanks.
->
-> --
-> Catalin
-> --
+On Fri, 30 Jan 2009, Lennart Sorensen wrote:
 
+> On Thu, Jan 29, 2009 at 07:07:48PM -0500, Bill Davidsen wrote:
+>> Would you expect that firmware would be shared between old tech laptop
+>> drives and desktop/server drives? Particularly since the laptop drive was
+>> built before any of the 7200.11 drives?
+>>
+>> I think this is a very unlikely part of the problem. Certainly the drive
+>> might be dying or other hardware issue.
+>
+> It does seem unlikely, although if it is a common design flaw in their
+> firmware, it could have been carried over from older drives and just not
+> be as noticeable on the older drives with smaller caches and less drive
+> space.
+>
+> Now if the drive is really old, then year it might simply be failing.
 
-Hi,
+No, the driver is pretty new (less than 1 year old) and the use is very 
+light.
 
-May be it would be better to make the softlockup detector hooking into
-schedule_timeout()
-(ie by using a tracepoint) to check if a thread chose to sleep more
-than hung_task_timeout_secs
-intentionally in a TASK_UNINTERRUPTIBLE state.
+> -- 
+> Len Sorensen
+>
 
-Fixing it into kmemleak would not solve the problem in other tasks
-which do similar sleeps...
-
-Mandeep, if you agree I can try something? Or perhaps you prefer to do
-it yourself. As you wish.
+--
+Catalin(ux) M. BOIE
+http://kernel.embedromix.ro/
