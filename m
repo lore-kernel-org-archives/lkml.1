@@ -1,123 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZBBOK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbZBBOM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752771AbZBBOK4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 09:10:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752551AbZBBOKr
+	id S1755836AbZBBOM5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 09:12:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZBBOMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 09:10:47 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33587 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752554AbZBBOKq (ORCPT
+	Mon, 2 Feb 2009 09:12:41 -0500
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:50432 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753230AbZBBOMk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 09:10:46 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH] Fix OOPS in mmap_region() when merging adjacent VM_LOCKED file segments
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Greg KH <gregkh@suse.de>,
-       Maksim Yevmenkin <maksim.yevmenkin@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, will@crowder-design.com,
-       Rik van Riel <riel@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Mikos Szeredi <miklos@szeredi.hu>, Andy Whitcroft <apw@canonical.com>,
-       Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <Pine.LNX.4.64.0902021215060.18750@blonde.anvils>
-References: <20090202205515.EC89.KOSAKI.MOTOHIRO@jp.fujitsu.com> <Pine.LNX.4.64.0902021215060.18750@blonde.anvils>
-Message-Id: <20090202224410.EC95.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Mon, 2 Feb 2009 09:12:40 -0500
+Date: Mon, 2 Feb 2009 19:42:33 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [-mm patch] Show memcg information during OOM
+Message-ID: <20090202141233.GD918@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090202125240.GA918@balbir.in.ibm.com> <20090202215527.EC92.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Mon,  2 Feb 2009 23:10:42 +0900 (JST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090202215527.EC92.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc to mel)
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-02-02 21:59:34]:
 
-> On Mon, 2 Feb 2009, KOSAKI Motohiro wrote:
-> > >  
-> > > -	if (flags & MAP_NORESERVE)
-> > > +	/*
-> > > +	 * Set 'VM_NORESERVE' if we should not account for the
-> > > +	 * memory use of this mapping. We only honor MAP_NORESERVE
-> > > +	 * if we're allowed to overcommit memory.
-> > > +	 */
-> > > +	if ((flags & MAP_NORESERVE) && sysctl_overcommit_memory != OVERCOMMIT_NEVER)
-> > 
-> > I afraid this line a bit.
-> > if following scenario happend, we can lost VM_NORESERVE?
-> > 
-> > 1. admin set overcommit_memory to "never"
-> > 2. mmap
-> > 3. admin set overcommit_memory to "guess"
+> Hi
 > 
-> I still haven't reviewed it fully myself (and note that what
-> Linus put in his tree is not identical to this posted patch),
-> but I do believe this is okay.
+> > +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
+> > +{
+> > +	printk(KERN_WARNING "Memory cgroups's name %s\n",
+> > +		memcg->css.cgroup->dentry->d_name.name);
+> > +	printk(KERN_WARNING "Memory cgroup RSS : usage %llu, limit %llu"
+> > +		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
+> > +		res_counter_read_u64(&memcg->res, RES_LIMIT),
+> > +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
+> > +	printk(KERN_WARNING "Memory cgroup swap: usage %llu, limit %llu "
+> > +		"failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
+> > +		res_counter_read_u64(&memcg->res, RES_LIMIT),
+> > +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
 > 
-> When admin changes overcommit_memory, we don't make a pass across
-> every vma of every mm in the system, to adjust all the accounting
-> of VM_NORESERVE areas; so I think it's quite reasonable to take
-> VM_NORESERVE as reflecting the policy in force when that vma was
-> created.  And nothing is displaying the VM_NORESERVE flag.
-
-hmhm, I see.
-
-
-> Ah, you're actually thinking of
-> 4. mprotect
-> with the original flags (!VM_WRITE) such that no VM_ACCOUNT was done,
-> and now VM_WRITE is added and the accounting is done despite it having
-> been mapped MAP_NORESERVE originally.  Whereas before Linus's change,
-> VM_NORESERVE would have still exempted it.
+> s/res/memsw/ ?
 > 
-> Well... I don't think I care!
-
-Yeah.
-
-FWIW, we don't need VM_NORESERVE checking now because VM_NORESERVE and VM_ACCOUNT
-are exclusive condition now :)
-
-
-
-> But I wonder what the hugetlb situation is: that
-> 	if (!accountable)
-> 		vm_flags |= VM_NORESERVE;
-> looks suspicious to me, they look as if they're exempting all
-> the hugetlb pages from its accounting, whereas !accountable was
-> only supposed to exempt them from mmap_region()'s own accounting.
-
-HAHAHA, Indeed.
-
-when hugepage shared read-only mapping  -> hugepage shared writable maping,
-following code seems to cause calling vm_enough_memory() although hugepage.
-
-========================================================
-mprotect_fixup(struct vm_area_struct *vma, struct vm_area_struct **pprev,
-        unsigned long start, unsigned long end, unsigned long newflags)
-{
-        if (newflags & VM_WRITE) {
-                if (!(oldflags & (VM_ACCOUNT|VM_WRITE|
-                                                VM_SHARED|VM_NORESERVE))) {
-                        charged = nrpages;
-                        if (security_vm_enough_memory(charged))
-                                return -ENOMEM;
-                        newflags |= VM_ACCOUNT;
-                }
-        }
-==========================================================
-
-mel, what do you think this?
-
+> and, I don't like the name of "Memory cgroup RSS" and "Memory cgroup swap".
+> it seems misleading. memcg->res doesn't only count count rss, but also cache.
+> memcg->memsw doesn't only count swap, but also memory.
 > 
-> Perhaps.  I'm still looking at other things,
-> not given this the time it needs yet.
-> 
-> Hugh
+> otherthing, I think it is good patch for me :)
+>
 
+Good point, I fixed the res/memsw problem and sent out a patch. About
+the RSS thing, not sure what to call it, just calling it memory can be
+confusing, may be I should call it
 
+Memory and Memory+swap
 
+Thanks for the review 
+
+-- 
+	Balbir
