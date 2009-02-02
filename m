@@ -1,15 +1,15 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757326AbZBBNGz (ORCPT <rfc822;ralf@linux-mips.org>);
-	Mon, 2 Feb 2009 08:06:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZBBNGq
+	id S1757246AbZBBNCN (ORCPT <rfc822;ralf@linux-mips.org>);
+	Mon, 2 Feb 2009 08:02:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbZBBNB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 08:06:46 -0500
-Received: from olc-14.verat.net ([62.108.127.40]:40016 "EHLO olc-14.verat.net"
+	Mon, 2 Feb 2009 08:01:57 -0500
+Received: from olc-15.verat.net ([62.108.127.41]:40455 "EHLO olc-15.verat.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbZBBNGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 08:06:46 -0500
-Message-ID: <8974.41.220.75.3.1233579224.squirrel@webmail.verat.net>
-Date: Mon, 2 Feb 2009 13:53:44 +0100 (CET)
+	id S1753228AbZBBNB4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 08:01:56 -0500
+Message-ID: <9413.41.220.75.3.1233579714.squirrel@webmail.verat.net>
+Date: Mon, 2 Feb 2009 14:01:54 +0100 (CET)
 Subject: =?iso-8859-1?Q?Kj=E6re_uio.no_konto_Bruker?=
 From: "Universitetet i Oslo Help Desk" <helpdesk@uio.no>
 Reply-To: desk.help500@gmail.com
@@ -23,7 +23,7 @@ To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757326AbZBBNGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1757246AbZBBNCN@vger.kernel.org>
 
 Kjære uio.no konto Bruker,
 
