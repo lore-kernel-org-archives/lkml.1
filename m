@@ -1,48 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753077AbZBBHre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753285AbZBBHta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753077AbZBBHre (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 02:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750874AbZBBHrZ
+	id S1753285AbZBBHta (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 02:49:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZBBHtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 02:47:25 -0500
-Received: from mail-in-14.arcor-online.net ([151.189.21.54]:60080 "EHLO
-	mail-in-14.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750698AbZBBHrY (ORCPT
+	Mon, 2 Feb 2009 02:49:19 -0500
+Received: from monty.telenet-ops.be ([195.130.132.56]:55617 "EHLO
+	monty.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751007AbZBBHtS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 02:47:24 -0500
-X-DKIM: Sendmail DKIM Filter v2.6.0 mail-in-01.arcor-online.net 867CD3326DD
-Subject: Re: [Bugme-new] [Bug 12562] New: High overhead while switching or
- synchronizing threads on different cores
-From: Thomas Pilarski <thomas.pi@arcor.de>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gregory Haskins <ghaskins@novell.com>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1233302270.6061.9.camel@marge.simson.net>
-References: <bug-12562-10286@http.bugzilla.kernel.org/>
-	 <20090128125604.94ed3fe0.akpm@linux-foundation.org>
-	 <1233181507.6988.14.camel@bugs-laptop>  <1233220048.7835.19.camel@twins>
-	 <1233223979.5294.41.camel@bugs-laptop>
-	 <1233224644.5294.52.camel@bugs-laptop>  <1233229028.4495.34.camel@laptop>
-	 <1233237934.11129.183.camel@bugs-laptop>
-	 <1233302270.6061.9.camel@marge.simson.net>
-Content-Type: text/plain
-Date: Mon, 02 Feb 2009 08:43:55 +0100
-Message-Id: <1233560635.4126.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 02:49:18 -0500
+Date: Mon, 2 Feb 2009 08:49:16 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
+In-Reply-To: <20090201174916.19144.11318.sendpatchset@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0902020847410.11930@anakin>
+References: <20090201174909.19144.67767.sendpatchset@localhost.localdomain>
+ <20090201174916.19144.11318.sendpatchset@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Freitag, den 30.01.2009, 08:57 +0100 schrieb Mike Galbraith:
-> One of those "don't _ever_ do that" things?
+On Sun, 1 Feb 2009, Bartlomiej Zolnierkiewicz wrote:
+> From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Subject: [PATCH] ide: include <asm/ide.h> only when needed
+> 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> ---
+>  drivers/ide/ide-io-std.c |    7 +++++++
+>  drivers/ide/tx4938ide.c  |    2 ++
+>  drivers/ide/tx4939ide.c  |    2 ++
+>  include/linux/ide.h      |    7 -------
+>  4 files changed, 11 insertions(+), 7 deletions(-)
+> 
+> Index: b/drivers/ide/ide-io-std.c
+> ===================================================================
+> --- a/drivers/ide/ide-io-std.c
+> +++ b/drivers/ide/ide-io-std.c
+> @@ -2,6 +2,13 @@
+>  #include <linux/kernel.h>
+>  #include <linux/ide.h>
+>  
+> +#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_MIPS) || \
+> +    defined(CONFIG_PARISC) || defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+> +#include <asm/ide.h>
+> +#else
+> +#include <asm-generic/ide_iops.h>
+> +#endif
+> +
+>  /*
+>   *	Conventional PIO operations for ATA devices
+>   */
+> Index: b/drivers/ide/tx4938ide.c
+> ===================================================================
+> --- a/drivers/ide/tx4938ide.c
+> +++ b/drivers/ide/tx4938ide.c
+> @@ -15,6 +15,8 @@
+>  #include <linux/init.h>
+>  #include <linux/platform_device.h>
+>  #include <linux/io.h>
+> +
+> +#include <asm/ide.h>
 
-I did not known random() uses a system call. It's rather unrealistic to
-have five million system calls in a second. By adding a small loop with
-some calculations near the random, the problem disappears too.
-It is a unlucky chosen data generator.
+Did you try checkpatch.pl?
 
+    [...]
 
+> Index: b/include/linux/ide.h
+> ===================================================================
+> --- a/include/linux/ide.h
+> +++ b/include/linux/ide.h
+> @@ -193,13 +193,6 @@ static inline void ide_std_init_ports(hw
+>  	hw->io_ports.ctl_addr = ctl_addr;
+>  }
+>  
+> -#if defined(CONFIG_ARM) || defined(CONFIG_M68K) || defined(CONFIG_MIPS) || \
+> -    defined(CONFIG_PARISC) || defined(CONFIG_PPC) || defined(CONFIG_SPARC)
+> -#include <asm/ide.h>
+> -#else
+> -#include <asm-generic/ide_iops.h>
+> -#endif
+> -
+>  #define MAX_HWIFS	10
+>  
+>  /*
+
+As checkpatch.pl complains about any include of asm/*.h where the corresponding
+linux/*.h exists, this `fix' is incompatible with it.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
