@@ -1,71 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759659AbZBBVkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758960AbZBBVlg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759659AbZBBVkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 16:40:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758588AbZBBVjW
+	id S1758960AbZBBVlg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 16:41:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759431AbZBBVjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 16:39:22 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:35232 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758877AbZBBVjV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 16:39:21 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-Date: Mon, 2 Feb 2009 22:39:01 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <alpine.LFD.2.00.0902021241430.3247@localhost.localdomain> <alpine.LFD.2.00.0902021251130.3247@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902021251130.3247@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902022239.02453.rjw@sisk.pl>
+	Mon, 2 Feb 2009 16:39:37 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:10839 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759128AbZBBVjf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 16:39:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=NXVc+nxShLAOKUwfKdt3tGQbulzuxio4814TmF8kS55BRAZZeKhj1CYAt+wWAaXmUE
+         bMBQlQ1UltC8NLYIdYNCTC8jcYZGpPBR9r5ub8tzbwHtzoKuMMXEJ9PbMgi8jIMpqIVK
+         O33eIkSsrKw6ks10YVxLoW09WyR34k3f8/ReI=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Mon, 02 Feb 2009 22:40:29 +0100
+Message-Id: <20090202214029.17960.54823.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090202213707.17960.61897.sendpatchset@localhost.localdomain>
+References: <20090202213707.17960.61897.sendpatchset@localhost.localdomain>
+Subject: [PATCH 14/14] ide: sanitize ide_finish_cmd()
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 02 February 2009, Linus Torvalds wrote:
-> 
-> On Mon, 2 Feb 2009, Linus Torvalds wrote:
-> > 
-> > I suspect that we could possibly make ACPI happy by actually leaving 
-> > interrupts "enabled" in the suspend-late (and early-resume) paths, but 
-> > with all hardware interrupts actually turned off. But that's really just a 
-> > "let's fool people by turning off interrupts a different way" thing - it 
-> > in no way really changes any fundamental issues.
-> 
-> Btw, I do think that we can make ACPI happy regardless.
-> 
-> We quite commonly call into ACPI during the early boot sequence, when 
-> interrupts are disabled for all the same reasons. We don't get the 
-> "might_sleep()" warnings, simply because we have these kinds of checks:
-> 
-> 	..
->         if ((!in_atomic() && !irqs_disabled()) ||
->                     system_state != SYSTEM_RUNNING || oops_in_progress)
-> 		return;
-> 	..
-> 
-> ie we know that "system_state != SYSTEM_RUNNING" is a special case where 
-> things are allowed to do things that they aren't normally allowed to do.
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] ide: sanitize ide_finish_cmd()
 
-Yes, which is why I thought it might be a good idea to make the AML interpreter
-allow is to execute AML with interrupts off, so that we can put devices into
-low power states and/or put them into D0 with interrupts off.
+* Move ide_end_request() call out from ide_finish_cmd() to its users.
 
-Then, we'll be able to make ACPI happy (up to some strange ordering
-expectations of some insane BIOSes maybe) and fix the interrupts issue at
-the same time.
+* Use ide_finish_cmd() in task_no_data_intr().
 
-The idea would be to have a special code path(s) where AML can be executed
-with interrupts off and a couple of special entry points into the AML
-interpreter for this purpose.
+There should be no functional changes caused by this patch.
 
-Thanks,
-Rafael
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-dma.c      |    5 ++++-
+ drivers/ide/ide-taskfile.c |   24 +++++++++---------------
+ 2 files changed, 13 insertions(+), 16 deletions(-)
+
+Index: b/drivers/ide/ide-dma.c
+===================================================================
+--- a/drivers/ide/ide-dma.c
++++ b/drivers/ide/ide-dma.c
+@@ -98,7 +98,10 @@ ide_startstop_t ide_dma_intr(ide_drive_t
+ 		if (!dma_stat) {
+ 			struct ide_cmd *cmd = &hwif->cmd;
+ 
+-			ide_finish_cmd(drive, cmd, stat);
++			if ((cmd->tf_flags & IDE_TFLAG_FS) == 0)
++				ide_finish_cmd(drive, cmd, stat);
++			else
++				ide_end_request(drive, 1, cmd->rq->nr_sectors);
+ 			return ide_stopped;
+ 		}
+ 		printk(KERN_ERR "%s: %s: bad DMA status (0x%02x)\n",
+Index: b/drivers/ide/ide-taskfile.c
+===================================================================
+--- a/drivers/ide/ide-taskfile.c
++++ b/drivers/ide/ide-taskfile.c
+@@ -150,12 +150,8 @@ static ide_startstop_t task_no_data_intr
+ 		drive->mult_count = drive->mult_req;
+ 
+ 	if (custom == 0 || tf->command == ATA_CMD_IDLEIMMEDIATE ||
+-	    tf->command == ATA_CMD_CHK_POWER) {
+-		u8 err = ide_read_error(drive);
+-
+-		ide_complete_cmd(drive, cmd, stat, err);
+-		ide_complete_rq(drive, err);
+-	}
++	    tf->command == ATA_CMD_CHK_POWER)
++		ide_finish_cmd(drive, cmd, stat);
+ 
+ 	return ide_stopped;
+ }
+@@ -287,15 +283,10 @@ static void ide_error_cmd(ide_drive_t *d
+ 
+ void ide_finish_cmd(ide_drive_t *drive, struct ide_cmd *cmd, u8 stat)
+ {
+-	if ((cmd->tf_flags & IDE_TFLAG_FS) == 0) {
+-		u8 err = ide_read_error(drive);
++	u8 err = ide_read_error(drive);
+ 
+-		ide_complete_cmd(drive, cmd, stat, err);
+-		ide_complete_rq(drive, err);
+-		return;
+-	}
+-
+-	ide_end_request(drive, 1, cmd->rq->nr_sectors);
++	ide_complete_cmd(drive, cmd, stat, err);
++	ide_complete_rq(drive, err);
+ }
+ 
+ /*
+@@ -350,7 +341,10 @@ out_wait:
+ 	ide_set_handler(drive, &task_pio_intr, WAIT_WORSTCASE, NULL);
+ 	return ide_started;
+ out_end:
+-	ide_finish_cmd(drive, cmd, stat);
++	if ((cmd->tf_flags & IDE_TFLAG_FS) == 0)
++		ide_finish_cmd(drive, cmd, stat);
++	else
++		ide_end_request(drive, 1, cmd->rq->nr_sectors);
+ 	return ide_stopped;
+ out_err:
+ 	ide_error_cmd(drive, cmd);
