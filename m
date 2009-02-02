@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbZBBM7M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757286AbZBBM7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757098AbZBBM7M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 07:59:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZBBM65
+	id S1757286AbZBBM7r (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 07:59:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753493AbZBBM7i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 07:58:57 -0500
-Received: from olc-12.verat.net ([62.108.127.38]:42446 "EHLO olc-12.verat.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753106AbZBBM65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 07:58:57 -0500
-X-Greylist: delayed 302 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Feb 2009 07:58:56 EST
-Message-ID: <11995.41.220.75.3.1233579503.squirrel@webmail.verat.net>
-Date: Mon, 2 Feb 2009 13:58:23 +0100 (CET)
-Subject: =?iso-8859-1?Q?Kj=E6re_uio.no_konto_Bruker?=
-From: "Universitetet i Oslo Help Desk" <helpdesk@uio.no>
-Reply-To: desk.help500@gmail.com
-User-Agent: SquirrelMail/1.4.13
+	Mon, 2 Feb 2009 07:59:38 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60214 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753223AbZBBM7h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 07:59:37 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [-mm patch] Show memcg information during OOM
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+In-Reply-To: <20090202125240.GA918@balbir.in.ibm.com>
+References: <20090202125240.GA918@balbir.in.ibm.com>
+Message-Id: <20090202215527.EC92.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Mon,  2 Feb 2009 21:59:34 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kjære uio.no konto Bruker,
+Hi
 
-Det vil være en generell oppgradering i systemet mellom Februray 2 til 20
-2009.
-På grunn av anonym registrering av uio.no kontoer og antall
-av sovende kontoer, vil vi kjøre denne oppgraderingen for å fastslå
-nøyaktige antallet abonnenter vi har i dag.
+> +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
+> +{
+> +	printk(KERN_WARNING "Memory cgroups's name %s\n",
+> +		memcg->css.cgroup->dentry->d_name.name);
+> +	printk(KERN_WARNING "Memory cgroup RSS : usage %llu, limit %llu"
+> +		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
+> +		res_counter_read_u64(&memcg->res, RES_LIMIT),
+> +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
+> +	printk(KERN_WARNING "Memory cgroup swap: usage %llu, limit %llu "
+> +		"failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
+> +		res_counter_read_u64(&memcg->res, RES_LIMIT),
+> +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
 
-Du blir bedt om å logge deg inn på uio.no og bekrefte hvis
-Kontoen er fortsatt gyldig og sender umiddelbart den folowing:
+s/res/memsw/ ?
 
-Brukernavn: :................................( Obligatorisk)
-Passord :...................................( Obligatorisk)
-Fødselsdato :..............................( Valgfritt)
-Staten :........................................( Valgfritt)
+and, I don't like the name of "Memory cgroup RSS" and "Memory cgroup swap".
+it seems misleading. memcg->res doesn't only count count rss, but also cache.
+memcg->memsw doesn't only count swap, but also memory.
 
-Før du sender kontoopplysningene dine til oss, er du råd til å logge inn i
-denne
-Koblingen nedenfor: https://webmail.uio.no/src/login.php
+otherthing, I think it is good patch for me :)
 
-Merk at hvis kontoen din gjøre Login sende oss detaljene eller det betyr
-det har vært deleted.Sorry for inconvinences dette kan føre til at du
-vi bare prøver å kontrollere at du ikke mister informasjon i regnskapet.
 
-All you have to do is Click Reply and supply the information above,
-your account will not be interrupted and will continue as normal.
+> +}
+> +
+>  /*
+>   * Unlike exported interface, "oom" parameter is added. if oom==true,
+>   * oom-killer can be invoked.
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index d3b9bac..b8e53ae 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+>  			current->comm, gfp_mask, order, current->oomkilladj);
+>  		task_lock(current);
+>  		cpuset_print_task_mems_allowed(current);
+> +		mem_cgroup_print_mem_info(mem);
+>  		task_unlock(current);
+>  		dump_stack();
+>  		show_mem();
+> 
+> -- 
+> 	Balbir
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-Thanks for your attention to this request. Once again We apologize for any
-inconveniences. Warning!!! Account users that refuse to update their account
-after 5 Days of receiving this warning, user will lose his/her account
-permanently.
 
-2009© Universitetet i Oslo (uio.no)
 
