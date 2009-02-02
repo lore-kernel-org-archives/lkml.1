@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756914AbZBBRP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757341AbZBBRPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756914AbZBBRP3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 12:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752596AbZBBRPU
+	id S1757341AbZBBRPz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 12:15:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZBBRPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 12:15:20 -0500
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:55793 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752551AbZBBRPS convert rfc822-to-8bit
+	Mon, 2 Feb 2009 12:15:44 -0500
+Received: from bay0-omc2-s22.bay0.hotmail.com ([65.54.246.158]:39240 "EHLO
+	bay0-omc2-s22.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752596AbZBBRPo convert rfc822-to-8bit
 	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 12:15:18 -0500
-From: Bhavesh Davda <bhavesh@vmware.com>
-To: "kyle@infradead.org" <kyle@infradead.org>
-CC: "David.Woodhouse@intel.com" <David.Woodhouse@intel.com>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 2 Feb 2009 09:15:15 -0800
-Subject: RE: [PATCH] intel-iommu: intel_iommu_domain_alloc should check
-	'dmar_disabled'
-Thread-Topic: [PATCH] intel-iommu: intel_iommu_domain_alloc should check
-	'dmar_disabled'
-Thread-Index: AcmDXq2yqQAnHW71QqiQMvoTe2JeWQB+ABww
-Message-ID: <AF9CD7A487028E428749836D21102612201D46C5F2@PA-EXMBX02.vmware.com>
-References: <AF9CD7A487028E428749836D21102612201D323DBB@PA-EXMBX02.vmware.com>
- <20090131044454.GA5184@bombadil.infradead.org>
-In-Reply-To: <20090131044454.GA5184@bombadil.infradead.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
+	Mon, 2 Feb 2009 12:15:44 -0500
+X-Greylist: delayed 311 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Feb 2009 12:15:44 EST
+Message-ID: <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl>
+X-Originating-IP: [128.107.248.220]
+From: Krishna Kothapalli <krishna_sunitha@hotmail.com>
+To: <kaneshige.kenji@jp.fujitsu.com>, <ebiederm@xmission.com>
+CC: <linux-pci@vger.kernel.org>, <jbarnes@virtuousgeek.org>, <achiang@hp.com>,
+       <djwong@us.ibm.com>, <xyzzy@speakeasy.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: RE: Q: state of pci express hotplug
+Date: Mon, 2 Feb 2009 12:15:39 -0500
+Importance: Normal
+In-Reply-To: <4986581F.7060704@jp.fujitsu.com>
+References: <m1fxj06js8.fsf@fess.ebiederm.org>
+ <4986581F.7060704@jp.fujitsu.com>
 Content-Type: text/plain; charset="Windows-1252"
 Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
+X-OriginalArrivalTime: 02 Feb 2009 17:15:40.0118 (UTC) FILETIME=[DF44C760:01C98559]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At least with 2.6.28, you could trigger the Oops as follows:
 
-1. Boot with intel_iommu=off
-2. Call the exported symbol intel_iommu_domain_alloc() from a module which knows nothing about the fact that dmar_disabled is true
 
-Looks like intel_iommu_domain_alloc is not exported any more at git head, and I see a bunch of commits to git head from Joerg Roedel on Jan 3, 2009, that happened sometime between 2.6.28 and 2.6.29-rc1, so I guess we're good.
+> I'd like to know details of the bugs. Could you please show the
+> details of the bugs?
 
-Thanks
+Not sure if this is a bug or error on my part:
 
-- Bhavesh
- 
-Bhavesh P. Davda
+a) Cold plug of the PCI express card looks ok ( the devices show up is the sysfs ). 
+b)
+However hotplug of the same device does not work (it won't show up in
+the sysfs and uevents are not sent to udev ). Same issue when ACPI is removed from the kernel build and
+modprobe pciehp pciehp_force=1
 
-> -----Original Message-----
-> From: Kyle McMartin [mailto:kyle@infradead.org] On Behalf Of Kyle
-> McMartin
-> Sent: Friday, January 30, 2009 8:45 PM
-> To: Bhavesh Davda
-> Cc: David.Woodhouse@intel.com; mingo@elte.hu; linux-
-> kernel@vger.kernel.org
-> Subject: Re: [PATCH] intel-iommu: intel_iommu_domain_alloc should check
-> 'dmar_disabled'
-> 
-> On Fri, Jan 16, 2009 at 03:54:12PM -0800, Bhavesh Davda wrote:
-> >
-> > intel_iommu_domain_alloc() will try and iommu_alloc_domain(iommu),
-> > which calls alloc_domain_mem() to allocate out of
-> 'iommu_domain_cache'.
-> > Unfortunately iommu_domain_cache will not be created if booted with
-> > "intel_iommu=off", i.e. dmar_disabled = 1.
-> >
-> 
-> Hi Bhavesh,
-> 
-> What's the callchain that can result in intel_iommu_domain_alloc
-> being called? It looks like most possible callsites are checking
-> intel_iommu_found, which will be 0 since we check dmar_disabled before
-> calling init_dmars to enumerate the iommus.
-> 
-> (I'm looking at 2.6.28.y right now, is there an interim between when
-> you
->  stumbled upon this two weeks ago and git head where it's no longer an
->  issue? I guess it probably got missed due to folks travelling for
-> LCA.)
-> 
-> regards, Kyle
+Posted some details in (can send in more details if needed) :
+http://article.gmane.org/gmane.linux.kernel.pci/2865
+http://article.gmane.org/gmane.linux.kernel.pci/2868
+
+
+_________________________________________________________________
+Windows Live™: E-mail. Chat. Share. Get more ways to connect. 
+http://windowslive.com/howitworks?ocid=TXT_TAGLM_WL_t2_allup_howitworks_012009
