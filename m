@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754977AbZBBPrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZBBPtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754977AbZBBPrl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 10:47:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZBBPrc
+	id S1756028AbZBBPtS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 10:49:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751557AbZBBPtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 10:47:32 -0500
-Received: from mail.perle.com ([216.129.13.248]:2175 "EHLO MAILV6.PERLE.COM"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751557AbZBBPrb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 10:47:31 -0500
-In-Reply-To: <20090129193440.2c6efb65@lxorguk.ukuu.org.uk>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 60/80] tty: extract the pty init time special cases
-MIME-Version: 1.0
-Sensitivity: 
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF3207513C.B2AADC83-ON8525754E.007B165D-85257551.0056C108@perle.com>
-From: bmckinlay@perle.com
-Date: Mon, 2 Feb 2009 10:42:49 -0500
-X-MIMETrack: Serialize by Router on MAILV6/Perle(Release 6.5.6FP3|March 27, 2008) at 02/02/2009
- 10:42:28 AM,
-	Serialize complete at 02/02/2009 10:42:28 AM
-Content-Type: text/plain; charset="US-ASCII"
+	Mon, 2 Feb 2009 10:49:06 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:40341 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752137AbZBBPtF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 10:49:05 -0500
+Subject: Re: [RFC v7] wait: prevent exclusive waiter starvation
+From: Chris Mason <chris.mason@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Matthew Wilcox <matthew@wil.cx>, Chuck Lever <cel@citi.umich.edu>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Ingo Molnar <mingo@elte.hu>, stable@kernel.org
+In-Reply-To: <1233239675.10354.18.camel@think.oraclecorp.com>
+References: <20090123095904.GA22890@cmpxchg.org>
+	 <20090123113541.GB12684@redhat.com> <20090123133050.GA19226@redhat.com>
+	 <20090126215957.GA3889@cmpxchg.org> <20090127032359.GA17359@redhat.com>
+	 <20090127193434.GA19673@cmpxchg.org> <20090127200544.GA28843@redhat.com>
+	 <20090128091453.GA22036@cmpxchg.org> <20090129044227.GA5231@redhat.com>
+	 <20090128233734.81d8004a.akpm@linux-foundation.org>
+	 <20090129083108.GA27495@redhat.com>
+	 <20090129011143.884e5573.akpm@linux-foundation.org>
+	 <1233239675.10354.18.camel@think.oraclecorp.com>
+Content-Type: text/plain
+Date: Mon, 02 Feb 2009 10:47:47 -0500
+Message-Id: <1233589667.18113.24.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.498715AB.02D8:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The first most useful part would be understand what your pty driver does
-> and is required that is not in the base one. Just an idea of what extra
-> APIs it provides would be quite useful. If it is stuff like virtual 
-modem
-> lines then that is stuff I want to see supported in the base kernel
-> anyway.
+On Thu, 2009-01-29 at 09:34 -0500, Chris Mason wrote:
 
-Our pty driver basically creates a virtual serial TTY on the slave side 
-which 
-will allow the application to control a remote device server serial port 
-across a LAN network.  The application can control things like baud rate,
-parity, stop bits, HW & SW flow control, and monitor and control modem 
-signals. 
+> > > > So I think we're saying that
+> > > > lock_page_killable-avoid-lost-wakeups.patch actually did fix the bug?
+> > > 
+> > > I think yes,
+> > > 
+> 
+> Our test case that was able to reliably trigger the bug was fixed by
+> lock_page_killable-avoid-lost-wakeups.patch.
+> 
+> I'll ask them to test v7 as well.  The run takes about a day, so
+> confirmation will take a bit.
 
-Below are some defines that would explain how we extended the base pty.
-One note is the our diver is based on the legacy/bsd pty not the unix98
-pty, so if it was decided that this extension was to be merged into the
-base pty then the code would have to be ported to the unix98 sections as
-well.
+v7 went through a total of 5 runs and passed all of them.  Unpatched we
+would fail after one run, so I think this does fix it.
 
-/* 
-   There aren't enough bits available in tty->ctrl_status for the events 
-that
-   we need to signal to the daemon, so we will use 1 bit to indicate that
-   the daemon needs to make an IOCTL (PTX_IOCXCSGET) to get the real 
-status.
-*/
-#define TIOCPKT_XCTRLSTATUS     0x40
-
-//  bit definition for ptyx_struct.ctrl_status
-#define XCTRLSTATUS_SIGNALS     0x00000001      // update DTR, RTS signals
-#define XCTRLSTATUS_TERMIOS     0x00000002      // update termios settings
-#define XCTRLSTATUS_BREAK       0x00000004      // send break signal
-#define XCTRLSTATUS_OPEN        0x00000008      // slave port opened
-#define XCTRLSTATUS_CLOSE       0x00000010      // slave port closed
-#define XCTRLSTATUS_BREAKON     0x00000020      // send break on
-#define XCTRLSTATUS_BREAKOFF    0x00000040      // send break off
-#define XCTRLSTATUS_DRAIN       0x00000080      // drain port
-
-// IOCTLs handled by master ptyx driver
-#define PTX_IOC         ('p' << 24) + ('t' << 16) + ('x' << 8)
-#define PTX_IOCMSET     PTX_IOC + 1     // set modem signal
-#define PTX_IOCLSET     PTX_IOC + 2     // set line status info
-#define PTX_IOCXCSGET   PTX_IOC + 3     // get extended control status
-#define PTX_IOCDRAINEND PTX_IOC + 4     // drain complete
-#define PTX_IOCNETSTAT  PTX_IOC + 5     // update network
-#define PTX_IOCOWTSET   PTX_IOC + 6     // give ptyx, the open wait time 
-in msec
-                                                // -1=ignore network 
-status, -2=wait forever
+-chris
 
 
 
- 
 
-
-  Barry
