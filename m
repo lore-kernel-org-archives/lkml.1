@@ -1,137 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753847AbZBBNuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753864AbZBBNzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753847AbZBBNuS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 08:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbZBBNuE
+	id S1753864AbZBBNzx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 08:55:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752349AbZBBNzp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 08:50:04 -0500
-Received: from ns1.wincor-nixdorf.com ([80.154.98.129]:42807 "EHLO
-	mxpdbe1.wincor-nixdorf.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751729AbZBBNuB (ORCPT
+	Mon, 2 Feb 2009 08:55:45 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40605 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752301AbZBBNzo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 08:50:01 -0500
-Message-ID: <4986F78D.5000901@wincor-nixdorf.com>
-Date: Mon, 02 Feb 2009 14:39:25 +0100
-From: Niels de Vos <niels.devos@wincor-nixdorf.com>
-Organization: Wincor Nixdorf International
-User-Agent: Thunderbird 2.0.0.19 (X11/20090107)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Max Weninger <max.weninger@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, lifebook@conan.de
-Subject: Re: SOLVED support of touchscreen reported as eGalax but is not working
-References: <20090125234902.7605fd16@zork.foo.com>	<497D9469.3030908@wincor-nixdorf.com>	<20090126124941.4f67aaf5@shire2>	<497DA8E3.5070006@wincor-nixdorf.com>	<20090127013806.5e31199f@zork.foo.com>	<20090127014822.780ecb90@zork.foo.com>	<20090127020529.4070840b@zork.foo.com> <20090130151836.891f3204.akpm@linux-foundation.org>
-In-Reply-To: <20090130151836.891f3204.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigB61FDC61FDF5026C10A26B0E"
-X-OriginalArrivalTime: 02 Feb 2009 13:46:23.0359 (UTC) FILETIME=[A2DB68F0:01C9853C]
+	Mon, 2 Feb 2009 08:55:44 -0500
+Subject: Re: [BUG??] Deadlock between kswapd and
+ sys_inotify_add_watch(lockdep  report)
+From: Peter Zijlstra <peterz@infradead.org>
+To: MinChan Kim <minchan.kim@gmail.com>
+Cc: Nick Piggin <npiggin@suse.de>, linux kernel <linux-kernel@vger.kernel.org>,
+       linux mm <linux-mm@kvack.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <28c262360902020543we62e394kb21c16f599824552@mail.gmail.com>
+References: <20090202101735.GA12757@barrios-desktop>
+	 <28c262360902020225w6419089ft2dda30da9dfb32a9@mail.gmail.com>
+	 <1233571202.4787.124.camel@laptop> <20090202112721.GA13532@barrios-desktop>
+	 <1233575085.4787.140.camel@laptop> <20090202115627.GB13532@barrios-desktop>
+	 <1233580147.4787.207.camel@laptop>
+	 <28c262360902020543we62e394kb21c16f599824552@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 02 Feb 2009 14:55:37 +0100
+Message-Id: <1233582937.4787.217.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigB61FDC61FDF5026C10A26B0E
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-02-02 at 22:43 +0900, MinChan Kim wrote:
+> On Mon, Feb 2, 2009 at 10:09 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+> > On Mon, 2009-02-02 at 20:56 +0900, MinChan Kim wrote:
+> >> Thanks for kind explanation. :)
+> >> Unfortunately, I still have a question. :(
+> >
+> > No problem :-)
+> >
+> >> > > I think if reclaim context which have GFP_FS already have lock A and then
+> >> > > do pageout, if writepage need the lock A, we have to catch such a case.
+> >> > > I thought Nick's patch's goal catchs such a case.
+> >> >
+> >> > Correct, it exactly does that.
+> >>
+> >> But, I think such a case can be caught by lockdep of recursive detection
+> >> which is existed long time ago by making you.
+> >
+> > (Ingo wrote that code)
+> >
+> >> what's difference Nick's patch and recursive lockdep ?
+> >
+> > Very good question indeed. Every time I started to write an answer I
+> > realize its wrong.
+> >
+> > The below is half the answer:
+> >
+> > /*
+> >  * Check whether we are holding such a class already.
+> >  *
+> >  * (Note that this has to be done separately, because the graph cannot
+> >  * detect such classes of deadlocks.)
+> >  *
+> >  * Returns: 0 on deadlock detected, 1 on OK, 2 on recursive read
+> >  */
+> > static int
+> > check_deadlock(struct task_struct *curr, struct held_lock *next,
+> >               struct lockdep_map *next_instance, int read)
+> >
+> > So in order for the reclaim report to trigger we have to actually hit
+> > that code path that has the recursion in it. The reclaim context
+> > annotation by Nick ensures we detect such cases without having to do
+> > that.
+> 
+> In my case and Nick's patch's example hit code path that has the
+> recursion in it.
+> then reported it.
+> 
+> Do I miss something ?
 
-Andrew Morton wrote:
-> (cc restored - please jsut do reply-to-all, always)
->=20
-> On Tue, 27 Jan 2009 02:05:29 +0100
-> Max Weninger <max.weninger@gmail.com> wrote:
->=20
->> Hi again
->>
->> On Tue, 27 Jan 2009 01:48:22 +0100
->> Max Weninger <max.weninger@gmail.com> wrote:
->>
->>> On Tue, 27 Jan 2009 01:38:06 +0100
->>> Max Weninger <max.weninger@gmail.com> wrote:
->>>
->>>> Hi
->>>>
->>>> On Mon, 26 Jan 2009 13:13:23 +0100
->>>> Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
->>>>
->>>>> Max Weninger wrote:
->>>>>> Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
->>>>>>> You can obviously download the drivers from
->>>>>>> <http://home.eeti.com.tw/web20/TouchKitDriver/linuxDriver.htm>.
->>>>>>>
->>>>>>> It would be great if eGalax could be convinced to get these
->>>>>>> drivers included in main-line ;)
->>>>>> Thanks for your quick reply
->>>>>> BUT: I have tried those driver also
->>>>>>
->>>>>> I tried this "brandnew" one (but also older ones)
->>>>>> http://home.eeti.com.tw/web20/drivers/touch_driver/Linux/2.06.2416=
-/TouchKit-2.06.2410-32b-k26.tar.gz
->>>>>> after making it compile for 2.6.28.2 :)
->>>>>> since there is source code delivered
->>>>> For what it's worth; the version we use from eGalax is
->>>>> 1.0.3.1701. I don't have the hardware here atm, so I can't test
->>>>> an other driver now.
->>>> I tried kernel 2.6.23.17 and there the touchscreen is recognized
->>>> using the builtin usbtouchscreen driver
->>> It also works with 2.6.26.8
->> After comparing the usbtouchscreen.c sources between the different
->> versions I got it working by commenting the follwoing lines
->>
->> ...
->> #ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
->>         /* ignore the HID capable devices, handled by usbhid */
->>         {USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info =3D DEVTYP=
-E_IGNORE},
->>         {USB_DEVICE_HID_CLASS(0x0eef, 0x0002), .driver_info =3D DEVTYP=
-E_IGNORE},
->> ...
->>
->> Now the entry in /proc/bus/input/devices is created as in the
->> older versions.
->>
->> So it seems that usbhid is not correctly handling my type
->> of touchscreen if I understand the comment there correctly
->>
->=20
-> So... how do we fix this for real?
+I'm not sure I fully understand your question, but let me try and
+explain more clearly.
 
-(...after some research...)
+Without Nick's patch you'd have to hit the following path:
 
-Best would probably be updating the Xorg evtouch-driver. It looks like so=
-meone=20
-already did this. I found a site containing a quite complete description =
-of
-(hopefully the same) problem: http://zalman.ostergaard.net/touch.html
+  mutex_lock()  <--- inotify_mutex
+  inotify_inode_is_dead()
+  dentry_iput()
+  d_kill()
+  __shrink_dcache_sb()
+  shrink_dcache_memory()
+  shrink_slab()
+  try_to_free_page() <-- direct reclaim
+  alloc_pages()
+  alloc_slab_page()
+  allocate_slab()
+  new_slab()
+  __slab_alloc()
+  kmem_cache_alloc()
+  idr_pre_get()
+  inotify_handle_get_wd()
+  inotify_add_watch() <-- inotify_mutex
+  sys_inotify_add_watch()
+  syscall_call
 
-However I don't think the changes were submitted upstream as the (new) dr=
-iver=20
-does not contain support for the other eGalax-hardware anymore.
+before the recursive check would actually produce a warning.
 
-In my view the problem is not the Linux usbtouchscreen/usbhid driver, but=
- the
-evtouch-driver. It looks like the evtouch-driver is not maintained by the=
+This path is very unlikely, as it would have to enter direct reclaim
+from exactly the right allocation.
 
-Xorg-folks, but on http://www.conan.de/touchscreen/evtouch.html (contact
-added in CC).
-
-Anyone interested in creating a patch for evtouch?
-
-Niels
+With Nick's patch, we get notified about this possibility without ever
+having had to actually hit this.
 
 
---------------enigB61FDC61FDF5026C10A26B0E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFJhveO5KAkGQPO/QoRAhuYAKCfjR1avdEP54m/Xbt11Mp6tFoATwCg2wHb
-EDcNDJcFgFzxh2Tfjdq9Crk=
-=S1fE
------END PGP SIGNATURE-----
-
---------------enigB61FDC61FDF5026C10A26B0E--
