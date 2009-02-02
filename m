@@ -1,102 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZBBI3l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZBBIeX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753367AbZBBI3l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 03:29:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751900AbZBBI33
+	id S1754033AbZBBIeX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 03:34:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752184AbZBBIeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 03:29:29 -0500
-Received: from gw-ca.panasas.com ([66.104.249.162]:8591 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751614AbZBBI32 (ORCPT
+	Mon, 2 Feb 2009 03:34:14 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38966 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751900AbZBBIeO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 03:29:28 -0500
-Message-ID: <4986AEE8.5040609@panasas.com>
-Date: Mon, 02 Feb 2009 10:29:28 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird/3.0a2 (X11; 2008072418)
+	Mon, 2 Feb 2009 03:34:14 -0500
+Date: Mon, 2 Feb 2009 09:34:02 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Sriram V <vshrirama@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org
+Subject: Re: SMC911X driver Suspend-Resume Failures
+Message-ID: <20090202083402.GA3114@elf.ucw.cz>
+References: <8bf247760901300435s56024125o9aae1a112196c9a1@mail.gmail.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Christoph Hellwig <hch@infradead.org>, Eric Sandeen <sandeen@sandeen.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, mfasheh@suse.com,
-       joel.becker@oracle.com, linux-kernel@vger.kernel.org,
-       xfs-masters@oss.sgi.com, viro@zeniv.linux.org.uk,
-       Ankit Jain <me@ankitjain.org>, linux-fsdevel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [xfs-masters] [PATCH] fs: Add new pre-allocation ioctls to vfs
- for compatibility with legacy xfs ioctls
-References: <20090130171423.f99c88d0.akpm@linux-foundation.org> <20090201164130.GA32276@infradead.org> <4985D48A.6090007@panasas.com> <200902020131.04203.arnd@arndb.de>
-In-Reply-To: <200902020131.04203.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Feb 2009 08:29:25.0183 (UTC) FILETIME=[5B240CF0:01C98510]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bf247760901300435s56024125o9aae1a112196c9a1@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Sunday 01 February 2009, Boaz Harrosh wrote:
->> Christoph Hellwig wrote:
->>> The structures have been defined exactly like that in XFS (and ocfs2)
->>> before, and there are similar cases in other ioctls handlers.
->>>
->>> If anyone feels like changing this in some way feel free to wade through
->>> the endless discussions about the pros and cons for it, but I think
->>> doing it in context of this patch is not helpful.
->> OK so ia64 gcc is broken in regard to __attribute__((packed(1))),
->> and it should not be used.
+On Fri 2009-01-30 18:05:27, Sriram V wrote:
+> Hi,
+>    I am using 2.6.28 and am testing PM on my arm target. I am using
+> smc911x.c driver.
+>    I get the error when i try to resume from suspend:
 > 
-> No, the compiler is correct, it has to generate more complex code
-> if it cannot assume that data is naturally aligned and the architecture
-> does not support unaligned loads. If you don't understand this, please
-> at least read the list archives about the last five times this came up
-> before claiming that the compiler is broken.
-> 
+>    has anyone seen this error before.
 
-Wrong!! Sorry, you guys don't listen.
-I'm talking of the case where the structures are EXACTLY the same anyway
-you look at them. sizeof(foo) == sizeof(foo_packed) and 
-offsetof(foo_memmber) == offsetof(foo_packed_member) for every member of
-the structure. foo && foo_packed are declared exactly the same but with
-__attribute__((packed(1))) applied to the later.
+No, but try unloading the smc911 module and see if that repeats. Then
+you can debug it with printk.
 
-THEN in ia64 case the compiler is brain dead, because it relates
-"unalignment" to packed(1) which are two different things.
 
->> But clearly the programmer, Like in this patch exactly, should spell
->> out the hole created by padding and spell that hole out and call it
->> __Padding. The porgrammer thought about it, identified there is an hole,
->> please don't drop this information on the floor. Put it in the code so I 
->> don't have to break my head on it.
-> 
-> Again, you are missing the point. The patch has to leave out the padding
-> and whatnot because the idea of the patch is to provide a
-> backwards-compatible API for programs written against the legacy XFS
-> API. The original definition of the interface was flawed, but unless you
-> can travel back in time to complain about this in the initial submission
-> of the XFS file system, you should not blame the entirely correct patch now.
-> 
 
-Lets make a small test is: sizeof(orig_struct) == sizeof(my_struct)?
-offsetof(orig_any_memmber) == offsetof(my_any_memmber)?
-
-Yes because the padding is there if you shove it under the rug or expose
-it.
-
-What I'm saying is don't repeat the passed mistakes, spell out the exact
-structure layout. So it will compile the same for any <= 64bit machine.
-If the way a structure was defined in the passed, produced two or more
-memory representations, spell these out with different structure
-definitions and choose the one you need at compile time.
-
-Otherwise you have fixed nothing. You are just repeating the same
-passed mistake. And down the future some programmer will wish he add
-a time machine to go back and fix what we've done today. But bingo, he
-did and told me about it, and now it is time to fix that.
-
-> 	Arnd <><
-
-Don't let the compiler have the driver's sit. You do the driving, because
-he does not know where you want to go.
-
-Boaz
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
