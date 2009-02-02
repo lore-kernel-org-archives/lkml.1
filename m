@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZBBInA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZBBIoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbZBBInA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 03:43:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZBBImw
+	id S1754804AbZBBIoW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 03:44:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751797AbZBBIoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 03:42:52 -0500
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:56713 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbZBBImv (ORCPT
+	Mon, 2 Feb 2009 03:44:08 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:17155 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751472AbZBBIoF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 03:42:51 -0500
-Message-ID: <4986B205.2040807@s5r6.in-berlin.de>
-Date: Mon, 02 Feb 2009 09:42:45 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14
+	Mon, 2 Feb 2009 03:44:05 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iNMhTJ3JB5M7qiISChsp4PMoD6awz+zdnI3oZw/AlQF7N+fl/URTrwJPO5u7SIVAxE
+         qVcmdrMqV/hVWArZDm2mGdHHOnHclIn5xE9JchxYg7/nRUgRqJ8Nhl2Jv5jxDtKvj7h4
+         1CLu3t1/PW5lgnYAZC6RAssfpkUhZ7rT/rmS0=
+Date: Mon, 2 Feb 2009 08:43:58 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090202084358.GB4129@ff.dom.local>
+References: <20090130.134227.123379239.davem@davemloft.net> <20090130221604.GD11381@gondor.apana.org.au> <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [RFC][PATCH] create workqueue threads only when needed
-References: <20090127001708.GA4815@nowhere>	 <20090126163015.7f879b18@infradead.org> <20090131180347.GC5884@nowhere>	 <20090131101502.7ce8e7af@infradead.org> <20090131182843.GD5884@nowhere>	 <1233524261.18767.60.camel@pasglop>  <20090202022414.GA5006@nowhere> <1233554443.18767.71.camel@pasglop>
-In-Reply-To: <1233554443.18767.71.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090202.001854.261399333.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Mon, 2009-02-02 at 03:24 +0100, Frederic Weisbecker wrote:
->> On Mon, Feb 02, 2009 at 08:37:41AM +1100, Benjamin Herrenschmidt wrote:
->> > 
->> > > I don't know, most of those I've looked on are not documented about the reason
->> > > for a private workqueue. I guess most of them can use the usual kevent.
-
-I rather suspect that the majority of private workqueues are there for
-good reasons.
-
->> > The main problem with kevent is that it gets clogged up.
->> 
->> I don't think so. Here is a snapshot of the workqueue tracer in my
->> box currently:
+On Mon, Feb 02, 2009 at 12:18:54AM -0800, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Mon, 2 Feb 2009 08:08:55 +0000
 > 
-> That's not quite what I meant ... 
+> > On Sat, Jan 31, 2009 at 09:16:04AM +1100, Herbert Xu wrote:
+> > > On Fri, Jan 30, 2009 at 01:42:27PM -0800, David Miller wrote:
+> > ...
+> > > > Back to real life, I think long term the thing to do is to just do the
+> > > > cached page allocator thing we'll be doing after Jarek's socket page
+> > > > patch is integrated, and for best performance the driver has to
+> > > > receive it's data into pages, only explicitly pulling the ethernet
+> > > > header into the linear area, like NIU does.
+> > > 
+> > > Yes that sounds like the way to go.
+> > 
+> > Looks like a lot of changes in drivers, plus: would it work with jumbo
+> > frames? I wonder why the linear area can't be allocated as paged, and
+> > freed with put_page() instead of kfree(skb->head) in skb_release_data().
 > 
-> The main problem with keventd I'd say is that it's used in all sort of
-> exeptional code path (ie, driver reset path, error handling, etc...) for
-> things that will msleep happily for tenth milliseconds, that sort of
-> thing.
-> 
-> IE. It will be pretty responsive -in general- but can suffer form
-> horrible latencies every now and then.
+> Allocating 4096 or 8192 bytes for a 1500 byte frame is wasteful.
 
-Actually it /should/ be the other way around:
+I mean allocating chunks of cached pages similarly to sk_sndmsg_page
+way. I guess the similar problem is to be worked out in any case. But
+it seems doing it on the linear area requires less changes in other
+places.
 
-The shared workqueue should only be used for work that sleeps only
-briefly (perhaps with the exception of very unlikely longer sleeps e.g.
-for allocations that cause paging).
-
-Work which /may/ sleep longer, for example performs SCSI transactions,
-needs to go into a private workqueue or other kind of context.
-
-OTOH you are right too; work which must not be deferred too long by work
-from another uncooperative/ unfair subsystem is probably also better off
-in an own workqueue...
--- 
-Stefan Richter
--=====-==--= --=- ---=-
-http://arcgraph.de/sr/
+Jarek P.
