@@ -1,84 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbZBBS34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbZBBSaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758516AbZBBS34 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 13:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753106AbZBBS3m
+	id S1758340AbZBBSaZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 13:30:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757506AbZBBSaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 13:29:42 -0500
-Received: from rv-out-0506.google.com ([209.85.198.229]:60421 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753754AbZBBS3k (ORCPT
+	Mon, 2 Feb 2009 13:30:01 -0500
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:36654 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbZBBSaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 13:29:40 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=rgcjquGJN5WrOJJ5dUQzqZg6cBT9UP6PQHS0lIC8EAHwPr+RmaOoMCBWgWktKtfu1y
-         V2ydkC2Jk5oZpQq6Heqr4+CXKwr04qW2d6qyz5okmFrglYtWH599CXWhfkOuO7MnAR96
-         MHiltNnGGM0aVcoVM+NE4O+CPvB/epnMc+9mk=
+	Mon, 2 Feb 2009 13:30:00 -0500
+Message-ID: <49873B99.3070405@nortel.com>
+Date: Mon, 02 Feb 2009 12:29:45 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <1233576952.4787.152.camel@laptop>
-References: <bug-12562-10286@http.bugzilla.kernel.org/>
-	 <1233229028.4495.34.camel@laptop>
-	 <1233237934.11129.183.camel@bugs-laptop>
-	 <1233302270.6061.9.camel@marge.simson.net>
-	 <1233560635.4126.18.camel@localhost.localdomain>
-	 <1233562763.4787.71.camel@laptop>
-	 <1233563600.3669.36.camel@localhost.localdomain>
-	 <1233564731.21378.9.camel@marge.simson.net>
-	 <1233564920.4787.108.camel@laptop> <1233576952.4787.152.camel@laptop>
-Date: Tue, 3 Feb 2009 07:29:39 +1300
-Message-ID: <cfd18e0f0902021029q6ccc5bd1q291582525ca54a2b@mail.gmail.com>
-Subject: Re: [Bugme-new] [Bug 12562] New: High overhead while switching or 
-	synchronizing threads on different cores
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Mike Galbraith <efault@gmx.de>, Thomas Pilarski <thomas.pi@arcor.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gregory Haskins <ghaskins@novell.com>, bugme-daemon@bugzilla.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Doug Thompson <norsk5@yahoo.com>, ncunningham-lkml@crca.org.au,
+       Pavel Machek <pavel@suse.cz>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       bluesmoke-devel@lists.sourceforge.net
+Subject: Re: marching through all physical memory in software
+References: <715599.77204.qm@web50111.mail.re2.yahoo.com> <m1wscc7fop.fsf@fess.ebiederm.org>
+In-Reply-To: <m1wscc7fop.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 Feb 2009 18:29:51.0511 (UTC) FILETIME=[3C817270:01C98564]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Peter,
+Eric W. Biederman wrote:
 
-On Tue, Feb 3, 2009 at 1:15 AM, Peter Zijlstra <peterz@infradead.org> wrote:
-> On Mon, 2009-02-02 at 09:55 +0100, Peter Zijlstra wrote:
->
->> Ah, that was a good clue, apparently all you need to so it use
->> random_r() and provide your own state and all should be well.
->
-> Michael, would it make sense to add the random_r() family to the "SEE
-> ALSO" section of the random() man page?
->
-> (Admittedly, my random() manpage is ancient: 2008-03-07, so it might be
-> this is already the case, in which case, ignore me :)
+> Thinking about it.  We only care about memory the kernel is using so the memory
+> maps the BIOS supplies the kernel should be sufficient.  We have weird corner
+> cases like ACPI but not handling those in the first pass and getting
+> something working should be fine.
 
-(Up-to-date version of the pages can always be found online at the
-location in the .sig.)
+Agreed.
 
-Well, the man page already had this text under notes:
+The next question is who handles the conversion of the various different 
+arch-specific BIOS mappings to a standard format that we can feed to the 
+background "scrub" code.  Is this something that belongs in the edac 
+memory controller code, or would it live in /arch/foo somewhere?
 
-       This  function  should  not  be  used  in  cases where multiple
-       threads use random() and the behavior should  be  reproducible.
-       Use random_r(3) for that purpose.
-
-But it certainly doesn't hurt to have random_r(3) also listed under
-the SEE ALSO, and I've added it for man-pages-3.18.
-
-Cheers,
-
-Michael
-
-
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Chris
