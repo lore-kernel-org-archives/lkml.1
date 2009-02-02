@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbZBBDoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZBBE5u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757024AbZBBDoU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 1 Feb 2009 22:44:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZBBDoK
+	id S1756905AbZBBE5u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 1 Feb 2009 23:57:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753672AbZBBE5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 1 Feb 2009 22:44:10 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:60986 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754118AbZBBDoJ (ORCPT
+	Sun, 1 Feb 2009 23:57:41 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:52154 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614AbZBBE5k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 1 Feb 2009 22:44:09 -0500
-Date: Mon, 2 Feb 2009 14:44:03 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [RFC] per-CPU cryptd thread implementation based on workqueue
-Message-ID: <20090202034403.GA9089@gondor.apana.org.au>
-References: <1232075437.13948.12.camel@yhuang-dev.sh.intel.com> <20090116033105.GB10390@gondor.apana.org.au> <1232591537.6101.3.camel@yhuang-dev.sh.intel.com> <20090122030400.GA10229@gondor.apana.org.au> <1232608558.6101.13.camel@yhuang-dev.sh.intel.com> <20090122073040.GA12395@gondor.apana.org.au> <1233545425.19806.44.camel@yhuang-dev.sh.intel.com>
+	Sun, 1 Feb 2009 23:57:40 -0500
+Date: Sun, 1 Feb 2009 21:57:38 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 11/14] OMAP clock: track child clocks
+In-Reply-To: <20090129220608.GJ18233@n2100.arm.linux.org.uk>
+Message-ID: <alpine.DEB.2.00.0902012154450.888@utopia.booyaka.com>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192756.29333.41541.stgit@localhost.localdomain> <20090129151401.GC18233@n2100.arm.linux.org.uk> <20090129220608.GJ18233@n2100.arm.linux.org.uk>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233545425.19806.44.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 11:30:25AM +0800, Huang Ying wrote:
-> 
-> The only needed spin lock usage is cryptd_tfm_in_queue() now, I think we
-> can protect that via RCU, what's your opinions?
+Hello Russell,
 
-We should just get rid of cryptd_tfm_in_queue since it's only used
-for debugging.
+On Thu, 29 Jan 2009, Russell King - ARM Linux wrote:
 
-> But I think the simplest method to pass requests to specified CPU is via
-> work queue (queue_work_on()). We can add a function named
-> cryptd_enqueue_request_on(), and construct a load-balance version cryptd
-> on top of that.
+> And here is my version of this patch:
 
-That's fine by me.  I'm not so worried whether the load-balancing
-version exists as a template alongside cryptd or on top of cryptd.
+Thanks, your version is quite a bit cleaner than the original.
 
-However, the default cryptd should definitely not perform balancing.
-Also note that not doing balancing does not mean that we only use
-one CPU.  cryptd should simply use the CPU on which the request was
-received.  So if the requests are received in parallel then the work
-would be carried out in parallel.
+Will you merge your patch directly, or would you like me to resend your
+version here?
 
-The load-balancing version would also need to ensure that the
-completion handlers are invoked in the exact order in which the
-requests were received since this is crucial for IPsec.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+- Paul
