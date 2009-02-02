@@ -1,291 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758442AbZBBRYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbZBBRYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758442AbZBBRYk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 12:24:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757737AbZBBRX5
+	id S1757777AbZBBRYY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 12:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZBBRX4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 12:23:57 -0500
-Received: from e24smtp01.br.ibm.com ([32.104.18.85]:60282 "EHLO
-	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758124AbZBBRXy (ORCPT
+	Mon, 2 Feb 2009 12:23:56 -0500
+Received: from e24smtp04.br.ibm.com ([32.104.18.25]:60304 "EHLO
+	e24smtp04.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758122AbZBBRXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 2 Feb 2009 12:23:54 -0500
 From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, jmorris@namei.org, dave@linux.vnet.ibm.com,
-       matthltc@us.ibm.com, zohar@linux.vnet.ibm.com,
-       Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATCH 2/2] TPM: integrity interface
-Date: Mon,  2 Feb 2009 15:23:44 -0200
-Message-Id: <324e291aaf0c34062f2bca31da95a9f172ae2c28.1233592746.git.srajiv@linux.vnet.ibm.com>
+       matthltc@us.ibm.com, zohar@linux.vnet.ibm.com
+Subject: [PATCH 0/2] TPM: refactoring and integrity
+Date: Mon,  2 Feb 2009 15:23:42 -0200
+Message-Id: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
-References: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
-In-Reply-To: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
-References: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds internal kernel support for:
- - reading/extending a pcr value
- - looking up the tpm_chip for a given chip number
+This patchset contains a refactoring patch and integrity one. The first addresses Matt Helsley and Dave Hansen's comments on replacing the data[] vectors by packed structures making the code easier to read and debug and also consolidates most of the tpm_show_* functions. The second one provides an interface to read and extend PCR values, which is widely used by IMA.
 
-Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
----
- drivers/char/tpm/tpm.c |  129 +++++++++++++++++++++++++++++++++++++++++-------
- drivers/char/tpm/tpm.h |   18 +++++++
- include/linux/tpm.h    |   35 +++++++++++++
- 3 files changed, 163 insertions(+), 19 deletions(-)
+This version also addresses Matt Helsley's last observation on the timeout_t structure usage to access TPM_CAP_PROP_TIS_DURATION capability, now a new structure is being used, duration_t, whose fields now match exactly as defined in the TPM specification.
+
+Rajiv Andrade (2):
+  TPM: sysfs functions consolidation
+  TPM: integrity interface
+
+ drivers/char/tpm/tpm.c |  528 ++++++++++++++++++++++--------------------------
+ drivers/char/tpm/tpm.h |  142 +++++++++++++
+ include/linux/tpm.h    |   35 ++++
+ 3 files changed, 423 insertions(+), 282 deletions(-)
  create mode 100644 include/linux/tpm.h
-
-diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index 9b9eb76..0387965 100644
---- a/drivers/char/tpm/tpm.c
-+++ b/drivers/char/tpm/tpm.c
-@@ -661,28 +661,125 @@ ssize_t tpm_show_temp_deactivated(struct device * dev,
- }
- EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
- 
--static const u8 pcrread[] = {
--	0, 193,			/* TPM_TAG_RQU_COMMAND */
--	0, 0, 0, 14,		/* length */
--	0, 0, 0, 21,		/* TPM_ORD_PcrRead */
--	0, 0, 0, 0		/* PCR index */
-+/*
-+ * tpm_chip_find_get - return tpm_chip for given chip number
-+ */
-+static struct tpm_chip *tpm_chip_find_get(int chip_num)
-+{
-+	struct tpm_chip *pos;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
-+		if (chip_num != TPM_ANY_NUM && chip_num != pos->dev_num)
-+			continue;
-+
-+		if (try_module_get(pos->dev->driver->owner))
-+			break;
-+	}
-+	rcu_read_unlock();
-+	return pos;
-+}
-+
-+#define TPM_ORDINAL_PCRREAD cpu_to_be32(21)
-+#define READ_PCR_RESULT_SIZE 30
-+static struct tpm_input_header pcrread_header = {
-+	.tag = TPM_TAG_RQU_COMMAND,
-+	.length = cpu_to_be32(14),
-+	.ordinal = TPM_ORDINAL_PCRREAD
-+};
-+ 
-+int __tpm_pcr_read(struct tpm_chip *chip, int pcr_idx, u8 *res_buf)
-+{
-+	int rc;
-+	struct tpm_cmd_t cmd;
-+
-+	cmd.header.in = pcrread_header;
-+	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
-+	BUILD_BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
-+	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
-+			  "attempting to read a pcr value");
-+
-+	if (rc == 0)
-+		memcpy(res_buf, cmd.params.pcrread_out.pcr_result,
-+		       TPM_DIGEST_SIZE);
-+	return rc;
-+}
-+
-+/**
-+ * tpm_pcr_read - read a pcr value
-+ * @chip_num: 	tpm idx # or ANY
-+ * @pcr_idx:	pcr idx to retrieve
-+ * @res_buf: 	TPM_PCR value
-+ * 		size of res_buf is 20 bytes (or NULL if you don't care)
-+ *
-+ * The TPM driver should be built-in, but for whatever reason it
-+ * isn't, protect against the chip disappearing, by incrementing
-+ * the module usage count.
-+ */
-+int tpm_pcr_read(u32 chip_num, int pcr_idx, u8 *res_buf)
-+{
-+	struct tpm_chip *chip;
-+	int rc;
-+
-+	chip = tpm_chip_find_get(chip_num);
-+	if (chip == NULL)
-+		return -ENODEV;
-+	rc = __tpm_pcr_read(chip, pcr_idx, res_buf);
-+	module_put(chip->dev->driver->owner);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_read);
-+
-+/**
-+ * tpm_pcr_extend - extend pcr value with hash
-+ * @chip_num: 	tpm idx # or AN&
-+ * @pcr_idx:	pcr idx to extend
-+ * @hash: 	hash value used to extend pcr value
-+ *
-+ * The TPM driver should be built-in, but for whatever reason it
-+ * isn't, protect against the chip disappearing, by incrementing
-+ * the module usage count.
-+ */
-+#define TPM_ORD_PCR_EXTEND cpu_to_be32(20)
-+#define EXTEND_PCR_SIZE 34
-+static struct tpm_input_header pcrextend_header = {
-+	.tag = TPM_TAG_RQU_COMMAND,
-+	.length = cpu_to_be32(34),
-+	.ordinal = TPM_ORD_PCR_EXTEND
- };
- 
-+int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash)
-+{
-+	struct tpm_cmd_t cmd;
-+	int rc;
-+	struct tpm_chip *chip;
-+
-+	chip = tpm_chip_find_get(chip_num);
-+	if (chip == NULL)
-+		return -ENODEV;
-+
-+	cmd.header.in = pcrextend_header;
-+	BUILD_BUG_ON(be32_to_cpu(cmd.header.in.length) > EXTEND_PCR_SIZE);
-+	cmd.params.pcrextend_in.pcr_idx = cpu_to_be32(pcr_idx);
-+	memcpy(cmd.params.pcrextend_in.hash, hash, TPM_DIGEST_SIZE);
-+	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
-+			  "attempting extend a PCR value");
-+	
-+	module_put(chip->dev->driver->owner);
-+	return rc;
-+}
-+EXPORT_SYMBOL_GPL(tpm_pcr_extend);
-+
- ssize_t tpm_show_pcrs(struct device *dev, struct device_attribute *attr,
- 		      char *buf)
- {
- 	cap_t cap;
--	u8 *data;
-+	u8 digest[TPM_DIGEST_SIZE];
- 	ssize_t rc;
- 	int i, j, num_pcrs;
--	__be32 index;
- 	char *str = buf;
- 	struct tpm_chip *chip = dev_get_drvdata(dev);
- 
--	data = kzalloc(TPM_INTERNAL_RESULT_SIZE, GFP_KERNEL);
--	if (!data)
--		return -ENOMEM;
--
- 	rc = tpm_getcap(dev, TPM_CAP_PROP_PCR, &cap,
- 			"attempting to determine the number of PCRS");
- 	if (rc)
-@@ -690,20 +787,14 @@ ssize_t tpm_show_pcrs(struct device *dev, struct device_attribute *attr,
- 
- 	num_pcrs = be32_to_cpu(cap.num_pcrs);
- 	for (i = 0; i < num_pcrs; i++) {
--		memcpy(data, pcrread, sizeof(pcrread));
--		index = cpu_to_be32(i);
--		memcpy(data + 10, &index, 4);
--		rc = transmit_cmd(chip, (struct tpm_cmd_t *)data,
--				  TPM_INTERNAL_RESULT_SIZE,
--				  "attempting to read a PCR");
-+		rc = __tpm_pcr_read(chip, i, digest);
- 		if (rc)
- 			break;
- 		str += sprintf(str, "PCR-%02d: ", i);
- 		for (j = 0; j < TPM_DIGEST_SIZE; j++)
--			str += sprintf(str, "%02X ", *(data + 10 + j));
-+			str += sprintf(str, "%02X ", digest[j]);
- 		str += sprintf(str, "\n");
- 	}
--	kfree(data);
- 	return str - buf;
- }
- EXPORT_SYMBOL_GPL(tpm_show_pcrs);
-diff --git a/drivers/char/tpm/tpm.h b/drivers/char/tpm/tpm.h
-index d64f6b7..8e00b4d 100644
---- a/drivers/char/tpm/tpm.h
-+++ b/drivers/char/tpm/tpm.h
-@@ -26,6 +26,7 @@
- #include <linux/miscdevice.h>
- #include <linux/platform_device.h>
- #include <linux/io.h>
-+#include <linux/tpm.h>
- 
- enum tpm_timeout {
- 	TPM_TIMEOUT = 5,	/* msecs */
-@@ -234,11 +235,28 @@ typedef union {
- 	struct	tpm_output_header out;
- } tpm_cmd_header;
- 
-+#define TPM_DIGEST_SIZE 20
-+struct tpm_pcrread_out {
-+	u8	pcr_result[TPM_DIGEST_SIZE];
-+}__attribute__((packed));
-+
-+struct tpm_pcrread_in {
-+	__be32	pcr_idx;
-+}__attribute__((packed));
-+
-+struct tpm_pcrextend_in {
-+	__be32	pcr_idx;
-+	u8	hash[TPM_DIGEST_SIZE];
-+}__attribute__((packed));
-+
- typedef union {
- 	struct	tpm_getcap_params_out getcap_out;
- 	struct	tpm_readpubek_params_out readpubek_out;
- 	u8	readpubek_out_buffer[sizeof(struct tpm_readpubek_params_out)];
- 	struct	tpm_getcap_params_in getcap_in;
-+	struct	tpm_pcrread_in	pcrread_in;
-+	struct	tpm_pcrread_out	pcrread_out;
-+	struct	tpm_pcrextend_in pcrextend_in;
- } tpm_cmd_params;
- 
- struct tpm_cmd_t {
-diff --git a/include/linux/tpm.h b/include/linux/tpm.h
-new file mode 100644
-index 0000000..3338b3f
---- /dev/null
-+++ b/include/linux/tpm.h
-@@ -0,0 +1,35 @@
-+/*
-+ * Copyright (C) 2004,2007,2008 IBM Corporation
-+ *
-+ * Authors:
-+ * Leendert van Doorn <leendert@watson.ibm.com>
-+ * Dave Safford <safford@watson.ibm.com>
-+ * Reiner Sailer <sailer@watson.ibm.com>
-+ * Kylene Hall <kjhall@us.ibm.com>
-+ * Debora Velarde <dvelarde@us.ibm.com>
-+ *
-+ * Maintained by: <tpmdd_devel@lists.sourceforge.net>
-+ *
-+ * Device driver for TCG/TCPA TPM (trusted platform module).
-+ * Specifications at www.trustedcomputinggroup.org
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License as
-+ * published by the Free Software Foundation, version 2 of the
-+ * License.
-+ *
-+ */
-+#ifndef __LINUX_TPM_H__
-+#define __LINUX_TPM_H__
-+
-+/*
-+ * Chip num is this value or a valid tpm idx
-+ */
-+#define	TPM_ANY_NUM 0xFFFF
-+
-+#if defined(CONFIG_TCG_TPM)
-+
-+extern int tpm_pcr_read(u32 chip_num, int pcr_idx, u8 *res_buf);
-+extern int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash);
-+#endif
-+#endif
--- 
-1.5.6.3
 
