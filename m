@@ -1,60 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbZBCDbR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752819AbZBCDi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753256AbZBCDbR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 22:31:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZBCDbE
+	id S1752819AbZBCDi5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 22:38:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZBCDir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 22:31:04 -0500
-Received: from gate.crashing.org ([63.228.1.57]:45169 "EHLO gate.crashing.org"
+	Mon, 2 Feb 2009 22:38:47 -0500
+Received: from srv5.dvmed.net ([207.36.208.214]:56795 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751247AbZBCDbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 22:31:03 -0500
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <1233625606.18767.157.camel@pasglop>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
-	 <200902030045.19416.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902021551050.3247@localhost.localdomain>
-	 <200902030115.32659.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain>
-	 <1233623525.18767.151.camel@pasglop>
-	 <alpine.LFD.2.00.0902021729510.3247@localhost.localdomain>
-	 <1233625606.18767.157.camel@pasglop>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 14:30:20 +1100
-Message-Id: <1233631820.16867.27.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1751523AbZBCDir (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 22:38:47 -0500
+Message-ID: <4987BC43.3040400@garzik.org>
+Date: Mon, 02 Feb 2009 22:38:43 -0500
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: =?ISO-8859-1?Q?Pasi_K=E4rkk=E4inen?= <pasik@iki.fi>
+CC: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: [PATCH] Fix sata_sil compilation error with libata debug enabled
+ (2.6.29-rcX)
+References: <20090202194714.GN15052@edu.joroinen.fi>
+In-Reply-To: <20090202194714.GN15052@edu.joroinen.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 12:46 +1100, Benjamin Herrenschmidt wrote:
-> > Note how the PCI layer (currently) only saves the low _16_ dwords of 
-> > config space (64 bytes). The radeonfb code that did it by hand saved the 
-> > whole 64 dwords (256 bytes). It _probably_ doesn't matter, but..
-> > 
-> > The reason the PCI layer only does 64 bytes is that that was the really 
-> > old PCI config space model - the rest was undefined and apparently a few 
-> > cards reportedly even crashed when accessing it (but who knows, that may 
-> > be urban folklore).
-> > 
-> > But if that patch works for you, it's clearly already better than _not_ 
-> > applying the patch, so..
+Pasi Kärkkäinen wrote:
+> Hello!
 > 
-> Radeons don't do much with config space... the worst we may miss I
-> suppose is subsystem vendor/device... Maybe I'll add something to
-> explicitely save and restore it or X might get upset. I'll have a look.
+> I tried compiling 2.6.29-rc1 and 2.6.29-rc3 with libata debugging enabled
+> and got the following error:
+> 
+>   CC [M]  drivers/ata/sata_sil.o
+> drivers/ata/sata_sil.c: In function 'sil_fill_sg':
+> drivers/ata/sata_sil.c:327: error: 'pi' undeclared (first use in this function)
+> drivers/ata/sata_sil.c:327: error: (Each undeclared identifier is reported only once
+> drivers/ata/sata_sil.c:327: error: for each function it appears in.)
+> make[2]: *** [drivers/ata/sata_sil.o] Error 1
+> make[1]: *** [drivers/ata] Error 2
+> make: *** [drivers] Error 2
+> 
+> include/linux/libata.h has the following enabled:
+> 
+> #define ATA_DEBUG
+> #define ATA_VERBOSE_DEBUG
+> #define ATA_IRQ_TRAP
+> 
+> The attached patch fixes the compilation.. I'm not sure if it's the correct
+> fix, but looking at the code it seems correct.. or at least makes the
+> code compile for me :)
 
-Actually, subsystem stuff is below 0x40 so it should be fine too.
-
-Cheers,
-Ben.
+applied
 
 
