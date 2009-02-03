@@ -1,125 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbZBCNlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755462AbZBCNlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116AbZBCNlY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 08:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZBCNlO
+	id S1755462AbZBCNlj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 08:41:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbZBCNlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 08:41:14 -0500
-Received: from e35.co.us.ibm.com ([32.97.110.153]:60139 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752919AbZBCNlM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 08:41:12 -0500
-Subject: Re: [BUGFIX take 2] [PATCH] write-back: fix nr_to_write counter
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: dedekind@infradead.org
-Cc: torvalds@linux-foundation.org, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <1233655712.24809.101.camel@localhost.localdomain>
-References: <1233655712.24809.101.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 07:41:01 -0600
-Message-Id: <1233668461.30906.4.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 08:41:15 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:36996 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753153AbZBCNlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 08:41:13 -0500
+Date: Tue, 3 Feb 2009 05:41:10 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, Vitaliy Gusev <vgusev@openvz.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
+Message-ID: <20090203134110.GC6607@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090130123358.GA26216@redhat.com> <20090130125058.GA26931@redhat.com> <200901312246.07737.rusty@rustcorp.com.au> <20090201102117.GA5728@redhat.com> <m1wsc82033.fsf@fess.ebiederm.org> <20090202194105.GA23141@redhat.com> <m1hc3c19s7.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1hc3c19s7.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 12:08 +0200, Artem Bityutskiy wrote:
-> From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> Date: Mon, 2 Feb 2009 18:33:49 +0200
-> Subject: [PATCH] write-back: fix nr_to_write counter
+On Mon, Feb 02, 2009 at 07:25:44PM -0800, Eric W. Biederman wrote:
+> Oleg Nesterov <oleg@redhat.com> writes:
 > 
-> Commit 05fe478dd04e02fa230c305ab9b5616669821dd3 introduced some
-> @wbc->nr_to_write breakage. Here is the change from the commit:
+> > On 02/02, Eric W. Biederman wrote:
+> >>
+> >> Oleg on that note we should not need a barrier at all. We should be
+> >> able to simply say:
+> >>
+> >> cmplp = k->vfork_done;
+> >> if (cmplp){
+> >> 	/* if vfork_done is NULL we have passed mm_release */
+> >> 	kthread = container_of(cmplp, struct kthread, exited);
+> >> 	kthread->should_stop = 1;
+> >> 	wake_up_process(k);
+> >> 	wait_for_completion(&kthread->exited);
+> >> }
+> >
+> > Yes, but the compiler can read ->vfork_done twice, and turn this code
+> > into
+> >
+> > 	cmplp = k->vfork_done;
+> > 	if (cmplp){
+> > 		kthread = container_of(k->vfork_done, struct kthread, exited);
+> > 		...
+> >
+> > and when we read k->vfork_done again it can be already NULL.
+> > Probably we could use ACCESS_ONCE() instead.
+> >
+> > Perhaps this barrier() is not needed in practice, but just to be safe.
 > 
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -963,8 +963,10 @@ retry:
->                                 }
->                         }
+> Certainly.   I definitely see where you are coming from.
+> And of course all of this only works because a pointer is a word size
+> so it is read and updated atomically by the compiler.
 > 
-> -                       if (--nr_to_write <= 0)
-> -                               done = 1;
-> +                       if (wbc->sync_mode == WB_SYNC_NONE) {
-> +                               if (--wbc->nr_to_write <= 0)
-> +                                       done = 1;
-> +                       }
->                         if (wbc->nonblocking && bdi_write_congested(bdi)) {
->                                 wbc->encountered_congestion = 1;
->                                 done = 1
->                         }
+> I wish we had a good idiom we could use to make it clear what we
+> are doing.  The rcu pointer read code perhaps?
 
-Actually quoting a patch in the description in this manner will make the
-patch fail to apply (or fail to apply correctly).  If you must quote the
-patch, you should probably prepend ">" or something.
+ACCESS_ONCE() suffices in many cases, but if the pointer being accessed
+points to a structure that might recently have been initialized, then
+rcu_dereference() will be required on Alpha.  Though perhaps the
+discussion below removes the need entirely, but cannot say that I fully
+understand this part of the kernel.
 
-> It makes the following changes:
-> 1. Decrement wbc->nr_to_write instead of nr_to_write
-> 2. Decrement wbc->nr_to_write _only_ if wbc->sync_mode == WB_SYNC_NONE
-> 3. If synced nr_to_write pages, stop only if if wbc->sync_mode ==
-> WB_SYNC_NONE, otherwise keep going.
-> 
-> However, according to the commit message, the intention was to
-> only make change 3. Change 1 is a bug. Change 2 does not seem to be
-> necessary, and it breaks UBIFS expectations, so if needed, it
-> should be done separately later. And change 2 does not seem to
-> be documented in the commit message.
-> 
-> This patch des the following:
-> 1. Undo changes 1 and 2
-> 2. Add a comment explaining change 3 (it very useful to have comments in
-> _code_, not only in the commit).
-> 
-> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-> Acked-by: Nick Piggin <npiggin@suse.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
->  mm/page-writeback.c |   21 +++++++++++++++------
->  1 files changed, 15 insertions(+), 6 deletions(-)
-> 
-> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> index b493db7..13a2b8e 100644
-> --- a/mm/page-writeback.c
-> +++ b/mm/page-writeback.c
-> @@ -1051,13 +1051,22 @@ continue_unlock:
->  				}
->   			}
-> 
-> -			if (wbc->sync_mode == WB_SYNC_NONE) {
-> -				wbc->nr_to_write--;
-> -				if (wbc->nr_to_write <= 0) {
-> -					done = 1;
-> -					break;
-> -				}
-> +			if (nr_to_write > 0)
-> +				nr_to_write--;
-> +			else if (wbc->sync_mode == WB_SYNC_NONE) {
-> +				/*
-> +				 * We stop writing back only if we are not
-> +				 * doing integrity sync. In case of integrity
-> +				 * sync we have to keep going because someone
-> +				 * may be concurrently dirtying pages, and we
-> +				 * might have synced a lot of newly appeared
-> +				 * dirty pages, bud have not synced all of the
-> +				 * old dirty pages.
-> +				 */
-> +				done = 1;
-> +				break;
->  			}
-> +
->  			if (wbc->nonblocking && bdi_write_congested(bdi)) {
->  				wbc->encountered_congestion = 1;
->  				done = 1;
-> -- 
-> 1.6.0.6
-> 
-> 
--- 
-David Kleikamp
-IBM Linux Technology Center
+							Thanx, Paul
 
+> > And in fact I saw the bug report with this code:
+> >
+> > 	ac.ac_tty = current->signal->tty ?
+> > 		old_encode_dev(tty_devnum(current->signal->tty)) : 0;
+> >
+> > this code is wrong anyway, but ->tty was read twice. I specially
+> > asked for .s file because I wasn't able to believe the bug manifests
+> > itself this way.
+> 
+> Interesting.
+> 
+> >> Thinking of it I wish we had someplace we could store a pointer
+> >> that would not be cleared so we could remove that whole confusing
+> >> conditional.  I just looked through task_struct and there doesn't
+> >> appear to be anything promising.
+> >>
+> >> Perhaps we could rename vfork_done mm_done and not clear it in
+> >> mm_release.
+> >
+> > Yes, in that case we don't need the barrier().
+> >
+> > I was thinking about changing mm_release() too, but we should clear
+> > ->vfork_done (or whatever) in exec_mmap() anyway.
+> 
+> Yes.  I realized that just after I wrote that.  So clearing
+> vfork_done in all cases is a good idea so we don't make get sloppy.
+> 
+> Eric
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
