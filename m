@@ -1,95 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbZBCL3I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZBCLdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbZBCL3I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 06:29:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751961AbZBCL2z
+	id S1753208AbZBCLdm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 06:33:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZBCLde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 06:28:55 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:36403 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbZBCL2z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 06:28:55 -0500
-Date: Tue, 3 Feb 2009 11:28:52 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-Message-ID: <20090203112852.GJ9840@csn.ul.ie>
-References: <20090123154653.GA14517@wotan.suse.de> <1232959706.21504.7.camel@penberg-laptop> <20090203101205.GF9840@csn.ul.ie> <200902032136.26022.nickpiggin@yahoo.com.au>
+	Tue, 3 Feb 2009 06:33:34 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51674 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750997AbZBCLdd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 06:33:33 -0500
+Date: Tue, 3 Feb 2009 12:33:19 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: /proc/sys/vm/drop_caches: add error handling
+Message-ID: <20090203113319.GA2022@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902032136.26022.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 09:36:24PM +1100, Nick Piggin wrote:
-> On Tuesday 03 February 2009 21:12:06 Mel Gorman wrote:
-> > On Mon, Jan 26, 2009 at 10:48:26AM +0200, Pekka Enberg wrote:
-> > > Hi Nick,
-> > >
-> > > On Fri, 2009-01-23 at 16:46 +0100, Nick Piggin wrote:
-> > > > Since last time, fixed bugs pointed out by Hugh and Andi, cleaned up
-> > > > the code suggested by Ingo (haven't yet incorporated Ingo's last
-> > > > patch).
-> > > >
-> > > > Should have fixed the crash reported by Yanmin (I was able to reproduce
-> > > > it on an ia64 system and fix it).
-> > > >
-> > > > Significantly reduced static footprint of init arrays, thanks to Andi's
-> > > > suggestion.
-> > > >
-> > > > Please consider for trial merge for linux-next.
-> > >
-> > > I merged a the one you resent privately as this one didn't apply at all.
-> > > The code is in topic/slqb/core branch of slab.git and should appear in
-> > > linux-next tomorrow.
-> > >
-> > > Testing and especially performance testing is welcome. If any of the HPC
-> > > people are reading this, please do give SLQB a good beating as Nick's
-> > > plan is to replace both, SLAB and SLUB, with it in the long run.As
-> > > Christoph has expressed concerns over latency issues of SLQB, I suppose
-> > > it would be interesting to hear if it makes any difference to the
-> > > real-time folks.
-> >
-> > The HPC folks care about a few different workloads but speccpu is one that
-> > shows up. I was in the position to run tests because I had put together
-> > the test harness for a paper I spent the last month writing. This mail
-> > shows a comparison between slab, slub and slqb for speccpu2006 running a
-> > single thread and sysbench ranging clients from 1 to 4*num_online_cpus()
-> > (16 in both cases). Additional tests were not run because just these two
-> > take one day per kernel to complete. Results are ratios to the SLAB figures
-> > and based on an x86-64 and ppc64 machine.
-> 
-> Hi Mel,
-> 
-> This is very nice, thanks for testing. SLQB and SLUB are quite similar
-> in a lot of cases, which indeed could be explained by cacheline placement
-> (both of these can allocate down to much smaller sizes, and both of them
-> also put metadata directly in free object memory rather than external
-> locations).
-> 
-> But it will be interesting to try looking at some of the tests where
-> SLQB has larger regressions, so that might give me something to go on
-> if I can lay my hands on speccpu2006...
-> 
-> I'd be interested to see how slub performs if booted with slub_min_objects=1
-> (which should give similar order pages to SLAB and SLQB).
-> 
 
-Just to clarify on this last point, do you mean slub_max_order=0 to
-force order-0 allocations in SLUB?
+Document that drop_caches is unsafe, and add error checking so that it
+bails out on invalid inputs. [Note that this was triggered by Android
+trying to use it in production, and incidentally writing invalid
+value...]
+
+Signed-off-by: Pavel Machek <pavel@suse.cz> 
+
+diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+index 3197fc8..b90f050 100644
+--- a/Documentation/sysctl/vm.txt
++++ b/Documentation/sysctl/vm.txt
+@@ -132,6 +132,10 @@ To free pagecache, dentries and inodes:
+ As this is a non-destructive operation and dirty objects are not freeable, the
+ user should run `sync' first.
+ 
++Note that calling this causes some serious latencies, and that this is
++a debug feature; it should not be used for production as it does not
++contain neccessary locking to guarantee safe operation.
++
+ ==============================================================
+ 
+ hugepages_treat_as_movable
+diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+index 3e5637f..765dec3 100644
+--- a/fs/drop_caches.c
++++ b/fs/drop_caches.c
+@@ -9,8 +9,9 @@
+ #include <linux/sysctl.h>
+ #include <linux/gfp.h>
+ 
+-/* A global variable is a bit ugly, but it keeps the code simple */
+-int sysctl_drop_caches;
++/* A global variable is a bit ugly, and has locking problems,
++   but it keeps the code simple */
++unsigned int sysctl_drop_caches;
+ 
+ static void drop_pagecache_sb(struct super_block *sb)
+ {
+@@ -65,12 +66,17 @@ static void drop_slab(void)
+ int drop_caches_sysctl_handler(ctl_table *table, int write,
+ 	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
+ {
+-	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+-	if (write) {
+-		if (sysctl_drop_caches & 1)
+-			drop_pagecache();
+-		if (sysctl_drop_caches & 2)
+-			drop_slab();
+-	}
+-	return 0;
++	int res;
++	res = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
++	if (res)
++		return res;
++	if (!write)
++		return res;
++	if (sysctl_drop_caches & ~3)
++		return -EINVAL;
++	if (sysctl_drop_caches & 1)
++		drop_pagecache();
++	if (sysctl_drop_caches & 2)
++		drop_slab();
++	return res;
+ }
+
 
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
