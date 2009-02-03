@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbZBCXT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZBCXTq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbZBCXT0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 18:19:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZBCXTR
+	id S1754839AbZBCXTq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 18:19:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbZBCXTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 18:19:17 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53732 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751374AbZBCXTQ (ORCPT
+	Tue, 3 Feb 2009 18:19:35 -0500
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:54635 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752457AbZBCXTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 18:19:16 -0500
-Date: Tue, 3 Feb 2009 15:18:14 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jesse Barnes <jesse.barnes@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
- standard config registers of all devices early)
-In-Reply-To: <1233702327.16867.109.camel@pasglop>
-Message-ID: <alpine.LFD.2.00.0902031514510.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <200902032253.42709.rjw@sisk.pl> <1233700390.16867.97.camel@pasglop>  <200902032344.22348.rjw@sisk.pl> <1233702327.16867.109.camel@pasglop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Feb 2009 18:19:32 -0500
+X-MUA: Evolution 2.24.3 
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuQEACtgiElQLLDG/2dsb2JhbACBbs15hBQG
+X-IronPort-AV: E=Sophos;i="4.37,374,1231113600"; 
+   d="scan'208";a="141965925"
+Subject: [PATCH] cramfs: explicitly state type of unsigned int
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 23:18:43 +0000
+Message-Id: <1233703123.20790.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I was using cramfs as a model for a new filesystem and came across this,
+rather confusing issue...
+
+These variables are currently declared with only a type modifier, not a
+type.
+
+Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
+---
 
 
-On Wed, 4 Feb 2009, Benjamin Herrenschmidt wrote:
-> 
-> Wait wait wait ... the -whole- point of the exercise, wether using
-> local_irq_save or disable_irq, -is- to put the ACPI bit -after- setting
-> the device in low power state and before the restore on wakeup...
+diff --git a/fs/cramfs/inode.c b/fs/cramfs/inode.c
+index a07338d..d9210bc 100644
+--- a/fs/cramfs/inode.c
++++ b/fs/cramfs/inode.c
+@@ -136,7 +136,7 @@ static void *cramfs_read(struct super_block *sb, unsigned int offset, unsigned i
+ {
+ 	struct address_space *mapping = sb->s_bdev->bd_inode->i_mapping;
+ 	struct page *pages[BLKS_PER_BUF];
+-	unsigned i, blocknr, buffer;
++	unsigned int i, blocknr, buffer;
+ 	unsigned long devsize;
+ 	char *data;
 
-You're missing context.
-
-ACPI isn't just for the device power settings. It's for the CPU's too, and 
-it's for things like "prepare to sleep". And they all have _different_ 
-requirements.
-
-What Rafael is trying to tell you is that we have ACPI-initiated ordering 
-requirements between turning CPU's off, and turning devices off, and he's 
-not willing to change that.
-
-> The -one- thing that indeed conflicts here is that we disable nonboot
-> CPUs earlier. Right ?
-
-This.
-
-> Now, I doubt that would be a big issue
-
-With ACPI, there is no such thing as a "big issue". There are only tons of 
-small horrid details that. And the "big issue" is that all the small 
-details are insane.
-
-		Linus
