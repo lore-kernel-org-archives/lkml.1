@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbZBCWZa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZBCW0o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756171AbZBCWZa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:25:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZBCWZS
+	id S1755842AbZBCW0o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:26:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZBCW0b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:25:18 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36993 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbZBCWZR (ORCPT
+	Tue, 3 Feb 2009 17:26:31 -0500
+Received: from smtpfb2-g21.free.fr ([212.27.42.10]:34548 "EHLO
+	smtpfb2-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751268AbZBCW0a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:25:17 -0500
-Date: Tue, 3 Feb 2009 23:25:01 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: Valdis.Kletnieks@vt.edu, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Doug Thompson <norsk5@yahoo.com>, ncunningham-lkml@crca.org.au,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, bluesmoke-devel@lists.sourceforge.net
-Subject: Re: marching through all physical memory in software
-Message-ID: <20090203222501.GC2857@elf.ucw.cz>
-References: <715599.77204.qm@web50111.mail.re2.yahoo.com> <m1wscc7fop.fsf@fess.ebiederm.org> <49873B99.3070405@nortel.com> <37985.1233614746@turing-police.cc.vt.edu> <4988555B.8010408@nortel.com>
+	Tue, 3 Feb 2009 17:26:30 -0500
+To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org
+Cc: Pavel Machek <pavel@ucw.cz>
+Subject: Acer 6592 TM, suspend to ram and resume freeze
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Tue, 03 Feb 2009 21:36:19 +0100
+Message-ID: <873aevl0l8.fsf@free.fr>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4988555B.8010408@nortel.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+First of all, sorry for the duplicate on linux-pm, but as Pavel suggested, this
+topic gains wider audience as acpi and pm are involved.
 
->>> The next question is who handles the conversion of the various 
->>> different arch-specific BIOS mappings to a standard format that we 
->>> can feed to the background "scrub" code.  Is this something that 
->>> belongs in the edac memory controller code, or would it live in 
->>> /arch/foo somewhere?
->>
->>
->> If it's intended to be something basically stand-alone that doesn't require
->> an actual EDAC chipset, it should probably live elsewhere.  Otherwise, you get
->> into the case of people who don't enable it because they "know" their hardware
->> doesn't have an EDAC ability, even if they *could* benefit from the function.
->>
->> On the other hand, if it's an EDAC-only thing, maybe under drivers/edac/$ARCH?
->
-> I don't see anything in the name of EDAC that implies hardware only...a  
-> software memory scrub could be considered "error detection and  
-> correction".  Might have to update the config help text though.
+I have an issue with my laptop with suspend to ram.
+My laptop is an Acer Travelmate 6592g :
 
-Software memory scrub would no longer be a "driver" :-). So it should
-go into kernel/scrub or mm/scrub or maybe mm/edac or something.
+> [rj@velvet wireshark-1.0.5 (master)]$ sudo s2ram -i
+> This machine can be identified by:
+>     sys_vendor   = "Acer"
+>     sys_product  = "TravelMate 6592"
+>     sys_version  = "PSMBOU-1234567"
+>     bios_version = "V1.53   "
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+The kernel running is the last I have : 2.6.29-rc1, but the problem is the same
+whatever the kernel version I take (between 2.6.16 and 2.6.29-rc1).
+
+The issue is that even if the laptop enters suspend correctly, it hangs on
+comming out of it. After some research, I cornered down the module which changes
+the behaviour : acpi_cpufreq.ko.
+
+When I forbid the laptop to load this module, the suspend to ram works like a
+charm, in "init" single mode or multi-user mode. When I load the module, the
+resume always hangs (fan goes high speed like crazy, no LCD back, hard drive led
+stays on, caps_lock key not responsive, ...)
+
+Now, I notice that loading acpi-cpufreq triggers the following message :
+> log: Jan 19 18:23:42 velvet kernel: ACPI: EC: non-query interrupt received, switching to interrupt mode
+
+As this is not the part of the kernel I'm most at ease with, I'd like some help
+to investigate. I'll gladly make any test or apply patches to my own git tree.
+
+I join to this mail a URL [1] to see the little information I have :
+ - kernel messages (/var/log/messages), for single user startup
+ - ACPI table
+ - my kernel configuration
+ - kernel message for a working suspend to ram (ie. without acpi_cpufreq).
+ - I suspend using s2ram -f -v -p -s
+
+Best regards.
+
+--
+Robert
+
+[1] http://belgarath.hd.free.fr/download/acer6592tm/
