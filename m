@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752633AbZBCXUE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZBCXUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752633AbZBCXUE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 18:20:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbZBCXTg
+	id S1755242AbZBCXUs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 18:20:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbZBCXUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 18:19:36 -0500
-Received: from vena.lwn.net ([206.168.112.25]:58184 "EHLO vena.lwn.net"
+	Tue, 3 Feb 2009 18:20:37 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:50802 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752952AbZBCXTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 18:19:34 -0500
-Date: Tue, 3 Feb 2009 16:19:31 -0700
-From: Jonathan Corbet <corbet@lwn.net>
+	id S1751961AbZBCXUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 18:20:36 -0500
+Date: Wed, 4 Feb 2009 00:17:17 +0100
+From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mpm@selenic.com, dada1@cosmosbay.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, oleg@redhat.com, viro@ZenIV.linux.org.uk,
-       davidel@xmailserver.org, davem@davemloft.net, hch@lst.de,
-       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-Message-ID: <20090203161931.4054a25e@bike.lwn.net>
-In-Reply-To: <20090203145346.8df40277.akpm@linux-foundation.org>
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
-	<1233598811-6871-3-git-send-email-corbet@lwn.net>
-	<20090203133942.2ecec281.akpm@linux-foundation.org>
-	<4988BD4E.8080206@cosmosbay.com>
-	<20090203140543.6e915f97.akpm@linux-foundation.org>
-	<1233699722.3243.127.camel@calx>
-	<20090203153740.363d0a04@bike.lwn.net>
-	<20090203145346.8df40277.akpm@linux-foundation.org>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+Cc: Ingo Molnar <mingo@elte.hu>, Lin Ming <ming.m.lin@intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] posix-cpu-timers: use ->sighand instead of ->signal to
+	check the task is alive
+Message-ID: <20090203231717.GA5028@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009 14:53:46 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
+No functional changes.
 
-> Well.  We _could_ whack part of this nut with my usual hammer: protect
-> f_flags with file->f_dentry->d_inode->i_lock.  IIRC there was some
-> objection to that - performance?
+It doesn't matter which pointer to check under tasklist to ensure the task
+was not released, ->signal or ->sighand. But we are going to make ->signal
+refcountable, change the code to use ->sighand.
 
-Andi has objected to the addition of locks, but i_lock is maybe
-sufficiently dispersed to pass muster there.  I had an instinctive
-reaction to using a lock which is three pointers away, but I can get
-over that.  I'll admit a bit of ignorance, though: if a given struct
-file exists, do we know for sure that file->f_dentry->d_inode exists?
+Sadly, it is not trivial to audit kernel/posix-cpu-timers.c, but it really
+abuses tasklist_lock. I believe it doesn't need this lock at all, but the
+changes are not easy to test.
 
-> One problem here seems to be that we're trying to change multiple
-> things at the same time.  We can blame the BKL for that.
-> 
-> Can we break the problem into manageable chunks?  Your patchset did
-> that, I guess.  What were those chunks again? ;)
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 
-I'm not really sure how to break it down any further.  If we take the
-i_lock approach, the chunks would be something like:
+--- 6.29-rc3/kernel/posix-cpu-timers.c~2_CPU_TIMERS	2009-01-29 01:13:55.000000000 +0100
++++ 6.29-rc3/kernel/posix-cpu-timers.c	2009-02-04 00:09:23.000000000 +0100
+@@ -297,7 +297,7 @@ int posix_cpu_clock_get(const clockid_t 
+ 				}
+ 			} else {
+ 				read_lock(&tasklist_lock);
+-				if (thread_group_leader(p) && p->signal) {
++				if (thread_group_leader(p) && p->sighand) {
+ 					error =
+ 					    cpu_clock_sample_group(which_clock,
+ 							           p, &rtn);
+@@ -374,7 +374,7 @@ int posix_cpu_timer_del(struct k_itimer 
+ 
+ 	if (likely(p != NULL)) {
+ 		read_lock(&tasklist_lock);
+-		if (unlikely(p->signal == NULL)) {
++		if (unlikely(p->sighand == NULL)) {
+ 			/*
+ 			 * We raced with the reaping of the task.
+ 			 * The deletion should have cleared us off the list.
+@@ -640,10 +640,10 @@ int posix_cpu_timer_set(struct k_itimer 
+ 	read_lock(&tasklist_lock);
+ 	/*
+ 	 * We need the tasklist_lock to protect against reaping that
+-	 * clears p->signal.  If p has just been reaped, we can no
++	 * clears p->sighand.  If p has just been reaped, we can no
+ 	 * longer get any information about it at all.
+ 	 */
+-	if (unlikely(p->signal == NULL)) {
++	if (unlikely(p->sighand == NULL)) {
+ 		read_unlock(&tasklist_lock);
+ 		put_task_struct(p);
+ 		timer->it.cpu.task = NULL;
+@@ -812,7 +812,7 @@ void posix_cpu_timer_get(struct k_itimer
+ 		clear_dead = p->exit_state;
+ 	} else {
+ 		read_lock(&tasklist_lock);
+-		if (unlikely(p->signal == NULL)) {
++		if (unlikely(p->sighand == NULL)) {
+ 			/*
+ 			 * The process has been reaped.
+ 			 * We can't even collect a sample any more.
+@@ -1146,7 +1146,7 @@ void posix_cpu_timer_schedule(struct k_i
+ 		read_lock(&tasklist_lock); /* arm_timer needs it.  */
+ 	} else {
+ 		read_lock(&tasklist_lock);
+-		if (unlikely(p->signal == NULL)) {
++		if (unlikely(p->sighand == NULL)) {
+ 			/*
+ 			 * The process has been reaped.
+ 			 * We can't even collect a sample any more.
 
- 1) Use i_lock to protect accesses to f_flags.  This would enable some 
-    BKL usage to be removed, but would not fix fasync.
-
- 2) Move responsibility for the FASYNC bit into ->fasync(), with
-    fasync_helper() doing it in almost all situations.  The remaining
-    BKL usage would then go away.
-
- 3) The same optional fasync() return values cleanup.
-
-Make sense?
-
-jon
