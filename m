@@ -1,55 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751983AbZBCWpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752731AbZBCWqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751983AbZBCWpP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:45:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZBCWpA
+	id S1752731AbZBCWqx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:46:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZBCWqo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:45:00 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41693 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751025AbZBCWo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:44:59 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore standard config registers of all devices early)
-Date: Tue, 3 Feb 2009 23:44:21 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902032253.42709.rjw@sisk.pl> <1233700390.16867.97.camel@pasglop>
-In-Reply-To: <1233700390.16867.97.camel@pasglop>
+	Tue, 3 Feb 2009 17:46:44 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:2117 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751025AbZBCWqn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:46:43 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=VYk7OXPOPJB/5/Nnxjhi8teDtokzc/9Sn739vqvRSr+9mHloDhVHUfcMsaI/TkkqeF
+         +7LltgBKrZ9w9z9JHGBm00LHigR31xv32ydkflXkkOZ5T4g5JMv8EM2hFvDTGkOwRDP4
+         XBoNjqVFoH3XkhFjOTAPW9cA0/p6Sf1XhoVyA=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Date: Tue, 3 Feb 2009 23:46:40 +0100
+Message-ID: <19f34abd0902031446r617fd29cmf60e9409564fa58b@mail.gmail.com>
+Subject: FASYNC + dup + close gives the wrong fd in SIGIO
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: linux-man@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902032344.22348.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 February 2009, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-02-03 at 22:53 +0100, Rafael J. Wysocki wrote:
-> 
-> > That would change the ordering of ACPI method calls, which also is important
-> > and prone to breaking, as I wrote in the original message.
-> 
-> Ok, I'm not -that- familiar with ACPI, but I don't see where this
-> ordering change you seem to fear is ... Ie, what gets re-ordered vs.
-> what ? 
+Hi,
 
-(Newer) ACPI says that devices should be put into low power states (presumably
-with the help of appropriate ACPI AML routines) before the _PTS method is
-called.  In turn, we're supposed to disable nonboot CPUs after calling _PTS.
-There is analogous requirement for the _WAK method during resume.
+There seems to be a small deficiency in the O_ASYNC/FASYNC
+implementation. When the flag is set for a file descriptor, it does
+not "follow" the fd across dup()+close(), so the SIGIO handler will
+get the ->si_fd for the fd at the time when O_ASYNC was set. For
+example:
 
-Currently, the suspend code ordering follows these rules, but if we move
-the putting of devices into low power states into the suspend_late part, they
-will have to be done after _PTS and that is likely to break things (we've
-already had this problem once and I have really bad memories related to it).
+pipe([3, 4])                            = 0
+getpid()                                = 23982
+fcntl(3, F_SETOWN, 23982)               = 0
+fcntl(3, F_SETSIG, 0x1d)                = 0
+fcntl(3, F_SETFL, O_RDONLY|O_ASYNC)     = 0
+dup(3)                                  = 5
+close(3)                                = 0
+write(4, "\0"..., 1)                    = 1
+--- SIGIO (I/O possible) @ 0 (0) ---
+[...]
+SIGIO for fd 3
 
-Thanks,
-Rafael
+It seems a bit obscure, I agree, but I thought I'd mention it. Maybe
+the fcntl() man page could carry this extra information?
+
+Here's my test case:
+
+#define _GNU_SOURCE
+
+#include <fcntl.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
+static int done = 0;
+
+static void handle_sigio(int signo, siginfo_t *info, void *unused)
+{
+        printf("SIGIO for fd %d\n", info->si_fd);
+        done = 1;
+}
+
+int main(void)
+{
+        struct sigaction act;
+        int pipe_fd[2];
+
+        memset(&act, 0, sizeof(act));
+        act.sa_sigaction = &handle_sigio;
+        act.sa_flags = SA_SIGINFO;
+        sigaction(SIGIO, &act, NULL);
+
+        pipe(pipe_fd);
+        fcntl(pipe_fd[0], F_SETOWN, getpid());
+        fcntl(pipe_fd[0], F_SETSIG, SIGIO);
+        fcntl(pipe_fd[0], F_SETFL, O_ASYNC);
+        dup(pipe_fd[0]);
+        close(pipe_fd[0]);
+
+        write(pipe_fd[1], "", 1);
+
+        while (!done)
+                sleep(1);
+
+        return 0;
+}
+
+
+
+Vegard
+
+-- 
+"The animistic metaphor of the bug that maliciously sneaked in while
+the programmer was not looking is intellectually dishonest as it
+disguises that the error is the programmer's own creation."
+	-- E. W. Dijkstra, EWD1036
