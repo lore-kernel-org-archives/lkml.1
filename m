@@ -1,106 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753581AbZBCQef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755033AbZBCQew@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753581AbZBCQef (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 11:34:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZBCQe1
+	id S1755033AbZBCQew (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 11:34:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbZBCQel
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 11:34:27 -0500
-Received: from casper.infradead.org ([85.118.1.10]:52079 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751724AbZBCQe1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 11:34:27 -0500
-Date: Tue, 3 Feb 2009 07:19:27 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Negative values in /proc/latency_stats
-Message-ID: <20090203071927.266e83a5@infradead.org>
-In-Reply-To: <20090202205545.4e1a32ea.akpm@linux-foundation.org>
-References: <4e5e476b0901310542n796dafbem5c656da07a2f8a56@mail.gmail.com>
-	<20090202205545.4e1a32ea.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Feb 2009 11:34:41 -0500
+Received: from mga02.intel.com ([134.134.136.20]:53223 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752038AbZBCQek (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 11:34:40 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,373,1231142400"; 
+   d="scan'208";a="486804078"
+From: Jesse Barnes <jesse.barnes@intel.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+Date: Tue, 3 Feb 2009 08:33:07 -0800
+User-Agent: KMail/1.9.10
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain> <1233641226.16867.81.camel@pasglop>
+In-Reply-To: <1233641226.16867.81.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200902030833.08222.jesse.barnes@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Feb 2009 20:55:45 -0800
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-[ I'm on a plane and writing a patch to fix some of the issues you
-mention; I need to be tethered to test before sending]
-> 
-> - It implements an up-to-1536-loops loop followed by an
->   up-to-384-loops loop on a scheduler hotpath.
-> 
->   All under spin_lock_irqsave()!
-
-while you mention the theoretical worst case scenario numbers, the
-reality isn't this bleak. it's a linear array that stores a chain, and
-yes, the chain is searched lazy. but... the chain is stored "most
-unique -> least unique", so typical complexity is a lot lower than what
-you mention. And it is also only on when you are actually actively
-tracing.
-
-> 
-> - store_stacktrace() unnecessarily initalises trace.skip.
-
-fixed in patch
-
-> 
-> - account_scheduler_latency() should be an inline:
-> 
-> 	if (unlikely(latencytop_enabled))
-> 		__account_scheduler_latency(...);
-
-borderline but fair; function calls are cheap (or even free in some
-cases) but this one is in such a hotpath that this optimization makes
-some sense.
-> 
-> - ditto clear_all_latency_tracing()
-
-this one is only called in slowpaths, so I wouldn't think this makes
-sense.
+On Monday, February 2, 2009 10:07 pm Benjamin Herrenschmidt wrote:
+> On Mon, 2009-02-02 at 16:28 -0800, Linus Torvalds wrote:
+> > On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
+> > > BTW, on the PMAC the problematic driver appears to be the radeon
+> > > driver, according to Ben, and the breakage is not related to USB.
+> >
+> > Hmm. atyfb_base.c has the same kind of things with magic PMAC code, but
+> > it doesn't follow the USB pattern - it just replaces
+> > "pci_set_power_state()" _entirely_.
+> >
+> > It seems a very interesting suspend routine, btw. It doesn't seem to do
+> > any of the pci_save_state() at all, just re-initializes from scratch.
+> > Maybe it is unhappy with the PM layer deciding to try to restore state
+> > since it clearly didn't..
 >
-> - it's schizophrenic in its placement of spaces around semicolons in
->   `for' statements.
+> In fact, atyfb is also busted in -rc3 for different reasons though
+> probably by the same patch. I just dug an old powerbook with a mach64
+> and it crashes on resume with a machine check in there. (Among 2 or 3
+> other problems introduced by recent kernels, such as pci_get_* now
+> kmallocs with GFP_KERNEL internally which makes it WARN when I use it in
+> my low level suspend/resume code to whack the memory controller, etc...
+> this one is going to bite others I reckon, or IDE having some interrupt
+> problems on resume).
+>
+> Adding a pci_save_state() to atyfb_pci_suspend() and a
+> pci_set_power_state() + pci_restore_state() at the beginning of
+> atyfb_pci_resume() fixes the machine check here.
+>
+> Now where it gets funny is that I've added code to read the BAR and
+> command register content before, between, and after those calls and
+> print it and .. they are sane... Until i discovered that what happens is
+> that the new generic code seems to actually blast 0 all over my config
+> space if I don't call pci_save_state() in suspend(). I suppose I was
+> missing a "mandatory" call here... but the core should be more robust,
+> ie it shouldn't erase the config space of something because a driver
+> "forgot" to call pci_save_state() !
 
-fixed in patch
-
-> 
-> - it seems to only be implemented if CONFIG_FAIR_GROUP_SCHED=y.
-
-this is a misunderstanding; sched_fair.c is not related to the fair
-GROUP scheduler. It is the normal scheduler policy.
-
-> 
-> - lstats_fops should be const.
-
-fixed
- 
-> And it emits negative numbers too ;)
-
-the problem with this one is that the numbers probably really ARE
-negative... (but i need to test some more)
-If time goes backwards during idle, the sleep time is considered
-negative.... which I can understand will confuse humans.
-The alternative possibility would be that we had a several-minutes
-latency, which I consider unlikely.... the worst latency I've seen
-under normal load is in the 10 second range, not the
-hundreds-of-seconds or thousands-of-seconds range. And you'd think
-people would notice such latencies and complain.
-
-I'll see if I can just discard the "time goes backwards" cases rather
-than propagating the insanity to userspace.
-
+Whoa, I don't think we actually zero the contents in the suspend/resume core, 
+but if the device goes into D3 the config space contents may be lost, maybe 
+that's what happening here?
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jesse Barnes, Intel Open Source Technology Center
