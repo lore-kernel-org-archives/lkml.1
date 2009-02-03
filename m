@@ -1,70 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755980AbZBCBNa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZBCBTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755980AbZBCBNa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:13:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZBCBNV
+	id S1754834AbZBCBTM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:19:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbZBCBS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:13:21 -0500
-Received: from gate.crashing.org ([63.228.1.57]:36944 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751541AbZBCBNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:13:21 -0500
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
-	 <200902030045.19416.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902021551050.3247@localhost.localdomain>
-	 <200902030115.32659.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 12:12:05 +1100
-Message-Id: <1233623525.18767.151.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Mon, 2 Feb 2009 20:18:58 -0500
+Received: from 89-43-179-112.volio.ro ([89.43.179.112]:2916 "EHLO
+	server2.radioconsult.ro" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750845AbZBCBS5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 20:18:57 -0500
+X-Greylist: delayed 1466 seconds by postgrey-1.27 at vger.kernel.org; Mon, 02 Feb 2009 20:18:57 EST
+Message-ID: <498795C5.70507@radioconsult.ro>
+Date: Tue, 03 Feb 2009 02:54:29 +0200
+From: Catalin Ionescu <catalin.ionescu@radioconsult.ro>
+Reply-To: catalin.ionescu@radioconsult.ro
+Organization: Radio Consult SRL
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: MAP_LOCKED caused speed penalty
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 16:28 -0800, Linus Torvalds wrote:
-> 
-> On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
-> > 
-> > BTW, on the PMAC the problematic driver appears to be the radeon driver,
-> > according to Ben, and the breakage is not related to USB.
+I'm using 2.6.26 on a Debian box with Ahthlon64 X2 and 2.6.29-rc3-git3
+on an Orion5x based board. The issue is visible on both, though not so
+significant on the Athlon64.
 
-> Hmm. atyfb_base.c has the same kind of things with magic PMAC code, but it 
-> doesn't follow the USB pattern - it just replaces "pci_set_power_state()" 
-> _entirely_. 
+For testing I have combined from 2 disks on two SATA ports. With just
+one disk the problem is not visible at all.
 
-radeonfb_pm.c is the culprit here, I haven't looked at atyfb (mach64)
-yet, but it has similar issues yes. I just attached a patch to the BZ
-cleaning up radeonfb. I can have a look at doing a similar cleanup to
-atyfb and aty128fb next.
+When using the buffer allocating code with the MAP_LOCKED flag the
+direct transfer speed to the disk is significantly lower then when the
+MAP_LOCKED flag is not used.
 
-> It seems a very interesting suspend routine, btw. It doesn't seem to do 
-> any of the pci_save_state() at all, just re-initializes from scratch. 
-> Maybe it is unhappy with the PM layer deciding to try to restore state 
-> since it clearly didn't..
+Orion5x ->  150MB/s vs. 205MB/s
+Athlon64 -> 165MB/s vs. 180MB/s
 
-Well, I wrote that so ... :-) bear in mind that this code was mostly
-written way before the PCI layer knew how to save and restore state.
-Also, atyfb has some cases of chips that don't support PCI D states but
-use private MMIO register to control suspend/resume.
+The test code is:
 
-Anyway, my proposed radeonfb patch is at:
+#include <aio.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libaio.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <sys/param.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
 
- http://bugzilla.kernel.org/attachment.cgi?id=20085
+////////////////////////////////////////////////////////////////////////////////
+#define BufferSize      0x00100000
+#define BuffersNum      ((0x40000000/BufferSize)*512)
+#define DrivesNum       2
+static const char *Drives[]={"/dev/sdb","/dev/sdc","/dev/sdd","/dev/sde"};
+#define BuffsPerDrive   (0x01000000/BufferSize/DrivesNum)
+////////////////////////////////////////////////////////////////////////////////
+int main(void)
+{ void *Buf[DrivesNum][BuffsPerDrive],*Buf_[DrivesNum][BuffsPerDrive];
+  int fd[DrivesNum];
+  size_t i,j,BufIdx;
+  uint32_t StartTime,LastTime;
+  uint32_t _StepsNum;
+  uint64_t _TotalTime;
+  io_context_t Ctx[DrivesNum];
+  struct iocb CBs[DrivesNum][BuffsPerDrive];
+  struct iocb *CBPs[DrivesNum][BuffsPerDrive];
+  struct timeval tv;
 
-I'll look at cleaning up atyfb and aty128fb later today if needed.
+  //  Opens the files.
+  for (i=0;i<DrivesNum;i++)
+    if ((fd[i]=open(Drives[i],O_DIRECT|O_LARGEFILE|O_WRONLY))==-1)
+perror(Drives[i]);
+  //  Allocates the memory blocks from which the write should be done.
+  for (i=0;i<DrivesNum;i++)
+    for (j=0;j<BuffsPerDrive;j++)
+    { //Buf_[i][j]=malloc(BufferSize+4096);
 
-Cheers,
-Ben.
+Buf_[i][j]=mmap(NULL,(BufferSize+4096)&-4096,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS,-1,0);
 
+//Buf_[i][j]=mmap(NULL,(BufferSize+4096)&-4096,PROT_READ|PROT_WRITE,MAP_PRIVATE|MAP_ANONYMOUS|MAP_LOCKED,-1,0);
+      Buf[i][j]=(void *)(((uint32_t)Buf_[i][j])&-4096);
+    }
+  for (i=0;i<DrivesNum;i++)
+  { Ctx[i]=NULL;
+    j=io_setup(64,&Ctx[i]);
+    if (j) printf("io_setup %d - Error %d\n",i,j);
+    for (j=0;j<BuffsPerDrive;j++) CBPs[i][j]=&CBs[i][j];
+  }
+  BufIdx=0;
+  for (_TotalTime=0,_StepsNum=1;_StepsNum<=BuffersNum;_StepsNum++)
+  { gettimeofday(&tv,NULL);
+    StartTime=tv.tv_sec*1000000+tv.tv_usec;
+    for (i=0;i<DrivesNum;i++) if (fd[i]!=-1)
+    { struct io_event Ev;
 
+      if (_StepsNum>=BuffsPerDrive) io_getevents(Ctx[i],1,1,&Ev,NULL);
+
+io_prep_pwrite(&CBs[i][BufIdx],fd[i],Buf[i][BufIdx],BufferSize,(uint64_t)_StepsNum*BufferSize);
+      io_submit(Ctx[i],1,&CBPs[i][BufIdx]);
+    }
+    gettimeofday(&tv,NULL);
+    _TotalTime+=(LastTime=tv.tv_sec*1000000+tv.tv_usec-StartTime);
+    BufIdx=(BufIdx+1)%BuffsPerDrive;
+    if (!(_StepsNum%10)) printf("Step %u/%u - %.02lf MB/s - %.02lf MB/s
+         \r",
+                                _StepsNum,BuffersNum,
+
+(float)BufferSize*DrivesNum/(int32_t)LastTime,
+
+(float)BufferSize*DrivesNum*(int32_t)_StepsNum/(int64_t)_TotalTime);
+  }
+  for (i=0;i<DrivesNum;i++) io_destroy(Ctx[i]);
+  //  Frees the memory blocks.
+  for (i=0;i<DrivesNum;i++)
+    for (j=0;j<BuffsPerDrive;j++)
+      //free(Buf_[i][j]);
+      munmap(Buf_[i][j],(BufferSize+4096)&-4096);
+  //  Closes all opened files.
+  for (i=0;i<DrivesNum;i++) if (fd[i]!=-1) close(fd[i]);
+}
+////////////////////////////////////////////////////////////////////////////////
