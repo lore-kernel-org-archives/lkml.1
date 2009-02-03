@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbZBCQVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752723AbZBCQZD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755315AbZBCQVR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 11:21:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZBCQVE
+	id S1752723AbZBCQZD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 11:25:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZBCQYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 11:21:04 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42190 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbZBCQVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 11:21:02 -0500
-Date: Tue, 3 Feb 2009 11:19:49 -0500
-From: Bill Nottingham <notting@redhat.com>
-To: Gabor Gombas <gombasg@sztaki.hu>
-Cc: "Daniel P. Berrange" <berrange@redhat.com>, debian-devel@lists.debian.org,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org
-Subject: Re: cgroup mount point
-Message-ID: <20090203161949.GB32677@nostromo.devel.redhat.com>
-Mail-Followup-To: Gabor Gombas <gombasg@sztaki.hu>,
-	"Daniel P. Berrange" <berrange@redhat.com>,
-	debian-devel@lists.debian.org, linux-kernel@vger.kernel.org,
-	containers@lists.linux-foundation.org
-References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com> <20090203102416.GA8886@redhat.com> <20090203150315.GI482@boogie.lpds.sztaki.hu>
+	Tue, 3 Feb 2009 11:24:53 -0500
+Received: from relay1.sgi.com ([192.48.179.29]:41085 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751986AbZBCQYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 11:24:52 -0500
+Date: Tue, 3 Feb 2009 10:24:51 -0600
+From: Dean Nelson <dcn@sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] sgi-xp: link XPNET's net_device_ops to its net_device structure
+Message-ID: <20090203162451.GA32228@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090203150315.GI482@boogie.lpds.sztaki.hu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gabor Gombas (gombasg@sztaki.hu) said: 
-> On Tue, Feb 03, 2009 at 10:24:16AM +0000, Daniel P. Berrange wrote:
-> 
-> > Putting new mount points in / is not really acceptable, so that rules
-> > out the first two. /opt is just totally wrong, since that is intended
-> > for add on software packages. /dev/ feels a little odd, since it is
-> > not really device nodes, but perhaps that doesn't matter. So my pref
-> > would be something in /dev/cgroups or /sys/cgroups
-> 
-> How about /var/lib/cgroup? There's already precedent
-> (/var/lib/nfs/rpc_pipefs) of mounting virtual file systems under
-> /var/lib.
+A recent patch by Stephen Hemminger to convert XPNET to use net_device_ops and
+internal net_device_stats failed to link the net_device_ops structure to the
+net_device structure. See commit e8ac9c55f28482f5b2f497a8e7eb90985db237c2.
 
-Depending on when you need the cgroup filesystem to setup your
-containers, /var may not be there.
+Signed-off-by: Dean Nelson <dcn@sgi.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>
 
-Bill
+---
+
+ drivers/misc/sgi-xp/xpnet.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux/drivers/misc/sgi-xp/xpnet.c
+===================================================================
+--- linux.orig/drivers/misc/sgi-xp/xpnet.c	2009-02-03 06:52:18.000000000 -0600
++++ linux/drivers/misc/sgi-xp/xpnet.c	2009-02-03 09:45:12.021089437 -0600
+@@ -3,7 +3,7 @@
+  * License.  See the file "COPYING" in the main directory of this archive
+  * for more details.
+  *
+- * Copyright (C) 1999-2008 Silicon Graphics, Inc. All rights reserved.
++ * Copyright (C) 1999-2009 Silicon Graphics, Inc. All rights reserved.
+  */
+ 
+ /*
+@@ -551,6 +551,7 @@ xpnet_init(void)
+ 
+ 	netif_carrier_off(xpnet_device);
+ 
++	xpnet_device->netdev_ops = &xpnet_netdev_ops;
+ 	xpnet_device->mtu = XPNET_DEF_MTU;
+ 
+ 	/*
