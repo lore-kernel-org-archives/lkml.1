@@ -1,57 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753104AbZBCWJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbZBCWNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753104AbZBCWJx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:09:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZBCWJo
+	id S1754922AbZBCWNw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:13:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZBCWNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:09:44 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41536 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750963AbZBCWJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:09:43 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-Date: Tue, 3 Feb 2009 23:09:01 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain> <20090202234923.GA7499@elte.hu>
-In-Reply-To: <20090202234923.GA7499@elte.hu>
+	Tue, 3 Feb 2009 17:13:39 -0500
+Received: from rcsinet13.oracle.com ([148.87.113.125]:59389 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbZBCWNi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:13:38 -0500
+Message-ID: <4988C17B.1030902@oracle.com>
+Date: Tue, 03 Feb 2009 14:13:15 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: linux-kernel@vger.kernel.org
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Neil Brown <neilb@suse.de>,
+       Roland Dreier <rolandd@cisco.com>, Dave Miller <davem@davemloft.net>,
+       netdev@vger.kernel.org
+Subject: [PATCH] sunrpc: fix rdma dependencies
+References: <200902030112.n131CNiq010549@imap1.linux-foundation.org>
+In-Reply-To: <200902030112.n131CNiq010549@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902032309.01983.rjw@sisk.pl>
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4988C17A.01D3:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 February 2009, Ingo Molnar wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > Ingo: how do we walk over all the interrupt descriptors in todays world? 
-> > The whole sparse-vs-nonsparse makes things a bit more complex.
-> 
-> this:
-> 
->         struct irq_desc *desc;
->         int irq;
-> 
->         for_each_irq_desc(i, desc) {
-> 	...
-> 	}
-> 
-> should do the trick.
+Andrew Morton wrote:
+> This patch was dropped because other changes were merged, which wrecked this patch.
 
-So, what do I do in the loop to disable irqs for all devices on the IOAPIC
-level.  Would disable_irq(irq) be sufficient?
+The kconfig just moved from one file to another one.  The problem is still there.
 
-Also, how can I skip the timer interrupt (we don't want to disable that)?
+---
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Rafael
+Fix sunrpc/rdma build dependencies.
+Survives 12 build combinations of INET, IPV6, SUNRPC,
+INFINIBAND, and INFINIBAND_ADDR_TRANS.
+
+ERROR: "rdma_destroy_id" [net/sunrpc/xprtrdma/xprtrdma.ko] undefined!
+ERROR: "rdma_connect" [net/sunrpc/xprtrdma/xprtrdma.ko] undefined!
+ERROR: "rdma_destroy_qp" [net/sunrpc/xprtrdma/xprtrdma.ko] undefined!
+ERROR: "rdma_create_id" [net/sunrpc/xprtrdma/xprtrdma.ko] undefined!
+ERROR: "rdma_create_qp" [net/sunrpc/xprtrdma/xprtrdma.ko] undefined!
+ERROR: "rdma_resolve_route" [net/sunrpc/xprtrdma/xprtrdma.ko] undefined!
+ERROR: "rdma_disconnect" [net/sunrpc/xprtrdma/xprtrdma.ko] undefined!
+ERROR: "rdma_resolve_addr" [net/sunrpc/xprtrdma/xprtrdma.ko] undefined!
+ERROR: "rdma_accept" [net/sunrpc/xprtrdma/svcrdma.ko] undefined!
+ERROR: "rdma_destroy_id" [net/sunrpc/xprtrdma/svcrdma.ko] undefined!
+ERROR: "rdma_listen" [net/sunrpc/xprtrdma/svcrdma.ko] undefined!
+ERROR: "rdma_create_id" [net/sunrpc/xprtrdma/svcrdma.ko] undefined!
+ERROR: "rdma_create_qp" [net/sunrpc/xprtrdma/svcrdma.ko] undefined!
+ERROR: "rdma_bind_addr" [net/sunrpc/xprtrdma/svcrdma.ko] undefined!
+ERROR: "rdma_disconnect" [net/sunrpc/xprtrdma/svcrdma.ko] undefined!
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc:	J. Bruce Fields <bfields@fieldses.org>
+cc:	Neil Brown <neilb@suse.de>
+cc:	Roland Dreier <rolandd@cisco.com>
+cc:	Dave Miller <davem@davemloft.net>
+---
+ net/sunrpc/Kconfig |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- mmotm-2009-0202-1712.orig/net/sunrpc/Kconfig
++++ mmotm-2009-0202-1712/net/sunrpc/Kconfig
+@@ -6,7 +6,7 @@ config SUNRPC_GSS
+ 
+ config SUNRPC_XPRT_RDMA
+ 	tristate
+-	depends on SUNRPC && INFINIBAND && EXPERIMENTAL
++	depends on SUNRPC && INFINIBAND && INFINIBAND_ADDR_TRANS && EXPERIMENTAL
+ 	default SUNRPC && INFINIBAND
+ 	help
+ 	  This option allows the NFS client and server to support
