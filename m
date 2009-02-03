@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbZBCTDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbZBCTDs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753825AbZBCTDT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 14:03:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbZBCTDK
+	id S1755222AbZBCTDs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 14:03:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZBCTDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 14:03:10 -0500
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52719 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751387AbZBCTDJ (ORCPT
+	Tue, 3 Feb 2009 14:03:39 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52956 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751525AbZBCTDi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 14:03:09 -0500
-Message-ID: <498893EE.9060107@cs.helsinki.fi>
-Date: Tue, 03 Feb 2009 20:58:54 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.19 (Macintosh/20081209)
-MIME-Version: 1.0
-To: Mel Gorman <mel@csn.ul.ie>
-CC: Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
+	Tue, 3 Feb 2009 14:03:38 -0500
+Date: Tue, 3 Feb 2009 11:03:04 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jesse Barnes <jesse.barnes@intel.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-References: <20090123154653.GA14517@wotan.suse.de> <1232959706.21504.7.camel@penberg-laptop> <20090203101205.GF9840@csn.ul.ie>
-In-Reply-To: <20090203101205.GF9840@csn.ul.ie>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
+ standard config registers of all devices early)
+In-Reply-To: <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0902031047320.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902031804.26752.rjw@sisk.pl> <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain> <200902031032.26771.jesse.barnes@intel.com> <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
 
-Mel Gorman wrote:
-> The OLTP workload results could indicate a downside with using sysbench
-> although it could also be hardware. The reports from the Intel guys have been
-> pretty clear-cut that SLUB is a loser but sysbench-postgres on these test
-> machines at least do not agree. Of course their results are perfectly valid
-> but the discrepency needs to be explained or there will be a disconnect
-> between developers and the performance people.  Something important is
-> missing that means sysbench-postgres *may* not be a reliable indicator of
-> TPC-C performance.  It could easily be down to the hardware as their tests
-> are on a mega-large machine with oodles of disks and probably NUMA where
-> the test machine used for this is a lot less respectable.
 
-Yup. That's more or less what I've been saying for a long time now. The 
-OLTP regression is not all obvious and while there has been plenty of 
-talk about it (cache line ping-pong due to lack of queues, high order 
-pages), I've yet to see a detailed analysis on it.
+On Tue, 3 Feb 2009, Linus Torvalds wrote:
+>
+> That said, we've also never had much reason to _care_ deeply, so it's also 
+> possible that we do mask things over some path. I didn't actually walk 
+> _all_ the paths, and the logic for irq handling has changed enough over 
+> the years that I don't know all the paths any more. Maybe we do that 
+> explicit mask in some path I missed. We _shouldn't_, but who knows..
 
-It would be interesting to know what drivers the Intel setup uses. One 
-thing I speculated with Christoph at OLS is that the regression could be 
-due to bad interaction with the SCSI subsystem, for example. That would 
-explain why the regression doesn't show up in typical setups which have ATA.
+Ok, so I decided to actually try to walk it all. Better look at the actual 
+code.
 
-Anyway, even if we did end up going forward with SLQB, it would sure as 
-hell be less painful if we understood the reasons behind it.
+Hmm. The _normal_ simple irq handler does this the way I described, but 
+for some reason the "handle_edge_irq()" does not. And the reason is 
+actually a buglet: it needs to mask things for the "recursive interrupt" 
+case.
 
-			Pekka
+But that literally just looks like a small implementation detail (the code 
+decided to share the code for IRQ_INPROGRESS and IRQ_DISABLED). We should 
+fix it, so that you _can_ disable irqs and not have to worry about this 
+all.
+
+I'm really not sure why that handle_edge_irq thing uses "ack_and_mask()" 
+instead of just "desc->chip->ack()"? I'm also totally flummoxed as to why 
+it feels it needs to go all the way out to the device to mask things, 
+instead of just masking at an apic level, which is much simpler and faster 
+(especially since masking should never happen in practice anyway).
+
+			Linus
