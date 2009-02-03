@@ -1,111 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbZBCNre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZBCNwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754400AbZBCNre (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 08:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751583AbZBCNr0
+	id S1754501AbZBCNwW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 08:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752793AbZBCNwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 08:47:26 -0500
-Received: from mx2.suse.de ([195.135.220.15]:49913 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751088AbZBCNrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 08:47:25 -0500
-Date: Tue, 3 Feb 2009 14:47:21 +0100
-From: Karsten Keil <kkeil@suse.de>
-To: linux-kernel@vger.kernel.org
-Cc: Michal Hocko <mhocko@suse.cz>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: [RFC] Suspicious bug in module refcounting
-Message-ID: <20090203134721.GA11069@pingi.kke.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 3 Feb 2009 08:52:13 -0500
+Received: from moutng.kundenserver.de ([212.227.126.186]:56860 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752358AbZBCNwM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 08:52:12 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [git pull -tip V2] fix headers_check warnings
+Date: Tue, 3 Feb 2009 14:50:35 +0100
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Miller <davem@davemloft.net>, LKML <linux-kernel@vger.kernel.org>,
+       reiserfs-devel@vger.kernel.org
+References: <1233598278.10133.4.camel@localhost.localdomain>
+In-Reply-To: <1233598278.10133.4.camel@localhost.localdomain>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Organization: SuSE Linux AG
-X-Operating-System: Linux 2.6.16.60-0.34-smp x86_64
-User-Agent: Mutt/1.5.9i
+Message-Id: <200902031450.37016.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18iEjOEVbVbKoPmhfo6G/Guo5LF0VBL2q5CGMY
+ yK7y7/xv00sKO4DTUh5uAjeXvfWY0ODGiTUWZbtrVDlLDsCGNY
+ Bf99cJi60zB1iSFON4Mmg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Monday 02 February 2009, Jaswinder Singh Rajput wrote:
+> Jaswinder Singh Rajput (7):
+>       headers_check fix: linux/coda_psdev.h
+>       headers_check fix: linux/in6.h
+>       headers_check fix: linux/nubus.h
+>       headers_check fix: linux/socket.h
+>       headers_check fix: linux/reinserfs_fs.h
+>       headers_check fix: x86, prctl.h
+>       headers_check fix: x86, setup.h
 
-While debugging a wired SCTP bug we hit from time to time
-the BUG_ON(module_refcount(module) == 0) statement in __module_get().
-After fixing the SCTP bug in final tests runs with lot of traffic
-we still saw this bug message from time to time.
-Looking at the refcounting in sctp, does not show up any forgotten
-get module operation or some wrong put module calls.
-We added some debug code and this shows only, that the test case heavly
-change module_refcount(sctp) bacause the socket accept call also increase
-the module count (and the BUG always was triggered in the __module_get() here).
-If the socket close, it decrease the module refcount, so no problem here.
-Some times the refcount seems to go very high, very quickly and later
-goes down very quickly again, I think this occurs if the network stalls for
-some time (the test case try to saturate a GB networklink).
-So I had the idea that the bug is in the refcounting itself and not related
-to the sctp code.
-After looking closer at __module_get() and module_refcount(module) it looks
-as I'm right, but I can not belive that this bug was not discovered before,
-the code is here since long time.
-The refcount is a per CPU atomic variable, module_refcount() simple add
-in a fully unprotected loop (not disabled irqs, not protected against
-scheduling) all per cpu values.
+The new changes look good, thanks for your tireless effort to
+cut down the warnings. However, my other previous comments still
+apply.
+In particular, the reiserfs_fs.h changes don't look helpful, how
+about just not exporting that file?
 
-The issue is that so the process (it is as syscall from a userspace process)
-get scheduled in the middle of the counting loop, so it already has counted
-some per cpu vales, but not all.
-Now while the process is not active, other processes modify the counts, some
-accepts (== module gets) increase the count on already summed up CPUs,
-some other release sockets on CPUs, which are not already summed up.
-If the process become active again, it read the now decremented values from
-later CPUS, so the total count is too low and may reach zero, in which the above
-BUG_ON() will be triggered.
-
-To prove this I replaced the BUG_ON with following code:
-
-        if (module) {
--               BUG_ON(module_refcount(module) == 0);
-+               unsigned int c = module_refcount(module);
-+
-+               if (unlikely(c == 0)) {
-+                       printk(KERN_ERR" module %s refcount=%x/%x\n", module->name, c,  module_refcount(module));
-+                       module_dump_refcounts(module);
-+                       WARN_ON(1);
-+               }
-                local_inc(&module->ref[get_cpu()].count);
-                put_cpu();
-        }
-
-module_dump_refcounts() does print out the per cpu refcounts.
-If my idea is correct the second call to  module_refcount(module) should
-have a none zero value.
-
-And indeed:
-
-Feb  2 03:29:51 pingi5 kernel:  module sctp refcount=0/8e
-Feb  2 03:29:51 pingi5 kernel: CPU0 refcount:38562331
-Feb  2 03:29:51 pingi5 kernel: CPU1 refcount:-38562187
-Feb  2 03:29:51 pingi5 kernel: Badness in __module_get at include/linux/module.h:374
-Feb  2 03:29:51 pingi5 kernel:
-Feb  2 03:29:51 pingi5 kernel: Call Trace: <ffffffff802837c2>{sys_accept+212} <ffffffff8019c76f>{dput+44}
-Feb  2 03:29:51 pingi5 kernel:        <ffffffff8018704f>{__fput+355} <ffffffff801a0dff>{mntput_no_expire+29}
-Feb  2 03:29:51 pingi5 kernel:        <ffffffff801845df>{filp_close+92} <ffffffff8010adba>{system_call+126}
-
-
-Do my findings be correct, or do I miss something ?
-
-A other thing is, why __module_get() should be used anyway, I think it was a
-optimation long time ago, current code seems to need more cycles on default
-SMP kernels as try_module_get(), because of the big loop  in module_refcount()
-which goes trough all possible CPUs (NR_CPU, 64 in default config).
-try_module_get() only has one test and one atomic increment.
-
-
-I think we should replace all unprotected __module_get() calls with
-try_module_get(), or remove __module_get() completely.
-
-
-Any comments ?
-
-
--- 
-Karsten Keil
-SuSE Labs
+	Arnd <><
