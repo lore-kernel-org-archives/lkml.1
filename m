@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZBCWQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZBCWRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbZBCWQc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:16:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZBCWQW
+	id S1756081AbZBCWRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:17:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZBCWRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:16:22 -0500
-Received: from gw1.cosmosbay.com ([212.99.114.194]:48292 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZBCWQV convert rfc822-to-8bit (ORCPT
+	Tue, 3 Feb 2009 17:17:12 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49519 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751302AbZBCWRK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:16:21 -0500
-X-Greylist: delayed 1198 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 17:16:21 EST
-Message-ID: <4988BD4E.8080206@cosmosbay.com>
-Date: Tue, 03 Feb 2009 22:55:26 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, oleg@redhat.com, viro@ZenIV.linux.org.uk,
-       davidel@xmailserver.org, davem@davemloft.net, hch@lst.de,
-       linux-api@vger.kernel.org, mpm@selenic.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net>	<1233598811-6871-3-git-send-email-corbet@lwn.net> <20090203133942.2ecec281.akpm@linux-foundation.org>
-In-Reply-To: <20090203133942.2ecec281.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 03 Feb 2009 22:55:26 +0100 (CET)
+	Tue, 3 Feb 2009 17:17:10 -0500
+Date: Tue, 3 Feb 2009 14:16:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: miaox@cn.fujitsu.com
+Cc: mingo@elte.hu, menage@google.com, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the
+ unallowed node when memory spread is set
+Message-Id: <20090203141645.91c7ea18.akpm@linux-foundation.org>
+In-Reply-To: <4987B925.1010405@cn.fujitsu.com>
+References: <4976D77C.3020107@cn.fujitsu.com>
+	<20090127144233.18cf9b3f.akpm@linux-foundation.org>
+	<4987B925.1010405@cn.fujitsu.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton a écrit :
-> On Mon,  2 Feb 2009 11:20:09 -0700
-> Jonathan Corbet <corbet@lwn.net> wrote:
+On Tue, 03 Feb 2009 11:25:25 +0800
+Miao Xie <miaox@cn.fujitsu.com> wrote:
+
+> on 2009-1-28 6:42 Andrew Morton wrote:
+> > On Wed, 21 Jan 2009 16:06:20 +0800
+> > Miao Xie <miaox@cn.fujitsu.com> wrote:
+> > 
+> >> The task still allocated the page caches on old node after modifying its
+> >> cpuset's mems when 'memory_spread_page' was set, it is caused by the old
+> >> mem_allowed_list of the task, the current kernel doesn't updates it unless some
+> >> function invokes cpuset_update_task_memory_state(), it is too late sometimes.
+> >> We must update the mem_allowed_list of the tasks in time.
+> >>
+> >> Slab has the same problem.
+> >>
+> >> We fixes the bug by updating tasks' mem_allowed_list and spread flag after
+> >> its cpuset's mems or spread flag is changed.
+> >>
+> >>
+> >> ...
+> >>
+> >> --- a/kernel/kthread.c
+> >> +++ b/kernel/kthread.c
+> >> @@ -242,6 +242,7 @@ int kthreadd(void *unused)
+> >>  	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+> >>  	set_cpus_allowed_ptr(tsk, CPU_MASK_ALL_PTR);
+> >>  
+> >> +	current->mems_allowed = node_possible_map;
+> >>  	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+> > 
+> > Why this change?  kthreadd() is called from rest_init(), before anyone
+> > has had a chance to alter ->mems_allowed?
 > 
->> Matt Mackall suggested converting epoll's ep_lock to a bitlock as a way of
->> saving space in struct file.  This patch makes that change.
-> 
-> hrm.  bit_spin_lock() makes people upset (large penguiny people).  iirc
-> it doesn't have all the correct/well-understood memory/compiler
-> ordering semantics which spinlocks have.  And lockdep doesn't know about
-> it.
-> 
+> I found that after mems_allowed of kthreadd was not initialized applying this patch,
+> every bit of it is 1, so...
+> Maybe it is redundant.
 
-In a previous attempt (2005), I suggested using a single global lock.
+I think it is redundant.  kthreadd's mems_allowed _should_ be all-ones.
+Or at least, all-nodes-allowed.
 
-http://search.luky.org/linux-kernel.2005/msg50862.html
+I wasn't able to find out where the setting of init'smems_allowed
+happens, after a bit of grepping and hunting.  It should be done within
+INIT_TASK, but isn't.
 
-Probably an array of hashed spinlocks would be more than enough.
+Still, kthreadd is reliably parented by swapper, and there shold be no
+need to alter its mems_allowed.
 
+Similarly, what was the reason for setting current->mems_allowed in
+kernel_init()?  That also should be unneeded.
 
+Finally, I've somewhat lost track of where we are with this patch. 
+Paul, do you see any other remaining issues?
 
