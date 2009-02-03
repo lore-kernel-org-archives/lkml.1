@@ -1,154 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZBCMy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbZBCM5b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754578AbZBCMy7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:54:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZBCMyu
+	id S1754594AbZBCM5b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:57:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZBCM5W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:54:50 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:36676 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751554AbZBCMyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:54:50 -0500
-Date: Tue, 3 Feb 2009 10:54:26 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 1/3] trace: better manage the context info for
-	events
-Message-ID: <20090203125426.GB17781@ghostprotocols.net>
-Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Frederic Weisbecker <fweisbec@gmail.com>,
-	Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090202222921.GB12082@ghostprotocols.net> <20090203020746.GB22718@nowhere> <alpine.DEB.1.10.0902022128130.2192@gandalf.stny.rr.com>
+	Tue, 3 Feb 2009 07:57:22 -0500
+Received: from liberdade.minaslivre.org ([72.232.18.203]:49899 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751467AbZBCM5W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:57:22 -0500
+Date: Tue, 3 Feb 2009 10:57:45 -0200
+From: Thadeu Lima de Souza Cascardo <cascardo@minaslivre.org>
+To: Ben Finney <ben+debian@benfinney.id.au>
+Cc: debian-devel@lists.debian.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: cgroup mount point
+Message-ID: <20090203125744.GC3788@vespa.holoscopio.com>
+Mail-Followup-To: Ben Finney <ben+debian@benfinney.id.au>,
+	debian-devel@lists.debian.org, linux-kernel@vger.kernel.org,
+	containers@lists.linux-foundation.org
+References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com> <20090203102416.GA8886@redhat.com> <87ljsnzo4v.fsf@benfinney.id.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="da4uJneut+ArUgXk"
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902022128130.2192@gandalf.stny.rr.com>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <87ljsnzo4v.fsf@benfinney.id.au>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, Feb 02, 2009 at 09:32:51PM -0500, Steven Rostedt escreveu:
-> 
-> On Tue, 3 Feb 2009, Frederic Weisbecker wrote:
-> 
-> > On Mon, Feb 02, 2009 at 08:29:21PM -0200, Arnaldo Carvalho de Melo wrote:
-> > > From: Frederic Weisbecker <fweisbec@gmail.com>
-> > > 
-> > > Impact: make trace_event more convenient for tracers
-> > > 
-> > > All tracers (for the moment) that use the struct trace_event want to
-> > > have the context info printed before their own output: the pid/cmdline,
-> > > cpu, and timestamp.
-> > > 
-> > > But some other tracers that want to implement their trace_event
-> > > callbacks will not necessary need these information or they may want to
-> > > format them as they want.
-> > > 
-> > > This patch adds a new default-enabled trace option:
-> > > TRACE_ITER_CONTEXT_INFO When disabled through:
-> > > 
-> > > echo nocontext-info > /debugfs/tracing/trace_options
-> > > 
-> > > The pid, cpu and timestamps headers will not be printed.
-> > > 
-> > > IE with the sched_switch tracer with context-info (default):
-> > > 
-> > >      bash-2935 [001] 100.356561: 2935:120:S ==> [001]  0:140:R <idle>
-> > >    <idle>-0    [000] 100.412804:    0:140:R   + [000] 11:115:S events/0
-> > >    <idle>-0    [000] 100.412816:    0:140:R ==> [000] 11:115:R events/0
-> > >  events/0-11   [000] 100.412829:   11:115:S ==> [000]  0:140:R <idle>
-> > > 
-> > > Without context-info:
-> > > 
-> > >  2935:120:S ==> [001]  0:140:R <idle>
-> > >     0:140:R   + [000] 11:115:S events/0
-> > >     0:140:R ==> [000] 11:115:R events/0
-> > >    11:115:S ==> [000]  0:140:R <idle>
-> > > 
-> > > A tracer can disable it at runtime by clearing the bit
-> > > TRACE_ITER_CONTEXT_INFO in trace_flags.
-> > > 
-> > > The print routines were renamed to trace_print_context and
-> > > trace_print_lat_context, so that they can be used by tracers if they
-> > > want to use them for one of the trace_event callbacks.
-> > 
-> > 
-> > Actually, I wonder if this is not breaking the sense of the TRACE_ITER_CONTEXT_INFO
-> > flag.
 
-> Yeah, I agree with Frederic here. Let the user decide this as a global
-> flag for about of data to print. The tracer should just provide a
-> callback incase the tracer has a different context format.
+--da4uJneut+ArUgXk
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Feb 03, 2009 at 11:44:00PM +1100, Ben Finney wrote:
+> "Daniel P. Berrange" <berrange@redhat.com> writes:
+>=20
+> > On Mon, Feb 02, 2009 at 07:41:53PM -0200, Thadeu Lima de Souza Cascardo=
+ wrote:
+> > > So, we have some more options now: /cgroups, /containers,
+> > > /dev/cpuset, /dev/cpuctl, /opt/cgroup, /opt/cpuset.
+> >=20
+> > Putting new mount points in / is not really acceptable, so that rules
+> > out the first two. /opt is just totally wrong, since that is intended
+> > for add on software packages. /dev/ feels a little odd, since it is
+> > not really device nodes
+>=20
+> I agree with all that Thadeu Lima says here. I would add that cgroups
+> are nothing to do with device nodes, so definitely don't belong in
+> =E2=80=98/dev/=E2=80=99 either.
 
-> > In the first patch I made about it, I thought this flag was to
-> > decide whether we want to print the context information in the
-> > standard way.
+The message you quoted is from Daniel Berrange, not me. Could you also
+tell your rationale for not agreeing with /?
 
-> > Then, Steven suggested to actually provide callbacks for the tracers
-> > which want to override the standard context information printer.
-> > The flag then got more logical: TRACE_ITER_CONTEXT_INFO was not only
-> > about deciding whether we want or not the standard context info, it
-> > tells if we want in a global way the context info to be printed,
-> > whatever how the tracer decides to print it.  (This is the theory,
-> > but since we couldn't override the bin/raw/hex cases, the practical
-> > case didn't follow this idea).
+Regards,
+Cascardo.
 
-> > If someone doesn't want to see these informations in the blk tracer,
-> > this flag will not help him. Worst, it will double print the context
-> > info if the user enables the flag.
+> Since they're a filesystem mapping =E2=80=9Cfor browsing and manipulation
+> from user space=E2=80=9D of a kernel facility, I think =E2=80=98/sys/cgro=
+ups/=E2=80=99 is
+> appropriate.
+>=20
+> --=20
+>  \     =E2=80=9CIt's my belief we developed language because of our deep =
+inner |
+>   `\                  need to complain.=E2=80=9D =E2=80=94Jane Wagner, vi=
+a Lily Tomlin |
+> _o__)                                                                  |
+> Ben Finney
 
-> > Now that I see the practical case, I'm not sure the design of my
-> > patch was valuable.  A tracer has to play with the flag if it wants
-> > to override the context info in the bin/raw/hex cases. And I don't
-> > think this is a good way to proceed.
+--da4uJneut+ArUgXk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-> > In my opinion, the ITER_CONTEXT_INFO flag should mostly be set by the user.
- 
-> I think it should _only_ be set by user.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-> > And only one callback could be added to trace_event: context_info()
-> > Then, the tracer will manage itself the raw/hex/bin/normal cases
-> > inside this callback.
+iEYEARECAAYFAkmIP0gACgkQyTpryRcqtS0gfwCeNESvcsbtrnHDydfihDHfsyXV
+1F0AnjoRLwCaSYBnpRh9BIJFhQn2EJMd
+=w/XP
+-----END PGP SIGNATURE-----
 
-> Yeah, this is a good idea. The callback can be passed an enum to what kind
-> of trace it is: TRACE_FMT_RAW TRACE_FMT_HEX ...
-
-And another thing I was trying to avoid: To have to build the trace
-record in two pieces, one in the ->context_info and another in the
-->binary calls.
-
-> > We can provide the default callbacks available for the tracers which
-> > want it and even one function which proceed all of them, depending
-> > on the flags.  ftrace/preempt/sched.... tracers can register this
-> > function for their context_info callback and other tracers too if
-> > they want.
-
-> > Or they can override it, and even pick the default callbacks for
-> > dedicated flags when they want.
-
-> > Then, when the user wants the context info to be printed or not, he
-> > just have to set/clear the context-info flag manually.
-
-> > A tracer can even decide to set/clear it by default, but for its
-> > real sense: print or not these context info.
-
-> > What do you think?
-> 
-> I'm not sure a tracer should decide if it should have the format or not. 
-> In its context callback, it might decide there. But if the user does not 
-> want it, it should be off.
-> 
-> Unless you are saying have the tracer decide if it is enabled on or off 
-> when the trace is selected?
-
-Perhaps we should have a per tracer flags.
-
-- Arnaldo
+--da4uJneut+ArUgXk--
