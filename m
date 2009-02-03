@@ -1,97 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755380AbZBCWP5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZBCWQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755380AbZBCWP5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:15:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZBCWPp
+	id S1755973AbZBCWQc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:16:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbZBCWQW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:15:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:41561 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751541AbZBCWPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:15:44 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Parag Warudkar <parag.lkml@gmail.com>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-Date: Tue, 3 Feb 2009 23:15:26 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200902031029.30739.rjw@sisk.pl> <alpine.DEB.2.00.0902031622070.5481@parag-desktop>
-In-Reply-To: <alpine.DEB.2.00.0902031622070.5481@parag-desktop>
+	Tue, 3 Feb 2009 17:16:22 -0500
+Received: from gw1.cosmosbay.com ([212.99.114.194]:48292 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751627AbZBCWQV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:16:21 -0500
+X-Greylist: delayed 1198 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 17:16:21 EST
+Message-ID: <4988BD4E.8080206@cosmosbay.com>
+Date: Tue, 03 Feb 2009 22:55:26 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902032315.27113.rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, oleg@redhat.com, viro@ZenIV.linux.org.uk,
+       davidel@xmailserver.org, davem@davemloft.net, hch@lst.de,
+       linux-api@vger.kernel.org, mpm@selenic.com, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
+References: <1233598811-6871-1-git-send-email-corbet@lwn.net>	<1233598811-6871-3-git-send-email-corbet@lwn.net> <20090203133942.2ecec281.akpm@linux-foundation.org>
+In-Reply-To: <20090203133942.2ecec281.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 03 Feb 2009 22:55:26 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 February 2009, Parag Warudkar wrote:
+Andrew Morton a écrit :
+> On Mon,  2 Feb 2009 11:20:09 -0700
+> Jonathan Corbet <corbet@lwn.net> wrote:
 > 
-> On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
+>> Matt Mackall suggested converting epoll's ep_lock to a bitlock as a way of
+>> saving space in struct file.  This patch makes that change.
 > 
-> > Did you have a chance to check if the patch from Linus (reproduced
-> > below) on top of current -git fixed the problem for you too?
-> > 
-> Hi Rafael,
+> hrm.  bit_spin_lock() makes people upset (large penguiny people).  iirc
+> it doesn't have all the correct/well-understood memory/compiler
+> ordering semantics which spinlocks have.  And lockdep doesn't know about
+> it.
 > 
-> Yes, the patch below (atop today's git) does work for me.
 
-Good.
+In a previous attempt (2005), I suggested using a single global lock.
 
-Can you also test this one instead and tell me if it still works?
+http://search.luky.org/linux-kernel.2005/msg50862.html
 
-Rafael
+Probably an array of hashed spinlocks would be more than enough.
 
----
- drivers/pci/pcie/portdrv_pci.c |   16 +---------------
- 1 file changed, 1 insertion(+), 15 deletions(-)
 
-Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
-+++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
-@@ -55,25 +55,13 @@ static int pcie_portdrv_suspend(struct p
- 
- }
- 
--static int pcie_portdrv_suspend_late(struct pci_dev *dev, pm_message_t state)
--{
--	return pci_save_state(dev);
--}
--
--static int pcie_portdrv_resume_early(struct pci_dev *dev)
--{
--	return pci_restore_state(dev);
--}
--
- static int pcie_portdrv_resume(struct pci_dev *dev)
- {
--	pcie_portdrv_restore_config(dev);
-+	pci_set_master(dev);
- 	return pcie_port_device_resume(dev);
- }
- #else
- #define pcie_portdrv_suspend NULL
--#define pcie_portdrv_suspend_late NULL
--#define pcie_portdrv_resume_early NULL
- #define pcie_portdrv_resume NULL
- #endif
- 
-@@ -292,8 +280,6 @@ static struct pci_driver pcie_portdriver
- 	.remove		= pcie_portdrv_remove,
- 
- 	.suspend	= pcie_portdrv_suspend,
--	.suspend_late	= pcie_portdrv_suspend_late,
--	.resume_early	= pcie_portdrv_resume_early,
- 	.resume		= pcie_portdrv_resume,
- 
- 	.err_handler 	= &pcie_portdrv_err_handler,
 
