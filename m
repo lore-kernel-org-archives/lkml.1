@@ -1,77 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbZBCJ61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbZBCKAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753000AbZBCJ61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 04:58:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZBCJ6T
+	id S1752938AbZBCKAR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 05:00:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZBCKAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 04:58:19 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:52343 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751358AbZBCJ6S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 04:58:18 -0500
-Date: Tue, 3 Feb 2009 09:58:16 +0000 (GMT)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Daniel Vetter <daniel@ffwll.ch>, linux-kernel@vger.kernel.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, dri-devel@lists.sourceforge.net
-Subject: Re: + drivers-gpu-drm-i915-intel_lvdsc-fix-locking-snafu.patch added
- to -mm tree
-In-Reply-To: <20090202224448.b19eaca4.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.2.00.0902030955420.31073@skynet.skynet.ie>
-References: <200901292050.n0TKol5b015605@imap1.linux-foundation.org> <200901291324.17624.jbarnes@virtuousgeek.org> <20090129134825.620e3f84.akpm@linux-foundation.org> <20090131152508.GA4668@viiv.ffwll.ch> <20090202224448.b19eaca4.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Feb 2009 05:00:04 -0500
+Received: from hpsmtp-eml19.KPNXCHANGE.COM ([213.75.38.84]:50847 "EHLO
+	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750845AbZBCKAD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 05:00:03 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [BUG] Suspend tries to suspend devices already in D3
+Date: Tue, 3 Feb 2009 10:59:59 +0100
+User-Agent: KMail/1.9.9
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200902030949.42342.elendil@planet.nl> <200902031034.12175.rjw@sisk.pl>
+In-Reply-To: <200902031034.12175.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902031059.59760.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Feb 2009 10:00:00.0375 (UTC) FILETIME=[2D2E4870:01C985E6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 03 February 2009, Rafael J. Wysocki wrote:
+> > What is different is that before this suspend I had switched to my
+> > wired e1000e NIC and had done an ifdown on the wireless. I suspect
+> > that because of that the wireless already was at D3 _before_ the
+> > suspend was started.
+>
+> If ifdown causes the device to go into D3, then this is possible.
 
-On Mon, 2 Feb 2009, Andrew Morton wrote:
-
-> (cc's added)
-> 
-> On Sat, 31 Jan 2009 16:25:08 +0100 Daniel Vetter <daniel@ffwll.ch> wrote:
-> 
-> > On Thu, Jan 29, 2009 at 01:48:25PM -0800, Andrew Morton wrote:
-> > > On Thu, 29 Jan 2009 13:24:17 -0800
-> > > Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-> > > > On Thursday, January 29, 2009 12:50 pm akpm@linux-foundation.org wrote:
-> 
-> So I assume that it would make sense to track this as a post-2.6.28
-> regression?
-> 
-
->From ac048e1734699dd98f4bdf4daf2b9592d4a4d38e Mon Sep 17 00:00:00 2001
-From: Dave Airlie <airlied@redhat.com>
-Date: Tue, 3 Feb 2009 19:05:12 +1000
-Subject: [PATCH] i915: fix unneeded locking in i915 LVDS get modes code.
-
-This code is always called under the lock from the higher layers,
-so need to go locking it here.
-
-Signed-off-by: Dave Airlie <airlied@redhat.com>
----
- drivers/gpu/drm/i915/intel_lvds.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/gpu/drm/i915/intel_lvds.c b/drivers/gpu/drm/i915/intel_lvds.c
-index b36a521..cf8da64 100644
---- a/drivers/gpu/drm/i915/intel_lvds.c
-+++ b/drivers/gpu/drm/i915/intel_lvds.c
-@@ -311,10 +311,8 @@ static int intel_lvds_get_modes(struct drm_connector *connector)
- 	if (dev_priv->panel_fixed_mode != NULL) {
- 		struct drm_display_mode *mode;
- 
--		mutex_lock(&dev->mode_config.mutex);
- 		mode = drm_mode_duplicate(dev, dev_priv->panel_fixed_mode);
- 		drm_mode_probed_add(connector, mode);
--		mutex_unlock(&dev->mode_config.mutex);
- 
- 		return 1;
- 	}
--- 
-1.6.0.6
-
+Note that I'm not 100% sure the device was in D3, but it seems likely.
+All we really know is that it wasn't in D0.
