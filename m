@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbZBCQsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756496AbZBCQsz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756303AbZBCQsk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 11:48:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753647AbZBCQq7
+	id S1756496AbZBCQsz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 11:48:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbZBCQrA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 11:46:59 -0500
-Received: from mx2.suse.de ([195.135.220.15]:55973 "EHLO mx2.suse.de"
+	Tue, 3 Feb 2009 11:47:00 -0500
+Received: from mx2.suse.de ([195.135.220.15]:55978 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbZBCQqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 11:46:52 -0500
+	id S1752845AbZBCQqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 11:46:54 -0500
 From: Thomas Renninger <trenn@suse.de>
 To: davej@codemonkey.org.uk
 Cc: mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
        venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
        Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 4/7] CPUFREQ: powernow-k8: Get transition latency from ACPI _PSS table
-Date: Tue,  3 Feb 2009 17:46:43 +0100
-Message-Id: <1233679606-1971-5-git-send-email-trenn@suse.de>
+Subject: [PATCH 2/7] CPUFREQ: ondemand/conservative: deprecate sampling_rate{min,max}
+Date: Tue,  3 Feb 2009 17:46:41 +0100
+Message-Id: <1233679606-1971-3-git-send-email-trenn@suse.de>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1233679606-1971-1-git-send-email-trenn@suse.de>
 References: <1233679606-1971-1-git-send-email-trenn@suse.de>
@@ -24,81 +24,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mark Langsdorf <mark.langsdorf@amd.com>
+The same info can be obtained via the transition_latency sysfs file
 
-At this time, the PowerNow! driver for K8 uses an experimentally
-derived formula to calculate transition latency.  The value it
-provides is orders of magnitude too large on modern systems.
-This patch replaces the formula with ACPI _PSS latency values
-for more accuracy and better performance.
-
-I've tested it on two 2nd generation Opteron systems, a 3rd
-generation Operton system, and a Turion X2 without seeing any
-stability problems.
-
-Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 Signed-off-by: Thomas Renninger <trenn@suse.de>
 ---
- arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   28 ++++++++++++++++++++++------
- 1 files changed, 22 insertions(+), 6 deletions(-)
+ Documentation/cpu-freq/governors.txt   |   10 ++++++++--
+ drivers/cpufreq/cpufreq_conservative.c |    4 ++++
+ drivers/cpufreq/cpufreq_ondemand.c     |    5 +++++
+ 3 files changed, 17 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-index 5c28b37..fb039cd 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-@@ -939,10 +939,25 @@ static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data)
- 	free_cpumask_var(data->acpi_data.shared_cpu_map);
+diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-freq/governors.txt
+index 5b0cfa6..9b18512 100644
+--- a/Documentation/cpu-freq/governors.txt
++++ b/Documentation/cpu-freq/governors.txt
+@@ -119,8 +119,14 @@ want the kernel to look at the CPU usage and to make decisions on
+ what to do about the frequency.  Typically this is set to values of
+ around '10000' or more.
+ 
+-show_sampling_rate_(min|max): the minimum and maximum sampling rates
+-available that you may set 'sampling_rate' to.
++show_sampling_rate_(min|max): THIS INTERFACE IS DEPRECATED, DON'T USE IT.
++You can use wider ranges now and the general
++cpuinfo_transition_latency variable (cmp. with user-guide.txt) can be
++used to obtain exactly the same info:
++show_sampling_rate_min = transtition_latency * 500    / 1000
++show_sampling_rate_max = transtition_latency * 500000 / 1000
++(divided by 1000 is to illustrate that sampling rate is in us and
++transition latency is exported ns).
+ 
+ up_threshold: defines what the average CPU usage between the samplings
+ of 'sampling_rate' needs to be for the kernel to make a decision on
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 0320962..5ba0a3f 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -140,11 +140,15 @@ static struct notifier_block dbs_cpufreq_notifier_block = {
+ /************************** sysfs interface ************************/
+ static ssize_t show_sampling_rate_max(struct cpufreq_policy *policy, char *buf)
+ {
++	printk(KERN_INFO "CPUFREQ: conservative sampling_rate_max "
++	       "sysfs file is deprecated - used by: %s\n", current->comm);
+ 	return sprintf (buf, "%u\n", MAX_SAMPLING_RATE);
  }
  
-+static int get_transition_latency(struct powernow_k8_data *data)
-+{
-+	int max_latency = 0;
-+	int i;
-+	for (i = 0; i < data->acpi_data.state_count; i++) {
-+		int cur_latency = data->acpi_data.states[i].transition_latency
-+			+ data->acpi_data.states[i].bus_master_latency;
-+		if (cur_latency > max_latency)
-+			max_latency = cur_latency;
-+	}
-+	/* value in usecs, needs to be in nanoseconds */
-+	return 1000 * max_latency;
-+}
-+
- #else
- static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data) { return -ENODEV; }
- static void powernow_k8_cpu_exit_acpi(struct powernow_k8_data *data) { return; }
- static void powernow_k8_acpi_pst_values(struct powernow_k8_data *data, unsigned int index) { return; }
-+static int get_transition_latency(struct powernow_k8_data *data) { return 0; }
- #endif /* CONFIG_X86_POWERNOW_K8_ACPI */
+ static ssize_t show_sampling_rate_min(struct cpufreq_policy *policy, char *buf)
+ {
++	printk(KERN_INFO "CPUFREQ: conservative sampling_rate_max "
++	       "sysfs file is deprecated - used by: %s\n", current->comm);
+ 	return sprintf (buf, "%u\n", MIN_SAMPLING_RATE);
+ }
  
- /* Take a frequency, and issue the fid/vid transition command */
-@@ -1173,7 +1188,13 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
- 		if (rc) {
- 			goto err_out;
- 		}
--	}
-+		/* Take a crude guess here.
-+		 * That guess was in microseconds, so multiply with 1000 */
-+		pol->cpuinfo.transition_latency = (
-+			 ((data->rvo + 8) * data->vstable * VST_UNITS_20US) +
-+			 ((1 << data->irt) * 30)) * 1000;
-+	} else /* ACPI _PSS objects available */
-+		pol->cpuinfo.transition_latency = get_transition_latency(data);
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 6f45b16..4b42e36 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -21,6 +21,7 @@
+ #include <linux/hrtimer.h>
+ #include <linux/tick.h>
+ #include <linux/ktime.h>
++#include <linux/sched.h>
  
- 	/* only run on specific CPU from here on */
- 	oldmask = current->cpus_allowed;
-@@ -1204,11 +1225,6 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
- 		cpumask_copy(pol->cpus, &per_cpu(cpu_core_map, pol->cpu));
- 	data->available_cores = pol->cpus;
+ /*
+  * dbs is used in this file as a shortform for demandbased switching
+@@ -203,11 +204,15 @@ static void ondemand_powersave_bias_init(void)
+ /************************** sysfs interface ************************/
+ static ssize_t show_sampling_rate_max(struct cpufreq_policy *policy, char *buf)
+ {
++	printk(KERN_INFO "CPUFREQ: ondemand sampling_rate_max "
++	       "sysfs file is deprecated - used by: %s\n", current->comm);
+ 	return sprintf (buf, "%u\n", MAX_SAMPLING_RATE);
+ }
  
--	/* Take a crude guess here.
--	 * That guess was in microseconds, so multiply with 1000 */
--	pol->cpuinfo.transition_latency = (((data->rvo + 8) * data->vstable * VST_UNITS_20US)
--	    + (3 * (1 << data->irt) * 10)) * 1000;
--
- 	if (cpu_family == CPU_HW_PSTATE)
- 		pol->cur = find_khz_freq_from_pstate(data->powernow_table, data->currpstate);
- 	else
+ static ssize_t show_sampling_rate_min(struct cpufreq_policy *policy, char *buf)
+ {
++	printk(KERN_INFO "CPUFREQ: ondemand sampling_rate_min "
++	       "sysfs file is deprecated - used by: %s\n", current->comm);
+ 	return sprintf (buf, "%u\n", MIN_SAMPLING_RATE);
+ }
+ 
 -- 
 1.6.0.2
 
