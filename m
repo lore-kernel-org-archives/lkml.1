@@ -1,203 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZBCT2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZBCT3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbZBCT2h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 14:28:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752497AbZBCT2Q
+	id S1754552AbZBCT3F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 14:29:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755210AbZBCT2c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 14:28:16 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55476 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752175AbZBCT2O (ORCPT
+	Tue, 3 Feb 2009 14:28:32 -0500
+Received: from cobija.connexer.com ([66.93.22.232]:39972 "EHLO
+	cobija.connexer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755031AbZBCT2b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 14:28:14 -0500
-Date: Tue, 3 Feb 2009 11:25:29 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, oleg@redhat.com,
-       travis@sgi.com, a.p.zijlstra@chello.nl, mm-commits@vger.kernel.org,
-       rusty@rustcorp.com.au
-Subject: Re: +
- work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch  added to
- -mm tree
-Message-Id: <20090203112529.26e6bf76.akpm@linux-foundation.org>
-In-Reply-To: <c62985530902030858y28906b2dh511c5868afabfd17@mail.gmail.com>
-References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
-	<20090203121147.GB19979@elte.hu>
-	<c62985530902030858y28906b2dh511c5868afabfd17@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 14:28:31 -0500
+X-Greylist: delayed 1939 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 14:28:31 EST
+Date: Tue, 3 Feb 2009 19:51:17 +0100
+From: sean finney <seanius@seanius.net>
+To: Paul Menage <menage@google.com>, Gustavo Noronha <kov@debian.org>,
+       debian-devel@lists.debian.org, linux-kernel@vger.kernel.org
+Subject: Re: cgroup mount point
+Message-ID: <20090203185117.GB3359@mini-me.seanius.net>
+References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com> <20090203102416.GA8886@redhat.com> <87ljsnzo4v.fsf@benfinney.id.au> <1233671913.8902.53.camel@abacate.horta> <6599ad830902030855h1753f4a4o3a303b4dbddf10de@mail.gmail.com> <20090203184915.GA10004@glandium.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="O5XBE6gyVG5Rl6Rj"
+Content-Disposition: inline
+In-Reply-To: <20090203184915.GA10004@glandium.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009 17:58:13 +0100
-Fr__d__ric Weisbecker <fweisbec@gmail.com> wrote:
 
-> 2009/2/3 Ingo Molnar <mingo@elte.hu>:
-> >
-> > * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-> >
-> >> ------------------------------------------------------
-> >> Subject: work_on_cpu(): rewrite it to create a kernel thread on demand
-> >> From: Andrew Morton <akpm@linux-foundation.org>
-> >>
-> >> The various implemetnations and proposed implemetnations of work_on_cpu()
-> >> are vulnerable to various deadlocks because they all used queues of some
-> >> form.
-> >>
-> >> Unrelated pieces of kernel code thus gained dependencies wherein if one
-> >> work_on_cpu() caller holds a lock which some other work_on_cpu() callback
-> >> also takes, the kernel could rarely deadlock.
-> >>
-> >> Fix this by creating a short-lived kernel thread for each work_on_cpu()
-> >> invokation.
-> >>
-> >> This is not terribly fast, but the only current caller of work_on_cpu() is
-> >> pci_call_probe().
-> >
-> > hm, it's quite ugly as well
+--O5XBE6gyVG5Rl6Rj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-No it isn't.
+On Tue, Feb 03, 2009 at 07:49:15PM +0100, Mike Hommey wrote:
+> > Having one virtual filesystem mounted on top of another virtual
+> > filesystem seems like a recipe for problems.
+>=20
+> Like with /sys/fs/fuse/connections ? Come on, there is no problem with a
+> virtual filesystem mounted on top of another.
 
-It's no less ugly than the current code.
-
-It's less buggy than the current code.
-
->, and wasteful with resources.
-
-The current code consumes about 10kbytes per cpu and one kernel thread
-per cpu.  This code fixes that.
-
-(ie: since when did you guys care about consuming resources?)
-
-> Sorry I don't see the patch but only the changelog.
-> So perhaps my answer will be a bit out of sync.
-> 
-> But if pci_call_probe() is the only caller, so it is supposed to be
-> called only on boot.
-> Perhaps the work_on_cpu thread can be killed after boot up and then
-> become a thread created
-> on the fly after that if needed....
-> 
-> Or perhaps it's too much complex.....
-
-Series of four patches:
-
-- switch cstate.c frmo work_on_cpu to smp_call_function_single()
-
-- ditto acpi-cpufreq.c
-
-- ditto mce_amd_64.c
-
-The final work_on_cpu() caller is pci_call_probe().  I'd like to find a
-way of removing that callsite as well, so we can finally remove this
-turkey but for now, just fix the bugs in it:
+or /proc/bus/usb or /dev/shm or /dev/pts... :)
 
 
+	sean
 
-From: Andrew Morton <akpm@linux-foundation.org>
+--O5XBE6gyVG5Rl6Rj
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-The various implementations and proposed implementations of work_on_cpu()
-are vulnerable to various deadlocks because they all use queues of some
-form.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-Unrelated pieces of kernel code thus gained dependencies wherein if one
-work_on_cpu() caller holds a lock which some other work_on_cpu() callback
-also takes, the kernel could rarely deadlock.
+iD8DBQFJiJIlynjLPm522B0RAnn0AJ44TJ1aJXSPiFBDv6OGaTl34eKsywCdH90n
+dCdoZh7FfpKHwUsWCv/i4Ok=
+=ak5U
+-----END PGP SIGNATURE-----
 
-Also, the present work_on_cpu() implementation creates yet another kernel
-thread per CPU.
-
-Fix this by creating a short-lived kernel thread for each work_on_cpu()
-invokation.
-
-This is not terribly fast, but the only current caller of work_on_cpu() is
-pci_call_probe().
-
-It would be nice to find some other way of doing the node-local
-allocations in the PCI probe code so that we can zap work_on_cpu()
-altogether.  The code there is rather nasty.  I can't think of anything
-simple at this time...
-
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- kernel/workqueue.c |   36 +++++++++++++++++++-----------------
- 1 file changed, 19 insertions(+), 17 deletions(-)
-
-diff -puN kernel/workqueue.c~work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand kernel/workqueue.c
---- a/kernel/workqueue.c~work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand
-+++ a/kernel/workqueue.c
-@@ -971,20 +971,20 @@ undo:
- }
- 
- #ifdef CONFIG_SMP
--static struct workqueue_struct *work_on_cpu_wq __read_mostly;
- 
- struct work_for_cpu {
--	struct work_struct work;
-+	struct completion completion;
- 	long (*fn)(void *);
- 	void *arg;
- 	long ret;
- };
- 
--static void do_work_for_cpu(struct work_struct *w)
-+static int do_work_for_cpu(void *_wfc)
- {
--	struct work_for_cpu *wfc = container_of(w, struct work_for_cpu, work);
--
-+	struct work_for_cpu *wfc = _wfc;
- 	wfc->ret = wfc->fn(wfc->arg);
-+	complete(&wfc->completion);
-+	return 0;
- }
- 
- /**
-@@ -995,17 +995,23 @@ static void do_work_for_cpu(struct work_
-  *
-  * This will return the value @fn returns.
-  * It is up to the caller to ensure that the cpu doesn't go offline.
-+ * The caller must not hold any locks which would prevent @fn from completing.
-  */
- long work_on_cpu(unsigned int cpu, long (*fn)(void *), void *arg)
- {
--	struct work_for_cpu wfc;
--
--	INIT_WORK(&wfc.work, do_work_for_cpu);
--	wfc.fn = fn;
--	wfc.arg = arg;
--	queue_work_on(cpu, work_on_cpu_wq, &wfc.work);
--	flush_work(&wfc.work);
--
-+	struct task_struct *sub_thread;
-+	struct work_for_cpu wfc = {
-+		.completion = COMPLETION_INITIALIZER_ONSTACK(wfc.completion),
-+		.fn = fn,
-+		.arg = arg,
-+	};
-+
-+	sub_thread = kthread_create(do_work_for_cpu, &wfc, "work_for_cpu");
-+	if (IS_ERR(sub_thread))
-+		return PTR_ERR(sub_thread);
-+	kthread_bind(sub_thread, cpu);
-+	wake_up_process(sub_thread);
-+	wait_for_completion(&wfc.completion);
- 	return wfc.ret;
- }
- EXPORT_SYMBOL_GPL(work_on_cpu);
-@@ -1021,8 +1027,4 @@ void __init init_workqueues(void)
- 	hotcpu_notifier(workqueue_cpu_callback, 0);
- 	keventd_wq = create_workqueue("events");
- 	BUG_ON(!keventd_wq);
--#ifdef CONFIG_SMP
--	work_on_cpu_wq = create_workqueue("work_on_cpu");
--	BUG_ON(!work_on_cpu_wq);
--#endif
- }
-_
-
+--O5XBE6gyVG5Rl6Rj--
