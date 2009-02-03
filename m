@@ -1,63 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZBCMBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZBCMB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753808AbZBCMBj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:01:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752069AbZBCMBb
+	id S1754496AbZBCMB4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:01:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZBCMBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:01:31 -0500
-Received: from edu.joroinen.fi ([194.89.68.130]:48709 "EHLO edu.joroinen.fi"
+	Tue, 3 Feb 2009 07:01:45 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:60223 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751869AbZBCMBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:01:30 -0500
-Date: Tue, 3 Feb 2009 14:01:28 +0200
-From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: [PATCH] Fix sata_sil compilation error with libata debug enabled (2.6.29-rcX)
-Message-ID: <20090203120128.GT15052@edu.joroinen.fi>
-References: <20090202194714.GN15052@edu.joroinen.fi> <4987BC43.3040400@garzik.org>
+	id S1754171AbZBCMBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:01:44 -0500
+Date: Tue, 3 Feb 2009 12:01:39 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator (try 2)
+Message-ID: <20090203120139.GM9840@csn.ul.ie>
+References: <20090123154653.GA14517@wotan.suse.de> <200902032136.26022.nickpiggin@yahoo.com.au> <20090203112852.GJ9840@csn.ul.ie> <200902032250.55968.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4987BC43.3040400@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200902032250.55968.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 10:38:43PM -0500, Jeff Garzik wrote:
-> Pasi Kärkkäinen wrote:
-> >Hello!
-> >
-> >I tried compiling 2.6.29-rc1 and 2.6.29-rc3 with libata debugging enabled
-> >and got the following error:
-> >
-> >  CC [M]  drivers/ata/sata_sil.o
-> >drivers/ata/sata_sil.c: In function 'sil_fill_sg':
-> >drivers/ata/sata_sil.c:327: error: 'pi' undeclared (first use in this 
-> >function)
-> >drivers/ata/sata_sil.c:327: error: (Each undeclared identifier is reported 
-> >only once
-> >drivers/ata/sata_sil.c:327: error: for each function it appears in.)
-> >make[2]: *** [drivers/ata/sata_sil.o] Error 1
-> >make[1]: *** [drivers/ata] Error 2
-> >make: *** [drivers] Error 2
-> >
-> >include/linux/libata.h has the following enabled:
-> >
-> >#define ATA_DEBUG
-> >#define ATA_VERBOSE_DEBUG
-> >#define ATA_IRQ_TRAP
-> >
-> >The attached patch fixes the compilation.. I'm not sure if it's the correct
-> >fix, but looking at the code it seems correct.. or at least makes the
-> >code compile for me :)
+On Tue, Feb 03, 2009 at 10:50:54PM +1100, Nick Piggin wrote:
+> On Tuesday 03 February 2009 22:28:52 Mel Gorman wrote:
+> > On Tue, Feb 03, 2009 at 09:36:24PM +1100, Nick Piggin wrote:
 > 
-> applied
+> > > I'd be interested to see how slub performs if booted with
+> > > slub_min_objects=1 (which should give similar order pages to SLAB and
+> > > SLQB).
+> >
+> > Just to clarify on this last point, do you mean slub_max_order=0 to
+> > force order-0 allocations in SLUB?
+> 
+> Hmm... I think slub_min_objects=1 should also do basically the same.
+> Actually slub_min_object=1 and slub_max_order=1 should get closest I
+> think.
 > 
 
-Great, thanks!
+I'm going with slub_min_objects=1 and slub_max_order=0. A quick glance
+of the source shows the calculation as
 
--- Pasi
+        for (order = max(min_order,
+                                fls(min_objects * size - 1) - PAGE_SHIFT);
+                        order <= max_order; order++) {
+
+so the max_order is inclusive not exclusive. This will force the order-0
+allocations I think you are looking for.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
