@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754347AbZBCEFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbZBCEH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754347AbZBCEFd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 23:05:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753218AbZBCEFU
+	id S1754228AbZBCEH1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 23:07:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZBCEHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 23:05:20 -0500
-Received: from avexch1.qlogic.com ([198.70.193.115]:45835 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751515AbZBCEFS (ORCPT
+	Mon, 2 Feb 2009 23:07:13 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45782 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752224AbZBCEHM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 23:05:18 -0500
-Date: Mon, 2 Feb 2009 20:05:16 -0800
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "matthew@wil.cx" <matthew@wil.cx>, "gregkh@suse.de" <gregkh@suse.de>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Seokmann Ju <seokmann.ju@qlogic.com>
-Subject: Re: slab error in verify_redzone_free() badness...
-Message-ID: <20090203040516.GA11835@plap4-2.local>
-References: <20090129225532.GA37589@plap4-2.local> <20090202151852.de39952b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090202151852.de39952b.akpm@linux-foundation.org>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 03 Feb 2009 04:04:16.0044 (UTC) FILETIME=[7AF7D6C0:01C985B4]
+	Mon, 2 Feb 2009 23:07:12 -0500
+Date: Mon, 2 Feb 2009 20:06:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: travis@sgi.com, mingo@redhat.com, davej@redhat.com,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Message-Id: <20090202200649.c1af2fd1.akpm@linux-foundation.org>
+In-Reply-To: <200902022305.51344.rusty@rustcorp.com.au>
+References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
+	<200901310829.17099.rusty@rustcorp.com.au>
+	<20090130141744.007fe725.akpm@linux-foundation.org>
+	<200902022305.51344.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Feb 2009, Andrew Morton wrote:
+On Mon, 2 Feb 2009 23:05:50 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> I'd be suspecting a bug in the caller.
-> 
-> Try setting CONFIG_DEBUG_PAGEALLOC, and use slab.c (not slub).  slab
-> will perform page unmapping for those 2k-sized slabs.  I don't know
-> whether slub does that.
-> 
-> All being well, you'll get a nice oops at the site of the improper
-> reference.
+> +/**
+> + * __work_on_cpu - run a function in a workqueue on a particular cpu
+> + * @swq: the (singlethreaded) workqueue
+> + * @cpu: the cpu to run on
+> + * @fn: the function to run
+> + * @arg: the function arg
+> + *
+> + * This will return the value @fn returns.
+> + * It is up to the caller to ensure that the cpu doesn't go offline.
+> + *
+> + * Example:
+> + *	int ret;
+> + *	struct workqueue_struct *wq = create_singlethread_workqueue("myq");
+> + *	if (unlikely(!wq))
+> + *		ret = -ENOMEM;
+> + *	else {
+> + *		ret = __work_on_cpu(wq, cpu, fn, arg);
+> + *		destroy_workqueue(wq);
+> + *	}
+> + */
+> +long __work_on_cpu(struct workqueue_struct *swq,
+> +		   unsigned int cpu, long (*fn)(void *), void *arg)
+> +{
+> +	struct work_for_cpu wfc;
+> +
+> +	INIT_WORK(&wfc.work, do_work_for_cpu);
+> +	wfc.fn = fn;
+> +	wfc.arg = arg;
+> +	wfc.cpu = cpu;
+> +	BUG_ON(!swq->singlethread);
+> +	queue_work(swq, &wfc.work);
+> +	flush_work(&wfc.work);
+> +
+> +	return wfc.ret;
+> +}
+> +EXPORT_SYMBOL_GPL(__work_on_cpu);
 
-Thanks for the tip...  Yeah, we're triaging this further, as it seems
-to be pointing to something in the recent 'refactoring/multi-q' code
-in qla2xxx...
+If we're going to do this then we might as well create the thread right
+here, use it once and then let it exit.
 
---
-av
+That's slower, but I suspect that we could get a lot of that inefficiency
+back by coming up with a kernel_thread_on_cpu(), so we don't go and schedule
+the function on a random CPU only to immediately switch it over to a different
+one, dunno.
+
+But as you say, rdmsr_on_cpu() is easy to do, using
+smp_call_function_single().  Then we can easily convert all other
+work_on_cpu() callers to smp_call_function_single() and zap
+work_on_cpu().  The best outcome, methinks.
