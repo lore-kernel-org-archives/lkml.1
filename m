@@ -1,96 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZBCM2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753033AbZBCM2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbZBCM2H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:28:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZBCM1v
+	id S1753033AbZBCM2Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZBCM1x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:27:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41919 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbZBCM1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:27:50 -0500
-Date: Tue, 3 Feb 2009 13:27:32 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       hpa@zytor.com
-Subject: Re: x86's nmi_hz wrt. oprofile's nmi_timer_int.c
-Message-ID: <20090203122732.GF19979@elte.hu>
-References: <20090129.155852.161923905.davem@davemloft.net> <20090130150125.GF31009@elte.hu> <20090130.135409.180077287.davem@davemloft.net> <20090202.151439.124517945.davem@davemloft.net>
+	Tue, 3 Feb 2009 07:27:53 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:47277 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752373AbZBCM1w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:27:52 -0500
+Date: Tue, 3 Feb 2009 23:27:15 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       w@1wt.eu, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090203122715.GA9307@gondor.apana.org.au>
+References: <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090203111012.GA16878@ioremap.net> <20090203112431.GA8746@gondor.apana.org.au> <20090203114944.GA21957@ioremap.net> <20090203115313.GA9018@gondor.apana.org.au> <20090203120715.GA22427@ioremap.net> <20090203121209.GA9154@gondor.apana.org.au> <20090203121836.GA23300@ioremap.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090202.151439.124517945.davem@davemloft.net>
+In-Reply-To: <20090203121836.GA23300@ioremap.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 03, 2009 at 03:18:36PM +0300, Evgeniy Polyakov wrote:
+>
+> I agree that this will work and will be better than nothing, but copying
+> 9kb into 3 pages is rather CPU hungry operation, and I think (but have
+> no numbers though) that system will behave faster if MTU is reduced to
+> the standard one.
 
-* David Miller <davem@davemloft.net> wrote:
+Reducing the MTU can create all sorts of problems so it should be
+avoided if at all possible.  These days, path MTU discovery is
+haphazard at best.  In fact MTU problems are the main reason why
+jumbo frames simply don't get deployed.
 
-> From: David Miller <davem@davemloft.net>
-> Date: Fri, 30 Jan 2009 13:54:09 -0800 (PST)
-> 
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Fri, 30 Jan 2009 16:01:25 +0100
-> > 
-> > > 
-> > > * David Miller <davem@davemloft.net> wrote:
-> > > 
-> > > Reducing it to 1 HZ was kind of a performance hack: running NMIs at HZ 
-> > > needlessly interrupts the CPU HZ times a second. It's more than enough to 
-> > > have 1 nmi-watchdog tick per second to notice deadlocks that take longer 
-> > > than 5 seconds.
-> > 
-> > For the NMI watchdog's purposes I understand the intent, and this
-> > is perfectly fine.
-> > 
-> > The problem is that it stays at '1' when oprofile starts using the NMI
-> > watchdog, and we certainly want more than one oprofile tick per second
-> > :-)
-> 
-> Just making sure you understand the problem, here is the
-> sequence of events:
-> 
-> 1) At bootup, the NMI watchdog is tested.
-> 
->    It is tested with nmi_hz=HZ
-> 
-> 2) If the test passes, nmi_hz is reduced down to '1'
-> 
-> As I stated, everything up to this point is fine.  Next:
-> 
-> 3) oprofile initializes and if we choose to use the NMI
->    timer for oprofile profiling it is implemented using
->    a simple DIE_NMI notifier.
-> 
->    However, nmi_hz is still just '1' which means that oprofile
->    will only receive one sample per-second.  And this is definitely
->    not what we want.
-> 
-> Somehow the code in arch/x86/oprofile/nmi_timer_int.c needs to have an 
-> interface into the NMI watchdog core so that it can increase nmi_hz back 
-> up to "HZ" when the NMI timer profiling is enabled and back down to "1" 
-> when such profiling stops.
+> Another solution is to have a proper allocator which will be able to
+> defragment the data, if talking about the alternatives to the drop.
 
-btw., these types of interactions will be solved in a natural way via 
-perfcounters: in that model the NMI watchdog is a set of per-CPU counters 
-running on each CPU [with a NMI watchdog callback in the IRQ handling 
-routine] - and oprofile uses its own perfcounter - what is left of the PMU 
-hardware.
+Sure, if we can create an allocator that can guarantee contiguous
+allocations all the time then by all means go for it.  But until
+we get there, doing what I suggested is way better than stopping
+the receiving process altogether.
 
-I.e. each PMU using facility can just use performance counters transparently 
-and interactions will be solved naturally by perfcounters resource 
-management.
+> So:
+> 1. copy the whole jumbo skb into fragmented one
+> 2. reduce the MTU
+> 3. rely on the allocator
 
-	Ingo
+Yes, improving the allocator would obviously inrease the performance,
+however, there is nothing against employing both methods.  I'd
+always avoid reducing the MTU at run-time though.
+
+> For the 'good' hardware and drivers nothing from the above is really needed.
+
+Right, that's why there is a point beyond which improving the
+allocator is no longer worthwhile.
+
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
