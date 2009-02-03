@@ -1,79 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZBCMCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753726AbZBCMH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754353AbZBCMCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:02:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752428AbZBCMCe
+	id S1753726AbZBCMH2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:07:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBCMHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:02:34 -0500
-Received: from mail.lang.hm ([64.81.33.126]:34690 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752281AbZBCMCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:02:33 -0500
-Date: Tue, 3 Feb 2009 05:05:14 -0800 (PST)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Evgeniy Polyakov <zbr@ioremap.net>
-cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       w@1wt.eu, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-In-Reply-To: <20090203114944.GA21957@ioremap.net>
-Message-ID: <alpine.DEB.1.10.0902030458390.28633@asgard.lang.hm>
-References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090203111012.GA16878@ioremap.net>
- <20090203112431.GA8746@gondor.apana.org.au> <20090203114944.GA21957@ioremap.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 3 Feb 2009 07:07:11 -0500
+Received: from mail1-relais-roc.national.inria.fr ([192.134.164.82]:50028 "EHLO
+	mail1-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750998AbZBCMHK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:07:10 -0500
+X-Greylist: delayed 596 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 07:07:09 EST
+X-IronPort-AV: E=Sophos;i="4.37,372,1231110000"; 
+   d="scan'208";a="23496661"
+Date: Tue, 3 Feb 2009 12:57:12 +0100
+From: Samuel Thibault <samuel.thibault@ens-lyon.org>
+To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, torvalds@osdl.org
+Subject: [PATCH, TRIVIAL] Fix my email address in qd65xx.[ch]
+Message-ID: <20090203115712.GC4996@const.bordeaux.inria.fr>
+Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
+	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+	torvalds@osdl.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009, Evgeniy Polyakov wrote:
+The @fnac.net will be shut down within a couple of months, so fix my
+email address.
 
-> On Tue, Feb 03, 2009 at 10:24:31PM +1100, Herbert Xu (herbert@gondor.apana.org.au) wrote:
->>> I even believe that for some hardware it is the only way to deal
->>> with the jumbo frames.
->>
->> Not necessarily.  Even if the hardware can only DMA into contiguous
->> memory, we can always allocate a sufficient number of contiguous
->> buffers initially, and then always copy them into fragmented skbs
->> at receive time.  This way the contiguous buffers are never
->> depleted.
->
-> How many such preallocated frames is enough? Does it enough to have all
-> sockets recv buffer sizes divided by the MTU size? Or just some of them,
-> or... That will work but there are way too many corner cases.
->
->> Granted copying sucks, but this is really because the underlying
->> hardware is badly designed.  Also copying is way better than
->> not receiving at all due to memory fragmentation.
->
-> Maybe just do not allow jumbo frames when memory is fragmented enough
-> and fallback to the smaller MTU in this case? With LRO/GRO stuff there
-> should be not that much of the overhead compared to multiple-page
-> copies.
+Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
 
-
-1. define 'fragmented enough'
-
-2. the packet size was already negotiated on your existing connections, 
-how are you going to change all those on the fly?
-
-3. what do you do when a remote system sends you a large packet? drop it 
-on the floor?
-
-having some pool of large buffers to receive into (and copy out of those 
-buffers as quickly as possible) would cause a performance hit when things 
-get bad, but isn't that better than dropping packets?
-
-as for the number of buffers to use. make a reasonable guess. if you only 
-have a small number of packets around, use the buffers directly, as you 
-use more of them start copying, as useage climbs attempt to allocate more. 
-if you can't allocate more (and you have all of your existing ones in use) 
-you will have to drop the packet, but at that point are you really in any 
-worse shape than if you didn't have some mechanism to copy out of the 
-large buffers?
-
-David Lang
+diff --git a/drivers/ide/qd65xx.c b/drivers/ide/qd65xx.c
+index 5b2e3af..08c4fa3 100644
+--- a/drivers/ide/qd65xx.c
++++ b/drivers/ide/qd65xx.c
+@@ -16,7 +16,7 @@
+ 
+ /*
+  * Rewritten from the work of Colten Edwards <pje120@cs.usask.ca> by
+- * Samuel Thibault <samuel.thibault@fnac.net>
++ * Samuel Thibault <samuel.thibault@ens-lyon.org>
+  */
+ 
+ #include <linux/module.h>
+diff --git a/drivers/ide/qd65xx.h b/drivers/ide/qd65xx.h
+index 6636f96..d7e67a1 100644
+--- a/drivers/ide/qd65xx.h
++++ b/drivers/ide/qd65xx.h
+@@ -4,7 +4,7 @@
+ 
+ /*
+  * Authors:	Petr Soucek <petr@ryston.cz>
+- * 		Samuel Thibault <samuel.thibault@fnac.net>
++ * 		Samuel Thibault <samuel.thibault@ens-lyon.org>
+  */
+ 
+ /* truncates a in [b,c] */
