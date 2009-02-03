@@ -1,138 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZBCJLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754121AbZBCJMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753930AbZBCJLd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 04:11:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZBCJLS
+	id S1754121AbZBCJMN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 04:12:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZBCJL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 04:11:18 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49027 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751065AbZBCJLR (ORCPT
+	Tue, 3 Feb 2009 04:11:59 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:54543 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751212AbZBCJL6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 04:11:17 -0500
-Date: Tue, 3 Feb 2009 01:10:38 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-Subject: Re: [PATCH 2/3] crypto: Per-CPU cryptd thread implementation based
- on kcrypto_wq
-Message-Id: <20090203011038.c12acc5b.akpm@linux-foundation.org>
-In-Reply-To: <1233556940.19806.58.camel@yhuang-dev.sh.intel.com>
-References: <1233556940.19806.58.camel@yhuang-dev.sh.intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 04:11:58 -0500
+Date: Tue, 3 Feb 2009 04:11:52 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: Rodolfo Giometti <giometti@linux.it>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <dwmw2@infradead.org>, Dave Jones <davej@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Michael Kerrisk <mtk.manpages@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: LinuxPPS core (Version 1): the PPS Linux implementation.
+Message-ID: <20090203091152.GA1091@infradead.org>
+References: <1233510933-17512-1-git-send-email-giometti@linux.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233510933-17512-1-git-send-email-giometti@linux.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 02 Feb 2009 14:42:20 +0800 Huang Ying <ying.huang@intel.com> wrote:
+On Sun, Feb 01, 2009 at 06:55:32PM +0100, Rodolfo Giometti wrote:
+> * pps.h revisited but not splitted, since several stuff are shared between
+>   kernel and user land (I hope this will not stop inclusion...)
 
-> Original cryptd thread implementation has scalability issue, this
-> patch solve the issue with a per-CPU thread implementation.
-> 
-> struct cryptd_queue is defined to be a per-CPU queue, which holds one
-> struct cryptd_cpu_queue for each CPU. In struct cryptd_cpu_queue, a
-> struct crypto_queue holds all requests for the CPU, a struct
-> work_struct is used to run all requests for the CPU.
-> 
-> ...
->
-> +int cryptd_init_queue(struct cryptd_queue *queue, unsigned int max_cpu_qlen)
-> +{
-> +	int cpu;
-> +	struct cryptd_cpu_queue *cpu_queue;
-> +
-> +	queue->cpu_queue = alloc_percpu(struct cryptd_cpu_queue);
-> +	if (!queue->cpu_queue)
-> +		return -ENOMEM;
-> +	for_each_possible_cpu(cpu) {
-> +		cpu_queue = per_cpu_ptr(queue->cpu_queue, cpu);
-> +		crypto_init_queue(&cpu_queue->queue, max_cpu_qlen);
-> +		INIT_WORK(&cpu_queue->work, cryptd_queue_worker);
-> +	}
-> +	return 0;
-> +}
-
-Could be made static, I believe.
-
-> +void cryptd_fini_queue(struct cryptd_queue *queue)
-> +{
-> +	int cpu;
-> +	struct cryptd_cpu_queue *cpu_queue;
-> +
-> +	for_each_possible_cpu(cpu) {
-> +		cpu_queue = per_cpu_ptr(queue->cpu_queue, cpu);
-> +		BUG_ON(cpu_queue->queue.qlen);
-> +	}
-> +	free_percpu(queue->cpu_queue);
-> +}
-
-Ditto.
-
-> +int cryptd_enqueue_request(struct cryptd_queue *queue,
-> +			   struct crypto_async_request *request)
-> +{
-> +	int cpu, err;
-> +	struct cryptd_cpu_queue *cpu_queue;
-> +
-> +	cpu = get_cpu();
-> +	cpu_queue = per_cpu_ptr(queue->cpu_queue, cpu);
-> +	err = crypto_enqueue_request(&cpu_queue->queue, request);
-> +	queue_work_on(cpu, kcrypto_wq, &cpu_queue->work);
-> +	put_cpu();
-> +
-> +	return err;
-> +}
-
-Ditto?
-
-> +static void cryptd_queue_worker(struct work_struct *work)
-
-A few comments explaining the code wouldn't kill us...
-
-> +{
-> +	struct cryptd_cpu_queue *cpu_queue;
-> +	struct crypto_async_request *req, *backlog;
-> +
-> +	cpu_queue = container_of(work, struct cryptd_cpu_queue, work);
-> +	/* Only handle one request at a time to avoid hogging crypto
-> +	 * workqueue */
-
-Not sure what that means.
-
-> +	preempt_disable();
-> +	backlog = crypto_get_backlog(&cpu_queue->queue);
-> +	req = crypto_dequeue_request(&cpu_queue->queue);
-> +	preempt_enable();
-
-This function is run by a per-cpu thread, so it cannot be migrated to
-another CPU by the CPU scheduler.
-
-It is quite unclear what this preempt_disable() is needed for.  Please
-either remove it or provide adequate comments.
-
-> +	if (!req)
-> +		goto out;
-> +
-> +	if (backlog)
-> +		backlog->complete(backlog, -EINPROGRESS);
-> +	req->complete(req, 0);
-> +out:
-> +	if (cpu_queue->queue.qlen)
-> +		queue_work(kcrypto_wq, &cpu_queue->work);
-
-Again, unclear and needs commentary.
-
-If we come here via the `goto out;' path above, this CPU queue has no
-more work do do, I think?  If so, why does it requeue itself?
-
-> +}
-> +
-> 
-> ...
->
+I really think the bits under ifdef __KERNEL__ should be split into
+a pps_kernel.h.  Not enough to block inclusion, but a very strong
+recommendation.  Headers containing ABIs and kernel-internal bits get
+messy over time.
 
