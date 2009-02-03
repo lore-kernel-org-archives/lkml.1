@@ -1,125 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZBCMvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754578AbZBCMy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753067AbZBCMvk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:51:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754403AbZBCMv2
+	id S1754578AbZBCMy7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:54:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbZBCMyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:51:28 -0500
-Received: from mtagate1.de.ibm.com ([195.212.17.161]:43067 "EHLO
-	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409AbZBCMv1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:51:27 -0500
-Message-ID: <49883CEA.7070403@linux.vnet.ibm.com>
-Date: Tue, 03 Feb 2009 13:47:38 +0100
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Tue, 3 Feb 2009 07:54:50 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:36676 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751554AbZBCMyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:54:50 -0500
+Date: Tue, 3 Feb 2009 10:54:26 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/3] trace: better manage the context info for
+	events
+Message-ID: <20090203125426.GB17781@ghostprotocols.net>
+Mail-Followup-To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Frederic Weisbecker <fweisbec@gmail.com>,
+	Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20090202222921.GB12082@ghostprotocols.net> <20090203020746.GB22718@nowhere> <alpine.DEB.1.10.0902022128130.2192@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>
-Subject: [PATCH 4/4] gcov: enable GCOV_PROFILE_ALL for x86_64
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902022128130.2192@gandalf.stny.rr.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Em Mon, Feb 02, 2009 at 09:32:51PM -0500, Steven Rostedt escreveu:
+> 
+> On Tue, 3 Feb 2009, Frederic Weisbecker wrote:
+> 
+> > On Mon, Feb 02, 2009 at 08:29:21PM -0200, Arnaldo Carvalho de Melo wrote:
+> > > From: Frederic Weisbecker <fweisbec@gmail.com>
+> > > 
+> > > Impact: make trace_event more convenient for tracers
+> > > 
+> > > All tracers (for the moment) that use the struct trace_event want to
+> > > have the context info printed before their own output: the pid/cmdline,
+> > > cpu, and timestamp.
+> > > 
+> > > But some other tracers that want to implement their trace_event
+> > > callbacks will not necessary need these information or they may want to
+> > > format them as they want.
+> > > 
+> > > This patch adds a new default-enabled trace option:
+> > > TRACE_ITER_CONTEXT_INFO When disabled through:
+> > > 
+> > > echo nocontext-info > /debugfs/tracing/trace_options
+> > > 
+> > > The pid, cpu and timestamps headers will not be printed.
+> > > 
+> > > IE with the sched_switch tracer with context-info (default):
+> > > 
+> > >      bash-2935 [001] 100.356561: 2935:120:S ==> [001]  0:140:R <idle>
+> > >    <idle>-0    [000] 100.412804:    0:140:R   + [000] 11:115:S events/0
+> > >    <idle>-0    [000] 100.412816:    0:140:R ==> [000] 11:115:R events/0
+> > >  events/0-11   [000] 100.412829:   11:115:S ==> [000]  0:140:R <idle>
+> > > 
+> > > Without context-info:
+> > > 
+> > >  2935:120:S ==> [001]  0:140:R <idle>
+> > >     0:140:R   + [000] 11:115:S events/0
+> > >     0:140:R ==> [000] 11:115:R events/0
+> > >    11:115:S ==> [000]  0:140:R <idle>
+> > > 
+> > > A tracer can disable it at runtime by clearing the bit
+> > > TRACE_ITER_CONTEXT_INFO in trace_flags.
+> > > 
+> > > The print routines were renamed to trace_print_context and
+> > > trace_print_lat_context, so that they can be used by tracers if they
+> > > want to use them for one of the trace_event callbacks.
+> > 
+> > 
+> > Actually, I wonder if this is not breaking the sense of the TRACE_ITER_CONTEXT_INFO
+> > flag.
 
-Enable gcov profiling of the entire kernel on x86_64. Required changes
-include disabling profiling for:
-
-* arch/kernel/acpi/realmode and arch/kernel/boot/compressed:
-  not linked to main kernel
-* arch/vdso, arch/kernel/vsyscall_64 and arch/kernel/hpet:
-  profiling causes segfaults during boot (incompatible context)
-
-Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-
----
- arch/x86/boot/Makefile                 |    1 +
- arch/x86/boot/compressed/Makefile      |    1 +
- arch/x86/kernel/Makefile               |    2 ++
- arch/x86/kernel/acpi/realmode/Makefile |    1 +
- arch/x86/vdso/Makefile                 |    1 +
- kernel/gcov/Kconfig                    |    2 +-
- 6 files changed, 7 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.29-rc3/kernel/gcov/Kconfig
-===================================================================
---- linux-2.6.29-rc3.orig/kernel/gcov/Kconfig
-+++ linux-2.6.29-rc3/kernel/gcov/Kconfig
-@@ -34,7 +34,7 @@ config GCOV_KERNEL
- config GCOV_PROFILE_ALL
- 	bool "Profile entire Kernel"
- 	depends on GCOV_KERNEL
--	depends on S390 || X86_32
-+	depends on S390 || X86
- 	default n
- 	---help---
- 	This options activates profiling for the entire kernel.
-Index: linux-2.6.29-rc3/arch/x86/kernel/acpi/realmode/Makefile
-===================================================================
---- linux-2.6.29-rc3.orig/arch/x86/kernel/acpi/realmode/Makefile
-+++ linux-2.6.29-rc3/arch/x86/kernel/acpi/realmode/Makefile
-@@ -42,6 +42,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- KBUILD_CFLAGS	+= $(call cc-option, -m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- WAKEUP_OBJS = $(addprefix $(obj)/,$(wakeup-y))
- 
-Index: linux-2.6.29-rc3/arch/x86/boot/Makefile
-===================================================================
---- linux-2.6.29-rc3.orig/arch/x86/boot/Makefile
-+++ linux-2.6.29-rc3/arch/x86/boot/Makefile
-@@ -71,6 +71,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- KBUILD_CFLAGS +=   $(call cc-option,-m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- $(obj)/zImage:  asflags-y := $(SVGA_MODE) $(RAMDISK)
- $(obj)/bzImage: ccflags-y := -D__BIG_KERNEL__
-Index: linux-2.6.29-rc3/arch/x86/boot/compressed/Makefile
-===================================================================
---- linux-2.6.29-rc3.orig/arch/x86/boot/compressed/Makefile
-+++ linux-2.6.29-rc3/arch/x86/boot/compressed/Makefile
-@@ -14,6 +14,7 @@ KBUILD_CFLAGS += $(call cc-option,-ffree
- KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
- 
- KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- LDFLAGS := -m elf_$(UTS_MACHINE)
- LDFLAGS_vmlinux := -T
-Index: linux-2.6.29-rc3/arch/x86/vdso/Makefile
-===================================================================
---- linux-2.6.29-rc3.orig/arch/x86/vdso/Makefile
-+++ linux-2.6.29-rc3/arch/x86/vdso/Makefile
-@@ -123,6 +123,7 @@ quiet_cmd_vdso = VDSO    $@
- 		       -Wl,-T,$(filter %.lds,$^) $(filter %.o,$^)
- 
- VDSO_LDFLAGS = -fPIC -shared $(call ld-option, -Wl$(comma)--hash-style=sysv)
-+GCOV_PROFILE := n
- 
- #
- # Install the unstripped copy of vdso*.so listed in $(vdso-install-y).
-Index: linux-2.6.29-rc3/arch/x86/kernel/Makefile
-===================================================================
---- linux-2.6.29-rc3.orig/arch/x86/kernel/Makefile
-+++ linux-2.6.29-rc3/arch/x86/kernel/Makefile
-@@ -23,6 +23,8 @@ nostackp := $(call cc-option, -fno-stack
- CFLAGS_vsyscall_64.o	:= $(PROFILING) -g0 $(nostackp)
- CFLAGS_hpet.o		:= $(nostackp)
- CFLAGS_tsc.o		:= $(nostackp)
-+GCOV_PROFILE_vsyscall_64.o	:= n
-+GCOV_PROFILE_hpet.o		:= n
- 
- obj-y			:= process_$(BITS).o signal.o entry_$(BITS).o
- obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
+> Yeah, I agree with Frederic here. Let the user decide this as a global
+> flag for about of data to print. The tracer should just provide a
+> callback incase the tracer has a different context format.
 
 
+> > In the first patch I made about it, I thought this flag was to
+> > decide whether we want to print the context information in the
+> > standard way.
 
+> > Then, Steven suggested to actually provide callbacks for the tracers
+> > which want to override the standard context information printer.
+> > The flag then got more logical: TRACE_ITER_CONTEXT_INFO was not only
+> > about deciding whether we want or not the standard context info, it
+> > tells if we want in a global way the context info to be printed,
+> > whatever how the tracer decides to print it.  (This is the theory,
+> > but since we couldn't override the bin/raw/hex cases, the practical
+> > case didn't follow this idea).
+
+> > If someone doesn't want to see these informations in the blk tracer,
+> > this flag will not help him. Worst, it will double print the context
+> > info if the user enables the flag.
+
+> > Now that I see the practical case, I'm not sure the design of my
+> > patch was valuable.  A tracer has to play with the flag if it wants
+> > to override the context info in the bin/raw/hex cases. And I don't
+> > think this is a good way to proceed.
+
+> > In my opinion, the ITER_CONTEXT_INFO flag should mostly be set by the user.
+ 
+> I think it should _only_ be set by user.
+
+> > And only one callback could be added to trace_event: context_info()
+> > Then, the tracer will manage itself the raw/hex/bin/normal cases
+> > inside this callback.
+
+> Yeah, this is a good idea. The callback can be passed an enum to what kind
+> of trace it is: TRACE_FMT_RAW TRACE_FMT_HEX ...
+
+And another thing I was trying to avoid: To have to build the trace
+record in two pieces, one in the ->context_info and another in the
+->binary calls.
+
+> > We can provide the default callbacks available for the tracers which
+> > want it and even one function which proceed all of them, depending
+> > on the flags.  ftrace/preempt/sched.... tracers can register this
+> > function for their context_info callback and other tracers too if
+> > they want.
+
+> > Or they can override it, and even pick the default callbacks for
+> > dedicated flags when they want.
+
+> > Then, when the user wants the context info to be printed or not, he
+> > just have to set/clear the context-info flag manually.
+
+> > A tracer can even decide to set/clear it by default, but for its
+> > real sense: print or not these context info.
+
+> > What do you think?
+> 
+> I'm not sure a tracer should decide if it should have the format or not. 
+> In its context callback, it might decide there. But if the user does not 
+> want it, it should be off.
+> 
+> Unless you are saying have the tracer decide if it is enabled on or off 
+> when the trace is selected?
+
+Perhaps we should have a per tracer flags.
+
+- Arnaldo
