@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752838AbZBCWzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZBCW4y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752838AbZBCWzO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:55:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZBCWy7
+	id S1753186AbZBCW4y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:56:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZBCW4p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:54:59 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51132 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751071AbZBCWy6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:54:58 -0500
-Date: Tue, 3 Feb 2009 14:53:46 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: mpm@selenic.com, dada1@cosmosbay.com, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, oleg@redhat.com, viro@ZenIV.linux.org.uk,
-       davidel@xmailserver.org, davem@davemloft.net, hch@lst.de,
-       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-Message-Id: <20090203145346.8df40277.akpm@linux-foundation.org>
-In-Reply-To: <20090203153740.363d0a04@bike.lwn.net>
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
-	<1233598811-6871-3-git-send-email-corbet@lwn.net>
-	<20090203133942.2ecec281.akpm@linux-foundation.org>
-	<4988BD4E.8080206@cosmosbay.com>
-	<20090203140543.6e915f97.akpm@linux-foundation.org>
-	<1233699722.3243.127.camel@calx>
-	<20090203153740.363d0a04@bike.lwn.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Feb 2009 17:56:45 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:41736 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751664AbZBCW4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:56:44 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Subject: Re: [Bug #12402] 2.6.29-rc: kernel BUG at fs/xfs/support/debug.c:108
+Date: Tue, 3 Feb 2009 23:56:02 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Eric Sandeen <sandeen@sandeen.net>, Dave Chinner <david@fromorbit.com>
+References: <0GOi9pntEoL.A.iGF.B9QdJB@chimera> <2QN7KFic7LG.A.03.I-QdJB@chimera> <a4423d670901281539s958128avcaf4756021125795@mail.gmail.com>
+In-Reply-To: <a4423d670901281539s958128avcaf4756021125795@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902032356.03242.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009 15:37:40 -0700
-Jonathan Corbet <corbet@lwn.net> wrote:
-
-> On Tue, 03 Feb 2009 16:22:02 -0600
-> Matt Mackall <mpm@selenic.com> wrote:
-> 
-> > But that re-opens the question of what to do about poor Jon's quest.
+On Thursday 29 January 2009, Alexander Beregalov wrote:
+> 2009/1/20 Rafael J. Wysocki <rjw@sisk.pl>:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
 > >
-> > I got confused halfway through as he went from using a global fasync
-> > spinlock to a non-locked but atomic flag bit. Not sure why using a
-> > per-file or per-inode lock doesn't work for the fasync code.
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.28.  Please verify if it still should be listed and let me know
+> > (either way).
+> >
+> >
+> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12402
+> > Subject         : 2.6.29-rc: kernel BUG at fs/xfs/support/debug.c:108
+> > Submitter       : Alexander Beregalov <a.beregalov@gmail.com>
+> > Date            : 2009-01-09 04:41 (11 days old)
+> > References      : http://thread.gmane.org/gmane.comp.file-systems.xfs.general/27548
+> > Handled-By      : Christoph Hellwig <hch@infradead.org>
+> >
 > 
-> No per-file lock because (1) there is resistance to growing struct
-> file, and (2) lockless algorithms are all the rage now.  Additionally,
-> solving the fasync-atomicity problem with locks requires the use of a
-> mutex (or the BKL) rather than a spinlock.  I suppose we could combine
-> a global f_flags lock with the set-FASYNC-in-fasync_helper() bits.
+> Should be closed, thanks.
 > 
-> At this point Poor Jon sees a fork in the road as he contemplates the
-> future of his quest:
-> 
-> - Go with this patch set, perhaps with a bit of cleanup as suggested by
->   Andrew.
-> 
-> - Go back to the global lock.
-> 
-> - Go away, leave the BKL in place, and wait for somebody smarter to
->   attack the problem.
+> commit 74e2d06521913443c7e2697037909f5efc200ec5
+> (Long btree pointers are still 64 bit on disk)
 
-Well.  We _could_ whack part of this nut with my usual hammer: protect
-f_flags with file->f_dentry->d_inode->i_lock.  IIRC there was some
-objection to that - performance?
+Closed, thanks.
 
-One problem here seems to be that we're trying to change multiple
-things at the same time.  We can blame the BKL for that.
-
-Can we break the problem into manageable chunks?  Your patchset did
-that, I guess.  What were those chunks again? ;)
+Rafael
