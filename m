@@ -1,79 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752782AbZBCIrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752971AbZBCIti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752782AbZBCIrw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 03:47:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZBCIrn
+	id S1752971AbZBCIti (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 03:49:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZBCIta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 03:47:43 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:53474 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750900AbZBCIrm (ORCPT
+	Tue, 3 Feb 2009 03:49:30 -0500
+Received: from mtagate5.uk.ibm.com ([195.212.29.138]:40386 "EHLO
+	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750821AbZBCIt3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 03:47:42 -0500
-Date: Tue, 3 Feb 2009 01:47:41 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH B 01/10] OMAP2/3 clock: combine clkdm, clkdm_name into
- union in struct clk
-In-Reply-To: <20090131115523.GF1394@n2100.arm.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0902030142590.29513@utopia.booyaka.com>
-References: <20090128024301.27240.39391.stgit@localhost.localdomain> <20090128024401.27240.68328.stgit@localhost.localdomain> <20090131115523.GF1394@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Feb 2009 03:49:29 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH v2] NOHZ: fix nohz on cpu unplug
+Date: Tue, 3 Feb 2009 09:48:13 +0100
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <200901301729.30284.borntraeger@de.ibm.com> <200902021323.44015.borntraeger@de.ibm.com> <1233619023.16238.12.camel@vayu>
+In-Reply-To: <1233619023.16238.12.camel@vayu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902030948.13519.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009, Russell King - ARM Linux wrote:
+Am Tuesday 03 February 2009 00:57:03 schrieb Suresh Siddha:
+> Does this patch fix the issue? Thanks.
 
-> On Tue, Jan 27, 2009 at 07:44:08PM -0700, Paul Walmsley wrote:
-> > diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-> > index 55c5d67..7aa09f5 100644
-> > --- a/arch/arm/mach-omap2/clock.c
-> > +++ b/arch/arm/mach-omap2/clock.c
-> > @@ -77,17 +77,17 @@ void omap2_init_clk_clkdm(struct clk *clk)
-> >  {
-> >  	struct clockdomain *clkdm;
-> >  
-> > -	if (!clk->clkdm_name)
-> > +	if (!clk->clkdm.name)
-> >  		return;
-> >  
-> > -	clkdm = clkdm_lookup(clk->clkdm_name);
-> > +	clkdm = clkdm_lookup(clk->clkdm.name);
-> >  	if (clkdm) {
-> >  		pr_debug("clock: associated clk %s to clkdm %s\n",
-> > -			 clk->name, clk->clkdm_name);
-> > -		clk->clkdm = clkdm;
-> > +			 clk->name, clk->clkdm.name);
-> > +		clk->clkdm.ptr = clkdm;
-> >  	} else {
-> >  		pr_debug("clock: could not associate clk %s to "
-> > -			 "clkdm %s\n", clk->name, clk->clkdm_name);
-> > +			 "clkdm %s\n", clk->name, clk->clkdm.name);
-> >  	}
-> 
-> This is unsafe - if the clock domain can not be found, you leave the
-> union pointing at the string, and there's no way for this to prevent
-> the clock from being registered.
-> 
-> The result is that:
-> 
-> > -		if (clk->clkdm)
-> > -			omap2_clkdm_clk_disable(clk->clkdm, clk);
-> > +		if (clk->clkdm.ptr)
-> > +			omap2_clkdm_clk_disable(clk->clkdm.ptr, clk);
-> 
-> and similar places will pass the pointer to the string, potentially
-> causing an oops, or worse, data corruption due to scribbing over
-> someone elses memory.
+I fixed up a compile error. (See below). After that, the patch does indeed fix 
+the problem.
 
-Agreed.  Now that omap2_init_clk_clkdm() is called by the 
-OMAP arch-specific clk_register(), this should be pretty easy to 
-implement.  Will send a patch that applies on top of F 06.
+Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
 
-- Paul
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 96439a4..8a0419b 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -4026,19 +4026,24 @@ int select_nohz_load_balancer(int stop_tick)
+>  	int cpu = smp_processor_id();
+>
+>  	if (stop_tick) {
+> -		cpumask_set_cpu(cpu, nohz.cpu_mask);
+>  		cpu_rq(cpu)->in_nohz_recently = 1;
+>
+> -		/*
+> -		 * If we are going offline and still the leader, give up!
+> -		 */
+> -		if (!cpu_active(cpu) &&
+> -		    atomic_read(&nohz.load_balancer) == cpu) {
+> +		if (!cpu_active(cpu) {
+
+That does not compile...I used the following:
+		if (!cpu_active(cpu)) {
+
+> +			if (atomic_read(&nohz.load_balancer) != cpu)
+> +				return 0;
+> +
+> +			/*
+> +			 * If we are going offline and still the leader,
+> +			 * give up!
+> +			 */
+>  			if (atomic_cmpxchg(&nohz.load_balancer, cpu, -1) != cpu)
+>  				BUG();
+> +
+>  			return 0;
+>  		}
+>
+> +		cpumask_set_cpu(cpu, nohz.cpu_mask);
+> +
+>  		/* time for ilb owner also to sleep */
+>  		if (cpumask_weight(nohz.cpu_mask) == num_online_cpus()) {
+>  			if (atomic_read(&nohz.load_balancer) == cpu)
+
+
