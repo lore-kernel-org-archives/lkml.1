@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZBCUHZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753713AbZBCULi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754610AbZBCUHZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 15:07:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752084AbZBCUHM
+	id S1753713AbZBCULi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 15:11:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZBCULa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 15:07:12 -0500
-Received: from iolanthe.rowland.org ([192.131.102.54]:40594 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751695AbZBCUHL (ORCPT
+	Tue, 3 Feb 2009 15:11:30 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34374 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751239AbZBCUL3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 15:07:11 -0500
-Date: Tue, 3 Feb 2009 15:07:10 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, <mingo@elte.hu>,
-       <richardj_moore@uk.ibm.com>
-Subject: Re: [RFC Patch 1/10] Introducing generic hardware breakpoint handler
- interfaces
-In-Reply-To: <20090203172331.GA8300@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0902031459450.2272-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Feb 2009 15:11:29 -0500
+Date: Tue, 3 Feb 2009 12:10:41 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, mingo@elte.hu, davem@davemloft.net
+Subject: Re: [patch 2/6] epoll keyed wakeups v2 - introduce new *_poll()
+ wakeup macros
+Message-Id: <20090203121041.23d440be.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0902031116500.23050@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.13601.1233518664.2>
+	<20090203001401.cc960d4e.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0902031011380.23050@alien.or.mcafeemobile.com>
+	<alpine.DEB.1.10.0902031116500.23050@alien.or.mcafeemobile.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009, K.Prasad wrote:
+On Tue, 3 Feb 2009 11:20:46 -0800 (PST)
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-> Hi Alan,
-> 	After a better understanding about RCU usage in this patch, I'm
-> thinking if the list traversals in kernel/hw_breakpoint.c should be
-> changed into their RCU equivalent i.e. list_for_each_entry_rcu() instead
-> of list_for_each_entry() and list_del_rcu() instead of list_del() -
-> given that we are considering the list of thread HW breakpoints
-> (thread_bps) and kernel breakpoints (cur_kbpdata) which are also
-> accessed from exception-handler contexts.
+> On Tue, 3 Feb 2009, Davide Libenzi wrote:
 > 
-> I think that with the possibility of parallel execution of
-> the 'update' sections which would alter the protected data structures
-> (mentioned above) through functions such as - say insert_bp_in_list(),
-> balance_kernel_vs_user() and various other routines and the read-side
-> critical regions which need to be identified after converting the list
-> traversal routines it would be necessary to wrap the code around them
-> with rcu_read_(un)lock() routines.
+> > On Tue, 3 Feb 2009, Andrew Morton wrote:
+> > 
+> > > On Sun, 01 Feb 2009 12:04:23 -0800 Davide Libenzi <davidel@xmailserver.org> wrote:
+> > > 
+> > > > +#define wake_up_nested_poll(x, m, s)					\
+> > > > +do {									\
+> > > > +	unsigned long flags;						\
+> > > > +									\
+> > > > +	spin_lock_irqsave_nested(&(x)->lock, flags, (s));		\
+> > > > +	wake_up_locked_poll(x, m);					\
+> > > > +	spin_unlock_irqrestore(&(x)->lock, flags);			\
+> > > > +} while (0)
+> > > 
+> > > I had to go and find the callsite to work out the type of `x' :(
+> > > 
+> > > - this macro can be passed the address of any structure which has a
+> > >   `spinlock_t lock;' in it, which seems strange.
+> > > 
+> > > - It references its first arg three times.
+> > > 
+> > > Is there any reason why we can't implement this in C?  
+> > 
+> > I don't see any reason why these two couldn't be normal functions (I 
+> > just referenced wake_up_nested(), that was a macro in the first place). 
+> 
+> Actually reading the comments helps :) It triggers an include-hell, if you 
+> make them inline. Since they're lockdep debug thingies, I think it's kinda 
+> wasted turn them into non-inline real functions, so they'd better remain 
+> macros IMO.
+> 
 
-The read-side critical sections don't need to be identified -- I can
-tell you exactly what they are.  There is only one, and it is in
-switch_to_thread_hw_breakpoint().  If you go look at that routine,
-you'll see it already uses list_for_each_entry_rcu().
+ho hum.  I think it'd be worth at least renaming the arguments to
+something less daft, for readability reasons.
 
-> What do you think? Is there something grossly incorrect in this
-> assessment of locking requirements?
+One could also do
 
-Not in your assessment of locking requirements, only in your 
-understanding of where the critical section is.
+do {
+	wait_queue_head_t *__wqh = x;
+	<use __wqh>
+}
 
-Alan Stern
+which would provide typechecking of the first arg (so people can no
+longer "pass the address of any structure which has a `spinlock_t
+lock;' in it") and which fixes the multiple-references-to-an-argument
+issue.
+
 
