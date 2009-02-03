@@ -1,240 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbZBCUpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753588AbZBCUry@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471AbZBCUpm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 15:45:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZBCUpP
+	id S1753588AbZBCUry (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 15:47:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZBCUro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 15:45:15 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33494 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751840AbZBCUpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 15:45:11 -0500
-Subject: Re: [stable]  A patch in 2.6.27.9 caused device names to change
-From: Dan Williams <dcbw@redhat.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, stable@kernel.org
-In-Reply-To: <20090203151433.4674d681@dhcp-100-2-144.bos.redhat.com>
-References: <20090202170238.348af36a@dhcp-100-2-144.bos.redhat.com>
-	 <20090203000529.GC9467@kroah.com>
-	 <1233672611.11344.6.camel@localhost.localdomain>
-	 <20090203151433.4674d681@dhcp-100-2-144.bos.redhat.com>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 15:43:42 -0500
-Message-Id: <1233693822.11344.220.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 15:47:44 -0500
+Received: from liberdade.minaslivre.org ([72.232.18.203]:43347 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752028AbZBCUro (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 15:47:44 -0500
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: linux-kernel@vger.kernel.org
+Cc: trivial@kernel.org, kamezawa.hiroyu@jp.fujitsu.com, lizf@cn.fujitsu.com,
+       rdunlap@xenotime.net,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH] trivial: fix where cgroup documentation is not correctly referred to
+Date: Tue,  3 Feb 2009 18:48:05 -0200
+Message-Id: <1233694085-23893-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <498879F1.9040009@xenotime.net>
+References: <498879F1.9040009@xenotime.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 15:14 -0500, Chuck Ebbert wrote:
-> On Tue, 03 Feb 2009 09:50:11 -0500
-> Dan Williams <dcbw@redhat.com> wrote:
-> 
-> > On Mon, 2009-02-02 at 16:05 -0800, Greg KH wrote:
-> > > On Mon, Feb 02, 2009 at 05:02:38PM -0500, Chuck Ebbert wrote:
-> > > > This patch:
-> > > > http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob_plain;f=releases/2.6.27.9/usb-option-add-pantech-cards.patch;hb=HEAD
-> > > > 
-> > > > replaced my wireless adapter's /dev/ttyACM0 interface with three interfaces:
-> > > > /dev/ttyUSB[012]
-> > > > 
-> > > > That broke my ppp connection scripts. And I have to use /dev/ttyUSB1 to connect,
-> > > > not USB0. Also it looks like Network Manager only knows how to use the first
-> > > > interface in its auto-connect mode, so people using that also lost their
-> > > > connections.
-> > > 
-> > > Ugh, that sucks.
-> > > 
-> > > That is what is also in upstream, so 2.6.29-rc also fails for you?
-> > >
-> 
-> I didn't try it, but it should. I don't have a problem with that, just with
-> changing the driver in a stable kernel update.
->  
-> > > Dan, what's with replacing working devices with the cdc-acm driver with
-> > > option device ids?  Is there some reason you did this?
-> > 
-> > For a long time we've been operating under the assumption that mobile
-> > broadband devices should be driven by option and sierra, since those
-> > drivers had the necessary buffering optimizations to support
-> > higher-speed mobile broadband devices.  That was true at least up until
-> > 2.6.24.
-> > 
-> > Furthermore, up until this point, I have not seen mobile broadband
-> > adapters (that aren't cellphones connected via USB) that *are* CDC-ACM
-> > compliant.  Everything previously has advertised proprietary interfaces,
-> > some of which are serial ports and some of which are not.
-> > 
-> > Most mobile broadband cards *do* have more than one TTY, the others are
-> > used for additional control ports or proprietary access for stuff like
-> > GPS and flashing the firmware.
-> > 
-> > Can we get the 'lsusb -v' output for this card?  I'm quite curious how
-> > many endpoints and interfaces the device actually has.
-> > 
-> 
-> Bus 002 Device 005: ID 106c:3711 Curitel Communications, Inc. 
+cgroup documentation was moved to Documentation/cgroups/. There are some
+places that still refer to Documentation/controllers/,
+Documentation/cgroups.txt and Documentation/cpusets.txt. Fix those.
 
-Excellent.  Thanks for the dump.  My original patch is in error, and the
-ID should indeed be handled by cdc-acm.  If we figure out what the
-additional interfaces are for, we can add matching to other drivers for
-them, or something like that.  Sound OK?  Sorry for the error on my end.
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ Documentation/00-INDEX                         |    4 ++--
+ Documentation/cgroups/00-INDEX                 |   18 ++++++++++++++++++
+ Documentation/kernel-parameters.txt            |    4 ++--
+ Documentation/scheduler/sched-rt-group.txt     |    2 +-
+ Documentation/vm/numa_memory_policy.txt        |    3 ++-
+ Documentation/vm/page_migration                |    3 ++-
+ Documentation/x86/x86_64/fake-numa-for-cpusets |    5 +++--
+ include/linux/cgroup.h                         |    5 ++++-
+ init/Kconfig                                   |    2 +-
+ 9 files changed, 35 insertions(+), 11 deletions(-)
+ create mode 100644 Documentation/cgroups/00-INDEX
 
-Dan
-
-> Device Descriptor:
->   bLength                18
->   bDescriptorType         1
->   bcdUSB               2.00
->   bDeviceClass            2 Communications
->   bDeviceSubClass         0 
->   bDeviceProtocol         0 
->   bMaxPacketSize0        64
->   idVendor           0x106c Curitel Communications, Inc.
->   idProduct          0x3711 
->   bcdDevice            1.00
->   iManufacturer           1 PANTECH
->   iProduct                2 PANTECH USB MODEM
->   iSerial                 0 
->   bNumConfigurations      1
->   Configuration Descriptor:
->     bLength                 9
->     bDescriptorType         2
->     wTotalLength          113
->     bNumInterfaces          4
->     bConfigurationValue     1
->     iConfiguration          0 
->     bmAttributes         0x80
->       (Bus Powered)
->     MaxPower              500mA
->     Interface Descriptor:
->       bLength                 9
->       bDescriptorType         4
->       bInterfaceNumber        0
->       bAlternateSetting       0
->       bNumEndpoints           1
->       bInterfaceClass         2 Communications
->       bInterfaceSubClass      2 Abstract (modem)
->       bInterfaceProtocol      1 AT-commands (v.25ter)
->       iInterface              0 
->       CDC Header:
->         bcdCDC               1.09
->       CDC Call Management:
->         bmCapabilities       0x03
->           call management
->           use DataInterface
->         bDataInterface          1
->       CDC ACM:
->         bmCapabilities       0x0f
->           connection notifications
->           sends break
->           line coding and serial state
->           get/set/clear comm features
->       CDC Union:
->         bMasterInterface        0
->         bSlaveInterface         1 
->       Endpoint Descriptor:
->         bLength                 7
->         bDescriptorType         5
->         bEndpointAddress     0x81  EP 1 IN
->         bmAttributes            3
->           Transfer Type            Interrupt
->           Synch Type               None
->           Usage Type               Data
->         wMaxPacketSize     0x0040  1x 64 bytes
->         bInterval               9
->     Interface Descriptor:
->       bLength                 9
->       bDescriptorType         4
->       bInterfaceNumber        1
->       bAlternateSetting       0
->       bNumEndpoints           2
->       bInterfaceClass        10 CDC Data
->       bInterfaceSubClass      0 Unused
->       bInterfaceProtocol      0 
->       iInterface              3 Data Interface
->       Endpoint Descriptor:
->         bLength                 7
->         bDescriptorType         5
->         bEndpointAddress     0x85  EP 5 IN
->         bmAttributes            2
->           Transfer Type            Bulk
->           Synch Type               None
->           Usage Type               Data
->         wMaxPacketSize     0x0200  1x 512 bytes
->         bInterval               0
->       Endpoint Descriptor:
->         bLength                 7
->         bDescriptorType         5
->         bEndpointAddress     0x03  EP 3 OUT
->         bmAttributes            2
->           Transfer Type            Bulk
->           Synch Type               None
->           Usage Type               Data
->         wMaxPacketSize     0x0200  1x 512 bytes
->         bInterval               0
->     Interface Descriptor:
->       bLength                 9
->       bDescriptorType         4
->       bInterfaceNumber        2
->       bAlternateSetting       0
->       bNumEndpoints           2
->       bInterfaceClass       255 Vendor Specific Class
->       bInterfaceSubClass      0 
->       bInterfaceProtocol      0 
->       iInterface              0 
->       Endpoint Descriptor:
->         bLength                 7
->         bDescriptorType         5
->         bEndpointAddress     0x89  EP 9 IN
->         bmAttributes            2
->           Transfer Type            Bulk
->           Synch Type               None
->           Usage Type               Data
->         wMaxPacketSize     0x0200  1x 512 bytes
->         bInterval               0
->       Endpoint Descriptor:
->         bLength                 7
->         bDescriptorType         5
->         bEndpointAddress     0x07  EP 7 OUT
->         bmAttributes            2
->           Transfer Type            Bulk
->           Synch Type               None
->           Usage Type               Data
->         wMaxPacketSize     0x0200  1x 512 bytes
->         bInterval               0
->     Interface Descriptor:
->       bLength                 9
->       bDescriptorType         4
->       bInterfaceNumber        3
->       bAlternateSetting       0
->       bNumEndpoints           2
->       bInterfaceClass         8 Mass Storage
->       bInterfaceSubClass      6 SCSI
->       bInterfaceProtocol     80 Bulk (Zip)
->       iInterface              0 
->       Endpoint Descriptor:
->         bLength                 7
->         bDescriptorType         5
->         bEndpointAddress     0x02  EP 2 OUT
->         bmAttributes            2
->           Transfer Type            Bulk
->           Synch Type               None
->           Usage Type               Data
->         wMaxPacketSize     0x0200  1x 512 bytes
->         bInterval               0
->       Endpoint Descriptor:
->         bLength                 7
->         bDescriptorType         5
->         bEndpointAddress     0x86  EP 6 IN
->         bmAttributes            2
->           Transfer Type            Bulk
->           Synch Type               None
->           Usage Type               Data
->         wMaxPacketSize     0x0200  1x 512 bytes
->         bInterval               0
-> Device Status:     0x0000
->   (Bus Powered)
-> 
+diff --git a/Documentation/00-INDEX b/Documentation/00-INDEX
+index 2a39aeb..d05737a 100644
+--- a/Documentation/00-INDEX
++++ b/Documentation/00-INDEX
+@@ -86,6 +86,8 @@ cachetlb.txt
+ 	- describes the cache/TLB flushing interfaces Linux uses.
+ cdrom/
+ 	- directory with information on the CD-ROM drivers that Linux has.
++cgroups/
++	- cgroups features, including cpusets and memory controller.
+ connector/
+ 	- docs on the netlink based userspace<->kernel space communication mod.
+ console/
+@@ -98,8 +100,6 @@ cpu-load.txt
+ 	- document describing how CPU load statistics are collected.
+ cpuidle/
+ 	- info on CPU_IDLE, CPU idle state management subsystem.
+-cpusets.txt
+-	- documents the cpusets feature; assign CPUs and Mem to a set of tasks.
+ cputopology.txt
+ 	- documentation on how CPU topology info is exported via sysfs.
+ cris/
+diff --git a/Documentation/cgroups/00-INDEX b/Documentation/cgroups/00-INDEX
+new file mode 100644
+index 0000000..3f58fa3
+--- /dev/null
++++ b/Documentation/cgroups/00-INDEX
+@@ -0,0 +1,18 @@
++00-INDEX
++	- this file
++cgroups.txt
++	- Control Groups definition, implementation details, examples and API.
++cpuacct.txt
++	- CPU Accounting Controller; account CPU usage for groups of tasks.
++cpusets.txt
++	- documents the cpusets feature; assign CPUs and Mem to a set of tasks.
++devices.txt
++	- Device Whitelist Controller; description, interface and security.
++freezer-subsystem.txt
++	- checkpointing; rationale to not use signals, interface.
++memcg_test.txt
++	- Memory Resource Controller; implementation details.
++memory.txt
++	- Memory Resource Controller; design, accounting, interface, testing.
++resource_counter.txt
++	- Resource Counter API.
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index d8362cf..4fd448b 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -1563,7 +1563,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 	nosoftlockup	[KNL] Disable the soft-lockup detector.
+ 
+ 	noswapaccount	[KNL] Disable accounting of swap in memory resource
+-			controller. (See Documentation/controllers/memory.txt)
++			controller. (See Documentation/cgroups/memory.txt)
+ 
+ 	nosync		[HW,M68K] Disables sync negotiation for all devices.
+ 
+@@ -1907,7 +1907,7 @@ and is between 256 and 4096 characters. It is defined in the file
+ 
+ 	relax_domain_level=
+ 			[KNL, SMP] Set scheduler's default relax_domain_level.
+-			See Documentation/cpusets.txt.
++			See Documentation/cgroups/cpusets.txt.
+ 
+ 	reserve=	[KNL,BUGS] Force the kernel to ignore some iomem area
+ 
+diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+index 3ef339f..5ba4d3f 100644
+--- a/Documentation/scheduler/sched-rt-group.txt
++++ b/Documentation/scheduler/sched-rt-group.txt
+@@ -126,7 +126,7 @@ This uses the /cgroup virtual file system and "/cgroup/<cgroup>/cpu.rt_runtime_u
+ to control the CPU time reserved for each control group instead.
+ 
+ For more information on working with control groups, you should read
+-Documentation/cgroups.txt as well.
++Documentation/cgroups/cgroups.txt as well.
+ 
+ Group settings are checked against the following limits in order to keep the configuration
+ schedulable:
+diff --git a/Documentation/vm/numa_memory_policy.txt b/Documentation/vm/numa_memory_policy.txt
+index 6aaaeb3..be45dbb 100644
+--- a/Documentation/vm/numa_memory_policy.txt
++++ b/Documentation/vm/numa_memory_policy.txt
+@@ -8,7 +8,8 @@ The current memory policy support was added to Linux 2.6 around May 2004.  This
+ document attempts to describe the concepts and APIs of the 2.6 memory policy
+ support.
+ 
+-Memory policies should not be confused with cpusets (Documentation/cpusets.txt)
++Memory policies should not be confused with cpusets
++(Documentation/cgroups/cpusets.txt)
+ which is an administrative mechanism for restricting the nodes from which
+ memory may be allocated by a set of processes. Memory policies are a
+ programming interface that a NUMA-aware application can take advantage of.  When
+diff --git a/Documentation/vm/page_migration b/Documentation/vm/page_migration
+index d5fdfd3..6513fe2 100644
+--- a/Documentation/vm/page_migration
++++ b/Documentation/vm/page_migration
+@@ -37,7 +37,8 @@ locations.
+ 
+ Larger installations usually partition the system using cpusets into
+ sections of nodes. Paul Jackson has equipped cpusets with the ability to
+-move pages when a task is moved to another cpuset (See ../cpusets.txt).
++move pages when a task is moved to another cpuset (See
++Documentation/cgroups/cpusets.txt).
+ Cpusets allows the automation of process locality. If a task is moved to
+ a new cpuset then also all its pages are moved with it so that the
+ performance of the process does not sink dramatically. Also the pages
+diff --git a/Documentation/x86/x86_64/fake-numa-for-cpusets b/Documentation/x86/x86_64/fake-numa-for-cpusets
+index 33bb566..0f11d9b 100644
+--- a/Documentation/x86/x86_64/fake-numa-for-cpusets
++++ b/Documentation/x86/x86_64/fake-numa-for-cpusets
+@@ -7,7 +7,8 @@ you can create fake NUMA nodes that represent contiguous chunks of memory and
+ assign them to cpusets and their attached tasks.  This is a way of limiting the
+ amount of system memory that are available to a certain class of tasks.
+ 
+-For more information on the features of cpusets, see Documentation/cpusets.txt.
++For more information on the features of cpusets, see
++Documentation/cgroups/cpusets.txt.
+ There are a number of different configurations you can use for your needs.  For
+ more information on the numa=fake command line option and its various ways of
+ configuring fake nodes, see Documentation/x86/x86_64/boot-options.txt.
+@@ -32,7 +33,7 @@ A machine may be split as follows with "numa=fake=4*512," as reported by dmesg:
+ 	On node 3 totalpages: 131072
+ 
+ Now following the instructions for mounting the cpusets filesystem from
+-Documentation/cpusets.txt, you can assign fake nodes (i.e. contiguous memory
++Documentation/cgroups/cpusets.txt, you can assign fake nodes (i.e. contiguous memory
+ address spaces) to individual cpusets:
+ 
+ 	[root@xroads /]# mkdir exampleset
+diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
+index e267e62..1d9dd8f 100644
+--- a/include/linux/cgroup.h
++++ b/include/linux/cgroup.h
+@@ -341,7 +341,10 @@ int cgroup_task_count(const struct cgroup *cgrp);
+ /* Return true if the cgroup is a descendant of the current cgroup */
+ int cgroup_is_descendant(const struct cgroup *cgrp);
+ 
+-/* Control Group subsystem type. See Documentation/cgroups.txt for details */
++/*
++ * Control Group subsystem type.
++ * See Documentation/cgroups/cgroups.txt for details
++ */
+ 
+ struct cgroup_subsys {
+ 	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
+diff --git a/init/Kconfig b/init/Kconfig
+index f068071..87e26cd 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -505,7 +505,7 @@ config CGROUP_MEM_RES_CTLR
+ 	select MM_OWNER
+ 	help
+ 	  Provides a memory resource controller that manages both anonymous
+-	  memory and page cache. (See Documentation/controllers/memory.txt)
++	  memory and page cache. (See Documentation/cgroups/memory.txt)
+ 
+ 	  Note that setting this option increases fixed memory overhead
+ 	  associated with each page of memory in the system. By this,
+-- 
+1.6.0.6
 
