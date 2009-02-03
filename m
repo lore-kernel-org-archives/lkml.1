@@ -1,178 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbZBCCOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZBCCRb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984AbZBCCOH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 21:14:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZBCCNz
+	id S1752541AbZBCCRb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 21:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZBCCRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 21:13:55 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:45573 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750977AbZBCCNy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 21:13:54 -0500
-Date: Tue, 3 Feb 2009 11:12:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org, lizf@cn.fujitsu.com
-Subject: Re: [PATCH] trivial: fix where cgroup documentation is not
- correctly referred to
-Message-Id: <20090203111242.c71bedaa.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1233614324-27603-1-git-send-email-cascardo@holoscopio.com>
-References: <1233614324-27603-1-git-send-email-cascardo@holoscopio.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Feb 2009 21:17:23 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45687 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750857AbZBCCRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 21:17:23 -0500
+Message-ID: <4987A8F3.1010702@kernel.org>
+Date: Mon, 02 Feb 2009 18:16:19 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86: fix kexec with vmlinux
+References: <49878B88.8050602@kernel.org>
+In-Reply-To: <49878B88.8050602@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  2 Feb 2009 20:38:44 -0200
-Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote:
 
-> cgroup documentation was moved to Documentation/cgroups/. There are some
-> places that still refer to Documentation/controllers/,
-> Documentation/cgroups.txt and Documentation/cpusets.txt. Fix those.
-> 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Impact: fix regression with kexec with vmlinux
 
-Thanks, very helpful.
-for memory cgroup part, Ack from me.
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+split data.init into data.init, percpu, data.init2 sections
+instead of let data.init wrap percpu secion.
 
-> ---
->  Documentation/kernel-parameters.txt            |    4 ++--
->  Documentation/scheduler/sched-rt-group.txt     |    2 +-
->  Documentation/vm/numa_memory_policy.txt        |    3 ++-
->  Documentation/vm/page_migration                |    3 ++-
->  Documentation/x86/x86_64/fake-numa-for-cpusets |    5 +++--
->  include/linux/cgroup.h                         |    5 ++++-
->  init/Kconfig                                   |    2 +-
->  7 files changed, 15 insertions(+), 9 deletions(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index d8362cf..4fd448b 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1563,7 +1563,7 @@ and is between 256 and 4096 characters. It is defined in the file
->  	nosoftlockup	[KNL] Disable the soft-lockup detector.
->  
->  	noswapaccount	[KNL] Disable accounting of swap in memory resource
-> -			controller. (See Documentation/controllers/memory.txt)
-> +			controller. (See Documentation/cgroups/memory.txt)
->  
->  	nosync		[HW,M68K] Disables sync negotiation for all devices.
->  
-> @@ -1907,7 +1907,7 @@ and is between 256 and 4096 characters. It is defined in the file
->  
->  	relax_domain_level=
->  			[KNL, SMP] Set scheduler's default relax_domain_level.
-> -			See Documentation/cpusets.txt.
-> +			See Documentation/cgroups/cpusets.txt.
->  
->  	reserve=	[KNL,BUGS] Force the kernel to ignore some iomem area
->  
-> diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
-> index 3ef339f..5ba4d3f 100644
-> --- a/Documentation/scheduler/sched-rt-group.txt
-> +++ b/Documentation/scheduler/sched-rt-group.txt
-> @@ -126,7 +126,7 @@ This uses the /cgroup virtual file system and "/cgroup/<cgroup>/cpu.rt_runtime_u
->  to control the CPU time reserved for each control group instead.
->  
->  For more information on working with control groups, you should read
-> -Documentation/cgroups.txt as well.
-> +Documentation/cgroups/cgroups.txt as well.
->  
->  Group settings are checked against the following limits in order to keep the configuration
->  schedulable:
-> diff --git a/Documentation/vm/numa_memory_policy.txt b/Documentation/vm/numa_memory_policy.txt
-> index 6aaaeb3..be45dbb 100644
-> --- a/Documentation/vm/numa_memory_policy.txt
-> +++ b/Documentation/vm/numa_memory_policy.txt
-> @@ -8,7 +8,8 @@ The current memory policy support was added to Linux 2.6 around May 2004.  This
->  document attempts to describe the concepts and APIs of the 2.6 memory policy
->  support.
->  
-> -Memory policies should not be confused with cpusets (Documentation/cpusets.txt)
-> +Memory policies should not be confused with cpusets
-> +(Documentation/cgroups/cpusets.txt)
->  which is an administrative mechanism for restricting the nodes from which
->  memory may be allocated by a set of processes. Memory policies are a
->  programming interface that a NUMA-aware application can take advantage of.  When
-> diff --git a/Documentation/vm/page_migration b/Documentation/vm/page_migration
-> index d5fdfd3..6513fe2 100644
-> --- a/Documentation/vm/page_migration
-> +++ b/Documentation/vm/page_migration
-> @@ -37,7 +37,8 @@ locations.
->  
->  Larger installations usually partition the system using cpusets into
->  sections of nodes. Paul Jackson has equipped cpusets with the ability to
-> -move pages when a task is moved to another cpuset (See ../cpusets.txt).
-> +move pages when a task is moved to another cpuset (See
-> +Documentation/cgroups/cpusets.txt).
->  Cpusets allows the automation of process locality. If a task is moved to
->  a new cpuset then also all its pages are moved with it so that the
->  performance of the process does not sink dramatically. Also the pages
-> diff --git a/Documentation/x86/x86_64/fake-numa-for-cpusets b/Documentation/x86/x86_64/fake-numa-for-cpusets
-> index 33bb566..0f11d9b 100644
-> --- a/Documentation/x86/x86_64/fake-numa-for-cpusets
-> +++ b/Documentation/x86/x86_64/fake-numa-for-cpusets
-> @@ -7,7 +7,8 @@ you can create fake NUMA nodes that represent contiguous chunks of memory and
->  assign them to cpusets and their attached tasks.  This is a way of limiting the
->  amount of system memory that are available to a certain class of tasks.
->  
-> -For more information on the features of cpusets, see Documentation/cpusets.txt.
-> +For more information on the features of cpusets, see
-> +Documentation/cgroups/cpusets.txt.
->  There are a number of different configurations you can use for your needs.  For
->  more information on the numa=fake command line option and its various ways of
->  configuring fake nodes, see Documentation/x86/x86_64/boot-options.txt.
-> @@ -32,7 +33,7 @@ A machine may be split as follows with "numa=fake=4*512," as reported by dmesg:
->  	On node 3 totalpages: 131072
->  
->  Now following the instructions for mounting the cpusets filesystem from
-> -Documentation/cpusets.txt, you can assign fake nodes (i.e. contiguous memory
-> +Documentation/cgroups/cpusets.txt, you can assign fake nodes (i.e. contiguous memory
->  address spaces) to individual cpusets:
->  
->  	[root@xroads /]# mkdir exampleset
-> diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-> index e267e62..1d9dd8f 100644
-> --- a/include/linux/cgroup.h
-> +++ b/include/linux/cgroup.h
-> @@ -341,7 +341,10 @@ int cgroup_task_count(const struct cgroup *cgrp);
->  /* Return true if the cgroup is a descendant of the current cgroup */
->  int cgroup_is_descendant(const struct cgroup *cgrp);
->  
-> -/* Control Group subsystem type. See Documentation/cgroups.txt for details */
-> +/*
-> + * Control Group subsystem type.
-> + * See Documentation/cgroups/cgroups.txt for details
-> + */
->  
->  struct cgroup_subsys {
->  	struct cgroup_subsys_state *(*create)(struct cgroup_subsys *ss,
-> diff --git a/init/Kconfig b/init/Kconfig
-> index f068071..87e26cd 100644
-> --- a/init/Kconfig
-> +++ b/init/Kconfig
-> @@ -505,7 +505,7 @@ config CGROUP_MEM_RES_CTLR
->  	select MM_OWNER
->  	help
->  	  Provides a memory resource controller that manages both anonymous
-> -	  memory and page cache. (See Documentation/controllers/memory.txt)
-> +	  memory and page cache. (See Documentation/cgroups/memory.txt)
->  
->  	  Note that setting this option increases fixed memory overhead
->  	  associated with each page of memory in the system. By this,
-> -- 
-> 1.6.0.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+so kexec loading will be happy that there will not have overlapping.
 
+before patch have
+Elf file type is EXEC (Executable file)
+Entry point 0x200000
+There are 6 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  LOAD           0x0000000000200000 0xffffffff80200000 0x0000000000200000
+                 0x0000000000ca6000 0x0000000000ca6000  R E    200000
+  LOAD           0x0000000000ea6000 0xffffffff80ea6000 0x0000000000ea6000
+                 0x000000000014dfe0 0x000000000014dfe0  RWE    200000
+  LOAD           0x0000000001000000 0xffffffffff600000 0x0000000000ff4000
+                 0x0000000000000888 0x0000000000000888  RWE    200000
+  LOAD           0x00000000011f6000 0xffffffff80ff6000 0x0000000000ff6000
+                 0x0000000000073086 0x0000000000a2d938  RWE    200000
+  LOAD           0x0000000001400000 0x0000000000000000 0x000000000106a000
+                 0x00000000001d2ce0 0x00000000001d2ce0  RWE    200000
+  NOTE           0x00000000009e2c1c 0xffffffff809e2c1c 0x00000000009e2c1c
+                 0x0000000000000024 0x0000000000000024         4
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     .text .notes __ex_table .rodata __bug_table .pci_fixup .builtin_fw __ksymtab __ksymtab_gpl __ksymtab_strings __init_rodata __param 
+   01     .data .init.rodata .data.cacheline_aligned .data.read_mostly 
+   02     .vsyscall_0 .vsyscall_fn .vsyscall_gtod_data .vsyscall_1 .vsyscall_2 .vgetcpu_mode .jiffies 
+   03     .data.init_task .smp_locks .init.text .init.data .init.setup .initcall.init .con_initcall.init .x86_cpu_dev.init .altinstructions .altinstr_replacement .exit.text .init.ramfs .bss 
+   04     .data.percpu 
+   05     .notes 
+
+
+after patch got
+
+Elf file type is EXEC (Executable file)
+Entry point 0x200000
+There are 7 program headers, starting at offset 64
+
+Program Headers:
+  Type           Offset             VirtAddr           PhysAddr
+                 FileSiz            MemSiz              Flags  Align
+  LOAD           0x0000000000200000 0xffffffff80200000 0x0000000000200000
+                 0x0000000000ca6000 0x0000000000ca6000  R E    200000
+  LOAD           0x0000000000ea6000 0xffffffff80ea6000 0x0000000000ea6000
+                 0x000000000014dfe0 0x000000000014dfe0  RWE    200000
+  LOAD           0x0000000001000000 0xffffffffff600000 0x0000000000ff4000
+                 0x0000000000000888 0x0000000000000888  RWE    200000
+  LOAD           0x00000000011f6000 0xffffffff80ff6000 0x0000000000ff6000
+                 0x0000000000073086 0x0000000000073086  RWE    200000
+  LOAD           0x0000000001400000 0x0000000000000000 0x000000000106a000
+                 0x00000000001d2ce0 0x00000000001d2ce0  RWE    200000
+  LOAD           0x000000000163d000 0xffffffff8123d000 0x000000000123d000
+                 0x0000000000000000 0x00000000007e6938  RWE    200000
+  NOTE           0x00000000009e2c1c 0xffffffff809e2c1c 0x00000000009e2c1c
+                 0x0000000000000024 0x0000000000000024         4
+
+ Section to Segment mapping:
+  Segment Sections...
+   00     .text .notes __ex_table .rodata __bug_table .pci_fixup .builtin_fw __ksymtab __ksymtab_gpl __ksymtab_strings __init_rodata __param 
+   01     .data .init.rodata .data.cacheline_aligned .data.read_mostly 
+   02     .vsyscall_0 .vsyscall_fn .vsyscall_gtod_data .vsyscall_1 .vsyscall_2 .vgetcpu_mode .jiffies 
+   03     .data.init_task .smp_locks .init.text .init.data .init.setup .initcall.init .con_initcall.init .x86_cpu_dev.init .altinstructions .altinstr_replacement .exit.text .init.ramfs 
+   04     .data.percpu 
+   05     .bss 
+   06     .notes 
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/vmlinux_64.lds.S |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/vmlinux_64.lds.S
++++ linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
+@@ -22,6 +22,7 @@ PHDRS {
+ #ifdef CONFIG_SMP
+ 	percpu PT_LOAD FLAGS(7);	/* RWE */
+ #endif
++	data.init2 PT_LOAD FLAGS(7);	/* RWE */
+ 	note PT_NOTE FLAGS(0);	/* ___ */
+ }
+ SECTIONS
+@@ -215,7 +216,7 @@ SECTIONS
+   /*
+    * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
+    * output PHDR, so the next output section - __data_nosave - should
+-   * switch it back to data.init.  Also, pda should be at the head of
++   * start another section data.init2.  Also, pda should be at the head of
+    * percpu area.  Preallocate it and define the percpu offset symbol
+    * so that it can be accessed as a percpu variable.
+    */
+@@ -232,7 +233,7 @@ SECTIONS
+   __nosave_begin = .;
+   .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+       *(.data.nosave)
+-  } :data.init	/* switch back to data.init, see PERCPU_VADDR() above */
++  } :data.init2 /* use another section data.init2, see PERCPU_VADDR() above */
+   . = ALIGN(PAGE_SIZE);
+   __nosave_end = .;
+ 
