@@ -1,95 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbZBCAe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbZBCAl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbZBCAe5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:34:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753617AbZBCAes
+	id S1757580AbZBCAl7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:41:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754119AbZBCAlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:34:48 -0500
-Received: from fg-out-1718.google.com ([72.14.220.159]:35810 "EHLO
+	Mon, 2 Feb 2009 19:41:49 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:37103 "EHLO
 	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752913AbZBCAes (ORCPT
+	with ESMTP id S1754035AbZBCAls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:34:48 -0500
+	Mon, 2 Feb 2009 19:41:48 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Wb+uRBVoqUdbYcI9C7ALq8oQc2F02BY7W/lJhRl6cR8jwQiXvOX1oKMm1oA7Rlb7S/
-         GYHO+6QJfZ4wYgCllYQh+d5FjkJOYB7GyxiULCfGCRtQmMptdkuI3b/HKhyR6KIv1803
-         g4BDAmU1A+fHluVGWkaJBHrmu7a4wOkjrRYuA=
-Date: Tue, 3 Feb 2009 03:34:42 +0300
-From: Anton Vorontsov <cbouatmailru@gmail.com>
-To: Balaji Rao <balajirrao@openmoko.org>
-Cc: linux-kernel@vger.kernel.org, Anton Vorontsov <cbou@mail.ru>,
-       Andy Green <andy@openmoko.com>
-Subject: Re: [PATCH 2/3] pcf50633_charger: Remove mbc_set_status
-Message-ID: <20090203003442.GC29462@zarina>
-Reply-To: cbouatmailru@gmail.com
-References: <20090127135238.6875.26314.stgit@fedora.yogi> <20090127135255.6875.64874.stgit@fedora.yogi>
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=Zym9L0rgBSvAu8FHl86z+UYSCvbt/FPQEt8s7l2R5xJwL0nNUK2llCREOKJWtPuSny
+         vnJXVHyChY8UcNNe5ChhtqU+R6QZ/giwaGWd4J/fYtztbIASybOMUEnlQPPJM/YMA5+O
+         97P8RhkvOOvgpagclKCn3lyj8tbA/g9CmoddY=
+Date: Tue, 3 Feb 2009 01:41:42 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Mandeep Singh Baines <msb@google.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: next-20090202: task kmemleak:763 blocked for more than 120
+	seconds.
+Message-ID: <20090203004141.GA22718@nowhere>
+References: <a4423d670902020327x61a1d9dehb1642b25ec7f82f1@mail.gmail.com> <tnxiqns28mm.fsf@pc1117.cambridge.arm.com> <c62985530902020715u73407d4dqe14c340de310c866@mail.gmail.com> <20090202215740.GA26550@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=windows-1251
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090127135255.6875.64874.stgit@fedora.yogi>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090202215740.GA26550@google.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Jan 27, 2009 at 07:22:55PM +0530, Balaji Rao wrote:
-> Remove unused 'pcf50633_mbc_set_status' function.
+On Mon, Feb 02, 2009 at 01:57:40PM -0800, Mandeep Singh Baines wrote:
+> Frédéric Weisbecker (fweisbec@gmail.com) wrote:
+> > 2009/2/2 Catalin Marinas <catalin.marinas@arm.com>:
+> > > Alexander Beregalov <a.beregalov@gmail.com> wrote:
+> > >> It seems it is blocked forever.
+> > >
+> > > Scanning the full memory may take a lot of time, depending on the
+> > > amount of RAM and the number of objects allocated. It is not unlikely
+> > > to take more than 120 seconds on some loaded systems. However, it
+> > > should call schedule() periodically to let other tasks run. Is your
+> > > system unresponsive during this?
+> > >
+> > >> [ 1704.619898] INFO: task kmemleak:763 blocked for more than 120 seconds.
+> > >> [ 1704.697951] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs"
+> > >> disables this message.
+> > >> [ 1704.791613] kmemleak      D 0000000000000001  6008   763      2
+> > > [...]
+> > >> [ 1706.246334] no locks held by kmemleak/763.
+> > >
+> > > It looks like the kmemleak thread is in the TASK_UNINTERUPTIBLE state.
+> > > This happens when it calls schedule_timeout_uninterruptible() to sleep
+> > > between scans. It probably took more than 120 to scan the memory and
+> > > hence the report.
+> > >
+> > > It doesn't look like a problem, only that the watchdog thread checks
+> > > for uninterruptible tasks. I can try to make it sleep with
+> > > TASK_INTERRUPTIBLE to avoid the message.
+> > >
+> > > Thanks.
+> > >
+> > > --
+> > > Catalin
+> > > --
+> > 
+> > 
+> > Hi,
+> > 
+> > May be it would be better to make the softlockup detector hooking into
+> > schedule_timeout()
+> > (ie by using a tracepoint) to check if a thread chose to sleep more
+> > than hung_task_timeout_secs
+> > intentionally in a TASK_UNINTERRUPTIBLE state.
+> > 
+> > Fixing it into kmemleak would not solve the problem in other tasks
+> > which do similar sleeps...
+> > 
 > 
-> Signed-off-by: Balaji Rao <balajirrao@openmoko.org>
-> Cc: Andy Green <andy@openmoko.com>
-> Cc: Anton Vorontsov <cbou@mail.ru>
-> ---
-
-This patch applied to battery-2.6.git (i.e. for 2.6.30).
-
-Thanks!
-
->  drivers/power/pcf50633-charger.c |   15 ---------------
->  include/linux/mfd/pcf50633/mbc.h |    1 -
->  2 files changed, 0 insertions(+), 16 deletions(-)
+> The hung_task timeout is now 480 seconds because of sys_sync:
 > 
-> diff --git a/drivers/power/pcf50633-charger.c b/drivers/power/pcf50633-charger.c
-> index 41aec2a..aceffdc 100644
-> --- a/drivers/power/pcf50633-charger.c
-> +++ b/drivers/power/pcf50633-charger.c
-> @@ -84,21 +84,6 @@ int pcf50633_mbc_get_status(struct pcf50633 *pcf)
->  }
->  EXPORT_SYMBOL_GPL(pcf50633_mbc_get_status);
->  
-> -void pcf50633_mbc_set_status(struct pcf50633 *pcf, int what, int status)
-> -{
-> -	struct pcf50633_mbc *mbc = platform_get_drvdata(pcf->mbc_pdev);
-> -
-> -	if (what & PCF50633_MBC_USB_ONLINE)
-> -		mbc->usb_online = !!status;
-> -	if (what & PCF50633_MBC_USB_ACTIVE)
-> -		mbc->usb_active = !!status;
-> -	if (what & PCF50633_MBC_ADAPTER_ONLINE)
-> -		mbc->adapter_online = !!status;
-> -	if (what & PCF50633_MBC_ADAPTER_ACTIVE)
-> -		mbc->adapter_active = !!status;
-> -}
-> -EXPORT_SYMBOL_GPL(pcf50633_mbc_set_status);
-> -
->  static ssize_t
->  show_chgmode(struct device *dev, struct device_attribute *attr, char *buf)
->  {
-> diff --git a/include/linux/mfd/pcf50633/mbc.h b/include/linux/mfd/pcf50633/mbc.h
-> index 6e17619..4119579 100644
-> --- a/include/linux/mfd/pcf50633/mbc.h
-> +++ b/include/linux/mfd/pcf50633/mbc.h
-> @@ -128,7 +128,6 @@ enum pcf50633_reg_mbcs3 {
->  int pcf50633_mbc_usb_curlim_set(struct pcf50633 *pcf, int ma);
->  
->  int pcf50633_mbc_get_status(struct pcf50633 *);
-> -void pcf50633_mbc_set_status(struct pcf50633 *, int what, int status);
->  
->  #endif
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=fb822db465bd9fd4208eef1af4490539b236c54e
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+Oh ok.
+
+ 
+> But are there are really any other tasks which call
+> schedule_timeout_uninterruptibl() for with a timeout >480 seconds?
+
+
+I doubt it, you're right :-)
+
+
+> Right now kmemleak appears to be the only exception. (A quick grep didn't turn
+> anything up.) And it is trivial to change kmemleak to use INTERRUPTIBLE.
+> Might even be a nice feature. You could stop it faster that way.
+
+
+Right. BTW, I wonder how it behaves in case of suspend to disk.
+But changing the state to TASK_INTERRUPTIBLE wouldn't change it in this case since the
+signals are only sent to userpace threads to freeze them.
+
+Kernel threads try to freeze by themselves.
+
+But for such very long schedule_timeout, will the hibernation wait for kmemleak
+to wake up and then try_to_freeze() before suspend to disk?
+
+Does kmemleak listen to power events to wake up itself in such case? Sorry
+I didn't look at kmemleak sources...
+
+
+> I suspect cases where long UNINTERRUPTIBLE sleeps is the right solution are
+> extremely rare. Since kmemleak can be modified, maybe hold off on ignoring
+> schedule_timeout_uninterruptible(). Not exempting schedule_timeout_uninter*
+> reduces code sprawl and discourages long UNINTERRUPTIBLE sleeps.
+
+Right.
+
+
+> > Mandeep, if you agree I can try something? Or perhaps you prefer to do
+> > it yourself. As you wish.
+> 
+> Nah, don't wait for me. If you have a useful patch, just send it;) I'm
+> actually not the maintainer of hung_task, mingo@elte.hu is, but I am more than
+> happy to review patches.
+
+
+Thanks, but since the delay has been enlarged and such long sleeping threads should be rare,
+it doesn't seem to required yet. And if it needs to be changed, false warning will be reported :-)
+
+Thanks.
+
