@@ -1,118 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753720AbZBCJwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754154AbZBCJwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753720AbZBCJwD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 04:52:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZBCJvy
+	id S1754154AbZBCJwt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 04:52:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZBCJwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 04:51:54 -0500
-Received: from [202.81.31.146] ([202.81.31.146]:56379 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbZBCJvx (ORCPT
+	Tue, 3 Feb 2009 04:52:40 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:1487 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751568AbZBCJwk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 04:51:53 -0500
-X-Greylist: delayed 18623 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 04:51:52 EST
-Date: Tue, 3 Feb 2009 10:11:23 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: David Rientjes <rientjes@google.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM
-Message-ID: <20090203044123.GL918@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090202125240.GA918@balbir.in.ibm.com> <20090202215527.EC92.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090202141705.GE918@balbir.in.ibm.com> <alpine.DEB.2.00.0902021235500.26971@chino.kir.corp.google.com> <20090202205434.GI918@balbir.in.ibm.com> <alpine.DEB.2.00.0902021256030.30674@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0902021256030.30674@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Feb 2009 04:52:40 -0500
+Date: Tue, 3 Feb 2009 10:52:22 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Hans de Goede <hdegoede@redhat.com>,
+       Matthew Garrett <mjg@redhat.com>, Roland Dreier <rolandd@cisco.com>
+Subject: Re: [PATCH] dmi: Let dmi_walk() users pass private data
+Message-ID: <20090203105222.34f9f1b5@hyperion.delvare>
+In-Reply-To: <20090203004210.235f162d.akpm@linux-foundation.org>
+References: <20090201224659.6e7e84eb@hyperion.delvare>
+	<20090203004210.235f162d.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Rientjes <rientjes@google.com> [2009-02-02 13:05:02]:
+On Tue, 3 Feb 2009 00:42:10 -0800, Andrew Morton wrote:
+> On Sun, 1 Feb 2009 22:46:59 +0100 Jean Delvare <khali@linux-fr.org> wrote:
+> 
+> > At the moment, dmi_walk() lacks flexibility, users can't pass data to
+> > the callback function. Add a pointer for private data to make this
+> > function more flexible.
+> 
+> That new argument is sometimes called "priv", other times called "data"
+> and other times called "dummy".  It would be good to come up with a nice
+> meaningful name and stick to it.
+> 
+> (The "dummy" thing probably makes sense, as long as people think to 
+> rename it to the chosen identifier if they later actually use it for
+> something).
 
-> On Tue, 3 Feb 2009, Balbir Singh wrote:
-> 
-> > David, I'd agree, but since we are under printk_ratelimit() and this
-> > is a not-so-common path, does the log level matter much? If it does, I
-> > don't mind using KERN_INFO.
-> > 
-> 
-> It matters for parsing dmesg output; the only KERN_WARNING message from 
-> the oom killer is normally the header.  There's a couple extra ones for 
-> error conditions (that could certainly be changed to KERN_ERR), but only 
-> in very rare circumstances.
-> 
-> As defined by include/linux/kernel.h:
-> 
-> 	#define KERN_WARNING	"<4>"	/* warning conditions			*/
-> 	...
-> 	#define KERN_INFO	"<6>"	/* informational			*/
-> 
-> The meminfo you are printing falls under the "informational" category, no?
-> 
-> While you're there, it might also be helpful to make another change 
-> that would also help in parsing the output:
-> 
-> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > index 8e4be9c..954b0d5 100644
-> > --- a/mm/memcontrol.c
-> > +++ b/mm/memcontrol.c
-> > @@ -813,6 +813,25 @@ bool mem_cgroup_oom_called(struct task_struct *task)
-> >  	rcu_read_unlock();
-> >  	return ret;
-> >  }
-> > +
-> > +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg)
-> > +{
-> > +	if (!memcg)
-> > +		return;
-> > +
-> > +	printk(KERN_WARNING "Memory cgroups's name %s\n",
-> > +		memcg->css.cgroup->dentry->d_name.name);
-> 
-> This should be "cgroup's", but I don't think you want to print this on a 
-> line by itself since the only system-wide synchronization here is a 
-> read-lock on tasklist_lock and there could be two separate memcg's that 
-> are oom.
-> 
-> So it's quite possible, though unlikely, that two seperate oom events 
-> would have these messages merged together in the ring buffer, which would 
-> make parsing impossible.
-> 
-> I think you probably want to add the name to each line you print, such as:
-> 
-> > +	printk(KERN_WARNING "Cgroup memory: usage %llu, limit %llu"
-> > +		" failcnt %llu\n", res_counter_read_u64(&memcg->res, RES_USAGE),
-> > +		res_counter_read_u64(&memcg->res, RES_LIMIT),
-> > +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
-> 
-> 	const char *name = memcg->css.cgroup->dentry->d_name.name;
-> 
-> 	printk(KERN_INFO "Cgroup %s memory: usage %llu, limit %llu"
-> 			" failcount %llu\n", name, ...);
-> 
-> > +	printk(KERN_WARNING "Cgroup memory+swap: usage %llu, limit %llu "
-> > +		"failcnt %llu\n",
-> > +		res_counter_read_u64(&memcg->memsw, RES_USAGE),
-> > +		res_counter_read_u64(&memcg->memsw, RES_LIMIT),
-> > +		res_counter_read_u64(&memcg->memsw, RES_FAILCNT));
-> 
-> and
-> 
-> 	printk(KERN_INFO "Cgroup %s memory+swap: usage %llu, limit %llu "
-> 		"failcnt %llu\n", name, ...);
-> 
-> > +}
->
+Indeed, naming things "dummy" when they are required for prototype
+reasons but otherwise unused is a rather common strategy.
 
-Thanks for the review, I'll incorporate as much of it as possible in
-the next version. 
+As for "priv" vs. "data", I wanted to use "data" everywhere, but it
+happens that we already have a local variable named "data" in function
+dmi_table(). I didn't want to change it, to not make the patch bigger
+and harder to read. If you think this is such a big issue, I could
+either rename that local variable nevertheless, or use "priv"
+everywhere (with the open question whether we should also use "priv"
+instead of "data" in <linux/dmi.h> or not.) Let me know what you prefer.
 
+Thanks,
 -- 
-	Balbir
+Jean Delvare
