@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbZBCNhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754757AbZBCNka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbZBCNhz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 08:37:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZBCNhq
+	id S1754757AbZBCNka (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 08:40:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbZBCNkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 08:37:46 -0500
-Received: from igw2.watson.ibm.com ([129.34.20.6]:46351 "EHLO
-	igw2.watson.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752290AbZBCNhq (ORCPT
+	Tue, 3 Feb 2009 08:40:20 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43662 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753279AbZBCNkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 08:37:46 -0500
-Subject: Re: [PATCH 2/6] integrity: IMA as an integrity service provider
-From: david safford <safford@watson.ibm.com>
-To: "Serge E. Hallyn" <serge@hallyn.com>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       Mimi Zohar <zohar@us.ibm.com>
-In-Reply-To: <20090202230211.GA18452@hallyn.com>
-References: <cover.1233262162.git.zohar@linux.vnet.ibm.com>
-	 <eae67eb66b76df32f0e95c4cda33fd6271567c94.1233262163.git.zohar@linux.vnet.ibm.com>
-	 <20090202230211.GA18452@hallyn.com>
-Content-Type: text/plain
+	Tue, 3 Feb 2009 08:40:19 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Brian Swetland <swetland@google.com>
+Subject: Re: lowmemory android driver not needed?
+Cc: kosaki.motohiro@jp.fujitsu.com, Greg KH <greg@kroah.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Arve =?ISO-2022-JP?B?SGo/bm5ldhskQmlIGyhC?= <arve@android.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Pavel Machek <pavel@suse.cz>,
+       arve@google.com, San Mehat <san@android.com>,
+       Robert Love <rlove@google.com>, linux-kernel@vger.kernel.org,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>,
+       ext Juha =?ISO-2022-JP?B?WXJqP2wbJEIhJhsoQg==?= 
+	<juha.yrjola@solidboot.com>,
+       viktor.rosendahl@nokia.com, Trilok Soni <soni.trilok@gmail.com>
+In-Reply-To: <20090130064113.GB7870@bulgaria.corp.google.com>
+References: <20090130062010.GD31209@kroah.com> <20090130064113.GB7870@bulgaria.corp.google.com>
+Message-Id: <20090203114855.EC9D.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
-Date: Tue, 03 Feb 2009 08:36:10 -0500
-Message-Id: <1233668170.4263.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Tue,  3 Feb 2009 22:40:14 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 17:02 -0600, Serge E. Hallyn wrote:
-> Quoting Mimi Zohar (zohar@linux.vnet.ibm.com):
-> > +
-> > +/* Add template entry to the measurement list and hash table,
-> > + * and extend the pcr.
-> > + */
-> > +int ima_add_template_entry(struct ima_template_entry *entry, int violation,
-> > +			   const char *op, struct inode *inode)
-> > +{
-> > +	u8 digest[IMA_DIGEST_SIZE];
-> > +	const char *audit_cause = "hash_added";
-> > +	int audit_info = 1;
-> > +	int result = 0;
-> > +
-> > +	mutex_lock(&ima_extend_list_mutex);
-> > +	if (!violation) {
-> > +		memcpy(digest, entry->digest, sizeof digest);
-> > +		if (ima_lookup_digest_entry(digest)) {
-> > +			audit_cause = "hash_exists";
-> > +			goto out;
-> 
-> Ok so not that I'm saying this would be easy, but an attacker
-> compromising say ftpd doesn't need to come up with a compromised
-> ftpd where sha1sum(evilftpd)==sha1sum(origftpd) - he just needs to
-> come up with one wher sha1sum(evilftpd)==sha1sum(X) where X is
-> any pristine program already loaded.  Right?
-> 
-> Is checking that strcmp(entry->file_name, newfilename)==0 warranted
-> here, or am I being silly?
+Hi
 
-The birthday paradox, which is essential for any practical attack,
-requires that the attacker can freely choose both x and y in 
-his search for collisions sha1sum(x) == sha1sum(y). Here, the
-attacker cannot freely choose x, but can only choose x from a list
-of existing files. Even if there are a million valid files, that only
-reduces the attack complexity by 2^20, which is still infeasible.
+> [Greg KH <greg@kroah.com>]
+> > > but I don't think driver/staging is good place for non driver code.
+> > > The problem is, any patch must be reviewed by stakeholder, not maintenar only.
+> > > then, the patch should post lkml and subsystem mailing list at first.
+> > > 
+> > > I like reviewed code than unreviewed code.
+> > 
+> > Heh, so do I.
+> > 
+> > And this is an odd "driver", I do know that.
+> > 
+> > But it solves a real problem that can't be solved any other way
+> > currently, which is needed for a real system that is shipping.  So, if
+> > it can't be solved any other way, do you have a way this kind of thing
+> > could be more "correct"?
 
-dave
+I agree this patch address correct requirement.
+
+
+> I think a lot of the confusion here comes from Arve's earlier (very
+> terse) remark:  "I never expected it to be merged. I wrote it to allow 
+> us to ship a product."
+> 
+> At the risk of putting words in his mouth, I believe this should be
+> parsed as "we wrote this to solve problems necessary to ship products
+> and did not expect it to be merged to mainline as-is".  
+
+ok. I believe you.
+I also hope that I'm working with various background guys.
+
+
+thanks.
+
+> We'd love to get support for low memory process killing that works for
+> our app model into the mainline.  
+>
+> If that's by reworking this driver
+> until it's acceptable or by implementing the same functionality a
+> different way, making use of some other subsystem, or whatever, we're
+> not particularly picky.  Our goal is, eventually, to maintain as few
+> patches outside of the kernel as possible so things can build "out of
+> the box."
+
+
+
+
 
