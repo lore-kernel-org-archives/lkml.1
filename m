@@ -1,66 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbZBCWhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbZBCWiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbZBCWhw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:37:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZBCWhn
+	id S1752376AbZBCWiO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:38:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZBCWhz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:37:43 -0500
-Received: from vena.lwn.net ([206.168.112.25]:48140 "EHLO vena.lwn.net"
+	Tue, 3 Feb 2009 17:37:55 -0500
+Received: from gw.goop.org ([64.81.55.164]:34913 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751508AbZBCWhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:37:42 -0500
-Date: Tue, 3 Feb 2009 15:37:40 -0700
-From: Jonathan Corbet <corbet@lwn.net>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, oleg@redhat.com, viro@ZenIV.linux.org.uk,
-       davidel@xmailserver.org, davem@davemloft.net, hch@lst.de,
-       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-Message-ID: <20090203153740.363d0a04@bike.lwn.net>
-In-Reply-To: <1233699722.3243.127.camel@calx>
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
-	<1233598811-6871-3-git-send-email-corbet@lwn.net>
-	<20090203133942.2ecec281.akpm@linux-foundation.org>
-	<4988BD4E.8080206@cosmosbay.com>
-	<20090203140543.6e915f97.akpm@linux-foundation.org>
-	<1233699722.3243.127.camel@calx>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.2; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	id S1755471AbZBCWhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:37:54 -0500
+Message-ID: <4988C73F.2070707@goop.org>
+Date: Tue, 03 Feb 2009 14:37:51 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       randy.dunlap@oracle.com, linux-kernel@vger.kernel.org, x86@kernel.org,
+       Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: mmotm 2009-02-02-17-12 uploaded (x86/nopmd etc.)
+References: <200902030112.n131CNiq010549@imap1.linux-foundation.org> <498893C8.6080506@oracle.com> <20090203191804.GA24698@elte.hu> <20090203121706.423d5cab.akpm@linux-foundation.org> <20090203212538.GB20527@elte.hu>
+In-Reply-To: <20090203212538.GB20527@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Feb 2009 16:22:02 -0600
-Matt Mackall <mpm@selenic.com> wrote:
-
-> But that re-opens the question of what to do about poor Jon's quest.
+Ingo Molnar wrote:
+> the include file spaghetti is ... interesting there, and it's historic.
 >
-> I got confused halfway through as he went from using a global fasync
-> spinlock to a non-locked but atomic flag bit. Not sure why using a
-> per-file or per-inode lock doesn't work for the fasync code.
+> I could blame it on highmem, PAE or paravirt - but i'll only blame it on 
+> paravirt for now because those developers are still around! ;-)
+>   
 
-No per-file lock because (1) there is resistance to growing struct
-file, and (2) lockless algorithms are all the rage now.  Additionally,
-solving the fasync-atomicity problem with locks requires the use of a
-mutex (or the BKL) rather than a spinlock.  I suppose we could combine
-a global f_flags lock with the set-FASYNC-in-fasync_helper() bits.
+Hey, don't forget unification, if we're pointing fingers ;)
 
-At this point Poor Jon sees a fork in the road as he contemplates the
-future of his quest:
+> Jeremy, any ideas how to reduce the historic dependency mess in that area?
+> I think we should go on three routes at once:
+>
+>  - agressive splitup and separation of type definitions from method
+>    declaration (+ inline definitions). The spinlock_types.h / spinlock.h 
+>    splitup was really nice in solving such dependency problems.
+>   
 
-- Go with this patch set, perhaps with a bit of cleanup as suggested by
-  Andrew.
+That already exists to some extent, though I don't think it's being used 
+to maximum advantage (pgtable-[23]level.h vs pgtable-[23]level-defs.h).  
+For consistency we'd have  pgtable-4level(-defs).h headers too, and 
+top-level pgtable.h/pgtable-defs.h headers.  But its not clear to me 
+that would even be enough...
 
-- Go back to the global lock.
+>  - uninlining of methods: instead of macro-ing them - wherever possible. 
+>    It's really hard to mess up type + externs headers - while headers with 
+>    inlines and macros mixed in get painful quickly.
+>   
 
-- Go away, leave the BKL in place, and wait for somebody smarter to
-  attack the problem.
+Yes.  I went through a period of fairly aggressive inline->macro 
+conversion, and in many cases the remaining macros are there to #include 
+hell.
 
-Any wise guidance would be most welcome...
+>  - removal of spurious pile of dozens of #include lines in header files.
 
-jon
+Yeah, it would be useful to make sure that each header only #includes 
+the bare minimum headers to satisfy its own definitions - but of course 
+that's going to provoke a long series of #include whack-a-mole patches.
+
+    J
