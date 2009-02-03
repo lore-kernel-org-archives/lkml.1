@@ -1,354 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753547AbZBCJh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbZBCJl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753547AbZBCJh3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 04:37:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbZBCJhT
+	id S1753567AbZBCJl3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 04:41:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZBCJlR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 04:37:19 -0500
-Received: from sh.osrg.net ([192.16.179.4]:37743 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751761AbZBCJhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 04:37:17 -0500
-Date: Tue, 3 Feb 2009 18:37:06 +0900
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, James.Bottomley@HansenPartnership.com
-Subject: [PATCH] remove unused include/asm-generic/dma-mapping.h
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090203183259Q.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 03 Feb 2009 18:37:07 +0900 (JST)
+	Tue, 3 Feb 2009 04:41:17 -0500
+Received: from mail-bw0-f12.google.com ([209.85.218.12]:47983 "EHLO
+	mail-bw0-f12.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbZBCJlQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 04:41:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dui+hjrBINbslmJ09TSPuSebPDhG42aVbptJ4Ol+2JmPl9q4SOCp01NUS2jA3dxRLF
+         XsiGtQ8QQQyjYzHffFWHoUOzeLczW5b46js5ff8OZYoLsCizvIveQyLzkS3y9iODCAM4
+         LzxAx2L2vzKRN9jnkmM4JkO+VKLh27TZ93Qi4=
+Date: Tue, 3 Feb 2009 09:41:08 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090203094108.GA4639@ff.dom.local>
+References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090202.235017.253437221.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Seems that we don't need include/asm-generic/dma-mapping.h anymore.
+On Mon, Feb 02, 2009 at 11:50:17PM -0800, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Mon, 2 Feb 2009 08:43:58 +0000
+> 
+> > On Mon, Feb 02, 2009 at 12:18:54AM -0800, David Miller wrote:
+> > > Allocating 4096 or 8192 bytes for a 1500 byte frame is wasteful.
+> > 
+> > I mean allocating chunks of cached pages similarly to sk_sndmsg_page
+> > way. I guess the similar problem is to be worked out in any case. But
+> > it seems doing it on the linear area requires less changes in other
+> > places.
+> 
+> This is a very interesting idea, but it has some drawbacks:
+> 
+> 1) Just like any other allocator we'll need to find a way to
+>    handle > PAGE_SIZE allocations, and thus add handling for
+>    compound pages etc.
+>  
+>    And exactly the drivers that want such huge SKB data areas
+>    on receive should be converted to use scatter gather page
+>    vectors in order to avoid multi-order pages and thus strains
+>    on the page allocator.
 
-=
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH] remove unused include/asm-generic/dma-mapping.h
+I guess compound pages are handled by put_page() enough, but I don't
+think they should be main argument here, and I agree: scatter gather
+should be used where possible.
 
-Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- include/asm-generic/dma-mapping.h |  308 -------------------------------------
- 1 files changed, 0 insertions(+), 308 deletions(-)
- delete mode 100644 include/asm-generic/dma-mapping.h
+> 
+> 2) Space wastage and poor packing can be an issue.
+> 
+>    Even with SLAB/SLUB we get poor packing, look at Evegeniy's
+>    graphs that he made when writing his NTA patches.
 
-diff --git a/include/asm-generic/dma-mapping.h b/include/asm-generic/dma-mapping.h
-deleted file mode 100644
-index 189486c..0000000
---- a/include/asm-generic/dma-mapping.h
-+++ /dev/null
-@@ -1,308 +0,0 @@
--/* Copyright (C) 2002 by James.Bottomley@HansenPartnership.com 
-- *
-- * Implements the generic device dma API via the existing pci_ one
-- * for unconverted architectures
-- */
--
--#ifndef _ASM_GENERIC_DMA_MAPPING_H
--#define _ASM_GENERIC_DMA_MAPPING_H
--
--
--#ifdef CONFIG_PCI
--
--/* we implement the API below in terms of the existing PCI one,
-- * so include it */
--#include <linux/pci.h>
--/* need struct page definitions */
--#include <linux/mm.h>
--
--static inline int
--dma_supported(struct device *dev, u64 mask)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	return pci_dma_supported(to_pci_dev(dev), mask);
--}
--
--static inline int
--dma_set_mask(struct device *dev, u64 dma_mask)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	return pci_set_dma_mask(to_pci_dev(dev), dma_mask);
--}
--
--static inline void *
--dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
--		   gfp_t flag)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	return pci_alloc_consistent(to_pci_dev(dev), size, dma_handle);
--}
--
--static inline void
--dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
--		    dma_addr_t dma_handle)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	pci_free_consistent(to_pci_dev(dev), size, cpu_addr, dma_handle);
--}
--
--static inline dma_addr_t
--dma_map_single(struct device *dev, void *cpu_addr, size_t size,
--	       enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	return pci_map_single(to_pci_dev(dev), cpu_addr, size, (int)direction);
--}
--
--static inline void
--dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
--		 enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	pci_unmap_single(to_pci_dev(dev), dma_addr, size, (int)direction);
--}
--
--static inline dma_addr_t
--dma_map_page(struct device *dev, struct page *page,
--	     unsigned long offset, size_t size,
--	     enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	return pci_map_page(to_pci_dev(dev), page, offset, size, (int)direction);
--}
--
--static inline void
--dma_unmap_page(struct device *dev, dma_addr_t dma_address, size_t size,
--	       enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	pci_unmap_page(to_pci_dev(dev), dma_address, size, (int)direction);
--}
--
--static inline int
--dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
--	   enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	return pci_map_sg(to_pci_dev(dev), sg, nents, (int)direction);
--}
--
--static inline void
--dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
--	     enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	pci_unmap_sg(to_pci_dev(dev), sg, nhwentries, (int)direction);
--}
--
--static inline void
--dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
--			enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	pci_dma_sync_single_for_cpu(to_pci_dev(dev), dma_handle,
--				    size, (int)direction);
--}
--
--static inline void
--dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle, size_t size,
--			   enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	pci_dma_sync_single_for_device(to_pci_dev(dev), dma_handle,
--				       size, (int)direction);
--}
--
--static inline void
--dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
--		    enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	pci_dma_sync_sg_for_cpu(to_pci_dev(dev), sg, nelems, (int)direction);
--}
--
--static inline void
--dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nelems,
--		       enum dma_data_direction direction)
--{
--	BUG_ON(dev->bus != &pci_bus_type);
--
--	pci_dma_sync_sg_for_device(to_pci_dev(dev), sg, nelems, (int)direction);
--}
--
--static inline int
--dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
--{
--	return pci_dma_mapping_error(to_pci_dev(dev), dma_addr);
--}
--
--
--#else
--
--static inline int
--dma_supported(struct device *dev, u64 mask)
--{
--	return 0;
--}
--
--static inline int
--dma_set_mask(struct device *dev, u64 dma_mask)
--{
--	BUG();
--	return 0;
--}
--
--static inline void *
--dma_alloc_coherent(struct device *dev, size_t size, dma_addr_t *dma_handle,
--		   gfp_t flag)
--{
--	BUG();
--	return NULL;
--}
--
--static inline void
--dma_free_coherent(struct device *dev, size_t size, void *cpu_addr,
--		    dma_addr_t dma_handle)
--{
--	BUG();
--}
--
--static inline dma_addr_t
--dma_map_single(struct device *dev, void *cpu_addr, size_t size,
--	       enum dma_data_direction direction)
--{
--	BUG();
--	return 0;
--}
--
--static inline void
--dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
--		 enum dma_data_direction direction)
--{
--	BUG();
--}
--
--static inline dma_addr_t
--dma_map_page(struct device *dev, struct page *page,
--	     unsigned long offset, size_t size,
--	     enum dma_data_direction direction)
--{
--	BUG();
--	return 0;
--}
--
--static inline void
--dma_unmap_page(struct device *dev, dma_addr_t dma_address, size_t size,
--	       enum dma_data_direction direction)
--{
--	BUG();
--}
--
--static inline int
--dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
--	   enum dma_data_direction direction)
--{
--	BUG();
--	return 0;
--}
--
--static inline void
--dma_unmap_sg(struct device *dev, struct scatterlist *sg, int nhwentries,
--	     enum dma_data_direction direction)
--{
--	BUG();
--}
--
--static inline void
--dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle, size_t size,
--			enum dma_data_direction direction)
--{
--	BUG();
--}
--
--static inline void
--dma_sync_single_for_device(struct device *dev, dma_addr_t dma_handle, size_t size,
--			   enum dma_data_direction direction)
--{
--	BUG();
--}
--
--static inline void
--dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int nelems,
--		    enum dma_data_direction direction)
--{
--	BUG();
--}
--
--static inline void
--dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, int nelems,
--		       enum dma_data_direction direction)
--{
--	BUG();
--}
--
--static inline int
--dma_error(dma_addr_t dma_addr)
--{
--	return 0;
--}
--
--#endif
--
--/* Now for the API extensions over the pci_ one */
--
--#define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
--#define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
--#define dma_is_consistent(d, h)	(1)
--
--static inline int
--dma_get_cache_alignment(void)
--{
--	/* no easy way to get cache size on all processors, so return
--	 * the maximum possible, to be safe */
--	return (1 << INTERNODE_CACHE_SHIFT);
--}
--
--static inline void
--dma_sync_single_range_for_cpu(struct device *dev, dma_addr_t dma_handle,
--			      unsigned long offset, size_t size,
--			      enum dma_data_direction direction)
--{
--	/* just sync everything, that's all the pci API can do */
--	dma_sync_single_for_cpu(dev, dma_handle, offset+size, direction);
--}
--
--static inline void
--dma_sync_single_range_for_device(struct device *dev, dma_addr_t dma_handle,
--				 unsigned long offset, size_t size,
--				 enum dma_data_direction direction)
--{
--	/* just sync everything, that's all the pci API can do */
--	dma_sync_single_for_device(dev, dma_handle, offset+size, direction);
--}
--
--static inline void
--dma_cache_sync(struct device *dev, void *vaddr, size_t size,
--	       enum dma_data_direction direction)
--{
--	/* could define this in terms of the dma_cache ... operations,
--	 * but if you get this on a platform, you should convert the platform
--	 * to using the generic device DMA API */
--	BUG();
--}
--
--#endif
--
--- 
-1.5.4.2
+I'm a bit lost here: could you "remind" the way page space would be
+used/saved in your paged variant e.g. for ~1500B skbs?
 
+> 
+> Now, when choosing a way to move forward, I'm willing to accept a
+> little bit of the issues in #2 for the sake of avoiding the
+> issues in #1 above.
+> 
+> Jarek, note that we can just keep your current splice() copy hacks in
+> there.  And as a result we can have an easier to handle migration
+> path.  We just do the page RX allocation conversions in the drivers
+> where performance really matters, for hardware a lot of people have.
+> 
+> That's a lot smoother and has less issues that converting the system
+> wide SKB allocator upside down.
+> 
+
+Yes, this looks reasonable. On the other hand, I think it would be
+nice to get some opinions of slab folks (incl. Evgeniy) on the expected
+efficiency of such a solution. (It seems releasing with put_page() will
+always have some cost with delayed reusing and/or waste of space.)
+
+Jarek P.
