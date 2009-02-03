@@ -1,134 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754825AbZBCPhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbZBCPpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754825AbZBCPhy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 10:37:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZBCPhq
+	id S1754423AbZBCPpv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 10:45:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZBCPpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 10:37:46 -0500
-Received: from a2s12.a2hosting.com ([69.39.88.120]:46477 "EHLO
-	a2s12.a2hosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751839AbZBCPhp (ORCPT
+	Tue, 3 Feb 2009 10:45:40 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:65429 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751367AbZBCPpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 10:37:45 -0500
-X-Greylist: delayed 1804 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 10:37:45 EST
-Message-Id: <3A9AF76B-8B13-4E75-8349-4893CEE3A08E@loc.gov>
-From: Scott Phelps <sphe@loc.gov>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: soft lockup - CPU#0 stuck for 61s! [kswapd0:267]
-Date: Tue, 3 Feb 2009 10:07:36 -0500
-X-Mailer: Apple Mail (2.930.3)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - a2s12.a2hosting.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - loc.gov
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Tue, 3 Feb 2009 10:45:40 -0500
+Subject: [BUGFIX take 4] [PATCH] write-back: fix nr_to_write counter
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <49885ABD.2010600@hp.com>
+References: <1233655712.24809.101.camel@localhost.localdomain>
+	 <1233668461.30906.4.camel@norville.austin.ibm.com>
+	 <1233672349.5138.12.camel@localhost.localdomain>  <49885ABD.2010600@hp.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Feb 2009 17:44:59 +0200
+Message-Id: <1233675899.5138.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Feb 2009 15:44:55.0307 (UTC) FILETIME=[5C524DB0:01C98616]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I was seeing this error after four to five days running  kernel  
-2.6.27-9-generic from a default Intrepid install. I subsequently  
-installed the latest stable release, 2.6.28.3, and now just saw the  
-error after twenty days up uptime.
+[Fix spelling, pointed to by jim owens]
 
-The hardware is a Sun x4500
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Mon, 2 Feb 2009 18:33:49 +0200
+Subject: [PATCH] write-back: fix nr_to_write counter
 
-Here's a dump from syslog:
+Commit 05fe478dd04e02fa230c305ab9b5616669821dd3 introduced some
+@wbc->nr_to_write breakage. Here is the change from the commit:
 
-2009-02-03T02:32:59-05:00 foobar kernel 03 [kern.err] kernel:  
-[1748960.075466] BUG: soft lockup - CPU#0 stuck for 61s! [kswapd0:234]
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] Modules linked in: nfsd auth_rpcgss exportfs autofs4  
-nfs lockd nfs_acl sunrpc ipv6 iptable_filter ip_tables x_tables ext3  
-jbd mbcache parport_pc lp parport loop evdev pcspkr psmouse serio_raw  
-amd_rng i2c_amd8111 k8temp i2c_amd756 i2c_core shpchp pci_hotplug xfs  
-sd_mod crc_t10dif sg pata_amd pata_acpi lpfc scsi_transport_fc  
-scsi_tgt ata_generic sata_mv e1000 libata scsi_mod raid10 raid456  
-async_xor async_memcpy async_tx xor raid1 raid0 multipath linear  
-md_mod dm_mirror dm_region_hash dm_log dm_snapshot dm_mod fuse
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] CPU 0:
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] Modules linked in: nfsd auth_rpcgss exportfs autofs4  
-nfs lockd nfs_acl sunrpc ipv6 iptable_filter ip_tables x_tables ext3  
-jbd mbcache parport_pc lp parport loop evdev pcspkr psmouse serio_raw  
-amd_rng i2c_amd8111 k8temp i2c_amd756 i2c_core shpchp pci_hotplug xfs  
-sd_mod crc_t10dif sg pata_amd pata_acpi lpfc scsi_transport_fc  
-scsi_tgt ata_generic sata_mv e1000 libata scsi_mod raid10 raid456  
-async_xor async_memcpy async_tx xor raid1 raid0 multipath linear  
-md_mod dm_mirror dm_region_hash dm_log dm_snapshot dm_mod fuse
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] Pid: 234, comm: kswapd0 Not tainted 2.6.28-sphe #1
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] RIP: 0010:[<ffffffff802a6116>] [<ffffffff802a6116>]  
-find_get_pages+0x56/0x100
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] RSP: 0018:ffff8801f4dabbf0 EFLAGS: 00000246
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] RAX: ffff8802337a6830 RBX: ffff8801f4dabc30 RCX:  
-ffff8802337a68b8
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] RDX: 0000000000000229 RSI: 0000000000000000 RDI:  
-ffffe200076c2068
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] RBP: ffff8801f4dabc30 R08: 0000000000000006 R09:  
-000000000000000e
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] R10: 0000000000000028 R11: 0000000000000229 R12:  
-ffff88020b042e48
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] R13: ffffffff802b0c97 R14: ffff8801f4dabc30 R15:  
-000000000000000e
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] FS: 00007fe7f7b966e0(0000) GS:ffffffff8073aa00(0000)  
-knlGS:0000000009930830
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] CS: 0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] CR2: 00007fe7f7dafd1c CR3: 00000001f7455000 CR4:  
-00000000000006e0
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] DR0: 0000000000000000 DR1: 0000000000000000 DR2:  
-0000000000000000
-2009-02-03T02:32:59-05:00 foobar kernel 06 [kern.info] kernel:  
-[1748960.075471] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:  
-0000000000000400
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] Call Trace:
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff802b06bf>] pagevec_lookup+0x1f/0x30
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff802b20c3>] __invalidate_mapping_pages 
-+0x83/0x1c0
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff802b220b>] invalidate_mapping_pages+0xb/0x10
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff802fa7c0>] shrink_icache_memory+0x2a0/0x2b0
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff802b2575>] shrink_slab+0x125/0x180
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff802b58ef>] kswapd+0x56f/0x6d0
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff802b2e30>] ? isolate_pages_global+0x0/0x270
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff8025fd90>] ? autoremove_wake_function 
-+0x0/0x40
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff802b5380>] ? kswapd+0x0/0x6d0
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff8025f939>] kthread+0x49/0x90
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff8020d8b9>] child_rip+0xa/0x11
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff8025f8f0>] ? kthread+0x0/0x90
-2009-02-03T02:32:59-05:00 foobar kernel 04 [kern.warning] kernel:  
-[1748960.075471] [<ffffffff8020d8af>] ? child_rip+0x0/0x11
+>--- a/mm/page-writeback.c
+>+++ b/mm/page-writeback.c
+>@@ -963,8 +963,10 @@ retry:
+>                               }
+>                       }
+>
+>                       if (--nr_to_write <= 0)
+>                               done = 1;
+>                       if (wbc->sync_mode == WB_SYNC_NONE) {
+>                               if (--wbc->nr_to_write <= 0)
+>                                       done = 1;
+>                       }
+>                       if (wbc->nonblocking && bdi_write_congested(bdi)) {
+>                               wbc->encountered_congestion = 1;
+>                               done = 1
+>                       }
 
-Thanks in advance,
-Scott Phelps
+It makes the following changes:
+1. Decrement wbc->nr_to_write instead of nr_to_write
+2. Decrement wbc->nr_to_write _only_ if wbc->sync_mode == WB_SYNC_NONE
+3. If synced nr_to_write pages, stop only if if wbc->sync_mode ==
+WB_SYNC_NONE, otherwise keep going.
+
+However, according to the commit message, the intention was to
+only make change 3. Change 1 is a bug. Change 2 does not seem to be
+necessary, and it breaks UBIFS expectations, so if needed, it
+should be done separately later. And change 2 does not seem to
+be documented in the commit message.
+
+This patch does the following:
+1. Undo changes 1 and 2
+2. Add a comment explaining change 3 (it very useful to have comments in
+_code_, not only in the commit).
+
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ mm/page-writeback.c |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index b493db7..dc32dae 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -1051,13 +1051,22 @@ continue_unlock:
+ 				}
+  			}
+ 
+-			if (wbc->sync_mode == WB_SYNC_NONE) {
+-				wbc->nr_to_write--;
+-				if (wbc->nr_to_write <= 0) {
+-					done = 1;
+-					break;
+-				}
++			if (nr_to_write > 0)
++				nr_to_write--;
++			else if (wbc->sync_mode == WB_SYNC_NONE) {
++				/*
++				 * We stop writing back only if we are not
++				 * doing integrity sync. In case of integrity
++				 * sync we have to keep going because someone
++				 * may be concurrently dirtying pages, and we
++				 * might have synced a lot of newly appeared
++				 * dirty pages, but have not synced all of the
++				 * old dirty pages.
++				 */
++				done = 1;
++				break;
+ 			}
++
+ 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 				wbc->encountered_congestion = 1;
+ 				done = 1;
+-- 
+1.6.0.6
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
