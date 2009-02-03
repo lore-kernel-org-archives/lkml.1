@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755698AbZBCBcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756220AbZBCBdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755698AbZBCBcT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZBCBcK
+	id S1756220AbZBCBdX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:33:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751289AbZBCBdO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:32:10 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43553 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751283AbZBCBcJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:32:09 -0500
-Date: Tue, 3 Feb 2009 10:30:56 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] trivial: Give the right path in Documentation example
-Message-Id: <20090203103056.c4e097b3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <1233614376-27654-1-git-send-email-cascardo@holoscopio.com>
-References: <1233614376-27654-1-git-send-email-cascardo@holoscopio.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 2 Feb 2009 20:33:14 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44682 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751283AbZBCBdN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 20:33:13 -0500
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <alpine.LFD.2.00.0902021635240.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
+	 <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain>
+	 <1233614927.18767.121.camel@pasglop>  <200902030000.18049.rjw@sisk.pl>
+	 <1233620590.18767.138.camel@pasglop>
+	 <alpine.LFD.2.00.0902021635240.3247@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 12:32:41 +1100
+Message-Id: <1233624761.18767.155.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  2 Feb 2009 20:39:36 -0200
-Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com> wrote:
 
-> While the Documentation example creates /cgroup/test, it removes
-> /test/cgroup, which is clearly not the intended path. Change that to
-> /cgroup/test.
+> Why do you think this improves on anything?
 > 
-Ah, thanks.
+> Basically, it turns the mutex into a non-entity - but if your whole 
+> argument is that it might as well be a non-entity because nobody else can 
+> take it anyway, then why not just leave it around?
+> 
+> IOW, if your argument boils down to "there can be no contention", then you 
+> might as well say "just use the mutex, it will never block".
 
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Oh sure, you all argument is fine, there's just one little nit for which
+I think it made sense to take the mutex that way...
 
-> Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-> ---
->  Documentation/cgroups/memcg_test.txt |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/cgroups/memcg_test.txt b/Documentation/cgroups/memcg_test.txt
-> index 523a9c1..a926359 100644
-> --- a/Documentation/cgroups/memcg_test.txt
-> +++ b/Documentation/cgroups/memcg_test.txt
-> @@ -356,7 +356,7 @@ Under below explanation, we assume CONFIG_MEM_RES_CTRL_SWAP=y.
->  	(Shell-B)
->  	# move all tasks in /cgroup/test to /cgroup
->  	# /sbin/swapoff -a
-> -	# rmdir /test/cgroup
-> +	# rmdir /cgroup/test
->  	# kill malloc task.
->  
->  	Of course, tmpfs v.s. swapoff test should be tested, too.
-> -- 
-> 1.6.0.6
-> 
-> 
+The possible problem I see is on the "boundary" when you are about to
+get interrupts off. You want to make sure that any other kernel thread /
+process that was inside ACPI is completed before you do that.
+
+Taking the mutex will do that for you.
+
+Then you can disable interrupts and just ignore the mutex until you
+re-enable them.
+
+Now, of course, in a perfect world, anything that can poke ACPI would have
+got some suspend calls before hand and won't be around touching it but
+I wouldn't bet my life on this.
+
+Cheers,
+Ben.
+
 
