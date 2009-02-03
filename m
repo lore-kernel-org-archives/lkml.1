@@ -1,90 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751993AbZBCCcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752209AbZBCCdG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751993AbZBCCcJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 21:32:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbZBCCb4
+	id S1752209AbZBCCdG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 21:33:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751214AbZBCCcy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 21:31:56 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:43032 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750992AbZBCCbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 21:31:55 -0500
-Date: Tue, 3 Feb 2009 03:31:47 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Greg KH <greg@kroah.com>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       mtk.manpages@gmail.com, linux-man@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: open(2) says O_DIRECT works on 512 byte boundries?
-Message-ID: <20090203023147.GZ20323@random.random>
-References: <20090128213322.GA15789@kroah.com> <20090129141338.34e44a1f.kamezawa.hiroyu@jp.fujitsu.com> <20090129160826.701E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090130061714.GC31209@kroah.com> <20090202220856.GY20323@random.random> <20090203102920.684e7b67.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 2 Feb 2009 21:32:54 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:51502 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751058AbZBCCcy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 21:32:54 -0500
+Date: Mon, 2 Feb 2009 21:32:51 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/3] trace: better manage the context info for
+ events
+In-Reply-To: <20090203020746.GB22718@nowhere>
+Message-ID: <alpine.DEB.1.10.0902022128130.2192@gandalf.stny.rr.com>
+References: <20090202222921.GB12082@ghostprotocols.net> <20090203020746.GB22718@nowhere>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203102920.684e7b67.kamezawa.hiroyu@jp.fujitsu.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 10:29:20AM +0900, KAMEZAWA Hiroyuki wrote:
-> On Mon, 2 Feb 2009 23:08:56 +0100
-> Andrea Arcangeli <aarcange@redhat.com> wrote:
+
+On Tue, 3 Feb 2009, Frederic Weisbecker wrote:
+
+> On Mon, Feb 02, 2009 at 08:29:21PM -0200, Arnaldo Carvalho de Melo wrote:
+> > From: Frederic Weisbecker <fweisbec@gmail.com>
+> > 
+> > Impact: make trace_event more convenient for tracers
+> > 
+> > All tracers (for the moment) that use the struct trace_event want to
+> > have the context info printed before their own output: the pid/cmdline,
+> > cpu, and timestamp.
+> > 
+> > But some other tracers that want to implement their trace_event
+> > callbacks will not necessary need these information or they may want to
+> > format them as they want.
+> > 
+> > This patch adds a new default-enabled trace option:
+> > TRACE_ITER_CONTEXT_INFO When disabled through:
+> > 
+> > echo nocontext-info > /debugfs/tracing/trace_options
+> > 
+> > The pid, cpu and timestamps headers will not be printed.
+> > 
+> > IE with the sched_switch tracer with context-info (default):
+> > 
+> >      bash-2935 [001] 100.356561: 2935:120:S ==> [001]  0:140:R <idle>
+> >    <idle>-0    [000] 100.412804:    0:140:R   + [000] 11:115:S events/0
+> >    <idle>-0    [000] 100.412816:    0:140:R ==> [000] 11:115:R events/0
+> >  events/0-11   [000] 100.412829:   11:115:S ==> [000]  0:140:R <idle>
+> > 
+> > Without context-info:
+> > 
+> >  2935:120:S ==> [001]  0:140:R <idle>
+> >     0:140:R   + [000] 11:115:S events/0
+> >     0:140:R ==> [000] 11:115:R events/0
+> >    11:115:S ==> [000]  0:140:R <idle>
+> > 
+> > A tracer can disable it at runtime by clearing the bit
+> > TRACE_ITER_CONTEXT_INFO in trace_flags.
+> > 
+> > The print routines were renamed to trace_print_context and
+> > trace_print_lat_context, so that they can be used by tracers if they
+> > want to use them for one of the trace_event callbacks.
 > 
-> > Hi Greg!
-> > 
-> > > Thanks for the pointers, I'll go read the thread and follow up there.
-> > 
-> > If you also run into this final fix is attached below. Porting to
-> > mainline is a bit hard because of gup-fast... Perhaps we can use mmu
-> > notifiers to fix gup-fast... need to think more about it then I'll
-> > post something.
-> > 
-> > Please help testing the below on pre-gup-fast kernels, thanks!
-> > 
-> I commented in FJ-Redhat Path but not forwared from unknown reason ;)
-> I comment again.
 > 
-> 1. Why TestSetLockPage() is necessary ?
->    It seems not necesary.
+> Actually, I wonder if this is not breaking the sense of the TRACE_ITER_CONTEXT_INFO
+> flag.
 
-To avoid the VM to remove or add the page from/to swapcache and change
-page_count/mapcount from under us. This most certainly wasn't the
-reason of the slowdown (the slowdown were the false positives
-generated by pagevec pinning) and removing it was more intrusive than
-I wanted.
+Yeah, I agree with Frederic here. Let the user decide this as a global 
+flag for about of data to print. The tracer should just provide a callback 
+incase the tracer has a different context format.
 
-> 2. This patch doesn't cover HugeTLB.
-
-There's no need to change hugetlb with my approach. I'm not touching
-the cow path, I'm addressing the real source of the problem (i.e. when
-fork pretends to mark the child pte readonly and pointing to the
-shared parent page, same as ksm: while the pte wrprotect + tlb flush
-stops the _cpu_ it can't stop any get_user_pages(write=1) user, hence
-we need to pre-cow the child page in fork instead of marking the child
-pte readonly to avoid the parent to lose writes if post-fork the
-parent cows and the child doesn't cow).
-
-> 3. Why "follow_page() successfully finds a page" case only ?
->  not necessary to insert SetPageGUP() in following path ?
 > 
->  - handle_mm_fault()
->            => do_anonymos/swap/wp_page()
->            or some.
+> In the first patch I made about it, I thought this flag was to decide whether we want to
+> print the context information in the standard way.
+> 
+> Then, Steven suggested to actually provide callbacks for the tracers which want
+> to override the standard context information printer.
+> The flag then got more logical: TRACE_ITER_CONTEXT_INFO was not only about deciding
+> whether we want or not the standard context info, it tells if we want in a global way
+> the context info to be printed, whatever how the tracer decides to print it.
+> (This is the theory, but since we couldn't override the bin/raw/hex cases, the
+> practical case didn't follow this idea).
+> 
+> If someone doesn't want to see these informations in the blk tracer, this flag will
+> not help him. Worst, it will double print the context info if the user enables the flag.
+> 
+> Now that I see the practical case, I'm not sure the design of my patch was valuable.
+> A tracer has to play with the flag if it wants to override the context info in
+> the bin/raw/hex cases. And I don't think this is a good way to proceed.
+> 
+> In my opinion, the ITER_CONTEXT_INFO flag should mostly be set by the user.
 
-No need to change that either, all we need to know are the pages whose
-count vs mapcount has a discrepancy that could have been caused by
-get_user_pages. So only follow_page has to set it. More precisely
-FOLL_GET|FOLL_WRITE is the only path we care about there.
+I think it should _only_ be set by user.
 
-> BTW, when you write a patch against upstream, please CC me or linux-mm.
-> I'll have to add a hook for memory-cgroup.
+> 
+> And only one callback could be added to trace_event: context_info()
+> Then, the tracer will manage itself the raw/hex/bin/normal cases inside
+> this callback.
 
-Sure.
+Yeah, this is a good idea. The callback can be passed an enum to what kind
+of trace it is: TRACE_FMT_RAW TRACE_FMT_HEX ...
 
-BTW, despite I didn't reproduce the problem here while leaving the
-./dma_thread -a 512 -w 40 workload run half a day, others reported me
-trouble but it was on a different kernel codebase, but at this time
-I'm unsure if any remaining trouble is caused by some imperfection in
-this patch or something else. Test results would be interesting
-basically. Patch is against rhel-5.2 but should be trivial to apply to
-anything pre-get_user_pages_fast.
+
+> 
+> We can provide the default callbacks available for the tracers which want it and even
+> one function which proceed all of them, depending on the flags.
+> ftrace/preempt/sched.... tracers can register this function for their context_info callback
+> and other tracers too if they want.
+> 
+> Or they can override it, and even pick the default callbacks for dedicated flags when they want.
+> 
+> Then, when the user wants the context info to be printed or not, he just have to
+> set/clear the context-info flag manually.
+> 
+> A tracer can even decide to set/clear it by default, but for its real sense: print or not
+> these context info.
+> 
+> What do you think?
+
+I'm not sure a tracer should decide if it should have the format or not. 
+In its context callback, it might decide there. But if the user does not 
+want it, it should be off.
+
+Unless you are saying have the tracer decide if it is enabled on or off 
+when the trace is selected?
+
+-- Steve
