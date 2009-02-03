@@ -1,125 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754423AbZBCPpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZBCPtN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754423AbZBCPpv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 10:45:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752042AbZBCPpk
+	id S1754902AbZBCPtN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 10:49:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752757AbZBCPs6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 10:45:40 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:65429 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751367AbZBCPpk (ORCPT
+	Tue, 3 Feb 2009 10:48:58 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43936 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752535AbZBCPs5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 10:45:40 -0500
-Subject: [BUGFIX take 4] [PATCH] write-back: fix nr_to_write counter
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+	Tue, 3 Feb 2009 10:48:57 -0500
+Date: Tue, 3 Feb 2009 07:48:20 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <49885ABD.2010600@hp.com>
-References: <1233655712.24809.101.camel@localhost.localdomain>
-	 <1233668461.30906.4.camel@norville.austin.ibm.com>
-	 <1233672349.5138.12.camel@localhost.localdomain>  <49885ABD.2010600@hp.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 03 Feb 2009 17:44:59 +0200
-Message-Id: <1233675899.5138.19.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 03 Feb 2009 15:44:55.0307 (UTC) FILETIME=[5C524DB0:01C98616]
-X-Nokia-AV: Clean
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <1233641226.16867.81.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0902030742530.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <200902030045.19416.rjw@sisk.pl>  <alpine.LFD.2.00.0902021551050.3247@localhost.localdomain>  <200902030115.32659.rjw@sisk.pl>  <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain>
+ <1233641226.16867.81.camel@pasglop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Fix spelling, pointed to by jim owens]
 
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Date: Mon, 2 Feb 2009 18:33:49 +0200
-Subject: [PATCH] write-back: fix nr_to_write counter
 
-Commit 05fe478dd04e02fa230c305ab9b5616669821dd3 introduced some
-@wbc->nr_to_write breakage. Here is the change from the commit:
+On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
+> 
+> Now where it gets funny is that I've added code to read the BAR and
+> command register content before, between, and after those calls and
+> print it and .. they are sane... Until i discovered that what happens is
+> that the new generic code seems to actually blast 0 all over my config
+> space if I don't call pci_save_state() in suspend(). I suppose I was
+> missing a "mandatory" call here... but the core should be more robust,
+> ie it shouldn't erase the config space of something because a driver
+> "forgot" to call pci_save_state() !
 
->--- a/mm/page-writeback.c
->+++ b/mm/page-writeback.c
->@@ -963,8 +963,10 @@ retry:
->                               }
->                       }
->
->                       if (--nr_to_write <= 0)
->                               done = 1;
->                       if (wbc->sync_mode == WB_SYNC_NONE) {
->                               if (--wbc->nr_to_write <= 0)
->                                       done = 1;
->                       }
->                       if (wbc->nonblocking && bdi_write_congested(bdi)) {
->                               wbc->encountered_congestion = 1;
->                               done = 1
->                       }
+You've found a bug somewhere.
 
-It makes the following changes:
-1. Decrement wbc->nr_to_write instead of nr_to_write
-2. Decrement wbc->nr_to_write _only_ if wbc->sync_mode == WB_SYNC_NONE
-3. If synced nr_to_write pages, stop only if if wbc->sync_mode ==
-WB_SYNC_NONE, otherwise keep going.
+We _should_ be saving things, the legacy code does something like this:
 
-However, according to the commit message, the intention was to
-only make change 3. Change 1 is a bug. Change 2 does not seem to be
-necessary, and it breaks UBIFS expectations, so if needed, it
-should be done separately later. And change 2 does not seem to
-be documented in the commit message.
+        if (drv && drv->suspend) {
+                pci_dev->state_saved = false;
 
-This patch does the following:
-1. Undo changes 1 and 2
-2. Add a comment explaining change 3 (it very useful to have comments in
-_code_, not only in the commit).
+                i = drv->suspend(pci_dev, state);
+                suspend_report_result(drv->suspend, i);
+                if (i)
+                        return i;
 
-Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Acked-by: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
----
- mm/page-writeback.c |   21 +++++++++++++++------
- 1 files changed, 15 insertions(+), 6 deletions(-)
+                if (pci_dev->state_saved)
+                        goto Fixup;
 
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index b493db7..dc32dae 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -1051,13 +1051,22 @@ continue_unlock:
- 				}
-  			}
- 
--			if (wbc->sync_mode == WB_SYNC_NONE) {
--				wbc->nr_to_write--;
--				if (wbc->nr_to_write <= 0) {
--					done = 1;
--					break;
--				}
-+			if (nr_to_write > 0)
-+				nr_to_write--;
-+			else if (wbc->sync_mode == WB_SYNC_NONE) {
-+				/*
-+				 * We stop writing back only if we are not
-+				 * doing integrity sync. In case of integrity
-+				 * sync we have to keep going because someone
-+				 * may be concurrently dirtying pages, and we
-+				 * might have synced a lot of newly appeared
-+				 * dirty pages, but have not synced all of the
-+				 * old dirty pages.
-+				 */
-+				done = 1;
-+				break;
- 			}
-+
- 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
- 				wbc->encountered_congestion = 1;
- 				done = 1;
--- 
-1.6.0.6
+                if (WARN_ON_ONCE(pci_dev->current_state != PCI_D0))
+                        goto Fixup;
+        }
 
--- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+        pci_save_state(pci_dev);
 
+ie if your ->suspend function doesn't use pci_save_state() itself (which 
+sets that "state_saved" flag to true), then the generic code will do it 
+for you.
+
+Also, on the resume path, we actually have
+
+        if (pci_dev->state_saved)
+                pci_restore_standard_config(pci_dev);
+
+so I wonder how the heck you got that blast of all zeroes - because we 
+clearly shouldn't be trying to restore any unsaved state!
+
+So if you can figure out how it does all that...
+
+		Linus
