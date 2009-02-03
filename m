@@ -1,97 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZBCREt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbZBCRFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbZBCREt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 12:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZBCREl
+	id S1756012AbZBCRFf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 12:05:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZBCRFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 12:04:41 -0500
-Received: from ns1.suse.de ([195.135.220.2]:51707 "EHLO mx1.suse.de"
+	Tue, 3 Feb 2009 12:05:25 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:39999 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752151AbZBCREk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 12:04:40 -0500
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: cpufreq on demand governor sampling rate restricted to HZ even on NO_HZ kernels
-Date: Tue, 3 Feb 2009 18:04:35 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.13-HEAD_20090130075504_71baee03-default; KDE/4.1.3; x86_64; ; )
-Cc: "cpufreq@vger.kernel.org" <cpufreq@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <200901301559.15170.trenn@suse.de> <1233336496.13694.49.camel@jamoon.sc.intel.com>
-In-Reply-To: <1233336496.13694.49.camel@jamoon.sc.intel.com>
+	id S1752376AbZBCRFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 12:05:24 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Reworking suspend-resume sequence (was: Re: PCI PM: Restore standard config registers of all devices early)
+Date: Tue, 3 Feb 2009 18:04:25 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <1233633061.16867.41.camel@pasglop> <200902031026.34093.rjw@sisk.pl>
+In-Reply-To: <200902031026.34093.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-6"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902031804.36497.trenn@suse.de>
+Message-Id: <200902031804.26752.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 30 January 2009 18:28:16 Pallipadi, Venkatesh wrote:
-> On Fri, 2009-01-30 at 06:59 -0800, Thomas Renninger wrote:
-> > Hi,
-> >
-> > depending on HZ set to:
-> >
-> > 100
-> > 250
-> > 1000
-> >
-> > the ondemand governor is currently limited to poll the CPU load
-> > and adjust the frequency (sampling rate sysfs variable) every:
-> >
-> > 200ms
-> > 80ms
-> > 20ms
-> >
-> > This limitation does not consider NO_HZ which looks wrong?
-> > If this is correct, can someone give me a pointer, I'd like
-> > to understand why.
->
-> That is wrong.
-I think I got it now. I first thought my above assumptions are wrong.
-Double checking tells me that above assumptions are right, but you
-agree that the ondemand minimum sampling is wrong, is that correct?
+On Tuesday 03 February 2009, Rafael J. Wysocki wrote:
+> On Tuesday 03 February 2009, Benjamin Herrenschmidt wrote:
+> > On Mon, 2009-02-02 at 15:18 -0800, Linus Torvalds wrote:
 
-Can a system fall back to periodic timers, once NO_HZ is active?
-Or is NO_HZ always active, once no_hz=off boot param and timer
-requirements are analyzed?
-Then a rather low value could just be added to ondemand if no_hz is
-active, checking what is allowed to be written to ondemand/sampling_rate
-and that's it.
-What could be sane minimum sampling rate value, the ondemand governor
-would set the deferrable timer to?
+[--snip--]
 
-> ondemand sampling_rate should not limit the sampling rate
-> based on HZ when NO_HZ is configured. The idle statistics is not limited
-> by HZ rate with NO_HZ, as we will have idle microaccounting.
->
-> > If NO_HZ can/should go down to 20ms polling and more (current
-> > CPUs are able to switch fast enough, so that the ondemand governor
-> > would calculate the default polling interval below 80ms for them),
-> > this would hurt in respect of C-states at some point.
-> >
-> > For performance reasons, one wants to poll as much as possible, for
-> > powersaving reasons (C-states), one wants to poll as seldom as
-> > possible.
-> >
-> > I wonder whether it makes sense to dynamically adjust the polling
-> > interval (e.g. by a hint (and initial wakeup) from the scheduler or
-> > taking C-states into account) to:
-> >   - increase the sampling rate, e.g. based on context switching
-> >     activity
-> >   - lower sampling rate when the system is idle (to gain
-> >     full C-state efficiency)
-> > Or in what other way deep C-states could be taken into account
-> > in respect of ondemand polling?
->
-> ondemand polling uses deferrable timer and hence will not be called
-> frequently on a totally idle CPU. The main reason we did not do the
-> dynamic sampling_rate is because it increases the ondemand response time
-> with a sudden increase of load, which is not liked by most workloads.
+> > Comments ?
+> 
+> As I said, I tend to prefer the "loop of disable_irq()" approach, because it
+> would allow us to preserve the current ordering of ACPI operations.  Namely,
+> if we do:
+> 
+> suspend devices (normal suspend)
+>   loop of disable_irq()
+>     late suspend of devices
+>       _PTS
+>         disable nonboot CPUs
+>           local_irq_disable()
+>             sysdev suspend
+>               enter sleep state
+>               get control from the BIOS
+>             sysdev resume
+>             (*)
+>           local_irq_enable()
+>         enable nonboot CPUs
+>       _WAK
+>     early resume of devices
+>   loop of enable_irq()
+> resume devices (normal resume)
+> 
+> the ordering of _PTS with respect to putting devices into low power states and
+> disabling the nonboot CPUs will be the same as it is now and the same applies
+> to _WAK and putting devices into D0 etc. (I really _really_ wouldn't like to
+> change this ordering, since this alone is likely to break things badly).
+> 
+> Now, there's one subtle problem with resume in this picture.  Namely, before
+> running the "early resume of devices" we have to make sure that the interrupts
+> will be masked.  However, masking MSI-X, for example, means writing into
+> the memory space of the device, so we can't do it at this point.  Of course, we
+> can assume that MSI/MSI-X will be masked when we get control from the BIOS
+> (moreover, they are not shareable, so we can just ignore them at this point),
+> but still we'll have to mask the other interrupts before doing the
+> local_irq_enable() on resume - marked by the (*) above.  This appears to be
+> doable, though.
 
-Neat. I didn't know about the deferrable timer, thanks.
+Having reconsidered it, I think that the "loop of disable_irq()" may be
+problematic due to MSI/MSI-X and devices that are put into D3 during the
+"normal" suspend.  That is, we shouldn't try to mask MSI/MSI-X for devices in
+D3 (especially MSI-X, since that involves writing to the device's memory
+space).  This implies that devices in D3 should be avoided in the "loop of
+disable_irq()", but that could be tricky if we loop over struct irq_desc
+objects.
 
-    Thomas
+Still, we can modify pci_pm_suspend() (and the other PCI callbacks analogously)
+so that it masks the interrupt of the device right before returning to the
+caller if the device has not been put into a low power state before.  After
+that all devices will either be in low power states, so they won't be able to
+generate interrupts, or have their interrupts masked.  In the latter case the
+core can then put them into low power states in suspend_late().
+
+To summarize, I'd like to do the following:
+
+  suspend devices (normal suspend, mask interrupts for devices still in D0)
+    late suspend of devices (devices cannot generate interrupts)
+      _PTS
+        disable nonboot CPUs
+          local_irq_disable()
+            sysdev suspend
+              enter sleep state
+              get control from the BIOS
+            sysdev resume
+            (*)
+          local_irq_enable()
+        enable nonboot CPUs
+      _WAK
+    early resume of devices {
+      - devices cannot generate interrupts
+      - devices are being put into D0
+      - standard config registers are being restored
+    }
+  resume devices (unmask device interrupts, normal resume)
+
+The "early resume of devices" step can effectively unmask MSI/MSI-X, but that
+shouldn't matter, since they are not shared anyway.
+
+IOW, I would just move the late suspend of devices before _PTS and the
+early resume of devices after _WAK, with the additional disabling/enabling of
+device interrups (all PCI devices must enter the late suspend phase either in a
+low power state, or with their interrupts masked; analogously for resume).
+
+Thanks,
+Rafael
