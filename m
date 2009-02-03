@@ -1,105 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbZBCXzo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbZBCX7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753080AbZBCXzo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 18:55:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZBCXze
+	id S1752694AbZBCX7S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 18:59:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751277AbZBCX7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 18:55:34 -0500
-Received: from viefep21-int.chello.at ([62.179.121.41]:60276 "EHLO
-	viefep21-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751025AbZBCXze (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 18:55:34 -0500
-X-Greylist: delayed 1137 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 18:55:32 EST
-X-SourceIP: 77.56.78.26
-From: Daniel Ritz <daniel.ritz-ml@swissonline.ch>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: SOLVED support of touchscreen reported as eGalax but is not working
-Date: Wed, 4 Feb 2009 00:44:11 +0100
-User-Agent: KMail/1.9.6
-Cc: Max Weninger <max.weninger@gmail.com>, linux-kernel@vger.kernel.org,
-       Niels de Vos <niels.devos@wincor-nixdorf.com>,
-       linux-usb@vger.kernel.org
-References: <20090125234902.7605fd16@zork.foo.com> <20090131230901.13e2058e@vostro.foo.com> <20090202225929.e10dc57b.akpm@linux-foundation.org>
-In-Reply-To: <20090202225929.e10dc57b.akpm@linux-foundation.org>
+	Tue, 3 Feb 2009 18:59:03 -0500
+Received: from smtp5.welho.com ([213.243.153.39]:50602 "EHLO smtp5.welho.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751046AbZBCX7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 18:59:01 -0500
+Date: Wed, 4 Feb 2009 01:58:58 +0200
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] atyfb: fix CONFIG_ namespace
+	violations
+Message-ID: <20090203235858.GD22401@sci.fi>
+Mail-Followup-To: Randy Dunlap <randy.dunlap@oracle.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-fbdev-devel@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
+References: <200901310909.n0V99XIZ021497@imap1.linux-foundation.org> <4984AC40.8030708@oracle.com> <20090131121008.eb7f5ddd.akpm@linux-foundation.org> <20090202150002.05838fed.randy.dunlap@oracle.com> <Pine.LNX.4.64.0902030907350.15898@anakin> <20090203110631.GB22401@sci.fi> <4988C3E6.5010508@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200902040044.13071.daniel.ritz-ml@swissonline.ch>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4988C3E6.5010508@oracle.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 February 2009 07:59:29 Andrew Morton wrote:
-> On Sat, 31 Jan 2009 23:09:01 +0100 Max Weninger <max.weninger@gmail.com> wrote:
-[snip]
-> > > > After comparing the usbtouchscreen.c sources between the different
-> > > > versions I got it working by commenting the follwoing lines
-> > > > 
-> > > > ...
-> > > > #ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
-> > > >         /* ignore the HID capable devices, handled by usbhid */
-> > > >         {USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info =
-> > > > DEVTYPE_IGNORE}, {USB_DEVICE_HID_CLASS(0x0eef,
-> > > > 0x0002), .driver_info = DEVTYPE_IGNORE}, ...
-> > > > 
-> > > > Now the entry in /proc/bus/input/devices is created as in the
-> > > > older versions.
-> > > > 
-> > > > So it seems that usbhid is not correctly handling my type
-> > > > of touchscreen if I understand the comment there correctly
-> > > > 
-> > > 
-> > > So... how do we fix this for real?
-> > 
-> > Well I am really not an expert in kernel programming :-)
-> > I found out that these lines where added based on this thread from 2008
-> > 
-> > http://kerneltrap.org/mailarchive/linux-kernel/2008/6/28/2286264/thread
-> > 
-> > So all I can do is to provide any help in testing if needed
-> > 
+On Tue, Feb 03, 2009 at 02:23:34PM -0800, Randy Dunlap wrote:
+> Ville Syrjälä wrote:
+> > On Tue, Feb 03, 2009 at 09:09:38AM +0100, Geert Uytterhoeven wrote:
+> >> On Mon, 2 Feb 2009, Randy Dunlap wrote:
+> >>> --- linux-2.6.29-rc3-git3.orig/drivers/video/aty/atyfb_base.c
+> >>> +++ linux-2.6.29-rc3-git3/drivers/video/aty/atyfb_base.c
+> >>> @@ -135,7 +135,7 @@
+> >>>  #if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
+> >>>  defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
+> >>>  static const u32 lt_lcd_regs[] = {
+> >>> -	CONFIG_PANEL_LG,
+> >>> +	CNFG_PANEL_LG,
+> >> These were the official names as used in the ATI docs. After these changes, you
+> >> can no longer easily grep for them.
+> >>
+> >> Perhaps it's better to prefix everything with ATI_? yes, I know it's more work
+> >> (for the writer), but we want to optimize for the reader, right?
 > 
-> (optimistically cc'ing Daniel).
+> Everything??  not just the CONFIG_* namespace violations?
+> 
+> [If so,] Potentially 3600 changes just in 3 header files, then all of
+> the corresponding .c files.  No thanks.
 
-looks like it worked :)
+That does seem quite a bit of work. But even if you change only the
+CONFIG_ violations I'd say adding a prefix is preferable to changing
+the register name in a way that makes it more difficult to look it up
+in the chip documentation.
 
-ermm, that ignoring code...seems like i was just a little bit stupid when
-i wrote it...
-
-Max, please try the attached patch...
-
-rgds
--daniel
-
---------
-
-[PATCH] usbtouchscreen: fix eGalax/ETTI HID device ignoring
-
-Fix the eGalax/ETTI HID device ignoring by adding a match for the protocol too.
-This is what the marco USB_DEVICE_HID_CLASS() was supposed to do anyways.
-
-Devices confirmed to be real HID have the class set to HID and the protocol
-set to 'mouse'.  Some have HID class but protocol set to 'none'. Those are
-not HID and should be driven by usbtouchscreen.
-
-Signed-off-by: Daniel Ritz <daniel.ritz@gmx.ch>
-
-diff --git a/drivers/input/touchscreen/usbtouchscreen.c b/drivers/input/touchscreen/usbtouchscreen.c
-index 5080b26..ba6237a 100644
---- a/drivers/input/touchscreen/usbtouchscreen.c
-+++ b/drivers/input/touchscreen/usbtouchscreen.c
-@@ -118,7 +118,8 @@ enum {
- 
- #define USB_DEVICE_HID_CLASS(vend, prod) \
- 	.match_flags = USB_DEVICE_ID_MATCH_INT_CLASS \
--		| USB_DEVICE_ID_MATCH_DEVICE, \
-+		| USB_DEVICE_ID_MATCH_DEVICE \
-+		| USB_DEVICE_ID_MATCH_DEV_PROTOCOL, \
- 	.idVendor = (vend), \
- 	.idProduct = (prod), \
- 	.bInterfaceClass = USB_INTERFACE_CLASS_HID, \
-
-
+-- 
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
