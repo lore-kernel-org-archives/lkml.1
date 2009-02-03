@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZBCVMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755226AbZBCVNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753897AbZBCVMN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 16:12:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbZBCVL5
+	id S1755226AbZBCVNR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 16:13:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752117AbZBCVND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 16:11:57 -0500
-Received: from gate.crashing.org ([63.228.1.57]:32880 "EHLO gate.crashing.org"
+	Tue, 3 Feb 2009 16:13:03 -0500
+Received: from www.tglx.de ([62.245.132.106]:47600 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751508AbZBCVL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 16:11:57 -0500
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
- standard config registers of all devices early)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+	id S1750866AbZBCVNB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 16:13:01 -0500
+Date: Tue, 3 Feb 2009 22:12:04 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.0902031114321.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
-	 <200902031804.26752.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain>
-	 <200902031032.26771.jesse.barnes@intel.com>
-	 <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain>
-	 <alpine.LFD.2.00.0902031047320.3247@localhost.localdomain>
-	 <alpine.LFD.2.00.0902031114321.3247@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 08:11:26 +1100
-Message-Id: <1233695486.16867.95.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
+ standard config registers of all devices early)
+In-Reply-To: <20090203210442.GA27804@elte.hu>
+Message-ID: <alpine.LFD.2.00.0902032209060.22800@localhost.localdomain>
+References: <200902031804.26752.rjw@sisk.pl> <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain> <200902031032.26771.jesse.barnes@intel.com> <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain> <alpine.LFD.2.00.0902031047320.3247@localhost.localdomain>
+ <20090203191334.GA2797@elte.hu> <alpine.LFD.2.00.0902031120080.3247@localhost.localdomain> <20090203195304.GA31049@elte.hu> <alpine.LFD.2.00.0902031209280.3247@localhost.localdomain> <20090203205727.GA4460@elte.hu> <20090203210442.GA27804@elte.hu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 11:19 -0800, Linus Torvalds wrote:
+On Tue, 3 Feb 2009, Ingo Molnar wrote:
+> So i'd still like your tentative Signed-off-by for your patch - it's i think 
+> not v2.6.29 material but if it stays problem free in testing we can try it 
+> in v2.6.30. If it causes problem it will be clearly bisectable and clearly 
+> revertable.
 > 
-> On Tue, 3 Feb 2009, Linus Torvalds wrote:
-> > 
-> > Hmm. The _normal_ simple irq handler does this the way I described, but 
-> > for some reason the "handle_edge_irq()" does not. And the reason is 
-> > actually a buglet: it needs to mask things for the "recursive interrupt" 
-> > case.
-> 
-> Btw, just to clarify: none of this happens at the actual "irq_disable()" 
-> time: it only happens if you get an interrupt _while_ it's disabled. Which 
-> obviously shouldn't happen in the shutdown/wakeup path anyway for MSI, 
-> since the interrupts aren't shared, but it would be good to just be extra 
-> safe.
-> 
-> I do suspect we could/should just get rid of the msi masking entirely, but 
-> that may be too scary a step.
+> Maybe we could split it in two: and for MSI we could introduce a 'simpler 
+> and faster' edge flow as well - and keep the legacy handler untouched. That 
+> way it's low-risk in its entirety. (and avoids the MSI ->mask complication 
+> as well.)
 
-I agree :-) It's been a source of problem anyway, I remember hearing
-some device reacting strangely (aka, losing MSIs) when masked, and it's
-not even implemented by all devices (somebody had the "smart" idea of
-making an optional feature). So it ends up being a lot of not very
-useful code...
+Yes, seperating out the MSI handler into it's own flow control is the
+right way to go. We had trouble with real edge hardware and IIRC most
+of the problems originated from ARM. rmk ??
 
-> For the current suspend/resume situation, maybe it's enough to know that 
-> it shouldn't be happening anyway, and even if it _does_ happen on a device 
-> that has been shut down, it's just not going to do anything. Sure, it's 
-> doing that "writel/readl", but if it gets lost, who really cares? Nobody.
+Thanks,
 
-Note that I still believe that life would be simpler to just keep the
-current local_irq_save() and just tweak might_sleep() etc... so that
-ACPI is safe to call. At least it can be done orthogonally to this
-interrupt change.
-
-IE. As I said earlier, that interrupt masking -will- change the exposed
-semantics of suspend_late() to drivers. In fact, iirc, it's you who
-advertised initially suspend_late() as being the 'easy' way to write a
-PCI driver suspend routine specifically because you don't have to bother
-about being re-entered from anywhere for things like request processing
-etc... With the change, the kernel is essentially still operating,
-timers are ticking, we may even be scheduling, so this important
-assumption is gone. That means a lot more chances for driver to screw
-up.
-
-Cheers,
-Ben.
-
-
+	tglx
