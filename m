@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbZBCEH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754184AbZBCEKc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754228AbZBCEH1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 23:07:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZBCEHN
+	id S1754184AbZBCEKc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 23:10:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751684AbZBCEKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 23:07:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45782 "EHLO
+	Mon, 2 Feb 2009 23:10:23 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40468 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752224AbZBCEHM (ORCPT
+	by vger.kernel.org with ESMTP id S1751515AbZBCEKX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 23:07:12 -0500
-Date: Mon, 2 Feb 2009 20:06:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090202200649.c1af2fd1.akpm@linux-foundation.org>
-In-Reply-To: <200902022305.51344.rusty@rustcorp.com.au>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<200901310829.17099.rusty@rustcorp.com.au>
-	<20090130141744.007fe725.akpm@linux-foundation.org>
-	<200902022305.51344.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 23:10:23 -0500
+Date: Mon, 2 Feb 2009 20:09:57 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <1233633315.16867.45.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0902022008060.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <200902022239.02453.rjw@sisk.pl>  <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain>  <200902022331.49131.rjw@sisk.pl>  <alpine.LFD.2.00.0902021508340.3247@localhost.localdomain> 
+ <1233633061.16867.41.camel@pasglop> <1233633315.16867.45.camel@pasglop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Feb 2009 23:05:50 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-> +/**
-> + * __work_on_cpu - run a function in a workqueue on a particular cpu
-> + * @swq: the (singlethreaded) workqueue
-> + * @cpu: the cpu to run on
-> + * @fn: the function to run
-> + * @arg: the function arg
-> + *
-> + * This will return the value @fn returns.
-> + * It is up to the caller to ensure that the cpu doesn't go offline.
-> + *
-> + * Example:
-> + *	int ret;
-> + *	struct workqueue_struct *wq = create_singlethread_workqueue("myq");
-> + *	if (unlikely(!wq))
-> + *		ret = -ENOMEM;
-> + *	else {
-> + *		ret = __work_on_cpu(wq, cpu, fn, arg);
-> + *		destroy_workqueue(wq);
-> + *	}
-> + */
-> +long __work_on_cpu(struct workqueue_struct *swq,
-> +		   unsigned int cpu, long (*fn)(void *), void *arg)
-> +{
-> +	struct work_for_cpu wfc;
-> +
-> +	INIT_WORK(&wfc.work, do_work_for_cpu);
-> +	wfc.fn = fn;
-> +	wfc.arg = arg;
-> +	wfc.cpu = cpu;
-> +	BUG_ON(!swq->singlethread);
-> +	queue_work(swq, &wfc.work);
-> +	flush_work(&wfc.work);
-> +
-> +	return wfc.ret;
-> +}
-> +EXPORT_SYMBOL_GPL(__work_on_cpu);
 
-If we're going to do this then we might as well create the thread right
-here, use it once and then let it exit.
+On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
+> 
+> The new code will basically make the core bring back everything to D0 on
+> resume. That's a huge power surge and often not needed at all...
 
-That's slower, but I suspect that we could get a lot of that inefficiency
-back by coming up with a kernel_thread_on_cpu(), so we don't go and schedule
-the function on a random CPU only to immediately switch it over to a different
-one, dunno.
+Well, we could easily do it only if it was D0 _before_ resume.
 
-But as you say, rdmsr_on_cpu() is easy to do, using
-smp_call_function_single().  Then we can easily convert all other
-work_on_cpu() callers to smp_call_function_single() and zap
-work_on_cpu().  The best outcome, methinks.
+But quite frankly, before I worry about "huge power surge" issues, I want 
+to feel like the architecture allows for clueless driver writers, and 
+still giving us reliable suspend/resume.
+
+Once we have that reliability, and only _then_, do I care at all about 
+power issues. Make it work first, and not result in a dead machine if 
+there is unlucky shared interrupt timings.
+
+			Linus
