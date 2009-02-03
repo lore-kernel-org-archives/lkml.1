@@ -1,79 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZBCQpE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbZBCQrF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbZBCQpE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 11:45:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZBCQoy
+	id S1755411AbZBCQrF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 11:47:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZBCQqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 11:44:54 -0500
-Received: from rv-out-0506.google.com ([209.85.198.234]:36338 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752205AbZBCQox (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 11:44:53 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=ukyF7oh0tc4hr2YRMIlhJbM1FfxYXJmQ+1NeFDmAr5jHHp1cQ7xaYP4SkbanSe7c9R
-         I+WSzM/yujutvWV2C4brHcDZIOCHYmvrYtucOLN2MvhvT6dy0WogtYztxNbgDJYN7t3P
-         TdsxKGaUw0R83RwyXHQYPNcyViuqZz/0p7VsY=
-MIME-Version: 1.0
-In-Reply-To: <20090203042405.GB16179@barrios-desktop>
-References: <20090203042405.GB16179@barrios-desktop>
-Date: Wed, 4 Feb 2009 01:44:52 +0900
-X-Google-Sender-Auth: b9fa98029a8703ce
-Message-ID: <2f11576a0902030844l64c25496sa5f2892bbb04e47c@mail.gmail.com>
-Subject: Re: [PATCH v2] fix mlocked page counter mistmatch
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux mm <linux-mm@kvack.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 11:46:49 -0500
+Received: from ns1.suse.de ([195.135.220.2]:51021 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750845AbZBCQqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 11:46:48 -0500
+From: Thomas Renninger <trenn@suse.de>
+To: davej@codemonkey.org.uk
+Cc: mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
+       Thomas Renninger <trenn@suse.de>
+Subject: [PATCH 3/7] CPUFREQ: ondemand/conservative: sanitize sampling_rate restrictions
+Date: Tue,  3 Feb 2009 17:46:42 +0100
+Message-Id: <1233679606-1971-4-git-send-email-trenn@suse.de>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1233679606-1971-1-git-send-email-trenn@suse.de>
+References: <1233679606-1971-1-git-send-email-trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi MinChan,
+Limit sampling rate to transition_latency * 100 or kernel limits.
+If sampling_rate is tried to be set too low, set the lowest allowed value.
 
-I'm confusing now.
-Can you teach me?
+Signed-off-by: Thomas Renninger <trenn@suse.de>
+---
+ Documentation/cpu-freq/governors.txt   |   14 +++++++++++++-
+ drivers/cpufreq/cpufreq_conservative.c |   19 ++++++++++++++++---
+ drivers/cpufreq/cpufreq_ondemand.c     |   19 +++++++++++++++----
+ 3 files changed, 44 insertions(+), 8 deletions(-)
 
-> When I tested following program, I found that mlocked counter
-> is strange.
-> It couldn't free some mlocked pages of test program.
-> It is caused that try_to_unmap_file don't check real
-> page mapping in vmas.
+diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-freq/governors.txt
+index 9b18512..ce73f3e 100644
+--- a/Documentation/cpu-freq/governors.txt
++++ b/Documentation/cpu-freq/governors.txt
+@@ -117,7 +117,19 @@ accessible parameters:
+ sampling_rate: measured in uS (10^-6 seconds), this is how often you
+ want the kernel to look at the CPU usage and to make decisions on
+ what to do about the frequency.  Typically this is set to values of
+-around '10000' or more.
++around '10000' or more. It's default value is (cmp. with users-guide.txt):
++transition_latency * 1000
++The lowest value you can set is:
++transition_latency * 100 or it may get restricted to a value where it
++makes not sense for the kernel anymore to poll that often which depends
++on your HZ config variable (HZ=1000: max=20000us, HZ=250: max=5000).
++Be aware that transition latency is in ns and sampling_rate is in us, so you
++get the same sysfs value by default.
++Sampling rate should always get adjusted considering the transition latency
++To set the sampling rate 750 times as high as the transition latency
++in the bash (as said, 1000 is default), do:
++echo `$(($(cat cpuinfo_transition_latency) * 750 / 1000)) \
++    >ondemand/sampling_rate
+ 
+ show_sampling_rate_(min|max): THIS INTERFACE IS DEPRECATED, DON'T USE IT.
+ You can use wider ranges now and the general
+diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
+index 5ba0a3f..b8bbd4a 100644
+--- a/drivers/cpufreq/cpufreq_conservative.c
++++ b/drivers/cpufreq/cpufreq_conservative.c
+@@ -54,7 +54,18 @@ static unsigned int def_sampling_rate;
+ 			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
+ #define MIN_SAMPLING_RATE			\
+ 			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
++/* Above MIN_SAMPLING_RATE will vanish with its sysfs file soon
++ * Define the minimal settable sampling rate to the greater of:
++ *   - "HW transition latency" * 100 (same as default sampling / 10)
++ *   - MIN_STAT_SAMPLING_RATE
++ * To avoid that userspace shoots itself.
++*/
++#define MINIMUM_SAMPLING_RATE			\
++			((def_sampling_rate / 10) < MIN_STAT_SAMPLING_RATE \
++			 ? MIN_STAT_SAMPLING_RATE : (def_sampling_rate / 10))
++/* This will also vanish soon with removing sampling_rate_max */
+ #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
++
+ #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
+ #define DEF_SAMPLING_DOWN_FACTOR		(1)
+ #define MAX_SAMPLING_DOWN_FACTOR		(10)
+@@ -197,12 +208,14 @@ static ssize_t store_sampling_rate(struct cpufreq_policy *unused,
+ 	ret = sscanf (buf, "%u", &input);
+ 
+ 	mutex_lock(&dbs_mutex);
+-	if (ret != 1 || input > MAX_SAMPLING_RATE || input < MIN_SAMPLING_RATE) {
++	if (ret != 1) {
+ 		mutex_unlock(&dbs_mutex);
+ 		return -EINVAL;
+ 	}
+-
+-	dbs_tuners_ins.sampling_rate = input;
++	if  (input < MINIMUM_SAMPLING_RATE)
++		dbs_tuners_ins.sampling_rate = MINIMUM_SAMPLING_RATE;
++	else
++		dbs_tuners_ins.sampling_rate = input;
+ 	mutex_unlock(&dbs_mutex);
+ 
+ 	return count;
+diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
+index 4b42e36..70e0841 100644
+--- a/drivers/cpufreq/cpufreq_ondemand.c
++++ b/drivers/cpufreq/cpufreq_ondemand.c
+@@ -52,6 +52,16 @@ static unsigned int def_sampling_rate;
+ 			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
+ #define MIN_SAMPLING_RATE			\
+ 			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
++/* Above MIN_SAMPLING_RATE will vanish with its sysfs file soon
++ * Define the minimal settable sampling rate to the greater of:
++ *   - "HW transition latency" * 100 (same as default sampling / 10)
++ *   - MIN_STAT_SAMPLING_RATE
++ * To avoid that userspace shoots itself.
++*/
++#define MINIMUM_SAMPLING_RATE			\
++			((def_sampling_rate / 10) < MIN_STAT_SAMPLING_RATE \
++			 ? MIN_STAT_SAMPLING_RATE : (def_sampling_rate / 10))
++/* This will also vanish soon with removing sampling_rate_max */
+ #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
+ #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
+ #define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
+@@ -243,13 +253,14 @@ static ssize_t store_sampling_rate(struct cpufreq_policy *unused,
+ 	ret = sscanf(buf, "%u", &input);
+ 
+ 	mutex_lock(&dbs_mutex);
+-	if (ret != 1 || input > MAX_SAMPLING_RATE
+-		     || input < MIN_SAMPLING_RATE) {
++	if (ret != 1) {
+ 		mutex_unlock(&dbs_mutex);
+ 		return -EINVAL;
+ 	}
+-
+-	dbs_tuners_ins.sampling_rate = input;
++	if  (input < MINIMUM_SAMPLING_RATE)
++		dbs_tuners_ins.sampling_rate = MINIMUM_SAMPLING_RATE;
++	else
++		dbs_tuners_ins.sampling_rate = input;
+ 	mutex_unlock(&dbs_mutex);
+ 
+ 	return count;
+-- 
+1.6.0.2
 
-What meanining is "real" page mapping?
-
-
-> That's because goal of address_space for file is to find all processes
-> into which the file's specific interval is mapped.
-> What I mean is that it's not related page but file's interval.
-
-hmmm. No.
-I ran your reproduce program.
-
-two vma pointing the same page cause this leaking.
-
-iow, any library have .text and .data segment. then the tail of .text
-and the head of .data vma point the same page.
-its page was leaked.
-
-
-> Even if the page isn't really mapping at the vma, it returns
-> SWAP_MLOCK since the vma have VM_LOCKED, then calls
-> try_to_mlock_page. After all, mlocked counter is increased again.
->
-> COWed anon page in a file-backed vma could be a such case.
-> This patch resolves it.
-
-What meaning is "anon page in a file-backed"?
-As far as I know, if cow happend on private mapping page, new page is
-treated truth anon.
-
-
-So, I don't reach to your conclusion yet. please teach me.
