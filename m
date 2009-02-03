@@ -1,73 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZBCImU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753207AbZBCImp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479AbZBCImU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 03:42:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZBCImI
+	id S1753207AbZBCImp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 03:42:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZBCImc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 03:42:08 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:47353 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbZBCImG (ORCPT
+	Tue, 3 Feb 2009 03:42:32 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:62578 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751134AbZBCImb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 03:42:06 -0500
-Date: Tue, 3 Feb 2009 01:42:03 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: "Woodruff, Richard" <r-woodruff2@ti.com>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH E 08/14] OMAP clock: move rate recalc, propagation code
- up to plat-omap/clock.c
-In-Reply-To: <20090131114014.GD1394@n2100.arm.linux.org.uk>
-Message-ID: <alpine.DEB.2.00.0902030133040.29513@utopia.booyaka.com>
-References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192748.29333.5856.stgit@localhost.localdomain> <20090129174153.GH18233@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901300135560.26985@utopia.booyaka.com> <20090130085249.GB6864@n2100.arm.linux.org.uk>
- <13B9B4C6EF24D648824FF11BE89671620376DEC116@dlee02.ent.ti.com> <20090131114014.GD1394@n2100.arm.linux.org.uk>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 3 Feb 2009 03:42:31 -0500
+Subject: [BUGFIX re-send] [PATCH] write-back: fix nr_to_write counter
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Cc: npiggin@suse.de, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Feb 2009 10:42:22 +0200
+Message-Id: <1233650542.24809.54.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Feb 2009 08:42:17.0962 (UTC) FILETIME=[522A84A0:01C985DB]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Russell, 
+Hi,
 
-On Sat, 31 Jan 2009, Russell King - ARM Linux wrote:
+commit 05fe478dd04e02fa230c305ab9b5616669821dd3
+Author: Nick Piggin <npiggin@suse.de>
+Date:   Tue Jan 6 14:39:08 2009 -0800
 
-> On Fri, Jan 30, 2009 at 08:23:49AM -0600, Woodruff, Richard wrote:
-> > 
-> > > There's one bug that your version highlights in mine - the virtual mpu
-> > > clock in omap1 touches the DPLL and repropagates that rate.  I've
-> > > removed that repropagation, so that needs fixing.
-> > >
-> > > However, this raises a question: why is the virtual mpu clock touching
-> > > some other part of the clock tree.  I wonder whether this should be
-> > > handled a different way, though the first thing that needs answering is
-> > > why we have this alias for 'arm_ck' ?
-> > 
-> > At one point in time the virtual clock allowed control for a set of clocks
-> > with some dependencies.  The mpu alias provided a convenient control point.
-> 
-> >From what I can see (checking both mainline and Tony's tree), this mpu
-> alias (virtual_ck_mpu) is not used on OMAP1, which seems to suggest
-> that this quirk has become redundant.  If it is redundant, it should
-> be removed.
->
-> If there is some code somewhere to use it, this quirk should live with
-> the user of the quirk until such time that the user becomes ready to be
-> merged.
+    mm: write_cache_pages integrity fix
 
-I don't think there's any reason for virtual_ck_mpu or virt_prcm_set to 
-have a parent clock listed.  
+broke wbc->nr_to_write handling. Here is the fix.
 
-At some point this year, those virtual OPP clocks will be removed from the 
-clock tree and implemented in a different manner.
+I'm not 100% sure I got things right, because I am far not expert in the
+area. Please, review it. The patch fixes my UBIFS issues, which are
+caused by the fact that wbc->nr_to_write is not updated.
+======================================================================
 
-If you like, I will send a patch for removal of virtual_ck_mpu from OMAP1, 
-although my suspicion is that OMAP1 is just missing a CPUFreq driver to 
-use that OPP clock.
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Mon, 2 Feb 2009 18:33:49 +0200
+Subject: [PATCH] write-back: fix nr_to_write counter
 
+Commit 05fe478dd04e02fa230c305ab9b5616669821dd3 broke @wbc->nr_to_write.
+'write_cache_pages()' changes it in the loop, but restores the original
+value from @nr_to_write at the end, because of this code:
 
-- Paul
+       if (!wbc->no_nrwrite_index_update) {
+                if (wbc->range_cyclic || (range_whole && nr_to_write > 0))
+                        mapping->writeback_index = done_index;
+                wbc->nr_to_write = nr_to_write;
+        }
+
+Well, in case of @wbc->no_nrwrite_index_update != 0, we do change
+wbc->nr_to_write, while we should not. This patch fixes this behavior.
+
+Also, I think wbc->nr_to_write should be changed in all cases, not only
+when wbc->sync_mode == WB_SYNC_NONE.
+
+Also, I add a comment explaining why we do not stop writing back.
+
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+---
+ mm/page-writeback.c |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index b493db7..13a2b8e 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -1051,13 +1051,22 @@ continue_unlock:
+ 				}
+  			}
+ 
+-			if (wbc->sync_mode == WB_SYNC_NONE) {
+-				wbc->nr_to_write--;
+-				if (wbc->nr_to_write <= 0) {
+-					done = 1;
+-					break;
+-				}
++			if (nr_to_write > 0)
++				nr_to_write--;
++			else if (wbc->sync_mode == WB_SYNC_NONE) {
++				/*
++				 * We stop writing back only if we are not
++				 * doing integrity sync. In case of integrity
++				 * sync we have to keep going because someone
++				 * may be concurrently dirtying pages, and we
++				 * might have synced a lot of newly appeared
++				 * dirty pages, bud have not synced all of the
++				 * old dirty pages.
++				 */
++				done = 1;
++				break;
+ 			}
++
+ 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 				wbc->encountered_congestion = 1;
+ 				done = 1;
+-- 
+1.6.0.6
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
