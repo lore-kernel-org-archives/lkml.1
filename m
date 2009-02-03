@@ -1,184 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbZBCJJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbZBCJJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752179AbZBCJJV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 04:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751734AbZBCJJG
+	id S1754076AbZBCJJl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 04:09:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752494AbZBCJJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 04:09:06 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36009 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661AbZBCJJE (ORCPT
+	Tue, 3 Feb 2009 04:09:12 -0500
+Received: from mail-bw0-f29.google.com ([209.85.218.29]:54632 "EHLO
+	mail-bw0-f29.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752084AbZBCJJK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 04:09:04 -0500
-Date: Tue, 3 Feb 2009 18:07:51 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "menage@google.com" <menage@google.com>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: [PATCH 5/6] memcg: fix OOM killer under memcg
-Message-Id: <20090203180751.fd63b7ae.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090203180320.9f29aa76.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090203180320.9f29aa76.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 04:09:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=vstezq+NEHJr91SLApZC/XLYPjL+MOVGgIoSoTKlX90S906CN9W4/8iuPYqgrtbuBp
+         Ba0lqgSjKuAwdJnWNFGZth6GF9nytGBXkvXvD0URRE44KBbTENMv69LW20NM9vPSVrmo
+         /snw3uSoaniTzMwM1Thh79KTHxpMvh/cAE7xw=
+Date: Tue, 3 Feb 2009 10:09:03 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/3] trace: better manage the context info for
+	events
+Message-ID: <20090203090902.GA23466@nowhere>
+References: <20090202222921.GB12082@ghostprotocols.net> <20090203020746.GB22718@nowhere> <alpine.DEB.1.10.0902022128130.2192@gandalf.stny.rr.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902022128130.2192@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Mon, Feb 02, 2009 at 09:32:51PM -0500, Steven Rostedt wrote:
+> 
+> On Tue, 3 Feb 2009, Frederic Weisbecker wrote:
+> 
+> > On Mon, Feb 02, 2009 at 08:29:21PM -0200, Arnaldo Carvalho de Melo wrote:
+> > > From: Frederic Weisbecker <fweisbec@gmail.com>
+> > > 
+> > > Impact: make trace_event more convenient for tracers
+> > > 
+> > > All tracers (for the moment) that use the struct trace_event want to
+> > > have the context info printed before their own output: the pid/cmdline,
+> > > cpu, and timestamp.
+> > > 
+> > > But some other tracers that want to implement their trace_event
+> > > callbacks will not necessary need these information or they may want to
+> > > format them as they want.
+> > > 
+> > > This patch adds a new default-enabled trace option:
+> > > TRACE_ITER_CONTEXT_INFO When disabled through:
+> > > 
+> > > echo nocontext-info > /debugfs/tracing/trace_options
+> > > 
+> > > The pid, cpu and timestamps headers will not be printed.
+> > > 
+> > > IE with the sched_switch tracer with context-info (default):
+> > > 
+> > >      bash-2935 [001] 100.356561: 2935:120:S ==> [001]  0:140:R <idle>
+> > >    <idle>-0    [000] 100.412804:    0:140:R   + [000] 11:115:S events/0
+> > >    <idle>-0    [000] 100.412816:    0:140:R ==> [000] 11:115:R events/0
+> > >  events/0-11   [000] 100.412829:   11:115:S ==> [000]  0:140:R <idle>
+> > > 
+> > > Without context-info:
+> > > 
+> > >  2935:120:S ==> [001]  0:140:R <idle>
+> > >     0:140:R   + [000] 11:115:S events/0
+> > >     0:140:R ==> [000] 11:115:R events/0
+> > >    11:115:S ==> [000]  0:140:R <idle>
+> > > 
+> > > A tracer can disable it at runtime by clearing the bit
+> > > TRACE_ITER_CONTEXT_INFO in trace_flags.
+> > > 
+> > > The print routines were renamed to trace_print_context and
+> > > trace_print_lat_context, so that they can be used by tracers if they
+> > > want to use them for one of the trace_event callbacks.
+> > 
+> > 
+> > Actually, I wonder if this is not breaking the sense of the TRACE_ITER_CONTEXT_INFO
+> > flag.
+> 
+> Yeah, I agree with Frederic here. Let the user decide this as a global 
+> flag for about of data to print. The tracer should just provide a callback 
+> incase the tracer has a different context format.
+> 
+> > 
+> > In the first patch I made about it, I thought this flag was to decide whether we want to
+> > print the context information in the standard way.
+> > 
+> > Then, Steven suggested to actually provide callbacks for the tracers which want
+> > to override the standard context information printer.
+> > The flag then got more logical: TRACE_ITER_CONTEXT_INFO was not only about deciding
+> > whether we want or not the standard context info, it tells if we want in a global way
+> > the context info to be printed, whatever how the tracer decides to print it.
+> > (This is the theory, but since we couldn't override the bin/raw/hex cases, the
+> > practical case didn't follow this idea).
+> > 
+> > If someone doesn't want to see these informations in the blk tracer, this flag will
+> > not help him. Worst, it will double print the context info if the user enables the flag.
+> > 
+> > Now that I see the practical case, I'm not sure the design of my patch was valuable.
+> > A tracer has to play with the flag if it wants to override the context info in
+> > the bin/raw/hex cases. And I don't think this is a good way to proceed.
+> > 
+> > In my opinion, the ITER_CONTEXT_INFO flag should mostly be set by the user.
+> 
+> I think it should _only_ be set by user.
+> 
+> > 
+> > And only one callback could be added to trace_event: context_info()
+> > Then, the tracer will manage itself the raw/hex/bin/normal cases inside
+> > this callback.
+> 
+> Yeah, this is a good idea. The callback can be passed an enum to what kind
+> of trace it is: TRACE_FMT_RAW TRACE_FMT_HEX ...
+> 
+> 
+> > 
+> > We can provide the default callbacks available for the tracers which want it and even
+> > one function which proceed all of them, depending on the flags.
+> > ftrace/preempt/sched.... tracers can register this function for their context_info callback
+> > and other tracers too if they want.
+> > 
+> > Or they can override it, and even pick the default callbacks for dedicated flags when they want.
+> > 
+> > Then, when the user wants the context info to be printed or not, he just have to
+> > set/clear the context-info flag manually.
+> > 
+> > A tracer can even decide to set/clear it by default, but for its real sense: print or not
+> > these context info.
+> > 
+> > What do you think?
+> 
+> I'm not sure a tracer should decide if it should have the format or not. 
+> In its context callback, it might decide there. But if the user does not 
+> want it, it should be off.
 
-This patch tries to fix OOM Killer problems caused by hierarchy.
-Now, memcg itself has OOM KILL function (in oom_kill.c) and tries to
-kill a task in memcg.
 
-But, when hierarchy is used, it's broken and correct task cannot
-be killed. For example, in following cgroup
+Of course, I just thought that some tracers could choose if it's default enabled
+or disabled when they are selected.
 
-	/groupA/	hierarchy=1, limit=1G,
-		01	nolimit
-		02	nolimit
-All tasks' memory usage under /groupA, /groupA/01, groupA/02 is limited to
-groupA's 1Gbytes but OOM Killer just kills tasks in groupA.
 
-This patch provides makes the bad process be selected from all tasks
-under hierarchy. BTW, currently, oom_jiffies is updated against groupA
-in above case. oom_jiffies of tree should be updated.
+> 
+> Unless you are saying have the tracer decide if it is enabled on or off 
+> when the trace is selected?
 
-To see how oom_jiffies is used, please check mem_cgroup_oom_called()
-callers.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
-Index: mmotm-2.6.29-Feb02/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.29-Feb02.orig/mm/memcontrol.c
-+++ mmotm-2.6.29-Feb02/mm/memcontrol.c
-@@ -295,6 +295,9 @@ struct mem_cgroup *mem_cgroup_from_task(
- static struct mem_cgroup *try_get_mem_cgroup_from_mm(struct mm_struct *mm)
- {
- 	struct mem_cgroup *mem = NULL;
-+
-+	if (!mm)
-+		return;
- 	/*
- 	 * Because we have no locks, mm->owner's may be being moved to other
- 	 * cgroup. We use css_tryget() here even if this looks
-@@ -483,13 +486,23 @@ void mem_cgroup_move_lists(struct page *
- 	mem_cgroup_add_lru_list(page, to);
- }
+Exactly, I meant that printing the context can be mostly relevant for several tracers
+(ftrace, sched) but can be encumbering for some other traces (mmiotrace).
+
+So perhaps a tracer could touch this flag when it's selected
+and restore its value when unselected.
+
+Or perhaps we can provide a pair of functions to do it in a proper way...
+
  
--int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem)
-+int task_in_mem_cgroup(struct task_struct *task, struct mem_cgroup *mem)
- {
- 	int ret;
-+	struct mem_cgroup *curr = NULL;
- 
- 	task_lock(task);
--	ret = task->mm && mm_match_cgroup(task->mm, mem);
-+	rcu_read_lock();
-+	curr = try_get_mem_cgroup_from_mm(task->mm);
-+	rcu_read_unlock();
- 	task_unlock(task);
-+	if (!curr)
-+		return 0;
-+	if (curr->use_hierarchy)
-+		ret = css_is_ancestor(&curr->css, &mem->css);
-+	else
-+		ret = (curr == mem);
-+	css_put(&curr->css);
- 	return ret;
- }
- 
-@@ -820,6 +833,19 @@ bool mem_cgroup_oom_called(struct task_s
- 	rcu_read_unlock();
- 	return ret;
- }
-+
-+static int record_last_oom_cb(struct mem_cgroup *mem, void *data)
-+{
-+	mem->last_oom_jiffies = jiffies;
-+	return 0;
-+}
-+
-+static void record_last_oom(struct mem_cgroup *mem)
-+{
-+	mem_cgroup_walk_tree(mem, NULL, record_last_oom_cb);
-+}
-+
-+
- /*
-  * Unlike exported interface, "oom" parameter is added. if oom==true,
-  * oom-killer can be invoked.
-@@ -902,7 +928,7 @@ static int __mem_cgroup_try_charge(struc
- 				mutex_lock(&memcg_tasklist);
- 				mem_cgroup_out_of_memory(mem_over_limit, gfp_mask);
- 				mutex_unlock(&memcg_tasklist);
--				mem_over_limit->last_oom_jiffies = jiffies;
-+				record_last_oom(mem_over_limit);
- 			}
- 			goto nomem;
- 		}
-Index: mmotm-2.6.29-Feb02/Documentation/cgroups/memcg_test.txt
-===================================================================
---- mmotm-2.6.29-Feb02.orig/Documentation/cgroups/memcg_test.txt
-+++ mmotm-2.6.29-Feb02/Documentation/cgroups/memcg_test.txt
-@@ -1,5 +1,5 @@
- Memory Resource Controller(Memcg)  Implementation Memo.
--Last Updated: 2009/1/19
-+Last Updated: 2009/1/20
- Base Kernel Version: based on 2.6.29-rc2.
- 
- Because VM is getting complex (one of reasons is memcg...), memcg's behavior
-@@ -360,3 +360,21 @@ Under below explanation, we assume CONFI
- 	# kill malloc task.
- 
- 	Of course, tmpfs v.s. swapoff test should be tested, too.
-+
-+ 9.8 OOM-Killer
-+	Out-of-memory caused by memcg's limit will kill tasks under
-+	the memcg. When hierarchy is used, a task under hierarchy
-+	will be killed by the kernel.
-+	In this case, panic_on_oom shouldn't be invoked and tasks
-+	in other groups shouldn't be killed.
-+
-+	It's not difficult to cause OOM under memcg as following.
-+	Case A) when you can swapoff
-+	#swapoff -a
-+	#echo 50M > /memory.limit_in_bytes
-+	run 51M of malloc
-+
-+	Case B) when you use mem+swap limitation.
-+	#echo 50M > memory.limit_in_bytes
-+	#echo 50M > memory.memsw.limit_in_bytes
-+	run 51M of malloc
-Index: mmotm-2.6.29-Feb02/include/linux/memcontrol.h
-===================================================================
---- mmotm-2.6.29-Feb02.orig/include/linux/memcontrol.h
-+++ mmotm-2.6.29-Feb02/include/linux/memcontrol.h
-@@ -66,7 +66,7 @@ extern unsigned long mem_cgroup_isolate_
- 					struct mem_cgroup *mem_cont,
- 					int active, int file);
- extern void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask);
--int task_in_mem_cgroup(struct task_struct *task, const struct mem_cgroup *mem);
-+int task_in_mem_cgroup(struct task_struct *task, struct mem_cgroup *mem);
- 
- extern struct mem_cgroup *mem_cgroup_from_task(struct task_struct *p);
- 
-@@ -192,7 +192,7 @@ static inline int mm_match_cgroup(struct
- }
- 
- static inline int task_in_mem_cgroup(struct task_struct *task,
--				     const struct mem_cgroup *mem)
-+				     struct mem_cgroup *mem)
- {
- 	return 1;
- }
+> -- Steve
 
