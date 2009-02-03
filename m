@@ -1,92 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758596AbZBCAqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbZBCAsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758596AbZBCAqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:46:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753271AbZBCAqk
+	id S1759086AbZBCAsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:48:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbZBCAsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:46:40 -0500
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:34650 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752770AbZBCAqk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:46:40 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgMFAMcfh0lMQWt2/2dsb2JhbACBbssxhBQG
-Date: Mon, 2 Feb 2009 19:46:32 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Subject: Re: [RFC PATCH] block: Fix bio merge induced high I/O latency
-Message-ID: <20090203004632.GA17778@Krystal>
-References: <20090117004439.GA11492@Krystal> <20090117162657.GA31965@Krystal> <20090117190437.GZ30821@kernel.dk> <20090118211234.GA4913@Krystal> <20090119182654.GT30821@kernel.dk> <20090120021055.GA6990@Krystal> <20090120073709.GC30821@kernel.dk> <20090120122855.GF30821@kernel.dk> <20090202020811.GA19565@Krystal> <20090202112600.GE30821@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 2 Feb 2009 19:48:09 -0500
+Received: from smtp.gentoo.org ([140.211.166.183]:58819 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752770AbZBCAsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 19:48:08 -0500
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Subject: Re: [PATCH] sh: maple: Add support for VMU devices (v2) [1/3]
+Date: Mon, 2 Feb 2009 19:48:01 -0500
+User-Agent: KMail/1.11.0 (Linux/2.6.28; KDE/4.2.0; x86_64; ; )
+Cc: greg KH <greg@kroah.com>, dwmw2 <dwmw2@infradead.org>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       MTD <linux-mtd@lists.infradead.org>,
+       "linux-sh" <linux-sh@vger.kernel.org>,
+       "linux-input" <linux-input@vger.kernel.org>
+References: <1233619569.13918.12.camel@localhost.localdomain> <1233620263.13918.31.camel@localhost.localdomain>
+In-Reply-To: <1233620263.13918.31.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3028677.rxxFT817vE";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090202112600.GE30821@kernel.dk>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 19:13:34 up 33 days, 11 min,  8 users,  load average: 0.74, 0.43,
-	0.30
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200902021948.04031.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jens Axboe (jens.axboe@oracle.com) wrote:
-> It's also working around the real problem for this specific issue, which
-> is that you just don't want to have sync apps blocked waiting for async
-> writeout in the first place.
-> 
+--nextPart3028677.rxxFT817vE
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Maybe I could help to identify criterion for such sync requests which
-are treated as async. From a newcomer's look at the situation, I would
-assume that :
+On Monday 02 February 2009 19:17:43 Adrian McMenamin wrote:
+> +	if (src_ofs >=3D ((card->parts)[partition]).numblocks * card->blocklen)
+> +	if (num > ((card->parts)[partition]).numblocks)
+> +	pcache =3D (card->parts[partition]).pcache;
 
-- Small I/O requests
-- I/O requests caused by major page faults, except those caused by
-  access to mmapped files which result in large consecutive file
-  reads/writes.
+ive only quoted some, but the use of parenthesis here is pointless and imo=
+=20
+makes the code harder to read.  it's like trying to parse lisp ;).
 
-Should never *ever* fall into the async I/O request path. Am I correct ?
-If yes, then I could trigger some tracing test cases and identify the
-faulty scenarios with LTTng. Maybe the solution does not sit only within
-the block I/O layer :
+> +	vblock =3D kmalloc(sizeof(struct vmu_block), GFP_KERNEL);
 
-I guess we would also have to find out what is considered a "large" and
-a "small" I/O request. I think using open() flags to specify if
-I/O is expected to be synchronous or asynchronous for a particular file
-would be a good start (AFAIK, only O_DIRECT seems to be close to this,
-but it also has the side-effect of not using any kernel buffering, which
-I am not sure is wanted in every case). If this implies adding new
-flags to open(), then supporting older apps could be done by heuristics
-on the size of the requests. New applications which have very specific
-needs (e.g. large synchronous I/O) could be tuned with the new flags.
-Any small request coming from the page fault handler would be treated as
-synchronous. Requests coming from the page fault handler on a
-particular mmapped file would behave following the sync/async flags of
-the associated open(). If not flag is specified, the heuristic would
-apply to the resulting merged requests from the page fault handler.
-Therefore, large consecutive reads of mmapped files would fall in the
-"async" category by default. mmap of shared libraries and memory mapping
-done by exec() should clearly specify the "sync" flag, because those
-accesses *will* cause delays when the application needs to be executed.
+sizeof(*vblock) ?
 
-Hopefully what I am saying here makes sense. If you have links to some
-background information to point me to so I get a better understanding of
-how async vs sync requests are handled by the CFQ, I would greatly
-appreciate.
+> +static int __init vmu_flash_map_init(void)
+> +{
+> +	maple_driver_register(&vmu_flash_driver);
+> +	return 0;
+> +}
 
-Best regards,
+shouldnt this be:
+	return maple_driver_register(&vmu_flash_driver);
+=2Dmike
 
-Mathieu
+--nextPart3028677.rxxFT817vE
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
 
+iQIcBAABAgAGBQJJh5RDAAoJEEFjO5/oN/WBRykP/iv7lqy/HPvyJ6uGn9lnDJTQ
+U/SP1CdoPdRekhY4cn0dmjmHhVk6NXtSy5Pm+TXJ3c024WEdU5MSu0h4ZVvJ77cF
+v44SU7rSBwvaGruUhMEpRzMdmBvaqrun4G7NhHcK5KT6Qkc9mKuC1vPVfJ8n9Na1
+4dTQv3dScf1y7RmETJwdUcfrleIE3bDODXOhI3MXoRKVpI96KRWJUp/bNGwxUEzB
+Gq6+lObXsCWD2rIhgMkRVC6dstb1A/RRkseH12DGyY51ke6mLMsnDuhAMJ0fhn/r
+jbwIrI//G+Hj00uWrmoBLz3idom9kgW2sTJRtjrnVg0++mqLpl+X9MMUdBHb1gsK
+Nz+JD6CVwdeZIfzEAJCBO6xa4U7v22cS9abxnpZd2Y7AsCyYgGCikymFoNlXMwr8
+39voMlruHucFzXABa0OTldRsUYjnO2GbmGtj3ARcBLIW1Vfpsn95TgPjMj4m6KlH
+gXHkFXFr6NpHOe98RgNBD9zrf+rPcOorWyGRAIpmwyzVoli3IEswgJhbbyeD15aE
+hxy8dmcmd689i/rMCc0Wr43zpW5WH22ugHwP1+kwDIJZeT+ATJ8L1WW1xvVKdLcp
+PTOZFij5W4laVhUGIsZMrNf13v5AJpRL4ouTbFiX02fIyROE5lcA86C+aehyEx2k
+ULxC3loEadAwU/58cap4
+=Iz4Y
+-----END PGP SIGNATURE-----
 
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+--nextPart3028677.rxxFT817vE--
