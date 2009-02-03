@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZBCVGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755529AbZBCVHX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZBCVGy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 16:06:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZBCVGq
+	id S1755529AbZBCVHX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 16:07:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZBCVHE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 16:06:46 -0500
-Received: from gate.crashing.org ([63.228.1.57]:51725 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbZBCVGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 16:06:46 -0500
-Subject: Re: [Linux-fbdev-devel] [PATCH] atyfb: fix distorted image on
- PowerMacs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-Cc: Risto Suominen <risto.suominen@gmail.com>, Alex Kern <alex.kern@gmx.de>,
-       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
-In-Reply-To: <20090203185624.GC22401@sci.fi>
-References: <46e1c7760901221022p697f1689ubf03c909cdf1b99b@mail.gmail.com>
-	 <20090122201204.GD4996@sci.fi>  <20090203185624.GC22401@sci.fi>
-Content-Type: text/plain; charset="UTF-8"
-Date: Wed, 04 Feb 2009 08:06:12 +1100
-Message-Id: <1233695172.16867.91.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Tue, 3 Feb 2009 16:07:04 -0500
+Received: from [84.77.67.98] ([84.77.67.98]:1666 "EHLO ventoso.org"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752700AbZBCVHD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 16:07:03 -0500
+X-Greylist: delayed 1531 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 16:07:03 EST
+Message-ID: <4988ABEE.6020703@ventoso.org>
+Date: Tue, 03 Feb 2009 21:41:18 +0100
+From: Luca Olivetti <luca@ventoso.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090114)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Daniel Walker <dwalker@fifo99.com>, Greg KH <gregkh@suse.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>,
+       Janne Grunau <janne-dvb@grunau.be>
+Subject: Re: [crash] af9005_usb_module_init(): BUG: unable to handle kernel
+ paging request at ff100000
+References: <20090203172836.GA6964@elte.hu> <1233685361.5903.131.camel@desktop> <20090203193029.GA13726@elte.hu>
+In-Reply-To: <20090203193029.GA13726@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 20:56 +0200, Ville Syrjälä wrote:
-> On Thu, Jan 22, 2009 at 10:12:04PM +0200, Ville Syrjälä wrote:
-> > On Thu, Jan 22, 2009 at 08:22:48PM +0200, Risto Suominen wrote:
-> > > Since the complete re-write in 2.6.10, some PowerMacs (At least PowerMac 5500
-> > > and PowerMac G3 Beige rev A) with ATI Mach64 chip have suffered from unstable
-> > > columns in their framebuffer image. This seems to depend on a value (4) read
-> > > from PLL_EXT_CNTL register, which leads to incorrect DSP config parameters to
-> > > be written to the chip. This patch uses a value calculated by aty_init_pll_ct
-> > > instead, as a starting point.
-> > 
-> > AFAICS it should be the right thing to do on other systems too. I have
-> > a good collection of mach64 pci cards and laptops so I'll try to find
-> > some time next week to test that theory on x86.
+En/na Ingo Molnar ha escrit:
+> * Daniel Walker <dwalker@fifo99.com> wrote:
 > 
-> Well, the experiment failed on the first Mobility I tried. The FIFO
-> calculations aren't obvious from the code and there's no mention how
-> to actually calculate them in the programming guide. So I guess special
-> casing powermacs is the best way forward.
+>> On Tue, 2009-02-03 at 18:28 +0100, Ingo Molnar wrote:
+>>> FYI, -tip qa keeps triggering this bootup crash occasionally, ever since 
+>>> June 2008 when a DVB merge brought in this new driver:
+>> It looks like it could be a config problem.. The crash happens around 
+>> these two symbol "af9005_rc_keys", and "af9005_rc_keys_size" , and they 
+>> are both defined inside af9005-remote.c different from where the init 
+>> functions is lcoated .. af9005-remote.c needs a special config 
+>> CONFIG_DVB_USB_AF9005_REMOTE to get compiled which you have disabled..
+> 
+> ok - but it shouldnt crash, obviously.
 
-There's one powermac with a M1 (the first clamshell ibook). I don't have
-such a machine however, it would be useful if somebody who did could
-test if the patch caused a regression there...
+Did you try my suggestion I sent the past December 26th?
+Quote:
 
-It's possible that we should instead base the code on the chip variant.
+El Fri, 26 Dec 2008 11:08:33 -0200
+Mauro Carvalho Chehab <mchehab@infradead.org> escribi�:
+ > > Luca,
+ > >
+ > > Could you please verify this issue?
 
-Ben.
+No, I don't have 2.6.28, but I guess that maybe once usb_register is
+called the dvb-usb subsystem asynchronously (is that an smp system?)
+starts polling the remote before the rc_decode function pointer has been
+initialized.
+Could you try to initialize it to NULL before calling usb_register?
 
-
+Bye
+-- 
+Luca
