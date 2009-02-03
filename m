@@ -1,202 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752775AbZBCD34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753256AbZBCDbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752775AbZBCD34 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 22:29:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZBCD3s
+	id S1753256AbZBCDbR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 22:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZBCDbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 22:29:48 -0500
-Received: from ipmail05.adl2.internode.on.net ([203.16.214.145]:35965 "EHLO
-	ipmail05.adl2.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751247AbZBCD3r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 22:29:47 -0500
-Date: Tue, 3 Feb 2009 14:27:40 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: spurious -ENOSPC on XFS
-Message-ID: <20090203032740.GG24173@disturbed>
-Mail-Followup-To: Mikulas Patocka <mpatocka@redhat.com>,
-	Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-	linux-kernel@vger.kernel.org
-References: <20090118173144.GA1999@infradead.org> <Pine.LNX.4.64.0901201430250.4603@hs20-bc2-1.build.redhat.com> <20090120232422.GF10158@disturbed> <20090122205913.GA30859@infradead.org> <20090122224347.GA18751@infradead.org> <Pine.LNX.4.64.0901231509010.5179@hs20-bc2-1.build.redhat.com> <20090124071249.GF32390@disturbed> <Pine.LNX.4.64.0901291136050.19368@hs20-bc2-1.build.redhat.com> <20090131235725.GA24173@disturbed> <Pine.LNX.4.64.0902021214310.15622@hs20-bc2-1.build.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0902021214310.15622@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 2 Feb 2009 22:31:04 -0500
+Received: from gate.crashing.org ([63.228.1.57]:45169 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751247AbZBCDbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 22:31:03 -0500
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1233625606.18767.157.camel@pasglop>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
+	 <200902030045.19416.rjw@sisk.pl>
+	 <alpine.LFD.2.00.0902021551050.3247@localhost.localdomain>
+	 <200902030115.32659.rjw@sisk.pl>
+	 <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain>
+	 <1233623525.18767.151.camel@pasglop>
+	 <alpine.LFD.2.00.0902021729510.3247@localhost.localdomain>
+	 <1233625606.18767.157.camel@pasglop>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 14:30:20 +1100
+Message-Id: <1233631820.16867.27.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 12:36:40PM -0500, Mikulas Patocka wrote:
-> On Sun, 1 Feb 2009, Dave Chinner wrote:
-> > On Thu, Jan 29, 2009 at 11:39:00AM -0500, Mikulas Patocka wrote:
-> > > On Sat, 24 Jan 2009, Dave Chinner wrote:
-> > > > On Fri, Jan 23, 2009 at 03:14:30PM -0500, Mikulas Patocka wrote:
-> > > > > If I placed
-> > > > > xfs_sync_inodes(ip->i_mount, SYNC_DELWRI);
-> > > > > xfs_sync_inodes(ip->i_mount, SYNC_DELWRI | SYNC_IOWAIT);
-> > > > > directly to xfs_flush_device, I got lock dependency warning (though not a 
-> > > > > real deadlock).
-> > > > 
-> > > > Same reason memory reclaim gives lockdep warnings on XFS - we're
-> > > > recursing into operations that take inode locks while we currently
-> > > > hold an inode lock.  However, it shouldn't deadlock because
-> > > > we should ever try to take the iolock on the inode that we current
-> > > > hold it on.
-> > > > 
-> > > > > So synchronous flushing definitely needs some thinking and lock 
-> > > > > rearchitecting.
-> > > > 
-> > > > No, not at all. At most the grabbing of the iolock in
-> > > > xfs_sync_inodes_ag() needs to become a trylock....
-> > > 
-> > > You are wrong, the comments in the code are right. It really
-> > > deadlocks if it is modified to use synchronous wait for the end of
-> > > the flush and if the flush is done with xfs_sync_inodes:
-....
-> > So it is stuck:
+On Tue, 2009-02-03 at 12:46 +1100, Benjamin Herrenschmidt wrote:
+> > Note how the PCI layer (currently) only saves the low _16_ dwords of 
+> > config space (64 bytes). The radeonfb code that did it by hand saved the 
+> > whole 64 dwords (256 bytes). It _probably_ doesn't matter, but..
 > > 
-> > 127                 /*
-> > 128                  * If we have to flush data or wait for I/O completion
-> > 129                  * we need to hold the iolock.
-> > 130                  */
-> > 131                 if ((flags & SYNC_DELWRI) && VN_DIRTY(inode)) {
-> > 132     >>>>>>>>            xfs_ilock(ip, XFS_IOLOCK_SHARED);
-> > 133                         lock_flags |= XFS_IOLOCK_SHARED;
-> > 134                         error = xfs_flush_pages(ip, 0, -1, fflag, FI_NONE);
-> > 135                         if (flags & SYNC_IOWAIT)
-> > 136                                 xfs_ioend_wait(ip);
-> > 137                 }
+> > The reason the PCI layer only does 64 bytes is that that was the really 
+> > old PCI config space model - the rest was undefined and apparently a few 
+> > cards reportedly even crashed when accessing it (but who knows, that may 
+> > be urban folklore).
 > > 
-> > Given that we are stuck on the iolock in xfs_sync_inodes_ag(), I
-> > suspect you should re-read my comments above about "lock
-> > re-architecting" ;).
+> > But if that patch works for you, it's clearly already better than _not_ 
+> > applying the patch, so..
 > 
-> No, if you turn it into a trylock, it will randomly fail if any other 
-> process is holding the lock for whatever reason. So you will still get 
-> spurious -ENOSPCs, although with lower probability.
+> Radeons don't do much with config space... the worst we may miss I
+> suppose is subsystem vendor/device... Maybe I'll add something to
+> explicitely save and restore it or X might get upset. I'll have a look.
 
-The flush is never, ever going to be perfect. While we are blocking
-waiting for the flush, other concurrent writes could be doing more
-delayed allocation. The flush won't catch these, so we can still get
-spurious ENOSPCs even with a *perfect* flush.
-
-Hence there is no point in trying to make the code perfect - we
-can look at more complex solutions if and only if the simple
-solution is not sufficient.
-
-> > If you make the xfs_ilock() there xfs_ilock_nowait() and avoid data
-> > writeback if we don't get the lock the deadlock goes away, right?
-> 
-> But that premature ENOSPC possibility will still exist.
-> The only right solution that I see is to drop this flushing code at all 
-> (because it's unfixable), catch -ENOSPCs exactly before you are about to 
-> return them to Linux VFS, flush at this point (you are not holding any 
-> locks here) and retry.
-
-Still not perfect as soon as you consider concurrency (as per above).
-
-> There seems to be more bugs with forgetting to flush delayed allocation 
-> --- you should flush delayed allocation after *every* failed allocate 
-> attempt, but the code flushes it only after failed delayed allocate 
-> attempt --- i.e. nondelayed allocators, such as xfs_iomap_write_direct 
-> (and maybe other places) will still return -ENOSPC without attempting to 
-> flush other inodes with delayed allocation.
-
-xfs_iomap_write_direct() is for direct IO, and if that fails due to
-ENOSPC, we're going to return the error rather than try to flush
-delayed allocation blocks. Users of direct IO care more about
-deterministic response than trying to use every last byte of the
-filesystem. Such users also don't tend to mix buffered writes
-(hence delayed allocation) and direct IO on the same filesystem
-precisely because of the non-deterministic nature of buffered IO.
-Hence we don't flush here.
-
-xfs_iomap_write_allocate() does the allocation of delayed extents,
-which we've already guaranteed that there is space for due to the
-flushing in xfs_iomap_write_delay(). Hence we don't flush here,
-either.
-
-For metadata allocations (all over the place), we take a reservation
-first and so we could trigger a flush in certain circumstances if
-the reservation fails (to avoid recursion and transaction subsystem
-deadlocks). However, if you are not getting spurious enospc on
-creating inodes (as opposed to writing to them) then I see no
-immediate need for flushes there, either....
-
-> Syncing should be really moved at the topmost place.
-
-This can only be considered a best effort flush, not a sync.
-
-> This is what I tried: I turned that 500ms wait into a completion:
-> 
-> 
-> Use xfs_sync_inodes and not sync_blockdev. sync_blockdev writes dirty 
-> metadata buffers, it doesn't touch inodes and pages at all.
-> 
-> Also, change that 500ms delay to a wait for completion, so that the
-> behavior is not dependent on magic timeout values. XFS developers insist
-> that it can't deadlock (I hope they're right).
-> 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-.....
-> @@ -415,6 +419,7 @@ xfs_syncd_queue_work(
->   * has failed with ENOSPC and we are in the process of scratching our
->   * heads, looking about for more room...
->   */
-> +#if 0
->  STATIC void
->  xfs_flush_inode_work(
->  	struct xfs_mount *mp,
-> @@ -424,16 +429,20 @@ xfs_flush_inode_work(
->  	filemap_flush(inode->i_mapping);
->  	iput(inode);
->  }
-> +#endif
->  
->  void
->  xfs_flush_inode(
->  	xfs_inode_t	*ip)
->  {
-> +#if 0
->  	struct inode	*inode = VFS_I(ip);
-> +	DECLARE_COMPLETION_ONSTACK(completion);
->  
->  	igrab(inode);
-> -	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_inode_work);
-> -	delay(msecs_to_jiffies(500));
-> +	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_inode_work, &completion);
-> +	wait_for_completion(&completion);
-> +#endif
-
-Why did you turn off the initial inode flush?
-
->  }
->  
->  /*
-> @@ -446,7 +455,7 @@ xfs_flush_device_work(
->  	void		*arg)
->  {
->  	struct inode	*inode = arg;
-> -	sync_blockdev(mp->m_super->s_bdev);
-> +	xfs_sync_inodes(mp, SYNC_DELWRI | SYNC_IOWAIT);
->  	iput(inode);
-
-This should be:
-
-	xfs_sync_inodes(mp, SYNC_DELWRI);
-	xfs_sync_inodes(mp, SYNC_DELWRI | SYNC_IOWAIT);
-
-As it will flush the inodes asynchronously and then the second
-pass will wait for all the IO to complete. That will be much
-more efficient than synchronous flushing.
+Actually, subsystem stuff is below 0x40 so it should be fine too.
 
 Cheers,
+Ben.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+
