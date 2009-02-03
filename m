@@ -1,63 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZBCWG6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756046AbZBCWHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755827AbZBCWG6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:06:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZBCWGt
+	id S1756046AbZBCWHd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:07:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZBCWHU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:06:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46458 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751598AbZBCWGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:06:48 -0500
-Date: Tue, 3 Feb 2009 14:05:43 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: corbet@lwn.net, linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       oleg@redhat.com, viro@ZenIV.linux.org.uk, davidel@xmailserver.org,
-       davem@davemloft.net, hch@lst.de, linux-api@vger.kernel.org,
-       mpm@selenic.com, alan@lxorguk.ukuu.org.uk
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-Message-Id: <20090203140543.6e915f97.akpm@linux-foundation.org>
-In-Reply-To: <4988BD4E.8080206@cosmosbay.com>
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
-	<1233598811-6871-3-git-send-email-corbet@lwn.net>
-	<20090203133942.2ecec281.akpm@linux-foundation.org>
-	<4988BD4E.8080206@cosmosbay.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Feb 2009 17:07:20 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52755 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752104AbZBCWHS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:07:18 -0500
+Message-ID: <4988C00A.2040904@redhat.com>
+Date: Tue, 03 Feb 2009 16:07:06 -0600
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       t-sato@yk.jp.nec.com
+Subject: Re: [PATCH V4] Allow SysRq emergency thaw to thaw frozen filesystems
+References: <496EB639.6090800@redhat.com>	<4970E087.8020308@redhat.com>	<4970E4FB.7040407@redhat.com>	<20090130134009.02d4a576.akpm@linux-foundation.org>	<498779D6.7010304@redhat.com> <20090203140135.fe8360f6.akpm@linux-foundation.org>
+In-Reply-To: <20090203140135.fe8360f6.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Feb 2009 22:55:26 +0100
-Eric Dumazet <dada1@cosmosbay.com> wrote:
-
-> Andrew Morton a __crit :
-> > On Mon,  2 Feb 2009 11:20:09 -0700
-> > Jonathan Corbet <corbet@lwn.net> wrote:
-> > 
-> >> Matt Mackall suggested converting epoll's ep_lock to a bitlock as a way of
-> >> saving space in struct file.  This patch makes that change.
-> > 
-> > hrm.  bit_spin_lock() makes people upset (large penguiny people).  iirc
-> > it doesn't have all the correct/well-understood memory/compiler
-> > ordering semantics which spinlocks have.  And lockdep doesn't know about
-> > it.
-> > 
+Andrew Morton wrote:
+> On Mon, 02 Feb 2009 16:55:18 -0600
+> Eric Sandeen <sandeen@redhat.com> wrote:
 > 
-> In a previous attempt (2005), I suggested using a single global lock.
+>> (this version fixes a couple small issues raised by Randy Dunlap)
+>> (and adds sb_lock locking I forgot, as akpm pointed out)
+>> (Randy's CONFIG_BLOCK fix should still apply over this)
 > 
-> http://search.luky.org/linux-kernel.2005/msg50862.html
+> <converts it to a delta so I can see what you did>
 
-ok..
+Sorry, didn't know if you want deltas on top of old patches or new
+respun patches.  Guess now I know :)
 
-> Probably an array of hashed spinlocks would be more than enough.
+> --- a/fs/buffer.c~allow-sysrq-emergency-thaw-to-thaw-frozen-filesystems-v4
+> +++ a/fs/buffer.c
+> @@ -263,11 +263,13 @@ void do_thaw_all(unsigned long unused)
+>  	struct super_block *sb;
+>  	char b[BDEVNAME_SIZE];
+>  
+> +	spin_lock(&sb_lock);
+>  	list_for_each_entry(sb, &super_blocks, s_list) {
+>  		while (sb->s_bdev && !thaw_bdev(sb->s_bdev, sb))
+>  			printk(KERN_WARNING "Emergency Thaw on %s\n",
+>  			       bdevname(sb->s_bdev, b));
+>  	}
+> +	spin_unlock(&sb_lock);
+>  	printk(KERN_WARNING "Emergency Thaw complete\n");
+>  }
+>  
+> _
 > 
+> 
+> Can't call thaw_bdev() under spinlock.
 
-yes, f_ep_lock is a teeny innermost lock.  Perhaps using
-f->f_dentry->d_inode->i_lock would be a decent speed/space compromise.
+Oh, sigh, I've come full circle to what I started with that didn't work,
+didn't I.
 
+> If we're going to do this, I think it will need the whole
+> sb_lock/s_count/s_umount song-n-dance.
+> 
+> It's a pretty common operation.  What you want is, I think, identical
+> to sync_supers(), only with one line changed.
+> 
+> so we could do
+> 
+> void apply_to_all_supers(void (fn)(struct super_block *))
+> {
+> 	struct super_block *sb;
+> 
+> 	spin_lock(&sb_lock);
+> restart:
+> 	list_for_each_entry(sb, &super_blocks, s_list) {
+> 		if (sb->s_dirt) {
+> 			sb->s_count++;
+> 			spin_unlock(&sb_lock);
+> 			down_read(&sb->s_umount);
+> 			(*fn)(sb);
+> 			up_read(&sb->s_umount);
+> 			spin_lock(&sb_lock);
+> 			if (__put_super_and_need_restart(sb))
+> 				goto restart;
+> 		}
+> 	}
+> 	spin_unlock(&sb_lock);
+> 
+> }
+> 
+> That isn't quite sufficient to use for get_super(), but I think it
+> could be made so.
+> 
+> Ditto user_get_super().
+> 
+> Ditto do_emergency_remount()
+> 
+> But that's a separate little project for someone.  For the purposes of
+> this patch I guess you could do yet another copy-n-paste.
 
+Ok, thanks.  Sorry for dragging this out through 5 revisions :(
+
+-Eric
