@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZBCW0o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZBCW3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbZBCW0o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:26:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZBCW0b
+	id S1755168AbZBCW3x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:29:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZBCW3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:26:31 -0500
-Received: from smtpfb2-g21.free.fr ([212.27.42.10]:34548 "EHLO
-	smtpfb2-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751268AbZBCW0a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:26:30 -0500
-To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org
-Cc: Pavel Machek <pavel@ucw.cz>
-Subject: Acer 6592 TM, suspend to ram and resume freeze
-From: Robert Jarzmik <robert.jarzmik@free.fr>
-Date: Tue, 03 Feb 2009 21:36:19 +0100
-Message-ID: <873aevl0l8.fsf@free.fr>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 3 Feb 2009 17:29:44 -0500
+Received: from waste.org ([66.93.16.53]:43689 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751134AbZBCW3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:29:43 -0500
+Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
+From: Matt Mackall <mpm@selenic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, corbet@lwn.net,
+       linux-kernel@vger.kernel.org, andi@firstfloor.org, oleg@redhat.com,
+       viro@ZenIV.linux.org.uk, davidel@xmailserver.org, davem@davemloft.net,
+       hch@lst.de, linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20090203140543.6e915f97.akpm@linux-foundation.org>
+References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
+	 <1233598811-6871-3-git-send-email-corbet@lwn.net>
+	 <20090203133942.2ecec281.akpm@linux-foundation.org>
+	 <4988BD4E.8080206@cosmosbay.com>
+	 <20090203140543.6e915f97.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 16:22:02 -0600
+Message-Id: <1233699722.3243.127.camel@calx>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First of all, sorry for the duplicate on linux-pm, but as Pavel suggested, this
-topic gains wider audience as acpi and pm are involved.
+On Tue, 2009-02-03 at 14:05 -0800, Andrew Morton wrote:
+> On Tue, 03 Feb 2009 22:55:26 +0100
+> Eric Dumazet <dada1@cosmosbay.com> wrote:
+> 
+> > Andrew Morton a __crit :
+> > > On Mon,  2 Feb 2009 11:20:09 -0700
+> > > Jonathan Corbet <corbet@lwn.net> wrote:
+> > > 
+> > >> Matt Mackall suggested converting epoll's ep_lock to a bitlock as a way of
+> > >> saving space in struct file.  This patch makes that change.
+> > > 
+> > > hrm.  bit_spin_lock() makes people upset (large penguiny people).  iirc
+> > > it doesn't have all the correct/well-understood memory/compiler
+> > > ordering semantics which spinlocks have.  And lockdep doesn't know about
+> > > it.
+> > > 
+> > 
+> > In a previous attempt (2005), I suggested using a single global lock.
+> > 
+> > http://search.luky.org/linux-kernel.2005/msg50862.html
+> 
+> ok..
+> 
+> > Probably an array of hashed spinlocks would be more than enough.
+> > 
+> 
+> yes, f_ep_lock is a teeny innermost lock.  Perhaps using
+> f->f_dentry->d_inode->i_lock would be a decent speed/space compromise.
 
-I have an issue with my laptop with suspend to ram.
-My laptop is an Acer Travelmate 6592g :
+That seems eminently reasonable.
 
-> [rj@velvet wireshark-1.0.5 (master)]$ sudo s2ram -i
-> This machine can be identified by:
->     sys_vendor   = "Acer"
->     sys_product  = "TravelMate 6592"
->     sys_version  = "PSMBOU-1234567"
->     bios_version = "V1.53   "
+But that re-opens the question of what to do about poor Jon's quest.
 
-The kernel running is the last I have : 2.6.29-rc1, but the problem is the same
-whatever the kernel version I take (between 2.6.16 and 2.6.29-rc1).
+I got confused halfway through as he went from using a global fasync
+spinlock to a non-locked but atomic flag bit. Not sure why using a
+per-file or per-inode lock doesn't work for the fasync code.
 
-The issue is that even if the laptop enters suspend correctly, it hangs on
-comming out of it. After some research, I cornered down the module which changes
-the behaviour : acpi_cpufreq.ko.
+-- 
+http://selenic.com : development and support for Mercurial and Linux
 
-When I forbid the laptop to load this module, the suspend to ram works like a
-charm, in "init" single mode or multi-user mode. When I load the module, the
-resume always hangs (fan goes high speed like crazy, no LCD back, hard drive led
-stays on, caps_lock key not responsive, ...)
 
-Now, I notice that loading acpi-cpufreq triggers the following message :
-> log: Jan 19 18:23:42 velvet kernel: ACPI: EC: non-query interrupt received, switching to interrupt mode
-
-As this is not the part of the kernel I'm most at ease with, I'd like some help
-to investigate. I'll gladly make any test or apply patches to my own git tree.
-
-I join to this mail a URL [1] to see the little information I have :
- - kernel messages (/var/log/messages), for single user startup
- - ACPI table
- - my kernel configuration
- - kernel message for a working suspend to ram (ie. without acpi_cpufreq).
- - I suspend using s2ram -f -v -p -s
-
-Best regards.
-
---
-Robert
-
-[1] http://belgarath.hd.free.fr/download/acer6592tm/
