@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbZBCAXz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbZBCA1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759642AbZBCAXz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:23:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZBCAXr
+	id S1759478AbZBCA1U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbZBCA1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:23:47 -0500
-Received: from gate.crashing.org ([63.228.1.57]:44386 "EHLO gate.crashing.org"
+	Mon, 2 Feb 2009 19:27:10 -0500
+Received: from tundra.namei.org ([65.99.196.166]:4399 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752381AbZBCAXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:23:46 -0500
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200902030000.18049.rjw@sisk.pl>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
-	 <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain>
-	 <1233614927.18767.121.camel@pasglop>  <200902030000.18049.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 11:23:09 +1100
-Message-Id: <1233620590.18767.138.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1754051AbZBCA1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 19:27:09 -0500
+Date: Tue, 3 Feb 2009 11:26:33 +1100 (EST)
+From: James Morris <jmorris@namei.org>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       dave@linux.vnet.ibm.com, matthltc@us.ibm.com, zohar@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/2] TPM: refactoring and integrity
+In-Reply-To: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
+Message-ID: <alpine.LRH.1.10.0902031125190.20287@tundra.namei.org>
+References: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2 Feb 2009, Rajiv Andrade wrote:
 
-> But we can't tell no one is holding the mutex in question, AFAICS.
+> This patchset contains a refactoring patch and integrity one. The first addresses Matt Helsley and Dave Hansen's comments on replacing the data[] vectors by packed structures making the code easier to read and debug and also consolidates most of the tpm_show_* functions. The second one provides an interface to read and extend PCR values, which is widely used by IMA.
 > 
-> I'm afraid we'd really need a special "no mutexes, no GFP_KERNEL allocations"
-> code path for that.
+> This version also addresses Matt Helsley's last observation on the timeout_t structure usage to access TPM_CAP_PROP_TIS_DURATION capability, now a new structure is being used, duration_t, whose fields now match exactly as defined in the TPM specification.
+> 
+> Rajiv Andrade (2):
+>   TPM: sysfs functions consolidation
+>   TPM: integrity interface
+> 
+>  drivers/char/tpm/tpm.c |  528 ++++++++++++++++++++++--------------------------
+>  drivers/char/tpm/tpm.h |  142 +++++++++++++
+>  include/linux/tpm.h    |   35 ++++
+>  3 files changed, 423 insertions(+), 282 deletions(-)
+>  create mode 100644 include/linux/tpm.h
 
-No, the mutex shouldn't be held already, if it is, you're probably
-already in deep trouble. IE, you probably want to enfore that anyway,
-ie, it wouldn't be very sane to suspend the machine while ACPI was
-already in the -middle- of interpreting something anyway.
+Applied to 
+git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
-IE, you should have something to ensure, before you turn interrupts off,
-that nobody else is inside the AML interpreter. You already know there
-are no other CPUs, so it's just a matter of making sure no other process
-has scheduled while holding that mutex.
+(For some reason, these ended up out of order in my mail folder which 
+upset git-am... fixed manually).
 
-The easy way to do that is to do something like taking the mutex
-yourself and then setting a flag so that the intepreter stops trying to
-take it or release it itself, maybe just using the global system state.
-
-Then release the mutex on resume.
-
-All of these are issues that exist today. IE. Regardless of that
-powermac problem, which is unrelated (see other posts), I think these
-things need to be sorted cleanly or suspend will not be as rock solid as
-it could/should be. IE. It's several order of magnitude better than it
-was, I agree, but I believe we have here a few reasonably simple things
-we can/should do to make it more robust.
-
-Cheers,
-Ben.
-
-
+-- 
+James Morris
+<jmorris@namei.org>
