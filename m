@@ -1,96 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752789AbZBCKU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZBCK0P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752789AbZBCKU1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 05:20:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZBCKUR
+	id S1752779AbZBCK0P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 05:26:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZBCKZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 05:20:17 -0500
-Received: from e28smtp09.in.ibm.com ([59.145.155.9]:39245 "EHLO
-	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbZBCKUP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 05:20:15 -0500
-Date: Tue, 3 Feb 2009 15:49:21 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM (v2)
-Message-ID: <20090203101921.GY918@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090203072013.GU918@balbir.in.ibm.com> <20090203072701.GV918@balbir.in.ibm.com> <20090203170427.c6070cda.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Tue, 3 Feb 2009 05:25:58 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:46039 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750966AbZBCKZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 05:25:58 -0500
+Date: Tue, 3 Feb 2009 10:24:16 +0000
+From: "Daniel P. Berrange" <berrange@redhat.com>
+To: debian-devel@lists.debian.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: cgroup mount point
+Message-ID: <20090203102416.GA8886@redhat.com>
+Reply-To: "Daniel P. Berrange" <berrange@redhat.com>
+References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090203170427.c6070cda.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090202214153.GV3643@vespa.holoscopio.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-03 17:04:27]:
+On Mon, Feb 02, 2009 at 07:41:53PM -0200, Thadeu Lima de Souza Cascardo wrote:
+> On Mon, Feb 02, 2009 at 09:52:46PM +0100, Mike Hommey wrote:
+> > On Mon, Feb 02, 2009 at 09:26:11PM +0100, Julien Cristau wrote:
+> > > On Mon, 2009-02-02 at 18:00 -0200, Thadeu Lima de Souza Cascardo wrote:
+> > > > Hello,
+> > > > 
+> > > > Some software I intend to package work with the new cgroup feature in
+> > > > Linux. I would like to open a discussion about what would be the better
+> > > > place to mount it and how/when to mount it.
+> > > 
+> > > What do other distros use?
+> > 
+> > Even better: what do the kernel folks want to do?
+> > 
+> > Mike
+> 
+> From what I've seen, most of them are in the same phases as Debian, or,
+> perhaps, behind. Fedora seems to plan that for Fedora 11, and they have
+> some support in libvirt.
 
-> On Tue, 3 Feb 2009 12:57:01 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > Checkpatch caught an additional space, so here is the patch again
-> > 
-> > 
-> > Description: Add RSS and swap to OOM output from memcg
-> > 
-> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > 
-> > Changelog v2..v1:
-> > 
-> > 1. Add more information about task's memcg and the memcg
-> >    over it's limit
-> > 2. Print data in KB
-> > 3. Move the print routine outside task_lock()
-> > 4. Use rcu_read_lock() around cgroup_path, strictly speaking it
-> >    is not required, but relying on the current memcg implementation
-> >    is not a good idea.
-> > 
-> > 
-> > This patch displays memcg values like failcnt, usage and limit
-> > when an OOM occurs due to memcg.
-> > 
-> > Thanks go out to Johannes Weiner, Li Zefan, David Rientjes,
-> > Kamezawa Hiroyuki, Daisuke Nishimura and KOSAKI Motohiro for
-> > review.
-> > 
-> 
-> IIUC, this oom_kill is serialized by memcg_tasklist mutex.
-> Then, you don't have to allocate buffer on stack.
-> 
-> 
-> > +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg, struct task_struct *p)
-> > +{
-> > +	struct cgroup *task_cgrp;
-> > +	struct cgroup *mem_cgrp;
-> > +	/*
-> > +	 * Need a buffer on stack, can't rely on allocations.
-> > +	 */
-> > +	char task_memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
-> > +	char memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
-> > +	int ret;
-> > +
-> 
-> making this as
-> 
-> static char task_memcg_name[PATH_MAX];
-> static char memcg_name[PATH_MAX];
-> 
-> is ok, I think. and the patch will be more simple.
->
+libvirt is not going to impose any policy for mount points, nor mount
+anything itself. When we use cgroups, libvirt just looks up the mount
+table to find out where the admin or distro has put the mount points
+for each cgroups controller.
 
-I am having second thoughts about this one. It introduces a standard
-overhead of 2 pages on x86*, while the first one will work for most
-cases and all the overhead is on stack, which disappears quickly.
-That is the reason I did not do it in the first place and put it as a
-NOTE.
- 
+I've also not done anything in default Fedora install to automatically
+setup cgroups, since doing that hits the hard-to-answer question of
+whether to mount all controllers in one, or a separate mount per
+controller, or a hybrid.
+
+> So, we have some more options now: /cgroups, /containers, /dev/cpuset,
+> /dev/cpuctl, /opt/cgroup, /opt/cpuset.
+
+Putting new mount points in / is not really acceptable, so that rules
+out the first two. /opt is just totally wrong, since that is intended
+for add on software packages. /dev/ feels a little odd, since it is
+not really device nodes, but perhaps that doesn't matter. So my pref
+would be something in /dev/cgroups or /sys/cgroups
+
+I also think 'cgroups' is a better name than 'containers', since 
+'containers' is refering to just one specific use case.
+
+Regards,
+Daniel
 -- 
-	Balbir
+|: Red Hat, Engineering, London   -o-   http://people.redhat.com/berrange/ :|
+|: http://libvirt.org  -o-  http://virt-manager.org  -o-  http://ovirt.org :|
+|: http://autobuild.org       -o-         http://search.cpan.org/~danberr/ :|
+|: GnuPG: 7D3B9505  -o-  F3C9 553F A1DA 4AC2 5648 23C1 B3DF F742 7D3B 9505 :|
