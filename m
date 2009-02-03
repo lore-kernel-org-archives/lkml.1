@@ -1,92 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZBCVmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752152AbZBCVm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752291AbZBCVmL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 16:42:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZBCVl4
+	id S1752152AbZBCVm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 16:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZBCVmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 16:41:56 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60936 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751500AbZBCVlz (ORCPT
+	Tue, 3 Feb 2009 16:42:13 -0500
+Received: from mail-ew0-f31.google.com ([209.85.219.31]:38394 "EHLO
+	mail-ew0-f31.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbZBCVmK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 16:41:55 -0500
-Date: Tue, 3 Feb 2009 13:41:28 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: jeremy@goop.org, jaswinderrajput@gmail.com, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org, x86@kernel.org, righi.andrea@gmail.com
-Subject: Re: mmotm 2009-02-02-17-12 uploaded (x86/nopmd etc.)
-Message-Id: <20090203134128.37042ea8.akpm@linux-foundation.org>
-In-Reply-To: <20090203212538.GB20527@elte.hu>
-References: <200902030112.n131CNiq010549@imap1.linux-foundation.org>
-	<498893C8.6080506@oracle.com>
-	<20090203191804.GA24698@elte.hu>
-	<20090203121706.423d5cab.akpm@linux-foundation.org>
-	<20090203212538.GB20527@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 16:42:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GMU9IYqKQZR1+LZ1h2cG0VKCo9rlBphtr1efbqmSBp2NjEd8Iwx/Ml0+7a5AtcVOU1
+         i7BQBCmZfExuGhDI7O1KGYR/L5czZNwpduuFVyXnE0VYUv7Dwn3TYvP5gDZhpGuLZWv2
+         kbxXzc/TqoeufCDG+LIzxOMdp0fDU4zCElAu8=
+Date: Tue, 3 Feb 2009 22:39:36 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/3] trace: better manage the context info for
+	events
+Message-ID: <20090203213935.GE6344@nowhere>
+References: <20090202222921.GB12082@ghostprotocols.net> <20090203020746.GB22718@nowhere> <alpine.DEB.1.10.0902022128130.2192@gandalf.stny.rr.com> <20090203090902.GA23466@nowhere> <20090203125712.GC17781@ghostprotocols.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090203125712.GC17781@ghostprotocols.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009 22:25:38 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Tue, 3 Feb 2009 20:18:04 +0100
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
+On Tue, Feb 03, 2009 at 10:57:12AM -0200, Arnaldo Carvalho de Melo wrote:
+> Em Tue, Feb 03, 2009 at 10:09:03AM +0100, Frederic Weisbecker escreveu:
+> > On Mon, Feb 02, 2009 at 09:32:51PM -0500, Steven Rostedt wrote:
 > > > 
-> > > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > > On Tue, 3 Feb 2009, Frederic Weisbecker wrote:
 > > > 
-> > > > akpm@linux-foundation.org wrote:
-> > > > > The mm-of-the-moment snapshot 2009-02-02-17-12 has been uploaded to
+> > > > On Mon, Feb 02, 2009 at 08:29:21PM -0200, Arnaldo Carvalho de Melo wrote:
+> > > > > From: Frederic Weisbecker <fweisbec@gmail.com>
 > > > > > 
-> > > > >    http://userweb.kernel.org/~akpm/mmotm/
+> > > > > Impact: make trace_event more convenient for tracers
 > > > > > 
-> > > > > and will soon be available at
+> > > > > All tracers (for the moment) that use the struct trace_event want to
+> > > > > have the context info printed before their own output: the pid/cmdline,
+> > > > > cpu, and timestamp.
 > > > > > 
-> > > > >    git://git.zen-sources.org/zen/mmotm.git
+> > > > > But some other tracers that want to implement their trace_event
+> > > > > callbacks will not necessary need these information or they may want to
+> > > > > format them as they want.
+> > > > > 
+> > > > > This patch adds a new default-enabled trace option:
+> > > > > TRACE_ITER_CONTEXT_INFO When disabled through:
+> > > > > 
+> > > > > echo nocontext-info > /debugfs/tracing/trace_options
+> > > > > 
+> > > > > The pid, cpu and timestamps headers will not be printed.
+> > > > > 
+> > > > > IE with the sched_switch tracer with context-info (default):
+> > > > > 
+> > > > >      bash-2935 [001] 100.356561: 2935:120:S ==> [001]  0:140:R <idle>
+> > > > >    <idle>-0    [000] 100.412804:    0:140:R   + [000] 11:115:S events/0
+> > > > >    <idle>-0    [000] 100.412816:    0:140:R ==> [000] 11:115:R events/0
+> > > > >  events/0-11   [000] 100.412829:   11:115:S ==> [000]  0:140:R <idle>
+> > > > > 
+> > > > > Without context-info:
+> > > > > 
+> > > > >  2935:120:S ==> [001]  0:140:R <idle>
+> > > > >     0:140:R   + [000] 11:115:S events/0
+> > > > >     0:140:R ==> [000] 11:115:R events/0
+> > > > >    11:115:S ==> [000]  0:140:R <idle>
+> > > > > 
+> > > > > A tracer can disable it at runtime by clearing the bit
+> > > > > TRACE_ITER_CONTEXT_INFO in trace_flags.
+> > > > > 
+> > > > > The print routines were renamed to trace_print_context and
+> > > > > trace_print_lat_context, so that they can be used by tracers if they
+> > > > > want to use them for one of the trace_event callbacks.
 > > > > 
 > > > > 
-> > > > There seems to be some kind of #include hell here.  I moved a few lines
-> > > > around in include/asm-generic/pgtable-nopmd.h & that makes the build
-> > > > get further, but it still has header problems (BUG() is undefined).
+> > > > Actually, I wonder if this is not breaking the sense of the TRACE_ITER_CONTEXT_INFO
+> > > > flag.
 > > > 
-> > > problem caused by which commit?
+> > > Yeah, I agree with Frederic here. Let the user decide this as a global 
+> > > flag for about of data to print. The tracer should just provide a callback 
+> > > incase the tracer has a different context format.
 > > > 
+> > > > 
+> > > > In the first patch I made about it, I thought this flag was to decide whether we want to
+> > > > print the context information in the standard way.
+> > > > 
+> > > > Then, Steven suggested to actually provide callbacks for the tracers which want
+> > > > to override the standard context information printer.
+> > > > The flag then got more logical: TRACE_ITER_CONTEXT_INFO was not only about deciding
+> > > > whether we want or not the standard context info, it tells if we want in a global way
+> > > > the context info to be printed, whatever how the tracer decides to print it.
+> > > > (This is the theory, but since we couldn't override the bin/raw/hex cases, the
+> > > > practical case didn't follow this idea).
+> > > > 
+> > > > If someone doesn't want to see these informations in the blk tracer, this flag will
+> > > > not help him. Worst, it will double print the context info if the user enables the flag.
+> > > > 
+> > > > Now that I see the practical case, I'm not sure the design of my patch was valuable.
+> > > > A tracer has to play with the flag if it wants to override the context info in
+> > > > the bin/raw/hex cases. And I don't think this is a good way to proceed.
+> > > > 
+> > > > In my opinion, the ITER_CONTEXT_INFO flag should mostly be set by the user.
+> > > 
+> > > I think it should _only_ be set by user.
+> > > 
+> > > > 
+> > > > And only one callback could be added to trace_event: context_info()
+> > > > Then, the tracer will manage itself the raw/hex/bin/normal cases inside
+> > > > this callback.
+> > > 
+> > > Yeah, this is a good idea. The callback can be passed an enum to what kind
+> > > of trace it is: TRACE_FMT_RAW TRACE_FMT_HEX ...
+> > > 
+> > > 
+> > > > 
+> > > > We can provide the default callbacks available for the tracers which want it and even
+> > > > one function which proceed all of them, depending on the flags.
+> > > > ftrace/preempt/sched.... tracers can register this function for their context_info callback
+> > > > and other tracers too if they want.
+> > > > 
+> > > > Or they can override it, and even pick the default callbacks for dedicated flags when they want.
+> > > > 
+> > > > Then, when the user wants the context info to be printed or not, he just have to
+> > > > set/clear the context-info flag manually.
+> > > > 
+> > > > A tracer can even decide to set/clear it by default, but for its real sense: print or not
+> > > > these context info.
+> > > > 
+> > > > What do you think?
+> > > 
+> > > I'm not sure a tracer should decide if it should have the format or not. 
+> > > In its context callback, it might decide there. But if the user does not 
+> > > want it, it should be off.
 > > 
-> > mm-unify-some-pmd_-functions-and-move-them-in-a-distinct-include.patch
 > > 
-> > This is getting painful.
+> > Of course, I just thought that some tracers could choose if it's default enabled
+> > or disabled when they are selected.
 > 
-> the include file spaghetti is ... interesting there, and it's historic.
-> 
-> I could blame it on highmem, PAE or paravirt - but i'll only blame it on 
-> paravirt for now because those developers are still around! ;-)
-> 
-> Jeremy, any ideas how to reduce the historic dependency mess in that area?
-> I think we should go on three routes at once:
-> 
->  - agressive splitup and separation of type definitions from method
->    declaration (+ inline definitions). The spinlock_types.h / spinlock.h 
->    splitup was really nice in solving such dependency problems.
-
-I like this one.  The mixing up of declare-something with use-something
-is often the source of our woes.
+> As the 3rd patch does? :)
 
 
->  - uninlining of methods: instead of macro-ing them - wherever possible. 
->    It's really hard to mess up type + externs headers - while headers with 
->    inlines and macros mixed in get painful quickly.
+Again, we had a different meaning of this flag :-)
+
+  
+> > > Unless you are saying have the tracer decide if it is enabled on or off 
+> > > when the trace is selected?
+> > 
+> > 
+> > Exactly, I meant that printing the context can be mostly relevant for several tracers
+> > (ftrace, sched) but can be encumbering for some other traces (mmiotrace).
+> > 
+> > So perhaps a tracer could touch this flag when it's selected
+> > and restore its value when unselected.
 > 
->  - removal of spurious pile of dozens of #include lines in header files.
+> I just had to save the previous setting for context_info, in
+> trace->start(), but I took the lazy approach "at trace->start() time
+> TRACE_ITER_CONTEXT_INFO will always be turned on, let the tracer decide
+> if it should disable it"
 > 
-> If anyone sends such patches i could try them on the -tip build machinery 
-> and help shake out collateral damage - which there will be for sure.
-> 
-> 	Ingo
+> - Arnaldo
+
