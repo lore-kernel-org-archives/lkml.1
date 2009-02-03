@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZBCWeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbZBCWhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbZBCWeT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:34:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751508AbZBCWeJ
+	id S1754429AbZBCWhw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:37:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZBCWhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:34:09 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37413 "EHLO gate.crashing.org"
+	Tue, 3 Feb 2009 17:37:43 -0500
+Received: from vena.lwn.net ([206.168.112.25]:48140 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311AbZBCWeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:34:09 -0500
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
- standard config registers of all devices early)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200902032253.42709.rjw@sisk.pl>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
-	 <alpine.LFD.2.00.0902031114321.3247@localhost.localdomain>
-	 <1233695486.16867.95.camel@pasglop>  <200902032253.42709.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 09:33:10 +1100
-Message-Id: <1233700390.16867.97.camel@pasglop>
+	id S1751508AbZBCWhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:37:42 -0500
+Date: Tue, 3 Feb 2009 15:37:40 -0700
+From: Jonathan Corbet <corbet@lwn.net>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>, linux-kernel@vger.kernel.org,
+       andi@firstfloor.org, oleg@redhat.com, viro@ZenIV.linux.org.uk,
+       davidel@xmailserver.org, davem@davemloft.net, hch@lst.de,
+       linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
+Message-ID: <20090203153740.363d0a04@bike.lwn.net>
+In-Reply-To: <1233699722.3243.127.camel@calx>
+References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
+	<1233598811-6871-3-git-send-email-corbet@lwn.net>
+	<20090203133942.2ecec281.akpm@linux-foundation.org>
+	<4988BD4E.8080206@cosmosbay.com>
+	<20090203140543.6e915f97.akpm@linux-foundation.org>
+	<1233699722.3243.127.camel@calx>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.2; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 22:53 +0100, Rafael J. Wysocki wrote:
+On Tue, 03 Feb 2009 16:22:02 -0600
+Matt Mackall <mpm@selenic.com> wrote:
 
-> That would change the ordering of ACPI method calls, which also is important
-> and prone to breaking, as I wrote in the original message.
+> But that re-opens the question of what to do about poor Jon's quest.
+>
+> I got confused halfway through as he went from using a global fasync
+> spinlock to a non-locked but atomic flag bit. Not sure why using a
+> per-file or per-inode lock doesn't work for the fasync code.
 
-Ok, I'm not -that- familiar with ACPI, but I don't see where this
-ordering change you seem to fear is ... Ie, what gets re-ordered vs.
-what ? 
+No per-file lock because (1) there is resistance to growing struct
+file, and (2) lockless algorithms are all the rage now.  Additionally,
+solving the fasync-atomicity problem with locks requires the use of a
+mutex (or the BKL) rather than a spinlock.  I suppose we could combine
+a global f_flags lock with the set-FASYNC-in-fasync_helper() bits.
 
-Ben.
+At this point Poor Jon sees a fork in the road as he contemplates the
+future of his quest:
 
+- Go with this patch set, perhaps with a bit of cleanup as suggested by
+  Andrew.
 
+- Go back to the global lock.
+
+- Go away, leave the BKL in place, and wait for somebody smarter to
+  attack the problem.
+
+Any wise guidance would be most welcome...
+
+jon
