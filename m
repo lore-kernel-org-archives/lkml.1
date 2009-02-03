@@ -1,85 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZBCWRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754048AbZBCWUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbZBCWRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:17:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZBCWRM
+	id S1754048AbZBCWUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:20:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbZBCWUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:17:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49519 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751302AbZBCWRK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:17:10 -0500
-Date: Tue, 3 Feb 2009 14:16:45 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: miaox@cn.fujitsu.com
-Cc: mingo@elte.hu, menage@google.com, linux-kernel@vger.kernel.org,
-       cl@linux-foundation.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the
- unallowed node when memory spread is set
-Message-Id: <20090203141645.91c7ea18.akpm@linux-foundation.org>
-In-Reply-To: <4987B925.1010405@cn.fujitsu.com>
-References: <4976D77C.3020107@cn.fujitsu.com>
-	<20090127144233.18cf9b3f.akpm@linux-foundation.org>
-	<4987B925.1010405@cn.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Feb 2009 17:20:32 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:35289 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751050AbZBCWUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:20:31 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] [resend] Resume from hibernation fails with pata_it821x RAID volume
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Disposition: inline
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 3 Feb 2009 23:20:17 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200902032320.19907.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Feb 2009 11:25:25 +0800
-Miao Xie <miaox@cn.fujitsu.com> wrote:
+Hello,
+hibernation didn't work for me since I started to use IT8212 controller. Now I 
+did some debugging (booting with no_console_suspend init=/bin/sh).
 
-> on 2009-1-28 6:42 Andrew Morton wrote:
-> > On Wed, 21 Jan 2009 16:06:20 +0800
-> > Miao Xie <miaox@cn.fujitsu.com> wrote:
-> > 
-> >> The task still allocated the page caches on old node after modifying its
-> >> cpuset's mems when 'memory_spread_page' was set, it is caused by the old
-> >> mem_allowed_list of the task, the current kernel doesn't updates it unless some
-> >> function invokes cpuset_update_task_memory_state(), it is too late sometimes.
-> >> We must update the mem_allowed_list of the tasks in time.
-> >>
-> >> Slab has the same problem.
-> >>
-> >> We fixes the bug by updating tasks' mem_allowed_list and spread flag after
-> >> its cpuset's mems or spread flag is changed.
-> >>
-> >>
-> >> ...
-> >>
-> >> --- a/kernel/kthread.c
-> >> +++ b/kernel/kthread.c
-> >> @@ -242,6 +242,7 @@ int kthreadd(void *unused)
-> >>  	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
-> >>  	set_cpus_allowed_ptr(tsk, CPU_MASK_ALL_PTR);
-> >>  
-> >> +	current->mems_allowed = node_possible_map;
-> >>  	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
-> > 
-> > Why this change?  kthreadd() is called from rest_init(), before anyone
-> > has had a chance to alter ->mems_allowed?
-> 
-> I found that after mems_allowed of kthreadd was not initialized applying this patch,
-> every bit of it is 1, so...
-> Maybe it is redundant.
+Found that resume fails (2.6.28) with "serial number mismatch 'some 
+garbage' != 'some other garbage'" and "revalidation failed" messages. That's 
+because the controller firmware fills different serial number in the IDENTIFY 
+every boot.
 
-I think it is redundant.  kthreadd's mems_allowed _should_ be all-ones.
-Or at least, all-nodes-allowed.
+The patch below fixes the resume simply clearing the serial number. The proper 
+fix would be probably to fill in the serial number of the RAID volume 
+instead. I assume that there must be something like that stored on the drives 
+but I don't know where.
 
-I wasn't able to find out where the setting of init'smems_allowed
-happens, after a bit of grepping and hunting.  It should be done within
-INIT_TASK, but isn't.
 
-Still, kthreadd is reliably parented by swapper, and there shold be no
-need to alter its mems_allowed.
+Fix resume on pata_it821x RAID volume by clearing the serial number in 
+IDENTIFY data, which is otherwise different on each boot.
 
-Similarly, what was the reason for setting current->mems_allowed in
-kernel_init()?  That also should be unneeded.
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
 
-Finally, I've somewhat lost track of where we are with this patch. 
-Paul, do you see any other remaining issues?
+--- linux-2.6.28-orig/drivers/ata/pata_it821x.c	2009-01-02 17:18:36.000000000 
++0100
++++ linux/drivers/ata/pata_it821x.c	2009-02-02 17:47:57.000000000 +0100
+@@ -561,6 +561,9 @@
+ 		id[83] |= 0x4400;	/* Word 83 is valid and LBA48 */
+ 		id[86] |= 0x0400;	/* LBA48 on */
+ 		id[ATA_ID_MAJOR_VER] |= 0x1F;
++		/* Clear the serial number because it's different each boot
++		   which breaks validation on resume */
++		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
+ 	}
+ 	return err_mask;
+ }
 
+
+-- 
+Ondrej Zary
