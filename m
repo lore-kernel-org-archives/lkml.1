@@ -1,74 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752436AbZBCF1K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZBCFaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752436AbZBCF1K (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 00:27:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZBCF0w
+	id S1753456AbZBCFaG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 00:30:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZBCF3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 00:26:52 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:39454 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753207AbZBCF0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 00:26:51 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=jxfKYDNWH22OHfow+gmLzTEzg3EbHZb+8Lg3vsOMcPOm3Sk6HcV+ickZcLhjIrQI5
-	aQ0a4IdIIJD+NftasK/yw==
-Date: Mon, 2 Feb 2009 21:25:52 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: Li Zefan <lizf@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM
-In-Reply-To: <20090203045556.GN918@balbir.in.ibm.com>
-Message-ID: <alpine.DEB.2.00.0902022121150.28810@chino.kir.corp.google.com>
-References: <20090202125240.GA918@balbir.in.ibm.com> <20090202140849.GB918@balbir.in.ibm.com> <49879DE5.8030505@cn.fujitsu.com> <20090203044143.GM918@balbir.in.ibm.com> <alpine.DEB.2.00.0902022045170.27139@chino.kir.corp.google.com>
- <20090203045556.GN918@balbir.in.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Feb 2009 00:29:54 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38457 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751277AbZBCF3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 00:29:53 -0500
+Date: Tue, 3 Feb 2009 06:29:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/3] trace: fix default boot up tracer
+Message-ID: <20090203052913.GC28361@elte.hu>
+References: <20090203023830.440860800@goodmis.org> <20090203024358.332574797@goodmis.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.24.198.101
-X-GMailtapped: rientjes
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090203024358.332574797@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009, Balbir Singh wrote:
 
-> > > > > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> > > > > index d3b9bac..b8e53ae 100644
-> > > > > --- a/mm/oom_kill.c
-> > > > > +++ b/mm/oom_kill.c
-> > > > > @@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
-> > > > >  			current->comm, gfp_mask, order, current->oomkilladj);
-> > > > >  		task_lock(current);
-> > > > >  		cpuset_print_task_mems_allowed(current);
-> > > > > +		mem_cgroup_print_mem_info(mem);
-> > > > 
-> > > > I think this can be put outside the task lock. The lock is used to call task_cs() safely in
-> > > > cpuset_print_task_mems_allowed().
-> > > >
-> > > 
-> > > Thanks, I'll work on that in the next version.
-> > >  
-> > 
-> > I was also wondering about this and assumed that it was necessary to 
-> > prevent the cgroup from disappearing during the oom.  If task_lock() isn't 
-> > held, is the memcg->css.cgroup->dentry->d_name.name dereference always 
-> > safe without rcu?
-> >
-> 
-> oom_kill_process is called with tasklist_lock held (read-mode). That
-> should suffice, no? The memcg cannot go away since it has other groups
-> or tasks associated with it. 
-> 
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-I don't see how this prevents a task from being reattached to a different 
-cgroup and then a rmdir on memcg->css.cgroup would destroy the dentry 
-without cgroup_mutex or dereferencing via rcu.
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> Peter Zijlstra started the functionality to start up a default
+> tracing at bootup. This patch finishes the work.
+> 
+> Now if you add 'ftrace=<tracer>' to the command line, when that tracer
+> is registered on bootup, that tracer is selected and starts tracing.
+> 
+> Note, all selftests for tracers that are registered after this tracer
+> is disabled. This prevents the selftests from disturbing the running
+> tracer, or the running tracer from disturbing the selftest.
+> 
+> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+> ---
+>  kernel/trace/trace.c |   60 +++++++++++++++++++++++++++++++++++++++++++++-----
+>  1 files changed, 54 insertions(+), 6 deletions(-)
+
+applied to tip/tracing/ftrace, thanks Steve!
+
+This portion is a bit ugly:
+
+> -	lock_kernel();
+>  
+> +	if (!ret && default_bootup_tracer) {
+> +		if (!strncmp(default_bootup_tracer, type->name,
+> +			     BOOTUP_TRACER_SIZE)) {
+> +			printk(KERN_INFO "Starting tracer '%s'\n",
+> +			       type->name);
+> +			/* Do we want this tracer to start on bootup? */
+> +			tracing_set_tracer(type->name);
+> +			default_bootup_tracer = NULL;
+> +			/* disable other selftests, since this will break it. */
+> +			tracing_selftest_disabled = 1;
+> +#ifdef CONFIG_FTRACE_STARTUP_TEST
+> +			printk(KERN_INFO "Disabling FTRACE selftests due"
+> +			       " to running tracer '%s'\n", type->name);
+> +#endif
+> +		}
+> +	}
+> +
+> +	lock_kernel();
+>  	return ret;
+
+This could be done as:
+
+	if (ret || default_bootup_tracer)
+		goto out_relock;
+
+	if (strncmp(default_bootup_tracer, type->name, BOOTUP_TRACER_SIZE)) 
+		goto out_relock;
+
+	...
+
+ out_relock:
+	lock_kernel();
+	return ret;
+
+And we lose a lot of crappy linebreaks that way as well - beyond making the 
+purpose of the BKL bits clearer. Hm?
+
+	Ingo
+
