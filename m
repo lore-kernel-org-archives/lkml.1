@@ -1,50 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbZBCH1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754228AbZBCH1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753766AbZBCH1W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 02:27:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751476AbZBCH1J
+	id S1754228AbZBCH1g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 02:27:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZBCH1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 02:27:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43865
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750852AbZBCH1H (ORCPT
+	Tue, 3 Feb 2009 02:27:16 -0500
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:37321 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbZBCH1M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 02:27:07 -0500
-Date: Mon, 02 Feb 2009 23:27:04 -0800 (PST)
-Message-Id: <20090202.232704.05806886.davem@davemloft.net>
-To: jeffrey.t.kirsher@intel.com
-Cc: maciej.sosnowski@intel.com, dan.j.williams@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] dca: redesign locks
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <9929d2390902022158v47bdc745h7267c9c6ad6020e7@mail.gmail.com>
-References: <20090202171312.1559.65827.stgit@linux.site>
-	<9929d2390902022158v47bdc745h7267c9c6ad6020e7@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 02:27:12 -0500
+Date: Tue, 3 Feb 2009 12:57:01 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [-mm patch] Show memcg information during OOM (v2)
+Message-ID: <20090203072701.GV918@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090203072013.GU918@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090203072013.GU918@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Date: Mon, 2 Feb 2009 21:58:01 -0800
+Checkpatch caught an additional space, so here is the patch again
 
-> On Mon, Feb 2, 2009 at 9:14 AM, Maciej Sosnowski
-> <maciej.sosnowski@intel.com> wrote:
-> > Change spin_locks to irqsave to prevent dead-locks.
-> > Protect adding and deleting to/from dca_providers list.
-> > Drop the lock during dca_sysfs_add_req() and dca_sysfs_remove_req() calls
-> > as they might sleep (use GFP_KERNEL allocation).
-> >
-> > Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
-> > ---
-> >
-> >  drivers/dca/dca-core.c |   51 +++++++++++++++++++++++++++++++-----------------
-> >  1 files changed, 33 insertions(+), 18 deletions(-)
-> >
-> 
-> Acked-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
 
-Applied.
+Description: Add RSS and swap to OOM output from memcg
+
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+Changelog v2..v1:
+
+1. Add more information about task's memcg and the memcg
+   over it's limit
+2. Print data in KB
+3. Move the print routine outside task_lock()
+4. Use rcu_read_lock() around cgroup_path, strictly speaking it
+   is not required, but relying on the current memcg implementation
+   is not a good idea.
+
+
+This patch displays memcg values like failcnt, usage and limit
+when an OOM occurs due to memcg.
+
+Thanks go out to Johannes Weiner, Li Zefan, David Rientjes,
+Kamezawa Hiroyuki, Daisuke Nishimura and KOSAKI Motohiro for
+review.
+
+Sample output
+-------------
+
+Task in /a/x killed as a result of limit of /a
+memory: usage 1048576kB, limit 1048576kB, failcnt 4183
+memory+swap: usage 1400964kB, limit 9007199254740991kB, failcnt 0
+
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+
+ include/linux/memcontrol.h |    6 ++++
+ mm/memcontrol.c            |   61 ++++++++++++++++++++++++++++++++++++++++++++
+ mm/oom_kill.c              |    1 +
+ 3 files changed, 68 insertions(+), 0 deletions(-)
+
+
+diff --git a/include/linux/memcontrol.h b/include/linux/memcontrol.h
+index 326f45c..56f1af2 100644
+--- a/include/linux/memcontrol.h
++++ b/include/linux/memcontrol.h
+@@ -104,6 +104,8 @@ struct zone_reclaim_stat *mem_cgroup_get_reclaim_stat(struct mem_cgroup *memcg,
+ 						      struct zone *zone);
+ struct zone_reclaim_stat*
+ mem_cgroup_get_reclaim_stat_from_page(struct page *page);
++extern void mem_cgroup_print_mem_info(struct mem_cgroup *memcg,
++					struct task_struct *p);
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ extern int do_swap_account;
+@@ -270,6 +272,10 @@ mem_cgroup_get_reclaim_stat_from_page(struct page *page)
+ 	return NULL;
+ }
+ 
++void mem_cgroup_print_mem_info(struct mem_cgroup *memcg, struct task_struct *p)
++{
++}
++
+ #endif /* CONFIG_CGROUP_MEM_CONT */
+ 
+ #endif /* _LINUX_MEMCONTROL_H */
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 8e4be9c..ee3bae4 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -42,6 +42,7 @@
+ 
+ struct cgroup_subsys mem_cgroup_subsys __read_mostly;
+ #define MEM_CGROUP_RECLAIM_RETRIES	5
++#define MEM_CGROUP_OOM_BUF_SIZE		128
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ /* Turned on only when memory cgroup is enabled && really_do_swap_account = 0 */
+@@ -813,6 +814,66 @@ bool mem_cgroup_oom_called(struct task_struct *task)
+ 	rcu_read_unlock();
+ 	return ret;
+ }
++
++/**
++ * mem_cgroup_print_mem_info: Called from OOM with tasklist_lock held in
++ * read mode.
++ * @memcg: The memory cgroup that went over limit
++ * @p: Task that is going to be killed
++ *
++ * NOTE: @memcg and @p's mem_cgroup can be different when hierarchy is
++ * enabled
++ */
++void mem_cgroup_print_mem_info(struct mem_cgroup *memcg, struct task_struct *p)
++{
++	struct cgroup *task_cgrp;
++	struct cgroup *mem_cgrp;
++	/*
++	 * Need a buffer on stack, can't rely on allocations.
++	 */
++	char task_memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
++	char memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
++	int ret;
++
++	if (!memcg)
++		return;
++
++	mem_cgrp = memcg->css.cgroup;
++	task_cgrp = mem_cgroup_from_task(p)->css.cgroup;
++
++	rcu_read_lock();
++	ret = cgroup_path(task_cgrp, task_memcg_name, MEM_CGROUP_OOM_BUF_SIZE);
++	if (ret < 0) {
++		/*
++		 * Unfortunately, we are unable to convert to a useful name
++		 * But we'll still print out the usage information
++		 */
++		rcu_read_unlock();
++		goto done;
++	}
++	ret = cgroup_path(mem_cgrp, memcg_name, MEM_CGROUP_OOM_BUF_SIZE);
++	 if (ret < 0) {
++		rcu_read_unlock();
++		goto done;
++	}
++
++	rcu_read_unlock();
++
++	printk(KERN_INFO "Task in %s killed as a result of limit of %s\n",
++			task_memcg_name, memcg_name);
++done:
++
++	printk(KERN_INFO "memory: usage %llukB, limit %llukB, failcnt %llu\n",
++		res_counter_read_u64(&memcg->res, RES_USAGE) >> 10,
++		res_counter_read_u64(&memcg->res, RES_LIMIT) >> 10,
++		res_counter_read_u64(&memcg->res, RES_FAILCNT));
++	printk(KERN_INFO "memory+swap: usage %llukB, limit %llukB, "
++		"failcnt %llu\n",
++		res_counter_read_u64(&memcg->memsw, RES_USAGE) >> 10,
++		res_counter_read_u64(&memcg->memsw, RES_LIMIT) >> 10,
++		res_counter_read_u64(&memcg->memsw, RES_FAILCNT));
++}
++
+ /*
+  * Unlike exported interface, "oom" parameter is added. if oom==true,
+  * oom-killer can be invoked.
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index d3b9bac..951356f 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -394,6 +394,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 		cpuset_print_task_mems_allowed(current);
+ 		task_unlock(current);
+ 		dump_stack();
++		mem_cgroup_print_mem_info(mem, current);
+ 		show_mem();
+ 		if (sysctl_oom_dump_tasks)
+ 			dump_tasks(mem);
+
+-- 
+	Balbir
