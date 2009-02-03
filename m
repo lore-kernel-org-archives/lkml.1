@@ -1,213 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbZBCLWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475AbZBCLZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753978AbZBCLWi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 06:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZBCLW3
+	id S1753475AbZBCLZl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 06:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZBCLZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 06:22:29 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:57299 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751961AbZBCLW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 06:22:28 -0500
-Date: Tue, 3 Feb 2009 11:22:26 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-Message-ID: <20090203112226.GG9840@csn.ul.ie>
-References: <20090123154653.GA14517@wotan.suse.de> <1232959706.21504.7.camel@penberg-laptop> <20090203101205.GF9840@csn.ul.ie> <200902032136.26022.nickpiggin@yahoo.com.au>
+	Tue, 3 Feb 2009 06:25:30 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:43866 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751961AbZBCLZa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 06:25:30 -0500
+Date: Tue, 3 Feb 2009 22:24:31 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       w@1wt.eu, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090203112431.GA8746@gondor.apana.org.au>
+References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090203111012.GA16878@ioremap.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902032136.26022.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090203111012.GA16878@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 09:36:24PM +1100, Nick Piggin wrote:
-> On Tuesday 03 February 2009 21:12:06 Mel Gorman wrote:
-> > On Mon, Jan 26, 2009 at 10:48:26AM +0200, Pekka Enberg wrote:
-> > > Hi Nick,
-> > >
-> > > On Fri, 2009-01-23 at 16:46 +0100, Nick Piggin wrote:
-> > > > Since last time, fixed bugs pointed out by Hugh and Andi, cleaned up
-> > > > the code suggested by Ingo (haven't yet incorporated Ingo's last
-> > > > patch).
-> > > >
-> > > > Should have fixed the crash reported by Yanmin (I was able to reproduce
-> > > > it on an ia64 system and fix it).
-> > > >
-> > > > Significantly reduced static footprint of init arrays, thanks to Andi's
-> > > > suggestion.
-> > > >
-> > > > Please consider for trial merge for linux-next.
-> > >
-> > > I merged a the one you resent privately as this one didn't apply at all.
-> > > The code is in topic/slqb/core branch of slab.git and should appear in
-> > > linux-next tomorrow.
-> > >
-> > > Testing and especially performance testing is welcome. If any of the HPC
-> > > people are reading this, please do give SLQB a good beating as Nick's
-> > > plan is to replace both, SLAB and SLUB, with it in the long run.As
-> > > Christoph has expressed concerns over latency issues of SLQB, I suppose
-> > > it would be interesting to hear if it makes any difference to the
-> > > real-time folks.
-> >
-> > The HPC folks care about a few different workloads but speccpu is one that
-> > shows up. I was in the position to run tests because I had put together
-> > the test harness for a paper I spent the last month writing. This mail
-> > shows a comparison between slab, slub and slqb for speccpu2006 running a
-> > single thread and sysbench ranging clients from 1 to 4*num_online_cpus()
-> > (16 in both cases). Additional tests were not run because just these two
-> > take one day per kernel to complete. Results are ratios to the SLAB figures
-> > and based on an x86-64 and ppc64 machine.
-> 
-> Hi Mel,
-> 
-> This is very nice, thanks for testing.
+On Tue, Feb 03, 2009 at 02:10:12PM +0300, Evgeniy Polyakov wrote:
+>
+> I even believe that for some hardware it is the only way to deal
+> with the jumbo frames.
 
-Sure. It's been on my TODO list for long enough :). I should have been
-clear that the ratios are performance improvements based on wall time.
-A result of 0.9862 implies a performance regression of 1.38% in comparison
-to SLAB. 1.0031 implies a performance gain of 0.31% etc.
+Not necessarily.  Even if the hardware can only DMA into contiguous
+memory, we can always allocate a sufficient number of contiguous
+buffers initially, and then always copy them into fragmented skbs
+at receive time.  This way the contiguous buffers are never
+depleted.
 
-> SLQB and SLUB are quite similar
-> in a lot of cases, which indeed could be explained by cacheline placement
-> (both of these can allocate down to much smaller sizes, and both of them
-> also put metadata directly in free object memory rather than external
-> locations).
-> 
+Granted copying sucks, but this is really because the underlying
+hardware is badly designed.  Also copying is way better than
+not receiving at all due to memory fragmentation.
 
-Indeed. I know from other tests that poor cacheline placement can crucify
-performance. My current understanding is we don't notice as data and metadata
-are effectively using random cache lines.
-
-> But it will be interesting to try looking at some of the tests where
-> SLQB has larger regressions, so that might give me something to go on
-> if I can lay my hands on speccpu2006...
-> 
-
-I can generate profile runs although it'll take 3 days to gather it all
-together unless I target specific tests (the worst ones to start with
-obviously). The suite has a handy feature called monitor hooks that allows
-a pre and post script to run for each test which I use it to start/stop
-oprofile and gather one report per benchmark. I didn't use it for this run
-as profiling affects the outcome (7-9% overhead).
-
-I do have detailed profile data available for sysbench, both per thread run
-and the entire run but with the instruction-level included, it's a lot of
-data to upload. If you still want it, I'll start it going and it'll get up
-there eventually.
-
-> I'd be interested to see how slub performs if booted with slub_min_objects=1
-> (which should give similar order pages to SLAB and SLQB).
-> 
-
-I'll do this before profiling as only one run is required and should
-only take a day.
-
-Making spec actually build is tricky so I've included a sample config for
-x86-64 below that uses gcc and the monitor hooks in case someone else is in
-the position to repeat the results.
-
-===== Begin sample spec config file =====
-# Autogenerated by generate-speccpu.sh
-
-## Base configuration
-ignore_errors      = no
-tune               = base
-ext                = x86_64-m64-gcc42
-output_format      = asc, pdf, Screen
-reportable         = 1
-teeout             = yes
-teerunout          = yes
-hw_avail           = September 2008
-license_num        = 
-test_sponsor       = 
-prepared_by        = Mel Gorman
-tester             = Mel Gorman
-test_date          = Dec 2008
-
-## Compiler
-CC                 = gcc-4.2
-CXX                = g++-4.2
-FC                 = gfortran-4.2
-
-## HW config
-hw_model           = Gigabyte Technology Co., Ltd. GA-MA78GM-S2H
-hw_cpu_name        = AMD Phenom(tm) 9950 Quad-Core Processor
-hw_cpu_char        = 
-hw_cpu_mhz         = 1300.000
-hw_fpu             = Integrated
-hw_nchips          = 1
-hw_ncores          = 4
-hw_ncoresperchip   = 4
-hw_nthreadspercore = 1
-hw_ncpuorder       = 
-hw_pcache          = L1 64K Data, 64K Instruction per core
-hw_scache          = L2 512K Unified per core
-hw_tcache          = L3 2048K Unified Shared per chip
-hw_ocache          = 
-hw_memory          = 4594MB
-hw_disk            = SATA WD5000AAKS-00A7B0
-hw_vendor          = Komplett.ie
-
-## SW config
-sw_os              = Debian Lenny Beta for x86_64
-sw_file            = ext3
-sw_state           = Runlevel [2]
-sw_compiler        = gcc, g++ & gfortran 4.2 for x86_64
-sw_avail           = Dec 2008
-sw_other           = None
-sw_auto_parallel   = No
-sw_base_ptrsize    = 64-bit
-sw_peak_ptrsize    = Not Applicable
-
-## Monitor hooks
-monitor_pre_bench = /home/mel/git-public/vmregress/bin/oprofile_start.sh  --event timer --event dtlb_miss; echo iter >> /tmp/OPiter.${lognum}.${size_class}.${benchmark}
-monitor_post_bench = opcontrol --stop ; /home/mel/git-public/vmregress/bin/oprofile_report.sh > `dirname ${logname}`/OP.${lognum}.${size_class}.iter`cat /tmp/OPiter.${lognum}.${size_class}.${benchmark} | wc -l`.${benchmark}.txt
-
-## Optimisation
-makeflags          = -j4
-COPTIMIZE          = -O2 -m64
-CXXOPTIMIZE        = -O2 -m64
-FOPTIMIZE          = -O2 -m64
-
-notes0100= C base flags: $[COPTIMIZE]
-notes0110= C++ base flags: $[CXXOPTIMIZE]
-notes0120= Fortran base flags: $[FOPTIMIZE]
-
-## Portability flags - all
-default=base=default=default:
-notes35            = PORTABILITY=-DSPEC_CPU_LP64 is applied to all benchmarks
-PORTABILITY        = -DSPEC_CPU_LP64
-
-## Portability flags - int
-400.perlbench=default=default=default:
-CPORTABILITY       = -DSPEC_CPU_LINUX_X64
-notes35            = 400.perlbench: -DSPEC_CPU_LINUX_X64
-
-462.libquantum=default=default=default:
-CPORTABILITY       = -DSPEC_CPU_LINUX
-notes60            = 462.libquantum: -DSPEC_CPU_LINUX
-
-483.xalancbmk=default=default=default:
-CXXPORTABILITY       = -DSPEC_CPU_LINUX
-
-## Portability flags - flt
-481.wrf=default=default=default:
-CPORTABILITY      = -DSPEC_CPU_CASE_FLAG -DSPEC_CPU_LINUX
-
-__MD5__
-
+Cheers,
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
