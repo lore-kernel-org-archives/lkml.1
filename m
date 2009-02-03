@@ -1,53 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbZBCNbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755055AbZBCNdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754936AbZBCNbV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 08:31:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZBCNbM
+	id S1755055AbZBCNdS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 08:33:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZBCNdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 08:31:12 -0500
-Received: from e38.co.us.ibm.com ([32.97.110.159]:48808 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbZBCNbL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 08:31:11 -0500
-Subject: Re: [PATCH V4] Allow SysRq emergency thaw to thaw frozen
- filesystems
-From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Eric Sandeen <sandeen@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       t-sato@yk.jp.nec.com
-In-Reply-To: <20090203114829.GG11926@shareable.org>
-References: <496EB639.6090800@redhat.com> <4970E087.8020308@redhat.com>
-	 <4970E4FB.7040407@redhat.com>
-	 <20090130134009.02d4a576.akpm@linux-foundation.org>
-	 <498779D6.7010304@redhat.com>  <20090203114829.GG11926@shareable.org>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 07:31:07 -0600
-Message-Id: <1233667867.30906.0.camel@norville.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 08:33:08 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59565 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752311AbZBCNdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 08:33:05 -0500
+Date: Tue, 3 Feb 2009 14:32:51 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@suse.cz>
+Cc: "Kok, Auke" <auke-jan.h.kok@intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       powertop ml <power@bughost.org>,
+       Arjan van de Ven <arjan@linux.intel.com>, srostedt@redhat.com
+Subject: Re: [PATCH] tracer for sys_open() - sreadahead
+Message-ID: <20090203133251.GD29046@elte.hu>
+References: <497F69A4.2070007@intel.com> <20090130202219.GA1253@ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090130202219.GA1253@ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 11:48 +0000, Jamie Lokier wrote:
-> Eric Sandeen wrote:
-> > The timeout thaw originally proposed did not get merged, but
-> > perhaps something like this would be useful in emergencies.
+
+* Pavel Machek <pavel@suse.cz> wrote:
+
+> On Tue 2009-01-27 12:08:04, Kok, Auke wrote:
 > > 
-> > For example, freeze /path/to/mountpoint may freeze your
-> > root filesystem if you forgot that you had that unmounted.
+> > This tracer monitors regular file open() syscalls. This is a fast
+> > and low-overhead alternative to strace, and does not allow or
+> > require to be attached to every process.
+> > 
+> > The tracer only logs succesfull calls, as those are the only ones we
+> > are currently interested in, and we can determine the absolute path
+> > of these files as we log.
 > 
-> If you don't have console access, you're just logged in remotely, is
-> there a way to do an emergency unthaw from a shell command?
+> Maybe fanotify() should be used instead?
+> 
+> Or maybe just plain strace? One slow boot should not really hurt...
 
-echo j > /proc/sysrq-trigger
+ptrace is out of question for good tracing because it's not a transparent 
+probe. (ptrace monopolizes the traced task - if we use that then we break 
+regular strace usage.)
 
-Shaggy
--- 
-David Kleikamp
-IBM Linux Technology Center
-
+	Ingo
