@@ -1,88 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753529AbZBCTOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755143AbZBCTOY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753529AbZBCTOD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 14:14:03 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZBCTNw
+	id S1755143AbZBCTOY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 14:14:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752116AbZBCTOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 14:13:52 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37602 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752061AbZBCTNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 14:13:52 -0500
-Date: Tue, 3 Feb 2009 20:13:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jesse Barnes <jesse.barnes@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
-	standard config registers of all devices early)
-Message-ID: <20090203191334.GA2797@elte.hu>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902031804.26752.rjw@sisk.pl> <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain> <200902031032.26771.jesse.barnes@intel.com> <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain> <alpine.LFD.2.00.0902031047320.3247@localhost.localdomain>
+	Tue, 3 Feb 2009 14:14:12 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:28864 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754144AbZBCTOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 14:14:10 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=n45pO0Ced+UdtuS29wtoiHlMDxfQPDVzrtPtU5Khm/Q2mRxSnTJJzrMYRZlO/DTxo
+	kF7z5zeMGn3Wm9Erx6WlA==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902031047320.3247@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090203185117.GB3359@mini-me.seanius.net>
+References: <20090202200013.GU3643@vespa.holoscopio.com>
+	 <1233606371.15779.32.camel@radis.liafa.jussieu.fr>
+	 <20090202205246.GA28593@glandium.org>
+	 <20090202214153.GV3643@vespa.holoscopio.com>
+	 <20090203102416.GA8886@redhat.com> <87ljsnzo4v.fsf@benfinney.id.au>
+	 <1233671913.8902.53.camel@abacate.horta>
+	 <6599ad830902030855h1753f4a4o3a303b4dbddf10de@mail.gmail.com>
+	 <20090203184915.GA10004@glandium.org>
+	 <20090203185117.GB3359@mini-me.seanius.net>
+Date: Tue, 3 Feb 2009 11:14:03 -0800
+Message-ID: <6599ad830902031114t7de1b570p4ed5ec497e2e150e@mail.gmail.com>
+Subject: Re: cgroup mount point
+From: Paul Menage <menage@google.com>
+To: sean finney <seanius@seanius.net>
+Cc: Gustavo Noronha <kov@debian.org>, debian-devel@lists.debian.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.38
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 3, 2009 at 10:51 AM, sean finney <seanius@seanius.net> wrote:
+> On Tue, Feb 03, 2009 at 07:49:15PM +0100, Mike Hommey wrote:
+>> > Having one virtual filesystem mounted on top of another virtual
+>> > filesystem seems like a recipe for problems.
+>>
+>> Like with /sys/fs/fuse/connections ? Come on, there is no problem with a
+>> virtual filesystem mounted on top of another.
+>
+> or /proc/bus/usb or /dev/shm or /dev/pts... :)
+>
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+/dev is a bit different though - even if it's mounted as a udev fs,
+you can create a new directory in there to act as a mount point.
 
-> On Tue, 3 Feb 2009, Linus Torvalds wrote:
-> >
-> > That said, we've also never had much reason to _care_ deeply, so it's also 
-> > possible that we do mask things over some path. I didn't actually walk 
-> > _all_ the paths, and the logic for irq handling has changed enough over 
-> > the years that I don't know all the paths any more. Maybe we do that 
-> > explicit mask in some path I missed. We _shouldn't_, but who knows..
-> 
-> Ok, so I decided to actually try to walk it all. Better look at the actual 
-> code.
-> 
-> Hmm. The _normal_ simple irq handler does this the way I described, but 
-> for some reason the "handle_edge_irq()" does not. And the reason is 
-> actually a buglet: it needs to mask things for the "recursive interrupt" 
-> case.
-> 
-> But that literally just looks like a small implementation detail (the code 
-> decided to share the code for IRQ_INPROGRESS and IRQ_DISABLED). We should 
-> fix it, so that you _can_ disable irqs and not have to worry about this 
-> all.
-> 
-> I'm really not sure why that handle_edge_irq thing uses "ack_and_mask()" 
-> instead of just "desc->chip->ack()"? I'm also totally flummoxed as to why 
-> it feels it needs to go all the way out to the device to mask things, 
-> instead of just masking at an apic level, which is much simpler and faster 
-> (especially since masking should never happen in practice anyway).
+Cgroups supports multiple hierarchies on different mount points.
 
-Hm, do you mean mask_ack_irq()? The ->mask_ack() irqchip method is just a 
-small tweak normally: if we get an irq while the irq was disabled, we can 
-mark it pending and masks it for real.
+So if you have two cgroups hierarchies - say one for CPU/network and
+one for memory isolation, you could create /dev/cgroup/cpunet and
+/dev/cgroup/memory and mount the two hierarchies. But sysfs doesn't
+allow you to create new subdirectories to act as mountpoints. If we
+can have a /sys/cgroups directory which allows you to create arbitrary
+subdirs to act as mountpoints, that could be OK.
 
-It's optional for a PIC implementation to provide it and the generic code 
-does it via ->mask() + ->ack() if the PIC implementation keeps it NULL.
+Or just fake it by mounting a tmpfs on /sys/cgroups and then create
+mount points in there, but that seems like a bit of a hack.
 
-[ In theory this also solves screaming level-triggered irqs that advertise 
-  themselves as edge-triggered [due to firmware/BIOS bug - these do happen] 
-  and then keep spamming the system. ]
-
-I have not done a deep audit, normally (on x86 at least) ->mask_ack() should 
-not touch any lowlevel device bits (only the interrupt controller bits). 
-Have you found a case where it does?
-
-That would be arguably broken i think - we should not touch lowlevel device 
-bits from the current generation of PIC code really, there's just no point.
-
-	Ingo
+Paul
