@@ -1,212 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZBCBJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756482AbZBCBJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755407AbZBCBJU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:09:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbZBCBJB
+	id S1756482AbZBCBJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZBCBJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:09:01 -0500
-Received: from mail.gmx.net ([213.165.64.20]:60947 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753078AbZBCBJA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:09:00 -0500
-X-Authenticated: #31060655
-X-Provags-ID: V01U2FsdGVkX19iOcJh3I1igSI0IMYpTRlXM0s4NPuZ2vlVKiThbq
-	VcN1cDWSb9BH9X
-Message-ID: <49879928.8060501@gmx.net>
-Date: Tue, 03 Feb 2009 02:08:56 +0100
-From: Carl-Daniel Hailfinger <c-d.hailfinger.devel.2006@gmx.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.17) Gecko/20080922 SUSE/1.1.12-0.1 SeaMonkey/1.1.12
+	Mon, 2 Feb 2009 20:09:49 -0500
+Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:32205 "HELO
+	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752822AbZBCBJs convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 20:09:48 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5i6e/jf4gIXnIcfsMIxq0OTCnrV2BbeZLHu0Ocb2Iqz0Kjih12KwnebGpqnrsoAkw7BeFwwiunUHQqZtb8b8AOWZ4JdEy4DL0jQrPH3BbApNiX6RtEVsd+fDG/+ZkFKP5OHDxkOMZHoUWtjGaAu48/K/gKpwFod78QeJGreypuY=  ;
+X-YMail-OSG: BU3PEUAVM1k1qDpB4IusrO7GII1itcNXZN9dv.G44MWjoSQAKJ9CtCRGmQYbeLeA_z4msO4vdEg27jSY1qfmybCG9l4XKhgYGstwlrtq42C.t1BKFWRPh2WEh4083IcML6ZEJOwjMu2MQ5VZ2IdxGTCO4XopT2W.Nd8IUPosQzIDdPUbTlhcD_jBPpPj9toaWW_IbLtgwf7AQkFP3tCDhH6.UnmNwwWeM7Hl6I0-
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Federico Cuello <fedux@lugmen.org.ar>
+Subject: Re: sync-Regression in 2.6.28.2?
+Date: Tue, 3 Feb 2009 12:09:11 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: linux-kernel@vger.kernel.org, Udo Wolter <Udo.Wolter@charite.de>,
+       cf@charite.de
+References: <20090127093533.GB7037@charite.de> <497F77F6.40905@lugmen.org.ar>
+In-Reply-To: <497F77F6.40905@lugmen.org.ar>
 MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-CC: Grant Erickson <gerickson@nuovations.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] Add Alternative Log Buffer Support for printk Messages
-References: <C5A8B8CD.143B5%gerickson@nuovations.com> <20090131095901.E1D1583644C3@gemini.denx.de>
-In-Reply-To: <20090131095901.E1D1583644C3@gemini.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200902031209.12615.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 31.01.2009 10:59, Wolfgang Denk wrote:
-> Dear Grant & Andrew,
+On Wednesday 28 January 2009 08:09:10 Federico Cuello wrote:
+> Ralf Hildebrandt escribió:
+> > I recently installed 2.6.28.2 on our postfix/dovecot-based
+> > mailboxserver. Previously, 2.6.28 and 2.6.28.1 have been running there
+> > without a hitch.
+> >
+> > Now with 2.6.28.2 I had two major lockups: All writes to the users'
+> > Maildirs (on ext4) would stall, the load would rise, "sync" would never
+> > return.
+> >
+> > I had to "reboot -f -n" to get the machine back. All hanging processes
+> > were unkillable, even with kill -9.
+> > [...]
 >
-> In message <C5A8B8CD.143B5%gerickson@nuovations.com> you wrote:
->   
->>> We have an external log buffer, into which stuff was written by (say)
->>> the boot prom code.
->>>       
+> The same is happening to me, but I have some logs taken with sysrq.
 >
-> Correct. Typically we use this in U-Boot to pass Power-On Self Test
-> results to applications running under Linux, using the standard syslog
-> tools.
+> Here is my vmstat output:
 >
-> Another are of use is to save the log buffer over a reset (crash)  of
-> the  system,  so  that  it can be read either rom the boot loader or,
-> after a reboot, from Linux.
->   
-
-That part is not yet implemented in coreboot, but it certainly is useful.
-
-
->>> We want that to come out on the console during bootup.
->>>       
+> procs -----------memory---------- ---swap-- -----io---- -system--
+> ----cpu----
+>  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy
+> id wa
+>  0  2  99028  46536  26356 1569400    0    0     0     0 1400  437  0
+> 3  0 96
+>  0  2  99028  46536  26356 1569400    0    0     0     0 1344  355  0
+> 6  0 94
+>  0  2  99028  46536  26356 1569400    0    0     0     0 1373  387  0
+> 0  0 100
+>  0  2  99028  46536  26364 1569400    0    0     0    12 1403  384  1
+> 0  0 99
+>  0  2  99028  46536  26364 1569400    0    0     0     0 1370  378  0
+> 0  0 100
+>  0  2  99028  46536  26364 1569400    0    0     0     0 1351  346  0
+> 0  0 100
+>  0  2  99028  46536  26364 1569400    0    0     0     0 1395  412  0
+> 0  0 100
+>  0  2  99028  46536  26364 1569400    0    0     0     0 1349  332  0
+> 0  0 100
+>  0  2  99028  46536  26368 1569400    0    0     4     0 1407  387  0
+> 0  0 100
 >
-> Not necessarily. The main function is to feed it into the syslog
-> processing.
->   
-
-Indeed.
-
-
->>> So what we do is to divert the normal printk log buffer so that it
->>> starts writing at the tail of that existing external buffer.  We emit
->>> the entire buffer some time during bootup.  We henceforth continue to
->>> use that external buffer in the normal manner. If so, why do it this way?
->>>       
+> Notice the 100% iowait.
 >
-> Do you have a better approach how to share  the  log  buffer  between
-> Linux  and  a boot loader in such a way that the content will survive
-> crahses and reboots?
->
->
->   
->> I believe this to be a useful feature for the embedded system space;
->> however, I am not wedded in any way to the current implementation and am
->> happy to evolve it as needed to meet the needs of key stakeholders.
->>     
->
-> Indeed we use this heavily in embedded systems, mainly to process POST
-> results under Linux (for example, to disable certain functions when
-> the POST results indicate hardware issues, etc.).
->   
+> I also managed to reproduce it doing a rsync from one partition to a USB
+> drive. After the lockup I can't read any file from the source partition,
+> but the other partitions can be accessed normally.
 
-For coreboot, the feature is used to avoid long delays for serial output
-and to make the coreboot POST logs available on machines where you don't
-want to or can't store the POST logs. Coreboot POST logs at maximum
-verbosity are roughly 61kB large on my machine and may be bigger on
-others. Default verbosity still has a few dozen lines in the log.
+Hm, thanks for reporting, can you guys get a sysrq+W trace when the system
+reaches this state?
 
-
->>> Why not just copy the external buffer's contents into the normal buffer during
->>> bootup?  ie: printk("%s", external_buffer).
->>>       
->
-> For two reasons:
->
-> 1) Additional copy operation (ok, that's cheap).
->   
-
-Indeed. It probably won't take more than a few microseconds if the
-external buffer is already in DRAM.
-
-
-> 2) We would lose the capability that the buffer content even survives 
->    a reset / crash / reboot.
->
->    This is a feature can be very useful in embedded systems where
->    there is (at least normally) nobody looking at any console
->    messages; being able to see the kernel's crash messages after a
->    reboot in the normal syslog messages can be really helpful.
->   
-
-This benefit is a bit debatable on x86 due to the lack of non-volatile
-fast memory with decent sizes. (Yes, you can store the log in the flash
-ROM, but it will wear out.)
-Coreboot can try to preserve RAM contents, but depending on the
-particular hardware all bets are off.
-
-
->>> I think a quite bad part of this feature is that it renders the
->>> kernel's log_buf_len boot parameter (and its Kconfig defult)
->>> ineffective.  That's a pretty useful feature - people often set it to
->>> 1MB or more during problem diagnosis, and the new unalterable 16kbytes
->>> is very very small.
->>>       
->
-> Yes, we are aware of this, but it's a compromise. Basicly it depends
-> on hardware capabilities. In most cases, it is sufficient to keep the
-> syslog buffer in RAM. But if you really have to guarantee that the
-> content of the buffer remains stable, this cannot be used because
-> during a processor reset there will be usually a too long pause until
-> the memory controller gets re-initialized and RAM refresh continues -
-> we might lose data in this time. In most cases it just works fine,
-> but it's out of spec. In such situations, when such a guarantee is
-> needed, we can use any SRAM that may be available on the board, or we
-> can use some on-chip-memory (OCM, basicly also SRAM) that might be on
-> the processor.
->
-> The OCM on the processors in question is 16 kB, hence the limitation
-> there.
->   
-
-I'd like to have the buffer location at least configurable to use that
-feature on regular desktop and server x86 machines.
-
-
-> But note that the code is general enough to support the other options
-> (other, bigger SRAM, or arbitrarily sized buffer in RAM), too.
->   
-
-Good.
-
-
->> Agreed; however, I'm not sure how often this technique is employed in
->> embedded systems versus desktop systems.
->>     
->
-> I haven't seen this ever used in desktop systems yet. And I doubt if
-> there is any x86 with a boot loader that supports somehting like this.
->   
-
-Coreboot v3 (free x86 firmware, formerly known as LinuxBIOS) does this.
-
-
-> But there is for example a pretty large number of mobile cranes all
-> over the world which are using this feature :-)
->
->   
->> I'd be happy to keep the existing log buffer and perform a prepend from the
->> boot buffer to it rather than an append of the kernel buffer to the boot
->> buffer. Thoughts?
->>     
->
-> Please don't - this would implement only the way to pass the buffer
-> from the boot loader too Linux, but not the way back.
->   
-
-It would be great if the location of that buffer could be retrieved
-either via ACPI or e820 tables on x86. Hardcoded locations do not make
-sense for x86 because coreboot tries to keep memory as unfragmented as
-possible and stores the buffer at the top of memory (well, you can
-hardcode the buffer location in coreboot but that is just a hack).
-
-
-Unless I misread the code, it assumes no wraparound has occured in the
-firmware log buffer. With full verbosity in coreboot, such wraparounds
-can happen.
-
-The coreboot log buffer struct is really simple:
-struct printk_buffer {
-        int len;
-        int readoffset;
-        int writeoffset;
-        char buffer[];
-};
-
-The buffer is implemented as a ring buffer with variable size. The size
-is determined from a few runtime variables for minimum RAM waste, so
-hardcoding it to some fixed value would be suboptimal.
-
-Can we coordinate to make sure both U-Boot and coreboot can use the feature?
-
-
-Regards,
-Carl-Daniel
-
--- 
-http://www.hailfinger.org/
-
+Thanks,
+Nick
