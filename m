@@ -1,94 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755900AbZBCR6m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbZBCR7m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755900AbZBCR6m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 12:58:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZBCR6c
+	id S1756231AbZBCR7m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 12:59:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZBCR7a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 12:58:32 -0500
-Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.120]:56461 "EHLO
-	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbZBCR6b (ORCPT
+	Tue, 3 Feb 2009 12:59:30 -0500
+Received: from acsinet11.oracle.com ([141.146.126.233]:46044 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752591AbZBCR73 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 12:58:31 -0500
-Message-ID: <498885CC.4060509@intertwingly.net>
-Date: Tue, 03 Feb 2009 12:58:36 -0500
-From: Sam Ruby <rubys@intertwingly.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
-Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
-References: <4978767D.4060700@intertwingly.net> <20090130000758.1dff0113.akpm@linux-foundation.org>
-In-Reply-To: <20090130000758.1dff0113.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 3 Feb 2009 12:59:29 -0500
+Subject: Re: Commit 31a12666d8f0c22235297e1c1575f82061480029 slows down
+ Berkeley DB
+From: Chris Mason <chris.mason@oracle.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       npiggin@suse.de
+In-Reply-To: <200902031311.02378.nickpiggin@yahoo.com.au>
+References: <20090130012315.GB19554@duck.suse.cz>
+	 <200902031224.20856.nickpiggin@yahoo.com.au>
+	 <1233626066.2604.114.camel@ymzhang>
+	 <200902031311.02378.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 11:12:45 -0500
+Message-Id: <1233677565.7246.15.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.498885CE.0084:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 22 Jan 2009 08:37:01 -0500 Sam Ruby <rubys@intertwingly.net> wrote:
+On Tue, 2009-02-03 at 13:11 +1100, Nick Piggin wrote:
+> On Tuesday 03 February 2009 12:54:26 Zhang, Yanmin wrote:
+> > On Tue, 2009-02-03 at 12:24 +1100, Nick Piggin wrote:
+> > > On Friday 30 January 2009 12:23:15 Jan Kara wrote:
+> > > >   Hi,
+> > > >
+> > > >   today I found that commit 31a12666d8f0c22235297e1c1575f82061480029
+> > > > (mm: write_cache_pages cyclic fix) slows down operations over Berkeley
+> > > > DB. Without this "fix", I can add 100k entries in about 5 minutes 30s,
+> > > > with that change it takes about 20 minutes.
+> > > >   What is IMO happening is that previously we scanned to the end of
+> > > > file, we left writeback_index at the end of file and went to write next
+> > > > file. With the fix, we wrap around (seek) and after writing some more
+> > > > we go to next file (seek again).
+> >
+> > We also found this commit causes about 40~50% regression with iozone
+> > mmap-rand-write. #iozone -B -r 4k -s 64k -s 512m -s 1200m
+> >
+> > My machine has 8GB memory.
 > 
->> Hardware summary: http://tinyurl.com/ap79ra
->> APIC details: http://intertwingly.net/stories/2009/01/22/
->> Note acpidump.err: Wrong checksum for OEMB!
->>
->> Messages on boot using Intrepid, Jaunty Alpha 3, or Fedora 10:
->>
->> [    0.296001] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
->> [    0.296001] Kernel panic - not syncing: IO-APIC + timer doesn't work! 
->>   Boot with apic=debug and send a report.  Then try booting with the 
->> 'noapic' option.
->> [    0.296001]
->>
->> Able to get past this issue using "noapic", at which point things mostly 
->> work,
+> Ah, thanks. Yes BDB I believe is basically just doing an mmap-rand-write,
+> so maybe this is a good test case.
 > 
-> Join the ever-growing noapic club :(
-> 
-> I assume this is an ACPI problem.  Or at least, a BIOS problem which
-> ACPI can solve for us.
+> The interesting thing is why is this causing such a slowdown. If there is
+> only a single main file active in the workload, then I don't see why this
+> patch should make such a big difference. In either case, wouldn't pdflush
+> come back and just start writing out from the start of the file anyway?
 
-My understanding is that APCI and APIC are two different things.
+Perhaps the difference is that without the patch, pdflush will return
+after running congestion_wait()?  This would give bdb and iozone a
+chance to fill in more pages, and increases the chances we'll do
+sequential IO.
 
->> but rsync of large iso images result in corrupt files.  Able to 
->> copy those same files using Vista on the same machine, or using Hardy on 
->> another machine.  This problem may not be related to the above, but it 
->> seems plausible to me that this might be an interrupt issue.
-> 
-> Yes, it might be unrelated.  There are no kernel messages when it happens?
+-chris
 
-I see no messages to /var/log/messages while doing the following (which 
-involves rsync'ing a 2618793984 byte file from an NTFS to ext3 drive on 
-the same machine:
 
-rubys@rubix4:~/tmp$ rsync /mnt/shared/windows7_7000.iso .
-rubys@rubix4:~/tmp$ openssl md5 windows7_7000.iso
-MD5(windows7_7000.iso)= 953b9ac92d58f5edef525004bcce048d
-rubys@rubix4:~/tmp$ rsync /mnt/shared/windows7_7000.iso .
-rubys@rubix4:~/tmp$ openssl md5 windows7_7000.iso
-MD5(windows7_7000.iso)= 695328ef1280708eb73303656f6ef0b2
-
->> memtest86+ runs clean.
->>
->> Quite willing to invest time in installing kernels or distributions on 
->> fresh hard drives, run tests, obtain debug information, and report back.
->>
->> More background here: http://intertwingly.net/blog/2009/01/20/noAPIC
->>
->> Not subscribed, but will actively monitor the web archives for this 
->> mailing list for the next several days.
-> 
-> It'd be best to raise a report against ACPI?BIOS (I think) at
-> bugzilla.kernel.org, please.
-
-Once again, I'm talking about apic not acpi... does this advice still hold?
-
-> If any previous kernel version worked OK, please be sure to note that.
-
-I don't believe that's the case.  Put another way, I've yet to find a 
-Linux kernel that can boot without the noapic option on this machine.
-
-> Thanks.
-
-- Sam Ruby
