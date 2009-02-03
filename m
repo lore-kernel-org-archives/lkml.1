@@ -1,84 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752417AbZBCByJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbZBCByt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752417AbZBCByJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:54:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZBCBx4
+	id S1753716AbZBCByt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:54:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZBCByh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:53:56 -0500
-Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:21734 "HELO
-	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750799AbZBCBxz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:53:55 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Cbq3GtIBV/i5Gan7hIQU4BdE1MvRusGO2yosV429TJzuXnxL3oXaveZmIMKo27Z7+z6OZXoeugDdhTNb22lE3W2UV4p+RlZJTL5cTe8cnjoz5MpZ11F8tsl/mBNkYYaoJ4mLok1Si4tuninPTD2l1E7Am+SpTZ8GOGPoUuUkq80=  ;
-X-YMail-OSG: Pnw1L2QVM1kxKBBCKcxTzvo68bgttLWao_sLldSl3qpI5INQbOiACKvXkNLz.9R.yAQ4KKsDS4HZjMjgnXOSKLdKb0hcejHE60TXvpqhg6osT_QaC7lYvkzbzO0V7EXz0i4S4UeyrxeUpcHTtlw3GMHMLpNGSYWMNeXxnF2yt3T_Cgvs.oANaOmcPKYJuw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-Date: Tue, 3 Feb 2009 12:53:26 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20090114155923.GC1616@wotan.suse.de> <20090123155307.GB14517@wotan.suse.de> <alpine.DEB.1.10.0901261225240.1908@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0901261225240.1908@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 2 Feb 2009 20:54:37 -0500
+Received: from mga09.intel.com ([134.134.136.24]:16431 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750977AbZBCByg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 20:54:36 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,368,1231142400"; 
+   d="scan'208";a="383378028"
+Subject: Re: Commit 31a12666d8f0c22235297e1c1575f82061480029 slows down
+	Berkeley DB
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       npiggin@suse.de
+In-Reply-To: <200902031224.20856.nickpiggin@yahoo.com.au>
+References: <20090130012315.GB19554@duck.suse.cz>
+	 <200902031224.20856.nickpiggin@yahoo.com.au>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 09:54:26 +0800
+Message-Id: <1233626066.2604.114.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902031253.28078.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009 04:28:03 Christoph Lameter wrote:
-> n Fri, 23 Jan 2009, Nick Piggin wrote:
-> > According to memory policies, a task's memory policy is supposed to
-> > apply to its slab allocations too.
->
-> It does apply to slab allocations. The question is whether it has to apply
-> to every object allocation or to every page allocation of the slab
-> allocators.
-
-Quite obviously it should. Behaviour of a slab allocation on behalf of
-some task constrained within a given node should not depend on the task
-which has previously run on this CPU and made some allocations. Surely
-you can see this behaviour is not nice.
-
-
-> > > Memory policies are applied in a fuzzy way anyways. A context switch
-> > > can result in page allocation action that changes the expected
-> > > interleave pattern. Page populations in an address space depend on the
-> > > task policy. So the exact policy applied to a page depends on the task.
-> > > This isnt an exact thing.
+On Tue, 2009-02-03 at 12:24 +1100, Nick Piggin wrote:
+> On Friday 30 January 2009 12:23:15 Jan Kara wrote:
+> >   Hi,
 > >
-> > There are other memory policies than just interleave though.
->
-> Which have similar issues since memory policy application is depending on
-> a task policy and on memory migration that has been applied to an address
-> range.
+> >   today I found that commit 31a12666d8f0c22235297e1c1575f82061480029 (mm:
+> > write_cache_pages cyclic fix) slows down operations over Berkeley DB.
+> > Without this "fix", I can add 100k entries in about 5 minutes 30s, with
+> > that change it takes about 20 minutes.
+> >   What is IMO happening is that previously we scanned to the end of file,
+> > we left writeback_index at the end of file and went to write next file.
+> > With the fix, we wrap around (seek) and after writing some more we go
+> > to next file (seek again).
+We also found this commit causes about 40~50% regression with iozone mmap-rand-write.
+#iozone -B -r 4k -s 64k -s 512m -s 1200m
 
-What similar issues? If a task ask to have slab allocations constrained
-to node 0, then SLUB hands out objects from other nodes, then that's bad.
+My machine has 8GB memory.
 
+> Hmm, but isn't that what pdflush has asked for? It is wanting to flush
+> some of the dirty data out of this file, and hence it wants to start
+> from where it last flushed out and then cycle back and flush more?
+> 
+> 
+> >   Anyway, I think the original semantics of "cyclic" makes more sence, just
+> > the name was chosen poorly. What we should do is really scan to the end of
+> > file, reset index to start from the beginning next time and go for the next
+> > file.
+> 
+> Well, if we think of a file as containing a set of dirty pages (as it
+> appears to the high level mm), rather than a sequence, then behaviour
+> of my patch is correct (ie. there should be no distinction between dirty
+> pages at different offsets in the file).
+> 
+> However, clearly there is some problem with that assumption if you're
+> seeing a 4x slowdown :P I'd really like to know how it messes up the IO
+> patterns. How many files in the BDB workload? Are filesystem blocks
+> being allocated at the end of the file while writeout is happening?
+> Delayed allocation?
+> 
+> 
+> >   I can write a patch to introduce this semantics but I'd like to hear
+> > opinions of other people before I do so.
+> 
+> I like dirty page cleaning to be offset agnostic as far as possible,
+> but I can't argue with numbers like that. Though maybe it would be
+> possible to solve it some other way.
 
-> > But that is wrong. The lists obviously have high water marks that
-> > get trimmed down. Periodic trimming as I keep saying basically is
-> > alrady so infrequent that it is irrelevant (millions of objects
-> > per cpu can be allocated anyway between existing trimming interval)
->
-> Trimming through water marks and allocating memory from the page allocator
-> is going to be very frequent if you continually allocate on one processor
-> and free on another.
-
-Um yes, that's the point. But you previously claimed that it would just
-grow unconstrained. Which is obviously wrong. So I don't understand what
-your point is.
 
