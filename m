@@ -1,415 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbZBEC1h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762622AbZBEC2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762708AbZBEC1h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 21:27:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762379AbZBEC1Q
+	id S1762622AbZBEC2Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 21:28:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZBEC2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 21:27:16 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:56058 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762333AbZBEC1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 21:27:15 -0500
-Date: Thu, 5 Feb 2009 00:27:05 -0200
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH tip 2/2] trace: Remove unused trace_array_cpu parameter
-Message-ID: <20090205022705.GS3440@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Feb 2009 21:28:12 -0500
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59290 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756877AbZBEC2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 21:28:10 -0500
+Message-Id: <6.0.0.20.2.20090203165430.06ae1cd8@172.19.0.2>
+X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
+Date: Tue, 03 Feb 2009 17:04:40 +0900
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Subject: [RESEND] [PATCH] lseek: remove i_mutex
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+Hi 
+I removed i_mutex from generic_file_llseek.
+I think that the reason of protecting lseek with i_mutex is just
+touching i_size atomically.
 
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- block/blktrace.c                  |    2 +-
- kernel/trace/trace.c              |   47 ++++++++++++++----------------------
- kernel/trace/trace.h              |    4 ---
- kernel/trace/trace_functions.c    |    8 +++---
- kernel/trace/trace_irqsoff.c      |   10 ++++----
- kernel/trace/trace_sched_switch.c |    4 +-
- kernel/trace/trace_sched_wakeup.c |   12 ++++-----
- 7 files changed, 35 insertions(+), 52 deletions(-)
+So I introduce i_size_read here so i_mutex is no longer needed.
 
-diff --git a/block/blktrace.c b/block/blktrace.c
-index 1ebd068..d9d7146 100644
---- a/block/blktrace.c
-+++ b/block/blktrace.c
-@@ -245,7 +245,7 @@ record_it:
- 			if (pid != 0 &&
- 			    !(blk_tracer_flags.val & TRACE_BLK_OPT_CLASSIC) &&
- 			    (trace_flags & TRACE_ITER_STACKTRACE) != 0)
--				__trace_stack(blk_tr, NULL, flags, 5, pc);
-+				__trace_stack(blk_tr, flags, 5, pc);
- 			trace_wake_up();
- 			return;
+Following patch removes i_mutex from generic_file_llseek, and deletes 
+generic_file_llseek_nolock totally.
+
+Currently there is i_mutex contention not only around lseek, but also fsync or write.
+So,  I think we can mitigate i_mutex contention between fsync lseek and write by
+removing i_mutex.
+
+Thanks.
+
+Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+
+diff -Nrup linux-2.6.29-rc3.org/fs/cifs/cifsfs.c linux-2.6.29-rc3.lseek/fs/cifs/cifsfs.c
+--- linux-2.6.29-rc3.org/fs/cifs/cifsfs.c	2009-02-02 16:53:19.000000000 +0900
++++ linux-2.6.29-rc3.lseek/fs/cifs/cifsfs.c	2009-02-02 20:25:33.000000000 +0900
+@@ -636,7 +636,7 @@ static loff_t cifs_llseek(struct file *f
+ 		if (retval < 0)
+ 			return (loff_t)retval;
+ 	}
+-	return generic_file_llseek_unlocked(file, offset, origin);
++	return generic_file_llseek(file, offset, origin);
+ }
+ 
+ #ifdef CONFIG_CIFS_EXPERIMENTAL
+diff -Nrup linux-2.6.29-rc3.org/fs/gfs2/ops_file.c linux-2.6.29-rc3.lseek/fs/gfs2/ops_file.c
+--- linux-2.6.29-rc3.org/fs/gfs2/ops_file.c	2009-02-02 16:53:19.000000000 +0900
++++ linux-2.6.29-rc3.lseek/fs/gfs2/ops_file.c	2009-02-02 20:25:33.000000000 +0900
+@@ -62,11 +62,11 @@ static loff_t gfs2_llseek(struct file *f
+ 		error = gfs2_glock_nq_init(ip->i_gl, LM_ST_SHARED, LM_FLAG_ANY,
+ 					   &i_gh);
+ 		if (!error) {
+-			error = generic_file_llseek_unlocked(file, offset, origin);
++			error = generic_file_llseek(file, offset, origin);
+ 			gfs2_glock_dq_uninit(&i_gh);
  		}
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a5e4c0a..1d4ff56 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -776,7 +776,7 @@ tracing_generic_entry_update(struct trace_entry *entry, unsigned long flags,
- }
+ 	} else
+-		error = generic_file_llseek_unlocked(file, offset, origin);
++		error = generic_file_llseek(file, offset, origin);
  
- void
--trace_function(struct trace_array *tr, struct trace_array_cpu *data,
-+trace_function(struct trace_array *tr,
- 	       unsigned long ip, unsigned long parent_ip, unsigned long flags,
- 	       int pc)
+ 	return error;
+ }
+diff -Nrup linux-2.6.29-rc3.org/fs/ncpfs/file.c linux-2.6.29-rc3.lseek/fs/ncpfs/file.c
+--- linux-2.6.29-rc3.org/fs/ncpfs/file.c	2008-12-25 08:26:37.000000000 +0900
++++ linux-2.6.29-rc3.lseek/fs/ncpfs/file.c	2009-02-02 20:25:33.000000000 +0900
+@@ -286,7 +286,7 @@ static loff_t ncp_remote_llseek(struct f
  {
-@@ -802,7 +802,6 @@ trace_function(struct trace_array *tr, struct trace_array_cpu *data,
+ 	loff_t ret;
+ 	lock_kernel();
+-	ret = generic_file_llseek_unlocked(file, offset, origin);
++	ret = generic_file_llseek(file, offset, origin);
+ 	unlock_kernel();
+ 	return ret;
+ }
+diff -Nrup linux-2.6.29-rc3.org/fs/nfs/file.c linux-2.6.29-rc3.lseek/fs/nfs/file.c
+--- linux-2.6.29-rc3.org/fs/nfs/file.c	2009-02-02 16:53:19.000000000 +0900
++++ linux-2.6.29-rc3.lseek/fs/nfs/file.c	2009-02-02 20:25:33.000000000 +0900
+@@ -194,10 +194,10 @@ static loff_t nfs_file_llseek(struct fil
+ 			return (loff_t)retval;
  
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- static void __trace_graph_entry(struct trace_array *tr,
--				struct trace_array_cpu *data,
- 				struct ftrace_graph_ent *trace,
- 				unsigned long flags,
- 				int pc)
-@@ -826,7 +825,6 @@ static void __trace_graph_entry(struct trace_array *tr,
+ 		spin_lock(&inode->i_lock);
+-		loff = generic_file_llseek_unlocked(filp, offset, origin);
++		loff = generic_file_llseek(filp, offset, origin);
+ 		spin_unlock(&inode->i_lock);
+ 	} else
+-		loff = generic_file_llseek_unlocked(filp, offset, origin);
++		loff = generic_file_llseek(filp, offset, origin);
+ 	return loff;
  }
  
- static void __trace_graph_return(struct trace_array *tr,
--				struct trace_array_cpu *data,
- 				struct ftrace_graph_ret *trace,
- 				unsigned long flags,
- 				int pc)
-@@ -856,11 +854,10 @@ ftrace(struct trace_array *tr, struct trace_array_cpu *data,
-        int pc)
+diff -Nrup linux-2.6.29-rc3.org/fs/read_write.c linux-2.6.29-rc3.lseek/fs/read_write.c
+--- linux-2.6.29-rc3.org/fs/read_write.c	2009-02-02 16:53:19.000000000 +0900
++++ linux-2.6.29-rc3.lseek/fs/read_write.c	2009-02-02 20:25:33.000000000 +0900
+@@ -32,22 +32,23 @@ const struct file_operations generic_ro_
+ EXPORT_SYMBOL(generic_ro_fops);
+ 
+ /**
+- * generic_file_llseek_unlocked - lockless generic llseek implementation
++ * generic_file_llseek - generic llseek implementation for regular files
+  * @file:	file structure to seek on
+  * @offset:	file offset to seek to
+  * @origin:	type of seek
+  *
+- * Updates the file offset to the value specified by @offset and @origin.
+- * Locking must be provided by the caller.
++ * This is a generic implemenation of ->llseek useable for all normal local
++ * filesystems.  It just updates the file offset to the value specified by
++ * @offset and @origin.
+  */
+-loff_t
+-generic_file_llseek_unlocked(struct file *file, loff_t offset, int origin)
++loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
  {
- 	if (likely(!atomic_read(&data->disabled)))
--		trace_function(tr, data, ip, parent_ip, flags, pc);
-+		trace_function(tr, ip, parent_ip, flags, pc);
- }
++	loff_t rval;
+ 	struct inode *inode = file->f_mapping->host;
  
- static void __ftrace_trace_stack(struct trace_array *tr,
--				 struct trace_array_cpu *data,
- 				 unsigned long flags,
- 				 int skip, int pc)
- {
-@@ -891,27 +888,24 @@ static void __ftrace_trace_stack(struct trace_array *tr,
- }
- 
- static void ftrace_trace_stack(struct trace_array *tr,
--			       struct trace_array_cpu *data,
- 			       unsigned long flags,
- 			       int skip, int pc)
- {
- 	if (!(trace_flags & TRACE_ITER_STACKTRACE))
- 		return;
- 
--	__ftrace_trace_stack(tr, data, flags, skip, pc);
-+	__ftrace_trace_stack(tr, flags, skip, pc);
- }
- 
- void __trace_stack(struct trace_array *tr,
--		   struct trace_array_cpu *data,
- 		   unsigned long flags,
- 		   int skip, int pc)
- {
--	__ftrace_trace_stack(tr, data, flags, skip, pc);
-+	__ftrace_trace_stack(tr, flags, skip, pc);
- }
- 
- static void ftrace_trace_userstack(struct trace_array *tr,
--		   struct trace_array_cpu *data,
--		   unsigned long flags, int pc)
-+				   unsigned long flags, int pc)
- {
- #ifdef CONFIG_STACKTRACE
- 	struct ring_buffer_event *event;
-@@ -942,20 +936,17 @@ static void ftrace_trace_userstack(struct trace_array *tr,
- #endif
- }
- 
--void __trace_userstack(struct trace_array *tr,
--		   struct trace_array_cpu *data,
--		   unsigned long flags)
-+void __trace_userstack(struct trace_array *tr, unsigned long flags)
- {
--	ftrace_trace_userstack(tr, data, flags, preempt_count());
-+	ftrace_trace_userstack(tr, flags, preempt_count());
- }
- 
- static void
--ftrace_trace_special(void *__tr, void *__data,
-+ftrace_trace_special(void *__tr,
- 		     unsigned long arg1, unsigned long arg2, unsigned long arg3,
- 		     int pc)
- {
- 	struct ring_buffer_event *event;
--	struct trace_array_cpu *data = __data;
- 	struct trace_array *tr = __tr;
- 	struct special_entry *entry;
- 	unsigned long irq_flags;
-@@ -971,8 +962,8 @@ ftrace_trace_special(void *__tr, void *__data,
- 	entry->arg2			= arg2;
- 	entry->arg3			= arg3;
- 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
--	ftrace_trace_stack(tr, data, irq_flags, 4, pc);
--	ftrace_trace_userstack(tr, data, irq_flags, pc);
-+	ftrace_trace_stack(tr, irq_flags, 4, pc);
-+	ftrace_trace_userstack(tr, irq_flags, pc);
- 
- 	trace_wake_up();
- }
-@@ -981,12 +972,11 @@ void
- __trace_special(void *__tr, void *__data,
- 		unsigned long arg1, unsigned long arg2, unsigned long arg3)
- {
--	ftrace_trace_special(__tr, __data, arg1, arg2, arg3, preempt_count());
-+	ftrace_trace_special(__tr, arg1, arg2, arg3, preempt_count());
- }
- 
- void
- tracing_sched_switch_trace(struct trace_array *tr,
--			   struct trace_array_cpu *data,
- 			   struct task_struct *prev,
- 			   struct task_struct *next,
- 			   unsigned long flags, int pc)
-@@ -1010,13 +1000,12 @@ tracing_sched_switch_trace(struct trace_array *tr,
- 	entry->next_state		= next->state;
- 	entry->next_cpu	= task_cpu(next);
- 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
--	ftrace_trace_stack(tr, data, flags, 5, pc);
--	ftrace_trace_userstack(tr, data, flags, pc);
-+	ftrace_trace_stack(tr, flags, 5, pc);
-+	ftrace_trace_userstack(tr, flags, pc);
- }
- 
- void
- tracing_sched_wakeup_trace(struct trace_array *tr,
--			   struct trace_array_cpu *data,
- 			   struct task_struct *wakee,
- 			   struct task_struct *curr,
- 			   unsigned long flags, int pc)
-@@ -1040,8 +1029,8 @@ tracing_sched_wakeup_trace(struct trace_array *tr,
- 	entry->next_state		= wakee->state;
- 	entry->next_cpu			= task_cpu(wakee);
- 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
--	ftrace_trace_stack(tr, data, flags, 6, pc);
--	ftrace_trace_userstack(tr, data, flags, pc);
-+	ftrace_trace_stack(tr, flags, 6, pc);
-+	ftrace_trace_userstack(tr, flags, pc);
- 
- 	trace_wake_up();
- }
-@@ -1064,7 +1053,7 @@ ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3)
- 	data = tr->data[cpu];
- 
- 	if (likely(atomic_inc_return(&data->disabled) == 1))
--		ftrace_trace_special(tr, data, arg1, arg2, arg3, pc);
-+		ftrace_trace_special(tr, arg1, arg2, arg3, pc);
- 
- 	atomic_dec(&data->disabled);
- 	local_irq_restore(flags);
-@@ -1092,7 +1081,7 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
- 	disabled = atomic_inc_return(&data->disabled);
- 	if (likely(disabled == 1)) {
- 		pc = preempt_count();
--		__trace_graph_entry(tr, data, trace, flags, pc);
-+		__trace_graph_entry(tr, trace, flags, pc);
- 	}
- 	/* Only do the atomic if it is not already set */
- 	if (!test_tsk_trace_graph(current))
-@@ -1118,7 +1107,7 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
- 	disabled = atomic_inc_return(&data->disabled);
- 	if (likely(disabled == 1)) {
- 		pc = preempt_count();
--		__trace_graph_return(tr, data, trace, flags, pc);
-+		__trace_graph_return(tr, trace, flags, pc);
- 	}
- 	if (!trace->depth)
- 		clear_tsk_trace_graph(current);
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index f0c7a0f..df627a9 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -419,14 +419,12 @@ void ftrace(struct trace_array *tr,
- 			    unsigned long parent_ip,
- 			    unsigned long flags, int pc);
- void tracing_sched_switch_trace(struct trace_array *tr,
--				struct trace_array_cpu *data,
- 				struct task_struct *prev,
- 				struct task_struct *next,
- 				unsigned long flags, int pc);
- void tracing_record_cmdline(struct task_struct *tsk);
- 
- void tracing_sched_wakeup_trace(struct trace_array *tr,
--				struct trace_array_cpu *data,
- 				struct task_struct *wakee,
- 				struct task_struct *cur,
- 				unsigned long flags, int pc);
-@@ -436,7 +434,6 @@ void trace_special(struct trace_array *tr,
- 		   unsigned long arg2,
- 		   unsigned long arg3, int pc);
- void trace_function(struct trace_array *tr,
--		    struct trace_array_cpu *data,
- 		    unsigned long ip,
- 		    unsigned long parent_ip,
- 		    unsigned long flags, int pc);
-@@ -462,7 +459,6 @@ void update_max_tr_single(struct trace_array *tr,
- 			  struct task_struct *tsk, int cpu);
- 
- void __trace_stack(struct trace_array *tr,
--		   struct trace_array_cpu *data,
- 		   unsigned long flags,
- 		   int skip, int pc);
- 
-diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-index b3a320f..d067cea 100644
---- a/kernel/trace/trace_functions.c
-+++ b/kernel/trace/trace_functions.c
-@@ -78,7 +78,7 @@ function_trace_call_preempt_only(unsigned long ip, unsigned long parent_ip)
- 	disabled = atomic_inc_return(&data->disabled);
- 
- 	if (likely(disabled == 1))
--		trace_function(tr, data, ip, parent_ip, flags, pc);
-+		trace_function(tr, ip, parent_ip, flags, pc);
- 
- 	atomic_dec(&data->disabled);
- 	ftrace_preempt_enable(resched);
-@@ -108,7 +108,7 @@ function_trace_call(unsigned long ip, unsigned long parent_ip)
- 
- 	if (likely(disabled == 1)) {
- 		pc = preempt_count();
--		trace_function(tr, data, ip, parent_ip, flags, pc);
-+		trace_function(tr, ip, parent_ip, flags, pc);
- 	}
- 
- 	atomic_dec(&data->disabled);
-@@ -139,7 +139,7 @@ function_stack_trace_call(unsigned long ip, unsigned long parent_ip)
- 
- 	if (likely(disabled == 1)) {
- 		pc = preempt_count();
--		trace_function(tr, data, ip, parent_ip, flags, pc);
-+		trace_function(tr, ip, parent_ip, flags, pc);
+ 	switch (origin) {
+ 	case SEEK_END:
+-		offset += inode->i_size;
++		offset += i_size_read(inode);
+ 		break;
+ 	case SEEK_CUR:
  		/*
- 		 * skip over 5 funcs:
- 		 *    __ftrace_trace_stack,
-@@ -148,7 +148,7 @@ function_stack_trace_call(unsigned long ip, unsigned long parent_ip)
- 		 *    ftrace_list_func
- 		 *    ftrace_call
- 		 */
--		__trace_stack(tr, data, flags, 5, pc);
-+		__trace_stack(tr, flags, 5, pc);
+@@ -70,28 +71,7 @@ generic_file_llseek_unlocked(struct file
+ 		file->f_pos = offset;
+ 		file->f_version = 0;
  	}
+-
+-	return offset;
+-}
+-EXPORT_SYMBOL(generic_file_llseek_unlocked);
+-
+-/**
+- * generic_file_llseek - generic llseek implementation for regular files
+- * @file:	file structure to seek on
+- * @offset:	file offset to seek to
+- * @origin:	type of seek
+- *
+- * This is a generic implemenation of ->llseek useable for all normal local
+- * filesystems.  It just updates the file offset to the value specified by
+- * @offset and @origin under i_mutex.
+- */
+-loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
+-{
+-	loff_t rval;
+-
+-	mutex_lock(&file->f_dentry->d_inode->i_mutex);
+-	rval = generic_file_llseek_unlocked(file, offset, origin);
+-	mutex_unlock(&file->f_dentry->d_inode->i_mutex);
++	rval = offset;
  
- 	atomic_dec(&data->disabled);
-diff --git a/kernel/trace/trace_irqsoff.c b/kernel/trace/trace_irqsoff.c
-index ed344b0..c6b442d 100644
---- a/kernel/trace/trace_irqsoff.c
-+++ b/kernel/trace/trace_irqsoff.c
-@@ -95,7 +95,7 @@ irqsoff_tracer_call(unsigned long ip, unsigned long parent_ip)
- 	disabled = atomic_inc_return(&data->disabled);
- 
- 	if (likely(disabled == 1))
--		trace_function(tr, data, ip, parent_ip, flags, preempt_count());
-+		trace_function(tr, ip, parent_ip, flags, preempt_count());
- 
- 	atomic_dec(&data->disabled);
+ 	return rval;
  }
-@@ -153,7 +153,7 @@ check_critical_timing(struct trace_array *tr,
- 	if (!report_latency(delta))
- 		goto out_unlock;
- 
--	trace_function(tr, data, CALLER_ADDR0, parent_ip, flags, pc);
-+	trace_function(tr, CALLER_ADDR0, parent_ip, flags, pc);
- 
- 	latency = nsecs_to_usecs(delta);
- 
-@@ -177,7 +177,7 @@ out:
- 	data->critical_sequence = max_sequence;
- 	data->preempt_timestamp = ftrace_now(cpu);
- 	tracing_reset(tr, cpu);
--	trace_function(tr, data, CALLER_ADDR0, parent_ip, flags, pc);
-+	trace_function(tr, CALLER_ADDR0, parent_ip, flags, pc);
+diff -Nrup linux-2.6.29-rc3.org/fs/smbfs/file.c linux-2.6.29-rc3.lseek/fs/smbfs/file.c
+--- linux-2.6.29-rc3.org/fs/smbfs/file.c	2009-02-02 16:53:19.000000000 +0900
++++ linux-2.6.29-rc3.lseek/fs/smbfs/file.c	2009-02-02 20:25:33.000000000 +0900
+@@ -426,7 +426,7 @@ static loff_t smb_remote_llseek(struct f
+ {
+ 	loff_t ret;
+ 	lock_kernel();
+-	ret = generic_file_llseek_unlocked(file, offset, origin);
++	ret = generic_file_llseek(file, offset, origin);
+ 	unlock_kernel();
+ 	return ret;
  }
+diff -Nrup linux-2.6.29-rc3.org/include/linux/fs.h linux-2.6.29-rc3.lseek/include/linux/fs.h
+--- linux-2.6.29-rc3.org/include/linux/fs.h	2009-02-02 16:53:21.000000000 +0900
++++ linux-2.6.29-rc3.lseek/include/linux/fs.h	2009-02-02 20:25:33.000000000 +0900
+@@ -1982,8 +1982,6 @@ extern void
+ file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping);
+ extern loff_t no_llseek(struct file *file, loff_t offset, int origin);
+ extern loff_t generic_file_llseek(struct file *file, loff_t offset, int origin);
+-extern loff_t generic_file_llseek_unlocked(struct file *file, loff_t offset,
+-			int origin);
+ extern int generic_file_open(struct inode * inode, struct file * filp);
+ extern int nonseekable_open(struct inode * inode, struct file * filp);
  
- static inline void
-@@ -210,7 +210,7 @@ start_critical_timing(unsigned long ip, unsigned long parent_ip)
- 
- 	local_save_flags(flags);
- 
--	trace_function(tr, data, ip, parent_ip, flags, preempt_count());
-+	trace_function(tr, ip, parent_ip, flags, preempt_count());
- 
- 	per_cpu(tracing_cpu, cpu) = 1;
- 
-@@ -244,7 +244,7 @@ stop_critical_timing(unsigned long ip, unsigned long parent_ip)
- 	atomic_inc(&data->disabled);
- 
- 	local_save_flags(flags);
--	trace_function(tr, data, ip, parent_ip, flags, preempt_count());
-+	trace_function(tr, ip, parent_ip, flags, preempt_count());
- 	check_critical_timing(tr, data, parent_ip ? : ip, cpu);
- 	data->critical_start = 0;
- 	atomic_dec(&data->disabled);
-diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-index df175cb..c4f9add 100644
---- a/kernel/trace/trace_sched_switch.c
-+++ b/kernel/trace/trace_sched_switch.c
-@@ -43,7 +43,7 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
- 	data = ctx_trace->data[cpu];
- 
- 	if (likely(!atomic_read(&data->disabled)))
--		tracing_sched_switch_trace(ctx_trace, data, prev, next, flags, pc);
-+		tracing_sched_switch_trace(ctx_trace, prev, next, flags, pc);
- 
- 	local_irq_restore(flags);
- }
-@@ -66,7 +66,7 @@ probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee, int success)
- 	data = ctx_trace->data[cpu];
- 
- 	if (likely(!atomic_read(&data->disabled)))
--		tracing_sched_wakeup_trace(ctx_trace, data, wakee, current,
-+		tracing_sched_wakeup_trace(ctx_trace, wakee, current,
- 					   flags, pc);
- 
- 	local_irq_restore(flags);
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-index a48c9b4..96d7164 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -72,7 +72,7 @@ wakeup_tracer_call(unsigned long ip, unsigned long parent_ip)
- 	if (task_cpu(wakeup_task) != cpu)
- 		goto unlock;
- 
--	trace_function(tr, data, ip, parent_ip, flags, pc);
-+	trace_function(tr, ip, parent_ip, flags, pc);
- 
-  unlock:
- 	__raw_spin_unlock(&wakeup_lock);
-@@ -152,8 +152,8 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
- 	if (unlikely(!tracer_enabled || next != wakeup_task))
- 		goto out_unlock;
- 
--	trace_function(wakeup_trace, data, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
--	tracing_sched_switch_trace(wakeup_trace, data, prev, next, flags, pc);
-+	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
-+	tracing_sched_switch_trace(wakeup_trace, prev, next, flags, pc);
- 
- 	/*
- 	 * usecs conversion is slow so we try to delay the conversion
-@@ -254,10 +254,8 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int success)
- 
- 	data = wakeup_trace->data[wakeup_cpu];
- 	data->preempt_timestamp = ftrace_now(cpu);
--	tracing_sched_wakeup_trace(wakeup_trace, data, p, current,
--				   flags, pc);
--	trace_function(wakeup_trace, data, CALLER_ADDR1, CALLER_ADDR2,
--		       flags, pc);
-+	tracing_sched_wakeup_trace(wakeup_trace, p, current, flags, pc);
-+	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
- 
- out_locked:
- 	__raw_spin_unlock(&wakeup_lock);
--- 
-1.6.0.6
 
