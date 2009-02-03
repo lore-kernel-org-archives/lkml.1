@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZBCW3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755485AbZBCWbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755168AbZBCW3x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:29:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZBCW3o
+	id S1755485AbZBCWbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:31:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZBCWbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:29:44 -0500
-Received: from waste.org ([66.93.16.53]:43689 "EHLO waste.org"
+	Tue, 3 Feb 2009 17:31:06 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56294 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751134AbZBCW3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:29:43 -0500
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-From: Matt Mackall <mpm@selenic.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, corbet@lwn.net,
-       linux-kernel@vger.kernel.org, andi@firstfloor.org, oleg@redhat.com,
-       viro@ZenIV.linux.org.uk, davidel@xmailserver.org, davem@davemloft.net,
-       hch@lst.de, linux-api@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-In-Reply-To: <20090203140543.6e915f97.akpm@linux-foundation.org>
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
-	 <1233598811-6871-3-git-send-email-corbet@lwn.net>
-	 <20090203133942.2ecec281.akpm@linux-foundation.org>
-	 <4988BD4E.8080206@cosmosbay.com>
-	 <20090203140543.6e915f97.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 16:22:02 -0600
-Message-Id: <1233699722.3243.127.camel@calx>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1751589AbZBCWbE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 17:31:04 -0500
+Date: Tue, 3 Feb 2009 23:28:03 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: do_each_pid_task() needs rcu lock
+Message-ID: <20090203222803.GA31756@redhat.com>
+References: <20090203193904.GA23695@redhat.com> <20090203194214.GA23703@redhat.com> <m1fxivw673.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1fxivw673.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 14:05 -0800, Andrew Morton wrote:
-> On Tue, 03 Feb 2009 22:55:26 +0100
-> Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
-> > Andrew Morton a __crit :
-> > > On Mon,  2 Feb 2009 11:20:09 -0700
-> > > Jonathan Corbet <corbet@lwn.net> wrote:
-> > > 
-> > >> Matt Mackall suggested converting epoll's ep_lock to a bitlock as a way of
-> > >> saving space in struct file.  This patch makes that change.
-> > > 
-> > > hrm.  bit_spin_lock() makes people upset (large penguiny people).  iirc
-> > > it doesn't have all the correct/well-understood memory/compiler
-> > > ordering semantics which spinlocks have.  And lockdep doesn't know about
-> > > it.
-> > > 
-> > 
-> > In a previous attempt (2005), I suggested using a single global lock.
-> > 
-> > http://search.luky.org/linux-kernel.2005/msg50862.html
-> 
-> ok..
-> 
-> > Probably an array of hashed spinlocks would be more than enough.
-> > 
-> 
-> yes, f_ep_lock is a teeny innermost lock.  Perhaps using
-> f->f_dentry->d_inode->i_lock would be a decent speed/space compromise.
+On 02/03, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@redhat.com> writes:
+>
+> > On 02/03, Oleg Nesterov wrote:
+> >>
+> >> "ftrace: use struct pid" commit 978f3a45d9499c7a447ca7615455cefb63d44165
+> >> converted ftrace_pid_trace to "struct pid*". But we can't use
+> >> do_each_pid_task() without rcu_read_lock() even if we know the pid
+> >> itself can't go away (it was pinned in ftrace_pid_write). The exiting
+> >> task can detach itself from this pid at any moment.
+> >
+> > Q: why do we use do_each_pid_task(PIDTYPE_PID) ? We can never have more
+> > than 1 task in the loop. Perhaps,
+>
+> That is a bug in do_each_pid_task(PIDTYPE_PID).
+> For ftrace we really want to grab all tasks with a given pid even
+> in the crazy exec case.
 
-That seems eminently reasonable.
+Yes, I thought about de_thread() too. But we can't "fix" do_each_pid_task()
+to avoid the race?
 
-But that re-opens the question of what to do about poor Jon's quest.
+IOW. If we want to continue to trace the task with the same pid after
+exec reliably, then we should do something like
 
-I got confused halfway through as he went from using a global fasync
-spinlock to a non-locked but atomic flag bit. Not sure why using a
-per-file or per-inode lock doesn't work for the fasync code.
+	void ftrace_transfer_trace(struct task_struct *leader)
+	{
+		mutex_lock(&ftrace_start_lock);
+		if (test_tsk_trace_trace(leader))
+			set_tsk_trace_trace(current);
+		mutex_unlock(&ftrace_start_lock);
+	}
 
--- 
-http://selenic.com : development and support for Mercurial and Linux
+and, in de_thread,
 
+		write_unlock_irq(&tasklist_lock);
+	+
+	+	ftrace_transfer_trace(leader);
+	+
+		release_task(leader);
+
+No?
+
+(the above is not right of course, we can race with clear_ftrace_pid(),
+ just for illustration)
+
+Oleg.
 
