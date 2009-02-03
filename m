@@ -1,76 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZBCOAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZBCOGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbZBCOAa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 09:00:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZBCOAU
+	id S1754341AbZBCOGg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 09:06:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZBCOG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 09:00:20 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43214 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751978AbZBCOAT (ORCPT
+	Tue, 3 Feb 2009 09:06:26 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:54132 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbZBCOGZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 09:00:19 -0500
-Date: Tue, 3 Feb 2009 08:03:42 -0600
-From: "Serge E. Hallyn" <serge@hallyn.com>
-To: david safford <safford@watson.ibm.com>
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Christoph Hellwig <hch@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
-       Mimi Zohar <zohar@us.ibm.com>
-Subject: Re: [PATCH 2/6] integrity: IMA as an integrity service provider
-Message-ID: <20090203140342.GA22458@hallyn.com>
-References: <cover.1233262162.git.zohar@linux.vnet.ibm.com> <eae67eb66b76df32f0e95c4cda33fd6271567c94.1233262163.git.zohar@linux.vnet.ibm.com> <20090202230211.GA18452@hallyn.com> <1233668170.4263.24.camel@localhost.localdomain>
+	Tue, 3 Feb 2009 09:06:25 -0500
+From: Jean Pihet <jpihet@mvista.com>
+Organization: MontaVista
+To: Tony Lindgren <tony@atomide.com>,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-omap@vger.kernel.org,
+       "Jarkko Lavinen (NMP/Helsinki)" <jarkko.lavinen@nokia.com>,
+       Pierre Ossman <drzeus-mmc@drzeus.cx>, linux-kernel@vger.kernel.org
+Subject: [PATCH] OMAP: MMC: recover from transfer failures - Resend
+Date: Tue, 3 Feb 2009 15:05:58 +0100
+User-Agent: KMail/1.9.9
+References: <20081207213617.10456.43951.stgit@localhost> <200902020946.16508.jpihet@mvista.com> <20090202190503.GT7215@atomide.com>
+In-Reply-To: <20090202190503.GT7215@atomide.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233668170.4263.24.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_G9EiJNWwaG+ypeG"
+Message-Id: <200902031505.58697.jpihet@mvista.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting david safford (safford@watson.ibm.com):
-> On Mon, 2009-02-02 at 17:02 -0600, Serge E. Hallyn wrote:
-> > Quoting Mimi Zohar (zohar@linux.vnet.ibm.com):
-> > > +
-> > > +/* Add template entry to the measurement list and hash table,
-> > > + * and extend the pcr.
-> > > + */
-> > > +int ima_add_template_entry(struct ima_template_entry *entry, int violation,
-> > > +			   const char *op, struct inode *inode)
-> > > +{
-> > > +	u8 digest[IMA_DIGEST_SIZE];
-> > > +	const char *audit_cause = "hash_added";
-> > > +	int audit_info = 1;
-> > > +	int result = 0;
-> > > +
-> > > +	mutex_lock(&ima_extend_list_mutex);
-> > > +	if (!violation) {
-> > > +		memcpy(digest, entry->digest, sizeof digest);
-> > > +		if (ima_lookup_digest_entry(digest)) {
-> > > +			audit_cause = "hash_exists";
-> > > +			goto out;
-> > 
-> > Ok so not that I'm saying this would be easy, but an attacker
-> > compromising say ftpd doesn't need to come up with a compromised
-> > ftpd where sha1sum(evilftpd)==sha1sum(origftpd) - he just needs to
-> > come up with one wher sha1sum(evilftpd)==sha1sum(X) where X is
-> > any pristine program already loaded.  Right?
-> > 
-> > Is checking that strcmp(entry->file_name, newfilename)==0 warranted
-> > here, or am I being silly?
-> 
-> The birthday paradox, which is essential for any practical attack,
-> requires that the attacker can freely choose both x and y in 
-> his search for collisions sha1sum(x) == sha1sum(y). Here, the
-> attacker cannot freely choose x,
+--Boundary-00=_G9EiJNWwaG+ypeG
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-That's why I said a forward-looking attacker.  He can, in fact,
-choose x.
+Hi,
 
->  but can only choose x from a list
-> of existing files. Even if there are a million valid files, that only
-> reduces the attack complexity by 2^20, which is still infeasible.
-> 
-> dave
+This is a re-send of the patch that fixes a MMC host controller deadlock. T=
+he=20
+problem happens when removing the MMC/SD device when a transfer is on-going.
+
+It has been tested on OMAP3430 but this fix should apply to OMAP2 chips as=
+=20
+well, as seen from the TRMs.
+
+Regards,
+Jean
+
+=46rom d143f6b2e705aa4e9d2b032097fd1c82f8163262 Mon Sep 17 00:00:00 2001
+=46rom: Jean Pihet <jpihet@mvista.com>
+Date: Thu, 8 Jan 2009 12:35:21 +0100
+Subject: [PATCH] OMAP: MMC: recover from transfer failures
+
+Timeouts during a command that has a data phase can result in the
+next command issued after the command that failed not being processed,
+i.e. no interrupt ever occurs to indicate the command has completed.
+This failure can result in a deadlock.
+
+This patch resets the data state machine to clear the error in
+case of a command timeout.
+
+Tested on OMAP3430 chip and intensive MMC/SD device removal while
+transferring data.
+
+Signed-off-by: Andy Lowe <alowe@mvista.com>
+Signed-off-by: Jean Pihet <jpihet@mvista.com>
+Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+=2D--
+=A0drivers/mmc/host/omap_hsmmc.c | =A0 =A09 ++++++++-
+=A01 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index d5c1e9d..97150c0 100644
+=2D-- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -464,8 +464,15 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 end_cmd =3D=
+ 1;
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+=2D =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (host->data)
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if (host->data) {
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mmc_dma_cle=
+anup(host);
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 OMAP_HSMMC_WR=
+ITE(host->base, SYSCTL,
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 OMAP_HSMMC_READ(host->base,
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 SYSCTL) | SRD);
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 while (OMAP_H=
+SMMC_READ(host->base,
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 =A0 =A0 =A0 =A0 SYSCTL) & SRD)
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =
+=A0 ;
++ =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 }
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 if ((status & DATA_TIMEOUT) ||
+=A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 (status & DATA_CRC)) {
+=2D-
+1.5.4.4.21.gc4a6c
+
+
+On Monday 02 February 2009 20:05:06 Tony Lindgren wrote:
+> Hi,
+>
+> * Jean Pihet <jpihet@mvista.com> [090202 00:46]:
+> > Tony,
+> >
+> > Has this patch been applied to the linux-omap tree? Does it need to go
+> > the patchwork?
+> >
+> > Cf. http://marc.info/?l=3Dlinux-omap&m=3D123141577308177&w=3D2
+>
+> I'm not applying MMC patches, we need to move that discussion to LKML
+> and keep Pierre involved.
+>
+> Jarkko Lavinen was planning to set up a git branch against the mainline
+> tree for the omap mmc patches, so until we have that, let's just let the
+> patches float on the list for a while.
+>
+> But yeah, if you want patchwork to pick up your patch so it does not
+> get lost, just please resend it to the linux-omap list and it should
+> get automatically picked up by patchwork.
+>
+> Regards,
+>
+> Tony
+
+
+
+--Boundary-00=_G9EiJNWwaG+ypeG
+Content-Type: text/x-diff;
+  charset="iso 8859-15";
+  name="OMAP-MMC-recover-from-transfer-failures.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="OMAP-MMC-recover-from-transfer-failures.patch"
+
+=46rom d143f6b2e705aa4e9d2b032097fd1c82f8163262 Mon Sep 17 00:00:00 2001
+=46rom: Jean Pihet <jpihet@mvista.com>
+Date: Thu, 8 Jan 2009 12:35:21 +0100
+Subject: [PATCH] OMAP: MMC: recover from transfer failures
+
+Timeouts during a command that has a data phase can result in the
+next command issued after the command that failed not being processed,
+i.e. no interrupt ever occurs to indicate the command has completed.
+This failure can result in a deadlock.
+
+This patch resets the data state machine to clear the error in
+case of a command timeout.
+
+Tested on OMAP3430 chip and intensive MMC/SD device removal while
+transferring data.
+
+Signed-off-by: Andy Lowe <alowe@mvista.com>
+Signed-off-by: Jean Pihet <jpihet@mvista.com>
+Signed-off-by: Adrian Hunter <ext-adrian.hunter@nokia.com>
+=2D--
+ drivers/mmc/host/omap_hsmmc.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/mmc/host/omap_hsmmc.c b/drivers/mmc/host/omap_hsmmc.c
+index d5c1e9d..97150c0 100644
+=2D-- a/drivers/mmc/host/omap_hsmmc.c
++++ b/drivers/mmc/host/omap_hsmmc.c
+@@ -464,8 +464,15 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+ 				}
+ 				end_cmd =3D 1;
+ 			}
+=2D			if (host->data)
++			if (host->data) {
+ 				mmc_dma_cleanup(host);
++				OMAP_HSMMC_WRITE(host->base, SYSCTL,
++					OMAP_HSMMC_READ(host->base,
++							SYSCTL) | SRD);
++				while (OMAP_HSMMC_READ(host->base,
++						SYSCTL) & SRD)
++					;
++			}
+ 		}
+ 		if ((status & DATA_TIMEOUT) ||
+ 			(status & DATA_CRC)) {
+=2D-=20
+1.5.4.4.21.gc4a6c
+
+
+--Boundary-00=_G9EiJNWwaG+ypeG--
