@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755515AbZBCQzA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755929AbZBCQza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755515AbZBCQzA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 11:55:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZBCQyw
+	id S1755929AbZBCQza (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 11:55:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZBCQzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 11:54:52 -0500
-Received: from einhorn.in-berlin.de ([192.109.42.8]:57224 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752430AbZBCQyw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 11:54:52 -0500
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Tue, 3 Feb 2009 17:54:31 +0100 (CET)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] ieee1394: dv1394: move deprecation message from module init
- to file open
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.27c6433221173763@s5r6.in-berlin.de>
+	Tue, 3 Feb 2009 11:55:14 -0500
+Received: from mail.mellanox.co.il ([194.90.237.43]:58848 "EHLO mellanox.co.il"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755164AbZBCQzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 11:55:12 -0500
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 11:55:11 EST
+Date: Tue, 3 Feb 2009 18:49:30 +0200
+From: Eli Cohen <eli@mellanox.co.il>
+To: linux-kernel@vger.kernel.org, Roland Dreier <rdreier@cisco.com>
+Subject: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+Message-ID: <20090203164930.GA10101@mtls03>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-OriginalArrivalTime: 03 Feb 2009 16:48:27.0842 (UTC) FILETIME=[3CC4FA20:01C9861F]
+X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.500.1027-16442.000
+X-TM-AS-Result: No--5.470300-8.000000-31
+X-TM-AS-User-Approved-Sender: No
+X-TM-AS-User-Blocked-Sender: No
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On many Linux installations, the dv1394 driver will be auto-loaded
-whenever an AV/C device (e.g. camcorder or audio device) is plugged in.
-An irritating message would then appear in the kernel log.
+Drivers may want to take advantage of the large pages used for memory obtained
+from hugetlbfs. One example is mlx4_ib which can use much less MTT entries (in
+the order of HPAGE_SIZE / PAGE_SIZE) when registering such memory, thus scale
+significantly better when registering larger memory regions. Other drivers
+could also benefit from this.
 
-Defer this message to until a dv1394 character device file is actually
-used by a program.  Also include the program name in the message and
-update the message slightly.
-
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Eli Cohen <eli@mellanox.co.il>
 ---
- drivers/ieee1394/dv1394.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/powerpc/mm/hash_utils_64.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Index: linux/drivers/ieee1394/dv1394.c
-===================================================================
---- linux.orig/drivers/ieee1394/dv1394.c
-+++ linux/drivers/ieee1394/dv1394.c
-@@ -1823,6 +1823,10 @@ static int dv1394_open(struct inode *ino
- 
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 8d5b475..6cff8c7 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -104,6 +104,7 @@ int mmu_highuser_ssize = MMU_SEGSIZE_256M;
+ u16 mmu_slb_size = 64;
+ #ifdef CONFIG_HUGETLB_PAGE
+ unsigned int HPAGE_SHIFT;
++EXPORT_SYMBOL(HPAGE_SHIFT);
  #endif
- 
-+	printk(KERN_INFO "%s: NOTE, the dv1394 interface is unsupported "
-+	       "and will not be available in the new firewire driver stack. "
-+	       "Try libraw1394 based programs instead.\n", current->comm);
-+
- 	return 0;
- }
- 
-@@ -2567,10 +2571,6 @@ static int __init dv1394_init_module(voi
- {
- 	int ret;
- 
--	printk(KERN_WARNING
--	       "NOTE: The dv1394 driver is unsupported and may be removed in a "
--	       "future Linux release. Use raw1394 instead.\n");
--
- 	cdev_init(&dv1394_cdev, &dv1394_fops);
- 	dv1394_cdev.owner = THIS_MODULE;
- 	ret = cdev_add(&dv1394_cdev, IEEE1394_DV1394_DEV, 16);
-
+ #ifdef CONFIG_PPC_64K_PAGES
+ int mmu_ci_restrictions;
 -- 
-Stefan Richter
--=====-==--= --=- ---==
-http://arcgraph.de/sr/
+1.6.1
 
