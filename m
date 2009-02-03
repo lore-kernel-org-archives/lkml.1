@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZBCI2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbZBCIhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752704AbZBCI2y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 03:28:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750963AbZBCI2r
+	id S1752317AbZBCIhB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 03:37:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbZBCIgw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 03:28:47 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:59266 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750857AbZBCI2q (ORCPT
+	Tue, 3 Feb 2009 03:36:52 -0500
+Received: from smtp.nokia.com ([192.100.105.134]:61786 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750845AbZBCIgw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 03:28:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Pin1T0SV4wjmpWbt1x8jjWD3Rn7o7qw+elPJ/WELNJxXZqmbf4xI+camwCL65XnKzK
-         fEj7F8/WJDa+vcDuqB8nHupXA8oFXHdW2Auf/kiCnPwAt8QIevIz4YJ7IV6yoIA2zTEn
-         +Ww18jcdTr7V3IRT8Zju9Psgl0dj3le5dEfew=
-MIME-Version: 1.0
-Date: Tue, 3 Feb 2009 10:28:44 +0200
-Message-ID: <ab4346860902030028p5798d4afi8aec5c2fd5fc83e0@mail.gmail.com>
-Subject: [kernel make system] adding pre-check scripts
-From: Victoria Muntean <vikimun@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 03:36:52 -0500
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org,
+       Adrian Hunter <ext-adrian.hunter@nokia.com>
+Date: Tue, 03 Feb 2009 12:33:54 +0200
+Message-Id: <20090203103354.13185.12343.sendpatchset@localhost.localdomain>
+Subject: [GIT PULL] UBIFS changes for 2.6.29-rc4
+X-OriginalArrivalTime: 03 Feb 2009 08:35:23.0886 (UTC) FILETIME=[5B5B88E0:01C985DA]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is there provision in kernel makefiles to execute user-supplied
-pre/post add-on scripts ? (by following some convention)
+Hi Linus,
 
-I have script pre-checks.sh, it checks that .config defines certain parameters
-certain way. This is to prevent [build with] accidental redefine of
-certain important parameters.
+please pull UBIFS fixes and clean-ups from
 
-One possibility is to
-               ./my-pre-checks.sh && make
-But this is not perfect.
-It leaves of pre-checks optional easy to forget to run before build.
-Is it possible to make "make" execute my pre-script before build.
+git://git.infradead.org/ubifs-2.6.git linux-next
 
-Thanks
-V.M.
+The following changes since commit 1de9e8e70f5acc441550ca75433563d91b269bbe:
+  Linus Torvalds (1):
+        Linux 2.6.29-rc2
+
+Adrian Hunter (5):
+      UBIFS: ensure orphan area head is initialized
+      UBIFS: fix LPT out-of-space bug (again)
+      UBIFS: sync wbufs after syncing inodes and pages
+      UBIFS: spelling fix 'date' -> 'data'
+      UBIFS: remount ro fixes
+
+Artem Bityutskiy (12):
+      UBIFS: do not commit twice
+      UBIFS: constify operations
+      UBIFS: do not treat all data as short term
+      UBIFS: document dark_wm and dead_wm better
+      UBIFS: simplify locking
+      UBIFS: fix LEB list freeing
+      UBIFS: add re-mount debugging checks
+      UBIFS: always clean up GC LEB space
+      UBIFS: fix assertions
+      UBIFS: fix no_chk_data_crc
+      UBIFS: return sensible error codes
+      UBIFS: remove fast unmounting
+
+ Documentation/filesystems/ubifs.txt |    7 --
+ fs/ubifs/budget.c                   |   35 +++++--
+ fs/ubifs/debug.c                    |  122 ++++++++++++++++------
+ fs/ubifs/debug.h                    |   36 ++++---
+ fs/ubifs/dir.c                      |   96 +++++++----------
+ fs/ubifs/file.c                     |    9 +-
+ fs/ubifs/gc.c                       |   28 +++++-
+ fs/ubifs/io.c                       |   22 +++--
+ fs/ubifs/journal.c                  |    2 +-
+ fs/ubifs/lprops.c                   |   12 ++-
+ fs/ubifs/lpt_commit.c               |   44 ++++++--
+ fs/ubifs/master.c                   |    2 +-
+ fs/ubifs/orphan.c                   |   38 ++++----
+ fs/ubifs/super.c                    |  195 +++++++++++++++++------------------
+ fs/ubifs/tnc.c                      |   12 ++-
+ fs/ubifs/ubifs.h                    |   26 +++---
+ 16 files changed, 393 insertions(+), 293 deletions(-)
+
+Thanks,
+Artem.
