@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZBCXMi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZBCXOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753225AbZBCXMi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 18:12:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZBCXMa
+	id S1753792AbZBCXOV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 18:14:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZBCXOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 18:12:30 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:37308 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbZBCXM3 (ORCPT
+	Tue, 3 Feb 2009 18:14:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49767 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751961AbZBCXOC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 18:12:29 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 3 Feb 2009 15:12:27 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jonathan Corbet <corbet@lwn.net>, mpm@selenic.com, dada1@cosmosbay.com,
+	Tue, 3 Feb 2009 18:14:02 -0500
+Date: Tue, 3 Feb 2009 15:13:09 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       andi@firstfloor.org, oleg@redhat.com, viro@ZenIV.linux.org.uk,
-       David Miller <davem@davemloft.net>, hch@lst.de,
-       linux-api@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-In-Reply-To: <alpine.DEB.1.10.0902031508280.23050@alien.or.mcafeemobile.com>
-Message-ID: <alpine.DEB.1.10.0902031511200.23050@alien.or.mcafeemobile.com>
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net> <1233598811-6871-3-git-send-email-corbet@lwn.net> <20090203133942.2ecec281.akpm@linux-foundation.org> <4988BD4E.8080206@cosmosbay.com> <20090203140543.6e915f97.akpm@linux-foundation.org>
- <1233699722.3243.127.camel@calx> <20090203153740.363d0a04@bike.lwn.net> <20090203145346.8df40277.akpm@linux-foundation.org> <alpine.DEB.1.10.0902031508280.23050@alien.or.mcafeemobile.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <200902032309.01983.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0902031504420.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain> <20090202234923.GA7499@elte.hu> <200902032309.01983.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009, Davide Libenzi wrote:
 
-> On Tue, 3 Feb 2009, Andrew Morton wrote:
+
+On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
+> > 
+> >         struct irq_desc *desc;
+> >         int irq;
+> > 
+> >         for_each_irq_desc(i, desc) {
+> > 	...
+> > 	}
+> > 
+> > should do the trick.
 > 
-> > Well.  We _could_ whack part of this nut with my usual hammer: protect
-> > f_flags with file->f_dentry->d_inode->i_lock.  IIRC there was some
-> > objection to that - performance?
-> 
-> If you meant it for epoll, that uses a single shared inode, that'd turn to 
-> be a global lock.
+> So, what do I do in the loop to disable irqs for all devices on the IOAPIC
+> level.  Would disable_irq(irq) be sufficient?
 
-Course you couldn't have meant it for epoll, so forget about the comment :)
+Yes. It literally should be something as simple as
 
+	void disable_device_irqs(void)
+	{
+		struct irq_desc *desc;
+		int i;
 
-- Davide
+		for_each_irq_desc(i, desc)
+			disable_irq(i);
+	}
 
+	void enable_device_irqs(void)
+	{
+		struct irq_desc *desc;
+		int i;
 
+		for_each_irq_desc(i, desc)
+			enable_irq(i);
+	}
+
+although we might do something smarter eventually (ie start adding tests 
+for specific flags etc - at that point we'll also need to mark which 
+interrupts we've disabled so that we get the disable/enable nesting 
+right).
+
+And it probably makes sense to do this inside kernel/irq/manage.c or 
+similar, since any extensions are going to be very aware of irq internals. 
+For example, the thing might well end up taking the desc->lock and peek 
+inside the descriptor to see if it's really a "device" interrupt or a 
+"system" interrupt etc.
+
+		Linus
