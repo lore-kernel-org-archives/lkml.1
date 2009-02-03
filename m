@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbZBCGBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752920AbZBCGEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752791AbZBCGBb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 01:01:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZBCGBW
+	id S1752920AbZBCGEl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 01:04:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZBCGEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 01:01:22 -0500
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:45683 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbZBCGBW (ORCPT
+	Tue, 3 Feb 2009 01:04:32 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:40939 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbZBCGEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 01:01:22 -0500
-Date: Tue, 3 Feb 2009 14:55:04 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>,
+	Tue, 3 Feb 2009 01:04:32 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
+	b=LpaJvUcz2qWeN224vuF/+o2bTHYyKKm8ITuIn58Be1HBkRkhJUh6BstUioS4mXJOB
+	L9JtU4Z4T69iDDp98gRTg==
+Date: Mon, 2 Feb 2009 22:04:05 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
        KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
 Subject: Re: [-mm patch] Show memcg information during OOM
-Message-Id: <20090203145504.0ffef746.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090203124436.bc0120ca.nishimura@mxp.nes.nec.co.jp>
-References: <20090202125240.GA918@balbir.in.ibm.com>
-	<20090202134505.GA4848@cmpxchg.org>
-	<20090203124436.bc0120ca.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090203145504.0ffef746.nishimura@mxp.nes.nec.co.jp>
+Message-ID: <alpine.DEB.2.00.0902022203400.31820@chino.kir.corp.google.com>
+References: <20090202125240.GA918@balbir.in.ibm.com> <20090202134505.GA4848@cmpxchg.org> <20090203124436.bc0120ca.nishimura@mxp.nes.nec.co.jp> <20090203145504.0ffef746.nishimura@mxp.nes.nec.co.jp>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-GMailtapped-By: 172.28.16.146
+X-GMailtapped: rientjes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> > > index d3b9bac..b8e53ae 100644
-> > > --- a/mm/oom_kill.c
-> > > +++ b/mm/oom_kill.c
-> > > @@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
-> > >  			current->comm, gfp_mask, order, current->oomkilladj);
-> > >  		task_lock(current);
-> > >  		cpuset_print_task_mems_allowed(current);
-> > > +		mem_cgroup_print_mem_info(mem);
-> > 
-> > mem is only !NULL when we come from mem_cgroup_out_of_memory().  This
-> > crashes otherwise in mem_cgroup_print_mem_info(), no?
-> > 
-> I think you're right.
-> 
-> IMHO, "mem_cgroup_print_mem_info(current)" would be better here,
-> and call mem_cgroup_from_task at mem_cgroup_print_mem_info.
-> 
-Reading other messages on this thread, mem_cgroup_print_mem_info
-should be called only when oom_kill_process is called from mem_cgroup_out_of_memory,
-so checking "if (!mem)" would be enough.
+On Tue, 3 Feb 2009, Daisuke Nishimura wrote:
 
+> > > > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> > > > index d3b9bac..b8e53ae 100644
+> > > > --- a/mm/oom_kill.c
+> > > > +++ b/mm/oom_kill.c
+> > > > @@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+> > > >  			current->comm, gfp_mask, order, current->oomkilladj);
+> > > >  		task_lock(current);
+> > > >  		cpuset_print_task_mems_allowed(current);
+> > > > +		mem_cgroup_print_mem_info(mem);
+> > > 
+> > > mem is only !NULL when we come from mem_cgroup_out_of_memory().  This
+> > > crashes otherwise in mem_cgroup_print_mem_info(), no?
+> > > 
+> > I think you're right.
+> > 
+> > IMHO, "mem_cgroup_print_mem_info(current)" would be better here,
+> > and call mem_cgroup_from_task at mem_cgroup_print_mem_info.
+> > 
+> Reading other messages on this thread, mem_cgroup_print_mem_info
+> should be called only when oom_kill_process is called from mem_cgroup_out_of_memory,
+> so checking "if (!mem)" would be enough.
+> 
 
-Thanks,
-Daisuke Nishimura.
+You're right, but it's understandable why there would be confusion since 
+it's very poorly documented.
