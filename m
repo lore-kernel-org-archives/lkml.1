@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZBCBeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbZBCBef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbZBCBeU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:34:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZBCBeJ
+	id S1757455AbZBCBef (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:34:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753300AbZBCBeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:34:09 -0500
-Received: from smtp115.mail.mud.yahoo.com ([209.191.84.164]:23274 "HELO
-	smtp115.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751283AbZBCBeI (ORCPT
+	Mon, 2 Feb 2009 20:34:15 -0500
+Received: from mga10.intel.com ([192.55.52.92]:7941 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753152AbZBCBeP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:34:08 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=A4H2zRNilonmqnmfekzB34pdMWWbCqtf+pMdiTymriHChCnasO1bZxpGJ0gHaAqr61O7qjamk3pAq2oJg6YWOKQOFKZfykxaRx/Dov4BaS+uA3PDJuizHcXF0aWB2s8Fzj3x7zxlPaP0bKiz91u8YWUszvjVFNG/Rhbsw8rStXc=  ;
-X-YMail-OSG: uHtrcJkVM1nJdhKc7Lh_HmGkSfpuO9JoWPgoHEURkmsW6WWt1VgAt76HhVPLaF97Td70wapPUr6ZoheT7IS5tWxK7IBaBbdwg6O07aaqBPxvaZI0pXr3_qdKcIa4BxsoMs7J7KNktPE0QBsRolzdlzZNclkTlAM5oSwejUGsUb331j6pRnYLXczVj5LUSg--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
+	Mon, 2 Feb 2009 20:34:15 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,368,1231142400"; 
+   d="scan'208";a="662184132"
+Subject: Re: [patch] SLQB slab allocator
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH] SLUB: revert direct page allocator pass through
-Date: Tue, 3 Feb 2009 12:33:39 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, yanmin_zhang@linux.intel.com,
-       Andi Kleen <andi@firstfloor.org>, Matthew Wilcox <matthew@wil.cx>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <Pine.LNX.4.64.0901231041210.8574@melkki.cs.Helsinki.FI> <200901240317.26227.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0901261206500.32192@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0901261206500.32192@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Hugh Dickins <hugh@veritas.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>
+In-Reply-To: <alpine.DEB.1.10.0902020955490.1549@qirst.com>
+References: <20090121143008.GV24891@wotan.suse.de>
+	 <Pine.LNX.4.64.0901211705570.7020@blonde.anvils>
+	 <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com>
+	 <Pine.LNX.4.64.0901221239260.21677@blonde.anvils>
+	 <Pine.LNX.4.64.0901231357250.9011@blonde.anvils>
+	 <1233545923.2604.60.camel@ymzhang>
+	 <1233565214.17835.13.camel@penberg-laptop>
+	 <alpine.DEB.1.10.0902020955490.1549@qirst.com>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 09:34:04 +0800
+Message-Id: <1233624844.2604.106.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902031233.40987.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009 04:17:28 Christoph Lameter wrote:
-> On Sat, 24 Jan 2009, Nick Piggin wrote:
+On Mon, 2009-02-02 at 10:00 -0500, Christoph Lameter wrote:
+> On Mon, 2 Feb 2009, Pekka Enberg wrote:
+> 
+> > Hi Yanmin,
+> >
+> > On Mon, 2009-02-02 at 11:38 +0800, Zhang, Yanmin wrote:
+> > > Can we add a checking about free memory page number/percentage in function
+> > > allocate_slab that we can bypass the first try of alloc_pages when memory
+> > > is hungry?
+> >
+> > If the check isn't too expensive, I don't any reason not to. How would
+> > you go about checking how much free pages there are, though? Is there
+> > something in the page allocator that we can use for this?
+> 
+> If the free memory is low then reclaim needs to be run to increase the
+> free memory.
+I think reclaim did start often with Hugh's case. There would be no swap if not.
 
-> > Other ones which could be changed but could introduce regressions are
-> > watermarks, buddy merging, and struct page error checking and setup.
->
-> Isnt it possible to defer that (queuing them (sigh)).
+>  Falling back immediately incurs the overhead of going through
+> the order 0 queues.
+The falling back is temporal. Later on when there is enough free pages available,
+new slab allocations go back to higher order automatically. This is to save the first
+high-order allocation try because it often fails if memory is hungry.
 
-If you defer it then you lose merge opportunities and effectively increase
-the rate of fragmentation.
-
-
-> A bitmap could be
-> used to avoid queuing and may even allow fully concurrent allocations
-> without locks. Use a counter to check watermarks once in a while.
-
-Bitmap? Involving locks or atomic operations, right?
-
-
-> > (I did make that patch to enable refcounting to be avoided FWIW, which
-> > avoids a couple of atomic operations, but I don't think it brought
-> > performance up too much, but I still intend to dust it off at some
-> > point).
->
-> Well if the page stays with a refcount of one then we do not need to check
-> the refcount at all but just push it in an out of some queue / bitmap or
-> something.
-
-I sent you the patch but I don't think you ever came back with numbers.
-It's trivial, you just can avoid the put_page_testzero if the caller does
-not need refcounting and the refcount remains at 0 (has to remain 0, not
-1, because of speculative page references).
-
-The page refcounting layer lives on top of the buddy/queueing/etc layers,
-so the same technique works no matter what the underlying allocator looks
-like.
-
-The only reason I didn't merge it is that it added another branch. I wanted
-to rework the APIs a little bit to avoid it.
 
