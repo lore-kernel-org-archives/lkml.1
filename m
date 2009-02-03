@@ -1,93 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbZBCSIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754523AbZBCSOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbZBCSIF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 13:08:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZBCSHw
+	id S1754523AbZBCSOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 13:14:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZBCSOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 13:07:52 -0500
-Received: from kroah.org ([198.145.64.141]:52416 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752133AbZBCSHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 13:07:52 -0500
-Date: Tue, 3 Feb 2009 09:37:01 -0800
-From: Greg KH <greg@kroah.com>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: =?iso-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: Stack trace with kernel 2.6.29-rc2
-Message-ID: <20090203173701.GA30687@kroah.com>
-References: <20090202192823.GA3181@ime.usp.br> <alpine.LRH.1.10.0902031345410.22097@twin.jikos.cz>
+	Tue, 3 Feb 2009 13:14:37 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41988 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbZBCSOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 13:14:36 -0500
+Date: Tue, 3 Feb 2009 19:14:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] xen: fix 32-bit build resulting from mmu move
+Message-ID: <20090203181425.GA4884@elte.hu>
+References: <49876C6E.3010809@goop.org> <20090203122112.GD19979@elte.hu> <49887B79.4040708@goop.org> <20090203173612.GA3528@elte.hu> <49888787.30803@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LRH.1.10.0902031345410.22097@twin.jikos.cz>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <49888787.30803@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 01:46:06PM +0100, Jiri Kosina wrote:
-> 
-> [ added linux-usb to CC ]
-> 
-> On Mon, 2 Feb 2009, Rogério Brito wrote:
-> 
-> > Dear people,
-> > 
-> > I have compiled a kernel 2.6.29-rc2 here and my girlfriend's cell phone
-> > had a photo that she wanted me to retouch with GIMP.
-> > 
-> > Upon plugging the phone (a Sony-Ericsson W580i), I got the following
-> > stack trace:
-> > 
-> > - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> > [   43.301629] [drm] Initialized i915 1.6.0 20080730 on minor 0
-> > [   70.296125] hfs: Filesystem was not cleanly unmounted, running fsck.hfsplus is recommended.  mounting read-only.
-> > [47560.223207] RPC: Registered udp transport module.
-> > [47560.223213] RPC: Registered tcp transport module.
-> > [64006.505015] usb 4-1: new full speed USB device using uhci_hcd and address 2
-> > [64006.683960] usb 4-1: New USB device found, idVendor=0fce, idProduct=d089
-> > [64006.683968] usb 4-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-> > [64006.683972] usb 4-1: Product: Sony Ericsson W580
-> > [64006.683975] usb 4-1: Manufacturer: Sony Ericsson
-> > [64006.683977] usb 4-1: SerialNumber: 3538320239844940
-> > [64006.684265] usb 4-1: configuration #3 chosen from 1 choice
-> > [64017.954045] usb 4-1: USB disconnect, address 2
-> > [64019.944014] usb 4-1: new full speed USB device using uhci_hcd and address 3
-> > [64020.104164] usb 4-1: New USB device found, idVendor=0fce, idProduct=e089
-> > [64020.104170] usb 4-1: New USB device strings: Mfr=1, Product=2, SerialNumber=3
-> > [64020.104174] usb 4-1: Product: Memory Stick
-> > [64020.104177] usb 4-1: Manufacturer: Sony Ericsson
-> > [64020.104180] usb 4-1: SerialNumber: 3538320239844940
-> > [64020.104854] usb 4-1: configuration #2 chosen from 1 choice
-> > [64020.194618] SCSI subsystem initialized
-> > [64020.206166] Initializing USB Mass Storage driver...
-> > [64020.206805] scsi0 : SCSI emulation for USB Mass Storage devices
-> > [64020.210153] usb-storage: device found at 3
-> > [64020.210157] usb-storage: waiting for device to settle before scanning
-> > [64020.210182] usbcore: registered new interface driver usb-storage
-> > [64020.210189] USB Mass Storage support registered.
-> > [64025.211305] usb-storage: device scan complete
-> > [64025.214298] scsi 0:0:0:0: Direct-Access     Sony Eri Memory Stick     0000 PQ: 0 ANSI: 0
-> > [64025.300302] Driver 'sd' needs updating - please use bus_type methods
-> > [64025.306246] sd 0:0:0:0: [sda] 958999 512-byte hardware sectors: (491 MB/468 MiB)
-> > [64025.313247] sd 0:0:0:0: [sda] Test WP failed, assume Write Enabled
-> > [64025.313253] sd 0:0:0:0: [sda] Assuming drive cache: write through
-> > [64025.322240] sd 0:0:0:0: [sda] 958999 512-byte hardware sectors: (491 MB/468 MiB)
-> > [64025.329243] sd 0:0:0:0: [sda] Test WP failed, assume Write Enabled
-> > [64025.329249] sd 0:0:0:0: [sda] Assuming drive cache: write through
-> > [64025.329254]  sda: sda1
-> > [64025.338262] sda: p1 size 958999 limited to end of disk
-> > [64025.341192] sd 0:0:0:0: [sda] Attached SCSI removable disk
-> > [64025.510204] ------------[ cut here ]------------
-> > [64025.510211] WARNING: at drivers/usb/storage/transport.c:584 last_sector_hacks+0xfd/0x155 [usb_storage]()
-> > [64025.510214] Hardware name:  
 
-I think this message happened when it was plugged in, not removed.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-It's a known issue and will be addressed in the next -rc.
+> Ingo Molnar wrote:
+>> i have a lot of successful builds with that pattern, that's why i asked 
+>> for a specific config from you that definitely triggers it - i'd like 
+>> to investigate how it escaped my testing procedures.
+>>   
+>
+> Hm, I don't see how you could be; the functions are just outright  
+> missing.  Without the patch, the attached config fails with:
+>
+> $ make 'ARCH=i386' arch/x86/xen/mmu.o
+> [...]
+>  CC      arch/x86/xen/mmu.o
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1810: error: 'xen_kmap_atomic_pte' undeclared here (not in a function)
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1816: error: 'xen_set_pte_init' undeclared here (not in a function)
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1824: error: initializer element is not constant
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1824: error: (near initialization for 'xen_mmu_ops.pte_val')
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1825: error: initializer element is not constant
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1825: error: (near initialization for 'xen_mmu_ops.pgd_val')
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1827: error: initializer element is not constant
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1827: error: (near initialization for 'xen_mmu_ops.make_pte')
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1828: error: initializer element is not constant
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1828: error: (near initialization for 'xen_mmu_ops.make_pgd')
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1838: error: initializer element is not constant
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1838: error: (near initialization for 'xen_mmu_ops.make_pmd')
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1839: error: initializer element is not constant
+> /home/jeremy/hg/xen/paravirt/linux/arch/x86/xen/mmu.c:1839: error: (near initialization for 'xen_mmu_ops.pmd_val')
+> make[3]: *** [arch/x86/xen/mmu.o] Error 1
+> make[2]: *** [arch/x86/xen/mmu.o] Error 2
+> make[1]: *** [sub-make] Error 2
+> make: *** [all] Error 2
+>
 
-thanks,
+hm, it triggers here too. Maybe the count of 32-bit tests wasnt high enough 
+yet to hit this.
 
-greg k-h
+	Ingo
