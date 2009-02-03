@@ -1,63 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753732AbZBCErk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753363AbZBCEzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753732AbZBCErk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 23:47:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751347AbZBCErc
+	id S1753363AbZBCEzl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 23:55:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZBCEzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 23:47:32 -0500
-Received: from smtp-out.google.com ([216.239.33.17]:37404 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbZBCErb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 23:47:31 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-gmailtapped-by:x-gmailtapped;
-	b=vE+Eitcvu9tX08crkVkS5zHN5HP1f9fKzC20NwpE/THlFwb7Yr0lTDFYazEU7n9S/
-	dI1THcXHYjus19IpUATIQ==
-Date: Mon, 2 Feb 2009 20:47:05 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-cc: Li Zefan <lizf@cn.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+	Mon, 2 Feb 2009 23:55:33 -0500
+Received: from mail.gmx.net ([213.165.64.20]:39387 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751198AbZBCEzc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 23:55:32 -0500
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+7nXELiXS7FWKHSy4OmBAHCzqGo/UTP34NEJ8uXc
+	lmeTTRlBR8yeVz
+Subject: Re: [Bugme-new] [Bug 12562] New: High overhead while switching or 
+	synchronizing threads on different cores
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: mtk.manpages@gmail.com, Thomas Pilarski <thomas.pi@arcor.de>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM
-In-Reply-To: <20090203044143.GM918@balbir.in.ibm.com>
-Message-ID: <alpine.DEB.2.00.0902022045170.27139@chino.kir.corp.google.com>
-References: <20090202125240.GA918@balbir.in.ibm.com> <20090202140849.GB918@balbir.in.ibm.com> <49879DE5.8030505@cn.fujitsu.com> <20090203044143.GM918@balbir.in.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-GMailtapped-By: 172.28.16.144
-X-GMailtapped: rientjes
+       Gregory Haskins <ghaskins@novell.com>, bugme-daemon@bugzilla.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1233599714.4787.221.camel@laptop>
+References: <bug-12562-10286@http.bugzilla.kernel.org/>
+	 <1233229028.4495.34.camel@laptop> <1233237934.11129.183.camel@bugs-laptop>
+	 <1233302270.6061.9.camel@marge.simson.net>
+	 <1233560635.4126.18.camel@localhost.localdomain>
+	 <1233562763.4787.71.camel@laptop>
+	 <1233563600.3669.36.camel@localhost.localdomain>
+	 <1233564731.21378.9.camel@marge.simson.net>
+	 <1233564920.4787.108.camel@laptop> <1233576952.4787.152.camel@laptop>
+	 <cfd18e0f0902021029q6ccc5bd1q291582525ca54a2b@mail.gmail.com>
+	 <1233599714.4787.221.camel@laptop>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 05:55:28 +0100
+Message-Id: <1233636928.17734.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009, Balbir Singh wrote:
+This bug is now dead... so who closes it?
 
-> > > diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> > > index d3b9bac..b8e53ae 100644
-> > > --- a/mm/oom_kill.c
-> > > +++ b/mm/oom_kill.c
-> > > @@ -392,6 +392,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
-> > >  			current->comm, gfp_mask, order, current->oomkilladj);
-> > >  		task_lock(current);
-> > >  		cpuset_print_task_mems_allowed(current);
-> > > +		mem_cgroup_print_mem_info(mem);
-> > 
-> > I think this can be put outside the task lock. The lock is used to call task_cs() safely in
-> > cpuset_print_task_mems_allowed().
-> >
-> 
-> Thanks, I'll work on that in the next version.
->  
+	-Mike
 
-I was also wondering about this and assumed that it was necessary to 
-prevent the cgroup from disappearing during the oom.  If task_lock() isn't 
-held, is the memcg->css.cgroup->dentry->d_name.name dereference always 
-safe without rcu?
