@@ -1,34 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbZBCHA2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753501AbZBCHEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753731AbZBCHA2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 02:00:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZBCHAP
+	id S1753501AbZBCHEZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 02:04:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZBCHEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 02:00:15 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48767 "EHLO
+	Tue, 3 Feb 2009 02:04:16 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42795 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752084AbZBCHAO (ORCPT
+	by vger.kernel.org with ESMTP id S1751726AbZBCHEP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 02:00:14 -0500
-Date: Mon, 2 Feb 2009 22:59:29 -0800
+	Tue, 3 Feb 2009 02:04:15 -0500
+Date: Mon, 2 Feb 2009 23:03:35 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Max Weninger <max.weninger@gmail.com>
-Cc: linux-kernel@vger.kernel.org,
-       Niels de Vos <niels.devos@wincor-nixdorf.com>,
-       linux-usb@vger.kernel.org, Daniel Ritz <daniel.ritz@gmx.ch>
-Subject: Re: SOLVED support of touchscreen reported as eGalax but is not
- working
-Message-Id: <20090202225929.e10dc57b.akpm@linux-foundation.org>
-In-Reply-To: <20090131230901.13e2058e@vostro.foo.com>
-References: <20090125234902.7605fd16@zork.foo.com>
-	<497D9469.3030908@wincor-nixdorf.com>
-	<20090126124941.4f67aaf5@shire2>
-	<497DA8E3.5070006@wincor-nixdorf.com>
-	<20090127013806.5e31199f@zork.foo.com>
-	<20090127014822.780ecb90@zork.foo.com>
-	<20090127020529.4070840b@zork.foo.com>
-	<20090130151836.891f3204.akpm@linux-foundation.org>
-	<20090131230901.13e2058e@vostro.foo.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: dmitry.torokhov@gmail.com, dtor@mail.ru, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, linux-input@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [PATCH] psmouse: run kpsmoused only while needed
+Message-Id: <20090202230335.9e31c97f.akpm@linux-foundation.org>
+In-Reply-To: <20090128230837.GA7631@nowhere>
+References: <496fd1d3.0d135e0a.171b.43ea@mx.google.com>
+	<20090126143210.ce6a4503.akpm@linux-foundation.org>
+	<20090128230837.GA7631@nowhere>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -37,81 +30,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 31 Jan 2009 23:09:01 +0100 Max Weninger <max.weninger@gmail.com> wrote:
+On Thu, 29 Jan 2009 00:08:39 +0100 Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Hi to all
-> 
-> On Fri, 30 Jan 2009 15:18:36 -0800
-> Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > (cc restored - please jsut do reply-to-all, always)
+> > > @@ -1131,7 +1155,13 @@ static void psmouse_disconnect(struct serio *serio)
+> > >  
+> > >  	/* make sure we don't have a resync in progress */
+> > >  	mutex_unlock(&psmouse_mutex);
+> > > -	flush_workqueue(kpsmoused_wq);
+> > > +
+> > > +	prepare_to_wait(&psmouse->recync_pending_queue, &wait,
+> > > +				TASK_UNINTERRUPTIBLE);
+> > > +	if (atomic_read(&psmouse->nb_recync_pending))
+> > > +		schedule();
+> > > +	finish_wait(&psmouse->recync_pending_queue, &wait);
 > > 
-> > On Tue, 27 Jan 2009 02:05:29 +0100
-> > Max Weninger <max.weninger@gmail.com> wrote:
+> > So... we're requiring that nb_recync_pending is zero at this stage?
 > > 
-> > > Hi again
-> > > 
-> > > On Tue, 27 Jan 2009 01:48:22 +0100
-> > > Max Weninger <max.weninger@gmail.com> wrote:
-> > > 
-> > > > On Tue, 27 Jan 2009 01:38:06 +0100
-> > > > Max Weninger <max.weninger@gmail.com> wrote:
-> > > > 
-> > > > > Hi
-> > > > > 
-> > > > > On Mon, 26 Jan 2009 13:13:23 +0100
-> > > > > Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
-> > > > > 
-> > > > > > Max Weninger wrote:
-> > > > > > > Niels de Vos <niels.devos@wincor-nixdorf.com> wrote:
-> > > > > > >> You can obviously download the drivers from
-> > > > > > >> <http://home.eeti.com.tw/web20/TouchKitDriver/linuxDriver.htm>.
-> > > > > > >>
-> > > > > > >> It would be great if eGalax could be convinced to get these
-> > > > > > >> drivers included in main-line ;)
-> > > > > > > 
-> > > > > > > Thanks for your quick reply
-> > > > > > > BUT: I have tried those driver also
-> > > > > > > 
-> > > > > > > I tried this "brandnew" one (but also older ones)
-> > > > > > > http://home.eeti.com.tw/web20/drivers/touch_driver/Linux/2.06.2416/TouchKit-2.06.2410-32b-k26.tar.gz
-> > > > > > > after making it compile for 2.6.28.2 :)
-> > > > > > > since there is source code delivered
-> > > > > > 
-> > > > > > For what it's worth; the version we use from eGalax is
-> > > > > > 1.0.3.1701. I don't have the hardware here atm, so I can't
-> > > > > > test an other driver now.
-> > > > > 
-> > > > > I tried kernel 2.6.23.17 and there the touchscreen is recognized
-> > > > > using the builtin usbtouchscreen driver
-> > > > 
-> > > > It also works with 2.6.26.8
-> > > 
-> > > After comparing the usbtouchscreen.c sources between the different
-> > > versions I got it working by commenting the follwoing lines
-> > > 
-> > > ...
-> > > #ifdef CONFIG_TOUCHSCREEN_USB_EGALAX
-> > >         /* ignore the HID capable devices, handled by usbhid */
-> > >         {USB_DEVICE_HID_CLASS(0x0eef, 0x0001), .driver_info =
-> > > DEVTYPE_IGNORE}, {USB_DEVICE_HID_CLASS(0x0eef,
-> > > 0x0002), .driver_info = DEVTYPE_IGNORE}, ...
-> > > 
-> > > Now the entry in /proc/bus/input/devices is created as in the
-> > > older versions.
-> > > 
-> > > So it seems that usbhid is not correctly handling my type
-> > > of touchscreen if I understand the comment there correctly
-> > > 
+> > I wonder if the code manages to do that.  A little WARN_ON(), maybe?
 > > 
-> > So... how do we fix this for real?
+> > >  	mutex_lock(&psmouse_mutex);
+> > >  
+> > 
 > 
-> Well I am really not an expert in kernel programming :-)
-> I found out that these lines where added based on this thread from 2008
+> After reading how work the async jobs (kernel/async.c), I think it would be better
+> to actually use it instead of creating a thread through a workqueue and wait for a
+> counter to be zero to be sure all is flushed.
 > 
-> http://kerneltrap.org/mailarchive/linux-kernel/2008/6/28/2286264/thread
+> The async functions provide local execution and synchronisation domains through special cookies,
+> which means long tasks of mouse resync will not starve other works.
 > 
-> So all I can do is to provide any help in testing if needed
-> 
+> What do you think about it?
 
-(optimistically cc'ing Daniel).
+Yes, it would be better to use the async infrastructure.
+
+If only to see how the code ends up looking - it _should_ be simpler/cleaner
+than the open-coded implementation.  If it isn't, we should ask the async code
+"why not?".
