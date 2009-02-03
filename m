@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZBCXav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZBCXk5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbZBCXav (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 18:30:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZBCXa1
+	id S1753863AbZBCXk5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 18:40:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZBCXks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 18:30:27 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:34217 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752691AbZBCXaZ (ORCPT
+	Tue, 3 Feb 2009 18:40:48 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:53695 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbZBCXkr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 18:30:25 -0500
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       linux-kernel@vger.kernel.org
-References: <20090203193904.GA23695@redhat.com>
-	<20090203194214.GA23703@redhat.com> <m1fxivw673.fsf@fess.ebiederm.org>
-	<20090203222803.GA31756@redhat.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 03 Feb 2009 15:30:43 -0800
-In-Reply-To: <20090203222803.GA31756@redhat.com> (Oleg Nesterov's message of "Tue\, 3 Feb 2009 23\:28\:03 +0100")
-Message-ID: <m1zlh3umho.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 3 Feb 2009 18:40:47 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=MgguqXE9HyOGtBQLjWxkD78UECUqkGnr5x0208GpR3xBUjsagat580Hpe8UfLPo/2
+	I89q9Xz7doDz3CeOC/h/g==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.180.49.163;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.180.49.163
-X-SA-Exim-Rcpt-To: oleg@redhat.com, linux-kernel@vger.kernel.org, srostedt@redhat.com, mingo@elte.hu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Oleg Nesterov <oleg@redhat.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] ftrace: do_each_pid_task() needs rcu lock
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+In-Reply-To: <20090204003847.308cd0df@sbs173>
+References: <20090202200013.GU3643@vespa.holoscopio.com>
+	 <20090202214153.GV3643@vespa.holoscopio.com>
+	 <20090203102416.GA8886@redhat.com> <87ljsnzo4v.fsf@benfinney.id.au>
+	 <1233671913.8902.53.camel@abacate.horta>
+	 <6599ad830902030855h1753f4a4o3a303b4dbddf10de@mail.gmail.com>
+	 <20090203184915.GA10004@glandium.org>
+	 <20090203185117.GB3359@mini-me.seanius.net>
+	 <6599ad830902031114t7de1b570p4ed5ec497e2e150e@mail.gmail.com>
+	 <20090204003847.308cd0df@sbs173>
+Date: Tue, 3 Feb 2009 15:40:39 -0800
+Message-ID: <6599ad830902031540ra4e00dejd844d584b0668a6e@mail.gmail.com>
+Subject: Re: cgroup mount point
+From: Paul Menage <menage@google.com>
+To: Harald Braumann <harry@unheit.net>
+Cc: sean finney <seanius@seanius.net>, Gustavo Noronha <kov@debian.org>,
+       debian-devel@lists.debian.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.25.146.35
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oleg Nesterov <oleg@redhat.com> writes:
-
-> On 02/03, Eric W. Biederman wrote:
->>
->> Oleg Nesterov <oleg@redhat.com> writes:
->>
->> > On 02/03, Oleg Nesterov wrote:
->> >>
->> >> "ftrace: use struct pid" commit 978f3a45d9499c7a447ca7615455cefb63d44165
->> >> converted ftrace_pid_trace to "struct pid*". But we can't use
->> >> do_each_pid_task() without rcu_read_lock() even if we know the pid
->> >> itself can't go away (it was pinned in ftrace_pid_write). The exiting
->> >> task can detach itself from this pid at any moment.
->> >
->> > Q: why do we use do_each_pid_task(PIDTYPE_PID) ? We can never have more
->> > than 1 task in the loop. Perhaps,
->>
->> That is a bug in do_each_pid_task(PIDTYPE_PID).
->> For ftrace we really want to grab all tasks with a given pid even
->> in the crazy exec case.
+On Tue, Feb 3, 2009 at 3:38 PM, Harald Braumann <harry@unheit.net> wrote:
 >
-> Yes, I thought about de_thread() too. But we can't "fix" do_each_pid_task()
-> to avoid the race?
+> So, what's the problem with /dev/cgroups then? If shm/ and pts/
+> are allowed under /dev, wouldn't it be discriminating against
+> cgroups/, to not allow it there?
 
-For the case of exec there is that.  There is also the case that
-ftrace unlike everything else wants to trace be able to trace all of
-the idle threads with pid 0.  I think that is a special case
-currently, but for that case the only correct version I can think
-of do_each_task_pid(), and current do_each_task_pid is wrong because
-it does not allow that.
+Right, that's what I proposed a couple of emails earlier in this thread.
 
-Eric
+Paul
