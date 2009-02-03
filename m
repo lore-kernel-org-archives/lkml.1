@@ -1,75 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZBCBXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZBCBY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZBCBXU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:23:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751908AbZBCBXL
+	id S1756031AbZBCBY7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:24:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752008AbZBCBYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:23:11 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48642 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751901AbZBCBXK (ORCPT
+	Mon, 2 Feb 2009 20:24:48 -0500
+Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:34267 "HELO
+	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751901AbZBCBYr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:23:10 -0500
-Date: Tue, 3 Feb 2009 10:21:57 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM
-Message-Id: <20090203102157.9f643965.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090202140849.GB918@balbir.in.ibm.com>
-References: <20090202125240.GA918@balbir.in.ibm.com>
-	<20090202140849.GB918@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 2 Feb 2009 20:24:47 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=3pN6vSIE1wL181u+y9NGPZ/g+EKC1WxrhJzGQeVHRWjx4P55kHgoJQttexOi9784WU3cqK4Tvha3NB3g851fUoAdkxpb+qmrM1oUl3XJYUTyk6FZ6UU3vh3Y6KtHHDNAZogFys81K6ENqfrAQX2l4KyoH5qk0vmw+WqdkdEWFLM=  ;
+X-YMail-OSG: Agq4IdkVM1nTdhe42xQ69cAstetHQb6IJQayS0ZjnLmRz_21eqZJpBul5ISVOj4H1mowtZm1zbC7fhnwcrzOy3Cl7oUIfhsvcbAkZOmjI1nBmeK7Zc_H8ryYIfD9eHwc_g.ATnsScdYl_dwpGWtNR7DqkoXW6ZRCiyjdMLAaAlgF0Fbd2XcC0FPAlQ3d5A--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: Commit 31a12666d8f0c22235297e1c1575f82061480029 slows down Berkeley DB
+Date: Tue, 3 Feb 2009 12:24:20 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, npiggin@suse.de
+References: <20090130012315.GB19554@duck.suse.cz>
+In-Reply-To: <20090130012315.GB19554@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902031224.20856.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Feb 2009 19:38:49 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+On Friday 30 January 2009 12:23:15 Jan Kara wrote:
+>   Hi,
+>
+>   today I found that commit 31a12666d8f0c22235297e1c1575f82061480029 (mm:
+> write_cache_pages cyclic fix) slows down operations over Berkeley DB.
+> Without this "fix", I can add 100k entries in about 5 minutes 30s, with
+> that change it takes about 20 minutes.
+>   What is IMO happening is that previously we scanned to the end of file,
+> we left writeback_index at the end of file and went to write next file.
+> With the fix, we wrap around (seek) and after writing some more we go
+> to next file (seek again).
 
-> * Balbir Singh <balbir@linux.vnet.ibm.com> [2009-02-02 18:22:40]:
-> 
-> > Hi, All,
-> > 
-> > I found the following patch useful while debugging the memory
-> > controller. It adds additional information if memcg invoked the OOM.
-> > 
-> > Comments, Suggestions?
-> >
-> 
-> 
-> Description: Add RSS and swap to OOM output from memcg
-> 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-
-> This patch displays memcg values like failcnt, usage and limit
-> when an OOM occurs due to memcg.
-> 
-
-please use "KB" not bytes in OOM killer information.
-
-And the most important information is dropped..
-Even if you show information, the most important information that
-"where I am and where we hit limit ?" is not coverred.
-Could you consider some way to show full-path ?
-
-  OOM-Killer:
-  Task in /memory/xxx/yyy/zzz is killed by
-  Limit of /memory/xxxx
-  RSS Limit :     Usage:     Failcnt....
-  RSS+SWAP Limit: ....
+Hmm, but isn't that what pdflush has asked for? It is wanting to flush
+some of the dirty data out of this file, and hence it wants to start
+from where it last flushed out and then cycle back and flush more?
 
 
+>   Anyway, I think the original semantics of "cyclic" makes more sence, just
+> the name was chosen poorly. What we should do is really scan to the end of
+> file, reset index to start from the beginning next time and go for the next
+> file.
 
-Thanks,
--Kame
+Well, if we think of a file as containing a set of dirty pages (as it
+appears to the high level mm), rather than a sequence, then behaviour
+of my patch is correct (ie. there should be no distinction between dirty
+pages at different offsets in the file).
+
+However, clearly there is some problem with that assumption if you're
+seeing a 4x slowdown :P I'd really like to know how it messes up the IO
+patterns. How many files in the BDB workload? Are filesystem blocks
+being allocated at the end of the file while writeout is happening?
+Delayed allocation?
+
+
+>   I can write a patch to introduce this semantics but I'd like to hear
+> opinions of other people before I do so.
+
+I like dirty page cleaning to be offset agnostic as far as possible,
+but I can't argue with numbers like that. Though maybe it would be
+possible to solve it some other way.
 
