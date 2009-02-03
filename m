@@ -1,35 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754766AbZBCPIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZBCPL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754766AbZBCPIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 10:08:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752092AbZBCPIW
+	id S1754692AbZBCPL6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 10:11:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbZBCPLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 10:08:22 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:54857 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891AbZBCPIW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 10:08:22 -0500
-Date: Tue, 3 Feb 2009 16:08:16 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Greg KH <greg@kroah.com>, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       mtk.manpages@gmail.com, linux-man@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: open(2) says O_DIRECT works on 512 byte boundries?
-Message-ID: <20090203150816.GB20323@random.random>
-References: <20090128213322.GA15789@kroah.com> <20090129141338.34e44a1f.kamezawa.hiroyu@jp.fujitsu.com> <20090129160826.701E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090130061714.GC31209@kroah.com> <20090202220856.GY20323@random.random> <20090203133811.47324d80.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 3 Feb 2009 10:11:48 -0500
+Received: from boogie.lpds.sztaki.hu ([193.224.70.237]:60409 "EHLO
+	boogie.lpds.sztaki.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752092AbZBCPLs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 10:11:48 -0500
+X-Greylist: delayed 510 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 10:11:48 EST
+Date: Tue, 3 Feb 2009 16:03:15 +0100
+From: Gabor Gombas <gombasg@sztaki.hu>
+To: "Daniel P. Berrange" <berrange@redhat.com>
+Cc: debian-devel@lists.debian.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: cgroup mount point
+Message-ID: <20090203150315.GI482@boogie.lpds.sztaki.hu>
+References: <20090202200013.GU3643@vespa.holoscopio.com> <1233606371.15779.32.camel@radis.liafa.jussieu.fr> <20090202205246.GA28593@glandium.org> <20090202214153.GV3643@vespa.holoscopio.com> <20090203102416.GA8886@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090203133811.47324d80.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090203102416.GA8886@redhat.com>
+X-Copyright: Forwarding or publishing without permission is prohibited.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 01:38:11PM +0900, KAMEZAWA Hiroyuki wrote:
-> From above, FOLL_WRITE can be dropped and PageGUP() will not be set ?
+On Tue, Feb 03, 2009 at 10:24:16AM +0000, Daniel P. Berrange wrote:
 
-Yeah, this was an implementation trouble!! If cow triggered, PG_gup
-wasn't getting set as it should have.
+> Putting new mount points in / is not really acceptable, so that rules
+> out the first two. /opt is just totally wrong, since that is intended
+> for add on software packages. /dev/ feels a little odd, since it is
+> not really device nodes, but perhaps that doesn't matter. So my pref
+> would be something in /dev/cgroups or /sys/cgroups
 
-The only remaining bit is to check hugetlb pages...
+How about /var/lib/cgroup? There's already precedent
+(/var/lib/nfs/rpc_pipefs) of mounting virtual file systems under
+/var/lib.
+
+Gabor
+
+-- 
+     ---------------------------------------------------------
+     MTA SZTAKI Computer and Automation Research Institute
+                Hungarian Academy of Sciences
+     ---------------------------------------------------------
