@@ -1,100 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753254AbZBCUp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbZBCUpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753254AbZBCUp2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 15:45:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZBCUpN
+	id S1754471AbZBCUpm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 15:45:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZBCUpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 15:45:13 -0500
-Received: from out01.mta.xmission.com ([166.70.13.231]:50165 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbZBCUpK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 15:45:10 -0500
-To: Simon Horman <horms@verge.net.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Eric Biederman <ebiederm@xmision.com>, kexec@lists.infradead.org,
-       linux-kernel@vger.kernel.org, hbabu@us.ibm.com,
-       Vivek Goyal <vgoyal@redhat.com>
-References: <20090119212127.GA13157@hmsreliant.think-freely.org>
-	<20090120141551.GA5125@redhat.com>
-	<20090120150958.GB18207@hmsreliant.think-freely.org>
-	<20090120152255.GB5125@redhat.com>
-	<20090127001211.f847ea5a.akpm@linux-foundation.org>
-	<20090128041109.GA4943@verge.net.au>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 03 Feb 2009 12:45:18 -0800
-In-Reply-To: <20090128041109.GA4943@verge.net.au> (Simon Horman's message of "Wed\, 28 Jan 2009 15\:11\:34 +1100")
-Message-ID: <m1ljsnz1up.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.180.49.163;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.180.49.163
-X-SA-Exim-Rcpt-To: horms@verge.net.au, vgoyal@redhat.com, hbabu@us.ibm.com, linux-kernel@vger.kernel.org, kexec@lists.infradead.org, ebiederm@xmision.com, nhorman@tuxdriver.com, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Simon Horman <horms@verge.net.au>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  1.0 XM_Sft_Co_L33T XM_Sft_Co_L33T
-	*  0.0 XM_Sft_Brands_C00 XM_Sft_Brands_C00
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH]: add dmesg log symbols to /proc/vmcoreinfo lists
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+	Tue, 3 Feb 2009 15:45:15 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:33494 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751840AbZBCUpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 15:45:11 -0500
+Subject: Re: [stable]  A patch in 2.6.27.9 caused device names to change
+From: Dan Williams <dcbw@redhat.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org, stable@kernel.org
+In-Reply-To: <20090203151433.4674d681@dhcp-100-2-144.bos.redhat.com>
+References: <20090202170238.348af36a@dhcp-100-2-144.bos.redhat.com>
+	 <20090203000529.GC9467@kroah.com>
+	 <1233672611.11344.6.camel@localhost.localdomain>
+	 <20090203151433.4674d681@dhcp-100-2-144.bos.redhat.com>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 15:43:42 -0500
+Message-Id: <1233693822.11344.220.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Simon Horman <horms@verge.net.au> writes:
+On Tue, 2009-02-03 at 15:14 -0500, Chuck Ebbert wrote:
+> On Tue, 03 Feb 2009 09:50:11 -0500
+> Dan Williams <dcbw@redhat.com> wrote:
+> 
+> > On Mon, 2009-02-02 at 16:05 -0800, Greg KH wrote:
+> > > On Mon, Feb 02, 2009 at 05:02:38PM -0500, Chuck Ebbert wrote:
+> > > > This patch:
+> > > > http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob_plain;f=releases/2.6.27.9/usb-option-add-pantech-cards.patch;hb=HEAD
+> > > > 
+> > > > replaced my wireless adapter's /dev/ttyACM0 interface with three interfaces:
+> > > > /dev/ttyUSB[012]
+> > > > 
+> > > > That broke my ppp connection scripts. And I have to use /dev/ttyUSB1 to connect,
+> > > > not USB0. Also it looks like Network Manager only knows how to use the first
+> > > > interface in its auto-connect mode, so people using that also lost their
+> > > > connections.
+> > > 
+> > > Ugh, that sucks.
+> > > 
+> > > That is what is also in upstream, so 2.6.29-rc also fails for you?
+> > >
+> 
+> I didn't try it, but it should. I don't have a problem with that, just with
+> changing the driver in a stable kernel update.
+>  
+> > > Dan, what's with replacing working devices with the cdc-acm driver with
+> > > option device ids?  Is there some reason you did this?
+> > 
+> > For a long time we've been operating under the assumption that mobile
+> > broadband devices should be driven by option and sierra, since those
+> > drivers had the necessary buffering optimizations to support
+> > higher-speed mobile broadband devices.  That was true at least up until
+> > 2.6.24.
+> > 
+> > Furthermore, up until this point, I have not seen mobile broadband
+> > adapters (that aren't cellphones connected via USB) that *are* CDC-ACM
+> > compliant.  Everything previously has advertised proprietary interfaces,
+> > some of which are serial ports and some of which are not.
+> > 
+> > Most mobile broadband cards *do* have more than one TTY, the others are
+> > used for additional control ports or proprietary access for stuff like
+> > GPS and flashing the firmware.
+> > 
+> > Can we get the 'lsusb -v' output for this card?  I'm quite curious how
+> > many endpoints and interfaces the device actually has.
+> > 
+> 
+> Bus 002 Device 005: ID 106c:3711 Curitel Communications, Inc. 
 
->> I also did all the below.  Please check it.  (Is anyone else reading all
->> this stuff??)
->
-> These look fine to me. Unfortunately they don't apply to the version
-> of Linus' tree that I have checked out and I'm away from net access
-> at this moment (though obviously not by the time this message reaches you).
-> I'll update my tree and check once I'm back online.
->
-> Eric Biederman usually watches kexec stuff. I'm pretty sure he
-> is on the kexec mailing list, but I've CCed him anyway.
+Excellent.  Thanks for the dump.  My original patch is in error, and the
+ID should indeed be handled by cdc-acm.  If we figure out what the
+additional interfaces are for, we can add matching to other drivers for
+them, or something like that.  Sound OK?  Sorry for the error on my end.
 
-Thanks.
+Dan
 
-The question at head seems to be does it make sense to always
-export log_buf and log_end in the VMCOREINFO section of the
-core file we generate.
+> Device Descriptor:
+>   bLength                18
+>   bDescriptorType         1
+>   bcdUSB               2.00
+>   bDeviceClass            2 Communications
+>   bDeviceSubClass         0 
+>   bDeviceProtocol         0 
+>   bMaxPacketSize0        64
+>   idVendor           0x106c Curitel Communications, Inc.
+>   idProduct          0x3711 
+>   bcdDevice            1.00
+>   iManufacturer           1 PANTECH
+>   iProduct                2 PANTECH USB MODEM
+>   iSerial                 0 
+>   bNumConfigurations      1
+>   Configuration Descriptor:
+>     bLength                 9
+>     bDescriptorType         2
+>     wTotalLength          113
+>     bNumInterfaces          4
+>     bConfigurationValue     1
+>     iConfiguration          0 
+>     bmAttributes         0x80
+>       (Bus Powered)
+>     MaxPower              500mA
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        0
+>       bAlternateSetting       0
+>       bNumEndpoints           1
+>       bInterfaceClass         2 Communications
+>       bInterfaceSubClass      2 Abstract (modem)
+>       bInterfaceProtocol      1 AT-commands (v.25ter)
+>       iInterface              0 
+>       CDC Header:
+>         bcdCDC               1.09
+>       CDC Call Management:
+>         bmCapabilities       0x03
+>           call management
+>           use DataInterface
+>         bDataInterface          1
+>       CDC ACM:
+>         bmCapabilities       0x0f
+>           connection notifications
+>           sends break
+>           line coding and serial state
+>           get/set/clear comm features
+>       CDC Union:
+>         bMasterInterface        0
+>         bSlaveInterface         1 
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x81  EP 1 IN
+>         bmAttributes            3
+>           Transfer Type            Interrupt
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0040  1x 64 bytes
+>         bInterval               9
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        1
+>       bAlternateSetting       0
+>       bNumEndpoints           2
+>       bInterfaceClass        10 CDC Data
+>       bInterfaceSubClass      0 Unused
+>       bInterfaceProtocol      0 
+>       iInterface              3 Data Interface
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x85  EP 5 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x03  EP 3 OUT
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        2
+>       bAlternateSetting       0
+>       bNumEndpoints           2
+>       bInterfaceClass       255 Vendor Specific Class
+>       bInterfaceSubClass      0 
+>       bInterfaceProtocol      0 
+>       iInterface              0 
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x89  EP 9 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x07  EP 7 OUT
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+>     Interface Descriptor:
+>       bLength                 9
+>       bDescriptorType         4
+>       bInterfaceNumber        3
+>       bAlternateSetting       0
+>       bNumEndpoints           2
+>       bInterfaceClass         8 Mass Storage
+>       bInterfaceSubClass      6 SCSI
+>       bInterfaceProtocol     80 Bulk (Zip)
+>       iInterface              0 
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x02  EP 2 OUT
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+>       Endpoint Descriptor:
+>         bLength                 7
+>         bDescriptorType         5
+>         bEndpointAddress     0x86  EP 6 IN
+>         bmAttributes            2
+>           Transfer Type            Bulk
+>           Synch Type               None
+>           Usage Type               Data
+>         wMaxPacketSize     0x0200  1x 512 bytes
+>         bInterval               0
+> Device Status:     0x0000
+>   (Bus Powered)
+> 
 
-The premise of VMCOREINFO is that it gives crash or other
-analysis tools enough information to pair a core dump with
-a vmlinux and decipher the page table layout.  In general
-things that are tricky to infer from just the core dump,
-and the vmlinux.
-
-Do log_buf and log_end fall in that category?
-
-They are certainly important enough and they are symbols that
-are tricky to find. That said I think we should also have 
-this information exported so that we can get at
-it with kgdb, jtag debuggers, and other weird debugging tools.
-Do we have that already?  It doesn't look like it.  That
-may be an argument for a different interface.
-
-That aside we aren't currently exporting log_buf_len, so I don't
-think this code works actually works.
-
-Neil can you add a comment in kernel/printk.c of the algorithm
-necessary for external tools to decode the ring buffer?
-
-We need the comment because people working on kernel/printk.c
-need to know what is happening and without having to review lots
-of user space code, and we need the comment to verify that we
-are exporting the right things.
-
-Eric
