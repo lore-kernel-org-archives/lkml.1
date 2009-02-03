@@ -1,77 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754679AbZBCM0z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZBCM2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754679AbZBCM0z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:26:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752325AbZBCM0r
+	id S1754553AbZBCM2H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:28:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZBCM1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:26:47 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:51453 "EHLO gir.skynet.ie"
+	Tue, 3 Feb 2009 07:27:51 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41919 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752131AbZBCM0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:26:46 -0500
-Date: Tue, 3 Feb 2009 12:26:44 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-Message-ID: <20090203122644.GN9840@csn.ul.ie>
-References: <20090123154653.GA14517@wotan.suse.de> <200902032250.55968.nickpiggin@yahoo.com.au> <20090203120139.GM9840@csn.ul.ie> <200902032307.09025.nickpiggin@yahoo.com.au>
+	id S1750997AbZBCM1u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:27:50 -0500
+Date: Tue, 3 Feb 2009 13:27:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>, Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: tglx@linutronix.de, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: x86's nmi_hz wrt. oprofile's nmi_timer_int.c
+Message-ID: <20090203122732.GF19979@elte.hu>
+References: <20090129.155852.161923905.davem@davemloft.net> <20090130150125.GF31009@elte.hu> <20090130.135409.180077287.davem@davemloft.net> <20090202.151439.124517945.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902032307.09025.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090202.151439.124517945.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 11:07:07PM +1100, Nick Piggin wrote:
-> On Tuesday 03 February 2009 23:01:39 Mel Gorman wrote:
-> > On Tue, Feb 03, 2009 at 10:50:54PM +1100, Nick Piggin wrote:
-> > > On Tuesday 03 February 2009 22:28:52 Mel Gorman wrote:
-> > > > On Tue, Feb 03, 2009 at 09:36:24PM +1100, Nick Piggin wrote:
-> > > > > I'd be interested to see how slub performs if booted with
-> > > > > slub_min_objects=1 (which should give similar order pages to SLAB and
-> > > > > SLQB).
-> > > >
-> > > > Just to clarify on this last point, do you mean slub_max_order=0 to
-> > > > force order-0 allocations in SLUB?
-> > >
-> > > Hmm... I think slub_min_objects=1 should also do basically the same.
-> > > Actually slub_min_object=1 and slub_max_order=1 should get closest I
-> > > think.
-> >
-> > I'm going with slub_min_objects=1 and slub_max_order=0. A quick glance
-> > of the source shows the calculation as
-> >
-> >         for (order = max(min_order,
-> >                                 fls(min_objects * size - 1) - PAGE_SHIFT);
-> >                         order <= max_order; order++) {
-> >
-> > so the max_order is inclusive not exclusive. This will force the order-0
-> > allocations I think you are looking for.
+
+* David Miller <davem@davemloft.net> wrote:
+
+> From: David Miller <davem@davemloft.net>
+> Date: Fri, 30 Jan 2009 13:54:09 -0800 (PST)
 > 
-> Well, but in the case of really bad internal fragmentation in the page,
-> SLAB will do order-1 allocations even if it doesn't strictly need to.
-> Probably this isn't a huge deal, but I think if we do slub_min_objects=1,
-> then SLUB won't care about number of objects per page, and slub_max_order=1
-> will mean it stops caring about fragmentation after order-1. I think. Which
-> would be pretty close to SLAB (depending on exactly how much fragmentation
-> it cares about).
+> > From: Ingo Molnar <mingo@elte.hu>
+> > Date: Fri, 30 Jan 2009 16:01:25 +0100
+> > 
+> > > 
+> > > * David Miller <davem@davemloft.net> wrote:
+> > > 
+> > > Reducing it to 1 HZ was kind of a performance hack: running NMIs at HZ 
+> > > needlessly interrupts the CPU HZ times a second. It's more than enough to 
+> > > have 1 nmi-watchdog tick per second to notice deadlocks that take longer 
+> > > than 5 seconds.
+> > 
+> > For the NMI watchdog's purposes I understand the intent, and this
+> > is perfectly fine.
+> > 
+> > The problem is that it stays at '1' when oprofile starts using the NMI
+> > watchdog, and we certainly want more than one oprofile tick per second
+> > :-)
 > 
+> Just making sure you understand the problem, here is the
+> sequence of events:
+> 
+> 1) At bootup, the NMI watchdog is tested.
+> 
+>    It is tested with nmi_hz=HZ
+> 
+> 2) If the test passes, nmi_hz is reduced down to '1'
+> 
+> As I stated, everything up to this point is fine.  Next:
+> 
+> 3) oprofile initializes and if we choose to use the NMI
+>    timer for oprofile profiling it is implemented using
+>    a simple DIE_NMI notifier.
+> 
+>    However, nmi_hz is still just '1' which means that oprofile
+>    will only receive one sample per-second.  And this is definitely
+>    not what we want.
+> 
+> Somehow the code in arch/x86/oprofile/nmi_timer_int.c needs to have an 
+> interface into the NMI watchdog core so that it can increase nmi_hz back 
+> up to "HZ" when the NMI timer profiling is enabled and back down to "1" 
+> when such profiling stops.
 
-Ok, very good point and I agree with your assessment. Tests are restarted with
-slub_min_objects=1 slab_max_order=1. The dmesg line related to SLUB looks like
+btw., these types of interactions will be solved in a natural way via 
+perfcounters: in that model the NMI watchdog is a set of per-CPU counters 
+running on each CPU [with a NMI watchdog callback in the IRQ handling 
+routine] - and oprofile uses its own perfcounter - what is left of the PMU 
+hardware.
 
-SLUB: Genslabs=13, HWalign=64, Order=0-1, MinObjects=1, CPUs=4, Nodes=1
+I.e. each PMU using facility can just use performance counters transparently 
+and interactions will be solved naturally by perfcounters resource 
+management.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	Ingo
