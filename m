@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbZBCAaL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbZBCAan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754896AbZBCAaL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:30:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZBCA35
+	id S1759855AbZBCAan (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:30:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbZBCAad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:29:57 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52085 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754119AbZBCA35 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:29:57 -0500
-Date: Mon, 2 Feb 2009 16:28:58 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Mon, 2 Feb 2009 19:30:33 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:36089 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755363AbZBCAac (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 19:30:32 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+Date: Tue, 3 Feb 2009 01:29:51 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
        Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-In-Reply-To: <200902030115.32659.rjw@sisk.pl>
-Message-ID: <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902030045.19416.rjw@sisk.pl> <alpine.LFD.2.00.0902021551050.3247@localhost.localdomain> <200902030115.32659.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902030000.18049.rjw@sisk.pl> <1233620590.18767.138.camel@pasglop>
+In-Reply-To: <1233620590.18767.138.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902030129.52445.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
+On Tuesday 03 February 2009, Benjamin Herrenschmidt wrote:
 > 
-> BTW, on the PMAC the problematic driver appears to be the radeon driver,
-> according to Ben, and the breakage is not related to USB.
+> > But we can't tell no one is holding the mutex in question, AFAICS.
+> > 
+> > I'm afraid we'd really need a special "no mutexes, no GFP_KERNEL allocations"
+> > code path for that.
+> 
+> No, the mutex shouldn't be held already, if it is, you're probably
+> already in deep trouble. IE, you probably want to enfore that anyway,
+> ie, it wouldn't be very sane to suspend the machine while ACPI was
+> already in the -middle- of interpreting something anyway.
+> 
+> IE, you should have something to ensure, before you turn interrupts off,
+> that nobody else is inside the AML interpreter. You already know there
+> are no other CPUs, so it's just a matter of making sure no other process
+> has scheduled while holding that mutex.
+> 
+> The easy way to do that is to do something like taking the mutex
+> yourself and then setting a flag so that the intepreter stops trying to
+> take it or release it itself, maybe just using the global system state.
+> 
+> Then release the mutex on resume.
 
-Hmm. atyfb_base.c has the same kind of things with magic PMAC code, but it 
-doesn't follow the USB pattern - it just replaces "pci_set_power_state()" 
-_entirely_. 
+Yes, that should work.
 
-It seems a very interesting suspend routine, btw. It doesn't seem to do 
-any of the pci_save_state() at all, just re-initializes from scratch. 
-Maybe it is unhappy with the PM layer deciding to try to restore state 
-since it clearly didn't..
+> All of these are issues that exist today. IE. Regardless of that
+> powermac problem, which is unrelated (see other posts), I think these
+> things need to be sorted cleanly or suspend will not be as rock solid as
+> it could/should be. IE. It's several order of magnitude better than it
+> was, I agree, but I believe we have here a few reasonably simple things
+> we can/should do to make it more robust.
 
-		Linus
+Agreed.
+
+Thanks,
+Rafael
