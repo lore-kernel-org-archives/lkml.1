@@ -1,75 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754780AbZBCM3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbZBCM3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754780AbZBCM3T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:29:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750997AbZBCM3F
+	id S1754984AbZBCM3m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:29:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753051AbZBCM33
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:29:05 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42172 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752006AbZBCM3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:29:04 -0500
-Date: Tue, 3 Feb 2009 13:28:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH v2] NOHZ: fix nohz on cpu unplug
-Message-ID: <20090203122847.GG19979@elte.hu>
-References: <200901301729.30284.borntraeger@de.ibm.com> <200902021323.44015.borntraeger@de.ibm.com> <1233619023.16238.12.camel@vayu> <200902030948.13519.borntraeger@de.ibm.com>
+	Tue, 3 Feb 2009 07:29:29 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:47292 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752151AbZBCM32 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:29:28 -0500
+Date: Tue, 3 Feb 2009 23:28:39 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Willy Tarreau <w@1wt.eu>
+Cc: Evgeniy Polyakov <zbr@ioremap.net>, Jarek Poplawski <jarkao2@gmail.com>,
+       David Miller <davem@davemloft.net>, dada1@cosmosbay.com, ben@zeus.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090203122839.GA9393@gondor.apana.org.au>
+References: <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090203111012.GA16878@ioremap.net> <20090203112431.GA8746@gondor.apana.org.au> <20090203114944.GA21957@ioremap.net> <20090203115313.GA9018@gondor.apana.org.au> <20090203120715.GA22427@ioremap.net> <20090203121209.GA9154@gondor.apana.org.au> <20090203121836.GA23300@ioremap.net> <20090203122535.GB8633@1wt.eu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902030948.13519.borntraeger@de.ibm.com>
+In-Reply-To: <20090203122535.GB8633@1wt.eu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 03, 2009 at 01:25:35PM +0100, Willy Tarreau wrote:
+>
+> > So:
+> > 1. copy the whole jumbo skb into fragmented one
+> > 2. reduce the MTU
+> 
+> you'll not reduce MTU of established connections though. And trying to
+> advertise MSS changes in the middle of a TCP connection is an awful
+> hack which I think will not work everywhere.
 
-* Christian Borntraeger <borntraeger@de.ibm.com> wrote:
+Not to mention that Ethernet isn't just IP, so the protocol that
+is being used might not have a concept of path MTU discovery at
+all.
 
-> Am Tuesday 03 February 2009 00:57:03 schrieb Suresh Siddha:
-> > Does this patch fix the issue? Thanks.
-> 
-> I fixed up a compile error. (See below). After that, the patch does indeed fix 
-> the problem.
-> 
-> Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
-> 
-> 
-> > diff --git a/kernel/sched.c b/kernel/sched.c
-> > index 96439a4..8a0419b 100644
-> > --- a/kernel/sched.c
-> > +++ b/kernel/sched.c
-> > @@ -4026,19 +4026,24 @@ int select_nohz_load_balancer(int stop_tick)
-> >  	int cpu = smp_processor_id();
-> >
-> >  	if (stop_tick) {
-> > -		cpumask_set_cpu(cpu, nohz.cpu_mask);
-> >  		cpu_rq(cpu)->in_nohz_recently = 1;
-> >
-> > -		/*
-> > -		 * If we are going offline and still the leader, give up!
-> > -		 */
-> > -		if (!cpu_active(cpu) &&
-> > -		    atomic_read(&nohz.load_balancer) == cpu) {
-> > +		if (!cpu_active(cpu) {
-> 
-> That does not compile...I used the following:
-> 		if (!cpu_active(cpu)) {
-
-Could you please resubmit an updated patch?
-
-	Ingo
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
