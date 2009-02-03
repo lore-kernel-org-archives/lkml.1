@@ -1,41 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752938AbZBCKAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753110AbZBCKJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752938AbZBCKAR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 05:00:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZBCKAE
+	id S1753110AbZBCKJI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 05:09:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZBCKIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 05:00:04 -0500
-Received: from hpsmtp-eml19.KPNXCHANGE.COM ([213.75.38.84]:50847 "EHLO
-	hpsmtp-eml19.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750845AbZBCKAD (ORCPT
+	Tue, 3 Feb 2009 05:08:54 -0500
+Received: from smtp.nokia.com ([192.100.122.233]:59273 "EHLO
+	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751933AbZBCKIx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 05:00:03 -0500
-From: Frans Pop <elendil@planet.nl>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [BUG] Suspend tries to suspend devices already in D3
-Date: Tue, 3 Feb 2009 10:59:59 +0100
-User-Agent: KMail/1.9.9
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200902030949.42342.elendil@planet.nl> <200902031034.12175.rjw@sisk.pl>
-In-Reply-To: <200902031034.12175.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902031059.59760.elendil@planet.nl>
-X-OriginalArrivalTime: 03 Feb 2009 10:00:00.0375 (UTC) FILETIME=[2D2E4870:01C985E6]
+	Tue, 3 Feb 2009 05:08:53 -0500
+Subject: [BUGFIX take 2] [PATCH] write-back: fix nr_to_write counter
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: torvalds@linux-foundation.org
+Cc: Andrew Morton <akpm@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 03 Feb 2009 12:08:32 +0200
+Message-Id: <1233655712.24809.101.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 03 Feb 2009 10:08:28.0884 (UTC) FILETIME=[5C469940:01C985E7]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 February 2009, Rafael J. Wysocki wrote:
-> > What is different is that before this suspend I had switched to my
-> > wired e1000e NIC and had done an ifdown on the wireless. I suspect
-> > that because of that the wireless already was at D3 _before_ the
-> > suspend was started.
->
-> If ifdown causes the device to go into D3, then this is possible.
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Date: Mon, 2 Feb 2009 18:33:49 +0200
+Subject: [PATCH] write-back: fix nr_to_write counter
 
-Note that I'm not 100% sure the device was in D3, but it seems likely.
-All we really know is that it wasn't in D0.
+Commit 05fe478dd04e02fa230c305ab9b5616669821dd3 introduced some
+@wbc->nr_to_write breakage. Here is the change from the commit:
+
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -963,8 +963,10 @@ retry:
+                                }
+                        }
+
+-                       if (--nr_to_write <= 0)
+-                               done = 1;
++                       if (wbc->sync_mode == WB_SYNC_NONE) {
++                               if (--wbc->nr_to_write <= 0)
++                                       done = 1;
++                       }
+                        if (wbc->nonblocking && bdi_write_congested(bdi)) {
+                                wbc->encountered_congestion = 1;
+                                done = 1
+                        }
+
+It makes the following changes:
+1. Decrement wbc->nr_to_write instead of nr_to_write
+2. Decrement wbc->nr_to_write _only_ if wbc->sync_mode == WB_SYNC_NONE
+3. If synced nr_to_write pages, stop only if if wbc->sync_mode ==
+WB_SYNC_NONE, otherwise keep going.
+
+However, according to the commit message, the intention was to
+only make change 3. Change 1 is a bug. Change 2 does not seem to be
+necessary, and it breaks UBIFS expectations, so if needed, it
+should be done separately later. And change 2 does not seem to
+be documented in the commit message.
+
+This patch des the following:
+1. Undo changes 1 and 2
+2. Add a comment explaining change 3 (it very useful to have comments in
+_code_, not only in the commit).
+
+Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Acked-by: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+ mm/page-writeback.c |   21 +++++++++++++++------
+ 1 files changed, 15 insertions(+), 6 deletions(-)
+
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index b493db7..13a2b8e 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -1051,13 +1051,22 @@ continue_unlock:
+ 				}
+  			}
+ 
+-			if (wbc->sync_mode == WB_SYNC_NONE) {
+-				wbc->nr_to_write--;
+-				if (wbc->nr_to_write <= 0) {
+-					done = 1;
+-					break;
+-				}
++			if (nr_to_write > 0)
++				nr_to_write--;
++			else if (wbc->sync_mode == WB_SYNC_NONE) {
++				/*
++				 * We stop writing back only if we are not
++				 * doing integrity sync. In case of integrity
++				 * sync we have to keep going because someone
++				 * may be concurrently dirtying pages, and we
++				 * might have synced a lot of newly appeared
++				 * dirty pages, bud have not synced all of the
++				 * old dirty pages.
++				 */
++				done = 1;
++				break;
+ 			}
++
+ 			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 				wbc->encountered_congestion = 1;
+ 				done = 1;
+-- 
+1.6.0.6
+
+
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
