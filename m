@@ -1,103 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbZBCTtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZBCTvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753782AbZBCTtp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 14:49:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZBCTte
+	id S1753730AbZBCTvx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 14:51:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZBCTvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 14:49:34 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36031 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751234AbZBCTtd (ORCPT
+	Tue, 3 Feb 2009 14:51:45 -0500
+Received: from wa-out-1112.google.com ([209.85.146.181]:51191 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751589AbZBCTvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 14:49:33 -0500
-Date: Tue, 3 Feb 2009 11:48:49 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ruby <rubys@intertwingly.net>
-Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org
-Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
-Message-Id: <20090203114849.b661f1ce.akpm@linux-foundation.org>
-In-Reply-To: <498885CC.4060509@intertwingly.net>
-References: <4978767D.4060700@intertwingly.net>
-	<20090130000758.1dff0113.akpm@linux-foundation.org>
-	<498885CC.4060509@intertwingly.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Feb 2009 14:51:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YDt5uOh35fypHzwzD5x/ryAVO3t6+7qUaYv+R3/PIw0pbyWa29E/ZmUeSV2r9d30rg
+         ARxvtsGII4qJGsMhJuiF316k0GPIs8YkaSvZ3nMPzaWFa0gNcpgwLH9xvrBnSuZ9lMKU
+         wLerLbR5yklcu7VbDlFFOjr+0eZPnseVu0ElY=
+MIME-Version: 1.0
+In-Reply-To: <20090203133313.GA5679@redhat.com>
+References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com>
+	 <20090201174159.4a52e15c.akpm@linux-foundation.org>
+	 <20090202064509.GA20237@redhat.com>
+	 <3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com>
+	 <20090202165606.GA13346@redhat.com> <498754EF.8090604@redhat.com>
+	 <3f43f78b0902021239s21566f76hf7f59850b2dbf45a@mail.gmail.com>
+	 <3f43f78b0902021839j1eb1eb04u49be47277c99900d@mail.gmail.com>
+	 <20090203133313.GA5679@redhat.com>
+Date: Tue, 3 Feb 2009 11:51:42 -0800
+Message-ID: <3f43f78b0902031151ta841190i2c7898facc34cb95@mail.gmail.com>
+Subject: Re: main thread pthread_exit/sys_exit bug!
+From: Kaz Kylheku <kkylheku@gmail.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 03 Feb 2009 12:58:36 -0500
-Sam Ruby <rubys@intertwingly.net> wrote:
+On Tue, Feb 3, 2009 at 5:33 AM, Oleg Nesterov <oleg@redhat.com> wrote:
+> On 02/02, Kaz Kylheku wrote:
+>>
+>> On Mon, Feb 2, 2009 at 12:39 PM, Kaz Kylheku <kkylheku@gmail.com> wrote:
+>> > On Mon, Feb 2, 2009 at 12:17 PM, Ulrich Drepper <drepper@redhat.com> wrote:
+>> >> The userlevel context of the
+>> >> thread is not usable anymore.  It will have run all kinds of
+>> >> destructors.  The current behavior is AFAIK that the main thread won't
+>> >> react to any signal anymore.  That is absolutely required.
+>> >
+>> > Hey Ulrich,
+>> >
+>> > Thanks for articulating that requirement. I think it can be met by
+>> > extending the patch a little bit.
+>>
+>> I've now done that.
+>>
+>> The exiting thread leader, if there are still other
+>> threads alive, gets its own private signal handler array in which
+>> every action is set to SIG_IGN, using the ignore_signals
+>> function.
+>>
+>> I experimented with blocking signals, but that approach
+>> breaks the test case of being able to attach GDB to the
+>> exiting thread.
+>>
+>> As part of the patch, I found it convenient to extend the
+>> incomplete sys_unshare functionality w.r.t. signal handlers,
+>> rather than reinvent the wheel.
+>
+> This is wrong, we can not and must not unshare ->sighand.
 
-> Andrew Morton wrote:
-> > On Thu, 22 Jan 2009 08:37:01 -0500 Sam Ruby <rubys@intertwingly.net> wrote:
-> > 
-> >> Hardware summary: http://tinyurl.com/ap79ra
-> >> APIC details: http://intertwingly.net/stories/2009/01/22/
-> >> Note acpidump.err: Wrong checksum for OEMB!
-> >>
-> >> Messages on boot using Intrepid, Jaunty Alpha 3, or Fedora 10:
-> >>
-> >> [    0.296001] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
-> >> [    0.296001] Kernel panic - not syncing: IO-APIC + timer doesn't work! 
-> >>   Boot with apic=debug and send a report.  Then try booting with the 
-> >> 'noapic' option.
-> >> [    0.296001]
-> >>
-> >> Able to get past this issue using "noapic", at which point things mostly 
-> >> work,
-> > 
-> > Join the ever-growing noapic club :(
-> > 
-> > I assume this is an ACPI problem.  Or at least, a BIOS problem which
-> > ACPI can solve for us.
-> 
-> My understanding is that APCI and APIC are two different things.
+You are right; it breaks important invariant conditions which
+connect the thread group together, like the one about the
+lock, et cetera.  The patch goes too far: rather than simply
+delaying the finalization (relatively safe), it's messing with
+the shared state (risky).
 
-They sure are.  But it is ACPI which communicates with the BIOS to tell
-the kernel about the APIC, hwo it's wired up, etc.
+Well, it doesn't bother me that that has to be thrown out.
+In fact, I do not agree with the requirement that the thread
+which calls pthread_exit must not respond to signals;
+the original patch works for me.
 
-Although in this case it looks like the problem might be with the
-mp-bios tables, which ACPI does not handle.  In which case it would be
-core x86 code which will have to fix this up, not ACPI.
+I.e. in my embedded GNU/Linux distro, that requirement
+doesn't exist. And since I can't find it in the Single
+Unix Specification, so much for that!
 
-Did you try updating the BIOS?
+Nothing in the spec says that once pthread_exit is called,
+signals are stopped. This function invokes cleanup handling,
+and thread-specific-storage destruction. During any of those
+tasks, signals can still be happening.  Any of those
+tasks can easily enter into an indefinite wait. What if
+a cleanup handler performs a blocking RPC to a remote
+server? Well, there you are, stuck in pthread_exit,
+handling signals, and not cleaning up your robust list, etc.
 
-> >> but rsync of large iso images result in corrupt files.  Able to 
-> >> copy those same files using Vista on the same machine, or using Hardy on 
-> >> another machine.  This problem may not be related to the above, but it 
-> >> seems plausible to me that this might be an interrupt issue.
-> > 
-> > Yes, it might be unrelated.  There are no kernel messages when it happens?
-> 
-> I see no messages to /var/log/messages while doing the following (which 
-> involves rsync'ing a 2618793984 byte file from an NTFS to ext3 drive on 
-> the same machine:
-> 
-> rubys@rubix4:~/tmp$ rsync /mnt/shared/windows7_7000.iso .
-> rubys@rubix4:~/tmp$ openssl md5 windows7_7000.iso
-> MD5(windows7_7000.iso)= 953b9ac92d58f5edef525004bcce048d
-> rubys@rubix4:~/tmp$ rsync /mnt/shared/windows7_7000.iso .
-> rubys@rubix4:~/tmp$ openssl md5 windows7_7000.iso
-> MD5(windows7_7000.iso)= 695328ef1280708eb73303656f6ef0b2
-> 
-> >> memtest86+ runs clean.
-> >>
-> >> Quite willing to invest time in installing kernels or distributions on 
-> >> fresh hard drives, run tests, obtain debug information, and report back.
-> >>
-> >> More background here: http://intertwingly.net/blog/2009/01/20/noAPIC
-> >>
-> >> Not subscribed, but will actively monitor the web archives for this 
-> >> mailing list for the next several days.
-> > 
-> > It'd be best to raise a report against ACPI?BIOS (I think) at
-> > bugzilla.kernel.org, please.
-> 
-> Once again, I'm talking about apic not acpi... does this advice still hold?
+I also don't require robust locks to be cleaned up
+instantly if they are owned by a main thread that has
+called pthread_exit.
 
-Not sure.  Perhaps platform_i386/platform_x86_64 would be correct.
-Can the x86 maintainers please advise?
+My organization is a heavy user of robust mutexes;
+they protect the integrity of a large, ``real time'' database
+stored in shared memory. I don't think that this would
+affect us in any way. The principal concern is that
+a process dies, for whatever reason, while holding locks.
+It's more to recover from catastrophic failures, not from
+mutex locking mistakes. If a thread locks a mutex and
+doesn't release it due to bad program logic, that is a
+problem whether or not that thread dies.  It's not
+particularly useful that we can resolve that situation
+with EOWNERDEAD in the kernel when that thread
+happens to die, because that's just one case where
+we are lucky, so to speak.
 
+> Yes, gdb refuses to attach to the dead thread (I didn't check
+> this myself, but I think you are right). But there is nothing
+> wrong here, because we can't ptrace this thread. But, gdb
+> _can_ ptrace the process, and it can see it have other threads.
+
+Face it, allowing the thread leader to exit is as wrong as doing
+other stupid things to the leader, like unsharing the signal
+handler.
+
+Either way, you are breaking some little stick which is holding
+up the illusion that there is a process which has threads.
+
+> OK, if nothing else. Let's suppose your patch is correct.
+
+Obviously, the second part isn't. I'm very happy to have
+any excuse to throw this out, thanks!
+
+The first part isn't Ulrich-compliant. That is signficant,
+and duly noted; but it's not the law where I'm sitting.
