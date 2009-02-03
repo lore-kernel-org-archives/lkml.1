@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbZBCSrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755578AbZBCSr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbZBCSrW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 13:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZBCSrN
+	id S1755578AbZBCSr7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 13:47:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZBCSrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 13:47:13 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53313 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751387AbZBCSrN (ORCPT
+	Tue, 3 Feb 2009 13:47:51 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:12515 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751565AbZBCSru (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 13:47:13 -0500
-Date: Tue, 3 Feb 2009 10:46:51 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jesse Barnes <jesse.barnes@intel.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
- standard config registers of all devices early)
-In-Reply-To: <200902031032.26771.jesse.barnes@intel.com>
-Message-ID: <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902031804.26752.rjw@sisk.pl> <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain> <200902031032.26771.jesse.barnes@intel.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 3 Feb 2009 13:47:50 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=PkMK+U02lpOklrsf3i9B8y9f5lD9NcR8wtlos0TEM7vPzRdCR+AGBy886W5g9MSD7e
+         4tf+dGPfb87+Ru9WeGBLF+/RzT/gb4k9511Sa99a2HTfy+pgy6RrvMaCLbqK5Hg7OXmZ
+         mRinuQtvf47F0vWucUYrBt7tgqpmsL4J36wjM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <84144f020902031042i31eaec14v53a0e7a203acd28b@mail.gmail.com>
+References: <20090114155923.GC1616@wotan.suse.de>
+	 <20090123155307.GB14517@wotan.suse.de>
+	 <alpine.DEB.1.10.0901261225240.1908@qirst.com>
+	 <200902031253.28078.nickpiggin@yahoo.com.au>
+	 <alpine.DEB.1.10.0902031217390.17910@qirst.com>
+	 <84144f020902031042i31eaec14v53a0e7a203acd28b@mail.gmail.com>
+Date: Tue, 3 Feb 2009 20:47:48 +0200
+X-Google-Sender-Auth: f5ec21bd8edc2f9c
+Message-ID: <84144f020902031047o2e117652w28886efb495688c4@mail.gmail.com>
+Subject: Re: [patch] SLQB slab allocator
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 3, 2009 at 8:42 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>> It will grow unconstrained if you elect to defer queue processing. That
+>> was what we discussed.
+>
+> Well, the slab_hiwater() check in __slab_free() of mm/slqb.c will cap
+> the size of the queue. But we do the same thing in SLAB with
+> alien->limit in cache_free_alien() and ac->limit in __cache_free(). So
+> I'm not sure what you mean when you say that the queues will "grow
+> unconstrained" (in either of the allocators). Hmm?
 
-
-On Tue, 3 Feb 2009, Jesse Barnes wrote:
-> 
-> But won't ->disable point at ->mask in the MSI case (msi_chip doesn't have 
-> a ->disable, so the IRQ core will make ->disable point at ->mask)?
-
-No. I clarified this in the next message, but basically it boils down to a 
-simple case: "for edge-triggered interrupts, it's actually stupid to mask 
-things, because it's both simpler and _cheaper_ to just take change that 
-the interrupt might happen once" (especially since it almost never 
-happens).
-
-In fact, for an edge-triggered interrupt it is often a _bug_ to mask the 
-interrupt source, because you often lose the interrupt. So masking is not 
-only complex and expensive, it's also often _wrong_. Instead, what 
-disable_irq() does is to take the interrupt, but instead of calling the 
-interrupt handlers (it's disabled!) it just sets a flag.
-
-And that is a big _correctness_ issue, because the setting of the flag is 
-how we know to resend the interrupt when we enable things again - even 
-though the hardware itself actually lost the edge.
-
-[ Of course, you can hope that the PCI device itself doesn't lose it, and 
-  sees the edge again when unmasking, but the fact that many interrupt 
-  controllers get this fundamental masking issue wrong means that I'd 
-  almost bet that lots of PCI devices get it wrong too! ]
-
-> And in mask we do go poke at PCI regs (msi_set_mask_bits) to mask interrupts 
-> if possible (though if there's no mask bit in the legacy MSI case we don't do 
-> anything).
-
-I actually think that's a bug. I think it's just horribly stupid for to 
-->mask to go down to the device layer (for all the same reasons that we 
-don't do it for disable), but it doesn't much matter. We only use it for 
-"shutdown" of the irq controller - we should do the same thing we do for 
-irq_disable and just set a flag.
-
-The only reason to actually _mask_ an interrupt is if it is 
-level-triggered and can cause screaming. But even then it's often better 
-to just wait for the interrupt to happen (and mask it then), because 99% 
-of the time the interrupt obviously never happens.
-
-But we've never had reason to optimize ->mask/->unmask.
-
-That said, we've also never had much reason to _care_ deeply, so it's also 
-possible that we do mask things over some path. I didn't actually walk 
-_all_ the paths, and the logic for irq handling has changed enough over 
-the years that I don't know all the paths any more. Maybe we do that 
-explicit mask in some path I missed. We _shouldn't_, but who knows..
-
-		Linus
+That said, I can imagine a worst-case scenario where a queue with N
+objects is pinning N mostly empty slabs. As soon as we hit the
+periodical flush, we might need to do tons of work. That's pretty hard
+to control with watermarks as well as the scenario is solely dependent
+on allocation/free patterns.
