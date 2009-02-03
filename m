@@ -1,60 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZBCMTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754805AbZBCMTj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbZBCMTZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:19:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZBCMTL
+	id S1754805AbZBCMTj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:19:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbZBCMTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:19:11 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:53273 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752131AbZBCMTK (ORCPT
+	Tue, 3 Feb 2009 07:19:18 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49904 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752889AbZBCMTQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:19:10 -0500
-Date: Tue, 3 Feb 2009 23:18:08 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: david@lang.hm, Jarek Poplawski <jarkao2@gmail.com>,
-       David Miller <davem@davemloft.net>, w@1wt.eu, dada1@cosmosbay.com,
-       ben@zeus.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090203121808.GA9218@gondor.apana.org.au>
-References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090203111012.GA16878@ioremap.net> <20090203112431.GA8746@gondor.apana.org.au> <20090203114944.GA21957@ioremap.net> <alpine.DEB.1.10.0902030458390.28633@asgard.lang.hm> <20090203121219.GB22427@ioremap.net>
+	Tue, 3 Feb 2009 07:19:16 -0500
+Date: Tue, 3 Feb 2009 12:18:28 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+In-Reply-To: <1233646145.2604.137.camel@ymzhang>
+Message-ID: <Pine.LNX.4.64.0902031150110.5290@blonde.anvils>
+References: <20090121143008.GV24891@wotan.suse.de> 
+ <Pine.LNX.4.64.0901211705570.7020@blonde.anvils> 
+ <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com> 
+ <Pine.LNX.4.64.0901221239260.21677@blonde.anvils> 
+ <Pine.LNX.4.64.0901231357250.9011@blonde.anvils>  <1233545923.2604.60.camel@ymzhang>
+  <1233565214.17835.13.camel@penberg-laptop> <1233646145.2604.137.camel@ymzhang>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203121219.GB22427@ioremap.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 03:12:19PM +0300, Evgeniy Polyakov wrote:
+On Tue, 3 Feb 2009, Zhang, Yanmin wrote:
+> On Mon, 2009-02-02 at 11:00 +0200, Pekka Enberg wrote:
+> > On Mon, 2009-02-02 at 11:38 +0800, Zhang, Yanmin wrote:
+> > > Can we add a checking about free memory page number/percentage in function
+> > > allocate_slab that we can bypass the first try of alloc_pages when memory
+> > > is hungry?
+> > 
+> > If the check isn't too expensive, I don't any reason not to. How would
+> > you go about checking how much free pages there are, though? Is there
+> > something in the page allocator that we can use for this?
 > 
-> It is a solution, but I think it will behave noticebly worse than
-> with decresed MTU.
+> We can use nr_free_pages(), totalram_pages and hugetlb_total_pages(). Below
+> patch is a try. I tested it with hackbench and tbench on my stoakley
+> (2 qual-core processors) and tigerton (4 qual-core processors).
+> There is almost no regression.
 
-Not necessarily.  Remember GSO/GRO in essence are just hacks to
-get around the fact that we can't increase the MTU to where we
-want it to be.  MTU reduces the cost over the entire path while
-GRO/GSO only do so for the sender and the receiver.
+May I repeat what I said yesterday?  Certainly I'm oversimplifying,
+but if I'm plain wrong, please correct me.
 
-In other words when given the choice between a larger MTU with
-copying or GRO, the larger MTU will probably win anyway as it's
-optimising the entire path rather than just the receiver.
- 
-> That's the main point: how to deal with broken hardware? I think (but
-> have no strong numbers though) that having 6 packets with 1500 MTU
-> combined into GRO/LRO frame will be processed way faster than copying 9k
-> MTU into 3 pages and process single skb.
+Having lots of free memory is a temporary accident following process
+exit (when lots of anonymous memory has suddenly been freed), before
+it has been put to use for page cache.  The kernel tries to run with
+a certain amount of free memory in reserve, and the rest of memory
+put to (potentially) good use.  I don't think we have the number
+you're looking for there, though perhaps some approximation could
+be devised (or I'm looking at the problem the wrong way round).
 
-Please note that with my scheme, you'd only start copying if you
-can't allocate a linear skb.  So if memory fragmentation doesn't
-happen then there is no copying at all.
+Perhaps feedback from vmscan.c, on how much it's having to write back,
+would provide a good clue.  There's plenty of stats maintained there.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> 
+> Besides this patch, I have another patch to try to reduce the calculation
+> of "totalram_pages - hugetlb_total_pages()", but it touches many files.
+> So just post the first simple patch here for review.
+> 
+> 
+> Hugh,
+> 
+> Would you like to test it on your machines?
+
+Indeed I shall, starting in a few hours when I've finished with trying
+the script I promised yesterday to send you.  And I won't be at all
+surprised if your patch eliminates my worst cases, because I don't
+expect to have any significant amount of free memory during my testing,
+and my swap testing suffers from slub's thirst for higher orders.
+
+But I don't believe the kind of check you're making is appropriate,
+and I do believe that when you try more extensive testing, you'll find
+regressions in other tests which were relying on the higher orders.
+If all of your testing happens to have lots of free memory around,
+I'm surprised; but perhaps I'm naive about how things actually work,
+especially on the larger machines.
+
+Or maybe your tests are relying crucially on the slabs allocated at
+system startup, when of course there should be plenty of free memory
+around.
+
+By the way, when I went to remind myself of what nr_free_pages()
+actually does, my grep immediately hit this remark in mm/mmap.c:
+		 * nr_free_pages() is very expensive on large systems,
+I hope that's just a stale comment from before it was converted
+to global_page_state(NR_FREE_PAGES)!
+
+Hugh
