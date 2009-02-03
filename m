@@ -1,163 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755805AbZBCOkl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbZBCOlE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755805AbZBCOkl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 09:40:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZBCOkF
+	id S1755728AbZBCOlE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 09:41:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZBCOkv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 09:40:05 -0500
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:63672 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752853AbZBCOkD (ORCPT
+	Tue, 3 Feb 2009 09:40:51 -0500
+Received: from moutng.kundenserver.de ([212.227.126.187]:50984 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753984AbZBCOku convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 09:40:03 -0500
-X-Trace: 138682748/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.44.176.198/None/adrian@newgolddream.dyndns.info
-X-SBRS: None
-X-RemoteIP: 80.44.176.198
-X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
-X-MUA: Evolution 2.24.3 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArEEAErmh0lQLLDG/2dsb2JhbACBbs1ChBQG
-X-IronPort-AV: E=Sophos;i="4.37,372,1231113600"; 
-   d="scan'208";a="138682748"
-Subject: [PATCH] sh: maple: Add support for VMU devices (v3) [3/3]
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: greg KH <greg@kroah.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, dwmw2 <dwmw2@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>,
-       linux-sh <linux-sh@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>
-In-Reply-To: <1233671486.6512.8.camel@localhost.localdomain>
-References: <1233671486.6512.8.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 14:39:51 +0000
-Message-Id: <1233671991.6512.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 09:40:50 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [git pull -tip] headers_check fix cleanup
+Date: Tue, 3 Feb 2009 15:40:26 +0100
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
+       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org
+References: <1233671617.27322.3.camel@localhost.localdomain>
+In-Reply-To: <1233671617.27322.3.camel@localhost.localdomain>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200902031540.27166.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/LL39ZtsgxjgR11OuwuEW0+yisRDJFTX8U+HG
+ dvF9yPe16DkyX3bIIVr+35eZW7Og2/7i+BNgl32W8niVtP2URB
+ ytrWxuBt3OgOhI9xYasng==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch updates the Maple keyboard driver to reflect changes in the
-maple bus code and also to tidy up some dubious legacy code.
+On Tuesday 03 February 2009, Jaswinder Singh Rajput wrote:
+> These patchset is based on Arnd Bergmann suggestions:
+> git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
+> 
+> Jaswinder Singh Rajput (3):
+>       headers_check fix cleanup: linux/coda_psdev.h
+>       headers_check fix cleanup: linux/nubus.h
+>       headers_check fix cleanup: linux/reiserfs_fs.h
 
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
----
+Looks good, thanks for the follow-up!
 
-diff --git a/drivers/input/keyboard/maple_keyb.c b/drivers/input/keyboard/maple_keyb.c
-index 22f17a5..42ff911 100644
---- a/drivers/input/keyboard/maple_keyb.c
-+++ b/drivers/input/keyboard/maple_keyb.c
-@@ -1,8 +1,8 @@
- /*
-  * SEGA Dreamcast keyboard driver
-  * Based on drivers/usb/usbkbd.c
-- * Copyright YAEGASHI Takeshi, 2001
-- * Porting to 2.6 Copyright Adrian McMenamin, 2007, 2008
-+ * Copyright (c) YAEGASHI Takeshi, 2001
-+ * Porting to 2.6 Copyright (c) Adrian McMenamin, 2007 - 2009
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -33,7 +33,7 @@ static DEFINE_MUTEX(maple_keyb_mutex);
- 
- #define NR_SCANCODES 256
- 
--MODULE_AUTHOR("YAEGASHI Takeshi, Adrian McMenamin");
-+MODULE_AUTHOR("Adrian McMenamin <adrian@mcmen.demon.co.uk");
- MODULE_DESCRIPTION("SEGA Dreamcast keyboard driver");
- MODULE_LICENSE("GPL");
- 
-@@ -115,7 +115,7 @@ static void dc_scan_kbd(struct dc_kbd *kbd)
- 				input_event(dev, EV_MSC, MSC_SCAN, code);
- 				input_report_key(dev, keycode, 0);
- 			} else
--				printk(KERN_DEBUG "maple_keyb: "
-+				dev_dbg(&dev->dev,
- 					"Unknown key (scancode %#x) released.",
- 					code);
- 		}
-@@ -127,7 +127,7 @@ static void dc_scan_kbd(struct dc_kbd *kbd)
- 				input_event(dev, EV_MSC, MSC_SCAN, code);
- 				input_report_key(dev, keycode, 1);
- 			} else
--				printk(KERN_DEBUG "maple_keyb: "
-+				dev_dbg(&dev->dev,
- 					"Unknown key (scancode %#x) pressed.",
- 					code);
- 		}
-@@ -140,7 +140,7 @@ static void dc_kbd_callback(struct mapleq *mq)
- {
- 	struct maple_device *mapledev = mq->dev;
- 	struct dc_kbd *kbd = maple_get_drvdata(mapledev);
--	unsigned long *buf = mq->recvbuf;
-+	unsigned long *buf = (unsigned long *)(mq->recvbuf->buf);
- 
- 	/*
- 	 * We should always get the lock because the only
-@@ -159,22 +159,30 @@ static void dc_kbd_callback(struct mapleq *mq)
- 
- static int probe_maple_kbd(struct device *dev)
- {
--	struct maple_device *mdev = to_maple_dev(dev);
--	struct maple_driver *mdrv = to_maple_driver(dev->driver);
-+	struct maple_device *mdev;
-+	struct maple_driver *mdrv;
- 	int i, error;
- 	struct dc_kbd *kbd;
- 	struct input_dev *idev;
- 
--	if (!(mdev->function & MAPLE_FUNC_KEYBOARD))
--		return -EINVAL;
-+	mdev = to_maple_dev(dev);
-+	if (!mdev) {
-+		error = -EINVAL;
-+		goto fail;
-+	}
- 
- 	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
--	idev = input_allocate_device();
--	if (!kbd || !idev) {
-+	if (!kbd) {
- 		error = -ENOMEM;
- 		goto fail;
- 	}
- 
-+	idev = input_allocate_device();
-+	if (!idev) {
-+		error = -ENOMEM;
-+		goto fail_idev_alloc;
-+	}
-+
- 	kbd->dev = idev;
- 	memcpy(kbd->keycode, dc_kbd_keycode, sizeof(kbd->keycode));
- 
-@@ -195,7 +203,7 @@ static int probe_maple_kbd(struct device *dev)
- 
- 	error = input_register_device(idev);
- 	if (error)
--		goto fail;
-+		goto fail_register;
- 
- 	/* Maple polling is locked to VBLANK - which may be just 50/s */
- 	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50,
-@@ -207,10 +215,12 @@ static int probe_maple_kbd(struct device *dev)
- 
- 	return error;
- 
--fail:
-+fail_register:
-+	maple_set_drvdata(mdev, NULL);
- 	input_free_device(idev);
-+fail_idev_alloc:
- 	kfree(kbd);
--	maple_set_drvdata(mdev, NULL);
-+fail:
- 	return error;
- }
- 
-
-
-
+	Arnd <><
