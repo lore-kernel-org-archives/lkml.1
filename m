@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752621AbZBCNMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZBCNNn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752621AbZBCNMr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 08:12:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753863AbZBCNM3
+	id S1755176AbZBCNNn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 08:13:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZBCNNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 08:12:29 -0500
-Received: from www17.your-server.de ([213.133.104.17]:45599 "EHLO
+	Tue, 3 Feb 2009 08:13:35 -0500
+Received: from www17.your-server.de ([213.133.104.17]:45759 "EHLO
 	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753738AbZBCNM2 convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1750900AbZBCNNe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 08:12:28 -0500
-Message-ID: <20090203141253.202078k31ubcrjdh@mail.your-server.de>
-Date: Tue, 03 Feb 2009 14:12:53 +0100
+	Tue, 3 Feb 2009 08:13:34 -0500
+Message-ID: <20090203141400.11911hi0w7trf194@mail.your-server.de>
+Date: Tue, 03 Feb 2009 14:14:00 +0100
 From: Thomas Meyer <thomas@m3y3r.de>
 To: linux-kernel@vger.kernel.org
 Subject: ge kills my machine
@@ -22,12 +22,11 @@ Content-Type: text/plain;
  format="flowed"
 Content-Disposition: inline
 Content-Transfer-Encoding: 8BIT
-User-Agent: Dynamic Internet Messaging Program (DIMP) H3 (1.1)
+User-Agent: Internet Messaging Program (IMP) 4.3.3
 X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
 
 Hello,
 
