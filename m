@@ -1,89 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759086AbZBCAsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756776AbZBCAvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759086AbZBCAsU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:48:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbZBCAsJ
+	id S1756776AbZBCAvi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:51:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZBCAva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:48:09 -0500
-Received: from smtp.gentoo.org ([140.211.166.183]:58819 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752770AbZBCAsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:48:08 -0500
-From: Mike Frysinger <vapier@gentoo.org>
-Organization: wh0rd.org
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Subject: Re: [PATCH] sh: maple: Add support for VMU devices (v2) [1/3]
-Date: Mon, 2 Feb 2009 19:48:01 -0500
-User-Agent: KMail/1.11.0 (Linux/2.6.28; KDE/4.2.0; x86_64; ; )
-Cc: greg KH <greg@kroah.com>, dwmw2 <dwmw2@infradead.org>,
-       Paul Mundt <lethal@linux-sh.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>,
-       "linux-sh" <linux-sh@vger.kernel.org>,
-       "linux-input" <linux-input@vger.kernel.org>
-References: <1233619569.13918.12.camel@localhost.localdomain> <1233620263.13918.31.camel@localhost.localdomain>
-In-Reply-To: <1233620263.13918.31.camel@localhost.localdomain>
+	Mon, 2 Feb 2009 19:51:30 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:47051 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbZBCAv3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 19:51:29 -0500
+Message-ID: <49879508.4090801@jp.fujitsu.com>
+Date: Tue, 03 Feb 2009 09:51:20 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3028677.rxxFT817vE";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Krishna Kothapalli <krishna_sunitha@hotmail.com>
+CC: ebiederm@xmission.com, linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+       achiang@hp.com, djwong@us.ibm.com, xyzzy@speakeasy.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: state of pci express hotplug
+References: <m1fxj06js8.fsf@fess.ebiederm.org> <4986581F.7060704@jp.fujitsu.com> <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl>
+In-Reply-To: <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Message-Id: <200902021948.04031.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3028677.rxxFT817vE
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Krishna Kothapalli wrote:
+> 
+>> I'd like to know details of the bugs. Could you please show the
+>> details of the bugs?
+> 
+> Not sure if this is a bug or error on my part:
+> 
+> a) Cold plug of the PCI express card looks ok ( the devices show up is the sysfs ). 
+> b)
+> However hotplug of the same device does not work (it won't show up in
+> the sysfs and uevents are not sent to udev ). Same issue when ACPI is removed from the kernel build and
+> modprobe pciehp pciehp_force=1
+> 
+> Posted some details in (can send in more details if needed) :
+> http://article.gmane.org/gmane.linux.kernel.pci/2865
+> http://article.gmane.org/gmane.linux.kernel.pci/2868
+> 
 
-On Monday 02 February 2009 19:17:43 Adrian McMenamin wrote:
-> +	if (src_ofs >=3D ((card->parts)[partition]).numblocks * card->blocklen)
-> +	if (num > ((card->parts)[partition]).numblocks)
-> +	pcache =3D (card->parts[partition]).pcache;
+In the beginning, I'd like to know which hotplug controller driver
+manages your hotplug slots. Could you tell me which hotplug controller
+drivers add the directories under /sys/bus/pci/slots, with the following
+steps?
 
-ive only quoted some, but the use of parenthesis here is pointless and imo=
-=20
-makes the code harder to read.  it's like trying to parse lisp ;).
+  (1) Build all your hotplug drivers as kernel modules.
+  (2) Modprobe hotplug drivers one by one, and check which drivers add
+      directories under /sys/bus/pci/slots. Before trying the next driver,
+      please rmmod the previous driver, because there are hotplug slots
+      that can be managed by the several drivers. Note that you don't need
+      to try fakephp this time. 
 
-> +	vblock =3D kmalloc(sizeof(struct vmu_block), GFP_KERNEL);
+Here is an example. My machine has four hotplug slots and those can be
+handled by acpiphp or pciehp. I tried acpiphp, pciehp and shpchp on that
+machine.
 
-sizeof(*vblock) ?
+# ls /sys/bus/pci/slots/
+# /sbin/modprobe acpiphp
+# ls /sys/bus/pci/slots/
+1  2  3  4
+# /sbin/rmmod acpiphp
+# ls /sys/bus/pci/slots/
+# /sbin/modprobe pciehp
+# ls /sys/bus/pci/slots/
+1  2  3  4
+# /sbin/rmmod pciehp
+# ls /sys/bus/pci/slots/
+# /sbin/modprobe shpchp
+# ls /sys/bus/pci/slots/
 
-> +static int __init vmu_flash_map_init(void)
-> +{
-> +	maple_driver_register(&vmu_flash_driver);
-> +	return 0;
-> +}
+Thanks,
+Kenji Kaneshige
 
-shouldnt this be:
-	return maple_driver_register(&vmu_flash_driver);
-=2Dmike
-
---nextPart3028677.rxxFT817vE
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iQIcBAABAgAGBQJJh5RDAAoJEEFjO5/oN/WBRykP/iv7lqy/HPvyJ6uGn9lnDJTQ
-U/SP1CdoPdRekhY4cn0dmjmHhVk6NXtSy5Pm+TXJ3c024WEdU5MSu0h4ZVvJ77cF
-v44SU7rSBwvaGruUhMEpRzMdmBvaqrun4G7NhHcK5KT6Qkc9mKuC1vPVfJ8n9Na1
-4dTQv3dScf1y7RmETJwdUcfrleIE3bDODXOhI3MXoRKVpI96KRWJUp/bNGwxUEzB
-Gq6+lObXsCWD2rIhgMkRVC6dstb1A/RRkseH12DGyY51ke6mLMsnDuhAMJ0fhn/r
-jbwIrI//G+Hj00uWrmoBLz3idom9kgW2sTJRtjrnVg0++mqLpl+X9MMUdBHb1gsK
-Nz+JD6CVwdeZIfzEAJCBO6xa4U7v22cS9abxnpZd2Y7AsCyYgGCikymFoNlXMwr8
-39voMlruHucFzXABa0OTldRsUYjnO2GbmGtj3ARcBLIW1Vfpsn95TgPjMj4m6KlH
-gXHkFXFr6NpHOe98RgNBD9zrf+rPcOorWyGRAIpmwyzVoli3IEswgJhbbyeD15aE
-hxy8dmcmd689i/rMCc0Wr43zpW5WH22ugHwP1+kwDIJZeT+ATJ8L1WW1xvVKdLcp
-PTOZFij5W4laVhUGIsZMrNf13v5AJpRL4ouTbFiX02fIyROE5lcA86C+aehyEx2k
-ULxC3loEadAwU/58cap4
-=Iz4Y
------END PGP SIGNATURE-----
-
---nextPart3028677.rxxFT817vE--
