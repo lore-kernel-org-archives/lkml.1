@@ -1,99 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZBCPMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755965AbZBCPMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZBCPMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 10:12:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbZBCPMK
+	id S1755965AbZBCPMu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 10:12:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbZBCPM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 10:12:10 -0500
-Received: from outbound-va3.frontbridge.com ([216.32.180.16]:22742 "EHLO
-	VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755473AbZBCPMI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 10:12:08 -0500
-X-BigFish: VPS-15(zz1432R98dR1805M936fM8b9dn19c1l19c2kzzzzz32i6bh6di64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 5,
-X-WSS-ID: 0KEHWVQ-01-FEE-01
-Date: Tue, 3 Feb 2009 16:11:37 +0100
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Mark Hounschell <dmarkh@cfl.rr.com>
-CC: Mark Hounschell <markh@compro.net>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       john stultz <johnstul@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: PROBLEM: Can't boot a (HZ = 1000) kernel using an AMD
-	Phenom-II processor
-Message-ID: <20090203151137.GB12017@aftab>
-References: <49798F33.8070906@cfl.rr.com> <20090123130416.GA27616@alberich.amd.com> <497A48D5.9040904@cfl.rr.com> <497E0072.7000500@compro.net> <20090127163843.GA1628@aftab> <497FA725.7020503@cfl.rr.com> <497FA7F2.3060709@cfl.rr.com> <498416CE.4040101@cfl
+	Tue, 3 Feb 2009 10:12:27 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45168 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755732AbZBCPM0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 10:12:26 -0500
+Date: Tue, 3 Feb 2009 16:12:13 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Machek <pavel@suse.cz>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Ian Campbell <Ian.Campbell@citrix.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH RFC WIP] x86/paravirt: add register-saving thunks to
+	reduce caller register pressure
+Message-ID: <20090203151213.GE29046@elte.hu>
+References: <4980A07D.3010008@goop.org> <20090130210625.GD1253@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49880BC3.7040901@cfl.rr.com>
+In-Reply-To: <20090130210625.GD1253@ucw.cz>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 03 Feb 2009 15:11:37.0406 (UTC) FILETIME=[B57ACDE0:01C98611]
-Content-Transfer-Encoding: 8BIT
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On Tue, Feb 03, 2009 at 04:17:55AM -0500, Mark Hounschell wrote:
-> Borislav Petkov wrote:
-> > On Sat, Jan 31, 2009 at 04:15:58AM -0500, Mark Hounschell wrote:
-> > 
-> > [..]
-> > 
-> >> So were you able to reproduce this with my .config. Has anyone booted a Hz=1000
-> >> kernel on an AMD Phenom-II? Is there something wrong with my .config? Is there
-> >> anything else I can do?
-> > 
-> > Hi,
-> > 
-> > sorry for the delay - I've been busy last week and couldn't get to your
-> > problem. So, I couldn't reproduce the bug here with a Phenom II and your
-> > kernel config. However, we have a working theory, so can you please send
-> > me the output of
-> > 
-> > xxd /sys/firmware/acpi/tables/APIC
-> > 
+* Pavel Machek <pavel@suse.cz> wrote:
+
 > 
-> markh@harley:~> xxd /sys/firmware/acpi/tables/APIC
-> 0000000: 4150 4943 8400 0000 014c 5258 3738 3020  APIC.....LRX780
-> 0000010: 4157 5244 4143 5049 312e 3042 4157 5244  AWRDACPI1.0BAWRD
-> 0000020: 0000 0000 0000 e0fe 0100 0000 0008 0000  ................
-> 0000030: 0100 0000 0008 0101 0100 0000 0008 0202  ................
-> 0000040: 0100 0000 0008 0303 0100 0000 010c 0400  ................
-> 0000050: 0000 c0fe 0000 0000 020a 0000 0200 0000  ................
-> 0000060: 0000 020a 0009 0900 0000 0f00 0406 0005  ................
-> 0000070: 0001 0406 0105 0001 0406 0205 0001 0406  ................
-> 0000080: 0305 0001
-
-looks good at a glance...
-
+> > This patch seeks to alleviate this pressure by introducing wrapper
+> > thunks that will do the register saving/restoring, so that the
+> > callsite doesn't need to worry about it, but the callee function can
+> > be conventional compiler-generated code.  In many cases (particularly
+> > performance-sensitive cases) the callee will be in assembler anyway,
+> > and need not use the compiler's calling convention.
 > >
-> > Also, can you boot a 64-bit, HZ1000 kernel on your machine?
-> > 
+> > Standard calling convention is:
+> > 	 arguments	    return	scratch
+> > x86-32	 eax edx ecx	    eax		?
 > 
-> No, a 64 bit kernel @1000Hz doesn't boot either. As with the 32 bit kernel,
-> setting Hz to 250 allows it to boot. The messages are slightly different when it
-> hangs on the 64bit kernel at 1000Hz.
+> esi edi ebp ?
 
-That's not cool - as I said before, I can't reproduce this behavior here
-which means that the problem might be chipset-related. What you could do
-now is to boot the kernel with "debug initcall_debug log_buf_len=10M"
-and try to capture the whole boot log with a serial console - or if that
-doesn't work - make a screenshot with a camera of some sort. This might
-shed some light on the question where exactly your machine hangs.
+No, they are not scratch [callee-clobbered] registers, they are 
+callee-saved.
 
--- 
-Regards/Gruss,
-Boris.
+Jeremy's table is incomplete (and incorrect on 64-bit):
 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+|  Standard calling convention is:
+|           arguments          return	scratch
+|  x86-32   eax edx ecx        eax         ?
+|  x86-64   rdi rsi rdx rcx    rax         r8 r9 r10 r11
 
+The correct one is:
+
+ x86 function calling convention, 64-bit:
+ ----------------------------------------
+  arguments            |  callee-saved       | extra caller-saved | return
+ [callee-clobbered]    |                     | [callee-clobbered] |
+ ---------------------------------------------------------------------------
+ rdi rsi rdx rcx r8 r9 | rbx rbp [*] r12-r15 | r10, r11           | rax [**]
+
+ ( rsp is obviously invariant across normal function calls. (gcc can 'merge'
+   functions when it sees tail-call optimization possibilities) rflags is
+   clobbered. Leftover arguments are passed over the stack frame. )
+
+ [*]  In the frame-pointers case ebp is fixed to the stack frame.
+
+ [**] for struct return values wider than 64 bits the return convention is a 
+      bit more complex: up to 128 bits width we return small structures 
+      straight in rax, rdx. For structures larger than that (3 words or 
+      larger) the caller puts a pointer to an on-stack return struct 
+      [allocated in the caller's stack frame] into the first argument - i.e. 
+      into rdi. All other arguments shift up by one in this case. 
+      Fortunately this case is rare in the kernel.
+
+As you can see r8 and r9 are regparm arguments for 5 or 6 parameter calls 
+and not just extra scratch registers. (although they certainly can be used 
+as such too - all regparm arguments are callee-clobbered on x86)
+
+For 32-bit we have the following conventions - kernel is build with 
+-mregparm=3 and -freg-struct-return:
+
+ x86 function calling convention, 32-bit:
+ ----------------------------------------
+  arguments         | callee-saved        | extra caller-saved | return
+ [callee-clobbered] |                     | [callee-clobbered] |
+ -------------------------------------------------------------------------
+ eax edx ecx        | ebx edi esi ebp [*] | <none>             | eax, [**]
+
+ ( here too esp is obviously invariant across normal function calls. eflags
+   is clobbered. Leftover arguments are passed over the stack frame. )
+
+ [*]  In the frame-pointers case ebp is fixed to the stack frame.
+
+ [**] We build with -freg-struct-return, which on 32-bit means similar
+      semantics as on 64-bit: edx can be used for a second return value 
+      (i.e. covering structure sizes up to 64 bits) - after that it gets 
+      more complex and more expensive: 3-word or larger struct returns get 
+      done in the caller's frame and the pointer to the return struct goes 
+      into regparm0, i.e. eax - the other arguments shift up and the 
+      function's register parameters degenerate to regparm=2 in essence.
+
+> actually standard calling convention is all arguments on stack iirc but we 
+> use regparm=3 for kernel...?
+
+Correct, 32-bit x86 gets built with:
+
+   KBUILD_CFLAGS += -msoft-float -mregparm=3 -freg-struct-return
+
+	Ingo
