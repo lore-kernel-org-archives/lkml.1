@@ -1,55 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbZBCAWH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759642AbZBCAXz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759630AbZBCAWH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:22:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758224AbZBCAVm
+	id S1759642AbZBCAXz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:23:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753393AbZBCAXr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:21:42 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38062 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759765AbZBCAVl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:21:41 -0500
-Date: Mon, 2 Feb 2009 16:21:20 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+	Mon, 2 Feb 2009 19:23:47 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44386 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752381AbZBCAXq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 19:23:46 -0500
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
        Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-In-Reply-To: <1233619881.18767.131.camel@pasglop>
-Message-ID: <alpine.LFD.2.00.0902021617390.3247@localhost.localdomain>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <alpine.LFD.2.00.0902021413040.3247@localhost.localdomain>  <200902022333.51017.rjw@sisk.pl>  <200902022356.33094.rjw@sisk.pl> <1233619881.18767.131.camel@pasglop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <200902030000.18049.rjw@sisk.pl>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>
+	 <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain>
+	 <1233614927.18767.121.camel@pasglop>  <200902030000.18049.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Tue, 03 Feb 2009 11:23:09 +1100
+Message-Id: <1233620590.18767.138.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
+> But we can't tell no one is holding the mutex in question, AFAICS.
 > 
-> > * Memory allocations with GFP_KERNEL are made, which is even worse, because
-> >   we really shouldn't do that during suspend _at_ _all_, even during the regular
-> >   ->suspend() with interrupts on, because there's not guarantee that swap will
-> >   will be available at that time.  So, for the sake of correctness, we should
-> >   get rid of the GFP_KERNEL from the ACPI code paths executed during
-> >   suspend-resume anyway.
-> 
-> Well, as I said, this is a problem with more than just ACPI and again, I
-> don't think the fix is to be done in ACPI itself. The buddy and slab
-> should basically stick NOIO or ATOMIC to any allocation done after we
-> started suspending the system.
+> I'm afraid we'd really need a special "no mutexes, no GFP_KERNEL allocations"
+> code path for that.
 
-We already do have magic code for things like PF_MEMALLOC (recursion), or 
-TIF_MEMDIE (oom) or "(rt_task(p)) && !in_interrupt()" (give RT tasks 
-higher priorities) in the page allocator.
+No, the mutex shouldn't be held already, if it is, you're probably
+already in deep trouble. IE, you probably want to enfore that anyway,
+ie, it wouldn't be very sane to suspend the machine while ACPI was
+already in the -middle- of interpreting something anyway.
 
-Having a special case for NOT_RUNNING wouldn't be _pretty_, but it 
-certainly isn't totally unreasonable either.
+IE, you should have something to ensure, before you turn interrupts off,
+that nobody else is inside the AML interpreter. You already know there
+are no other CPUs, so it's just a matter of making sure no other process
+has scheduled while holding that mutex.
 
-			Linus
+The easy way to do that is to do something like taking the mutex
+yourself and then setting a flag so that the intepreter stops trying to
+take it or release it itself, maybe just using the global system state.
+
+Then release the mutex on resume.
+
+All of these are issues that exist today. IE. Regardless of that
+powermac problem, which is unrelated (see other posts), I think these
+things need to be sorted cleanly or suspend will not be as rock solid as
+it could/should be. IE. It's several order of magnitude better than it
+was, I agree, but I believe we have here a few reasonably simple things
+we can/should do to make it more robust.
+
+Cheers,
+Ben.
+
+
