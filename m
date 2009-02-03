@@ -1,150 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZBCU4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbZBCU6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbZBCU4b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 15:56:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752028AbZBCU4W
+	id S1753961AbZBCU6R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 15:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751953AbZBCU56
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 15:56:22 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:42479 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751815AbZBCU4V (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 15:56:21 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:content-transfer-encoding:in-reply-to:
-	x-operating-system:user-agent:x-gmailtapped-by:x-gmailtapped;
-	b=UvmWJjLCOpi8ZjpJpLoqAb5VGXni+fjtFBB8HSxWSvtkp+3DRmiw79Gp5PODFSo7Y
-	dce4AnKvFBodejY93OVhQ==
-Date: Tue, 3 Feb 2009 12:56:09 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       rientjes@google.com, mbligh@google.com, thockin@google.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2 v3] softlockup: check all tasks in hung_task
-Message-ID: <20090203205609.GA9581@google.com>
+	Tue, 3 Feb 2009 15:57:58 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60216 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751630AbZBCU56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 15:57:58 -0500
+Date: Tue, 3 Feb 2009 21:57:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Jesse Barnes <jesse.barnes@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>
+Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
+	standard config registers of all devices early)
+Message-ID: <20090203205727.GA4460@elte.hu>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902031804.26752.rjw@sisk.pl> <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain> <200902031032.26771.jesse.barnes@intel.com> <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain> <alpine.LFD.2.00.0902031047320.3247@localhost.localdomain> <20090203191334.GA2797@elte.hu> <alpine.LFD.2.00.0902031120080.3247@localhost.localdomain> <20090203195304.GA31049@elte.hu> <alpine.LFD.2.00.0902031209280.3247@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090203122346.GE19979@elte.hu>
-X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
-User-Agent: Mutt/1.5.11
-X-GMailtapped-By: 172.28.16.147
-X-GMailtapped: msb
+In-Reply-To: <alpine.LFD.2.00.0902031209280.3247@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar (mingo@elte.hu) wrote:
+
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> So I wouldn't worry too much. I think this is interesting mostly from a 
+> performance standpoint - MSI interrupts are supposed to be fast, and under 
+> heavy interrupt load I could easily see something like
 > 
-> * Mandeep Singh Baines <msb@google.com> wrote:
+>  - cpu1: handles interrupt, has acked it, calls down to the handler
 > 
-> > +		if (sysctl_hung_task_check_count && !(max_count--)) {
-> > +			max_count = sysctl_hung_task_check_count;
+>  - the handler clears the original irq source, but another packet (or disk 
+>    completion) happens almost immediately
 > 
-> just a minor nit, why not:
+>  - cpu2 takes the second interrupt, but it's still IRQ_INPROGRESS, so it 
+>    masks.
 > 
-> 	!--max_count
+>  - cpu1 gets back and unmasks etc and now really handles it because of 
+>    IRQ_PENDING.
 > 
-> ?
-> 
-> That way we can lose the parenthesis and we'll also not overcount and wont 
-> let max_count go down to -1.
-> 
-> 	Ingo
+> Note how the mask/unmask were all just costly extra overhead over the PCI 
+> bus. If we're talking something like high-performance 10Gbit ethernet (or 
+> even maybe fast SSD disks), driver writers actually do count PCI cycles, 
+> because a single PCI read can be several hundred ns, and if you take a 
+> thousand interrupts per second, it does add up.
 
-Good question. Yeah, there's really nothing about this patch that requires
-changing the !--max_count test.
+In practice MSI (and in particular MSI-X) irq sources tend to be bound to a 
+single CPU on modern x86 hardware. The kernel does not do IRQ balancing 
+anymore, nor does the hardware. We have a slow irq-balancer daemon 
+(irqbalanced) in user-space. So singular IRQ sources, especially when they 
+are MSI, tend to be 99.9% on the same CPU. Changing affinity is possible and 
+has to always work reliably, but it is a performance slowpath.
 
-Changed the condition back to a simple !--max_count test.
+An increasing trend is to have multiple irqs per device (multiple descriptor 
+rings, split rx and tx rings with separate irq sources): and each IRQ can 
+get balanced to a separate CPU. But those irqs cannot interact on a ->mask() 
+level as each IRQ has its separate irq_desc.
 
----
-Instead of checking only hung_task_check_count tasks, all tasks are checked.
-hung_task_check_count is still used to put an upper bound on the critical
-section. Every hung_task_check_count checks, the critical section is
-refreshed. Keeping the critical section small minimizes time preemption is
-disabled and keeps rcu grace periods small.
+The most advanced way of balancing IRQs is not widespread yet: it is where 
+devices actually interpret the payload and send completions dynamically to 
+differing CPUs - depending on things like the TCP/IP hash value or a 
+in-descriptor "target CPU". That way we could get completion on the CPU 
+where the work was submitted from. (and where the data structures are the 
+most cache-localized)
 
-To prevent following a stale pointer, get_task_struct is called on g and t.
-To verify that g and t have not been unhashed while outside the critical
-section, the task states are checked.
+That principle works both for networking and for other IO transports - but 
+we have little support for it yet. It would work really well for workloads 
+where one physical device is shared by many CPUs.
 
-The design was proposed by Frédéric Weisbecker.
+(A lesser method that approximates this is the use of lots of 
+submission/completion rings per device and their binding to cpus - but that 
+can never really approach the number of CPUs really possible in a system.)
 
-Frédéric Weisbecker (fweisbec@gmail.com) wrote:
->
-> Instead of having this arbitrary limit of tasks, why not just
-> lurk the need_resched() and then schedule if it needs too.
->
-> I know that sounds a bit racy, because you will have to release the
-> tasklist_lock and
-> a lot of things can happen in the task list until you become resched.
-> But you can do a get_task_struct() on g and t before your thread is
-> going to sleep and then put them
-> when it is awaken.
-> Perhaps some tasks will disappear or be appended in the list before g
-> and t, but that doesn't really matter:
-> if they disappear, they didn't lockup, and if they were appended, they
-> are not enough cold to be analyzed :-)
->
-> This way you can drop the arbitrary limit of task number given by the user....
->
-> Frederic.
->
+And in this most advanced mode of MSI IRQs, and if MSI devices had the 
+ability to direct IRQs to a specific CPU (they dont have that right now 
+AFAICT), we'd run into the overhead scenarios you describe above, and your 
+edge-triggered flow is the most performant one.
 
-Signed-off-by: Mandeep Singh Baines <msb@google.com>
----
- kernel/hung_task.c |   27 +++++++++++++++++++++++++--
- 1 files changed, 25 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index a841db3..f47eea4 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -109,6 +109,24 @@ static void check_hung_task(struct task_struct *t, unsigned long now,
- 		panic("hung_task: blocked tasks");
- }
- 
-+ /*
-+  * To avoid extending the RCU grace period for an unbounded amount of time,
-+  * periodically exit the critical section and enter a new one.
-+  *
-+  * For preemptible RCU it is sufficient to call rcu_read_unlock in order
-+  * exit the grace period. For classic RCU, a reschedule is required.
-+  */
-+static void check_hung_rcu_refresh(struct task_struct *g, struct task_struct *t)
-+{
-+	get_task_struct(g);
-+	get_task_struct(t);
-+	rcu_read_unlock();
-+	cond_resched();
-+	rcu_read_lock();
-+	put_task_struct(t);
-+	put_task_struct(g);
-+}
-+
- /*
-  * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
-  * a really long time (120 seconds). If that happens, print out
-@@ -129,8 +147,13 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
- 
- 	rcu_read_lock();
- 	do_each_thread(g, t) {
--		if (!--max_count)
--			goto unlock;
-+		if (!--max_count) {
-+			max_count = sysctl_hung_task_check_count;
-+			check_hung_rcu_refresh(g, t);
-+			/* Exit if t or g was unhashed during refresh. */
-+			if (t->state == TASK_DEAD || g->state == TASK_DEAD)
-+				goto unlock;
-+		}
- 		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
- 		if (t->state == TASK_UNINTERRUPTIBLE)
- 			check_hung_task(t, now, timeout);
--- 
-1.5.4.5
-
+	Ingo
