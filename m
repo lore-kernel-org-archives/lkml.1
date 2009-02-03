@@ -1,87 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752834AbZBCBtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbZBCBwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752834AbZBCBtT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:49:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZBCBtJ
+	id S1753172AbZBCBwU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:52:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZBCBwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:49:09 -0500
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:22617 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750977AbZBCBtJ (ORCPT
+	Mon, 2 Feb 2009 20:52:10 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50101 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbZBCBwJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:49:09 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=1FLZNpsqyci0RhTZB6e6chubR8bxXl0MqbAi7LRHA4o/dCFAx3YgQl+WE0WV/BkGZSNmjUKKDRsQe9mgv4GQATfEprgePis56V4lH0kN3uyt8KFeEJ27VQPOYeRGUytoW9i2QU9GEQmj+Vc6QNic8pCPLEF5TgBx7t2k8FFinWI=  ;
-X-YMail-OSG: E7jesocVM1nTDNvMJs94BXugrczBv5jY0q127tewg12Gmxu9D9AveZ4v7_thh9yvOXceD4Zys6Ld1kEGtTmLlP52EamOApoEwdBrB_gnfxbuz3zoRdkZ9y.qRDrA8uwslD9v_0wU5JigcZPxf..YOTuaFduSDFJA9mTUV8nTInxJGtr1NebJBxTQwckmfQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-Date: Tue, 3 Feb 2009 12:48:40 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20090114150900.GC25401@wotan.suse.de> <20090123161017.GC14517@wotan.suse.de> <alpine.DEB.1.10.0901261230540.1908@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0901261230540.1908@qirst.com>
+	Mon, 2 Feb 2009 20:52:09 -0500
+Date: Tue, 03 Feb 2009 10:52:03 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mingo@elte.hu
+Subject: Re: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non DMA_64BIT_MASK devices
+Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org,
+       linux-ia64@vger.kernel.org
+In-Reply-To: <20090203082825J.fujita.tomonori@lab.ntt.co.jp>
+References: <20090130184210.4A8E.E1E9C6FF@jp.fujitsu.com> <20090203082825J.fujita.tomonori@lab.ntt.co.jp>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20090203104439.8ADF.E1E9C6FF@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902031248.42124.nickpiggin@yahoo.com.au>
+X-Mailer: Becky! ver. 2.48.02 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 27 January 2009 04:34:21 Christoph Lameter wrote:
-> On Fri, 23 Jan 2009, Nick Piggin wrote:
-> > > SLUB can directly free an object to any slab page. "Queuing" on free
-> > > via the per cpu slab is only possible if the object came from that per
-> > > cpu slab. This is typically only the case for objects that were
-> > > recently allocated.
-> >
-> > Ah yes ok that's right. But then you don't get LIFO allocation
-> > behaviour for those cases.
->
-> But you get more TLB local allocations.
+> On Fri, 30 Jan 2009 20:24:13 +0900
+> Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> 
+> > > > swiotlb_dma_ops is set by pci_swiotlb_init().
+> > > > However, it seems to be not called when CONFIG_IA64_DIG/Generic configuration.
+> > > 
+> > > You are talking about setting dma_ops to swiotlb_dma_ops?
+> > > 
+> > > I think that swiotlb_dma_init() also sets dma_ops to swiotlb_dma_ops.
+> > 
+> > Certainly.
+> > I overlooked the 7th patch of your unifying dma_ops patch set.
+> > ia64_swiotlb_alloc_coherent was called when I tested again.
+> > I'm sorry.
+> > 
+> > However, GFP_DMA is still always on in ia64_swiotlb_alloc_coherent()
+> > regardless of the value of dev->coherent_dma_mask.
+> > 
+> > After following patch applied, GFP_DMA is set correctly by your patch.
+> > Am I still overlooking other your patch?
+> 
+> No, you are not. We need the following change. Somehow I thought that
+> I already made this change.
+> 
+> Can you resend this to Ingo with the proper description and
+> Signed-off-by (you can add my Acked-by if you like)?
 
-Not necessarily at all. Because when the "active" page runs out, you've
-lost all the LIFO information about objects with active caches and TLBs.
+Sure!
+Ingo-san. Could you apply the following patch?
+
+Bye.
+
+-----
+
+Because dma_alloc_coherent() always required DMA zone even if DMA is
+NOT necessary, FUJITA Tomonori posted a patch to fix it.
+
+http://marc.info/?l=linux-ia64&m=123314730923356&w=2
+
+However, this fix needs one more patch to fix completely.
+I tested and confirmed dma_alloc_coherent() returns 
+correct zone after applied following patch.
 
 
-> > > Yes you can loose track of caching hot objects. That is one of the
-> > > concerns with the SLUB approach. On the other hand: Caching
-> > > architectures get more and more complex these days (especially in a
-> > > NUMA system). The
-> >
-> > Because it is more important to get good cache behaviour.
->
-> Its going to be quite difficult to realize algorithm that guestimate what
-> information the processor keeps in its caches. The situation is quite
-> complex in NUMA systems.
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+---
+ arch/ia64/include/asm/dma-mapping.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-LIFO is fine.
+Index: dma_fix_test/arch/ia64/include/asm/dma-mapping.h
+===================================================================
+--- dma_fix_test.orig/arch/ia64/include/asm/dma-mapping.h	2009-01-30 19:36:33.000000000 +0900
++++ dma_fix_test/arch/ia64/include/asm/dma-mapping.h	2009-01-30 20:20:06.000000000 +0900
+@@ -71,7 +71,7 @@ static inline void *dma_alloc_coherent(s
+ 				       dma_addr_t *daddr, gfp_t gfp)
+ {
+ 	struct dma_mapping_ops *ops = platform_dma_get_ops(dev);
+-	return ops->alloc_coherent(dev, size, daddr, gfp | GFP_DMA);
++	return ops->alloc_coherent(dev, size, daddr, gfp);
+ }
+ 
+ static inline void dma_free_coherent(struct device *dev, size_t size,
 
 
-> > So I think it is wrong to say it requires more metadata handling. SLUB
-> > will have to switch pages more often or free objects to pages other than
-> > the "fast" page (what do you call it?), so quite often I think you'll
-> > find SLUB has just as much if not more metadata handling.
->
-> Its the per cpu slab. SLUB does not switch pages often but frees objects
-> not from the per cpu slab directly with minimal overhead compared to a per
-> cpu slab free. The overhead is much less than the SLAB slowpath which has
-> to be taken for alien caches etc.
+-- 
+Yasunori Goto 
 
-But the slab allocator isn't just about allocating. It is also about
-freeing. And you can be switching pages frequently in the freeing path.
-And depending on allocation patterns, it can still be quite frequent
-in the allocation path too (and even if you have gigantic pages, they
-can still get mostly filled up which reduces your queue size and
-increases rate of switching between them).
 
