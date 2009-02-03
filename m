@@ -1,99 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753172AbZBCBwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752417AbZBCByJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753172AbZBCBwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:52:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZBCBwK
+	id S1752417AbZBCByJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:54:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZBCBx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:52:10 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:50101 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbZBCBwJ (ORCPT
+	Mon, 2 Feb 2009 20:53:56 -0500
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:21734 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750799AbZBCBxz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:52:09 -0500
-Date: Tue, 03 Feb 2009 10:52:03 +0900
-From: Yasunori Goto <y-goto@jp.fujitsu.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, mingo@elte.hu
-Subject: Re: [PATCH -tip 1/3] IA64: fix swiotlb alloc_coherent for non DMA_64BIT_MASK devices
-Cc: tony.luck@intel.com, linux-kernel@vger.kernel.org,
-       linux-ia64@vger.kernel.org
-In-Reply-To: <20090203082825J.fujita.tomonori@lab.ntt.co.jp>
-References: <20090130184210.4A8E.E1E9C6FF@jp.fujitsu.com> <20090203082825J.fujita.tomonori@lab.ntt.co.jp>
-X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
-Message-Id: <20090203104439.8ADF.E1E9C6FF@jp.fujitsu.com>
+	Mon, 2 Feb 2009 20:53:55 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Cbq3GtIBV/i5Gan7hIQU4BdE1MvRusGO2yosV429TJzuXnxL3oXaveZmIMKo27Z7+z6OZXoeugDdhTNb22lE3W2UV4p+RlZJTL5cTe8cnjoz5MpZ11F8tsl/mBNkYYaoJ4mLok1Si4tuninPTD2l1E7Am+SpTZ8GOGPoUuUkq80=  ;
+X-YMail-OSG: Pnw1L2QVM1kxKBBCKcxTzvo68bgttLWao_sLldSl3qpI5INQbOiACKvXkNLz.9R.yAQ4KKsDS4HZjMjgnXOSKLdKb0hcejHE60TXvpqhg6osT_QaC7lYvkzbzO0V7EXz0i4S4UeyrxeUpcHTtlw3GMHMLpNGSYWMNeXxnF2yt3T_Cgvs.oANaOmcPKYJuw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+Date: Tue, 3 Feb 2009 12:53:26 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20090114155923.GC1616@wotan.suse.de> <20090123155307.GB14517@wotan.suse.de> <alpine.DEB.1.10.0901261225240.1908@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0901261225240.1908@qirst.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.48.02 [ja]
+Content-Disposition: inline
+Message-Id: <200902031253.28078.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Fri, 30 Jan 2009 20:24:13 +0900
-> Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-> 
-> > > > swiotlb_dma_ops is set by pci_swiotlb_init().
-> > > > However, it seems to be not called when CONFIG_IA64_DIG/Generic configuration.
-> > > 
-> > > You are talking about setting dma_ops to swiotlb_dma_ops?
-> > > 
-> > > I think that swiotlb_dma_init() also sets dma_ops to swiotlb_dma_ops.
-> > 
-> > Certainly.
-> > I overlooked the 7th patch of your unifying dma_ops patch set.
-> > ia64_swiotlb_alloc_coherent was called when I tested again.
-> > I'm sorry.
-> > 
-> > However, GFP_DMA is still always on in ia64_swiotlb_alloc_coherent()
-> > regardless of the value of dev->coherent_dma_mask.
-> > 
-> > After following patch applied, GFP_DMA is set correctly by your patch.
-> > Am I still overlooking other your patch?
-> 
-> No, you are not. We need the following change. Somehow I thought that
-> I already made this change.
-> 
-> Can you resend this to Ingo with the proper description and
-> Signed-off-by (you can add my Acked-by if you like)?
+On Tuesday 27 January 2009 04:28:03 Christoph Lameter wrote:
+> n Fri, 23 Jan 2009, Nick Piggin wrote:
+> > According to memory policies, a task's memory policy is supposed to
+> > apply to its slab allocations too.
+>
+> It does apply to slab allocations. The question is whether it has to apply
+> to every object allocation or to every page allocation of the slab
+> allocators.
 
-Sure!
-Ingo-san. Could you apply the following patch?
-
-Bye.
-
------
-
-Because dma_alloc_coherent() always required DMA zone even if DMA is
-NOT necessary, FUJITA Tomonori posted a patch to fix it.
-
-http://marc.info/?l=linux-ia64&m=123314730923356&w=2
-
-However, this fix needs one more patch to fix completely.
-I tested and confirmed dma_alloc_coherent() returns 
-correct zone after applied following patch.
+Quite obviously it should. Behaviour of a slab allocation on behalf of
+some task constrained within a given node should not depend on the task
+which has previously run on this CPU and made some allocations. Surely
+you can see this behaviour is not nice.
 
 
-Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
-Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- arch/ia64/include/asm/dma-mapping.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> > > Memory policies are applied in a fuzzy way anyways. A context switch
+> > > can result in page allocation action that changes the expected
+> > > interleave pattern. Page populations in an address space depend on the
+> > > task policy. So the exact policy applied to a page depends on the task.
+> > > This isnt an exact thing.
+> >
+> > There are other memory policies than just interleave though.
+>
+> Which have similar issues since memory policy application is depending on
+> a task policy and on memory migration that has been applied to an address
+> range.
 
-Index: dma_fix_test/arch/ia64/include/asm/dma-mapping.h
-===================================================================
---- dma_fix_test.orig/arch/ia64/include/asm/dma-mapping.h	2009-01-30 19:36:33.000000000 +0900
-+++ dma_fix_test/arch/ia64/include/asm/dma-mapping.h	2009-01-30 20:20:06.000000000 +0900
-@@ -71,7 +71,7 @@ static inline void *dma_alloc_coherent(s
- 				       dma_addr_t *daddr, gfp_t gfp)
- {
- 	struct dma_mapping_ops *ops = platform_dma_get_ops(dev);
--	return ops->alloc_coherent(dev, size, daddr, gfp | GFP_DMA);
-+	return ops->alloc_coherent(dev, size, daddr, gfp);
- }
- 
- static inline void dma_free_coherent(struct device *dev, size_t size,
+What similar issues? If a task ask to have slab allocations constrained
+to node 0, then SLUB hands out objects from other nodes, then that's bad.
 
 
--- 
-Yasunori Goto 
+> > But that is wrong. The lists obviously have high water marks that
+> > get trimmed down. Periodic trimming as I keep saying basically is
+> > alrady so infrequent that it is irrelevant (millions of objects
+> > per cpu can be allocated anyway between existing trimming interval)
+>
+> Trimming through water marks and allocating memory from the page allocator
+> is going to be very frequent if you continually allocate on one processor
+> and free on another.
 
+Um yes, that's the point. But you previously claimed that it would just
+grow unconstrained. Which is obviously wrong. So I don't understand what
+your point is.
 
