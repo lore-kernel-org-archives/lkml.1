@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754655AbZBCQhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754183AbZBCQlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754655AbZBCQhf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 11:37:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752081AbZBCQh1
+	id S1754183AbZBCQlN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 11:41:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZBCQk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 11:37:27 -0500
-Received: from rv-out-0506.google.com ([209.85.198.233]:34979 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941AbZBCQh0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 11:37:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=IL1x2B0o1lwchWzSK/C6X+dV4ARv2q7lccXxZrBIMRqiAlsNWsg2R6JokjgX0ZlPLd
-         bLv2cCp9zeFUwsTWdqWVEc9yS7t2LUtxBydgheZH8dKhZvFvGZMSCw5IiVwSZZV7jjPS
-         ibjnq0obDKAZCraLFC614hXxrvKcFn631zw1Q=
-MIME-Version: 1.0
-Date: Tue, 3 Feb 2009 22:07:25 +0530
-Message-ID: <a80c86b70902030837h334268b1r34cf06bf617645fe@mail.gmail.com>
-Subject: shrinking root partition and using free space to create a block 
-	device
-From: Prateek Donni <prateek.donni@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Tue, 3 Feb 2009 11:40:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:41455 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751735AbZBCQk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 11:40:57 -0500
+Subject: Re: [PATCH v2] ftrace: On PowerPC we don't need frame pointers for
+	CALLER_ADDRs
+From: Steven Rostedt <srostedt@redhat.com>
+To: avorontsov@ru.mvista.com
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090203161955.GA776@oksana.dev.rtsoft.ru>
+References: <20090131190650.GA4284@oksana.dev.rtsoft.ru>
+	 <1233534919.18767.69.camel@pasglop>
+	 <1233583455.16878.3.camel@localhost.localdomain>
+	 <20090203145649.GA19955@oksana.dev.rtsoft.ru>
+	 <20090203160645.GA9020@elte.hu> <20090203161955.GA776@oksana.dev.rtsoft.ru>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Tue, 03 Feb 2009 11:32:18 -0500
+Message-Id: <1233678738.16878.5.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are intending to protect a set of user specified files using LVM
-mirroring where the protected space on which the user files are stored
-is mirrored on an LV on a different disk. Our problem is that for a
-user with a custom layout has installed linux with 2 partitons for
-swap and / and there is no other space available on the primary disk
-where we can store the files to be protected tht is mirrored across
-other disk, so we intend to allocate some space on the primary disk
-that can be used as a LV that is mirrored across an LV on different
-disk.
-What can be done in this situation?
-For now we thought of the following:
-1> Shrinking the root partition to get some unallocated space that can
-be used to create a PV.
-	problems :
-		a. How do u do it? Can gparted be used online without the live CD?
-		b. How much can the root be compressed without the OS failure?
-2> Can the root partition be converted into a LV?
-3> There is free space on the root partition. Now can we use this free
-space to create a block device that can be converted into PV that
-would contain my protected files mirrored across other LV on a
-different disk. If so how can we do it?
-Can anyone help me with this?
-Thanks a lot.
+
+On Tue, 2009-02-03 at 19:19 +0300, Anton Vorontsov wrote:
+> On Tue, Feb 03, 2009 at 05:06:45PM +0100, Ingo Molnar wrote:
+
+> [1] Btw, why exactly do we need the -fno-omit-frame-pointer for
+> "FUNCTION_TRCER" tracer? Why just -pg isn't sufficient?..
+> 
+
+The problem is this that is in the toplevel Makefile:
+
+
+ifdef CONFIG_FRAME_POINTER
+KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+else
+KBUILD_CFLAGS	+= -fomit-frame-pointer
+endif
+
+
+-pg is incompatible with -fomit-frame-pointer
+
+-- Steve
+
+
