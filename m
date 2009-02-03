@@ -1,149 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbZBCIFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZBCIJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752380AbZBCIFt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 03:05:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZBCIFk
+	id S1752551AbZBCIJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 03:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZBCIJT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 03:05:40 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40176 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750917AbZBCIFj (ORCPT
+	Tue, 3 Feb 2009 03:09:19 -0500
+Received: from bombadil.infradead.org ([18.85.46.34]:37139 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751234AbZBCIJS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 03:05:39 -0500
-Date: Tue, 3 Feb 2009 17:04:27 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM (v2)
-Message-Id: <20090203170427.c6070cda.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090203072701.GV918@balbir.in.ibm.com>
-References: <20090203072013.GU918@balbir.in.ibm.com>
-	<20090203072701.GV918@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 03:09:18 -0500
+Date: Tue, 3 Feb 2009 03:09:16 -0500
+From: Christoph Hellwig <hch@infradead.org>
+To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
+Subject: XFS status update for January 2009
+Message-ID: <20090203080915.GA8921@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009 12:57:01 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+January has been an extremely busy month on the userspace front.  Many
+smaller and medium updates went into xfsprogs, xfstests and to a lesser
+extent xfsdump.  xfsprogs and xfsdump are ramping up for getting a 3.0.0
+release out in early February which will include the first major re-sync
+with the kernel code in libxfs, a cleanup of the exported library interfaces
+and the move of two tools (xfs_fsr and xfs_estimate) from the xfsdump
+package to xfsprogs.  After this the xfsprogs package will contain all
+tools that use internal libxfs interfaces which fortunately equates to those
+needed for normal administration.  The xfsdump package now only contains
+the xfsdump/xfsrestore tools needed for backing up and restoring XFS
+filesystems.  In addition it grew a fix to support dump/restore on systems
+with a 64k page size.  A large number of acl/attr package patches was
+posted to the list, but pending a possible split of these packages from the
+XFS project these weren't processed yet.
 
-> Checkpatch caught an additional space, so here is the patch again
-> 
-> 
-> Description: Add RSS and swap to OOM output from memcg
-> 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Changelog v2..v1:
-> 
-> 1. Add more information about task's memcg and the memcg
->    over it's limit
-> 2. Print data in KB
-> 3. Move the print routine outside task_lock()
-> 4. Use rcu_read_lock() around cgroup_path, strictly speaking it
->    is not required, but relying on the current memcg implementation
->    is not a good idea.
-> 
-> 
-> This patch displays memcg values like failcnt, usage and limit
-> when an OOM occurs due to memcg.
-> 
-> Thanks go out to Johannes Weiner, Li Zefan, David Rientjes,
-> Kamezawa Hiroyuki, Daisuke Nishimura and KOSAKI Motohiro for
-> review.
-> 
+On the kernel side the big excitement in January was an in-memory corruption
+introduced in the btree refactoring which hit people running 32bit platforms
+without support for large block devices.  This issue was fixed and pushed
+to the 2.6.29 development tree after a long collaborative debugging effort
+at linux.conf.au.  Besides that about a dozen minor fixes were pushed to
+2.6.29 and the first batch of misc patches for the 2.6.30 release cycle
+was sent out.
 
-IIUC, this oom_kill is serialized by memcg_tasklist mutex.
-Then, you don't have to allocate buffer on stack.
+At the end of December the SGI group in Melbourne which the previous
+XFS maintainer and some other developers worked for has been closed down
+and they will be missed greatly.  As a result maintainership has been passed
+on in a way that has been slightly controversial in the community, and the
+first patchset of work in progress in Melbourne have been posted to the list
+to be picked up by others.
 
-
-> +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg, struct task_struct *p)
-> +{
-> +	struct cgroup *task_cgrp;
-> +	struct cgroup *mem_cgrp;
-> +	/*
-> +	 * Need a buffer on stack, can't rely on allocations.
-> +	 */
-> +	char task_memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
-> +	char memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
-> +	int ret;
-> +
-
-making this as
-
-static char task_memcg_name[PATH_MAX];
-static char memcg_name[PATH_MAX];
-
-is ok, I think. and the patch will be more simple.
-
-Thanks,
--kame
-
-
-> +	if (!memcg)
-> +		return;
-> +
-> +	mem_cgrp = memcg->css.cgroup;
-> +	task_cgrp = mem_cgroup_from_task(p)->css.cgroup;
-> +
-> +	rcu_read_lock();
-> +	ret = cgroup_path(task_cgrp, task_memcg_name, MEM_CGROUP_OOM_BUF_SIZE);
-> +	if (ret < 0) {
-> +		/*
-> +		 * Unfortunately, we are unable to convert to a useful name
-> +		 * But we'll still print out the usage information
-> +		 */
-> +		rcu_read_unlock();
-> +		goto done;
-> +	}
-> +	ret = cgroup_path(mem_cgrp, memcg_name, MEM_CGROUP_OOM_BUF_SIZE);
-> +	 if (ret < 0) {
-> +		rcu_read_unlock();
-> +		goto done;
-> +	}
-> +
-> +	rcu_read_unlock();
-> +
-> +	printk(KERN_INFO "Task in %s killed as a result of limit of %s\n",
-> +			task_memcg_name, memcg_name);
-> +done:
-> +
-> +	printk(KERN_INFO "memory: usage %llukB, limit %llukB, failcnt %llu\n",
-> +		res_counter_read_u64(&memcg->res, RES_USAGE) >> 10,
-> +		res_counter_read_u64(&memcg->res, RES_LIMIT) >> 10,
-> +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
-> +	printk(KERN_INFO "memory+swap: usage %llukB, limit %llukB, "
-> +		"failcnt %llu\n",
-> +		res_counter_read_u64(&memcg->memsw, RES_USAGE) >> 10,
-> +		res_counter_read_u64(&memcg->memsw, RES_LIMIT) >> 10,
-> +		res_counter_read_u64(&memcg->memsw, RES_FAILCNT));
-> +}
-> +
->  /*
->   * Unlike exported interface, "oom" parameter is added. if oom==true,
->   * oom-killer can be invoked.
-> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> index d3b9bac..951356f 100644
-> --- a/mm/oom_kill.c
-> +++ b/mm/oom_kill.c
-> @@ -394,6 +394,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
->  		cpuset_print_task_mems_allowed(current);
->  		task_unlock(current);
->  		dump_stack();
-> +		mem_cgroup_print_mem_info(mem, current);
->  		show_mem();
->  		if (sysctl_oom_dump_tasks)
->  			dump_tasks(mem);
-> 
-> -- 
-> 	Balbir
-> 
-
+The xfs.org wiki has gotten a little facelift on it's front page making it
+a lot easier to read.
