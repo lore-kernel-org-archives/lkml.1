@@ -1,91 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755506AbZBCSmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbZBCSpl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755506AbZBCSmg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 13:42:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZBCSmQ
+	id S1754488AbZBCSpl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 13:45:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZBCSpb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 13:42:16 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:45334 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752903AbZBCSmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 13:42:14 -0500
-Date: Tue, 3 Feb 2009 19:41:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
-	standard config registers of all devices early)
-Message-ID: <20090203184133.GA18323@elte.hu>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <1233633061.16867.41.camel@pasglop> <200902031026.34093.rjw@sisk.pl> <200902031804.26752.rjw@sisk.pl> <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain> <alpine.LFD.2.00.0902031022390.3247@localhost.localdomain>
+	Tue, 3 Feb 2009 13:45:31 -0500
+Received: from vanadium.sabren.com ([67.19.173.84]:32887 "EHLO
+	vanadium.sabren.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752445AbZBCSpa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 13:45:30 -0500
+X-Greylist: delayed 2975 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 13:45:30 EST
+Message-ID: <49888526.60803@intertwingly.net>
+Date: Tue, 03 Feb 2009 12:55:50 -0500
+From: Sam Ruby <rubys@intertwingly.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902031022390.3247@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
+References: <4978767D.4060700@intertwingly.net> <20090130000758.1dff0113.akpm@linux-foundation.org>
+In-Reply-To: <20090130000758.1dff0113.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> On Tue, 3 Feb 2009, Linus Torvalds wrote:
-> > 
-> > So don't worry about putting devices in D3 - disable_irq() will not care 
-> > AT ALL whether the device is alive or not, and will never try to touch 
-> > it anyway.
+Andrew Morton wrote:
+> On Thu, 22 Jan 2009 08:37:01 -0500 Sam Ruby <rubys@intertwingly.net> wrote:
 > 
-> Btw, this is very much the case for MSI irq's in particular. If you ask to 
-> _mask_ them, it will go to the look up the device list and try to mask 
-> them (quite frankly, that sounds insane to me, but whatever), but that not 
-> what the irq layer does for the simple "disable()" case.
+>> Hardware summary: http://tinyurl.com/ap79ra
+>> APIC details: http://intertwingly.net/stories/2009/01/22/
+>> Note acpidump.err: Wrong checksum for OEMB!
+>>
+>> Messages on boot using Intrepid, Jaunty Alpha 3, or Fedora 10:
+>>
+>> [    0.296001] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+>> [    0.296001] Kernel panic - not syncing: IO-APIC + timer doesn't work! 
+>>   Boot with apic=debug and send a report.  Then try booting with the 
+>> 'noapic' option.
+>> [    0.296001]
+>>
+>> Able to get past this issue using "noapic", at which point things mostly 
+>> work,
 > 
-> It will literally just set the flag, and then even if an interrupt happens 
-> afterwards, it will just ->ack it, and then call the ->end thing - and 
-> doesn't need to do anything else in the whole "disable" path because MSI's 
-> are obviously edge-triggered.
+> Join the ever-growing noapic club :(
 > 
-> And the ACK is a pure (x2/io)apic thing, and again doesn't actually touch 
-> the device itself, only the irq controller itself.
+> I assume this is an ACPI problem.  Or at least, a BIOS problem which
+> ACPI can solve for us.
+
+My understanding is that APCI and APIC are two different things.
+
+>> but rsync of large iso images result in corrupt files.  Able to 
+>> copy those same files using Vista on the same machine, or using Hardy on 
+>> another machine.  This problem may not be related to the above, but it 
+>> seems plausible to me that this might be an interrupt issue.
 > 
-> So while it is possible in theory that some irq controller ends up trying 
-> to access the device for disable_irq, I don't think it's ever true in 
-> reality.
+> Yes, it might be unrelated.  There are no kernel messages when it happens?
+
+I see no messages to /var/log/messages while doing the following (which 
+involves rsync'ing a 2618793984 byte file from an NTFS to ext3 drive on 
+the same machine:
+
+rubys@rubix4:~/tmp$ rsync /mnt/shared/windows7_7000.iso .
+rubys@rubix4:~/tmp$ openssl md5 windows7_7000.iso
+MD5(windows7_7000.iso)= 953b9ac92d58f5edef525004bcce048d
+rubys@rubix4:~/tmp$ rsync /mnt/shared/windows7_7000.iso .
+rubys@rubix4:~/tmp$ openssl md5 windows7_7000.iso
+MD5(windows7_7000.iso)= 695328ef1280708eb73303656f6ef0b2
+
+>> memtest86+ runs clean.
+>>
+>> Quite willing to invest time in installing kernels or distributions on 
+>> fresh hard drives, run tests, obtain debug information, and report back.
+>>
+>> More background here: http://intertwingly.net/blog/2009/01/20/noAPIC
+>>
+>> Not subscribed, but will actively monitor the web archives for this 
+>> mailing list for the next several days.
 > 
-> But it's possible that I overlooked some really odd case, of course.
+> It'd be best to raise a report against ACPI?BIOS (I think) at
+> bugzilla.kernel.org, please.
 
-Sidenote: one future usecase that moves towards this might be threaded IRQ 
-handlers - but it's not a real problem.
+Once again, I'm talking about apic not acpi... does this advice still hold?
 
-For them to run well we want to split IRQ processing into two bits: the 
-"fast and atomic" bit, which just goes in, checks which hw generated the 
-IRQ, then disables that hw via its device, and then wakes up the irq kernel 
-thread to do all the fancy stuff.
+> If any previous kernel version worked OK, please be sure to note that.
 
-[ at this point that 'complete the IRQ' processing might even be done on
-  another CPU - if we decide that the irq was requested from a given CPU. So 
-  there's even performance advantage to such a splitup. We have not yet 
-  built up much local CPU state so we can migrate the work cheaply. ]
+I don't believe that's the case.
 
-But it's not an issue: this too will be driven centrally and disable_irq() 
-will obviously inhibit irqs to all handlers on the chain [to stay 
-compatible] and not touch the device hw in the suspend case.
+> Thanks.
 
-So the 'disable the device irq itself' functionality is hidden behind the 
-irq flow machinery - and never executed once you've done a widespread 
-disable_irq() calls on (almost) all devices.
-
-	Ingo
+- Sam Ruby
