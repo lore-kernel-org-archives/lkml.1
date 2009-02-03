@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbZBCMKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZBCMMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754165AbZBCMKV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:10:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBCMKI
+	id S1754286AbZBCMMc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:12:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZBCMMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:10:08 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49763 "EHLO mx2.mail.elte.hu"
+	Tue, 3 Feb 2009 07:12:20 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39457 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbZBCMKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:10:07 -0500
-Date: Tue, 3 Feb 2009 13:09:25 +0100
+	id S1750997AbZBCMMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:12:19 -0500
+Date: Tue, 3 Feb 2009 13:11:47 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
-       Len Brown <lenb@kernel.org>
-Subject: Re: PCI PM: Restore standard config registers of all devices early
-Message-ID: <20090203120925.GA19979@elte.hu>
-References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <alpine.LFD.2.00.0902021343280.3247@localhost.localdomain> <1233614927.18767.121.camel@pasglop> <200902030000.18049.rjw@sisk.pl> <1233620590.18767.138.camel@pasglop> <alpine.LFD.2.00.0902021635240.3247@localhost.localdomain> <20090203050648.GA14076@elte.hu> <1233659215.10184.19.camel@laptop>
+To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@redhat.com>, Mike Travis <travis@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: mm-commits@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: +
+	work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch
+	added to -mm tree
+Message-ID: <20090203121147.GB19979@elte.hu>
+References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1233659215.10184.19.camel@laptop>
+In-Reply-To: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,27 +39,26 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
 
-> On Tue, 2009-02-03 at 06:06 +0100, Ingo Molnar wrote:
-> > 
-> > Mutexes should work just fine in irqs-off sections - they'll safely 
-> > save/restore interrupts, even the debug variants.
+> ------------------------------------------------------
+> Subject: work_on_cpu(): rewrite it to create a kernel thread on demand
+> From: Andrew Morton <akpm@linux-foundation.org>
 > 
-> mutex_lock() has might_sleep() which will generate a splat in atomic
-> contexts.
+> The various implemetnations and proposed implemetnations of work_on_cpu()
+> are vulnerable to various deadlocks because they all used queues of some
+> form.
 > 
-> That said, afaik the acpi code uses semaphores.
+> Unrelated pieces of kernel code thus gained dependencies wherein if one
+> work_on_cpu() caller holds a lock which some other work_on_cpu() callback
+> also takes, the kernel could rarely deadlock.
+> 
+> Fix this by creating a short-lived kernel thread for each work_on_cpu()
+> invokation.
+> 
+> This is not terribly fast, but the only current caller of work_on_cpu() is
+> pci_call_probe().
 
-even the might_sleep() should be OK with Linus's system_state change to the 
-suspend code:
-
-void __might_sleep(char *file, int line)
-{
-#ifdef in_atomic
-        static unsigned long prev_jiffy;        /* ratelimiting */
-
-        if ((!in_atomic() && !irqs_disabled()) ||
-                    system_state != SYSTEM_RUNNING || oops_in_progress)
+hm, it's quite ugly as well, and wasteful with resources.
 
 	Ingo
