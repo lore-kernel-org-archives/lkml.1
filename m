@@ -1,123 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753445AbZBCWrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753156AbZBCWtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753445AbZBCWrW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 17:47:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZBCWrB
+	id S1753156AbZBCWtb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 17:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbZBCWtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 17:47:01 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43998 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751447AbZBCWq7 (ORCPT
+	Tue, 3 Feb 2009 17:49:23 -0500
+Received: from smtp-out.google.com ([216.239.45.13]:55258 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751988AbZBCWtW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 17:46:59 -0500
-Date: Tue, 3 Feb 2009 14:46:47 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: balbir@linux.vnet.ibm.com
-Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com, linux-mm@kvack.org
-Subject: Re: [-mm patch] Show memcg information during OOM (v3)
-Message-Id: <20090203144647.09bf9c97.akpm@linux-foundation.org>
-In-Reply-To: <20090203172135.GF918@balbir.in.ibm.com>
-References: <20090203172135.GF918@balbir.in.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Feb 2009 17:49:22 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:
+	x-gmailtapped-by:x-gmailtapped;
+	b=mtlZiXUqybgwNxCaBVzKfeLN25yqR2B7B79QaZeK/PiMUyoUHt6Yr9qGbkRogSMyM
+	QWJ20zCb9+gT9Vx7gLVdQ==
+MIME-Version: 1.0
+In-Reply-To: <20090203141645.91c7ea18.akpm@linux-foundation.org>
+References: <4976D77C.3020107@cn.fujitsu.com>
+	 <20090127144233.18cf9b3f.akpm@linux-foundation.org>
+	 <4987B925.1010405@cn.fujitsu.com>
+	 <20090203141645.91c7ea18.akpm@linux-foundation.org>
+Date: Tue, 3 Feb 2009 14:49:15 -0800
+Message-ID: <6599ad830902031449j1fa3dd08re842b57f8700b389@mail.gmail.com>
+Subject: Re: [PATCH] cpuset: fix allocating page cache/slab object on the 
+	unallowed node when memory spread is set
+From: Paul Menage <menage@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: miaox@cn.fujitsu.com, mingo@elte.hu, linux-kernel@vger.kernel.org,
+       cl@linux-foundation.org, nickpiggin@yahoo.com.au
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-GMailtapped-By: 172.28.16.148
+X-GMailtapped: menage
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009 22:51:35 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> 
-> Description: Add RSS and swap to OOM output from memcg
-> 
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> 
-> Changelog v3..v2
-> 1. Use static char arrays of size PATH_MAX in order to make
->    the OOM message more reliable.
-> 
-> Changelog v2..v1:
-> 
-> 1. Add more information about task's memcg and the memcg
->    over it's limit
-> 2. Print data in KB
-> 3. Move the print routine outside task_lock()
-> 4. Use rcu_read_lock() around cgroup_path, strictly speaking it
->    is not required, but relying on the current memcg implementation
->    is not a good idea.
-> 
-> 
-> This patch displays memcg values like failcnt, usage and limit
-> when an OOM occurs due to memcg.
-> 
-> Thanks go out to Johannes Weiner, Li Zefan, David Rientjes,
-> Kamezawa Hiroyuki, Daisuke Nishimura and KOSAKI Motohiro for
-> review.
-> 
-> Sample output
-> -------------
-> 
-> Task in /a/x killed as a result of limit of /a
-> memory: usage 1048576kB, limit 1048576kB, failcnt 4183
-> memory+swap: usage 1400964kB, limit 9007199254740991kB, failcnt 0
-> 
+On Tue, Feb 3, 2009 at 2:16 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 03 Feb 2009 11:25:25 +0800
+> Miao Xie <miaox@cn.fujitsu.com> wrote:
 >
-> ...
+>> on 2009-1-28 6:42 Andrew Morton wrote:
+>> > On Wed, 21 Jan 2009 16:06:20 +0800
+>> > Miao Xie <miaox@cn.fujitsu.com> wrote:
+>> >
+>> >> The task still allocated the page caches on old node after modifying its
+>> >> cpuset's mems when 'memory_spread_page' was set, it is caused by the old
+>> >> mem_allowed_list of the task, the current kernel doesn't updates it unless some
+>> >> function invokes cpuset_update_task_memory_state(), it is too late sometimes.
+>> >> We must update the mem_allowed_list of the tasks in time.
+>> >>
+>> >> Slab has the same problem.
+>> >>
+>> >> We fixes the bug by updating tasks' mem_allowed_list and spread flag after
+>> >> its cpuset's mems or spread flag is changed.
+>> >>
+>> >>
+>> >> ...
+>> >>
+>> >> --- a/kernel/kthread.c
+>> >> +++ b/kernel/kthread.c
+>> >> @@ -242,6 +242,7 @@ int kthreadd(void *unused)
+>> >>    set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+>> >>    set_cpus_allowed_ptr(tsk, CPU_MASK_ALL_PTR);
+>> >>
+>> >> +  current->mems_allowed = node_possible_map;
+>> >>    current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+>> >
+>> > Why this change?  kthreadd() is called from rest_init(), before anyone
+>> > has had a chance to alter ->mems_allowed?
+>>
+>> I found that after mems_allowed of kthreadd was not initialized applying this patch,
+>> every bit of it is 1, so...
+>> Maybe it is redundant.
 >
-> +/**
-> + * mem_cgroup_print_mem_info: Called from OOM with tasklist_lock held in
-> + * read mode.
-> + * @memcg: The memory cgroup that went over limit
-> + * @p: Task that is going to be killed
-> + *
-> + * NOTE: @memcg and @p's mem_cgroup can be different when hierarchy is
-> + * enabled
-> + */
-> +void mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
-> +{
-> +	struct cgroup *task_cgrp;
-> +	struct cgroup *mem_cgrp;
-> +	/*
-> +	 * Need a buffer on stack, can't rely on allocations. The code relies
-> +	 * on the assumption that OOM is serialized for memory controller.
-> +	 * If this assumption is broken, revisit this code.
-> +	 */
-> +	static char task_memcg_name[PATH_MAX];
-> +	static char memcg_name[PATH_MAX];
+> I think it is redundant.  kthreadd's mems_allowed _should_ be all-ones.
+> Or at least, all-nodes-allowed.
+>
+> I wasn't able to find out where the setting of init'smems_allowed
+> happens, after a bit of grepping and hunting.  It should be done within
+> INIT_TASK, but isn't.
+>
+> Still, kthreadd is reliably parented by swapper, and there shold be no
+> need to alter its mems_allowed.
+>
+> Similarly, what was the reason for setting current->mems_allowed in
+> kernel_init()?  That also should be unneeded.
+>
+> Finally, I've somewhat lost track of where we are with this patch.
+> Paul, do you see any other remaining issues?
 
-I don't think we need both of these.  With a bit of shuffling we could
-reuse the single buffer?
+AFAICS this patch still has a race between a thread reading its
+mems_allowed, and another thread updating it. The current architecture
+of having task->mems_allowed be only updatable by current was PaulJ's
+code originally, and I'm a bit loathe to touch it. But if we're going
+to, we'll need at the minimum to add a lock for any code that touches
+current->mems_allowed.
 
-fixlets..
-
-- kerneldoc requires that the function description be a single line
-
-- unmunge whitespace
-
---- a/mm/memcontrol.c~memcg-show-memcg-information-during-oom-fix
-+++ a/mm/memcontrol.c
-@@ -724,8 +724,7 @@ static int mem_cgroup_count_children_cb(
- }
- 
- /**
-- * mem_cgroup_print_mem_info: Called from OOM with tasklist_lock held in
-- * read mode.
-+ * mem_cgroup_print_mem_info: Called from OOM with tasklist_lock held in read mode.
-  * @memcg: The memory cgroup that went over limit
-  * @p: Task that is going to be killed
-  *
-@@ -762,7 +761,7 @@ void mem_cgroup_print_oom_info(struct me
- 		goto done;
- 	}
- 	ret = cgroup_path(mem_cgrp, memcg_name, PATH_MAX);
--	 if (ret < 0) {
-+	if (ret < 0) {
- 		rcu_read_unlock();
- 		goto done;
- 	}
-diff -puN mm/oom_kill.c~memcg-show-memcg-information-during-oom-fix mm/oom_kill.c
-_
-
+Paul
