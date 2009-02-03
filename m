@@ -1,137 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755421AbZBCO46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZBCPBc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755421AbZBCO46 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 09:56:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbZBCO4w
+	id S1754417AbZBCPBc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 10:01:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbZBCPB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 09:56:52 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:56298 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752496AbZBCO4v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 09:56:51 -0500
-Date: Tue, 3 Feb 2009 17:56:49 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v2] ftrace: On PowerPC we don't need frame pointers for
-	CALLER_ADDRs
-Message-ID: <20090203145649.GA19955@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090131190650.GA4284@oksana.dev.rtsoft.ru> <1233534919.18767.69.camel@pasglop> <1233583455.16878.3.camel@localhost.localdomain>
+	Tue, 3 Feb 2009 10:01:26 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39992 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752496AbZBCPBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 10:01:25 -0500
+Date: Tue, 3 Feb 2009 16:01:12 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       mtk.manpages@gmail.com, linux-man@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: open(2) says O_DIRECT works on 512 byte boundries?
+Message-ID: <20090203150111.GA20323@random.random>
+References: <20090128213322.GA15789@kroah.com> <20090129141338.34e44a1f.kamezawa.hiroyu@jp.fujitsu.com> <20090129160826.701E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090130061714.GC31209@kroah.com> <20090202220856.GY20323@random.random> <20090203035012.GC1867@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1233583455.16878.3.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090203035012.GC1867@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to this discussion:
-
-http://lkml.org/lkml/2008/7/25/338
-http://lkml.org/lkml/2008/7/26/72
-
-Frame pointers do nothing useful on PowerPC, so lib/Kconfig.debug
-makes CONFIG_FRAME_POINTER unselectable on PPC targets. But ftrace.h
-requires CONFIG_FRAME_POINTER for CALLER_ADDR macros. Therefore
-tracing is completely useless on PowerPC:
-
-[...]
-  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
-  <idle>-0       0X.h3    9us+: 0 (0)
-  <idle>-0       0X..3   72us : 0 (0)
-  <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
-
-This patch introduces a ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol,
-when selected the CALLER_ADDR macros are available without the
-FRAME_POINTER Kconfig symbol.
-
-With this patch the trace output turns into:
-
-[...]
-  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
-  <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
-  <idle>-0       0X..3   87us : cpu_idle (__got2_end)
-  <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
-
-On Mon, Feb 02, 2009 at 09:04:15AM -0500, Steven Rostedt wrote:
-[...]
-> > > -#ifdef CONFIG_FRAME_POINTER
-> > > +#if defined(CONFIG_FRAME_POINTER) || defined(CONFIG_PPC)
+On Mon, Feb 02, 2009 at 07:50:12PM -0800, Greg KH wrote:
+> On Mon, Feb 02, 2009 at 11:08:56PM +0100, Andrea Arcangeli wrote:
+> > Hi Greg!
+> > 
+> > > Thanks for the pointers, I'll go read the thread and follow up there.
+> > 
+> > If you also run into this final fix is attached below. Porting to
+> > mainline is a bit hard because of gup-fast... Perhaps we can use mmu
+> > notifiers to fix gup-fast... need to think more about it then I'll
+> > post something.
+> > 
+> > Please help testing the below on pre-gup-fast kernels, thanks!
 > 
-> Perhaps we should add a HAVE_NORMAL_FRAME_POINTERS in 
-> arch/powerpc/Kconfig under PPC and then we can change the above line to:
-> 
-> #if defined(CONFIG_FRAME_POINTERS) || \
-> 		defined(CONFIG_HAVE_NORMAL_FRAME_POINTERS)
-> 
-> This way when another arch wants to belong to this, we do not need to
-> have a list of archs here.
+> Thanks a lot for the patch, I'll try this out tomorrow.
 
-Would it be better if we introduce ARCH_HAS_NORMAL_FRAME_POINTERS
-in lib/Kconfig.debug, along with ARCH_WANT_FRAME_POINTERS?
+before testing I recommend to make this change:
 
-Note that we can't use ARCH_WANT_FRAME_POINTERS for our needs since
-that symbol is used for other (mostly cosmetic) purposes: whether we
-we want CONFIG_FRAME_POINTER depend on CONFIG_DEBUG_KERNEL, and
-whether frame pointers should be default =y (see commit
-da4276b8299a6544dc41ac2485d3ffca5811b3fb).
+-       if ((flags & FOLL_WRITE) && PageAnon(page) && !PageGUP(page))
++	if (PageAnon(page) && !PageGUP(page))
 
- arch/powerpc/Kconfig   |    1 +
- include/linux/ftrace.h |    3 ++-
- lib/Kconfig.debug      |    6 ++++++
- 3 files changed, 9 insertions(+), 1 deletions(-)
+If gup triggers cow, gup clears FOLL_WRITE from foll_flags before
+calling follow_page again, I think that's why it didn't work right for
+everyone, it just couldn't work right if FOLL_WRITE was going away
+before the last follow_page run. I wanted to set PG_gup only for
+gup(write=1) and not for gup(write=0) but that optimization that
+clears FOLL_WRITE prevents the above to work right, so the simple
+solution is to always set PG_gup, it won't make a big difference.
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 74cc312..d1c67bd 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -111,6 +111,7 @@ config PPC
- 	select HAVE_FTRACE_MCOUNT_RECORD
- 	select HAVE_DYNAMIC_FTRACE
- 	select HAVE_FUNCTION_TRACER
-+	select ARCH_HAS_NORMAL_FRAME_POINTERS
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select HAVE_IDE
- 	select HAVE_IOREMAP_PROT
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 7840e71..ede3fe2 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -237,7 +237,8 @@ static inline void __ftrace_enabled_restore(int enabled)
- #endif
- }
- 
--#ifdef CONFIG_FRAME_POINTER
-+#if defined(CONFIG_FRAME_POINTER) || \
-+		defined(CONFIG_ARCH_HAS_NORMAL_FRAME_POINTERS)
- /* TODO: need to fix this for ARM */
- # define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
- # define CALLER_ADDR1 ((unsigned long)__builtin_return_address(1))
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 29044f5..808f4e2 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -579,6 +579,12 @@ config ARCH_WANT_FRAME_POINTERS
- 	bool
- 	help
- 
-+config ARCH_HAS_NORMAL_FRAME_POINTERS
-+	bool
-+	help
-+	  Architectures should select this symbol if their ABI implies
-+	  having a frame pointer.
-+
- config FRAME_POINTER
- 	bool "Compile the kernel with frame pointers"
- 	depends on DEBUG_KERNEL && \
--- 
-1.5.6.5
-
+I'm looking at the hugetlb cow before posting an update...
