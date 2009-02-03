@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZBCOIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZBCORJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbZBCOIr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 09:08:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZBCOIh
+	id S1754059AbZBCORJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 09:17:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZBCOQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 09:08:37 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:4522 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbZBCOIg (ORCPT
+	Tue, 3 Feb 2009 09:16:56 -0500
+Received: from cluster-d.mailcontrol.com ([85.115.60.190]:53772 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752256AbZBCOQz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 09:08:36 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Fh1YcmyVCKotwzO6FgptZdVTVil54bX7Ba4Q13dirFsKuKWEoglSp9qGCud/8m41uA
-         A5n45kU3n8rdewSUVNI2AHeJrLrkbKhkLjnQjxE8YwELSqa7oZFRXFvKmj+/bKrmd3Eo
-         qBy+C7mO41bZHUAJljJeI5eXIBE1uG+/jEQtk=
+	Tue, 3 Feb 2009 09:16:55 -0500
+Message-ID: <49885139.3070106@csr.com>
+Date: Tue, 03 Feb 2009 14:14:17 +0000
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <20090129220633.GA18603@elf.ucw.cz>
-References: <2f11576a0901160518g52a3e70endc98fe4792a98b9b@mail.gmail.com>
-	 <d6200be20901212213x1069762cpd377d04bc5a04a91@mail.gmail.com>
-	 <20090128234209.A949.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	 <d6200be20901281851k45f9692em1379140c8951c195@mail.gmail.com>
-	 <20090129220633.GA18603@elf.ucw.cz>
-Date: Tue, 3 Feb 2009 23:08:35 +0900
-X-Google-Sender-Auth: 28518adc52a1614f
-Message-ID: <2f11576a0902030608q5ba07b2at38d4a0f1a7e13cc5@mail.gmail.com>
-Subject: Re: lowmemory android driver not needed?
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Pavel Machek <pavel@suse.cz>
-Cc: "Arve Hj?nnev?g" <arve@android.com>, Greg KH <greg@kroah.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Brian Swetland <swetland@google.com>, arve@google.com,
-       San Mehat <san@android.com>, Robert Love <rlove@google.com>,
-       linux-kernel@vger.kernel.org,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>,
-       "ext Juha Yrj??????" <juha.yrjola@solidboot.com>,
-       viktor.rosendahl@nokia.com, Trilok Soni <soni.trilok@gmail.com>
+To: Greg KH <greg@kroah.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] UWB and WUSB fixes
+References: <49873632.6040108@csr.com> <20090203051244.GA1826@kroah.com>
+In-Reply-To: <20090203051244.GA1826@kroah.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 03 Feb 2009 14:14:16.0991 (UTC) FILETIME=[B2D522F0:01C98609]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Greg KH wrote:
+> On Mon, Feb 02, 2009 at 06:06:42PM +0000, David Vrabel wrote:
+>>  drivers/usb/host/whci/asl.c       |    9 +++++++--
+>>  drivers/usb/host/whci/hw.c        |   15 +++++++++++++++
+>>  drivers/usb/host/whci/pzl.c       |    9 +++++++--
+>>  drivers/usb/host/whci/whcd.h      |    1 +
+>>  drivers/usb/wusbcore/devconnect.c |    1 +
+>>  drivers/usb/wusbcore/rh.c         |    3 +++
+> 
+> For patches under drivers/usb/ could you please route them through me?
+> It makes things a bit easier to coordinate at times.  Not that there is
+> a problem at all with these patches, but in the future it would be
+> nicer.
 
-2009/1/30 Pavel Machek <pavel@suse.cz>:
-> Hi!
->
->> I never expected it to be merged. I wrote it to allow us to ship a product.
->>
->> > The top problem is, this file stay on non proper place.
->> > then, MM folks don't review at all.
->> >
->> > I think this patch need to receive MM folks review.
->>
->> This patch solves two problems for us:
->> 1. It gives us more control over which process gets killed when we run
->> out of memory. This can easily be fixed in the regular oom killer
->> instead.
->> 2. It prevents the system from getting unusable due to excessive
->> demand paging. Before we added the low memory killer, we had devices
->> stuck for many minutes before the system managed to allocate enough
->> memory for the oom killer to kick in.
->> The second problem is the most critical and if it is solved, we will
->> not need this patch.
->
-> Ok, maybe the best way forward is to create a "demo" that can be run
-> on desktop machine,
+This is more work for me (and you) and I don't see the benefit.  Could
+you expand on what situations you see this as helping?
 
-good idea! :)
-
-
-> where machine misbehaves (like becomes useless for
-> 10 minutes before OOM killer kicks in), then draw attetion of
-> Andrew/Nick/etc?
+David
+-- 
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
