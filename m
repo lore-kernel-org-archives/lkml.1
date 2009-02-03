@@ -1,100 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753502AbZBCVf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752743AbZBCVi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753502AbZBCVf2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 16:35:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751391AbZBCVfT
+	id S1752743AbZBCVi3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 16:38:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZBCViU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 16:35:19 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52421 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbZBCVfT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 16:35:19 -0500
-Date: Tue, 3 Feb 2009 22:32:44 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Kaz Kylheku <kkylheku@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: main thread pthread_exit/sys_exit bug!
-Message-ID: <20090203213244.GA29040@redhat.com>
-References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com> <20090201174159.4a52e15c.akpm@linux-foundation.org> <20090202064509.GA20237@redhat.com> <3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com> <20090202165606.GA13346@redhat.com> <498754EF.8090604@redhat.com> <3f43f78b0902021239s21566f76hf7f59850b2dbf45a@mail.gmail.com> <3f43f78b0902021839j1eb1eb04u49be47277c99900d@mail.gmail.com> <20090203133313.GA5679@redhat.com> <3f43f78b0902031151ta841190i2c7898facc34cb95@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3f43f78b0902031151ta841190i2c7898facc34cb95@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Feb 2009 16:38:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57856 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750866AbZBCViT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 16:38:19 -0500
+Date: Tue, 3 Feb 2009 13:37:22 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: linux-kernel@vger.kernel.org, andi@firstfloor.org, oleg@redhat.com,
+       viro@ZenIV.linux.org.uk, davidel@xmailserver.org, davem@davemloft.net,
+       hch@lst.de, linux-api@vger.kernel.org, mpm@selenic.com,
+       alan@lxorguk.ukuu.org.uk, corbet@lwn.net
+Subject: Re: [PATCH 1/4] Use bit operations for file->f_flags
+Message-Id: <20090203133722.9e70de76.akpm@linux-foundation.org>
+In-Reply-To: <1233598811-6871-2-git-send-email-corbet@lwn.net>
+References: <1233598811-6871-1-git-send-email-corbet@lwn.net>
+	<1233598811-6871-2-git-send-email-corbet@lwn.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03, Kaz Kylheku wrote:
+On Mon,  2 Feb 2009 11:20:08 -0700
+Jonathan Corbet <corbet@lwn.net> wrote:
+
+> Turn struct file->f_flags into an unsigned long and use bitops to change
+> its contents.  This allows the safe manipulation of these flags without the
+> need for locks.  BKL use is removed where possible, but manipulations of
+> the FASYNC bit still require it (that will be fixed in a later patch).
+> 
+> ...
 >
-> Well, it doesn't bother me that that has to be thrown out.
-> In fact, I do not agree with the requirement that the thread
-> which calls pthread_exit must not respond to signals;
-> the original patch works for me.
+> diff --git a/arch/alpha/include/asm/fcntl.h b/arch/alpha/include/asm/fcntl.h
+> index 25da001..de7172f 100644
+> --- a/arch/alpha/include/asm/fcntl.h
+> +++ b/arch/alpha/include/asm/fcntl.h
+> @@ -9,13 +9,18 @@
+>  #define O_NOCTTY	010000	/* not fcntl */
+>  
+>  #define O_NONBLOCK	 00004
+> +#define NR_O_NONBLOCK	 2
+>  #define O_APPEND	 00010
+> +#define NR_O_APPEND	 3
+>  #define O_SYNC		040000
+> +#define NR_O_SYNC	14
+>  #define O_DIRECTORY	0100000	/* must be a directory */
+>  #define O_NOFOLLOW	0200000 /* don't follow links */
+>  #define O_LARGEFILE	0400000 /* will be set by the kernel on every open */
+>  #define O_DIRECT	02000000 /* direct disk access - should check with OSF/1 */
+> +#define NR_O_DIRECT	19
+>  #define O_NOATIME	04000000
+> +#define NR_O_NOATIME	20
+>  #define O_CLOEXEC	010000000 /* set close_on_exec */
+>  
+>  #define F_GETLK		7
+> diff --git a/arch/arm/include/asm/fcntl.h b/arch/arm/include/asm/fcntl.h
+> index a80b660..e74b8d1 100644
+> --- a/arch/arm/include/asm/fcntl.h
+> +++ b/arch/arm/include/asm/fcntl.h
+> @@ -4,6 +4,7 @@
+>  #define O_DIRECTORY	 040000	/* must be a directory */
+>  #define O_NOFOLLOW	0100000	/* don't follow links */
+>  #define O_DIRECT	0200000	/* direct disk access hint - currently ignored */
+> +#define NR_O_DIRECT	16
+>  #define O_LARGEFILE	0400000
+>  
+>  #include <asm-generic/fcntl.h>
 
-What about other users? We can't know what how much they
-depend on the current behaviour.
+hm, it's not exactly a vision of splendour, is it.
 
-> I.e. in my embedded GNU/Linux distro, that requirement
-> doesn't exist. And since I can't find it in the Single
-> Unix Specification, so much for that!
->
-> Nothing in the spec says that once pthread_exit is called,
-> signals are stopped. This function invokes cleanup handling,
-> and thread-specific-storage destruction. During any of those
-> tasks, signals can still be happening.  Any of those
-> tasks can easily enter into an indefinite wait. What if
-> a cleanup handler performs a blocking RPC to a remote
-> server? Well, there you are, stuck in pthread_exit,
-> handling signals, and not cleaning up your robust list, etc.
->
-> I also don't require robust locks to be cleaned up
-> instantly if they are owned by a main thread that has
-> called pthread_exit.
+I suppose we could/should do
 
-OK, OK. Please forget about signals, futexes, etc.
-Simple program:
+#define O_NONBLOCK	(1 << NR_O_NONBLOCK)
 
-	pthread_t main_thread;
+but that doesn't prevent people from accidentally doing open-coded &/|
+in the future.  Perhaps renaming f_flags to f__flags_atomic (stupid
+name?) would help.
 
-	void *tfunc(void *a)
-	{
-		pthread_joni(main_thread, NULL);
-		return NULL;
-	}
+> +static void tweak_flags_bit(int nr, int on, unsigned long *flags)
+> +{
+> +	if (on)
+> +		set_bit(nr, flags);
+> +	else
+> +		clear_bit(nr, flags);
+> +}
 
-	int main(void)
-	{
-		pthread_t thr;
+I see this construct fairly frequently.  I think.  Someone(tm) should
+check ;) If correct I guess we should have some generic version, put it
+in include/linux/bitops.h.
 
-		main_thread = pthread_self();
-		pthread_create(&thr, NULL, tfunc, NULL);
-		pthread_exit(NULL);
-	}
+>  
+>  static int setfl(int fd, struct file * filp, unsigned long arg)
+>  {
+> @@ -187,9 +195,17 @@ static int setfl(int fd, struct file * filp, unsigned long arg)
+>  			if (error < 0)
+>  				goto out;
+>  		}
+> +		change_bit(NR_FASYNC, &filp->f_flags);
+>  	}
+>  
+> -	filp->f_flags = (arg & SETFL_MASK) | (filp->f_flags & ~SETFL_MASK);
+> +	/*
+> +	 * Now that we use bitops we have to tweak each bit individually.
+> +	 */
+> +	tweak_flags_bit(NR_O_APPEND, arg & O_APPEND, &filp->f_flags);
+> +	tweak_flags_bit(NR_O_NONBLOCK, arg & O_NONBLOCK, &filp->f_flags);
+> +	tweak_flags_bit(NR_O_NDELAY, arg & O_NDELAY, &filp->f_flags);
+> +	tweak_flags_bit(NR_O_DIRECT, arg & O_DIRECT, &filp->f_flags);
+> +	tweak_flags_bit(NR_O_NOATIME, arg & O_NOATIME, &filp->f_flags);
 
-I bet this will hang with your patch applied. Because
-we depend on sys_futex(->clear_child_tid, FUTEX_WAKE, ...).
+Could pass the file* to tweak_flags_bit() - that would generate less
+code.  Unless the compiler chooses to inline tweak_flags_bit().
 
-Kaz, you know, it is not easy to say "you patch is wrong
-in any case, no matter how much it will be improved" ;)
-But even if the current behaviour is not optimal, we must not
-change it unless we think it leads to bugs. We can't know
-which application can suffer. The current behaviour is old.
+>   out:
+>  	unlock_kernel();
+>  	return error;
+> diff --git a/fs/ioctl.c b/fs/ioctl.c
+> index 240ec63..fc0db36 100644
+> --- a/fs/ioctl.c
+> +++ b/fs/ioctl.c
+> @@ -392,22 +392,24 @@ static int file_ioctl(struct file *filp, unsigned int cmd,
+>  
+>  static int ioctl_fionbio(struct file *filp, int __user *argp)
+>  {
+> -	unsigned int flag;
+>  	int on, error;
+>  
+>  	error = get_user(on, argp);
+>  	if (error)
+>  		return error;
+> -	flag = O_NONBLOCK;
+>  #ifdef __sparc__
+>  	/* SunOS compatibility item. */
+> -	if (O_NONBLOCK != O_NDELAY)
+> -		flag |= O_NDELAY;
+> +	if (O_NONBLOCK != O_NDELAY) {
+> +		if (on)
+> +			set_bit(NR_O_NDELAY, &filp->f_flags);
+> +		else
+> +			clear_bit(NR_O_NDELAY, &filp->f_flags);
 
-> Face it, allowing the thread leader to exit is as wrong as doing
-> other stupid things to the leader, like unsharing the signal
-> handler.
+hey, I recognise that!
 
-Perhaps. That is why I said _something_ like your patch perhaps
-makes sense. But this is tricky, and I don't see a simple/clean
-way to improve things. And, otoh, I do not see _real_ problems
-with the zombie leaders.
+> +	}
+>  #endif
+>  	if (on)
+> -		filp->f_flags |= flag;
+> +		set_bit(NR_O_NONBLOCK, &filp->f_flags);
+>  	else
+> -		filp->f_flags &= ~flag;
+> +		clear_bit(NR_O_NONBLOCK, &filp->f_flags);
+
+and that.
 
 
-As for original problem, it should be fixed anyway. wait_task_stopped()
-should take SIGNAL_STOP_STOPPED into account, not task->state.
-Unless we are ptracer, of course.
-
-Oleg.
+as for the whole patchset: gee, that global lock you had is looking
+attractive ;)
 
