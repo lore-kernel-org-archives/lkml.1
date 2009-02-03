@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755728AbZBCOlE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbZBCOmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755728AbZBCOlE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 09:41:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZBCOkv
+	id S1755737AbZBCOmH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 09:42:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbZBCOl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 09:40:51 -0500
-Received: from moutng.kundenserver.de ([212.227.126.187]:50984 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753984AbZBCOku convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 09:40:50 -0500
-From: Arnd Bergmann <arnd@arndb.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [git pull -tip] headers_check fix cleanup
-Date: Tue, 3 Feb 2009 15:40:26 +0100
+	Tue, 3 Feb 2009 09:41:57 -0500
+Received: from hpsmtp-eml16.KPNXCHANGE.COM ([213.75.38.116]:22982 "EHLO
+	hpsmtp-eml16.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752757AbZBCOl4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 09:41:56 -0500
+From: Frans Pop <elendil@planet.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Comparison between .28 and .29-rc3 for STR cycle
+Date: Tue, 3 Feb 2009 15:41:49 +0100
 User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
-       LKML <linux-kernel@vger.kernel.org>, reiserfs-devel@vger.kernel.org
-References: <1233671617.27322.3.camel@localhost.localdomain>
-In-Reply-To: <1233671617.27322.3.camel@localhost.localdomain>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+References: <200902031237.53579.elendil@planet.nl>
+In-Reply-To: <200902031237.53579.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="utf-8"
 Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-Message-Id: <200902031540.27166.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/LL39ZtsgxjgR11OuwuEW0+yisRDJFTX8U+HG
- dvF9yPe16DkyX3bIIVr+35eZW7Og2/7i+BNgl32W8niVtP2URB
- ytrWxuBt3OgOhI9xYasng==
+Message-Id: <200902031541.50182.elendil@planet.nl>
+X-OriginalArrivalTime: 03 Feb 2009 14:41:51.0001 (UTC) FILETIME=[8CB30890:01C9860D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 03 February 2009, Jaswinder Singh Rajput wrote:
-> These patchset is based on Arnd Bergmann suggestions:
-> git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
-> 
-> Jaswinder Singh Rajput (3):
->       headers_check fix cleanup: linux/coda_psdev.h
->       headers_check fix cleanup: linux/nubus.h
->       headers_check fix cleanup: linux/reiserfs_fs.h
+On Tuesday 03 February 2009, Frans Pop wrote:
+> # Of the next 4 lines only the 3rd line also appears during normal
+> boot.
+>  +pci 0000:00:02.0: PME# disabled 
+> Â +pci 0000:00:02.1: PME# disabled
+> Â +pci 0000:00:03.0: PME# disabled
+> Â +pci 0000:00:03.2: PME# disabled
 
-Looks good, thanks for the follow-up!
+The 3rd device is also the only one that has a "PME# supported" line 
+during normal boot.
 
-	Arnd <><
+Problem seems to be in drivers/pci/pci.c in pci_enable_wake(), which has:
+        if (!enable || pci_pme_capable(dev, state)) {
+                pci_pme_active(dev, enable);
+                pme_done = true;
+        }
+
+So it's always called if enable is false, regardless of whether the device 
+is PME# capable. Should a test for dev->pme_support be added somewhere?
+
+It seems harmless, just inconsistent.
