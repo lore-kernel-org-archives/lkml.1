@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbZBCMdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbZBCMdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbZBCMdR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:33:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752006AbZBCMdA
+	id S1752573AbZBCMdy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:33:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZBCMdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:33:00 -0500
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:51144 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751495AbZBCMdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:33:00 -0500
-Date: Tue, 3 Feb 2009 13:32:42 +0100
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Grant Grundler <grundler@google.com>,
-       Greg Freemyer <greg.freemyer@gmail.com>, Tejun Heo <htejun@gmail.com>,
-       Michael Tokarev <mjt@tls.msk.ru>, Kay Sievers <kay.sievers@vrfy.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] block: export SSD/non-rotational queue flag through
- sysfs
-Message-ID: <20090203133242.29904063@mjolnir.drzeus.cx>
-In-Reply-To: <20090116064818.GS30821@kernel.dk>
-References: <4964866D.8010503@msgid.tls.msk.ru>
-	<1231342473.3282.19.camel@localhost.localdomain>
-	<496ECBA0.60209@gmail.com>
-	<87f94c370901150707h10506e99reaa40c23e32ab18c@mail.gmail.com>
-	<1232035561.5966.48.camel@localhost.localdomain>
-	<da824cf30901151055o2385ef74x918e8390e576d807@mail.gmail.com>
-	<1232046039.5966.54.camel@localhost.localdomain>
-	<da824cf30901151445q6b54c0b1nbf24f03849e1a5b3@mail.gmail.com>
-	<1232061429.5966.87.camel@localhost.localdomain>
-	<Pine.LNX.4.64.0901152341500.15035@blonde.anvils>
-	<20090116064818.GS30821@kernel.dk>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature"; micalg=PGP-SHA1; boundary="=_freyr.drzeus.cx-18211-1233664376-0001-2"
+	Tue, 3 Feb 2009 07:33:42 -0500
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:45075 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752407AbZBCMdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:33:41 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=IVrIwjwvY3+DDvbdME3SSCmNhXpZrpaIA1+F6Y4qoqrVrRO432WBaLcM/tPFXv7VFAwB4IEiCyjonOmFttR+d7gteVwmOY6G2NZ3if2dTCjWdZ3BwGBH1q1+FW4TnVQhIjZ3jCw28f0osvU+2R5DO9KtsO0wSVpIkpfLi4A0ur8=  ;
+X-YMail-OSG: WAAeYQkVM1lwnDB8XsVfT_peR_e_0YiZe5NZPuaN9nznRnAE8eLwNqLavExNpMJWNgTuqzK06fr3nM.2N43buCZqlNJ16NIZM0UBNqtP8ek5FTJmlCvfIW6uPju3fVhLCLd4mr1e0VQaOgYmwlbCcItZnnwkt_If94geCoUg08LTWFbgfA_leI97v55SAQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Date: Tue, 3 Feb 2009 23:33:12 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Evgeniy Polyakov <zbr@ioremap.net>, david@lang.hm,
+       Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       w@1wt.eu, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+References: <20090202080855.GA4129@ff.dom.local> <20090203121219.GB22427@ioremap.net> <20090203121808.GA9218@gondor.apana.org.au>
+In-Reply-To: <20090203121808.GA9218@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902032333.15525.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tuesday 03 February 2009 23:18:08 Herbert Xu wrote:
+> On Tue, Feb 03, 2009 at 03:12:19PM +0300, Evgeniy Polyakov wrote:
+> > It is a solution, but I think it will behave noticebly worse than
+> > with decresed MTU.
+>
+> Not necessarily.  Remember GSO/GRO in essence are just hacks to
+> get around the fact that we can't increase the MTU to where we
+> want it to be.  MTU reduces the cost over the entire path while
+> GRO/GSO only do so for the sender and the receiver.
+>
+> In other words when given the choice between a larger MTU with
+> copying or GRO, the larger MTU will probably win anyway as it's
+> optimising the entire path rather than just the receiver.
+>
+> > That's the main point: how to deal with broken hardware? I think (but
+> > have no strong numbers though) that having 6 packets with 1500 MTU
+> > combined into GRO/LRO frame will be processed way faster than copying 9k
+> > MTU into 3 pages and process single skb.
+>
+> Please note that with my scheme, you'd only start copying if you
+> can't allocate a linear skb.  So if memory fragmentation doesn't
+> happen then there is no copying at all.
 
---=_freyr.drzeus.cx-18211-1233664376-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+This sounds like a really nice idea (to the layman)!
 
-On Fri, 16 Jan 2009 07:48:18 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
->=20
-> For non-queuing devices, I think our current check is a bit too drastic.
-> We probably want to change that to
->=20
-> int dont_plug(q)
-> {
->         return blk_queue_nonrot(q) && blk_queue_tagged(q);
-> }
->=20
-
-Please do. The MMC block driver sets nonrot as of late, but it is
-extremely dependent on merging. The command overhead is just silly, so
-to get anywhere near the speed numbers indicated in marketing you need
-large requests.
-
-It seems that too many confuse "non-rotational" with "low latency",
-which isn't always the same. :)
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.drzeus.cx-18211-1233664376-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-
-iEYEARECAAYFAkmIOXIACgkQ7b8eESbyJLjdVQCgqNVyBfYB9z9dVstnhmi75i4t
-GHkAoIi1mICX4UQmdcFWxF5fkUm/Zc1T
-=cPzc
------END PGP SIGNATURE-----
-
---=_freyr.drzeus.cx-18211-1233664376-0001-2--
