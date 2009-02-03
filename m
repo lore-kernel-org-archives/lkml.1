@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753456AbZBCFaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753292AbZBCFb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753456AbZBCFaG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 00:30:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZBCF3y
+	id S1753292AbZBCFb3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 00:31:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZBCFbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 00:29:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38457 "EHLO mx3.mail.elte.hu"
+	Tue, 3 Feb 2009 00:31:21 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39831 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751277AbZBCF3x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 00:29:53 -0500
-Date: Tue, 3 Feb 2009 06:29:13 +0100
+	id S1750845AbZBCFbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 00:31:20 -0500
+Date: Tue, 3 Feb 2009 06:31:08 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -17,13 +17,13 @@ Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/3] trace: fix default boot up tracer
-Message-ID: <20090203052913.GC28361@elte.hu>
-References: <20090203023830.440860800@goodmis.org> <20090203024358.332574797@goodmis.org>
+Subject: Re: [PATCH 3/3] trace: let boot trace be chosen by command line
+Message-ID: <20090203053108.GD28361@elte.hu>
+References: <20090203023830.440860800@goodmis.org> <20090203024358.531245194@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090203024358.332574797@goodmis.org>
+In-Reply-To: <20090203024358.531245194@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -42,63 +42,18 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 > From: Steven Rostedt <srostedt@redhat.com>
 > 
-> Peter Zijlstra started the functionality to start up a default
-> tracing at bootup. This patch finishes the work.
-> 
-> Now if you add 'ftrace=<tracer>' to the command line, when that tracer
-> is registered on bootup, that tracer is selected and starts tracing.
-> 
-> Note, all selftests for tracers that are registered after this tracer
-> is disabled. This prevents the selftests from disturbing the running
-> tracer, or the running tracer from disturbing the selftest.
+> Now that we have a working ftrace=<tracer> function, make the boot
+> tracer get activated by it. This way we can turn it on or off without
+> recompiling the kernel, as well as keeping the selftests on. The
+> selftests are disabled whenever a default tracer starts running.
 > 
 > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 > ---
->  kernel/trace/trace.c |   60 +++++++++++++++++++++++++++++++++++++++++++++-----
->  1 files changed, 54 insertions(+), 6 deletions(-)
+>  kernel/trace/Kconfig      |    7 +++----
+>  kernel/trace/trace.c      |    5 +----
+>  kernel/trace/trace_boot.c |   11 +++++++----
+>  3 files changed, 11 insertions(+), 12 deletions(-)
 
-applied to tip/tracing/ftrace, thanks Steve!
-
-This portion is a bit ugly:
-
-> -	lock_kernel();
->  
-> +	if (!ret && default_bootup_tracer) {
-> +		if (!strncmp(default_bootup_tracer, type->name,
-> +			     BOOTUP_TRACER_SIZE)) {
-> +			printk(KERN_INFO "Starting tracer '%s'\n",
-> +			       type->name);
-> +			/* Do we want this tracer to start on bootup? */
-> +			tracing_set_tracer(type->name);
-> +			default_bootup_tracer = NULL;
-> +			/* disable other selftests, since this will break it. */
-> +			tracing_selftest_disabled = 1;
-> +#ifdef CONFIG_FTRACE_STARTUP_TEST
-> +			printk(KERN_INFO "Disabling FTRACE selftests due"
-> +			       " to running tracer '%s'\n", type->name);
-> +#endif
-> +		}
-> +	}
-> +
-> +	lock_kernel();
->  	return ret;
-
-This could be done as:
-
-	if (ret || default_bootup_tracer)
-		goto out_relock;
-
-	if (strncmp(default_bootup_tracer, type->name, BOOTUP_TRACER_SIZE)) 
-		goto out_relock;
-
-	...
-
- out_relock:
-	lock_kernel();
-	return ret;
-
-And we lose a lot of crappy linebreaks that way as well - beyond making the 
-purpose of the BKL bits clearer. Hm?
+Applied to tip/tracing/ftrace, thanks Steve!
 
 	Ingo
-
