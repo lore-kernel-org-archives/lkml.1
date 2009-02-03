@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbZBCDnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752704AbZBCDsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752611AbZBCDnv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 22:43:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZBCDnn
+	id S1752704AbZBCDsT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 22:48:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZBCDsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 22:43:43 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49469 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbZBCDnm (ORCPT
+	Mon, 2 Feb 2009 22:48:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58912 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751371AbZBCDsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 22:43:42 -0500
-Date: Tue, 3 Feb 2009 12:42:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrea Arcangeli <aarcange@redhat.com>, Greg KH <greg@kroah.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       mtk.manpages@gmail.com, linux-man@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: open(2) says O_DIRECT works on 512 byte boundries?
-Message-Id: <20090203124230.c738302a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090203115540.86a01273.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090128213322.GA15789@kroah.com>
-	<20090129141338.34e44a1f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090129160826.701E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20090130061714.GC31209@kroah.com>
-	<20090202220856.GY20323@random.random>
-	<20090203102920.684e7b67.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090203023147.GZ20323@random.random>
-	<20090203115540.86a01273.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 22:48:09 -0500
+Date: Mon, 2 Feb 2009 19:47:13 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <1233631820.16867.27.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0902021941120.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <200902030045.19416.rjw@sisk.pl>  <alpine.LFD.2.00.0902021551050.3247@localhost.localdomain>  <200902030115.32659.rjw@sisk.pl>  <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain> 
+ <1233623525.18767.151.camel@pasglop>  <alpine.LFD.2.00.0902021729510.3247@localhost.localdomain>  <1233625606.18767.157.camel@pasglop> <1233631820.16867.27.camel@pasglop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009 11:55:40 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-> On Tue, 3 Feb 2009 03:31:47 +0100
-> Andrea Arcangeli <aarcange@redhat.com> wrote:
+
+On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
+> On Tue, 2009-02-03 at 12:46 +1100, Benjamin Herrenschmidt wrote:
+> >
+> > Radeons don't do much with config space... the worst we may miss I
+> > suppose is subsystem vendor/device... Maybe I'll add something to
+> > explicitely save and restore it or X might get upset. I'll have a look.
 > 
-> > On Tue, Feb 03, 2009 at 10:29:20AM +0900, KAMEZAWA Hiroyuki wrote:
-> > > On Mon, 2 Feb 2009 23:08:56 +0100
-> > > Andrea Arcangeli <aarcange@redhat.com> wrote:
-> > > 
-> > > > Hi Greg!
-> > > > 
-> > > > > Thanks for the pointers, I'll go read the thread and follow up there.
-> > > > 
-> > > > If you also run into this final fix is attached below. Porting to
-> > > > mainline is a bit hard because of gup-fast... Perhaps we can use mmu
-> > > > notifiers to fix gup-fast... need to think more about it then I'll
-> > > > post something.
-> > > > 
-> > > > Please help testing the below on pre-gup-fast kernels, thanks!
-> > > > 
-> > > I commented in FJ-Redhat Path but not forwared from unknown reason ;)
-> > > I comment again.
-> > > 
-> > > 1. Why TestSetLockPage() is necessary ?
-> > >    It seems not necesary.
-> > 
-> > To avoid the VM to remove or add the page from/to swapcache and change
-> > page_count/mapcount from under us. This most certainly wasn't the
-> > reason of the slowdown (the slowdown were the false positives
-> > generated by pagevec pinning) and removing it was more intrusive than
-> > I wanted.
-> 
-> My point is.
->   - If TestSetLockPage() failes, force_cow=1.
->   - If count/mapcount check fails, force_cow=1.
-> 
-> So, lock_page() here seems meaningless. If you consider lock_page() is important,
-> just use lock_page() seems better.
-> 
-I changed my thinking. I understood *lock* is necessary here.
-But I'm not sure this is enough.
+> Actually, subsystem stuff is below 0x40 so it should be fine too.
 
+The things above 0x40 tend to be:
 
+ - capabilities (values and next-pointers)
 
-> > > 3. Why "follow_page() successfully finds a page" case only ?
-> > >  not necessary to insert SetPageGUP() in following path ?
-> > > 
-> > >  - handle_mm_fault()
-> > >            => do_anonymos/swap/wp_page()
-> > >            or some.
-> > 
-> > No need to change that either, all we need to know are the pages whose
-> > count vs mapcount has a discrepancy that could have been caused by
-> > get_user_pages. So only follow_page has to set it. More precisely
-> > FOLL_GET|FOLL_WRITE is the only path we care about there.
-> > 
-> 
-> Assume 3 threads in a process.
-please ignore this, I'm shame ;(
+   The PCI layer will save a random couple of these (read: the ones it 
+   cares about)
 
--Kame
+ - random non-architected values specific to that chip. And sometimes 
+   these are important. Like ISA interrupt routing information for cardbus 
+   controllers. Or timing values set up by the BIOS.
 
+but in 99% of all cases the stuff isn't really anything special, or is 
+just fine at its cold-reset default values. But I could in theory see that 
+some graphics card could hide things like DRAM timings in there, that get 
+initialized on POST, but not (obviously) on a STR cycle.
+
+So it could go either way. Totally unimportant or hugely important. Most 
+cards don't seem to care, and saving just the low 64 bytes seems to work 
+for almost all drivers.
+
+			Linus
