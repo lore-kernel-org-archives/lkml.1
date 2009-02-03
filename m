@@ -1,692 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZBCKJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753575AbZBCKMT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbZBCKJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 05:09:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZBCKJq
+	id S1753575AbZBCKMT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 05:12:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZBCKMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 05:09:46 -0500
-Received: from ey-out-2122.google.com ([74.125.78.26]:58726 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751819AbZBCKJo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 05:09:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=UJnG9bqkonh8cjVRuy265r1Hxqwk43myo939Ht6zAEzdCad1Yxck1AxtRkwSEvhC4t
-         2QhT1rpa4aI8sE//Hx1cMBIekQ+0Lcr/Mf2AsShmc2D5k7RHvoh9rOYqW1DHjC2z+wI6
-         09C72UTB6uCm5XHVfyXMq81b9amdzlEF0ylbw=
-Message-ID: <498817E2.3020008@gmail.com>
-Date: Tue, 03 Feb 2009 11:09:38 +0100
-From: Andrea Righi <righi.andrea@gmail.com>
-Reply-To: righi.andrea@gmail.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 3 Feb 2009 05:12:10 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:39692 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751859AbZBCKMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 05:12:08 -0500
+Date: Tue, 3 Feb 2009 10:12:06 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator (try 2)
+Message-ID: <20090203101205.GF9840@csn.ul.ie>
+References: <20090123154653.GA14517@wotan.suse.de> <1232959706.21504.7.camel@penberg-laptop>
 MIME-Version: 1.0
-To: Andrey Borzenkov <arvidjaar@mail.ru>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Linux Frame Buffer Device Development 
-	<linux-fbdev-devel@lists.sourceforge.net>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-pm@lists.linux-foundation.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [Linux-fbdev-devel] [2.6.29-rc2] fb_mmap: circular locking dependency
- on hibernation
-References: <200901272137.57757.arvidjaar@mail.ru> <200902011015.45562.arvidjaar@mail.ru> <49862722.7020109@gmail.com> <200902022036.42805.arvidjaar@mail.ru>
-In-Reply-To: <200902022036.42805.arvidjaar@mail.ru>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1232959706.21504.7.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-02-02 18:36, Andrey Borzenkov wrote:
-> I hope you do not think I'm doing this on purpose? :)
-
-LOL!
-
-Don't worry, we'll be able to fix it before linux 3.0.0 (maybe).
-
+On Mon, Jan 26, 2009 at 10:48:26AM +0200, Pekka Enberg wrote:
+> Hi Nick,
 > 
-> [  241.668005] =======================================================
-> [  241.668044] [ INFO: possible circular locking dependency detected ]
-> [  241.668068] 2.6.29-rc3-1avb #17
-> [  241.668080] -------------------------------------------------------
-> [  241.668100] s2disk/4219 is trying to acquire lock:
-> [  241.668118]  (&fb_info->lock){--..}, at: [<c02235e7>] 
-> fb_mmap+0x97/0x170
-> [  241.668188]
-> [  241.668190] but task is already holding lock:
-> [  241.668207]  (&mm->mmap_sem){----}, at: [<c010639e>] 
-> sys_mmap2+0x8e/0xc0
-> [  241.668256]
-> [  241.668258] which lock already depends on the new lock.
-> [  241.668262]
-> [  241.668282]
-> [  241.668284] the existing dependency chain (in reverse order) is:
-> [  241.668305]
-> [  241.668307] -> #2 (&mm->mmap_sem){----}:
-> [  241.668331]        [<c014520f>] __lock_acquire+0x129f/0x1930
-> [  241.668362]        [<c01458fc>] lock_acquire+0x5c/0x80
-> [  241.668382]        [<c0182117>] might_fault+0x77/0xa0
-> [  241.668413]        [<c0209916>] copy_to_user+0x36/0x120
-> [  241.668439]        [<c01a60f7>] filldir+0x97/0xe0
-> [  241.668482]        [<c01de339>] sysfs_readdir+0x129/0x220
-> [  241.668508]        [<c01a62a6>] vfs_readdir+0x86/0xa0
-> [  241.668529]        [<c01a63e8>] sys_getdents+0x68/0xc0
-> [  241.668549]        [<c010344a>] syscall_call+0x7/0xb
-> [  241.668570]        [<ffffffff>] 0xffffffff
-> [  241.668650]
-> [  241.668653] -> #1 (sysfs_mutex){--..}:
-> [  241.668676]        [<c014520f>] __lock_acquire+0x129f/0x1930
-> [  241.668698]        [<c01458fc>] lock_acquire+0x5c/0x80
-> [  241.668718]        [<c030820a>] mutex_lock_nested+0xba/0x2f0
-> [  241.668749]        [<c01de6cc>] sysfs_addrm_start+0x2c/0xc0
-> [  241.668771]        [<c01dec80>] create_dir+0x40/0x90
-> [  241.668792]        [<c01decfb>] sysfs_create_dir+0x2b/0x50
-> [  241.668812]        [<c02036bc>] kobject_add_internal+0xbc/0x1b0
-> [  241.668853]        [<c0203881>] kobject_add_varg+0x31/0x50
-> [  241.668874]        [<c02038fc>] kobject_add+0x2c/0x60
-> [  241.668895]        [<c0273718>] device_add+0xa8/0x550
-> [  241.668938]        [<c0273bd2>] device_register+0x12/0x20
-> [  241.668960]        [<c0273c8b>] device_create_vargs+0xab/0xc0
-> [  241.668982]        [<c0273cc8>] device_create+0x28/0x30
-> [  241.669003]        [<c026cf3d>] register_con_driver+0xed/0x130
-> [  241.669027]        [<c026e45b>] take_over_console+0x1b/0x50
-> [  241.669049]        [<c02304dd>] fbcon_takeover+0x5d/0xb0
-> [  241.669081]        [<c0231457>] fbcon_event_notify+0xb27/0xc20
-> [  241.669104]        [<c030c683>] notifier_call_chain+0x53/0xa0
-> [  241.669138]        [<c0138ab4>] 
-> __blocking_notifier_call_chain+0x44/0x60
-> [  241.669218]        [<c0138aea>] 
-> blocking_notifier_call_chain+0x1a/0x20
-> [  241.669246]        [<c0222f81>] fb_notifier_call_chain+0x11/0x20
-> [  241.669276]        [<c0223f08>] register_framebuffer+0x168/0x220
-> [  241.669305]        [<c0414ba2>] vesafb_probe+0x542/0x783
-> [  241.669347]        [<c027687f>] platform_drv_probe+0xf/0x20
-> [  241.669378]        [<c0275a97>] driver_probe_device+0x87/0x1b0
-> [  241.669404]        [<c0275c58>] __device_attach+0x8/0x10
-> [  241.669429]        [<c02750db>] bus_for_each_drv+0x5b/0x80
-> [  241.669460]        [<c0275d06>] device_attach+0x76/0x80
-> [  241.669484]        [<c0274ef7>] bus_attach_device+0x47/0x70
-> [  241.669511]        [<c0273993>] device_add+0x323/0x550
-> [  241.669536]        [<c0277255>] platform_device_add+0x175/0x1c0
-> [  241.669567]        [<c0414e7d>] vesafb_init+0x9a/0x1ec
-> [  241.669592]        [<c010111a>] do_one_initcall+0x2a/0x160
-> [  241.669619]        [<c04004d5>] kernel_init+0x83/0xd5
-> [  241.669661]        [<c0103a77>] kernel_thread_helper+0x7/0x10
-> [  241.669688]        [<ffffffff>] 0xffffffff
-> [  241.669737]
-> [  241.669739] -> #0 (&fb_info->lock){--..}:
-> [  241.669770]        [<c014537c>] __lock_acquire+0x140c/0x1930
-> [  241.669797]        [<c01458fc>] lock_acquire+0x5c/0x80
-> [  241.669821]        [<c030820a>] mutex_lock_nested+0xba/0x2f0
-> [  241.669847]        [<c02235e7>] fb_mmap+0x97/0x170
-> [  241.669872]        [<c0188c76>] mmap_region+0x1d6/0x530
-> [  241.669908]        [<c01891a3>] do_mmap_pgoff+0x1d3/0x2f0
-> [  241.669934]        [<c01063bd>] sys_mmap2+0xad/0xc0
-> [  241.669959]        [<c0103371>] sysenter_do_call+0x12/0x31
-> [  241.669984]        [<ffffffff>] 0xffffffff
-> [  241.670009]
-> [  241.670012] other info that might help us debug this:
-> [  241.670015]
-> [  241.670049] 1 lock held by s2disk/4219:
-> [  241.670065]  #0:  (&mm->mmap_sem){----}, at: [<c010639e>] 
-> sys_mmap2+0x8e/0xc0
-> [  241.670092]
-> [  241.670092] stack backtrace:
-> [  241.670092] Pid: 4219, comm: s2disk Not tainted 2.6.29-rc3-1avb #17
-> [  241.670092] Call Trace:
-> [  241.670092]  [<c0306e38>] ? printk+0x18/0x20
-> [  241.670092]  [<c0143b1f>] print_circular_bug_tail+0xcf/0xe0
-> [  241.670092]  [<c014537c>] __lock_acquire+0x140c/0x1930
-> [  241.670092]  [<c01487f0>] ? futex_wait+0x170/0x450
-> [  241.670092]  [<c011826c>] ? try_to_wake_up+0x10c/0x120
-> [  241.670092]  [<c0309d15>] ? _spin_unlock_irqrestore+0x35/0x60
-> [  241.670092]  [<c0141105>] ? lock_release_holdtime+0x35/0x210
-> [  241.670092]  [<c01458fc>] lock_acquire+0x5c/0x80
-> [  241.670092]  [<c02235e7>] ? fb_mmap+0x97/0x170
-> [  241.670092]  [<c030820a>] mutex_lock_nested+0xba/0x2f0
-> [  241.670092]  [<c02235e7>] ? fb_mmap+0x97/0x170
-> [  241.670092]  [<c02235e7>] ? fb_mmap+0x97/0x170
-> [  241.670092]  [<c019542d>] ? kmem_cache_alloc+0xad/0x100
-> [  241.670092]  [<c02235e7>] fb_mmap+0x97/0x170
-> [  241.670092]  [<c0188c76>] mmap_region+0x1d6/0x530
-> [  241.670092]  [<c0186cfd>] ? arch_get_unmapped_area_topdown+0x8d/0x170
-> [  241.670092]  [<c01891a3>] do_mmap_pgoff+0x1d3/0x2f0
-> [  241.670092]  [<c01063bd>] sys_mmap2+0xad/0xc0
-> [  241.670092]  [<c0103371>] sysenter_do_call+0x12/0x31
-> [  244.217754] Syncing filesystems ... done.
-> [  244.228175] Freezing user space processes ... (elapsed 0.00 seconds) 
-> done.
+> On Fri, 2009-01-23 at 16:46 +0100, Nick Piggin wrote:
+> > Since last time, fixed bugs pointed out by Hugh and Andi, cleaned up the
+> > code suggested by Ingo (haven't yet incorporated Ingo's last patch).
+> > 
+> > Should have fixed the crash reported by Yanmin (I was able to reproduce it
+> > on an ia64 system and fix it).
+> > 
+> > Significantly reduced static footprint of init arrays, thanks to Andi's
+> > suggestion.
+> > 
+> > Please consider for trial merge for linux-next.
+> 
+> I merged a the one you resent privately as this one didn't apply at all.
+> The code is in topic/slqb/core branch of slab.git and should appear in
+> linux-next tomorrow.
+> 
+> Testing and especially performance testing is welcome. If any of the HPC
+> people are reading this, please do give SLQB a good beating as Nick's
+> plan is to replace both, SLAB and SLUB, with it in the long run.As
+> Christoph has expressed concerns over latency issues of SLQB, I suppose
+> it would be interesting to hear if it makes any difference to the
+> real-time folks.
+> 
 
-OK, another patch. This one is a cumulative patch against the latest
-Linus' git.
+The HPC folks care about a few different workloads but speccpu is one that
+shows up. I was in the position to run tests because I had put together
+the test harness for a paper I spent the last month writing. This mail
+shows a comparison between slab, slub and slqb for speccpu2006 running a
+single thread and sysbench ranging clients from 1 to 4*num_online_cpus()
+(16 in both cases). Additional tests were not run because just these two
+take one day per kernel to complete. Results are ratios to the SLAB figures
+and based on an x86-64 and ppc64 machine.
 
-Thanks again!
--Andrea
+X86-64 Test machine
+        CPU		AMD Phenom 9950 Quad-Core
+        CPU Frequency   1.3GHz
+        Physical CPUs	1 (4 cores)
+        L1 Cache        64K Data, 64K Instruction per core
+        L2 Cache        512K Unified per core
+        L3 Cache        2048K Unified Shared per chip
+        Main Memory     8 GB
+        Mainboard       Gigabyte GA-MA78GM-S2H
+        Machine Model   Custom built from parts
 
----
-fbmem: fix circular locking dependency between fb_info->lock and mm->mmap_sem
+SPEC CPU 2006
+-------------
+Integer tests
+SPEC test       slab         slub       slqb
+400.perlbench   1.0000     1.0016     1.0064
+401.bzip2       1.0000     0.9804     1.0011
+403.gcc         1.0000     1.0023     0.9965
+429.mcf         1.0000     1.0022     0.9963
+445.gobmk       1.0000     0.9944     0.9986
+456.hmmer       1.0000     0.9792     0.9701
+458.sjeng       1.0000     0.9989     1.0133
+462.libquantum  1.0000     0.9905     0.9981
+464.h264ref     1.0000     0.9877     1.0058
+471.omnetpp     1.0000     0.9893     1.0993
+473.astar       1.0000     0.9542     0.9596
+483.xalancbmk   1.0000     0.9547     0.9982
+---------------
+specint geomean 1.0000     0.9862     1.0031
 
-Avoid calling copy_from/to_user() with fb_info->lock mutex held in the
-framebuffer's ioctl().
+Floating Point Tests
+SPEC test       slab         slub       slqb
+410.bwaves      1.0000     0.9939     1.0005
+416.gamess      1.0000     1.0040     0.9984
+433.milc        1.0000     0.9865     0.9865
+434.zeusmp      1.0000     0.9810     0.9879
+435.gromacs     1.0000     0.9854     1.0125
+436.cactusADM   1.0000     1.0467     1.0294
+437.leslie3d    1.0000     0.9846     0.9963
+444.namd        1.0000     1.0000     1.0000
+447.dealII      1.0000     0.9913     0.9957
+450.soplex      1.0000     0.9940     1.0015
+453.povray      1.0000     0.9904     1.0197
+454.calculix    1.0000     0.9937     1.0000
+459.GemsFDTD    1.0000     1.0061     1.0000
+465.tonto       1.0000     0.9979     0.9989
+470.lbm         1.0000     1.0099     1.0212
+481.wrf         1.0000     1.0000     1.0045
+482.sphinx3     1.0000     1.0047     1.0068
+---------------
+specfp geomean  1.0000     0.9981     1.0035
 
-fb_mmap() is called under mm->mmap_sem (A) held, that also acquires
-fb_info->lock (B); fb_ioctl() takes fb_info->lock (B) and does
-copy_from/to_user() that might acquire mm->mmap_sem (A), causing a
-deadlock.
+Sysbench - Postgres
+-------------------
+Client            slab       slub       slqb
+     1          1.0000     0.9484     0.9804
+     2          1.0000     1.0069     0.9994
+     3          1.0000     1.0064     0.9994
+     4          1.0000     0.9900     0.9904
+     5          1.0000     1.0023     0.9869
+     6          1.0000     1.0139     1.0069
+     7          1.0000     0.9973     0.9991
+     8          1.0000     1.0206     1.0197
+     9          1.0000     0.9884     0.9817
+    10          1.0000     0.9980     1.0135
+    11          1.0000     0.9959     1.0164
+    12          1.0000     0.9978     0.9953
+    13          1.0000     1.0024     0.9942
+    14          1.0000     0.9975     0.9808
+    15          1.0000     0.9914     0.9933
+    16          1.0000     0.9767     0.9726
+--------------
+Geometric mean  1.0000     0.9957     0.9955
 
-Also fix other potential circular locking dependencies (always between
-fb_info->lock and mm->mmap_sem) in fbcon that occur calling the blocking
-fb_notifier_call_chain() with fb_info->lock held.
+On this particular x86-64, slab is on average faster for sysbench but
+by a very small margin, less then 0.5%. I wasn't doing multiple runs for
+each client number to see if this is within the noise but generally these
+figures are quite stable. SPEC CPU is more interesting. Both SLUB and SLQB
+regress on a number of the benchmarks although on average SLQB is very
+marginally faster than SLAB (approx 0.3% faster) where SLUB is between
+around 1% slower. Both SLUB and SLQB show big regressions on some tests:
+hmmer, astar. omnetpp is also interesting in that SLUB regresses a little
+and SLQB gains considerably. This is likely due to luck in cache placement.
 
-NOTE: it doesn't push down the fb_info->lock in each own driver's
-specific fb_ioctl() implementation, so there are still some potential
-deadlocks elsewhere.
+Overall, while the regressions where they exist are troublesome, they are
+also small and I strongly suspect there are far greater variances between
+kernel releases due to changes other than the allocators. SLQB is the
+winner, but by a minimal margin.
 
-CC: Andrey Borzenkov <arvidjaar@mail.ru>
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- drivers/video/backlight/backlight.c |    3 +
- drivers/video/backlight/lcd.c       |    3 +
- drivers/video/console/fbcon.c       |   73 +++++++++++++++++---
- drivers/video/fbcmap.c              |   20 ++++--
- drivers/video/fbmem.c               |  128 +++++++++++++++++------------------
- include/linux/fb.h                  |   15 ++++
- 6 files changed, 160 insertions(+), 82 deletions(-)
+PPC64 Test Machine
+        CPU              PPC970MP, altivec supported
+        CPU Frequency    2.5GHz
+        Physical CPUs 2 x dual core (4 cores in all)
+        L1 Cache         32K Data, 64K Instruction per core
+        L2 Cache         1024K Unified per core
+        L3 Cache         N/a
+        Main Memory      10GB
+        Mainboard        Specific to the machine model
 
-diff --git a/drivers/video/backlight/backlight.c b/drivers/video/backlight/backlight.c
-index 157057c..dd37cbc 100644
---- a/drivers/video/backlight/backlight.c
-+++ b/drivers/video/backlight/backlight.c
-@@ -35,6 +35,8 @@ static int fb_notifier_callback(struct notifier_block *self,
- 		return 0;
- 
- 	bd = container_of(self, struct backlight_device, fb_notif);
-+	if (!lock_fb_info(evdata->info))
-+		return -ENODEV;
- 	mutex_lock(&bd->ops_lock);
- 	if (bd->ops)
- 		if (!bd->ops->check_fb ||
-@@ -47,6 +49,7 @@ static int fb_notifier_callback(struct notifier_block *self,
- 			backlight_update_status(bd);
- 		}
- 	mutex_unlock(&bd->ops_lock);
-+	unlock_fb_info(evdata->info);
- 	return 0;
- }
- 
-diff --git a/drivers/video/backlight/lcd.c b/drivers/video/backlight/lcd.c
-index b644947..0bb13df 100644
---- a/drivers/video/backlight/lcd.c
-+++ b/drivers/video/backlight/lcd.c
-@@ -40,6 +40,8 @@ static int fb_notifier_callback(struct notifier_block *self,
- 	if (!ld->ops)
- 		return 0;
- 
-+	if (!lock_fb_info(evdata->info))
-+		return -ENODEV;
- 	mutex_lock(&ld->ops_lock);
- 	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
- 		if (event == FB_EVENT_BLANK) {
-@@ -51,6 +53,7 @@ static int fb_notifier_callback(struct notifier_block *self,
- 		}
- 	}
- 	mutex_unlock(&ld->ops_lock);
-+	unlock_fb_info(evdata->info);
- 	return 0;
- }
- 
-diff --git a/drivers/video/console/fbcon.c b/drivers/video/console/fbcon.c
-index 1657b96..2cd500a 100644
---- a/drivers/video/console/fbcon.c
-+++ b/drivers/video/console/fbcon.c
-@@ -2954,8 +2954,11 @@ static int fbcon_fb_unbind(int idx)
- 
- static int fbcon_fb_unregistered(struct fb_info *info)
- {
--	int i, idx = info->node;
-+	int i, idx;
- 
-+	if (!lock_fb_info(info))
-+		return -ENODEV;
-+	idx = info->node;
- 	for (i = first_fb_vc; i <= last_fb_vc; i++) {
- 		if (con2fb_map[i] == idx)
- 			con2fb_map[i] = -1;
-@@ -2979,13 +2982,14 @@ static int fbcon_fb_unregistered(struct fb_info *info)
- 		}
- 	}
- 
--	if (!num_registered_fb)
--		unregister_con_driver(&fb_con);
--
--
- 	if (primary_device == idx)
- 		primary_device = -1;
- 
-+	unlock_fb_info(info);
-+
-+	if (!num_registered_fb)
-+		unregister_con_driver(&fb_con);
-+
- 	return 0;
- }
- 
-@@ -3021,9 +3025,13 @@ static inline void fbcon_select_primary(struct fb_info *info)
- 
- static int fbcon_fb_registered(struct fb_info *info)
- {
--	int ret = 0, i, idx = info->node;
-+	int ret = 0, i, idx;
- 
-+	if (!lock_fb_info(info))
-+		return -ENODEV;
-+	idx = info->node;
- 	fbcon_select_primary(info);
-+	unlock_fb_info(info);
- 
- 	if (info_idx == -1) {
- 		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-@@ -3124,7 +3132,7 @@ static void fbcon_get_requirement(struct fb_info *info,
- 	}
- }
- 
--static int fbcon_event_notify(struct notifier_block *self, 
-+static int fbcon_event_notify(struct notifier_block *self,
- 			      unsigned long action, void *data)
- {
- 	struct fb_event *event = data;
-@@ -3132,7 +3140,7 @@ static int fbcon_event_notify(struct notifier_block *self,
- 	struct fb_videomode *mode;
- 	struct fb_con2fbmap *con2fb;
- 	struct fb_blit_caps *caps;
--	int ret = 0;
-+	int idx, ret = 0;
- 
- 	/*
- 	 * ignore all events except driver registration and deregistration
-@@ -3144,23 +3152,54 @@ static int fbcon_event_notify(struct notifier_block *self,
- 
- 	switch(action) {
- 	case FB_EVENT_SUSPEND:
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
- 		fbcon_suspended(info);
-+		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_RESUME:
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
- 		fbcon_resumed(info);
-+		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_MODE_CHANGE:
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
- 		fbcon_modechanged(info);
-+		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_MODE_CHANGE_ALL:
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
- 		fbcon_set_all_vcs(info);
-+		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_MODE_DELETE:
- 		mode = event->data;
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
- 		ret = fbcon_mode_deleted(info, mode);
-+		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_FB_UNBIND:
--		ret = fbcon_fb_unbind(info->node);
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
-+		idx = info->node;
-+		unlock_fb_info(info);
-+		ret = fbcon_fb_unbind(idx);
- 		break;
- 	case FB_EVENT_FB_REGISTERED:
- 		ret = fbcon_fb_registered(info);
-@@ -3178,17 +3217,31 @@ static int fbcon_event_notify(struct notifier_block *self,
- 		con2fb->framebuffer = con2fb_map[con2fb->console - 1];
- 		break;
- 	case FB_EVENT_BLANK:
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
- 		fbcon_fb_blanked(info, *(int *)event->data);
-+		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_NEW_MODELIST:
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
- 		fbcon_new_modelist(info);
-+		unlock_fb_info(info);
- 		break;
- 	case FB_EVENT_GET_REQ:
- 		caps = event->data;
-+		if (!lock_fb_info(info)) {
-+			ret = -ENODEV;
-+			goto done;
-+		}
- 		fbcon_get_requirement(info, caps);
-+		unlock_fb_info(info);
- 		break;
- 	}
--
- done:
- 	return ret;
- }
-diff --git a/drivers/video/fbcmap.c b/drivers/video/fbcmap.c
-index 91b78e6..f53b9f1 100644
---- a/drivers/video/fbcmap.c
-+++ b/drivers/video/fbcmap.c
-@@ -250,10 +250,6 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- 	int rc, size = cmap->len * sizeof(u16);
- 	struct fb_cmap umap;
- 
--	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
--			        !info->fbops->fb_setcmap))
--		return -EINVAL;
--
- 	memset(&umap, 0, sizeof(struct fb_cmap));
- 	rc = fb_alloc_cmap(&umap, cmap->len, cmap->transp != NULL);
- 	if (rc)
-@@ -262,11 +258,23 @@ int fb_set_user_cmap(struct fb_cmap_user *cmap, struct fb_info *info)
- 	    copy_from_user(umap.green, cmap->green, size) ||
- 	    copy_from_user(umap.blue, cmap->blue, size) ||
- 	    (cmap->transp && copy_from_user(umap.transp, cmap->transp, size))) {
--		fb_dealloc_cmap(&umap);
--		return -EFAULT;
-+		rc = -EFAULT;
-+		goto out;
- 	}
- 	umap.start = cmap->start;
-+	if (!lock_fb_info(info)) {
-+		rc = -ENODEV;
-+		goto out;
-+	}
-+	if (cmap->start < 0 || (!info->fbops->fb_setcolreg &&
-+				!info->fbops->fb_setcmap)) {
-+		rc = -EINVAL;
-+		goto out1;
-+	}
- 	rc = fb_set_cmap(&umap, info);
-+out1:
-+	unlock_fb_info(info);
-+out:
- 	fb_dealloc_cmap(&umap);
- 	return rc;
- }
-diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-index 756efeb..5cdee72 100644
---- a/drivers/video/fbmem.c
-+++ b/drivers/video/fbmem.c
-@@ -1013,132 +1013,132 @@ static long do_fb_ioctl(struct fb_info *info, unsigned int cmd,
- 	struct fb_var_screeninfo var;
- 	struct fb_fix_screeninfo fix;
- 	struct fb_con2fbmap con2fb;
-+	struct fb_cmap cmap_from;
- 	struct fb_cmap_user cmap;
- 	struct fb_event event;
- 	void __user *argp = (void __user *)arg;
- 	long ret = 0;
- 
--	fb = info->fbops;
--	if (!fb)
--		return -ENODEV;
--
- 	switch (cmd) {
- 	case FBIOGET_VSCREENINFO:
--		ret = copy_to_user(argp, &info->var,
--				    sizeof(var)) ? -EFAULT : 0;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		var = info->var;
-+		unlock_fb_info(info);
-+
-+		ret = copy_to_user(argp, &var, sizeof(var)) ? -EFAULT : 0;
- 		break;
- 	case FBIOPUT_VSCREENINFO:
--		if (copy_from_user(&var, argp, sizeof(var))) {
--			ret =  -EFAULT;
--			break;
--		}
-+		if (copy_from_user(&var, argp, sizeof(var)))
-+			return -EFAULT;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		acquire_console_sem();
- 		info->flags |= FBINFO_MISC_USEREVENT;
- 		ret = fb_set_var(info, &var);
- 		info->flags &= ~FBINFO_MISC_USEREVENT;
- 		release_console_sem();
--		if (ret == 0 && copy_to_user(argp, &var, sizeof(var)))
-+		unlock_fb_info(info);
-+		if (!ret && copy_to_user(argp, &var, sizeof(var)))
- 			ret = -EFAULT;
- 		break;
- 	case FBIOGET_FSCREENINFO:
--		ret = copy_to_user(argp, &info->fix,
--				    sizeof(fix)) ? -EFAULT : 0;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		fix = info->fix;
-+		unlock_fb_info(info);
-+
-+		ret = copy_to_user(argp, &fix, sizeof(fix)) ? -EFAULT : 0;
- 		break;
- 	case FBIOPUTCMAP:
- 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
--			ret = -EFAULT;
--		else
--			ret = fb_set_user_cmap(&cmap, info);
-+			return -EFAULT;
-+		ret = fb_set_user_cmap(&cmap, info);
- 		break;
- 	case FBIOGETCMAP:
- 		if (copy_from_user(&cmap, argp, sizeof(cmap)))
--			ret = -EFAULT;
--		else
--			ret = fb_cmap_to_user(&info->cmap, &cmap);
-+			return -EFAULT;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		cmap_from = info->cmap;
-+		unlock_fb_info(info);
-+		ret = fb_cmap_to_user(&cmap_from, &cmap);
- 		break;
- 	case FBIOPAN_DISPLAY:
--		if (copy_from_user(&var, argp, sizeof(var))) {
--			ret = -EFAULT;
--			break;
--		}
-+		if (copy_from_user(&var, argp, sizeof(var)))
-+			return -EFAULT;
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		acquire_console_sem();
- 		ret = fb_pan_display(info, &var);
- 		release_console_sem();
-+		unlock_fb_info(info);
- 		if (ret == 0 && copy_to_user(argp, &var, sizeof(var)))
--			ret = -EFAULT;
-+			return -EFAULT;
- 		break;
- 	case FBIO_CURSOR:
- 		ret = -EINVAL;
- 		break;
- 	case FBIOGET_CON2FBMAP:
- 		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
--			ret = -EFAULT;
--		else if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
--			ret = -EINVAL;
--		else {
--			con2fb.framebuffer = -1;
--			event.info = info;
--			event.data = &con2fb;
--			fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP,
--								&event);
--			ret = copy_to_user(argp, &con2fb,
--				    sizeof(con2fb)) ? -EFAULT : 0;
--		}
-+			return -EFAULT;
-+		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
-+			return -EINVAL;
-+		con2fb.framebuffer = -1;
-+		event.data = &con2fb;
-+		event.info = info;
-+		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
-+
-+		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
- 		break;
- 	case FBIOPUT_CON2FBMAP:
--		if (copy_from_user(&con2fb, argp, sizeof(con2fb))) {
--			ret = -EFAULT;
--			break;
--		}
--		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES) {
--			ret = -EINVAL;
--			break;
--		}
--		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX) {
--			ret = -EINVAL;
--			break;
--		}
-+		if (copy_from_user(&con2fb, argp, sizeof(con2fb)))
-+			return -EFAULT;
-+		if (con2fb.console < 1 || con2fb.console > MAX_NR_CONSOLES)
-+			return -EINVAL;
-+		if (con2fb.framebuffer < 0 || con2fb.framebuffer >= FB_MAX)
-+			return -EINVAL;
- 		if (!registered_fb[con2fb.framebuffer])
- 			request_module("fb%d", con2fb.framebuffer);
- 		if (!registered_fb[con2fb.framebuffer]) {
- 			ret = -EINVAL;
- 			break;
- 		}
--		event.info = info;
- 		event.data = &con2fb;
-+		event.info = info;
- 		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP,
- 					      &event);
- 		break;
- 	case FBIOBLANK:
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
- 		acquire_console_sem();
- 		info->flags |= FBINFO_MISC_USEREVENT;
- 		ret = fb_blank(info, arg);
- 		info->flags &= ~FBINFO_MISC_USEREVENT;
- 		release_console_sem();
--		break;;
-+		unlock_fb_info(info);
-+		break;
- 	default:
--		if (fb->fb_ioctl == NULL)
--			ret = -ENOTTY;
--		else
-+		if (!lock_fb_info(info))
-+			return -ENODEV;
-+		fb = info->fbops;
-+		if (fb->fb_ioctl)
- 			ret = fb->fb_ioctl(info, cmd, arg);
-+		else
-+			ret = -ENOTTY;
-+		unlock_fb_info(info);
- 	}
- 	return ret;
- }
- 
- static long fb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
--__acquires(&info->lock)
--__releases(&info->lock)
- {
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	int fbidx = iminor(inode);
--	struct fb_info *info;
--	long ret;
-+	struct fb_info *info = registered_fb[fbidx];
- 
--	info = registered_fb[fbidx];
--	mutex_lock(&info->lock);
--	ret = do_fb_ioctl(info, cmd, arg);
--	mutex_unlock(&info->lock);
--	return ret;
-+	return do_fb_ioctl(info, cmd, arg);
- }
- 
- #ifdef CONFIG_COMPAT
-@@ -1257,8 +1257,6 @@ static int fb_get_fscreeninfo(struct fb_info *info, unsigned int cmd,
- 
- static long fb_compat_ioctl(struct file *file, unsigned int cmd,
- 			    unsigned long arg)
--__acquires(&info->lock)
--__releases(&info->lock)
- {
- 	struct inode *inode = file->f_path.dentry->d_inode;
- 	int fbidx = iminor(inode);
-@@ -1266,7 +1264,6 @@ __releases(&info->lock)
- 	struct fb_ops *fb = info->fbops;
- 	long ret = -ENOIOCTLCMD;
- 
--	mutex_lock(&info->lock);
- 	switch(cmd) {
- 	case FBIOGET_VSCREENINFO:
- 	case FBIOPUT_VSCREENINFO:
-@@ -1292,7 +1289,6 @@ __releases(&info->lock)
- 			ret = fb->fb_compat_ioctl(info, cmd, arg);
- 		break;
- 	}
--	mutex_unlock(&info->lock);
- 	return ret;
- }
- #endif
-diff --git a/include/linux/fb.h b/include/linux/fb.h
-index 818fe21..31527e1 100644
---- a/include/linux/fb.h
-+++ b/include/linux/fb.h
-@@ -960,6 +960,21 @@ extern struct fb_info *registered_fb[FB_MAX];
- extern int num_registered_fb;
- extern struct class *fb_class;
- 
-+static inline int lock_fb_info(struct fb_info *info)
-+{
-+	mutex_lock(&info->lock);
-+	if (!info->fbops) {
-+		mutex_unlock(&info->lock);
-+		return 0;
-+	}
-+	return 1;
-+}
-+
-+static inline void unlock_fb_info(struct fb_info *info)
-+{
-+	mutex_unlock(&info->lock);
-+}
-+
- static inline void __fb_pad_aligned_buffer(u8 *dst, u32 d_pitch,
- 					   u8 *src, u32 s_pitch, u32 height)
- {
+SPEC CPU 2006
+-------------
+Integer tests
+SPEC test       slab         slub       slqb
+400.perlbench   1.0000     1.0497     1.0497
+401.bzip2       1.0000     1.0496     1.0489
+403.gcc         1.0000     1.0509     1.0509
+429.mcf         1.0000     1.0554     1.0549
+445.gobmk       1.0000     1.0535     1.0556
+456.hmmer       1.0000     1.0651     1.0566
+458.sjeng       1.0000     1.0612     1.0564
+462.libquantum  1.0000     1.0389     1.0396
+464.h264ref     1.0000     1.0517     1.0503
+471.omnetpp     1.0000     1.0555     1.0574
+473.astar       1.0000     1.0508     1.0521
+483.xalancbmk   1.0000     1.0594     1.0584
+---------------
+specint geomean 1.0000     1.0534     1.0525
 
+Floating Point Tests
+SPEC test       slab         slub       slqb
+410.bwaves      1.0000     1.0381     1.0367
+416.gamess      1.0000     1.0550     1.0550
+433.milc        1.0000     1.0464     1.0450
+434.zeusmp      1.0000     1.0510     1.0528
+435.gromacs     1.0000     1.0461     1.0445
+436.cactusADM   1.0000     1.0457     1.0450
+437.leslie3d    1.0000     1.0437     1.0428
+444.namd        1.0000     1.0482     1.0496
+447.dealII      1.0000     1.0505     1.0505
+450.soplex      1.0000     1.0522     1.0499
+453.povray      1.0000     1.0513     1.0534
+454.calculix    1.0000     1.0374     1.0357
+459.GemsFDTD    1.0000     1.0465     1.0465
+465.tonto       1.0000     1.0488     1.0456
+470.lbm         1.0000     1.0438     1.0452
+481.wrf         1.0000     1.0423     1.0429
+482.sphinx3     1.0000     1.0464     1.0479
+---------------
+specfp geomean  1.0000     1.0467     1.0464
+
+Sysbench - Postgres
+-------------------
+Client            slab       slub       slqb
+     1          1.0000     1.0153     1.0051
+     2          1.0000     1.0273     1.0269
+     3          1.0000     1.0299     1.0234
+     4          1.0000     1.0159     1.0146
+     5          1.0000     1.0232     1.0264
+     6          1.0000     1.0238     1.0088
+     7          1.0000     1.0240     1.0076
+     8          1.0000     1.0134     1.0024
+     9          1.0000     1.0154     1.0077
+    10          1.0000     1.0126     1.0009
+    11          1.0000     1.0100     0.9933
+    12          1.0000     1.0112     0.9993
+    13          1.0000     1.0131     1.0035
+    14          1.0000     1.0237     1.0071
+    15          1.0000     1.0098     0.9997
+    16          1.0000     1.0110     0.9994
+Geometric mean  1.0000     1.0175     1.0078
+
+Unlike x86-64, ppc64 sees a consistent gain with with SLUB or SLQB and
+the difference between SLUB and SLQB negligible on average with speccpu.
+However, it is very noticeable sysbench where SLUB is generally a win in the
+1% range over SLQB and SLQB regressed very marginally in a few instances. The
+three benchmarks showing odd behaviour on x86-64, hmmer aster and omnetpp,
+do not show similar weirdness on ppc64.
+
+Overall on ppc64, SLUB is the winner by a clearer margin.
+
+Summary
+-------
+The decision on whether to use SLUB, SLAB or SLQB for either speccpu 2006
+and sysbench is not very clearcut. The win on ppc64 would imply SLUB is the
+way to go but it is also clear that different architectures will produce
+different results which needs to be taken into account when trying to
+reproduce figures from other people.  I stronly suspect variations of the
+same architecture will also show different results. Things like omnetpp on
+x86-64 imply that how cache is used is a factor but it's down to luck how
+what the result will be.
+
+Downsides
+---------
+The SPEC CPU tests were not parallelised so there is no indication as to which
+allocator might scale better to the number of CPUs. The test machines were
+not NUMA so there is also no indication on which might be better there. There
+wasn't a means of measuring allocator jitter. Queue cleaning means that some
+allocations might stall, something that SLUB is expected to be immune to,
+doesn't have a clear way of measuring but something other allocators could
+potentially "cheat" on by postponing cleaning to a time when performance
+is not being measured.  I wasn't tracking to see which consumed the least
+memory so we don't know which is more memory efficient either.
+
+The OLTP workload results could indicate a downside with using sysbench
+although it could also be hardware. The reports from the Intel guys have been
+pretty clear-cut that SLUB is a loser but sysbench-postgres on these test
+machines at least do not agree. Of course their results are perfectly valid
+but the discrepency needs to be explained or there will be a disconnect
+between developers and the performance people.  Something important is
+missing that means sysbench-postgres *may* not be a reliable indicator of
+TPC-C performance.  It could easily be down to the hardware as their tests
+are on a mega-large machine with oodles of disks and probably NUMA where
+the test machine used for this is a lot less respectable.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
