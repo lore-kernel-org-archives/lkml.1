@@ -1,135 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753730AbZBCTvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbZBCTxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753730AbZBCTvx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 14:51:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZBCTvp
+	id S1754770AbZBCTxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 14:53:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZBCTxe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 14:51:45 -0500
-Received: from wa-out-1112.google.com ([209.85.146.181]:51191 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751589AbZBCTvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 14:51:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YDt5uOh35fypHzwzD5x/ryAVO3t6+7qUaYv+R3/PIw0pbyWa29E/ZmUeSV2r9d30rg
-         ARxvtsGII4qJGsMhJuiF316k0GPIs8YkaSvZ3nMPzaWFa0gNcpgwLH9xvrBnSuZ9lMKU
-         wLerLbR5yklcu7VbDlFFOjr+0eZPnseVu0ElY=
+	Tue, 3 Feb 2009 14:53:34 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57954 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751738AbZBCTxd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 14:53:33 -0500
+Date: Tue, 3 Feb 2009 20:53:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Cc: Jesse Barnes <jesse.barnes@intel.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>
+Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
+	standard config registers of all devices early)
+Message-ID: <20090203195304.GA31049@elte.hu>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902031804.26752.rjw@sisk.pl> <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain> <200902031032.26771.jesse.barnes@intel.com> <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain> <alpine.LFD.2.00.0902031047320.3247@localhost.localdomain> <20090203191334.GA2797@elte.hu> <alpine.LFD.2.00.0902031120080.3247@localhost.localdomain>
 MIME-Version: 1.0
-In-Reply-To: <20090203133313.GA5679@redhat.com>
-References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com>
-	 <20090201174159.4a52e15c.akpm@linux-foundation.org>
-	 <20090202064509.GA20237@redhat.com>
-	 <3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com>
-	 <20090202165606.GA13346@redhat.com> <498754EF.8090604@redhat.com>
-	 <3f43f78b0902021239s21566f76hf7f59850b2dbf45a@mail.gmail.com>
-	 <3f43f78b0902021839j1eb1eb04u49be47277c99900d@mail.gmail.com>
-	 <20090203133313.GA5679@redhat.com>
-Date: Tue, 3 Feb 2009 11:51:42 -0800
-Message-ID: <3f43f78b0902031151ta841190i2c7898facc34cb95@mail.gmail.com>
-Subject: Re: main thread pthread_exit/sys_exit bug!
-From: Kaz Kylheku <kkylheku@gmail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902031120080.3247@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 3, 2009 at 5:33 AM, Oleg Nesterov <oleg@redhat.com> wrote:
-> On 02/02, Kaz Kylheku wrote:
->>
->> On Mon, Feb 2, 2009 at 12:39 PM, Kaz Kylheku <kkylheku@gmail.com> wrote:
->> > On Mon, Feb 2, 2009 at 12:17 PM, Ulrich Drepper <drepper@redhat.com> wrote:
->> >> The userlevel context of the
->> >> thread is not usable anymore.  It will have run all kinds of
->> >> destructors.  The current behavior is AFAIK that the main thread won't
->> >> react to any signal anymore.  That is absolutely required.
->> >
->> > Hey Ulrich,
->> >
->> > Thanks for articulating that requirement. I think it can be met by
->> > extending the patch a little bit.
->>
->> I've now done that.
->>
->> The exiting thread leader, if there are still other
->> threads alive, gets its own private signal handler array in which
->> every action is set to SIG_IGN, using the ignore_signals
->> function.
->>
->> I experimented with blocking signals, but that approach
->> breaks the test case of being able to attach GDB to the
->> exiting thread.
->>
->> As part of the patch, I found it convenient to extend the
->> incomplete sys_unshare functionality w.r.t. signal handlers,
->> rather than reinvent the wheel.
->
-> This is wrong, we can not and must not unshare ->sighand.
 
-You are right; it breaks important invariant conditions which
-connect the thread group together, like the one about the
-lock, et cetera.  The patch goes too far: rather than simply
-delaying the finalization (relatively safe), it's messing with
-the shared state (risky).
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-Well, it doesn't bother me that that has to be thrown out.
-In fact, I do not agree with the requirement that the thread
-which calls pthread_exit must not respond to signals;
-the original patch works for me.
+> On Tue, 3 Feb 2009, Ingo Molnar wrote:
+> > > 
+> > > I'm really not sure why that handle_edge_irq thing uses "ack_and_mask()" 
+> > > instead of just "desc->chip->ack()"? I'm also totally flummoxed as to why 
+> > > it feels it needs to go all the way out to the device to mask things, 
+> > > instead of just masking at an apic level, which is much simpler and faster 
+> > > (especially since masking should never happen in practice anyway).
+> > 
+> > Hm, do you mean mask_ack_irq()?
+> 
+> Yes.
+> 
+> >		 The ->mask_ack() irqchip method is just a 
+> > small tweak normally: if we get an irq while the irq was disabled, we can 
+> > mark it pending and masks it for real.
+> 
+> No, I know why mask_ack_irq() does what it does and I agree with it. What 
+> I was really reacting to was that handle_edge_irq() calls it at _all_. 
+> IOW, I'm talking about this code:
+> 
+> 	handle_edge_irq(unsigned int irq, struct irq_desc *desc)
+> 	...
+> 	        if (unlikely((desc->status & (IRQ_INPROGRESS | IRQ_DISABLED)) ||
+> 	                    !desc->action)) {
+> 	                desc->status |= (IRQ_PENDING | IRQ_MASKED);
+> 	                mask_ack_irq(desc, irq);
+> 	..
+> 
+> where the masking part seems a bit pointless. And in the case of MSI, it 
+> causes us to go all the way out to the device, which sounds pretty 
+> expensive too.
 
-I.e. in my embedded GNU/Linux distro, that requirement
-doesn't exist. And since I can't find it in the Single
-Unix Specification, so much for that!
+hm, i agree that your patched version looks much simpler.
 
-Nothing in the spec says that once pthread_exit is called,
-signals are stopped. This function invokes cleanup handling,
-and thread-specific-storage destruction. During any of those
-tasks, signals can still be happening.  Any of those
-tasks can easily enter into an indefinite wait. What if
-a cleanup handler performs a blocking RPC to a remote
-server? Well, there you are, stuck in pthread_exit,
-handling signals, and not cleaning up your robust list, etc.
+There's two reasons we have this variant:
 
-I also don't require robust locks to be cleaned up
-instantly if they are owned by a main thread that has
-called pthread_exit.
+ - huge bikeshed painting thread in the early days of the genirq patchset, 
+   with folks expressing concern about our original plans to keep 
+   edge-triggered unmasked _always_. (which your patch does too)
+   So we just went with the path of least resistence and used this hybride.
 
-My organization is a heavy user of robust mutexes;
-they protect the integrity of a large, ``real time'' database
-stored in shared memory. I don't think that this would
-affect us in any way. The principal concern is that
-a process dies, for whatever reason, while holding locks.
-It's more to recover from catastrophic failures, not from
-mutex locking mistakes. If a thread locks a mutex and
-doesn't release it due to bad program logic, that is a
-problem whether or not that thread dies.  It's not
-particularly useful that we can resolve that situation
-with EOWNERDEAD in the kernel when that thread
-happens to die, because that's just one case where
-we are lucky, so to speak.
+ - the screaming-irq observation i had - do you consider that valid?:
 
-> Yes, gdb refuses to attach to the dead thread (I didn't check
-> this myself, but I think you are right). But there is nothing
-> wrong here, because we can't ptrace this thread. But, gdb
-> _can_ ptrace the process, and it can see it have other threads.
+   >> [ In theory this also solves screaming level-triggered irqs that 
+   >>   advertise themselves as edge-triggered [due to firmware/BIOS bug - 
+   >>   these do happen] and then keep spamming the system. ]
 
-Face it, allowing the thread leader to exit is as wrong as doing
-other stupid things to the leader, like unsharing the signal
-handler.
+   I wanted to have a pretty much interchangeable flow method between edge 
+   and level triggered - so that the BIOS cannot screw us by enumerating an 
+   irq as edge-triggered while it's level-triggered.
 
-Either way, you are breaking some little stick which is holding
-up the illusion that there is a process which has threads.
+   Especially for legacy x86 irqs in the low <16 range the trigger mode can 
+   be influenced by chipset settings and might not always be what we think 
+   it is.
 
-> OK, if nothing else. Let's suppose your patch is correct.
+That's my rough recollection - Thomas, is that correct and do you have 
+anything to add here?
 
-Obviously, the second part isn't. I'm very happy to have
-any excuse to throw this out, thanks!
-
-The first part isn't Ulrich-compliant. That is signficant,
-and duly noted; but it's not the law where I'm sitting.
+	Ingo
