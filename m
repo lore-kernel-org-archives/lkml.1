@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752317AbZBCIhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZBCImU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752317AbZBCIhB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 03:37:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbZBCIgw
+	id S1752479AbZBCImU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 03:42:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751134AbZBCImI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 03:36:52 -0500
-Received: from smtp.nokia.com ([192.100.105.134]:61786 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750845AbZBCIgw (ORCPT
+	Tue, 3 Feb 2009 03:42:08 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:47353 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbZBCImG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 03:36:52 -0500
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       linux-kernel@vger.kernel.org,
-       Adrian Hunter <ext-adrian.hunter@nokia.com>
-Date: Tue, 03 Feb 2009 12:33:54 +0200
-Message-Id: <20090203103354.13185.12343.sendpatchset@localhost.localdomain>
-Subject: [GIT PULL] UBIFS changes for 2.6.29-rc4
-X-OriginalArrivalTime: 03 Feb 2009 08:35:23.0886 (UTC) FILETIME=[5B5B88E0:01C985DA]
-X-Nokia-AV: Clean
+	Tue, 3 Feb 2009 03:42:06 -0500
+Date: Tue, 3 Feb 2009 01:42:03 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: "Woodruff, Richard" <r-woodruff2@ti.com>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
+       Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH E 08/14] OMAP clock: move rate recalc, propagation code
+ up to plat-omap/clock.c
+In-Reply-To: <20090131114014.GD1394@n2100.arm.linux.org.uk>
+Message-ID: <alpine.DEB.2.00.0902030133040.29513@utopia.booyaka.com>
+References: <20090128192551.29333.82943.stgit@localhost.localdomain> <20090128192748.29333.5856.stgit@localhost.localdomain> <20090129174153.GH18233@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0901300135560.26985@utopia.booyaka.com> <20090130085249.GB6864@n2100.arm.linux.org.uk>
+ <13B9B4C6EF24D648824FF11BE89671620376DEC116@dlee02.ent.ti.com> <20090131114014.GD1394@n2100.arm.linux.org.uk>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hello Russell, 
 
-please pull UBIFS fixes and clean-ups from
+On Sat, 31 Jan 2009, Russell King - ARM Linux wrote:
 
-git://git.infradead.org/ubifs-2.6.git linux-next
+> On Fri, Jan 30, 2009 at 08:23:49AM -0600, Woodruff, Richard wrote:
+> > 
+> > > There's one bug that your version highlights in mine - the virtual mpu
+> > > clock in omap1 touches the DPLL and repropagates that rate.  I've
+> > > removed that repropagation, so that needs fixing.
+> > >
+> > > However, this raises a question: why is the virtual mpu clock touching
+> > > some other part of the clock tree.  I wonder whether this should be
+> > > handled a different way, though the first thing that needs answering is
+> > > why we have this alias for 'arm_ck' ?
+> > 
+> > At one point in time the virtual clock allowed control for a set of clocks
+> > with some dependencies.  The mpu alias provided a convenient control point.
+> 
+> >From what I can see (checking both mainline and Tony's tree), this mpu
+> alias (virtual_ck_mpu) is not used on OMAP1, which seems to suggest
+> that this quirk has become redundant.  If it is redundant, it should
+> be removed.
+>
+> If there is some code somewhere to use it, this quirk should live with
+> the user of the quirk until such time that the user becomes ready to be
+> merged.
 
-The following changes since commit 1de9e8e70f5acc441550ca75433563d91b269bbe:
-  Linus Torvalds (1):
-        Linux 2.6.29-rc2
+I don't think there's any reason for virtual_ck_mpu or virt_prcm_set to 
+have a parent clock listed.  
 
-Adrian Hunter (5):
-      UBIFS: ensure orphan area head is initialized
-      UBIFS: fix LPT out-of-space bug (again)
-      UBIFS: sync wbufs after syncing inodes and pages
-      UBIFS: spelling fix 'date' -> 'data'
-      UBIFS: remount ro fixes
+At some point this year, those virtual OPP clocks will be removed from the 
+clock tree and implemented in a different manner.
 
-Artem Bityutskiy (12):
-      UBIFS: do not commit twice
-      UBIFS: constify operations
-      UBIFS: do not treat all data as short term
-      UBIFS: document dark_wm and dead_wm better
-      UBIFS: simplify locking
-      UBIFS: fix LEB list freeing
-      UBIFS: add re-mount debugging checks
-      UBIFS: always clean up GC LEB space
-      UBIFS: fix assertions
-      UBIFS: fix no_chk_data_crc
-      UBIFS: return sensible error codes
-      UBIFS: remove fast unmounting
+If you like, I will send a patch for removal of virtual_ck_mpu from OMAP1, 
+although my suspicion is that OMAP1 is just missing a CPUFreq driver to 
+use that OPP clock.
 
- Documentation/filesystems/ubifs.txt |    7 --
- fs/ubifs/budget.c                   |   35 +++++--
- fs/ubifs/debug.c                    |  122 ++++++++++++++++------
- fs/ubifs/debug.h                    |   36 ++++---
- fs/ubifs/dir.c                      |   96 +++++++----------
- fs/ubifs/file.c                     |    9 +-
- fs/ubifs/gc.c                       |   28 +++++-
- fs/ubifs/io.c                       |   22 +++--
- fs/ubifs/journal.c                  |    2 +-
- fs/ubifs/lprops.c                   |   12 ++-
- fs/ubifs/lpt_commit.c               |   44 ++++++--
- fs/ubifs/master.c                   |    2 +-
- fs/ubifs/orphan.c                   |   38 ++++----
- fs/ubifs/super.c                    |  195 +++++++++++++++++------------------
- fs/ubifs/tnc.c                      |   12 ++-
- fs/ubifs/ubifs.h                    |   26 +++---
- 16 files changed, 393 insertions(+), 293 deletions(-)
 
-Thanks,
-Artem.
+- Paul
