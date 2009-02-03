@@ -1,85 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754378AbZBCMNX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZBCMNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754378AbZBCMNX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:13:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752322AbZBCMNB
+	id S1754511AbZBCMNi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:13:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZBCMNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:13:01 -0500
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:27971 "EHLO
-	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751791AbZBCMNA (ORCPT
+	Tue, 3 Feb 2009 07:13:08 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:33568 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753229AbZBCMNG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:13:00 -0500
-X-IronPort-AV: E=Sophos;i="4.37,372,1231110000"; 
-   d="scan'208";a="20566510"
-Date: Tue, 3 Feb 2009 13:12:58 +0100
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, torvalds@osdl.org
-Subject: Re: replaces [PATCH, TRIVIAL] Fix my email address in qd65xx.[ch]
-Message-ID: <20090203121258.GD4996@const.bordeaux.inria.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	torvalds@osdl.org
-References: <20090203115712.GC4996@const.bordeaux.inria.fr>
+	Tue, 3 Feb 2009 07:13:06 -0500
+Date: Tue, 3 Feb 2009 23:12:09 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       w@1wt.eu, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090203121209.GA9154@gondor.apana.org.au>
+References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090203111012.GA16878@ioremap.net> <20090203112431.GA8746@gondor.apana.org.au> <20090203114944.GA21957@ioremap.net> <20090203115313.GA9018@gondor.apana.org.au> <20090203120715.GA22427@ioremap.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090203115712.GC4996@const.bordeaux.inria.fr>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <20090203120715.GA22427@ioremap.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Samuel Thibault, le Tue 03 Feb 2009 12:57:12 +0100, a écrit :
-> The @fnac.net will be shut down within a couple of months, so fix my
-> email address.
+On Tue, Feb 03, 2009 at 03:07:15PM +0300, Evgeniy Polyakov wrote:
+>
+> How many? A hundred or so descriptors (or even several thousands) -
+> this really does not scale for the somewhat loaded IO servers, that's
+> why we frequently get questions why dmesg is filler with order-3 and
+> higher allocation failure dumps.
 
-Oops, missed the duplicated pata file, here it is again.
+I think you've misunderstood my suggested scheme.
 
+I'm suggesting that we keep the driver initialisation path as is,
+so however many skb's the driver is allocating at open() time
+remains unchanged.  Usually this would be the number of entries
+on the ring buffer.  We can't do any better than that since if
+the hardware can't do SG then you'll just have to find this many
+contiguous buffers.
 
+The only change we need to make is at receive time.  Instead of
+always pushing the received skb into the stack, we should try to
+allocate a linear replacement skb, and if that fails, allocate
+a fragmented skb and copy the data into it.  That way we can
+always push a linear skb back into the ring buffer.
 
-The @fnac.net will be shut down within a couple of months, so fix my
-email address.
-
-Signed-off-by: Samuel Thibault <samuel.thibault@ens-lyon.org>
-
-diff --git a/drivers/ide/qd65xx.c b/drivers/ide/qd65xx.c
-index 5b2e3af..08c4fa3 100644
---- a/drivers/ide/qd65xx.c
-+++ b/drivers/ide/qd65xx.c
-@@ -16,7 +16,7 @@
- 
- /*
-  * Rewritten from the work of Colten Edwards <pje120@cs.usask.ca> by
-- * Samuel Thibault <samuel.thibault@fnac.net>
-+ * Samuel Thibault <samuel.thibault@ens-lyon.org>
-  */
- 
- #include <linux/module.h>
-diff --git a/drivers/ide/qd65xx.h b/drivers/ide/qd65xx.h
-index 6636f96..d7e67a1 100644
---- a/drivers/ide/qd65xx.h
-+++ b/drivers/ide/qd65xx.h
-@@ -4,7 +4,7 @@
- 
- /*
-  * Authors:	Petr Soucek <petr@ryston.cz>
-- * 		Samuel Thibault <samuel.thibault@fnac.net>
-+ * 		Samuel Thibault <samuel.thibault@ens-lyon.org>
-  */
- 
- /* truncates a in [b,c] */
-diff --git a/drivers/ata/pata_qdi.c b/drivers/ata/pata_qdi.c
-index 3080f37..f1b26f7 100644
---- a/drivers/ata/pata_qdi.c
-+++ b/drivers/ata/pata_qdi.c
-@@ -12,7 +12,7 @@
-  *
-  * Probe code based on drivers/ide/legacy/qd65xx.c
-  * Rewritten from the work of Colten Edwards <pje120@cs.usask.ca> by
-- * Samuel Thibault <samuel.thibault@fnac.net>
-+ * Samuel Thibault <samuel.thibault@ens-lyon.org>
-  */
- 
- #include <linux/kernel.h>
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
