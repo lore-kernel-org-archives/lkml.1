@@ -1,53 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbZBCTo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753782AbZBCTtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbZBCTo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 14:44:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZBCTor
+	id S1753782AbZBCTtp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 14:49:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZBCTte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 14:44:47 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:51800 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752334AbZBCTor (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 14:44:47 -0500
-Date: Tue, 3 Feb 2009 20:42:14 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ftrace: do_each_pid_task() needs rcu lock
-Message-ID: <20090203194214.GA23703@redhat.com>
-References: <20090203193904.GA23695@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203193904.GA23695@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 3 Feb 2009 14:49:34 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36031 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751234AbZBCTtd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 14:49:33 -0500
+Date: Tue, 3 Feb 2009 11:48:49 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sam Ruby <rubys@intertwingly.net>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org, x86@kernel.org
+Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
+Message-Id: <20090203114849.b661f1ce.akpm@linux-foundation.org>
+In-Reply-To: <498885CC.4060509@intertwingly.net>
+References: <4978767D.4060700@intertwingly.net>
+	<20090130000758.1dff0113.akpm@linux-foundation.org>
+	<498885CC.4060509@intertwingly.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/03, Oleg Nesterov wrote:
->
-> "ftrace: use struct pid" commit 978f3a45d9499c7a447ca7615455cefb63d44165
-> converted ftrace_pid_trace to "struct pid*". But we can't use
-> do_each_pid_task() without rcu_read_lock() even if we know the pid
-> itself can't go away (it was pinned in ftrace_pid_write). The exiting
-> task can detach itself from this pid at any moment.
+On Tue, 03 Feb 2009 12:58:36 -0500
+Sam Ruby <rubys@intertwingly.net> wrote:
 
-Q: why do we use do_each_pid_task(PIDTYPE_PID) ? We can never have more
-than 1 task in the loop. Perhaps,
+> Andrew Morton wrote:
+> > On Thu, 22 Jan 2009 08:37:01 -0500 Sam Ruby <rubys@intertwingly.net> wrote:
+> > 
+> >> Hardware summary: http://tinyurl.com/ap79ra
+> >> APIC details: http://intertwingly.net/stories/2009/01/22/
+> >> Note acpidump.err: Wrong checksum for OEMB!
+> >>
+> >> Messages on boot using Intrepid, Jaunty Alpha 3, or Fedora 10:
+> >>
+> >> [    0.296001] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+> >> [    0.296001] Kernel panic - not syncing: IO-APIC + timer doesn't work! 
+> >>   Boot with apic=debug and send a report.  Then try booting with the 
+> >> 'noapic' option.
+> >> [    0.296001]
+> >>
+> >> Able to get past this issue using "noapic", at which point things mostly 
+> >> work,
+> > 
+> > Join the ever-growing noapic club :(
+> > 
+> > I assume this is an ACPI problem.  Or at least, a BIOS problem which
+> > ACPI can solve for us.
+> 
+> My understanding is that APCI and APIC are two different things.
 
-	static void set_ftrace_pid(struct pid *pid)
-	{
-		struct task_struct *p;
+They sure are.  But it is ACPI which communicates with the BIOS to tell
+the kernel about the APIC, hwo it's wired up, etc.
 
-		rcu_read_lock();
-		p = pid_task(pid, PIDTYPE_PID);
-		if (p)
-			set_tsk_trace_trace(p);
-		rcu_read_unlock();
-	}
+Although in this case it looks like the problem might be with the
+mp-bios tables, which ACPI does not handle.  In which case it would be
+core x86 code which will have to fix this up, not ACPI.
 
-looks better?
+Did you try updating the BIOS?
 
-Oleg.
+> >> but rsync of large iso images result in corrupt files.  Able to 
+> >> copy those same files using Vista on the same machine, or using Hardy on 
+> >> another machine.  This problem may not be related to the above, but it 
+> >> seems plausible to me that this might be an interrupt issue.
+> > 
+> > Yes, it might be unrelated.  There are no kernel messages when it happens?
+> 
+> I see no messages to /var/log/messages while doing the following (which 
+> involves rsync'ing a 2618793984 byte file from an NTFS to ext3 drive on 
+> the same machine:
+> 
+> rubys@rubix4:~/tmp$ rsync /mnt/shared/windows7_7000.iso .
+> rubys@rubix4:~/tmp$ openssl md5 windows7_7000.iso
+> MD5(windows7_7000.iso)= 953b9ac92d58f5edef525004bcce048d
+> rubys@rubix4:~/tmp$ rsync /mnt/shared/windows7_7000.iso .
+> rubys@rubix4:~/tmp$ openssl md5 windows7_7000.iso
+> MD5(windows7_7000.iso)= 695328ef1280708eb73303656f6ef0b2
+> 
+> >> memtest86+ runs clean.
+> >>
+> >> Quite willing to invest time in installing kernels or distributions on 
+> >> fresh hard drives, run tests, obtain debug information, and report back.
+> >>
+> >> More background here: http://intertwingly.net/blog/2009/01/20/noAPIC
+> >>
+> >> Not subscribed, but will actively monitor the web archives for this 
+> >> mailing list for the next several days.
+> > 
+> > It'd be best to raise a report against ACPI?BIOS (I think) at
+> > bugzilla.kernel.org, please.
+> 
+> Once again, I'm talking about apic not acpi... does this advice still hold?
+
+Not sure.  Perhaps platform_i386/platform_x86_64 would be correct.
+Can the x86 maintainers please advise?
 
