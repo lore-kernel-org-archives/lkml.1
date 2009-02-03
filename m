@@ -1,83 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZBCVFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZBCVGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754638AbZBCVFc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 16:05:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZBCVFY
+	id S1754644AbZBCVGy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 16:06:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZBCVGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 16:05:24 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41409 "EHLO mx3.mail.elte.hu"
+	Tue, 3 Feb 2009 16:06:46 -0500
+Received: from gate.crashing.org ([63.228.1.57]:51725 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750866AbZBCVFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 16:05:23 -0500
-Date: Tue, 3 Feb 2009 22:04:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Jesse Barnes <jesse.barnes@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andreas Schwab <schwab@suse.de>, Len Brown <lenb@kernel.org>
-Subject: Re: Reworking suspend-resume sequence (was: Re: PCI PM: Restore
-	standard config registers of all devices early)
-Message-ID: <20090203210442.GA27804@elte.hu>
-References: <200902031804.26752.rjw@sisk.pl> <alpine.LFD.2.00.0902030955370.3247@localhost.localdomain> <200902031032.26771.jesse.barnes@intel.com> <alpine.LFD.2.00.0902031033310.3247@localhost.localdomain> <alpine.LFD.2.00.0902031047320.3247@localhost.localdomain> <20090203191334.GA2797@elte.hu> <alpine.LFD.2.00.0902031120080.3247@localhost.localdomain> <20090203195304.GA31049@elte.hu> <alpine.LFD.2.00.0902031209280.3247@localhost.localdomain> <20090203205727.GA4460@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203205727.GA4460@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1750866AbZBCVGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 16:06:46 -0500
+Subject: Re: [Linux-fbdev-devel] [PATCH] atyfb: fix distorted image on
+ PowerMacs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ville =?ISO-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+Cc: Risto Suominen <risto.suominen@gmail.com>, Alex Kern <alex.kern@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-fbdev-devel@lists.sourceforge.net
+In-Reply-To: <20090203185624.GC22401@sci.fi>
+References: <46e1c7760901221022p697f1689ubf03c909cdf1b99b@mail.gmail.com>
+	 <20090122201204.GD4996@sci.fi>  <20090203185624.GC22401@sci.fi>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 04 Feb 2009 08:06:12 +1100
+Message-Id: <1233695172.16867.91.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-02-03 at 20:56 +0200, Ville Syrjälä wrote:
+> On Thu, Jan 22, 2009 at 10:12:04PM +0200, Ville Syrjälä wrote:
+> > On Thu, Jan 22, 2009 at 08:22:48PM +0200, Risto Suominen wrote:
+> > > Since the complete re-write in 2.6.10, some PowerMacs (At least PowerMac 5500
+> > > and PowerMac G3 Beige rev A) with ATI Mach64 chip have suffered from unstable
+> > > columns in their framebuffer image. This seems to depend on a value (4) read
+> > > from PLL_EXT_CNTL register, which leads to incorrect DSP config parameters to
+> > > be written to the chip. This patch uses a value calculated by aty_init_pll_ct
+> > > instead, as a starting point.
+> > 
+> > AFAICS it should be the right thing to do on other systems too. I have
+> > a good collection of mach64 pci cards and laptops so I'll try to find
+> > some time next week to test that theory on x86.
+> 
+> Well, the experiment failed on the first Mobility I tried. The FIFO
+> calculations aren't obvious from the code and there's no mention how
+> to actually calculate them in the programming guide. So I guess special
+> casing powermacs is the best way forward.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+There's one powermac with a M1 (the first clamshell ibook). I don't have
+such a machine however, it would be useful if somebody who did could
+test if the patch caused a regression there...
 
-[...]
-> That principle works both for networking and for other IO transports - but 
-> we have little support for it yet. It would work really well for workloads 
-> where one physical device is shared by many CPUs.
+It's possible that we should instead base the code on the chip variant.
 
-Which is really what we have in _practice_ - only benchmarketing sets up one 
-physical device per CPU and avoids all the ugly consequences of 
-gathering/spreadig a channel of information from/to a single device to 
-multiple CPUs.
+Ben.
 
-> (A lesser method that approximates this is the use of lots of 
-> submission/completion rings per device and their binding to cpus - but 
-> that can never really approach the number of CPUs really possible in a 
-> system.)
 
-btw., more advanced device IRQ models was one of the thinking behind sparse 
-IRQ support: defining a really large NR_IRQS limit on x86 by default, on all 
-form factors, and making it really easy and cheap to have a _ton_ of IRQs in 
-a Linux system might give hw designers ideas to create such hardware.
-
-/me dreams on ;-)
-
-> And in this most advanced mode of MSI IRQs, and if MSI devices had the 
-> ability to direct IRQs to a specific CPU (they dont have that right now 
-> AFAICT), we'd run into the overhead scenarios you describe above, and your 
-> edge-triggered flow is the most performant one.
-
-So i'd still like your tentative Signed-off-by for your patch - it's i think 
-not v2.6.29 material but if it stays problem free in testing we can try it 
-in v2.6.30. If it causes problem it will be clearly bisectable and clearly 
-revertable.
-
-Maybe we could split it in two: and for MSI we could introduce a 'simpler 
-and faster' edge flow as well - and keep the legacy handler untouched. That 
-way it's low-risk in its entirety. (and avoids the MSI ->mask complication 
-as well.)
-
-	Ingo
