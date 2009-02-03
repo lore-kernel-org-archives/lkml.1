@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753735AbZBCN4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbZBCN46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753735AbZBCN4c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 08:56:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753336AbZBCN4F
+	id S1755632AbZBCN46 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 08:56:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751523AbZBCN4s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 08:56:05 -0500
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:45079 "EHLO
-	gprs189-60.eurotel.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752762AbZBCN4E (ORCPT
+	Tue, 3 Feb 2009 08:56:48 -0500
+Received: from www17.your-server.de ([213.133.104.17]:58904 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751344AbZBCN4r convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 08:56:04 -0500
-Date: Tue, 3 Feb 2009 14:55:54 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: etienne <etienne.basset@numericable.fr>
-Cc: airlied@linux.ie, rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net
-Subject: Re: [2.6.29-rc3][Suspend regression][DRM, RADEON]
-Message-ID: <20090203135554.GA1560@ucw.cz>
-References: <4971DFA5.2000304@numericable.fr> <4974EB02.4060303@numericable.fr> <4980D58F.8010105@numericable.fr>
+	Tue, 3 Feb 2009 08:56:47 -0500
+Message-ID: <20090203140658.459729qa52nud7jm@mail.your-server.de>
+Date: Tue, 03 Feb 2009 14:06:58 +0100
+From: Thomas Meyer <thomas@m3y3r.de>
+To: linux-kernel@vger.kernel.org
+Subject: ge kills my machine
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
 Content-Disposition: inline
-In-Reply-To: <4980D58F.8010105@numericable.fr>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+User-Agent: Dynamic Internet Messaging Program (DIMP) H3 (1.1)
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Are there any patch i could try?
->> Is it possible to run a git bisect excluding all drm commits to find  
->> the other bug?
-> hello,
->
-> I tried 2.6.29-rc3, and things got a little better. Suspend/resume  
-> results in a garbage video, but now i have access to my desktop via SSH  
-> after resume; so only X/drm seems to be broken after resume.
-> I (re)did  the stupid replace of driver/gpu/drm and include /drm by  
-> 2.6.28 files, and have now been able to suspend/resume a few time.
-> So in rc1-rc2 I had multiple bugs preventing me from STR, now there's  
-> only one left in DRM. My initial bisect was perhaps not so useless after  
-> all?
->
-> Is it possible to run a bisect only for DRM changes? are there any logs,  
-> additionnal info  I can provide?
 
-I think git bisect can do that, yes. 
+Hello,
 
+Shortly after starting google earth my machine is dead.
+Google earth version is unknown. Strings command tells: "Jul  8 2008"  
+and "18:49:53".
+Before I was able to start google earth I needed to do:
+"chcon -t textrel_shlib_t /opt/googleearth/lib*.so"
+Because selinux prevented the execution of the libraries.
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Kernel version I encountered the hang is:
+2.6.27.12-170.2.5.fc10.i686
+and
+v2.6.29-rc3-430-gb1792e3
+
+x11 driver is a self compiled radeonhd:
+1.2.4-24-gb76bfbd
+
+libdrm version is
+$ yum info libdrm
+Installierte Pakete
+Name       : libdrm
+Architektur : i386
+Version    : 2.4.0
+Ausgabe    : 0.21.fc10
+Grösse     : 68 k
+Repo       : installed
+
+I tried to capture a possible oops via netconsole (eth0), but I got  
+nothing back.
+
+Ideas for solving this problem are welcome!
+
+Greets
+thomas
+
