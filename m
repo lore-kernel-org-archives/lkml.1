@@ -1,72 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751783AbZBCHue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752380AbZBCIFt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751783AbZBCHue (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 02:50:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZBCHuV
+	id S1752380AbZBCIFt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 03:05:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751065AbZBCIFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 02:50:21 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44083
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750852AbZBCHuU (ORCPT
+	Tue, 3 Feb 2009 03:05:40 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40176 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750917AbZBCIFj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 02:50:20 -0500
-Date: Mon, 02 Feb 2009 23:50:17 -0800 (PST)
-Message-Id: <20090202.235017.253437221.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090202084358.GB4129@ff.dom.local>
-References: <20090202080855.GA4129@ff.dom.local>
-	<20090202.001854.261399333.davem@davemloft.net>
-	<20090202084358.GB4129@ff.dom.local>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 3 Feb 2009 03:05:39 -0500
+Date: Tue, 3 Feb 2009 17:04:27 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [-mm patch] Show memcg information during OOM (v2)
+Message-Id: <20090203170427.c6070cda.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090203072701.GV918@balbir.in.ibm.com>
+References: <20090203072013.GU918@balbir.in.ibm.com>
+	<20090203072701.GV918@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Mon, 2 Feb 2009 08:43:58 +0000
+On Tue, 3 Feb 2009 12:57:01 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> On Mon, Feb 02, 2009 at 12:18:54AM -0800, David Miller wrote:
-> > Allocating 4096 or 8192 bytes for a 1500 byte frame is wasteful.
+> Checkpatch caught an additional space, so here is the patch again
 > 
-> I mean allocating chunks of cached pages similarly to sk_sndmsg_page
-> way. I guess the similar problem is to be worked out in any case. But
-> it seems doing it on the linear area requires less changes in other
-> places.
+> 
+> Description: Add RSS and swap to OOM output from memcg
+> 
+> From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> 
+> Changelog v2..v1:
+> 
+> 1. Add more information about task's memcg and the memcg
+>    over it's limit
+> 2. Print data in KB
+> 3. Move the print routine outside task_lock()
+> 4. Use rcu_read_lock() around cgroup_path, strictly speaking it
+>    is not required, but relying on the current memcg implementation
+>    is not a good idea.
+> 
+> 
+> This patch displays memcg values like failcnt, usage and limit
+> when an OOM occurs due to memcg.
+> 
+> Thanks go out to Johannes Weiner, Li Zefan, David Rientjes,
+> Kamezawa Hiroyuki, Daisuke Nishimura and KOSAKI Motohiro for
+> review.
+> 
 
-This is a very interesting idea, but it has some drawbacks:
+IIUC, this oom_kill is serialized by memcg_tasklist mutex.
+Then, you don't have to allocate buffer on stack.
 
-1) Just like any other allocator we'll need to find a way to
-   handle > PAGE_SIZE allocations, and thus add handling for
-   compound pages etc.
- 
-   And exactly the drivers that want such huge SKB data areas
-   on receive should be converted to use scatter gather page
-   vectors in order to avoid multi-order pages and thus strains
-   on the page allocator.
 
-2) Space wastage and poor packing can be an issue.
+> +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg, struct task_struct *p)
+> +{
+> +	struct cgroup *task_cgrp;
+> +	struct cgroup *mem_cgrp;
+> +	/*
+> +	 * Need a buffer on stack, can't rely on allocations.
+> +	 */
+> +	char task_memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
+> +	char memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
+> +	int ret;
+> +
 
-   Even with SLAB/SLUB we get poor packing, look at Evegeniy's
-   graphs that he made when writing his NTA patches.
+making this as
 
-Now, when choosing a way to move forward, I'm willing to accept a
-little bit of the issues in #2 for the sake of avoiding the
-issues in #1 above.
+static char task_memcg_name[PATH_MAX];
+static char memcg_name[PATH_MAX];
 
-Jarek, note that we can just keep your current splice() copy hacks in
-there.  And as a result we can have an easier to handle migration
-path.  We just do the page RX allocation conversions in the drivers
-where performance really matters, for hardware a lot of people have.
+is ok, I think. and the patch will be more simple.
 
-That's a lot smoother and has less issues that converting the system
-wide SKB allocator upside down.
+Thanks,
+-kame
+
+
+> +	if (!memcg)
+> +		return;
+> +
+> +	mem_cgrp = memcg->css.cgroup;
+> +	task_cgrp = mem_cgroup_from_task(p)->css.cgroup;
+> +
+> +	rcu_read_lock();
+> +	ret = cgroup_path(task_cgrp, task_memcg_name, MEM_CGROUP_OOM_BUF_SIZE);
+> +	if (ret < 0) {
+> +		/*
+> +		 * Unfortunately, we are unable to convert to a useful name
+> +		 * But we'll still print out the usage information
+> +		 */
+> +		rcu_read_unlock();
+> +		goto done;
+> +	}
+> +	ret = cgroup_path(mem_cgrp, memcg_name, MEM_CGROUP_OOM_BUF_SIZE);
+> +	 if (ret < 0) {
+> +		rcu_read_unlock();
+> +		goto done;
+> +	}
+> +
+> +	rcu_read_unlock();
+> +
+> +	printk(KERN_INFO "Task in %s killed as a result of limit of %s\n",
+> +			task_memcg_name, memcg_name);
+> +done:
+> +
+> +	printk(KERN_INFO "memory: usage %llukB, limit %llukB, failcnt %llu\n",
+> +		res_counter_read_u64(&memcg->res, RES_USAGE) >> 10,
+> +		res_counter_read_u64(&memcg->res, RES_LIMIT) >> 10,
+> +		res_counter_read_u64(&memcg->res, RES_FAILCNT));
+> +	printk(KERN_INFO "memory+swap: usage %llukB, limit %llukB, "
+> +		"failcnt %llu\n",
+> +		res_counter_read_u64(&memcg->memsw, RES_USAGE) >> 10,
+> +		res_counter_read_u64(&memcg->memsw, RES_LIMIT) >> 10,
+> +		res_counter_read_u64(&memcg->memsw, RES_FAILCNT));
+> +}
+> +
+>  /*
+>   * Unlike exported interface, "oom" parameter is added. if oom==true,
+>   * oom-killer can be invoked.
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index d3b9bac..951356f 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -394,6 +394,7 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+>  		cpuset_print_task_mems_allowed(current);
+>  		task_unlock(current);
+>  		dump_stack();
+> +		mem_cgroup_print_mem_info(mem, current);
+>  		show_mem();
+>  		if (sysctl_oom_dump_tasks)
+>  			dump_tasks(mem);
+> 
+> -- 
+> 	Balbir
+> 
 
