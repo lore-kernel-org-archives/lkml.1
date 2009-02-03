@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZBCORJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754521AbZBCOTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZBCORJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 09:17:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZBCOQ4
+	id S1754521AbZBCOTd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 09:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbZBCOTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 09:16:56 -0500
-Received: from cluster-d.mailcontrol.com ([85.115.60.190]:53772 "EHLO
-	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752256AbZBCOQz (ORCPT
+	Tue, 3 Feb 2009 09:19:24 -0500
+Received: from zone0.gcu-squad.org ([212.85.147.21]:17501 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752585AbZBCOTX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 09:16:55 -0500
-Message-ID: <49885139.3070106@csr.com>
-Date: Tue, 03 Feb 2009 14:14:17 +0000
-From: David Vrabel <david.vrabel@csr.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] UWB and WUSB fixes
-References: <49873632.6040108@csr.com> <20090203051244.GA1826@kroah.com>
-In-Reply-To: <20090203051244.GA1826@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 3 Feb 2009 09:19:23 -0500
+Date: Tue, 3 Feb 2009 15:19:01 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Luca Tettamanti <kronos.it@gmail.com>
+Cc: Thomas Renninger <trenn@suse.de>, Hans de Goede <hdegoede@redhat.com>,
+       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH 1/2] RFC: ACPI: Interface for ACPI drivers to place
+ quirk   code which gets executed early
+Message-ID: <20090203151901.670b7bf8@hyperion.delvare>
+In-Reply-To: <68676e00902030545x131e4144ya751bf6af3e4d33@mail.gmail.com>
+References: <20090125210520.GA12963@dreamland.darkstar.lan>
+	<200902021822.11906.trenn@suse.de>
+	<20090202202246.GA9023@dreamland.darkstar.lan>
+	<200902031408.12237.trenn@suse.de>
+	<68676e00902030545x131e4144ya751bf6af3e4d33@mail.gmail.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 Feb 2009 14:14:16.0991 (UTC) FILETIME=[B2D522F0:01C98609]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Mon, Feb 02, 2009 at 06:06:42PM +0000, David Vrabel wrote:
->>  drivers/usb/host/whci/asl.c       |    9 +++++++--
->>  drivers/usb/host/whci/hw.c        |   15 +++++++++++++++
->>  drivers/usb/host/whci/pzl.c       |    9 +++++++--
->>  drivers/usb/host/whci/whcd.h      |    1 +
->>  drivers/usb/wusbcore/devconnect.c |    1 +
->>  drivers/usb/wusbcore/rh.c         |    3 +++
+On Tue, 3 Feb 2009 14:45:17 +0100, Luca Tettamanti wrote:
+> On Tue, Feb 3, 2009 at 2:08 PM, Thomas Renninger <trenn@suse.de> wrote:
+> > On Monday 02 February 2009 21:22:46 Luca Tettamanti wrote:
+> >> Il Mon, Feb 02, 2009 at 06:22:10PM +0100, Thomas Renninger ha scritto:
+> >> > These two patches are tested on a ASUS machine and worked as expected,
+> >> > but probably may still need some cleanup.
+> >>
+> >> I'd keep the DMI+HID approach since it's more flexible:
+> >> - (AFAICS) Thinkpads have different methods for hwmon depending on the
+> >>   model and no fixed HID
+> >> - With DMI it would be possible to include ASUS motherboards (ATK w/
+> >>   hwmon) but exclude ASUS laptops (ATK w/o hwmon).
+> > I thought the ATK01[01]0 devices are ASUS specific.
 > 
-> For patches under drivers/usb/ could you please route them through me?
-> It makes things a bit easier to coordinate at times.  Not that there is
-> a problem at all with these patches, but in the future it would be
-> nicer.
+> Me too, I was thinking about using DMI_CHASSIS_TYPE to restrict the
+> match only to motherboard (not notebooks).
+> 
+> > I now found an ATK0100 (not the ATK0110 this is about) on a Sony and a
+> > Samsung.
+> > I still wonder why you want to restrict the check to ASUS.
+> > Your ATK0110 driver would also load on any other machine which has such
+> > a device. And why shouldn't a Samsung/Sony/... machine with a ATK0110
+> > device not access the hwmon sensor through it?
+> 
+> Ah, I was unaware that it was used also by other vendors. It the same
+> interface though? Do you have a dump of the DSDT of such machines?
+> 
+> > Should we already look a bit deeper into the ATK0110 device in the quirk
+> > to make sure it provides thermal, fan or other hwmon device accessing
+> > functionality?
+> 
+> Hum, maybe it's the best thing to do. Hans,  Jean what do you think?
 
-This is more work for me (and you) and I don't see the benefit.  Could
-you expand on what situations you see this as helping?
+I'd suggest we first check whether the other vendor implementations are
+compatible or not. Then we will know if we must set the resource check
+to strict for these as well.
 
-David
+I would still recommend vendor-based tests. Given that ACPI device
+names aren't standard, we can't exclude that different vendors come up
+with different devices using the same name. So checking only the device
+names seem too risky in general (even though it might work OK for
+specific cases such as the ATK0110.)
+
 -- 
-David Vrabel, Senior Software Engineer, Drivers
-CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
-Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
+Jean Delvare
