@@ -1,59 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752551AbZBCIJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZBCIJ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752551AbZBCIJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 03:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751358AbZBCIJT
+	id S1752937AbZBCIJ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 03:09:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZBCIJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 03:09:19 -0500
-Received: from bombadil.infradead.org ([18.85.46.34]:37139 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751234AbZBCIJS (ORCPT
+	Tue, 3 Feb 2009 03:09:49 -0500
+Received: from winston.telenet-ops.be ([195.130.137.75]:36492 "EHLO
+	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbZBCIJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 03:09:18 -0500
-Date: Tue, 3 Feb 2009 03:09:16 -0500
-From: Christoph Hellwig <hch@infradead.org>
-To: xfs@oss.sgi.com, linux-kernel@vger.kernel.org
-Subject: XFS status update for January 2009
-Message-ID: <20090203080915.GA8921@infradead.org>
+	Tue, 3 Feb 2009 03:09:48 -0500
+Date: Tue, 3 Feb 2009 09:09:38 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-fbdev-devel@lists.sourceforge.net,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] atyfb: fix CONFIG_ namespace
+ violations
+In-Reply-To: <20090202150002.05838fed.randy.dunlap@oracle.com>
+Message-ID: <Pine.LNX.4.64.0902030907350.15898@anakin>
+References: <200901310909.n0V99XIZ021497@imap1.linux-foundation.org>
+ <4984AC40.8030708@oracle.com> <20090131121008.eb7f5ddd.akpm@linux-foundation.org>
+ <20090202150002.05838fed.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-January has been an extremely busy month on the userspace front.  Many
-smaller and medium updates went into xfsprogs, xfstests and to a lesser
-extent xfsdump.  xfsprogs and xfsdump are ramping up for getting a 3.0.0
-release out in early February which will include the first major re-sync
-with the kernel code in libxfs, a cleanup of the exported library interfaces
-and the move of two tools (xfs_fsr and xfs_estimate) from the xfsdump
-package to xfsprogs.  After this the xfsprogs package will contain all
-tools that use internal libxfs interfaces which fortunately equates to those
-needed for normal administration.  The xfsdump package now only contains
-the xfsdump/xfsrestore tools needed for backing up and restoring XFS
-filesystems.  In addition it grew a fix to support dump/restore on systems
-with a 64k page size.  A large number of acl/attr package patches was
-posted to the list, but pending a possible split of these packages from the
-XFS project these weren't processed yet.
+On Mon, 2 Feb 2009, Randy Dunlap wrote:
+> On Sat, 31 Jan 2009 12:10:08 -0800 Andrew Morton wrote:
+> > On Sat, 31 Jan 2009 11:53:36 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> > 
+> > > so staging adds a new config symbol that conflicts with the
+> > > (incorrect namespace) usage in mach64.h.
+> > > 
+> > > mach64 needs to change IMO, even though it is older.
+> > 
+> > Sigh, yes, that file has gone on a rampage through the namespace
+> > rules.  I'll take a look at it sometime.
+> > --
+> 
+> I went ahead with a minimal set of changes, but you can toss them
+> and do more if you prefer.
+> 
+> ---
+> 
+> From: Randy Dunlap <randy.dunlap@oracle.com>
+> 
+> [1/2] Fix namespace violations by changing non-kconfig CONFIG_ names
+> to CNFG_*.
+> 
+> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  drivers/video/aty/aty128fb.c    |    8 ++++----
+>  drivers/video/aty/atyfb_base.c  |   22 +++++++++++-----------
+>  drivers/video/aty/radeon_base.c |   10 +++++-----
+>  drivers/video/aty/radeon_pm.c   |   18 +++++++++---------
+>  include/video/aty128.h          |    4 ++--
+>  include/video/mach64.h          |   24 ++++++++++++------------
+>  include/video/radeon.h          |   18 +++++++++---------
+>  7 files changed, 52 insertions(+), 52 deletions(-)
+> 
+> --- linux-2.6.29-rc3-git3.orig/drivers/video/aty/atyfb_base.c
+> +++ linux-2.6.29-rc3-git3/drivers/video/aty/atyfb_base.c
+> @@ -135,7 +135,7 @@
+>  #if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
+>  defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
+>  static const u32 lt_lcd_regs[] = {
+> -	CONFIG_PANEL_LG,
+> +	CNFG_PANEL_LG,
 
-On the kernel side the big excitement in January was an in-memory corruption
-introduced in the btree refactoring which hit people running 32bit platforms
-without support for large block devices.  This issue was fixed and pushed
-to the 2.6.29 development tree after a long collaborative debugging effort
-at linux.conf.au.  Besides that about a dozen minor fixes were pushed to
-2.6.29 and the first batch of misc patches for the 2.6.30 release cycle
-was sent out.
+These were the official names as used in the ATI docs. After these changes, you
+can no longer easily grep for them.
 
-At the end of December the SGI group in Melbourne which the previous
-XFS maintainer and some other developers worked for has been closed down
-and they will be missed greatly.  As a result maintainership has been passed
-on in a way that has been slightly controversial in the community, and the
-first patchset of work in progress in Melbourne have been posted to the list
-to be picked up by others.
+Perhaps it's better to prefix everything with ATI_? yes, I know it's more work
+(for the writer), but we want to optimize for the reader, right?
 
-The xfs.org wiki has gotten a little facelift on it's front page making it
-a lot easier to read.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
