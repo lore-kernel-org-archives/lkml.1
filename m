@@ -1,58 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZBCPBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754201AbZBCPCh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbZBCPBc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 10:01:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752512AbZBCPB0
+	id S1754201AbZBCPCh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 10:02:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZBCPCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 10:01:26 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:39992 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752496AbZBCPBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 10:01:25 -0500
-Date: Tue, 3 Feb 2009 16:01:12 +0100
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       mtk.manpages@gmail.com, linux-man@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: open(2) says O_DIRECT works on 512 byte boundries?
-Message-ID: <20090203150111.GA20323@random.random>
-References: <20090128213322.GA15789@kroah.com> <20090129141338.34e44a1f.kamezawa.hiroyu@jp.fujitsu.com> <20090129160826.701E.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090130061714.GC31209@kroah.com> <20090202220856.GY20323@random.random> <20090203035012.GC1867@kroah.com>
+	Tue, 3 Feb 2009 10:02:31 -0500
+Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:39405 "EHLO
+	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752770AbZBCPCa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 10:02:30 -0500
+Message-ID: <49885C81.2040901@rsk.demon.co.uk>
+Date: Tue, 03 Feb 2009 15:02:25 +0000
+From: richard kennedy <richard@rsk.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203035012.GC1867@kroah.com>
+To: Karsten Keil <kkeil@suse.de>
+CC: linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [RFC] Suspicious bug in module refcounting
+References: <20090203134721.GA11069@pingi.kke.suse.de>
+In-Reply-To: <20090203134721.GA11069@pingi.kke.suse.de>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 07:50:12PM -0800, Greg KH wrote:
-> On Mon, Feb 02, 2009 at 11:08:56PM +0100, Andrea Arcangeli wrote:
-> > Hi Greg!
-> > 
-> > > Thanks for the pointers, I'll go read the thread and follow up there.
-> > 
-> > If you also run into this final fix is attached below. Porting to
-> > mainline is a bit hard because of gup-fast... Perhaps we can use mmu
-> > notifiers to fix gup-fast... need to think more about it then I'll
-> > post something.
-> > 
-> > Please help testing the below on pre-gup-fast kernels, thanks!
+Karsten Keil wrote:
+> Hi,
 > 
-> Thanks a lot for the patch, I'll try this out tomorrow.
+> While debugging a wired SCTP bug we hit from time to time
+> the BUG_ON(module_refcount(module) == 0) statement in __module_get().
+> After fixing the SCTP bug in final tests runs with lot of traffic
+> we still saw this bug message from time to time.
+> Looking at the refcounting in sctp, does not show up any forgotten
+> get module operation or some wrong put module calls.
+> We added some debug code and this shows only, that the test case heavly
+> change module_refcount(sctp) bacause the socket accept call also increase
+> the module count (and the BUG always was triggered in the __module_get() here).
+> If the socket close, it decrease the module refcount, so no problem here.
+> Some times the refcount seems to go very high, very quickly and later
+> goes down very quickly again, I think this occurs if the network stalls for
+> some time (the test case try to saturate a GB networklink).
+> So I had the idea that the bug is in the refcounting itself and not related
+> to the sctp code.
+> After looking closer at __module_get() and module_refcount(module) it looks
+> as I'm right, but I can not belive that this bug was not discovered before,
+> the code is here since long time.
+> The refcount is a per CPU atomic variable, module_refcount() simple add
+> in a fully unprotected loop (not disabled irqs, not protected against
+> scheduling) all per cpu values.
+> 
+> The issue is that so the process (it is as syscall from a userspace process)
+> get scheduled in the middle of the counting loop, so it already has counted
+> some per cpu vales, but not all.
+> Now while the process is not active, other processes modify the counts, some
+> accepts (== module gets) increase the count on already summed up CPUs,
+> some other release sockets on CPUs, which are not already summed up.
+> If the process become active again, it read the now decremented values from
+> later CPUS, so the total count is too low and may reach zero, in which the above
+> BUG_ON() will be triggered.
+> 
+> To prove this I replaced the BUG_ON with following code:
+> 
+>         if (module) {
+> -               BUG_ON(module_refcount(module) == 0);
+> +               unsigned int c = module_refcount(module);
+> +
+> +               if (unlikely(c == 0)) {
+> +                       printk(KERN_ERR" module %s refcount=%x/%x\n", module->name, c,  module_refcount(module));
+> +                       module_dump_refcounts(module);
+> +                       WARN_ON(1);
+> +               }
+>                 local_inc(&module->ref[get_cpu()].count);
+>                 put_cpu();
+>         }
+> 
+> module_dump_refcounts() does print out the per cpu refcounts.
+> If my idea is correct the second call to  module_refcount(module) should
+> have a none zero value.
+> 
+> And indeed:
+> 
+> Feb  2 03:29:51 pingi5 kernel:  module sctp refcount=0/8e
+> Feb  2 03:29:51 pingi5 kernel: CPU0 refcount:38562331
+> Feb  2 03:29:51 pingi5 kernel: CPU1 refcount:-38562187
+> Feb  2 03:29:51 pingi5 kernel: Badness in __module_get at include/linux/module.h:374
+> Feb  2 03:29:51 pingi5 kernel:
+> Feb  2 03:29:51 pingi5 kernel: Call Trace: <ffffffff802837c2>{sys_accept+212} <ffffffff8019c76f>{dput+44}
+> Feb  2 03:29:51 pingi5 kernel:        <ffffffff8018704f>{__fput+355} <ffffffff801a0dff>{mntput_no_expire+29}
+> Feb  2 03:29:51 pingi5 kernel:        <ffffffff801845df>{filp_close+92} <ffffffff8010adba>{system_call+126}
+> 
+> 
+> Do my findings be correct, or do I miss something ?
+> 
+> A other thing is, why __module_get() should be used anyway, I think it was a
+> optimation long time ago, current code seems to need more cycles on default
+> SMP kernels as try_module_get(), because of the big loop  in module_refcount()
+> which goes trough all possible CPUs (NR_CPU, 64 in default config).
+> try_module_get() only has one test and one atomic increment.
+> 
+> 
+> I think we should replace all unprotected __module_get() calls with
+> try_module_get(), or remove __module_get() completely.
+> 
+> 
+> Any comments ?
+> 
 
-before testing I recommend to make this change:
+Hi Karsten,
 
--       if ((flags & FOLL_WRITE) && PageAnon(page) && !PageGUP(page))
-+	if (PageAnon(page) && !PageGUP(page))
+I've been seeing problems in a simple socket test harness that I think
+has the same cause. I have several clients all calling a single socket
+server on the same machine, under heavy load & after some time the
+clients will fail to connect with -EADDRNOTAVAIL even though the server
+is still running.
 
-If gup triggers cow, gup clears FOLL_WRITE from foll_flags before
-calling follow_page again, I think that's why it didn't work right for
-everyone, it just couldn't work right if FOLL_WRITE was going away
-before the last follow_page run. I wanted to set PG_gup only for
-gup(write=1) and not for gup(write=0) but that optimization that
-clears FOLL_WRITE prevents the above to work right, so the simple
-solution is to always set PG_gup, it won't make a big difference.
+I changed the module ref count to be an atomic_t and the problem goes
+away. I haven't tracked down the exact cause of the problem yet ( the
+network code is kind of tricky!).
 
-I'm looking at the hugetlb cow before posting an update...
+So I think you're right module_refcount() does need some sort of locking.
+
+BTW On my desktop machine I cannot measure any significant performance
+differences between the atomic_t refcount & the existing code, so it may
+be that atomic_t will be good enough.
+
+regards
+Richard
+
+
+
+
+
