@@ -1,73 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752828AbZBCLsQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754112AbZBCLsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752828AbZBCLsQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 06:48:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBCLsB
+	id S1754112AbZBCLsa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 06:48:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZBCLsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 06:48:01 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41455 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751786AbZBCLsA (ORCPT
+	Tue, 3 Feb 2009 06:48:07 -0500
+Received: from pfepa.post.tele.dk ([195.41.46.235]:41923 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752183AbZBCLsG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 06:48:00 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Pavel Machek <pavel@suse.cz>
-Subject: Re: /proc/sys/vm/drop_caches: add error handling
-Cc: kosaki.motohiro@jp.fujitsu.com, kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, linux-mm <linux-mm@kvack.org>
-In-Reply-To: <20090203113319.GA2022@elf.ucw.cz>
-References: <20090203113319.GA2022@elf.ucw.cz>
-Message-Id: <20090203204456.ECA3.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Tue,  3 Feb 2009 20:47:56 +0900 (JST)
+	Tue, 3 Feb 2009 06:48:06 -0500
+Date: Tue, 3 Feb 2009 12:49:51 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Victoria Muntean <vikimun@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [kernel make system] adding pre-check scripts
+Message-ID: <20090203114951.GA14098@uranus.ravnborg.org>
+References: <ab4346860902030028p5798d4afi8aec5c2fd5fc83e0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ab4346860902030028p5798d4afi8aec5c2fd5fc83e0@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 03, 2009 at 10:28:44AM +0200, Victoria Muntean wrote:
+> Is there provision in kernel makefiles to execute user-supplied
+> pre/post add-on scripts ? (by following some convention)
 > 
-> Document that drop_caches is unsafe, and add error checking so that it
-> bails out on invalid inputs. [Note that this was triggered by Android
-> trying to use it in production, and incidentally writing invalid
-> value...]
+> I have script pre-checks.sh, it checks that .config defines certain parameters
+> certain way. This is to prevent [build with] accidental redefine of
+> certain important parameters.
+> 
+> One possibility is to
+>                ./my-pre-checks.sh && make
+> But this is not perfect.
+> It leaves of pre-checks optional easy to forget to run before build.
+> Is it possible to make "make" execute my pre-script before build.
 
-Yup. good patch.
+Hi Victoria.
 
-> -	return 0;
-> +	int res;
-> +	res = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
-> +	if (res)
-> +		return res;
-> +	if (!write)
-> +		return res;
-> +	if (sysctl_drop_caches & ~3)
-> +		return -EINVAL;
-> +	if (sysctl_drop_caches & 1)
-> +		drop_pagecache();
-> +	if (sysctl_drop_caches & 2)
-> +		drop_slab();
-> +	return res;
->  }
+We do not have such functionality and unless thre is a broad interest
+I do not plan to add it either.
+People usually include this in their 'kmake' scripts or whatever they name it.
 
-I think following is clarify more.
-
-	res = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
-	if (res)
-		return res;
-	if (!write)
-		return 0;
-	if (sysctl_drop_caches & ~3)
-		return -EINVAL;
-	if (sysctl_drop_caches & 1)
-		drop_pagecache();
-	if (sysctl_drop_caches & 2)
-		drop_slab();
-	return 0;
-
-
-otherthings, _very_ looks good to me. :)
-
-
-
+	Sam
