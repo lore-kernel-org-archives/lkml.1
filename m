@@ -1,64 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754286AbZBCMMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752377AbZBCMMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754286AbZBCMMc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 07:12:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZBCMMU
+	id S1752377AbZBCMMq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 07:12:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZBCMMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 07:12:20 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39457 "EHLO mx3.mail.elte.hu"
+	Tue, 3 Feb 2009 07:12:25 -0500
+Received: from broadrack.ru ([195.178.208.66]:36805 "EHLO tservice.net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750997AbZBCMMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 07:12:19 -0500
-Date: Tue, 3 Feb 2009 13:11:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@redhat.com>, Mike Travis <travis@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: mm-commits@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: +
-	work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch
-	added to -mm tree
-Message-ID: <20090203121147.GB19979@elte.hu>
-References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
+	id S1752930AbZBCMMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 07:12:24 -0500
+Date: Tue, 3 Feb 2009 15:12:19 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: david@lang.hm
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
+       w@1wt.eu, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090203121219.GB22427@ioremap.net>
+References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090203111012.GA16878@ioremap.net> <20090203112431.GA8746@gondor.apana.org.au> <20090203114944.GA21957@ioremap.net> <alpine.DEB.1.10.0902030458390.28633@asgard.lang.hm>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <alpine.DEB.1.10.0902030458390.28633@asgard.lang.hm>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-
-> ------------------------------------------------------
-> Subject: work_on_cpu(): rewrite it to create a kernel thread on demand
-> From: Andrew Morton <akpm@linux-foundation.org>
+On Tue, Feb 03, 2009 at 05:05:14AM -0800, david@lang.hm (david@lang.hm) wrote:
+> >Maybe just do not allow jumbo frames when memory is fragmented enough
+> >and fallback to the smaller MTU in this case? With LRO/GRO stuff there
+> >should be not that much of the overhead compared to multiple-page
+> >copies.
 > 
-> The various implemetnations and proposed implemetnations of work_on_cpu()
-> are vulnerable to various deadlocks because they all used queues of some
-> form.
 > 
-> Unrelated pieces of kernel code thus gained dependencies wherein if one
-> work_on_cpu() caller holds a lock which some other work_on_cpu() callback
-> also takes, the kernel could rarely deadlock.
-> 
-> Fix this by creating a short-lived kernel thread for each work_on_cpu()
-> invokation.
-> 
-> This is not terribly fast, but the only current caller of work_on_cpu() is
-> pci_call_probe().
+> 1. define 'fragmented enough'
 
-hm, it's quite ugly as well, and wasteful with resources.
+When allocator can not provide requested amount of data.
 
-	Ingo
+> 2. the packet size was already negotiated on your existing connections, 
+> how are you going to change all those on the fly?
+
+I.e. MTU can not be changed on-flight? Magic world.
+
+> 3. what do you do when a remote system sends you a large packet? drop it 
+> on the floor?
+
+We already do just that when jumbo frame can not be allocated :)
+
+> having some pool of large buffers to receive into (and copy out of those 
+> buffers as quickly as possible) would cause a performance hit when things 
+> get bad, but isn't that better than dropping packets?
+
+It is a solution, but I think it will behave noticebly worse than
+with decresed MTU.
+
+> as for the number of buffers to use. make a reasonable guess. if you only 
+> have a small number of packets around, use the buffers directly, as you 
+> use more of them start copying, as useage climbs attempt to allocate more. 
+> if you can't allocate more (and you have all of your existing ones in use) 
+> you will have to drop the packet, but at that point are you really in any 
+> worse shape than if you didn't have some mechanism to copy out of the 
+> large buffers?
+
+That's the main point: how to deal with broken hardware? I think (but
+have no strong numbers though) that having 6 packets with 1500 MTU
+combined into GRO/LRO frame will be processed way faster than copying 9k
+MTU into 3 pages and process single skb.
+
+-- 
+	Evgeniy Polyakov
