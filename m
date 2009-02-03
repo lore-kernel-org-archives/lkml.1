@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752937AbZBCIJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZBCIOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752937AbZBCIJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 03:09:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751344AbZBCIJt
+	id S1752610AbZBCIOw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 03:14:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751630AbZBCIOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 03:09:49 -0500
-Received: from winston.telenet-ops.be ([195.130.137.75]:36492 "EHLO
-	winston.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751358AbZBCIJs (ORCPT
+	Tue, 3 Feb 2009 03:14:43 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:47085 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751493AbZBCIOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 03:09:48 -0500
-Date: Tue, 3 Feb 2009 09:09:38 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH 1/2] atyfb: fix CONFIG_ namespace
- violations
-In-Reply-To: <20090202150002.05838fed.randy.dunlap@oracle.com>
-Message-ID: <Pine.LNX.4.64.0902030907350.15898@anakin>
-References: <200901310909.n0V99XIZ021497@imap1.linux-foundation.org>
- <4984AC40.8030708@oracle.com> <20090131121008.eb7f5ddd.akpm@linux-foundation.org>
- <20090202150002.05838fed.randy.dunlap@oracle.com>
+	Tue, 3 Feb 2009 03:14:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
+         :mime-version:content-type;
+        b=S3n6G7Zzlgf10ZpWeVIaJxBvC6AWlu1NJOLmNO5wXqnLjKui1Jrrkc+e68HOHSXD9S
+         Rto0R+OMW0oKaq3il4u2zpOvG9Lip5YyYBb8mUtLQXIw5XWJIn/4Itudi4UllJ6+Bq5I
+         gduQAnfTNfvwwd4/ZgrgadVmZds3S3G2MLx3g=
+Date: Tue, 3 Feb 2009 11:14:21 +0300 (EAT)
+From: Dan Carpenter <error27@gmail.com>
+X-X-Sender: dcarpenter@bikeee
+To: R.E.Wolff@BitWizard.nl
+cc: linux-kernel@vger.kernel.org
+Subject: [patch] unlock_kernel() on error path in sx_fw_ioctl()
+Message-ID: <alpine.DEB.2.00.0902030829580.31813@bikeee>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Feb 2009, Randy Dunlap wrote:
-> On Sat, 31 Jan 2009 12:10:08 -0800 Andrew Morton wrote:
-> > On Sat, 31 Jan 2009 11:53:36 -0800 Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > 
-> > > so staging adds a new config symbol that conflicts with the
-> > > (incorrect namespace) usage in mach64.h.
-> > > 
-> > > mach64 needs to change IMO, even though it is older.
-> > 
-> > Sigh, yes, that file has gone on a rampage through the namespace
-> > rules.  I'll take a look at it sometime.
-> > --
-> 
-> I went ahead with a minimal set of changes, but you can toss them
-> and do more if you prefer.
-> 
-> ---
-> 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
-> 
-> [1/2] Fix namespace violations by changing non-kconfig CONFIG_ names
-> to CNFG_*.
-> 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  drivers/video/aty/aty128fb.c    |    8 ++++----
->  drivers/video/aty/atyfb_base.c  |   22 +++++++++++-----------
->  drivers/video/aty/radeon_base.c |   10 +++++-----
->  drivers/video/aty/radeon_pm.c   |   18 +++++++++---------
->  include/video/aty128.h          |    4 ++--
->  include/video/mach64.h          |   24 ++++++++++++------------
->  include/video/radeon.h          |   18 +++++++++---------
->  7 files changed, 52 insertions(+), 52 deletions(-)
-> 
-> --- linux-2.6.29-rc3-git3.orig/drivers/video/aty/atyfb_base.c
-> +++ linux-2.6.29-rc3-git3/drivers/video/aty/atyfb_base.c
-> @@ -135,7 +135,7 @@
->  #if defined(CONFIG_PM) || defined(CONFIG_PMAC_BACKLIGHT) || \
->  defined (CONFIG_FB_ATY_GENERIC_LCD) || defined(CONFIG_FB_ATY_BACKLIGHT)
->  static const u32 lt_lcd_regs[] = {
-> -	CONFIG_PANEL_LG,
-> +	CNFG_PANEL_LG,
+If we return directly with -EPERM then lock_kernel() is still held.
 
-These were the official names as used in the ATI docs. After these changes, you
-can no longer easily grep for them.
+This was found with a code checker (http://repo.or.cz/w/smatch.git/). 
+Compile tested only, sorry.
 
-Perhaps it's better to prefix everything with ATI_? yes, I know it's more work
-(for the writer), but we want to optimize for the reader, right?
+regards,
+dan carpenter
 
-Gr{oetje,eeting}s,
+Signed-off-by: Dan Carpenter <error27@gmail.com>
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--- orig/drivers/char/sx.c	2009-02-03 08:27:59.000000000 +0300
++++ devel/drivers/char/sx.c	2009-02-03 08:28:31.000000000 +0300
+@@ -1747,7 +1747,8 @@
+  		break;
+  	case SXIO_DO_RAMTEST:
+  		if (sx_initialized)	/* Already initialized: better not ramtest the board.  */
+-			return -EPERM;
++			rc = -EPERM;
++			break;
+  		if (IS_SX_BOARD(board)) {
+  			rc = do_memtest(board, 0, 0x7000);
+  			if (!rc)
