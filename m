@@ -1,157 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759887AbZBCAVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759630AbZBCAWH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759887AbZBCAVr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:21:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755853AbZBCAVY
+	id S1759630AbZBCAWH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:22:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758224AbZBCAVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:21:24 -0500
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:22341 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754573AbZBCAVW (ORCPT
+	Mon, 2 Feb 2009 19:21:42 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38062 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759765AbZBCAVl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:21:22 -0500
-X-MUA: Evolution 2.24.3 
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgMFALsch0lQLLDG/2dsb2JhbACBbssbhBQG
-X-IronPort-AV: E=Sophos;i="4.37,368,1231113600"; 
-   d="scan'208";a="141265869"
-Subject: Re: [PATCH] sh: maple: Add support for VMU devices (v2) [3/3]
-From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-To: greg KH <greg@kroah.com>, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Paul Mundt <lethal@linux-sh.org>, dwmw2 <dwmw2@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       MTD <linux-mtd@lists.infradead.org>,
-       linux-sh <linux-sh@vger.kernel.org>,
-       linux-input <linux-input@vger.kernel.org>
-In-Reply-To: <1233619569.13918.12.camel@localhost.localdomain>
-References: <1233619569.13918.12.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 00:17:58 +0000
-Message-Id: <1233620278.13918.33.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 19:21:41 -0500
+Date: Mon, 2 Feb 2009 16:21:20 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <1233619881.18767.131.camel@pasglop>
+Message-ID: <alpine.LFD.2.00.0902021617390.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org>  <alpine.LFD.2.00.0902021413040.3247@localhost.localdomain>  <200902022333.51017.rjw@sisk.pl>  <200902022356.33094.rjw@sisk.pl> <1233619881.18767.131.camel@pasglop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch updates the Maple keyboard driver to reflect changes in the
-maple bus code and also to tidy up some dubious legacy code.
-
-Signed-off-by: Adrian McMenamin <adrian@mcmen.demon.co.uk>
----
-
-diff --git a/drivers/input/keyboard/maple_keyb.c b/drivers/input/keyboard/maple_keyb.c
-index 22f17a5..42ff911 100644
---- a/drivers/input/keyboard/maple_keyb.c
-+++ b/drivers/input/keyboard/maple_keyb.c
-@@ -1,8 +1,8 @@
- /*
-  * SEGA Dreamcast keyboard driver
-  * Based on drivers/usb/usbkbd.c
-- * Copyright YAEGASHI Takeshi, 2001
-- * Porting to 2.6 Copyright Adrian McMenamin, 2007, 2008
-+ * Copyright (c) YAEGASHI Takeshi, 2001
-+ * Porting to 2.6 Copyright (c) Adrian McMenamin, 2007 - 2009
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -33,7 +33,7 @@ static DEFINE_MUTEX(maple_keyb_mutex);
- 
- #define NR_SCANCODES 256
- 
--MODULE_AUTHOR("YAEGASHI Takeshi, Adrian McMenamin");
-+MODULE_AUTHOR("Adrian McMenamin <adrian@mcmen.demon.co.uk");
- MODULE_DESCRIPTION("SEGA Dreamcast keyboard driver");
- MODULE_LICENSE("GPL");
- 
-@@ -115,7 +115,7 @@ static void dc_scan_kbd(struct dc_kbd *kbd)
- 				input_event(dev, EV_MSC, MSC_SCAN, code);
- 				input_report_key(dev, keycode, 0);
- 			} else
--				printk(KERN_DEBUG "maple_keyb: "
-+				dev_dbg(&dev->dev,
- 					"Unknown key (scancode %#x) released.",
- 					code);
- 		}
-@@ -127,7 +127,7 @@ static void dc_scan_kbd(struct dc_kbd *kbd)
- 				input_event(dev, EV_MSC, MSC_SCAN, code);
- 				input_report_key(dev, keycode, 1);
- 			} else
--				printk(KERN_DEBUG "maple_keyb: "
-+				dev_dbg(&dev->dev,
- 					"Unknown key (scancode %#x) pressed.",
- 					code);
- 		}
-@@ -140,7 +140,7 @@ static void dc_kbd_callback(struct mapleq *mq)
- {
- 	struct maple_device *mapledev = mq->dev;
- 	struct dc_kbd *kbd = maple_get_drvdata(mapledev);
--	unsigned long *buf = mq->recvbuf;
-+	unsigned long *buf = (unsigned long *)(mq->recvbuf->buf);
- 
- 	/*
- 	 * We should always get the lock because the only
-@@ -159,22 +159,30 @@ static void dc_kbd_callback(struct mapleq *mq)
- 
- static int probe_maple_kbd(struct device *dev)
- {
--	struct maple_device *mdev = to_maple_dev(dev);
--	struct maple_driver *mdrv = to_maple_driver(dev->driver);
-+	struct maple_device *mdev;
-+	struct maple_driver *mdrv;
- 	int i, error;
- 	struct dc_kbd *kbd;
- 	struct input_dev *idev;
- 
--	if (!(mdev->function & MAPLE_FUNC_KEYBOARD))
--		return -EINVAL;
-+	mdev = to_maple_dev(dev);
-+	if (!mdev) {
-+		error = -EINVAL;
-+		goto fail;
-+	}
- 
- 	kbd = kzalloc(sizeof(struct dc_kbd), GFP_KERNEL);
--	idev = input_allocate_device();
--	if (!kbd || !idev) {
-+	if (!kbd) {
- 		error = -ENOMEM;
- 		goto fail;
- 	}
- 
-+	idev = input_allocate_device();
-+	if (!idev) {
-+		error = -ENOMEM;
-+		goto fail_idev_alloc;
-+	}
-+
- 	kbd->dev = idev;
- 	memcpy(kbd->keycode, dc_kbd_keycode, sizeof(kbd->keycode));
- 
-@@ -195,7 +203,7 @@ static int probe_maple_kbd(struct device *dev)
- 
- 	error = input_register_device(idev);
- 	if (error)
--		goto fail;
-+		goto fail_register;
- 
- 	/* Maple polling is locked to VBLANK - which may be just 50/s */
- 	maple_getcond_callback(mdev, dc_kbd_callback, HZ/50,
-@@ -207,10 +215,12 @@ static int probe_maple_kbd(struct device *dev)
- 
- 	return error;
- 
--fail:
-+fail_register:
-+	maple_set_drvdata(mdev, NULL);
- 	input_free_device(idev);
-+fail_idev_alloc:
- 	kfree(kbd);
--	maple_set_drvdata(mdev, NULL);
-+fail:
- 	return error;
- }
- 
 
 
+On Tue, 3 Feb 2009, Benjamin Herrenschmidt wrote:
+> 
+> > * Memory allocations with GFP_KERNEL are made, which is even worse, because
+> >   we really shouldn't do that during suspend _at_ _all_, even during the regular
+> >   ->suspend() with interrupts on, because there's not guarantee that swap will
+> >   will be available at that time.  So, for the sake of correctness, we should
+> >   get rid of the GFP_KERNEL from the ACPI code paths executed during
+> >   suspend-resume anyway.
+> 
+> Well, as I said, this is a problem with more than just ACPI and again, I
+> don't think the fix is to be done in ACPI itself. The buddy and slab
+> should basically stick NOIO or ATOMIC to any allocation done after we
+> started suspending the system.
+
+We already do have magic code for things like PF_MEMALLOC (recursion), or 
+TIF_MEMDIE (oom) or "(rt_task(p)) && !in_interrupt()" (give RT tasks 
+higher priorities) in the page allocator.
+
+Having a special case for NOT_RUNNING wouldn't be _pretty_, but it 
+certainly isn't totally unreasonable either.
+
+			Linus
