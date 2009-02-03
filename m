@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752592AbZBCLuK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754031AbZBCLvc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752592AbZBCLuK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 06:50:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbZBCLty
+	id S1754031AbZBCLvc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 06:51:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZBCLvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 06:49:54 -0500
-Received: from corega.com.ru ([195.178.208.66]:56675 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751763AbZBCLty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 06:49:54 -0500
-Date: Tue, 3 Feb 2009 14:49:44 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>,
-       w@1wt.eu, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090203114944.GA21957@ioremap.net>
-References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local> <20090203111012.GA16878@ioremap.net> <20090203112431.GA8746@gondor.apana.org.au>
+	Tue, 3 Feb 2009 06:51:23 -0500
+Received: from smtp113.mail.mud.yahoo.com ([209.191.84.66]:43117 "HELO
+	smtp113.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752156AbZBCLvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 06:51:23 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=k3MDWxDjfAJB3Qm1ufCEei1A2DLa5xwIOr1f4tmP5LyCZpCPAsabN0qrIrSrSjFHrjy3UUzIm9Rxlu2ZTbyAVQBDobG2E7nV5gGpOfBLPUYzzeuwsB2jWxQ45usBqIKt8fgPXlI4I8Odh3g4BFJ1Kwy+yHMlgkEQt8H9Ly4OzfI=  ;
+X-YMail-OSG: 8hoZVhAVM1kdSUbBxmCpe2Zo9ZM8SfO70GheRT1zgt7FouCinAqaBwsjcb_75GxyJ9yKI6mfszak4mi1jSztpK7xBMprH1w4oE5rDZScfkM9qixknS70GuU5qU7NPgfQR4p0QbZDguX9QouA6DhONMdcAm8BfM9qQQtUhbaS_U20ipVD0g5PYbsstPbrvw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [patch] SLQB slab allocator (try 2)
+Date: Tue, 3 Feb 2009 22:50:54 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+References: <20090123154653.GA14517@wotan.suse.de> <200902032136.26022.nickpiggin@yahoo.com.au> <20090203112852.GJ9840@csn.ul.ie>
+In-Reply-To: <20090203112852.GJ9840@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090203112431.GA8746@gondor.apana.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200902032250.55968.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 10:24:31PM +1100, Herbert Xu (herbert@gondor.apana.org.au) wrote:
-> > I even believe that for some hardware it is the only way to deal
-> > with the jumbo frames.
-> 
-> Not necessarily.  Even if the hardware can only DMA into contiguous
-> memory, we can always allocate a sufficient number of contiguous
-> buffers initially, and then always copy them into fragmented skbs
-> at receive time.  This way the contiguous buffers are never
-> depleted.
+On Tuesday 03 February 2009 22:28:52 Mel Gorman wrote:
+> On Tue, Feb 03, 2009 at 09:36:24PM +1100, Nick Piggin wrote:
 
-How many such preallocated frames is enough? Does it enough to have all
-sockets recv buffer sizes divided by the MTU size? Or just some of them,
-or... That will work but there are way too many corner cases.
+> > I'd be interested to see how slub performs if booted with
+> > slub_min_objects=1 (which should give similar order pages to SLAB and
+> > SLQB).
+>
+> Just to clarify on this last point, do you mean slub_max_order=0 to
+> force order-0 allocations in SLUB?
 
-> Granted copying sucks, but this is really because the underlying
-> hardware is badly designed.  Also copying is way better than
-> not receiving at all due to memory fragmentation.
+Hmm... I think slub_min_objects=1 should also do basically the same.
+Actually slub_min_object=1 and slub_max_order=1 should get closest I
+think.
 
-Maybe just do not allow jumbo frames when memory is fragmented enough
-and fallback to the smaller MTU in this case? With LRO/GRO stuff there
-should be not that much of the overhead compared to multiple-page
-copies.
-
--- 
-	Evgeniy Polyakov
