@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755261AbZBCOvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754840AbZBCOy4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755261AbZBCOvr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 09:51:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZBCOvk
+	id S1754840AbZBCOy4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 09:54:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZBCOyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 09:51:40 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:52649 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752496AbZBCOvk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 09:51:40 -0500
-Subject: Re: [stable]  A patch in 2.6.27.9 caused device names to change
-From: Dan Williams <dcbw@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-In-Reply-To: <20090203000529.GC9467@kroah.com>
-References: <20090202170238.348af36a@dhcp-100-2-144.bos.redhat.com>
-	 <20090203000529.GC9467@kroah.com>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 09:50:11 -0500
-Message-Id: <1233672611.11344.6.camel@localhost.localdomain>
+	Tue, 3 Feb 2009 09:54:47 -0500
+Received: from sov-mail-b0010.gradwell.net ([193.84.87.34]:40282 "EHLO
+	sov-mail-b0010.gradwell.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751987AbZBCOyq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 09:54:46 -0500
+Date: Tue, 3 Feb 2009 14:54:01 +0000
+From: Alex Buell <alex.buell@munted.org.uk>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27 & ext4 strangeness
+Message-ID: <20090203145401.08af7fe8@lithium.local.net>
+In-Reply-To: <20090131000917.GB27950@mit.edu>
+References: <20090130194702.5a2ca774@lithium.local.net>
+	<20090131000917.GB27950@mit.edu>
+Organization: One tortoiseshell cat, very high maintenance
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+X-Face: "wUuhsy:X)M;>-dA\j"&y@*\$91]iX10Iv1WG_oNbGYpo,eqc06O?"VSeRTx]xM\LiITUh01z}<|GF/4Gzz(MAU~;p4AS,%TB69M:vB-9+i'#W7$UQCW&UP#zt{VdLlzEiw8k~jL<
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-02-02 at 16:05 -0800, Greg KH wrote:
-> On Mon, Feb 02, 2009 at 05:02:38PM -0500, Chuck Ebbert wrote:
-> > This patch:
-> > http://git.kernel.org/?p=linux/kernel/git/stable/stable-queue.git;a=blob_plain;f=releases/2.6.27.9/usb-option-add-pantech-cards.patch;hb=HEAD
-> > 
-> > replaced my wireless adapter's /dev/ttyACM0 interface with three interfaces:
-> > /dev/ttyUSB[012]
-> > 
-> > That broke my ppp connection scripts. And I have to use /dev/ttyUSB1 to connect,
-> > not USB0. Also it looks like Network Manager only knows how to use the first
-> > interface in its auto-connect mode, so people using that also lost their
-> > connections.
+On Fri, 30 Jan 2009 19:09:17 -0500, I waved a wand and this message
+magically appears in front of Theodore Tso:
+
+> If you can reproduce this, can you send me the output of "df /; df -i
+> /; dumpe2fs /dev/XXX" (where XXX is your root device) before you
+> reboot and force an fsck?  And then can you send me the output of "df
+> / ; df -i /; dumpe2fs /dev/XXX" after the 2nd reboot and forced fsck.
+> I've never seen anything like this, so I don't know what to make of
+> it.
 > 
-> Ugh, that sucks.
+> It also would be interesting to see if you can reproduce it running a
+> kernel from the ext4-stable branch of the ext4 tree:
 > 
-> That is what is also in upstream, so 2.6.29-rc also fails for you?
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tytso/ext4.git
+>    http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git
 > 
-> Dan, what's with replacing working devices with the cdc-acm driver with
-> option device ids?  Is there some reason you did this?
+> This has all of the ext4 fixes that is in the latest mainline, based
+> on the 2.6.28 kernel.
 
-For a long time we've been operating under the assumption that mobile
-broadband devices should be driven by option and sierra, since those
-drivers had the necessary buffering optimizations to support
-higher-speed mobile broadband devices.  That was true at least up until
-2.6.24.
+I've not been able to reproduce this yet but when it happens again I
+will drop you a email. I'm actually quite happy with ext4 ever since I
+switched all my boxes over to that filesystem. 
 
-Furthermore, up until this point, I have not seen mobile broadband
-adapters (that aren't cellphones connected via USB) that *are* CDC-ACM
-compliant.  Everything previously has advertised proprietary interfaces,
-some of which are serial ports and some of which are not.
+Thanks.
+-- 
+http://www.munted.org.uk
 
-Most mobile broadband cards *do* have more than one TTY, the others are
-used for additional control ports or proprietary access for stuff like
-GPS and flashing the firmware.
-
-Can we get the 'lsusb -v' output for this card?  I'm quite curious how
-many endpoints and interfaces the device actually has.
-
-Plus, are we expected to keep device names stable these days?  cdc-acm
-is the catch-all driver, but if that driver is more "generic" and a
-better driver is found, can we not update IDs just because the device
-name may change?
-
-Dan
-
-
+Fearsome grindings.
