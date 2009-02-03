@@ -1,145 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbZBCQrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbZBCQr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbZBCQrF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 11:47:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZBCQqt
+	id S1755768AbZBCQr2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 11:47:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752923AbZBCQqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 11:46:49 -0500
-Received: from ns1.suse.de ([195.135.220.2]:51021 "EHLO mx1.suse.de"
+	Tue, 3 Feb 2009 11:46:54 -0500
+Received: from ns2.suse.de ([195.135.220.15]:55969 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750845AbZBCQqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 11:46:48 -0500
+	id S1752746AbZBCQqw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 11:46:52 -0500
 From: Thomas Renninger <trenn@suse.de>
 To: davej@codemonkey.org.uk
 Cc: mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org,
-       Thomas Renninger <trenn@suse.de>
-Subject: [PATCH 3/7] CPUFREQ: ondemand/conservative: sanitize sampling_rate restrictions
-Date: Tue,  3 Feb 2009 17:46:42 +0100
-Message-Id: <1233679606-1971-4-git-send-email-trenn@suse.de>
+       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
+Subject: CPUFREQ: Ondemand and powernow-k8 enhancements/fixes/cleanups
+Date: Tue,  3 Feb 2009 17:46:39 +0100
+Message-Id: <1233679606-1971-1-git-send-email-trenn@suse.de>
 X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1233679606-1971-1-git-send-email-trenn@suse.de>
-References: <1233679606-1971-1-git-send-email-trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Limit sampling rate to transition_latency * 100 or kernel limits.
-If sampling_rate is tried to be set too low, set the lowest allowed value.
+These are the same I sent out some days ago, but messed up the
+cpufreq list address.
 
-Signed-off-by: Thomas Renninger <trenn@suse.de>
----
- Documentation/cpu-freq/governors.txt   |   14 +++++++++++++-
- drivers/cpufreq/cpufreq_conservative.c |   19 ++++++++++++++++---
- drivers/cpufreq/cpufreq_ondemand.c     |   19 +++++++++++++++----
- 3 files changed, 44 insertions(+), 8 deletions(-)
+The patches are based against Dave's cpufreq git tree's fixes branch.
+There is also the one from Mark Langsdorf (adjusted to latest tree)
+included which got posted on the cpufreq list recently.
+guilt should add the
+From: Mark Langsdorf ...
+tag right, so that he shows up as the author of this one.
 
-diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-freq/governors.txt
-index 9b18512..ce73f3e 100644
---- a/Documentation/cpu-freq/governors.txt
-+++ b/Documentation/cpu-freq/governors.txt
-@@ -117,7 +117,19 @@ accessible parameters:
- sampling_rate: measured in uS (10^-6 seconds), this is how often you
- want the kernel to look at the CPU usage and to make decisions on
- what to do about the frequency.  Typically this is set to values of
--around '10000' or more.
-+around '10000' or more. It's default value is (cmp. with users-guide.txt):
-+transition_latency * 1000
-+The lowest value you can set is:
-+transition_latency * 100 or it may get restricted to a value where it
-+makes not sense for the kernel anymore to poll that often which depends
-+on your HZ config variable (HZ=1000: max=20000us, HZ=250: max=5000).
-+Be aware that transition latency is in ns and sampling_rate is in us, so you
-+get the same sysfs value by default.
-+Sampling rate should always get adjusted considering the transition latency
-+To set the sampling rate 750 times as high as the transition latency
-+in the bash (as said, 1000 is default), do:
-+echo `$(($(cat cpuinfo_transition_latency) * 750 / 1000)) \
-+    >ondemand/sampling_rate
- 
- show_sampling_rate_(min|max): THIS INTERFACE IS DEPRECATED, DON'T USE IT.
- You can use wider ranges now and the general
-diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-index 5ba0a3f..b8bbd4a 100644
---- a/drivers/cpufreq/cpufreq_conservative.c
-+++ b/drivers/cpufreq/cpufreq_conservative.c
-@@ -54,7 +54,18 @@ static unsigned int def_sampling_rate;
- 			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
- #define MIN_SAMPLING_RATE			\
- 			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
-+/* Above MIN_SAMPLING_RATE will vanish with its sysfs file soon
-+ * Define the minimal settable sampling rate to the greater of:
-+ *   - "HW transition latency" * 100 (same as default sampling / 10)
-+ *   - MIN_STAT_SAMPLING_RATE
-+ * To avoid that userspace shoots itself.
-+*/
-+#define MINIMUM_SAMPLING_RATE			\
-+			((def_sampling_rate / 10) < MIN_STAT_SAMPLING_RATE \
-+			 ? MIN_STAT_SAMPLING_RATE : (def_sampling_rate / 10))
-+/* This will also vanish soon with removing sampling_rate_max */
- #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
-+
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
- #define DEF_SAMPLING_DOWN_FACTOR		(1)
- #define MAX_SAMPLING_DOWN_FACTOR		(10)
-@@ -197,12 +208,14 @@ static ssize_t store_sampling_rate(struct cpufreq_policy *unused,
- 	ret = sscanf (buf, "%u", &input);
- 
- 	mutex_lock(&dbs_mutex);
--	if (ret != 1 || input > MAX_SAMPLING_RATE || input < MIN_SAMPLING_RATE) {
-+	if (ret != 1) {
- 		mutex_unlock(&dbs_mutex);
- 		return -EINVAL;
- 	}
--
--	dbs_tuners_ins.sampling_rate = input;
-+	if  (input < MINIMUM_SAMPLING_RATE)
-+		dbs_tuners_ins.sampling_rate = MINIMUM_SAMPLING_RATE;
-+	else
-+		dbs_tuners_ins.sampling_rate = input;
- 	mutex_unlock(&dbs_mutex);
- 
- 	return count;
-diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-index 4b42e36..70e0841 100644
---- a/drivers/cpufreq/cpufreq_ondemand.c
-+++ b/drivers/cpufreq/cpufreq_ondemand.c
-@@ -52,6 +52,16 @@ static unsigned int def_sampling_rate;
- 			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
- #define MIN_SAMPLING_RATE			\
- 			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
-+/* Above MIN_SAMPLING_RATE will vanish with its sysfs file soon
-+ * Define the minimal settable sampling rate to the greater of:
-+ *   - "HW transition latency" * 100 (same as default sampling / 10)
-+ *   - MIN_STAT_SAMPLING_RATE
-+ * To avoid that userspace shoots itself.
-+*/
-+#define MINIMUM_SAMPLING_RATE			\
-+			((def_sampling_rate / 10) < MIN_STAT_SAMPLING_RATE \
-+			 ? MIN_STAT_SAMPLING_RATE : (def_sampling_rate / 10))
-+/* This will also vanish soon with removing sampling_rate_max */
- #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
- #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
- #define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
-@@ -243,13 +253,14 @@ static ssize_t store_sampling_rate(struct cpufreq_policy *unused,
- 	ret = sscanf(buf, "%u", &input);
- 
- 	mutex_lock(&dbs_mutex);
--	if (ret != 1 || input > MAX_SAMPLING_RATE
--		     || input < MIN_SAMPLING_RATE) {
-+	if (ret != 1) {
- 		mutex_unlock(&dbs_mutex);
- 		return -EINVAL;
- 	}
--
--	dbs_tuners_ins.sampling_rate = input;
-+	if  (input < MINIMUM_SAMPLING_RATE)
-+		dbs_tuners_ins.sampling_rate = MINIMUM_SAMPLING_RATE;
-+	else
-+		dbs_tuners_ins.sampling_rate = input;
- 	mutex_unlock(&dbs_mutex);
- 
- 	return count;
--- 
-1.6.0.2
+Dave, can you add these to your tree, please.
+
+Thanks,
+
+    Thomas
+
 
