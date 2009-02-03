@@ -1,93 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZBCJBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbZBCJEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbZBCJBS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 04:01:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751314AbZBCJBE
+	id S1752660AbZBCJEs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 04:04:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZBCJEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 04:01:04 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:36194 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751212AbZBCJBC (ORCPT
+	Tue, 3 Feb 2009 04:04:33 -0500
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35778 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751312AbZBCJEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 04:01:02 -0500
-Date: Tue, 3 Feb 2009 14:30:34 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+	Tue, 3 Feb 2009 04:04:32 -0500
+Date: Tue, 3 Feb 2009 18:03:20 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "menage@google.com" <menage@google.com>,
        "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [-mm patch] Show memcg information during OOM (v2)
-Message-ID: <20090203090034.GW918@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090203072013.GU918@balbir.in.ibm.com> <20090203072701.GV918@balbir.in.ibm.com> <20090203170427.c6070cda.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090203170427.c6070cda.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [PATCH 0/6] memcg/cgroup, updates related to CSS ID
+Message-Id: <20090203180320.9f29aa76.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-03 17:04:27]:
+This is CSS ID series of patches. Some are for cgroup, others are for memcg.
 
-> On Tue, 3 Feb 2009 12:57:01 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> 
-> > Checkpatch caught an additional space, so here is the patch again
-> > 
-> > 
-> > Description: Add RSS and swap to OOM output from memcg
-> > 
-> > From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > 
-> > Changelog v2..v1:
-> > 
-> > 1. Add more information about task's memcg and the memcg
-> >    over it's limit
-> > 2. Print data in KB
-> > 3. Move the print routine outside task_lock()
-> > 4. Use rcu_read_lock() around cgroup_path, strictly speaking it
-> >    is not required, but relying on the current memcg implementation
-> >    is not a good idea.
-> > 
-> > 
-> > This patch displays memcg values like failcnt, usage and limit
-> > when an OOM occurs due to memcg.
-> > 
-> > Thanks go out to Johannes Weiner, Li Zefan, David Rientjes,
-> > Kamezawa Hiroyuki, Daisuke Nishimura and KOSAKI Motohiro for
-> > review.
-> > 
-> 
-> IIUC, this oom_kill is serialized by memcg_tasklist mutex.
-> Then, you don't have to allocate buffer on stack.
-> 
-> 
-> > +void mem_cgroup_print_mem_info(struct mem_cgroup *memcg, struct task_struct *p)
-> > +{
-> > +	struct cgroup *task_cgrp;
-> > +	struct cgroup *mem_cgrp;
-> > +	/*
-> > +	 * Need a buffer on stack, can't rely on allocations.
-> > +	 */
-> > +	char task_memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
-> > +	char memcg_name[MEM_CGROUP_OOM_BUF_SIZE];
-> > +	int ret;
-> > +
-> 
-> making this as
-> 
-> static char task_memcg_name[PATH_MAX];
-> static char memcg_name[PATH_MAX];
-> 
-> is ok, I think. and the patch will be more simple.
->
+No big changes from previous version. (*) is a patch for cgroup.
+I think almost all comments are satisfied.
+Isn't it not so bad time to start to test something new ?
 
-I've mentioned it in the NOTE section as well, I wanted more opinions
-before going that route. I'll resend v3. 
+[1/6] CSS ID for cgroup (*)
+[2/6] use CSS ID in memcg's hierarchy.
+[3/6] hierarchical stat for memcg
+[4/6] fix shrink memory retry or -EBUSY
+[5/6] fix oom killer under memcg hierarchy.
+[6/6] fix frequent -EBUSY (*)
 
--- 
-	Balbir
+Thanks,
+-Kame
+
