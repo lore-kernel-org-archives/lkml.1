@@ -1,138 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752541AbZBCCRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752494AbZBCCTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752541AbZBCCRb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 21:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750977AbZBCCRX
+	id S1752494AbZBCCTc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 21:19:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751206AbZBCCTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 21:17:23 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45687 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750857AbZBCCRX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 21:17:23 -0500
-Message-ID: <4987A8F3.1010702@kernel.org>
-Date: Mon, 02 Feb 2009 18:16:19 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 2 Feb 2009 21:19:23 -0500
+Received: from outbound-mail-124.bluehost.com ([67.222.38.24]:47198 "HELO
+	outbound-mail-124.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750977AbZBCCTW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 21:19:22 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=Rj6XfJcqaC6kWJToMLNoaQhoXgj8Qet8k1IpUo05nDTrOr/GlHLLQfvJWcjqZiRCPyqRgq/3A/MTXWRW61rMZIvSjUo+cPhZKss63K/gM7sdsUy21uERP4o2wTypgg4a;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: [git pull] PCI fixes
+Date: Mon, 2 Feb 2009 18:19:19 -0800
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: fix kexec with vmlinux
-References: <49878B88.8050602@kernel.org>
-In-Reply-To: <49878B88.8050602@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902021819.19436.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please consider pulling my for-linus branch:
+git pull git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6.git for-linus
 
-Impact: fix regression with kexec with vmlinux
+A few more fixes for this round (and a few more pending, want to get them
+through linux-next first though).  There's one patch for new hw support here,
+but it's a two liner, and missing a whole release would be a pain, so I'm
+including it; hope that's not a problem.
 
-split data.init into data.init, percpu, data.init2 sections
-instead of let data.init wrap percpu secion.
+-- 
+Jesse Barnes, Intel Open Source Technology Center
 
-so kexec loading will be happy that there will not have overlapping.
+Darrick J. Wong (1):
+      PCI hotplug: fakephp: Allocate PCI resources before adding the device
 
-before patch have
-Elf file type is EXEC (Executable file)
-Entry point 0x200000
-There are 6 program headers, starting at offset 64
+Matthew Garrett (1):
+      PCI hotplug: Change link order of pciehp & acpiphp
 
-Program Headers:
-  Type           Offset             VirtAddr           PhysAddr
-                 FileSiz            MemSiz              Flags  Align
-  LOAD           0x0000000000200000 0xffffffff80200000 0x0000000000200000
-                 0x0000000000ca6000 0x0000000000ca6000  R E    200000
-  LOAD           0x0000000000ea6000 0xffffffff80ea6000 0x0000000000ea6000
-                 0x000000000014dfe0 0x000000000014dfe0  RWE    200000
-  LOAD           0x0000000001000000 0xffffffffff600000 0x0000000000ff4000
-                 0x0000000000000888 0x0000000000000888  RWE    200000
-  LOAD           0x00000000011f6000 0xffffffff80ff6000 0x0000000000ff6000
-                 0x0000000000073086 0x0000000000a2d938  RWE    200000
-  LOAD           0x0000000001400000 0x0000000000000000 0x000000000106a000
-                 0x00000000001d2ce0 0x00000000001d2ce0  RWE    200000
-  NOTE           0x00000000009e2c1c 0xffffffff809e2c1c 0x00000000009e2c1c
-                 0x0000000000000024 0x0000000000000024         4
+Matthew Wilcox (1):
+      PCI MSI: Fix undefined shift by 32
 
- Section to Segment mapping:
-  Segment Sections...
-   00     .text .notes __ex_table .rodata __bug_table .pci_fixup .builtin_fw __ksymtab __ksymtab_gpl __ksymtab_strings __init_rodata __param 
-   01     .data .init.rodata .data.cacheline_aligned .data.read_mostly 
-   02     .vsyscall_0 .vsyscall_fn .vsyscall_gtod_data .vsyscall_1 .vsyscall_2 .vgetcpu_mode .jiffies 
-   03     .data.init_task .smp_locks .init.text .init.data .init.setup .initcall.init .con_initcall.init .x86_cpu_dev.init .altinstructions .altinstr_replacement .exit.text .init.ramfs .bss 
-   04     .data.percpu 
-   05     .notes 
+Rafael J. Wysocki (4):
+      PCI PM: Fix suspend error paths and testing facility breakage
+      PCI PM: Fix hibernation breakage on EeePC 701
+      PCI PM: Power up devices before restoring their state
+      PCI PM: Do not wait for buses in B2 or B3 during resume
 
+Seth Heasley (1):
+      PCI: irq and pci_ids patch for Intel Tigerpoint DeviceIDs
 
-after patch got
-
-Elf file type is EXEC (Executable file)
-Entry point 0x200000
-There are 7 program headers, starting at offset 64
-
-Program Headers:
-  Type           Offset             VirtAddr           PhysAddr
-                 FileSiz            MemSiz              Flags  Align
-  LOAD           0x0000000000200000 0xffffffff80200000 0x0000000000200000
-                 0x0000000000ca6000 0x0000000000ca6000  R E    200000
-  LOAD           0x0000000000ea6000 0xffffffff80ea6000 0x0000000000ea6000
-                 0x000000000014dfe0 0x000000000014dfe0  RWE    200000
-  LOAD           0x0000000001000000 0xffffffffff600000 0x0000000000ff4000
-                 0x0000000000000888 0x0000000000000888  RWE    200000
-  LOAD           0x00000000011f6000 0xffffffff80ff6000 0x0000000000ff6000
-                 0x0000000000073086 0x0000000000073086  RWE    200000
-  LOAD           0x0000000001400000 0x0000000000000000 0x000000000106a000
-                 0x00000000001d2ce0 0x00000000001d2ce0  RWE    200000
-  LOAD           0x000000000163d000 0xffffffff8123d000 0x000000000123d000
-                 0x0000000000000000 0x00000000007e6938  RWE    200000
-  NOTE           0x00000000009e2c1c 0xffffffff809e2c1c 0x00000000009e2c1c
-                 0x0000000000000024 0x0000000000000024         4
-
- Section to Segment mapping:
-  Segment Sections...
-   00     .text .notes __ex_table .rodata __bug_table .pci_fixup .builtin_fw __ksymtab __ksymtab_gpl __ksymtab_strings __init_rodata __param 
-   01     .data .init.rodata .data.cacheline_aligned .data.read_mostly 
-   02     .vsyscall_0 .vsyscall_fn .vsyscall_gtod_data .vsyscall_1 .vsyscall_2 .vgetcpu_mode .jiffies 
-   03     .data.init_task .smp_locks .init.text .init.data .init.setup .initcall.init .con_initcall.init .x86_cpu_dev.init .altinstructions .altinstr_replacement .exit.text .init.ramfs 
-   04     .data.percpu 
-   05     .bss 
-   06     .notes 
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/kernel/vmlinux_64.lds.S |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/vmlinux_64.lds.S
-+++ linux-2.6/arch/x86/kernel/vmlinux_64.lds.S
-@@ -22,6 +22,7 @@ PHDRS {
- #ifdef CONFIG_SMP
- 	percpu PT_LOAD FLAGS(7);	/* RWE */
- #endif
-+	data.init2 PT_LOAD FLAGS(7);	/* RWE */
- 	note PT_NOTE FLAGS(0);	/* ___ */
- }
- SECTIONS
-@@ -215,7 +216,7 @@ SECTIONS
-   /*
-    * percpu offsets are zero-based on SMP.  PERCPU_VADDR() changes the
-    * output PHDR, so the next output section - __data_nosave - should
--   * switch it back to data.init.  Also, pda should be at the head of
-+   * start another section data.init2.  Also, pda should be at the head of
-    * percpu area.  Preallocate it and define the percpu offset symbol
-    * so that it can be accessed as a percpu variable.
-    */
-@@ -232,7 +233,7 @@ SECTIONS
-   __nosave_begin = .;
-   .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-       *(.data.nosave)
--  } :data.init	/* switch back to data.init, see PERCPU_VADDR() above */
-+  } :data.init2 /* use another section data.init2, see PERCPU_VADDR() above */
-   . = ALIGN(PAGE_SIZE);
-   __nosave_end = .;
- 
+ arch/x86/pci/irq.c            |    1 +
+ drivers/pci/hotplug/Makefile  |    6 ++++-
+ drivers/pci/hotplug/fakephp.c |   42 +++++++++++++++++++++++++---------------
+ drivers/pci/msi.c             |   13 ++++++++++-
+ drivers/pci/pci-driver.c      |   21 +++++++++++++++++++-
+ drivers/pci/pci.c             |   32 +++++++++++++++---------------
+ include/linux/pci_ids.h       |    1 +
+ 7 files changed, 80 insertions(+), 36 deletions(-)
