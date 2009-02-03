@@ -1,81 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbZBCByt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZBCB6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753716AbZBCByt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 20:54:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751623AbZBCByh
+	id S1753403AbZBCB6R (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 20:58:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751489AbZBCB6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 20:54:37 -0500
-Received: from mga09.intel.com ([134.134.136.24]:16431 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750977AbZBCByg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 20:54:36 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,368,1231142400"; 
-   d="scan'208";a="383378028"
-Subject: Re: Commit 31a12666d8f0c22235297e1c1575f82061480029 slows down
-	Berkeley DB
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       npiggin@suse.de
-In-Reply-To: <200902031224.20856.nickpiggin@yahoo.com.au>
-References: <20090130012315.GB19554@duck.suse.cz>
-	 <200902031224.20856.nickpiggin@yahoo.com.au>
-Content-Type: text/plain
-Date: Tue, 03 Feb 2009 09:54:26 +0800
-Message-Id: <1233626066.2604.114.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 2 Feb 2009 20:58:05 -0500
+Received: from rv-out-0506.google.com ([209.85.198.225]:31789 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750977AbZBCB6E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 20:58:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=BOtVsZozdxrY8W1en6l7kkXwQu2BZxmn36XDanyVDixIgPw1S86Q9Lo6G3Kp1PRjsr
+         eLzKtfbYVfAl9RXxMGjZmXd9aokOirwTUIMUUhn+W6h2iEZ1Tf9PUD2kWrptKxes4KYH
+         1Mfd5yOnqNc+Bak+T+v92pxHXgI7E+gK0mX9c=
+Date: Tue, 3 Feb 2009 10:57:44 +0900
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH] fix mlocked page counter mismatch
+Message-ID: <20090203015744.GA16179@barrios-desktop>
+References: <20090202061622.GA13286@barrios-desktop> <1233594995.17895.144.camel@lts-notebook> <20090202232719.GC13532@barrios-desktop> <1233625686.17895.219.camel@lts-notebook>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233625686.17895.219.camel@lts-notebook>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 12:24 +1100, Nick Piggin wrote:
-> On Friday 30 January 2009 12:23:15 Jan Kara wrote:
-> >   Hi,
-> >
-> >   today I found that commit 31a12666d8f0c22235297e1c1575f82061480029 (mm:
-> > write_cache_pages cyclic fix) slows down operations over Berkeley DB.
-> > Without this "fix", I can add 100k entries in about 5 minutes 30s, with
-> > that change it takes about 20 minutes.
-> >   What is IMO happening is that previously we scanned to the end of file,
-> > we left writeback_index at the end of file and went to write next file.
-> > With the fix, we wrap around (seek) and after writing some more we go
-> > to next file (seek again).
-We also found this commit causes about 40~50% regression with iozone mmap-rand-write.
-#iozone -B -r 4k -s 64k -s 512m -s 1200m
+> > Thank you for testing. 
+> 
+> I did test this on 29-rc3 on a 4 socket x dual core x86_64 platform and
+> it seems to resolve the statistics miscount.  How do you want to
+> proceed.  Do you want to repost with this version of patch?  Or shall I?
 
-My machine has 8GB memory.
+I will repost this patch with your ACK and tested-by if you allow it. 
 
-> Hmm, but isn't that what pdflush has asked for? It is wanting to flush
-> some of the dirty data out of this file, and hence it wants to start
-> from where it last flushed out and then cycle back and flush more?
 > 
+> Regards,
+> Lee
 > 
-> >   Anyway, I think the original semantics of "cyclic" makes more sence, just
-> > the name was chosen poorly. What we should do is really scan to the end of
-> > file, reset index to start from the beginning next time and go for the next
-> > file.
-> 
-> Well, if we think of a file as containing a set of dirty pages (as it
-> appears to the high level mm), rather than a sequence, then behaviour
-> of my patch is correct (ie. there should be no distinction between dirty
-> pages at different offsets in the file).
-> 
-> However, clearly there is some problem with that assumption if you're
-> seeing a 4x slowdown :P I'd really like to know how it messes up the IO
-> patterns. How many files in the BDB workload? Are filesystem blocks
-> being allocated at the end of the file while writeout is happening?
-> Delayed allocation?
-> 
-> 
-> >   I can write a patch to introduce this semantics but I'd like to hear
-> > opinions of other people before I do so.
-> 
-> I like dirty page cleaning to be offset agnostic as far as possible,
-> but I can't argue with numbers like that. Though maybe it would be
-> possible to solve it some other way.
+> > > 
+> > > 
+> > > Index: linux-2.6.29-rc3/mm/rmap.c
+> > > ===================================================================
+> > > --- linux-2.6.29-rc3.orig/mm/rmap.c	2009-01-30 14:13:56.000000000 -0500
+> > > +++ linux-2.6.29-rc3/mm/rmap.c	2009-02-02 11:27:11.000000000 -0500
+> > > @@ -1072,7 +1072,8 @@ static int try_to_unmap_file(struct page
+> > >  	spin_lock(&mapping->i_mmap_lock);
+> > >  	vma_prio_tree_foreach(vma, &iter, &mapping->i_mmap, pgoff, pgoff) {
+> > >  		if (MLOCK_PAGES && unlikely(unlock)) {
+> > > -			if (!(vma->vm_flags & VM_LOCKED))
+> > > +			if (!((vma->vm_flags & VM_LOCKED) &&
+> > > +			      page_mapped_in_vma(page, vma)))
+> > >  				continue;	/* must visit all vmas */
+> > >  			ret = SWAP_MLOCK;
+> > >  		} else {
+> > > 
+> > 
 
+-- 
+Kinds Regards
+MinChan Kim
 
