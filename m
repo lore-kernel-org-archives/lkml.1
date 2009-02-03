@@ -1,410 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbZBCTUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbZBCTVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbZBCTUh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 14:20:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752682AbZBCTUZ
+	id S1756668AbZBCTVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 14:21:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbZBCTUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 14:20:25 -0500
-Received: from www.tglx.de ([62.245.132.106]:35919 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752256AbZBCTUX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 14:20:23 -0500
-To: linux-kernel@vger.kernel.org
-Cc: viro@zeniv.linux.org.uk, malware-list@lists.printk.net, eparis@redhat.com,
-       hch@infradead.org, alan@lxorguk.ukuu.org.uk
-Subject: [PATCHv2 4/5] VFS: DazukoFS, stackable-fs, file access control
-From: John Ogness <dazukocode@ogness.net>
-References: <8663jrgwo4.fsf@johno.fn.ogness.net>
-	<861vufgwlt.fsf@johno.fn.ogness.net>
-	<86wsc7fhzc.fsf_-_@johno.fn.ogness.net>
-	<86skmvfhx6.fsf_-_@johno.fn.ogness.net>
-Date: Tue, 03 Feb 2009 20:19:40 +0100
-In-Reply-To: <86skmvfhx6.fsf_-_@johno.fn.ogness.net> (John Ogness's message of "Tue\, 03 Feb 2009 20\:18\:29 +0100")
-Message-ID: <86ocxjfhv7.fsf_-_@johno.fn.ogness.net>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Tue, 3 Feb 2009 14:20:50 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:45488 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756504AbZBCTUs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 14:20:48 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 3 Feb 2009 11:20:46 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>
+Subject: Re: [patch 2/6] epoll keyed wakeups v2 - introduce new *_poll()
+ wakeup macros
+In-Reply-To: <alpine.DEB.1.10.0902031011380.23050@alien.or.mcafeemobile.com>
+Message-ID: <alpine.DEB.1.10.0902031116500.23050@alien.or.mcafeemobile.com>
+References: <send-serie.davidel@xmailserver.org.13601.1233518664.2> <20090203001401.cc960d4e.akpm@linux-foundation.org> <alpine.DEB.1.10.0902031011380.23050@alien.or.mcafeemobile.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch 4: Adds a new (optional) command to allow registered processes
-         to be tracked. The tracking allows processes to be
-         automatically unregistered if they crash and also allows
-         groups to be automatically deleted if no more processes are
-         registered.
+On Tue, 3 Feb 2009, Davide Libenzi wrote:
 
-Patched against 2.6.29-rc3.
+> On Tue, 3 Feb 2009, Andrew Morton wrote:
+> 
+> > On Sun, 01 Feb 2009 12:04:23 -0800 Davide Libenzi <davidel@xmailserver.org> wrote:
+> > 
+> > > +#define wake_up_nested_poll(x, m, s)					\
+> > > +do {									\
+> > > +	unsigned long flags;						\
+> > > +									\
+> > > +	spin_lock_irqsave_nested(&(x)->lock, flags, (s));		\
+> > > +	wake_up_locked_poll(x, m);					\
+> > > +	spin_unlock_irqrestore(&(x)->lock, flags);			\
+> > > +} while (0)
+> > 
+> > I had to go and find the callsite to work out the type of `x' :(
+> > 
+> > - this macro can be passed the address of any structure which has a
+> >   `spinlock_t lock;' in it, which seems strange.
+> > 
+> > - It references its first arg three times.
+> > 
+> > Is there any reason why we can't implement this in C?  
+> 
+> I don't see any reason why these two couldn't be normal functions (I 
+> just referenced wake_up_nested(), that was a macro in the first place). 
 
-Signed-off-by: John Ogness <dazukocode@ogness.net>
----
- Documentation/filesystems/dazukofs.txt |   24 ++++-
- fs/dazukofs/ctrl_dev.c                 |   15 ++-
- fs/dazukofs/event.c                    |  103 +++++++++++++++++++++--
- fs/dazukofs/event.h                    |    7 +
- fs/dazukofs/group_dev.c                |   30 ++++++
- 5 files changed, 162 insertions(+), 17 deletions(-)
-Index: linux-2.6.28/fs/dazukofs/ctrl_dev.c
-===================================================================
---- linux-2.6.28.orig/fs/dazukofs/ctrl_dev.c	2009-02-03 18:11:01.000000000 +0100
-+++ linux-2.6.28/fs/dazukofs/ctrl_dev.c	2009-02-03 18:12:14.000000000 +0100
-@@ -85,7 +85,7 @@
- }
- 
- static int process_command(char *buf, const char *key,
--			   int (*func)(const char *),
-+			   int (*func)(const char *, int), int arg2,
- 			   int *retcode)
- {
- 	char *p;
-@@ -104,7 +104,7 @@
- 		*retcode = -EINVAL;
- 	} else {
- 		*p2 = 0;
--		*retcode = func(p);
-+		*retcode = func(p, arg2);
- 		*p2 = ' ';
- 	}
- 
-@@ -131,14 +131,21 @@
- 
- 	if (!match || (match && ret >= 0)) {
- 		if (process_command(tmp, "del=",
--				    dazukofs_remove_group, &ret) == 0) {
-+				    dazukofs_remove_group, 0, &ret) == 0) {
- 			match = 1;
- 		}
- 	}
- 
- 	if (!match || (match && ret >= 0)) {
- 		if (process_command(tmp, "add=",
--				    dazukofs_add_group, &ret) == 0) {
-+				    dazukofs_add_group, 0, &ret) == 0) {
-+			match = 1;
-+		}
-+	}
-+
-+	if (!match || (match && ret >= 0)) {
-+		if (process_command(tmp, "addtrack=",
-+				    dazukofs_add_group, 1, &ret) == 0) {
- 			match = 1;
- 		}
- 	}
-Index: linux-2.6.28/fs/dazukofs/event.c
-===================================================================
---- linux-2.6.28.orig/fs/dazukofs/event.c	2009-02-03 18:11:01.000000000 +0100
-+++ linux-2.6.28/fs/dazukofs/event.c	2009-02-03 18:12:14.000000000 +0100
-@@ -65,6 +65,8 @@
- 	wait_queue_head_t queue;
- 	struct dazukofs_event_container working_list;
- 	atomic_t use_count;
-+	int tracking;
-+	int track_count;
- 	int deprecated;
- };
- 
-@@ -287,9 +289,10 @@
- }
- 
- /**
-- * __check_for_group - check if a group exists
-+ * __check_for_group - check if a group exists and set tracking
-  * @name: a group name to check for
-  * @id: a group id to check for
-+ * @track: flag set if tracking is to be used
-  * @already_exists: will be set if the group already exists
-  *
-  * Description: This function checks names and id's to see if a group may
-@@ -300,11 +303,17 @@
-  * If the group name exists and the id is already that which is requested,
-  * the function returns success, but sets the already_exists flag.
-  *
-+ * NOTE: Although the function name may imply read-only, this function
-+ *       _will_ set a group to track if the group is found to exist and
-+ *       tracking should be set. We do this because it is convenient
-+ *       since the work_mutex is already locked.
-+ *
-  * IMPORTANT: This function requires work_mutex to be held!
-  *
-  * Returns 0 if the group exists or may be created.
-  */
--static int __check_for_group(const char *name, int id, int *already_exists)
-+static int __check_for_group(const char *name, int id, int track,
-+			     int *already_exists)
- {
- 	struct dazukofs_group *grp;
- 	struct list_head *pos;
-@@ -325,6 +334,8 @@
- 		} else {
- 			if (strcmp(name, grp->name) == 0) {
- 				*already_exists = 1;
-+				if (track)
-+					grp->tracking = 1;
- 				break;
- 			} else if (grp->group_id == id) {
- 				id_available = 0;
-@@ -348,6 +359,7 @@
-  * __create_group - allocate and initialize a group structure
-  * @name: the name of the new group
-  * @id: the id of the new group
-+ * @track: flag set if tracking is to be used
-  *
-  * Description: This function allocates and initializes a group
-  * structure. The group_count should be locked to ensure that
-@@ -356,7 +368,8 @@
-  *
-  * Returns the newly created and initialized group structure.
-  */
--static struct dazukofs_group *__create_group(const char *name, int id)
-+static struct dazukofs_group *__create_group(const char *name, int id,
-+					     int track)
- {
- 	struct dazukofs_group *grp;
- 
-@@ -375,20 +388,27 @@
- 	init_waitqueue_head(&grp->queue);
- 	INIT_LIST_HEAD(&grp->todo_list.list);
- 	INIT_LIST_HEAD(&grp->working_list.list);
-+	if (track)
-+		grp->tracking = 1;
- 	return grp;
- }
- 
- /**
-  * dazukofs_add_group - add a new group
-  * @name: the name of the group to add
-+ * @track: flag set if tracking is to be used
-  *
-  * Description: This function is called by the device layer to add a new
-  * group. It returns success if the group has been successfully created
-  * or if the group already exists.
-  *
-+ * If the group already exists and is not tracking, but "track" is set,
-+ * the group will be changed to start tracking (actually done in the
-+ * function __check_for_group()).
-+ *
-  * Returns 0 on success.
-  */
--int dazukofs_add_group(const char *name)
-+int dazukofs_add_group(const char *name, int track)
- {
- 	int ret = 0;
- 	int already_exists;
-@@ -398,7 +418,8 @@
- 	write_lock(&group_count_rwlock);
- 
- 	mutex_lock(&work_mutex);
--	while (__check_for_group(name, available_id, &already_exists) != 0) {
-+	while (__check_for_group(name, available_id, track,
-+				 &already_exists) != 0) {
- 		/* try again with the next id */
- 		available_id++;
- 	}
-@@ -415,7 +436,7 @@
- 		goto out;
- 	}
- 
--	grp = __create_group(name, available_id);
-+	grp = __create_group(name, available_id, track);
- 	if (!grp) {
- 		ret = -ENOMEM;
- 		goto out;
-@@ -434,14 +455,17 @@
- /**
-  * dazukofs_remove_group - remove a group
-  * @name: the name of the group to remove
-+ * @unsued: argument not used
-  *
-  * Description: This function is called by the device layer to remove a
-  * group. It returns success if the group has been deleted or the group
-  * does not exist.
-  *
-+ * The unused argument exists for convenience to the device layer.
-+ *
-  * Returns 0 on success.
-  */
--int dazukofs_remove_group(const char *name)
-+int dazukofs_remove_group(const char *name, int unused)
- {
- 	int ret = 0;
- 	struct dazukofs_group *grp;
-@@ -741,6 +765,71 @@
- }
- 
- /**
-+ * dazukofs_group_open_tracking - begin tracking this process
-+ * @group_id: id of the group we belong to
-+ *
-+ * Description: This function is called by the device layer to begin
-+ * tracking the current process (if tracking for that group is enabled).
-+ *
-+ * Tracking simply means to keep track if there are any processes still
-+ * registered with the group, so we use a simple counter for that.
-+ * dazukofs_group_release_tracking() must be called when this process
-+ * unregisters.
-+ *
-+ * Returns 0 if tracking is _not_ enabled.
-+ */
-+int dazukofs_group_open_tracking(unsigned long group_id)
-+{
-+	struct dazukofs_group *grp;
-+	struct list_head *pos;
-+	int tracking = 0;
-+
-+	mutex_lock(&work_mutex);
-+	list_for_each(pos, &group_list.list) {
-+		grp = list_entry(pos, struct dazukofs_group, list);
-+		if (!grp->deprecated && grp->group_id == group_id) {
-+			if (grp->tracking) {
-+				atomic_inc(&grp->use_count);
-+				grp->track_count++;
-+				tracking = 1;
-+			}
-+			break;
-+		}
-+	}
-+	mutex_unlock(&work_mutex);
-+	return tracking;
-+}
-+
-+/**
-+ * dazukofs_group_release_tracking - stop tracking this process
-+ * @group_id: id of the group we belong to
-+ *
-+ * Description: This function is called by the device layer when a process
-+ * is no longer registered and thus tracking for this process should end
-+ * (if tracking for the group is enabled).
-+ */
-+void dazukofs_group_release_tracking(unsigned long group_id)
-+{
-+	struct dazukofs_group *grp;
-+	struct list_head *pos;
-+
-+	mutex_lock(&work_mutex);
-+	list_for_each(pos, &group_list.list) {
-+		grp = list_entry(pos, struct dazukofs_group, list);
-+		if (!grp->deprecated && grp->group_id == group_id) {
-+			if (grp->tracking) {
-+				atomic_dec(&grp->use_count);
-+				grp->track_count--;
-+				if (grp->track_count == 0)
-+					__remove_group(grp);
-+			}
-+			break;
-+		}
-+	}
-+	mutex_unlock(&work_mutex);
-+}
-+
-+/**
-  * dazukofs_return_event - return checked file access results
-  * @group_id: id of the group the event came from
-  * @event_id: the id of the event
-Index: linux-2.6.28/fs/dazukofs/event.h
-===================================================================
---- linux-2.6.28.orig/fs/dazukofs/event.h	2009-02-03 18:11:01.000000000 +0100
-+++ linux-2.6.28/fs/dazukofs/event.h	2009-02-03 18:12:14.000000000 +0100
-@@ -31,8 +31,11 @@
- 
- extern int dazukofs_check_access(struct dentry *dentry, struct vfsmount *mnt);
- 
-+extern int dazukofs_group_open_tracking(unsigned long group_id);
-+extern void dazukofs_group_release_tracking(unsigned long group_id);
-+
- extern int dazukofs_get_groups(char **buf);
--extern int dazukofs_add_group(const char *name);
--extern int dazukofs_remove_group(const char *name);
-+extern int dazukofs_add_group(const char *name, int track);
-+extern int dazukofs_remove_group(const char *name, int unused);
- 
- #endif /* __EVENT_H */
-Index: linux-2.6.28/fs/dazukofs/group_dev.c
-===================================================================
---- linux-2.6.28.orig/fs/dazukofs/group_dev.c	2009-02-03 18:11:01.000000000 +0100
-+++ linux-2.6.28/fs/dazukofs/group_dev.c	2009-02-03 18:12:14.000000000 +0100
-@@ -27,6 +27,24 @@
- #include "event.h"
- #include "dev.h"
- 
-+static int dazukofs_group_open(int group_id, struct inode *inode,
-+			       struct file *file)
-+{
-+	if (dazukofs_group_open_tracking(group_id))
-+		file->private_data = file;
-+	else
-+		file->private_data = NULL;
-+	return 0;
-+}
-+
-+static int dazukofs_group_release(int group_id, struct inode *inode,
-+				  struct file *file)
-+{
-+	if (file->private_data)
-+		dazukofs_group_release_tracking(group_id);
-+	return 0;
-+}
-+
- static ssize_t dazukofs_group_read(int group_id, struct file *file,
- 				   char __user *buffer, size_t length,
- 				   loff_t *pos)
-@@ -112,6 +130,16 @@
- }
- 
- #define DECLARE_GROUP_FOPS(group_id) \
-+static int \
-+dazukofs_group_open_##group_id(struct inode *inode, struct file *file) \
-+{ \
-+	return dazukofs_group_open(group_id, inode, file); \
-+} \
-+static int \
-+dazukofs_group_release_##group_id(struct inode *inode, struct file *file) \
-+{ \
-+	return dazukofs_group_release(group_id, inode, file); \
-+} \
- static ssize_t \
- dazukofs_group_read_##group_id(struct file *file, char __user *buffer, \
- 			       size_t length, loff_t *pos) \
-@@ -127,6 +155,8 @@
- } \
- static const struct file_operations group_fops_##group_id = { \
- 	.owner		= THIS_MODULE, \
-+	.open		= dazukofs_group_open_##group_id, \
-+	.release	= dazukofs_group_release_##group_id, \
- 	.read		= dazukofs_group_read_##group_id, \
- 	.write		= dazukofs_group_write_##group_id, \
- };
-Index: linux-2.6.28/Documentation/filesystems/dazukofs.txt
-===================================================================
---- linux-2.6.28.orig/Documentation/filesystems/dazukofs.txt	2009-02-03 18:11:01.000000000 +0100
-+++ linux-2.6.28/Documentation/filesystems/dazukofs.txt	2009-02-03 18:12:14.000000000 +0100
-@@ -180,10 +180,26 @@
- 
- By closing the device, the application will unregister itself.
- 
--NOTE: It is not necessary for the device to be open while the application
--      decides if access should be allowed. In fact, it doesn't even have to
--      be the same process that responds. DazukoFS is only interested in a
--      response that matches the pending event id.
-+To provide crash protection for applications, groups can be added using
-+the "addtrack" keyword instead of "add". The keyword "addtrack" tells
-+DazukoFS to add the group and track the number of registered processes in
-+that group. Tracking begins as soon as the first process has registered
-+with DazukoFS. Once all processes of the group have unregistered, DazukoFS
-+will automatically delete the group.
-+
-+If an application crashes, is killed, or ends without closing the device,
-+DazukoFS will still unregister that process. Using "addtrack" will ensure
-+that a created group is automatically deleted if the application is not
-+able to shutdown in a clean manner.
-+
-+NOTE: If "addtrack" is used, it is necessary for the device to be kept open
-+      the entire time the application is performing online file access
-+      control. Otherwise the group may become unintentionally deleted.
-+
-+      If "add" is used, it is not necessary for the device to be kept open
-+      while the application decides if access should be allowed. Actually,
-+      DazukoFS doesn't care which process responds to a file access event.
-+      DazukoFS is only interested in a response for the given event id.
- 
- A group can be deleted by writing to the /dev/dazukofs.ctrl device. For
- example, writing:
+Actually reading the comments helps :) It triggers an include-hell, if you 
+make them inline. Since they're lockdep debug thingies, I think it's kinda 
+wasted turn them into non-inline real functions, so they'd better remain 
+macros IMO.
+
+
+
+- Davide
+
+
