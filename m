@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759478AbZBCA1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbZBCAaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759478AbZBCA1U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 2 Feb 2009 19:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbZBCA1K
+	id S1754896AbZBCAaL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 2 Feb 2009 19:30:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZBCA35
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 2 Feb 2009 19:27:10 -0500
-Received: from tundra.namei.org ([65.99.196.166]:4399 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754051AbZBCA1J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 2 Feb 2009 19:27:09 -0500
-Date: Tue, 3 Feb 2009 11:26:33 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       dave@linux.vnet.ibm.com, matthltc@us.ibm.com, zohar@linux.vnet.ibm.com
-Subject: Re: [PATCH 0/2] TPM: refactoring and integrity
-In-Reply-To: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
-Message-ID: <alpine.LRH.1.10.0902031125190.20287@tundra.namei.org>
-References: <cover.1233592745.git.srajiv@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	Mon, 2 Feb 2009 19:29:57 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52085 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754119AbZBCA35 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 2 Feb 2009 19:29:57 -0500
+Date: Mon, 2 Feb 2009 16:28:58 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jesse.barnes@intel.com>, Andreas Schwab <schwab@suse.de>,
+       Len Brown <lenb@kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: PCI PM: Restore standard config registers of all devices early
+In-Reply-To: <200902030115.32659.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0902021622350.3247@localhost.localdomain>
+References: <200901261904.n0QJ4Q9c016709@hera.kernel.org> <200902030045.19416.rjw@sisk.pl> <alpine.LFD.2.00.0902021551050.3247@localhost.localdomain> <200902030115.32659.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Feb 2009, Rajiv Andrade wrote:
 
-> This patchset contains a refactoring patch and integrity one. The first addresses Matt Helsley and Dave Hansen's comments on replacing the data[] vectors by packed structures making the code easier to read and debug and also consolidates most of the tpm_show_* functions. The second one provides an interface to read and extend PCR values, which is widely used by IMA.
+
+On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
 > 
-> This version also addresses Matt Helsley's last observation on the timeout_t structure usage to access TPM_CAP_PROP_TIS_DURATION capability, now a new structure is being used, duration_t, whose fields now match exactly as defined in the TPM specification.
-> 
-> Rajiv Andrade (2):
->   TPM: sysfs functions consolidation
->   TPM: integrity interface
-> 
->  drivers/char/tpm/tpm.c |  528 ++++++++++++++++++++++--------------------------
->  drivers/char/tpm/tpm.h |  142 +++++++++++++
->  include/linux/tpm.h    |   35 ++++
->  3 files changed, 423 insertions(+), 282 deletions(-)
->  create mode 100644 include/linux/tpm.h
+> BTW, on the PMAC the problematic driver appears to be the radeon driver,
+> according to Ben, and the breakage is not related to USB.
 
-Applied to 
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+Hmm. atyfb_base.c has the same kind of things with magic PMAC code, but it 
+doesn't follow the USB pattern - it just replaces "pci_set_power_state()" 
+_entirely_. 
 
-(For some reason, these ended up out of order in my mail folder which 
-upset git-am... fixed manually).
+It seems a very interesting suspend routine, btw. It doesn't seem to do 
+any of the pci_save_state() at all, just re-initializes from scratch. 
+Maybe it is unhappy with the PM layer deciding to try to restore state 
+since it clearly didn't..
 
--- 
-James Morris
-<jmorris@namei.org>
+		Linus
