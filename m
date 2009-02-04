@@ -1,182 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZBDBIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbZBDBJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZBDBIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 20:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZBDBIE
+	id S1754815AbZBDBJJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 20:09:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZBDBI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 20:08:04 -0500
-Received: from mga02.intel.com ([134.134.136.20]:19994 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbZBDBIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 20:08:01 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,375,1231142400"; 
-   d="asc'?scan'208";a="383701759"
-Subject: Re: [PATCH 2/3] crypto: Per-CPU cryptd thread implementation based
-	on kcrypto_wq
-From: Huang Ying <ying.huang@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
-In-Reply-To: <20090203011038.c12acc5b.akpm@linux-foundation.org>
-References: <1233556940.19806.58.camel@yhuang-dev.sh.intel.com>
-	 <20090203011038.c12acc5b.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-Ji3+Qr3cN5SAwqAHIuLy"
-Date: Wed, 04 Feb 2009 09:07:58 +0800
-Message-Id: <1233709678.19806.107.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 3 Feb 2009 20:08:56 -0500
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:62013 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751508AbZBDBI4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 20:08:56 -0500
+X-IronPort-AV: E=Sophos;i="4.37,375,1231113600"; 
+   d="scan'208";a="242370480"
+From: Roland Dreier <rdreier@cisco.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Eli Cohen <eli@mellanox.co.il>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+References: <20090203164930.GA10101@mtls03>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 03 Feb 2009 17:08:54 -0800
+In-Reply-To: <20090203164930.GA10101@mtls03> (Eli Cohen's message of "Tue, 3
+	Feb 2009 18:49:30 +0200")
+Message-ID: <ada8wonnh3t.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 04 Feb 2009 01:08:55.0135 (UTC) FILETIME=[266E46F0:01C98665]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Forwarding Eli's patch below, since PowerPC guys may have missed it.  I
+guess the question for Ben et al is whether there is any issue with
+exporting HPAGE_SHIFT for modules (can be EXPORT_SYMBOL_GPL if you feel
+it's an internal detail).  It would probably make sense to roll this
+change into the mlx4 change that Eli alludes to below and merge through
+my tree (with ppc maintainer acks of course), rather than splitting this
+patch out and introducing cross-tree dependencies (and also separating
+the rationale for the change from the change itself).
 
---=-Ji3+Qr3cN5SAwqAHIuLy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2009-02-03 at 17:10 +0800, Andrew Morton wrote:
-> On Mon, 02 Feb 2009 14:42:20 +0800 Huang Ying <ying.huang@intel.com> wrot=
-e:
->=20
-> > Original cryptd thread implementation has scalability issue, this
-> > patch solve the issue with a per-CPU thread implementation.
-> >=20
-> > struct cryptd_queue is defined to be a per-CPU queue, which holds one
-> > struct cryptd_cpu_queue for each CPU. In struct cryptd_cpu_queue, a
-> > struct crypto_queue holds all requests for the CPU, a struct
-> > work_struct is used to run all requests for the CPU.
-> >=20
-> > ...
-> >
-> > +int cryptd_init_queue(struct cryptd_queue *queue, unsigned int max_cpu=
-_qlen)
-> > +{
-> > +	int cpu;
-> > +	struct cryptd_cpu_queue *cpu_queue;
-> > +
-> > +	queue->cpu_queue =3D alloc_percpu(struct cryptd_cpu_queue);
-> > +	if (!queue->cpu_queue)
-> > +		return -ENOMEM;
-> > +	for_each_possible_cpu(cpu) {
-> > +		cpu_queue =3D per_cpu_ptr(queue->cpu_queue, cpu);
-> > +		crypto_init_queue(&cpu_queue->queue, max_cpu_qlen);
-> > +		INIT_WORK(&cpu_queue->work, cryptd_queue_worker);
-> > +	}
-> > +	return 0;
-> > +}
->=20
-> Could be made static, I believe.
-
-OK. I will make it static.
-
-> > +void cryptd_fini_queue(struct cryptd_queue *queue)
-> > +{
-> > +	int cpu;
-> > +	struct cryptd_cpu_queue *cpu_queue;
-> > +
-> > +	for_each_possible_cpu(cpu) {
-> > +		cpu_queue =3D per_cpu_ptr(queue->cpu_queue, cpu);
-> > +		BUG_ON(cpu_queue->queue.qlen);
-> > +	}
-> > +	free_percpu(queue->cpu_queue);
-> > +}
->=20
-> Ditto.
-
-As above.
-
-> > +int cryptd_enqueue_request(struct cryptd_queue *queue,
-> > +			   struct crypto_async_request *request)
-> > +{
-> > +	int cpu, err;
-> > +	struct cryptd_cpu_queue *cpu_queue;
-> > +
-> > +	cpu =3D get_cpu();
-> > +	cpu_queue =3D per_cpu_ptr(queue->cpu_queue, cpu);
-> > +	err =3D crypto_enqueue_request(&cpu_queue->queue, request);
-> > +	queue_work_on(cpu, kcrypto_wq, &cpu_queue->work);
-> > +	put_cpu();
-> > +
-> > +	return err;
-> > +}
->=20
-> Ditto?
-
-As above.
-
-> > +static void cryptd_queue_worker(struct work_struct *work)
->=20
-> A few comments explaining the code wouldn't kill us...
-
-OK. I will add some comments. This the function for work_struct in
-cryptd_cpu_queue, it does real encryption/decryption.
-
-> > +{
-> > +	struct cryptd_cpu_queue *cpu_queue;
-> > +	struct crypto_async_request *req, *backlog;
-> > +
-> > +	cpu_queue =3D container_of(work, struct cryptd_cpu_queue, work);
-> > +	/* Only handle one request at a time to avoid hogging crypto
-> > +	 * workqueue */
->=20
-> Not sure what that means.
-
-cryptd is not the only user of kcrypto_wq (now, chainiv uses it too),
-and there may be a lot of requests in cryptd_cpu_queue, to reduce the
-latency of other kcrypto_wq user, only one request is processed in
-work_struct function, then the work_struct will be inserted again.
-
-> > +	preempt_disable();
-> > +	backlog =3D crypto_get_backlog(&cpu_queue->queue);
-> > +	req =3D crypto_dequeue_request(&cpu_queue->queue);
-> > +	preempt_enable();
->=20
-> This function is run by a per-cpu thread, so it cannot be migrated to
-> another CPU by the CPU scheduler.
->=20
-> It is quite unclear what this preempt_disable() is needed for.  Please
-> either remove it or provide adequate comments.
-
-preempt_disable is used to protect cpu_queue->queue. It can be accessed
-by cryptd_enqueue_request(). When cryptd_queue_worker() is running, it
-can be preempted by cryptd_enqueue_request() on same CPU.
-
-> > +	if (!req)
-> > +		goto out;
-> > +
-> > +	if (backlog)
-> > +		backlog->complete(backlog, -EINPROGRESS);
-> > +	req->complete(req, 0);
-> > +out:
-> > +	if (cpu_queue->queue.qlen)
-> > +		queue_work(kcrypto_wq, &cpu_queue->work);
->=20
-> Again, unclear and needs commentary.
->=20
-> If we come here via the `goto out;' path above, this CPU queue has no
-> more work do do, I think?  If so, why does it requeue itself?
-
-If there is no more work to do, the cpu_queue->queue.qlen will be zero,
-so it will not request itself. If we come here via another path, we may
-need do that.
-
-Best Regards,
-Huang Ying
+Thanks,
+  Roland
 
 
---=-Ji3+Qr3cN5SAwqAHIuLy
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Drivers may want to take advantage of the large pages used for memory obtained
+from hugetlbfs. One example is mlx4_ib which can use much less MTT entries (in
+the order of HPAGE_SIZE / PAGE_SIZE) when registering such memory, thus scale
+significantly better when registering larger memory regions. Other drivers
+could also benefit from this.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Signed-off-by: Eli Cohen <eli@mellanox.co.il>
+---
+ arch/powerpc/mm/hash_utils_64.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-iEYEABECAAYFAkmI6msACgkQKhFGF+eHlpg6NwCeJhhegxuWo9NpsJZY5Y8PK3ik
-e+MAoJnd+vfOFsXgiKXOnqNTmEQHHsG8
-=N+UC
------END PGP SIGNATURE-----
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 8d5b475..6cff8c7 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -104,6 +104,7 @@ int mmu_highuser_ssize = MMU_SEGSIZE_256M;
+ u16 mmu_slb_size = 64;
+ #ifdef CONFIG_HUGETLB_PAGE
+ unsigned int HPAGE_SHIFT;
++EXPORT_SYMBOL(HPAGE_SHIFT);
+ #endif
+ #ifdef CONFIG_PPC_64K_PAGES
+ int mmu_ci_restrictions;
+-- 
+1.6.1
 
---=-Ji3+Qr3cN5SAwqAHIuLy--
 
