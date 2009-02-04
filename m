@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZBDBVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756133AbZBDBVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbZBDBVe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 20:21:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752904AbZBDBTi
+	id S1756133AbZBDBVx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 20:21:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZBDBTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 20:19:38 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42191 "EHLO ogre.sisk.pl"
+	Tue, 3 Feb 2009 20:19:39 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:42193 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751472AbZBDBTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 20:19:34 -0500
+	id S1752775AbZBDBTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 20:19:37 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH 7/7] PCI PM: Let the core be more careful with respect to drivers using new framework
-Date: Wed, 4 Feb 2009 02:09:07 +0100
+Subject: [PATCH 2/7] PCI PM: Check if the state has been saved before trying to restore it
+Date: Wed, 4 Feb 2009 01:57:22 +0100
 User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
@@ -26,304 +26,34 @@ Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902040209.08633.rjw@sisk.pl>
+Message-Id: <200902040157.23385.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Currently, the PM core always attempts to manage devices with drivers
-that use the new PM framework.  In particular, it attempts to disable
-the devices (which is unnecessary), to save their state (which may be
-undesirable if the driver has done that already) and to put them into
-low power states (again, this may be undesirable if the driver has
-already put the device into a low power state).  That need not be
-the right thing to do, so make the core be more careful in this
-respect.
-
-Generally, there are the following categories of devices to consider:
-* bridge devices without drivers
-* non-bridge devices without drivers
-* bridge devices with drivers
-* non-bridge devices with drivers
-and each of them should be handled differently.
-
-For bridge devices without drivers the PCI PM core will save their
-state on suspend and restore it (early) during resume, after putting
-them into D0 if necessary.  It will not attempt to do anything else
-to these devices.
-
-For non-bridge devices without drivers the PCI PM core will disable
-them and save their state on suspend.  During resume, it will put
-them into D0, if necessary, restore their state (early) and reenable
-them.
-
-For bridge devices with drivers the PCI PM core will only save
-their state on suspend if the driver hasn't done that already.
-Still, the core will restore their state (early) during resume,
-after putting them into D0, if necessary.
-
-For non-bridge devices with drivers the PCI PM core will only save
-their state on suspend if the driver hasn't done that already.  Also,
-if the state of the device hasn't been saved by the driver, the core
-will attempt to put the device into a low power state.  During
-resume the core will restore the state of the device (early), after
-putting it into D0, if necessary.
+Check if the standard configuration registers of a PCI device have
+been saved during suspend before trying to restore them during
+resume.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-By: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/pci/pci-driver.c |  145 ++++++++++++++++++++++++++++++-----------------
- 1 file changed, 93 insertions(+), 52 deletions(-)
+ drivers/pci/pci.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/drivers/pci/pci-driver.c
+Index: linux-2.6/drivers/pci/pci.c
 ===================================================================
---- linux-2.6.orig/drivers/pci/pci-driver.c
-+++ linux-2.6/drivers/pci/pci-driver.c
-@@ -430,39 +430,22 @@ static void pci_pm_default_resume_noirq(
- 	pci_fixup_device(pci_fixup_resume_early, pci_dev);
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -1421,7 +1421,7 @@ int pci_restore_standard_config(struct p
+ 	dev->current_state = PCI_D0;
+ 
+  Restore:
+-	return pci_restore_state(dev);
++	return dev->state_saved ? pci_restore_state(dev) : 0;
  }
  
--static int pci_pm_default_resume(struct pci_dev *pci_dev)
-+static void pci_pm_default_resume(struct pci_dev *pci_dev)
- {
- 	pci_fixup_device(pci_fixup_resume, pci_dev);
- 
--	if (pci_is_bridge(pci_dev))
--		return 0;
--
--	pci_enable_wake(pci_dev, PCI_D0, false);
--	return pci_pm_reenable_device(pci_dev);
-+	if (!pci_is_bridge(pci_dev))
-+		pci_enable_wake(pci_dev, PCI_D0, false);
- }
- 
--static void pci_pm_default_suspend_generic(struct pci_dev *pci_dev)
-+static void pci_pm_default_suspend(struct pci_dev *pci_dev)
- {
--	/* If a non-bridge device is enabled at this point, disable it */
-+	/* Disable non-bridge devices without PM support */
- 	if (!pci_is_bridge(pci_dev))
- 		pci_disable_enabled_device(pci_dev);
--	/*
--	 * Save state with interrupts enabled, because in principle the bus the
--	 * device is on may be put into a low power state after this code runs.
--	 */
- 	pci_save_state(pci_dev);
- }
- 
--static void pci_pm_default_suspend(struct pci_dev *pci_dev, bool prepare)
--{
--	pci_pm_default_suspend_generic(pci_dev);
--
--	if (prepare && !pci_is_bridge(pci_dev))
--		pci_prepare_to_sleep(pci_dev);
--
--	pci_fixup_device(pci_fixup_suspend, pci_dev);
--}
--
- static bool pci_has_legacy_pm_support(struct pci_dev *pci_dev)
- {
- 	struct pci_driver *drv = pci_dev->driver;
-@@ -506,20 +489,48 @@ static int pci_pm_suspend(struct device 
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
- 	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
--	int error = 0;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_SUSPEND);
- 
--	if (pm && pm->suspend) {
-+	if (!pm) {
-+		pci_pm_default_suspend(pci_dev);
-+		goto Fixup;
-+	}
-+
-+	pci_dev->state_saved = false;
-+
-+	if (pm->suspend) {
-+		pci_power_t prev = pci_dev->current_state;
-+		int error;
-+
- 		error = pm->suspend(dev);
- 		suspend_report_result(pm->suspend, error);
-+		if (error)
-+			return error;
-+
-+		if (pci_dev->state_saved)
-+			goto Fixup;
-+
-+		if (pci_dev->current_state != PCI_D0
-+		    && pci_dev->current_state != PCI_UNKNOWN) {
-+			WARN_ONCE(pci_dev->current_state != prev,
-+				"PCI PM: State of device not saved by %pF\n",
-+				pm->suspend);
-+			goto Fixup;
-+		}
- 	}
- 
--	if (!error)
--		pci_pm_default_suspend(pci_dev, !!pm);
-+	if (!pci_dev->state_saved) {
-+		pci_save_state(pci_dev);
-+		if (!pci_is_bridge(pci_dev))
-+			pci_prepare_to_sleep(pci_dev);
-+	}
- 
--	return error;
-+ Fixup:
-+	pci_fixup_device(pci_fixup_suspend, pci_dev);
-+
-+	return 0;
- }
- 
- static int pci_pm_suspend_noirq(struct device *dev)
-@@ -562,7 +573,7 @@ static int pci_pm_resume_noirq(struct de
- static int pci_pm_resume(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct device_driver *drv = dev->driver;
-+	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int error = 0;
- 
- 	/*
-@@ -575,12 +586,16 @@ static int pci_pm_resume(struct device *
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_resume(dev);
- 
--	error = pci_pm_default_resume(pci_dev);
-+	pci_pm_default_resume(pci_dev);
- 
--	if (!error && drv && drv->pm && drv->pm->resume)
--		error = drv->pm->resume(dev);
-+	if (pm) {
-+		if (pm->resume)
-+			error = pm->resume(dev);
-+	} else {
-+		pci_pm_reenable_device(pci_dev);
-+	}
- 
--	return error;
-+	return 0;
- }
- 
- #else /* !CONFIG_SUSPEND */
-@@ -597,21 +612,31 @@ static int pci_pm_resume(struct device *
- static int pci_pm_freeze(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct device_driver *drv = dev->driver;
--	int error = 0;
-+	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_FREEZE);
- 
--	if (drv && drv->pm && drv->pm->freeze) {
--		error = drv->pm->freeze(dev);
--		suspend_report_result(drv->pm->freeze, error);
-+	if (!pm) {
-+		pci_pm_default_suspend(pci_dev);
-+		return 0;
- 	}
- 
--	if (!error)
--		pci_pm_default_suspend_generic(pci_dev);
-+	pci_dev->state_saved = false;
- 
--	return error;
-+	if (pm->freeze) {
-+		int error;
-+
-+		error = pm->freeze(dev);
-+		suspend_report_result(pm->freeze, error);
-+		if (error)
-+			return error;
-+	}
-+
-+	if (!pci_dev->state_saved)
-+		pci_save_state(pci_dev);
-+
-+	return 0;
- }
- 
- static int pci_pm_freeze_noirq(struct device *dev)
-@@ -654,16 +679,18 @@ static int pci_pm_thaw_noirq(struct devi
- static int pci_pm_thaw(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct device_driver *drv = dev->driver;
-+	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int error = 0;
- 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_resume(dev);
- 
--	pci_pm_reenable_device(pci_dev);
--
--	if (drv && drv->pm && drv->pm->thaw)
--		error =  drv->pm->thaw(dev);
-+	if (pm) {
-+		if (pm->thaw)
-+			error = pm->thaw(dev);
-+	} else {
-+		pci_pm_reenable_device(pci_dev);
-+	}
- 
- 	return error;
- }
-@@ -677,13 +704,23 @@ static int pci_pm_poweroff(struct device
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_suspend(dev, PMSG_HIBERNATE);
- 
--	if (pm && pm->poweroff) {
-+	if (!pm) {
-+		pci_pm_default_suspend(pci_dev);
-+		goto Fixup;
-+	}
-+
-+	pci_dev->state_saved = false;
-+
-+	if (pm->poweroff) {
- 		error = pm->poweroff(dev);
- 		suspend_report_result(pm->poweroff, error);
- 	}
- 
--	if (!error)
--		pci_pm_default_suspend(pci_dev, !!pm);
-+	if (!pci_dev->state_saved && !pci_is_bridge(pci_dev))
-+		pci_prepare_to_sleep(pci_dev);
-+
-+ Fixup:
-+	pci_fixup_device(pci_fixup_suspend, pci_dev);
- 
- 	return error;
- }
-@@ -724,7 +761,7 @@ static int pci_pm_restore_noirq(struct d
- static int pci_pm_restore(struct device *dev)
- {
- 	struct pci_dev *pci_dev = to_pci_dev(dev);
--	struct device_driver *drv = dev->driver;
-+	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
- 	int error = 0;
- 
- 	/*
-@@ -737,10 +774,14 @@ static int pci_pm_restore(struct device 
- 	if (pci_has_legacy_pm_support(pci_dev))
- 		return pci_legacy_resume(dev);
- 
--	error = pci_pm_default_resume(pci_dev);
-+	pci_pm_default_resume(pci_dev);
- 
--	if (!error && drv && drv->pm && drv->pm->restore)
--		error = drv->pm->restore(dev);
-+	if (pm) {
-+		if (pm->restore)
-+			error = pm->restore(dev);
-+	} else {
-+		pci_pm_reenable_device(pci_dev);
-+	}
- 
- 	return error;
- }
+ /**
+
