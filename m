@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbZBDCdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753865AbZBDCoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752988AbZBDCdQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 21:33:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZBDCc4
+	id S1753865AbZBDCoq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 21:44:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZBDCoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 21:32:56 -0500
-Received: from a-sasl-quonix.sasl.smtp.pobox.com ([208.72.237.25]:34791 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754828AbZBDCcz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 21:32:55 -0500
-Date: Tue, 3 Feb 2009 20:32:36 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Maynard Johnson <mpjohn@us.ibm.com>, carll@us.ibm.com
-Subject: Re: Performance counter API review was [patch] Performance Counters
- for Linux, v3
-Message-ID: <20090204023236.GH6913@localdomain>
-References: <20081211155230.GA4230@elte.hu>
- <87r64ag68n.fsf@basil.nowhere.org> <49875199.3010609@linux.vnet.ibm.com>
- <1233606782.10184.4.camel@laptop>
- <18824.64228.358045.890823@cargo.ozlabs.ibm.com>
+	Tue, 3 Feb 2009 21:44:37 -0500
+Received: from ozlabs.org ([203.10.76.45]:40509 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751244AbZBDCog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 21:44:36 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
+Date: Wed, 4 Feb 2009 13:14:31 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: travis@sgi.com, mingo@redhat.com, davej@redhat.com,
+       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20090116191108.135927000@polaris-admin.engr.sgi.com> <200902022305.51344.rusty@rustcorp.com.au> <20090202200649.c1af2fd1.akpm@linux-foundation.org>
+In-Reply-To: <20090202200649.c1af2fd1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <18824.64228.358045.890823@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-Pobox-Relay-ID: 2014A7FC-F264-11DD-8F2D-6F7C8D1D4FD0-04752483!a-sasl-quonix.pobox.com
+Message-Id: <200902041314.32277.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mackerras wrote:
->
-> By the way, how does userspace get to know about cpus being added or
-> removed?  Is there a better way than continually reading
-> /sys/devices/system/cpu/online?
+On Tuesday 03 February 2009 14:36:49 Andrew Morton wrote:
+> But as you say, rdmsr_on_cpu() is easy to do, using
+> smp_call_function_single().  Then we can easily convert all other
+> work_on_cpu() callers to smp_call_function_single() and zap
+> work_on_cpu().  The best outcome, methinks.
 
-The kernel generates uevents for cpu online and offline operations;
-you can see them with udevmonitor.  Not sure how you get those events
-to an arbitrary application, though.  Alternatively you can set an
-inotify watch on e.g. /sys/devices/system/cpu/cpu1/online (at least it
-seems to work here).
+grepping for set_cpus_allowed reveals the following users in the
+first third (when I got tired of it):
+
+File                         Function            Context      Calls
+powerpc/kernel/smp.c         smp_cpus_done       kernel_init smp_ops->setup_cpu()
+x86/.../speedstep-ich.c      _speedstep_get      cpufreq     speedstep_get_processor_frequency()
+x86/.../powernow-k8.c        check_supported_cpu cpufreq     cpuid_*()
+x86/.../powernow-k8.c        powernowk8_target   cpufreq     mutex_lock, etc
+x86/.../powernow-k8.c        powernowk8_cpu_init boot/hotplg rdmsr,wrmsr
+x86/.../powernow-k8.c        powernowk8_get      cpufreq     rdmsr
+x86/.../speedstep-centrino.c get_cur_freq        cpufreq     rdmsr
+x86/.../speedstep-centrino.c centrino_target     cpufreq     rdmsr,wrmsr
+x86/kernel/reboot.c          nativ..._shutdown   sys_reboot  misc
+x86/.../microcode_core.c     do_microcode_update sys_write   microcode_ops->request_microcode_user
+x86/.../microcode_core.c     reload_store        sys_write   mutex_lock, etc
+
+Some of these (reboot) we don't care what they do to cpumask.  Some are
+poor style, but not critical (boot time).  Some can use smp_call_function.
+
+But there are some which should *not* be frobbing their cpus_allowed, and
+really do seem to want a user context.
+
+I think you're right though: smp_call_function_single (or neat wrappers)
+where possible, work_on_cpu which can fail for the others, and we'll just
+have to plumb in the error returns.
+
+I'll start the patchstream for 2.6.30.
+
+Thanks,
+Rusty.
