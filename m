@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZBDH1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751804AbZBDH2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbZBDH1q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 02:27:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZBDH1e
+	id S1751804AbZBDH2B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 02:28:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZBDH1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 02:27:34 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46640
+	Wed, 4 Feb 2009 02:27:37 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46644
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751122AbZBDH1c (ORCPT
+	by vger.kernel.org with ESMTP id S1751513AbZBDH1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 02:27:32 -0500
-Date: Tue, 03 Feb 2009 23:27:29 -0800 (PST)
-Message-Id: <20090203.232729.194305460.davem@davemloft.net>
+	Wed, 4 Feb 2009 02:27:34 -0500
+Date: Tue, 03 Feb 2009 23:27:31 -0800 (PST)
+Message-Id: <20090203.232731.09107598.davem@davemloft.net>
 To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
+Subject: [GIT]: Sparc
 From: David Miller <davem@davemloft.net>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
@@ -26,42 +26,11 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-1) pcnet_cs does "if (x = y)" instead of "if (x == y)".  Fix from
-   Cord Walter
+Some build fixups from Stephen Rothwell, and some debugging
+helpers to assist with some of the crashes and hangs we've
+been seeing on sparc64 lately.
 
-2) Fix some userland header bogosity in linux/if_tunnel.h
-
-3) Recent changes caused sk->sk_drops to not get incremented for
-   ipv4 UDP sockets.  Fix from Eric Dumazet.
-
-4) RDMA sunrpc dependency fix from Randy Dunlap.
-
-5) DCA deadlock fixes from Maciej Sosnowski.
-
-6) Roel Kluin found a bunch of cases where we do (usually when
-   polling on a register bit to set or clear):
-
-	while (timeout--) {
-		if (bit_changed)
-			break;
-	}
-	if (timeout <= 0)
-		throw_error();
-
-   But this throws an error even if we did see the necessary
-   end-condition on the final iteration.
-
-   Several drivers have this bug now fixed.
-
-7) e1000 does not honor the need_ioport flag, fix from Karsten Keil.
-
-8) Three qlge bug fixes from Ron Mercer.
-
-9) AF_PACKET mmap() support has bugs because of incorrect operator
-   precendence in the end tests.  Fix from Sebastiano Di Paola.
-
-10) SGI xpnet fix, forgot to hook up ->netdev_ops, oops.  Fix from
-    Dean Nelson.
+In particular sparc64 has an NMI watchdog now.
 
 Please pull, thanks a lot!
 
@@ -71,64 +40,38 @@ The following changes since commit dcf6a79dda5cc2a2bec183e50d829030c0972aaa:
 
 are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
 
-Cord Walter (1):
-      pcnet_cs: Fix misuse of the equality operator.
+David S. Miller (6):
+      sparc64: Move generic PCR support code to seperate file.
+      sparc: Probe PMU type and record in sparc_pmu_type.
+      sparc64: Implement NMI watchdog on capable cpus.
+      sparc64: On non-Niagara, need to touch NMI watchdog in NOHZ mode.
+      sparc64: Validate kernel generated fault addresses on sparc64.
+      sparc64: Kill bogus TPC/address truncation during 32-bit faults.
 
-David S. Miller (2):
-      net: Fix userland breakage wrt. linux/if_tunnel.h
-      Merge branch 'master' of master.kernel.org:/.../torvalds/linux-2.6
+Stephen Rothwell (1):
+      sparc: fixup for sparseirq changes
 
-Dean Nelson (1):
-      sgi-xp: link XPNET's net_device_ops to its net_device structure
-
-Eric Dumazet (1):
-      udp: increments sk_drops in __udp_queue_rcv_skb()
-
-Filip Aben (1):
-      hso: add new device id's
-
-Karsten Keil (1):
-      e1000: Fix PCI enable to honor the need_ioport flag
-
-Maciej Sosnowski (1):
-      dca: redesign locks to fix deadlocks
-
-Randy Dunlap (1):
-      sunrpc: fix rdma dependencies
-
-Roel Kluin (2):
-      net: variables reach -1, but 0 tested
-      cassini/sungem: limit reaches -1, but 0 tested
-
-Ron Mercer (3):
-      qlge: bugfix: Fix endian issue when reading flash.
-      qlge: bugfix: Add flash offset for second port.
-      qlge: bugfix: Add missing netif_napi_del call.
-
-Sebastiano Di Paola (1):
-      net: packet socket packet_lookup_frame fix
-
- drivers/dca/dca-core.c         |   51 +++++++++++++++++++++++++--------------
- drivers/misc/sgi-xp/xpnet.c    |    3 +-
- drivers/net/cassini.c          |    4 +-
- drivers/net/e1000/e1000_main.c |    2 +-
- drivers/net/ibm_newemac/phy.c  |    4 +-
- drivers/net/pcmcia/pcnet_cs.c  |    2 +-
- drivers/net/qlge/qlge.h        |   10 ++++----
- drivers/net/qlge/qlge_main.c   |   25 +++++++++++++++----
- drivers/net/smc911x.c          |    4 +-
- drivers/net/smsc9420.c         |   12 ++++----
- drivers/net/sungem.c           |    2 +-
- drivers/net/sungem_phy.c       |    2 +-
- drivers/net/sunqe.c            |    2 +-
- drivers/net/tsi108_eth.c       |    2 +-
- drivers/net/tulip/de2104x.c    |    2 +-
- drivers/net/usb/hso.c          |    4 ++-
- include/linux/Kbuild           |    2 +-
- include/linux/if_tunnel.h      |    3 ++
- net/ipv4/udp.c                 |    4 ++-
- net/packet/af_packet.c         |    8 +++---
- net/sunrpc/Kconfig             |    2 +-
- 21 files changed, 93 insertions(+), 57 deletions(-)
+ arch/sparc/include/asm/cpudata_64.h |    2 +-
+ arch/sparc/include/asm/irq_64.h     |    4 +-
+ arch/sparc/include/asm/kdebug_64.h  |    2 +
+ arch/sparc/include/asm/nmi.h        |   10 ++
+ arch/sparc/include/asm/pcr.h        |   46 +++++++
+ arch/sparc/include/asm/pil.h        |    1 +
+ arch/sparc/kernel/Makefile          |    2 +
+ arch/sparc/kernel/cpu.c             |   33 ++++--
+ arch/sparc/kernel/irq_64.c          |   68 +----------
+ arch/sparc/kernel/kernel.h          |    1 +
+ arch/sparc/kernel/nmi.c             |  224 +++++++++++++++++++++++++++++++++
+ arch/sparc/kernel/pcr.c             |  153 +++++++++++++++++++++++
+ arch/sparc/kernel/process_64.c      |    5 +-
+ arch/sparc/kernel/setup_64.c        |    2 +
+ arch/sparc/kernel/ttable.S          |    3 +-
+ arch/sparc/mm/fault_64.c            |   44 ++++++-
+ arch/sparc/oprofile/init.c          |  232 +++++-----------------------------
+ 17 files changed, 548 insertions(+), 284 deletions(-)
+ create mode 100644 arch/sparc/include/asm/nmi.h
+ create mode 100644 arch/sparc/include/asm/pcr.h
+ create mode 100644 arch/sparc/kernel/nmi.c
+ create mode 100644 arch/sparc/kernel/pcr.c
