@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756613AbZBDXYX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZBDXZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756613AbZBDXYX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:24:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZBDXYN
+	id S1758077AbZBDXZi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:25:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZBDXZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 18:24:13 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:27358 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756132AbZBDXYN (ORCPT
+	Wed, 4 Feb 2009 18:25:27 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33132 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755554AbZBDXZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:24:13 -0500
-Message-ID: <498A2399.4090503@ct.jp.nec.com>
-Date: Wed, 04 Feb 2009 15:24:09 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: mm: introduce helper function in fault.c
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Feb 2009 18:25:26 -0500
+Date: Wed, 4 Feb 2009 15:24:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       mtk.manpages@gmail.com, linux-api@vger.kernel.org
+Subject: Re: [patch/rfc] eventfd semaphore-like behavior
+Message-Id: <20090204152434.c8f65d52.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
+	<20090204150507.665b5b7c.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+On Wed, 4 Feb 2009 15:18:43 -0800 (PST)
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-Impact: cleanup
+> > > Simple test here:
+> > > 
+> > > http://www.xmailserver.org/eventfd-sem.c
+> > > 
+> > > 
+> > > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+> > > 
+> > > +/*
+> > > + * CAREFUL: Check include/asm-generic/fcntl.h when defining
+> > > + * new flags, since they might collide with O_* ones. We want
+> > > + * to re-use O_* flags that couldn't possibly have a meaning
+> > > + * from eventfd, in order to leave a free define-space for
+> > > + * shared O_* flags.
+> > > + */
+> > > +#define EFD_SEMAPHORE (1 << 0)
+> > >  #define EFD_CLOEXEC O_CLOEXEC
+> > >  #define EFD_NONBLOCK O_NONBLOCK
+> > >  
+> > > +#define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
+> > > +#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
+> > 
+> > How would you recommend that userspace determine whether its kernel
+> > supports this feature, bearing in mind that someone might backport this
+> > patch into arbitrarily earlier kernel versions?
+> > 
+> > What should be userspace's fallback strategy if that support is not
+> > present?
+> 
+> #ifdef EFD_SEMAPHORE, maybe?
 
-Introduce helper function fault_in_kernel_address() to make editors happy.
-
-Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
----
- arch/x86/mm/fault.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index bfac289..27ec123 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -783,6 +783,15 @@ static inline int access_error(unsigned long error_code, int write,
- 	return 0;
- }
- 
-+static int fault_in_kernel_space(unsigned long address)
-+{
-+#ifdef CONFIG_X86_32
-+	return address >= TASK_SIZE;
-+#else /* !CONFIG_X86_32 */
-+	return address >= TASK_SIZE64;
-+#endif /* CONFIG_X86_32 */
-+}
-+
- /*
-  * This routine handles page faults.  It determines the address,
-  * and the problem, and then passes it off to one of the appropriate
-@@ -832,11 +841,7 @@ void __kprobes do_page_fault(struct pt_regs *regs, unsigned long error_code)
- 	 * (error_code & 4) == 0, and that the fault was not a
- 	 * protection error (error_code & 9) == 0.
- 	 */
--#ifdef CONFIG_X86_32
--	if (unlikely(address >= TASK_SIZE)) {
--#else
--	if (unlikely(address >= TASK_SIZE64)) {
--#endif
-+	if (unlikely(fault_in_kernel_space(address))) {
- 		if (!(error_code & (PF_RSVD | PF_USER | PF_PROT))) {
- 			if (vmalloc_fault(address) >= 0)
- 				return;
--- 
-1.6.1.2
-
+That's compile-time.  People who ship binaries will probably want
+to find a runtime thing for back-compatibility.
