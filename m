@@ -1,96 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZBDEmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbZBDEmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752664AbZBDEmh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 23:42:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbZBDEmY
+	id S1752969AbZBDEmx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 23:42:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755911AbZBDEm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 3 Feb 2009 23:42:26 -0500
+Received: from vms044pub.verizon.net ([206.46.252.44]:33404 "EHLO
+	vms044pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752764AbZBDEmY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 3 Feb 2009 23:42:24 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:37781 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752496AbZBDEmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 23:42:23 -0500
-Date: Tue, 3 Feb 2009 20:37:52 -0800
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>, hpa@zytor.com, hch@lst.de
-Cc: serue@us.ibm.com, sukadev@us.ibm.com,
-       Containers <containers@lists.osdl.org>, linux-kernel@vger.kernel.org
-Subject: [v2][PATCH 4/5] Remove get_init_pts_sb()
-Message-ID: <20090204043752.GD26202@us.ibm.com>
-References: <20090204043516.GB25963@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090204043516.GB25963@us.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Date: Tue, 03 Feb 2009 23:42:12 -0500 (EST)
+From: Len Brown <lenb@kernel.org>
+Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
+In-reply-to: <49890B46.8020308@intertwingly.net>
+X-X-Sender: lenb@localhost.localdomain
+To: Sam Ruby <rubys@intertwingly.net>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       x86@kernel.org, "Maciej W. Rozycki" <macro@linux-mips.org>
+Message-id: <alpine.LFD.2.00.0902032336000.5607@localhost.localdomain>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
+References: <4978767D.4060700@intertwingly.net>
+ <20090130000758.1dff0113.akpm@linux-foundation.org>
+ <498885CC.4060509@intertwingly.net>
+ <20090203114849.b661f1ce.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.0902032152180.22800@localhost.localdomain>
+ <49890B46.8020308@intertwingly.net>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > Do you have a second computer around with a serial port ? If yes, then
+> > please add the following to the kernel command line:
+> > 
+> >        earlyprintk=serial,ttyS0,115200 apic=debug
+> > 
+> > and connect the serial ports with a null modem cable. Fire up a
+> > terminal program on the second machine and capture the output.
+> 
+> I do have a second computer, and went out and bought a null modem adapter for
+> my serial cable and connected the two machines.  I've tried installing minicom
+> and also connecting it to ttyS0 at 115200 baud on the second machine, but when
+> I boot the first machine I don't see any output on the terminal.
 
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Date: Wed, 28 Jan 2009 18:59:28 -0800
-Subject: [v2][PATCH 4/5] Remove get_init_pts_sb()
+/boot/grub/menu.lst:
 
-With mknod_ptmx() moved to devpts_get_sb(), init_pts_mount() becomes
-a wrapper around get_init_pts_sb(). Remove get_init_pts_sb() and
-fold code into init_pts_mount().
+serial --unit=0 --speed=115200 --word=8 --parity=no --stop=1
+terminal --timeout=300 serial console
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- fs/devpts/inode.c |   25 ++++++-------------------
- 1 files changed, 6 insertions(+), 19 deletions(-)
+is what I use.
 
-diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
-index f7e887c..c821c9a 100644
---- a/fs/devpts/inode.c
-+++ b/fs/devpts/inode.c
-@@ -347,7 +347,11 @@ static int new_pts_mount(struct file_system_type *fs_type, int flags,
- }
- 
- /*
-- * get_init_pts_sb()
-+ * init_pts_mount()
-+ *
-+ *     Mount or remount the initial kernel mount of devpts. This type of
-+ *     mount maintains the legacy, single-instance semantics, while the
-+ *     kernel still allows multiple-instances.
-  *
-  *     This interface is needed to support multiple namespace semantics in
-  *     devpts while preserving backward compatibility of the current 'single-
-@@ -367,7 +371,7 @@ static int new_pts_mount(struct file_system_type *fs_type, int flags,
-  *     consistently selects the 'single-namespace' superblock even in the
-  *     presence of the private namespace (i.e 'newinstance') super-blocks.
-  */
--static int get_init_pts_sb(struct file_system_type *fs_type, int flags,
-+static int init_pts_mount(struct file_system_type *fs_type, int flags,
- 		void *data, struct pts_mount_opts *opts, struct vfsmount *mnt)
- {
- 	struct super_block *s;
-@@ -397,23 +401,6 @@ static int get_init_pts_sb(struct file_system_type *fs_type, int flags,
- 	return 0;
- }
- 
--/*
-- * Mount or remount the initial kernel mount of devpts. This type of
-- * mount maintains the legacy, single-instance semantics, while the
-- * kernel still allows multiple-instances.
-- */
--static int init_pts_mount(struct file_system_type *fs_type, int flags,
--		void *data, struct pts_mount_opts *opts, struct vfsmount *mnt)
--{
--	int err;
--
--	err = get_init_pts_sb(fs_type, flags, data, opts, mnt);
--	if (err)
--		return err;
--
--	return err;
--}
--
- static int devpts_get_sb(struct file_system_type *fs_type,
- 	int flags, const char *dev_name, void *data, struct vfsmount *mnt)
- {
--- 
-1.5.2.5
+this will give you a prompt from grub even before the kernel boots
+so you can select (and edit) your kernel via menu over the serial line
+if you wish.
+
+If this doesn't work, then the kernel earlyprintk is unlikely to work 
+also.
+
+Note that there may be some BIOS SETUP options related to the serial port 
+-- worth checking.
+
+Also, in minicom, be sure to turn off HW flow control
+
+there is a fancy serial console document someplace on this,
+probably at http://tldp.org/
+
+good luck,
+-Len
 
