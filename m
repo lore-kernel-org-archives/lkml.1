@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZBDGSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZBDGTm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755193AbZBDGSf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 01:18:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZBDGSZ
+	id S1753769AbZBDGTm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 01:19:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZBDGTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 01:18:25 -0500
-Received: from movementarian.org ([79.99.65.163]:46419 "EHLO movementarian.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751564AbZBDGSY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 01:18:24 -0500
-Date: Wed, 4 Feb 2009 01:17:47 -0500
-From: wli@movementarian.org
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Roland Dreier <rdreier@cisco.com>, Eli Cohen <eli@mellanox.co.il>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
-Message-ID: <20090204061747.GB10229@movementarian.org>
-References: <20090203164930.GA10101@mtls03> <1233712248.16867.131.camel@pasglop> <20090203211329.d6190a08.akpm@linux-foundation.org> <200902041631.39784.nickpiggin@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 4 Feb 2009 01:19:33 -0500
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:39403 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbZBDGTc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 01:19:32 -0500
+From: Christian Borntraeger <borntraeger@de.ibm.com>
+To: Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [PATCH v2] NOHZ: fix nohz on cpu unplug
+Date: Wed, 4 Feb 2009 07:19:25 +0100
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+References: <200901301729.30284.borntraeger@de.ibm.com> <200902030948.13519.borntraeger@de.ibm.com> <20090203122847.GG19979@elte.hu>
+In-Reply-To: <20090203122847.GG19979@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200902041631.39784.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200902040719.25593.borntraeger@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Feb 2009 12:50:48 +1100 Benjamin Herrenschmidt 
->>> Do the generic hugetlbfs code provides such an API ? If not, we may need
->>> to add one.
+Am Tuesday 03 February 2009 13:28:47 schrieb Ingo Molnar:
+> > > +		if (!cpu_active(cpu) {
+> >
+> > That does not compile...I used the following:
+> > 		if (!cpu_active(cpu)) {
+>
+> Could you please resubmit an updated patch?
 
-On Wednesday 04 February 2009 16:13:29 Andrew Morton wrote:
->> I think it's something like
->> 	huge_page_size(page_hstate(page))
+Suresh,
 
-On Wed, Feb 04, 2009 at 04:31:38PM +1100, Nick Piggin wrote:
-> That would work if you have a page, yes. If you want to query which hugepage
-> sizes are available, then you probably want for_each_hstate() (which is only
-> within mm/hugetlb.c at the moment, but I have no objections to exporting it
-> and symbols it requires).
+can you send the updated patch? After all, its your work and we need your 
+Signed-off-by anyway.
 
-Exciting things have happened in mm/hugetlb.c while I was out sick.
-I've got quite some catching up to do.
+You can add my 
+Reported-by: Christian Borntraeger <borntraeger@de.ibm.com>
+Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
 
+Thanks
 
--- wli
+Christian
