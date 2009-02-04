@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZBDIL5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZBDIMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbZBDIL5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 03:11:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZBDILr
+	id S1754259AbZBDIMZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:12:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZBDIME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 03:11:47 -0500
-Received: from smtp-out003.kontent.com ([81.88.40.217]:43485 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbZBDILq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 03:11:46 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Greg KH <greg@kroah.com>
-Subject: Re: [PATCH 1/2] usb-serial : fix the nousb oops
-Date: Wed, 4 Feb 2009 09:12:39 +0100
-User-Agent: KMail/1.9.10
-Cc: Dave Young <hidave.darkstar@gmail.com>, wgreathouse@smva.com,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <49857F23.3090208@gmail.com> <a8e1da0902011743o47764edfjf53a397b5a4aeeef@mail.gmail.com> <20090203235814.GA22380@kroah.com>
-In-Reply-To: <20090203235814.GA22380@kroah.com>
+	Wed, 4 Feb 2009 03:12:04 -0500
+Received: from corega.com.ru ([195.178.208.66]:49354 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753983AbZBDIMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 03:12:03 -0500
+Date: Wed, 4 Feb 2009 11:12:01 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Willy Tarreau <w@1wt.eu>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       jarkao2@gmail.com, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090204081201.GB10445@ioremap.net>
+References: <20090203121209.GA9154@gondor.apana.org.au> <20090203121836.GA23300@ioremap.net> <20090203122535.GB8633@1wt.eu> <20090203.164734.76871204.davem@davemloft.net> <20090204061947.GD20673@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902040912.40521.oliver@neukum.org>
+In-Reply-To: <20090204061947.GD20673@1wt.eu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wednesday 04 February 2009 00:58:14 schrieb Greg KH:
-> On Mon, Feb 02, 2009 at 09:43:04AM +0800, Dave Young wrote:
- 
-> > No, it is not new thing.  usb serial drivers normally call
-> > usb_serial_register first, then usb_register, usb_register will fail
-> > due to "nousb" checking, but usb_serial_register no.
+On Wed, Feb 04, 2009 at 07:19:47AM +0100, Willy Tarreau (w@1wt.eu) wrote:
+> Yes myri10ge for the optimal 4080, but with e1000 too (though I don't
+> remember the exact optimal value, I think it was slightly lower).
+
+Very likely it is related to the allocator - the same allocation
+overhead to get a page, but 2.5 times bigger frame.
+
+> For the myri10ge, could this be caused by the cache footprint then ?
+> I can also retry with various values between 4 and 9k, including
+> values close to 8k. Maybe the fact that 4k is better than 9 is
+> because we get better filling of all pages ?
 > 
-> But as usb_register will fail, shouldn't they properly back out and no
-> oopses happen?  This sounds like a simple fix to the drivers that are
-> failing here, not changing the usb-serial core.
+> I also remember having used a 7 kB MTU on e1000 and dl2k in the past.
+> BTW, 7k MTU on my NFS server which uses e1000 definitely stopped the
+> allocation failures which were polluting the logs, so it's been running
+> with that setting for years now.
 
-usb_register() can also fail for other reasons. There's no way you
-can save drivers from needing to cleanly fail in that case.
+Recent e1000 (e1000e) uses fragments, so it does not suffer from the
+high-order allocation failures.
 
-> And this should only be an issue if you build your drivers into the
-> kernel, right?
-
-No, you can load drivers by other methods than udev.
-
-	Regards
-		Oliver
+-- 
+	Evgeniy Polyakov
