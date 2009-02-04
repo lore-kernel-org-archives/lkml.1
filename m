@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762940AbZBDTAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761741AbZBDTAJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762940AbZBDTAm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:00:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761407AbZBDStd
+	id S1761741AbZBDTAJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:00:09 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761404AbZBDStc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:33 -0500
-Received: from kroah.org ([198.145.64.141]:32806 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:32 -0500
+Received: from kroah.org ([198.145.64.141]:32799 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761380AbZBDStY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:24 -0500
-Date: Wed, 4 Feb 2009 10:46:36 -0800
+	id S1759583AbZBDStX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:23 -0500
+Date: Wed, 4 Feb 2009 10:46:34 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,82 +22,84 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhao Yakui <yakui.zhao@intel.com>,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: [patch 24/41] ACPI: Avoid array address overflow when _CST MWAIT
-	hint bits are set
-Message-ID: <20090204184636.GY25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Len Brown <len.brown@intel.com>,
+       venkatesh.pallipadi@intel.com, Thomas Renninger <trenn@suse.de>
+Subject: [patch 23/41] cpuidle: Add decaying history logic to menu idle
+	predictor
+Message-ID: <20090204184634.GX25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-avoid-array-address-overflow-when-_cst-mwait-hint-bits-are-set.patch"
+Content-Disposition: inline; filename="cpuidle-add-decaying-history-logic-to-menu-idle-predictor.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Zhao Yakui <yakui.zhao@intel.com>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-commit 13b40a1a065824d2d4e55c8b48ea9f3f9d162929 upstream.
+commit 816bb611e41be29b476dc16f6297eb551bf4d747 upstream
 
-The Cx Register address obtained from the _CST object is used as the MWAIT
-hints if the register type is FFixedHW. And it is used to check whether
-the Cx type is supported or not.
+Add decaying history of predicted idle time, instead of using the last early
+wakeup. This logic helps menu governor do better job of predicting idle time.
 
-On some boxes the following Cx state package is obtained from _CST object:
-    >{
-                ResourceTemplate ()
-                {
-                    Register (FFixedHW,
-                        0x01,               // Bit Width
-                        0x02,               // Bit Offset
-                        0x0000000000889759, // Address
-                        0x03,               // Access Size
-                        )
-                },
+With this change, we also measured noticable (~8%) power savings on
+a DP server system with CPUs supporting deep C states, when system
+was lightly loaded. There was no change to power or perf on other load
+conditions.
 
-                0x03,
-                0xF5,
-                0x015E }
-
-   In such case we should use the bit[7:4] of Cx address to check whether
-the Cx type is supported or not.
-
-mask the MWAIT hint to avoid array address overflow
-
-Signed-off-by: Zhao Yakui <yakui.zhao@intel.com>
-Acked-by:Venki Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Cc: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/kernel/acpi/cstate.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/cpuidle/governors/menu.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
---- a/arch/x86/kernel/acpi/cstate.c
-+++ b/arch/x86/kernel/acpi/cstate.c
-@@ -56,6 +56,7 @@ static struct cstate_entry *cpu_cstate_e
- static short mwait_supported[ACPI_PROCESSOR_MAX_POWER];
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -15,12 +15,14 @@
+ #include <linux/tick.h>
  
- #define MWAIT_SUBSTATE_MASK	(0xf)
-+#define MWAIT_CSTATE_MASK	(0xf)
- #define MWAIT_SUBSTATE_SIZE	(4)
+ #define BREAK_FUZZ	4	/* 4 us */
++#define PRED_HISTORY_PCT	50
  
- #define CPUID_MWAIT_LEAF (5)
-@@ -98,7 +99,8 @@ int acpi_processor_ffh_cstate_probe(unsi
- 	cpuid(CPUID_MWAIT_LEAF, &eax, &ebx, &ecx, &edx);
+ struct menu_device {
+ 	int		last_state_idx;
  
- 	/* Check whether this particular cx_type (in CST) is supported or not */
--	cstate_type = (cx->address >> MWAIT_SUBSTATE_SIZE) + 1;
-+	cstate_type = ((cx->address >> MWAIT_SUBSTATE_SIZE) &
-+			MWAIT_CSTATE_MASK) + 1;
- 	edx_part = edx >> (cstate_type * MWAIT_SUBSTATE_SIZE);
- 	num_cstate_subtype = edx_part & MWAIT_SUBSTATE_MASK;
+ 	unsigned int	expected_us;
+ 	unsigned int	predicted_us;
++	unsigned int    current_predicted_us;
+ 	unsigned int	last_measured_us;
+ 	unsigned int	elapsed_us;
+ };
+@@ -47,6 +49,12 @@ static int menu_select(struct cpuidle_de
+ 	data->expected_us =
+ 		(u32) ktime_to_ns(tick_nohz_get_sleep_length()) / 1000;
  
++	/* Recalculate predicted_us based on prediction_history_pct */
++	data->predicted_us *= PRED_HISTORY_PCT;
++	data->predicted_us += (100 - PRED_HISTORY_PCT) *
++				data->current_predicted_us;
++	data->predicted_us /= 100;
++
+ 	/* find the deepest idle state that satisfies our constraints */
+ 	for (i = CPUIDLE_DRIVER_STATE_START + 1; i < dev->state_count; i++) {
+ 		struct cpuidle_state *s = &dev->states[i];
+@@ -97,7 +105,7 @@ static void menu_reflect(struct cpuidle_
+ 		measured_us = -1;
+ 
+ 	/* Predict time until next break event */
+-	data->predicted_us = max(measured_us, data->last_measured_us);
++	data->current_predicted_us = max(measured_us, data->last_measured_us);
+ 
+ 	if (last_idle_us + BREAK_FUZZ <
+ 	    data->expected_us - target->exit_latency) {
 
