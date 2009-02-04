@@ -1,45 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759638AbZBDUPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759311AbZBDURL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759638AbZBDUPs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 15:15:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759485AbZBDUPe
+	id S1759311AbZBDURL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 15:17:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754473AbZBDUQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 15:15:34 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:44449 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759477AbZBDUPc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 15:15:32 -0500
-Date: Wed, 4 Feb 2009 15:10:31 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, Nick Piggin <npiggin@suse.de>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-In-Reply-To: <84144f020902031042i31eaec14v53a0e7a203acd28b@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0902041509320.8154@qirst.com>
-References: <20090114155923.GC1616@wotan.suse.de>  <20090123155307.GB14517@wotan.suse.de>  <alpine.DEB.1.10.0901261225240.1908@qirst.com>  <200902031253.28078.nickpiggin@yahoo.com.au>  <alpine.DEB.1.10.0902031217390.17910@qirst.com>
- <84144f020902031042i31eaec14v53a0e7a203acd28b@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 4 Feb 2009 15:16:56 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40647 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754529AbZBDUQz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 15:16:55 -0500
+Date: Wed, 4 Feb 2009 21:16:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew McMillan <andrew@morphoss.com>, Len Brown <lenb@kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Early crash with 2.6.29-rc3
+Message-ID: <20090204201638.GI22608@elte.hu>
+References: <1233777795.14831.35.camel@happy.mcmillan.net.nz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233777795.14831.35.camel@happy.mcmillan.net.nz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009, Pekka Enberg wrote:
 
-> Well, the slab_hiwater() check in __slab_free() of mm/slqb.c will cap
-> the size of the queue. But we do the same thing in SLAB with
-> alien->limit in cache_free_alien() and ac->limit in __cache_free(). So
-> I'm not sure what you mean when you say that the queues will "grow
-> unconstrained" (in either of the allocators). Hmm?
+(Cc:s added. Boot crash during mmconf ACPI discovery.)
 
-Nick said he wanted to defer queue processing. If the water marks are
-checked and queue processing run then of course queue processing is not
-deferred and the queue does not build up further.
+* Andrew McMillan <andrew@morphoss.com> wrote:
+
+> Hi,
+> 
+> I see the following crash fairly early in the boot with a 2.6.29-rc3
+> kernel built with essentially the same options as my working 2.6.28
+> kernel on my Asus F3Ke laptop:
+> 
+> Pid: 1, comm: swapper Not tainted (2.6.29-rc3-happy #1) F3Ke
+> EIP: 0060:[<c02b6486>] EFLAGS: 00010217 CPU: 1
+> EIP is at acpi_ns_delete_node+0x16/0x5e
+> EAX: 00000000 EBX: f736a018 ECX: f7012858 EDX: 00000000
+> ESI: f736a018 EDI: f7012858 EBP: f704dcf8 ESP: f704dcf4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+> Process swapper (pid: 1, ti=f704c000 task=f7050000 task.ti=f704c000)
+> Stack:
+>  00000000 f704dd14 c02b6524 6b000000 00000004 f70133c0 f735a800 f735a800
+>  f704dd24 c02aa9d3 f735a800 00000000 f704dd40 c02b8a49 f7363f30 00000000
+>  f735a800 00000000 f7002f80 f704dd58 c02b9c33 f7363fc0 f7002f90 f7002f80
+> Call Trace:
+>  [<c02b6524>] ? acpi_ns_delete_namespace_by_owner+0x56/0xc3
+>  [<c02aa9d3>] ? acpi_ds_terminate_control_method+0x60/0xac
+>  [<c02b8a49>] ? acpi_ps_parse_aml+0x166/0x281
+>  [<c02b9c33>] ? acpi_ps_execute_method+0x19a/0x253
+>  [<c02b6693>] ? acpi_ns_evaluate+0xcb/0x17c
+>  [<c02bc741>] ? acpi_ut_evaluate_object+0x39/0x140
+>  [<c02bae8e>] ? acpi_rs_get_method_data+0x18/0x3c
+>  [<c02ba82b>] ? acpi_walk_resources+0x39/0x91
+>  [<c0666423>] ? check_mcfg_resource+0x0/0xaf
+>  [<c0666410>] ? find_mboard_resource+0x1b/0x2e
+>  [<c02b617f>] ? acpi_ns_get_device_callback+0xfe/0x112
+>  [<c02b7806>] ? acpi_ns_walk_namespace+0x9a/0x110
+>  [<c066639b>] ? is_acpi_reserved+0x0/0x5a
+>  [<c02b6005>] ? acpi_get_devices+0x47/0x5d
+>  [<c02b6081>] ? acpi_ns_get_device_callback+0x0/0x112
+>  [<c06663f5>] ? find_mboard_resource++0x0/0x2e
+>  [<c06663ec>] ? is_acpi_reserved+0x51/0x5a
+>  [<c0665b9c>] ? is_mmconf_reserved+0x5c/0x128
+>  [<c064f842>] ? acpi_parse_mcfg+0x8e/0x12c
+>  [<c066635e>] ? __pci_mmcfg_init+0x30c/0x32e
+>  [<c01d2783>] ? proc_mkdir_mode+0x33/0x50
+>  [<c065ef04>] ? acpi_init+0x0/0x237
+>  [<c066638a>] ? pci_mmcfg_late_init+0xa/0xc
+>  [<c065f083>] ? acpi_init+0x17f/0x237
+>  [<c010111a>] ? do_one_initcall+0x2a/0x150
+>  [<c01d26b4>] ? create_proc_entry+0x54/0xa0
+>  [<c016367c>] ? register_irq_proc+0x9c/0xb0
+>  [<c01636f5>] ? init_irq_proc+0x65/0x80
+>  [<c0643355>] ? kernel_init+0x127/0x180
+>  [<c064322e>] ? kernel_init+0x0/0x180
+>  [<c0103cdb>] ? kernel_thread_helper+0x7/0x1c
+> Code: ff ff ff 89 f0 e8 ed 05 00 00 89 c6 85 ff 75 bd 5b 5e 5f c9 55 89 e5 53
+>  89 c3 e8 d7 05 00 00 31 d2 89 c1 8b 40 0c eb 05 89 c2 <8b> 40 10 39 d8 75 f7
+>  d2 74 12 f6 43 06 01 8b 43 10 89 42 10
+> EIP: [<c02b6486>] acpi_ns_delete_node+016/0x5e SS:ESP 0068:f704dcf4
+> ---[ end trace 4eaa2a86a8e2da22 ]---
+> 
+> 
+> I hope this is useful.  The above was transcribed from a photo and,
+> though I checked it, there is of course still the possibility of an
+> error somewhere.  Please CC: me (or e-mail privately) if you have any
+> further questions about configuration or such, since I am not subscribed
+> to LKML.
+> 
+> Thanks,
+> 					Andrew McMillan.
+> 
+> ------------------------------------------------------------------------
+> andrew (AT) morphoss (DOT) com                            +64(272)DEBIAN
+>             Beware of a tall blond man with one black shoe.
+> ------------------------------------------------------------------------
+> 
+
 
