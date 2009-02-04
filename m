@@ -1,242 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZBDH47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZBDH5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbZBDH47 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 02:56:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbZBDH4r
+	id S1754058AbZBDH5q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 02:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZBDH5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 02:56:47 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:55750 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbZBDH4q (ORCPT
+	Wed, 4 Feb 2009 02:57:36 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:42555 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751513AbZBDH5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 02:56:46 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=k4rhfYrQLmsyeZvxKtKz69fzNWlCV/xE6H2J5tkWWcOegxZWiKS7746zInOtCM8BRc
-         KeN0AASlDWGQE3/2A6QAVklV8QK299JLK/nRNr8Fadi518BCpeb8Aq5CVnwtQ6LEMHEO
-         p6lPjsDXtri6fIdNiX2lONo7z7Ra5HVd/IBvA=
-Date: Wed, 4 Feb 2009 07:56:37 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090204075637.GA4279@ff.dom.local>
-References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local>
+	Wed, 4 Feb 2009 02:57:35 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Greg KH <greg@kroah.com>
+Subject: Re: [stable]  A patch in 2.6.27.9 caused device names to change
+Date: Wed, 4 Feb 2009 08:28:44 +0100
+User-Agent: KMail/1.9.10
+Cc: Dan Williams <dcbw@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20090202170238.348af36a@dhcp-100-2-144.bos.redhat.com> <1233672611.11344.6.camel@localhost.localdomain> <20090204000342.GB22380@kroah.com>
+In-Reply-To: <20090204000342.GB22380@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090203094108.GA4639@ff.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902040828.45615.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 09:41:08AM +0000, Jarek Poplawski wrote:
-> On Mon, Feb 02, 2009 at 11:50:17PM -0800, David Miller wrote:
-> > From: Jarek Poplawski <jarkao2@gmail.com>
-> > Date: Mon, 2 Feb 2009 08:43:58 +0000
-> > 
-> > > On Mon, Feb 02, 2009 at 12:18:54AM -0800, David Miller wrote:
-> > > > Allocating 4096 or 8192 bytes for a 1500 byte frame is wasteful.
-> > > 
-> > > I mean allocating chunks of cached pages similarly to sk_sndmsg_page
-> > > way. I guess the similar problem is to be worked out in any case. But
-> > > it seems doing it on the linear area requires less changes in other
-> > > places.
-> > 
-> > This is a very interesting idea, but it has some drawbacks:
-> > 
-> > 1) Just like any other allocator we'll need to find a way to
-> >    handle > PAGE_SIZE allocations, and thus add handling for
-> >    compound pages etc.
-> >  
-> >    And exactly the drivers that want such huge SKB data areas
-> >    on receive should be converted to use scatter gather page
-> >    vectors in order to avoid multi-order pages and thus strains
-> >    on the page allocator.
+Am Wednesday 04 February 2009 01:03:42 schrieb Greg KH:
+> On Tue, Feb 03, 2009 at 09:50:11AM -0500, Dan Williams wrote:
+ 
+> > For a long time we've been operating under the assumption that mobile
+> > broadband devices should be driven by option and sierra, since those
+> > drivers had the necessary buffering optimizations to support
+> > higher-speed mobile broadband devices.
 > 
-> I guess compound pages are handled by put_page() enough, but I don't
-> think they should be main argument here, and I agree: scatter gather
-> should be used where possible.
+> Who is "we" here?  Not me :)
+
+We currently have three drivers that can handle high speed serial
+connections in USB, option, sierra and cdc-acm.
+ 
+> > That was true at least up until 2.6.24.
 > 
-> > 
-> > 2) Space wastage and poor packing can be an issue.
-> > 
-> >    Even with SLAB/SLUB we get poor packing, look at Evegeniy's
-> >    graphs that he made when writing his NTA patches.
+> It all depends on the type of device.  If it says it is a cdc-acm modem,
+> by all means, let that driver handle it, don't try to bind it to a
+> different driver (that way lies races and madness...)
 > 
-> I'm a bit lost here: could you "remind" the way page space would be
-> used/saved in your paged variant e.g. for ~1500B skbs?
+> > Furthermore, up until this point, I have not seen mobile broadband
+> > adapters (that aren't cellphones connected via USB) that *are* CDC-ACM
+> > compliant.  Everything previously has advertised proprietary interfaces,
+> > some of which are serial ports and some of which are not.
+> 
+> Probably because we never see those devices being reported, because they
+> "just work" with no interaction from us.
 
-Here is some proof of concept to make sure I wasn't misunderstood.
-alloc_paged() is used only for "normal" size skbs (2x ~1500B per page;
-I think Herbert mentioned something like this at the beginning; it
-also avoids allocs other than GFP_ATOMIC and GFP_KERNEL for
-simplicity.)
+As far as I can tell, devices implementing the class specification are
+new and still quite rare. This is probably related to the relative newness
+of the WHC specification.
+  
+> > Plus, are we expected to keep device names stable these days?  cdc-acm
+> > is the catch-all driver, but if that driver is more "generic" and a
+> > better driver is found, can we not update IDs just because the device
+> > name may change?
 
-I guess it could be replaced with any other mechanizm allocting to a
-fragment or Evgeniy's allocator when it's ready.
- 
-Alas it's not tested, but if it works, I think it should show how
-much gain is expected here for most common traffic.
+There is no such thing as a better driver for a device that correctly
+implements the class specification than the class driver. You haven't
+seen complaints about cdc-acm's performance in a long time, have you?
 
-Jarek P.
----
-
-diff -Nurp a/include/linux/netdevice.h b/include/linux/netdevice.h
---- a/include/linux/netdevice.h	2009-02-02 20:23:46.000000000 +0100
-+++ b/include/linux/netdevice.h	2009-02-02 21:52:46.000000000 +0100
-@@ -1154,6 +1154,9 @@ struct softnet_data
- 	struct sk_buff		*completion_queue;
- 
- 	struct napi_struct	backlog;
-+
-+	struct page		*alloc_skb_page[2];
-+	unsigned int		alloc_skb_off[2];
- };
- 
- DECLARE_PER_CPU(struct softnet_data,softnet_data);
-diff -Nurp a/include/linux/skbuff.h b/include/linux/skbuff.h
---- a/include/linux/skbuff.h	2009-02-02 20:23:46.000000000 +0100
-+++ b/include/linux/skbuff.h	2009-02-02 22:12:04.000000000 +0100
-@@ -144,7 +144,8 @@ struct skb_shared_info {
- 	unsigned short	gso_size;
- 	/* Warning: this field is not always filled in (UFO)! */
- 	unsigned short	gso_segs;
--	unsigned short  gso_type;
-+	__u8		gso_type;
-+	__u8		alloc_paged;
- 	__be32          ip6_frag_id;
- #ifdef CONFIG_HAS_DMA
- 	unsigned int	num_dma_maps;
-diff -Nurp a/net/core/dev.c b/net/core/dev.c
---- a/net/core/dev.c	2009-02-02 19:37:33.000000000 +0100
-+++ b/net/core/dev.c	2009-02-02 23:15:55.000000000 +0100
-@@ -5243,6 +5243,9 @@ static int __init net_dev_init(void)
- 		queue->backlog.poll = process_backlog;
- 		queue->backlog.weight = weight_p;
- 		queue->backlog.gro_list = NULL;
-+
-+		queue->alloc_skb_page[0] = NULL;
-+		queue->alloc_skb_page[1] = NULL;
- 	}
- 
- 	dev_boot_phase = 0;
-diff -Nurp a/net/core/skbuff.c b/net/core/skbuff.c
---- a/net/core/skbuff.c	2009-02-02 20:23:46.000000000 +0100
-+++ b/net/core/skbuff.c	2009-02-02 23:57:10.000000000 +0100
-@@ -151,6 +151,55 @@ void skb_truesize_bug(struct sk_buff *sk
- }
- EXPORT_SYMBOL(skb_truesize_bug);
- 
-+static inline void *alloc_paged(unsigned int size, gfp_t gfp_mask)
-+{
-+	struct softnet_data *sd;
-+	unsigned long flags;
-+	unsigned int off;
-+	struct page *p;
-+	void *ret;
-+	int i;
-+
-+	if (size < 1400 || size > 2000)
-+		return NULL;
-+
-+	if (gfp_mask == GFP_ATOMIC)
-+		i = 0;
-+	else if (gfp_mask == GFP_KERNEL)
-+		i = 1;
-+	else
-+		return NULL;
-+
-+	local_irq_save(flags);
-+	sd = &__get_cpu_var(softnet_data);
-+	p = sd->alloc_skb_page[i];
-+
-+	if (p) {
-+		off = sd->alloc_skb_off[i];
-+		if (off + size > PAGE_SIZE) {
-+			put_page(p);
-+			goto new_page;
-+		}
-+	} else {
-+new_page:
-+		p = sd->alloc_skb_page[i] = alloc_pages(gfp_mask, 0);
-+		if (!p) {
-+			ret = NULL;
-+			goto out;
-+		}
-+
-+		off = 0;
-+		/* hold one ref to this page until it's full */
-+	}
-+
-+	get_page(p);
-+	ret = page_address(p) + off;
-+	sd->alloc_skb_off[i] = off + size;
-+out:
-+	local_irq_restore(flags);
-+	return ret;
-+}
-+
- /* 	Allocate a new skbuff. We do this ourselves so we can fill in a few
-  *	'private' fields and also do memory statistics to find all the
-  *	[BEEP] leaks.
-@@ -178,7 +227,7 @@ struct sk_buff *__alloc_skb(unsigned int
- 	struct kmem_cache *cache;
- 	struct skb_shared_info *shinfo;
- 	struct sk_buff *skb;
--	u8 *data;
-+	u8 *data, paged = 0;
- 
- 	cache = fclone ? skbuff_fclone_cache : skbuff_head_cache;
- 
-@@ -188,8 +237,13 @@ struct sk_buff *__alloc_skb(unsigned int
- 		goto out;
- 
- 	size = SKB_DATA_ALIGN(size);
--	data = kmalloc_node_track_caller(size + sizeof(struct skb_shared_info),
--			gfp_mask, node);
-+	data = alloc_paged(size + sizeof(struct skb_shared_info), gfp_mask);
-+	if (data)
-+		paged = 1;
-+	else
-+		data = kmalloc_node_track_caller(size +
-+						 sizeof(struct skb_shared_info),
-+						 gfp_mask, node);
- 	if (!data)
- 		goto nodata;
- 
-@@ -214,6 +268,7 @@ struct sk_buff *__alloc_skb(unsigned int
- 	shinfo->gso_type = 0;
- 	shinfo->ip6_frag_id = 0;
- 	shinfo->frag_list = NULL;
-+	shinfo->alloc_paged = paged;
- 
- 	if (fclone) {
- 		struct sk_buff *child = skb + 1;
-@@ -341,7 +396,10 @@ static void skb_release_data(struct sk_b
- 		if (skb_shinfo(skb)->frag_list)
- 			skb_drop_fraglist(skb);
- 
--		kfree(skb->head);
-+		if (skb_shinfo(skb)->alloc_paged)
-+			put_page(virt_to_page(skb->head));
-+		else
-+			kfree(skb->head);
- 	}
- }
- 
-@@ -1380,7 +1438,7 @@ static inline int spd_fill_page(struct s
- 	if (unlikely(spd->nr_pages == PIPE_BUFFERS))
- 		return 1;
- 
--	if (linear) {
-+	if (linear && !skb_shinfo(skb)->alloc_paged) {
- 		page = linear_to_page(page, len, &offset, skb);
- 		if (!page)
- 			return 1;
+	Regards
+		Oliver
