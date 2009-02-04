@@ -1,163 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752998AbZBDFIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZBDFKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752998AbZBDFIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 00:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750895AbZBDFIL
+	id S1753235AbZBDFKI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 00:10:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbZBDFJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 00:08:11 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52420 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750755AbZBDFIJ (ORCPT
+	Wed, 4 Feb 2009 00:09:55 -0500
+Received: from out02.mta.xmission.com ([166.70.13.232]:38696 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbZBDFJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 00:08:09 -0500
-Date: Tue, 3 Feb 2009 21:07:25 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Renninger <trenn@suse.de>
-Cc: davej@codemonkey.org.uk, mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] CPUFREQ: ondemand/conservative: sanitize
- sampling_rate restrictions
-Message-Id: <20090203210725.bed8a1dd.akpm@linux-foundation.org>
-In-Reply-To: <1233679606-1971-4-git-send-email-trenn@suse.de>
-References: <1233679606-1971-1-git-send-email-trenn@suse.de>
-	<1233679606-1971-4-git-send-email-trenn@suse.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Feb 2009 00:09:54 -0500
+To: paulmck@linux.vnet.ibm.com
+Cc: Rusty Russell <rusty@rustcorp.com.au>, paulmck@linux.vnet.ibm.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@lst.de>, Ingo Molnar <mingo@elte.hu>,
+       Pavel Emelyanov <xemul@openvz.org>, Vitaliy Gusev <vgusev@openvz.org>,
+       linux-kernel@vger.kernel.org
+References: <20090130123358.GA26216@redhat.com>
+	<20090130125058.GA26931@redhat.com>
+	<200901312246.07737.rusty@rustcorp.com.au>
+	<20090201102117.GA5728@redhat.com> <m1wsc82033.fsf@fess.ebiederm.org>
+	<20090202194105.GA23141@redhat.com> <m1hc3c19s7.fsf@fess.ebiederm.org>
+	<20090203134110.GC6607@linux.vnet.ibm.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 03 Feb 2009 21:10:06 -0800
+In-Reply-To: <20090203134110.GC6607@linux.vnet.ibm.com> (Paul E. McKenney's message of "Tue\, 3 Feb 2009 05\:41\:10 -0800")
+Message-ID: <m1ocxivlch.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.180.49.163;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.180.49.163
+X-SA-Exim-Rcpt-To: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, vgusev@openvz.org, xemul@openvz.org, mingo@elte.hu, hch@lst.de, akpm@linux-foundation.org, rusty@rustcorp.com.au
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;paulmck@linux.vnet.ibm.com
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
+X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
+X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue,  3 Feb 2009 17:46:42 +0100 Thomas Renninger <trenn@suse.de> wrote:
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
 
-> Limit sampling rate to transition_latency * 100 or kernel limits.
-> If sampling_rate is tried to be set too low, set the lowest allowed value.
-> 
-> Signed-off-by: Thomas Renninger <trenn@suse.de>
-> ---
->  Documentation/cpu-freq/governors.txt   |   14 +++++++++++++-
->  drivers/cpufreq/cpufreq_conservative.c |   19 ++++++++++++++++---
->  drivers/cpufreq/cpufreq_ondemand.c     |   19 +++++++++++++++----
->  3 files changed, 44 insertions(+), 8 deletions(-)
-> 
-> diff --git a/Documentation/cpu-freq/governors.txt b/Documentation/cpu-freq/governors.txt
-> index 9b18512..ce73f3e 100644
-> --- a/Documentation/cpu-freq/governors.txt
-> +++ b/Documentation/cpu-freq/governors.txt
-> @@ -117,7 +117,19 @@ accessible parameters:
->  sampling_rate: measured in uS (10^-6 seconds), this is how often you
->  want the kernel to look at the CPU usage and to make decisions on
->  what to do about the frequency.  Typically this is set to values of
-> -around '10000' or more.
-> +around '10000' or more. It's default value is (cmp. with users-guide.txt):
-> +transition_latency * 1000
-> +The lowest value you can set is:
-> +transition_latency * 100 or it may get restricted to a value where it
-> +makes not sense for the kernel anymore to poll that often which depends
-> +on your HZ config variable (HZ=1000: max=20000us, HZ=250: max=5000).
-> +Be aware that transition latency is in ns and sampling_rate is in us, so you
-> +get the same sysfs value by default.
-> +Sampling rate should always get adjusted considering the transition latency
-> +To set the sampling rate 750 times as high as the transition latency
-> +in the bash (as said, 1000 is default), do:
-> +echo `$(($(cat cpuinfo_transition_latency) * 750 / 1000)) \
-> +    >ondemand/sampling_rate
->  
->  show_sampling_rate_(min|max): THIS INTERFACE IS DEPRECATED, DON'T USE IT.
->  You can use wider ranges now and the general
-> diff --git a/drivers/cpufreq/cpufreq_conservative.c b/drivers/cpufreq/cpufreq_conservative.c
-> index 5ba0a3f..b8bbd4a 100644
-> --- a/drivers/cpufreq/cpufreq_conservative.c
-> +++ b/drivers/cpufreq/cpufreq_conservative.c
-> @@ -54,7 +54,18 @@ static unsigned int def_sampling_rate;
->  			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
->  #define MIN_SAMPLING_RATE			\
->  			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
-> +/* Above MIN_SAMPLING_RATE will vanish with its sysfs file soon
-> + * Define the minimal settable sampling rate to the greater of:
-> + *   - "HW transition latency" * 100 (same as default sampling / 10)
-> + *   - MIN_STAT_SAMPLING_RATE
-> + * To avoid that userspace shoots itself.
-> +*/
-> +#define MINIMUM_SAMPLING_RATE			\
-> +			((def_sampling_rate / 10) < MIN_STAT_SAMPLING_RATE \
-> +			 ? MIN_STAT_SAMPLING_RATE : (def_sampling_rate / 10))
+> ACCESS_ONCE() suffices in many cases, but if the pointer being accessed
+> points to a structure that might recently have been initialized, then
+> rcu_dereference() will be required on Alpha.  Though perhaps the
+> discussion below removes the need entirely, but cannot say that I fully
+> understand this part of the kernel.
 
-Use
-	max(def_sampling_rate / 10, MIN_STAT_SAMPLING_RATE)
-?
+Thanks.  I had overlooked the addition of ACCESS_ONCE() into our set of
+tricks.  I thought Oleg was referring to a hypothetical construct.
 
-But really, this should be a plain old C function.  Hiding a bunch of C
-code inside a macro which purports to be a compile-time constant is rude.
+Currently Oleg's implementation is fine because of an explicit
+memory barrier and two dereferences of the pointer.  It just isn't
+especially clear.
 
-> +/* This will also vanish soon with removing sampling_rate_max */
->  #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
+ACCESS_ONCE would help.
 
-Ditto, really.
+Hmm.
 
-> +
->  #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
->  #define DEF_SAMPLING_DOWN_FACTOR		(1)
->  #define MAX_SAMPLING_DOWN_FACTOR		(10)
-> @@ -197,12 +208,14 @@ static ssize_t store_sampling_rate(struct cpufreq_policy *unused,
->  	ret = sscanf (buf, "%u", &input);
->  
->  	mutex_lock(&dbs_mutex);
-> -	if (ret != 1 || input > MAX_SAMPLING_RATE || input < MIN_SAMPLING_RATE) {
-> +	if (ret != 1) {
->  		mutex_unlock(&dbs_mutex);
->  		return -EINVAL;
->  	}
-> -
-> -	dbs_tuners_ins.sampling_rate = input;
-> +	if  (input < MINIMUM_SAMPLING_RATE)
-> +		dbs_tuners_ins.sampling_rate = MINIMUM_SAMPLING_RATE;
-> +	else
-> +		dbs_tuners_ins.sampling_rate = input;
+I wonder if it would be better/clearer to define to_kthread as:
 
-	dbs_tuners_ins.sampling_rate = max(MINIMUM_SAMPLING_RATE, input);
+static struct kthread *to_kthread(struct task_struct *tsk)
+{
+	void *stack = task_stack_page(tsk);
+	return (struct kthread *)(stack + kthread_offset);
+        
+}
 
->  	mutex_unlock(&dbs_mutex);
->  
->  	return count;
-> diff --git a/drivers/cpufreq/cpufreq_ondemand.c b/drivers/cpufreq/cpufreq_ondemand.c
-> index 4b42e36..70e0841 100644
-> --- a/drivers/cpufreq/cpufreq_ondemand.c
-> +++ b/drivers/cpufreq/cpufreq_ondemand.c
-> @@ -52,6 +52,16 @@ static unsigned int def_sampling_rate;
->  			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
->  #define MIN_SAMPLING_RATE			\
->  			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
-> +/* Above MIN_SAMPLING_RATE will vanish with its sysfs file soon
-> + * Define the minimal settable sampling rate to the greater of:
-> + *   - "HW transition latency" * 100 (same as default sampling / 10)
-> + *   - MIN_STAT_SAMPLING_RATE
-> + * To avoid that userspace shoots itself.
-> +*/
-> +#define MINIMUM_SAMPLING_RATE			\
-> +			((def_sampling_rate / 10) < MIN_STAT_SAMPLING_RATE \
-> +			 ? MIN_STAT_SAMPLING_RATE : (def_sampling_rate / 10))
-> +/* This will also vanish soon with removing sampling_rate_max */
->  #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
->  #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
->  #define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
-> @@ -243,13 +253,14 @@ static ssize_t store_sampling_rate(struct cpufreq_policy *unused,
->  	ret = sscanf(buf, "%u", &input);
->  
->  	mutex_lock(&dbs_mutex);
-> -	if (ret != 1 || input > MAX_SAMPLING_RATE
-> -		     || input < MIN_SAMPLING_RATE) {
-> +	if (ret != 1) {
->  		mutex_unlock(&dbs_mutex);
->  		return -EINVAL;
->  	}
-> -
-> -	dbs_tuners_ins.sampling_rate = input;
-> +	if  (input < MINIMUM_SAMPLING_RATE)
-> +		dbs_tuners_ins.sampling_rate = MINIMUM_SAMPLING_RATE;
-> +	else
-> +		dbs_tuners_ins.sampling_rate = input;
->  	mutex_unlock(&dbs_mutex);
+And to measure kthread_offset the first time kthread() was
+called.  I would love to have a fixed compile time offset but
+I don't know how to measure it at compile time reliably.
 
-etceterata.
+Oleg what do you think.  It would remove the test and be simple and
+obviously correct.
+
+Eric
+
+
+
