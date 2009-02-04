@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759736AbZBDSmG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZBDSmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759736AbZBDSmG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:42:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZBDShP
+	id S1760023AbZBDSmo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:42:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbZBDShS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:15 -0500
-Received: from kroah.org ([198.145.64.141]:51029 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:18 -0500
+Received: from kroah.org ([198.145.64.141]:51044 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758458AbZBDShK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:10 -0500
-Date: Wed, 4 Feb 2009 10:34:42 -0800
+	id S1758490AbZBDShM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:12 -0500
+Date: Wed, 4 Feb 2009 10:34:46 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 13/33] sata_nv: fix MCP5x reset
-Message-ID: <20090204183442.GN13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>
+Subject: [patch 15/33] Fix memory corruption in console selection
+Message-ID: <20090204183446.GP13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_nv-fix-mcp5x-reset.patch"
+Content-Disposition: inline; filename="fix-memory-corruption-in-console-selection.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,104 +39,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tejun Heo <tj@kernel.org>
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-commit 2d775708bc6613f1be47f1e720781343341ecc94 upstream.
+commit 878b8619f711280fd05845e21956434b5e588cc4 upstream.
 
-MCP5x family of controllers seem to share much more with nf2's as far
-as reset protocol is concerned.  It requires heardreset to get the PHY
-going and classfication code report after hardreset is unreliable.
-Create a new board type MCP5x and use noclassify hardreset.  SWNCQ is
-modified to inherit from this new type.
+Fix an off-by-two memory error in console selection.
 
-This fixes hotplug regression reported in kernel bz#12351.
+The loop below goes from sel_start to sel_end (inclusive), so it writes
+one more character.  This one more character was added to the allocated
+size (+1), but it was not multiplied by an UTF-8 multiplier.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+This patch fixes a memory corruption when UTF-8 console is used and the
+user selects a few characters, all of them 3-byte in UTF-8 (for example
+a frame line).
+
+When memory redzones are enabled, a redzone corruption is reported.
+When they are not enabled, trashing of random memory occurs.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_nv.c |   42 +++++++++++++++++++++++++++++-------------
- 1 file changed, 29 insertions(+), 13 deletions(-)
+ drivers/char/selection.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -352,6 +352,7 @@ enum nv_host_type
- 	NFORCE3 = NFORCE2,	/* NF2 == NF3 as far as sata_nv is concerned */
- 	CK804,
- 	ADMA,
-+	MCP5x,
- 	SWNCQ,
- };
+--- a/drivers/char/selection.c
++++ b/drivers/char/selection.c
+@@ -268,7 +268,7 @@ int set_selection(const struct tiocl_sel
  
-@@ -363,10 +364,10 @@ static const struct pci_device_id nv_pci
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_CK804_SATA2), CK804 },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP04_SATA), CK804 },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP04_SATA2), CK804 },
--	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA), SWNCQ },
--	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA2), SWNCQ },
--	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA), SWNCQ },
--	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA2), SWNCQ },
-+	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA), MCP5x },
-+	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA2), MCP5x },
-+	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA), MCP5x },
-+	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA2), MCP5x },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA), GENERIC },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA2), GENERIC },
- 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA3), GENERIC },
-@@ -467,8 +468,19 @@ static struct ata_port_operations nv_adm
- 	.host_stop		= nv_adma_host_stop,
- };
- 
-+/* Kernel bz#12351 reports that when SWNCQ is enabled, for hotplug to
-+ * work, hardreset should be used and hardreset can't report proper
-+ * signature, which suggests that mcp5x is closer to nf2 as long as
-+ * reset quirkiness is concerned.  Define separate ops for mcp5x with
-+ * nv_noclassify_hardreset().
-+ */
-+static struct ata_port_operations nv_mcp5x_ops = {
-+	.inherits		= &nv_common_ops,
-+	.hardreset		= nv_noclassify_hardreset,
-+};
-+
- static struct ata_port_operations nv_swncq_ops = {
--	.inherits		= &nv_generic_ops,
-+	.inherits		= &nv_mcp5x_ops,
- 
- 	.qc_defer		= ata_std_qc_defer,
- 	.qc_prep		= nv_swncq_qc_prep,
-@@ -531,6 +543,15 @@ static const struct ata_port_info nv_por
- 		.port_ops	= &nv_adma_ops,
- 		.private_data	= NV_PI_PRIV(nv_adma_interrupt, &nv_adma_sht),
- 	},
-+	/* MCP5x */
-+	{
-+		.flags		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY,
-+		.pio_mask	= NV_PIO_MASK,
-+		.mwdma_mask	= NV_MWDMA_MASK,
-+		.udma_mask	= NV_UDMA_MASK,
-+		.port_ops	= &nv_mcp5x_ops,
-+		.private_data	= NV_PI_PRIV(nv_generic_interrupt, &nv_sht),
-+	},
- 	/* SWNCQ */
- 	{
- 		.flags	        = ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
-@@ -2355,14 +2376,9 @@ static int nv_init_one(struct pci_dev *p
- 	if (type == CK804 && adma_enabled) {
- 		dev_printk(KERN_NOTICE, &pdev->dev, "Using ADMA mode\n");
- 		type = ADMA;
--	}
--
--	if (type == SWNCQ) {
--		if (swncq_enabled)
--			dev_printk(KERN_NOTICE, &pdev->dev,
--				   "Using SWNCQ mode\n");
--		else
--			type = GENERIC;
-+	} else if (type == MCP5x && swncq_enabled) {
-+		dev_printk(KERN_NOTICE, &pdev->dev, "Using SWNCQ mode\n");
-+		type = SWNCQ;
- 	}
- 
- 	ppi[0] = &nv_port_info[type];
+ 	/* Allocate a new buffer before freeing the old one ... */
+ 	multiplier = use_unicode ? 3 : 1;  /* chars can take up to 3 bytes */
+-	bp = kmalloc((sel_end-sel_start)/2*multiplier+1, GFP_KERNEL);
++	bp = kmalloc(((sel_end-sel_start)/2+1)*multiplier, GFP_KERNEL);
+ 	if (!bp) {
+ 		printk(KERN_WARNING "selection: kmalloc() failed\n");
+ 		clear_selection();
 
