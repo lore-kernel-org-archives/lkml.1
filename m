@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763624AbZBDTDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755014AbZBDTD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763624AbZBDTDr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:03:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758792AbZBDStn
+	id S1755014AbZBDTD1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:03:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761401AbZBDStm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:43 -0500
-Received: from kroah.org ([198.145.64.141]:32932 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:42 -0500
+Received: from kroah.org ([198.145.64.141]:32921 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760027AbZBDStd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:33 -0500
-Date: Wed, 4 Feb 2009 10:46:54 -0800
+	id S1760357AbZBDStc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:32 -0500
+Date: Wed, 4 Feb 2009 10:46:52 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Corentin Chary <corentincj@iksaif.net>,
        Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: [patch 33/41] asus-laptop: Fix the led behavior with value > 1
-Message-ID: <20090204184654.GH25246@kroah.com>
+Subject: [patch 32/41] asus-laptop: Add support for P30/P35
+Message-ID: <20090204184652.GG25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="asus-laptop-fix-the-led-behavior-with-value-1.patch"
+Content-Disposition: inline; filename="asus-laptop-add-support-for-p30-p35.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,11 +40,13 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Corentin Chary <corentincj@iksaif.net>
+From: Torsten Krah <tkrah@fachschaft.imn.htwk-leipzig.de>
 
-commit e3deda9c87ac5eef2b5d18cd0b5511370979ca26 upstream.
+commit 4d0b856ef7eea5c03f4c1fa57793286ac068f4cd upstream.
 
-Fix http://bugzilla.kernel.org/show_bug.cgi?id=11613 .
+Add support for P30/P35.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=10848
 
 Signed-off-by: Corentin Chary <corentincj@iksaif.net>
 Signed-off-by: Len Brown <len.brown@intel.com>
@@ -52,18 +54,17 @@ Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/asus-laptop.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/misc/asus-laptop.c |    1 +
+ 1 file changed, 1 insertion(+)
 
 --- a/drivers/misc/asus-laptop.c
 +++ b/drivers/misc/asus-laptop.c
-@@ -351,7 +351,7 @@ static void write_status(acpi_handle han
- 	static void object##_led_set(struct led_classdev *led_cdev,	\
- 				     enum led_brightness value)		\
- 	{								\
--		object##_led_wk = value;				\
-+		object##_led_wk = (value > 0) ? 1 : 0;			\
- 		queue_work(led_workqueue, &object##_led_work);		\
- 	}								\
- 	static void object##_led_update(struct work_struct *ignored)	\
+@@ -139,6 +139,7 @@ ASUS_HANDLE(lcd_switch, "\\_SB.PCI0.SBRG
+ 	    "\\_SB.PCI0.PX40.ECD0._Q10",	/* L3C */
+ 	    "\\_SB.PCI0.PX40.EC0.Q10",	/* M1A */
+ 	    "\\_SB.PCI0.LPCB.EC0._Q10",	/* P30 */
++	    "\\_SB.PCI0.LPCB.EC0._Q0E", /* P30/P35 */
+ 	    "\\_SB.PCI0.PX40.Q10",	/* S1x */
+ 	    "\\Q10");		/* A2x, L2D, L3D, M2E */
+ 
 
