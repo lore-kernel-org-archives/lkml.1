@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758828AbZBDNGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760258AbZBDNGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758828AbZBDNGi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 08:06:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbZBDMv1
+	id S1760258AbZBDNGW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 08:06:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbZBDMvV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 07:51:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45110 "EHLO ogre.sisk.pl"
+	Wed, 4 Feb 2009 07:51:21 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45101 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756805AbZBDMv0 convert rfc822-to-8bit (ORCPT
+	id S1756784AbZBDMvT convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 07:51:26 -0500
+	Wed, 4 Feb 2009 07:51:19 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andreas Schwab" <schwab@suse.de>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
+       "Ingo Molnar" <mingo@elte.hu>, "Peter Zijlstra" <peterz@infradead.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
 References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
 In-Reply-To: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,8 +20,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <pWZw1SZjMCH.A.d9C.euYiJB@chimera>
-Subject: [Bug #12621] Resume broken on iBook
+Message-ID: <pWZw1SZjMCH.A.lID.guYiJB@chimera>
+Subject: [Bug #12618] hackbench [pthread mode] regression with 2.6.29-rc3
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Wed,  4 Feb 2009 11:24:09 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,13 +36,12 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12621
-Subject		: Resume broken on iBook
-Submitter	: Andreas Schwab <schwab@suse.de>
-Date		: 2009-02-01 16:54 (4 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=aa8c6c93747f7b55fa11e1624fec8ca33763a805
-Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
-		  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Patch		: http://bugzilla.kernel.org/attachment.cgi?id=20085&action=view
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12618
+Subject		: hackbench [pthread mode] regression with 2.6.29-rc3
+Submitter	: Zhang, Yanmin <yanmin_zhang@linux.intel.com>
+Date		: 2009-02-01 7:30 (4 days old)
+First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=490dea45d00f01847ebebd007685d564aaf2cd98
+References	: http://marc.info/?l=linux-kernel&m=123347347726527&w=4
+Handled-By	: Peter Zijlstra <peterz@infradead.org>
 
 
