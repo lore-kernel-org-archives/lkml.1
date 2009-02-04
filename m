@@ -1,64 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753645AbZBDEWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZBDEex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753645AbZBDEWi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 23:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZBDEW3
+	id S1753577AbZBDEex (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 23:34:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751472AbZBDEem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 23:22:29 -0500
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:36687 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751358AbZBDEW3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 23:22:29 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=6KTtVqI4KYui52ywKKt8jUtuRdXrwr0YWBDutDyliH+UK9kg6wSVqrF4vksxTr72yAW0rsSj/O0bJGGZO8FlSj3memNLhmP6ij8+ra/IlRN2z/IWPApwu3a4oC9WOdaAxsJR+xYyu5nJjkVq4NCmfJazeC65xxVr3FC3atkIwVo=  ;
-X-YMail-OSG: mfwGBKMVM1lwUEzFdDiKrjNqJV.AD98UVB7_nCaPHY3jjBDk8pDmU32llrfbe6HQ1DqBRWUwmXOx.z7CM_UVDa8Gkw9A7WeTrU0j8dBbUKe4YdaACKH5q4UJ2_ORlrJsSm0aM542gMcpIJuCffUyGD5rZVTv3mt7mtQbGUXmOrtiNS84HkW_0fh6VyH2euKolD0EsSk_xs7KjjdueU.FxoAeSWDEqlWC
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [patch] SLQB slab allocator
-Date: Wed, 4 Feb 2009 15:22:00 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Christoph Lameter <cl@linux-foundation.org>, Nick Piggin <npiggin@suse.de>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20090114155923.GC1616@wotan.suse.de> <84144f020902031042i31eaec14v53a0e7a203acd28b@mail.gmail.com> <84144f020902031047o2e117652w28886efb495688c4@mail.gmail.com>
-In-Reply-To: <84144f020902031047o2e117652w28886efb495688c4@mail.gmail.com>
+	Tue, 3 Feb 2009 23:34:42 -0500
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:58837 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751221AbZBDEel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 23:34:41 -0500
+Date: Tue, 3 Feb 2009 20:30:06 -0800
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: viro@ZenIV.linux.org.uk
+Cc: hch@lst.de, alan@lxorguk.ukuu.org.uk, hpa@zytor.com, serue@us.ibm.com,
+       "David C. Hansen" <haveblue@us.ibm.com>, sukadev@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: [PATCH] simple_set_mnt() should return void
+Message-ID: <20090204043006.GA25963@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902041522.01307.nickpiggin@yahoo.com.au>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009 05:47:48 Pekka Enberg wrote:
-> On Tue, Feb 3, 2009 at 8:42 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> >> It will grow unconstrained if you elect to defer queue processing. That
-> >> was what we discussed.
-> >
-> > Well, the slab_hiwater() check in __slab_free() of mm/slqb.c will cap
-> > the size of the queue. But we do the same thing in SLAB with
-> > alien->limit in cache_free_alien() and ac->limit in __cache_free(). So
-> > I'm not sure what you mean when you say that the queues will "grow
-> > unconstrained" (in either of the allocators). Hmm?
->
-> That said, I can imagine a worst-case scenario where a queue with N
-> objects is pinning N mostly empty slabs. As soon as we hit the
-> periodical flush, we might need to do tons of work. That's pretty hard
-> to control with watermarks as well as the scenario is solely dependent
-> on allocation/free patterns.
+Tested this with devpts and by compiling kernel with 'allmodconfig'.
+---
 
-That's very true, and we touched on this earlier. It is I guess
-you can say a downside of queueing. But an analogous situation
-in SLUB would be that lots of pages on the partial list with
-very few free objects, or freeing objects to pages with few
-objects in them. Basically SLUB will have to do the extra work
-in the fastpath.
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Wed, 28 Jan 2009 17:11:13 -0800
+Subject: [PATCH] simple_set_mnt() should return void
+
+simple_set_mnt() is defined as returning 'int' but always returns 0.
+Callers assume simple_set_mnt() never fails and don't properly cleanup
+if it were to _ever_ fail. For instance, get_sb_single()
+and get_sb_nodev() should:
+
+        up_write(sb->s_unmount);
+        deactivate_super(sb);
+
+if simple_set_mnt() fails.
+
+Since simple_set_mnt() never fails, would be cleaner if it did not
+return anything.
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ drivers/mtd/mtdsuper.c |    7 +++++--
+ fs/9p/vfs_super.c      |    5 +++--
+ fs/cifs/cifsfs.c       |    3 ++-
+ fs/devpts/inode.c      |    3 ++-
+ fs/libfs.c             |    3 ++-
+ fs/namespace.c         |    3 +--
+ fs/proc/root.c         |    3 ++-
+ fs/super.c             |    9 ++++++---
+ fs/ubifs/super.c       |    3 ++-
+ include/linux/fs.h     |    2 +-
+ kernel/cgroup.c        |    3 ++-
+ 11 files changed, 28 insertions(+), 16 deletions(-)
+
+diff --git a/drivers/mtd/mtdsuper.c b/drivers/mtd/mtdsuper.c
+index 00d46e1..92285d0 100644
+--- a/drivers/mtd/mtdsuper.c
++++ b/drivers/mtd/mtdsuper.c
+@@ -81,13 +81,16 @@ static int get_sb_mtd_aux(struct file_system_type *fs_type, int flags,
+ 
+ 	/* go */
+ 	sb->s_flags |= MS_ACTIVE;
+-	return simple_set_mnt(mnt, sb);
++	simple_set_mnt(mnt, sb);
++
++	return 0;
+ 
+ 	/* new mountpoint for an already mounted superblock */
+ already_mounted:
+ 	DEBUG(1, "MTDSB: Device %d (\"%s\") is already mounted\n",
+ 	      mtd->index, mtd->name);
+-	ret = simple_set_mnt(mnt, sb);
++	simple_set_mnt(mnt, sb);
++	ret = 0;
+ 	goto out_put;
+ 
+ out_error:
+diff --git a/fs/9p/vfs_super.c b/fs/9p/vfs_super.c
+index 93212e4..5f8ab8a 100644
+--- a/fs/9p/vfs_super.c
++++ b/fs/9p/vfs_super.c
+@@ -168,8 +168,9 @@ static int v9fs_get_sb(struct file_system_type *fs_type, int flags,
+ 	p9stat_free(st);
+ 	kfree(st);
+ 
+-P9_DPRINTK(P9_DEBUG_VFS, " return simple set mount\n");
+-	return simple_set_mnt(mnt, sb);
++P9_DPRINTK(P9_DEBUG_VFS, " simple set mount, return 0\n");
++	simple_set_mnt(mnt, sb);
++	return 0;
+ 
+ release_sb:
+ 	if (sb) {
+diff --git a/fs/cifs/cifsfs.c b/fs/cifs/cifsfs.c
+index 13ea532..38491fd 100644
+--- a/fs/cifs/cifsfs.c
++++ b/fs/cifs/cifsfs.c
+@@ -606,7 +606,8 @@ cifs_get_sb(struct file_system_type *fs_type,
+ 		return rc;
+ 	}
+ 	sb->s_flags |= MS_ACTIVE;
+-	return simple_set_mnt(mnt, sb);
++	simple_set_mnt(mnt, sb);
++	return 0;
+ }
+ 
+ static ssize_t cifs_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
+diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
+index 5f3231b..d008105 100644
+--- a/fs/devpts/inode.c
++++ b/fs/devpts/inode.c
+@@ -458,7 +458,8 @@ static int get_init_pts_sb(struct file_system_type *fs_type, int flags,
+ 		s->s_flags |= MS_ACTIVE;
+ 	}
+ 	do_remount_sb(s, flags, data, 0);
+-	return simple_set_mnt(mnt, s);
++	simple_set_mnt(mnt, s);
++	return 0;
+ }
+ 
+ /*
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 49b4409..8e77e11 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -242,7 +242,8 @@ int get_sb_pseudo(struct file_system_type *fs_type, char *name,
+ 	d_instantiate(dentry, root);
+ 	s->s_root = dentry;
+ 	s->s_flags |= MS_ACTIVE;
+-	return simple_set_mnt(mnt, s);
++	simple_set_mnt(mnt, s);
++	return 0;
+ 
+ Enomem:
+ 	up_write(&s->s_umount);
+diff --git a/fs/namespace.c b/fs/namespace.c
+index 228d8c4..c2594d5 100644
+--- a/fs/namespace.c
++++ b/fs/namespace.c
+@@ -397,11 +397,10 @@ static void __mnt_unmake_readonly(struct vfsmount *mnt)
+ 	spin_unlock(&vfsmount_lock);
+ }
+ 
+-int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
++void simple_set_mnt(struct vfsmount *mnt, struct super_block *sb)
+ {
+ 	mnt->mnt_sb = sb;
+ 	mnt->mnt_root = dget(sb->s_root);
+-	return 0;
+ }
+ 
+ EXPORT_SYMBOL(simple_set_mnt);
+diff --git a/fs/proc/root.c b/fs/proc/root.c
+index f6299a2..1e15a2b 100644
+--- a/fs/proc/root.c
++++ b/fs/proc/root.c
+@@ -83,7 +83,8 @@ static int proc_get_sb(struct file_system_type *fs_type,
+ 		ns->proc_mnt = mnt;
+ 	}
+ 
+-	return simple_set_mnt(mnt, sb);
++	simple_set_mnt(mnt, sb);
++	return 0;
+ }
+ 
+ static void proc_kill_sb(struct super_block *sb)
+diff --git a/fs/super.c b/fs/super.c
+index 645e540..17e05f1 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -813,7 +813,8 @@ int get_sb_bdev(struct file_system_type *fs_type,
+ 		bdev->bd_super = s;
+ 	}
+ 
+-	return simple_set_mnt(mnt, s);
++	simple_set_mnt(mnt, s);
++	return 0;
+ 
+ error_s:
+ 	error = PTR_ERR(s);
+@@ -859,7 +860,8 @@ int get_sb_nodev(struct file_system_type *fs_type,
+ 		return error;
+ 	}
+ 	s->s_flags |= MS_ACTIVE;
+-	return simple_set_mnt(mnt, s);
++	simple_set_mnt(mnt, s);
++	return 0;
+ }
+ 
+ EXPORT_SYMBOL(get_sb_nodev);
+@@ -891,7 +893,8 @@ int get_sb_single(struct file_system_type *fs_type,
+ 		s->s_flags |= MS_ACTIVE;
+ 	}
+ 	do_remount_sb(s, flags, data, 0);
+-	return simple_set_mnt(mnt, s);
++	simple_set_mnt(mnt, s);
++	return 0;
+ }
+ 
+ EXPORT_SYMBOL(get_sb_single);
+diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+index 89556ee..cd01c06 100644
+--- a/fs/ubifs/super.c
++++ b/fs/ubifs/super.c
+@@ -2032,7 +2032,8 @@ static int ubifs_get_sb(struct file_system_type *fs_type, int flags,
+ 	/* 'fill_super()' opens ubi again so we must close it here */
+ 	ubi_close_volume(ubi);
+ 
+-	return simple_set_mnt(mnt, sb);
++	simple_set_mnt(mnt, sb);
++	return 0;
+ 
+ out_deact:
+ 	up_write(&sb->s_umount);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 6022f44..e60b263 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1600,7 +1600,7 @@ struct super_block *sget(struct file_system_type *type,
+ extern int get_sb_pseudo(struct file_system_type *, char *,
+ 	const struct super_operations *ops, unsigned long,
+ 	struct vfsmount *mnt);
+-extern int simple_set_mnt(struct vfsmount *mnt, struct super_block *sb);
++extern void simple_set_mnt(struct vfsmount *mnt, struct super_block *sb);
+ int __put_super_and_need_restart(struct super_block *sb);
+ 
+ /* Alas, no aliases. Too much hassle with bringing module.h everywhere */
+diff --git a/kernel/cgroup.c b/kernel/cgroup.c
+index 5a54ff4..741f5c6 100644
+--- a/kernel/cgroup.c
++++ b/kernel/cgroup.c
+@@ -1071,7 +1071,8 @@ static int cgroup_get_sb(struct file_system_type *fs_type,
+ 		mutex_unlock(&cgroup_mutex);
+ 	}
+ 
+-	return simple_set_mnt(mnt, sb);
++	simple_set_mnt(mnt, sb);
++	return 0;
+ 
+  free_cg_links:
+ 	free_cg_links(&tmp_cg_links);
+-- 
+1.5.2.5
 
