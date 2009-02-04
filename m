@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZBDSmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbZBDSnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760023AbZBDSmo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:42:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758528AbZBDShS
+	id S1760116AbZBDSnB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:43:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbZBDShT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:18 -0500
-Received: from kroah.org ([198.145.64.141]:51044 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:19 -0500
+Received: from kroah.org ([198.145.64.141]:51052 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758490AbZBDShM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:12 -0500
-Date: Wed, 4 Feb 2009 10:34:46 -0800
+	id S1758316AbZBDShN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:13 -0500
+Date: Wed, 4 Feb 2009 10:34:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,13 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>
-Subject: [patch 15/33] Fix memory corruption in console selection
-Message-ID: <20090204183446.GP13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Scott Kilau <Scott.Kilau@digi.com>,
+       Paul Larson <pl@linux.vnet.ibm.com>
+Subject: [patch 16/33] Add enable_ms to jsm driver
+Message-ID: <20090204183448.GQ13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fix-memory-corruption-in-console-selection.patch"
+Content-Disposition: inline; filename="add-enable_ms-to-jsm-driver.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,40 +40,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mikulas Patocka <mpatocka@redhat.com>
+From: Paul Larson <pl@linux.vnet.ibm.com>
 
-commit 878b8619f711280fd05845e21956434b5e588cc4 upstream.
+commit 0461ec5bc7745b89a8ab67ba0ea497abd58a6301 upstream.
 
-Fix an off-by-two memory error in console selection.
+This fixes a crash observed when non-existant enable_ms function is
+called for jsm driver.
 
-The loop below goes from sel_start to sel_end (inclusive), so it writes
-one more character.  This one more character was added to the allocated
-size (+1), but it was not multiplied by an UTF-8 multiplier.
-
-This patch fixes a memory corruption when UTF-8 console is used and the
-user selects a few characters, all of them 3-byte in UTF-8 (for example
-a frame line).
-
-When memory redzones are enabled, a redzone corruption is reported.
-When they are not enabled, trashing of random memory occurs.
-
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Scott Kilau <Scott.Kilau@digi.com>
+Signed-off-by: Paul Larson <pl@linux.vnet.ibm.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/char/selection.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/serial/jsm/jsm_tty.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/drivers/char/selection.c
-+++ b/drivers/char/selection.c
-@@ -268,7 +268,7 @@ int set_selection(const struct tiocl_sel
+--- a/drivers/serial/jsm/jsm_tty.c
++++ b/drivers/serial/jsm/jsm_tty.c
+@@ -161,6 +161,11 @@ static void jsm_tty_stop_rx(struct uart_
+ 	channel->ch_bd->bd_ops->disable_receiver(channel);
+ }
  
- 	/* Allocate a new buffer before freeing the old one ... */
- 	multiplier = use_unicode ? 3 : 1;  /* chars can take up to 3 bytes */
--	bp = kmalloc((sel_end-sel_start)/2*multiplier+1, GFP_KERNEL);
-+	bp = kmalloc(((sel_end-sel_start)/2+1)*multiplier, GFP_KERNEL);
- 	if (!bp) {
- 		printk(KERN_WARNING "selection: kmalloc() failed\n");
- 		clear_selection();
++static void jsm_tty_enable_ms(struct uart_port *port)
++{
++	/* Nothing needed */
++}
++
+ static void jsm_tty_break(struct uart_port *port, int break_state)
+ {
+ 	unsigned long lock_flags;
+@@ -345,6 +350,7 @@ static struct uart_ops jsm_ops = {
+ 	.start_tx	= jsm_tty_start_tx,
+ 	.send_xchar	= jsm_tty_send_xchar,
+ 	.stop_rx	= jsm_tty_stop_rx,
++	.enable_ms	= jsm_tty_enable_ms,
+ 	.break_ctl	= jsm_tty_break,
+ 	.startup	= jsm_tty_open,
+ 	.shutdown	= jsm_tty_close,
 
