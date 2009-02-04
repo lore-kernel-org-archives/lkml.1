@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZBDGTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZBDGUf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbZBDGTm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 01:19:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZBDGTd
+	id S1754871AbZBDGUf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 01:20:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZBDGUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 01:19:33 -0500
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:39403 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750892AbZBDGTc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 01:19:32 -0500
-From: Christian Borntraeger <borntraeger@de.ibm.com>
-To: Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [PATCH v2] NOHZ: fix nohz on cpu unplug
-Date: Wed, 4 Feb 2009 07:19:25 +0100
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-References: <200901301729.30284.borntraeger@de.ibm.com> <200902030948.13519.borntraeger@de.ibm.com> <20090203122847.GG19979@elte.hu>
-In-Reply-To: <20090203122847.GG19979@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Feb 2009 01:20:23 -0500
+Received: from 1wt.eu ([62.212.114.60]:1994 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750892AbZBDGUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 01:20:22 -0500
+Date: Wed, 4 Feb 2009 07:19:47 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: David Miller <davem@davemloft.net>
+Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, jarkao2@gmail.com,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090204061947.GD20673@1wt.eu>
+References: <20090203121209.GA9154@gondor.apana.org.au> <20090203121836.GA23300@ioremap.net> <20090203122535.GB8633@1wt.eu> <20090203.164734.76871204.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902040719.25593.borntraeger@de.ibm.com>
+In-Reply-To: <20090203.164734.76871204.davem@davemloft.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Tuesday 03 February 2009 13:28:47 schrieb Ingo Molnar:
-> > > +		if (!cpu_active(cpu) {
-> >
-> > That does not compile...I used the following:
-> > 		if (!cpu_active(cpu)) {
->
-> Could you please resubmit an updated patch?
+On Tue, Feb 03, 2009 at 04:47:34PM -0800, David Miller wrote:
+> From: Willy Tarreau <w@1wt.eu>
+> Date: Tue, 3 Feb 2009 13:25:35 +0100
+> 
+> > Well, FWIW, I've always observed better performance with 4k MTU (4080 to
+> > be precise) than with 9K, and I think that the overhead of allocating 3
+> > contiguous pages is a major reason for this.
+> 
+> With what hardware?  If it's with myri10ge, that driver uses page
+> frags so would not be using 3 contiguous pages even for jumbo frames.
 
-Suresh,
+Yes myri10ge for the optimal 4080, but with e1000 too (though I don't
+remember the exact optimal value, I think it was slightly lower).
 
-can you send the updated patch? After all, its your work and we need your 
-Signed-off-by anyway.
+For the myri10ge, could this be caused by the cache footprint then ?
+I can also retry with various values between 4 and 9k, including
+values close to 8k. Maybe the fact that 4k is better than 9 is
+because we get better filling of all pages ?
 
-You can add my 
-Reported-by: Christian Borntraeger <borntraeger@de.ibm.com>
-Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
+I also remember having used a 7 kB MTU on e1000 and dl2k in the past.
+BTW, 7k MTU on my NFS server which uses e1000 definitely stopped the
+allocation failures which were polluting the logs, so it's been running
+with that setting for years now.
 
-Thanks
+Willy
 
-Christian
