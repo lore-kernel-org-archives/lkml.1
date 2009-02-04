@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755525AbZBDB3Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZBDBgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755525AbZBDB3Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 20:29:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZBDB2p
+	id S1753937AbZBDBgX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 20:36:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751046AbZBDBgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 20:28:45 -0500
-Received: from kroah.org ([198.145.64.141]:47816 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751485AbZBDB2o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 20:28:44 -0500
-Date: Tue, 3 Feb 2009 17:16:40 -0800
-From: Greg KH <greg@kroah.com>
-To: Eric Miao <eric.y.miao@gmail.com>
-Cc: Ben Dooks <ben-linux@fluff.org>, LKML <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [PATCH 2/2 RESEND] platform: introduce module id table for
-	platform devices
-Message-ID: <20090204011640.GC17622@kroah.com>
-References: <498464ED.3010607@gmail.com> <20090131155147.GU12431@fluff.org.uk> <f17812d70902020211u63d7e510k81926f45ff672323@mail.gmail.com>
+	Tue, 3 Feb 2009 20:36:14 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:54207 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751010AbZBDBgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 20:36:13 -0500
+Message-ID: <4988F0E4.3010404@cn.fujitsu.com>
+Date: Wed, 04 Feb 2009 09:35:32 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f17812d70902020211u63d7e510k81926f45ff672323@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: balbir@linux.vnet.ibm.com
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [-mm patch] Show memcg information during OOM (v3)
+References: <20090203172135.GF918@balbir.in.ibm.com> <4988E727.8030807@cn.fujitsu.com>
+In-Reply-To: <4988E727.8030807@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 02, 2009 at 06:11:48PM +0800, Eric Miao wrote:
-> >
-> > surely you mean PLATFORM_NAME_SIZE in this struct?
+>> +void mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
+>> +{
+>> +	struct cgroup *task_cgrp;
+>> +	struct cgroup *mem_cgrp;
+>> +	/*
+>> +	 * Need a buffer on stack, can't rely on allocations. The code relies
 > 
-> Indeed, patch updated below (and as attached):
+> I think it's in .bss section, but not on stack
 
-With this patch, I get the following warning:
-	drivers/base/platform.c:598: warning: assignment discards qualifiers from pointer target type
+> and it's better to explain why
+> the static buffer is safe in the comment.
+> 
 
-Also, don't put platform_match_id() underneath the comments for
-platform_match(), that will only confuse the kernel-doc scripts and any
-developer looking at the code.
+Sorry, I just saw the below comment.
 
-Care to fix it up and resend?
-
-thanks,
-
-greg k-h
+>> +	 * on the assumption that OOM is serialized for memory controller.
+>> +	 * If this assumption is broken, revisit this code.
+>> +	 */
+>> +	static char task_memcg_name[PATH_MAX];
+>> +	static char memcg_name[PATH_MAX];
+>> +	int ret;
+> 
