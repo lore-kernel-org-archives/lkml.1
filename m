@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZBDDBh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbZBDDHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbZBDDBh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 22:01:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZBDDB1
+	id S1754333AbZBDDHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 22:07:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZBDDGy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 22:01:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51150 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752160AbZBDDB0 (ORCPT
+	Tue, 3 Feb 2009 22:06:54 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:22083 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752175AbZBDDGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 22:01:26 -0500
-Date: Tue, 3 Feb 2009 19:01:11 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090203190111.2ec31cef.akpm@linux-foundation.org>
-In-Reply-To: <200902041314.32277.rusty@rustcorp.com.au>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<200902022305.51344.rusty@rustcorp.com.au>
-	<20090202200649.c1af2fd1.akpm@linux-foundation.org>
-	<200902041314.32277.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 3 Feb 2009 22:06:53 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PRBzt+1RXDjF52zsZAZqetVaOaN41iTl7b7OIstuL9UVjXadyr1NnavOIerc8LaD/f
+         f1oiu54jGCNN6Z51HqCObmh7Cqka+7FiyDQGmx0RYm2yltw5+jq646quE70bY4iR/TRR
+         GZrqu9EEmBhIwR9L2e3hkxIoW7qXG/LuV+sUQ=
+MIME-Version: 1.0
+In-Reply-To: <20090204022905.GM7199@verge.net.au>
+References: <1233642168.19806.74.camel@yhuang-dev.sh.intel.com>
+	 <20090204022905.GM7199@verge.net.au>
+Date: Wed, 4 Feb 2009 12:06:52 +0900
+Message-ID: <aec7e5c30902031906k7fe8947kc429ffc0274eb930@mail.gmail.com>
+Subject: Re: [PATCH resend] kexec/x86_64: Use one page table in x86_64 
+	machine_kexec
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Simon Horman <horms@verge.net.au>
+Cc: Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       kexec@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009 13:14:31 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+On Wed, Feb 4, 2009 at 11:29 AM, Simon Horman <horms@verge.net.au> wrote:
+> On Tue, Feb 03, 2009 at 02:22:48PM +0800, Huang Ying wrote:
+>> Impact: reduce kernel BSS size by 7 pages, improve code readability
+>>
+>> Two page tables are used in current x86_64 kexec implementation. One
+>> is used to jump from kernel virtual address to identity map address,
+>> the other is used to map all physical memory. In fact, on x86_64,
+>> there is no conflict between kernel virtual address space and physical
+>> memory space, so just one page table is sufficient. The page table
+>> pages used to map control page are dynamically allocated to save
+>> memory if kexec image is not loaded. ASM code used to map control page
+>> is replaced by C code too.
+>
+> Hi Huang,
+>
+> this patch looks quite nice to me. I am CCing my former colleague Magnus
+> Damm for comment. He did some work in this area a little while ago.
 
-> On Tuesday 03 February 2009 14:36:49 Andrew Morton wrote:
-> > But as you say, rdmsr_on_cpu() is easy to do, using
-> > smp_call_function_single().  Then we can easily convert all other
-> > work_on_cpu() callers to smp_call_function_single() and zap
-> > work_on_cpu().  The best outcome, methinks.
-> 
-> grepping for set_cpus_allowed reveals the following users in the
-> first third (when I got tired of it):
-> 
-> File                         Function            Context      Calls
-> powerpc/kernel/smp.c         smp_cpus_done       kernel_init smp_ops->setup_cpu()
-> x86/.../speedstep-ich.c      _speedstep_get      cpufreq     speedstep_get_processor_frequency()
-> x86/.../powernow-k8.c        check_supported_cpu cpufreq     cpuid_*()
-> x86/.../powernow-k8.c        powernowk8_target   cpufreq     mutex_lock, etc
-> x86/.../powernow-k8.c        powernowk8_cpu_init boot/hotplg rdmsr,wrmsr
-> x86/.../powernow-k8.c        powernowk8_get      cpufreq     rdmsr
-> x86/.../speedstep-centrino.c get_cur_freq        cpufreq     rdmsr
-> x86/.../speedstep-centrino.c centrino_target     cpufreq     rdmsr,wrmsr
-> x86/kernel/reboot.c          nativ..._shutdown   sys_reboot  misc
-> x86/.../microcode_core.c     do_microcode_update sys_write   microcode_ops->request_microcode_user
-> x86/.../microcode_core.c     reload_store        sys_write   mutex_lock, etc
-> 
-> Some of these (reboot) we don't care what they do to cpumask.  Some are
-> poor style, but not critical (boot time).  Some can use smp_call_function.
-> 
-> But there are some which should *not* be frobbing their cpus_allowed, and
-> really do seem to want a user context.
-> 
-> I think you're right though: smp_call_function_single (or neat wrappers)
-> where possible, work_on_cpu which can fail for the others, and we'll just
-> have to plumb in the error returns.
+Thanks for the ping Simon!
 
-I bet a lot of those can use plain old schedule_work_on().
+I like the idea of dynamically allocating pages and writing code in C
+instead of ASM. In fact, this patch is not so far away from what V2 of
+my patches did a few years ago:
 
-Could it be that after converting things to
-smp_call_function_single()/schedule_work_on(), we don't need
-work_on_cpu()?
+http://lkml.org/lkml/2006/5/24/12
 
+For one reason or another this wasn't acceptable at that point so I
+rewrote things and V4 got merged with static page tables and ASM code.
+
+This patch is a step in the right direction IMO, but I'm not sure how
+it affects the Xen dom0 implementation. Does it still work and/or does
+anyone care?
+
+Cheers,
+
+/ magnus
