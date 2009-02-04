@@ -1,80 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756838AbZBDRv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756744AbZBDR4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756838AbZBDRv7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 12:51:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZBDRvv
+	id S1756744AbZBDR4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 12:56:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752730AbZBDR4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 12:51:51 -0500
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:56540 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751677AbZBDRvu (ORCPT
+	Wed, 4 Feb 2009 12:56:07 -0500
+Received: from 64-76-18-116.static.impsat.net.ar ([64.76.18.116]:54066 "EHLO
+	mother.lugmen.org.ar" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752728AbZBDR4G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 12:51:50 -0500
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [PATCH] mfd: Use bulk read to fill WM8350 register cache
-Date: Wed,  4 Feb 2009 17:51:48 +0000
-Message-Id: <1233769908-1131-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-X-Mailer: git-send-email 1.5.6.5
+	Wed, 4 Feb 2009 12:56:06 -0500
+X-Greylist: delayed 1498 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Feb 2009 12:56:05 EST
+Message-ID: <4989D0D4.80300@lugmen.org.ar>
+Date: Wed, 04 Feb 2009 15:31:00 -0200
+From: Federico Cuello <fedux@lugmen.org.ar>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: sync-Regression in 2.6.28.2?
+References: <20090127093533.GB7037@charite.de> <200902031209.12615.nickpiggin@yahoo.com.au> <4988A034.20406@lugmen.org.ar> <200902041717.27320.nickpiggin@yahoo.com.au>
+In-Reply-To: <200902041717.27320.nickpiggin@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some I2C controllers have high overheads for setting up I2C operations
-which makes the register cache setup on startup excessively slow since
-it does a lot of small transactions. Reduce this overhead by doing a
-bulk read of the entire register bank and filtering out what we don't
-need later.
+Nick Piggin wrote:
+> [...]
+> Thanks, could you reply-to-all when replying to retain ccs please?
+>
+> Common theme is ext4, which uses no_nrwrite_index_update, and I introduced
+> a bug in there which could possibly cause ext4 to go into a loop...
+>
+> Would it be possible if you can test the following patch?
+>   
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
----
- drivers/mfd/wm8350-core.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
+I'll test it as soon as I get home.
 
-diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
-index cf8b9ed..c384cd2 100644
---- a/drivers/mfd/wm8350-core.c
-+++ b/drivers/mfd/wm8350-core.c
-@@ -1238,7 +1238,7 @@ static int wm8350_create_cache(struct wm8350 *wm8350, int type, int mode)
- 	}
- 
- 	wm8350->reg_cache =
--	    kzalloc(sizeof(u16) * (WM8350_MAX_REGISTER + 1), GFP_KERNEL);
-+		kmalloc(sizeof(u16) * (WM8350_MAX_REGISTER + 1), GFP_KERNEL);
- 	if (wm8350->reg_cache == NULL)
- 		return -ENOMEM;
- 
-@@ -1246,17 +1246,20 @@ static int wm8350_create_cache(struct wm8350 *wm8350, int type, int mode)
- 	 * a PMIC so the device many not be in a virgin state and we
- 	 * can't rely on the silicon values.
- 	 */
-+	ret = wm8350->read_dev(wm8350, 0,
-+			       sizeof(u16) * (WM8350_MAX_REGISTER + 1),
-+			       wm8350->reg_cache);
-+	if (ret < 0) {
-+		dev_err(wm8350->dev,
-+			"failed to read initial cache values\n");
-+		goto out;
-+	}
-+
-+	/* Mask out uncacheable/unreadable bits and the audio. */
- 	for (i = 0; i < WM8350_MAX_REGISTER; i++) {
--		/* audio register range */
- 		if (wm8350_reg_io_map[i].readable &&
- 		    (i < WM8350_CLOCK_CONTROL_1 || i > WM8350_AIF_TEST)) {
--			ret = wm8350->read_dev(wm8350, i, 2, (char *)&value);
--			if (ret < 0) {
--				dev_err(wm8350->dev,
--				       "failed to read initial cache value\n");
--				goto out;
--			}
--			value = be16_to_cpu(value);
-+			value = be16_to_cpu(wm8350->reg_cache[i]);
- 			value &= wm8350_reg_io_map[i].readable;
- 			value &= ~wm8350_reg_io_map[i].vol;
- 			wm8350->reg_cache[i] = value;
--- 
-1.5.6.5
+Meanwhile, I think the new patch may be slightly wrong. If I understand
+correctly PageWriteback(page) is called before nr_to_write is tested for
+being > 0 and then decremented if true, but "done" is  not set to 1
+until the next iteration. So another call to PageWriteback(page) while
+take place and then "done" will be set to true (if wbc->sync_mode ==
+WB_SYNC_NONE).
+
+If nr_to_write == 1 at the beginning of the loop then two pages will be
+written.
+
+I think the test condition should something like:
+
+if (--nr_to_write <= 0 && wbc->sync_mode == WB_SYNC_NONE) {
+    done = 1;
+    break;
+}
+
+.
+.
+
+> Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> Acked-by: Nick Piggin <npiggin@suse.de>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  mm/page-writeback.c |   21 +++++++++++++++------
+>  1 files changed, 15 insertions(+), 6 deletions(-)
+>
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index b493db7..dc32dae 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -1051,13 +1051,22 @@ continue_unlock:
+>  				}
+>   			}
+>  
+> -			if (wbc->sync_mode == WB_SYNC_NONE) {
+> -				wbc->nr_to_write--;
+> -				if (wbc->nr_to_write <= 0) {
+> -					done = 1;
+> -					break;
+> -				}
+> +			if (nr_to_write > 0)
+> +				nr_to_write--;
+> +			else if (wbc->sync_mode == WB_SYNC_NONE) {
+> +				/*
+> +				 * We stop writing back only if we are not
+> +				 * doing integrity sync. In case of integrity
+> +				 * sync we have to keep going because someone
+> +				 * may be concurrently dirtying pages, and we
+> +				 * might have synced a lot of newly appeared
+> +				 * dirty pages, but have not synced all of the
+> +				 * old dirty pages.
+> +				 */
+> +				done = 1;
+> +				break;
+>  			}
+> +
+>  			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+>  				wbc->encountered_congestion = 1;
+>  				done = 1;
+>   
 
