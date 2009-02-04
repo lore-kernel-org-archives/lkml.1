@@ -1,102 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbZBDXvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbZBDXx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760668AbZBDXvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:51:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759743AbZBDXtx
+	id S1759475AbZBDXx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:53:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbZBDXxs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 18:49:53 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:2265 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759699AbZBDXtw (ORCPT
+	Wed, 4 Feb 2009 18:53:48 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56142 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754510AbZBDXxr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:49:52 -0500
-Date: Wed, 4 Feb 2009 16:49:49 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Krishna Kothapalli <krishna_sunitha@hotmail.com>
-Cc: kaneshige.kenji@jp.fujitsu.com, ebiederm@xmission.com,
-       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org, djwong@us.ibm.com,
-       xyzzy@speakeasy.org, linux-kernel@vger.kernel.org
-Subject: Re: Q: state of pci express hotplug
-Message-ID: <20090204234949.GC19517@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Krishna Kothapalli <krishna_sunitha@hotmail.com>,
-	kaneshige.kenji@jp.fujitsu.com, ebiederm@xmission.com,
-	linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
-	djwong@us.ibm.com, xyzzy@speakeasy.org,
-	linux-kernel@vger.kernel.org
-References: <m1fxj06js8.fsf@fess.ebiederm.org> <4986581F.7060704@jp.fujitsu.com> <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl> <49879508.4090801@jp.fujitsu.com> <BAY111-W3692AA5F9F7896AA447A1F88C20@phx.gbl> <BAY111-W9013DA1F63973F9E7F8DF88C30@phx.gbl> <49892CDE.9040305@jp.fujitsu.com> <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 4 Feb 2009 18:53:47 -0500
+Date: Wed, 4 Feb 2009 15:53:08 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Larry Keegan <lk@pfw.demon.co.uk>
+Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: 'vmap allocation failed' with 2 graphics cards and kernel
+ 2.6.28
+Message-Id: <20090204155308.6efa5dc8.akpm@linux-foundation.org>
+In-Reply-To: <20090204194923.30bab978@cs2.al.itld>
+References: <20090204194923.30bab978@cs2.al.itld>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Krishna Kothapalli <krishna_sunitha@hotmail.com>:
+On Wed, 4 Feb 2009 19:49:23 +0000
+Larry Keegan <lk@pfw.demon.co.uk> wrote:
+
+> Dear Chaps,
 > 
-> > o The pciehp's debug output. We can get this as follows.
->   # /sbin/modprobe pciehp pciehp_debug
->   # dmesg | grep pciehp 
-> pciehp 0000:00:09.0:pcie02: Hotplug Controller:
-> pciehp 0000:00:09.0:pcie02:   Seg/Bus/Dev/Func/IRQ : 0000:00:09.0 IRQ 2295
-> pciehp 0000:00:09.0:pcie02:   Vendor ID            : 0x8086
-> pciehp 0000:00:09.0:pcie02:   Device ID            : 0x3410
-> pciehp 0000:00:09.0:pcie02:   Subsystem ID         : 0x0000
-> pciehp 0000:00:09.0:pcie02:   Subsystem Vendor ID  : 0x0000
-> pciehp 0000:00:09.0:pcie02:   PCIe Cap offset      : 0x90
-> pciehp 0000:00:09.0:pcie02: Slot Capabilities      : 0x0302005f
-> pciehp 0000:00:09.0:pcie02:   Physical Slot Number : 96
+> I'm experiencing a problem on a Gigabyte GA-G31M-S2L. The problem did
+> not occur on kernel 2.6.25, but does on 2.6.28 and 2.6.28.2. I am using
+> virgin kernels.
+> 
+> During boot I swapon <logical_volume>. This worked fine until 2.6.28
+> came along. Now, the kernel boots fine, but when I run swapon the
+> following error message is displayed:
+> 
+> vmap allocation failed: use vmalloc=<size> to increase size.
 
-Hm, this is merely an observation, but the slot number here seems
-wacky compared to the one that acpiphp reports later below.
+Nick, we should add a dump_stack() there too.
 
-Did we ever get a dmidecode from this machine?
+> The error seems to be directly related to the second graphics card
+> installed in this machine. Here are the details of the on-board
+> graphics chip:
+> 
+> 00:02.0 VGA compatible controller: Intel Corporation 82G33/G31 Express
+> Integrated Graphics Controller (rev 10) (prog-if 00 [VGA controller])
+> Subsystem: Giga-byte Technology Device d000 Flags: bus master, fast
+> devsel, latency 0, IRQ 2300 Memory at e6200000 (32-bit,
+> non-prefetchable) [size=512K] I/O ports at e400 [size=8]
+>         Memory at d0000000 (32-bit, prefetchable) [size=256M]
+>         Memory at e6100000 (32-bit, non-prefetchable) [size=1M]
+>         Capabilities: [90] MSI: Mask- 64bit- Count=1/1 Enable+
+>         Capabilities: [d0] Power Management version 2
+> 
+> and here are the details of the graphics card I added:
+> 
+> 01:00.0 VGA compatible controller: nVidia Corporation G72 [GeForce 7300
+> SE] (rev a1) (prog-if 00 [VGA controller]) Flags: fast devsel, IRQ 16
+>         Memory at e0000000 (32-bit, non-prefetchable) [size=16M]
+>         Memory at c0000000 (64-bit, prefetchable) [size=256M]
+>         Memory at e1000000 (64-bit, non-prefetchable) [size=16M]
+>         [virtual] Expansion ROM at e2000000 [disabled] [size=128K]
+>         Capabilities: [60] Power Management version 2
+>         Capabilities: [68] MSI: Mask- 64bit+ Count=1/1 Enable-
+>         Capabilities: [78] Express Endpoint, MSI 00
+>         Capabilities: [100] Virtual Channel <?>
+>         Capabilities: [128] Power Budgeting <?>
+> 
+> When I set the BIOS to initialise the nVidia PCI-Express graphics card
+> first I see the vmap error. When I set the BIOS to initialise the
+> on-board Intel graphics card first I do not.
+> 
+> I have upgraded to the latest (F9) BIOS revision, but to no avail. Has
+> anyone else come across this before?
 
-Also, once you insert the card, what happens if you:
+This is the first report I've seen.
 
-	# echo 1 > /sys/bus/pci/slots/96/power
+Unfortunately pre-2.6.28 kernels didn't have /proc/vmallocinfo.
 
-Does that do anything?
+Please send the contents of /proc/vmallocinfo.  Try to avoid
+wordwrapping it.
 
-> [root@localhost test]#  /sbin/modprobe acpiphp debug
-> [root@localhost test]# dmesg | grep acpiphp
-> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:09.0
-> acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:09:00
-> acpiphp: Slot [2] registered
+Did we intend to make /proc/vmallocinfo root-only?
 
-Here we see that ACPI thinks it's slot 2, not 96.
-
-> acpiphp_glue: Bus 0000:09 has 1 slot
-> acpiphp_glue: Total 1 slots
-> [root@localhost test]# 
-> [root@localhost test]# ls -lt /sys/bus/pci/slots
-> total 0
-> drwxr-xr-x 2 root root 0 2009-02-04 09:59 2
-> ---  Insert PCI express card in the slot
-> [root@localhost test]# dmesg | grep acpiphp
-> [root@localhost test]# lspci | wc
->     105    1284    9203
-> [root@localhost test]# ls -lt /sys/bus/pci/slots/2/
-> total 0
-> -r--r--r-- 1 root root 4096 2009-02-04 10:01 adapter
-> -r--r--r-- 1 root root 4096 2009-02-04 10:01 address
-> -rw-r--r-- 1 root root 4096 2009-02-04 10:01 attention
-> -r--r--r-- 1 root root 4096 2009-02-04 10:01 latch
-> -rw-r--r-- 1 root root 4096 2009-02-04 10:01 power
-
-Can you echo a 1 into the power file above?
-
-> [root@localhost test]# 
-> [root@localhost test]# /sbin/rmmod acpiphp
-> [root@localhost test]# dmesg | grep acpiphp
-> acpiphp: Slot [2] unregistered
-> acpiphp: release_slot - physical_slot = 2
-> [root@localhost test]# 
+Please gather the contents of /proc/iomem for 2.6.25 and for 2.6.28,
+perhaps we can work something out from that.
 
 Thanks.
-
-/ac
-
