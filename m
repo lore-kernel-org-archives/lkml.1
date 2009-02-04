@@ -1,33 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755960AbZBDNqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753405AbZBDNty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755960AbZBDNqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 08:46:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZBDNqd
+	id S1753405AbZBDNty (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 08:49:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbZBDNtp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 08:46:33 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57374 "EHLO mx2.mail.elte.hu"
+	Wed, 4 Feb 2009 08:49:45 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58469 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751961AbZBDNqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 08:46:32 -0500
-Date: Wed, 4 Feb 2009 14:46:12 +0100
+	id S1751234AbZBDNto (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 08:49:44 -0500
+Date: Wed, 4 Feb 2009 14:49:33 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alexey Fisher <bug-track@fisher-privat.net>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [Bug #12417] glx performance drop with: "x86: PAT: implement
-	track/untrack of pfnmap regions for x86 - v3"
-Message-ID: <20090204134612.GB17024@elte.hu>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.dX.QwYiJB@chimera>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: Re: [PATCH] x86: fix hpet timer reinit for x86_64
+Message-ID: <20090204134933.GC17024@elte.hu>
+References: <4989709F.1050207@openvz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <pWZw1SZjMCH.A.dX.QwYiJB@chimera>
+In-Reply-To: <4989709F.1050207@openvz.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -42,26 +36,31 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Rafael J. Wysocki <rjw@sisk.pl> wrote:
+* Pavel Emelyanov <xemul@openvz.org> wrote:
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+> There's a small problem with hpet_rtc_reinit function - it checks
+> for the
+> 	hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
+> to continue increasing both the HPET_T1_CMP (register) and the 
+> hpet_t1_cmp (variable).
 > 
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
+> But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
+> is 64-bit this condition will always be FALSE once the latter hits
+> the 32-bit boundary, and we can have a situation, when we don't
+> increase the HPET_T1_CMP register high enough.
 > 
+> The result - timer stops ticking, since HPET_T1_CMP becomes less, 
+> than the COUNTER and never increased again.
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12417
-> Subject		: glx performance drop with: "x86: PAT: implement track/untrack of pfnmap regions for x86 - v3"
-> Submitter	: Alexey Fisher <bug-track@fisher-privat.net>
-> Date		: 2009-01-06 18:46 (30 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5899329b19100c0b82dc78e9b21ed8b920c9ffb3
-> References	: http://marc.info/?l=linux-kernel&m=123126782822696&w=4
-> Handled-By	: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-> 		  Ingo Molnar <mingo@elte.hu>
+> The solution is to cut the upper 32-bit from the hpet_t1_cmp
+> variable to make the comparison to HPET_COUNTER correct.
 > 
+> Reported-by: Kirill Korotaev <dev@openvz.org>
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
 
-this should be fixed in latest -git. Alexey, can you confirm?
+applied to tip/timers/urgent, thanks Pavel!
+
+I'm wondering, what symptoms were seen due to the bug? Did system time stop, 
+or did it become erratic, or were there outright lockups?
 
 	Ingo
