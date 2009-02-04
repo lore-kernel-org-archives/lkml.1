@@ -1,137 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760706AbZBDWrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZBDW6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760706AbZBDWrj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 17:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756828AbZBDWrZ
+	id S1753995AbZBDW6u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 17:58:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZBDW6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 17:47:25 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:39760 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756785AbZBDWrY (ORCPT
+	Wed, 4 Feb 2009 17:58:41 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:39796 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751338AbZBDW6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 17:47:24 -0500
-Date: Wed, 4 Feb 2009 15:47:23 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
-Subject: Re: [PATCH B 01/10] OMAP2/3 clock: combine clkdm, clkdm_name into
- union in struct clk
-In-Reply-To: <alpine.DEB.2.00.0902030142590.29513@utopia.booyaka.com>
-Message-ID: <alpine.DEB.2.00.0902041542550.31536@utopia.booyaka.com>
-References: <20090128024301.27240.39391.stgit@localhost.localdomain> <20090128024401.27240.68328.stgit@localhost.localdomain> <20090131115523.GF1394@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902030142590.29513@utopia.booyaka.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 4 Feb 2009 17:58:40 -0500
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 4 Feb 2009 14:58:39 -0800 (PST)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Michael Kerrisk <mtk.manpages@gmail.com>
+Subject: [patch/rfc] eventfd semaphore-like behavior
+Message-ID: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Russell,
+People started using eventfd in scnarios where before where using pipes. 
+Many of them use eventfds in a semaphore-like way, like they were before 
+with pipes. The problem with eventfd is that a read() on the fd returns 
+and wipes the whole counter, making the use of it as semaphore a little 
+bit more cumbersome. You can do a read() followed by a write() of 
+COUNTER-1, but IMO it's pretty easy and cheap to make this work w/out 
+extra steps. This patch introduces a new eventfd flag that tells eventfd 
+to only dequeue 1 from the counter, allowing simple read/write to make it 
+behave like a semaphore.
+Simple test here:
 
-On Tue, 3 Feb 2009, Paul Walmsley wrote:
-
-> On Sat, 31 Jan 2009, Russell King - ARM Linux wrote:
-> 
-> > On Tue, Jan 27, 2009 at 07:44:08PM -0700, Paul Walmsley wrote:
-> > > diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-> > > index 55c5d67..7aa09f5 100644
-> > > --- a/arch/arm/mach-omap2/clock.c
-> > > +++ b/arch/arm/mach-omap2/clock.c
-> > > @@ -77,17 +77,17 @@ void omap2_init_clk_clkdm(struct clk *clk)
-
-...
-
-> > This is unsafe - if the clock domain can not be found, you leave the
-> > union pointing at the string, and there's no way for this to prevent
-> > the clock from being registered.
-> 
-> Agreed.  Now that omap2_init_clk_clkdm() is called by the 
-> OMAP arch-specific clk_register(), this should be pretty easy to 
-> implement.  Will send a patch that applies on top of F 06.
-
-The following patch prevents a clock with a bad or missing clockdomain 
-from registering.  It applies after F 06.
+http://www.xmailserver.org/eventfd-sem.c
 
 
-- Paul
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
-From: Paul Walmsley <paul@pwsan.com>
-Date: Wed, 4 Feb 2009 15:11:20 -0700
+- Davide
 
-OMAP2/3 clock: prevent clock registration with bad or missing clockdomain
 
-If clk_register() is called on a struct clk without a clockdomain
-name, or a struct clk which contains an invalid clockdomain name, fail
-the clock registration.  This prevents later code from inadvertently
-dereferencing the clockdomain name string as a struct clockdomain
-pointer.
-
-Problem reported by Russell King <linux@arm.linux.org.uk>.
-
-Tested on BeagleBoard ES2.1.
-
-Signed-off-by: Paul Walmsley <paul@pwsan.com>
-Cc: Russell King <linux@arm.linux.org.uk>.
 ---
- arch/arm/mach-omap2/clock.c |   21 ++++++++++-----------
- 1 files changed, 10 insertions(+), 11 deletions(-)
+ fs/eventfd.c            |   20 +++++++++++---------
+ include/linux/eventfd.h |   12 +++++++++++-
+ 2 files changed, 22 insertions(+), 10 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/clock.c b/arch/arm/mach-omap2/clock.c
-index 600b2f4..53069cd 100644
---- a/arch/arm/mach-omap2/clock.c
-+++ b/arch/arm/mach-omap2/clock.c
-@@ -188,26 +188,32 @@ static int _dpll_test_fint(struct clk *clk, u8 n)
- }
+Index: linux-2.6.mod/fs/eventfd.c
+===================================================================
+--- linux-2.6.mod.orig/fs/eventfd.c	2009-02-03 18:13:33.000000000 -0800
++++ linux-2.6.mod/fs/eventfd.c	2009-02-04 12:16:39.000000000 -0800
+@@ -28,6 +28,7 @@ struct eventfd_ctx {
+ 	 * issue a wakeup.
+ 	 */
+ 	__u64 count;
++	unsigned int flags;
+ };
  
- /**
-- * omap2_init_clk_clkdm - look up a clockdomain name, store pointer in clk
-+ * _omap2_init_clk_clkdm - look up a clockdomain name, store pointer in clk
-  * @clk: OMAP clock struct ptr to use
-  *
-  * Convert a clockdomain name stored in a struct clk 'clk' into a
-  * clockdomain pointer, and save it into the struct clk.  Intended to be
-- * called during clk_register().  No return value.
-+ * called during clk_register().  Returns 0 on success or -ENOENT if the
-+ * clockdomain is not found.
-  */
--void omap2_init_clk_clkdm(struct clk *clk)
-+static int _omap2_init_clk_clkdm(struct clk *clk)
+ /*
+@@ -87,22 +88,20 @@ static ssize_t eventfd_read(struct file 
  {
- 	struct clockdomain *clkdm;
-+	int ret;
+ 	struct eventfd_ctx *ctx = file->private_data;
+ 	ssize_t res;
+-	__u64 ucnt;
++	__u64 ucnt = 0;
+ 	DECLARE_WAITQUEUE(wait, current);
  
- 	clkdm = clkdm_lookup(clk->clkdm.name);
- 	if (clkdm) {
- 		pr_debug("clock: associated clk %s to clkdm %s\n",
- 			 clk->name, clk->clkdm.name);
- 		clk->clkdm.ptr = clkdm;
-+		ret = 0;
- 	} else {
- 		pr_err("clock: %s: could not associate to clkdm %s\n",
- 		       clk->name, clk->clkdm.name);
-+		ret = -ENOENT;
+ 	if (count < sizeof(ucnt))
+ 		return -EINVAL;
+ 	spin_lock_irq(&ctx->wqh.lock);
+ 	res = -EAGAIN;
+-	ucnt = ctx->count;
+-	if (ucnt > 0)
++	if (ctx->count > 0)
+ 		res = sizeof(ucnt);
+ 	else if (!(file->f_flags & O_NONBLOCK)) {
+ 		__add_wait_queue(&ctx->wqh, &wait);
+ 		for (res = 0;;) {
+ 			set_current_state(TASK_INTERRUPTIBLE);
+ 			if (ctx->count > 0) {
+-				ucnt = ctx->count;
+ 				res = sizeof(ucnt);
+ 				break;
+ 			}
+@@ -117,8 +116,9 @@ static ssize_t eventfd_read(struct file 
+ 		__remove_wait_queue(&ctx->wqh, &wait);
+ 		__set_current_state(TASK_RUNNING);
  	}
-+
-+	return ret;
- }
+-	if (res > 0) {
+-		ctx->count = 0;
++	if (likely(res > 0)) {
++		ucnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
++		ctx->count -= ucnt;
+ 		if (waitqueue_active(&ctx->wqh))
+ 			wake_up_locked_poll(&ctx->wqh, POLLOUT);
+ 	}
+@@ -166,7 +166,7 @@ static ssize_t eventfd_write(struct file
+ 		__remove_wait_queue(&ctx->wqh, &wait);
+ 		__set_current_state(TASK_RUNNING);
+ 	}
+-	if (res > 0) {
++	if (likely(res > 0)) {
+ 		ctx->count += ucnt;
+ 		if (waitqueue_active(&ctx->wqh))
+ 			wake_up_locked_poll(&ctx->wqh, POLLIN);
+@@ -207,7 +207,7 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, 
+ 	BUILD_BUG_ON(EFD_CLOEXEC != O_CLOEXEC);
+ 	BUILD_BUG_ON(EFD_NONBLOCK != O_NONBLOCK);
  
- /**
-@@ -1082,12 +1088,5 @@ void omap2_clk_disable_unused(struct clk *clk)
+-	if (flags & ~(EFD_CLOEXEC | EFD_NONBLOCK))
++	if (flags & ~EFD_FLAGS_SET)
+ 		return -EINVAL;
  
- int omap2_clk_register(struct clk *clk)
+ 	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
+@@ -216,13 +216,14 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, 
+ 
+ 	init_waitqueue_head(&ctx->wqh);
+ 	ctx->count = count;
++	ctx->flags = flags;
+ 
+ 	/*
+ 	 * When we call this, the initialization must be complete, since
+ 	 * anon_inode_getfd() will install the fd.
+ 	 */
+ 	fd = anon_inode_getfd("[eventfd]", &eventfd_fops, ctx,
+-			      flags & (O_CLOEXEC | O_NONBLOCK));
++			      flags & EFD_SHARED_FCNTL_FLAGS);
+ 	if (fd < 0)
+ 		kfree(ctx);
+ 	return fd;
+@@ -232,3 +233,4 @@ SYSCALL_DEFINE1(eventfd, unsigned int, c
  {
--	if (!clk->clkdm.name) {
--		pr_debug("clock: %s: missing clockdomain", clk->name);
--		WARN_ON(1);
--		return -EINVAL;
--	}
--
--	omap2_init_clk_clkdm(clk);
--	return 0;
-+	return _omap2_init_clk_clkdm(clk);
+ 	return sys_eventfd2(count, 0);
  }
--- 
-1.6.0.2.GIT
-
++
+Index: linux-2.6.mod/include/linux/eventfd.h
+===================================================================
+--- linux-2.6.mod.orig/include/linux/eventfd.h	2009-02-03 18:13:33.000000000 -0800
++++ linux-2.6.mod/include/linux/eventfd.h	2009-02-04 12:16:32.000000000 -0800
+@@ -13,10 +13,20 @@
+ /* For O_CLOEXEC and O_NONBLOCK */
+ #include <linux/fcntl.h>
+ 
+-/* Flags for eventfd2.  */
++/*
++ * CAREFUL: Check include/asm-generic/fcntl.h when defining
++ * new flags, since they might collide with O_* ones. We want
++ * to re-use O_* flags that couldn't possibly have a meaning
++ * from eventfd, in order to leave a free define-space for
++ * shared O_* flags.
++ */
++#define EFD_SEMAPHORE (1 << 0)
+ #define EFD_CLOEXEC O_CLOEXEC
+ #define EFD_NONBLOCK O_NONBLOCK
+ 
++#define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
++#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
++
+ struct file *eventfd_fget(int fd);
+ int eventfd_signal(struct file *file, int n);
+ 
