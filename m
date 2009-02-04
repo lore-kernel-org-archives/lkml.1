@@ -1,117 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758284AbZBDSiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbZBDTTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758284AbZBDSiJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:38:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758202AbZBDShA
+	id S1757575AbZBDTTk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:19:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757574AbZBDTTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:00 -0500
-Received: from kroah.org ([198.145.64.141]:50902 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758193AbZBDSg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:36:59 -0500
-Date: Wed, 4 Feb 2009 10:34:18 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       "dan.magenheimer@oracle.com" <dan.magenheimer@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 02/33] xen: make sysfs files behave as their names suggest
-Message-ID: <20090204183418.GC13936@kroah.com>
-References: <20090204182823.831027530@mini.kroah.org>
+	Wed, 4 Feb 2009 14:19:12 -0500
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:36193 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755620AbZBDTTK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 14:19:10 -0500
+X-IronPort-AV: E=Sophos;i="4.37,380,1231113600"; 
+   d="scan'208";a="137851383"
+From: Roland Dreier <rdreier@cisco.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       zbr@ioremap.net, jarkao2@gmail.com, dada1@cosmosbay.com, ben@zeus.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+References: <20090204081201.GB10445@ioremap.net>
+	<20090204085432.GA21638@1wt.eu>
+	<20090204085907.GA19388@gondor.apana.org.au>
+	<20090204.010146.18100191.davem@davemloft.net>
+	<20090204091217.GA21385@1wt.eu>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 04 Feb 2009 11:19:06 -0800
+In-Reply-To: <20090204091217.GA21385@1wt.eu> (Willy Tarreau's message of "Wed,
+	4 Feb 2009 10:12:17 +0100")
+Message-ID: <ada63jqm2mt.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="xen-make-sysfs-files-behave-as-their-names-suggest.patch"
-In-Reply-To: <20090204183403.GA13936@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 04 Feb 2009 19:19:07.0112 (UTC) FILETIME=[7301DE80:01C986FD]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+ > And the arbitrary choice of 9k for jumbo frames was total crap too.
+ > It's clear that no hardware designer was involved in the process.
+ > They have to stuff 16kB of RAM on a NIC to use only 9. And we need
+ > to allocate 3 pages for slightly more than 2. 7.5 kB would have been
+ > better in this regard.
 
-------------------
+9K was not totally arbitrary.  The CRC used for checksumming ethernet
+packets has a probability of undetected errors that goes up about
+11-thousand something bytes.  So the real limit is ~11000 bytes, and I
+believe ~9000 was chosen to be able to carry 8K NFS payloads + all XDR
+and transport headers without fragmentation.
 
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-
-commit 618b2c8db24522ae273d8299c6a936ea13793c4d upstream.
-
-1: make "target_kb" only accept and produce a memory size in kilobytes.
-2: add a second "target" file which produces output in bytes, and will accept
-   memparse input (scaled bytes)
-
-This fixes the rather irritating problem that writing the same value
-read back into target_kb would end up shrinking the domain by a factor
-of 1024, with generally bad results.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: "dan.magenheimer@oracle.com" <dan.magenheimer@oracle.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/xen/balloon.c |   33 ++++++++++++++++++++++++++++++++-
- 1 file changed, 32 insertions(+), 1 deletion(-)
-
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -488,7 +488,7 @@ static ssize_t store_target_kb(struct sy
- 	if (!capable(CAP_SYS_ADMIN))
- 		return -EPERM;
- 
--	target_bytes = memparse(buf, &endchar);
-+	target_bytes = simple_strtoull(buf, &endchar, 0) * 1024;
- 
- 	balloon_set_new_target(target_bytes >> PAGE_SHIFT);
- 
-@@ -498,8 +498,39 @@ static ssize_t store_target_kb(struct sy
- static SYSDEV_ATTR(target_kb, S_IRUGO | S_IWUSR,
- 		   show_target_kb, store_target_kb);
- 
-+
-+static ssize_t show_target(struct sys_device *dev, struct sysdev_attribute *attr,
-+			      char *buf)
-+{
-+	return sprintf(buf, "%llu\n",
-+		       (u64)balloon_stats.target_pages << PAGE_SHIFT);
-+}
-+
-+static ssize_t store_target(struct sys_device *dev,
-+			    struct sysdev_attribute *attr,
-+			    const char *buf,
-+			    size_t count)
-+{
-+	char *endchar;
-+	unsigned long long target_bytes;
-+
-+	if (!capable(CAP_SYS_ADMIN))
-+		return -EPERM;
-+
-+	target_bytes = memparse(buf, &endchar);
-+
-+	balloon_set_new_target(target_bytes >> PAGE_SHIFT);
-+
-+	return count;
-+}
-+
-+static SYSDEV_ATTR(target, S_IRUGO | S_IWUSR,
-+		   show_target, store_target);
-+
-+
- static struct sysdev_attribute *balloon_attrs[] = {
- 	&attr_target_kb,
-+	&attr_target,
- };
- 
- static struct attribute *balloon_info_attrs[] = {
-
+ - R.
