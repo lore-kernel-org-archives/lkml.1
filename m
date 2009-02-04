@@ -1,426 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZBDMJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZBDMLL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZBDMJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 07:09:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750892AbZBDMJT
+	id S1755304AbZBDMLL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 07:11:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbZBDMK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 07:09:19 -0500
-Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:39236 "EHLO
-	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750837AbZBDMJR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 07:09:17 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAFASiUl5LClx/2dsb2JhbADQNIQWBg
-X-IronPort-AV: E=Sophos;i="4.37,378,1231075800"; 
-   d="scan'208";a="282627264"
-Date: Wed, 4 Feb 2009 23:08:52 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: spurious -ENOSPC on XFS
-Message-ID: <20090204120852.GK24173@disturbed>
-Mail-Followup-To: Mikulas Patocka <mpatocka@redhat.com>,
-	Christoph Hellwig <hch@infradead.org>, xfs@oss.sgi.com,
-	linux-kernel@vger.kernel.org
-References: <20090120232422.GF10158@disturbed> <20090122205913.GA30859@infradead.org> <20090122224347.GA18751@infradead.org> <Pine.LNX.4.64.0901231509010.5179@hs20-bc2-1.build.redhat.com> <20090124071249.GF32390@disturbed> <Pine.LNX.4.64.0901291136050.19368@hs20-bc2-1.build.redhat.com> <20090131235725.GA24173@disturbed> <Pine.LNX.4.64.0902021214310.15622@hs20-bc2-1.build.redhat.com> <20090203032740.GG24173@disturbed> <Pine.LNX.4.64.0902031459350.28433@hs20-bc2-1.build.redhat.com>
+	Wed, 4 Feb 2009 07:10:56 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44591 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750782AbZBDMKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 07:10:55 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/7] PCI PM: Fix handling of devices without drivers
+Date: Wed, 4 Feb 2009 13:10:15 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Eric Sesterhenn <snakebyte@gmx.de>
+References: <200902040154.36018.rjw@sisk.pl> <200902040156.15200.rjw@sisk.pl> <alpine.LFD.2.00.0902031815550.3247@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902031815550.3247@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0902031459350.28433@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200902041310.15761.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 03:05:07PM -0500, Mikulas Patocka wrote:
-> On Tue, 3 Feb 2009, Dave Chinner wrote:
+On Wednesday 04 February 2009, Linus Torvalds wrote:
 > 
-> > > No, if you turn it into a trylock, it will randomly fail if any other 
-> > > process is holding the lock for whatever reason. So you will still get 
-> > > spurious -ENOSPCs, although with lower probability.
+> On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
 > > 
-> > The flush is never, ever going to be perfect. While we are blocking
-> > waiting for the flush, other concurrent writes could be doing more
-> > delayed allocation. The flush won't catch these, so we can still get
-> > spurious ENOSPCs even with a *perfect* flush.
-> 
-> So you can turn it into a loop --- while there are delayed allocations, 
-> flush and retry.
-
-I don't think that is necessary having just instrumented the code:
-
-[42949497.350000] Ai 7040, tl 7037, f 7037, w 0
-[42949497.510000] i 6528, tl 6528, f 6528, w 0
-[42949497.510000] i 3648, tl 3648, f 3648, w 0
-[42949497.530000] i 1977, tl 1977, f 1977, w 0
-[42949497.530000] Bi 7040, tl 7037, f 7037, w 7037
-[42949497.550000] i 6528, tl 6528, f 6528, w 6528
-[42949497.550000] i 3648, tl 3648, f 3648, w 3648
-[42949497.550000] i 1977, tl 1977, f 1977, w 1977
-[42949497.550000] CDd
-
-A = start of xfs_flush_device
-i = inodes in AG scanned for writeback
-tl = trylocks that succeeded
-f = number flushed
-w = number waited for.
-(there is 4 of these groups due to 4 AGs in the fs)
-B = startof blocking flush
-C = completion signaled
-D = completion complete
-d = xfs_flush_device done.
-
-As you can see, there are only 3 inodes (of ~19,200) that weren't
-successfully trylocked in the flush. I haven't seen any more than
-that, either.
-
-> ... and if you turn it into trylock, what are you going to do with the 
-> inode that is just being written to? You should definitely flush it, but 
-> trylock will skip it because it's already locked.
-
-We've already flushed it directly. You disabled that code fearing
-deadlocks. I've made it synchronous (i.e. not handed off to
-xfssyncd) because the flush path requires us to hold the lock we are
-already holding....
-
-> > > There seems to be more bugs with forgetting to flush delayed allocation 
-> > > --- you should flush delayed allocation after *every* failed allocate 
-> > > attempt, but the code flushes it only after failed delayed allocate 
-> > > attempt --- i.e. nondelayed allocators, such as xfs_iomap_write_direct 
-> > > (and maybe other places) will still return -ENOSPC without attempting to 
-> > > flush other inodes with delayed allocation.
-.....
-> > For metadata allocations (all over the place), we take a reservation
-> > first
-> 
-> And what if the reservation fails? Do you flush in this case?
-
-Well, if you read the rest of the paragraph you'd have the answer
-to that question. I'll leave it quoted because it is relevant:
-
-> > and so we could trigger a flush in certain circumstances if
-> > the reservation fails (to avoid recursion and transaction subsystem
-> > deadlocks). However, if you are not getting spurious enospc on
-> > creating inodes (as opposed to writing to them) then I see no
-> > immediate need for flushes there, either....
-
-It is relevant because the test case Eric provided fails repeatedly
-in xfs_create() on a reservation rather than on a data write, and
-without a flush there no further data writes will occur to flush out
-the blocks.
-
-So a flush there is needed, too.
-
-> > > @@ -415,6 +419,7 @@ xfs_syncd_queue_work(
-> > >   * has failed with ENOSPC and we are in the process of scratching our
-> > >   * heads, looking about for more room...
-> > >   */
-> > > +#if 0
-> > >  STATIC void
-> > >  xfs_flush_inode_work(
-> > >  	struct xfs_mount *mp,
-> > > @@ -424,16 +429,20 @@ xfs_flush_inode_work(
-> > >  	filemap_flush(inode->i_mapping);
-> > >  	iput(inode);
-> > >  }
-> > > +#endif
-> > >  
-> > >  void
-> > >  xfs_flush_inode(
-> > >  	xfs_inode_t	*ip)
-> > >  {
-> > > +#if 0
-> > >  	struct inode	*inode = VFS_I(ip);
-> > > +	DECLARE_COMPLETION_ONSTACK(completion);
-> > >  
-> > >  	igrab(inode);
-> > > -	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_inode_work);
-> > > -	delay(msecs_to_jiffies(500));
-> > > +	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_inode_work, &completion);
-> > > +	wait_for_completion(&completion);
-> > > +#endif
+> > Suspend to RAM is reported to break on some machines as a result of
+> > attempting to put one of driverless PCI devices into a low power
+> > state.  Avoid that by not attepmting to power manage driverless
+> > devices during suspend.
 > > 
-> > Why did you turn off the initial inode flush?
+> > Fix up pci_pm_poweroff() after a previous incomplete fix for the same
+> > thing during hibernation.
 > 
-> Because it recurses into Linux VFS layer and deadlocks.
+> Ok, I really don't like this patch, because:
+> 
+> > -static void pci_pm_default_suspend(struct pci_dev *pci_dev)
+> > +static void pci_pm_default_suspend(struct pci_dev *pci_dev, bool prepare)
+> >  {
+> >  	pci_pm_default_suspend_generic(pci_dev);
+> >  
+> > -	if (!pci_is_bridge(pci_dev))
+> > +	if (prepare && !pci_is_bridge(pci_dev))
+> >  		pci_prepare_to_sleep(pci_dev);
+> >  
+> >  	pci_fixup_device(pci_fixup_suspend, pci_dev);
+> 
+> This "helper" function really isn't helping anything at all any more. It's 
+> really just confusing things.
+> 
+> Now that was true even before this all; mostly because your naming in this 
+> area _really_ sucks. I mean, what the heck is the difference between 
+> "pci_pm_default_suspend_generic()" and "pci_pm_default_suspend()", and 
+> what do they do?
+> 
+> But you just made it worse. This trivial function that doesn't do anything 
+> interesting, and isn't well-named enough to actually explain what it is 
+> doing now became EVEN WORSE.  Now it's a trivial function that does two 
+> things, except it does one of those things only if the magic flag (that is 
+> also not helpfully named) is set.
+> 
+> Argh.
+> 
+> To make it worse, it's not at all obvious what the logic is:
+> 
+> > +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> > +		pci_pm_default_suspend(pci_dev, !!pm);
+> 
+> Whaa? This is basically totally obfuscated code both in the caller _and_ 
+> in the callee.
+> 
+> Now, it looks like this all then goes away in PATCH 7/7, so I guess I 
+> shouldn't complain too much, but I just don't see much point in carrying 
+> this broken patch around in the series, since it's then going away and 
+> rewritten almost immediately again.
 
-Not at all. It calls into the writeback code (not the VFS)
-which does not take any locks except page locks before it
-calls back into ->writepages....
+This is what has been tested by the bug reporter.
 
-I've attached the WIP patch I have right now (based on yours) that
-allows the test case to pass. It will need a bit of cleanup before
-it is ready for prime-time, but is passes xfsqa here including the
-ENOSPC stress tests.  Can you see if it fixes your test case and
-whether it deadlocks?
+OK, I should have created a more sophisticated version, but that would go
+away with patch 7/7 too, so ...
 
-Cheers,
+> Apart from that complaints, Acked-by: for the series. 
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Thanks!
 
-
-Use xfs_sync_inodes and not sync_blockdev. XFS keeps it's dirty
-metadata in different address spaces to the block device, so
-sync_blockdev does nothing.
-
-Change that 500ms delay to a wait for completion, so that the
-behavior is not dependent on magic timeout values.
-
-Add a trylock option to xfs_sync_inodes() so that it won't
-deadlock if we are already holding an inode lock.
-
-Add xfs_flush_device() to inode allocation failure in the create
-path as that is the other place that typically falls over due to
-outstanding delayed allocation extents.
-
-Based on work from Mikulas Patocka <mpatocka@redhat.com>.
-
----
- fs/xfs/linux-2.6/xfs_fs_subr.c |   14 ++++----
- fs/xfs/linux-2.6/xfs_sync.c    |   66 +++++++++++++++++++--------------------
- fs/xfs/linux-2.6/xfs_sync.h    |    6 ++-
- fs/xfs/xfs_mount.h             |    2 +-
- fs/xfs/xfs_vnodeops.c          |    6 ++++
- 5 files changed, 50 insertions(+), 44 deletions(-)
-
-diff --git a/fs/xfs/linux-2.6/xfs_fs_subr.c b/fs/xfs/linux-2.6/xfs_fs_subr.c
-index 5aeb777..08be36d 100644
---- a/fs/xfs/linux-2.6/xfs_fs_subr.c
-+++ b/fs/xfs/linux-2.6/xfs_fs_subr.c
-@@ -74,14 +74,14 @@ xfs_flush_pages(
- 
- 	if (mapping_tagged(mapping, PAGECACHE_TAG_DIRTY)) {
- 		xfs_iflags_clear(ip, XFS_ITRUNCATED);
--		ret = filemap_fdatawrite(mapping);
--		if (flags & XFS_B_ASYNC)
--			return -ret;
--		ret2 = filemap_fdatawait(mapping);
--		if (!ret)
--			ret = ret2;
-+		ret = -filemap_fdatawrite(mapping);
- 	}
--	return -ret;
-+	if (flags & XFS_B_ASYNC)
-+		return ret;
-+	ret2 = xfs_wait_on_pages(ip, first, last);
-+	if (!ret)
-+		ret = ret2;
-+	return ret;
- }
- 
- int
-diff --git a/fs/xfs/linux-2.6/xfs_sync.c b/fs/xfs/linux-2.6/xfs_sync.c
-index a608e72..fddb9de 100644
---- a/fs/xfs/linux-2.6/xfs_sync.c
-+++ b/fs/xfs/linux-2.6/xfs_sync.c
-@@ -62,12 +62,6 @@ xfs_sync_inodes_ag(
- 	uint32_t	first_index = 0;
- 	int		error = 0;
- 	int		last_error = 0;
--	int		fflag = XFS_B_ASYNC;
--
--	if (flags & SYNC_DELWRI)
--		fflag = XFS_B_DELWRI;
--	if (flags & SYNC_WAIT)
--		fflag = 0;		/* synchronous overrides all */
- 
- 	do {
- 		struct inode	*inode;
-@@ -128,12 +122,23 @@ xfs_sync_inodes_ag(
- 		 * If we have to flush data or wait for I/O completion
- 		 * we need to hold the iolock.
- 		 */
--		if ((flags & SYNC_DELWRI) && VN_DIRTY(inode)) {
--			xfs_ilock(ip, XFS_IOLOCK_SHARED);
--			lock_flags |= XFS_IOLOCK_SHARED;
--			error = xfs_flush_pages(ip, 0, -1, fflag, FI_NONE);
--			if (flags & SYNC_IOWAIT)
-+		if (flags & SYNC_DELWRI) {
-+			if (VN_DIRTY(inode)) {
-+				if (flags & SYNC_TRYLOCK) {
-+					if (xfs_ilock_nowait(ip, XFS_IOLOCK_SHARED))
-+						lock_flags |= XFS_IOLOCK_SHARED;
-+				} else {
-+					xfs_ilock(ip, XFS_IOLOCK_SHARED);
-+					lock_flags |= XFS_IOLOCK_SHARED;
-+				}
-+				if (lock_flags & XFS_IOLOCK_SHARED) {
-+					error = xfs_flush_pages(ip, 0, -1,
-+							XFS_B_ASYNC, FI_NONE);
-+				}
-+			}
-+			if (VN_CACHED(inode) && (flags & SYNC_IOWAIT)) {
- 				xfs_ioend_wait(ip);
-+			}
- 		}
- 		xfs_ilock(ip, XFS_ILOCK_SHARED);
- 
-@@ -388,7 +393,7 @@ xfs_quiesce_attr(
- }
- 
- /*
-- * Enqueue a work item to be picked up by the vfs xfssyncd thread.
-+ * Enqueue a work item to be picked up by the xfssyncd thread.
-  * Doing this has two advantages:
-  * - It saves on stack space, which is tight in certain situations
-  * - It can be used (with care) as a mechanism to avoid deadlocks.
-@@ -398,15 +403,17 @@ STATIC void
- xfs_syncd_queue_work(
- 	struct xfs_mount *mp,
- 	void		*data,
--	void		(*syncer)(struct xfs_mount *, void *))
-+	void		(*syncer)(struct xfs_mount *, void *),
-+	struct completion *completion)
- {
--	struct bhv_vfs_sync_work *work;
-+	struct xfs_sync_work *work;
- 
--	work = kmem_alloc(sizeof(struct bhv_vfs_sync_work), KM_SLEEP);
-+	work = kmem_zalloc(sizeof(struct xfs_sync_work), KM_SLEEP);
- 	INIT_LIST_HEAD(&work->w_list);
- 	work->w_syncer = syncer;
- 	work->w_data = data;
- 	work->w_mount = mp;
-+	work->w_completion = completion;
- 	spin_lock(&mp->m_sync_lock);
- 	list_add_tail(&work->w_list, &mp->m_sync_list);
- 	spin_unlock(&mp->m_sync_lock);
-@@ -419,25 +426,11 @@ xfs_syncd_queue_work(
-  * has failed with ENOSPC and we are in the process of scratching our
-  * heads, looking about for more room...
-  */
--STATIC void
--xfs_flush_inode_work(
--	struct xfs_mount *mp,
--	void		*arg)
--{
--	struct inode	*inode = arg;
--	filemap_flush(inode->i_mapping);
--	iput(inode);
--}
--
- void
- xfs_flush_inode(
- 	xfs_inode_t	*ip)
- {
--	struct inode	*inode = VFS_I(ip);
--
--	igrab(inode);
--	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_inode_work);
--	delay(msecs_to_jiffies(500));
-+	xfs_flush_pages(ip, 0, -1, 0, FI_NONE);
- }
- 
- /*
-@@ -450,7 +443,8 @@ xfs_flush_device_work(
- 	void		*arg)
- {
- 	struct inode	*inode = arg;
--	sync_blockdev(mp->m_super->s_bdev);
-+	xfs_sync_inodes(mp, SYNC_DELWRI | SYNC_TRYLOCK);
-+	xfs_sync_inodes(mp, SYNC_DELWRI | SYNC_TRYLOCK | SYNC_IOWAIT);
- 	iput(inode);
- }
- 
-@@ -459,10 +453,11 @@ xfs_flush_device(
- 	xfs_inode_t	*ip)
- {
- 	struct inode	*inode = VFS_I(ip);
-+	DECLARE_COMPLETION_ONSTACK(completion);
- 
- 	igrab(inode);
--	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_device_work);
--	delay(msecs_to_jiffies(500));
-+	xfs_syncd_queue_work(ip->i_mount, inode, xfs_flush_device_work, &completion);
-+	wait_for_completion(&completion);
- 	xfs_log_force(ip->i_mount, (xfs_lsn_t)0, XFS_LOG_FORCE|XFS_LOG_SYNC);
- }
- 
-@@ -497,7 +492,7 @@ xfssyncd(
- {
- 	struct xfs_mount	*mp = arg;
- 	long			timeleft;
--	bhv_vfs_sync_work_t	*work, *n;
-+	xfs_sync_work_t		*work, *n;
- 	LIST_HEAD		(tmp);
- 
- 	set_freezable();
-@@ -530,6 +525,8 @@ xfssyncd(
- 		list_for_each_entry_safe(work, n, &tmp, w_list) {
- 			(*work->w_syncer)(mp, work->w_data);
- 			list_del(&work->w_list);
-+			if (work->w_completion)
-+				complete(work->w_completion);
- 			if (work == &mp->m_sync_work)
- 				continue;
- 			kmem_free(work);
-@@ -545,6 +542,7 @@ xfs_syncd_init(
- {
- 	mp->m_sync_work.w_syncer = xfs_sync_worker;
- 	mp->m_sync_work.w_mount = mp;
-+	mp->m_sync_work.w_completion = NULL;
- 	mp->m_sync_task = kthread_run(xfssyncd, mp, "xfssyncd");
- 	if (IS_ERR(mp->m_sync_task))
- 		return -PTR_ERR(mp->m_sync_task);
-diff --git a/fs/xfs/linux-2.6/xfs_sync.h b/fs/xfs/linux-2.6/xfs_sync.h
-index 5f6de1e..de87a7f 100644
---- a/fs/xfs/linux-2.6/xfs_sync.h
-+++ b/fs/xfs/linux-2.6/xfs_sync.h
-@@ -20,18 +20,20 @@
- 
- struct xfs_mount;
- 
--typedef struct bhv_vfs_sync_work {
-+typedef struct xfs_sync_work {
- 	struct list_head	w_list;
- 	struct xfs_mount	*w_mount;
- 	void			*w_data;	/* syncer routine argument */
- 	void			(*w_syncer)(struct xfs_mount *, void *);
--} bhv_vfs_sync_work_t;
-+	struct completion	*w_completion;
-+} xfs_sync_work_t;
- 
- #define SYNC_ATTR		0x0001	/* sync attributes */
- #define SYNC_DELWRI		0x0002	/* look at delayed writes */
- #define SYNC_WAIT		0x0004	/* wait for i/o to complete */
- #define SYNC_BDFLUSH		0x0008	/* BDFLUSH is calling -- don't block */
- #define SYNC_IOWAIT		0x0010  /* wait for all I/O to complete */
-+#define SYNC_TRYLOCK		0x0020  /* only try to lock inodes */
- 
- int xfs_syncd_init(struct xfs_mount *mp);
- void xfs_syncd_stop(struct xfs_mount *mp);
-diff --git a/fs/xfs/xfs_mount.h b/fs/xfs/xfs_mount.h
-index f5e9937..775a2ac 100644
---- a/fs/xfs/xfs_mount.h
-+++ b/fs/xfs/xfs_mount.h
-@@ -322,7 +322,7 @@ typedef struct xfs_mount {
- #endif
- 	struct xfs_mru_cache	*m_filestream;  /* per-mount filestream data */
- 	struct task_struct	*m_sync_task;	/* generalised sync thread */
--	bhv_vfs_sync_work_t	m_sync_work;	/* work item for VFS_SYNC */
-+	xfs_sync_work_t		m_sync_work;	/* work item for VFS_SYNC */
- 	struct list_head	m_sync_list;	/* sync thread work item list */
- 	spinlock_t		m_sync_lock;	/* work item list lock */
- 	int			m_sync_seq;	/* sync thread generation no. */
-diff --git a/fs/xfs/xfs_vnodeops.c b/fs/xfs/xfs_vnodeops.c
-index 0e55c5d..e1099e7 100644
---- a/fs/xfs/xfs_vnodeops.c
-+++ b/fs/xfs/xfs_vnodeops.c
-@@ -1449,6 +1449,12 @@ xfs_create(
- 	error = xfs_trans_reserve(tp, resblks, XFS_CREATE_LOG_RES(mp), 0,
- 			XFS_TRANS_PERM_LOG_RES, XFS_CREATE_LOG_COUNT);
- 	if (error == ENOSPC) {
-+		/* flush delalloc blocks and retry */
-+		xfs_flush_device(dp);
-+		error = xfs_trans_reserve(tp, resblks, XFS_CREATE_LOG_RES(mp), 0,
-+			XFS_TRANS_PERM_LOG_RES, XFS_CREATE_LOG_COUNT);
-+	}
-+	if (error == ENOSPC) {
- 		resblks = 0;
- 		error = xfs_trans_reserve(tp, 0, XFS_CREATE_LOG_RES(mp), 0,
- 				XFS_TRANS_PERM_LOG_RES, XFS_CREATE_LOG_COUNT);
+Rafael
