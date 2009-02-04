@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbZBDNbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759596AbZBDNbf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755AbZBDNbx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 08:31:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757399AbZBDNZp
+	id S1759596AbZBDNbf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 08:31:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbZBDNZo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 08:25:45 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45655 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754712AbZBDNZo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Feb 2009 08:25:44 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45653 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757360AbZBDNZn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 08:25:43 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Andrey Vul" <andrey.vul@gmail.com>,
-       "Francois Romieu" <romieu@fr.zoreil.com>
+       "Andrew S. Johnson" <andy@asjohnson.com>
 References: <a47yn9c9JrF.A.hz.L5YiJB@chimera>
 In-Reply-To: <a47yn9c9JrF.A.hz.L5YiJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <CGyEB0S4BpO.A.KvB.n5YiJB@chimera>
-Subject: [Bug #12411] 2.6.28: BUG in r8169
+Message-ID: <CGyEB0S4BpO.A.BkB.g5YiJB@chimera>
+Subject: [Bug #12426] TMDC Joystick no longer works in kernel 2.6.28
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed,  4 Feb 2009 11:58:42 +0100 (CET)
+Date: Wed,  4 Feb 2009 11:58:45 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,10 +35,10 @@ introduced between 2.6.27 and 2.6.28.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12411
-Subject		: 2.6.28: BUG in r8169
-Submitter	: Andrey Vul <andrey.vul@gmail.com>
-Date		: 2008-12-31 18:37 (36 days old)
-References	: http://marc.info/?l=linux-kernel&m=123074869611409&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12426
+Subject		: TMDC Joystick no longer works in kernel 2.6.28
+Submitter	: Andrew S. Johnson <andy@asjohnson.com>
+Date		: 2009-01-10 21:53 (26 days old)
+References	: http://marc.info/?l=linux-kernel&m=123162486415366&w=4
 
 
