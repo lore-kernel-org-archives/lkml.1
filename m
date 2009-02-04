@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760804AbZBDS40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758571AbZBDS4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760804AbZBDS40 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:56:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760338AbZBDStU
+	id S1758571AbZBDS4r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:56:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760343AbZBDStV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:20 -0500
-Received: from kroah.org ([198.145.64.141]:34396 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:21 -0500
+Received: from kroah.org ([198.145.64.141]:60931 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761122AbZBDStM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:12 -0500
-Date: Wed, 4 Feb 2009 10:46:14 -0800
+	id S1758589AbZBDStN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:13 -0500
+Date: Wed, 4 Feb 2009 10:46:16 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
-       "J. Bruce Fields" <bfields@pig.fieldses.org>
-Subject: [patch 13/41] nfsd: only set file_lock.fl_lmops in nfsd4_lockt if
-	a stateowner is found
-Message-ID: <20090204184614.GN25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Seth Heasley <seth.heasley@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 14/41] PCI: irq and pci_ids patch for Intel Tigerpoint
+	DeviceIDs
+Message-ID: <20090204184616.GO25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="nfsd-only-set-file_lock.fl_lmops-in-nfsd4_lockt-if-a-stateowner-is-found.patch"
+Content-Disposition: inline; filename="pci-irq-and-pci_ids-patch-for-intel-tigerpoint-deviceids.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,38 +41,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jeff Layton <jlayton@redhat.com>
+From: Seth Heasley <seth.heasley@intel.com>
 
-commit fa82a491275a613b15489aab4b99acecb00958d3 upstream.
+commit 57064d213d2e44654d4f13c66df135b5e7389a26 upstream.
 
-nfsd4_lockt does a search for a lockstateowner when building the lock
-struct to test. If one is found, it'll set fl_owner to it. Regardless of
-whether that happens, it'll also set fl_lmops. Given that this lock is
-basically a "lightweight" lock that's just used for checking conflicts,
-setting fl_lmops is probably not appropriate for it.
+This patch adds the Intel Tigerpoint LPC Controller DeviceIDs.
 
-This behavior exposed a bug in DLM's GETLK implementation where it
-wasn't clearing out the fields in the file_lock before filling in
-conflicting lock info. While we were able to fix this in DLM, it
-still seems pointless and dangerous to set the fl_lmops this way
-when we may have a NULL lockstateowner.
-
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: J. Bruce Fields <bfields@pig.fieldses.org>
+Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfsd/nfs4state.c |    1 -
- 1 file changed, 1 deletion(-)
+ arch/x86/pci/irq.c      |    1 +
+ include/linux/pci_ids.h |    1 +
+ 2 files changed, 2 insertions(+)
 
---- a/fs/nfsd/nfs4state.c
-+++ b/fs/nfsd/nfs4state.c
-@@ -2840,7 +2840,6 @@ nfsd4_lockt(struct svc_rqst *rqstp, stru
- 		file_lock.fl_owner = (fl_owner_t)lockt->lt_stateowner;
- 	file_lock.fl_pid = current->tgid;
- 	file_lock.fl_flags = FL_POSIX;
--	file_lock.fl_lmops = &nfsd_posix_mng_ops;
- 
- 	file_lock.fl_start = lockt->lt_offset;
- 	if ((lockt->lt_length == ~(u64)0) || LOFF_OVERFLOW(lockt->lt_offset, lockt->lt_length))
+--- a/arch/x86/pci/irq.c
++++ b/arch/x86/pci/irq.c
+@@ -573,6 +573,7 @@ static __init int intel_router_probe(str
+ 	case PCI_DEVICE_ID_INTEL_ICH7_1:
+ 	case PCI_DEVICE_ID_INTEL_ICH7_30:
+ 	case PCI_DEVICE_ID_INTEL_ICH7_31:
++	case PCI_DEVICE_ID_INTEL_TGP_LPC:
+ 	case PCI_DEVICE_ID_INTEL_ESB2_0:
+ 	case PCI_DEVICE_ID_INTEL_ICH8_0:
+ 	case PCI_DEVICE_ID_INTEL_ICH8_1:
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2384,6 +2384,7 @@
+ #define PCI_DEVICE_ID_INTEL_ICH7_0	0x27b8
+ #define PCI_DEVICE_ID_INTEL_ICH7_1	0x27b9
+ #define PCI_DEVICE_ID_INTEL_ICH7_30	0x27b0
++#define PCI_DEVICE_ID_INTEL_TGP_LPC	0x27bc
+ #define PCI_DEVICE_ID_INTEL_ICH7_31	0x27bd
+ #define PCI_DEVICE_ID_INTEL_ICH7_17	0x27da
+ #define PCI_DEVICE_ID_INTEL_ICH7_19	0x27dd
 
