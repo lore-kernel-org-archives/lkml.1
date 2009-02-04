@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZBDGUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753465AbZBDG1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbZBDGUf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 01:20:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751129AbZBDGUX
+	id S1753465AbZBDG1T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 01:27:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZBDG1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 01:20:23 -0500
-Received: from 1wt.eu ([62.212.114.60]:1994 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbZBDGUW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 01:20:22 -0500
-Date: Wed, 4 Feb 2009 07:19:47 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, jarkao2@gmail.com,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090204061947.GD20673@1wt.eu>
-References: <20090203121209.GA9154@gondor.apana.org.au> <20090203121836.GA23300@ioremap.net> <20090203122535.GB8633@1wt.eu> <20090203.164734.76871204.davem@davemloft.net>
+	Wed, 4 Feb 2009 01:27:10 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37096 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751188AbZBDG1J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 01:27:09 -0500
+Date: Tue, 3 Feb 2009 22:26:01 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Eli Cohen <eli@mellanox.co.il>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+Message-Id: <20090203222601.747ca8b7.akpm@linux-foundation.org>
+In-Reply-To: <aday6wmn2vr.fsf@cisco.com>
+References: <20090203164930.GA10101@mtls03>
+	<ada8wonnh3t.fsf@cisco.com>
+	<1233712248.16867.131.camel@pasglop>
+	<20090203211329.d6190a08.akpm@linux-foundation.org>
+	<aday6wmn2vr.fsf@cisco.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203.164734.76871204.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 04:47:34PM -0800, David Miller wrote:
-> From: Willy Tarreau <w@1wt.eu>
-> Date: Tue, 3 Feb 2009 13:25:35 +0100
+On Tue, 03 Feb 2009 22:16:08 -0800 Roland Dreier <rdreier@cisco.com> wrote:
+
+>  > I think it's something like
+>  > 
+>  > 	huge_page_size(page_hstate(page))
 > 
-> > Well, FWIW, I've always observed better performance with 4k MTU (4080 to
-> > be precise) than with 9K, and I think that the overhead of allocating 3
-> > contiguous pages is a major reason for this.
+> That would suit.  I assume the intention is for that to be usable by
+> driver modules on any architecture?
 > 
-> With what hardware?  If it's with myri10ge, that driver uses page
-> frags so would not be using 3 contiguous pages even for jumbo frames.
 
-Yes myri10ge for the optimal 4080, but with e1000 too (though I don't
-remember the exact optimal value, I think it was slightly lower).
+erm, you overestimate the amount of planning and forethought which goes
+into these things ;)
 
-For the myri10ge, could this be caused by the cache footprint then ?
-I can also retry with various values between 4 and 9k, including
-values close to 8k. Maybe the fact that 4k is better than 9 is
-because we get better filling of all pages ?
-
-I also remember having used a 7 kB MTU on e1000 and dl2k in the past.
-BTW, 7k MTU on my NFS server which uses e1000 definitely stopped the
-allocation failures which were polluting the logs, so it's been running
-with that setting for years now.
-
-Willy
+The lack of any EXPORT_SYMBOL(size_to_hstate) is a broadish hint.
 
