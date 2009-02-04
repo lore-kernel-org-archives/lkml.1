@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754229AbZBDEzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbZBDE6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754229AbZBDEzJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 23:55:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751717AbZBDEy5
+	id S1755063AbZBDE6S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 23:58:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZBDE6I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 23:54:57 -0500
-Received: from smtp117.mail.mud.yahoo.com ([209.191.84.166]:43414 "HELO
-	smtp117.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751630AbZBDEy4 (ORCPT
+	Tue, 3 Feb 2009 23:58:08 -0500
+Received: from ti-out-0910.google.com ([209.85.142.189]:14562 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752409AbZBDE6G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 23:54:56 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=XiLKoTA5iNEhfUrhNmrYzao5SVwIbpRIa1sb307q2jXu4OTc+g15FEoIVyuK+hcqHD38nrob0cjgqL5l4Yjz25D4OPQYOmquGyHZbgbwsjEESQsZN0lbOdFY9U5WNcjnCGiZgBydyzx7cFyZvehsJ+0PA69Qve9wZRhc8uV4B6U=  ;
-X-YMail-OSG: liLKES4VM1lVeWHmFB0gGA7k3hG9X.9NbBGv0Lq_gbvq7zsV29rrXKFvGXbz2mLoyMLL4XJzpXhW6qOlS5cx97I3ipOLgUS_ZOESa0OHXTA467qThlkQL9ZnsB8AmAJplok6RkjmB3M4lzjmni6QOS5X2TqpBKQ7TnQQprH.CCBBw9AfqLbxk.k5vTGhG5g_K_SMbyRUJLdmp7RnocSMA.sufqk-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-Date: Wed, 4 Feb 2009 15:54:27 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       andi@firstfloor.org, oleg@redhat.com, viro@zeniv.linux.org.uk,
-       davidel@xmailserver.org, davem@davemloft.net, hch@lst.de,
-       linux-api@vger.kernel.org, mpm@selenic.com, alan@lxorguk.ukuu.org.uk
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net> <1233598811-6871-3-git-send-email-corbet@lwn.net> <20090203133942.2ecec281.akpm@linux-foundation.org>
-In-Reply-To: <20090203133942.2ecec281.akpm@linux-foundation.org>
+	Tue, 3 Feb 2009 23:58:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LP1CDCFlzOijVCrXjOMnd4FlqUO3Lx9ca6eux5oBmQfhflBNfD01qlDj8CTUpsjOnS
+         GG/hBd/WYSsNeNLRFuYqF1pXwuthMd6CoR46NkrhdXVJu6g+xa0KG/mKxk7VMw/HZ41T
+         DA5MZisjNo904+tb5WdrrpmmrA8Q9tfuMLscw=
+Date: Wed, 4 Feb 2009 13:57:45 +0900
+From: MinChan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux mm <linux-mm@kvack.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH v2] fix mlocked page counter mistmatch
+Message-ID: <20090204045745.GC6212@barrios-desktop>
+References: <20090204103648.ECAF.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090204024447.GB6212@barrios-desktop> <20090204115047.ECB5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902041554.29184.nickpiggin@yahoo.com.au>
+In-Reply-To: <20090204115047.ECB5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009 08:39:42 Andrew Morton wrote:
-> On Mon,  2 Feb 2009 11:20:09 -0700
->
-> Jonathan Corbet <corbet@lwn.net> wrote:
-> > Matt Mackall suggested converting epoll's ep_lock to a bitlock as a way
-> > of saving space in struct file.  This patch makes that change.
->
-> hrm.  bit_spin_lock() makes people upset (large penguiny people).  iirc
-> it doesn't have all the correct/well-understood memory/compiler
-> ordering semantics which spinlocks have.
+On Wed, Feb 04, 2009 at 11:51:43AM +0900, KOSAKI Motohiro wrote:
+> > > Could you please teach me why this issue doesn't happend on munlockall()?
+> > > your scenario seems to don't depend on exit_mmap().
+> > 
+> > 
+> > Good question.
+> > It's a different issue.
+> > It is related to mmap_sem locking issue. 
+> > 
+> > Actually, I am about to make a patch.
+> > But, I can't understand that Why try_do_mlock_page should downgrade mm_sem ?
+> > Is it necessary ? 
+> > 
+> > In munlockall path, mmap_sem already is holding in write-mode of mmap_sem.
+> > so, try_to_mlock_page always fail to downgrade mmap_sem.
+> > It's why it looks like working well about mlocked counter. 
+> 
+> lastest linus tree don't have downgrade mmap_sem.
+> (recently it was removed)
 
-Bit spinlocks are OK now they are using lock bitops. Of course, they are
-even nicer (and become very comparable to spinlocks) if you can use the
-non-atomic unlock __bit_spin_unlock().
+Thnaks for information.
 
-But it seems probably like another approach being discussed is a better
-idea anyway.
+what is 'latest linus tree' ?
+You mean '29-rc3-git5'?
 
-> And lockdep doesn't know about
-> it.
 
-This is a valid concern. Someone had a patch to add lockdep support to it,
-which might be a good idea to do. But for small inner locks, maybe not a
-huge problem.
+With '29-rc3-git5', I found,
+
+static int try_to_mlock_page(struct page *page, struct vm_area_struct *vma)
+{
+  int mlocked = 0; 
+
+  if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
+    if (vma->vm_flags & VM_LOCKED) {
+      mlock_vma_page(page);
+      mlocked++;  /* really mlocked the page */
+    }    
+    up_read(&vma->vm_mm->mmap_sem);
+  }
+  return mlocked;
+}
+
+It still try to downgrade mmap_sem.
+Do I miss something ?
+
+> 
+> please see it.
+> 
+
+-- 
+Kinds Regards
+MinChan Kim
 
