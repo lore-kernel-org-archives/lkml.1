@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbZBDNfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760721AbZBDNf4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760641AbZBDNfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 08:35:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbZBDN0d
+	id S1760721AbZBDNf4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 08:35:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760075AbZBDNdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 08:26:33 -0500
-Received: from zone0.gcu-squad.org ([212.85.147.21]:26281 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757756AbZBDN0c (ORCPT
+	Wed, 4 Feb 2009 08:33:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:40036 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758817AbZBDNdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 08:26:32 -0500
-Date: Wed, 4 Feb 2009 14:26:06 +0100
-From: Jean Delvare <khali@linux-fr.org>
-To: Matthew Garrett <mjg@redhat.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, Len Brown <lenb@kernel.org>,
-       Luca Tettamanti <kronos.it@gmail.com>, Thomas Renninger <trenn@suse.de>,
-       linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ACPI: add "auto" to acpi_enforce_resources
-Message-ID: <20090204142606.1823661b@hyperion.delvare>
-In-Reply-To: <20090204131708.GA2739@srcf.ucam.org>
-References: <20090125210520.GA12963@dreamland.darkstar.lan>
-	<200901291130.35434.trenn@suse.de>
-	<68676e00901290716g1aabd6c0p1e5202fbdbc659a4@mail.gmail.com>
-	<alpine.LFD.2.00.0902040042570.9833@localhost.localdomain>
-	<20090204060513.GA28321@srcf.ucam.org>
-	<498953DF.5050306@redhat.com>
-	<20090204131708.GA2739@srcf.ucam.org>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.12.9; x86_64-suse-linux-gnu)
+	Wed, 4 Feb 2009 08:33:10 -0500
+Subject: Re: 2.6.29-rc: unable to compile e100 firmware into kernel
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-kbuild@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+In-Reply-To: <4807377b0902011105l29e846c3r140212ac654efb93@mail.gmail.com>
+References: <200901311900.00851.arvidjaar@mail.ru>
+	 <4807377b0902011105l29e846c3r140212ac654efb93@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 04 Feb 2009 13:33:04 +0000
+Message-Id: <1233754384.19223.183.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthew,
-
-On Wed, 4 Feb 2009 13:17:09 +0000, Matthew Garrett wrote:
-> On Wed, Feb 04, 2009 at 09:37:51AM +0100, Hans de Goede wrote:
+On Sun, 2009-02-01 at 11:05 -0800, Jesse Brandeburg wrote:
+> On Sat, Jan 31, 2009 at 7:59 AM, Andrey Borzenkov <arvidjaar@mail.ru> wrote:
+> > {pts/2}% LC_ALL=C make -C ~/src/linux-git O=$HOME/build/linux-2.6.29
+> > make: Entering directory `/home/bor/src/linux-git'
+> >  Using /home/bor/src/linux-git as source for kernel
+> > ln -fsn /home/bor/src/linux-git source
 > 
-> > Len, Matthew, what is you opinion of the proposed auto setting for 
-> > acpi_enforce_resources, which is meant to mean strict on known problematic 
-> > systems and lax on others?
-> 
-> Personally, I'd rather that it was "strict" on everything. We might 
-> break some existing setups, but they're already working mostly by luck.
+> I think (seem to recall something on the list) there have been
+> multiple people reporting the make O= option doesn't work with
+> CONFIG_FIRMWARE_IN_KERNEL,
 
-Are you the new hwmon and i2c subsystems maintainer and I wasn't aware
-of it?
+That shouldn't be the case -- it works fine here.
+
+Andrey, what version of make are you using? Does it give you any clues
+if you use 'make V=1' or 'make -d firmware/built-in.o' ?  
+
+>  but what does the CONFIG_PREVENT_FIRMWARE_BUILD=y option do?  If it
+> does what it appears to by its title, looks like you might need to set
+> that to =n
+
+Nah, that's something entirely different. That's for GPL-compatible
+firmware where we actually _have_ the source in the kernel tree too, but
+the user probably doesn't have the required tools so we don't usually
+bother rebuilding it.
 
 -- 
-Jean Delvare
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
