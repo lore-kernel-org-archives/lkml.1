@@ -1,52 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754699AbZBDLOx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbZBDLUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754699AbZBDLOx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 06:14:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZBDLOp
+	id S1755327AbZBDLUV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 06:20:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZBDLUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 06:14:45 -0500
-Received: from gate1.ipvision.dk ([217.195.186.3]:58154 "EHLO
-	gate1.ipvision.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751562AbZBDLOo (ORCPT
+	Wed, 4 Feb 2009 06:20:05 -0500
+Received: from smtp-out002.kontent.com ([81.88.40.216]:45442 "EHLO
+	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751771AbZBDLUE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 06:14:44 -0500
-X-Greylist: delayed 5564 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Feb 2009 06:14:44 EST
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, jarkao2@gmail.com, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-References: <20090203094108.GA4639@ff.dom.local>
-	<20090203111012.GA16878@ioremap.net>
-	<20090203112431.GA8746@gondor.apana.org.au>
-	<20090203.164630.173080148.davem@davemloft.net>
-From: Benny Amorsen <benny+usenet@amorsen.dk>
-Date: Wed, 04 Feb 2009 10:41:44 +0100
-In-Reply-To: <20090203.164630.173080148.davem@davemloft.net> (David Miller's message of "Tue\, 03 Feb 2009 16\:46\:30 -0800 \(PST\)")
-Message-ID: <m3skmubktj.fsf@ursa.amorsen.dk>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 4 Feb 2009 06:20:04 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Dan Williams <dcbw@redhat.com>
+Subject: Re: [stable]  A patch in 2.6.27.9 caused device names to change
+Date: Wed, 4 Feb 2009 12:20:56 +0100
+User-Agent: KMail/1.9.10
+Cc: Greg KH <greg@kroah.com>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20090202170238.348af36a@dhcp-100-2-144.bos.redhat.com> <20090203000529.GC9467@kroah.com> <1233672611.11344.6.camel@localhost.localdomain>
+In-Reply-To: <1233672611.11344.6.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Spam-Score: -6.4 (------)
-X-Spam-Report: ALL_TRUSTED=-3.3, BAYES_00=-3.099
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200902041220.58180.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller <davem@davemloft.net> writes:
+Am Tuesday 03 February 2009 15:50:11 schrieb Dan Williams:
+> Furthermore, up until this point, I have not seen mobile broadband
+> adapters (that aren't cellphones connected via USB) that *are* CDC-ACM
+> compliant.  Everything previously has advertised proprietary interfaces,
+> some of which are serial ports and some of which are not.
+> 
+> Most mobile broadband cards *do* have more than one TTY, the others are
+> used for additional control ports or proprietary access for stuff like
+> GPS and flashing the firmware.
 
-> From: Herbert Xu <herbert@gondor.apana.org.au>
+Exactly for this reason, the cdc-wdm driver has been added to the kernel.
 
->> Granted copying sucks, but this is really because the underlying
->> hardware is badly designed.  Also copying is way better than
->> not receiving at all due to memory fragmentation.
->
-> This scheme sounds very reasonable.
-
-Would it be possible to add a counter somewhere for this, or is that
-too expensive?
-
-
-/Benny
+	Regards
+		Oliver
 
