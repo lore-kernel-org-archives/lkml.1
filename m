@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbZBDShu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbZBDSjr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758641AbZBDShu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:37:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758200AbZBDSg7
+	id S1758726AbZBDSjr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:39:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbZBDShI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:36:59 -0500
-Received: from kroah.org ([198.145.64.141]:50876 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:08 -0500
+Received: from kroah.org ([198.145.64.141]:50960 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755040AbZBDSg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:36:57 -0500
-Date: Wed, 4 Feb 2009 10:34:15 -0800
+	id S1758281AbZBDShE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:04 -0500
+Date: Wed, 4 Feb 2009 10:34:29 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: [patch 01/33] Manually revert "mlock: downgrade mmap sem while
-	populating mlocked regions"
-Message-ID: <20090204183415.GB13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
+       Steve French <sfrench@us.ibm.com>
+Subject: [patch 07/33] cifs: make sure we allocate enough storage for
+	socket address
+Message-ID: <20090204183429.GH13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="manually-revert-mlock-downgrade-mmap-sem-while-populating-mlocked-regions.patch"
+Content-Disposition: inline; filename="cifs-make-sure-we-allocate-enough-storage-for-socket-address.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,136 +41,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: Jeff Layton <jlayton@redhat.com>
 
-commit 27421e211a39784694b597dbf35848b88363c248 upstream.
+commit a9ac49d303f967be0dabd97cb722c4a13109c6c2 upstream.
 
-This essentially reverts commit 8edb08caf68184fb170f4f69c7445929e199eaea.
+cifs_mount declares a struct sockaddr on the stack and then casts it
+to the proper address type. The storage allocated is fine for ipv4,
+but is too small for ipv6 addresses. Declare it as
+"struct sockaddr_storage" instead of struct sockaddr".
 
-It downgraded our mmap semaphore to a read-lock while mlocking pages, in
-order to allow other threads (and external accesses like "ps" et al) to
-walk the vma lists and take page faults etc.  Which is a nice idea, but
-the implementation does not work.
+This bug was manifesting itself as oopses and address corruption when
+mounting IPv6 addresses.
 
-Because we cannot upgrade the lock back to a write lock without
-releasing the mmap semaphore, the code had to release the lock entirely
-and then re-take it as a writelock.  However, that meant that the caller
-possibly lost the vma chain that it was following, since now another
-thread could come in and mmap/munmap the range.
-
-The code tried to work around that by just looking up the vma again and
-erroring out if that happened, but quite frankly, that was just a buggy
-hack that doesn't actually protect against anything (the other thread
-could just have replaced the vma with another one instead of totally
-unmapping it).
-
-The only way to downgrade to a read map _reliably_ is to do it at the
-end, which is likely the right thing to do: do all the 'vma' operations
-with the write-lock held, then downgrade to a read after completing them
-all, and then do the "populate the newly mlocked regions" while holding
-just the read lock.  And then just drop the read-lock and return to user
-space.
-
-The (perhaps somewhat simpler) alternative is to just make all the
-callers of mlock_vma_pages_range() know that the mmap lock got dropped,
-and just re-grab the mmap semaphore if it needs to mlock more than one
-vma region.
-
-So we can do this "downgrade mmap sem while populating mlocked regions"
-thing right, but the way it was done here was absolutely not correct.
-Thus the revert, in the expectation that we will do it all correctly
-some day.
-
-Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
-Cc: Rik van Riel <riel@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Tested-by: Stefan Bader <stefan.bader@canonical.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/mlock.c |   47 ++---------------------------------------------
- 1 file changed, 2 insertions(+), 45 deletions(-)
+ fs/cifs/connect.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
---- a/mm/mlock.c
-+++ b/mm/mlock.c
-@@ -293,14 +293,10 @@ static inline int __mlock_posix_error_re
-  *
-  * return number of pages [> 0] to be removed from locked_vm on success
-  * of "special" vmas.
-- *
-- * return negative error if vma spanning @start-@range disappears while
-- * mmap semaphore is dropped.  Unlikely?
-  */
- long mlock_vma_pages_range(struct vm_area_struct *vma,
- 			unsigned long start, unsigned long end)
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -1356,7 +1356,7 @@ cifs_parse_mount_options(char *options, 
+ }
+ 
+ static struct TCP_Server_Info *
+-cifs_find_tcp_session(struct sockaddr *addr)
++cifs_find_tcp_session(struct sockaddr_storage *addr)
  {
--	struct mm_struct *mm = vma->vm_mm;
- 	int nr_pages = (end - start) / PAGE_SIZE;
- 	BUG_ON(!(vma->vm_flags & VM_LOCKED));
+ 	struct list_head *tmp;
+ 	struct TCP_Server_Info *server;
+@@ -1376,11 +1376,11 @@ cifs_find_tcp_session(struct sockaddr *a
+ 		if (server->tcpStatus == CifsNew)
+ 			continue;
  
-@@ -313,20 +309,8 @@ long mlock_vma_pages_range(struct vm_are
- 	if (!((vma->vm_flags & (VM_DONTEXPAND | VM_RESERVED)) ||
- 			is_vm_hugetlb_page(vma) ||
- 			vma == get_gate_vma(current))) {
--		long error;
--		downgrade_write(&mm->mmap_sem);
--
--		error = __mlock_vma_pages_range(vma, start, end, 1);
+-		if (addr->sa_family == AF_INET &&
++		if (addr->ss_family == AF_INET &&
+ 		    (addr4->sin_addr.s_addr !=
+ 		     server->addr.sockAddr.sin_addr.s_addr))
+ 			continue;
+-		else if (addr->sa_family == AF_INET6 &&
++		else if (addr->ss_family == AF_INET6 &&
+ 			 memcmp(&server->addr.sockAddr6.sin6_addr,
+ 				&addr6->sin6_addr, sizeof(addr6->sin6_addr)))
+ 			continue;
+@@ -2036,7 +2036,7 @@ cifs_mount(struct super_block *sb, struc
+ 	int rc = 0;
+ 	int xid;
+ 	struct socket *csocket = NULL;
+-	struct sockaddr addr;
++	struct sockaddr_storage addr;
+ 	struct sockaddr_in *sin_server = (struct sockaddr_in *) &addr;
+ 	struct sockaddr_in6 *sin_server6 = (struct sockaddr_in6 *) &addr;
+ 	struct smb_vol volume_info;
+@@ -2048,7 +2048,7 @@ cifs_mount(struct super_block *sb, struc
  
--		up_read(&mm->mmap_sem);
--		/* vma can change or disappear */
--		down_write(&mm->mmap_sem);
--		vma = find_vma(mm, start);
--		/* non-NULL vma must contain @start, but need to check @end */
--		if (!vma ||  end > vma->vm_end)
--			return -ENOMEM;
--
--		return 0;	/* hide other errors from mmap(), et al */
-+		return __mlock_vma_pages_range(vma, start, end, 1);
- 	}
+ /* cFYI(1, ("Entering cifs_mount. Xid: %d with: %s", xid, mount_data)); */
  
- 	/*
-@@ -437,41 +421,14 @@ success:
- 	vma->vm_flags = newflags;
+-	memset(&addr, 0, sizeof(struct sockaddr));
++	memset(&addr, 0, sizeof(struct sockaddr_storage));
+ 	memset(&volume_info, 0, sizeof(struct smb_vol));
+ 	if (cifs_parse_mount_options(mount_data, devname, &volume_info)) {
+ 		rc = -EINVAL;
+@@ -2078,9 +2078,9 @@ cifs_mount(struct super_block *sb, struc
+ 			rc = cifs_inet_pton(AF_INET6, volume_info.UNCip,
+ 					    &sin_server6->sin6_addr.in6_u);
+ 			if (rc > 0)
+-				addr.sa_family = AF_INET6;
++				addr.ss_family = AF_INET6;
+ 		} else {
+-			addr.sa_family = AF_INET;
++			addr.ss_family = AF_INET;
+ 		}
  
- 	if (lock) {
--		/*
--		 * mmap_sem is currently held for write.  Downgrade the write
--		 * lock to a read lock so that other faults, mmap scans, ...
--		 * while we fault in all pages.
--		 */
--		downgrade_write(&mm->mmap_sem);
--
- 		ret = __mlock_vma_pages_range(vma, start, end, 1);
+ 		if (rc <= 0) {
+@@ -2122,7 +2122,7 @@ cifs_mount(struct super_block *sb, struc
  
--		/*
--		 * Need to reacquire mmap sem in write mode, as our callers
--		 * expect this.  We have no support for atomically upgrading
--		 * a sem to write, so we need to check for ranges while sem
--		 * is unlocked.
--		 */
--		up_read(&mm->mmap_sem);
--		/* vma can change or disappear */
--		down_write(&mm->mmap_sem);
--		*prev = find_vma(mm, start);
--		/* non-NULL *prev must contain @start, but need to check @end */
--		if (!(*prev) || end > (*prev)->vm_end)
--			ret = -ENOMEM;
--		else if (ret > 0) {
-+		if (ret > 0) {
- 			mm->locked_vm -= ret;
- 			ret = 0;
- 		} else
- 			ret = __mlock_posix_error_return(ret); /* translate if needed */
- 	} else {
--		/*
--		 * TODO:  for unlocking, pages will already be resident, so
--		 * we don't need to wait for allocations/reclaim/pagein, ...
--		 * However, unlocking a very large region can still take a
--		 * while.  Should we downgrade the semaphore for both lock
--		 * AND unlock ?
--		 */
- 		__mlock_vma_pages_range(vma, start, end, 0);
- 	}
- 
+ 	srvTcp = cifs_find_tcp_session(&addr);
+ 	if (!srvTcp) { /* create socket */
+-		if (addr.sa_family == AF_INET6) {
++		if (addr.ss_family == AF_INET6) {
+ 			cFYI(1, ("attempting ipv6 connect"));
+ 			/* BB should we allow ipv6 on port 139? */
+ 			/* other OS never observed in Wild doing 139 with v6 */
+@@ -2153,7 +2153,7 @@ cifs_mount(struct super_block *sb, struc
+ 		} else {
+ 			srvTcp->noblocksnd = volume_info.noblocksnd;
+ 			srvTcp->noautotune = volume_info.noautotune;
+-			if (addr.sa_family == AF_INET6)
++			if (addr.ss_family == AF_INET6)
+ 				memcpy(&srvTcp->addr.sockAddr6, sin_server6,
+ 					sizeof(struct sockaddr_in6));
+ 			else
 
