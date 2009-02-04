@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZBDJrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbZBDJxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbZBDJrZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 04:47:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZBDJrQ
+	id S1753677AbZBDJxu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 04:53:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751322AbZBDJxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 04:47:16 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59561
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750866AbZBDJrP (ORCPT
+	Wed, 4 Feb 2009 04:53:41 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:58212 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751071AbZBDJxl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 04:47:15 -0500
-Date: Wed, 04 Feb 2009 01:47:09 -0800 (PST)
-Message-Id: <20090204.014709.208354803.davem@davemloft.net>
-To: lists@nerdbynature.de
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: Kernel unaligned access at TPC
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.DEB.2.00.0902041001550.4084@bogon.housecafe.de>
-References: <alpine.DEB.2.00.0902041001550.4084@bogon.housecafe.de>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Wed, 4 Feb 2009 04:53:41 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC][PATCH] create workqueue threads only when needed
+Date: Wed, 4 Feb 2009 10:54:29 +0100
+User-Agent: KMail/1.9.10
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Steven Rostedt <rostedt@goodmis.org>
+References: <20090127001708.GA4815@nowhere> <200902021103.47596.oliver@neukum.org> <1233607457.18767.101.camel@pasglop>
+In-Reply-To: <1233607457.18767.101.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902041054.31531.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christian Kujau <lists@nerdbynature.de>
-Date: Wed, 4 Feb 2009 10:07:52 +0100 (CET)
-
+Am Monday 02 February 2009 21:44:17 schrieb Benjamin Herrenschmidt:
 > 
-> [   94.099721] Kernel unaligned access at TPC[54c818] nsm_get_handle+0x158/0x400
-> [   94.336558] Kernel unaligned access at TPC[54c81c] nsm_get_handle+0x15c/0x400
-> [   94.678623] Kernel unaligned access at TPC[54c818] nsm_get_handle+0x158/0x400
-> [   94.915452] Kernel unaligned access at TPC[54c81c] nsm_get_handle+0x15c/0x400
-> [   95.252917] Kernel unaligned access at TPC[54c818] nsm_get_handle+0x158/0x400
+> > > Something such as slow-work or async funcs (not sure about the later, I
+> > > have to look at the implementation) but the basic idea is to have a pool
+> > > of threads for "generic" delayed work, when its busy, pick another one,
+> > > and the pool itself should resize if there's too much pressure.
+> > 
+> > And all that without using GFP_KERNEL?
 > 
-> Searching the net only brought up a post[0] from kernel-testers, but this 
-> box here is running fine - no filesystem errors or anything. Are these 
-> messages something to worry about or can they be ignored?
+> Not too hard. There are options here, one is to keep always one thread
+> available in the pool that will create new ones, one is to hop via
+> keventd for the creation, which is still better than spending 200ms
+> resetting a network NIC, etc...
 
-You can safely ignore it, but it should get fixed.
+But how does that solve the underlying problem of not being
+allowed to hit the block layer? It seems to me you cannot do
+without dedicated threads for block error handling. In fact, given
+how rare this is, why not start one and share it?
+
+	Regards
+		Oliver
+
