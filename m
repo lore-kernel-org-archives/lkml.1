@@ -1,55 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbZBDDSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbZBDD2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753791AbZBDDSk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 22:18:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZBDDSb
+	id S1753716AbZBDD2W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 22:28:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751869AbZBDD2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 22:18:31 -0500
-Received: from hera.kernel.org ([140.211.167.34]:33748 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751358AbZBDDSa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 22:18:30 -0500
-Message-ID: <498908F9.9040901@kernel.org>
-Date: Wed, 04 Feb 2009 12:18:17 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 3 Feb 2009 22:28:12 -0500
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.123]:55563 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbZBDD2M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 22:28:12 -0500
+Message-ID: <49890B46.8020308@intertwingly.net>
+Date: Tue, 03 Feb 2009 22:28:06 -0500
+From: Sam Ruby <rubys@intertwingly.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, x86@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, cpw@sgi.com
-Subject: Re: #tj-percpu has been rebased
-References: <49833350.1020809@kernel.org> <4983E5D3.3040100@kernel.org> <200902021934.14168.rusty@rustcorp.com.au>
-In-Reply-To: <200902021934.14168.rusty@rustcorp.com.au>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=utf-8
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org,
+       x86@kernel.org, "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: Re: [APIC] Kernel panic, rsync corruption, intel q8200, 2.6.28-rc8
+References: <4978767D.4060700@intertwingly.net> <20090130000758.1dff0113.akpm@linux-foundation.org> <498885CC.4060509@intertwingly.net> <20090203114849.b661f1ce.akpm@linux-foundation.org> <alpine.LFD.2.00.0902032152180.22800@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0902032152180.22800@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 04 Feb 2009 03:18:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> On Saturday 31 January 2009 16:16:59 Tejun Heo wrote:
->> Anyways, please pull from
->>
->>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+Thomas Gleixner wrote:
+> On Tue, 3 Feb 2009, Andrew Morton wrote:
+>>>>> [    0.296001] ..MP-BIOS bug: 8254 timer not connected to IO-APIC
+>>>>> [    0.296001] Kernel panic - not syncing: IO-APIC + timer doesn't work! 
+> Sigh.
 > 
-> Thanks.  cpualloc patches rebased on top of it (I had to include the module
-> patch I've got queued for 2.6.29, otherwise gratuitous conflicts):
+>> Not sure.  Perhaps platform_i386/platform_x86_64 would be correct.
+>> Can the x86 maintainers please advise?
 > 
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/rusty/tj-percpu-cpualloc master
+> Yup. That's correct
 > 
-> Boot tested here, but that's no guarantee that something didn't break.
+> @Sam: I just checked, that your machine has a serial port. That's a
+> good start :)
 > 
-> I'm going to be occupied with finishing off cpumask_t this cycle, so I'd be
-> happy for you to take ownership of any and all of these that you want to keep.
-> I'll try to keep up with other patches as you post them.
+> Do you have a second computer around with a serial port ? If yes, then
+> please add the following to the kernel command line:
+> 
+>        earlyprintk=serial,ttyS0,115200 apic=debug
+> 
+> and connect the serial ports with a null modem cable. Fire up a
+> terminal program on the second machine and capture the output.
 
-Will merge it in this week.
+I do have a second computer, and went out and bought a null modem 
+adapter for my serial cable and connected the two machines.  I've tried 
+installing minicom and also connecting it to ttyS0 at 115200 baud on the 
+second machine, but when I boot the first machine I don't see any output 
+on the terminal.
 
-Thanks.
+What am I missing?
 
--- 
-tejun
+> Thanks,
+> 
+> 	tglx
+
+- Sam Ruby
+
