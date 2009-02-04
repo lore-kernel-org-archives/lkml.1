@@ -1,70 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZBDPJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756530AbZBDPJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756797AbZBDPJj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 10:09:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151AbZBDPIo
+	id S1756530AbZBDPJz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 10:09:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZBDPJd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 10:08:44 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:60220 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754337AbZBDPIm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 10:08:42 -0500
-Date: Wed, 4 Feb 2009 18:08:40 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: [PATCH 3/3] tracing: Tracers that use CALLER_ADDR macros should
-	select FRAME_POINTER
-Message-ID: <20090204150840.GC30027@oksana.dev.rtsoft.ru>
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Feb 2009 10:09:33 -0500
+Received: from fifo99.com ([67.223.236.141]:36989 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756726AbZBDPJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 10:09:32 -0500
+Subject: Re: [PATCH NET-NEXT 01/10] clocksource: allow usage independent of
+	timekeeping.c
+From: Daniel Walker <dwalker@fifo99.com>
+To: Patrick Ohly <patrick.ohly@intel.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, John Stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1233758796.15940.198.camel@ecld0pohly>
+References: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
+	 <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
+	 <1233756235.15119.54.camel@desktop> <1233758796.15940.198.camel@ecld0pohly>
+Content-Type: text/plain
+Date: Wed, 04 Feb 2009 07:09:30 -0800
+Message-Id: <1233760170.15119.76.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Irqsoff, switch and preempt tracers use CALLER_ADDR macros, so they
-should select FRAME_POINTER. Otherwise traces are meaningless.
+On Wed, 2009-02-04 at 15:46 +0100, Patrick Ohly wrote:
+> Hi Daniel!
+> 
+> Thanks for looking at this. I think the previous discussion of this
+> patch under the same subject on LKML already addressed your concerns,
+> but I'll also reply in detail below.
+> 
+> On Wed, 2009-02-04 at 14:03 +0000, Daniel Walker wrote:
+> > On Wed, 2009-02-04 at 14:01 +0100, Patrick Ohly wrote:
+> > 
+> > >  /**
+> > > + * struct cyclecounter - hardware abstraction for a free running counter
+> > > + *	Provides completely state-free accessors to the underlying hardware.
+> > > + *	Depending on which hardware it reads, the cycle counter may wrap
+> > > + *	around quickly. Locking rules (if necessary) have to be defined
+> > > + *	by the implementor and user of specific instances of this API.
+> > > + *
+> > > + * @read:		returns the current cycle value
+> > > + * @mask:		bitmask for two's complement
+> > > + *			subtraction of non 64 bit counters,
+> > > + *			see CLOCKSOURCE_MASK() helper macro
+> > > + * @mult:		cycle to nanosecond multiplier
+> > > + * @shift:		cycle to nanosecond divisor (power of two)
+> > > + */
+> > > +struct cyclecounter {
+> > > +	cycle_t (*read)(const struct cyclecounter *cc);
+> > > +	cycle_t mask;
+> > > +	u32 mult;
+> > > +	u32 shift;
+> > > +};
+> > 
+> > Where are these defined? I don't see any in created in your code.
+> 
+> What do you mean with "these"? cycle_t? That type is defined in
+> clocksource.h. This patch intentionally adds these definitions to the
+> existing file because of the large conceptual overlap.
 
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
----
- kernel/trace/Kconfig |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+No, your creating a new structure here that wasn't declared. I was
+referring to "struct cyclecounter". I did look up one of your prior
+submission (Dec. 15) and reviewed that.
 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index e2a4ff6..48f7a37 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -86,6 +86,7 @@ config IRQSOFF_TRACER
- 	select TRACE_IRQFLAGS
- 	select TRACING
- 	select TRACER_MAX_TRACE
-+	select FRAME_POINTER
- 	help
- 	  This option measures the time spent in irqs-off critical
- 	  sections, with microsecond accuracy.
-@@ -108,6 +109,7 @@ config PREEMPT_TRACER
- 	depends on DEBUG_KERNEL
- 	select TRACING
- 	select TRACER_MAX_TRACE
-+	select FRAME_POINTER
- 	help
- 	  This option measures the time spent in preemption off critical
- 	  sections, with microsecond accuracy.
-@@ -136,6 +138,7 @@ config SCHED_TRACER
- 	select TRACING
- 	select CONTEXT_SWITCH_TRACER
- 	select TRACER_MAX_TRACE
-+	select FRAME_POINTER
- 	help
- 	  This tracer tracks the latency of the highest priority task
- 	  to be scheduled in, starting from the point it has woken up.
--- 
-1.5.6.5
+> In an earlier revision of the patch I had adapted clocksource itself so
+> that it could be used outside of the time keeping code; John wanted me
+> to use these smaller structs instead that you now find in the current
+> patch.
+
+Well, I think your original idea was better.. I don't think we need the
+duplication of underlying clocksource mechanics.
+
+> Eventually John wants to refactor clocksource so that it uses them and
+> just adds additional elements in clocksource. Right now clocksource is a
+> mixture of different concepts. Breaking out cyclecounter and timecounter
+> is a first step towards that cleanup.
+
+The problem I see is that your putting off the cleanup of struct
+clocksource with duplication.. It should go in reverse , you should use
+clocksources for your patch set. Which will motivate John to clean up
+the clocksource structure.
+
+There's a whole other issue which is that we have many architectures
+already declaring struct clocksource for it's most basic usage. So I
+think we want clocksource to be the base "cycle counter" structure (in
+name and usage). Almost everything else in struct clocksource is
+specific to generic timekeeping and could be factored out easily.
+
+Daniel
+
