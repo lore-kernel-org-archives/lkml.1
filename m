@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753692AbZBDIuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753165AbZBDIz0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753692AbZBDIuS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 03:50:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751698AbZBDIuE
+	id S1753165AbZBDIz0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:55:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZBDIzG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 03:50:04 -0500
-Received: from prod-mail-xrelay01.akamai.com ([72.246.2.12]:51507 "EHLO
-	prod-mail-xrelay01.akamai.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750990AbZBDIuD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 03:50:03 -0500
-X-Greylist: delayed 578 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Feb 2009 03:50:03 EST
-Date: Wed, 4 Feb 2009 00:40:22 -0800
-From: Shakesh Jain <shjain@akamai.com>, ShakeshJain@akamai.com
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jason Uhlenkott <juhlenko@akamai.com>
-Subject: [PATCH] sysctl: min-max range check is broken
-Message-ID: <20090204084022.GB14071@akamai.com>
-MIME-Version: 1.0
+	Wed, 4 Feb 2009 03:55:06 -0500
+Received: from 1wt.eu ([62.212.114.60]:2008 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751920AbZBDIzF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 03:55:05 -0500
+Date: Wed, 4 Feb 2009 09:54:32 +0100
+From: Willy Tarreau <w@1wt.eu>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       jarkao2@gmail.com, dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090204085432.GA21638@1wt.eu>
+References: <20090203121209.GA9154@gondor.apana.org.au> <20090203121836.GA23300@ioremap.net> <20090203122535.GB8633@1wt.eu> <20090203.164734.76871204.davem@davemloft.net> <20090204061947.GD20673@1wt.eu> <20090204081201.GB10445@ioremap.net>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090204081201.GB10445@ioremap.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do_proc_dointvec_minmax_conv() which gets callled from
-proc_dointvec_minmax proc_handler doesn't increment the pointer to
-the 'min' (extra1) and 'max' (extra2) after each range check which
-results in doing the check against same set of min and max values.
+On Wed, Feb 04, 2009 at 11:12:01AM +0300, Evgeniy Polyakov wrote:
+> On Wed, Feb 04, 2009 at 07:19:47AM +0100, Willy Tarreau (w@1wt.eu) wrote:
+> > Yes myri10ge for the optimal 4080, but with e1000 too (though I don't
+> > remember the exact optimal value, I think it was slightly lower).
+> 
+> Very likely it is related to the allocator - the same allocation
+> overhead to get a page, but 2.5 times bigger frame.
+> 
+> > For the myri10ge, could this be caused by the cache footprint then ?
+> > I can also retry with various values between 4 and 9k, including
+> > values close to 8k. Maybe the fact that 4k is better than 9 is
+> > because we get better filling of all pages ?
+> > 
+> > I also remember having used a 7 kB MTU on e1000 and dl2k in the past.
+> > BTW, 7k MTU on my NFS server which uses e1000 definitely stopped the
+> > allocation failures which were polluting the logs, so it's been running
+> > with that setting for years now.
+> 
+> Recent e1000 (e1000e) uses fragments, so it does not suffer from the
+> high-order allocation failures.
 
-This breaks the range checking for those sysctl's where you can
-write multiple values to /proc with each variable having its own range
-specification.
+My server is running 2.4 :-), but I observed the same issues with older
+2.6 as well. I can certainly imagine that things have changed a lot since,
+but the initial point remains : jumbo frames are expensive to deal with,
+and with recent NICs and drivers, we might get close performance for
+little additional cost. After all, initial justification for jumbo frames
+was the devastating interrupt rate and all NICs coalesce interrupts now.
 
-It seems to be implemented for the sysctl() system call strategy in
-sysctl_intvec() where min and max are treated as arrays.
+So if we can optimize all the infrastructure for extremely fast
+processing of standard frames (1500) and still support jumbo frames
+in a suboptimal mode, I think it could be a very good trade-off.
 
-Signed-off-by: Shakesh Jain <shjain@akamai.com>
----
- kernel/sysctl.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-========================================================================
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 368d163..50bffcd 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -2377,8 +2377,8 @@ static int do_proc_dointvec_minmax_conv(int *negp, unsigned long *lvalp,
- 	struct do_proc_dointvec_minmax_conv_param *param = data;
- 	if (write) {
- 		int val = *negp ? -*lvalp : *lvalp;
--		if ((param->min && *param->min > val) ||
--		    (param->max && *param->max < val))
-+		if ((param->min && *(param->min++) > val) ||
-+		    (param->max && *(param->max++) < val))
- 			return -EINVAL;
- 		*valp = val;
- 	} else {
+Regards,
+willy
+
