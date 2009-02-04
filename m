@@ -1,75 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754815AbZBDBJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbZBDBKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754815AbZBDBJJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 20:09:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZBDBI4
+	id S1754557AbZBDBKd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 20:10:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZBDBKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 20:08:56 -0500
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:62013 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751508AbZBDBI4 (ORCPT
+	Tue, 3 Feb 2009 20:10:23 -0500
+Received: from rv-out-0506.google.com ([209.85.198.230]:19626 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750959AbZBDBKW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 20:08:56 -0500
-X-IronPort-AV: E=Sophos;i="4.37,375,1231113600"; 
-   d="scan'208";a="242370480"
-From: Roland Dreier <rdreier@cisco.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Eli Cohen <eli@mellanox.co.il>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
-References: <20090203164930.GA10101@mtls03>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 03 Feb 2009 17:08:54 -0800
-In-Reply-To: <20090203164930.GA10101@mtls03> (Eli Cohen's message of "Tue, 3
-	Feb 2009 18:49:30 +0200")
-Message-ID: <ada8wonnh3t.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Tue, 3 Feb 2009 20:10:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Mx9UWK1HExgl2Akd0gRF7ed2/Om0ZWrhdjwcd1gPzCNmxlaiGoo+BQjCpKurxhrSnB
+         AXvPnEyyEwC3js9IrLTVQhgpKXkfWWAqp4wnJlpl7EI3U4F2Fm6cSSMu6LeaPPk7Nnpg
+         agOVqxp6/JHDxFRC4UvaglcvntZh3cqPs3Mlo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 04 Feb 2009 01:08:55.0135 (UTC) FILETIME=[266E46F0:01C98665]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+In-Reply-To: <20090203235814.GA22380@kroah.com>
+References: <49857F23.3090208@gmail.com> <20090201155117.GA10018@kroah.com>
+	 <a8e1da0902011743o47764edfjf53a397b5a4aeeef@mail.gmail.com>
+	 <20090203235814.GA22380@kroah.com>
+Date: Wed, 4 Feb 2009 09:10:20 +0800
+Message-ID: <a8e1da0902031710u2ebd69b0r4de5916fab2d3cba@mail.gmail.com>
+Subject: Re: [PATCH 1/2] usb-serial : fix the nousb oops
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forwarding Eli's patch below, since PowerPC guys may have missed it.  I
-guess the question for Ben et al is whether there is any issue with
-exporting HPAGE_SHIFT for modules (can be EXPORT_SYMBOL_GPL if you feel
-it's an internal detail).  It would probably make sense to roll this
-change into the mlx4 change that Eli alludes to below and merge through
-my tree (with ppc maintainer acks of course), rather than splitting this
-patch out and introducing cross-tree dependencies (and also separating
-the rationale for the change from the change itself).
+remove wgreathouse@smva.com in cc-list because this mail will be
+rejected by the smva.com email server.
 
-Thanks,
-  Roland
+On Wed, Feb 4, 2009 at 7:58 AM, Greg KH <greg@kroah.com> wrote:
+> On Mon, Feb 02, 2009 at 09:43:04AM +0800, Dave Young wrote:
+>> On Sun, Feb 1, 2009 at 11:51 PM, Greg KH <greg@kroah.com> wrote:
+>> > On Sun, Feb 01, 2009 at 06:53:23PM +0800, Dave Young wrote:
+>> >>
+>> >> In case with "nousb" booting, serial drivers will trigger kernel oops.
+>> >
+>> > They will?  What is the oops message?
+>>
+>> Yes, they will, at lease I saw usb_serial/aircable/ftdi_sio oops. I
+>> will manage to copy the oops message later.
+>>
+>> >
+>> >> Here add usb_disabled() check in usb_serial_init and usb_serial_register
+>> >
+>> > This is odd, is it something new?  Why is usb-serial the only driver
+>> > that needs such a thing?
+>>
+>> No, it is not new thing.  usb serial drivers normally call
+>> usb_serial_register first, then usb_register, usb_register will fail
+>> due to "nousb" checking, but usb_serial_register no.
+>
+> But as usb_register will fail, shouldn't they properly back out and no
+> oopses happen?  This sounds like a simple fix to the drivers that are
+> failing here, not changing the usb-serial core.
 
+Hi greg
 
-Drivers may want to take advantage of the large pages used for memory obtained
-from hugetlbfs. One example is mlx4_ib which can use much less MTT entries (in
-the order of HPAGE_SIZE / PAGE_SIZE) when registering such memory, thus scale
-significantly better when registering larger memory regions. Other drivers
-could also benefit from this.
+I think all usb serial drivers which call usb_serial_register will
+oops, so IMHO usb core should be fixed.
 
-Signed-off-by: Eli Cohen <eli@mellanox.co.il>
+I think maybe you missed my another reply, copy the content here again.
+
 ---
- arch/powerpc/mm/hash_utils_64.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+hand copy part of the oops message:
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 8d5b475..6cff8c7 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -104,6 +104,7 @@ int mmu_highuser_ssize = MMU_SEGSIZE_256M;
- u16 mmu_slb_size = 64;
- #ifdef CONFIG_HUGETLB_PAGE
- unsigned int HPAGE_SHIFT;
-+EXPORT_SYMBOL(HPAGE_SHIFT);
- #endif
- #ifdef CONFIG_PPC_64K_PAGES
- int mmu_ci_restrictions;
+BUG: unable to handle kernel NULL pointer dereference at 00000001
+IP: [<c0527636>] kset_find_obj+0x3b/0x5c
+*pde = 00000000
+Oops: 0000 [#1] SMP
+
+[snip...]
+
+EIP is at kset_find_obj+0x3b/0x5c
+EAX:00000001
+
+[snip...]
+
+Call Trace:
+driver_register
+destruct_tty_driver
+usb_serial_bus_register
+usb_serial_register
+aircable_init
+_stext
+aircable_init
+restore_nocheck_notrace
+pci_arch_init
+
+[snip...]
+
+Actually, after the usb_serial_init failed, the usb_serial_bus_type
+will be unregistered.
+
+So when  serial dirvers call usb_serial_register (then
+usb_serial_bus_register, and then driver_register),  due to the bus
+kset already unregistered kernel will oops.
+---
+
+>
+> And this should only be an issue if you build your drivers into the
+> kernel, right?
+
+Yes.
+
+>
+> thanks,
+>
+> greg k-h
+>
+
+
+
 -- 
-1.6.1
-
-
+Regards
+dave
