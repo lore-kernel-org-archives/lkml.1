@@ -1,383 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754216AbZBDC3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZBDCcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754216AbZBDC3Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 21:29:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZBDC3Q
+	id S1754093AbZBDCcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 21:32:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZBDCcp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 21:29:16 -0500
-Received: from kirsty.vergenet.net ([202.4.237.240]:56296 "EHLO
-	kirsty.vergenet.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbZBDC3P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 21:29:15 -0500
-Date: Wed, 4 Feb 2009 11:29:07 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Huang Ying <ying.huang@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       kexec@lists.infradead.org, Magnus Damm <magnus.damm@gmail.com>
-Subject: Re: [PATCH resend] kexec/x86_64: Use one page table in x86_64
-	machine_kexec
-Message-ID: <20090204022905.GM7199@verge.net.au>
-References: <1233642168.19806.74.camel@yhuang-dev.sh.intel.com>
+	Tue, 3 Feb 2009 21:32:45 -0500
+Received: from bay0-omc2-s36.bay0.hotmail.com ([65.54.246.172]:11880 "EHLO
+	bay0-omc2-s36.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752398AbZBDCco convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 21:32:44 -0500
+Message-ID: <BAY111-W9013DA1F63973F9E7F8DF88C30@phx.gbl>
+X-Originating-IP: [171.70.247.31]
+From: Krishna Kothapalli <krishna_sunitha@hotmail.com>
+To: <kaneshige.kenji@jp.fujitsu.com>
+CC: <ebiederm@xmission.com>, <linux-pci@vger.kernel.org>,
+       <jbarnes@virtuousgeek.org>, <achiang@hp.com>, <djwong@us.ibm.com>,
+       <xyzzy@speakeasy.org>, <linux-kernel@vger.kernel.org>
+Subject: RE: Q: state of pci express hotplug
+Date: Tue, 3 Feb 2009 21:32:43 -0500
+Importance: Normal
+In-Reply-To: <BAY111-W3692AA5F9F7896AA447A1F88C20@phx.gbl>
+References: <m1fxj06js8.fsf@fess.ebiederm.org>
+ <4986581F.7060704@jp.fujitsu.com>
+   <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl>
+   <49879508.4090801@jp.fujitsu.com>  
+ <BAY111-W3692AA5F9F7896AA447A1F88C20@phx.gbl>
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233642168.19806.74.camel@yhuang-dev.sh.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 04 Feb 2009 02:32:43.0279 (UTC) FILETIME=[DB7029F0:01C98670]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 03, 2009 at 02:22:48PM +0800, Huang Ying wrote:
-> Impact: reduce kernel BSS size by 7 pages, improve code readability
-> 
-> Two page tables are used in current x86_64 kexec implementation. One
-> is used to jump from kernel virtual address to identity map address,
-> the other is used to map all physical memory. In fact, on x86_64,
-> there is no conflict between kernel virtual address space and physical
-> memory space, so just one page table is sufficient. The page table
-> pages used to map control page are dynamically allocated to save
-> memory if kexec image is not loaded. ASM code used to map control page
-> is replaced by C code too.
 
-Hi Huang,
+> Kenji Kaneshige wrote:
+> (1) Build all your hotplug drivers as kernel modules.
+> (2) Modprobe hotplug drivers one by one, and check which drivers add
+> directories under /sys/bus/pci/slots. Before trying the next driver,
+> please rmmod the previous driver, because there are hotplug slots
+> that can be managed by the several drivers. Note that you don't need
+> to try fakephp this time.
+>
+ 
+Thanks much for the exact steps. Here are the results (with 2.6.25 and 2.6.28.3 ). Pls let me know if you want me to run them on a different branch or other steps.
+ 
+with 2.6.25-14
+-------------------
 
-this patch looks quite nice to me. I am CCing my former colleague Magnus
-Damm for comment. He did some work in this area a little while ago.
+Built the kernel with these options:-
+ 
+CONFIG_HOTPLUG_PCI=y
+CONFIG_HOTPLUG_PCI_FAKE=m
+CONFIG_HOTPLUG_PCI_ACPI=m
+CONFIG_HOTPLUG_PCI_ACPI_IBM=m
+# CONFIG_HOTPLUG_PCI_CPCI is not set
+CONFIG_HOTPLUG_PCI_SHPC=m
+ 
+# uname -a
+Linux localhost.localdomain 2.6.25-14.fc9.x86_64.kkhp #4 SMP Tue Feb 3 11:12:07 PST 2009 x86_64 x86_64 x86_64 GNU/Linux
+ 
+ 
+[root@localhost linux-2.6.25.x86_64]#ls -lt /sys/bus/pci/slots
+total 0
+[root@localhost linux-2.6.25.x86_64]# /sbin/modprobe acpiphp
+[root@localhost linux-2.6.25.x86_64]# ls -lt /sys/bus/pci/slots
+total 0
+drwxr-xr-x 2 root root 0 2009-02-03 11:32 2
+[root@localhost linux-2.6.25.x86_64]# /sbin/rmmod acpiphp
+[root@localhost linux-2.6.25.x86_64]# ls -lt /sys/bus/pci/slots
+total 0
+[root@localhost linux-2.6.25.x86_64]# /sbin/modprobe pciehp
+[root@localhost linux-2.6.25.x86_64]# ls -lt /sys/bus/pci/slots
+total 0
+drwxr-xr-x 2 root root 0 2009-02-03 11:33 0009_0096
+[root@localhost linux-2.6.25.x86_64]# /sbin/rmmod pciehp
+[root@localhost linux-2.6.25.x86_64]# /sbin/modprobe shpchp
+[root@localhost linux-2.6.25.x86_64]# ls -lt /sys/bus/pci/slots
+total 0
 
-> Signed-off-by: Huang Ying <ying.huang@intel.com>
-> 
-> ---
->  arch/x86/include/asm/kexec.h         |   27 ++-----
->  arch/x86/kernel/machine_kexec_64.c   |   82 +++++++++++++++-------
->  arch/x86/kernel/relocate_kernel_64.S |  125 -----------------------------------
->  3 files changed, 67 insertions(+), 167 deletions(-)
-> 
-> --- a/arch/x86/include/asm/kexec.h
-> +++ b/arch/x86/include/asm/kexec.h
-> @@ -9,23 +9,8 @@
->  # define PAGES_NR		4
->  #else
->  # define PA_CONTROL_PAGE	0
-> -# define VA_CONTROL_PAGE	1
-> -# define PA_PGD			2
-> -# define VA_PGD			3
-> -# define PA_PUD_0		4
-> -# define VA_PUD_0		5
-> -# define PA_PMD_0		6
-> -# define VA_PMD_0		7
-> -# define PA_PTE_0		8
-> -# define VA_PTE_0		9
-> -# define PA_PUD_1		10
-> -# define VA_PUD_1		11
-> -# define PA_PMD_1		12
-> -# define VA_PMD_1		13
-> -# define PA_PTE_1		14
-> -# define VA_PTE_1		15
-> -# define PA_TABLE_PAGE		16
-> -# define PAGES_NR		17
-> +# define PA_TABLE_PAGE		1
-> +# define PAGES_NR		2
->  #endif
->  
->  #ifdef CONFIG_X86_32
-> @@ -157,9 +142,9 @@ relocate_kernel(unsigned long indirectio
->  		unsigned long start_address) ATTRIB_NORET;
->  #endif
->  
-> -#ifdef CONFIG_X86_32
->  #define ARCH_HAS_KIMAGE_ARCH
->  
-> +#ifdef CONFIG_X86_32
->  struct kimage_arch {
->  	pgd_t *pgd;
->  #ifdef CONFIG_X86_PAE
-> @@ -169,6 +154,12 @@ struct kimage_arch {
->  	pte_t *pte0;
->  	pte_t *pte1;
->  };
-> +#else
-> +struct kimage_arch {
-> +	pud_t *pud;
-> +	pmd_t *pmd;
-> +	pte_t *pte;
-> +};
->  #endif
->  
->  #endif /* __ASSEMBLY__ */
-> --- a/arch/x86/kernel/machine_kexec_64.c
-> +++ b/arch/x86/kernel/machine_kexec_64.c
-> @@ -18,15 +18,6 @@
->  #include <asm/mmu_context.h>
->  #include <asm/io.h>
->  
-> -#define PAGE_ALIGNED __attribute__ ((__aligned__(PAGE_SIZE)))
-> -static u64 kexec_pgd[512] PAGE_ALIGNED;
-> -static u64 kexec_pud0[512] PAGE_ALIGNED;
-> -static u64 kexec_pmd0[512] PAGE_ALIGNED;
-> -static u64 kexec_pte0[512] PAGE_ALIGNED;
-> -static u64 kexec_pud1[512] PAGE_ALIGNED;
-> -static u64 kexec_pmd1[512] PAGE_ALIGNED;
-> -static u64 kexec_pte1[512] PAGE_ALIGNED;
-> -
->  static void init_level2_page(pmd_t *level2p, unsigned long addr)
->  {
->  	unsigned long end_addr;
-> @@ -107,12 +98,65 @@ out:
->  	return result;
->  }
->  
-> +static void free_transition_pgtable(struct kimage *image)
-> +{
-> +	free_page((unsigned long)image->arch.pud);
-> +	free_page((unsigned long)image->arch.pmd);
-> +	free_page((unsigned long)image->arch.pte);
-> +}
-> +
-> +static int init_transition_pgtable(struct kimage *image, pgd_t *pgd)
-> +{
-> +	pud_t *pud;
-> +	pmd_t *pmd;
-> +	pte_t *pte;
-> +	unsigned long vaddr, paddr;
-> +	int result = -ENOMEM;
-> +
-> +	vaddr = (unsigned long)relocate_kernel;
-> +	paddr = __pa(page_address(image->control_code_page)+PAGE_SIZE);
-> +	pgd += pgd_index(vaddr);
-> +	if (!pgd_present(*pgd)) {
-> +		pud = (pud_t *)get_zeroed_page(GFP_KERNEL);
-> +		if (!pud)
-> +			goto err;
-> +		image->arch.pud = pud;
-> +		set_pgd(pgd, __pgd(__pa(pud) | _KERNPG_TABLE));
-> +	}
-> +	pud = pud_offset(pgd, vaddr);
-> +	if (!pud_present(*pud)) {
-> +		pmd = (pmd_t *)get_zeroed_page(GFP_KERNEL);
-> +		if (!pmd)
-> +			goto err;
-> +		image->arch.pmd = pmd;
-> +		set_pud(pud, __pud(__pa(pmd) | _KERNPG_TABLE));
-> +	}
-> +	pmd = pmd_offset(pud, vaddr);
-> +	if (!pmd_present(*pmd)) {
-> +		pte = (pte_t *)get_zeroed_page(GFP_KERNEL);
-> +		if (!pte)
-> +			goto err;
-> +		image->arch.pte = pte;
-> +		set_pmd(pmd, __pmd(__pa(pte) | _KERNPG_TABLE));
-> +	}
-> +	pte = pte_offset_kernel(pmd, vaddr);
-> +	set_pte(pte, pfn_pte(paddr >> PAGE_SHIFT, PAGE_KERNEL_EXEC));
-> +	return 0;
-> +err:
-> +	free_transition_pgtable(image);
-> +	return result;
-> +}
-> +
->  
->  static int init_pgtable(struct kimage *image, unsigned long start_pgtable)
->  {
->  	pgd_t *level4p;
-> +	int result;
->  	level4p = (pgd_t *)__va(start_pgtable);
-> -	return init_level4_page(image, level4p, 0, max_pfn << PAGE_SHIFT);
-> +	result = init_level4_page(image, level4p, 0, max_pfn << PAGE_SHIFT);
-> +	if (result)
-> +		return result;
-> +	return init_transition_pgtable(image, level4p);
->  }
->  
->  static void set_idt(void *newidt, u16 limit)
-> @@ -174,7 +218,7 @@ int machine_kexec_prepare(struct kimage 
->  
->  void machine_kexec_cleanup(struct kimage *image)
->  {
-> -	return;
-> +	free_transition_pgtable(image);
->  }
->  
->  /*
-> @@ -195,22 +239,6 @@ void machine_kexec(struct kimage *image)
->  	memcpy(control_page, relocate_kernel, PAGE_SIZE);
->  
->  	page_list[PA_CONTROL_PAGE] = virt_to_phys(control_page);
-> -	page_list[VA_CONTROL_PAGE] = (unsigned long)relocate_kernel;
-> -	page_list[PA_PGD] = virt_to_phys(&kexec_pgd);
-> -	page_list[VA_PGD] = (unsigned long)kexec_pgd;
-> -	page_list[PA_PUD_0] = virt_to_phys(&kexec_pud0);
-> -	page_list[VA_PUD_0] = (unsigned long)kexec_pud0;
-> -	page_list[PA_PMD_0] = virt_to_phys(&kexec_pmd0);
-> -	page_list[VA_PMD_0] = (unsigned long)kexec_pmd0;
-> -	page_list[PA_PTE_0] = virt_to_phys(&kexec_pte0);
-> -	page_list[VA_PTE_0] = (unsigned long)kexec_pte0;
-> -	page_list[PA_PUD_1] = virt_to_phys(&kexec_pud1);
-> -	page_list[VA_PUD_1] = (unsigned long)kexec_pud1;
-> -	page_list[PA_PMD_1] = virt_to_phys(&kexec_pmd1);
-> -	page_list[VA_PMD_1] = (unsigned long)kexec_pmd1;
-> -	page_list[PA_PTE_1] = virt_to_phys(&kexec_pte1);
-> -	page_list[VA_PTE_1] = (unsigned long)kexec_pte1;
-> -
->  	page_list[PA_TABLE_PAGE] =
->  	  (unsigned long)__pa(page_address(image->control_code_page));
->  
-> --- a/arch/x86/kernel/relocate_kernel_64.S
-> +++ b/arch/x86/kernel/relocate_kernel_64.S
-> @@ -29,122 +29,6 @@ relocate_kernel:
->  	 * %rdx start address
->  	 */
->  
-> -	/* map the control page at its virtual address */
-> -
-> -	movq	$0x0000ff8000000000, %r10        /* mask */
-> -	mov	$(39 - 3), %cl                   /* bits to shift */
-> -	movq	PTR(VA_CONTROL_PAGE)(%rsi), %r11 /* address to map */
-> -
-> -	movq	%r11, %r9
-> -	andq	%r10, %r9
-> -	shrq	%cl, %r9
-> -
-> -	movq	PTR(VA_PGD)(%rsi), %r8
-> -	addq	%r8, %r9
-> -	movq	PTR(PA_PUD_0)(%rsi), %r8
-> -	orq	$PAGE_ATTR, %r8
-> -	movq	%r8, (%r9)
-> -
-> -	shrq	$9, %r10
-> -	sub	$9, %cl
-> -
-> -	movq	%r11, %r9
-> -	andq	%r10, %r9
-> -	shrq	%cl, %r9
-> -
-> -	movq	PTR(VA_PUD_0)(%rsi), %r8
-> -	addq	%r8, %r9
-> -	movq	PTR(PA_PMD_0)(%rsi), %r8
-> -	orq	$PAGE_ATTR, %r8
-> -	movq	%r8, (%r9)
-> -
-> -	shrq	$9, %r10
-> -	sub	$9, %cl
-> -
-> -	movq	%r11, %r9
-> -	andq	%r10, %r9
-> -	shrq	%cl, %r9
-> -
-> -	movq	PTR(VA_PMD_0)(%rsi), %r8
-> -	addq	%r8, %r9
-> -	movq	PTR(PA_PTE_0)(%rsi), %r8
-> -	orq	$PAGE_ATTR, %r8
-> -	movq	%r8, (%r9)
-> -
-> -	shrq	$9, %r10
-> -	sub	$9, %cl
-> -
-> -	movq	%r11, %r9
-> -	andq	%r10, %r9
-> -	shrq	%cl, %r9
-> -
-> -	movq	PTR(VA_PTE_0)(%rsi), %r8
-> -	addq	%r8, %r9
-> -	movq	PTR(PA_CONTROL_PAGE)(%rsi), %r8
-> -	orq	$PAGE_ATTR, %r8
-> -	movq	%r8, (%r9)
-> -
-> -	/* identity map the control page at its physical address */
-> -
-> -	movq	$0x0000ff8000000000, %r10        /* mask */
-> -	mov	$(39 - 3), %cl                   /* bits to shift */
-> -	movq	PTR(PA_CONTROL_PAGE)(%rsi), %r11 /* address to map */
-> -
-> -	movq	%r11, %r9
-> -	andq	%r10, %r9
-> -	shrq	%cl, %r9
-> -
-> -	movq	PTR(VA_PGD)(%rsi), %r8
-> -	addq	%r8, %r9
-> -	movq	PTR(PA_PUD_1)(%rsi), %r8
-> -	orq	$PAGE_ATTR, %r8
-> -	movq	%r8, (%r9)
-> -
-> -	shrq	$9, %r10
-> -	sub	$9, %cl
-> -
-> -	movq	%r11, %r9
-> -	andq	%r10, %r9
-> -	shrq	%cl, %r9
-> -
-> -	movq	PTR(VA_PUD_1)(%rsi), %r8
-> -	addq	%r8, %r9
-> -	movq	PTR(PA_PMD_1)(%rsi), %r8
-> -	orq	$PAGE_ATTR, %r8
-> -	movq	%r8, (%r9)
-> -
-> -	shrq	$9, %r10
-> -	sub	$9, %cl
-> -
-> -	movq	%r11, %r9
-> -	andq	%r10, %r9
-> -	shrq	%cl, %r9
-> -
-> -	movq	PTR(VA_PMD_1)(%rsi), %r8
-> -	addq	%r8, %r9
-> -	movq	PTR(PA_PTE_1)(%rsi), %r8
-> -	orq	$PAGE_ATTR, %r8
-> -	movq	%r8, (%r9)
-> -
-> -	shrq	$9, %r10
-> -	sub	$9, %cl
-> -
-> -	movq	%r11, %r9
-> -	andq	%r10, %r9
-> -	shrq	%cl, %r9
-> -
-> -	movq	PTR(VA_PTE_1)(%rsi), %r8
-> -	addq	%r8, %r9
-> -	movq	PTR(PA_CONTROL_PAGE)(%rsi), %r8
-> -	orq	$PAGE_ATTR, %r8
-> -	movq	%r8, (%r9)
-> -
-> -relocate_new_kernel:
-> -	/* %rdi indirection_page
-> -	 * %rsi page_list
-> -	 * %rdx start address
-> -	 */
-> -
->  	/* zero out flags, and disable interrupts */
->  	pushq $0
->  	popfq
-> @@ -156,9 +40,8 @@ relocate_new_kernel:
->  	/* get physical address of page table now too */
->  	movq	PTR(PA_TABLE_PAGE)(%rsi), %rcx
->  
-> -	/* switch to new set of page tables */
-> -	movq	PTR(PA_PGD)(%rsi), %r9
-> -	movq	%r9, %cr3
-> +	/* Switch to the identity mapped page tables */
-> +	movq	%rcx, %cr3
->  
->  	/* setup a new stack at the end of the physical control page */
->  	lea	PAGE_SIZE(%r8), %rsp
-> @@ -194,9 +77,7 @@ identity_mapped:
->  	jmp 1f
->  1:
->  
-> -	/* Switch to the identity mapped page tables,
-> -	 * and flush the TLB.
-> -	*/
-> +	/* Flush the TLB (needed?) */
->  	movq	%rcx, %cr3
->  
->  	/* Do the copies */
-> 
+with 2.6.28.3
+---------------
+
+build with options
+CONFIG_HOTPLUG_PCI=y
+CONFIG_HOTPLUG_PCI_FAKE=m
+CONFIG_HOTPLUG_PCI_ACPI=m
+CONFIG_HOTPLUG_PCI_ACPI_IBM=m
+# CONFIG_HOTPLUG_PCI_CPCI is not set
+CONFIG_HOTPLUG_PCI_SHPC=m
 
 
+# uname -a
+Linux localhost.localdomain 2.6.28.3 #1 SMP Tue Feb 3 16:51:23 PST 2009 x86_64 x86_64 x86_64 GNU/Linux
 
--- 
-Simon Horman
-  VA Linux Systems Japan K.K., Sydney, Australia Satellite Office
-  H: www.vergenet.net/~horms/             W: www.valinux.co.jp/en
 
+#ls -lt /sys/bus/pci/slots
+total 0
+# /sbin/modprobe acpiphp
+# ls -lt /sys/bus/pci/slots
+total 0
+drwxr-xr-x 2 root root 0 2009-02-03 18:15 2
+
+## /var/log/messages contains following messages
+Feb  3 18:15:06 localhost kernel: acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+Feb  3 18:15:06 localhost kernel: acpiphp: Slot [2] registered
+
+# /sbin/rmmod acpiphp
+# ls -lt /sys/bus/pci/slots
+total 0
+# /sbin/modprobe pciehp
+# ls -lt /sys/bus/pci/slots
+total 0
+drwxr-xr-x 2 root root 0 2009-02-03 18:19 96
+
+/var/log/messages:-
+Feb  3 18:19:35 localhost kernel: pciehp 0000:00:09.0:pcie02: Link Active Reporting supported
+Feb  3 18:19:36 localhost kernel: pciehp 0000:00:09.0:pcie02: Command not completed in 1000 msec
+Feb  3 18:19:36 localhost kernel: pciehp 0000:00:09.0:pcie02: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
+Feb  3 18:19:37 localhost kernel: pciehp 0000:00:09.0:pcie02: Command not completed in 1000 msec
+Feb  3 18:19:37 localhost kernel: pciehp 0000:00:09.0:pcie02: Registering domain:bus:dev=0000:09:00 hp_slot=0 sun=60 slot_device_offset=0
+Feb  3 18:19:37 localhost kernel: pciehp 0000:00:09.0:pcie02: get_power_status: physical_slot = 96
+Feb  3 18:19:37 localhost kernel: pciehp 0000:00:09.0:pcie02: hpc_get_power_status: SLOTCTRL a8 value read 7bf
+Feb  3 18:19:37 localhost kernel: pciehp 0000:00:09.0:pcie02: get_attention_status: physical_slot = 96
+Feb  3 18:19:37 localhost kernel: pciehp 0000:00:09.0:pcie02: hpc_get_attention_status: SLOTCTRL a8, value read 7bf
+Feb  3 18:19:37 localhost kernel: pciehp 0000:00:09.0:pcie02: get_latch_status: physical_slot = 96
+Feb  3 18:19:37 localhost kernel: pciehp 0000:00:09.0:pcie02: get_adapter_status: physical_slot = 96
+Feb  3 18:19:37 localhost kernel: pciehp: PCI Express Hot Plug Controller Driver version: 0.4
+
+# /sbin/rmmod pciehp
+# /sbin/modprobe shpchp
+# ls -lt /sys/bus/pci/slots
+total 0
+/var/log/messages:-
+Feb  3 18:21:05 localhost kernel: shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+
+# /sbin/rmmod shpchp
+# 
+
+
+[root@localhost linux-2.6.25.x86_64]# /sbin/rmmod shpchp
+[root@localhost linux-2.6.25.x86_64]# 
+ 
+ 
+
+Thanks,
+Krishna
+ 
+_________________________________________________________________
+Windows Live™ Hotmail®…more than just e-mail. 
+http://windowslive.com/howitworks?ocid=TXT_TAGLM_WL_t2_hm_justgotbetter_howitworks_012009
