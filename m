@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758655AbZBDSwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbZBDSwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758655AbZBDSwO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:52:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759335AbZBDStE
+	id S1760743AbZBDSwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:52:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761363AbZBDStJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:04 -0500
-Received: from kroah.org ([198.145.64.141]:34264 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:09 -0500
+Received: from kroah.org ([198.145.64.141]:34296 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760220AbZBDStB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:01 -0500
-Date: Wed, 4 Feb 2009 10:45:52 -0800
+	id S1755098AbZBDStD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:03 -0500
+Date: Wed, 4 Feb 2009 10:45:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Breno Leitao <leitao@linux.vnet.ibm.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 02/41] ixgb: fix bug when freeing resources
-Message-ID: <20090204184552.GC25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Mark Lord <mlord@pobox.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 04/41] sata_mv: fix 8-port timeouts on 508x/6081 chips
+Message-ID: <20090204184556.GE25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="ixgb-fix-bug-when-freeing-resources.patch"
+Content-Disposition: inline; filename="sata_mv-fix-8-port-timeouts-on-508x-6081-chips.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,49 +40,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Brandeburg, Jesse <jesse.brandeburg@intel.com>
+From: Mark Lord <liml@rtr.ca>
 
-commit 23e55a32ca1ffdbe7a492ef99f0e0ac48e504a13 upstream.
+commit b0bccb18bc523d1d5060d25958f12438062829a9 upstream.
 
-It was pointed out by Breno Leitao <leitao@linux.vnet.ibm.com> that
-ixgb would crash on PPC when an IOMMU was in use, if change_mtu was
-called.
+Fix a longstanding bug for the 8-port Marvell Sata controllers (508x/6081),
+where accesses to the upper 4 ports would cause lost-interrupts / timeouts
+for the lower 4-ports.  With this patch, the 6081 boards should finally be
+reliable enough for mainstream use with Linux.
 
-It appears to be a pretty simple issue in the driver that wasn't discovered
-because most systems don't run with an IOMMU.  The driver needs to only unmap
-buffers that are mapped (duh).
-
-CC: Breno Leitao <leitao@linux.vnet.ibm.com>
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Mark Lord <mlord@pobox.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/ixgb/ixgb_main.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ drivers/ata/sata_mv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/ixgb/ixgb_main.c
-+++ b/drivers/net/ixgb/ixgb_main.c
-@@ -977,15 +977,17 @@ ixgb_clean_rx_ring(struct ixgb_adapter *
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -883,7 +883,7 @@ static void mv_start_dma(struct ata_port
+ 		struct mv_host_priv *hpriv = ap->host->private_data;
+ 		int hardport = mv_hardport_from_port(ap->port_no);
+ 		void __iomem *hc_mmio = mv_hc_base_from_port(
+-					mv_host_base(ap->host), hardport);
++					mv_host_base(ap->host), ap->port_no);
+ 		u32 hc_irq_cause, ipending;
  
- 	for (i = 0; i < rx_ring->count; i++) {
- 		buffer_info = &rx_ring->buffer_info[i];
--		if (buffer_info->skb) {
--
-+		if (buffer_info->dma) {
- 			pci_unmap_single(pdev,
- 					 buffer_info->dma,
- 					 buffer_info->length,
- 					 PCI_DMA_FROMDEVICE);
-+			buffer_info->dma = 0;
-+			buffer_info->length = 0;
-+		}
- 
-+		if (buffer_info->skb) {
- 			dev_kfree_skb(buffer_info->skb);
--
- 			buffer_info->skb = NULL;
- 		}
- 	}
+ 		/* clear EDMA event indicators, if any */
 
