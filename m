@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759089AbZBDSjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbZBDSko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759089AbZBDSjK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:39:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758247AbZBDShF
+	id S1758910AbZBDSko (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:40:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZBDShL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:05 -0500
-Received: from kroah.org ([198.145.64.141]:50939 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:11 -0500
+Received: from kroah.org ([198.145.64.141]:50982 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758264AbZBDShC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:02 -0500
-Date: Wed, 4 Feb 2009 10:34:24 -0800
+	id S1758302AbZBDShG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:06 -0500
+Date: Wed, 4 Feb 2009 10:34:33 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,81 +22,134 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Jike Song <albcamus@gmail.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 05/33] PCI/MSI: bugfix/utilize for msi_capability_init()
-Message-ID: <20090204183424.GF13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>,
+       Andrey Borzenkov <arvidjaar@mail.ru>
+Subject: [patch 09/33] orinoco: move kmalloc(..., GFP_KERNEL) outside
+	spinlock in orinoco_ioctl_set_genie
+Message-ID: <20090204183433.GJ13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-msi-bugfix-utilize-for-msi_capability_init.patch"
+Content-Disposition: inline; filename="orinoco-move-kmalloc-outside-spinlock-in-orinoco_ioctl_set_genie.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+From: Andrey Borzenkov <arvidjaar@mail.ru>
 
-commit 0db29af1e767464d71b89410d61a1e5b668d0370 upstream.
+commit 7fe99c4e28ab54eada8aa456b417114e6ef21587 upstream
 
-This patch fix a following bug and does a cleanup.
+orinoco: move kmalloc(..., GFP_KERNEL) outside spinlock in orinoco_ioctl_set_genie
 
-bug:
-	commit 5993760f7fc75b77e4701f1e56dc84c0d6cf18d5
-	had a wrong change (since is_64 is boolean[0|1]):
+[   56.923623] BUG: sleeping function called from invalid context at /home/bor/src/linux-git/mm/slub.c:1599
+[   56.923644] in_atomic(): 0, irqs_disabled(): 1, pid: 3031, name: wpa_supplicant
+[   56.923656] 2 locks held by wpa_supplicant/3031:
+[   56.923662]  #0:  (rtnl_mutex){--..}, at: [<c02abd1f>] rtnl_lock+0xf/0x20
+[   56.923703]  #1:  (&priv->lock){++..}, at: [<dfc840c2>] orinoco_ioctl_set_genie+0x52/0x130 [orinoco]
+[   56.923782] irq event stamp: 910
+[   56.923788] hardirqs last  enabled at (909): [<c01957db>] __kmalloc+0x7b/0x140
+[   56.923820] hardirqs last disabled at (910): [<c0309419>] _spin_lock_irqsave+0x19/0x80
+[   56.923847] softirqs last  enabled at (880): [<c0124f54>] __do_softirq+0xc4/0x110
+[   56.923865] softirqs last disabled at (871): [<c01049ae>] do_softirq+0x8e/0xe0
+[   56.923895] Pid: 3031, comm: wpa_supplicant Not tainted 2.6.29-rc2-1avb #1
+[   56.923905] Call Trace:
+[   56.923919]  [<c01049ae>] ? do_softirq+0x8e/0xe0
+[   56.923941]  [<c011ad12>] __might_sleep+0xd2/0x100
+[   56.923952]  [<c0195837>] __kmalloc+0xd7/0x140
+[   56.923963]  [<c030946a>] ? _spin_lock_irqsave+0x6a/0x80
+[   56.923981]  [<dfc840e9>] ? orinoco_ioctl_set_genie+0x79/0x130 [orinoco]
+[   56.923999]  [<dfc840c2>] ? orinoco_ioctl_set_genie+0x52/0x130 [orinoco]
+[   56.924017]  [<dfc840e9>] orinoco_ioctl_set_genie+0x79/0x130 [orinoco]
+[   56.924036]  [<c0209325>] ? copy_from_user+0x35/0x130
+[   56.924061]  [<c02ffd96>] ioctl_standard_call+0x196/0x380
+[   56.924085]  [<c029f945>] ? __dev_get_by_name+0x85/0xb0
+[   56.924096]  [<c02ff88f>] wext_handle_ioctl+0x14f/0x230
+[   56.924113]  [<dfc84070>] ? orinoco_ioctl_set_genie+0x0/0x130 [orinoco]
+[   56.924132]  [<c02a3da5>] dev_ioctl+0x495/0x570
+[   56.924155]  [<c0293e05>] ? sys_sendto+0xa5/0xd0
+[   56.924171]  [<c0142fe8>] ? mark_held_locks+0x48/0x90
+[   56.924183]  [<c0292880>] ? sock_ioctl+0x0/0x280
+[   56.924193]  [<c029297d>] sock_ioctl+0xfd/0x280
+[   56.924203]  [<c0292880>] ? sock_ioctl+0x0/0x280
+[   56.924235]  [<c01a51d0>] vfs_ioctl+0x20/0x80
+[   56.924246]  [<c01a53e2>] do_vfs_ioctl+0x72/0x570
+[   56.924257]  [<c0293e62>] ? sys_send+0x32/0x40
+[   56.924268]  [<c02947c0>] ? sys_socketcall+0x1d0/0x2a0
+[   56.924280]  [<c010339f>] ? sysenter_exit+0xf/0x16
+[   56.924292]  [<c01a5919>] sys_ioctl+0x39/0x70
+[   56.924302]  [<c0103371>] sysenter_do_call+0x12/0x31
 
--               pci_write_config_dword(dev,
--                       msi_mask_bits_reg(pos, is_64bit_address(control)),
--                       maskbits);
-+               pci_write_config_dword(dev, entry->msi_attrib.is_64, maskbits);
-
-utilize:
-	Unify separated if (entry->msi_attrib.maskbit) statements.
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Acked-by: "Jike Song" <albcamus@gmail.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Andrey Borzenkov <arvidjaar@mail.ru>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/msi.c |   16 +++++++---------
- 1 file changed, 7 insertions(+), 9 deletions(-)
+ drivers/net/wireless/orinoco.c |   30 +++++++++++++-----------------
+ 1 file changed, 13 insertions(+), 17 deletions(-)
 
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -378,21 +378,19 @@ static int msi_capability_init(struct pc
- 	entry->msi_attrib.masked = 1;
- 	entry->msi_attrib.default_irq = dev->irq;	/* Save IOAPIC IRQ */
- 	entry->msi_attrib.pos = pos;
--	if (entry->msi_attrib.maskbit) {
--		entry->mask_base = (void __iomem *)(long)msi_mask_bits_reg(pos,
--				entry->msi_attrib.is_64);
--	}
- 	entry->dev = dev;
- 	if (entry->msi_attrib.maskbit) {
--		unsigned int maskbits, temp;
-+		unsigned int base, maskbits, temp;
+--- a/drivers/net/wireless/orinoco.c
++++ b/drivers/net/wireless/orinoco.c
+@@ -4938,32 +4938,29 @@ static int orinoco_ioctl_set_genie(struc
+ 	struct orinoco_private *priv = netdev_priv(dev);
+ 	u8 *buf;
+ 	unsigned long flags;
+-	int err = 0;
+ 
+ 	if ((wrqu->data.length > MAX_WPA_IE_LEN) ||
+ 	    (wrqu->data.length && (extra == NULL)))
+ 		return -EINVAL;
+ 
+-	if (orinoco_lock(priv, &flags) != 0)
+-		return -EBUSY;
+-
+ 	if (wrqu->data.length) {
+ 		buf = kmalloc(wrqu->data.length, GFP_KERNEL);
+-		if (buf == NULL) {
+-			err = -ENOMEM;
+-			goto out;
+-		}
++		if (buf == NULL)
++			return -ENOMEM;
+ 
+ 		memcpy(buf, extra, wrqu->data.length);
+-		kfree(priv->wpa_ie);
+-		priv->wpa_ie = buf;
+-		priv->wpa_ie_len = wrqu->data.length;
+-	} else {
+-		kfree(priv->wpa_ie);
+-		priv->wpa_ie = NULL;
+-		priv->wpa_ie_len = 0;
++	} else
++		buf = NULL;
 +
-+		base = msi_mask_bits_reg(pos, entry->msi_attrib.is_64);
-+		entry->mask_base = (void __iomem *)(long)base;
-+
- 		/* All MSIs are unmasked by default, Mask them all */
--		pci_read_config_dword(dev,
--			msi_mask_bits_reg(pos, entry->msi_attrib.is_64),
--			&maskbits);
-+		pci_read_config_dword(dev, base, &maskbits);
- 		temp = (1 << multi_msi_capable(control));
- 		temp = ((temp - 1) & ~temp);
- 		maskbits |= temp;
--		pci_write_config_dword(dev, entry->msi_attrib.is_64, maskbits);
-+		pci_write_config_dword(dev, base, maskbits);
- 		entry->msi_attrib.maskbits_mask = temp;
++	if (orinoco_lock(priv, &flags) != 0) {
++		kfree(buf);
++		return -EBUSY;
  	}
- 	list_add_tail(&entry->list, &dev->msi_list);
+ 
++	kfree(priv->wpa_ie);
++	priv->wpa_ie = buf;
++	priv->wpa_ie_len = wrqu->data.length;
++
+ 	if (priv->wpa_ie) {
+ 		/* Looks like wl_lkm wants to check the auth alg, and
+ 		 * somehow pass it to the firmware.
+@@ -4972,9 +4969,8 @@ static int orinoco_ioctl_set_genie(struc
+ 		 */
+ 	}
+ 
+-out:
+ 	orinoco_unlock(priv, &flags);
+-	return err;
++	return 0;
+ }
+ 
+ static int orinoco_ioctl_get_genie(struct net_device *dev,
 
