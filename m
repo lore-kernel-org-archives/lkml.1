@@ -1,84 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764026AbZBDTHJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764251AbZBDTHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764026AbZBDTHJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:07:09 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759614AbZBDStu
+	id S1764251AbZBDTHn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:07:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761519AbZBDSuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:50 -0500
-Received: from kroah.org ([198.145.64.141]:33044 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759514AbZBDStl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:41 -0500
-Date: Wed, 4 Feb 2009 10:47:10 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lin Ming <ming.m.lin@intel.com>,
-       Bob Moore <robert.moore@intel.com>, Len Brown <len.brown@intel.com>,
-       Thomas Renninger <trenn@suse.de>
-Subject: [patch 41/41] ACPICA: Allow multiple backslash prefix in namepaths
-Message-ID: <20090204184710.GP25246@kroah.com>
-References: <20090204184029.881610776@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpica-allow-multiple-backslash-prefix-in-namepaths.patch"
-In-Reply-To: <20090204184539.GA25246@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 4 Feb 2009 13:50:11 -0500
+Received: from rn-out-0910.google.com ([64.233.170.185]:36897 "EHLO
+	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760541AbZBDSuK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:50:10 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        b=w6SUpVvHvAZPt8g+A70SpPRGQquQuMLBMFzj14s4L2XIPwGrifUzoo9rbp4LlPj96f
+         KIXSBOpgN331uO2lUFkWTHLCV9AhqzxwFvzGqIlP20yaMN62EyBm15B50BpguvuYe56D
+         uJ5ldJ4n84SkbxnNMnblNxtUqEzMXiajyTjgw=
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Alberto Bertogli <albertito@blitiri.com.ar>
+Subject: [PATCH] Do not __always_inline bvec_kmap_irq() and bvec_kunmap_irq()
+Date: Wed,  4 Feb 2009 16:49:55 -0200
+Message-Id: <1233773395-13251-1-git-send-email-albertito@blitiri.com.ar>
+X-Mailer: git-send-email 1.6.1.1.363.g2a3bd
+In-Reply-To: <1233773102-12903-1-git-send-email-albertito@blitiri.com.ar>
+References: <1233773102-12903-1-git-send-email-albertito@blitiri.com.ar>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+On Tue, Feb 03 2009, Andrew Morton wrote:
+> The comment is wrong - this was a sparc requirement, long since removed.
 
-------------------
+So remove both the comment and the inline requirement, going back to the
+inline hint.
 
-From: Lin Ming <ming.m.lin@intel.com>
-
-commit d037c5fd7367548191eab2b376a1d08c4ffaf7ff upstream.
-
-In a fully qualified namepath, allow multiple backslash prefixes.
-This can happen because of the use of a double-backslash in strings
-(since backslash is the escape character) causing confusion.
-ACPICA BZ 739 Lin Ming.
-
-http://www.acpica.org/bugzilla/show_bug.cgi?id=739
-
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: Thomas Renninger <trenn@suse.de>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
 ---
- drivers/acpi/namespace/nsutils.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
 
---- a/drivers/acpi/namespace/nsutils.c
-+++ b/drivers/acpi/namespace/nsutils.c
-@@ -314,9 +314,15 @@ void acpi_ns_get_internal_name_length(st
- 	 *
- 	 * strlen() + 1 covers the first name_seg, which has no path separator
- 	 */
--	if (acpi_ns_valid_root_prefix(next_external_char[0])) {
-+	if (acpi_ns_valid_root_prefix(*next_external_char)) {
- 		info->fully_qualified = TRUE;
- 		next_external_char++;
-+
-+		/* Skip redundant root_prefix, like \\_SB.PCI0.SBRG.EC0 */
-+
-+		while (acpi_ns_valid_root_prefix(*next_external_char)) {
-+			next_external_char++;
-+		}
- 	} else {
- 		/*
- 		 * Handle Carat prefixes
+This is the same patch as before, except it's properly indented because
+everything fits < 80 columns or so.
+
+ include/linux/bio.h |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
+
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 713ec6e..972a0e4 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -442,11 +442,8 @@ extern struct biovec_slab bvec_slabs[BIOVEC_NR_POOLS] __read_mostly;
+ /*
+  * remember never ever reenable interrupts between a bvec_kmap_irq and
+  * bvec_kunmap_irq!
+- *
+- * This function MUST be inlined - it plays with the CPU interrupt flags.
+  */
+-static __always_inline char *bvec_kmap_irq(struct bio_vec *bvec,
+-		unsigned long *flags)
++static inline char *bvec_kmap_irq(struct bio_vec *bvec, unsigned long *flags)
+ {
+ 	unsigned long addr;
+ 
+@@ -462,8 +459,7 @@ static __always_inline char *bvec_kmap_irq(struct bio_vec *bvec,
+ 	return (char *) addr + bvec->bv_offset;
+ }
+ 
+-static __always_inline void bvec_kunmap_irq(char *buffer,
+-		unsigned long *flags)
++static inline void bvec_kunmap_irq(char *buffer, unsigned long *flags)
+ {
+ 	unsigned long ptr = (unsigned long) buffer & PAGE_MASK;
+ 
+-- 
+1.6.1.1.363.g2a3bd
 
