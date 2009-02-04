@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbZBDSis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759564AbZBDSuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758941AbZBDSis (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:38:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbZBDShD
+	id S1759564AbZBDSuV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759561AbZBDSpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:03 -0500
-Received: from kroah.org ([198.145.64.141]:50930 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758247AbZBDShA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:00 -0500
-Date: Wed, 4 Feb 2009 10:34:22 -0800
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Adrian Bunk <bunk@kernel.org>,
-       Greg Ungerer <gerg@uclinux.org>
-Subject: [patch 04/33] m68knommu: set NO_DMA
-Message-ID: <20090204183422.GE13936@kroah.com>
-References: <20090204182823.831027530@mini.kroah.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="m68knommu-set-no_dma.patch"
-In-Reply-To: <20090204183403.GA13936@kroah.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Wed, 4 Feb 2009 13:45:21 -0500
+Received: from qw-out-2122.google.com ([74.125.92.24]:21361 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759768AbZBDSpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:45:17 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer:in-reply-to
+         :references;
+        b=uf9RXy9R7ssCL+a4aXpDo9KPKpzmHaznBm/lZpG+LfahiZj0fFi3nywv5bww2HFNnD
+         GwCO/Ii+xkhcAJAbs+jQtmjqCfKv8MzalxRyr2JTgXbXp5vZL0FvSyJ3OvPY1tFpZxkd
+         uEOLcIm3VhLQCJGNqwV//EA8r9weaEyaleXl4=
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org, Alberto Bertogli <albertito@blitiri.com.ar>
+Subject: [PATCH] Do not __always_inline bvec_kmap_irq() and bvec_kunmap_irq()
+Date: Wed,  4 Feb 2009 16:45:02 -0200
+Message-Id: <1233773102-12903-1-git-send-email-albertito@blitiri.com.ar>
+X-Mailer: git-send-email 1.6.1.1.363.g2a3bd
+In-Reply-To: <20090203085111.GT30821@kernel.dk>
+References: <20090203085111.GT30821@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.28-stable review patch.  If anyone has any objections, please let us know.
+On Tue, Feb 03 2009, Andrew Morton wrote:
+> The comment is wrong - this was a sparc requirement, long since removed.
 
-------------------
+So remove both the comment and the inline requirement, going back to the
+inline hint.
 
-From: Adrian Bunk <bunk@kernel.org>
-
-commit e0212e72186e855027dd35b37e9d7a99a078448c upstream.
-
-m68knommu does not set the Kconfig NO_DMA variable, but also does
-not provide the required functions, resulting in the following
-build error triggered by commit a40c24a13366e324bc0ff8c3bb107db89312c984
-(net: Add SKB DMA mapping helper functions.):
-
-<--  snip  -->
-
-..
-  LD      vmlinux
-net/built-in.o: In function `skb_dma_unmap':
-(.text+0xac5e): undefined reference to `dma_unmap_single'
-net/built-in.o: In function `skb_dma_unmap':
-(.text+0xac7a): undefined reference to `dma_unmap_page'
-net/built-in.o: In function `skb_dma_map':
-(.text+0xacdc): undefined reference to `dma_map_single'
-net/built-in.o: In function `skb_dma_map':
-(.text+0xace8): undefined reference to `dma_mapping_error'
-net/built-in.o: In function `skb_dma_map':
-(.text+0xad10): undefined reference to `dma_map_page'
-net/built-in.o: In function `skb_dma_map':
-(.text+0xad82): undefined reference to `dma_unmap_page'
-net/built-in.o: In function `skb_dma_map':
-(.text+0xadc6): undefined reference to `dma_unmap_single'
-make[1]: *** [vmlinux] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@kernel.org>
-Signed-off-by: Greg Ungerer <gerg@uclinux.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
+Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
 ---
- arch/m68knommu/Kconfig |    4 ++++
- 1 file changed, 4 insertions(+)
 
---- a/arch/m68knommu/Kconfig
-+++ b/arch/m68knommu/Kconfig
-@@ -14,6 +14,10 @@ config MMU
- 	bool
- 	default n
+So I came up with this, but I'm not sure if it's better than just avoid the
+inline and placing them somewhere else. If you want me to write a different
+patch, let me know.
+
+Thanks a lot,
+		Alberto
+
+
+
+ include/linux/bio.h |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/bio.h b/include/linux/bio.h
+index 713ec6e..20bcc51 100644
+--- a/include/linux/bio.h
++++ b/include/linux/bio.h
+@@ -442,10 +442,8 @@ extern struct biovec_slab bvec_slabs[BIOVEC_NR_POOLS] __read_mostly;
+ /*
+  * remember never ever reenable interrupts between a bvec_kmap_irq and
+  * bvec_kunmap_irq!
+- *
+- * This function MUST be inlined - it plays with the CPU interrupt flags.
+  */
+-static __always_inline char *bvec_kmap_irq(struct bio_vec *bvec,
++static inline char *bvec_kmap_irq(struct bio_vec *bvec,
+ 		unsigned long *flags)
+ {
+ 	unsigned long addr;
+@@ -462,7 +460,7 @@ static __always_inline char *bvec_kmap_irq(struct bio_vec *bvec,
+ 	return (char *) addr + bvec->bv_offset;
+ }
  
-+config NO_DMA
-+	bool
-+	default y
-+
- config FPU
- 	bool
- 	default n
+-static __always_inline void bvec_kunmap_irq(char *buffer,
++static inline void bvec_kunmap_irq(char *buffer,
+ 		unsigned long *flags)
+ {
+ 	unsigned long ptr = (unsigned long) buffer & PAGE_MASK;
+-- 
+1.6.1.1.363.g2a3bd
 
