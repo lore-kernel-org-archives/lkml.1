@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752387AbZBDAfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbZBDAjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752387AbZBDAfM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 19:35:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZBDAez
+	id S1753813AbZBDAjX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 19:39:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZBDAjL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 19:34:55 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:33449 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751485AbZBDAey (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 19:34:54 -0500
-X-IronPort-AV: E=Sophos;i="4.37,375,1231142400"; 
-   d="scan'208";a="122564281"
-Subject: Re: [patch] remove put_cpu_no_resched()
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Tony Luck <tony.luck@intel.com>
-In-Reply-To: <20090204001840.664546943@linutronix.de>
-References: <20090204001840.664546943@linutronix.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 03 Feb 2009 19:33:59 -0500
-Message-Id: <1233707639.7161.17.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-X-OriginalArrivalTime: 04 Feb 2009 00:34:46.0088 (UTC) FILETIME=[611A8480:01C98660]
+	Tue, 3 Feb 2009 19:39:11 -0500
+Received: from yx-out-2324.google.com ([74.125.44.29]:62135 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbZBDAjJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 19:39:09 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version:content-type;
+        b=wlDj/j//BonR2Pvyt/8H6Et5sxrMifFkRBBRhrnsnQ//zve6qrBsryBbBJ2RVT3aQC
+         GlraTKf6MidMAX0CCL3cOjK7ixWXaWhGmSR4csFxugyDVSr5CrEhPwfRQbyaauiElYOx
+         AsNHuTPW1y3y362lW+zF1h2Mo+KsxDAKs6fJw=
+Date: Tue, 3 Feb 2009 19:38:59 -0500 (EST)
+From: Parag Warudkar <parag.lkml@gmail.com>
+X-X-Sender: parag@parag-laptop
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Parag Warudkar <parag.lkml@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matt Carlson <mcarlson@broadcom.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: 2.6.29-rc3: tg3 dead after resume
+In-Reply-To: <200902032315.27113.rjw@sisk.pl>
+Message-ID: <alpine.DEB.2.00.0902031937070.7758@parag-laptop>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200902031029.30739.rjw@sisk.pl> <alpine.DEB.2.00.0902031622070.5481@parag-desktop> <200902032315.27113.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-04 at 00:27 +0000, Thomas Gleixner wrote:
-> plain text document attachment (remove-put-cpu-no-resched.patch)
-> Impact: remove a high latency source
-> 
-> put_cpu_no_resched() is an optimization of put_cpu() which
-> unfortunately can cause high latencies.
-> 
-> The nfs iostats code uses put_cpu_no_resched() in a code sequence
-> where a reschedule request caused by an interrupt between the
-> get_cpu() and the put_cpu_no_resched() can delay the reschedule for at
-> least HZ.
-> 
-> The other users of put_cpu_no_resched() optimize correctly in
-> interrupt code, but there is no real harm in using the put_cpu()
-> function which is an alias for preempt_enable(). The extra check of the
-> preemmpt count is not as critical as the potential source of missing a
-> reschedule.
-> 
-> Debugged in the preempt-rt tree and verified in mainline.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> Reviewed-by: Ingo Molnar <mingo@elte.hu>
-> Cc: Tony Luck <tony.luck@intel.com>
-> Cc: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
--- 
-Trond Myklebust
-Linux NFS client maintainer
 
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
+
+> 
+> Can you also test this one instead and tell me if it still works?
+> 
+
+Removing Linus' patch and applying the below one works as well.
+
+Parag
+ 
+> ---
+>  drivers/pci/pcie/portdrv_pci.c |   16 +---------------
+>  1 file changed, 1 insertion(+), 15 deletions(-)
+> 
+> Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
+> +++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
+> @@ -55,25 +55,13 @@ static int pcie_portdrv_suspend(struct p
+>  
+>  }
+>  
+> -static int pcie_portdrv_suspend_late(struct pci_dev *dev, pm_message_t state)
+> -{
+> -	return pci_save_state(dev);
+> -}
+> -
+> -static int pcie_portdrv_resume_early(struct pci_dev *dev)
+> -{
+> -	return pci_restore_state(dev);
+> -}
+> -
+>  static int pcie_portdrv_resume(struct pci_dev *dev)
+>  {
+> -	pcie_portdrv_restore_config(dev);
+> +	pci_set_master(dev);
+>  	return pcie_port_device_resume(dev);
+>  }
+>  #else
+>  #define pcie_portdrv_suspend NULL
+> -#define pcie_portdrv_suspend_late NULL
+> -#define pcie_portdrv_resume_early NULL
+>  #define pcie_portdrv_resume NULL
+>  #endif
+>  
+> @@ -292,8 +280,6 @@ static struct pci_driver pcie_portdriver
+>  	.remove		= pcie_portdrv_remove,
+>  
+>  	.suspend	= pcie_portdrv_suspend,
+> -	.suspend_late	= pcie_portdrv_suspend_late,
+> -	.resume_early	= pcie_portdrv_resume_early,
+>  	.resume		= pcie_portdrv_resume,
+>  
+>  	.err_handler 	= &pcie_portdrv_err_handler,
+> 
+> 
