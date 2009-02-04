@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZBDVbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760550AbZBDVcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbZBDVbn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 16:31:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752459AbZBDVbf
+	id S1760550AbZBDVcX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 16:32:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753794AbZBDVcN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 16:31:35 -0500
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:37096 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751562AbZBDVbe convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 16:31:34 -0500
-Date: Wed, 4 Feb 2009 16:31:16 -0500 (EST)
-From: Anders Kaseorg <andersk@MIT.EDU>
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Jeff Arnold <jbarnold@MIT.EDU>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Denys Vlasenko <vda.linux@googlemail.com>,
-       Tim Abbott <tabbott@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
-       Nikanth Karthikesan <knikanth@suse.de>
-Subject: Re: [PATCH 5/7] Ksplice: Add functions for walking kallsyms
- symbols
-In-Reply-To: <200902042200.50726.rusty@rustcorp.com.au>
-Message-ID: <alpine.DEB.2.00.0902041605140.32142@vinegar-pot.mit.edu>
-References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-5-git-send-email-jbarnold@mit.edu> <1228521840-3886-6-git-send-email-jbarnold@mit.edu> <200902042200.50726.rusty@rustcorp.com.au>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 4 Feb 2009 16:32:13 -0500
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:25326 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752459AbZBDVcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 16:32:12 -0500
+X-IronPort-AV: E=Sophos;i="4.37,381,1231113600"; 
+   d="scan'208";a="62327634"
+From: Roland Dreier <rdreier@cisco.com>
+To: wli@movementarian.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Eli Cohen <eli@mellanox.co.il>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
+	<1233712248.16867.131.camel@pasglop>
+	<20090203211329.d6190a08.akpm@linux-foundation.org>
+	<aday6wmn2vr.fsf@cisco.com>
+	<20090203222601.747ca8b7.akpm@linux-foundation.org>
+	<adad4dym2zp.fsf@cisco.com> <20090204210037.GC10229@movementarian.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 04 Feb 2009 13:31:43 -0800
+In-Reply-To: <20090204210037.GC10229@movementarian.org>
+	(wli@movementarian.org's message of "Wed, 4 Feb 2009 16:00:37 -0500")
+Message-ID: <adazlh1lwhs.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 04 Feb 2009 21:31:43.0639 (UTC) FILETIME=[F9778A70:01C9870F]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009, Rusty Russell wrote:
-> Seems reasonable.  Did you really not want a name-filtering version?  That
-> might be generally useful.
+ > You should be able to find the head of a compound page using the
+ > compound_head() inline, so try
 
-We don’t actually want a name-filtering version for Ksplice.  We process 
-all the symbols we need in one pass, in order to avoid traversing the 
-kallsyms list separately for each symbol.
+ > 	PAGE_SIZE << compound_order(compound_head(page))
 
-> But does no locking at all.  It either needs a comment that it can only be
-> called from inside stop_machine, or that it needs preempt disabled, or
-> whatever.
+Thanks!  Looks like that should be exactly what we need.
 
-It might as well use preempt_disable() and RCU itself (patch below).
-
-> Is the !CONFIG_KALLSYMS version useful to you?  If not, please don't
-> implement the noop version.  I want someone who *does* expect it to work to
-> have to think about it if they use it...
-
-No, we don’t have a particular use for it; we added it for consistency 
-with kallsyms_lookup_name(), etc.
-
-Anders
-
-diff --git a/kernel/module.c b/kernel/module.c
-index 556112c..6bb5814 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2577,17 +2577,20 @@ int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
- {
- 	struct module *mod;
- 	unsigned int i;
--	int ret;
-+	int ret = 0;
-
--	list_for_each_entry(mod, &modules, list) {
-+	preempt_disable();
-+	list_for_each_entry_rcu(mod, &modules, list) {
- 		for (i = 0; i < mod->num_symtab; i++) {
- 			ret = fn(data, mod->strtab + mod->symtab[i].st_name,
- 				 mod, mod->symtab[i].st_value);
- 			if (ret != 0)
--				return ret;
-+				goto out;
- 		}
- 	}
--	return 0;
-+out:
-+	preempt_enable();
-+	return ret;
- }
- #endif /* CONFIG_KALLSYMS */
-
+ - R.
