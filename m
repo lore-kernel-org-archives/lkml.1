@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758786AbZBDTr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbZBDTtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758786AbZBDTr6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:47:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758592AbZBDTro
+	id S1758679AbZBDTtA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:49:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbZBDTsv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 14:47:44 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42557 "EHLO mx3.mail.elte.hu"
+	Wed, 4 Feb 2009 14:48:51 -0500
+Received: from smtp5.welho.com ([213.243.153.39]:49880 "EHLO smtp5.welho.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758577AbZBDTrn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 14:47:43 -0500
-Date: Wed, 4 Feb 2009 20:47:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [PATCH tip 1/1] trace: Make the trace_event callbacks return
-	enum print_line_t
-Message-ID: <20090204194734.GD22608@elte.hu>
-References: <20090203222041.GE3440@ghostprotocols.net> <20090203224933.GG6344@nowhere> <20090204000550.GH3440@ghostprotocols.net>
+	id S1753491AbZBDTsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 14:48:51 -0500
+Date: Wed, 4 Feb 2009 21:48:51 +0200
+From: Adrian Bunk <bunk@kernel.org>
+To: Balaji Rao <balajirrao@openmoko.org>, Andy Green <andy@openmoko.com>,
+       Samuel Ortiz <sameo@openedhand.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: mfd/pcf50633-gpio.c is completely unused
+Message-ID: <20090204194844.GA26138@localhost.pp.htv.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090204000550.GH3440@ghostprotocols.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I'm wondering:
 
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+Is any user for the code in drivers/mfd/pcf50633-gpio.c pending, or did 
+something go wrong when merging it?
 
-> As they actually all return these enumerators.
->     
-> Reported-by: Frederic Weisbecker <fweisbec@gmail.com>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> 
+Currently it is completely unused.
 
-applied	to tip:tracing/ftrace, thanks Arnaldo!
+cu
+Adrian
 
-	Ingo
+-- 
 
-ps. the diffstat was missing - it's usually handy on lkml
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
