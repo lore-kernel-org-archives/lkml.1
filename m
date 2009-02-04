@@ -1,73 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZBDMlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZBDMqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbZBDMlY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 07:41:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751234AbZBDMlQ
+	id S1754737AbZBDMqZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 07:46:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZBDMqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 07:41:16 -0500
-Received: from mx2.compro.net ([216.54.166.4]:27482 "EHLO mx2.compro.net"
+	Wed, 4 Feb 2009 07:46:05 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44877 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbZBDMlP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 07:41:15 -0500
-X-IronPort-AV: E=Sophos;i="4.37,378,1231131600"; 
-   d="scan'208";a="3351143"
-Message-ID: <49898CE8.1030605@compro.net>
-Date: Wed, 04 Feb 2009 07:41:12 -0500
-From: Mark Hounschell <markh@compro.net>
-Reply-To: markh@compro.net
-Organization: Compro Computer Svcs.
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751117AbZBDMqD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 07:46:03 -0500
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Dirk Hohndel" <hohndel@infradead.org>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+In-Reply-To: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: APIC: enable workaround on AMD Fam10h CPUs
-References: <20090203172200.GA3955@aftab>
-In-Reply-To: <20090203172200.GA3955@aftab>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <pWZw1SZjMCH.A.Cy.ZwYiJB@chimera>
+Subject: [Bug #12400] git-latest: kernel oops in IOMMU setup
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Wed,  4 Feb 2009 11:21:32 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> From: Borislav Petkov <borislav.petkov@amd.com>
-> Date: Tue, 3 Feb 2009 16:24:22 +0100
-> Subject: [PATCH] APIC: enable workaround on AMD Fam10h CPUs
-> 
-> Impact: fix to enable APIC for AMD Fam10h on chipsets with a missing/b0rked
-> 	ACPI MP table (MADT)
-> 
-> Booting a 32bit kernel on an AMD Fam10h CPU running on chipsets with
-> missing/b0rked MP table leads to a hang pretty early in the boot process
-> due to the APIC not being initialized. Fix that by falling back to the
-> default APIC base address in 32bit code, as it is done in the 64bit
-> codepath.
-> 
-> Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
-> ---
->  arch/x86/kernel/apic.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/apic.c b/arch/x86/kernel/apic.c
-> index 4b6df24..115449f 100644
-> --- a/arch/x86/kernel/apic.c
-> +++ b/arch/x86/kernel/apic.c
-> @@ -1436,7 +1436,7 @@ static int __init detect_init_APIC(void)
->  	switch (boot_cpu_data.x86_vendor) {
->  	case X86_VENDOR_AMD:
->  		if ((boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model > 1) ||
-> -		    (boot_cpu_data.x86 == 15))
-> +		    (boot_cpu_data.x86 >= 15))
->  			break;
->  		goto no_apic;
->  	case X86_VENDOR_INTEL:
+This message has been generated automatically as a part of a report
+of recent regressions.
 
-Hi Borislav,
+The following bug entry is on the current list of known regressions
+from 2.6.28.  Please verify if it still should be listed and let me know
+(either way).
 
-Could this have anything to do with my Phenom-II problem that you've been so kind
-to help me with?
 
-Thanks
-Mark
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12400
+Subject		: git-latest: kernel oops in IOMMU setup
+Submitter	: Dirk Hohndel <hohndel@infradead.org>
+Date		: 2009-01-08 20:05 (28 days old)
+References	: http://marc.info/?l=linux-kernel&m=123144520124853&w=4
+Handled-By	: Dirk Hohndel <hohndel@infradead.org>
+Patch		: http://marc.info/?l=linux-kernel&m=123152033725557&w=4
+
+
