@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758995AbZBDSte@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbZBDSic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758995AbZBDSte (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:49:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbZBDShq
+	id S1758839AbZBDSic (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:38:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbZBDShB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:46 -0500
-Received: from kroah.org ([198.145.64.141]:51212 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:01 -0500
+Received: from kroah.org ([198.145.64.141]:50919 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758582AbZBDSha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:30 -0500
-Date: Wed, 4 Feb 2009 10:35:20 -0800
+	id S1755040AbZBDSg7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:36:59 -0500
+Date: Wed, 4 Feb 2009 10:34:20 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lin Ming <ming.m.lin@intel.com>,
-       Bob Moore <robert.moore@intel.com>, Len Brown <len.brown@intel.com>,
-       Thomas Renninger <trenn@suse.de>
-Subject: [patch 33/33] ACPICA: Allow multiple backslash prefix in namepaths
-Message-ID: <20090204183520.GH13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Mark Lord <mlord@pobox.com>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 03/33] sata_mv: fix 8-port timeouts on 508x/6081 chips
+Message-ID: <20090204183420.GD13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpica-allow-multiple-backslash-prefix-in-namepaths.patch"
+Content-Disposition: inline; filename="sata_mv-fix-8-port-timeouts-on-508x-6081-chips.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,44 +40,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lin Ming <ming.m.lin@intel.com>
+From: Mark Lord <liml@rtr.ca>
 
-commit d037c5fd7367548191eab2b376a1d08c4ffaf7ff upstream.
+commit b0bccb18bc523d1d5060d25958f12438062829a9 upstream.
 
-In a fully qualified namepath, allow multiple backslash prefixes.
-This can happen because of the use of a double-backslash in strings
-(since backslash is the escape character) causing confusion.
-ACPICA BZ 739 Lin Ming.
+Fix a longstanding bug for the 8-port Marvell Sata controllers (508x/6081),
+where accesses to the upper 4 ports would cause lost-interrupts / timeouts
+for the lower 4-ports.  With this patch, the 6081 boards should finally be
+reliable enough for mainstream use with Linux.
 
-http://www.acpica.org/bugzilla/show_bug.cgi?id=739
-
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Len Brown <len.brown@intel.com>
-Cc: Thomas Renninger <trenn@suse.de>
+Signed-off-by: Mark Lord <mlord@pobox.com>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/namespace/nsutils.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ drivers/ata/sata_mv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/acpi/namespace/nsutils.c
-+++ b/drivers/acpi/namespace/nsutils.c
-@@ -314,9 +314,15 @@ void acpi_ns_get_internal_name_length(st
- 	 *
- 	 * strlen() + 1 covers the first name_seg, which has no path separator
- 	 */
--	if (acpi_ns_valid_root_prefix(next_external_char[0])) {
-+	if (acpi_ns_valid_root_prefix(*next_external_char)) {
- 		info->fully_qualified = TRUE;
- 		next_external_char++;
-+
-+		/* Skip redundant root_prefix, like \\_SB.PCI0.SBRG.EC0 */
-+
-+		while (acpi_ns_valid_root_prefix(*next_external_char)) {
-+			next_external_char++;
-+		}
- 	} else {
- 		/*
- 		 * Handle Carat prefixes
+--- a/drivers/ata/sata_mv.c
++++ b/drivers/ata/sata_mv.c
+@@ -883,7 +883,7 @@ static void mv_start_dma(struct ata_port
+ 		struct mv_host_priv *hpriv = ap->host->private_data;
+ 		int hardport = mv_hardport_from_port(ap->port_no);
+ 		void __iomem *hc_mmio = mv_hc_base_from_port(
+-					mv_host_base(ap->host), hardport);
++					mv_host_base(ap->host), ap->port_no);
+ 		u32 hc_irq_cause, ipending;
+ 
+ 		/* clear EDMA event indicators, if any */
 
