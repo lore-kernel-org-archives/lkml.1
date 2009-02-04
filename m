@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbZBDSqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760796AbZBDSqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760709AbZBDSqW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:46:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbZBDShc
+	id S1760796AbZBDSqi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:46:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbZBDShd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:32 -0500
-Received: from kroah.org ([198.145.64.141]:51158 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:33 -0500
+Received: from kroah.org ([198.145.64.141]:51163 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758188AbZBDShV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:21 -0500
-Date: Wed, 4 Feb 2009 10:35:03 -0800
+	id S1758275AbZBDShW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:22 -0500
+Date: Wed, 4 Feb 2009 10:35:05 -0800
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Larry.Finger@lwfinger.net,
-       linville@tuxdriver.com, nbd@openwrt.org,
-       Christian Lamparter <chunkeey@web.de>
-Subject: [patch 24/33] minstrel: fix warning if lowest supported rate index
-	is not 0
-Message-ID: <20090204183503.GY13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Seth Heasley <seth.heasley@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 25/33] PCI: irq and pci_ids patch for Intel Tigerpoint
+	DeviceIDs
+Message-ID: <20090204183505.GZ13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="minstrel-fix-warning-if-lowest-supported-rate-index-is-not-0.patch"
+Content-Disposition: inline; filename="pci-irq-and-pci_ids-patch-for-intel-tigerpoint-deviceids.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,65 +41,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Christian Lamparter <chunkeey@web.de>
+From: Seth Heasley <seth.heasley@intel.com>
 
-commit d57854bb1d78ba89ffbfdfd1c3e95b52ed7478ff upstream
+commit 57064d213d2e44654d4f13c66df135b5e7389a26 upstream.
 
-This patch fixes the following WARNING (caused by rix_to_ndx): "
->WARNING: at net/mac80211/rc80211_minstrel.c:69 minstrel_rate_init+0xd2/0x33a [mac80211]()
->[...]
->Call Trace:
-> warn_on_slowpath+0x51/0x75
-> _format_mac_addr+0x4c/0x88
-> minstrel_rate_init+0xd2/0x33a [mac80211]
-> print_mac+0x16/0x1b
-> schedule_hrtimeout_range+0xdc/0x107
-> ieee80211_add_station+0x158/0x1bd [mac80211]
-> nl80211_new_station+0x1b3/0x20b [cfg80211]
+This patch adds the Intel Tigerpoint LPC Controller DeviceIDs.
 
-The reason is that I'm experimenting with "g" only mode on a 802.11 b/g card.
-
-Therefore rate_lowest_index returns 4 (= 6Mbit, instead of usual 0 = 1Mbit).
-Since mi->r array is initialized with zeros in minstrel_alloc_sta,
-rix_to_ndx has a hard time to find the 6Mbit entry and will trigged the WARNING.
-
-Signed-off-by: Christian Lamparter <chunkeey@web.de>
-Acked-by: Felix Fietkau <nbd@openwrt.org>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Seth Heasley <seth.heasley@intel.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/mac80211/rc80211_minstrel.c |   10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ arch/x86/pci/irq.c      |    1 +
+ include/linux/pci_ids.h |    1 +
+ 2 files changed, 2 insertions(+)
 
---- a/net/mac80211/rc80211_minstrel.c
-+++ b/net/mac80211/rc80211_minstrel.c
-@@ -389,13 +389,15 @@ minstrel_rate_init(void *priv, struct ie
- {
- 	struct minstrel_sta_info *mi = priv_sta;
- 	struct minstrel_priv *mp = priv;
--	struct minstrel_rate *mr_ctl;
-+	struct ieee80211_local *local = hw_to_local(mp->hw);
-+	struct ieee80211_rate *ctl_rate;
- 	unsigned int i, n = 0;
- 	unsigned int t_slot = 9; /* FIXME: get real slot time */
- 
- 	mi->lowest_rix = rate_lowest_index(sband, sta);
--	mr_ctl = &mi->r[rix_to_ndx(mi, mi->lowest_rix)];
--	mi->sp_ack_dur = mr_ctl->ack_time;
-+	ctl_rate = &sband->bitrates[mi->lowest_rix];
-+	mi->sp_ack_dur = ieee80211_frame_duration(local, 10, ctl_rate->bitrate,
-+				!!(ctl_rate->flags & IEEE80211_RATE_ERP_G), 1);
- 
- 	for (i = 0; i < sband->n_bitrates; i++) {
- 		struct minstrel_rate *mr = &mi->r[n];
-@@ -410,7 +412,7 @@ minstrel_rate_init(void *priv, struct ie
- 
- 		mr->rix = i;
- 		mr->bitrate = sband->bitrates[i].bitrate / 5;
--		calc_rate_durations(mi, hw_to_local(mp->hw), mr,
-+		calc_rate_durations(mi, local, mr,
- 				&sband->bitrates[i]);
- 
- 		/* calculate maximum number of retransmissions before
+--- a/arch/x86/pci/irq.c
++++ b/arch/x86/pci/irq.c
+@@ -573,6 +573,7 @@ static __init int intel_router_probe(str
+ 	case PCI_DEVICE_ID_INTEL_ICH7_1:
+ 	case PCI_DEVICE_ID_INTEL_ICH7_30:
+ 	case PCI_DEVICE_ID_INTEL_ICH7_31:
++	case PCI_DEVICE_ID_INTEL_TGP_LPC:
+ 	case PCI_DEVICE_ID_INTEL_ESB2_0:
+ 	case PCI_DEVICE_ID_INTEL_ICH8_0:
+ 	case PCI_DEVICE_ID_INTEL_ICH8_1:
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -2418,6 +2418,7 @@
+ #define PCI_DEVICE_ID_INTEL_ICH7_0	0x27b8
+ #define PCI_DEVICE_ID_INTEL_ICH7_1	0x27b9
+ #define PCI_DEVICE_ID_INTEL_ICH7_30	0x27b0
++#define PCI_DEVICE_ID_INTEL_TGP_LPC	0x27bc
+ #define PCI_DEVICE_ID_INTEL_ICH7_31	0x27bd
+ #define PCI_DEVICE_ID_INTEL_ICH7_17	0x27da
+ #define PCI_DEVICE_ID_INTEL_ICH7_19	0x27dd
 
