@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763420AbZBDTCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763340AbZBDTC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763420AbZBDTCo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:02:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761437AbZBDStk
+	id S1763340AbZBDTC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:02:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759041AbZBDStk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 4 Feb 2009 13:49:40 -0500
-Received: from kroah.org ([198.145.64.141]:32884 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:32898 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759468AbZBDSt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:29 -0500
-Date: Wed, 4 Feb 2009 10:46:46 -0800
+	id S1760331AbZBDSta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:30 -0500
+Date: Wed, 4 Feb 2009 10:46:48 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Renninger <trenn@suse.de>,
-       Matthew Wilcox <willy@linux.intel.com>, Len Brown <len.brown@intel.com>
-Subject: [patch 29/41] ACPI: Fix compiler warnings introduced by 32 to 64
-	bit acpi conversions
-Message-ID: <20090204184646.GD25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
+Subject: [patch 30/41] ACPI EC: Fix regression due to use of uninitialized
+	variable
+Message-ID: <20090204184648.GE25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpi-fix-compiler-warnings-introduced-by-32-to-64-bit-acpi-conversions.patch"
+Content-Disposition: inline; filename="acpi-ec-fix-regression-due-to-use-of-uninitialized-variable.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,41 +41,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Renninger <trenn@suse.de>
+From: Alexey Starikovskiy <astarikovskiy@suse.de>
 
-commit: 27663c5855b10af9ec67bc7dfba001426ba21222 forgot to convert things at
-two prints.
+commit d21cf3c16b1191f3154a51e0b20c82bf851cc553 upstream.
 
-Cc: Matthew Wilcox <willy@linux.intel.com>
-Cc: Len Brown <len.brown@intel.com>
-Signed-off-by: Thomas Renninger <trenn@suse.de>
+breakage introduced by following patch
+commit 27663c5855b10af9ec67bc7dfba001426ba21222
+Author: Matthew Wilcox <willy@linux.intel.com>
+Date:   Fri Oct 10 02:22:59 2008 -0400
+
+acpi_evaluate_integer() does not clear passed variable if
+there is an error at evaluation.
+So if we ignore error, we must supply initialized variable.
+
+http://bugzilla.kernel.org/show_bug.cgi?id=11917
+
+Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+Tested-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/intel_menlow.c       |    2 +-
- drivers/pci/hotplug/acpiphp_ibm.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/acpi/ec.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/misc/intel_menlow.c
-+++ b/drivers/misc/intel_menlow.c
-@@ -104,7 +104,7 @@ static int memory_get_cur_bandwidth(stru
- 	if (ACPI_FAILURE(status))
- 		return -EFAULT;
+--- a/drivers/acpi/ec.c
++++ b/drivers/acpi/ec.c
+@@ -769,7 +769,7 @@ static acpi_status
+ ec_parse_device(acpi_handle handle, u32 Level, void *context, void **retval)
+ {
+ 	acpi_status status;
+-	unsigned long long tmp;
++	unsigned long long tmp = 0;
  
--	return sprintf(buf, "%ld\n", value);
-+	return sprintf(buf, "%lld\n", value);
- }
- 
- static int memory_set_cur_bandwidth(struct thermal_cooling_device *cdev,
---- a/drivers/pci/hotplug/acpiphp_ibm.c
-+++ b/drivers/pci/hotplug/acpiphp_ibm.c
-@@ -204,7 +204,7 @@ static int ibm_set_attention_status(stru
- 		err("APLS evaluation failed:  0x%08x\n", stat);
- 		return -ENODEV;
- 	} else if (!rc) {
--		err("APLS method failed:  0x%08lx\n", rc);
-+		err("APLS method failed:  0x%08llx\n", rc);
- 		return -ERANGE;
- 	}
- 	return 0;
+ 	struct acpi_ec *ec = context;
+ 	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
+@@ -784,6 +784,7 @@ ec_parse_device(acpi_handle handle, u32 
+ 		return status;
+ 	ec->gpe = tmp;
+ 	/* Use the global lock for all EC transactions? */
++	tmp = 0;
+ 	acpi_evaluate_integer(handle, "_GLK", NULL, &tmp);
+ 	ec->global_lock = tmp;
+ 	ec->handle = handle;
 
