@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760972AbZBDSrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761105AbZBDSr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760972AbZBDSrj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:47:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756372AbZBDShi
+	id S1761105AbZBDSr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:47:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758567AbZBDShj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:38 -0500
-Received: from kroah.org ([198.145.64.141]:51202 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:39 -0500
+Received: from kroah.org ([198.145.64.141]:51229 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758567AbZBDShZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:25 -0500
-Date: Wed, 4 Feb 2009 10:35:10 -0800
+	id S1758572AbZBDSh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:27 -0500
+Date: Wed, 4 Feb 2009 10:35:14 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Matthew Garrett <mjg59@srcf.ucam.org>,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: [patch 28/33] video: always update the brightness when poking
-	"brightness"
-Message-ID: <20090204183510.GC13936@kroah.com>
+Subject: [patch 30/33] ACPI: Do not modify SCI_EN directly
+Message-ID: <20090204183514.GE13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="video-always-update-the-brightness-when-poking-brightness.patch"
+Content-Disposition: inline; filename="acpi-do-not-modify-sci_en-directly.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,42 +40,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-commit 9e6dada9d255497127251c03aaa59296d186f959 upstream.
+commit 11e93130c7ce5228d484fd5e86f3984835d4256b upstream.
 
-always update props.brightness no matter the backlight is changed
-via procfs, hotkeys or sysfs.
+According to the ACPI specification the SCI_EN flag is controlled by
+the hardware, which sets this flag to inform the kernel that ACPI is
+enabled.  For this reason, we shouldn't try to modify SCI_EN
+directly.  Also, we don't need to do it in irqrouter_resume(), since
+lower-level resume code takes care of enabling ACPI in case it hasn't
+been enabled by the BIOS before passing control to the kernel (which
+by the way is against the ACPI specification).
 
-Sighed-off-by: Zhang Rui <rui.zhang@intel.com>
-Acked-by: Matthew Garrett <mjg59@srcf.ucam.org>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/video.c |    5 +++++
- 1 file changed, 5 insertions(+)
+ drivers/acpi/pci_link.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
---- a/drivers/acpi/video.c
-+++ b/drivers/acpi/video.c
-@@ -481,6 +481,7 @@ acpi_video_device_lcd_set_level(struct a
- 	int status = AE_OK;
- 	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
- 	struct acpi_object_list args = { 1, &arg0 };
-+	int state;
+--- a/drivers/acpi/pci_link.c
++++ b/drivers/acpi/pci_link.c
+@@ -796,10 +796,6 @@ static int irqrouter_resume(struct sys_d
+ 	struct list_head *node = NULL;
+ 	struct acpi_pci_link *link = NULL;
  
- 
- 	arg0.integer.value = level;
-@@ -489,6 +490,10 @@ acpi_video_device_lcd_set_level(struct a
- 		status = acpi_evaluate_object(device->dev->handle, "_BCM",
- 					      &args, NULL);
- 	device->brightness->curr = level;
-+	for (state = 2; state < device->brightness->count; state++)
-+		if (level == device->brightness->levels[state])
-+			device->backlight->props.brightness = state - 2;
-+
- 	return status;
- }
- 
+-
+-	/* Make sure SCI is enabled again (Apple firmware bug?) */
+-	acpi_set_register(ACPI_BITREG_SCI_ENABLE, 1);
+-
+ 	list_for_each(node, &acpi_link.entries) {
+ 		link = list_entry(node, struct acpi_pci_link, node);
+ 		if (!link) {
 
