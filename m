@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbZBDRJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757111AbZBDRTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbZBDRJi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 12:09:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbZBDRJ3
+	id S1757111AbZBDRTd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 12:19:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752604AbZBDRTX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 12:09:29 -0500
-Received: from mailbox2.myri.com ([64.172.73.26]:1859 "EHLO myri.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752728AbZBDRJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 12:09:28 -0500
-Message-ID: <4989CB58.5000509@myri.com>
-Date: Wed, 04 Feb 2009 12:07:36 -0500
-From: Loic Prylli <loic@myri.com>
-User-Agent: Thunderbird 2.0.0.17 (X11/20080914)
+	Wed, 4 Feb 2009 12:19:23 -0500
+Received: from acsinet12.oracle.com ([141.146.126.234]:18321 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752127AbZBDRTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 12:19:23 -0500
+Message-ID: <4989CE0A.6060603@oracle.com>
+Date: Wed, 04 Feb 2009 09:19:06 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Ed Swierk <eswierk@aristanetworks.com>
-CC: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] Detect mmconfig on nVidia MCP55
-References: <1233765552.16414.6.camel@localhost.localdomain>
-In-Reply-To: <1233765552.16414.6.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: linux-next: Tree for February 4 (sound/isa/msnd)
+References: <20090204192215.1045f2aa.sfr@canb.auug.org.au>
+In-Reply-To: <20090204192215.1045f2aa.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.4989CE09.00B7:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04/2009 11:39 AM, Ed Swierk wrote:
-> Detect and enable memory-mapped PCI configuration space on the nVidia
-> MCP55 southbridge even if the ACPI MCFG table is missing or wrong.
->
->   
+Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20090203:
+> 
+> Undropped trees:
+> 	sound
 
 
-Minor question: there are motherboards with two MCP55 southbridges. 
-Would the patch support mmconfig for both?
+When CONFIG_PNP=n:
+
+sound/isa/msnd/msnd_pinnacle.c:891: error: 'isapnp' undeclared (first use in this function)
 
 
-Loic
 
-
+-- 
+~Randy
