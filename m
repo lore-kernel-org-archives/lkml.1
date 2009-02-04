@@ -1,75 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZBDKCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbZBDKIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbZBDKCG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 05:02:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZBDKBy
+	id S1754499AbZBDKIB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 05:08:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbZBDKHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 05:01:54 -0500
-Received: from diva.malsain.org ([91.121.19.57]:37482 "EHLO diva.malsain.org"
+	Wed, 4 Feb 2009 05:07:52 -0500
+Received: from mx1.suse.de ([195.135.220.2]:48119 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751253AbZBDKBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 05:01:53 -0500
-X-Greylist: delayed 2729 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Feb 2009 05:01:53 EST
-Subject: Re: cgroup mount point
-From: Josselin Mouette <joss@debian.org>
-To: debian-devel@lists.debian.org, linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090204003847.308cd0df@sbs173>
-References: <20090202200013.GU3643@vespa.holoscopio.com>
-	 <1233606371.15779.32.camel@radis.liafa.jussieu.fr>
-	 <20090202205246.GA28593@glandium.org>
-	 <20090202214153.GV3643@vespa.holoscopio.com>
-	 <20090203102416.GA8886@redhat.com> <87ljsnzo4v.fsf@benfinney.id.au>
-	 <1233671913.8902.53.camel@abacate.horta>
-	 <6599ad830902030855h1753f4a4o3a303b4dbddf10de@mail.gmail.com>
-	 <20090203184915.GA10004@glandium.org>
-	 <20090203185117.GB3359@mini-me.seanius.net>
-	 <6599ad830902031114t7de1b570p4ed5ec497e2e150e@mail.gmail.com>
-	 <20090204003847.308cd0df@sbs173>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IxhQGec//Iwh5eUNeTg1"
-Date: Wed, 04 Feb 2009 10:16:21 +0100
-Message-Id: <1233738981.4045.4.camel@shizuru>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	id S1751918AbZBDKHv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 05:07:51 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 3/7] CPUFREQ: ondemand/conservative: sanitize sampling_rate restrictions
+Date: Wed, 4 Feb 2009 11:07:47 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.13-HEAD_20090130075504_71baee03-default; KDE/4.1.3; x86_64; ; )
+Cc: davej@codemonkey.org.uk, mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
+References: <1233679606-1971-1-git-send-email-trenn@suse.de> <1233679606-1971-4-git-send-email-trenn@suse.de> <20090203210725.bed8a1dd.akpm@linux-foundation.org>
+In-Reply-To: <20090203210725.bed8a1dd.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902041107.48417.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 04 February 2009 06:07:25 Andrew Morton wrote:
+> On Tue,  3 Feb 2009 17:46:42 +0100 Thomas Renninger <trenn@suse.de> wrote:
+> > Limit sampling rate to transition_latency * 100 or kernel limits.
+> > If sampling_rate is tried to be set too low, set the lowest allowed
+> > value.
+> >
+> > Signed-off-by: Thomas Renninger <trenn@suse.de>
+> > ---
+> >  Documentation/cpu-freq/governors.txt   |   14 +++++++++++++-
+> >  drivers/cpufreq/cpufreq_conservative.c |   19 ++++++++++++++++---
+> >  drivers/cpufreq/cpufreq_ondemand.c     |   19 +++++++++++++++----
+> >  3 files changed, 44 insertions(+), 8 deletions(-)
+> >
+> > diff --git a/Documentation/cpu-freq/governors.txt
+> > b/Documentation/cpu-freq/governors.txt index 9b18512..ce73f3e 100644
+> > --- a/Documentation/cpu-freq/governors.txt
+> > +++ b/Documentation/cpu-freq/governors.txt
+> > @@ -117,7 +117,19 @@ accessible parameters:
+> >  sampling_rate: measured in uS (10^-6 seconds), this is how often you
+> >  want the kernel to look at the CPU usage and to make decisions on
+> >  what to do about the frequency.  Typically this is set to values of
+> > -around '10000' or more.
+> > +around '10000' or more. It's default value is (cmp. with
+> > users-guide.txt): +transition_latency * 1000
+> > +The lowest value you can set is:
+> > +transition_latency * 100 or it may get restricted to a value where it
+> > +makes not sense for the kernel anymore to poll that often which depends
+> > +on your HZ config variable (HZ=1000: max=20000us, HZ=250: max=5000).
+> > +Be aware that transition latency is in ns and sampling_rate is in us, so
+> > you +get the same sysfs value by default.
+> > +Sampling rate should always get adjusted considering the transition
+> > latency +To set the sampling rate 750 times as high as the transition
+> > latency +in the bash (as said, 1000 is default), do:
+> > +echo `$(($(cat cpuinfo_transition_latency) * 750 / 1000)) \
+> > +    >ondemand/sampling_rate
+> >
+> >  show_sampling_rate_(min|max): THIS INTERFACE IS DEPRECATED, DON'T USE
+> > IT. You can use wider ranges now and the general
+> > diff --git a/drivers/cpufreq/cpufreq_conservative.c
+> > b/drivers/cpufreq/cpufreq_conservative.c index 5ba0a3f..b8bbd4a 100644
+> > --- a/drivers/cpufreq/cpufreq_conservative.c
+> > +++ b/drivers/cpufreq/cpufreq_conservative.c
+> > @@ -54,7 +54,18 @@ static unsigned int def_sampling_rate;
+> >  			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
+> >  #define MIN_SAMPLING_RATE			\
+> >  			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
+This one will vanish after the deprecation time expired.
 
---=-IxhQGec//Iwh5eUNeTg1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> > +/* Above MIN_SAMPLING_RATE will vanish with its sysfs file soon
+> > + * Define the minimal settable sampling rate to the greater of:
+> > + *   - "HW transition latency" * 100 (same as default sampling / 10)
+> > + *   - MIN_STAT_SAMPLING_RATE
+> > + * To avoid that userspace shoots itself.
+> > +*/
+> > +#define MINIMUM_SAMPLING_RATE			\
+> > +			((def_sampling_rate / 10) < MIN_STAT_SAMPLING_RATE \
+> > +			 ? MIN_STAT_SAMPLING_RATE : (def_sampling_rate / 10))
+>
+> Use
+> 	max(def_sampling_rate / 10, MIN_STAT_SAMPLING_RATE)
+> ?
+Ok.
 
-Le mercredi 04 f=C3=A9vrier 2009 =C3=A0 00:38 +0100, Harald Braumann a =C3=
-=A9crit :
-> So, what's the problem with /dev/cgroups then? If shm/ and pts/
-> are allowed under /dev, wouldn't it be discriminating against
-> cgroups/, to not allow it there?
+> But really, this should be a plain old C function.  Hiding a bunch of C
+> code inside a macro which purports to be a compile-time constant is rude.
+>
+> > +/* This will also vanish soon with removing sampling_rate_max */
+> >  #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
+>
+> Ditto, really.
+This one will also be removed after the deprecation time expired.
+Therefore I'd prefer to not touch it now and leave it as it is,
+but I will remove these with finally removing sampling_rate_{min,max}.
 
-/dev/pts contains device entries, so it sounds right to put it in /dev.
-Similarly if the cgroups FS provides facilities to control some system
-settings, it clearly belongs in /sys.
+I will also use max(..) where suggested and repost the three, modified
+patches.
+Thanks for your detailed, review. It's appreciated!
 
-(/dev/shm is another story, and if you asked me, I=E2=80=99d have put it
-in /lib/shm instead, but it=E2=80=99s a bit late to change it.)
+     Thomas
 
---=20
- .''`.
-: :' :      We are debian.org. Lower your prices, surrender your code.
-`. `'       We will add your hardware and software distinctiveness to
-  `-        our own. Resistance is futile.
-
---=-IxhQGec//Iwh5eUNeTg1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iD8DBQBJiVzkrSla4ddfhTMRAuIvAJ97+myCtPh+C0ggOUYbYbjtI3uprQCcC1OB
-FrLuEEAmuRmriX6+cDTqUPs=
-=QrjL
------END PGP SIGNATURE-----
-
---=-IxhQGec//Iwh5eUNeTg1--
+> > +
+> >  #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
+> >  #define DEF_SAMPLING_DOWN_FACTOR		(1)
+> >  #define MAX_SAMPLING_DOWN_FACTOR		(10)
+> > @@ -197,12 +208,14 @@ static ssize_t store_sampling_rate(struct
+> > cpufreq_policy *unused, ret = sscanf (buf, "%u", &input);
+> >
+> >  	mutex_lock(&dbs_mutex);
+> > -	if (ret != 1 || input > MAX_SAMPLING_RATE || input < MIN_SAMPLING_RATE)
+> > { +	if (ret != 1) {
+> >  		mutex_unlock(&dbs_mutex);
+> >  		return -EINVAL;
+> >  	}
+> > -
+> > -	dbs_tuners_ins.sampling_rate = input;
+> > +	if  (input < MINIMUM_SAMPLING_RATE)
+> > +		dbs_tuners_ins.sampling_rate = MINIMUM_SAMPLING_RATE;
+> > +	else
+> > +		dbs_tuners_ins.sampling_rate = input;
+>
+> 	dbs_tuners_ins.sampling_rate = max(MINIMUM_SAMPLING_RATE, input);
+>
+> >  	mutex_unlock(&dbs_mutex);
+> >
+> >  	return count;
+> > diff --git a/drivers/cpufreq/cpufreq_ondemand.c
+> > b/drivers/cpufreq/cpufreq_ondemand.c index 4b42e36..70e0841 100644
+> > --- a/drivers/cpufreq/cpufreq_ondemand.c
+> > +++ b/drivers/cpufreq/cpufreq_ondemand.c
+> > @@ -52,6 +52,16 @@ static unsigned int def_sampling_rate;
+> >  			(MIN_SAMPLING_RATE_RATIO * jiffies_to_usecs(10))
+> >  #define MIN_SAMPLING_RATE			\
+> >  			(def_sampling_rate / MIN_SAMPLING_RATE_RATIO)
+> > +/* Above MIN_SAMPLING_RATE will vanish with its sysfs file soon
+> > + * Define the minimal settable sampling rate to the greater of:
+> > + *   - "HW transition latency" * 100 (same as default sampling / 10)
+> > + *   - MIN_STAT_SAMPLING_RATE
+> > + * To avoid that userspace shoots itself.
+> > +*/
+> > +#define MINIMUM_SAMPLING_RATE			\
+> > +			((def_sampling_rate / 10) < MIN_STAT_SAMPLING_RATE \
+> > +			 ? MIN_STAT_SAMPLING_RATE : (def_sampling_rate / 10))
+> > +/* This will also vanish soon with removing sampling_rate_max */
+> >  #define MAX_SAMPLING_RATE			(500 * def_sampling_rate)
+> >  #define DEF_SAMPLING_RATE_LATENCY_MULTIPLIER	(1000)
+> >  #define TRANSITION_LATENCY_LIMIT		(10 * 1000 * 1000)
+> > @@ -243,13 +253,14 @@ static ssize_t store_sampling_rate(struct
+> > cpufreq_policy *unused, ret = sscanf(buf, "%u", &input);
+> >
+> >  	mutex_lock(&dbs_mutex);
+> > -	if (ret != 1 || input > MAX_SAMPLING_RATE
+> > -		     || input < MIN_SAMPLING_RATE) {
+> > +	if (ret != 1) {
+> >  		mutex_unlock(&dbs_mutex);
+> >  		return -EINVAL;
+> >  	}
+> > -
+> > -	dbs_tuners_ins.sampling_rate = input;
+> > +	if  (input < MINIMUM_SAMPLING_RATE)
+> > +		dbs_tuners_ins.sampling_rate = MINIMUM_SAMPLING_RATE;
+> > +	else
+> > +		dbs_tuners_ins.sampling_rate = input;
+> >  	mutex_unlock(&dbs_mutex);
+>
+> etceterata.
+> --
+> To unsubscribe from this list: send the line "unsubscribe cpufreq" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
