@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761712AbZBDSvA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760487AbZBDSuo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761712AbZBDSvA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:51:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759525AbZBDSrE
+	id S1760487AbZBDSuo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:50:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760801AbZBDSqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:47:04 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:47261 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758141AbZBDSrC convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:47:02 -0500
-Date: Wed, 4 Feb 2009 13:46:59 -0500
-To: linux-kernel@vger.kernel.org
-Subject: Re: Missing unistd_no.h and unistd_mm.h export on m68k
-Message-ID: <20090204184659.GG26064@csclub.uwaterloo.ca>
-References: <20090204181453.GE26064@csclub.uwaterloo.ca> <20090204183142.GF26064@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090204183142.GF26064@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+	Wed, 4 Feb 2009 13:46:40 -0500
+Received: from mail-qy0-f11.google.com ([209.85.221.11]:43377 "EHLO
+	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758801AbZBDSqj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:46:39 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=GtfZruL9IwLU8y92vPwfOp/GzPk6nX472OInj9kHEvJoHe8OuYyPhFp43yphI85xQ0
+         9YmDYNZcH9CPMOdf0MEBSV9LA1h8dntZni/8MTUFJ0eZu+8C0mUZ0ELUQxJXOyrEphG/
+         AfxIgbC0xAy6Bz83MENJfOoFVNRYMCsULqYPY=
+From: Alberto Bertogli <albertito@blitiri.com.ar>
+To: axboe@kernel.dk
+Cc: linux-kernel@vger.kernel.org, Alberto Bertogli <albertito@blitiri.com.ar>
+Subject: [PATCH] bio_put(): add bio_clone() to the list of functions in the comment
+Date: Wed,  4 Feb 2009 16:46:25 -0200
+Message-Id: <1233773185-13135-1-git-send-email-albertito@blitiri.com.ar>
+X-Mailer: git-send-email 1.6.1.1.363.g2a3bd
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 01:31:42PM -0500, Lennart Sorensen wrote:
-> On Wed, Feb 04, 2009 at 01:14:53PM -0500, Lennart Sorensen wrote:
-> > make header_install fails to include the files unistd_no.h and
-> > unistd_mm.h on m68k, while those two files are included by unistd.h.
-> > 
-> > This patch fixes this by adding these two files to the list of m68k
-> > specific headers to export.
-> > 
-> > Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
-> > 
-> > Signed
-> > diff --git a/arch/m68k/include/asm/Kbuild b/arch/m68k/include/asm/Kbuild
-> > index 1a922fa..2bb4738 100644
-> > --- a/arch/m68k/include/asm/Kbuild
-> > +++ b/arch/m68k/include/asm/Kbuild
-> > @@ -1,2 +1,2 @@
-> >  include include/asm-generic/Kbuild.asm
-> > -header-y += cachectl.h
-> > +header-y += cachectl.h unistd_no.h unistd_mm.h
-> 
-> Hmm, seems it is actually much worse than I thought.  All _no.h and
-> _mm.h are being missed, making m68k compiles of things like uclibc
-> rather broken.  Yuck.
+In bio_put()'s comment, add bio_clone() to the list of functions that can
+give you a bio reference.
 
-So updated patch that makes uclibc actually compile for m68k.
+Signed-off-by: Alberto Bertogli <albertito@blitiri.com.ar>
+---
+ fs/bio.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/fs/bio.c b/fs/bio.c
+index 4fb5046..43038f9 100644
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -392,7 +392,7 @@ EXPORT_SYMBOL(zero_fill_bio);
+  *
+  * Description:
+  *   Put a reference to a &struct bio, either one you have gotten with
+- *   bio_alloc or bio_get. The last put of a bio will free it.
++ *   bio_alloc, bio_get or bio_clone. The last put of a bio will free it.
+  **/
+ void bio_put(struct bio *bio)
+ {
 -- 
-Len Sorensen
+1.6.1.1.363.g2a3bd
 
-
-
-make header_install fails to include the files *_no.h and
-*_mm.h on m68k, while those files are included by the matching *.h
-
-This patch fixes this by adding these missing files to the list of m68k
-specific headers to export.  With this patch, uclibc compiles again.
-
-Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
-
-diff --git a/arch/m68k/include/asm/Kbuild b/arch/m68k/include/asm/Kbuild
-index 1a922fa..c69926c 100644
---- a/arch/m68k/include/asm/Kbuild
-+++ b/arch/m68k/include/asm/Kbuild
-@@ -1,2 +1,2 @@
- include include/asm-generic/Kbuild.asm
--header-y += cachectl.h
-+header-y += cachectl.h atomic_mm.h atomic_no.h bitops_mm.h bitops_no.h bootinfo_mm.h bootinfo_no.h bug_mm.h bug_no.h bugs_mm.h bugs_no.h cache_mm.h cache_no.h cacheflush_mm.h cacheflush_no.h checksum_mm.h checksum_no.h current_mm.h current_no.h delay_mm.h delay_no.h div64_mm.h div64_no.h dma-mapping_mm.h dma-mapping_no.h dma_mm.h dma_no.h elf_mm.h elf_no.h entry_mm.h entry_no.h fb_mm.h fb_no.h fpu_mm.h fpu_no.h hardirq_mm.h hardirq_no.h hw_irq_mm.h hw_irq_no.h io_mm.h io_no.h irq_mm.h irq_no.h kmap_types_mm.h kmap_types_no.h machdep_mm.h machdep_no.h mc146818rtc_mm.h mc146818rtc_no.h mmu_context_mm.h mmu_context_no.h mmu_mm.h mmu_no.h module_mm.h module_no.h page_mm.h page_no.h page_offset_mm.h page_offset_no.h param_mm.h param_no.h pci_mm.h pci_no.h pgalloc_mm.h pgalloc_no.h pgtable_mm.h pgtable_no.h processor_mm.h processor_no.h ptrace_mm.h ptrace_no.h scatterlist_mm.h scatterlist_no.h segment_mm.h segment_no.h setup_mm.h setup_no.h sigcontext_mm.h sigcontext_no.h siginfo_mm.h siginfo_no.h signal_mm.h signal_no.h string_mm.h string_no.h swab_mm.h swab_no.h system_mm.h system_no.h thread_info_mm.h thread_info_no.h timex_mm.h timex_no.h tlbflush_mm.h tlbflush_no.h traps_mm.h traps_no.h uaccess_mm.h uaccess_no.h ucontext_mm.h ucontext_no.h unaligned_mm.h unaligned_no.h unistd_mm.h unistd_no.h
