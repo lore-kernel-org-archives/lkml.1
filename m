@@ -1,86 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbZBDERb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755748AbZBDERo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754289AbZBDERb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 23:17:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZBDERV
+	id S1755748AbZBDERo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 23:17:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753181AbZBDER1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 23:17:21 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33934 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751358AbZBDERV (ORCPT
+	Tue, 3 Feb 2009 23:17:27 -0500
+Received: from web37601.mail.mud.yahoo.com ([209.191.87.84]:46290 "HELO
+	web37601.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752923AbZBDER0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 23:17:21 -0500
-Date: Tue, 3 Feb 2009 20:16:42 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, oleg@redhat.com,
-       travis@sgi.com, a.p.zijlstra@chello.nl, mm-commits@vger.kernel.org
-Subject: Re: +
- work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch  added to
- -mm tree
-Message-Id: <20090203201642.057a07b9.akpm@linux-foundation.org>
-In-Reply-To: <200902041428.12059.rusty@rustcorp.com.au>
-References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
-	<c62985530902030858y28906b2dh511c5868afabfd17@mail.gmail.com>
-	<20090203112529.26e6bf76.akpm@linux-foundation.org>
-	<200902041428.12059.rusty@rustcorp.com.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 23:17:26 -0500
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Tue, 03 Feb 2009 23:17:25 EST
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:Cc:MIME-Version:Content-Type:Message-ID;
+  b=UUKRvQKQrMhgIHtLj2HW05Rb9npzNsuJwT76+y48w0viKtitpNm2o/3LY1JnBHaVGg83cnEhYKq1pf7HEUxBxzf+hxu872FJXmDNnQtY36LJQyE50TGtVA3D7mdT3Er04KURHbLwtrAHsqUe1TAwmZjW8+TydMKN2bMT+QEksyU=;
+X-YMail-OSG: mnsOWYEVM1mPZzWHu.VgX8sFV3Xds1LB_nI6vC9FcDg4zKWH6lsWS_NFTAz0uz43qCrxXX2p974O3hbJV4pPwrL0tjdpcV5rSAiuEjHyCH_JqxYrYoAGArgHRjhGV1XrRMX5x1PRHx11tQKcWfx.JZsmMFnADUjBEwe6.0hpFDksKrqnh25Nbmhmkzsf
+X-Mailer: YahooMailWebService/0.7.260.1
+Date: Tue, 3 Feb 2009 20:10:44 -0800 (PST)
+From: Alex Dubov <oakad@yahoo.com>
+Reply-To: oakad@yahoo.com
+Subject: Support for direct IO in RapidIO susbsystem
+To: mporter@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <546742.44897.qm@web37601.mail.mud.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009 14:28:11 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
+Greetings.
 
-> On Wednesday 04 February 2009 05:55:29 Andrew Morton wrote:
-> > On Tue, 3 Feb 2009 17:58:13 +0100
-> > Fr__d__ric Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > 2009/2/3 Ingo Molnar <mingo@elte.hu>:
-> > > >
-> > > > * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-> > > >
-> > > >> ------------------------------------------------------
-> > > >> Subject: work_on_cpu(): rewrite it to create a kernel thread on demand
-> > > >> From: Andrew Morton <akpm@linux-foundation.org>
-> > > >>
-> > > >> The various implemetnations and proposed implemetnations of work_on_cpu()
-> > > >> are vulnerable to various deadlocks because they all used queues of some
-> > > >> form.
-> > > >>
-> > > >> Unrelated pieces of kernel code thus gained dependencies wherein if one
-> > > >> work_on_cpu() caller holds a lock which some other work_on_cpu() callback
-> > > >> also takes, the kernel could rarely deadlock.
-> > > >>
-> > > >> Fix this by creating a short-lived kernel thread for each work_on_cpu()
-> > > >> invokation.
-> > > >>
-> > > >> This is not terribly fast, but the only current caller of work_on_cpu() is
-> > > >> pci_call_probe().
-> > > >
-> > > > hm, it's quite ugly as well
-> > 
-> > No it isn't.
-> > 
-> > It's no less ugly than the current code.
-> > 
-> > It's less buggy than the current code.
-> 
-> Whatever, I like your version.
+I was browsing through kernel code and found no support for mmaping of remote RapidIO device address ranges. Therefore some questions:
 
-Careful, or you'll own it ;)
+1. Is there any open-source implementation of this functionality? There are some vendor supplied close-source drivers which do this.
+2. Are there any specific plans to implement it (agreed upon API, user space stuff, etc)?
 
-> Tho making it a series of 5 and exposing rdmsr_on_cpu/wrmsr_on_cpu for other
-> uses would be even better.
+Thanks.
 
-These:
 
-int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
-int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
-int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
-int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
 
-already exist.  I don't think anything else needs to be done here?
+      
