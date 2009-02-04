@@ -1,260 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754077AbZBDP1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752445AbZBDP1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754077AbZBDP1X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 10:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZBDP1N
+	id S1752445AbZBDP1h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 10:27:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZBDP1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 10:27:13 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:35179 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752427AbZBDP1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 10:27:14 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:64704 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752462AbZBDP1M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Feb 2009 10:27:12 -0500
-Date: Wed, 4 Feb 2009 15:27:10 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-Message-ID: <20090204152709.GA4799@csn.ul.ie>
-References: <20090123154653.GA14517@wotan.suse.de> <200902032136.26022.nickpiggin@yahoo.com.au> <20090203112226.GG9840@csn.ul.ie> <200902041748.41801.nickpiggin@yahoo.com.au>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ad9P4PFVMtwDvjkU7bD/jUS5+Bte5kAb0TGYKCAk7z3SUv2C71wfyTh1mNqiaFTT8G
+         QTJs99QqTZxrJTAn2xOtTJ4Woq2GlWMU6mC7POfsBbmcJMhmZw2Ab+i8UOScGSh6jquD
+         fEzBJ4pgbrchveUVs1esYXdQ94bkgHwUGBJFk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <200902041748.41801.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090204071136.2f682dc2@infradead.org>
+References: <c4e36d110902040649v3810c96du1c84caa9052ef4c6@mail.gmail.com>
+	 <20090204071136.2f682dc2@infradead.org>
+Date: Wed, 4 Feb 2009 16:27:08 +0100
+Message-ID: <c4e36d110902040727p1742a8fbxa382cfe2cd3f0ae7@mail.gmail.com>
+Subject: Re: BUG: unable to handle kernel paging request at 0000000000002328 
+	__d_lookup+0xc8/0x1d0
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 05:48:40PM +1100, Nick Piggin wrote:
-> On Tuesday 03 February 2009 22:22:26 Mel Gorman wrote:
-> > On Tue, Feb 03, 2009 at 09:36:24PM +1100, Nick Piggin wrote:
-> 
-> > > But it will be interesting to try looking at some of the tests where
-> > > SLQB has larger regressions, so that might give me something to go on
-> > > if I can lay my hands on speccpu2006...
-> >
-> > I can generate profile runs although it'll take 3 days to gather it all
-> > together unless I target specific tests (the worst ones to start with
-> > obviously). The suite has a handy feature called monitor hooks that allows
-> > a pre and post script to run for each test which I use it to start/stop
-> > oprofile and gather one report per benchmark. I didn't use it for this run
-> > as profiling affects the outcome (7-9% overhead).
-> >
-> > I do have detailed profile data available for sysbench, both per thread run
-> > and the entire run but with the instruction-level included, it's a lot of
-> > data to upload. If you still want it, I'll start it going and it'll get up
-> > there eventually.
-> 
-> It couldn't hurt, but it's usually tricky to read anything out of these from
-> CPU cycle profiles. Especially if they are due to cache or tlb effects (which
-> tend to just get spread out all over the profile).
-> 
+2009/2/4 Arjan van de Ven <arjan@infradead.org>:
+> On Wed, 4 Feb 2009 15:49:52 +0100
+> Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
+>
+>> Hi
+>>
+>> Today I've got this ugly oops - my machine T61, 4GB of memory (checked
+>> with memtest), SMP, C2D
+>> kernel commit: 33bfad54b58cf05cfe6678c3ec9235d4bc8db4c2
+>>
+>> The only 'strange' thing I've been doing today is testing ext4 and its
+>> online resize functionality.
+>> But this oops happened somewhat later - so I'm not really sure whether
+>> there is some correlation.
+>>
+>> (Full kernel log follows)
+>
+> if you have CONFIG_DEBUG_INFO enabled, you can run the oops through
+> http://www.kerneloops.org/download/markup_oops.pl (or
+> scripts/markup_oops.pl, but the 64 bit support is pending in a
+> maintainer tree) to turn this into an even better bug report...
+> ... it will show exactly where in the code the oops was.
+>
 
-Indeed. To date, I've used them for comparing relative counts of things like
-TLB and cache misses on the basis "relatively more misses running test X is
-bad" or working out things like tlb-misses-per-instructions but it's a bit
-vague. We might notice if one of the allocators is being particularly cache
-unfriendly due to a spike in cache misses.
+Yep ok - I'm using a script called disasfun.sh - but both gives the same output:
 
-> slabinfo (for SLUB) and slqbinfo (for SLQB) activity data could be interesting
-> (invoke with -AD).
-> 
-
-Ok, I butchered Ingo's proc monitoring script to gather /proc/slabinfo,
-slabinfo -AD and slqbinfo -AD before and after each speccpu subtest.  The tests
-with profiling just started but it will take a few days to complete and thats
-assuming I made no mistakes in the automation. I'll be at FOSDEM from Friday
-till Monday so may not be able to collect the results until Monday.
-
-> 
-> > > I'd be interested to see how slub performs if booted with
-> > > slub_min_objects=1 (which should give similar order pages to SLAB and
-> > > SLQB).
-> >
-> > I'll do this before profiling as only one run is required and should
-> > only take a day.
-> >
-> > Making spec actually build is tricky so I've included a sample config for
-> > x86-64 below that uses gcc and the monitor hooks in case someone else is in
-> > the position to repeat the results.
-> 
-> Thanks. I don't know if we have a copy of spec 2006 I can use, but I'll ask
-> around.
-> 
-
-In the meantime, here are the results I have with slub configured  to
-use small orders.
-
-X86-64 Test machine
-        CPU             AMD Phenom 9950 Quad-Core
-        CPU Frequency   1.3GHz
-        Physical CPUs   1 (4 cores)
-        L1 Cache        64K Data, 64K Instruction per core
-        L2 Cache        512K Unified per core
-        L3 Cache        2048K Unified Shared per chip
-        Main Memory     8 GB
-        Mainboard       Gigabyte GA-MA78GM-S2H
-        Machine Model   Custom built from parts
-
-SPEC CPU 2006
--------------
-Integer tests
-SPEC test       slab                 slub  slub-minorder           slqb
-400.perlbench   1.0000             1.0016         0.9921         1.0064
-401.bzip2       1.0000             0.9804         0.9858         1.0011
-403.gcc         1.0000             1.0023         0.9977         0.9965
-429.mcf         1.0000             1.0022         0.9847         0.9963
-445.gobmk       1.0000             0.9944         0.9958         0.9986
-456.hmmer       1.0000             0.9792         0.9874         0.9701
-458.sjeng       1.0000             0.9989         1.0144         1.0133
-462.libquantum  1.0000             0.9905         0.9943         0.9981
-464.h264ref     1.0000             0.9877         0.9926         1.0058
-471.omnetpp     1.0000             0.9893         1.0896         1.0993
-473.astar       1.0000             0.9542         0.9930         0.9596
-483.xalancbmk   1.0000             0.9547         0.9928         0.9982
+--------------
+Here is markup_oops.pl:
 ---------------
-specint geomean 1.0000             0.9862         1.0013         1.0031
 
-Floating Point Tests
-SPEC test       slab                 slub  slub-minorder           slqb
-410.bwaves      1.0000             0.9939         1.0000         1.0005
-416.gamess      1.0000             1.0040         1.0032         0.9984
-433.milc        1.0000             0.9865         0.9986         0.9865
-434.zeusmp      1.0000             0.9810         0.9980         0.9879
-435.gromacs     1.0000             0.9854         1.0100         1.0125
-436.cactusADM   1.0000             1.0467         0.9904         1.0294
-437.leslie3d    1.0000             0.9846         0.9970         0.9963
-444.namd        1.0000             1.0000         0.9986         1.0000
-447.dealII      1.0000             0.9913         0.9957         0.9957
-450.soplex      1.0000             0.9940         0.9955         1.0015
-453.povray      1.0000             0.9904         1.0097         1.0197
-454.calculix    1.0000             0.9937         0.9975         1.0000
-459.GemsFDTD    1.0000             1.0061         0.9902         1.0000
-465.tonto       1.0000             0.9979         1.0000         0.9989
-470.lbm         1.0000             1.0099         0.9924         1.0212
-481.wrf         1.0000             1.0000         1.0045         1.0045
-482.sphinx3     1.0000             1.0047         1.0000         1.0068
----------------
-specfp geomean  1.0000             0.9981         0.9989         1.0035
+No vmlinux specified, assuming /lib/modules/2.6.29-rc3/build/vmlinux
+ 				goto next;
+ 		} else {
+ 			if (qstr->len != len)
+ 				goto next;
+ 			if (memcmp(qstr->name, str, len))
+ ffffffff802f821b:	44 8b 75 c4          	mov    -0x3c(%rbp),%r14d |  %r14 => 5
+ 	struct hlist_node *node;
+ 	struct dentry *dentry;
 
-Sysbench-Postgres
------------------
-Client           slab  slub-default  slub-minorder            slqb
-     1         1.0000        0.9484         0.9699          0.9804
-     2         1.0000        1.0069         1.0036          0.9994
-     3         1.0000        1.0064         1.0080          0.9994
-     4         1.0000        0.9900         1.0049          0.9904
-     5         1.0000        1.0023         1.0144          0.9869
-     6         1.0000        1.0139         1.0215          1.0069
-     7         1.0000        0.9973         0.9966          0.9991
-     8         1.0000        1.0206         1.0223          1.0197
-     9         1.0000        0.9884         1.0167          0.9817
-    10         1.0000        0.9980         0.9842          1.0135
-    11         1.0000        0.9959         1.0036          1.0164
-    12         1.0000        0.9978         1.0032          0.9953
-    13         1.0000        1.0024         1.0022          0.9942
-    14         1.0000        0.9975         1.0064          0.9808
-    15         1.0000        0.9914         0.9949          0.9933
-    16         1.0000        0.9767         0.9692          0.9726
-Geo. mean      1.0000        0.9957         1.0012          0.9955
+ 	rcu_read_lock();
+ 	
+ 	hlist_for_each_entry_rcu(dentry, node, head, d_hash) {
+ ffffffff802f821f:	4c 31 eb             	xor    %r13,%rbx   |  %r13 =
+18721e0036d5fe5
+ ffffffff802f8222:	44 8b 55 b8          	mov    -0x48(%rbp),%r10d |
+%r10 => 85a6ed9
+ ffffffff802f8226:	41 21 dc             	and    %ebx,%r12d
+ ffffffff802f8229:	4c 8b 5d b0          	mov    -0x50(%rbp),%r11 |
+%r11 => ffff88013b404300
+ ffffffff802f822d:	4e 8d 24 e0          	lea    (%rax,%r12,8),%r12 |
+%r12 => ffff8800028b0000
+ ffffffff802f8231:	49 8b 04 24          	mov    (%r12),%rax |  %r12 =
+ffff8800028b0000
+ ffffffff802f8235:	48 89 c3             	mov    %rax,%rbx
+ ffffffff802f8238:	48 85 c0             	test   %rax,%rax   |  %eax => 2328
+ ffffffff802f823b:	75 0b                	jne    ffffffff802f8248
+<__d_lookup+0xc8>
+ ffffffff802f823d:	eb 69                	jmp    ffffffff802f82a8
+<__d_lookup+0x128>
+ ffffffff802f823f:	90                   	nop
+ ffffffff802f8240:	48 8b 1b             	mov    (%rbx),%rbx
+ ffffffff802f8243:	48 85 db             	test   %rbx,%rbx   |  %ebx => 2328
+ ffffffff802f8246:	74 60                	je     ffffffff802f82a8
+<__d_lookup+0x128>
+*ffffffff802f8248:	48 8b 03             	mov    (%rbx),%rax |  %ebx =
+2328 <--- faulting instruction
+ ffffffff802f824b:	4c 8d 63 a8          	lea    -0x58(%rbx),%r12
+ ffffffff802f824f:	0f 18 08             	prefetcht0 (%rax)
+ 		struct qstr *qstr;
 
-PPC64 Test Machine
-        CPU              PPC970MP, altivec supported
-        CPU Frequency    2.5GHz
-        Physical CPUs 2 x dual core (4 cores in all)
-        L1 Cache         32K Data, 64K Instruction per core
-        L2 Cache         1024K Unified per core
-        L3 Cache         N/a
-        Main Memory      10GB
-        Mainboard        Specific to the machine model
+ 		if (dentry->d_name.hash != hash)
+ ffffffff802f8252:	45 39 54 24 70       	cmp    %r10d,0x70(%r12)
+ ffffffff802f8257:	75 e7                	jne    ffffffff802f8240
+<__d_lookup+0xc0>
+ 			continue;
+ 		if (dentry->d_parent != parent)
+ ffffffff802f8259:	4d 39 5c 24 68       	cmp    %r11,0x68(%r12)
+ ffffffff802f825e:	75 e0                	jne    ffffffff802f8240
+<__d_lookup+0xc0>
+ 			continue;
 
-SPEC CPU 2006
--------------
-Integer tests
-SPEC test       slab                 slub  slub-minorder           slqb
-400.perlbench   1.0000             1.0497         1.0515         1.0497
-401.bzip2       1.0000             1.0496         1.0496         1.0489
-403.gcc         1.0000             1.0509         1.0509         1.0509
-429.mcf         1.0000             1.0554         1.0549         1.0549
-445.gobmk       1.0000             1.0535         1.0545         1.0556
-456.hmmer       1.0000             1.0651         1.0636         1.0566
-458.sjeng       1.0000             1.0612         1.0612         1.0564
-462.libquantum  1.0000             1.0389         1.0403         1.0396
-464.h264ref     1.0000             1.0517         1.0496         1.0503
-471.omnetpp     1.0000             1.0555         1.0574         1.0574
-473.astar       1.0000             1.0508         1.0514         1.0521
-483.xalancbmk   1.0000             1.0594         1.0584         1.0584
----------------
-specint geomean 1.0000             1.0534         1.0536         1.0525
+ 		spin_lock(&dentry->d_lock);
+ ffffffff802f8260:	44 89 55 b8          	mov    %r10d,-0x48(%rbp)
+ ffffffff802f8264:	4c 89 5d b0          	mov    %r11,-0x50(%rbp)
+ ffffffff802f8268:	4d 8d 6c 24 08       	lea    0x8(%r12),%r13
+ ffffffff802f826d:	4c 89 ef             	mov    %r13,%rdi
+ ffffffff802f8270:	e8 3b df 25 00       	callq  ffffffff805561b0 <_spin_lock>
+ 		/*
+ 		 * Recheck the dentry after taking the lock - d_move may have
 
-Floating Point Tests
-SPEC test       slab                 slub  slub-minorder           slqb
-410.bwaves      1.0000             1.0381         1.0381         1.0367
-416.gamess      1.0000             1.0550         1.0539         1.0550
-433.milc        1.0000             1.0464         1.0457         1.0450
-434.zeusmp      1.0000             1.0510         1.0482         1.0528
-435.gromacs     1.0000             1.0461         1.0437         1.0445
-436.cactusADM   1.0000             1.0457         1.0463         1.0450
-437.leslie3d    1.0000             1.0437         1.0437         1.0428
-444.namd        1.0000             1.0482         1.0482         1.0496
-447.dealII      1.0000             1.0505         1.0495         1.0505
-450.soplex      1.0000             1.0522         1.0511         1.0499
-453.povray      1.0000             1.0513         1.0534         1.0534
-454.calculix    1.0000             1.0374         1.0370         1.0357
-459.GemsFDTD    1.0000             1.0465         1.0465         1.0465
-465.tonto       1.0000             1.0488         1.0494         1.0456
-470.lbm         1.0000             1.0438         1.0438         1.0452
-481.wrf         1.0000             1.0423         1.0423         1.0429
-482.sphinx3     1.0000             1.0464         1.0479         1.0479
----------------
-specfp geomean  1.0000             1.0467         1.0464         1.0464
 
-Sysbench-Postgres
------------------
-Client           slab  slub-default  slub-minorder            slqb
-     1         1.0000        1.0153         1.0179          1.0051
-     2         1.0000        1.0273         1.0181          1.0269
-     3         1.0000        1.0299         1.0195          1.0234
-     4         1.0000        1.0159         1.0130          1.0146
-     5         1.0000        1.0232         1.0192          1.0264
-     6         1.0000        1.0238         1.0142          1.0088
-     7         1.0000        1.0240         1.0063          1.0076
-     8         1.0000        1.0134         0.9842          1.0024
-     9         1.0000        1.0154         1.0152          1.0077
-    10         1.0000        1.0126         1.0018          1.0009
-    11         1.0000        1.0100         0.9971          0.9933
-    12         1.0000        1.0112         0.9985          0.9993
-    13         1.0000        1.0131         1.0060          1.0035
-    14         1.0000        1.0237         1.0074          1.0071
-    15         1.0000        1.0098         0.9997          0.9997
-    16         1.0000        1.0110         0.9899          0.9994
-Geo. mean      1.0000        1.0175         1.0067          1.0078
+--------------------------
+and here is  disasfun.sh  -   fault is at 0x2100 + 0xc8 -> 0x21c8
+---------------------------
 
-The order SLUB uses does not make much of a difference to SPEC CPU on
-either test machine or sysbench on x86-64. Howeer, on the ppc64 machine, the
-performance advantage SLUB has over SLAB appears to be eliminated if high-order
-pages are not used. I think I might run SLUB again incase the higher average
-performance was a co-incidence due to lucky cache layout. Otherwise, Christoph
-can probably put together a plausible theory on this result faster than I can.
 
-On the TLB front, it is perfectly possible that the workloads on x86-64 are
-not allocator or memory intensive enough to take advantage of fewer calls to
-the page allocator or potentially reduced TLB pressure. As the kernel portion
-of the address space already uses huge pages slab objects may have to occupy
-a very large percentage of memory before TLB pressure became an issue. The L1
-TLBs on both test machines are fully associative making testing reduced TLB
-pressure practically impossible. For bonus points, 1G pages are being used on
-the x86-64 so I have nowhere near enough memory to put that under TLB pressure.
 
-Measuring reduced metadata overhead is more plausible.
+    2191:	44 89 f1             	mov    %r14d,%ecx
+	struct hlist_node *node;
+	struct dentry *dentry;
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+	rcu_read_lock();
+	
+	hlist_for_each_entry_rcu(dentry, node, head, d_hash) {
+    2194:	48 8b 45 d0          	mov    -0x30(%rbp),%rax
+
+static inline struct hlist_head *d_hash(struct dentry *parent,
+					unsigned long hash)
+{
+	hash += ((unsigned long) parent ^ GOLDEN_RATIO_PRIME) / L1_CACHE_BYTES;
+	hash = hash ^ ((hash ^ GOLDEN_RATIO_PRIME) >> D_HASHBITS);
+    2198:	48 d3 eb             	shr    %cl,%rbx
+			if (parent->d_op->d_compare(parent, qstr, name))
+				goto next;
+		} else {
+			if (qstr->len != len)
+				goto next;
+			if (memcmp(qstr->name, str, len))
+    219b:	44 8b 75 c4          	mov    -0x3c(%rbp),%r14d
+	struct hlist_node *node;
+	struct dentry *dentry;
+
+	rcu_read_lock();
+	
+	hlist_for_each_entry_rcu(dentry, node, head, d_hash) {
+    219f:	4c 31 eb             	xor    %r13,%rbx
+    21a2:	44 8b 55 b8          	mov    -0x48(%rbp),%r10d
+    21a6:	41 21 dc             	and    %ebx,%r12d
+    21a9:	4c 8b 5d b0          	mov    -0x50(%rbp),%r11
+    21ad:	4e 8d 24 e0          	lea    (%rax,%r12,8),%r12
+    21b1:	49 8b 04 24          	mov    (%r12),%rax
+    21b5:	48 89 c3             	mov    %rax,%rbx
+    21b8:	48 85 c0             	test   %rax,%rax
+    21bb:	75 0b                	jne    21c8 <__d_lookup+0xc8>
+    21bd:	eb 69                	jmp    2228 <__d_lookup+0x128>
+    21bf:	90                   	nop
+    21c0:	48 8b 1b             	mov    (%rbx),%rbx
+    21c3:	48 85 db             	test   %rbx,%rbx
+    21c6:	74 60                	je     2228 <__d_lookup+0x128>
+    21c8:	48 8b 03             	mov    (%rbx),%rax
+    21cb:	4c 8d 63 a8          	lea    -0x58(%rbx),%r12
+    21cf:	0f 18 08             	prefetcht0 (%rax)
+		struct qstr *qstr;
+
+		if (dentry->d_name.hash != hash)
+    21d2:	45 39 54 24 70       	cmp    %r10d,0x70(%r12)
+    21d7:	75 e7                	jne    21c0 <__d_lookup+0xc0>
+			continue;
+		if (dentry->d_parent != parent)
+    21d9:	4d 39 5c 24 68       	cmp    %r11,0x68(%r12)
+    21de:	75 e0                	jne    21c0 <__d_lookup+0xc0>
+			continue;
+
+		spin_lock(&dentry->d_lock);
+    21e0:	44 89 55 b8          	mov    %r10d,-0x48(%rbp)
+    21e4:	4c 89 5d b0          	mov    %r11,-0x50(%rbp)
+    21e8:	4d 8d 6c 24 08       	lea    0x8(%r12),%r13
+    21ed:	4c 89 ef             	mov    %r13,%rdi
+    21f0:	e8 00 00 00 00       	callq  21f5 <__d_lookup+0xf5>
+		/*
+		 * Recheck the dentry after taking the lock - d_move may have
+		 * changed things.  Don't bother checking the hash because we're
+		 * about to compare the whole name anyway.
+		 */
+		if (dentry->d_parent != parent)
+
+
+Zdenek
