@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760665AbZBDSpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbZBDSqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760665AbZBDSpy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:45:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755675AbZBDSha
+	id S1760709AbZBDSqW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:46:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758581AbZBDShc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:30 -0500
-Received: from kroah.org ([198.145.64.141]:51138 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:32 -0500
+Received: from kroah.org ([198.145.64.141]:51158 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758550AbZBDShU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:20 -0500
-Date: Wed, 4 Feb 2009 10:35:01 -0800
+	id S1758188AbZBDShV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:21 -0500
+Date: Wed, 4 Feb 2009 10:35:03 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,16 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linville@tuxdriver.com,
-       Larry.Finger@lwfinger.net, Christian Lamparter <chunkeey@web.de>
-Subject: [patch 23/33] p54usb: rewriting rx/tx routines to make use of
-	usb_anchors facilities
-Message-ID: <20090204183501.GX13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Larry.Finger@lwfinger.net,
+       linville@tuxdriver.com, nbd@openwrt.org,
+       Christian Lamparter <chunkeey@web.de>
+Subject: [patch 24/33] minstrel: fix warning if lowest supported rate index
+	is not 0
+Message-ID: <20090204183503.GY13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="p54usb-rewriting-rx-tx-routines-to-make-use-of-usb_anchor-s-facilities.patch"
+Content-Disposition: inline; filename="minstrel-fix-warning-if-lowest-supported-rate-index-is-not-0.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -43,275 +44,63 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Christian Lamparter <chunkeey@web.de>
 
-commit dd397dc9dddfa2149a1bbc9e52ac7d5630737cec upstream
+commit d57854bb1d78ba89ffbfdfd1c3e95b52ed7478ff upstream
 
-Alan Stern found several flaws in p54usb's implementation and annotated:
-"usb_kill_urb() and similar routines do not expect an URB's completion
-routine to deallocate it.  This is almost obvious -- if the URB is deallocated
-before the completion routine returns then there's no way for usb_kill_urb
-to detect when the URB actually is complete."
+This patch fixes the following WARNING (caused by rix_to_ndx): "
+>WARNING: at net/mac80211/rc80211_minstrel.c:69 minstrel_rate_init+0xd2/0x33a [mac80211]()
+>[...]
+>Call Trace:
+> warn_on_slowpath+0x51/0x75
+> _format_mac_addr+0x4c/0x88
+> minstrel_rate_init+0xd2/0x33a [mac80211]
+> print_mac+0x16/0x1b
+> schedule_hrtimeout_range+0xdc/0x107
+> ieee80211_add_station+0x158/0x1bd [mac80211]
+> nl80211_new_station+0x1b3/0x20b [cfg80211]
 
-This patch addresses all known limitations in the old implementation and fixes
-khub's "use-after-freed" hang, when SLUB debug's poisoning option is enabled.
+The reason is that I'm experimenting with "g" only mode on a 802.11 b/g card.
+
+Therefore rate_lowest_index returns 4 (= 6Mbit, instead of usual 0 = 1Mbit).
+Since mi->r array is initialized with zeros in minstrel_alloc_sta,
+rix_to_ndx has a hard time to find the 6Mbit entry and will trigged the WARNING.
 
 Signed-off-by: Christian Lamparter <chunkeey@web.de>
-Tested-by: Larry Finger <Larry.Finger@lwfinger.net>
+Acked-by: Felix Fietkau <nbd@openwrt.org>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/p54/p54usb.c |  143 +++++++++++++++++++++++---------------
- drivers/net/wireless/p54/p54usb.h |    1 
- 2 files changed, 89 insertions(+), 55 deletions(-)
+ net/mac80211/rc80211_minstrel.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
---- a/drivers/net/wireless/p54/p54usb.c
-+++ b/drivers/net/wireless/p54/p54usb.c
-@@ -85,13 +85,13 @@ static void p54u_rx_cb(struct urb *urb)
- 	struct ieee80211_hw *dev = info->dev;
- 	struct p54u_priv *priv = dev->priv;
- 
-+	skb_unlink(skb, &priv->rx_queue);
-+
- 	if (unlikely(urb->status)) {
--		info->urb = NULL;
--		usb_free_urb(urb);
-+		dev_kfree_skb_irq(skb);
- 		return;
- 	}
- 
--	skb_unlink(skb, &priv->rx_queue);
- 	skb_put(skb, urb->actual_length);
- 
- 	if (priv->hw_type == P54U_NET2280)
-@@ -104,7 +104,6 @@ static void p54u_rx_cb(struct urb *urb)
- 	if (p54_rx(dev, skb)) {
- 		skb = dev_alloc_skb(priv->common.rx_mtu + 32);
- 		if (unlikely(!skb)) {
--			usb_free_urb(urb);
- 			/* TODO check rx queue length and refill *somewhere* */
- 			return;
- 		}
-@@ -114,7 +113,6 @@ static void p54u_rx_cb(struct urb *urb)
- 		info->dev = dev;
- 		urb->transfer_buffer = skb_tail_pointer(skb);
- 		urb->context = skb;
--		skb_queue_tail(&priv->rx_queue, skb);
- 	} else {
- 		if (priv->hw_type == P54U_NET2280)
- 			skb_push(skb, priv->common.tx_hdr_len);
-@@ -129,22 +127,23 @@ static void p54u_rx_cb(struct urb *urb)
- 			WARN_ON(1);
- 			urb->transfer_buffer = skb_tail_pointer(skb);
- 		}
--
--		skb_queue_tail(&priv->rx_queue, skb);
- 	}
- 
--	usb_submit_urb(urb, GFP_ATOMIC);
-+	usb_anchor_urb(urb, &priv->submitted);
-+	if (usb_submit_urb(urb, GFP_ATOMIC)) {
-+		usb_unanchor_urb(urb);
-+		dev_kfree_skb_irq(skb);
-+	} else
-+		skb_queue_tail(&priv->rx_queue, skb);
- }
- 
--static void p54u_tx_cb(struct urb *urb)
--{
--	usb_free_urb(urb);
--}
-+static void p54u_tx_cb(struct urb *urb) { }
- 
--static void p54u_tx_free_cb(struct urb *urb)
-+static void p54u_free_urbs(struct ieee80211_hw *dev)
+--- a/net/mac80211/rc80211_minstrel.c
++++ b/net/mac80211/rc80211_minstrel.c
+@@ -389,13 +389,15 @@ minstrel_rate_init(void *priv, struct ie
  {
--	kfree(urb->transfer_buffer);
--	usb_free_urb(urb);
-+	struct p54u_priv *priv = dev->priv;
-+
-+	usb_kill_anchored_urbs(&priv->submitted);
- }
+ 	struct minstrel_sta_info *mi = priv_sta;
+ 	struct minstrel_priv *mp = priv;
+-	struct minstrel_rate *mr_ctl;
++	struct ieee80211_local *local = hw_to_local(mp->hw);
++	struct ieee80211_rate *ctl_rate;
+ 	unsigned int i, n = 0;
+ 	unsigned int t_slot = 9; /* FIXME: get real slot time */
  
- static int p54u_init_urbs(struct ieee80211_hw *dev)
-@@ -153,15 +152,18 @@ static int p54u_init_urbs(struct ieee802
- 	struct urb *entry;
- 	struct sk_buff *skb;
- 	struct p54u_rx_info *info;
-+	int ret = 0;
+ 	mi->lowest_rix = rate_lowest_index(sband, sta);
+-	mr_ctl = &mi->r[rix_to_ndx(mi, mi->lowest_rix)];
+-	mi->sp_ack_dur = mr_ctl->ack_time;
++	ctl_rate = &sband->bitrates[mi->lowest_rix];
++	mi->sp_ack_dur = ieee80211_frame_duration(local, 10, ctl_rate->bitrate,
++				!!(ctl_rate->flags & IEEE80211_RATE_ERP_G), 1);
  
- 	while (skb_queue_len(&priv->rx_queue) < 32) {
- 		skb = __dev_alloc_skb(priv->common.rx_mtu + 32, GFP_KERNEL);
--		if (!skb)
--			break;
-+		if (!skb) {
-+			ret = -ENOMEM;
-+			goto err;
-+		}
- 		entry = usb_alloc_urb(0, GFP_KERNEL);
- 		if (!entry) {
--			kfree_skb(skb);
--			break;
-+			ret = -ENOMEM;
-+			goto err;
- 		}
- 		usb_fill_bulk_urb(entry, priv->udev,
- 				  usb_rcvbulkpipe(priv->udev, P54U_PIPE_DATA),
-@@ -171,26 +173,25 @@ static int p54u_init_urbs(struct ieee802
- 		info->urb = entry;
- 		info->dev = dev;
- 		skb_queue_tail(&priv->rx_queue, skb);
--		usb_submit_urb(entry, GFP_KERNEL);
-+
-+		usb_anchor_urb(entry, &priv->submitted);
-+		ret = usb_submit_urb(entry, GFP_KERNEL);
-+		if (ret) {
-+			skb_unlink(skb, &priv->rx_queue);
-+			usb_unanchor_urb(entry);
-+			goto err;
-+		}
-+		usb_free_urb(entry);
-+		entry = NULL;
- 	}
+ 	for (i = 0; i < sband->n_bitrates; i++) {
+ 		struct minstrel_rate *mr = &mi->r[n];
+@@ -410,7 +412,7 @@ minstrel_rate_init(void *priv, struct ie
  
- 	return 0;
--}
--
--static void p54u_free_urbs(struct ieee80211_hw *dev)
--{
--	struct p54u_priv *priv = dev->priv;
--	struct p54u_rx_info *info;
--	struct sk_buff *skb;
+ 		mr->rix = i;
+ 		mr->bitrate = sband->bitrates[i].bitrate / 5;
+-		calc_rate_durations(mi, hw_to_local(mp->hw), mr,
++		calc_rate_durations(mi, local, mr,
+ 				&sband->bitrates[i]);
  
--	while ((skb = skb_dequeue(&priv->rx_queue))) {
--		info = (struct p54u_rx_info *) skb->cb;
--		if (!info->urb)
--			continue;
--
--		usb_kill_urb(info->urb);
--		kfree_skb(skb);
--	}
-+err:
-+	usb_free_urb(entry);
-+	kfree_skb(skb);
-+	p54u_free_urbs(dev);
-+	return ret;
- }
- 
- static void p54u_tx_3887(struct ieee80211_hw *dev, struct p54_control_hdr *data,
-@@ -210,16 +211,29 @@ static void p54u_tx_3887(struct ieee8021
- 	}
- 
- 	usb_fill_bulk_urb(addr_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), &data->req_id,
--		sizeof(data->req_id), p54u_tx_cb, dev);
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA),
-+			  &data->req_id, sizeof(data->req_id), p54u_tx_cb,
-+			  dev);
- 	usb_fill_bulk_urb(data_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), data, len,
--		free_on_tx ? p54u_tx_free_cb : p54u_tx_cb, dev);
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA),
-+			  data, len, p54u_tx_cb, dev);
- 	addr_urb->transfer_flags |= URB_ZERO_PACKET;
--	data_urb->transfer_flags |= URB_ZERO_PACKET;
-+	data_urb->transfer_flags |= URB_ZERO_PACKET |
-+				    (free_on_tx ? URB_FREE_BUFFER : 0);
- 
--	usb_submit_urb(addr_urb, GFP_ATOMIC);
--	usb_submit_urb(data_urb, GFP_ATOMIC);
-+	usb_anchor_urb(addr_urb, &priv->submitted);
-+	if (usb_submit_urb(addr_urb, GFP_ATOMIC)) {
-+		usb_unanchor_urb(addr_urb);
-+		goto out;
-+	}
-+
-+	usb_anchor_urb(data_urb, &priv->submitted);
-+	if (usb_submit_urb(data_urb, GFP_ATOMIC))
-+		usb_unanchor_urb(data_urb);
-+
-+out:
-+	usb_free_urb(addr_urb);
-+	usb_free_urb(data_urb);
- }
- 
- static __le32 p54u_lm87_chksum(const __le32 *data, size_t length)
-@@ -251,12 +265,16 @@ static void p54u_tx_lm87(struct ieee8021
- 	hdr->device_addr = data->req_id;
- 
- 	usb_fill_bulk_urb(data_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr,
--		len + sizeof(*hdr), free_on_tx ? p54u_tx_free_cb : p54u_tx_cb,
--		dev);
--	data_urb->transfer_flags |= URB_ZERO_PACKET;
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr,
-+			  len + sizeof(*hdr), p54u_tx_cb, dev);
-+	data_urb->transfer_flags |= URB_ZERO_PACKET |
-+				    (free_on_tx ? URB_FREE_BUFFER : 0);
-+
-+	usb_anchor_urb(data_urb, &priv->submitted);
-+	if (usb_submit_urb(data_urb, GFP_ATOMIC))
-+		usb_unanchor_urb(data_urb);
- 
--	usb_submit_urb(data_urb, GFP_ATOMIC);
-+	usb_free_urb(data_urb);
- }
- 
- static void p54u_tx_net2280(struct ieee80211_hw *dev, struct p54_control_hdr *data,
-@@ -295,16 +313,30 @@ static void p54u_tx_net2280(struct ieee8
- 	hdr->len = cpu_to_le16(len);
- 
- 	usb_fill_bulk_urb(int_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DEV), reg, sizeof(*reg),
--		p54u_tx_free_cb, dev);
--	int_urb->transfer_flags |= URB_ZERO_PACKET;
--	usb_submit_urb(int_urb, GFP_ATOMIC);
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DEV),
-+			  reg, sizeof(*reg), p54u_tx_cb, dev);
-+	int_urb->transfer_flags |= URB_ZERO_PACKET | URB_FREE_BUFFER;
-+	usb_anchor_urb(int_urb, &priv->submitted);
-+	if (usb_submit_urb(int_urb, GFP_ATOMIC)) {
-+		usb_unanchor_urb(int_urb);
-+		goto out;
-+	}
- 
- 	usb_fill_bulk_urb(data_urb, priv->udev,
--		usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr, len + sizeof(*hdr),
--		free_on_tx ? p54u_tx_free_cb : p54u_tx_cb, dev);
--	data_urb->transfer_flags |= URB_ZERO_PACKET;
--	usb_submit_urb(data_urb, GFP_ATOMIC);
-+			  usb_sndbulkpipe(priv->udev, P54U_PIPE_DATA), hdr,
-+			  len + sizeof(*hdr), p54u_tx_cb, dev);
-+	data_urb->transfer_flags |= URB_ZERO_PACKET |
-+				    (free_on_tx ? URB_FREE_BUFFER : 0);
-+
-+	usb_anchor_urb(int_urb, &priv->submitted);
-+	if (usb_submit_urb(data_urb, GFP_ATOMIC)) {
-+		usb_unanchor_urb(data_urb);
-+		goto out;
-+	}
-+
-+out:
-+	usb_free_urb(int_urb);
-+	usb_free_urb(data_urb);
- }
- 
- static int p54u_write(struct p54u_priv *priv,
-@@ -805,6 +837,7 @@ static int __devinit p54u_probe(struct u
- 	SET_IEEE80211_DEV(dev, &intf->dev);
- 	usb_set_intfdata(intf, dev);
- 	priv->udev = udev;
-+	init_usb_anchor(&priv->submitted);
- 
- 	usb_get_dev(udev);
- 
---- a/drivers/net/wireless/p54/p54usb.h
-+++ b/drivers/net/wireless/p54/p54usb.h
-@@ -133,6 +133,7 @@ struct p54u_priv {
- 
- 	spinlock_t lock;
- 	struct sk_buff_head rx_queue;
-+	struct usb_anchor submitted;
- };
- 
- #endif /* P54USB_H */
+ 		/* calculate maximum number of retransmissions before
 
