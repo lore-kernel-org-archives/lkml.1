@@ -1,135 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbZBDUm3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756247AbZBDUoU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbZBDUm3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 15:42:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZBDUmS
+	id S1756247AbZBDUoU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 15:44:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZBDUoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 15:42:18 -0500
-Received: from ns.suse.de ([195.135.220.2]:44502 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752207AbZBDUmS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 15:42:18 -0500
-Date: Wed, 4 Feb 2009 12:40:09 -0800
-From: Greg KH <gregkh@suse.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Shane Hathaway <shane@hathawaymix.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Daolong Wang <ahlongxp@gmail.com>,
-       User-mode Linux Kernel Development 
-	<user-mode-linux-devel@lists.sourceforge.net>,
-       Jeff Dike <jdike@addtoit.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Rob Landley <rob@landley.net>, Am?rico Wang <xiyou.wangcong@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [uml-devel] [Patch] uml: fix a link error
-Message-ID: <20090204204009.GA10680@suse.de>
-References: <20090115194033.GA10926@hack.private> <20090116124158.4364e269.akpm@linux-foundation.org> <200901170328.15178.rob@landley.net> <dc84318c0901172223p57872a8cr227d940b1c0a908a@mail.gmail.com> <20090119152104.GC6432@c2.user-mode-linux.org> <dc84318c0901191746g31d51c23g65da89190dc8bfd2@mail.gmail.com> <49753063.8040007@hathawaymix.org> <alpine.LRH.2.00.0902041803360.7690@vixen.sonytel.be> <Pine.LNX.4.64.0902042115530.25136@anakin>
+	Wed, 4 Feb 2009 15:44:09 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:62417 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752280AbZBDUoI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 15:44:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :mime-version:content-type:content-disposition:user-agent;
+        b=m6+waKpAgp97decXh/LRESJdCTEBapaVw3QhdC+wbiq8shp9+vYWffaLuJC25CsEhu
+         4p/V3VE0xmjpKJe/JsXtXIEMldR7TupAjIkFinkrx6rPsKmxWoUzGkAdcGGSx0VgHtGQ
+         dXaT4+AGGpu6msdL304S9oAMmaYO0QCOUwbcM=
+Date: Wed, 4 Feb 2009 21:44:04 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: hpa@zytor.com, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86/Kconfig.cpu: make Kconfig help readable in the console
+Message-ID: <20090204204404.GA28323@gollum.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, hpa@zytor.com, mingo@elte.hu,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0902042115530.25136@anakin>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 09:32:51PM +0100, Geert Uytterhoeven wrote:
-> On Wed, 4 Feb 2009, Geert Uytterhoeven wrote:
-> > On Mon, 19 Jan 2009, Shane Hathaway wrote:
-> > > Daolong Wang wrote:
-> > > > On Mon, Jan 19, 2009 at 11:21 PM, Jeff Dike <jdike@addtoit.com> wrote:
-> > > >> On Sun, Jan 18, 2009 at 02:23:46PM +0800, Daolong Wang wrote:
-> > > >>> I can confirm this link error.
-> > > >> In what environment?  I see no problems here.
-> > > 
-> > > I can also confirm this link error.  The problem occurs when compiling
-> > > either 2.6.28.1 or 2.6.27.12; I didn't try anything earlier.  The patch
-> > > suggested at this beginning of this thread did solve the link problem
-> > > and the resulting kernel ran for several hours.  However, I think the
-> > > patch is still probably incorrect.
-> > > 
-> > > I'm going to repost what I said in another message I sent today, this
-> > > time with a wider audience:
-> > > 
-> > > The problem is that the name "sigprocmask" is getting renamed to
-> > > "kernel_sigprocmask" by a compiler directive in arch/um/Makefile, then
-> > > that name gets mangled into "sys_kernel_sigprocmask" by the
-> > > SYSCALL_DEFINE3(sigprocmask, ...) macro in kernel/signal.c.
-> > > 
-> > > So, instead of the patch suggested earlier, I added the following line
-> > > to arch/um/sys-i386/sys_call_table.S:
-> > > 
-> > > #define sys_sigprocmask sys_kernel_sigprocmask
-> > > 
-> > > This made it compile and link correctly.  Look at the symbols generated
-> > > by the compile of signal.c to see what I mean:
-> > > 
-> > > # nm kernel/signal.o | grep sigprocmask
-> > > 0000008f r __kstrtab_kernel_sigprocmask
-> > > 00000040 r __ksymtab_kernel_sigprocmask
-> > > 00001ea6 T kernel_sigprocmask
-> > > 00002d67 T sys_kernel_sigprocmask
-> > > 00001faf T sys_rt_sigprocmask
-> > > 
-> > > Unfortunately, it's a mystery to me that others haven't run into this
-> > > before.  My host environment is RHEL 4 inside some kind of chroot.
-> > 
-> > I've just started seeing this problem with some 2.6.29-rc3 kernel...
-> > 
-> > Before, I did not have this problem with various 2.6.28-rc8 and 2.6.29-rc1
-> > kernels (and several older versions I don't remember).
-> > 
-> > Given 2.6.29-rc1 works for me and 2.6.28.1 fails for you, I'm inclined to
-> > believe 2.6.28 is OK. I'll give it a try...
-> > 
-> > BTW, I'm using CentOS 5.2.
-> 
-> Following up from home...
-> 
-> Indeed, 2.6.28 works, 2.6.28.1 doesn't.
-> 
-> According to git bisect, it got introduced by the system call security fixes
-> (CVE-2009-0029), more specifically by this part:
-> 
-> | commit fe7c0d987fb2cce464d29eec9dfcca6296b5eed7
-> | Author: Heiko Carstens <heiko.carstens@de.ibm.com>
-> | Date:   Wed Jan 14 14:14:06 2009 +0100
-> | 
-> |     System call wrappers part 04
-> |     
-> |     commit b290ebe2c46d01b742b948ce03f09e8a3efb9a92 upstream.
-> |     
-> |     Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> |     Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-> | 
-> | --- a/kernel/signal.c
-> | +++ b/kernel/signal.c
-> | @@ -2425,8 +2424,8 @@ sys_sigpending(old_sigset_t __user *set)
-> |  /* Some platforms have their own version with special arguments others
-> |     support only sys_rt_sigprocmask.  */
-> |  
-> | -asmlinkage long
-> | -sys_sigprocmask(int how, old_sigset_t __user *set, old_sigset_t __user *oset)
->    ^^^^^^^^^^^^^^^
-> | +SYSCALL_DEFINE3(sigprocmask, int, how, old_sigset_t __user *, set,
->                    ^^^^^^^^^^^
-> | +		old_sigset_t __user *, oset)
-> |  {
-> |  	int error;
-> |  	old_sigset_t old_set, new_set;
-> 
-> Hence it allows sigprocmask to be redefined to kernel_sigprocmask by the C
-> preprocessor...
-> 
-> This got backported to 2.6.27.12 as well, confusing people who ran post-2.6.27
-> development kernels and never noticed the problem (including Jeff and me)...
-> 
-> It showed up in a "development" kernel in 2.6.29-rc2 only.
+From: Borislav Petkov <petkovbb@gmail.com>
+Date: Wed, 4 Feb 2009 21:14:50 +0100
+Subject: [PATCH] x86/Kconfig.cpu: make Kconfig help readable in the console
 
-Is there a real patch in Linus's tree for this fix that I can add to the
-.27 and .28 -stable kernel trees?
+Impact: cleanup
 
-thanks,
+Some lines exceed the 80 char width making them unreadable.
 
-greg k-h
+Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+---
+ arch/x86/Kconfig.cpu |   30 ++++++++++++++++--------------
+ 1 files changed, 16 insertions(+), 14 deletions(-)
+
+diff --git a/arch/x86/Kconfig.cpu b/arch/x86/Kconfig.cpu
+index 8078955..0f294ec 100644
+--- a/arch/x86/Kconfig.cpu
++++ b/arch/x86/Kconfig.cpu
+@@ -167,9 +167,9 @@ config MK7
+ config MK8
+ 	bool "Opteron/Athlon64/Hammer/K8"
+ 	help
+-	  Select this for an AMD Opteron or Athlon64 Hammer-family processor.  Enables
+-	  use of some extended instructions, and passes appropriate optimization
+-	  flags to GCC.
++	  Select this for an AMD Opteron or Athlon64 Hammer-family processor. 
++	  Enables use of some extended instructions, and passes appropriate
++	  optimization flags to GCC.
+ 
+ config MCRUSOE
+ 	bool "Crusoe"
+@@ -256,9 +256,11 @@ config MPSC
+ config MCORE2
+ 	bool "Core 2/newer Xeon"
+ 	help
+-	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and 53xx)
+-	  CPUs. You can distinguish newer from older Xeons by the CPU family
+-	  in /proc/cpuinfo. Newer ones have 6 and older ones 15 (not a typo)
++
++	  Select this for Intel Core 2 and newer Core 2 Xeons (Xeon 51xx and
++	  53xx) CPUs. You can distinguish newer from older Xeons by the CPU
++	  family in /proc/cpuinfo. Newer ones have 6 and older ones 15
++	  (not a typo)
+ 
+ config GENERIC_CPU
+ 	bool "Generic-x86-64"
+@@ -320,14 +322,14 @@ config X86_PPRO_FENCE
+ 	bool "PentiumPro memory ordering errata workaround"
+ 	depends on M686 || M586MMX || M586TSC || M586 || M486 || M386 || MGEODEGX1
+ 	help
+-	  Old PentiumPro multiprocessor systems had errata that could cause memory
+-	  operations to violate the x86 ordering standard in rare cases. Enabling this
+-	  option will attempt to work around some (but not all) occurances of
+-	  this problem, at the cost of much heavier spinlock and memory barrier
+-	  operations.
++	  Old PentiumPro multiprocessor systems had errata that could cause
++	  memory operations to violate the x86 ordering standard in rare cases.
++	  Enabling this option will attempt to work around some (but not all)
++	  occurances of this problem, at the cost of much heavier spinlock and
++	  memory barrier operations.
+ 
+-	  If unsure, say n here. Even distro kernels should think twice before enabling
+-	  this: there are few systems, and an unlikely bug.
++	  If unsure, say n here. Even distro kernels should think twice before
++	  enabling this: there are few systems, and an unlikely bug.
+ 
+ config X86_F00F_BUG
+ 	def_bool y
+-- 
+1.6.0.4
+
+-- 
+Regards/Gruss,
+    Boris.
