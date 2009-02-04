@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZBDILO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZBDIL5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753335AbZBDILO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 03:11:14 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZBDIK6
+	id S1753880AbZBDIL5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:11:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751781AbZBDILr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 03:10:58 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59908 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbZBDIK5 (ORCPT
+	Wed, 4 Feb 2009 03:11:47 -0500
+Received: from smtp-out003.kontent.com ([81.88.40.217]:43485 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbZBDILq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 03:10:57 -0500
-Date: Wed, 4 Feb 2009 17:09:44 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       heiko.carstens@de.ibm.com,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: [PATCH] use __GFP_NOWARN in page cgroup allocation
-Message-Id: <20090204170944.c93772d2.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Feb 2009 03:11:46 -0500
+From: Oliver Neukum <oliver@neukum.org>
+Organization: Novell
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 1/2] usb-serial : fix the nousb oops
+Date: Wed, 4 Feb 2009 09:12:39 +0100
+User-Agent: KMail/1.9.10
+Cc: Dave Young <hidave.darkstar@gmail.com>, wgreathouse@smva.com,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <49857F23.3090208@gmail.com> <a8e1da0902011743o47764edfjf53a397b5a4aeeef@mail.gmail.com> <20090203235814.GA22380@kroah.com>
+In-Reply-To: <20090203235814.GA22380@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902040912.40521.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This was recommended in
-"kmalloc-return-null-instead-of-link-failure.patch added to -mm tree" thread
-in the last month.
-Thanks,
--Kame
-=
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Am Wednesday 04 February 2009 00:58:14 schrieb Greg KH:
+> On Mon, Feb 02, 2009 at 09:43:04AM +0800, Dave Young wrote:
+ 
+> > No, it is not new thing.  usb serial drivers normally call
+> > usb_serial_register first, then usb_register, usb_register will fail
+> > due to "nousb" checking, but usb_serial_register no.
+> 
+> But as usb_register will fail, shouldn't they properly back out and no
+> oopses happen?  This sounds like a simple fix to the drivers that are
+> failing here, not changing the usb-serial core.
 
-page_cgroup's page allocation at init/memory hotplug uses kmalloc() and
-vmalloc(). If kmalloc() failes, vmalloc() is used.
+usb_register() can also fail for other reasons. There's no way you
+can save drivers from needing to cleanly fail in that case.
 
-This is because vmalloc() is very limited resource on 32bit systems.
-We want to use kmalloc() first.
+> And this should only be an issue if you build your drivers into the
+> kernel, right?
 
-But in this kind of call, __GFP_NOWARN should be specified.
+No, you can load drivers by other methods than udev.
 
-Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
-Index: mmotm-2.6.29-Feb03/mm/page_cgroup.c
-===================================================================
---- mmotm-2.6.29-Feb03.orig/mm/page_cgroup.c
-+++ mmotm-2.6.29-Feb03/mm/page_cgroup.c
-@@ -114,7 +114,8 @@ static int __init_refok init_section_pag
- 		nid = page_to_nid(pfn_to_page(pfn));
- 		table_size = sizeof(struct page_cgroup) * PAGES_PER_SECTION;
- 		if (slab_is_available()) {
--			base = kmalloc_node(table_size, GFP_KERNEL, nid);
-+			base = kmalloc_node(table_size,
-+					GFP_KERNEL | __GFP_NOWARN, nid);
- 			if (!base)
- 				base = vmalloc_node(table_size, nid);
- 		} else {
-
+	Regards
+		Oliver
