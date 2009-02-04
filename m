@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755720AbZBDLcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZBDLfa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755720AbZBDLcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 06:32:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZBDLcK
+	id S1755339AbZBDLfa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 06:35:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750986AbZBDLfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 06:32:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:48053 "EHLO hera.kernel.org"
+	Wed, 4 Feb 2009 06:35:21 -0500
+Received: from ozlabs.org ([203.10.76.45]:43948 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751869AbZBDLcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 06:32:09 -0500
-Subject: Re: usr/include/linux/soundcard.h warnings for 'make headers_check'
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
-       alsa-devel@alsa-project.org, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5hy6wma2zw.wl%tiwai@suse.de>
-References: <1232465902.3088.31.camel@localhost.localdomain>
-	 <s5h7i4psepm.wl%tiwai@suse.de> <20090121054138.GA26551@uranus.ravnborg.org>
-	 <200902032127.24526.arnd@arndb.de>
-	 <1233720252.3595.5.camel@localhost.localdomain>
-	 <s5hhc3ak8ns.wl%tiwai@suse.de>
-	 <1233736494.3198.15.camel@localhost.localdomain>
-	 <s5h4ozak20l.wl%tiwai@suse.de>
-	 <1233743877.5563.7.camel@localhost.localdomain>
-	 <s5hy6wma2zw.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 17:01:37 +0530
-Message-Id: <1233747097.5563.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	id S1750782AbZBDLfV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 06:35:21 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeff Arnold <jbarnold@mit.edu>
+Subject: Re: [PATCH 6/7] Ksplice: Export symbols needed for Ksplice
+Date: Wed, 4 Feb 2009 22:05:08 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Denys Vlasenko <vda.linux@googlemail.com>, Tim Abbott <tabbott@mit.edu>,
+       Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
+       Nikanth Karthikesan <knikanth@suse.de>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-6-git-send-email-jbarnold@mit.edu> <1228521840-3886-7-git-send-email-jbarnold@mit.edu>
+In-Reply-To: <1228521840-3886-7-git-send-email-jbarnold@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902042205.09651.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-04 at 11:52 +0100, Takashi Iwai wrote:
-> At Wed, 04 Feb 2009 16:07:57 +0530,
-> Jaswinder Singh Rajput wrote:
-> > 
-> > In kernel space we use USE_SEQ_MACROS in:
-> > sound/oss/mpu401.c
-> > sound/oss/midi_synth.c
-> > 
-> > so we can replace
-> > #if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL) && !defined(_KERNEL)) || defined(USE_SEQ_MACROS)
-> > with
-> > #ifdef USE_SEQ_MACROS
+On Saturday 06 December 2008 10:33:59 Jeff Arnold wrote:
+> From: Tim Abbott <tabbott@mit.edu>
 > 
-> Then this will break user-space apps.  They don't define
-> USE_SEQ_MACROS always.
-> 
+> Ksplice uses several functions from module.c in order to resolve
+> symbols and implement dependency handling.  Calling these functions
+> requires holding module_mutex, so it is exported.
 
-If userspace apps are coming through sys/soundcard.h we can define
-USE_SEQ_MACROS in it 
-OR 
-define USE_SEQ_MACROS in linux/soundcard.h for userspace 
-OR 
-need to redefine better #ifdef
+I have fought every attempt to export that.  It was long a cause of misery
+and pain; people saw the lock and so started grabbing it.
 
-Thanks,
---
-JSR
-
+Any chance we can find another way?
+Rusty.
