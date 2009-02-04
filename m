@@ -1,112 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZBDIf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZBDIiz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754645AbZBDIf6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 03:35:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBDIfe
+	id S1753379AbZBDIiz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:38:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751655AbZBDIiq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 03:35:34 -0500
-Received: from hera.kernel.org ([140.211.167.34]:38381 "EHLO hera.kernel.org"
+	Wed, 4 Feb 2009 03:38:46 -0500
+Received: from ozlabs.org ([203.10.76.45]:56688 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751568AbZBDIfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 03:35:33 -0500
-Subject: Re: usr/include/linux/soundcard.h warnings for 'make headers_check'
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
-       alsa-devel@alsa-project.org, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5hhc3ak8ns.wl%tiwai@suse.de>
-References: <1232465902.3088.31.camel@localhost.localdomain>
-	 <s5h7i4psepm.wl%tiwai@suse.de> <20090121054138.GA26551@uranus.ravnborg.org>
-	 <200902032127.24526.arnd@arndb.de>
-	 <1233720252.3595.5.camel@localhost.localdomain>
-	 <s5hhc3ak8ns.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 14:04:54 +0530
-Message-Id: <1233736494.3198.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	id S1751604AbZBDIip (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 03:38:45 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeff Arnold <jbarnold@mit.edu>
+Subject: Re: [PATCH 2/7] x86: Add an option to compile with -ffunction-sections -fdata-sections
+Date: Wed, 4 Feb 2009 19:08:41 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Denys Vlasenko <vda.linux@googlemail.com>, Tim Abbott <tabbott@mit.edu>,
+       Anders Kaseorg <andersk@mit.edu>, Waseem Daher <wdaher@mit.edu>,
+       Nikanth Karthikesan <knikanth@suse.de>
+References: <1228521840-3886-1-git-send-email-jbarnold@mit.edu> <1228521840-3886-2-git-send-email-jbarnold@mit.edu> <1228521840-3886-3-git-send-email-jbarnold@mit.edu>
+In-Reply-To: <1228521840-3886-3-git-send-email-jbarnold@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902041908.42173.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-04 at 07:39 +0100, Takashi Iwai wrote:
-> At Wed, 04 Feb 2009 09:34:12 +0530,
-> Jaswinder Singh Rajput wrote:
-> > 
-> > On Tue, 2009-02-03 at 21:27 +0100, Arnd Bergmann wrote:
-> > > On Wednesday 21 January 2009, Sam Ravnborg wrote:
-> > > > 
-> > > > > No, these are declarations for OSS-lib.
-> > > > > It doesn't belong to kernel, but it's better to keep it for
-> > > > > compatibility in some way.
-> > > > 
-> > > > But not in the kernel for sure.
-> > > > I just checked and for example: OSS_init is not used anywhere in the kernel.
-> > > > The kernel headers are not a "dump all your stuff" ground anymore.
-> > > > 
-> > > > So I encourage you to find a better home for the user space library definitons.
-> > > > We can let the definiton stay for a while - but eventually they have to
-> > > > be dropped from the kernel.
-> > > 
-> > > The last free version of OSSlib that matches this header is from ~1997, and
-> > > no current distro appears to be shipping it. All new OSSlib versions (the
-> > > oldest I found was from ~2003) contain in their documentation:
-> > > 
-> > > "Older versions of some OSS include files are distributed
-> > >  with various operating systems. There is no danger in
-> > >  using them but applications written for more recent OSS
-> > >  versions will not compile with older header files.
-> > > 
-> > >  The latest versions of these include files (such as
-> > >  soundcard.h) are distributed in ../include/sys. Use
-> > >  the -I/usr/lib/oss/include switch when compiling
-> > >  programs. Alternatively copy these files to /usr/include/sys
-> > >  so that they replace the original ones."
-> > > 
-> > > I think it's safe enough to assume that everyone that builds against
-> > > OSSlib by now also has the correct version of the header installed.
-> > > Consequently, we should just drop the #ifndef __KERNEL__ section
-> > > of soundcard.h (all the macros in there depend on the extern
-> > > declarations), and maybe add an
-> > > 
-> > > #ifdef OSSLIB
-> > > #error need to use <sys/soundcard.h> from libOSSlib
-> > > #endif
-> > > 
-> > 
-> > sys/soundcard.h is also pointing to linux/soundcard.h, we need to move
-> > all this stuff to sys/soundcard.h.
+On Saturday 06 December 2008 10:33:55 Jeff Arnold wrote:
+> From: Waseem Daher <wdaher@mit.edu>
 > 
-> All which stuff?
-> If you are referring to OSS-lib stuff in soundcard.h, then I'm for
-> it.
-> 
+> This patch makes it possible to link and boot an x86 kernel with
+> -ffunction-sections and -fdata-sections enabled.
 
-We need to fix things in such a way that we can replace:
-#if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL) && !defined(_KERNEL)) || defined(USE_SEQ_MACROS)
-with
-#ifdef __KERNEL__
-and only keep those things in this file which we need in kernel and move
-userspace declarations which are not required for kernel to
-sys/soundcard.h
+Nice:
+   text	   data	    bss	    dec	    hex	filename
+3575210	 361820	 319488	4256518	 40f306	vmlinux-with-sections
+3579626	 364892	 323584	4268102	 412046	vmlinux-no-sections
 
+> +config FUNCTION_DATA_SECTIONS
+> +	bool "Compile with -ffunction-sections -fdata-sections"
+> +	depends on !FTRACE
+> +	help
+> +	  If you say Y here the compiler will give each function
+> +	  and data structure its own ELF section.
 
-> Also giving an error with an ifdef OSSLIB like Arnd suggested would be
-> nice, too.  But maybe we need one more ifdef such as
-> 
-> #ifdef OSSLIB
-> #ifndef _SYS_SOUNDCARD_H
-> #error ...
-> #endif
-> #endif
-> 
+You need to make this depend on X86, otherwise allmodconfig will turn it on
+and break other archs.
 
-hmm, so you want to confirm that we only come through sys/soundcard.h
-for OSSLIB
+What's the conflict with FTRACE?
 
 Thanks,
---
-JSR
-
+Rusty.
