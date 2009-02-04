@@ -1,108 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760336AbZBDSty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758941AbZBDSis@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760336AbZBDSty (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:49:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758982AbZBDSku
+	id S1758941AbZBDSis (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:38:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbZBDShD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:40:50 -0500
-Received: from [84.77.67.98] ([84.77.67.98]:2119 "EHLO ventoso.org"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758571AbZBDSkt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:40:49 -0500
-Date: Wed, 4 Feb 2009 19:41:19 +0100
-From: Luca Olivetti <luca@ventoso.org>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>,
-       Janne Grunau <janne-dvb@grunau.be>
-Subject: Re: [crash] af9005_usb_module_init(): BUG: unable to handle kernel
- paging request at ff100000
-Message-ID: <20090204194119.62451733@noname>
-In-Reply-To: <1233772258.15119.106.camel@desktop>
-References: <20090203172836.GA6964@elte.hu>
-	<1233772258.15119.106.camel@desktop>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.10.12; arm-unknown-linux-gnueabi)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Feb 2009 13:37:03 -0500
+Received: from kroah.org ([198.145.64.141]:50930 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1758247AbZBDShA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:00 -0500
+Date: Wed, 4 Feb 2009 10:34:22 -0800
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Adrian Bunk <bunk@kernel.org>,
+       Greg Ungerer <gerg@uclinux.org>
+Subject: [patch 04/33] m68knommu: set NO_DMA
+Message-ID: <20090204183422.GE13936@kroah.com>
+References: <20090204182823.831027530@mini.kroah.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="m68knommu-set-no_dma.patch"
+In-Reply-To: <20090204183403.GA13936@kroah.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Wed, 04 Feb 2009 10:30:58 -0800
-Daniel Walker <dwalker@fifo99.com> escribió:
-> On Tue, 2009-02-03 at 18:28 +0100, Ingo Molnar wrote:
-> > 
-> > c23eca7a <af9005_usb_module_init>:
-> > c23eca7a:	55                   	push   %ebp
-> > c23eca7b:	89 e5                	mov    %esp,%ebp
-> > c23eca7d:	53                   	push   %ebx
-> > c23eca7e:	b9 2b 31 11 c2       	mov
-> > $0xc211312b,%ecx c23eca83:	31 d2
-> > xor    %edx,%edx c23eca85:	b8 b8 b4 2b c2
-> > mov    $0xc22bb4b8,%eax c23eca8a:	e8 d6 e8 4e ff
-> > 	call   c18db365 <usb_register_driver> c23eca8f:	89
-> > c3                	mov    %eax,%ebx c23eca91:	85
-> > c0                	test   %eax,%eax c23eca93:	74
-> > 0f                	je     c23ecaa4
-> > <af9005_usb_module_init+0x2a> c23eca95:	50
-> > 	push   %eax c23eca96:	68 3a 31 11 c2
-> > push   $0xc211313a c23eca9b:	e8 70 49 c6 fe
-> > call   c1051410 <printk> c23ecaa0:	58
-> > 	pop    %eax c23ecaa1:	5a
-> > pop    %edx c23ecaa2:	eb 64                	jmp
-> > c23ecb08 <af9005_usb_module_init+0x8e> c23ecaa4:	c7 05 8c 71
-> > cd c2 00 	movl   $0x0,0xc2cd718c c23ecaab:	00 00 00
-> > c23ecaae:	c7 05 90 71 cd c2 00 	movl
-> > $0x0,0xc2cd7190 c23ecab5:	00 00 00 c23ecab8:	c7 05 94
-> > 71 cd c2 00 	movl   $0x0,0xc2cd7194 c23ecabf:	00 00
-> > 00 c23ecac2:	b8 00 00 00 00       	mov    $0x0,%eax
-> > c23ecac7:	85 c0                	test   %eax,%eax
-> > c23ecac9:	74 12                	je     c23ecadd
-> > <af9005_usb_module_init+0x63> c23ecacb:	b8 00 00 00 00
-> > 	mov    $0x0,%eax c23ecad0:	85 c0
-> > 	test   %eax,%eax c23ecad2:	74 09
-> > 	je     c23ecadd <af9005_usb_module_init+0x63>
-> > c23ecad4:	b8 00 00 00 00       	mov    $0x0,%eax
-> > c23ecad9:	85 c0                	test   %eax,%eax
-> > c23ecadb:	75 17                	jne    c23ecaf4
-> > <af9005_usb_module_init+0x7a> c23ecadd:	68 60 31 11 c2
-> > 	push   $0xc2113160 c23ecae2:	e8 29 49 c6 fe
-> > 	call   c1051410 <printk> c23ecae7:	c7 05 00 b6 2b c2
-> > 00 	movl   $0x0,0xc22bb600 c23ecaee:	00 00 00
-> > c23ecaf1:	58                   	pop    %eax
-> > c23ecaf2:	eb 14                	jmp    c23ecb08
-> > <af9005_usb_module_init+0x8e> c23ecaf4:	c7 05 f8 b5 2b c2 00
-> > 	movl   $0x0,0xc22bb5f8 c23ecafb:	00 00 00
-> > c23ecafe:	a1 00 00 00 00       	mov
-> > 0x0,%eax           <= crash c23ecb03:	a3 fc b5 2b c2
-> > 	mov    %eax,0xc22bb5fc c23ecb08:	89
-> > d8                	mov    %ebx,%eax c23ecb0a:	8b 5d
-> > fc             	mov    -0x4(%ebp),%ebx c23ecb0d:
-> > c9                   	leave c23ecb0e:
-> > c3                   	ret    
-> 
-> Could this be a problem with your QA environment? (like distcc mixing
-> gcc versions) I'm not an assembly expert, but it looks like there are
-> several lines above that move zero into %eax ,
+2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
-The three symbols obtained with symbol_request (so maybe the linker is
-doing the right thing after all)?
+------------------
 
-> then test if %eax is
-> zero, 
+From: Adrian Bunk <bunk@kernel.org>
 
-if (rc_decode == NULL || rc_keys == NULL || rc_keys_size == NULL)
+commit e0212e72186e855027dd35b37e9d7a99a078448c upstream.
 
-> and exit the function if it's zero.. for example line c23ecac2
-> which would jump over the crash line. I'm not sure how it's getting
-> there.
+m68knommu does not set the Kconfig NO_DMA variable, but also does
+not provide the required functions, resulting in the following
+build error triggered by commit a40c24a13366e324bc0ff8c3bb107db89312c984
+(net: Add SKB DMA mapping helper functions.):
 
-I was going to ask the same question.
-Maybe the crash is somewhere else?
+<--  snip  -->
 
-Bye
--- 
-Luca
+..
+  LD      vmlinux
+net/built-in.o: In function `skb_dma_unmap':
+(.text+0xac5e): undefined reference to `dma_unmap_single'
+net/built-in.o: In function `skb_dma_unmap':
+(.text+0xac7a): undefined reference to `dma_unmap_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xacdc): undefined reference to `dma_map_single'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xace8): undefined reference to `dma_mapping_error'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xad10): undefined reference to `dma_map_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xad82): undefined reference to `dma_unmap_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xadc6): undefined reference to `dma_unmap_single'
+make[1]: *** [vmlinux] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ arch/m68knommu/Kconfig |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+--- a/arch/m68knommu/Kconfig
++++ b/arch/m68knommu/Kconfig
+@@ -14,6 +14,10 @@ config MMU
+ 	bool
+ 	default n
+ 
++config NO_DMA
++	bool
++	default y
++
+ config FPU
+ 	bool
+ 	default n
+
