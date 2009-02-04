@@ -1,84 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757774AbZBDQOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZBDQZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757774AbZBDQOS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 11:14:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbZBDQOC
+	id S1756839AbZBDQZe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 11:25:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZBDQZY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 11:14:02 -0500
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:37180 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752541AbZBDQOA (ORCPT
+	Wed, 4 Feb 2009 11:25:24 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43211 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751942AbZBDQZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 11:14:00 -0500
-Date: Wed, 4 Feb 2009 11:06:20 -0500 (EST)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Mel Gorman <mel@csn.ul.ie>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
+	Wed, 4 Feb 2009 11:25:24 -0500
+Date: Wed, 4 Feb 2009 08:24:58 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Norbert Preining <preining@logic.at>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-In-Reply-To: <498893EE.9060107@cs.helsinki.fi>
-Message-ID: <alpine.DEB.1.10.0902041050160.19633@qirst.com>
-References: <20090123154653.GA14517@wotan.suse.de> <1232959706.21504.7.camel@penberg-laptop> <20090203101205.GF9840@csn.ul.ie> <498893EE.9060107@cs.helsinki.fi>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+       Jens Axboe <jens.axboe@oracle.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
+In-Reply-To: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+Message-ID: <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009, Pekka Enberg wrote:
 
-> Anyway, even if we did end up going forward with SLQB, it would sure as hell
-> be less painful if we understood the reasons behind it.
 
-The reasons may depend on hardware contingencies like TLB handling
-overhead and various inefficiencies that depend on the exact processor
-model. Also the type of applications you want to run. Some of the IA64
-heritage of SLUB may be seen in the results of these tests. Note that PPC
-and IA64 have larger page sizes (which results in SLUB being able to put
-more objects into an order 0 page) and higher penalties for TLB handling.
-The initial justification for SLUB were Mel's results on IA64 that showed
-a 5-10% increase in performance through SLUB.
+On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12599
+> Subject		: dri /dev node disappeared with 2.6.29-rc1
+> Submitter	: Norbert Preining <preining@logic.at>
+> Date		: 2009-01-15 13:42 (21 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123202701026647&w=4
 
-In my current position we need to run extremely low latency code in user
-space and want to avoid any disturbance by kernel code interrupting user
-space. My main concern for my current work context is that switching to
-SLQB will bring back the old cache cleaning problems and introduce
-latencies for our user space applications. Otherwise I am on x86 now so
-the TLB issues are less of a concern for me now.
+I think this one is simply that Intel DRI now requires CONFIG_FB.
 
-In general it may be better to have a larger selection of slab allocators.
-I think this is no problem as long as we have motivated people that
-maintain these. Nick seems to be very motivated at this point. So lets
-merge SLQB as soon as we can and expose it to a wider audience so that it
-can mature. And people can have more fun running one against the other
-refining these more and more.
+So make sure that you say yes to the CONFIG_FB question (easiest fix: just 
+edit the .config file and change the line "# CONFIG_FB is not set" to 
+"CONFIG_FB=y" and do "make oldconfig" - I realize that people think that 
+graphical config front-ends are simpler, but often just editing the file 
+is the quickest way).
 
-There are still two major things that I hope will happen soon to clean up stuff in
-the slab allocators:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12591
+> Subject		: NULL pointer dereference in blk_queue_io_stat
+> Submitter	: Petr Vandrovec <vandrove@vc.cvut.cz>
+> Date		: 2009-01-31 23:58 (5 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bc58ba9468d94d62c56ab9b47173583ec140b165
+> Handled-By	: Jens Axboe <jens.axboe@oracle.com>
 
-1. The introduction of a per cpu allocator.
+I think this one is fixed by commit fb8ec18c316d8.
 
-This is important to optimize the fastpaths. The cpu allocator will allow
-us to get rid of the arrays indexes by NR_CPUS and allow operations that
-are atomic wrt. interrupts. The lookup of the kmem_cache_cpu struct
-address will no longer be necessary.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12511
+> Subject		: WARNING: at drivers/dma/dmaengine.c:352
+> Submitter	: Ingo Molnar <mingo@elte.hu>
+> Date		: 2009-01-19 21:31 (17 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123240070614443&w=4
+> Handled-By	: Dan Williams <dan.j.williams@intel.com>
 
-2. Alloc/free without disabling interrupts.
+This warning just got removed as bogus.
 
-Matthieu has written an early implementation of allocation functions that
-do not require interrupt disable/enable. It seems that these are right now
-the major cause of latency in the fast paths. Andi has stated that the
-interrupt enable/disable has been optimized in recent releases of new
-processors. The overhead may be due to the flags being pushed onto the
-stack and retrieved later. Mathieus implementation can be made more
-elegant if atomic per cpu ops are available. This could significantly
-increase the speed of the fast paths in the allocators (may be a challenge
-to SLAB and SLQB since they need to update a counter and a pointer but its
-straightforward in SLUB).
+Commit 83436a0560e9ef8af2f0796264dde4bed1415359
 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12506
+> Subject		: Undefined symbols when CONFIG_MFD_PCF50633 is enabled
+> Submitter	: Ozan Çağlayan <ozan@pardus.org.tr>
+> Date		: 2009-01-17 10:56 (19 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123218991104592&w=4
+
+Commit 9e6f8ed7c3a303d37eb119847dd3029701e37e28
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12505
+> Subject		: 2.6.29-rc1 Firefox crashing on page load
+> Submitter	: Justin Madru <jdm64@gawab.com>
+> Date		: 2009-01-16 20:56 (20 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4217458dafaa57d8e26a46f5d05ab8c53cf64191
+> References	: http://marc.info/?l=linux-kernel&m=123213941914274&w=4
+> Handled-By	: Justin P. Mattock <justinmattock@gmail.com>
+
+Heh. That commit you point to is very innocuous.
+
+Commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191 is a pure cleanup, and it 
+_does_ make the code look nicer, but while it looks lik a total no-op, it 
+actually has a very subtle behavioural change: it makes gcc think that it 
+owns the whole argument stack. Which is _not_ true of 'asmlinkage' 
+functions, but we've never been able to tell gcc to keep its grubby hands 
+off our stack.
+
+So I suspect that gcc inlines the function and then creates a function 
+call that re-uses the "struct pt_regs" on the stack as the argument area 
+too. Which corrupts the "pt_regs", and then we return to user space with 
+some random register contents.
+
+So I think we need to just revert it. Ingo, Hiroshi?
+
+				Linus
