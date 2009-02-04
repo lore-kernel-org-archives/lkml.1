@@ -1,58 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbZBDT3v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZBDTk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758326AbZBDT3v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:29:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752356AbZBDT3i
+	id S1755992AbZBDTk3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:40:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZBDTkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 14:29:38 -0500
-Received: from 1wt.eu ([62.212.114.60]:2038 "EHLO 1wt.eu"
+	Wed, 4 Feb 2009 14:40:17 -0500
+Received: from rtr.ca ([76.10.145.34]:48774 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752277AbZBDT3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 14:29:37 -0500
-Date: Wed, 4 Feb 2009 20:28:20 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       zbr@ioremap.net, jarkao2@gmail.com, dada1@cosmosbay.com, ben@zeus.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090204192820.GA27867@1wt.eu>
-References: <20090204081201.GB10445@ioremap.net> <20090204085432.GA21638@1wt.eu> <20090204085907.GA19388@gondor.apana.org.au> <20090204.010146.18100191.davem@davemloft.net> <20090204091217.GA21385@1wt.eu> <ada63jqm2mt.fsf@cisco.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ada63jqm2mt.fsf@cisco.com>
-User-Agent: Mutt/1.5.11
+	id S1752389AbZBDTkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 14:40:16 -0500
+Message-ID: <4989EF1D.4000106@rtr.ca>
+Date: Wed, 04 Feb 2009 14:40:13 -0500
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Krishna Kothapalli <krishna_sunitha@hotmail.com>
+Cc: kaneshige.kenji@jp.fujitsu.com, ebiederm@xmission.com,
+       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org, achiang@hp.com,
+       djwong@us.ibm.com, xyzzy@speakeasy.org, linux-kernel@vger.kernel.org
+Subject: Re: Q: state of pci express hotplug
+References: <m1fxj06js8.fsf@fess.ebiederm.org> <4986581F.7060704@jp.fujitsu.com>   <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl>   <49879508.4090801@jp.fujitsu.com>   <BAY111-W3692AA5F9F7896AA447A1F88C20@phx.gbl> <BAY111-W9013DA1F63973F9E7F8DF88C30@phx.gbl> <49892CDE.9040305@jp.fujitsu.com> <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
+In-Reply-To: <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 11:19:06AM -0800, Roland Dreier wrote:
->  > And the arbitrary choice of 9k for jumbo frames was total crap too.
->  > It's clear that no hardware designer was involved in the process.
->  > They have to stuff 16kB of RAM on a NIC to use only 9. And we need
->  > to allocate 3 pages for slightly more than 2. 7.5 kB would have been
->  > better in this regard.
+Krishna Kothapalli wrote:
+..
+>>  - and the device didn't show up under sysfs
+>>  Am I correct?
 > 
-> 9K was not totally arbitrary.  The CRC used for checksumming ethernet
-> packets has a probability of undetected errors that goes up about
-> 11-thousand something bytes.  So the real limit is ~11000 bytes, and I
-> believe ~9000 was chosen to be able to carry 8K NFS payloads + all XDR
-> and transport headers without fragmentation.
+>    YES
+..
 
-Yes I know that initial motivation. But IMHO it was a purely functional
-motivation without real considerations of the implications. When you
-read Alteon's initial proposal, there is even a biased analysis (they
-compare the fill ratio obtained with one 8k frame with that of 6 1.5k
-frames). Their own argument does not stand with their final proposal!
-I think that there might already have been people pushing for 8k and
-not 9 by then, but in order to get wide acceptance in datacenters,
-they had to please the NFS admins.
+Does it behave better with the pciehp_force=1 option?
 
-Now it's useless to speculate on history and I agree with Davem that
-we're wasting our time with this discussion, let's go back to the
-keyboard ;-)
-
-Willy
+   modprobe  pciehp pciehp_force=1
 
