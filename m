@@ -1,105 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZBDEIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754289AbZBDERb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZBDEIT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 23:08:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBDEII
+	id S1754289AbZBDERb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 23:17:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZBDERV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 23:08:08 -0500
-Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:48298 "HELO
-	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751786AbZBDEIH (ORCPT
+	Tue, 3 Feb 2009 23:17:21 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33934 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751358AbZBDERV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 23:08:07 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=ZQrdLrAuQMe/s4sr3ZqQNbvYWswI8JIQ6xcfz1TOktcEP/gDDRiw7NGuXZ0cr1iAMo4MrQuM43UCHtYZLFKBveU3OyLZvsUVvtvulAfhOEJR17rgOrn56JNI6yNfAKk/T/DuOb+9sk81eYvbkMV2zEvCukpgj6ab+BK19uXzV4o=  ;
-X-YMail-OSG: UObAHVYVM1mVGoJwwr8INMtNCz7BR3L769m.AenVgELTglCRu6WyTZH5.joRTfIf1rcThp9f65gSUwTKBJX6ubOJVgiZqbs09eMNHNhei1WDxcRoYZNAfkqCysQD1yPuml.xeyxghlK1P39Ni5OreWx5fp2TG22Jx6I.x0jFcNd8XKs7kmVJigkSckX7Pw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator
-Date: Wed, 4 Feb 2009 15:07:32 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-References: <20090114155923.GC1616@wotan.suse.de> <200902031253.28078.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0902031217390.17910@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0902031217390.17910@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 3 Feb 2009 23:17:21 -0500
+Date: Tue, 3 Feb 2009 20:16:42 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, oleg@redhat.com,
+       travis@sgi.com, a.p.zijlstra@chello.nl, mm-commits@vger.kernel.org
+Subject: Re: +
+ work_on_cpu-rewrite-it-to-create-a-kernel-thread-on-demand.patch  added to
+ -mm tree
+Message-Id: <20090203201642.057a07b9.akpm@linux-foundation.org>
+In-Reply-To: <200902041428.12059.rusty@rustcorp.com.au>
+References: <200902031058.n13AwOoK016719@imap1.linux-foundation.org>
+	<c62985530902030858y28906b2dh511c5868afabfd17@mail.gmail.com>
+	<20090203112529.26e6bf76.akpm@linux-foundation.org>
+	<200902041428.12059.rusty@rustcorp.com.au>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902041507.33464.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009 04:33:14 Christoph Lameter wrote:
-> On Tue, 3 Feb 2009, Nick Piggin wrote:
-> > Quite obviously it should. Behaviour of a slab allocation on behalf of
-> > some task constrained within a given node should not depend on the task
-> > which has previously run on this CPU and made some allocations. Surely
-> > you can see this behaviour is not nice.
->
-> If you want cache hot objects then its better to use what a prior task
-> has used. This opportunistic use is only done if the task is not asking
-> for memory from a specifc node. There is another tradeoff here.
->
-> SLABs method there is to ignore all caching advantages even if the task
-> did not ask for memory from a specific node. So it gets cache cold objects
-> and if the node to allow from is remote then it always must use the slow
-> path.
+On Wed, 4 Feb 2009 14:28:11 +1030 Rusty Russell <rusty@rustcorp.com.au> wrote:
 
-Yeah, but I don't think you actually demonstrated any real advantages
-to it, and there are obvious failure modes where constraints aren't
-obeyed, so I'm going to leave it as-is in SLQB.
+> On Wednesday 04 February 2009 05:55:29 Andrew Morton wrote:
+> > On Tue, 3 Feb 2009 17:58:13 +0100
+> > Fr__d__ric Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > 2009/2/3 Ingo Molnar <mingo@elte.hu>:
+> > > >
+> > > > * akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+> > > >
+> > > >> ------------------------------------------------------
+> > > >> Subject: work_on_cpu(): rewrite it to create a kernel thread on demand
+> > > >> From: Andrew Morton <akpm@linux-foundation.org>
+> > > >>
+> > > >> The various implemetnations and proposed implemetnations of work_on_cpu()
+> > > >> are vulnerable to various deadlocks because they all used queues of some
+> > > >> form.
+> > > >>
+> > > >> Unrelated pieces of kernel code thus gained dependencies wherein if one
+> > > >> work_on_cpu() caller holds a lock which some other work_on_cpu() callback
+> > > >> also takes, the kernel could rarely deadlock.
+> > > >>
+> > > >> Fix this by creating a short-lived kernel thread for each work_on_cpu()
+> > > >> invokation.
+> > > >>
+> > > >> This is not terribly fast, but the only current caller of work_on_cpu() is
+> > > >> pci_call_probe().
+> > > >
+> > > > hm, it's quite ugly as well
+> > 
+> > No it isn't.
+> > 
+> > It's no less ugly than the current code.
+> > 
+> > It's less buggy than the current code.
+> 
+> Whatever, I like your version.
 
-Objects where cache hotness tends to be most important are the shorter
-lived ones, and objects where constraints matter are longer lived ones,
-so I think this is pretty reasonable.
+Careful, or you'll own it ;)
 
-Also, you've just been spending lots of time arguing that cache hotness
-is not so important (because SLUB doesn't do LIFO like SLAB and SLQB).
+> Tho making it a series of 5 and exposing rdmsr_on_cpu/wrmsr_on_cpu for other
+> uses would be even better.
 
+These:
 
-> > > Which have similar issues since memory policy application is depending
-> > > on a task policy and on memory migration that has been applied to an
-> > > address range.
-> >
-> > What similar issues? If a task ask to have slab allocations constrained
-> > to node 0, then SLUB hands out objects from other nodes, then that's bad.
->
-> Of course. A task can ask to have allocations from node 0 and it will get
-> the object from node 0. But if the task does not care to ask for data
-> from a specific node then it can be satisfied from the cpu slab which
-> contains cache hot objects.
+int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
+int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
 
-But if it is using constrained allocations, then it is also asking for
-allocations from node 0.
-
-
-> > > > But that is wrong. The lists obviously have high water marks that
-> > > > get trimmed down. Periodic trimming as I keep saying basically is
-> > > > alrady so infrequent that it is irrelevant (millions of objects
-> > > > per cpu can be allocated anyway between existing trimming interval)
-> > >
-> > > Trimming through water marks and allocating memory from the page
-> > > allocator is going to be very frequent if you continually allocate on
-> > > one processor and free on another.
-> >
-> > Um yes, that's the point. But you previously claimed that it would just
-> > grow unconstrained. Which is obviously wrong. So I don't understand what
-> > your point is.
->
-> It will grow unconstrained if you elect to defer queue processing. That
-> was what we discussed.
-
-And I just keep pointing out that you are wrong (this must be the 4th time).
-
-We were talking about deferring the periodic queue reaping. SLQB will still
-constrain the queue sizes to the high watermarks.
-
+already exist.  I don't think anything else needs to be done here?
