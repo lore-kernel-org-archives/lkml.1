@@ -1,41 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZBDIfH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbZBDIfo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbZBDIfH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 03:35:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZBDIem
+	id S1751584AbZBDIfo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:35:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZBDIfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 03:34:42 -0500
-Received: from mailout.borland.com ([63.175.76.156]:32214 "EHLO
-	mail.borland.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752170AbZBDIek convert rfc822-to-8bit (ORCPT
+	Wed, 4 Feb 2009 03:35:34 -0500
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:43227 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751572AbZBDIfc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 03:34:40 -0500
-X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Feb 2009 03:34:40 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
+	Wed, 4 Feb 2009 03:35:32 -0500
+Date: Wed, 4 Feb 2009 14:05:24 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, heiko.carstens@de.ibm.com,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] use __GFP_NOWARN in page cgroup allocation
+Message-ID: <20090204083524.GJ4456@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090204170944.c93772d2.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-x-cr-puzzleid: {87D37BC3-31D0-48FD-9344-AE2F6DB7D082}
-x-cr-hashedpuzzle: BclN EsnK EuSM Id7k MW/s OGcR UMfk VHZL jeRv md3D oQ7d rsGq stJg tPl9 vEJs AARQ/g==;6;YQB2AG8AcgBvAG4AdABzAG8AdgBAAHIAdQAuAG0AdgBpAHMAdABhAC4AYwBvAG0AOwBsAGkAbgB1AHgALQBrAGUAcgBuAGUAbABAAHYAZwBlAHIALgBrAGUAcgBuAGUAbAAuAG8AcgBnADsAbABpAG4AdQB4AHAAcABjAC0AZABlAHYAQABvAHoAbABhAGIAcwAuAG8AcgBnADsAbQBpAG4AZwBvAEAAZQBsAHQAZQAuAGgAdQA7AHAAYQB1AGwAdQBzAEAAcwBhAG0AYgBhAC4AbwByAGcAOwBzAHIAbwBzAHQAZQBkAHQAQAByAGUAZABoAGEAdAAuAGMAbwBtAA==;Sosha1_v1;7;{87D37BC3-31D0-48FD-9344-AE2F6DB7D082};dQBzAGgAYQByAGEAbgBpAC4AawBvAG4AdQBkAHUAbABhAEAAYgBvAHIAbABhAG4AZAAuAGMAbwBtAA==;Wed, 04 Feb 2009 08:17:24 GMT;UgBFADoAIABbAFAAQQBUAEMASAAgAHYAMgBdACAAZgB0AHIAYQBjAGUAOgAgAE8AbgAgAFAAbwB3AGUAcgBQAEMAIAB3AGUAIABkAG8AbgAnAHQAIABuAGUAZQBkACAAZgByAGEAbQBlACAAcABvAGkAbgB0AGUAcgBzACAAZgBvAHIAQwBBAEwATABFAFIAXwBBAEQARABSAHMA
-Content-class: urn:content-classes:message
-Subject: RE: [PATCH v2] ftrace: On PowerPC we don't need frame pointers forCALLER_ADDRs
-Date: Wed, 4 Feb 2009 00:17:24 -0800
-Message-ID: <FBBDF103002CF543AB3BDA6D560847120214F716@USSVS-EXCH01.amer.borl.net>
-In-Reply-To: <20090203145649.GA19955@oksana.dev.rtsoft.ru>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH v2] ftrace: On PowerPC we don't need frame pointers forCALLER_ADDRs
-Thread-Index: AcmGD+oDpEYqxXnCTPSYcS32wGI5IAAkQ5/g
-References: <20090131190650.GA4284@oksana.dev.rtsoft.ru><1233534919.18767.69.camel@pasglop><1233583455.16878.3.camel@localhost.localdomain> <20090203145649.GA19955@oksana.dev.rtsoft.ru>
-From: "Usha Rani Konudula" <UshaRani.Konudula@borland.com>
-To: <avorontsov@ru.mvista.com>, "Steven Rostedt" <srostedt@redhat.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Paul Mackerras" <paulus@samba.org>,
-       <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>
-X-OriginalArrivalTime: 04 Feb 2009 08:19:29.0735 (UTC) FILETIME=[4D0D6570:01C986A1]
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090204170944.c93772d2.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-unsubscribe linux-kernel
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-04 17:09:44]:
 
+> This was recommended in
+> "kmalloc-return-null-instead-of-link-failure.patch added to -mm tree" thread
+> in the last month.
+> Thanks,
+> -Kame
+> =
+> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> page_cgroup's page allocation at init/memory hotplug uses kmalloc() and
+> vmalloc(). If kmalloc() failes, vmalloc() is used.
+> 
+> This is because vmalloc() is very limited resource on 32bit systems.
+> We want to use kmalloc() first.
+> 
+> But in this kind of call, __GFP_NOWARN should be specified.
+> 
+> Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+> Index: mmotm-2.6.29-Feb03/mm/page_cgroup.c
+> ===================================================================
+> --- mmotm-2.6.29-Feb03.orig/mm/page_cgroup.c
+> +++ mmotm-2.6.29-Feb03/mm/page_cgroup.c
+> @@ -114,7 +114,8 @@ static int __init_refok init_section_pag
+>  		nid = page_to_nid(pfn_to_page(pfn));
+>  		table_size = sizeof(struct page_cgroup) * PAGES_PER_SECTION;
+>  		if (slab_is_available()) {
+> -			base = kmalloc_node(table_size, GFP_KERNEL, nid);
+> +			base = kmalloc_node(table_size,
+> +					GFP_KERNEL | __GFP_NOWARN, nid);
+
+Thanks for getting to this.
+
+>  			if (!base)
+>  				base = vmalloc_node(table_size, nid);
+>  		} else {
+
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+
+-- 
+	Balbir
