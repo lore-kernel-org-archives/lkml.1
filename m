@@ -1,100 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbZBDAjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754035AbZBDAlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813AbZBDAjX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 19:39:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZBDAjL
+	id S1754035AbZBDAlR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 19:41:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZBDAlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 19:39:11 -0500
-Received: from yx-out-2324.google.com ([74.125.44.29]:62135 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751299AbZBDAjJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 19:39:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=wlDj/j//BonR2Pvyt/8H6Et5sxrMifFkRBBRhrnsnQ//zve6qrBsryBbBJ2RVT3aQC
-         GlraTKf6MidMAX0CCL3cOjK7ixWXaWhGmSR4csFxugyDVSr5CrEhPwfRQbyaauiElYOx
-         AsNHuTPW1y3y362lW+zF1h2Mo+KsxDAKs6fJw=
-Date: Tue, 3 Feb 2009 19:38:59 -0500 (EST)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-laptop
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Parag Warudkar <parag.lkml@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Carlson <mcarlson@broadcom.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: 2.6.29-rc3: tg3 dead after resume
-In-Reply-To: <200902032315.27113.rjw@sisk.pl>
-Message-ID: <alpine.DEB.2.00.0902031937070.7758@parag-laptop>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200902031029.30739.rjw@sisk.pl> <alpine.DEB.2.00.0902031622070.5481@parag-desktop> <200902032315.27113.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Feb 2009 19:41:03 -0500
+Received: from relay2.sgi.com ([192.48.179.30]:42667 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751589AbZBDAlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 19:41:02 -0500
+Date: Tue, 3 Feb 2009 18:40:59 -0600
+From: Robin Holt <holt@sgi.com>
+To: tony.luck@intel.com
+Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dean Nelson <dcn@sgi.com>, Russ Anderson <rja@sgi.com>
+Subject: [Patch] bte_copy of BTE_MAX_XFER trips BUG_ON.
+Message-ID: <20090204004059.GM8559@sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+BTE_MAX_XFER is wrong.  It is one greater than the number of cache
+lines the BTE is actually able to transfer.  If you request a transfer
+of exactly BTE_MAX_XFER size, you trip a very cryptic BUG_ON() which
+should certainly be made more clear.
 
-On Tue, 3 Feb 2009, Rafael J. Wysocki wrote:
+This patch fixes that constant and also cleans up the BUG_ON()s in
+arch/ia64/sn/kernel/bte.c to test one condition per line.
 
-> 
-> Can you also test this one instead and tell me if it still works?
-> 
+Signed-off-by: Robin Holt <holt@sgi.com>
 
-Removing Linus' patch and applying the below one works as well.
+---
 
-Parag
+ arch/ia64/include/asm/sn/bte.h |    2 +-
+ arch/ia64/sn/kernel/bte.c      |    7 ++++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+Index: bte_max_xfer_fix/arch/ia64/include/asm/sn/bte.h
+===================================================================
+--- bte_max_xfer_fix.orig/arch/ia64/include/asm/sn/bte.h	2009-02-03 18:07:26.000000000 -0600
++++ bte_max_xfer_fix/arch/ia64/include/asm/sn/bte.h	2009-02-03 18:09:38.749729353 -0600
+@@ -39,7 +39,7 @@
+ /* BTE status register only supports 16 bits for length field */
+ #define BTE_LEN_BITS (16)
+ #define BTE_LEN_MASK ((1 << BTE_LEN_BITS) - 1)
+-#define BTE_MAX_XFER ((1 << BTE_LEN_BITS) * L1_CACHE_BYTES)
++#define BTE_MAX_XFER (BTE_LEN_MASK << L1_CACHE_SHIFT)
  
-> ---
->  drivers/pci/pcie/portdrv_pci.c |   16 +---------------
->  1 file changed, 1 insertion(+), 15 deletions(-)
-> 
-> Index: linux-2.6/drivers/pci/pcie/portdrv_pci.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/pci/pcie/portdrv_pci.c
-> +++ linux-2.6/drivers/pci/pcie/portdrv_pci.c
-> @@ -55,25 +55,13 @@ static int pcie_portdrv_suspend(struct p
->  
->  }
->  
-> -static int pcie_portdrv_suspend_late(struct pci_dev *dev, pm_message_t state)
-> -{
-> -	return pci_save_state(dev);
-> -}
-> -
-> -static int pcie_portdrv_resume_early(struct pci_dev *dev)
-> -{
-> -	return pci_restore_state(dev);
-> -}
-> -
->  static int pcie_portdrv_resume(struct pci_dev *dev)
->  {
-> -	pcie_portdrv_restore_config(dev);
-> +	pci_set_master(dev);
->  	return pcie_port_device_resume(dev);
->  }
->  #else
->  #define pcie_portdrv_suspend NULL
-> -#define pcie_portdrv_suspend_late NULL
-> -#define pcie_portdrv_resume_early NULL
->  #define pcie_portdrv_resume NULL
->  #endif
->  
-> @@ -292,8 +280,6 @@ static struct pci_driver pcie_portdriver
->  	.remove		= pcie_portdrv_remove,
->  
->  	.suspend	= pcie_portdrv_suspend,
-> -	.suspend_late	= pcie_portdrv_suspend_late,
-> -	.resume_early	= pcie_portdrv_resume_early,
->  	.resume		= pcie_portdrv_resume,
->  
->  	.err_handler 	= &pcie_portdrv_err_handler,
-> 
-> 
+ 
+ /* Define hardware */
+Index: bte_max_xfer_fix/arch/ia64/sn/kernel/bte.c
+===================================================================
+--- bte_max_xfer_fix.orig/arch/ia64/sn/kernel/bte.c	2009-02-03 18:07:26.000000000 -0600
++++ bte_max_xfer_fix/arch/ia64/sn/kernel/bte.c	2009-02-03 18:15:42.854040475 -0600
+@@ -97,9 +97,10 @@ bte_result_t bte_copy(u64 src, u64 dest,
+ 		return BTE_SUCCESS;
+ 	}
+ 
+-	BUG_ON((len & L1_CACHE_MASK) ||
+-		 (src & L1_CACHE_MASK) || (dest & L1_CACHE_MASK));
+-	BUG_ON(!(len < ((BTE_LEN_MASK + 1) << L1_CACHE_SHIFT)));
++	BUG_ON(len & L1_CACHE_MASK);
++	BUG_ON(src & L1_CACHE_MASK);
++	BUG_ON(dest & L1_CACHE_MASK);
++	BUG_ON(len > BTE_MAX_XFER);
+ 
+ 	/*
+ 	 * Start with interface corresponding to cpu number
