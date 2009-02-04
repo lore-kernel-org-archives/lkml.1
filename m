@@ -1,90 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754670AbZBDJ76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZBDKCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754670AbZBDJ76 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 04:59:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZBDJ7t
+	id S1754807AbZBDKCG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 05:02:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZBDKBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 04:59:49 -0500
-Received: from cantor2.suse.de ([195.135.220.15]:52766 "EHLO mx2.suse.de"
+	Wed, 4 Feb 2009 05:01:54 -0500
+Received: from diva.malsain.org ([91.121.19.57]:37482 "EHLO diva.malsain.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751253AbZBDJ7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 04:59:48 -0500
-From: Thomas Renninger <trenn@suse.de>
-Organization: SUSE Products GmbH
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 6/7] CPUFREQ: powernow-k8: Only print error message once, not per core.
-Date: Wed, 4 Feb 2009 10:59:43 +0100
-User-Agent: KMail/1.10.3 (Linux/2.6.27.13-HEAD_20090130075504_71baee03-default; KDE/4.1.3; x86_64; ; )
-Cc: davej@codemonkey.org.uk, mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
-References: <1233679606-1971-1-git-send-email-trenn@suse.de> <1233679606-1971-7-git-send-email-trenn@suse.de> <20090203210947.49fc5933.akpm@linux-foundation.org>
-In-Reply-To: <20090203210947.49fc5933.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902041059.44897.trenn@suse.de>
+	id S1751253AbZBDKBx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 05:01:53 -0500
+X-Greylist: delayed 2729 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Feb 2009 05:01:53 EST
+Subject: Re: cgroup mount point
+From: Josselin Mouette <joss@debian.org>
+To: debian-devel@lists.debian.org, linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090204003847.308cd0df@sbs173>
+References: <20090202200013.GU3643@vespa.holoscopio.com>
+	 <1233606371.15779.32.camel@radis.liafa.jussieu.fr>
+	 <20090202205246.GA28593@glandium.org>
+	 <20090202214153.GV3643@vespa.holoscopio.com>
+	 <20090203102416.GA8886@redhat.com> <87ljsnzo4v.fsf@benfinney.id.au>
+	 <1233671913.8902.53.camel@abacate.horta>
+	 <6599ad830902030855h1753f4a4o3a303b4dbddf10de@mail.gmail.com>
+	 <20090203184915.GA10004@glandium.org>
+	 <20090203185117.GB3359@mini-me.seanius.net>
+	 <6599ad830902031114t7de1b570p4ed5ec497e2e150e@mail.gmail.com>
+	 <20090204003847.308cd0df@sbs173>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-IxhQGec//Iwh5eUNeTg1"
+Date: Wed, 04 Feb 2009 10:16:21 +0100
+Message-Id: <1233738981.4045.4.camel@shizuru>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009 06:09:47 Andrew Morton wrote:
-> On Tue,  3 Feb 2009 17:46:45 +0100 Thomas Renninger <trenn@suse.de> wrote:
-> > This is the typical message you get if you plug in a CPU
-> > which is newer than your BIOS. It's annoying seeing this
-> > message for each core.
-> >
-> > Signed-off-by: Thomas Renninger <trenn@suse.de>
-> > ---
-> >  arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   12 ++++++------
-> >  1 files changed, 6 insertions(+), 6 deletions(-)
-> >
-> > diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> > b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c index 9accffb..9e312c5 100644
-> > --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> > +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
-> > @@ -743,7 +743,7 @@ static int find_psb_table(struct powernow_k8_data
-> > *data) * BIOS and Kernel Developer's Guide, which is available on
-> >  	 * www.amd.com
-> >  	 */
-> > -	printk(KERN_ERR PFX "BIOS error - no PSB or ACPI _PSS objects\n");
-> > +	printk(KERN_ERR FW_BUG PFX "No PSB or ACPI _PSS objects\n");
-> >  	return -ENODEV;
-> >  }
-> >
-> > @@ -1154,11 +1154,11 @@ static int __cpuinit powernowk8_cpu_init(struct
-> > cpufreq_policy *pol) * an UP version, and is deprecated by AMD.
-> >  		 */
-> >  		if (num_online_cpus() != 1) {
-> > -			printk(KERN_ERR FW_BUG PFX "Your BIOS does not provide"
-> > -			       " ACPI _PSS objects in a way that Linux "
-> > -			       "understands. Please report this to the Linux "
-> > -			       "ACPI maintainers and complain to your BIOS "
-> > -			       "vendor.\n");
-> > +			WARN_ONCE(1, KERN_ERR FW_BUG PFX "Your BIOS does not "
-> > +				  "provide ACPI _PSS objects in a way that "
-> > +				  "Linux understands. Please report this to "
-> > +				  "the Linux ACPI maintainers and complain to "
-> > +				  "your BIOS vendor.\n");
-> >  			goto err_out;
-> >  		}
-> >  		if (pol->cpu != 0) {
->
-> WARN_ONCE will also spew a stack backtrace, which seems inappropriate here.
-Yes. I saw WARN_ONCE(1, KERN_INFO..), which should be a KERN_ERR then
-(if you get a backtrace you do not want to have the message suppressed?)
-and thus thought it's a simple printk.
->
-> There was talk of writing a simple ONCE() macro for this sort of thing:
->
-> 	if (ONCE())
-> 		printk(...)
-Yep, that would be nice here.
 
-> but it never happened.
-I added a static int print_once; hack now.
+--=-IxhQGec//Iwh5eUNeTg1
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
+Le mercredi 04 f=C3=A9vrier 2009 =C3=A0 00:38 +0100, Harald Braumann a =C3=
+=A9crit :
+> So, what's the problem with /dev/cgroups then? If shm/ and pts/
+> are allowed under /dev, wouldn't it be discriminating against
+> cgroups/, to not allow it there?
 
-   Thomas
+/dev/pts contains device entries, so it sounds right to put it in /dev.
+Similarly if the cgroups FS provides facilities to control some system
+settings, it clearly belongs in /sys.
+
+(/dev/shm is another story, and if you asked me, I=E2=80=99d have put it
+in /lib/shm instead, but it=E2=80=99s a bit late to change it.)
+
+--=20
+ .''`.
+: :' :      We are debian.org. Lower your prices, surrender your code.
+`. `'       We will add your hardware and software distinctiveness to
+  `-        our own. Resistance is futile.
+
+--=-IxhQGec//Iwh5eUNeTg1
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBJiVzkrSla4ddfhTMRAuIvAJ97+myCtPh+C0ggOUYbYbjtI3uprQCcC1OB
+FrLuEEAmuRmriX6+cDTqUPs=
+=QrjL
+-----END PGP SIGNATURE-----
+
+--=-IxhQGec//Iwh5eUNeTg1--
+
