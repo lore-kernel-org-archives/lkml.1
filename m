@@ -1,86 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbZBDQda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZBDQiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757300AbZBDQda (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 11:33:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbZBDQdL
+	id S1756352AbZBDQiU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 11:38:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbZBDQiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 11:33:11 -0500
-Received: from wf-out-1314.google.com ([209.85.200.172]:20257 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756641AbZBDQdI (ORCPT
+	Wed, 4 Feb 2009 11:38:10 -0500
+Received: from moutng.kundenserver.de ([212.227.126.188]:49250 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751235AbZBDQiJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 11:33:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=kR8OnKxugUsohCqiLG6n53Ga4DjHk+OECst+ywQHXG+JAVT1wsKyHEHSU0y4tdWJQS
-         gPo4wdb7N7/Dibq79nNBegI/KT3d+5DvP3z8VfS9Ha3Vq/DZQpmzEcsD8NBsBPludd5T
-         UlkBu2Umjgld6fmHY5sXXCtR5B8OcmWSzN68I=
+	Wed, 4 Feb 2009 11:38:09 -0500
+From: Arnd Bergmann <arnd@arndb.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [GIT PULL -tip v3] fix 39 'make headers_check' warnings
+Date: Wed, 4 Feb 2009 17:37:56 +0100
+User-Agent: KMail/1.9.9
+Cc: Avi Kivity <avi@redhat.com>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+References: <1232287474.3130.19.camel@localhost.localdomain> <4989B6F7.4060004@redhat.com> <1233763212.3523.5.camel@localhost.localdomain>
+In-Reply-To: <1233763212.3523.5.camel@localhost.localdomain>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-In-Reply-To: <200902041418.09630.rusty@rustcorp.com.au>
-References: <20090203134721.GA11069@pingi.kke.suse.de>
-	 <200902041418.09630.rusty@rustcorp.com.au>
-Date: Wed, 4 Feb 2009 09:33:07 -0700
-X-Google-Sender-Auth: 238786ac20227374
-Message-ID: <e9c3a7c20902040833o760bf450g658e7c7ff456b023@mail.gmail.com>
-Subject: Re: [RFC] Suspicious bug in module refcounting
-From: Dan Williams <dan.j.williams@intel.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Karsten Keil <kkeil@suse.de>, linux-kernel@vger.kernel.org,
-       Michal Hocko <mhocko@suse.cz>,
-       richard kennedy <richard@rsk.demon.co.uk>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
-       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902041737.57453.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+D+shPTkHuQ09psdd1x5qP6YoJIOfP1fe+5jW
+ 3mjKMSbZjwtr2PQVp3FTNzVA8NY41TQH4yOW7VBnia8TriEjGr
+ t4Gn8kBHavjgxKJBQtpSQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 3, 2009 at 8:48 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> On Wednesday 04 February 2009 00:17:21 Karsten Keil wrote:
->> The refcount is a per CPU atomic variable, module_refcount() simple add
->> in a fully unprotected loop (not disabled irqs, not protected against
->> scheduling) all per cpu values.
->
-> Hi Karsten,
->
->   Yes, the BUG_ON() is overly aggressive.  And I really hate __module_get,
-> and it looks like most of the callers are completely bogus.  The watchdog
-> drivers use it to nail themselves in place in their open routines: this is
-> OK, if a bit weird.
->
->   We should only use __module_get() when you *can't handle* failure;
-> otherwise you should accept that the admin did rmmod --wait and don't use the
-> module any further.
->
->  dmaengine.c seems to be taking liberties like this.  AFAICT it can error
-> out, so why not just try_module_get() always?
+On Wednesday 04 February 2009, Jaswinder Singh Rajput wrote:
+> On Wed, 2009-02-04 at 17:40 +0200, Avi Kivity wrote:
+> > If there's such a patch in the URL you posted, please point to it directly.
+> > 
+> All CONFIG_* patches are dropped.
 
-Currently there is no feedback loop for clients calling
-dmaengine_get().  It simply means "I want to do offload, pin any
-offload resources you may see, and don't let the resource leave until
-dmaengine_ref_count == 0".  Even if we always called try_module_get()
-we would still need to wait until dmaengine_ref_count reached zero to
-be sure no transactions are in flight, effectively ignoring module_get
-failures.
+Well, the kvm.h patch was one of two that AFAICT are actually needed:
+If you don't define CONFIG_X86 or CONFIG_IA64 in user space, you
+won't see the definitions for kvm_irqchip->pic, kvm_irqchip->ioapic
+or KVM_CAP_{DEVICE_ASSIGNMENT,DEVICE_MSI,USER_MSI}.
 
-However, dma-driver module removal is still in the central control of
-the administrator as downing all network interfaces and unloading the
-async_tx api (i.e. raid456) will kill all dmaengine references.  We
-just have the caveat highlighted below:
+The other patch that we still need is the one I posted for
+asm/ptrace-abi.h.
 
-modprobe raid456
-ifup eth0
-rmmod --wait ioat_dma &
-ifup eth1
-modprobe -r raid456
-ifdown eth0  <-- module removal succeeds here in a perfect world
-ifdown eth1 <-- module removal currently succeeds here
-
-Regards,
-Dan
+	Arnd <><
