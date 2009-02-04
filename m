@@ -1,90 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755063AbZBDE6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbZBDFE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755063AbZBDE6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 23:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752485AbZBDE6I
+	id S1752685AbZBDFE3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 00:04:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbZBDFEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 23:58:08 -0500
-Received: from ti-out-0910.google.com ([209.85.142.189]:14562 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752409AbZBDE6G (ORCPT
+	Wed, 4 Feb 2009 00:04:20 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55545 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750755AbZBDFET (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 23:58:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=LP1CDCFlzOijVCrXjOMnd4FlqUO3Lx9ca6eux5oBmQfhflBNfD01qlDj8CTUpsjOnS
-         GG/hBd/WYSsNeNLRFuYqF1pXwuthMd6CoR46NkrhdXVJu6g+xa0KG/mKxk7VMw/HZ41T
-         DA5MZisjNo904+tb5WdrrpmmrA8Q9tfuMLscw=
-Date: Wed, 4 Feb 2009 13:57:45 +0900
-From: MinChan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux mm <linux-mm@kvack.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH v2] fix mlocked page counter mistmatch
-Message-ID: <20090204045745.GC6212@barrios-desktop>
-References: <20090204103648.ECAF.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090204024447.GB6212@barrios-desktop> <20090204115047.ECB5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090204115047.ECB5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 4 Feb 2009 00:04:19 -0500
+Date: Tue, 3 Feb 2009 21:03:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: davej@codemonkey.org.uk, mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] CPUFREQ: ondemand/conservative: deprecate
+ sampling_rate{min,max}
+Message-Id: <20090203210334.a99354ee.akpm@linux-foundation.org>
+In-Reply-To: <1233679606-1971-3-git-send-email-trenn@suse.de>
+References: <1233679606-1971-1-git-send-email-trenn@suse.de>
+	<1233679606-1971-3-git-send-email-trenn@suse.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 11:51:43AM +0900, KOSAKI Motohiro wrote:
-> > > Could you please teach me why this issue doesn't happend on munlockall()?
-> > > your scenario seems to don't depend on exit_mmap().
-> > 
-> > 
-> > Good question.
-> > It's a different issue.
-> > It is related to mmap_sem locking issue. 
-> > 
-> > Actually, I am about to make a patch.
-> > But, I can't understand that Why try_do_mlock_page should downgrade mm_sem ?
-> > Is it necessary ? 
-> > 
-> > In munlockall path, mmap_sem already is holding in write-mode of mmap_sem.
-> > so, try_to_mlock_page always fail to downgrade mmap_sem.
-> > It's why it looks like working well about mlocked counter. 
-> 
-> lastest linus tree don't have downgrade mmap_sem.
-> (recently it was removed)
+On Tue,  3 Feb 2009 17:46:41 +0100 Thomas Renninger <trenn@suse.de> wrote:
 
-Thnaks for information.
+>  static ssize_t show_sampling_rate_max(struct cpufreq_policy *policy, char *buf)
+>  {
+> +	printk(KERN_INFO "CPUFREQ: conservative sampling_rate_max "
+> +	       "sysfs file is deprecated - used by: %s\n", current->comm);
+>  	return sprintf (buf, "%u\n", MAX_SAMPLING_RATE);
+>  }
 
-what is 'latest linus tree' ?
-You mean '29-rc3-git5'?
+I'd have thought that the user-irritation risk here is pretty high.
 
-
-With '29-rc3-git5', I found,
-
-static int try_to_mlock_page(struct page *page, struct vm_area_struct *vma)
-{
-  int mlocked = 0; 
-
-  if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
-    if (vma->vm_flags & VM_LOCKED) {
-      mlock_vma_page(page);
-      mlocked++;  /* really mlocked the page */
-    }    
-    up_read(&vma->vm_mm->mmap_sem);
-  }
-  return mlocked;
-}
-
-It still try to downgrade mmap_sem.
-Do I miss something ?
-
-> 
-> please see it.
-> 
-
--- 
-Kinds Regards
-MinChan Kim
+Would it make sense to throttle these or to make them once-per-boot
+or something?
 
