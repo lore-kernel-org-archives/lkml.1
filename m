@@ -1,112 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbZBDUGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbZBDUJ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758752AbZBDUGv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 15:06:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZBDUGj
+	id S1758977AbZBDUJ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 15:09:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbZBDUJM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 15:06:39 -0500
-Received: from e34.co.us.ibm.com ([32.97.110.152]:33869 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752103AbZBDUGi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 15:06:38 -0500
-Subject: Re: [PATCH NET-NEXT 01/10] clocksource: allow usage independent of
-	timekeeping.c
-From: john stultz <johnstul@us.ibm.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Patrick Ohly <patrick.ohly@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1233776421.15119.125.camel@desktop>
-References: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
-	 <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
-	 <1233756235.15119.54.camel@desktop> <1233758796.15940.198.camel@ecld0pohly>
-	 <1233760170.15119.76.camel@desktop>
-	 <1233775542.6994.13.camel@localhost.localdomain>
-	 <1233776421.15119.125.camel@desktop>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 12:06:22 -0800
-Message-Id: <1233777982.6994.51.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Feb 2009 15:09:12 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33630 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755347AbZBDUJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 15:09:11 -0500
+Date: Wed, 4 Feb 2009 21:08:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jeremy@goop.org, jaswinderrajput@gmail.com, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org, x86@kernel.org, righi.andrea@gmail.com
+Subject: Re: mmotm 2009-02-02-17-12 uploaded (x86/nopmd etc.)
+Message-ID: <20090204200846.GF22608@elte.hu>
+References: <200902030112.n131CNiq010549@imap1.linux-foundation.org> <498893C8.6080506@oracle.com> <20090203191804.GA24698@elte.hu> <20090203121706.423d5cab.akpm@linux-foundation.org> <20090203212538.GB20527@elte.hu> <20090203134128.37042ea8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090203134128.37042ea8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-04 at 11:40 -0800, Daniel Walker wrote:
-> On Wed, 2009-02-04 at 11:25 -0800, john stultz wrote:
-> > On Wed, 2009-02-04 at 07:09 -0800, Daniel Walker wrote:
-> > > On Wed, 2009-02-04 at 15:46 +0100, Patrick Ohly wrote:
-> > > > In an earlier revision of the patch I had adapted clocksource itself so
-> > > > that it could be used outside of the time keeping code; John wanted me
-> > > > to use these smaller structs instead that you now find in the current
-> > > > patch.
-> > > 
-> > > Well, I think your original idea was better.. I don't think we need the
-> > > duplication of underlying clocksource mechanics.
-> > > 
-> > > > Eventually John wants to refactor clocksource so that it uses them and
-> > > > just adds additional elements in clocksource. Right now clocksource is a
-> > > > mixture of different concepts. Breaking out cyclecounter and timecounter
-> > > > is a first step towards that cleanup.
-> > > 
-> > > The problem I see is that your putting off the cleanup of struct
-> > > clocksource with duplication.. It should go in reverse , you should use
-> > > clocksources for your patch set. Which will motivate John to clean up
-> > > the clocksource structure.
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> > > This is getting painful.
 > > 
-> > I strongly disagree. Misusing a established structure for unintended use
-> > is just bad. What Patrick wants to use the counters for has very
-> > different semantics then how clocksources are used.
+> > the include file spaghetti is ... interesting there, and it's historic.
+> > 
+> > I could blame it on highmem, PAE or paravirt - but i'll only blame it on 
+> > paravirt for now because those developers are still around! ;-)
+> > 
+> > Jeremy, any ideas how to reduce the historic dependency mess in that area?
+> > I think we should go on three routes at once:
+> > 
+> >  - agressive splitup and separation of type definitions from method
+> >    declaration (+ inline definitions). The spinlock_types.h / spinlock.h 
+> >    splitup was really nice in solving such dependency problems.
 > 
-> I don't think it's at all bad to reuse an established system like that,
-> especially when the purposed one is largely duplication of the other..
+> I like this one.  The mixing up of declare-something with use-something
+> is often the source of our woes.
 
-The duplication is only at a very low level. He could not reuse the
-established clocksource system without really breaking its semantics.
+yes. I mapped this problem area once and this is how the include file 
+spaghetti gets generated in practice:
 
-> The issue is more that struct clocksource has been loaded up with too
-> many timekeeping specific ornaments .. I would think a good clean up
-> would be just to remove those from the structure.
+  - type A gets declared
+  - type A gets _used_ in the same file in an inline method, BUT,
 
-I do agree. And I gave it a quick attempt and its not quite trivial.
-There is some timekeeping ornaments that are required in the clocksource
-(the two notions of mult, the flags values, etc). Trying to best split
-this out I think will take some care.
+      that usage also brings in instantiated use of type X1, X2 and X3.
 
-> > I think having a bit of redundancy in two structures is good motivation
-> > for me to clean up the clocksources to use cyclecounters.
-> 
-> I'm not sure what kind of clean up you have in mind. Given that
-> clocksources are used across many architectures, do you really want to
-> do a mass name change for all of them? Not to mention most people see
-> clocksources as cycle counters , so you would just add confusion in
-> addition to code flux.
+if all types are declared like that everywhere, it can be seen (and it's a 
+mathematical certainty) that the only conflict-free way of doing this is to:
 
-No matter what we do, we will have to touch the arch code in some way.
-Right now I suspect the arch code will still define clocksources, but we
-can refactor clocksources to use cyclecounters internally. 
+  - initially add random #include lines to bring in type X1, X2 and X3. 
+    Which brings in recursive dependencies from those X1 X2 and X3 files.
 
-> If your going to end up merging this new cycle counter structure with
-> clocksources anyway, why wouldn't we do it now instead of doing
-> temporary duplication ..
+  - when the stuff hits the fan then folks are in a big mess already and 
+    only a deep restructuring could gets them out of it - which they rarely 
+    do in an iterative environment. So they work it around iteratively: 
+    instead of new nice inline methods [which we really prefer] they delay 
+    all the 'usage' instantiation to .c file via the use of CPP macros 
+    [which we hate because they hide bugs and cause bugs].
 
-Patrick could have created his own NICcounter infrastructure somewhere
-far away from the generic time code and no one would gripe (much like
-sched_clock in many cases).  I think he's doing the right thing by
-establishing a base structure that we can reuse in the
-clocksource/timekeeping code. 
+Repeat that process for 15 years, on a 10 MLOC kernel with 1 MLOC headers 
+spread out in 10,000+ header files and you can see how it builds up to a big 
+pile of goo.
 
-Doing that conversion well so the code is more readable as well as
-removing structure duplication will take some time and will touch a lot
-of historically delicate time code, so it will need additional time to
-sit in testing trees before we push it upward. 
+In fact i'm surprised it's not worse than it is - a mitigating factor are 
+uninlining efforts which happen to have the side-effect of reducing the 
+spaghetti.
 
-I see no reason to block his code in the meantime.
+The only structural change that would solve this situation is a tool that 
+enforces that type definitions and methods related to a type should never 
+mix. We are far from being able to enforce anything like that.
 
-thanks
--john
-
+	Ingo
