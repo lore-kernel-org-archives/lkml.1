@@ -1,262 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbZBDNIp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760761AbZBDNJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760600AbZBDNIp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 08:08:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759470AbZBDNCI
+	id S1760761AbZBDNJq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 08:09:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757134AbZBDNEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 08:02:08 -0500
-Received: from mga11.intel.com ([192.55.52.93]:19357 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756702AbZBDNCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 08:02:03 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,378,1231142400"; 
-   d="scan'208";a="428022794"
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       John Stultz <johnstul@us.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Patrick Ohly <patrick.ohly@intel.com>
-Subject: [PATCH NET-NEXT 01/10] clocksource: allow usage independent of timekeeping.c
-Date: Wed,  4 Feb 2009 14:01:56 +0100
-Message-Id: <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
-References: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
+	Wed, 4 Feb 2009 08:04:09 -0500
+Received: from outbound-va3.frontbridge.com ([216.32.180.16]:37738 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756827AbZBDNEI convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 08:04:08 -0500
+X-BigFish: VPS-22(zz1432R98dR1805M936fM8b9dnzzzzz32i6bh6di62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KEJLMH-02-QN7-01
+Date: Wed, 4 Feb 2009 14:03:53 +0100
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Mark Hounschell <markh@compro.net>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: APIC: enable workaround on AMD Fam10h CPUs
+Message-ID: <20090204130353.GA15084@aftab>
+References: <20090203172200.GA3955@aftab> <49898CE8.1030605@compro.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <49898CE8.1030605@compro.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 04 Feb 2009 13:03:57.0044 (UTC) FILETIME=[09F61340:01C986C9]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-So far struct clocksource acted as the interface between time/timekeeping.c
-and hardware. This patch generalizes the concept so that a similar
-interface can also be used in other contexts. For that it introduces
-new structures and related functions *without* touching the existing
-struct clocksource.
+On Wed, Feb 04, 2009 at 07:41:12AM -0500, Mark Hounschell wrote:
+> Borislav Petkov wrote:
+> > From: Borislav Petkov <borislav.petkov@amd.com>
+> > Date: Tue, 3 Feb 2009 16:24:22 +0100
+> > Subject: [PATCH] APIC: enable workaround on AMD Fam10h CPUs
+> > 
+> > Impact: fix to enable APIC for AMD Fam10h on chipsets with a missing/b0rked
+> > 	ACPI MP table (MADT)
+> > 
+> > Booting a 32bit kernel on an AMD Fam10h CPU running on chipsets with
+> > missing/b0rked MP table leads to a hang pretty early in the boot process
+> > due to the APIC not being initialized. Fix that by falling back to the
+> > default APIC base address in 32bit code, as it is done in the 64bit
+> > codepath.
+> > 
+> > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+> > ---
+> >  arch/x86/kernel/apic.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/apic.c b/arch/x86/kernel/apic.c
+> > index 4b6df24..115449f 100644
+> > --- a/arch/x86/kernel/apic.c
+> > +++ b/arch/x86/kernel/apic.c
+> > @@ -1436,7 +1436,7 @@ static int __init detect_init_APIC(void)
+> >  	switch (boot_cpu_data.x86_vendor) {
+> >  	case X86_VENDOR_AMD:
+> >  		if ((boot_cpu_data.x86 == 6 && boot_cpu_data.x86_model > 1) ||
+> > -		    (boot_cpu_data.x86 == 15))
+> > +		    (boot_cpu_data.x86 >= 15))
+> >  			break;
+> >  		goto no_apic;
+> >  	case X86_VENDOR_INTEL:
+> 
+> Hi Borislav,
+> 
+> Could this have anything to do with my Phenom-II problem that you've been so kind
+> to help me with?
+> 
+> Thanks
+> Mark
+>
 
-The reasons for adding these new structures to clocksource.[ch] are
-* the APIs are clearly related
-* struct clocksource could be cleaned up to use the new structs
-* avoids proliferation of files with similar names (timesource.h?
-  timecounter.h?)
+Well, we thought so originally but since a 64bit kernel fails booting
+on your machine too, it can't be it because this is a 32bit codepath
+issue.
 
-As outlined in the discussion with John Stultz, this patch adds
-* struct cyclecounter: stateless API to hardware which counts clock cycles
-* struct timecounter: stateful utility code built on a cyclecounter which
-  provides a nanosecond counter
-* only the function to read the nanosecond counter; deltas are used internally
-  and not exposed to users of timecounter
+Another question: does your machine boot a tickless kernel (CONFIG_NO_HZ enabled)?
 
-The code does no locking of the shared state. It must be called at least
-as often as the cycle counter wraps around to detect these wrap arounds.
-Both is the responsibility of the timecounter user.
-
-Acked-by: John Stultz <johnstul@us.ibm.com>
----
- include/linux/clocksource.h |  101 +++++++++++++++++++++++++++++++++++++++++++
- kernel/time/clocksource.c   |   76 ++++++++++++++++++++++++++++++++
- 2 files changed, 177 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index f88d32f..0729ce2 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -22,8 +22,109 @@ typedef u64 cycle_t;
- struct clocksource;
- 
- /**
-+ * struct cyclecounter - hardware abstraction for a free running counter
-+ *	Provides completely state-free accessors to the underlying hardware.
-+ *	Depending on which hardware it reads, the cycle counter may wrap
-+ *	around quickly. Locking rules (if necessary) have to be defined
-+ *	by the implementor and user of specific instances of this API.
-+ *
-+ * @read:		returns the current cycle value
-+ * @mask:		bitmask for two's complement
-+ *			subtraction of non 64 bit counters,
-+ *			see CLOCKSOURCE_MASK() helper macro
-+ * @mult:		cycle to nanosecond multiplier
-+ * @shift:		cycle to nanosecond divisor (power of two)
-+ */
-+struct cyclecounter {
-+	cycle_t (*read)(const struct cyclecounter *cc);
-+	cycle_t mask;
-+	u32 mult;
-+	u32 shift;
-+};
-+
-+/**
-+ * struct timecounter - layer above a %struct cyclecounter which counts nanoseconds
-+ *	Contains the state needed by timecounter_read() to detect
-+ *	cycle counter wrap around. Initialize with
-+ *	timecounter_init(). Also used to convert cycle counts into the
-+ *	corresponding nanosecond counts with timecounter_cyc2time(). Users
-+ *	of this code are responsible for initializing the underlying
-+ *	cycle counter hardware, locking issues and reading the time
-+ *	more often than the cycle counter wraps around. The nanosecond
-+ *	counter will only wrap around after ~585 years.
-+ *
-+ * @cc:			the cycle counter used by this instance
-+ * @cycle_last:		most recent cycle counter value seen by
-+ *			timecounter_read()
-+ * @nsec:		continuously increasing count
-+ */
-+struct timecounter {
-+	const struct cyclecounter *cc;
-+	cycle_t cycle_last;
-+	u64 nsec;
-+};
-+
-+/**
-+ * cyclecounter_cyc2ns - converts cycle counter cycles to nanoseconds
-+ * @tc:		Pointer to cycle counter.
-+ * @cycles:	Cycles
-+ *
-+ * XXX - This could use some mult_lxl_ll() asm optimization. Same code
-+ * as in cyc2ns, but with unsigned result.
-+ */
-+static inline u64 cyclecounter_cyc2ns(const struct cyclecounter *cc,
-+				      cycle_t cycles)
-+{
-+	u64 ret = (u64)cycles;
-+	ret = (ret * cc->mult) >> cc->shift;
-+	return ret;
-+}
-+
-+/**
-+ * timecounter_init - initialize a time counter
-+ * @tc:			Pointer to time counter which is to be initialized/reset
-+ * @cc:			A cycle counter, ready to be used.
-+ * @start_tstamp:	Arbitrary initial time stamp.
-+ *
-+ * After this call the current cycle register (roughly) corresponds to
-+ * the initial time stamp. Every call to timecounter_read() increments
-+ * the time stamp counter by the number of elapsed nanoseconds.
-+ */
-+extern void timecounter_init(struct timecounter *tc,
-+			const struct cyclecounter *cc,
-+			u64 start_tstamp);
-+
-+/**
-+ * timecounter_read - return nanoseconds elapsed since timecounter_init()
-+ *                         plus the initial time stamp
-+ * @tc:          Pointer to time counter.
-+ *
-+ * In other words, keeps track of time since the same epoch as
-+ * the function which generated the initial time stamp.
-+ */
-+extern u64 timecounter_read(struct timecounter *tc);
-+
-+/**
-+ * timecounter_cyc2time - convert a cycle counter to same
-+ *                        time base as values returned by
-+ *                        timecounter_read()
-+ * @tc:		Pointer to time counter.
-+ * @cycle:	a value returned by tc->cc->read()
-+ *
-+ * Cycle counts that are converted correctly as long as they
-+ * fall into the interval [-1/2 max cycle count, +1/2 max cycle count],
-+ * with "max cycle count" == cs->mask+1.
-+ *
-+ * This allows conversion of cycle counter values which were generated
-+ * in the past.
-+ */
-+extern u64 timecounter_cyc2time(struct timecounter *tc,
-+				cycle_t cycle_tstamp);
-+
-+/**
-  * struct clocksource - hardware abstraction for a free running counter
-  *	Provides mostly state-free accessors to the underlying hardware.
-+ *	This is the structure used for system time.
-  *
-  * @name:		ptr to clocksource name
-  * @list:		list head for registration
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index ca89e15..6d4a267 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -31,6 +31,82 @@
- #include <linux/sched.h> /* for spin_unlock_irq() using preempt_count() m68k */
- #include <linux/tick.h>
- 
-+void timecounter_init(struct timecounter *tc,
-+		      const struct cyclecounter *cc,
-+		      u64 start_tstamp)
-+{
-+	tc->cc = cc;
-+	tc->cycle_last = cc->read(cc);
-+	tc->nsec = start_tstamp;
-+}
-+EXPORT_SYMBOL(timecounter_init);
-+
-+/**
-+ * clocksource_read_ns - get nanoseconds since last call of this function
-+ * @tc:         Pointer to time counter
-+ *
-+ * When the underlying cycle counter runs over, this will be handled
-+ * correctly as long as it does not run over more than once between
-+ * calls.
-+ *
-+ * The first call to this function for a new time counter initializes
-+ * the time tracking and returns bogus results.
-+ */
-+static u64 timecounter_read_delta(struct timecounter *tc)
-+{
-+	cycle_t cycle_now, cycle_delta;
-+	u64 ns_offset;
-+
-+	/* read cycle counter: */
-+	cycle_now = tc->cc->read(tc->cc);
-+
-+	/* calculate the delta since the last timecounter_read_delta(): */
-+	cycle_delta = (cycle_now - tc->cycle_last) & tc->cc->mask;
-+
-+	/* convert to nanoseconds: */
-+	ns_offset = cyclecounter_cyc2ns(tc->cc, cycle_delta);
-+
-+	/* update time stamp of timecounter_read_delta() call: */
-+	tc->cycle_last = cycle_now;
-+
-+	return ns_offset;
-+}
-+
-+u64 timecounter_read(struct timecounter *tc)
-+{
-+	u64 nsec;
-+
-+	/* increment time by nanoseconds since last call */
-+	nsec = timecounter_read_delta(tc);
-+	nsec += tc->nsec;
-+	tc->nsec = nsec;
-+
-+	return nsec;
-+}
-+EXPORT_SYMBOL(timecounter_read);
-+
-+u64 timecounter_cyc2time(struct timecounter *tc,
-+			 cycle_t cycle_tstamp)
-+{
-+	u64 cycle_delta = (cycle_tstamp - tc->cycle_last) & tc->cc->mask;
-+	u64 nsec;
-+
-+	/*
-+	 * Instead of always treating cycle_tstamp as more recent
-+	 * than tc->cycle_last, detect when it is too far in the
-+	 * future and treat it as old time stamp instead.
-+	 */
-+	if (cycle_delta > tc->cc->mask / 2) {
-+		cycle_delta = (tc->cycle_last - cycle_tstamp) & tc->cc->mask;
-+		nsec = tc->nsec - cyclecounter_cyc2ns(tc->cc, cycle_delta);
-+	} else {
-+		nsec = cyclecounter_cyc2ns(tc->cc, cycle_delta) + tc->nsec;
-+	}
-+
-+	return nsec;
-+}
-+EXPORT_SYMBOL(timecounter_cyc2time);
-+
- /* XXX - Would like a better way for initializing curr_clocksource */
- extern struct clocksource clocksource_jiffies;
- 
 -- 
-1.6.0.4
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Jochen Polster, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
