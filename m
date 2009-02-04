@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760116AbZBDSnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZBDSm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760116AbZBDSnB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:43:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757665AbZBDShT
+	id S1759939AbZBDSm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:42:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbZBDShR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:19 -0500
-Received: from kroah.org ([198.145.64.141]:51052 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:17 -0500
+Received: from kroah.org ([198.145.64.141]:51038 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758316AbZBDShN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:13 -0500
-Date: Wed, 4 Feb 2009 10:34:48 -0800
+	id S1758464AbZBDShL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:11 -0500
+Date: Wed, 4 Feb 2009 10:34:44 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Scott Kilau <Scott.Kilau@digi.com>,
-       Paul Larson <pl@linux.vnet.ibm.com>
-Subject: [patch 16/33] Add enable_ms to jsm driver
-Message-ID: <20090204183448.GQ13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: [patch 14/33] sata_nv: ck804 has borked hardreset too
+Message-ID: <20090204183444.GO13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="add-enable_ms-to-jsm-driver.patch"
+Content-Disposition: inline; filename="sata_nv-ck804-has-borked-hardreset-too.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,42 +40,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul Larson <pl@linux.vnet.ibm.com>
+From: Tejun Heo <tj@kernel.org>
 
-commit 0461ec5bc7745b89a8ab67ba0ea497abd58a6301 upstream.
+commit 8d993eaa9c3c61b8a5929a7f695078a1fcfb4869 upstream.
 
-This fixes a crash observed when non-existant enable_ms function is
-called for jsm driver.
+While playing with nvraid, I found out that rmmoding and insmoding
+often trigger hardreset failure on the first port (the second one was
+always okay).  Seriously, how diverse can you get with hardreset
+behaviors?  Anyways, make ck804 use noclassify variant too.
 
-Signed-off-by: Scott Kilau <Scott.Kilau@digi.com>
-Signed-off-by: Paul Larson <pl@linux.vnet.ibm.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/jsm/jsm_tty.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/ata/sata_nv.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
 
---- a/drivers/serial/jsm/jsm_tty.c
-+++ b/drivers/serial/jsm/jsm_tty.c
-@@ -161,6 +161,11 @@ static void jsm_tty_stop_rx(struct uart_
- 	channel->ch_bd->bd_ops->disable_receiver(channel);
- }
+--- a/drivers/ata/sata_nv.c
++++ b/drivers/ata/sata_nv.c
+@@ -436,11 +436,16 @@ static struct ata_port_operations nv_nf2
+ 	.hardreset		= nv_noclassify_hardreset,
+ };
  
-+static void jsm_tty_enable_ms(struct uart_port *port)
-+{
-+	/* Nothing needed */
-+}
-+
- static void jsm_tty_break(struct uart_port *port, int break_state)
- {
- 	unsigned long lock_flags;
-@@ -345,6 +350,7 @@ static struct uart_ops jsm_ops = {
- 	.start_tx	= jsm_tty_start_tx,
- 	.send_xchar	= jsm_tty_send_xchar,
- 	.stop_rx	= jsm_tty_stop_rx,
-+	.enable_ms	= jsm_tty_enable_ms,
- 	.break_ctl	= jsm_tty_break,
- 	.startup	= jsm_tty_open,
- 	.shutdown	= jsm_tty_close,
+-/* CK804 finally gets hardreset right */
++/* For initial probing after boot and hot plugging, hardreset mostly
++ * works fine on CK804 but curiously, reprobing on the initial port by
++ * rescanning or rmmod/insmod fails to acquire the initial D2H Reg FIS
++ * in somewhat undeterministic way.  Use noclassify hardreset.
++ */
+ static struct ata_port_operations nv_ck804_ops = {
+ 	.inherits		= &nv_common_ops,
+ 	.freeze			= nv_ck804_freeze,
+ 	.thaw			= nv_ck804_thaw,
++	.hardreset		= nv_noclassify_hardreset,
+ 	.host_stop		= nv_ck804_host_stop,
+ };
+ 
 
