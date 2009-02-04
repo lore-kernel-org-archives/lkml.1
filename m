@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755032AbZBDOEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbZBDOHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755032AbZBDOEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 09:04:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751820AbZBDOEB
+	id S1753640AbZBDOHO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 09:07:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751338AbZBDOHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 09:04:01 -0500
-Received: from fifo99.com ([67.223.236.141]:38756 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751572AbZBDOD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 09:03:57 -0500
-Subject: Re: [PATCH NET-NEXT 01/10] clocksource: allow usage independent of
-	timekeeping.c
-From: Daniel Walker <dwalker@fifo99.com>
-To: Patrick Ohly <patrick.ohly@intel.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       David Miller <davem@davemloft.net>, John Stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
-References: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
-	 <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
+	Wed, 4 Feb 2009 09:07:00 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:27094 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751117AbZBDOG7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 09:06:59 -0500
+Subject: Re: [PATCH v2] fix mlocked page counter mistmatch
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: MinChan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux mm <linux-mm@kvack.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>
+In-Reply-To: <20090204171639.ECCE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+References: <20090204115047.ECB5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090204045745.GC6212@barrios-desktop>
+	 <20090204171639.ECCE.KOSAKI.MOTOHIRO@jp.fujitsu.com>
 Content-Type: text/plain
-Date: Wed, 04 Feb 2009 06:03:55 -0800
-Message-Id: <1233756235.15119.54.camel@desktop>
+Organization: HP/OSLO
+Date: Wed, 04 Feb 2009 09:07:16 -0500
+Message-Id: <1233756436.14819.13.camel@lts-notebook>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -29,90 +33,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-04 at 14:01 +0100, Patrick Ohly wrote:
+On Wed, 2009-02-04 at 19:28 +0900, KOSAKI Motohiro wrote:
+> > With '29-rc3-git5', I found,
+> > 
+> > static int try_to_mlock_page(struct page *page, struct vm_area_struct *vma)
+> > {
+> >   int mlocked = 0; 
+> > 
+> >   if (down_read_trylock(&vma->vm_mm->mmap_sem)) {
+> >     if (vma->vm_flags & VM_LOCKED) {
+> >       mlock_vma_page(page);
+> >       mlocked++;  /* really mlocked the page */
+> >     }    
+> >     up_read(&vma->vm_mm->mmap_sem);
+> >   }
+> >   return mlocked;
+> > }
+> > 
+> > It still try to downgrade mmap_sem.
+> > Do I miss something ?
+> 
+> sorry, I misunderstood your "downgrade". I said linus removed downgrade_write(&mma_sem).
+> 
+> Now, I understand this issue perfectly. I agree you and lee-san's fix is correct.
+> 	Acked-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> 
+> 
+> and, I think current try_to_mlock_page() is correct. no need change.
+> Why?
+> 
+> 1. Generally, mmap_sem holding is necessary when vma->vm_flags accessed.
+>    that's vma's basic rule.
+> 2. However, try_to_unmap_one() doesn't held mamp_sem. but that's ok.
+>    it often get incorrect result. but caller consider incorrect value safe.
+> 3. try_to_mlock_page() need mmap_sem because it obey rule (1).
+> 4. in try_to_mlock_page(), if down_read_trylock() is failure, 
+>    we can't move the page to unevictable list. but that's ok.
+>    the page in evictable list is periodically try to reclaim. and
+>    be called try_to_unmap().
+>    try_to_unmap() (and its caller) also move the unevictable page to unevictable list.
+>    Therefore, in long term view, the page leak is not happend.
+> 
 
->  /**
-> + * struct cyclecounter - hardware abstraction for a free running counter
-> + *	Provides completely state-free accessors to the underlying hardware.
-> + *	Depending on which hardware it reads, the cycle counter may wrap
-> + *	around quickly. Locking rules (if necessary) have to be defined
-> + *	by the implementor and user of specific instances of this API.
-> + *
-> + * @read:		returns the current cycle value
-> + * @mask:		bitmask for two's complement
-> + *			subtraction of non 64 bit counters,
-> + *			see CLOCKSOURCE_MASK() helper macro
-> + * @mult:		cycle to nanosecond multiplier
-> + * @shift:		cycle to nanosecond divisor (power of two)
-> + */
-> +struct cyclecounter {
-> +	cycle_t (*read)(const struct cyclecounter *cc);
-> +	cycle_t mask;
-> +	u32 mult;
-> +	u32 shift;
-> +};
+Also worth noting that down_read_trylock() does not "downgrade" the
+semaphore.  It only tries to acquire it in read mode.  
 
-Where are these defined? I don't see any in created in your code.
+As Kosaki-san says, try_to_unmap() doesn't normally hold the mmap_sem.
+It needs to acquire it here to stabilize the vma [vm_flags] while
+mlocking the pages.  This is the place where a page mapped in a
+VM_LOCKED vma that vmscan found on the normal lru list--e.g., because we
+couldn't isolate them in mlock_vma_page()--get marked mlocked, if not
+already marked. mlock_vma_page() is a no-op if page is already mlocked.
 
-> +/**
-> + * struct timecounter - layer above a %struct cyclecounter which counts nanoseconds
-> + *	Contains the state needed by timecounter_read() to detect
-> + *	cycle counter wrap around. Initialize with
-> + *	timecounter_init(). Also used to convert cycle counts into the
-> + *	corresponding nanosecond counts with timecounter_cyc2time(). Users
-> + *	of this code are responsible for initializing the underlying
-> + *	cycle counter hardware, locking issues and reading the time
-> + *	more often than the cycle counter wraps around. The nanosecond
-> + *	counter will only wrap around after ~585 years.
-> + *
-> + * @cc:			the cycle counter used by this instance
-> + * @cycle_last:		most recent cycle counter value seen by
-> + *			timecounter_read()
-> + * @nsec:		continuously increasing count
-> + */
-> +struct timecounter {
-> +	const struct cyclecounter *cc;
-> +	cycle_t cycle_last;
-> +	u64 nsec;
-> +};
+If we successsfully acquire the mmap_sem and the vma is still VM_LOCKED,
+we know that the page is mlocked and try_to_unmap() will return
+SWAP_MLOCK.  This allows vmscan [shrink_page_list()] to move the page to
+the unevictable list and not need to bother with it in subsequent scans
+until it becomes munlocked.
 
-If your mixing generic and non-generic code, it seems a little
-presumptuous to assume the code would get called more often than the
-counter wraps. If this cyclecounter is what I think it is (a
-clocksource) they wrap at varied times.
+Lee 
 
-> +/**
-> + * cyclecounter_cyc2ns - converts cycle counter cycles to nanoseconds
-> + * @tc:		Pointer to cycle counter.
-> + * @cycles:	Cycles
-> + *
-> + * XXX - This could use some mult_lxl_ll() asm optimization. Same code
-> + * as in cyc2ns, but with unsigned result.
-> + */
-> +static inline u64 cyclecounter_cyc2ns(const struct cyclecounter *cc,
-> +				      cycle_t cycles)
-> +{
-> +	u64 ret = (u64)cycles;
-> +	ret = (ret * cc->mult) >> cc->shift;
-> +	return ret;
-> +}
 
-This is just outright duplication.. Why wouldn't you use the function
-that already exists for this?
-
-> +/**
-> + * clocksource_read_ns - get nanoseconds since last call of this function
-> + * @tc:         Pointer to time counter
-> + *
-> + * When the underlying cycle counter runs over, this will be handled
-> + * correctly as long as it does not run over more than once between
-> + * calls.
-> + *
-> + * The first call to this function for a new time counter initializes
-> + * the time tracking and returns bogus results.
-> + */
-
-"bogus results" doesn't sound very pretty..
-
-Daniel
 
