@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZBDSm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760173AbZBDSnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbZBDSm1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:42:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758123AbZBDShR
+	id S1760173AbZBDSnc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:43:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758540AbZBDShU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:17 -0500
-Received: from kroah.org ([198.145.64.141]:51038 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:20 -0500
+Received: from kroah.org ([198.145.64.141]:51065 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758464AbZBDShL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:11 -0500
-Date: Wed, 4 Feb 2009 10:34:44 -0800
+	id S1754774AbZBDShO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:14 -0500
+Date: Wed, 4 Feb 2009 10:34:50 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 14/33] sata_nv: ck804 has borked hardreset too
-Message-ID: <20090204183444.GO13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Stuart Hopkins <stuart@dodgy-geeza.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 17/33] Input: atkbd - Samsung NC10 key repeat fix
+Message-ID: <20090204183450.GR13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_nv-ck804-has-borked-hardreset-too.patch"
+Content-Disposition: inline; filename="input-atkbd-samsung-nc10-key-repeat-fix.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,41 +40,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tejun Heo <tj@kernel.org>
+From: Stuart Hopkins <stuart@dodgy-geeza.com>
 
-commit 8d993eaa9c3c61b8a5929a7f695078a1fcfb4869 upstream.
+commit 4200844bd9dc511088258437d564a187f0ffc94e upstream.
 
-While playing with nvraid, I found out that rmmoding and insmoding
-often trigger hardreset failure on the first port (the second one was
-always okay).  Seriously, how diverse can you get with hardreset
-behaviors?  Anyways, make ck804 use noclassify variant too.
+This patch fixes the key repeat issue with the Fn+F? keys on the new
+Samsung NC10 Netbook, so that the keys can be defined and used within
+ACPID correctly, otherwise the keys repeat indefinately.
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+This solves part of http://bugzilla.kernel.org/show_bug.cgi?id=12021
+
+Signed-off-by: Stuart Hopkins <stuart@dodgy-geeza.com>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_nv.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/input/keyboard/atkbd.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -436,11 +436,16 @@ static struct ata_port_operations nv_nf2
- 	.hardreset		= nv_noclassify_hardreset,
- };
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -884,6 +884,22 @@ static void atkbd_inventec_keymap_fixup(
+ }
  
--/* CK804 finally gets hardreset right */
-+/* For initial probing after boot and hot plugging, hardreset mostly
-+ * works fine on CK804 but curiously, reprobing on the initial port by
-+ * rescanning or rmmod/insmod fails to acquire the initial D2H Reg FIS
-+ * in somewhat undeterministic way.  Use noclassify hardreset.
+ /*
++ * Samsung NC10 with Fn+F? key release not working
 + */
- static struct ata_port_operations nv_ck804_ops = {
- 	.inherits		= &nv_common_ops,
- 	.freeze			= nv_ck804_freeze,
- 	.thaw			= nv_ck804_thaw,
-+	.hardreset		= nv_noclassify_hardreset,
- 	.host_stop		= nv_ck804_host_stop,
++static void atkbd_samsung_keymap_fixup(struct atkbd *atkbd)
++{
++	const unsigned int forced_release_keys[] = {
++		0x82, 0x83, 0x84, 0x86, 0x88, 0x89, 0xb3, 0xf7, 0xf9,
++	};
++	int i;
++
++	if (atkbd->set == 2)
++		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
++			__set_bit(forced_release_keys[i],
++				  atkbd->force_release_mask);
++}
++
++/*
+  * atkbd_set_keycode_table() initializes keyboard's keycode table
+  * according to the selected scancode set
+  */
+@@ -1493,6 +1509,15 @@ static struct dmi_system_id atkbd_dmi_qu
+ 		.callback = atkbd_setup_fixup,
+ 		.driver_data = atkbd_inventec_keymap_fixup,
+ 	},
++	{
++		.ident = "Samsung NC10",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "NC10"),
++		},
++		.callback = atkbd_setup_fixup,
++		.driver_data = atkbd_samsung_keymap_fixup,
++	},
+ 	{ }
  };
  
 
