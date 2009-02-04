@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbZBDSyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZBDSvr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756474AbZBDSyV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:54:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759336AbZBDStO
+	id S1760628AbZBDSvr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:51:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760286AbZBDStB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:14 -0500
-Received: from kroah.org ([198.145.64.141]:34308 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:01 -0500
+Received: from kroah.org ([198.145.64.141]:34246 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759583AbZBDStE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:04 -0500
-Date: Wed, 4 Feb 2009 10:45:58 -0800
+	id S1758210AbZBDStA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:00 -0500
+Date: Wed, 4 Feb 2009 10:45:49 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Andi Kleen <ak@linux.intel.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 05/41] x86: use early clobbers in usercopy*.c
-Message-ID: <20090204184558.GF25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Jeff Layton <jlayton@redhat.com>,
+       Steve French <sfrench@us.ibm.com>
+Subject: [patch 01/41] cifs: make sure we allocate enough storage for
+	socket address
+Message-ID: <20090204184549.GB25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="x86-use-early-clobbers-in-usercopy-.c.patch"
+Content-Disposition: inline; filename="cifs-make-sure-we-allocate-enough-storage-for-socket-address.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,103 +41,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andi Kleen <andi@firstfloor.org>
+From: Jeff Layton <jlayton@redhat.com>
 
-commit e0a96129db574d6365e3439d16d88517c437ab33 upstream.
+commit a9ac49d303f967be0dabd97cb722c4a13109c6c2 upstream.
 
-Impact: fix rare (but currently harmless) miscompile with certain configs and gcc versions
+cifs_mount declares a struct sockaddr on the stack and then casts it
+to the proper address type. The storage allocated is fine for ipv4,
+but is too small for ipv6 addresses. Declare it as
+"struct sockaddr_storage" instead of struct sockaddr".
 
-Hugh Dickins noticed that strncpy_from_user() was miscompiled
-in some circumstances with gcc 4.3.
+This bug was manifesting itself as oopses and address corruption when
+mounting IPv6 addresses.
 
-Thanks to Hugh's excellent analysis it was easy to track down.
-
-Hugh writes:
-
-> Try building an x86_64 defconfig 2.6.29-rc1 kernel tree,
-> except not quite defconfig, switch CONFIG_PREEMPT_NONE=y
-> and CONFIG_PREEMPT_VOLUNTARY off (because it expands a
-> might_fault() there, which hides the issue): using a
-> gcc 4.3.2 (I've checked both openSUSE 11.1 and Fedora 10).
->
-> It generates the following:
->
-> 0000000000000000 <__strncpy_from_user>:
->    0:   48 89 d1                mov    %rdx,%rcx
->    3:   48 85 c9                test   %rcx,%rcx
->    6:   74 0e                   je     16 <__strncpy_from_user+0x16>
->    8:   ac                      lods   %ds:(%rsi),%al
->    9:   aa                      stos   %al,%es:(%rdi)
->    a:   84 c0                   test   %al,%al
->    c:   74 05                   je     13 <__strncpy_from_user+0x13>
->    e:   48 ff c9                dec    %rcx
->   11:   75 f5                   jne    8 <__strncpy_from_user+0x8>
->   13:   48 29 c9                sub    %rcx,%rcx
->   16:   48 89 c8                mov    %rcx,%rax
->   19:   c3                      retq
->
-> Observe that "sub %rcx,%rcx; mov %rcx,%rax", whereas gcc 4.2.1
-> (and many other configs) say "sub %rcx,%rdx; mov %rdx,%rax".
-> Isn't it returning 0 when it ought to be returning strlen?
-
-The asm constraints for the strncpy_from_user() result were missing an
-early clobber, which tells gcc that the last output arguments
-are written before all input arguments are read.
-
-Also add more early clobbers in the rest of the file and fix 32-bit
-usercopy.c in the same way.
-
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-[ since this API is rarely used and no in-kernel user relies on a 'len'
-  return value (they only rely on negative return values) this miscompile
-  was never noticed in the field. But it's worth fixing it nevertheless. ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Tested-by: Stefan Bader <stefan.bader@canonical.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/lib/usercopy_32.c |    4 ++--
- arch/x86/lib/usercopy_64.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ fs/cifs/connect.c |   18 +++++++++---------
+ 1 file changed, 9 insertions(+), 9 deletions(-)
 
---- a/arch/x86/lib/usercopy_32.c
-+++ b/arch/x86/lib/usercopy_32.c
-@@ -49,7 +49,7 @@ do {									   \
- 		"	jmp 2b\n"					   \
- 		".previous\n"						   \
- 		_ASM_EXTABLE(0b,3b)					   \
--		: "=d"(res), "=c"(count), "=&a" (__d0), "=&S" (__d1),	   \
-+		: "=&d"(res), "=&c"(count), "=&a" (__d0), "=&S" (__d1),	   \
- 		  "=&D" (__d2)						   \
- 		: "i"(-EFAULT), "0"(count), "1"(count), "3"(src), "4"(dst) \
- 		: "memory");						   \
-@@ -211,7 +211,7 @@ long strnlen_user(const char __user *s, 
- 		"	.align 4\n"
- 		"	.long 0b,2b\n"
- 		".previous"
--		:"=r" (n), "=D" (s), "=a" (res), "=c" (tmp)
-+		:"=&r" (n), "=&D" (s), "=&a" (res), "=&c" (tmp)
- 		:"0" (n), "1" (s), "2" (0), "3" (mask)
- 		:"cc");
- 	return res & mask;
---- a/arch/x86/lib/usercopy_64.c
-+++ b/arch/x86/lib/usercopy_64.c
-@@ -32,7 +32,7 @@ do {									   \
- 		"	jmp 2b\n"					   \
- 		".previous\n"						   \
- 		_ASM_EXTABLE(0b,3b)					   \
--		: "=r"(res), "=c"(count), "=&a" (__d0), "=&S" (__d1),	   \
-+		: "=&r"(res), "=&c"(count), "=&a" (__d0), "=&S" (__d1),	   \
- 		  "=&D" (__d2)						   \
- 		: "i"(-EFAULT), "0"(count), "1"(count), "3"(src), "4"(dst) \
- 		: "memory");						   \
-@@ -86,7 +86,7 @@ unsigned long __clear_user(void __user *
- 		".previous\n"
- 		_ASM_EXTABLE(0b,3b)
- 		_ASM_EXTABLE(1b,2b)
--		: [size8] "=c"(size), [dst] "=&D" (__d0)
-+		: [size8] "=&c"(size), [dst] "=&D" (__d0)
- 		: [size1] "r"(size & 7), "[size8]" (size / 8), "[dst]"(addr),
- 		  [zero] "r" (0UL), [eight] "r" (8UL));
- 	return size;
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -1349,7 +1349,7 @@ cifs_parse_mount_options(char *options, 
+ }
+ 
+ static struct TCP_Server_Info *
+-cifs_find_tcp_session(struct sockaddr *addr)
++cifs_find_tcp_session(struct sockaddr_storage *addr)
+ {
+ 	struct list_head *tmp;
+ 	struct TCP_Server_Info *server;
+@@ -1369,11 +1369,11 @@ cifs_find_tcp_session(struct sockaddr *a
+ 		if (server->tcpStatus == CifsNew)
+ 			continue;
+ 
+-		if (addr->sa_family == AF_INET &&
++		if (addr->ss_family == AF_INET &&
+ 		    (addr4->sin_addr.s_addr !=
+ 		     server->addr.sockAddr.sin_addr.s_addr))
+ 			continue;
+-		else if (addr->sa_family == AF_INET6 &&
++		else if (addr->ss_family == AF_INET6 &&
+ 			 memcmp(&server->addr.sockAddr6.sin6_addr,
+ 				&addr6->sin6_addr, sizeof(addr6->sin6_addr)))
+ 			continue;
+@@ -2027,7 +2027,7 @@ cifs_mount(struct super_block *sb, struc
+ 	int rc = 0;
+ 	int xid;
+ 	struct socket *csocket = NULL;
+-	struct sockaddr addr;
++	struct sockaddr_storage addr;
+ 	struct sockaddr_in *sin_server = (struct sockaddr_in *) &addr;
+ 	struct sockaddr_in6 *sin_server6 = (struct sockaddr_in6 *) &addr;
+ 	struct smb_vol volume_info;
+@@ -2039,7 +2039,7 @@ cifs_mount(struct super_block *sb, struc
+ 
+ /* cFYI(1, ("Entering cifs_mount. Xid: %d with: %s", xid, mount_data)); */
+ 
+-	memset(&addr, 0, sizeof(struct sockaddr));
++	memset(&addr, 0, sizeof(struct sockaddr_storage));
+ 	memset(&volume_info, 0, sizeof(struct smb_vol));
+ 	if (cifs_parse_mount_options(mount_data, devname, &volume_info)) {
+ 		rc = -EINVAL;
+@@ -2069,9 +2069,9 @@ cifs_mount(struct super_block *sb, struc
+ 			rc = cifs_inet_pton(AF_INET6, volume_info.UNCip,
+ 					    &sin_server6->sin6_addr.in6_u);
+ 			if (rc > 0)
+-				addr.sa_family = AF_INET6;
++				addr.ss_family = AF_INET6;
+ 		} else {
+-			addr.sa_family = AF_INET;
++			addr.ss_family = AF_INET;
+ 		}
+ 
+ 		if (rc <= 0) {
+@@ -2113,7 +2113,7 @@ cifs_mount(struct super_block *sb, struc
+ 
+ 	srvTcp = cifs_find_tcp_session(&addr);
+ 	if (!srvTcp) { /* create socket */
+-		if (addr.sa_family == AF_INET6) {
++		if (addr.ss_family == AF_INET6) {
+ 			cFYI(1, ("attempting ipv6 connect"));
+ 			/* BB should we allow ipv6 on port 139? */
+ 			/* other OS never observed in Wild doing 139 with v6 */
+@@ -2144,7 +2144,7 @@ cifs_mount(struct super_block *sb, struc
+ 		} else {
+ 			srvTcp->noblocksnd = volume_info.noblocksnd;
+ 			srvTcp->noautotune = volume_info.noautotune;
+-			if (addr.sa_family == AF_INET6)
++			if (addr.ss_family == AF_INET6)
+ 				memcpy(&srvTcp->addr.sockAddr6, sin_server6,
+ 					sizeof(struct sockaddr_in6));
+ 			else
 
