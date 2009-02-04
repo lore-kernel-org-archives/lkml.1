@@ -1,147 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756277AbZBDQdF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757300AbZBDQda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756277AbZBDQdF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 11:33:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751942AbZBDQcy
+	id S1757300AbZBDQda (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 11:33:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756646AbZBDQdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 11:32:54 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52766 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbZBDQcx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 11:32:53 -0500
-Date: Wed, 4 Feb 2009 17:32:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Norbert Preining <preining@logic.at>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
-Message-ID: <20090204163213.GA25996@elte.hu>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain>
+	Wed, 4 Feb 2009 11:33:11 -0500
+Received: from wf-out-1314.google.com ([209.85.200.172]:20257 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756641AbZBDQdI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 11:33:08 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=kR8OnKxugUsohCqiLG6n53Ga4DjHk+OECst+ywQHXG+JAVT1wsKyHEHSU0y4tdWJQS
+         gPo4wdb7N7/Dibq79nNBegI/KT3d+5DvP3z8VfS9Ha3Vq/DZQpmzEcsD8NBsBPludd5T
+         UlkBu2Umjgld6fmHY5sXXCtR5B8OcmWSzN68I=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200902041418.09630.rusty@rustcorp.com.au>
+References: <20090203134721.GA11069@pingi.kke.suse.de>
+	 <200902041418.09630.rusty@rustcorp.com.au>
+Date: Wed, 4 Feb 2009 09:33:07 -0700
+X-Google-Sender-Auth: 238786ac20227374
+Message-ID: <e9c3a7c20902040833o760bf450g658e7c7ff456b023@mail.gmail.com>
+Subject: Re: [RFC] Suspicious bug in module refcounting
+From: Dan Williams <dan.j.williams@intel.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Karsten Keil <kkeil@suse.de>, linux-kernel@vger.kernel.org,
+       Michal Hocko <mhocko@suse.cz>,
+       richard kennedy <richard@rsk.demon.co.uk>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>, dwmw2@infradead.org,
+       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Feb 3, 2009 at 8:48 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> On Wednesday 04 February 2009 00:17:21 Karsten Keil wrote:
+>> The refcount is a per CPU atomic variable, module_refcount() simple add
+>> in a fully unprotected loop (not disabled irqs, not protected against
+>> scheduling) all per cpu values.
+>
+> Hi Karsten,
+>
+>   Yes, the BUG_ON() is overly aggressive.  And I really hate __module_get,
+> and it looks like most of the callers are completely bogus.  The watchdog
+> drivers use it to nail themselves in place in their open routines: this is
+> OK, if a bit weird.
+>
+>   We should only use __module_get() when you *can't handle* failure;
+> otherwise you should accept that the admin did rmmod --wait and don't use the
+> module any further.
+>
+>  dmaengine.c seems to be taking liberties like this.  AFAICT it can error
+> out, so why not just try_module_get() always?
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Currently there is no feedback loop for clients calling
+dmaengine_get().  It simply means "I want to do offload, pin any
+offload resources you may see, and don't let the resource leave until
+dmaengine_ref_count == 0".  Even if we always called try_module_get()
+we would still need to wait until dmaengine_ref_count reached zero to
+be sure no transactions are in flight, effectively ignoring module_get
+failures.
 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12505
-> > Subject		: 2.6.29-rc1 Firefox crashing on page load
-> > Submitter	: Justin Madru <jdm64@gawab.com>
-> > Date		: 2009-01-16 20:56 (20 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4217458dafaa57d8e26a46f5d05ab8c53cf64191
-> > References	: http://marc.info/?l=linux-kernel&m=123213941914274&w=4
-> > Handled-By	: Justin P. Mattock <justinmattock@gmail.com>
-> 
-> Heh. That commit you point to is very innocuous.
-> 
-> Commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191 is a pure cleanup, and it 
-> _does_ make the code look nicer, but while it looks lik a total no-op, it 
-> actually has a very subtle behavioural change: it makes gcc think that it 
-> owns the whole argument stack. Which is _not_ true of 'asmlinkage' 
-> functions, but we've never been able to tell gcc to keep its grubby hands 
-> off our stack.
-> 
-> So I suspect that gcc inlines the function and then creates a function 
-> call that re-uses the "struct pt_regs" on the stack as the argument area 
-> too. Which corrupts the "pt_regs", and then we return to user space with 
-> some random register contents.
+However, dma-driver module removal is still in the central control of
+the administrator as downing all network interfaces and unloading the
+async_tx api (i.e. raid456) will kill all dmaengine references.  We
+just have the caveat highlighted below:
 
-yes - i tracked it down back then, just the regression entry didnt get 
-updated.
+modprobe raid456
+ifup eth0
+rmmod --wait ioat_dma &
+ifup eth1
+modprobe -r raid456
+ifdown eth0  <-- module removal succeeds here in a perfect world
+ifdown eth1 <-- module removal currently succeeds here
 
-> So I think we need to just revert it. Ingo, Hiroshi?
-
-should be fixed upstream by:
-
- 552b8aa: Revert "x86: signal: change type of paramter for sys_rt_sigreturn()"
-
-the revert commit is below with explaination - also with a Tested-by tag. 
-The revert is not a pure revert - it also adds a comment to preserve this 
-circumstance cleanly.
-
-We first had a few fruitless attempts to annotate it in some clear fashion 
-(the existing tailcall-avoidance macros we have didnt suit this case) - then 
-went for the revert because none of the variants that told gcc not to screw 
-up actually made the code better than it was originally.
-
-	Ingo
-
--------------->
->From 552b8aa4d1edcc1c764ff6f61a7686347a2d1827 Mon Sep 17 00:00:00 2001
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 20 Jan 2009 09:31:49 +0100
-Subject: [PATCH] Revert "x86: signal: change type of paramter for sys_rt_sigreturn()"
-
-This reverts commit 4217458dafaa57d8e26a46f5d05ab8c53cf64191.
-
-Justin Madru bisected this commit, it was causing weird Firefox
-crashes.
-
-The reason is that GCC mis-optimizes (re-uses) the on-stack parameters of
-the calling frame, which corrupts the syscall return pt_regs state and
-thus corrupts user-space register state.
-
-So we go back to the slightly less clean but more optimization-safe
-method of getting to pt_regs. Also add a comment to explain this.
-
-Resolves: http://bugzilla.kernel.org/show_bug.cgi?id=12505
-
-Reported-and-bisected-by: Justin Madru <jdm64@gawab.com>
-Tested-by: Justin Madru <jdm64@gawab.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/syscalls.h |    2 +-
- arch/x86/kernel/signal.c        |   11 +++++++++--
- 2 files changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
-index 9c6797c..c0b0bda 100644
---- a/arch/x86/include/asm/syscalls.h
-+++ b/arch/x86/include/asm/syscalls.h
-@@ -40,7 +40,7 @@ asmlinkage int sys_sigaction(int, const struct old_sigaction __user *,
- 			     struct old_sigaction __user *);
- asmlinkage int sys_sigaltstack(unsigned long);
- asmlinkage unsigned long sys_sigreturn(unsigned long);
--asmlinkage int sys_rt_sigreturn(struct pt_regs);
-+asmlinkage int sys_rt_sigreturn(unsigned long);
- 
- /* kernel/ioport.c */
- asmlinkage long sys_iopl(unsigned long);
-diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
-index 89bb766..df0587f 100644
---- a/arch/x86/kernel/signal.c
-+++ b/arch/x86/kernel/signal.c
-@@ -632,9 +632,16 @@ badframe:
- }
- 
- #ifdef CONFIG_X86_32
--asmlinkage int sys_rt_sigreturn(struct pt_regs regs)
-+/*
-+ * Note: do not pass in pt_regs directly as with tail-call optimization
-+ * GCC will incorrectly stomp on the caller's frame and corrupt user-space
-+ * register state:
-+ */
-+asmlinkage int sys_rt_sigreturn(unsigned long __unused)
- {
--	return do_rt_sigreturn(&regs);
-+	struct pt_regs *regs = (struct pt_regs *)&__unused;
-+
-+	return do_rt_sigreturn(regs);
- }
- #else /* !CONFIG_X86_32 */
- asmlinkage long sys_rt_sigreturn(struct pt_regs *regs)
+Regards,
+Dan
