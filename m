@@ -1,18 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbZBDMvm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757064AbZBDMv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756903AbZBDMvm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 07:51:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbZBDMtG
+	id S1757064AbZBDMv6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 07:51:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZBDMtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 07:49:06 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:44943 "EHLO ogre.sisk.pl"
+	Wed, 4 Feb 2009 07:49:07 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:44945 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756205AbZBDMtD convert rfc822-to-8bit (ORCPT
+	id S1756209AbZBDMtE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 07:49:03 -0500
+	Wed, 4 Feb 2009 07:49:04 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Mattia Dongili" <malattia@linux.it>,
-       "Norbert Preining" <preining@logic.at>
+       "Daniel Vetter" <daniel@ffwll.ch>
 References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
 In-Reply-To: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +19,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <pWZw1SZjMCH.A.3UH.zvYiJB@chimera>
-Subject: [Bug #12494] Sony backlight regression from 2.6.28 to 29-rc
+Message-ID: <pWZw1SZjMCH.A.htH.CwYiJB@chimera>
+Subject: [Bug #12441] Xorg can't use dri on radeon X1950 AGP
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Wed,  4 Feb 2009 11:23:58 +0100 (CET)
+Date: Wed,  4 Feb 2009 11:23:57 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,11 +35,9 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12494
-Subject		: Sony backlight regression from 2.6.28 to 29-rc
-Submitter	: Norbert Preining <preining@logic.at>
-Date		: 2009-01-19 8:14 (17 days old)
-References	: http://marc.info/?l=linux-acpi&m=123235286829512&w=4
-Handled-By	: Mattia Dongili <malattia@linux.it>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12441
+Subject		: Xorg can't use dri on radeon X1950 AGP
+Submitter	: Daniel Vetter <daniel@ffwll.ch>
+Date		: 2009-01-13 05:20 (23 days old)
 
 
