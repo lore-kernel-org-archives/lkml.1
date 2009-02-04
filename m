@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763801AbZBDTEe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762271AbZBDTFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763801AbZBDTEe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:04:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760339AbZBDStp
+	id S1762271AbZBDTFP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:05:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761451AbZBDStr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:45 -0500
-Received: from kroah.org ([198.145.64.141]:32958 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:47 -0500
+Received: from kroah.org ([198.145.64.141]:32986 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759476AbZBDStf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:35 -0500
-Date: Wed, 4 Feb 2009 10:46:58 -0800
+	id S1761422AbZBDSth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:37 -0500
+Date: Wed, 4 Feb 2009 10:47:02 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Zhang Rui <rui.zhang@intel.com>,
+       alan@lxorguk.ukuu.org.uk, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: [patch 35/41] dont load asus-acpi if model is not supported
-Message-ID: <20090204184658.GJ25246@kroah.com>
+Subject: [patch 37/41] ACPI: Do not modify SCI_EN directly
+Message-ID: <20090204184702.GL25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="don-t-load-asus-acpi-if-model-is-not-supported.patch"
+Content-Disposition: inline; filename="acpi-do-not-modify-sci_en-directly.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,31 +40,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Zhang Rui <rui.zhang@intel.com>
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-commit 7745384080ef70f7710530afa3e45477b126e056 upstream.
+commit 11e93130c7ce5228d484fd5e86f3984835d4256b upstream.
 
-asus_hotk_get_info should return -ENODEV if the model is not supported.
-http://bugzilla.kernel.org/show_bug.cgi?id=10389
+According to the ACPI specification the SCI_EN flag is controlled by
+the hardware, which sets this flag to inform the kernel that ACPI is
+enabled.  For this reason, we shouldn't try to modify SCI_EN
+directly.  Also, we don't need to do it in irqrouter_resume(), since
+lower-level resume code takes care of enabling ACPI in case it hasn't
+been enabled by the BIOS before passing control to the kernel (which
+by the way is against the ACPI specification).
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/asus_acpi.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/acpi/pci_link.c |    4 ----
+ 1 file changed, 4 deletions(-)
 
---- a/drivers/acpi/asus_acpi.c
-+++ b/drivers/acpi/asus_acpi.c
-@@ -1244,6 +1244,8 @@ static int asus_hotk_get_info(void)
- 			       "default values\n", string);
- 			printk(KERN_NOTICE
- 			       "  send /proc/acpi/dsdt to the developers\n");
-+			kfree(model);
-+			return -ENODEV;
- 		}
- 		hotk->methods = &model_conf[hotk->model];
- 		return AE_OK;
+--- a/drivers/acpi/pci_link.c
++++ b/drivers/acpi/pci_link.c
+@@ -796,10 +796,6 @@ static int irqrouter_resume(struct sys_d
+ 	struct list_head *node = NULL;
+ 	struct acpi_pci_link *link = NULL;
+ 
+-
+-	/* Make sure SCI is enabled again (Apple firmware bug?) */
+-	acpi_set_register(ACPI_BITREG_SCI_ENABLE, 1);
+-
+ 	list_for_each(node, &acpi_link.entries) {
+ 		link = list_entry(node, struct acpi_pci_link, node);
+ 		if (!link) {
 
