@@ -1,99 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757092AbZBDSZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbZBDS1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757092AbZBDSZd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZBDSZY
+	id S1758052AbZBDS1R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZBDS1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:25:24 -0500
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:30175 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbZBDSZX (ORCPT
+	Wed, 4 Feb 2009 13:27:02 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43190 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbZBDS1B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:25:23 -0500
-Date: Wed, 4 Feb 2009 11:25:22 -0700
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Andrew Patterson <andrew.patterson@hp.com>, linux-pci@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] PCI: enhance physical slot debug information
-Message-ID: <20090204182522.GA22419@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>,
-	Jesse Barnes <jbarnes@virtuousgeek.org>,
-	Andrew Patterson <andrew.patterson@hp.com>,
-	linux-pci@vger.kernel.org,
-	linux-kernel <linux-kernel@vger.kernel.org>
+	Wed, 4 Feb 2009 13:27:01 -0500
+Date: Wed, 4 Feb 2009 19:26:45 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: /proc/sys/vm/drop_caches: add error handling
+Message-ID: <20090204182645.GB4797@elf.ucw.cz>
+References: <20090203113319.GA2022@elf.ucw.cz> <20090203204456.ECA3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090203111447.41e2022c.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090203111447.41e2022c.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert usages of pr_debug to dev_dbg and add physical slot name.
+Hi!
 
-Note that we use dev_dbg on the struct pci_bus and still manually
-print out the PCI slot number (instead of calling dev_dbg on a
-pci_dev) because a struct pci_bus with empty physical slots will
-not have any pci_devs.
+> > I think following is clarify more.
+> > 
+> > 	res = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+> > 	if (res)
+> > 		return res;
+> > 	if (!write)
+> > 		return 0;
+> > 	if (sysctl_drop_caches & ~3)
+> > 		return -EINVAL;
+> > 	if (sysctl_drop_caches & 1)
+> > 		drop_pagecache();
+> > 	if (sysctl_drop_caches & 2)
+> > 		drop_slab();
+> > 	return 0;
+> > 
+> > 
+> > otherthings, _very_ looks good to me. :)
+> 
+> For better or for worse, my intent here was to be
+> future-back-compatible.  So if we later add new flags, and people write
+> code which uses those new flags, that code won't break on old kernels.
 
-Reviewed-by: Andrew Patterson <andrew.patterson@hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-Jesse, since this is all under #ifdef DEBUG, it's your call
-whether you want to queue it for .29 or .30. Doesn't matter much
-to us either way, thanks.
----
- slot.c |   18 ++++++++----------
- 1 file changed, 8 insertions(+), 10 deletions(-)
+Well, should I move test for &~3 to the end? You'd still get
+compatibility, but you'd also get expected error reports.
 
-diff --git a/drivers/pci/slot.c b/drivers/pci/slot.c
-index 5a8ccb4..2118944 100644
---- a/drivers/pci/slot.c
-+++ b/drivers/pci/slot.c
-@@ -1,8 +1,8 @@
- /*
-  * drivers/pci/slot.c
-  * Copyright (C) 2006 Matthew Wilcox <matthew@wil.cx>
-- * Copyright (C) 2006-2008 Hewlett-Packard Development Company, L.P.
-- * 	Alex Chiang <achiang@hp.com>
-+ * Copyright (C) 2006-2009 Hewlett-Packard Development Company, L.P.
-+ *	Alex Chiang <achiang@hp.com>
-  */
+> Probably that wasn't a very good idea, and such userspace code isn't
+> very good.
+
+--- 
+
+Report errors in drop_caches, and document stuff a bit better. 
+
+Signed-off-by: Pavel Machek <pavel@suse.cz>
+
+diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
+index 3197fc8..b90f050 100644
+--- a/Documentation/sysctl/vm.txt
++++ b/Documentation/sysctl/vm.txt
+@@ -132,6 +132,10 @@ To free pagecache, dentries and inodes:
+ As this is a non-destructive operation and dirty objects are not freeable, the
+ user should run `sync' first.
  
- #include <linux/kobject.h>
-@@ -52,8 +52,8 @@ static void pci_slot_release(struct kobject *kobj)
- 	struct pci_dev *dev;
- 	struct pci_slot *slot = to_pci_slot(kobj);
++Note that calling this causes some serious latencies, and that this is
++a debug feature; it should not be used for production as it does not
++contain neccessary locking to guarantee safe operation.
++
+ ==============================================================
  
--	pr_debug("%s: releasing pci_slot on %x:%d\n", __func__,
--		 slot->bus->number, slot->number);
-+	dev_dbg(&slot->bus->dev, "dev %02x, released physical slot %s\n",
-+		slot->number, pci_slot_name(slot));
+ hugepages_treat_as_movable
+diff --git a/fs/drop_caches.c b/fs/drop_caches.c
+index 3e5637f..f913a64 100644
+--- a/fs/drop_caches.c
++++ b/fs/drop_caches.c
+@@ -9,8 +9,9 @@
+ #include <linux/sysctl.h>
+ #include <linux/gfp.h>
  
- 	list_for_each_entry(dev, &slot->bus->devices, bus_list)
- 		if (PCI_SLOT(dev->devfn) == slot->number)
-@@ -248,9 +248,8 @@ placeholder:
- 		if (PCI_SLOT(dev->devfn) == slot_nr)
- 			dev->slot = slot;
+-/* A global variable is a bit ugly, but it keeps the code simple */
+-int sysctl_drop_caches;
++/* A global variable is a bit ugly, and has locking problems,
++   but it keeps the code simple */
++unsigned int sysctl_drop_caches;
  
--	/* Don't care if debug printk has a -1 for slot_nr */
--	pr_debug("%s: created pci_slot on %04x:%02x:%02x\n",
--		 __func__, pci_domain_nr(parent), parent->number, slot_nr);
-+	dev_dbg(&parent->dev, "dev %02x, created physical slot %s\n",
-+		slot_nr, pci_slot_name(slot));
- 
- out:
- 	kfree(slot_name);
-@@ -299,9 +298,8 @@ EXPORT_SYMBOL_GPL(pci_renumber_slot);
-  */
- void pci_destroy_slot(struct pci_slot *slot)
+ static void drop_pagecache_sb(struct super_block *sb)
  {
--	pr_debug("%s: dec refcount to %d on %04x:%02x:%02x\n", __func__,
--		 atomic_read(&slot->kobj.kref.refcount) - 1,
--		 pci_domain_nr(slot->bus), slot->bus->number, slot->number);
-+	dev_dbg(&slot->bus->dev, "dev %02x, dec refcount to %d\n",
-+		slot->number, atomic_read(&slot->kobj.kref.refcount) - 1);
- 
- 	down_write(&pci_bus_sem);
- 	kobject_put(&slot->kobj);
+@@ -65,12 +66,17 @@ static void drop_slab(void)
+ int drop_caches_sysctl_handler(ctl_table *table, int write,
+ 	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
+ {
+-	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
+-	if (write) {
+-		if (sysctl_drop_caches & 1)
+-			drop_pagecache();
+-		if (sysctl_drop_caches & 2)
+-			drop_slab();
+-	}
++	int res;
++	res = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
++	if (res)
++		return res;
++	if (!write)
++		return res;
++	if (sysctl_drop_caches & 1)
++		drop_pagecache();
++	if (sysctl_drop_caches & 2)
++		drop_slab();
++	if (sysctl_drop_caches & ~3)
++		return -EINVAL;
+ 	return 0;
+ }
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
