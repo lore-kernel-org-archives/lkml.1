@@ -1,170 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbZBDSRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbZBDSSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757814AbZBDSRa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:17:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZBDSRW
+	id S1758125AbZBDSSR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:18:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753319AbZBDSR7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:17:22 -0500
-Received: from bay0-omc2-s10.bay0.hotmail.com ([65.54.246.146]:51698 "EHLO
-	bay0-omc2-s10.bay0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752026AbZBDSRV convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:17:21 -0500
-Message-ID: <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
-X-Originating-IP: [171.70.247.34]
-From: Krishna Kothapalli <krishna_sunitha@hotmail.com>
-To: <kaneshige.kenji@jp.fujitsu.com>
-CC: <ebiederm@xmission.com>, <linux-pci@vger.kernel.org>,
-       <jbarnes@virtuousgeek.org>, <achiang@hp.com>, <djwong@us.ibm.com>,
-       <xyzzy@speakeasy.org>, <linux-kernel@vger.kernel.org>
-Subject: RE: Q: state of pci express hotplug
-Date: Wed, 4 Feb 2009 13:17:20 -0500
-Importance: Normal
-In-Reply-To: <49892CDE.9040305@jp.fujitsu.com>
-References: <m1fxj06js8.fsf@fess.ebiederm.org>
- <4986581F.7060704@jp.fujitsu.com>
-   <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl>
-   <49879508.4090801@jp.fujitsu.com>
-   <BAY111-W3692AA5F9F7896AA447A1F88C20@phx.gbl>
- <BAY111-W9013DA1F63973F9E7F8DF88C30@phx.gbl>
- <49892CDE.9040305@jp.fujitsu.com>
-Content-Type: text/plain; charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
+	Wed, 4 Feb 2009 13:17:59 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57665 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752026AbZBDSR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:17:57 -0500
+Date: Wed, 4 Feb 2009 19:17:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ed Swierk <eswierk@aristanetworks.com>
+Cc: tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, lenb@kernel.org,
+       linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [RFC] [PATCH] PCI mmconfig without ACPI
+Message-ID: <20090204181738.GA16174@elte.hu>
+References: <1233766786.16414.26.camel@localhost.localdomain>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 04 Feb 2009 18:17:20.0276 (UTC) FILETIME=[D18F9540:01C986F4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1233766786.16414.26.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+* Ed Swierk <eswierk@aristanetworks.com> wrote:
+
+> Make it possible to use memory-mapped PCI configuration space on systems 
+> with a supported PCI host bridge without CONFIG_ACPI.
+> 
+> The acpi_mcfg_allocation struct serves double duty, as a template for 
+> parsing the ACPI MCFG table and also to store the mmconfig data, which 
+> doesn't necessarily come from ACPI.  Should I leave the struct in 
+> acpi/actbl1.h for ACPI parsing, and create a new one for storing mmconfig 
+> data?
+
+ok, that's certainly a nice cleanup and restructuring of this code.
+
+A few comments:
+
+>  config PCI_MMCONFIG
+>  	def_bool y
+> -	depends on X86_32 && PCI && ACPI && (PCI_GOMMCONFIG || PCI_GOANY)
+> +	depends on X86_32 && PCI && (PCI_GOMMCONFIG || PCI_GOANY)
+
+( nice - increasing a PCI feature's reach and decoupling it from hardware 
+  enumeration methods such as ACPI is always good news! )
+
+> +#ifdef CONFIG_ACPI
+> +
+>  static acpi_status __init check_mcfg_resource(struct acpi_resource *res,
+>  					      void *data)
+
+An even cleaner approach would be to create a new file: 
+
+arch/x86/pci/mmconfig-acpi.c, and move this block of 5 functions there - and 
+add a obj-$(CONFIG_ACPI) rule to arch/x86/pci/Makefile to build it.
+
+The interfacing to arch/x86/pci/mmconfig-shared.c could be simplified too, 
+instead of this two-pass thing:
+
+        if (!known_bridge) {
+                acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
+                pci_mmcfg_reject_broken(early);
+        }
+
+a single:
+
+	if (!known_bridge)
+		pci_detect_acpi_mmcfg(early);
+
+interface could be used. In the !CONFIG_ACPI case this interface would be an 
+inline do-nothing wrapper, in a pci x86 header file:
+
+  static inline void pci_detect_acpi_mmcfg(int early) { }
+
+A few currently local symbols in the file would have to be made explicit and 
+moved into the header - but it should be rather straightforward i think.
+
+That way we avoid the ugly #ifdef and clean up the general code structure 
+and modularization a bit.
+
+this #ifdef would go away as well:
+
+> +#ifdef CONFIG_ACPI
+>  	if (!known_bridge) {
+>  		acpi_table_parse(ACPI_SIG_MCFG, acpi_parse_mcfg);
+>  		pci_mmcfg_reject_broken(early);
+>  	}
+> +#endif
 
 
-> Kenji Kaneshige wrote:
->
-> Thank you for sending the information. I understood your
-> hotplug slot can be handled by acpiphp or pciehp.
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
+> +#ifdef CONFIG_PCI_MMCONFIG
+> +
+> +struct acpi_mcfg_allocation {
+> +	u64 address;		/* Base address, processor-relative */
+> +	u16 pci_segment;	/* PCI segment group number */
+> +	u8 start_bus_number;	/* Starting PCI Bus number */
+> +	u8 end_bus_number;	/* Final PCI Bus number */
+> +	u32 reserved;
+> +};
 
-Tested this with 2.6.28.3 and details below:
+Please rename this to "struct pci_mcfg_allocation" - there's nothing ACPI 
+about it anymore - mmcfg is a PCI feature and ACPI is an enumeration method.
 
->Could you give me the following additional information?
->o My understanding about the problem is:
->  - Bad IRQ happen when you hot-add the device,
+Also, while touching it, please also use the opportunity to align structure 
+fields vertically:
 
-   I don't see bad IRQ stack trace anymore, based on the steps you suggested. May be this is because I did not have hotplug driverloaded (and diff kernel build config) ?
-  
->  - and the device is not found in the lspci output
+ struct pci_mcfg_allocation {
+	u64	address;		/* Base address, processor-relative */
+	u16	pci_segment;		/* PCI segment group number */
+	u8	start_bus_number;	/* Starting PCI Bus number */
+	u8	end_bus_number;		/* Final PCI Bus number */
+	u32	__reserved;
+ };
 
-   YES
+The whole layout of this structure becomes easier to read and nicer to look 
+at as well.
 
->  - and the device didn't show up under sysfs
->  Am I correct?
+Another small detail: note how i renamed reserved to __reserved - that is a 
+standard way to de-emphasise the signficance of a structure field.
 
-   YES
- 
-> o Details about the steps to reproduce the problem.
+The reserved field there is for future expansion and to pad the structure to 
+16 bytes - it doesnt really mean much and the underscores move it a bit out 
+of the default line of sight.
 
-  - boot the box with 2.6.28.3
-  -   # /sbin/modprobe pciehp pciehp_debug
-  - lspci 
-  - Insert the PCI express card on the hot swap slot and wait for 2 mins
-  - lspci <-- this does not show the PCI express device 
-  (The same device shows up in lspci and sysfs during cold boot ) 
+With a 'reserved' field people end up wondering whether it's perhaps some 
+_semantic_ 'reserved area' kind of thing (like for e820 maps, etc.) - so 
+it's never bad to make that distinction explicit via the double underscores.
 
-> o Does the problem happen with both acpiphp and pciehp?
+But again, nice patch and it would be nice to see this concept hit mainline.
 
-   That is correct.
-
-> o The pciehp's debug output. We can get this as follows.
-  # /sbin/modprobe pciehp pciehp_debug
-  # dmesg | grep pciehp 
-pciehp 0000:00:09.0:pcie02: Hotplug Controller:
-pciehp 0000:00:09.0:pcie02:   Seg/Bus/Dev/Func/IRQ : 0000:00:09.0 IRQ 2295
-pciehp 0000:00:09.0:pcie02:   Vendor ID            : 0x8086
-pciehp 0000:00:09.0:pcie02:   Device ID            : 0x3410
-pciehp 0000:00:09.0:pcie02:   Subsystem ID         : 0x0000
-pciehp 0000:00:09.0:pcie02:   Subsystem Vendor ID  : 0x0000
-pciehp 0000:00:09.0:pcie02:   PCIe Cap offset      : 0x90
-pciehp 0000:00:09.0:pcie02: Slot Capabilities      : 0x0302005f
-pciehp 0000:00:09.0:pcie02:   Physical Slot Number : 96
-pciehp 0000:00:09.0:pcie02:   Attention Button     : yes
-pciehp 0000:00:09.0:pcie02:   Power Controller     : yes
-pciehp 0000:00:09.0:pcie02:   MRL Sensor           : yes
-pciehp 0000:00:09.0:pcie02:   Attention Indicator  : yes
-pciehp 0000:00:09.0:pcie02:   Power Indicator      : yes
-pciehp 0000:00:09.0:pcie02:   Hot-Plug Surprise    :  no
-pciehp 0000:00:09.0:pcie02:   EMI Present          : yes
-pciehp 0000:00:09.0:pcie02:   Command Completed    : yes
-pciehp 0000:00:09.0:pcie02: Slot Status            : 0x0020
-pciehp 0000:00:09.0:pcie02: Slot Control           : 0x078f
-pciehp 0000:00:09.0:pcie02: Link Active Reporting supported
-pciehp 0000:00:09.0:pcie02: Command not completed in 1000 msec
-pciehp 0000:00:09.0:pcie02: HPC vendor_id 8086 device_id 3410 ss_vid 0 ss_did 0
-pciehp 0000:00:09.0:pcie02: Command not completed in 1000 msec
-pciehp 0000:00:09.0:pcie02: Registering domain:bus:dev=0000:09:00 hp_slot=0 sun=60 slot_device_offset=0
-pciehp 0000:00:09.0:pcie02: get_power_status: physical_slot = 96
-pciehp 0000:00:09.0:pcie02: hpc_get_power_status: SLOTCTRL a8 value read 7bf
-pciehp 0000:00:09.0:pcie02: get_attention_status: physical_slot = 96
-pciehp 0000:00:09.0:pcie02: hpc_get_attention_status: SLOTCTRL a8, value read 7bf
-pciehp 0000:00:09.0:pcie02: get_latch_status: physical_slot = 96
-pciehp 0000:00:09.0:pcie02: get_adapter_status: physical_slot = 96
-pciehp 0000:00:09.0:pcie02: hpc_power_off_slot: slot->hp_slot 0
-pciehp 0000:00:09.0:pcie02: Command not completed in 1000 msec
-pciehp 0000:00:09.0:pcie02: hpc_power_off_slot: SLOTCTRL a8 write cmd 400
-pciehp 0000:00:09.0:pcie02: service driver pciehp loaded
-pciehp: pcie_port_service_register = 0
-pciehp: PCI Express Hot Plug Controller Driver version: 0.4
-
--- Hot plug PCI express card and wait for 2 mins
--- no additional out put from dmesg
-
-[root@localhost test]# /sbin/rmmod pciehp 
-[root@localhost test]# dmesg | grep pciehp
--- Additional  output from dmesg  after pciehp is unloaded ( but the express card is still present in the slot):-
-pciehp: unload_pciehpd()
-pciehp 0000:00:09.0:pcie02: unloading service driver pciehp
-pciehp 0000:00:09.0:pcie02: release_slot: physical_slot = 96
-pciehp 0000:00:09.0:pcie02: Command not completed in 1000 msec
-pciehp 0000:00:09.0:pcie02: pcie_isr: intr_loc 8
-pciehp 0000:00:09.0:pcie02: Presence/Notify input change
-pciehp 0000:00:09.0:pcie02: Card present on Slot(øu'?)
-
--- removed the PCI express card from the slot
-
-[root@localhost test]# ls -lt /sys/bus/pci/slots
-total 0
-[root@localhost test]#  /sbin/modprobe acpiphp debug
-[root@localhost test]# dmesg | grep acpiphp
-acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
-acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:09.0
-acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:09:00
-acpiphp: Slot [2] registered
-acpiphp_glue: Bus 0000:09 has 1 slot
-acpiphp_glue: Total 1 slots
-[root@localhost test]# 
-[root@localhost test]# ls -lt /sys/bus/pci/slots
-total 0
-drwxr-xr-x 2 root root 0 2009-02-04 09:59 2
----  Insert PCI express card in the slot
-[root@localhost test]# dmesg | grep acpiphp
-[root@localhost test]# lspci | wc
-    105    1284    9203
-[root@localhost test]# ls -lt /sys/bus/pci/slots/2/
-total 0
--r--r--r-- 1 root root 4096 2009-02-04 10:01 adapter
--r--r--r-- 1 root root 4096 2009-02-04 10:01 address
--rw-r--r-- 1 root root 4096 2009-02-04 10:01 attention
--r--r--r-- 1 root root 4096 2009-02-04 10:01 latch
--rw-r--r-- 1 root root 4096 2009-02-04 10:01 power
-[root@localhost test]# 
-[root@localhost test]# /sbin/rmmod acpiphp
-[root@localhost test]# dmesg | grep acpiphp
-acpiphp: Slot [2] unregistered
-acpiphp: release_slot - physical_slot = 2
-[root@localhost test]# 
-
-
-
-_________________________________________________________________
-Windows Live™: Keep your life in sync. 
-http://windowslive.com/howitworks?ocid=TXT_TAGLM_WL_t1_allup_howitworks_022009
+	Ingo
