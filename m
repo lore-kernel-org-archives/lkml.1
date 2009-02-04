@@ -1,77 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbZBDSaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758248AbZBDSbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758083AbZBDSaW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:30:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZBDSaH
+	id S1758248AbZBDSbR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:31:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753093AbZBDSbB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:30:07 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58669 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752443AbZBDSaF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:30:05 -0500
-Date: Wed, 4 Feb 2009 19:29:51 +0100
-From: Pavel Machek <pavel@suse.cz>
-To: Christoph Hellwig <hch@infradead.org>, Eric Sesterhenn <snakebyte@gmx.de>,
-       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-btrfs@vger.kernel.org
-Subject: Re: Warning and BUG with btrfs and corrupted image
-Message-ID: <20090204182951.GC4797@elf.ucw.cz>
-References: <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice> <20090120101119.GB10158@disturbed> <20090120101503.GC17377@alice> <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org> <20090120222019.GB2320@elf.ucw.cz> <20090121040042.GI10158@disturbed> <20090126162711.GA2083@elf.ucw.cz> <20090201014050.GD24173@disturbed>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090201014050.GD24173@disturbed>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Feb 2009 13:31:01 -0500
+Received: from fifo99.com ([67.223.236.141]:58526 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752684AbZBDSbA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:31:00 -0500
+Subject: Re: [crash] af9005_usb_module_init(): BUG: unable to handle kernel
+	paging request at ff100000
+From: Daniel Walker <dwalker@fifo99.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg KH <gregkh@suse.de>, Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>,
+       Janne Grunau <janne-dvb@grunau.be>, Luca Olivetti <luca@ventoso.org>
+In-Reply-To: <20090203172836.GA6964@elte.hu>
+References: <20090203172836.GA6964@elte.hu>
+Content-Type: text/plain
+Date: Wed, 04 Feb 2009 10:30:58 -0800
+Message-Id: <1233772258.15119.106.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-02-01 12:40:50, Dave Chinner wrote:
-> On Mon, Jan 26, 2009 at 05:27:11PM +0100, Pavel Machek wrote:
-> > On Wed 2009-01-21 15:00:42, Dave Chinner wrote:
-> > > On Tue, Jan 20, 2009 at 11:20:19PM +0100, Pavel Machek wrote:
-> > > > On Tue 2009-01-20 08:28:29, Christoph Hellwig wrote:
-> > > > > I think that was the issue with the debug builds.  If you do this
-> > > > > testing always do it without CONFIG_XFS_DEBUG set as with that option
-> > > > > we intentionally panic on detected disk corruptions.
-> > > > 
-> > > > Uhuh, *_DEBUG options are not supposed to make kernel less
-> > > > stable/robust. Should that crashing functionality be guarded with
-> > > > command line option or something? ext2 has errors=panic mount
-> > > > option...
-> > > 
-> > > No, it's a debugging option that is described as:
-> > > 
-> > > 	"Say N unless you are an XFS developer, or you play one on TV."
-> > > 
-> > > Seriously, if you aren't trying to develop XFS stuff then *don't turn it
-> > > on*.
-> > 
-> > What about this, then?
+On Tue, 2009-02-03 at 18:28 +0100, Ingo Molnar wrote:
 > 
-> ....
-> 
-> > +	  Turning this option on will result in kernel panicking any time
-> > +	  it detects on-disk corruption.
-> 
-> Thin end of a wedge. There's a couple of thousand conditions that
-> CONFIG_XFS_DEBUG introduces kernel panics on:
-> 
-> $ grep -r ASSERT fs/xfs |wc -l
-> 2095
-> 
-> 
-> CONFIG_*_DEBUG means include *debug* code there to help developers,
-> including adding additional failure tests into the kernel. Besides,
-> which bit of "don't turn it on unless you are an XFS developer"
-> don't you understand?
+> c23eca7a <af9005_usb_module_init>:
+> c23eca7a:	55                   	push   %ebp
+> c23eca7b:	89 e5                	mov    %esp,%ebp
+> c23eca7d:	53                   	push   %ebx
+> c23eca7e:	b9 2b 31 11 c2       	mov    $0xc211312b,%ecx
+> c23eca83:	31 d2                	xor    %edx,%edx
+> c23eca85:	b8 b8 b4 2b c2       	mov    $0xc22bb4b8,%eax
+> c23eca8a:	e8 d6 e8 4e ff       	call   c18db365 <usb_register_driver>
+> c23eca8f:	89 c3                	mov    %eax,%ebx
+> c23eca91:	85 c0                	test   %eax,%eax
+> c23eca93:	74 0f                	je     c23ecaa4 <af9005_usb_module_init+0x2a>
+> c23eca95:	50                   	push   %eax
+> c23eca96:	68 3a 31 11 c2       	push   $0xc211313a
+> c23eca9b:	e8 70 49 c6 fe       	call   c1051410 <printk>
+> c23ecaa0:	58                   	pop    %eax
+> c23ecaa1:	5a                   	pop    %edx
+> c23ecaa2:	eb 64                	jmp    c23ecb08 <af9005_usb_module_init+0x8e>
+> c23ecaa4:	c7 05 8c 71 cd c2 00 	movl   $0x0,0xc2cd718c
+> c23ecaab:	00 00 00 
+> c23ecaae:	c7 05 90 71 cd c2 00 	movl   $0x0,0xc2cd7190
+> c23ecab5:	00 00 00 
+> c23ecab8:	c7 05 94 71 cd c2 00 	movl   $0x0,0xc2cd7194
+> c23ecabf:	00 00 00 
+> c23ecac2:	b8 00 00 00 00       	mov    $0x0,%eax
+> c23ecac7:	85 c0                	test   %eax,%eax
+> c23ecac9:	74 12                	je     c23ecadd <af9005_usb_module_init+0x63>
+> c23ecacb:	b8 00 00 00 00       	mov    $0x0,%eax
+> c23ecad0:	85 c0                	test   %eax,%eax
+> c23ecad2:	74 09                	je     c23ecadd <af9005_usb_module_init+0x63>
+> c23ecad4:	b8 00 00 00 00       	mov    $0x0,%eax
+> c23ecad9:	85 c0                	test   %eax,%eax
+> c23ecadb:	75 17                	jne    c23ecaf4 <af9005_usb_module_init+0x7a>
+> c23ecadd:	68 60 31 11 c2       	push   $0xc2113160
+> c23ecae2:	e8 29 49 c6 fe       	call   c1051410 <printk>
+> c23ecae7:	c7 05 00 b6 2b c2 00 	movl   $0x0,0xc22bb600
+> c23ecaee:	00 00 00 
+> c23ecaf1:	58                   	pop    %eax
+> c23ecaf2:	eb 14                	jmp    c23ecb08 <af9005_usb_module_init+0x8e>
+> c23ecaf4:	c7 05 f8 b5 2b c2 00 	movl   $0x0,0xc22bb5f8
+> c23ecafb:	00 00 00 
+> c23ecafe:	a1 00 00 00 00       	mov    0x0,%eax           <= crash
+> c23ecb03:	a3 fc b5 2b c2       	mov    %eax,0xc22bb5fc
+> c23ecb08:	89 d8                	mov    %ebx,%eax
+> c23ecb0a:	8b 5d fc             	mov    -0x4(%ebp),%ebx
+> c23ecb0d:	c9                   	leave  
+> c23ecb0e:	c3                   	ret    
 
-Yes, but DEBUG code is normally to help debugging, not to crash
-kernels. IMO xfs should use errors=panic mount option as ext3 does,
-but...
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Could this be a problem with your QA environment? (like distcc mixing
+gcc versions) I'm not an assembly expert, but it looks like there are
+several lines above that move zero into %eax , then test if %eax is
+zero, and exit the function if it's zero.. for example line c23ecac2
+which would jump over the crash line. I'm not sure how it's getting
+there.
+
+Daniel
+
