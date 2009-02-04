@@ -1,91 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZBDFKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbZBDFKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbZBDFKI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 00:10:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750987AbZBDFJz
+	id S1754929AbZBDFKk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 00:10:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752721AbZBDFKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 00:09:55 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:38696 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbZBDFJy (ORCPT
+	Wed, 4 Feb 2009 00:10:05 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47843 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752536AbZBDFKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 00:09:54 -0500
-To: paulmck@linux.vnet.ibm.com
-Cc: Rusty Russell <rusty@rustcorp.com.au>, paulmck@linux.vnet.ibm.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@lst.de>, Ingo Molnar <mingo@elte.hu>,
-       Pavel Emelyanov <xemul@openvz.org>, Vitaliy Gusev <vgusev@openvz.org>,
-       linux-kernel@vger.kernel.org
-References: <20090130123358.GA26216@redhat.com>
-	<20090130125058.GA26931@redhat.com>
-	<200901312246.07737.rusty@rustcorp.com.au>
-	<20090201102117.GA5728@redhat.com> <m1wsc82033.fsf@fess.ebiederm.org>
-	<20090202194105.GA23141@redhat.com> <m1hc3c19s7.fsf@fess.ebiederm.org>
-	<20090203134110.GC6607@linux.vnet.ibm.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 03 Feb 2009 21:10:06 -0800
-In-Reply-To: <20090203134110.GC6607@linux.vnet.ibm.com> (Paul E. McKenney's message of "Tue\, 3 Feb 2009 05\:41\:10 -0800")
-Message-ID: <m1ocxivlch.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=mx04.mta.xmission.com;;;ip=67.180.49.163;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.180.49.163
-X-SA-Exim-Rcpt-To: paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, vgusev@openvz.org, xemul@openvz.org, mingo@elte.hu, hch@lst.de, akpm@linux-foundation.org, rusty@rustcorp.com.au
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;paulmck@linux.vnet.ibm.com
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH 3/4] kthreads: rework kthread_stop()
-X-SA-Exim-Version: 4.2.1 (built Thu, 07 Dec 2006 04:40:56 +0000)
-X-SA-Exim-Scanned: Yes (on mx04.mta.xmission.com)
+	Wed, 4 Feb 2009 00:10:03 -0500
+Date: Tue, 3 Feb 2009 21:09:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Renninger <trenn@suse.de>
+Cc: davej@codemonkey.org.uk, mark.langsdorf@amd.com, cpufreq@vger.kernel.org,
+       venkatesh.pallipadi@intel.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] CPUFREQ: powernow-k8: Only print error message
+ once, not per core.
+Message-Id: <20090203210947.49fc5933.akpm@linux-foundation.org>
+In-Reply-To: <1233679606-1971-7-git-send-email-trenn@suse.de>
+References: <1233679606-1971-1-git-send-email-trenn@suse.de>
+	<1233679606-1971-7-git-send-email-trenn@suse.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> writes:
+On Tue,  3 Feb 2009 17:46:45 +0100 Thomas Renninger <trenn@suse.de> wrote:
 
-> ACCESS_ONCE() suffices in many cases, but if the pointer being accessed
-> points to a structure that might recently have been initialized, then
-> rcu_dereference() will be required on Alpha.  Though perhaps the
-> discussion below removes the need entirely, but cannot say that I fully
-> understand this part of the kernel.
+> This is the typical message you get if you plug in a CPU
+> which is newer than your BIOS. It's annoying seeing this
+> message for each core.
+> 
+> Signed-off-by: Thomas Renninger <trenn@suse.de>
+> ---
+>  arch/x86/kernel/cpu/cpufreq/powernow-k8.c |   12 ++++++------
+>  1 files changed, 6 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> index 9accffb..9e312c5 100644
+> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.c
+> @@ -743,7 +743,7 @@ static int find_psb_table(struct powernow_k8_data *data)
+>  	 * BIOS and Kernel Developer's Guide, which is available on
+>  	 * www.amd.com
+>  	 */
+> -	printk(KERN_ERR PFX "BIOS error - no PSB or ACPI _PSS objects\n");
+> +	printk(KERN_ERR FW_BUG PFX "No PSB or ACPI _PSS objects\n");
+>  	return -ENODEV;
+>  }
+>  
+> @@ -1154,11 +1154,11 @@ static int __cpuinit powernowk8_cpu_init(struct cpufreq_policy *pol)
+>  		 * an UP version, and is deprecated by AMD.
+>  		 */
+>  		if (num_online_cpus() != 1) {
+> -			printk(KERN_ERR FW_BUG PFX "Your BIOS does not provide"
+> -			       " ACPI _PSS objects in a way that Linux "
+> -			       "understands. Please report this to the Linux "
+> -			       "ACPI maintainers and complain to your BIOS "
+> -			       "vendor.\n");
+> +			WARN_ONCE(1, KERN_ERR FW_BUG PFX "Your BIOS does not "
+> +				  "provide ACPI _PSS objects in a way that "
+> +				  "Linux understands. Please report this to "
+> +				  "the Linux ACPI maintainers and complain to "
+> +				  "your BIOS vendor.\n");
+>  			goto err_out;
+>  		}
+>  		if (pol->cpu != 0) {
 
-Thanks.  I had overlooked the addition of ACCESS_ONCE() into our set of
-tricks.  I thought Oleg was referring to a hypothetical construct.
+WARN_ONCE will also spew a stack backtrace, which seems inappropriate here.
 
-Currently Oleg's implementation is fine because of an explicit
-memory barrier and two dereferences of the pointer.  It just isn't
-especially clear.
+There was talk of writing a simple ONCE() macro for this sort of thing:
 
-ACCESS_ONCE would help.
+	if (ONCE())
+		printk(...)
 
-Hmm.
-
-I wonder if it would be better/clearer to define to_kthread as:
-
-static struct kthread *to_kthread(struct task_struct *tsk)
-{
-	void *stack = task_stack_page(tsk);
-	return (struct kthread *)(stack + kthread_offset);
-        
-}
-
-And to measure kthread_offset the first time kthread() was
-called.  I would love to have a fixed compile time offset but
-I don't know how to measure it at compile time reliably.
-
-Oleg what do you think.  It would remove the test and be simple and
-obviously correct.
-
-Eric
-
-
-
+but it never happened.
