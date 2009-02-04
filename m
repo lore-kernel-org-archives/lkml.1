@@ -1,120 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754290AbZBDKin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZBDKkv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754290AbZBDKin (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 05:38:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZBDKif
+	id S1754834AbZBDKkv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 05:40:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZBDKkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 05:38:35 -0500
-Received: from hera.kernel.org ([140.211.167.34]:36336 "EHLO hera.kernel.org"
+	Wed, 4 Feb 2009 05:40:43 -0500
+Received: from mailhub.sw.ru ([195.214.232.25]:40815 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751239AbZBDKie (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 05:38:34 -0500
-Subject: Re: usr/include/linux/soundcard.h warnings for 'make headers_check'
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
-       alsa-devel@alsa-project.org, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5h4ozak20l.wl%tiwai@suse.de>
-References: <1232465902.3088.31.camel@localhost.localdomain>
-	 <s5h7i4psepm.wl%tiwai@suse.de> <20090121054138.GA26551@uranus.ravnborg.org>
-	 <200902032127.24526.arnd@arndb.de>
-	 <1233720252.3595.5.camel@localhost.localdomain>
-	 <s5hhc3ak8ns.wl%tiwai@suse.de>
-	 <1233736494.3198.15.camel@localhost.localdomain>
-	 <s5h4ozak20l.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 16:07:57 +0530
-Message-Id: <1233743877.5563.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	id S1751816AbZBDKkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 05:40:42 -0500
+Message-ID: <4989709F.1050207@openvz.org>
+Date: Wed, 04 Feb 2009 13:40:31 +0300
+From: Pavel Emelyanov <xemul@openvz.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Subject: [PATCH] x86: fix hpet timer reinit for x86_64
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-04 at 10:03 +0100, Takashi Iwai wrote:
-> At Wed, 04 Feb 2009 14:04:54 +0530,
-> Jaswinder Singh Rajput wrote:
-> > 
-> > On Wed, 2009-02-04 at 07:39 +0100, Takashi Iwai wrote:
-> > > At Wed, 04 Feb 2009 09:34:12 +0530,
-> > > Jaswinder Singh Rajput wrote:
-> > > > 
-> > > > On Tue, 2009-02-03 at 21:27 +0100, Arnd Bergmann wrote:
-> > > > > On Wednesday 21 January 2009, Sam Ravnborg wrote:
-> > > > > > 
-> > > > > > > No, these are declarations for OSS-lib.
-> > > > > > > It doesn't belong to kernel, but it's better to keep it for
-> > > > > > > compatibility in some way.
-> > > > > > 
-> > > > > > But not in the kernel for sure.
-> > > > > > I just checked and for example: OSS_init is not used anywhere in the kernel.
-> > > > > > The kernel headers are not a "dump all your stuff" ground anymore.
-> > > > > > 
-> > > > > > So I encourage you to find a better home for the user space library definitons.
-> > > > > > We can let the definiton stay for a while - but eventually they have to
-> > > > > > be dropped from the kernel.
-> > > > > 
-> > > > > The last free version of OSSlib that matches this header is from ~1997, and
-> > > > > no current distro appears to be shipping it. All new OSSlib versions (the
-> > > > > oldest I found was from ~2003) contain in their documentation:
-> > > > > 
-> > > > > "Older versions of some OSS include files are distributed
-> > > > >  with various operating systems. There is no danger in
-> > > > >  using them but applications written for more recent OSS
-> > > > >  versions will not compile with older header files.
-> > > > > 
-> > > > >  The latest versions of these include files (such as
-> > > > >  soundcard.h) are distributed in ../include/sys. Use
-> > > > >  the -I/usr/lib/oss/include switch when compiling
-> > > > >  programs. Alternatively copy these files to /usr/include/sys
-> > > > >  so that they replace the original ones."
-> > > > > 
-> > > > > I think it's safe enough to assume that everyone that builds against
-> > > > > OSSlib by now also has the correct version of the header installed.
-> > > > > Consequently, we should just drop the #ifndef __KERNEL__ section
-> > > > > of soundcard.h (all the macros in there depend on the extern
-> > > > > declarations), and maybe add an
-> > > > > 
-> > > > > #ifdef OSSLIB
-> > > > > #error need to use <sys/soundcard.h> from libOSSlib
-> > > > > #endif
-> > > > > 
-> > > > 
-> > > > sys/soundcard.h is also pointing to linux/soundcard.h, we need to move
-> > > > all this stuff to sys/soundcard.h.
-> > > 
-> > > All which stuff?
-> > > If you are referring to OSS-lib stuff in soundcard.h, then I'm for
-> > > it.
-> > > 
-> > 
-> > We need to fix things in such a way that we can replace:
-> > #if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL) && !defined(_KERNEL)) || defined(USE_SEQ_MACROS)
-> > with
-> > #ifdef __KERNEL__
-> > and only keep those things in this file which we need in kernel and move
-> > userspace declarations which are not required for kernel to
-> > sys/soundcard.h
-> 
-> Which means to remove only the OSS-lib part.  Some other macros are
-> used in sound/oss/*.c.  And, there are cases that apps want to use
-> SEQ* macros without oss-lib (which are actually most cases).
-> 
+There's a small problem with hpet_rtc_reinit function - it checks
+for the
+	hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
+to continue increasing both the HPET_T1_CMP (register) and the 
+hpet_t1_cmp (variable).
 
-In kernel space we use USE_SEQ_MACROS in:
-sound/oss/mpu401.c
-sound/oss/midi_synth.c
+But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
+is 64-bit this condition will always be FALSE once the latter hits
+the 32-bit boundary, and we can have a situation, when we don't
+increase the HPET_T1_CMP register high enough.
 
-so we can replace
-#if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL) && !defined(_KERNEL)) || defined(USE_SEQ_MACROS)
-with
-#ifdef USE_SEQ_MACROS
-and keep SEQ* macros used by above files so we do not break kernel and
-move rest of the block in sys/soundcard.h so userspace will be also
-happy.
+The result - timer stops ticking, since HPET_T1_CMP becomes less, 
+than the COUNTER and never increased again.
 
---
-JSR
+The solution is to cut the upper 32-bit from the hpet_t1_cmp
+variable to make the comparison to HPET_COUNTER correct.
 
+Reported-by: Kirill Korotaev <dev@openvz.org>
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+
+---
+
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 64d5ad0..ec319d1 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -1075,7 +1075,7 @@ static void hpet_rtc_timer_reinit(void)
+ 		hpet_t1_cmp += delta;
+ 		hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
+ 		lost_ints++;
+-	} while ((long)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
++	} while ((long)(hpet_readl(HPET_COUNTER) - (u32)hpet_t1_cmp) > 0);
+ 
+ 	if (lost_ints) {
+ 		if (hpet_rtc_flags & RTC_PIE)
