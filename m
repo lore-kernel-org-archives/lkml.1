@@ -1,89 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbZBDW1E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760830AbZBDW2R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760737AbZBDW1E (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 17:27:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZBDW0u
+	id S1760830AbZBDW2R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 17:28:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756064AbZBDW2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 17:26:50 -0500
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:20418 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755932AbZBDW0t (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 17:26:49 -0500
-X-IronPort-AV: E=Sophos;i="4.37,381,1231113600"; 
-   d="scan'208";a="133073728"
-From: Roland Dreier <rdreier@cisco.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Floris Kraak <randakar@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>
-Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
-References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
-	<20090204221451.GA27254@uranus.ravnborg.org>
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 04 Feb 2009 14:26:45 -0800
-In-Reply-To: <20090204221451.GA27254@uranus.ravnborg.org> (Sam Ravnborg's
-	message of "Wed, 4 Feb 2009 23:14:51 +0100")
-Message-ID: <adavdrplty2.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Wed, 4 Feb 2009 17:28:00 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38523 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755656AbZBDW2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 17:28:00 -0500
+Date: Wed, 4 Feb 2009 23:25:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] timer fix
+Message-ID: <20090204222543.GA19944@elte.hu>
+References: <20090204192551.GA19539@elte.hu> <alpine.LFD.2.00.0902041400100.3247@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 04 Feb 2009 22:26:46.0685 (UTC) FILETIME=[AA3C5CD0:01C98717]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902041400100.3247@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > Before judging on this patch could you please post what warning it
- > triggers and one or a few patches to fix some of them.
 
-The warnings are things like:
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-    init/main.c: In function 'start_kernel':
-    init/main.c:557: warning: format not a string literal and no format arguments
+> On Wed, 4 Feb 2009, Ingo Molnar wrote:
+> >
+> > Pavel Emelyanov (1):
+> >       x86: fix hpet timer reinit for x86_64
+> > 
+> > 
+> >  arch/x86/kernel/hpet.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+> > index 64d5ad0..ec319d1 100644
+> > --- a/arch/x86/kernel/hpet.c
+> > +++ b/arch/x86/kernel/hpet.c
+> > @@ -1075,7 +1075,7 @@ static void hpet_rtc_timer_reinit(void)
+> >  		hpet_t1_cmp += delta;
+> >  		hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
+> >  		lost_ints++;
+> > -	} while ((long)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
+> > +	} while ((long)(hpet_readl(HPET_COUNTER) - (u32)hpet_t1_cmp) > 0);
+> 
+> This is bordering on not being correct.
 
-where the patch to fix this would be:
+yeah, i had to look twice. The only reason i left it that way was because i 
+couldnt reproduce the problem and hpet is hellishly fragile and this patch 
+was tested so i chickened out.
 
-diff --git a/init/main.c b/init/main.c
-index 8442094..78fc0d8 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -554,7 +554,7 @@ asmlinkage void __init start_kernel(void)
- 	boot_cpu_init();
- 	page_address_init();
- 	printk(KERN_NOTICE);
--	printk(linux_banner);
-+	printk("%s", linux_banner);
- 	setup_arch(&command_line);
- 	mm_init_owner(&init_mm, &init_task);
- 	setup_command_line(command_line);
+OTOH that fragility is partly because such constructs have piled up so you 
+very much have a valid point ...
 
-with the impact:
+We'll clean this up. I've already added the clean 32-bit casts - which also 
+has another advantage: it does not actually trust the hw to always return 
+32-bit values - it explicitly cuts to 32 bits and does signed arithmetics on 
+that. Will also do the helper function cleanup to abstract the counter 
+arithmetics away.
 
-add/remove: 0/0 grow/shrink: 1/0 up/down: 7/0 (7)
-function                                     old     new   delta
-start_kernel                                 689     696      +7
+> In particular, think about when HPET_COUNTER or hpet_t1_cmp overflows in 
+> 32 bits, and what you want to happen. If you do the subtract add test in 
+> 64 bits, it will simply do the wrong thing. Think what happens if 
+> hpet_t1_cmp is actually _larger_ than HPET_COUNTER, but overflowed in 32 
+> bits, and you're now looking at:
+> 
+> 	(long) (0xffffffff - 0x00000001)
+> 
+> which is actually > 0, so the thing will continue to loop INCORRECTLY. It 
+> should have stopped (and _would_ have stopped on 32-bit x86).
 
+yeah, allowing that to happen is just wrong.
 
-There are also many warnings like:
-
-    drivers/char/mem.c: In function 'chr_dev_init':
-    drivers/char/mem.c:994: warning: format not a string literal and no format arguments
-
-which require a similar fix but show that we can't just restrict things
-to some trick with printk():
-
-diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index 3586b3b..ba3bf43 100644
---- a/drivers/char/mem.c
-+++ b/drivers/char/mem.c
-@@ -991,7 +991,7 @@ static int __init chr_dev_init(void)
- 	for (i = 0; i < ARRAY_SIZE(devlist); i++)
- 		device_create(mem_class, NULL,
- 			      MKDEV(MEM_MAJOR, devlist[i].minor), NULL,
--			      devlist[i].name);
-+			      "%s", devlist[i].name);
- 
- 	return 0;
- }
+	Ingo
