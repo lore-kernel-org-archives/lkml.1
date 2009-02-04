@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762207AbZBDSxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759837AbZBDSwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762207AbZBDSxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:53:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760256AbZBDStN
+	id S1759837AbZBDSwd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760803AbZBDStI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:13 -0500
-Received: from kroah.org ([198.145.64.141]:34314 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:08 -0500
+Received: from kroah.org ([198.145.64.141]:34282 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758767AbZBDStF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:05 -0500
-Date: Wed, 4 Feb 2009 10:46:00 -0800
+	id S1758210AbZBDStD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:03 -0500
+Date: Wed, 4 Feb 2009 10:45:54 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Scott Kilau <Scott.Kilau@digi.com>,
-       Paul Larson <pl@linux.vnet.ibm.com>
-Subject: [patch 06/41] Add enable_ms to jsm driver
-Message-ID: <20090204184600.GG25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Adrian Bunk <bunk@kernel.org>,
+       Greg Ungerer <gerg@uclinux.org>
+Subject: [patch 03/41] m68knommu: set NO_DMA
+Message-ID: <20090204184554.GD25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="add-enable_ms-to-jsm-driver.patch"
+Content-Disposition: inline; filename="m68knommu-set-no_dma.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,42 +40,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul Larson <pl@linux.vnet.ibm.com>
+From: Adrian Bunk <bunk@kernel.org>
 
-commit 0461ec5bc7745b89a8ab67ba0ea497abd58a6301 upstream.
+commit e0212e72186e855027dd35b37e9d7a99a078448c upstream.
 
-This fixes a crash observed when non-existant enable_ms function is
-called for jsm driver.
+m68knommu does not set the Kconfig NO_DMA variable, but also does
+not provide the required functions, resulting in the following
+build error triggered by commit a40c24a13366e324bc0ff8c3bb107db89312c984
+(net: Add SKB DMA mapping helper functions.):
 
-Signed-off-by: Scott Kilau <Scott.Kilau@digi.com>
-Signed-off-by: Paul Larson <pl@linux.vnet.ibm.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+<--  snip  -->
+
+..
+  LD      vmlinux
+net/built-in.o: In function `skb_dma_unmap':
+(.text+0xac5e): undefined reference to `dma_unmap_single'
+net/built-in.o: In function `skb_dma_unmap':
+(.text+0xac7a): undefined reference to `dma_unmap_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xacdc): undefined reference to `dma_map_single'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xace8): undefined reference to `dma_mapping_error'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xad10): undefined reference to `dma_map_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xad82): undefined reference to `dma_unmap_page'
+net/built-in.o: In function `skb_dma_map':
+(.text+0xadc6): undefined reference to `dma_unmap_single'
+make[1]: *** [vmlinux] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@kernel.org>
+Signed-off-by: Greg Ungerer <gerg@uclinux.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/serial/jsm/jsm_tty.c |    6 ++++++
- 1 file changed, 6 insertions(+)
+ arch/m68knommu/Kconfig |    4 ++++
+ 1 file changed, 4 insertions(+)
 
---- a/drivers/serial/jsm/jsm_tty.c
-+++ b/drivers/serial/jsm/jsm_tty.c
-@@ -161,6 +161,11 @@ static void jsm_tty_stop_rx(struct uart_
- 	channel->ch_bd->bd_ops->disable_receiver(channel);
- }
+--- a/arch/m68knommu/Kconfig
++++ b/arch/m68knommu/Kconfig
+@@ -14,6 +14,10 @@ config MMU
+ 	bool
+ 	default n
  
-+static void jsm_tty_enable_ms(struct uart_port *port)
-+{
-+	/* Nothing needed */
-+}
++config NO_DMA
++	bool
++	default y
 +
- static void jsm_tty_break(struct uart_port *port, int break_state)
- {
- 	unsigned long lock_flags;
-@@ -345,6 +350,7 @@ static struct uart_ops jsm_ops = {
- 	.start_tx	= jsm_tty_start_tx,
- 	.send_xchar	= jsm_tty_send_xchar,
- 	.stop_rx	= jsm_tty_stop_rx,
-+	.enable_ms	= jsm_tty_enable_ms,
- 	.break_ctl	= jsm_tty_break,
- 	.startup	= jsm_tty_open,
- 	.shutdown	= jsm_tty_close,
+ config FPU
+ 	bool
+ 	default n
 
