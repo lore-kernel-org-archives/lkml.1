@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753565AbZBDSze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760950AbZBDSyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753565AbZBDSze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:55:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759043AbZBDStS
+	id S1760950AbZBDSyz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:54:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761218AbZBDStQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:18 -0500
-Received: from kroah.org ([198.145.64.141]:34378 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:16 -0500
+Received: from kroah.org ([198.145.64.141]:34367 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759428AbZBDStK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:10 -0500
-Date: Wed, 4 Feb 2009 10:46:10 -0800
+	id S1761357AbZBDStJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:09 -0500
+Date: Wed, 4 Feb 2009 10:46:08 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>
-Subject: [patch 11/41] net: fix packet socket delivery in rx irq handler
-Message-ID: <20090204184610.GL25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Stuart Hopkins <stuart@dodgy-geeza.com>,
+       Dmitry Torokhov <dtor@mail.ru>
+Subject: [patch 10/41] Input: atkbd - Samsung NC10 key repeat fix
+Message-ID: <20090204184608.GK25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="net-fix-packet-socket-delivery-in-rx-irq-handler.patch"
+Content-Disposition: inline; filename="input-atkbd-samsung-nc10-key-repeat-fix.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,165 +40,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Patrick McHardy <kaber@trash.net>
+From: Stuart Hopkins <stuart@dodgy-geeza.com>
 
-commit 9b22ea560957de1484e6b3e8538f7eef202e3596 upstream.
+commit 4200844bd9dc511088258437d564a187f0ffc94e upstream.
 
-The changes to deliver hardware accelerated VLAN packets to packet
-sockets (commit bc1d0411) caused a warning for non-NAPI drivers.
-The __vlan_hwaccel_rx() function is called directly from the drivers
-RX function, for non-NAPI drivers that means its still in RX IRQ
-context:
+This patch fixes the key repeat issue with the Fn+F? keys on the new
+Samsung NC10 Netbook, so that the keys can be defined and used within
+ACPID correctly, otherwise the keys repeat indefinately.
 
-[   27.779463] ------------[ cut here ]------------
-[   27.779509] WARNING: at kernel/softirq.c:136 local_bh_enable+0x37/0x81()
-...
-[   27.782520]  [<c0264755>] netif_nit_deliver+0x5b/0x75
-[   27.782590]  [<c02bba83>] __vlan_hwaccel_rx+0x79/0x162
-[   27.782664]  [<f8851c1d>] atl1_intr+0x9a9/0xa7c [atl1]
-[   27.782738]  [<c0155b17>] handle_IRQ_event+0x23/0x51
-[   27.782808]  [<c015692e>] handle_edge_irq+0xc2/0x102
-[   27.782878]  [<c0105fd5>] do_IRQ+0x4d/0x64
+This solves part of http://bugzilla.kernel.org/show_bug.cgi?id=12021
 
-Split hardware accelerated VLAN reception into two parts to fix this:
-
-- __vlan_hwaccel_rx just stores the VLAN TCI and performs the VLAN
-  device lookup, then calls netif_receive_skb()/netif_rx()
-
-- vlan_hwaccel_do_receive(), which is invoked by netif_receive_skb()
-  in softirq context, performs the real reception and delivery to
-  packet sockets.
-
-Reported-and-tested-by: Ramon Casellas <ramon.casellas@cttc.es>
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
-Cc: Jesse Brandeburg <jesse.brandeburg@intel.com>
+Signed-off-by: Stuart Hopkins <stuart@dodgy-geeza.com>
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/if_vlan.h |    7 +++++++
- net/8021q/vlan_core.c   |   46 +++++++++++++++++++++++++++++++++-------------
- net/core/dev.c          |    3 +++
- 3 files changed, 43 insertions(+), 13 deletions(-)
+ drivers/input/keyboard/atkbd.c |   25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
 
---- a/include/linux/if_vlan.h
-+++ b/include/linux/if_vlan.h
-@@ -114,6 +114,8 @@ extern u16 vlan_dev_vlan_id(const struct
- 
- extern int __vlan_hwaccel_rx(struct sk_buff *skb, struct vlan_group *grp,
- 			     u16 vlan_tci, int polling);
-+extern int vlan_hwaccel_do_receive(struct sk_buff *skb);
-+
- #else
- static inline struct net_device *vlan_dev_real_dev(const struct net_device *dev)
- {
-@@ -133,6 +135,11 @@ static inline int __vlan_hwaccel_rx(stru
- 	BUG();
- 	return NET_XMIT_SUCCESS;
+--- a/drivers/input/keyboard/atkbd.c
++++ b/drivers/input/keyboard/atkbd.c
+@@ -884,6 +884,22 @@ static void atkbd_inventec_keymap_fixup(
  }
-+
-+static inline int vlan_hwaccel_do_receive(struct sk_buff *skb)
-+{
-+	return 0;
-+}
- #endif
  
- /**
---- a/net/8021q/vlan_core.c
-+++ b/net/8021q/vlan_core.c
-@@ -3,11 +3,20 @@
- #include <linux/if_vlan.h>
- #include "vlan.h"
- 
-+struct vlan_hwaccel_cb {
-+	struct net_device	*dev;
-+};
-+
-+static inline struct vlan_hwaccel_cb *vlan_hwaccel_cb(struct sk_buff *skb)
+ /*
++ * Samsung NC10 with Fn+F? key release not working
++ */
++static void atkbd_samsung_keymap_fixup(struct atkbd *atkbd)
 +{
-+	return (struct vlan_hwaccel_cb *)skb->cb;
++	const unsigned int forced_release_keys[] = {
++		0x82, 0x83, 0x84, 0x86, 0x88, 0x89, 0xb3, 0xf7, 0xf9,
++	};
++	int i;
++
++	if (atkbd->set == 2)
++		for (i = 0; i < ARRAY_SIZE(forced_release_keys); i++)
++			__set_bit(forced_release_keys[i],
++				  atkbd->force_release_mask);
 +}
 +
- /* VLAN rx hw acceleration helper.  This acts like netif_{rx,receive_skb}(). */
- int __vlan_hwaccel_rx(struct sk_buff *skb, struct vlan_group *grp,
- 		      u16 vlan_tci, int polling)
- {
--	struct net_device_stats *stats;
-+	struct vlan_hwaccel_cb *cb = vlan_hwaccel_cb(skb);
++/*
+  * atkbd_set_keycode_table() initializes keyboard's keycode table
+  * according to the selected scancode set
+  */
+@@ -1512,6 +1528,15 @@ static struct dmi_system_id atkbd_dmi_qu
+ 		.callback = atkbd_setup_fixup,
+ 		.driver_data = atkbd_inventec_keymap_fixup,
+ 	},
++	{
++		.ident = "Samsung NC10",
++		.matches = {
++			DMI_MATCH(DMI_SYS_VENDOR, "SAMSUNG ELECTRONICS CO., LTD."),
++			DMI_MATCH(DMI_PRODUCT_NAME, "NC10"),
++		},
++		.callback = atkbd_setup_fixup,
++		.driver_data = atkbd_samsung_keymap_fixup,
++	},
+ 	{ }
+ };
  
- 	if (skb_bond_should_drop(skb)) {
- 		dev_kfree_skb_any(skb);
-@@ -15,23 +24,35 @@ int __vlan_hwaccel_rx(struct sk_buff *sk
- 	}
- 
- 	skb->vlan_tci = vlan_tci;
-+	cb->dev = vlan_group_get_device(grp, vlan_tci & VLAN_VID_MASK);
-+
-+	return (polling ? netif_receive_skb(skb) : netif_rx(skb));
-+}
-+EXPORT_SYMBOL(__vlan_hwaccel_rx);
-+
-+int vlan_hwaccel_do_receive(struct sk_buff *skb)
-+{
-+	struct vlan_hwaccel_cb *cb = vlan_hwaccel_cb(skb);
-+	struct net_device *dev = cb->dev;
-+	struct net_device_stats *stats;
-+
- 	netif_nit_deliver(skb);
- 
--	skb->dev = vlan_group_get_device(grp, vlan_tci & VLAN_VID_MASK);
--	if (skb->dev == NULL) {
--		dev_kfree_skb_any(skb);
--		/* Not NET_RX_DROP, this is not being dropped
--		 * due to congestion. */
--		return NET_RX_SUCCESS;
-+	if (dev == NULL) {
-+		kfree_skb(skb);
-+		return -1;
- 	}
--	skb->dev->last_rx = jiffies;
-+
-+	skb->dev = dev;
-+	skb->priority = vlan_get_ingress_priority(dev, skb->vlan_tci);
- 	skb->vlan_tci = 0;
- 
--	stats = &skb->dev->stats;
-+	dev->last_rx = jiffies;
-+
-+	stats = &dev->stats;
- 	stats->rx_packets++;
- 	stats->rx_bytes += skb->len;
- 
--	skb->priority = vlan_get_ingress_priority(skb->dev, vlan_tci);
- 	switch (skb->pkt_type) {
- 	case PACKET_BROADCAST:
- 		break;
-@@ -43,13 +64,12 @@ int __vlan_hwaccel_rx(struct sk_buff *sk
- 		 * This allows the VLAN to have a different MAC than the
- 		 * underlying device, and still route correctly. */
- 		if (!compare_ether_addr(eth_hdr(skb)->h_dest,
--					skb->dev->dev_addr))
-+					dev->dev_addr))
- 			skb->pkt_type = PACKET_HOST;
- 		break;
- 	};
--	return (polling ? netif_receive_skb(skb) : netif_rx(skb));
-+	return 0;
- }
--EXPORT_SYMBOL(__vlan_hwaccel_rx);
- 
- struct net_device *vlan_dev_real_dev(const struct net_device *dev)
- {
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2187,6 +2187,9 @@ int netif_receive_skb(struct sk_buff *sk
- 	int ret = NET_RX_DROP;
- 	__be16 type;
- 
-+	if (skb->vlan_tci && vlan_hwaccel_do_receive(skb))
-+		return NET_RX_SUCCESS;
-+
- 	/* if we've gotten here through NAPI, check netpoll */
- 	if (netpoll_receive_skb(skb))
- 		return NET_RX_DROP;
 
