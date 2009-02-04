@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbZBDS5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbZBDS5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbZBDS5z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:57:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758894AbZBDStY
+	id S1758866AbZBDS5i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:57:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760267AbZBDStX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:24 -0500
-Received: from kroah.org ([198.145.64.141]:60958 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:23 -0500
+Received: from kroah.org ([198.145.64.141]:60948 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761367AbZBDStQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758020AbZBDStQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Feb 2009 13:49:16 -0500
-Date: Wed, 4 Feb 2009 10:46:22 -0800
+Date: Wed, 4 Feb 2009 10:46:20 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,12 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
        Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 17/41] sata_nv: ck804 has borked hardreset too
-Message-ID: <20090204184622.GR25246@kroah.com>
+Subject: [patch 16/41] sata_nv: fix MCP5x reset
+Message-ID: <20090204184620.GQ25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_nv-ck804-has-borked-hardreset-too.patch"
+Content-Disposition: inline; filename="sata_nv-fix-mcp5x-reset.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,39 +42,102 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Tejun Heo <tj@kernel.org>
 
-commit 8d993eaa9c3c61b8a5929a7f695078a1fcfb4869 upstream.
+commit 2d775708bc6613f1be47f1e720781343341ecc94 upstream.
 
-While playing with nvraid, I found out that rmmoding and insmoding
-often trigger hardreset failure on the first port (the second one was
-always okay).  Seriously, how diverse can you get with hardreset
-behaviors?  Anyways, make ck804 use noclassify variant too.
+MCP5x family of controllers seem to share much more with nf2's as far
+as reset protocol is concerned.  It requires heardreset to get the PHY
+going and classfication code report after hardreset is unreliable.
+Create a new board type MCP5x and use noclassify hardreset.  SWNCQ is
+modified to inherit from this new type.
+
+This fixes hotplug regression reported in kernel bz#12351.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_nv.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
+ drivers/ata/sata_nv.c |   42 +++++++++++++++++++++++++++++-------------
+ 1 file changed, 29 insertions(+), 13 deletions(-)
 
 --- a/drivers/ata/sata_nv.c
 +++ b/drivers/ata/sata_nv.c
-@@ -436,11 +436,16 @@ static struct ata_port_operations nv_nf2
- 	.hardreset		= nv_noclassify_hardreset,
+@@ -352,6 +352,7 @@ enum nv_host_type
+ 	NFORCE3 = NFORCE2,	/* NF2 == NF3 as far as sata_nv is concerned */
+ 	CK804,
+ 	ADMA,
++	MCP5x,
+ 	SWNCQ,
  };
  
--/* CK804 finally gets hardreset right */
-+/* For initial probing after boot and hot plugging, hardreset mostly
-+ * works fine on CK804 but curiously, reprobing on the initial port by
-+ * rescanning or rmmod/insmod fails to acquire the initial D2H Reg FIS
-+ * in somewhat undeterministic way.  Use noclassify hardreset.
+@@ -363,10 +364,10 @@ static const struct pci_device_id nv_pci
+ 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_CK804_SATA2), CK804 },
+ 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP04_SATA), CK804 },
+ 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP04_SATA2), CK804 },
+-	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA), SWNCQ },
+-	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA2), SWNCQ },
+-	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA), SWNCQ },
+-	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA2), SWNCQ },
++	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA), MCP5x },
++	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP51_SATA2), MCP5x },
++	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA), MCP5x },
++	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP55_SATA2), MCP5x },
+ 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA), GENERIC },
+ 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA2), GENERIC },
+ 	{ PCI_VDEVICE(NVIDIA, PCI_DEVICE_ID_NVIDIA_NFORCE_MCP61_SATA3), GENERIC },
+@@ -467,8 +468,19 @@ static struct ata_port_operations nv_adm
+ 	.host_stop		= nv_adma_host_stop,
+ };
+ 
++/* Kernel bz#12351 reports that when SWNCQ is enabled, for hotplug to
++ * work, hardreset should be used and hardreset can't report proper
++ * signature, which suggests that mcp5x is closer to nf2 as long as
++ * reset quirkiness is concerned.  Define separate ops for mcp5x with
++ * nv_noclassify_hardreset().
 + */
- static struct ata_port_operations nv_ck804_ops = {
- 	.inherits		= &nv_common_ops,
- 	.freeze			= nv_ck804_freeze,
- 	.thaw			= nv_ck804_thaw,
++static struct ata_port_operations nv_mcp5x_ops = {
++	.inherits		= &nv_common_ops,
 +	.hardreset		= nv_noclassify_hardreset,
- 	.host_stop		= nv_ck804_host_stop,
- };
++};
++
+ static struct ata_port_operations nv_swncq_ops = {
+-	.inherits		= &nv_generic_ops,
++	.inherits		= &nv_mcp5x_ops,
  
+ 	.qc_defer		= ata_std_qc_defer,
+ 	.qc_prep		= nv_swncq_qc_prep,
+@@ -531,6 +543,15 @@ static const struct ata_port_info nv_por
+ 		.port_ops	= &nv_adma_ops,
+ 		.private_data	= NV_PI_PRIV(nv_adma_interrupt, &nv_adma_sht),
+ 	},
++	/* MCP5x */
++	{
++		.flags		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY,
++		.pio_mask	= NV_PIO_MASK,
++		.mwdma_mask	= NV_MWDMA_MASK,
++		.udma_mask	= NV_UDMA_MASK,
++		.port_ops	= &nv_mcp5x_ops,
++		.private_data	= NV_PI_PRIV(nv_generic_interrupt, &nv_sht),
++	},
+ 	/* SWNCQ */
+ 	{
+ 		.flags	        = ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY |
+@@ -2355,14 +2376,9 @@ static int nv_init_one(struct pci_dev *p
+ 	if (type == CK804 && adma_enabled) {
+ 		dev_printk(KERN_NOTICE, &pdev->dev, "Using ADMA mode\n");
+ 		type = ADMA;
+-	}
+-
+-	if (type == SWNCQ) {
+-		if (swncq_enabled)
+-			dev_printk(KERN_NOTICE, &pdev->dev,
+-				   "Using SWNCQ mode\n");
+-		else
+-			type = GENERIC;
++	} else if (type == MCP5x && swncq_enabled) {
++		dev_printk(KERN_NOTICE, &pdev->dev, "Using SWNCQ mode\n");
++		type = SWNCQ;
+ 	}
+ 
+ 	ppi[0] = &nv_port_info[type];
 
