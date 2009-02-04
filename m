@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760627AbZBDVnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbZBDVo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760627AbZBDVnX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 16:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756151AbZBDVnK
+	id S1760156AbZBDVo7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 16:44:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756440AbZBDVou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 16:43:10 -0500
-Received: from mgw1.diku.dk ([130.225.96.91]:43352 "EHLO mgw1.diku.dk"
+	Wed, 4 Feb 2009 16:44:50 -0500
+Received: from gate.crashing.org ([63.228.1.57]:43859 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754785AbZBDVnI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 16:43:08 -0500
-Date: Wed, 4 Feb 2009 22:43:04 +0100 (CET)
-From: Julia Lawall <julia@diku.dk>
-To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH] arch/powerpc: Eliminate double sizeof
-Message-ID: <Pine.LNX.4.64.0902042236200.3091@ask.diku.dk>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1756151AbZBDVot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 16:44:49 -0500
+Subject: Re: [Bug #12508] "powerpc/pci: Reserve legacy regions on PCI"
+ broke my G3
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mikael Pettersson <mikpe@it.uu.se>
+In-Reply-To: <pWZw1SZjMCH.A.ZIG.YvYiJB@chimera>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+	 <pWZw1SZjMCH.A.ZIG.YvYiJB@chimera>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 08:44:27 +1100
+Message-Id: <1233783867.4612.9.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+On Wed, 2009-02-04 at 11:24 +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
 
-Taking sizeof the result of sizeof is quite strange and does not seem to be
-what is wanted here.
+Can you check if it's still broken ?
 
-This was fixed using the following semantic patch.
-(http://www.emn.fr/x-info/coccinelle/)
+59b608c2c33feacc8be281ec3ba9ca2a3a5cb9a7 might have fixed it...
 
-// <smpl>
-@@
-expression E;
-@@
+Cheers,
+Ben.
 
-- sizeof (
-  sizeof (E)
-- )
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12508
+> Subject		: "powerpc/pci: Reserve legacy regions on PCI" broke my G3
+> Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+> Date		: 2009-01-17 22:46 (19 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c1f343028d35ba4e88cd4a3c44e0d8b8a84264ee
+> References	: http://marc.info/?l=linux-kernel&m=123223247325452&w=4
+> Handled-By	: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
 
-@@
-type T;
-@@
-
-- sizeof (
-  sizeof (T)
-- )
-// </smpl>
-
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
- arch/powerpc/platforms/82xx/pq2ads-pci-pic.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff -u -p a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
---- a/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-+++ b/arch/powerpc/platforms/82xx/pq2ads-pci-pic.c
-@@ -186,7 +186,7 @@ out_unmap_regs:
- 	iounmap(priv->regs);
- out_free_bootmem:
- 	free_bootmem((unsigned long)priv,
--	             sizeof(sizeof(struct pq2ads_pci_pic)));
-+	             sizeof(struct pq2ads_pci_pic));
- 	of_node_put(np);
- out_unmap_irq:
- 	irq_dispose_mapping(irq);
