@@ -1,58 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755583AbZBDKwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754890AbZBDK4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755583AbZBDKwe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 05:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752999AbZBDKwM
+	id S1754890AbZBDK4U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 05:56:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZBDK4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 05:52:12 -0500
-Received: from casper.infradead.org ([85.118.1.10]:56451 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbZBDKwK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 05:52:10 -0500
-Subject: Re: Performance counter API review was [patch] Performance
- Counters for Linux, v3
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Stephane Eranian <eranian@googlemail.com>,
-       Eric Dumazet <dada1@cosmosbay.com>,
-       Robert Richter <robert.richter@amd.com>,
-       Arjan van de Veen <arjan@infradead.org>, Peter Anvin <hpa@zytor.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Maynard Johnson <mpjohn@us.ibm.com>, carll@us.ibm.com
-In-Reply-To: <18825.29238.559809.341658@cargo.ozlabs.ibm.com>
-References: <20081211155230.GA4230@elte.hu>
-	 <87r64ag68n.fsf@basil.nowhere.org> <49875199.3010609@linux.vnet.ibm.com>
-	 <1233606782.10184.4.camel@laptop>
-	 <18824.64228.358045.890823@cargo.ozlabs.ibm.com>
-	 <1233737124.10184.57.camel@laptop>
-	 <18825.29238.559809.341658@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 11:51:44 +0100
-Message-Id: <1233744704.5076.4.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Wed, 4 Feb 2009 05:56:02 -0500
+Received: from ozlabs.org ([203.10.76.45]:57072 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751771AbZBDK4A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 05:56:00 -0500
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: [RFC] Suspicious bug in module refcounting
+Date: Wed, 4 Feb 2009 21:25:47 +1030
+User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
+Cc: Karsten Keil <kkeil@suse.de>, linux-kernel@vger.kernel.org,
+       Michal Hocko <mhocko@suse.cz>,
+       richard kennedy <richard@rsk.demon.co.uk>,
+       Dan Williams <dan.j.williams@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, dwmw2@infradead.org,
+       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
+       Al Viro <viro@zeniv.linux.org.uk>
+References: <20090203134721.GA11069@pingi.kke.suse.de> <200902041418.09630.rusty@rustcorp.com.au> <20090204101130.GB19498@flint.arm.linux.org.uk>
+In-Reply-To: <20090204101130.GB19498@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902042125.48723.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-04 at 21:47 +1100, Paul Mackerras wrote:
-> Peter Zijlstra writes:
+On Wednesday 04 February 2009 20:41:30 Russell King wrote:
+> On Wed, Feb 04, 2009 at 02:18:08PM +1030, Rusty Russell wrote:
+> >   gameport.c, serio.c and input.c increment their own refcount, but to get
+> > into those init functions someone must be holding a refcount already (ie. a
+> > module depends on this module).  Ditto cyber2000fb.c, and MTD.
 > 
-> > How is smp_call_function() going to help here? You still need to pull
-> > all that data through that one FD. That's a cacheline bounce fest.
-> 
-> Well, let's put this into perspective.  We would be collecting 8 bytes
-> of data from each CPU.  Hardly a "cacheline bounce fest". :)
+> Err, wrong.  cyber2000fb.c does it in its module initialization function
+> to prevent the module (when built for Shark) from being unloaded.  It
+> does this because it's from the days of 2.2 kernels and no one bothered
+> writing the module unload support for Shark.  I'm certainly not in a
+> position to do that.
 
-Ah, I was thinking more of the event triggered profiling, like NMI time,
-cachemiss or pagefault profiling.
+Thanks, here's the patch then:
 
-In those cases you'd get a continuous stream of data for each cpu, at
-possibly quite high speeds.
+Subject: cyber2000fb.c: use proper method for stopping unload if CONFIG_ARCH_SHARK
 
+Russell explains the __module_get():
+> cyber2000fb.c does it in its module initialization function
+> to prevent the module (when built for Shark) from being unloaded.  It
+> does this because it's from the days of 2.2 kernels and no one bothered
+> writing the module unload support for Shark.
+
+Since 2.4, the correct answer has been to not define an unload fn.
+
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+diff --git a/drivers/video/cyber2000fb.c b/drivers/video/cyber2000fb.c
+--- a/drivers/video/cyber2000fb.c
++++ b/drivers/video/cyber2000fb.c
+@@ -1736,10 +1736,8 @@ static int __init cyber2000fb_init(void)
+ 
+ #ifdef CONFIG_ARCH_SHARK
+ 	err = cyberpro_vl_probe();
+-	if (!err) {
++	if (!err)
+ 		ret = 0;
+-		__module_get(THIS_MODULE);
+-	}
+ #endif
+ #ifdef CONFIG_PCI
+ 	err = pci_register_driver(&cyberpro_driver);
+@@ -1749,14 +1747,15 @@ static int __init cyber2000fb_init(void)
+ 
+ 	return ret ? err : 0;
+ }
++module_init(cyber2000fb_init);
+ 
++#ifndef CONFIG_ARCH_SHARK
+ static void __exit cyberpro_exit(void)
+ {
+ 	pci_unregister_driver(&cyberpro_driver);
+ }
+-
+-module_init(cyber2000fb_init);
+ module_exit(cyberpro_exit);
++#endif
+ 
+ MODULE_AUTHOR("Russell King");
+ MODULE_DESCRIPTION("CyberPro 2000, 2010 and 5000 framebuffer driver");
