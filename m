@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbZBDJN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZBDJNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbZBDJN3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 04:13:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZBDJMt
+	id S1754502AbZBDJNy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 04:13:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZBDJNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 04:12:49 -0500
-Received: from 1wt.eu ([62.212.114.60]:2017 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754075AbZBDJMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 04:12:47 -0500
-Date: Wed, 4 Feb 2009 10:12:17 +0100
-From: Willy Tarreau <w@1wt.eu>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, jarkao2@gmail.com,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090204091217.GA21385@1wt.eu>
-References: <20090204081201.GB10445@ioremap.net> <20090204085432.GA21638@1wt.eu> <20090204085907.GA19388@gondor.apana.org.au> <20090204.010146.18100191.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090204.010146.18100191.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+	Wed, 4 Feb 2009 04:13:18 -0500
+Received: from styx.suse.cz ([82.119.242.94]:57330 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754582AbZBDJM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 04:12:58 -0500
+Date: Wed, 4 Feb 2009 10:12:57 +0100 (CET)
+From: Jiri Kosina <jkosina@suse.cz>
+To: Paul Menage <menage@google.com>,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
+       kamezawa.hiroyu@jp.fujitsu.com, rdunlap@xenotime.net
+Subject: Re: [PATCH] trivial: fix where cgroup documentation is not correctly
+ 	referred to
+In-Reply-To: <6599ad830902032338q7018112cm499b0b6e83308707@mail.gmail.com>
+Message-ID: <alpine.LNX.1.10.0902041012250.11630@jikos.suse.cz>
+References: <498879F1.9040009@xenotime.net>  <1233694085-23893-1-git-send-email-cascardo@holoscopio.com>  <4988EADB.4050508@cn.fujitsu.com> <6599ad830902032338q7018112cm499b0b6e83308707@mail.gmail.com>
+User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 01:01:46AM -0800, David Miller wrote:
-> From: Herbert Xu <herbert@gondor.apana.org.au>
-> Date: Wed, 4 Feb 2009 19:59:07 +1100
-> 
-> > On Wed, Feb 04, 2009 at 09:54:32AM +0100, Willy Tarreau wrote:
-> > >
-> > > My server is running 2.4 :-), but I observed the same issues with older
-> > > 2.6 as well. I can certainly imagine that things have changed a lot since,
-> > > but the initial point remains : jumbo frames are expensive to deal with,
-> > > and with recent NICs and drivers, we might get close performance for
-> > > little additional cost. After all, initial justification for jumbo frames
-> > > was the devastating interrupt rate and all NICs coalesce interrupts now.
-> > 
-> > This is total crap! Jumbo frames are way better than any of the
-> > hacks (such as GSO) that people have come up with to get around it.
-> > The only reason we are not using it as much is because of this
-> > nasty thing called the Internet.
-> 
-> Completely agreed.
-> 
-> If Jumbo frames are slower, it is NOT some fundamental issue.  It is
-> rather due to some misdesign of the hardware or it's driver.
+On Tue, 3 Feb 2009, Paul Menage wrote:
 
-Agreed we can't use them *because* of the internet, but this
-limitation has forced hardware designers to find valid alternatives.
-For instance, having the ability to reach 10 Gbps with 1500 bytes
-frames on myri10ge with a low CPU usage is a real achievement. This
-is "only" 800 kpps after all.
+> >> cgroup documentation was moved to Documentation/cgroups/. There are some
+> >> places that still refer to Documentation/controllers/,
+> >> Documentation/cgroups.txt and Documentation/cpusets.txt. Fix those.
+> > After grep, I think there's no wrong ref anymore.
+> > Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+> Acked-by: Paul Menage <menage@google.com>
 
-And the arbitrary choice of 9k for jumbo frames was total crap too.
-It's clear that no hardware designer was involved in the process.
-They have to stuff 16kB of RAM on a NIC to use only 9. And we need
-to allocate 3 pages for slightly more than 2. 7.5 kB would have been
-better in this regard.
+Applied to trivial tree, thanks.
 
-I still find it nice to lower CPU usage with frames larger than 1500,
-but given the fact that this is rarely used (even in datacenters), I
-think our efforts should concentrate on where the real users are, ie
-<1500.
-
-Regards,
-Willy
-
+-- 
+Jiri Kosina
+SUSE Labs
