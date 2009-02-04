@@ -1,146 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZBDCWI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755330AbZBDCYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755036AbZBDCWI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 21:22:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZBDCVz
+	id S1755330AbZBDCYY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 21:24:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752641AbZBDCYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 21:21:55 -0500
-Received: from mga05.intel.com ([192.55.52.89]:19161 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751880AbZBDCVy (ORCPT
+	Tue, 3 Feb 2009 21:24:14 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40728 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752239AbZBDCYN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 21:21:54 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,375,1231142400"; 
-   d="scan'208";a="427909465"
-Subject: Re: [patch] SLQB slab allocator
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0902031150110.5290@blonde.anvils>
-References: <20090121143008.GV24891@wotan.suse.de>
-	 <Pine.LNX.4.64.0901211705570.7020@blonde.anvils>
-	 <84144f020901220201g6bdc2d5maf3395fc8b21fe67@mail.gmail.com>
-	 <Pine.LNX.4.64.0901221239260.21677@blonde.anvils>
-	 <Pine.LNX.4.64.0901231357250.9011@blonde.anvils>
-	 <1233545923.2604.60.camel@ymzhang>
-	 <1233565214.17835.13.camel@penberg-laptop>
-	 <1233646145.2604.137.camel@ymzhang>
-	 <Pine.LNX.4.64.0902031150110.5290@blonde.anvils>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 10:21:30 +0800
-Message-Id: <1233714090.2604.186.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Tue, 3 Feb 2009 21:24:13 -0500
+Date: Tue, 3 Feb 2009 18:23:28 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       Eric Sesterhenn <snakebyte@gmx.de>
+Subject: Re: [PATCH 1/7] PCI PM: Fix handling of devices without drivers
+In-Reply-To: <200902040156.15200.rjw@sisk.pl>
+Message-ID: <alpine.LFD.2.00.0902031815550.3247@localhost.localdomain>
+References: <200902040154.36018.rjw@sisk.pl> <200902040156.15200.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 12:18 +0000, Hugh Dickins wrote:
-> On Tue, 3 Feb 2009, Zhang, Yanmin wrote:
-> > On Mon, 2009-02-02 at 11:00 +0200, Pekka Enberg wrote:
-> > > On Mon, 2009-02-02 at 11:38 +0800, Zhang, Yanmin wrote:
-> > > > Can we add a checking about free memory page number/percentage in function
-> > > > allocate_slab that we can bypass the first try of alloc_pages when memory
-> > > > is hungry?
-> > > 
-> > > If the check isn't too expensive, I don't any reason not to. How would
-> > > you go about checking how much free pages there are, though? Is there
-> > > something in the page allocator that we can use for this?
-> > 
-> > We can use nr_free_pages(), totalram_pages and hugetlb_total_pages(). Below
-> > patch is a try. I tested it with hackbench and tbench on my stoakley
-> > (2 qual-core processors) and tigerton (4 qual-core processors).
-> > There is almost no regression.
+
+
+On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
 > 
-> May I repeat what I said yesterday?  Certainly I'm oversimplifying,
-> but if I'm plain wrong, please correct me.
-I did read your previous email carefully.
-
+> Suspend to RAM is reported to break on some machines as a result of
+> attempting to put one of driverless PCI devices into a low power
+> state.  Avoid that by not attepmting to power manage driverless
+> devices during suspend.
 > 
-> Having lots of free memory is a temporary accident following process
-> exit (when lots of anonymous memory has suddenly been freed), before
-> it has been put to use for page cache. 
-Some workloads do something like what you said. But lots of workloads
-don't use up most memory. Keepping an amount of free memory could
-quicken up system running.
+> Fix up pci_pm_poweroff() after a previous incomplete fix for the same
+> thing during hibernation.
 
-> The kernel tries to run with
-> a certain amount of free memory in reserve, and the rest of memory
-> put to (potentially) good use.  I don't think we have the number
-> you're looking for there, though perhaps some approximation could
-> be devised (or I'm looking at the problem the wrong way round).
-> 
-> Perhaps feedback from vmscan.c, on how much it's having to write back,
-> would provide a good clue.  There's plenty of stats maintained there.
-My startpoint is to look for a simple formula and the patch is a RFC.
-If we consider statistics of write back (and so on), what I am worried about
-is that page allocation called by allocate_slab might cause too many
-try_to_free_pages/page reclaim/swap when memory is hungry. Originally, I thought
-that's the root cause of your issue.
+Ok, I really don't like this patch, because:
 
-In other hand, free memory wouldn't vary too much with a good stably
-running system. So the patch tries to change allocate_slab:
-If there are high-order free pages available without reclaim/swap/free_pages,
-just go to the first alloc_slab_page; If not, just jump to the second try of
-alloc_slab_page. Of course, the checking is just a guess, not a guarantee.
+> -static void pci_pm_default_suspend(struct pci_dev *pci_dev)
+> +static void pci_pm_default_suspend(struct pci_dev *pci_dev, bool prepare)
+>  {
+>  	pci_pm_default_suspend_generic(pci_dev);
+>  
+> -	if (!pci_is_bridge(pci_dev))
+> +	if (prepare && !pci_is_bridge(pci_dev))
+>  		pci_prepare_to_sleep(pci_dev);
+>  
+>  	pci_fixup_device(pci_fixup_suspend, pci_dev);
 
+This "helper" function really isn't helping anything at all any more. It's 
+really just confusing things.
 
-> 
-> > 
-> > Besides this patch, I have another patch to try to reduce the calculation
-> > of "totalram_pages - hugetlb_total_pages()", but it touches many files.
-> > So just post the first simple patch here for review.
-> > 
-> > 
-> > Hugh,
-> > 
-> > Would you like to test it on your machines?
-> 
-> Indeed I shall, starting in a few hours when I've finished with trying
-> the script I promised yesterday to send you.  And I won't be at all
-> surprised if your patch eliminates my worst cases, because I don't
-> expect to have any significant amount of free memory during my testing,
-> and my swap testing suffers from slub's thirst for higher orders.
-> 
-> But I don't believe the kind of check you're making is appropriate,
-> and I do believe that when you try more extensive testing, you'll find
-> regressions in other tests which were relying on the higher orders.
-Yes, I agree. And we need find such tests which causes both memory used up
-and lots of higher-order allocations.
+Now that was true even before this all; mostly because your naming in this 
+area _really_ sucks. I mean, what the heck is the difference between 
+"pci_pm_default_suspend_generic()" and "pci_pm_default_suspend()", and 
+what do they do?
 
-> If all of your testing happens to have lots of free memory around,
-> I'm surprised; but perhaps I'm naive about how things actually work,
-> especially on the larger machines.
-I use dozeons of benchmarks, but they are mostly microbench. In addition, mostly,
-there are lots of free memory when they (except fio and membench) are running.
+But you just made it worse. This trivial function that doesn't do anything 
+interesting, and isn't well-named enough to actually explain what it is 
+doing now became EVEN WORSE.  Now it's a trivial function that does two 
+things, except it does one of those things only if the magic flag (that is 
+also not helpfully named) is set.
 
-I tried to enable some big benchmarks, such like specweb2005, but I failed because
-Tomcat scalability looks not good on 4 qual-core processor machines.
+Argh.
 
-I would find and add new benchmark/tests which use up memory even cause lots of swap
-into my testing framework.
+To make it worse, it's not at all obvious what the logic is:
 
-> 
-> Or maybe your tests are relying crucially on the slabs allocated at
-> system startup, when of course there should be plenty of free memory
-> around.
-> 
-> By the way, when I went to remind myself of what nr_free_pages()
-> actually does, my grep immediately hit this remark in mm/mmap.c:
-> 		 * nr_free_pages() is very expensive on large systems,
-> I hope that's just a stale comment from before it was converted
-> to global_page_state(NR_FREE_PAGES)!
-I think so.
+> +	struct dev_pm_ops *pm = dev->driver ? dev->driver->pm : NULL;
+> +		pci_pm_default_suspend(pci_dev, !!pm);
 
-I would try to reproduce your issue on my machines.
+Whaa? This is basically totally obfuscated code both in the caller _and_ 
+in the callee.
 
-Thanks for your scripts and suggestions.
+Now, it looks like this all then goes away in PATCH 7/7, so I guess I 
+shouldn't complain too much, but I just don't see much point in carrying 
+this broken patch around in the series, since it's then going away and 
+rewritten almost immediately again.
 
+Apart from that complaints, Acked-by: for the series. 
 
+			Linus
