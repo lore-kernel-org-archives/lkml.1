@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760081AbZBDVtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758792AbZBDVxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760081AbZBDVtK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 16:49:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbZBDVsz
+	id S1758792AbZBDVxe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 16:53:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZBDVxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 16:48:55 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48385 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752780AbZBDVsy (ORCPT
+	Wed, 4 Feb 2009 16:53:24 -0500
+Received: from hpsmtp-eml15.KPNXCHANGE.COM ([213.75.38.115]:13087 "EHLO
+	hpsmtp-eml15.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752275AbZBDVxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 16:48:54 -0500
-Date: Wed, 4 Feb 2009 13:48:23 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: rusty@rustcorp.com.au, travis@sgi.com, mingo@redhat.com, davej@redhat.com,
-       cpufreq@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-Message-Id: <20090204134823.8eefa728.akpm@linux-foundation.org>
-In-Reply-To: <20090204213519.GR22608@elte.hu>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	<200902041314.32277.rusty@rustcorp.com.au>
-	<20090203190111.2ec31cef.akpm@linux-foundation.org>
-	<200902042111.35543.rusty@rustcorp.com.au>
-	<20090204073636.30f15339.akpm@linux-foundation.org>
-	<20090204213519.GR22608@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Feb 2009 16:53:24 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in pci_legacy_suspend
+Date: Wed, 4 Feb 2009 22:53:15 +0100
+User-Agent: KMail/1.9.9
+Cc: rjw@sisk.pl, jbarnes@virtuousgeek.org, torvalds@linux-foundation.org,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+References: <200902040154.36018.rjw@sisk.pl> <200902041115.00842.elendil@planet.nl> <1233783502.4612.7.camel@pasglop>
+In-Reply-To: <1233783502.4612.7.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902042253.17447.elendil@planet.nl>
+X-OriginalArrivalTime: 04 Feb 2009 21:53:18.0286 (UTC) FILETIME=[FD22FEE0:01C98712]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009 22:35:19 +0100
-Ingo Molnar <mingo@elte.hu> wrote:
+On Wednesday 04 February 2009, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-02-04 at 11:14 +0100, Frans Pop wrote:
+> > Benjamin Herrenschmidt wrote:
+> > > Minor nit: Should the warning be preceeded by a message ? The
+> > > reason is, right now, all we get is a backtrace, it doesn't
+> > > actually tell you which device or driver caused it which makes it
+> > > pretty pointless.
+> > >
+> > > I think you should add a printk(KERN_ERR... just before that which
+> > > gives those informations along with a little blurb along the lines
+> > > of "driver changed device state without saving config space
+> > > state").
+> >
+> > That is actually already included in the patch (through
+> > drv->suspend):
+>
+> How so ? I've had such backtraces with no other info in my log...
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > mm/pdflush.c:
-> > 
-> >   wtf what the heck is all that stuff and who added it?  weird.
-> > 
-> >   Leave it alone I guess.  Can admins manually move kernel threads to
-> >   other CPUs?
-> 
-> they can - and there's even tools that do that (there's some -rt tools where 
-> you can put kernel thread priorities into a config file).
-> 
+Previous versions did not have the info, but with this patch I get:
+WARNING: at drivers/pci/pci-driver.c:374 pci_legacy_suspend+0x9b/0xde()
+Hardware name: HP Compaq 2510p Notebook PC
+PCI PM: Device state not saved by iwl_pci_suspend+0x0/0x4c [iwlagn]
+[...]
 
-Oh well, DontDoThatThen.
+Driver and function causing the warning are in the last line.
 
-I expect that the same argument applies to most of the set_cpus_allowed()
-callsites - they're run by root-only code.  Sure, root can (with
-careful timing) move root's own thread onto the wrong CPU in the middle
-of microcode loading.  In which case root gets to own both pieces.
-
-We only really need to worry about the places where non-root code can
-run set_cpus_allowed().  And then we only need to worry a little bit.
-
-Yes?
+Cheers,
+FJP
