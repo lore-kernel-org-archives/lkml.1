@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbZBDOSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbZBDOTR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753372AbZBDOSm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 09:18:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbZBDOSc
+	id S1753431AbZBDOTR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 09:19:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752023AbZBDOS6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 09:18:32 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47177 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751980AbZBDOSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 09:18:31 -0500
-Date: Wed, 4 Feb 2009 15:18:04 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>, x86@kernel.org,
-       sam@ravnborg.org, hpa@zytor.com, jirislaby@gmail.com, gregkh@suse.de,
-       davem@davemloft.net, xyzzy@speakeasy.org, mchehab@infradead.org,
-       jens.axboe@oracle.com, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>
-Subject: Re: [GIT PULL -tip] fix 22 make headers_check - 200901
-Message-ID: <20090204141804.GB4411@elte.hu>
-References: <20090204064307.GA18415@gondor.apana.org.au> <1233734645.3198.2.camel@localhost.localdomain> <200902041255.53264.arnd@arndb.de>
+	Wed, 4 Feb 2009 09:18:58 -0500
+Received: from mail.gmx.net ([213.165.64.20]:52674 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751482AbZBDOS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 09:18:57 -0500
+X-Authenticated: #1587495
+X-Provags-ID: V01U2FsdGVkX1822XhthUA2tUd73tduGfH7ZeXG6Lt7K5TCYD3xrk
+	lMQgS6OBUDM/OC
+From: Stefan Lippers-Hollmann <s.L-H@gmx.de>
+To: gregkh@suse.de
+Subject: Re: patch sata_nv-fix-mcp5x-reset.patch added to 2.6.28-stable tree
+Date: Wed, 4 Feb 2009 15:18:50 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, tj@kernel.org, jgarzik@redhat.com,
+       stable@kernel.org
+References: <20090203224712.E16AA4901A@coco.kroah.org>
+In-Reply-To: <20090203224712.E16AA4901A@coco.kroah.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200902041255.53264.arnd@arndb.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902041518.52708.s.L-H@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.46
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-* Arnd Bergmann <arnd@arndb.de> wrote:
+On Dienstag, 3. Februar 2009, gregkh@suse.de wrote:
+> This is a note to let you know that we have just queued up the patch titled
+> 
+>     Subject: sata_nv: fix MCP5x reset
+> 
+> to the 2.6.28-stable tree.  Its filename is
+> 
+>     sata_nv-fix-mcp5x-reset.patch
+> 
+> A git repo of this tree can be found at 
+>     http://www.kernel.org/git/?p=linux/kernel/git/stable/stable-queue.git;a=summary
+> 
+> 
+> From 2d775708bc6613f1be47f1e720781343341ecc94 Mon Sep 17 00:00:00 2001
+> From: Tejun Heo <tj@kernel.org>
+> Date: Sun, 25 Jan 2009 11:29:38 +0900
+> Subject: sata_nv: fix MCP5x reset
+> 
+> From: Tejun Heo <tj@kernel.org>
+> 
+> commit 2d775708bc6613f1be47f1e720781343341ecc94 upstream.
+> 
+> MCP5x family of controllers seem to share much more with nf2's as far
+> as reset protocol is concerned.  It requires heardreset to get the PHY
+> going and classfication code report after hardreset is unreliable.
+> Create a new board type MCP5x and use noclassify hardreset.  SWNCQ is
+> modified to inherit from this new type.
+> 
+> This fixes hotplug regression reported in kernel bz#12351.
+[...]
+> --- a/drivers/ata/sata_nv.c
+> +++ b/drivers/ata/sata_nv.c
+[...]
+> +/* Kernel bz#12351 reports that when SWNCQ is enabled, for hotplug to
+> + * work, hardreset should be used and hardreset can't report proper
+> + * signature, which suggests that mcp5x is closer to nf2 as long as
+> + * reset quirkiness is concerned.  Define separate ops for mcp5x with
+> + * nv_noclassify_hardreset().
+> + */
+> +static struct ata_port_operations nv_mcp5x_ops = {
+> +	.inherits		= &nv_common_ops,
+> +	.hardreset		= nv_noclassify_hardreset,
+> +};
+[...]
 
-> On Wednesday 04 February 2009, Jaswinder Singh Rajput wrote:
-> > On Wed, 2009-02-04 at 17:43 +1100, Herbert Xu wrote:
-> > > > -#include <asm/types.h>
-> > > > +#include <linux/types.h>
-> > > > #include <linux/ioctl.h>
-> > > 
-> > > Awesome, you've just broken the userspace build of kvm as the
-> > > file linux/types.h conflicts with sys/types.h.
-> > > 
-> > 
-> > What I did is absolutely right.
-> > 
-> > If there is any conflict then we need to solve it in better way.
-> > 
-> > Can you please share what is the conflict and what you are expecting and
-> > what you are getting.
-> 
-> I fear that the problem might be more widespread than just kvm.
-> The problem is that <linux/types.h> without __KERNEL_STRICT_NAMES
-> defines the standard types that glibc provides in its own <sys/types.h>,
-> some of them even defined differently (e.g. the size of off_t depends
-> __USE_FILE_OFFSET64).
-> 
-> You should be able to do
-> 
-> #include <sys/types.h>
-> #define __KERNEL_STRICT_NAMES
-> #include <linux/types.h>
-> 
-> or
-> 
-> #include <sys/types.h>
-> #include <asm/types.h>
-> 
-> but not without the __KERNEL_STRICT_NAMES! This means that the
-> mass-conversion to <linux/types.h> was flawed and should be fixed
-> before 2.6.29 to avoid more trouble.
+This fails to compile on 2.6.28.3+stable-queue (and most likely 2.6.27 as 
+well), because it depends on the rename from nv_nf2_hardreset() to 
+nv_noclassify_hardreset() in:
 
-agreed.
+commit e8caa3c70e94d867ca2efe9e53fd388b52d6d0c8
+Author: Tejun Heo <tj@kernel.org>
+Date:   Sun Jan 25 11:25:22 2009 +0900
 
-	Ingo
+    sata_nv: rename nv_nf2_hardreset()
+
+    nv_nf2_hardreset() will be used by other flavors too.  Rename it to
+    nv_noclassify_hardreset().
+
+    Signed-off-by: Tejun Heo <tj@kernel.org>
+    Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+
+As this function has only been renamed without functional changes, either 
+applying "sata_nv: rename nv_nf2_hardreset()" as well or using
+s/nv_nf2_hardreset/nv_noclassify_hardreset/g on this patch
+(and potentially following changes, "sata_nv: ck804 has borked hardreset 
+too" 8d993eaa9c3c61b8a5929a7f695078a1fcfb4869 comes to mind) fixes the 
+build.
+
+Regards
+	Stefan Lippers-Hollmann
