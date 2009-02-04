@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763499AbZBDTDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763682AbZBDTEK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763499AbZBDTDG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:03:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759481AbZBDStl
+	id S1763682AbZBDTEK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:04:10 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761446AbZBDSto
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:41 -0500
-Received: from kroah.org ([198.145.64.141]:32906 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:44 -0500
+Received: from kroah.org ([198.145.64.141]:32951 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761401AbZBDStb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:31 -0500
-Date: Wed, 4 Feb 2009 10:46:50 -0800
+	id S1761412AbZBDSte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:34 -0500
+Date: Wed, 4 Feb 2009 10:46:56 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,16 +22,15 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Bob Moore <robert.moore@intel.com>,
-       Lin Ming <ming.m.lin@intel.com>, Andi Kleen <ak@linux.intel.com>,
+       alan@lxorguk.ukuu.org.uk, Matthew Garrett <mjg59@srcf.ucam.org>,
        Len Brown <len.brown@intel.com>, Thomas Renninger <trenn@suse.de>
-Subject: [patch 31/41] ACPICA: Fix wrong resource descriptor length for
-	64-bit build
-Message-ID: <20090204184650.GF25246@kroah.com>
+Subject: [patch 34/41] video: always update the brightness when poking
+	"brightness"
+Message-ID: <20090204184656.GI25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="acpica-fix-wrong-resource-descriptor-length-for-64-bit-build.patch"
+Content-Disposition: inline; filename="video-always-update-the-brightness-when-poking-brightness.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -42,37 +41,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Bob Moore <robert.moore@intel.com>
+From: Zhang Rui <rui.zhang@intel.com>
 
-commit 9db4fcd99f7ef886ded97cd26a8642c70fbe34df upstream.
+commit 9e6dada9d255497127251c03aaa59296d186f959 upstream.
 
-The "minimal" descriptors such as EndTag are calculated as 12
-bytes long, but the actual length in the internal descriptor is
-16 because of the round-up to 8 on 64-bit build.
+always update props.brightness no matter the backlight is changed
+via procfs, hotkeys or sysfs.
 
-http://www.acpica.org/bugzilla/show_bug.cgi?id=728
-
-Signed-off-by: Bob Moore <robert.moore@intel.com>
-Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
+Sighed-off-by: Zhang Rui <rui.zhang@intel.com>
+Acked-by: Matthew Garrett <mjg59@srcf.ucam.org>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/acpi/actypes.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/acpi/video.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/include/acpi/actypes.h
-+++ b/include/acpi/actypes.h
-@@ -1225,8 +1225,8 @@ struct acpi_resource {
+--- a/drivers/acpi/video.c
++++ b/drivers/acpi/video.c
+@@ -482,6 +482,7 @@ acpi_video_device_lcd_set_level(struct a
+ 	int status = AE_OK;
+ 	union acpi_object arg0 = { ACPI_TYPE_INTEGER };
+ 	struct acpi_object_list args = { 1, &arg0 };
++	int state;
  
- #pragma pack()
  
--#define ACPI_RS_SIZE_MIN                    12
- #define ACPI_RS_SIZE_NO_DATA                8	/* Id + Length fields */
-+#define ACPI_RS_SIZE_MIN                    (u32) ACPI_ROUND_UP_TO_NATIVE_WORD (12)
- #define ACPI_RS_SIZE(type)                  (u32) (ACPI_RS_SIZE_NO_DATA + sizeof (type))
+ 	arg0.integer.value = level;
+@@ -490,6 +491,10 @@ acpi_video_device_lcd_set_level(struct a
+ 		status = acpi_evaluate_object(device->dev->handle, "_BCM",
+ 					      &args, NULL);
+ 	device->brightness->curr = level;
++	for (state = 2; state < device->brightness->count; state++)
++		if (level == device->brightness->levels[state])
++			device->backlight->props.brightness = state - 2;
++
+ 	return status;
+ }
  
- #define ACPI_NEXT_RESOURCE(res)             (struct acpi_resource *)((u8 *) res + res->length)
 
