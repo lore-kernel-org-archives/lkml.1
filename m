@@ -1,90 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZBDJMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbZBDJNI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbZBDJMq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 04:12:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZBDJM3
+	id S1754700AbZBDJNI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 04:13:08 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZBDJMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 04:12:29 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:56220 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751268AbZBDJM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 04:12:28 -0500
-Message-ID: <49895BD7.8090405@cn.fujitsu.com>
-Date: Wed, 04 Feb 2009 17:11:51 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Paul Menage <menage@google.com>, LKML <linux-kernel@vger.kernel.org>,
-       Linux Containers <containers@lists.linux-foundation.org>
-Subject: [PATCH] cgroups: fix lockdep subclasses overflow
-Content-Type: text/plain; charset=UTF-8
+	Wed, 4 Feb 2009 04:12:33 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51459
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752244AbZBDJMb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 04:12:31 -0500
+Date: Wed, 04 Feb 2009 01:12:28 -0800 (PST)
+Message-Id: <20090204.011228.88323558.davem@davemloft.net>
+To: w@1wt.eu
+Cc: zbr@ioremap.net, herbert@gondor.apana.org.au, jarkao2@gmail.com,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090204061947.GD20673@1wt.eu>
+References: <20090203122535.GB8633@1wt.eu>
+	<20090203.164734.76871204.davem@davemloft.net>
+	<20090204061947.GD20673@1wt.eu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I enabled all cgroup subsystems when compiling kernel, and then:
- # mount -t cgroup -o net_cls xxx /mnt
- # mkdir /mnt/0
+From: Willy Tarreau <w@1wt.eu>
+Date: Wed, 4 Feb 2009 07:19:47 +0100
 
-This showed up immediately:
- BUG: MAX_LOCKDEP_SUBCLASSES too low!
- turning off the locking correctness validator.
+> On Tue, Feb 03, 2009 at 04:47:34PM -0800, David Miller wrote:
+> > From: Willy Tarreau <w@1wt.eu>
+> > Date: Tue, 3 Feb 2009 13:25:35 +0100
+> > 
+> > > Well, FWIW, I've always observed better performance with 4k MTU (4080 to
+> > > be precise) than with 9K, and I think that the overhead of allocating 3
+> > > contiguous pages is a major reason for this.
+> > 
+> > With what hardware?  If it's with myri10ge, that driver uses page
+> > frags so would not be using 3 contiguous pages even for jumbo frames.
+> 
+> Yes myri10ge for the optimal 4080, but with e1000 too (though I don't
+> remember the exact optimal value, I think it was slightly lower).
+> 
+> For the myri10ge, could this be caused by the cache footprint then ?
+> I can also retry with various values between 4 and 9k, including
+> values close to 8k. Maybe the fact that 4k is better than 9 is
+> because we get better filling of all pages ?
 
-It's caused by the cgroup hierarchy lock:
-	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
-		struct cgroup_subsys *ss = subsys[i];
-		if (ss->root == root)
-			mutex_lock_nested(&ss->hierarchy_mutex, i);
-	}
+Looking quickly, myri10ge's buffer manager is incredibly simplistic so
+it wastes a lot of memory and gives terrible cache behavior.
 
-Now we have 9 cgroup subsystems, and the above 'i' for net_cls is 9, but
-MAX_LOCKDEP_SUBCLASSES is 8.
+When using JUMBO MTU it just gives whole pages to the chip.
 
-This patch uses different lockdep keys for different subsystems.
+So it looks like, assuming 4096 byte PAGE_SIZE and 9000 byte
+jumbo MTU, the chip will allocate for a full size frame:
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- include/linux/cgroup.h |    1 +
- kernel/cgroup.c        |    3 ++-
- 2 files changed, 3 insertions(+), 1 deletions(-)
+	FULL PAGE
+	FULL PAGE
+	FULL PAGE
 
-diff --git a/include/linux/cgroup.h b/include/linux/cgroup.h
-index e4e8e11..499900d 100644
---- a/include/linux/cgroup.h
-+++ b/include/linux/cgroup.h
-@@ -378,6 +378,7 @@ struct cgroup_subsys {
- 	 * - initiating hotplug events
- 	 */
- 	struct mutex hierarchy_mutex;
-+	struct lock_class_key subsys_key;
- 
- 	/*
- 	 * Link to parent, and list entry in parent's children.
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 5a54ff4..e14db9c 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -2351,7 +2351,7 @@ static void cgroup_lock_hierarchy(struct cgroupfs_root *root)
- 	for (i = 0; i < CGROUP_SUBSYS_COUNT; i++) {
- 		struct cgroup_subsys *ss = subsys[i];
- 		if (ss->root == root)
--			mutex_lock_nested(&ss->hierarchy_mutex, i);
-+			mutex_lock(&ss->hierarchy_mutex);
- 	}
- }
- 
-@@ -2637,6 +2637,7 @@ static void __init cgroup_init_subsys(struct cgroup_subsys *ss)
- 	BUG_ON(!list_empty(&init_task.tasks));
- 
- 	mutex_init(&ss->hierarchy_mutex);
-+	lockdep_set_class(&ss->hierarchy_mutex, &ss->subsys_key);
- 	ss->active = 1;
- }
- 
--- 
-1.5.4.rc3
+and only ~1K of that last full page will be utilized.
 
+The headers will therefore always land on the same cache lines,
+and PAGE_SIZE-~1K will be wasted.
 
-
+Whereas for < PAGE_SIZE mtu selections, it will give MTU sized
+blocks to the chip for packet data allocation.
