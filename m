@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760821AbZBEArw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759176AbZBEAyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760821AbZBEArw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 19:47:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbZBEArn
+	id S1759176AbZBEAyR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 19:54:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZBEAyC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 19:47:43 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:48985 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752721AbZBEArm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 19:47:42 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 7/7] PCI PM: Let the core be more careful with respect to drivers using new framework
-Date: Thu, 5 Feb 2009 01:47:01 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>
-References: <200902040154.36018.rjw@sisk.pl> <200902040209.08633.rjw@sisk.pl> <1233713153.16867.143.camel@pasglop>
-In-Reply-To: <1233713153.16867.143.camel@pasglop>
+	Wed, 4 Feb 2009 19:54:02 -0500
+Received: from out4.smtp.messagingengine.com ([66.111.4.28]:51692 "EHLO
+	out4.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752729AbZBEAyA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 19:54:00 -0500
+Date: Thu, 5 Feb 2009 09:22:57 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Norbert Preining <preining@logic.at>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
+Message-ID: <20090204222256.GA6954@brong.net>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain> <20090204181109.GR21085@gamma.logic.tuwien.ac.at> <alpine.LFD.2.00.0902041012440.3247@localhost.localdomain> <20090204185606.GA12991@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902050147.02632.rjw@sisk.pl>
+In-Reply-To: <20090204185606.GA12991@elte.hu>
+Organization: brong.net
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009, Benjamin Herrenschmidt wrote:
-> 
-> > For non-bridge devices without drivers the PCI PM core will disable
-> > them and save their state on suspend.  During resume, it will put
-> > them into D0, if necessary, restore their state (early) and reenable
-> > them.
-> 
-> This is "without drivers" only or does it include devices that have a
-> driver and no PM ops ?
+On Wed, Feb 04, 2009 at 07:56:06PM +0100, Ingo Molnar wrote:
+>    [...] it is a natural reaction: 
+>    they only see the small trivial annoyance they intruduce themselves - 
+>    which is in a code area and usecase they are prominently familiar with, 
+>    so they cannot personally relate to the trouble that users go through if 
+>    they hit such issues.
 
-It includes devices with drivers and without PM ops (either "legacy" or "new"),
-the idea being that in the simplest cases the driver should not be required to
-implement PM ops and the device should be handled nevertheless.
+Amen.  Preach it.  I spent quite a while just a week ago arguing that
+every semi-loaded machine out there using epoll should not require the
+admin to discover that their previously happy software stack was
+suddenly hitting an artificially tiny per-user instances count.
 
-> In the later case, the worry is that the driver will potentially still
-> take shared interrupts after you have disabled the device. I know the
-> normal disable path only disables bus mastering, which is a GOOD
-> thing :-) but the pcibios hook might do more here ...
+Luckily I was able to find multiple blog posts and mailing list archives
+with people who had literally spent _days_ tracking down why things had
+broken for them when they upgraded to a new -stable kernel.
 
-I don't know about ppc, but on x86 the pcibios hook is only supposed to
-disable the device's interrupt link.
+You really do have to assume that your users don't have time for this
+shit.  Anything that really can't DTRT automatically needs to be covered
+with plenty of easy to follow instructions on how to fix the problem -
+because for someone unfamiliar with that area of the system it really 
+does take enormous effort to track down what's changed.
 
-> I would recommend only doing that disabling in the "noirq" phase of
-> suspend to avoid problems here. Do you see any reason that wouldn't
-> work ?
-
-Potentially, calling into the AML interpreter.
-
-When we implement the changes discussed in the "PCI PM: Restore standard
-config registers of all devices early" thread, that part will end up in
-suspend_noirq.
-
-Thanks,
-Rafael
+Bron.
