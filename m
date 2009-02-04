@@ -1,142 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764300AbZBDTIG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758581AbZBDTLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764300AbZBDTIG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:08:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761249AbZBDS4q
+	id S1758581AbZBDTLe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:11:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751471AbZBDTLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:56:46 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34652 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761242AbZBDS4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:56:44 -0500
-Date: Wed, 4 Feb 2009 19:56:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Norbert Preining <preining@logic.at>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
-Message-ID: <20090204185606.GA12991@elte.hu>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain> <20090204181109.GR21085@gamma.logic.tuwien.ac.at> <alpine.LFD.2.00.0902041012440.3247@localhost.localdomain>
+	Wed, 4 Feb 2009 14:11:24 -0500
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:5335 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751046AbZBDTLX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 14:11:23 -0500
+X-IronPort-AV: E=Sophos;i="4.37,380,1231113600"; 
+   d="scan'208";a="133034273"
+From: Roland Dreier <rdreier@cisco.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Eli Cohen <eli@mellanox.co.il>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
+	<1233712248.16867.131.camel@pasglop>
+	<20090203211329.d6190a08.akpm@linux-foundation.org>
+	<aday6wmn2vr.fsf@cisco.com>
+	<20090203222601.747ca8b7.akpm@linux-foundation.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 04 Feb 2009 11:11:22 -0800
+In-Reply-To: <20090203222601.747ca8b7.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Tue, 3 Feb 2009 22:26:01 -0800")
+Message-ID: <adad4dym2zp.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902041012440.3247@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 04 Feb 2009 19:11:22.0583 (UTC) FILETIME=[5E205E70:01C986FC]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ > >  > 	huge_page_size(page_hstate(page))
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+ > > That would suit.  I assume the intention is for that to be usable by
+ > > driver modules on any architecture?
 
-> On Wed, 4 Feb 2009, Norbert Preining wrote:
-> > 
-> > The problem is that if you have a configuration under 2.6.28 without 
-> > CONFIG_FB and just call make oldconfig, or even make config and don't 
-> > know that you loose the DRM. And I was using make oldconfig (there is a 
-> > graphical config?? ;-))
-> 
-> Sure. It's inconvenient, no question about that. I asked the i915 people 
-> to look into not requiring CONFIG_FB, and I hope they will, but my point 
-> is that I don't think we can consider "small one-time inconvenience" to be 
-> a "regression".
+ > erm, you overestimate the amount of planning and forethought which goes
+ > into these things ;)
 
-if you mean that as a general principle, there's four very real downsides in 
-my opinion.
+ > The lack of any EXPORT_SYMBOL(size_to_hstate) is a broadish hint.
 
-Firstly, we could have done better (and still can do better), via various 
-easy and non-intrusive measures:
+Heh.  Looking into the implementation, it seems that I could actually do
 
-   - We could add a runtime warning:
+	PAGE_SIZE << compound_order(page)
 
-      for example a WARN_ONCE("please enable CONFIG_DRM_I915 and CONFIG_FB") 
-      that there's no DRM because CONFIG_FB is not selected and oldconfig 
-      loses the I915 setting silently - placed in a key DRM ioctl, would 
-      have gone a long way addressing the issue. Testers do notice kernel 
-      warnings that pop up when their X gets slow. (This approach might also 
-      have the added bonus of warning folks who enable the wrong driver for 
-      the hardware.)
+directly (since there's no reason to go from size to hstate and back to
+size.  I don't know all the details of these VM internals, but that
+seems to only work on the first (small) page of a giant page?  Which
+causes problems for what we're trying to do here...
 
-   - Or we could add a more thoughtful Kconfig migration:
+To summarize the goal, we are mapping user memory to a device that has
+its own page tables, where the device's page tables can also use
+multiple page sizes.  Using big pages on the device leads to similar
+efficiencies as hugetlb pages do on the CPU, and in fact if a user has
+used hugetlb pages for the memory they're giving to the device, that's a
+very strong hint that the device should use big pages too.
 
-      Rename DRM_I915 to DRM_I915_FB [which it really is now], and keep
-      DRM_I915 as a non-interactive migration helper: if set, it 
-      auto-selects both FB and DRM_I915_FB.
+But one valid situation we have to handle in the driver is if, say,
+userspace has a hugetlb mapped at virtual address 0x200000, and wants to
+map 0x80000 bytes at 0x280000 to the device.  In that case, we're going
+to do essentially
 
-      While CONFIG_FB is an interactive Kconfig option so a select can be 
-      dangerous to a correct dependency tree, it seems safe to do in this 
-      specific case because it seems to be a rather leaf entry with no 
-      dependencies.
+	get_user_pages(..., 0x280000, 0x80000 / PAGE_SIZE, ...)
 
-Sure, upgrading systems and following development is never easy and well 
-structured brains are in heavy demand in any case - but we should really 
-engineer things so that people spend time on reporting _real_ regressions - 
-and not waste their time and energy on self-inflicted wounds.
+and get_user_pages() is going to give us a bunch of normal PAGE_SIZE
+pages starting at offset 0x800000 within the compound page that makes up
+the huge page mapped at 0x200000.
 
-The four very real downsides are:
+get_user_pages() also gives us the vma back, and we can see from
+is_vm_hugetlb_page() (-- BTW can I just say that a function
+is_xxx_page() that operates on vmas is horribly misnamed --) that these
+pages all come from a hugetlb mapping, but figuring out the size of that
+mapping is I guess a challenge.
 
-1) I dont think it's honest to make an artificial distinction between a 
-   user-visible bug that can be fixed via a one-time tweak to a .config, and 
-   a user-visible bug that can be fixed via a one-time upgrade to a fixed 
-   kernel.
-
-   As far as the tester is involved the two are largely the same, and both 
-   were caused by this shiny new 'upstream kernel' thing they just tested.
-
-   Yes, to us developers there's a fundamental difference because one is a
-   fix in the code the other is a change in the environment - but the user
-   really doesnt make that distinction - both are largely black boxes to
-   them.
-
-   Also, it can actually get _worse_ than a regression: if it gets declared
-   a feature/annoyance and no action is taken - then it's an unfixed bug and
-   that's far worse than even the painful memory of a fixed bug.
-
-2) Furthermore, many testers dont touch early -rcs because they know they
-   have rough edges. So it's a linearly ongoing cost beyond -rc1.
-
-3) It's not the individual small annoyances that matter but the sheer sum of 
-   of such annoyances when migrating from one kernel to another. I still
-   struggle with some of such issues myself when testing back to some old 
-   kernel and keep wasting time on it - again and again. Keeping oldconfig 
-   compatibility is really a prime-type quality of Linux kernel testing i 
-   think.
-
-   Especially a casual tester will be discouraged by such an experience:
-   and more so if it's clearly avoidable via a few trivial tweaks - and the 
-   tester senses this 'ease of fix' intuitively and gets a "not a bug" 
-   pushback.
-
-4) Also, some maintainers are using every excuse they can find to not have 
-   to keep 'make oldconfig' compatibility. That is not because they
-   are lazy, embarrased and defensive or evil, but it is a natural reaction: 
-   they only see the small trivial annoyance they intruduce themselves - 
-   which is in a code area and usecase they are prominently familiar with, 
-   so they cannot personally relate to the trouble that users go through if 
-   they hit such issues.
-
-   But the thing is, we've got dozens and dozens of critical subsystems, and 
-   if each one does just a single such stupid looking tiny thing in a kernel 
-   cycle it mounts up to a real force. The sheer size of Linux is a real 
-   multiplicator factor here IMO. The moment Linus condones it the precedent 
-   is set and everyone will just say "others do it too every now and then 
-   and Linus doesnt mind so buzz off".
-
-In my experience the sum of such small stupid careless migration annoyances 
-during upgrades snowballs way too much in practice, and it has become the 
-main vector along which we lose good testers - so i am never shy to flame 
-folks if they introduce such issues ;-) YMMV.
-
-</soapbox ;) >
-
-	Ingo
+ - R.
