@@ -1,107 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbZBDVZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760396AbZBDV0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760109AbZBDVZl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 16:25:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZBDVZb
+	id S1760396AbZBDV0N (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 16:26:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbZBDVZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 16:25:31 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51417 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752261AbZBDVZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 16:25:30 -0500
-Date: Wed, 4 Feb 2009 22:25:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ed Swierk <eswierk@aristanetworks.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lenb@kernel.org, linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] Detect mmconfig on nVidia MCP55
-Message-ID: <20090204212517.GM22608@elte.hu>
-References: <1233765552.16414.6.camel@localhost.localdomain> <86802c440902041212q51f2a444l84e1ac29ee6f702e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <86802c440902041212q51f2a444l84e1ac29ee6f702e@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 4 Feb 2009 16:25:54 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36079 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753550AbZBDVZx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 16:25:53 -0500
+Date: Wed, 4 Feb 2009 13:25:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: jeremy@goop.org, jaswinderrajput@gmail.com, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org, x86@kernel.org, righi.andrea@gmail.com
+Subject: Re: mmotm 2009-02-02-17-12 uploaded (x86/nopmd etc.)
+Message-Id: <20090204132529.4b77dd4a.akpm@linux-foundation.org>
+In-Reply-To: <20090204200846.GF22608@elte.hu>
+References: <200902030112.n131CNiq010549@imap1.linux-foundation.org>
+	<498893C8.6080506@oracle.com>
+	<20090203191804.GA24698@elte.hu>
+	<20090203121706.423d5cab.akpm@linux-foundation.org>
+	<20090203212538.GB20527@elte.hu>
+	<20090203134128.37042ea8.akpm@linux-foundation.org>
+	<20090204200846.GF22608@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 4 Feb 2009 21:08:46 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> On Wed, Feb 4, 2009 at 8:39 AM, Ed Swierk <eswierk@aristanetworks.com> wrote:
-> > Detect and enable memory-mapped PCI configuration space on the nVidia
-> > MCP55 southbridge even if the ACPI MCFG table is missing or wrong.
-> >
-> > Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
-> >
-> > ---
-> > Index: linux-2.6.27.4/arch/x86/pci/mmconfig-shared.c
-> > ===================================================================
-> > --- linux-2.6.27.4.orig/arch/x86/pci/mmconfig-shared.c
-> > +++ linux-2.6.27.4/arch/x86/pci/mmconfig-shared.c
-> > @@ -155,6 +155,26 @@ static const char __init *pci_mmcfg_amd_
-> >        return "AMD Family 10h NB";
-> >  }
-> >
-> > +static const char __init *pci_mmcfg_nvidia_mcp55(void)
-> > +{
-> > +       u32 extcfg;
-> > +
-> > +       raw_pci_ops->read(0, 0, PCI_DEVFN(0, 0), 0x90, 4, &extcfg);
-> > +
-> > +       if (!(extcfg & 0x80000000))
-> > +               return NULL;
-> > +       pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]), GFP_KERNEL);
-> > +       if (!pci_mmcfg_config)
-> > +               return NULL;
-> > +       pci_mmcfg_config[0].address = (extcfg & 0x00007fff) << 25;
-> > +       pci_mmcfg_config[0].pci_segment = 0;
-> > +       pci_mmcfg_config[0].start_bus_number = 0;
-> > +       pci_mmcfg_config[0].end_bus_number = (1 << (8 - ((extcfg >> 28) & 3))) - 1;
-> > +       pci_mmcfg_config_num = 1;
-> > +
-> > +       return "nVidia MCP55";
-> > +}
-> > +
-> >  struct pci_mmcfg_hostbridge_probe {
-> >        u32 bus;
-> >        u32 devfn;
-> > @@ -172,6 +192,8 @@ static struct pci_mmcfg_hostbridge_probe
-> >          0x1200, pci_mmcfg_amd_fam10h },
-> >        { 0xff, PCI_DEVFN(0, 0), PCI_VENDOR_ID_AMD,
-> >          0x1200, pci_mmcfg_amd_fam10h },
-> > +       { 0, PCI_DEVFN(0, 0), PCI_VENDOR_ID_NVIDIA,
-> > +         0x0369, pci_mmcfg_nvidia_mcp55 },
 > 
-> may break amd family 10h + mcp55 system. because some system have setting 
-> in AMD cpu and mcp55 it will find setting in CPU nb, and your code will 
-> partially overwrite those setting.
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > > > This is getting painful.
+> > > 
+> > > the include file spaghetti is ... interesting there, and it's historic.
+> > > 
+> > > I could blame it on highmem, PAE or paravirt - but i'll only blame it on 
+> > > paravirt for now because those developers are still around! ;-)
+> > > 
+> > > Jeremy, any ideas how to reduce the historic dependency mess in that area?
+> > > I think we should go on three routes at once:
+> > > 
+> > >  - agressive splitup and separation of type definitions from method
+> > >    declaration (+ inline definitions). The spinlock_types.h / spinlock.h 
+> > >    splitup was really nice in solving such dependency problems.
+> > 
+> > I like this one.  The mixing up of declare-something with use-something
+> > is often the source of our woes.
+> 
+> yes. I mapped this problem area once and this is how the include file 
+> spaghetti gets generated in practice:
+> 
+>   - type A gets declared
+>   - type A gets _used_ in the same file in an inline method, BUT,
+> 
+>       that usage also brings in instantiated use of type X1, X2 and X3.
+> 
+> if all types are declared like that everywhere, it can be seen (and it's a 
+> mathematical certainty) that the only conflict-free way of doing this is to:
+> 
+>   - initially add random #include lines to bring in type X1, X2 and X3. 
+>     Which brings in recursive dependencies from those X1 X2 and X3 files.
+> 
+>   - when the stuff hits the fan then folks are in a big mess already and 
+>     only a deep restructuring could gets them out of it - which they rarely 
+>     do in an iterative environment. So they work it around iteratively: 
+>     instead of new nice inline methods [which we really prefer] they delay 
+>     all the 'usage' instantiation to .c file via the use of CPP macros 
+>     [which we hate because they hide bugs and cause bugs].
 
-That's a good point ...
+None of which would happen if we didn't also have an inlining fetish.
 
-We could do something like:
-
-	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
-		boot_cpu_data.x86 >= 0x10) {
-		u64 mmconf_val;
-
-		rdmsrl(MSR_FAM10H_MMIO_CONF_BASE, mmconf_val);
-		if (mmconf_val & FAM10H_MMIO_CONF_ENABLE)
-			return;
-	}
-
-To detect enabled on-CPU mmconf support. We could even put this into a 
-helper function as other places might want to use it too.
-
-	Ingo
