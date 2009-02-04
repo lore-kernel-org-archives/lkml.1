@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbZBDSwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbZBDSxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760743AbZBDSwu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:52:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761363AbZBDStJ
+	id S1762151AbZBDSxg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:53:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761358AbZBDStL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:09 -0500
-Received: from kroah.org ([198.145.64.141]:34296 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:11 -0500
+Received: from kroah.org ([198.145.64.141]:34340 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755098AbZBDStD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:03 -0500
-Date: Wed, 4 Feb 2009 10:45:56 -0800
+	id S1760280AbZBDStH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:07 -0500
+Date: Wed, 4 Feb 2009 10:46:04 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,14 +22,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mark Lord <mlord@pobox.com>,
-       Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 04/41] sata_mv: fix 8-port timeouts on 508x/6081 chips
-Message-ID: <20090204184556.GE25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>
+Subject: [patch 08/41] Fix memory corruption in console selection
+Message-ID: <20090204184604.GI25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="sata_mv-fix-8-port-timeouts-on-508x-6081-chips.patch"
+Content-Disposition: inline; filename="fix-memory-corruption-in-console-selection.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -40,32 +39,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mark Lord <liml@rtr.ca>
+From: Mikulas Patocka <mpatocka@redhat.com>
 
-commit b0bccb18bc523d1d5060d25958f12438062829a9 upstream.
+commit 878b8619f711280fd05845e21956434b5e588cc4 upstream.
 
-Fix a longstanding bug for the 8-port Marvell Sata controllers (508x/6081),
-where accesses to the upper 4 ports would cause lost-interrupts / timeouts
-for the lower 4-ports.  With this patch, the 6081 boards should finally be
-reliable enough for mainstream use with Linux.
+Fix an off-by-two memory error in console selection.
 
-Signed-off-by: Mark Lord <mlord@pobox.com>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+The loop below goes from sel_start to sel_end (inclusive), so it writes
+one more character.  This one more character was added to the allocated
+size (+1), but it was not multiplied by an UTF-8 multiplier.
+
+This patch fixes a memory corruption when UTF-8 console is used and the
+user selects a few characters, all of them 3-byte in UTF-8 (for example
+a frame line).
+
+When memory redzones are enabled, a redzone corruption is reported.
+When they are not enabled, trashing of random memory occurs.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/sata_mv.c |    2 +-
+ drivers/char/selection.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -883,7 +883,7 @@ static void mv_start_dma(struct ata_port
- 		struct mv_host_priv *hpriv = ap->host->private_data;
- 		int hardport = mv_hardport_from_port(ap->port_no);
- 		void __iomem *hc_mmio = mv_hc_base_from_port(
--					mv_host_base(ap->host), hardport);
-+					mv_host_base(ap->host), ap->port_no);
- 		u32 hc_irq_cause, ipending;
+--- a/drivers/char/selection.c
++++ b/drivers/char/selection.c
+@@ -268,7 +268,7 @@ int set_selection(const struct tiocl_sel
  
- 		/* clear EDMA event indicators, if any */
+ 	/* Allocate a new buffer before freeing the old one ... */
+ 	multiplier = use_unicode ? 3 : 1;  /* chars can take up to 3 bytes */
+-	bp = kmalloc((sel_end-sel_start)/2*multiplier+1, GFP_KERNEL);
++	bp = kmalloc(((sel_end-sel_start)/2+1)*multiplier, GFP_KERNEL);
+ 	if (!bp) {
+ 		printk(KERN_WARNING "selection: kmalloc() failed\n");
+ 		clear_selection();
 
