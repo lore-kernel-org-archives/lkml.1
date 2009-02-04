@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760538AbZBEADW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760781AbZBEADj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760538AbZBEADW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 19:03:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZBEADI
+	id S1760781AbZBEADj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 19:03:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbZBEADN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 19:03:08 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:33735 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752770AbZBEADG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 19:03:06 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 4 Feb 2009 16:02:45 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: mtk.manpages@gmail.com
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-api@vger.kernel.org
-Subject: Re: [patch/rfc] eventfd semaphore-like behavior
-In-Reply-To: <cfd18e0f0902041559l4c40d9b6k704068337a00df7a@mail.gmail.com>
-Message-ID: <alpine.DEB.1.10.0902041600170.6214@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>  <20090204150507.665b5b7c.akpm@linux-foundation.org>  <alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>  <20090204152434.c8f65d52.akpm@linux-foundation.org> 
- <alpine.DEB.1.10.0902041526590.6214@alien.or.mcafeemobile.com>  <20090204155514.6abbdc8f.akpm@linux-foundation.org> <cfd18e0f0902041559l4c40d9b6k704068337a00df7a@mail.gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 4 Feb 2009 19:03:13 -0500
+Received: from kroah.org ([198.145.64.141]:45766 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757678AbZBEADM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 19:03:12 -0500
+Date: Wed, 4 Feb 2009 15:59:49 -0800
+From: Greg KH <greg@kroah.com>
+To: Dave Young <hidave.darkstar@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] usb-serial : fix the nousb oops
+Message-ID: <20090204235949.GA300@kroah.com>
+References: <49857F23.3090208@gmail.com> <20090201155117.GA10018@kroah.com> <a8e1da0902011743o47764edfjf53a397b5a4aeeef@mail.gmail.com> <20090203235814.GA22380@kroah.com> <a8e1da0902031710u2ebd69b0r4de5916fab2d3cba@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8e1da0902031710u2ebd69b0r4de5916fab2d3cba@mail.gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009, Michael Kerrisk wrote:
-
-> > Dunno.  Probably try the syscall and see if it returned -EINVAL.  Does
-> > that work in this case?
+On Wed, Feb 04, 2009 at 09:10:20AM +0800, Dave Young wrote:
+> remove wgreathouse@smva.com in cc-list because this mail will be
+> rejected by the smva.com email server.
 > 
-> As youll have seen by now, Ulrich and I noted that it works.
+> On Wed, Feb 4, 2009 at 7:58 AM, Greg KH <greg@kroah.com> wrote:
+> > On Mon, Feb 02, 2009 at 09:43:04AM +0800, Dave Young wrote:
+> >> On Sun, Feb 1, 2009 at 11:51 PM, Greg KH <greg@kroah.com> wrote:
+> >> > On Sun, Feb 01, 2009 at 06:53:23PM +0800, Dave Young wrote:
+> >> >>
+> >> >> In case with "nousb" booting, serial drivers will trigger kernel oops.
+> >> >
+> >> > They will?  What is the oops message?
+> >>
+> >> Yes, they will, at lease I saw usb_serial/aircable/ftdi_sio oops. I
+> >> will manage to copy the oops message later.
+> >>
+> >> >
+> >> >> Here add usb_disabled() check in usb_serial_init and usb_serial_register
+> >> >
+> >> > This is odd, is it something new?  Why is usb-serial the only driver
+> >> > that needs such a thing?
+> >>
+> >> No, it is not new thing.  usb serial drivers normally call
+> >> usb_serial_register first, then usb_register, usb_register will fail
+> >> due to "nousb" checking, but usb_serial_register no.
+> >
+> > But as usb_register will fail, shouldn't they properly back out and no
+> > oopses happen?  This sounds like a simple fix to the drivers that are
+> > failing here, not changing the usb-serial core.
 > 
-> > If so, it would be sensible to mention this in
-> > the description somewhere as the approved probing method and to
-> > maintain it.
+> Hi greg
 > 
-> I'll add something to the man page, as this patch progresses.
+> I think all usb serial drivers which call usb_serial_register will
+> oops, so IMHO usb core should be fixed.
+> 
+> I think maybe you missed my another reply, copy the content here again.
 
-I see we already have stuff like this inside the man pages:
+No, I got it.
 
-O_CLOEXEC (Since Linux 2.6.23)
-          Enable the close-on-exec flag for the new file descriptor.  
-          ...
+I'm more interested in why usb-serial is oopsing, as it should't be.
 
-Maybe a similar note for the new flag?
+> ---
+> hand copy part of the oops message:
 
+Can you take a picture of the oops?
 
+thanks,
 
-- Davide
-
-
+greg k-h
