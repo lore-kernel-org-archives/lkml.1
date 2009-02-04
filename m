@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZBDOWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755151AbZBDO1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbZBDOWi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 09:22:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZBDOUJ
+	id S1755151AbZBDO1Z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 09:27:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751482AbZBDO1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 09:20:09 -0500
-Received: from mba.ocn.ne.jp ([122.1.235.107]:57901 "EHLO smtp.mba.ocn.ne.jp"
+	Wed, 4 Feb 2009 09:27:15 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:34249 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752688AbZBDOUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 09:20:06 -0500
-Date: Wed, 04 Feb 2009 23:20:06 +0900 (JST)
-Message-Id: <20090204.232006.01916235.anemo@mba.ocn.ne.jp>
-To: bzolnier@gmail.com
-Cc: geert@linux-m68k.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, apw@canonical.com
-Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <200902021927.25177.bzolnier@gmail.com>
-References: <20090201174916.19144.11318.sendpatchset@localhost.localdomain>
-	<Pine.LNX.4.64.0902020847410.11930@anakin>
-	<200902021927.25177.bzolnier@gmail.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	id S1751050AbZBDO1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 09:27:14 -0500
+Date: Wed, 4 Feb 2009 15:26:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Zachary Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Ravikiran Thirumalai <kiran@scalemp.com>
+Subject: Re: [PATCH 0 of 7] x86/paravirt: optimise pvop calls and register
+	use
+Message-ID: <20090204142648.GF4411@elte.hu>
+References: <patchbomb.1233182100@abulafia.goop.org> <49815764.6040809@kernel.org> <49817C26.2020503@goop.org> <4983DBC9.5080701@kernel.org> <20090131161240.GA3014@elte.hu> <20090204021023.GA30736@elte.hu> <4988FA82.3030905@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4988FA82.3030905@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2 Feb 2009 19:27:25 +0100, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
-> > > +#include <asm/ide.h>
-> > 
-> > Did you try checkpatch.pl?
-> 
-> Sure.
-> 
-> This driver uses stuff from <asm-mips/ide.h>.
-> 
-> [ I guess I could put '-mips' there to silence warnings on tx493{8,9}.c,
->   however I don't know of the way to get rid of ide-io-std.c's one... ]
 
-BTW, tx4939ide_{in,out}put_data_swap and
-tx4939ide_{in,out}put_data_swap do exactly same thing.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-If byte-swapped version of ide_{in,out}put_data() were available by
-ide core, they can be used instead.  The byte-swapped version of
-default_tp_ops would much helps such queer big-endian platforms.  Is
-it worth to bloat ide core? ;-)
+> Ingo Molnar wrote:
+>> x86/paravirt is causing boot trouble on a 32-bit box - it reboots 
+>> during early bootup (it's a laptop so no easy access to its crashlog - 
+>> if there's any).
+>>
+>> config attached.
+>
+> HPA just applied a patch which will likely fix this.   
+> 0eb592dbba40baebec9cdde3ff4574185de6cbcc
 
----
-Atsushi Nemoto
+thanks! Will need about 24 hours until i know for sure - the test-box that 
+is affected by this bug triggers the problem every 10 hours or so.
+
+	Ingo
