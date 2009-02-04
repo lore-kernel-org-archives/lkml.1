@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762107AbZBDSxK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762207AbZBDSxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762107AbZBDSxK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:53:10 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761284AbZBDStK
+	id S1762207AbZBDSxx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:53:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760256AbZBDStN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:10 -0500
-Received: from kroah.org ([198.145.64.141]:34333 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:13 -0500
+Received: from kroah.org ([198.145.64.141]:34314 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760217AbZBDStG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:06 -0500
-Date: Wed, 4 Feb 2009 10:46:02 -0800
+	id S1758767AbZBDStF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:05 -0500
+Date: Wed, 4 Feb 2009 10:46:00 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,15 +22,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Risto Suominen <Risto.Suominen@gmail.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [patch 07/41] fbdev/atyfb: Fix DSP config on some PowerMacs &
-	PowerBooks
-Message-ID: <20090204184602.GH25246@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Scott Kilau <Scott.Kilau@digi.com>,
+       Paul Larson <pl@linux.vnet.ibm.com>
+Subject: [patch 06/41] Add enable_ms to jsm driver
+Message-ID: <20090204184600.GG25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="fbdev-atyfb-fix-dsp-config-on-some-powermacs-powerbooks.patch"
+Content-Disposition: inline; filename="add-enable_ms-to-jsm-driver.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,55 +40,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Risto Suominen <Risto.Suominen@gmail.com>
+From: Paul Larson <pl@linux.vnet.ibm.com>
 
-commit 7fbb7cadd062baf299fd8b26a80ea99da0c3fe01 upstream.
+commit 0461ec5bc7745b89a8ab67ba0ea497abd58a6301 upstream.
 
-Since the complete re-write in 2.6.10, some PowerMacs (At least PowerMac 5500
-and PowerMac G3 Beige rev A) with ATI Mach64 chip have suffered from unstable
-columns in their framebuffer image. This seems to depend on a value (4) read
-from PLL_EXT_CNTL register, which leads to incorrect DSP config parameters to
-be written to the chip. This patch uses a value calculated by aty_init_pll_ct
-instead, as a starting point.
+This fixes a crash observed when non-existant enable_ms function is
+called for jsm driver.
 
-There are questions as to whether this should be extended to other platforms
-or maybe made dependent on specific chip types, but in the meantime, this has
-been tested on various powermacs and works for them so let's commit it.
-
-Signed-off-by: Risto Suominen <Risto.Suominen@gmail.com>
-Tested-by: Michael Pettersson <mike@it.uu.se>
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Scott Kilau <Scott.Kilau@digi.com>
+Signed-off-by: Paul Larson <pl@linux.vnet.ibm.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/video/aty/mach64_ct.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ drivers/serial/jsm/jsm_tty.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/drivers/video/aty/mach64_ct.c
-+++ b/drivers/video/aty/mach64_ct.c
-@@ -8,6 +8,9 @@
- #include <asm/io.h>
- #include <video/mach64.h>
- #include "atyfb.h"
-+#ifdef CONFIG_PPC
-+#include <asm/machdep.h>
-+#endif
+--- a/drivers/serial/jsm/jsm_tty.c
++++ b/drivers/serial/jsm/jsm_tty.c
+@@ -161,6 +161,11 @@ static void jsm_tty_stop_rx(struct uart_
+ 	channel->ch_bd->bd_ops->disable_receiver(channel);
+ }
  
- #undef DEBUG
- 
-@@ -536,6 +539,14 @@ static int __devinit aty_init_pll_ct(con
- 	pll->ct.xclk_post_div_real = postdividers[xpost_div];
- 	pll->ct.mclk_fb_div = q * pll->ct.xclk_post_div_real / 8;
- 
-+#ifdef CONFIG_PPC
-+	if (machine_is(powermac)) {
-+		/* Override PLL_EXT_CNTL & 0x07. */
-+		pll->ct.xclk_post_div = xpost_div;
-+		pll->ct.xclk_ref_div = 1;
-+	}
-+#endif
++static void jsm_tty_enable_ms(struct uart_port *port)
++{
++	/* Nothing needed */
++}
 +
- #ifdef DEBUG
- 	pllmclk = (1000000 * pll->ct.mclk_fb_mult * pll->ct.mclk_fb_div) /
- 			(par->ref_clk_per * pll->ct.pll_ref_div);
+ static void jsm_tty_break(struct uart_port *port, int break_state)
+ {
+ 	unsigned long lock_flags;
+@@ -345,6 +350,7 @@ static struct uart_ops jsm_ops = {
+ 	.start_tx	= jsm_tty_start_tx,
+ 	.send_xchar	= jsm_tty_send_xchar,
+ 	.stop_rx	= jsm_tty_stop_rx,
++	.enable_ms	= jsm_tty_enable_ms,
+ 	.break_ctl	= jsm_tty_break,
+ 	.startup	= jsm_tty_open,
+ 	.shutdown	= jsm_tty_close,
 
