@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762786AbZBDS72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbZBDS7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762786AbZBDS72 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:59:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761286AbZBDSta
+	id S1761647AbZBDS7q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:59:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761402AbZBDStb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:49:30 -0500
-Received: from kroah.org ([198.145.64.141]:32771 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:49:31 -0500
+Received: from kroah.org ([198.145.64.141]:32780 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759329AbZBDStV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:49:21 -0500
-Date: Wed, 4 Feb 2009 10:46:30 -0800
+	id S1761122AbZBDStW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:49:22 -0500
+Date: Wed, 4 Feb 2009 10:46:32 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,18 +25,19 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, Len Brown <len.brown@intel.com>,
        Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
        Thomas Renninger <trenn@suse.de>
-Subject: [patch 21/41] cpuidle: upon BIOS bug, default to default_idle
-	rather than polling
-Message-ID: <20090204184630.GV25246@kroah.com>
+Subject: [patch 22/41] cpuidle: use last_state which can reflect the actual
+	state entered
+Message-ID: <20090204184632.GW25246@kroah.com>
 References: <20090204184029.881610776@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="cpuidle-upon-bios-bug-default-to-default_idle-rather-than-polling.patch"
+Content-Disposition: inline; filename="cpuidle-use-last_state-which-can-reflect-the-actual-state-entered.patch"
 In-Reply-To: <20090204184539.GA25246@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
 
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
@@ -44,44 +45,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-commit 89cedfefca1d446ee2598fd3bcbb23ee3802e26a upstream
+commit 887e301aa1105326f1412a98749024263b1031c7 upstream
 
-http://bugzilla.kernel.org/show_bug.cgi?id=11345
+cpuidle accounts the idle time for the C-state it was trying to enter and
+not to the actual state that the driver eventually entered. The driver may
+select a different state than the one chosen by cpuidle due to
+constraints like bus-mastering, etc.
+
+Change the time acounting code to look at the dev->last_state after
+returning from target_state->enter(). Driver can modify dev->last_state
+internally, inside the enter routine to reflect the actual C-state
+entered.
 
 Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Tested-by: Kevin Hilman <khilman@deeprootsystems.com>
 Signed-off-by: Len Brown <len.brown@intel.com>
 Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/Kconfig          |    3 +++
- drivers/cpuidle/cpuidle.c |    4 ++++
- 2 files changed, 7 insertions(+)
+ drivers/cpuidle/cpuidle.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -123,6 +123,9 @@ config GENERIC_TIME_VSYSCALL
- config ARCH_HAS_CPU_RELAX
- 	def_bool y
- 
-+config ARCH_HAS_DEFAULT_IDLE
-+	def_bool y
-+
- config ARCH_HAS_CACHE_LINE_SIZE
- 	def_bool y
- 
 --- a/drivers/cpuidle/cpuidle.c
 +++ b/drivers/cpuidle/cpuidle.c
-@@ -56,7 +56,11 @@ static void cpuidle_idle_call(void)
- 		if (pm_idle_old)
- 			pm_idle_old();
- 		else
-+#if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
-+			default_idle();
-+#else
- 			local_irq_enable();
-+#endif
- 		return;
- 	}
+@@ -71,8 +71,11 @@ static void cpuidle_idle_call(void)
+ 	target_state = &dev->states[next_state];
+ 
+ 	/* enter the state and update stats */
+-	dev->last_residency = target_state->enter(dev, target_state);
+ 	dev->last_state = target_state;
++	dev->last_residency = target_state->enter(dev, target_state);
++	if (dev->last_state)
++		target_state = dev->last_state;
++
+ 	target_state->time += (unsigned long long)dev->last_residency;
+ 	target_state->usage++;
  
 
