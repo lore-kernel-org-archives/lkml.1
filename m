@@ -1,82 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZBDTks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZBDToV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbZBDTks (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:40:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbZBDTk3
+	id S1756916AbZBDToV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:44:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754325AbZBDToI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 14:40:29 -0500
-Received: from fifo99.com ([67.223.236.141]:35379 "EHLO fifo99.com"
+	Wed, 4 Feb 2009 14:44:08 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47946 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755656AbZBDTk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 14:40:27 -0500
-Subject: Re: [PATCH NET-NEXT 01/10] clocksource: allow usage independent of
-	timekeeping.c
-From: Daniel Walker <dwalker@fifo99.com>
-To: john stultz <johnstul@us.ibm.com>
-Cc: Patrick Ohly <patrick.ohly@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1233775542.6994.13.camel@localhost.localdomain>
-References: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
-	 <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
-	 <1233756235.15119.54.camel@desktop> <1233758796.15940.198.camel@ecld0pohly>
-	 <1233760170.15119.76.camel@desktop>
-	 <1233775542.6994.13.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 11:40:21 -0800
-Message-Id: <1233776421.15119.125.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1753957AbZBDToF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 14:44:05 -0500
+Date: Wed, 4 Feb 2009 20:43:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mandeep Singh Baines <msb@google.com>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       rientjes@google.com, mbligh@google.com, thockin@google.com,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 2/2 v3] softlockup: check all tasks in hung_task
+Message-ID: <20090204194339.GB22608@elte.hu>
+References: <20090203122346.GE19979@elte.hu> <20090203205609.GA9581@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090203205609.GA9581@google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-02-04 at 11:25 -0800, john stultz wrote:
-> On Wed, 2009-02-04 at 07:09 -0800, Daniel Walker wrote:
-> > On Wed, 2009-02-04 at 15:46 +0100, Patrick Ohly wrote:
-> > > In an earlier revision of the patch I had adapted clocksource itself so
-> > > that it could be used outside of the time keeping code; John wanted me
-> > > to use these smaller structs instead that you now find in the current
-> > > patch.
-> > 
-> > Well, I think your original idea was better.. I don't think we need the
-> > duplication of underlying clocksource mechanics.
-> > 
-> > > Eventually John wants to refactor clocksource so that it uses them and
-> > > just adds additional elements in clocksource. Right now clocksource is a
-> > > mixture of different concepts. Breaking out cyclecounter and timecounter
-> > > is a first step towards that cleanup.
-> > 
-> > The problem I see is that your putting off the cleanup of struct
-> > clocksource with duplication.. It should go in reverse , you should use
-> > clocksources for your patch set. Which will motivate John to clean up
-> > the clocksource structure.
-> 
-> I strongly disagree. Misusing a established structure for unintended use
-> is just bad. What Patrick wants to use the counters for has very
-> different semantics then how clocksources are used.
 
-I don't think it's at all bad to reuse an established system like that,
-especially when the purposed one is largely duplication of the other..
-The issue is more that struct clocksource has been loaded up with too
-many timekeeping specific ornaments .. I would think a good clean up
-would be just to remove those from the structure.
+* Mandeep Singh Baines <msb@google.com> wrote:
 
-> I think having a bit of redundancy in two structures is good motivation
-> for me to clean up the clocksources to use cyclecounters.
+> +static void check_hung_rcu_refresh(struct task_struct *g, struct task_struct *t)
 
-I'm not sure what kind of clean up you have in mind. Given that
-clocksources are used across many architectures, do you really want to
-do a mass name change for all of them? Not to mention most people see
-clocksources as cycle counters , so you would just add confusion in
-addition to code flux.
+please rename this to rcu_lock_break().
 
-If your going to end up merging this new cycle counter structure with
-clocksources anyway, why wouldn't we do it now instead of doing
-temporary duplication ..
+>  	do_each_thread(g, t) {
+> -		if (!--max_count)
+> -			goto unlock;
+> +		if (!--max_count) {
+> +			max_count = sysctl_hung_task_check_count;
+> +			check_hung_rcu_refresh(g, t);
+> +			/* Exit if t or g was unhashed during refresh. */
+> +			if (t->state == TASK_DEAD || g->state == TASK_DEAD)
+> +				goto unlock;
 
-Daniel
+Thinking about it some more, i think a slightly different approach (that has 
+the same end effect):
 
+ - Add a "static const int check_count_batching = 1024;" variable that adds 
+   some natural batching - and initialize max_count to that value. There's 
+   little point to make that batching configurable.
+
+ - Leave sysctl_hung_task_check_count present but change its default to 
+   something really large like MAX_PID.
+
+Thanks,
+
+	Ingo
