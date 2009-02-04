@@ -1,59 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZBDRie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755781AbZBDRps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758037AbZBDRie (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 12:38:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZBDRiY
+	id S1755781AbZBDRps (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 12:45:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbZBDRph
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 12:38:24 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:48378 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753532AbZBDRiX (ORCPT
+	Wed, 4 Feb 2009 12:45:37 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:23951 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751572AbZBDRpg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 12:38:23 -0500
-Message-ID: <4989D17F.4030406@zytor.com>
-Date: Wed, 04 Feb 2009 09:33:51 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 4 Feb 2009 12:45:36 -0500
+Message-ID: <4989D435.7010003@oracle.com>
+Date: Wed, 04 Feb 2009 09:45:25 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>, mingo@elte.hu, x86@kernel.org,
-       sam@ravnborg.org, jirislaby@gmail.com, gregkh@suse.de,
-       davem@davemloft.net, xyzzy@speakeasy.org, mchehab@infradead.org,
-       jens.axboe@oracle.com, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>
-Subject: Re: [GIT PULL -tip] fix 22 make headers_check - 200901
-References: <20090204064307.GA18415@gondor.apana.org.au> <1233734645.3198.2.camel@localhost.localdomain> <200902041255.53264.arnd@arndb.de>
-In-Reply-To: <200902041255.53264.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>, iss_storagedev@hp.com,
+       scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: cciss: WARNING/BUG in do_cciss_intr (it's back)
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A01020A.4989D437.012F:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> 
-> I fear that the problem might be more widespread than just kvm.
-> The problem is that <linux/types.h> without __KERNEL_STRICT_NAMES
-> defines the standard types that glibc provides in its own <sys/types.h>,
-> some of them even defined differently (e.g. the size of off_t depends
-> __USE_FILE_OFFSET64).
-> 
-> Subject: introduce <linux/strict_types.h>
-> 
+Hi Mike,
 
-Actually, if anything we should move the *non* __KERNEL_STRICT_NAMES out
-of <linux/types.h> into something else, or completely deep-six them.  I
-don't know of any libc which wants these anymore, and I think they're
-just residual libc5 cruft.
+Was there any debugging code added to try to help with this problem?
+or is that the WARNING before the BUG?
 
-However, if we want <linux/extra_types.h> that's fine with me; but
-<linux/types.h> really should be clean, which means doing what
-__KERNEL_STRICT_NAMES does now.
 
-	-hpa
+Booting 2.6.29-rc3-git6 oopsed with:
 
+calling  cciss_init+0x0/0x2e [cciss] @ 733
+HP CISS Driver (v 3.6.20)
+ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54
+cciss 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) -> IRQ 54
+cciss 0000:42:08.0: irq 56 for MSI/MSI-X
+IRQ 56/cciss0: IRQF_DISABLED is not guaranteed on shared IRQs
+cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 56 using DAC
+------------[ cut here ]------------
+WARNING: at drivers/block/cciss.c:225 do_cciss_intr+0x58f/0x99a [cciss]()
+Hardware name: ProLiant BL685c G1
+Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+Pid: 0, comm: swapper Not tainted 2.6.29-rc3-git6 #1
+Call Trace:
+ <IRQ>  [<ffffffff8023a741>] warn_slowpath+0xd3/0xf2
+ [<ffffffff80243a44>] ? __mod_timer+0xc1/0xd3
+ [<ffffffff8041469f>] ? smi_timeout+0xd9/0xe5
+ [<ffffffff8024f86a>] ? ktime_get_ts+0x49/0x4e
+ [<ffffffff804145c6>] ? smi_timeout+0x0/0xe5
+ [<ffffffffa0024c4b>] do_cciss_intr+0x58f/0x99a [cciss]
+ [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57
+ [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f
+ [<ffffffff8020e302>] do_IRQ+0xdc/0x152
+ [<ffffffff8020ca13>] ret_from_intr+0x0/0xa
+ <EOI> <4>---[ end trace a8b437cd48391e28 ]---
+BUG: unable to handle kernel NULL pointer dereference at 00000000000000f4
+IP: [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss]
+PGD 0
+Oops: 0002 [#1] SMP
+last sysfs file: /sys/block/ram15/dev
+CPU 2
+Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+Pid: 0, comm: swapper Tainted: G        W  2.6.29-rc3-git6 #1
+RIP: 0010:[<ffffffffa0024c93>]  [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss]
+RSP: 0018:ffff88027f12fef0  EFLAGS: 00010046
+RAX: 0000000000000000 RBX: ffff88007f840270 RCX: 0000000000013888
+RDX: 0000000000008080 RSI: 0000000000000046 RDI: 0000000000000009
+RBP: ffff88027f12ff20 R08: 000000447f12fa70 R09: ffff88017e540700
+R10: 0000000000000000 R11: 0000000000000000 R12: ffff88007f8404b0
+R13: ffff88027e1a0000 R14: 0000000000000000 R15: 0000000000000086
+FS:  0000000000680850(0000) GS:ffff88017f121380(0000) knlGS:0000000000000000
+CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+CR2: 00000000000000f4 CR3: 0000000000201000 CR4: 00000000000006e0
+DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+Process swapper (pid: 0, threadinfo ffff88017f164000, task ffff88017fa5d4c0)
+Stack:
+ 0000000000000001 ffff88027f126280 0000000000000000 0000000000000000
+ 0000000000000038 0000000000000000 ffff88027f12ff50 ffffffff8026ed21
+ ffffffff8076e000 0000000000000038 ffff88027f126280 ffffffff8076e054
+Call Trace:
+ <IRQ> <0> [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57
+ [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f
+ [<ffffffff8020e302>] do_IRQ+0xdc/0x152
+ [<ffffffff8020ca13>] ret_from_intr+0x0/0xa
+ <EOI> <0>Code: 50 08 48 c7 83 40 02 00 00 00 00 00 00 49 c7 44 24 08 00 00 00 00 8b 83 34 02 00 00 85 c0 0f 85 49 03 00 00 4c 8b b3 50 02 00 00 <41> c7 86 f4 00 00 00 00 00 00 00 4c 8b 83 28 02 00 00 66 41 8b
+RIP  [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss]
+ RSP <ffff88027f12fef0>
+CR2: 00000000000000f4
+---[ end trace a8b437cd48391e29 ]---
+Kernel panic - not syncing: Fatal exception in interrupt
+
+
+
+This is on an HP ProLiant BL685c G1, 4-proc system with
+8 GB of RAM.  (same as previous reports)
+
+
+Rebooting worked successfully.
+
+Thanks,
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+~Randy
