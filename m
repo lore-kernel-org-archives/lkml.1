@@ -1,53 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752904AbZBDHVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZBDH1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752904AbZBDHVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 02:21:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751302AbZBDHVE
+	id S1753248AbZBDH1q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 02:27:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZBDH1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 02:21:04 -0500
-Received: from smtp119.mail.mud.yahoo.com ([209.191.84.76]:44443 "HELO
-	smtp119.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751277AbZBDHVD (ORCPT
+	Wed, 4 Feb 2009 02:27:34 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46640
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751122AbZBDH1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 02:21:03 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=2kiy1hUIrfap12ONeVcqEx7oNHF4q8djiIGsCKk96FqlLquu0GRaVkhtgqcYU3hB3u7RJECmmXLKDeOxqWmvew/p3Ub5RjKFVWrzLe6E+ikJMJ+Vi8P7Mlp3z/vW8X9EDdNse+6k3PkvDY1lTQ+GR4u3ZSk//N25MT3PpiwKLbc=  ;
-X-YMail-OSG: wssAblUVM1kcZpOaUo9t_Vl13fJFs62nq.gPsvAdODJrWTcDeYJPh5863UlDNGrLAycw48wG40yuccynkoy8UzA3Al5IfBKOBUlFEa_WLozXg4JVadwx.Kh.VSdwRy0d.c7UjKce1GALTKAFWgKScMFAtBeaKl.REiXNZD3sbI2pdHdGWN6SIAj6wo0ifw--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 2/4] Convert epoll to a bitlock
-Date: Wed, 4 Feb 2009 18:20:18 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Jonathan Corbet <corbet@lwn.net>,
-       Andrew Morton <akpm@linux-foundation.org>, mpm@selenic.com,
-       dada1@cosmosbay.com, linux-kernel@vger.kernel.org, andi@firstfloor.org,
-       oleg@redhat.com, viro@zeniv.linux.org.uk, davidel@xmailserver.org,
-       davem@davemloft.net, linux-api@vger.kernel.org,
-       alan@lxorguk.ukuu.org.uk
-References: <1233598811-6871-1-git-send-email-corbet@lwn.net> <20090203161931.4054a25e@bike.lwn.net> <20090204071320.GA19348@lst.de>
-In-Reply-To: <20090204071320.GA19348@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 4 Feb 2009 02:27:32 -0500
+Date: Tue, 03 Feb 2009 23:27:29 -0800 (PST)
+Message-Id: <20090203.232729.194305460.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902041820.20535.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009 18:13:20 Christoph Hellwig wrote:
-> On Tue, Feb 03, 2009 at 04:19:31PM -0700, Jonathan Corbet wrote:
-> >  1) Use i_lock to protect accesses to f_flags.  This would enable some
-> >     BKL usage to be removed, but would not fix fasync.
->
-> What about just turning f_ep_lock into f_lock and using it?
 
-Ah, yes I was going to say that too, but I confused i_lock with i_mutex
-because it sounded like Jon needed a sleeping lock here?
+1) pcnet_cs does "if (x = y)" instead of "if (x == y)".  Fix from
+   Cord Walter
 
-Agree f_lock would be good. It might come in handy for other things too.
+2) Fix some userland header bogosity in linux/if_tunnel.h
 
+3) Recent changes caused sk->sk_drops to not get incremented for
+   ipv4 UDP sockets.  Fix from Eric Dumazet.
+
+4) RDMA sunrpc dependency fix from Randy Dunlap.
+
+5) DCA deadlock fixes from Maciej Sosnowski.
+
+6) Roel Kluin found a bunch of cases where we do (usually when
+   polling on a register bit to set or clear):
+
+	while (timeout--) {
+		if (bit_changed)
+			break;
+	}
+	if (timeout <= 0)
+		throw_error();
+
+   But this throws an error even if we did see the necessary
+   end-condition on the final iteration.
+
+   Several drivers have this bug now fixed.
+
+7) e1000 does not honor the need_ioport flag, fix from Karsten Keil.
+
+8) Three qlge bug fixes from Ron Mercer.
+
+9) AF_PACKET mmap() support has bugs because of incorrect operator
+   precendence in the end tests.  Fix from Sebastiano Di Paola.
+
+10) SGI xpnet fix, forgot to hook up ->netdev_ops, oops.  Fix from
+    Dean Nelson.
+
+Please pull, thanks a lot!
+
+The following changes since commit dcf6a79dda5cc2a2bec183e50d829030c0972aaa:
+  Artem Bityutskiy (1):
+        write-back: fix nr_to_write counter
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+Cord Walter (1):
+      pcnet_cs: Fix misuse of the equality operator.
+
+David S. Miller (2):
+      net: Fix userland breakage wrt. linux/if_tunnel.h
+      Merge branch 'master' of master.kernel.org:/.../torvalds/linux-2.6
+
+Dean Nelson (1):
+      sgi-xp: link XPNET's net_device_ops to its net_device structure
+
+Eric Dumazet (1):
+      udp: increments sk_drops in __udp_queue_rcv_skb()
+
+Filip Aben (1):
+      hso: add new device id's
+
+Karsten Keil (1):
+      e1000: Fix PCI enable to honor the need_ioport flag
+
+Maciej Sosnowski (1):
+      dca: redesign locks to fix deadlocks
+
+Randy Dunlap (1):
+      sunrpc: fix rdma dependencies
+
+Roel Kluin (2):
+      net: variables reach -1, but 0 tested
+      cassini/sungem: limit reaches -1, but 0 tested
+
+Ron Mercer (3):
+      qlge: bugfix: Fix endian issue when reading flash.
+      qlge: bugfix: Add flash offset for second port.
+      qlge: bugfix: Add missing netif_napi_del call.
+
+Sebastiano Di Paola (1):
+      net: packet socket packet_lookup_frame fix
+
+ drivers/dca/dca-core.c         |   51 +++++++++++++++++++++++++--------------
+ drivers/misc/sgi-xp/xpnet.c    |    3 +-
+ drivers/net/cassini.c          |    4 +-
+ drivers/net/e1000/e1000_main.c |    2 +-
+ drivers/net/ibm_newemac/phy.c  |    4 +-
+ drivers/net/pcmcia/pcnet_cs.c  |    2 +-
+ drivers/net/qlge/qlge.h        |   10 ++++----
+ drivers/net/qlge/qlge_main.c   |   25 +++++++++++++++----
+ drivers/net/smc911x.c          |    4 +-
+ drivers/net/smsc9420.c         |   12 ++++----
+ drivers/net/sungem.c           |    2 +-
+ drivers/net/sungem_phy.c       |    2 +-
+ drivers/net/sunqe.c            |    2 +-
+ drivers/net/tsi108_eth.c       |    2 +-
+ drivers/net/tulip/de2104x.c    |    2 +-
+ drivers/net/usb/hso.c          |    4 ++-
+ include/linux/Kbuild           |    2 +-
+ include/linux/if_tunnel.h      |    3 ++
+ net/ipv4/udp.c                 |    4 ++-
+ net/packet/af_packet.c         |    8 +++---
+ net/sunrpc/Kconfig             |    2 +-
+ 21 files changed, 93 insertions(+), 57 deletions(-)
