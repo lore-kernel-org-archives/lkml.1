@@ -1,42 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZBDTk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZBDTks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbZBDTk3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 14:40:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZBDTkR
+	id S1757355AbZBDTks (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 14:40:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755969AbZBDTk3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 14:40:17 -0500
-Received: from rtr.ca ([76.10.145.34]:48774 "EHLO mail.rtr.ca"
+	Wed, 4 Feb 2009 14:40:29 -0500
+Received: from fifo99.com ([67.223.236.141]:35379 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752389AbZBDTkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 14:40:16 -0500
-Message-ID: <4989EF1D.4000106@rtr.ca>
-Date: Wed, 04 Feb 2009 14:40:13 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Krishna Kothapalli <krishna_sunitha@hotmail.com>
-Cc: kaneshige.kenji@jp.fujitsu.com, ebiederm@xmission.com,
-       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org, achiang@hp.com,
-       djwong@us.ibm.com, xyzzy@speakeasy.org, linux-kernel@vger.kernel.org
-Subject: Re: Q: state of pci express hotplug
-References: <m1fxj06js8.fsf@fess.ebiederm.org> <4986581F.7060704@jp.fujitsu.com>   <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl>   <49879508.4090801@jp.fujitsu.com>   <BAY111-W3692AA5F9F7896AA447A1F88C20@phx.gbl> <BAY111-W9013DA1F63973F9E7F8DF88C30@phx.gbl> <49892CDE.9040305@jp.fujitsu.com> <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
-In-Reply-To: <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1755656AbZBDTk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 14:40:27 -0500
+Subject: Re: [PATCH NET-NEXT 01/10] clocksource: allow usage independent of
+	timekeeping.c
+From: Daniel Walker <dwalker@fifo99.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: Patrick Ohly <patrick.ohly@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1233775542.6994.13.camel@localhost.localdomain>
+References: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
+	 <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
+	 <1233756235.15119.54.camel@desktop> <1233758796.15940.198.camel@ecld0pohly>
+	 <1233760170.15119.76.camel@desktop>
+	 <1233775542.6994.13.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 04 Feb 2009 11:40:21 -0800
+Message-Id: <1233776421.15119.125.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krishna Kothapalli wrote:
-..
->>  - and the device didn't show up under sysfs
->>  Am I correct?
+On Wed, 2009-02-04 at 11:25 -0800, john stultz wrote:
+> On Wed, 2009-02-04 at 07:09 -0800, Daniel Walker wrote:
+> > On Wed, 2009-02-04 at 15:46 +0100, Patrick Ohly wrote:
+> > > In an earlier revision of the patch I had adapted clocksource itself so
+> > > that it could be used outside of the time keeping code; John wanted me
+> > > to use these smaller structs instead that you now find in the current
+> > > patch.
+> > 
+> > Well, I think your original idea was better.. I don't think we need the
+> > duplication of underlying clocksource mechanics.
+> > 
+> > > Eventually John wants to refactor clocksource so that it uses them and
+> > > just adds additional elements in clocksource. Right now clocksource is a
+> > > mixture of different concepts. Breaking out cyclecounter and timecounter
+> > > is a first step towards that cleanup.
+> > 
+> > The problem I see is that your putting off the cleanup of struct
+> > clocksource with duplication.. It should go in reverse , you should use
+> > clocksources for your patch set. Which will motivate John to clean up
+> > the clocksource structure.
 > 
->    YES
-..
+> I strongly disagree. Misusing a established structure for unintended use
+> is just bad. What Patrick wants to use the counters for has very
+> different semantics then how clocksources are used.
 
-Does it behave better with the pciehp_force=1 option?
+I don't think it's at all bad to reuse an established system like that,
+especially when the purposed one is largely duplication of the other..
+The issue is more that struct clocksource has been loaded up with too
+many timekeeping specific ornaments .. I would think a good clean up
+would be just to remove those from the structure.
 
-   modprobe  pciehp pciehp_force=1
+> I think having a bit of redundancy in two structures is good motivation
+> for me to clean up the clocksources to use cyclecounters.
+
+I'm not sure what kind of clean up you have in mind. Given that
+clocksources are used across many architectures, do you really want to
+do a mass name change for all of them? Not to mention most people see
+clocksources as cycle counters , so you would just add confusion in
+addition to code flux.
+
+If your going to end up merging this new cycle counter structure with
+clocksources anyway, why wouldn't we do it now instead of doing
+temporary duplication ..
+
+Daniel
 
