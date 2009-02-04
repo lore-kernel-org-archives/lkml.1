@@ -1,128 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758052AbZBDS1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbZBDSaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758052AbZBDS1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:27:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZBDS1C
+	id S1758083AbZBDSaW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:30:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZBDSaH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:27:02 -0500
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43190 "EHLO
+	Wed, 4 Feb 2009 13:30:07 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58669 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753148AbZBDS1B (ORCPT
+	with ESMTP id S1752443AbZBDSaF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:27:01 -0500
-Date: Wed, 4 Feb 2009 19:26:45 +0100
+	Wed, 4 Feb 2009 13:30:05 -0500
+Date: Wed, 4 Feb 2009 19:29:51 +0100
 From: Pavel Machek <pavel@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: /proc/sys/vm/drop_caches: add error handling
-Message-ID: <20090204182645.GB4797@elf.ucw.cz>
-References: <20090203113319.GA2022@elf.ucw.cz> <20090203204456.ECA3.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090203111447.41e2022c.akpm@linux-foundation.org>
+To: Christoph Hellwig <hch@infradead.org>, Eric Sesterhenn <snakebyte@gmx.de>,
+       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: Warning and BUG with btrfs and corrupted image
+Message-ID: <20090204182951.GC4797@elf.ucw.cz>
+References: <20090118174035.GG1944@ucw.cz> <20090120063150.GC5854@alice> <20090120101119.GB10158@disturbed> <20090120101503.GC17377@alice> <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org> <20090120222019.GB2320@elf.ucw.cz> <20090121040042.GI10158@disturbed> <20090126162711.GA2083@elf.ucw.cz> <20090201014050.GD24173@disturbed>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090203111447.41e2022c.akpm@linux-foundation.org>
+In-Reply-To: <20090201014050.GD24173@disturbed>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > I think following is clarify more.
+On Sun 2009-02-01 12:40:50, Dave Chinner wrote:
+> On Mon, Jan 26, 2009 at 05:27:11PM +0100, Pavel Machek wrote:
+> > On Wed 2009-01-21 15:00:42, Dave Chinner wrote:
+> > > On Tue, Jan 20, 2009 at 11:20:19PM +0100, Pavel Machek wrote:
+> > > > On Tue 2009-01-20 08:28:29, Christoph Hellwig wrote:
+> > > > > I think that was the issue with the debug builds.  If you do this
+> > > > > testing always do it without CONFIG_XFS_DEBUG set as with that option
+> > > > > we intentionally panic on detected disk corruptions.
+> > > > 
+> > > > Uhuh, *_DEBUG options are not supposed to make kernel less
+> > > > stable/robust. Should that crashing functionality be guarded with
+> > > > command line option or something? ext2 has errors=panic mount
+> > > > option...
+> > > 
+> > > No, it's a debugging option that is described as:
+> > > 
+> > > 	"Say N unless you are an XFS developer, or you play one on TV."
+> > > 
+> > > Seriously, if you aren't trying to develop XFS stuff then *don't turn it
+> > > on*.
 > > 
-> > 	res = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
-> > 	if (res)
-> > 		return res;
-> > 	if (!write)
-> > 		return 0;
-> > 	if (sysctl_drop_caches & ~3)
-> > 		return -EINVAL;
-> > 	if (sysctl_drop_caches & 1)
-> > 		drop_pagecache();
-> > 	if (sysctl_drop_caches & 2)
-> > 		drop_slab();
-> > 	return 0;
-> > 
-> > 
-> > otherthings, _very_ looks good to me. :)
+> > What about this, then?
 > 
-> For better or for worse, my intent here was to be
-> future-back-compatible.  So if we later add new flags, and people write
-> code which uses those new flags, that code won't break on old kernels.
+> ....
+> 
+> > +	  Turning this option on will result in kernel panicking any time
+> > +	  it detects on-disk corruption.
+> 
+> Thin end of a wedge. There's a couple of thousand conditions that
+> CONFIG_XFS_DEBUG introduces kernel panics on:
+> 
+> $ grep -r ASSERT fs/xfs |wc -l
+> 2095
+> 
+> 
+> CONFIG_*_DEBUG means include *debug* code there to help developers,
+> including adding additional failure tests into the kernel. Besides,
+> which bit of "don't turn it on unless you are an XFS developer"
+> don't you understand?
 
-Well, should I move test for &~3 to the end? You'd still get
-compatibility, but you'd also get expected error reports.
-
-> Probably that wasn't a very good idea, and such userspace code isn't
-> very good.
-
---- 
-
-Report errors in drop_caches, and document stuff a bit better. 
-
-Signed-off-by: Pavel Machek <pavel@suse.cz>
-
-diff --git a/Documentation/sysctl/vm.txt b/Documentation/sysctl/vm.txt
-index 3197fc8..b90f050 100644
---- a/Documentation/sysctl/vm.txt
-+++ b/Documentation/sysctl/vm.txt
-@@ -132,6 +132,10 @@ To free pagecache, dentries and inodes:
- As this is a non-destructive operation and dirty objects are not freeable, the
- user should run `sync' first.
- 
-+Note that calling this causes some serious latencies, and that this is
-+a debug feature; it should not be used for production as it does not
-+contain neccessary locking to guarantee safe operation.
-+
- ==============================================================
- 
- hugepages_treat_as_movable
-diff --git a/fs/drop_caches.c b/fs/drop_caches.c
-index 3e5637f..f913a64 100644
---- a/fs/drop_caches.c
-+++ b/fs/drop_caches.c
-@@ -9,8 +9,9 @@
- #include <linux/sysctl.h>
- #include <linux/gfp.h>
- 
--/* A global variable is a bit ugly, but it keeps the code simple */
--int sysctl_drop_caches;
-+/* A global variable is a bit ugly, and has locking problems,
-+   but it keeps the code simple */
-+unsigned int sysctl_drop_caches;
- 
- static void drop_pagecache_sb(struct super_block *sb)
- {
-@@ -65,12 +66,17 @@ static void drop_slab(void)
- int drop_caches_sysctl_handler(ctl_table *table, int write,
- 	struct file *file, void __user *buffer, size_t *length, loff_t *ppos)
- {
--	proc_dointvec_minmax(table, write, file, buffer, length, ppos);
--	if (write) {
--		if (sysctl_drop_caches & 1)
--			drop_pagecache();
--		if (sysctl_drop_caches & 2)
--			drop_slab();
--	}
-+	int res;
-+	res = proc_dointvec_minmax(table, write, file, buffer, length, ppos);
-+	if (res)
-+		return res;
-+	if (!write)
-+		return res;
-+	if (sysctl_drop_caches & 1)
-+		drop_pagecache();
-+	if (sysctl_drop_caches & 2)
-+		drop_slab();
-+	if (sysctl_drop_caches & ~3)
-+		return -EINVAL;
- 	return 0;
- }
-
-
+Yes, but DEBUG code is normally to help debugging, not to crash
+kernels. IMO xfs should use errors=panic mount option as ext3 does,
+but...
+								Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-
