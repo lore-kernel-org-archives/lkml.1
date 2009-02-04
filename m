@@ -1,90 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760073AbZBDVYB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbZBDVZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760073AbZBDVYB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 16:24:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZBDVXx
+	id S1760109AbZBDVZl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 16:25:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753550AbZBDVZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 16:23:53 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36918 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752061AbZBDVXw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 16:23:52 -0500
-Date: Wed, 4 Feb 2009 13:23:13 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: benh@kernel.crashing.org, eli@mellanox.co.il, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
-Message-Id: <20090204132313.e3047e2f.akpm@linux-foundation.org>
-In-Reply-To: <adad4dym2zp.fsf@cisco.com>
-References: <20090203164930.GA10101@mtls03>
-	<ada8wonnh3t.fsf@cisco.com>
-	<1233712248.16867.131.camel@pasglop>
-	<20090203211329.d6190a08.akpm@linux-foundation.org>
-	<aday6wmn2vr.fsf@cisco.com>
-	<20090203222601.747ca8b7.akpm@linux-foundation.org>
-	<adad4dym2zp.fsf@cisco.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Feb 2009 16:25:31 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51417 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752261AbZBDVZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 16:25:30 -0500
+Date: Wed, 4 Feb 2009 22:25:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ed Swierk <eswierk@aristanetworks.com>, tglx@linutronix.de,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lenb@kernel.org, linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] Detect mmconfig on nVidia MCP55
+Message-ID: <20090204212517.GM22608@elte.hu>
+References: <1233765552.16414.6.camel@localhost.localdomain> <86802c440902041212q51f2a444l84e1ac29ee6f702e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440902041212q51f2a444l84e1ac29ee6f702e@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Feb 2009 11:11:22 -0800
-Roland Dreier <rdreier@cisco.com> wrote:
 
->  > >  > 	huge_page_size(page_hstate(page))
-> 
->  > > That would suit.  I assume the intention is for that to be usable by
->  > > driver modules on any architecture?
-> 
->  > erm, you overestimate the amount of planning and forethought which goes
->  > into these things ;)
-> 
->  > The lack of any EXPORT_SYMBOL(size_to_hstate) is a broadish hint.
-> 
-> Heh.  Looking into the implementation, it seems that I could actually do
-> 
-> 	PAGE_SIZE << compound_order(page)
-> 
-> directly (since there's no reason to go from size to hstate and back to
-> size.  I don't know all the details of these VM internals, but that
-> seems to only work on the first (small) page of a giant page?  Which
-> causes problems for what we're trying to do here...
-> 
-> To summarize the goal, we are mapping user memory to a device that has
-> its own page tables, where the device's page tables can also use
-> multiple page sizes.  Using big pages on the device leads to similar
-> efficiencies as hugetlb pages do on the CPU, and in fact if a user has
-> used hugetlb pages for the memory they're giving to the device, that's a
-> very strong hint that the device should use big pages too.
-> 
-> But one valid situation we have to handle in the driver is if, say,
-> userspace has a hugetlb mapped at virtual address 0x200000, and wants to
-> map 0x80000 bytes at 0x280000 to the device.  In that case, we're going
-> to do essentially
-> 
-> 	get_user_pages(..., 0x280000, 0x80000 / PAGE_SIZE, ...)
-> 
-> and get_user_pages() is going to give us a bunch of normal PAGE_SIZE
-> pages starting at offset 0x800000 within the compound page that makes up
-> the huge page mapped at 0x200000.
-> 
-> get_user_pages() also gives us the vma back, and we can see from
-> is_vm_hugetlb_page() (-- BTW can I just say that a function
-> is_xxx_page() that operates on vmas is horribly misnamed --) that these
-> pages all come from a hugetlb mapping, but figuring out the size of that
-> mapping is I guess a challenge.
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-compound_head() will convert any page* inside a hugepage into a pointer
-to the head page.  It should work OK for regular pages as well as
-CONFIG_HUGETLB=n.
+> On Wed, Feb 4, 2009 at 8:39 AM, Ed Swierk <eswierk@aristanetworks.com> wrote:
+> > Detect and enable memory-mapped PCI configuration space on the nVidia
+> > MCP55 southbridge even if the ACPI MCFG table is missing or wrong.
+> >
+> > Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
+> >
+> > ---
+> > Index: linux-2.6.27.4/arch/x86/pci/mmconfig-shared.c
+> > ===================================================================
+> > --- linux-2.6.27.4.orig/arch/x86/pci/mmconfig-shared.c
+> > +++ linux-2.6.27.4/arch/x86/pci/mmconfig-shared.c
+> > @@ -155,6 +155,26 @@ static const char __init *pci_mmcfg_amd_
+> >        return "AMD Family 10h NB";
+> >  }
+> >
+> > +static const char __init *pci_mmcfg_nvidia_mcp55(void)
+> > +{
+> > +       u32 extcfg;
+> > +
+> > +       raw_pci_ops->read(0, 0, PCI_DEVFN(0, 0), 0x90, 4, &extcfg);
+> > +
+> > +       if (!(extcfg & 0x80000000))
+> > +               return NULL;
+> > +       pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]), GFP_KERNEL);
+> > +       if (!pci_mmcfg_config)
+> > +               return NULL;
+> > +       pci_mmcfg_config[0].address = (extcfg & 0x00007fff) << 25;
+> > +       pci_mmcfg_config[0].pci_segment = 0;
+> > +       pci_mmcfg_config[0].start_bus_number = 0;
+> > +       pci_mmcfg_config[0].end_bus_number = (1 << (8 - ((extcfg >> 28) & 3))) - 1;
+> > +       pci_mmcfg_config_num = 1;
+> > +
+> > +       return "nVidia MCP55";
+> > +}
+> > +
+> >  struct pci_mmcfg_hostbridge_probe {
+> >        u32 bus;
+> >        u32 devfn;
+> > @@ -172,6 +192,8 @@ static struct pci_mmcfg_hostbridge_probe
+> >          0x1200, pci_mmcfg_amd_fam10h },
+> >        { 0xff, PCI_DEVFN(0, 0), PCI_VENDOR_ID_AMD,
+> >          0x1200, pci_mmcfg_amd_fam10h },
+> > +       { 0, PCI_DEVFN(0, 0), PCI_VENDOR_ID_NVIDIA,
+> > +         0x0369, pci_mmcfg_nvidia_mcp55 },
+> 
+> may break amd family 10h + mcp55 system. because some system have setting 
+> in AMD cpu and mcp55 it will find setting in CPU nb, and your code will 
+> partially overwrite those setting.
 
-So..
+That's a good point ...
 
-	PAGE_SIZE << compound_order(compound_head(page))
+We could do something like:
 
-?
+	if (boot_cpu_data.x86_vendor == X86_VENDOR_AMD &&
+		boot_cpu_data.x86 >= 0x10) {
+		u64 mmconf_val;
+
+		rdmsrl(MSR_FAM10H_MMIO_CONF_BASE, mmconf_val);
+		if (mmconf_val & FAM10H_MMIO_CONF_ENABLE)
+			return;
+	}
+
+To detect enabled on-CPU mmconf support. We could even put this into a 
+helper function as other places might want to use it too.
+
+	Ingo
