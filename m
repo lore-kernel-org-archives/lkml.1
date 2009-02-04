@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756121AbZBDNR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZBDNUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756121AbZBDNR2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 08:17:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZBDNRR
+	id S1755873AbZBDNUt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 08:20:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZBDNUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 08:17:17 -0500
-Received: from cavan.codon.org.uk ([93.93.128.6]:41546 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZBDNRQ (ORCPT
+	Wed, 4 Feb 2009 08:20:32 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45480 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751863AbZBDNUb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 08:17:16 -0500
-Date: Wed, 4 Feb 2009 13:17:09 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: Hans de Goede <hdegoede@redhat.com>
-Cc: Len Brown <lenb@kernel.org>, Luca Tettamanti <kronos.it@gmail.com>,
-       Thomas Renninger <trenn@suse.de>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, khali@linux-fr.org
-Subject: Re: [PATCH] ACPI: add "auto" to acpi_enforce_resources
-Message-ID: <20090204131708.GA2739@srcf.ucam.org>
-References: <20090125210520.GA12963@dreamland.darkstar.lan> <200901291130.35434.trenn@suse.de> <68676e00901290716g1aabd6c0p1e5202fbdbc659a4@mail.gmail.com> <alpine.LFD.2.00.0902040042570.9833@localhost.localdomain> <20090204060513.GA28321@srcf.ucam.org> <498953DF.5050306@redhat.com>
+	Wed, 4 Feb 2009 08:20:31 -0500
+Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Chris Snook" <csnook@redhat.com>,
+       "Kumar Gala" <galak@kernel.crashing.org>,
+       "Max Krasnyansky" <maxk@qualcomm.com>,
+       "Scott Wood" <scottwood@freescale.com>
+References: <a47yn9c9JrF.A.hz.L5YiJB@chimera>
+In-Reply-To: <a47yn9c9JrF.A.hz.L5YiJB@chimera>
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498953DF.5050306@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-ID: <CGyEB0S4BpO.A.5JE.w8YiJB@chimera>
+Subject: [Bug #11849] default IRQ affinity change in v2.6.27 (breaking several SMP PPC based systems)
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Date: Wed,  4 Feb 2009 11:56:00 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 09:37:51AM +0100, Hans de Goede wrote:
+This message has been generated automatically as a part of a report
+of regressions introduced between 2.6.27 and 2.6.28.
 
-> Len, Matthew, what is you opinion of the proposed auto setting for 
-> acpi_enforce_resources, which is meant to mean strict on known problematic 
-> systems and lax on others?
+The following bug entry is on the current list of known regressions
+introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+be listed and let me know (either way).
 
-Personally, I'd rather that it was "strict" on everything. We might 
-break some existing setups, but they're already working mostly by luck.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=11849
+Subject		: default IRQ affinity change in v2.6.27 (breaking several SMP PPC based systems)
+Submitter	: Kumar Gala <galak@kernel.crashing.org>
+Date		: 2008-10-24 12:45 (104 days old)
+References	: http://marc.info/?l=linux-kernel&m=122485245924125&w=4
+
+
