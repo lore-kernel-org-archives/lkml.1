@@ -1,170 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZBDW6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZBDW7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753995AbZBDW6u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 17:58:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZBDW6l
+	id S1755159AbZBDW7Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 17:59:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751683AbZBDW7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 17:58:41 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:39796 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751338AbZBDW6k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 17:58:40 -0500
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 4 Feb 2009 14:58:39 -0800 (PST)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Michael Kerrisk <mtk.manpages@gmail.com>
-Subject: [patch/rfc] eventfd semaphore-like behavior
-Message-ID: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 4 Feb 2009 17:59:07 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56909 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751564AbZBDW7G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 17:59:06 -0500
+Date: Wed, 4 Feb 2009 23:58:48 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Kirill Korotaev <dev@openvz.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] timer fix
+Message-ID: <20090204225848.GA3251@elte.hu>
+References: <20090204192551.GA19539@elte.hu> <alpine.LFD.2.00.0902041400100.3247@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0902041400100.3247@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-People started using eventfd in scnarios where before where using pipes. 
-Many of them use eventfds in a semaphore-like way, like they were before 
-with pipes. The problem with eventfd is that a read() on the fd returns 
-and wipes the whole counter, making the use of it as semaphore a little 
-bit more cumbersome. You can do a read() followed by a write() of 
-COUNTER-1, but IMO it's pretty easy and cheap to make this work w/out 
-extra steps. This patch introduces a new eventfd flag that tells eventfd 
-to only dequeue 1 from the counter, allowing simple read/write to make it 
-behave like a semaphore.
-Simple test here:
 
-http://www.xmailserver.org/eventfd-sem.c
+* Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
+> 	} while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+that is also more efficient code by 6 bytes:
 
+before:
 
-- Davide
+ffffffff81020856:	ff c3                	inc    %ebx
+ffffffff81020858:	48 05 f0 00 00 00    	add    $0xf0,%rax
+ffffffff8102085e:	8b 00                	mov    (%rax),%eax
+ffffffff81020860:	8b 15 2a 79 85 00    	mov    0x85792a(%rip),%edx        # ffffffff81878190 <hpet_t1_cmp>
+ffffffff81020866:	89 c0                	mov    %eax,%eax
+ffffffff81020868:	48 29 d0             	sub    %rdx,%rax
+ffffffff8102086b:	48 85 c0             	test   %rax,%rax
+ffffffff8102086e:	7f bf                	jg     ffffffff8102082f <hpet_rtc_interrupt+0x68>
+ffffffff81020870:	85 db                	test   %ebx,%ebx
 
+after:
 
+ffffffff81020856:	ff c3                	inc    %ebx
+ffffffff81020858:	48 05 f0 00 00 00    	add    $0xf0,%rax
+ffffffff8102085e:	8b 00                	mov    (%rax),%eax
+ffffffff81020860:	2b 05 2a 79 85 00    	sub    0x85792a(%rip),%eax        # ffffffff81878190 <hpet_t1_cmp>
+ffffffff81020866:	85 c0                	test   %eax,%eax
+ffffffff81020868:	7f c5                	jg     ffffffff8102082f <hpet_rtc_interrupt+0x68>
+ffffffff8102086a:	85 db                	test   %ebx,%ebx
+
+Kirill, Pavel, could you please re-test the updated commit attached below?
+
+	Ingo
+
+---------------->
+>From 66a36a1e95fe9de9c6a56f0bcd01f4ba21929f86 Mon Sep 17 00:00:00 2001
+From: Pavel Emelyanov <xemul@openvz.org>
+Date: Wed, 4 Feb 2009 13:40:31 +0300
+Subject: [PATCH] x86: fix hpet timer reinit for x86_64
+
+There's a small problem with hpet_rtc_reinit function - it checks
+for the:
+
+	hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
+
+to continue increasing both the HPET_T1_CMP (register) and the
+hpet_t1_cmp (variable).
+
+But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
+is 64-bit this condition will always be FALSE once the latter hits
+the 32-bit boundary, and we can have a situation, when we don't
+increase the HPET_T1_CMP register high enough.
+
+The result - timer stops ticking, since HPET_T1_CMP becomes less,
+than the COUNTER and never increased again.
+
+The solution is (based on Linus's suggestion) to compare 64-bits
+(on 64-bit x86), but to do the comparison on 32-bit signed
+integers.
+
+Reported-by: Kirill Korotaev <dev@openvz.org>
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- fs/eventfd.c            |   20 +++++++++++---------
- include/linux/eventfd.h |   12 +++++++++++-
- 2 files changed, 22 insertions(+), 10 deletions(-)
+ arch/x86/kernel/hpet.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Index: linux-2.6.mod/fs/eventfd.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventfd.c	2009-02-03 18:13:33.000000000 -0800
-+++ linux-2.6.mod/fs/eventfd.c	2009-02-04 12:16:39.000000000 -0800
-@@ -28,6 +28,7 @@ struct eventfd_ctx {
- 	 * issue a wakeup.
- 	 */
- 	__u64 count;
-+	unsigned int flags;
- };
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index 64d5ad0..c761f91 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -1075,7 +1075,7 @@ static void hpet_rtc_timer_reinit(void)
+ 		hpet_t1_cmp += delta;
+ 		hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
+ 		lost_ints++;
+-	} while ((long)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
++	} while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
  
- /*
-@@ -87,22 +88,20 @@ static ssize_t eventfd_read(struct file 
- {
- 	struct eventfd_ctx *ctx = file->private_data;
- 	ssize_t res;
--	__u64 ucnt;
-+	__u64 ucnt = 0;
- 	DECLARE_WAITQUEUE(wait, current);
- 
- 	if (count < sizeof(ucnt))
- 		return -EINVAL;
- 	spin_lock_irq(&ctx->wqh.lock);
- 	res = -EAGAIN;
--	ucnt = ctx->count;
--	if (ucnt > 0)
-+	if (ctx->count > 0)
- 		res = sizeof(ucnt);
- 	else if (!(file->f_flags & O_NONBLOCK)) {
- 		__add_wait_queue(&ctx->wqh, &wait);
- 		for (res = 0;;) {
- 			set_current_state(TASK_INTERRUPTIBLE);
- 			if (ctx->count > 0) {
--				ucnt = ctx->count;
- 				res = sizeof(ucnt);
- 				break;
- 			}
-@@ -117,8 +116,9 @@ static ssize_t eventfd_read(struct file 
- 		__remove_wait_queue(&ctx->wqh, &wait);
- 		__set_current_state(TASK_RUNNING);
- 	}
--	if (res > 0) {
--		ctx->count = 0;
-+	if (likely(res > 0)) {
-+		ucnt = (ctx->flags & EFD_SEMAPHORE) ? 1 : ctx->count;
-+		ctx->count -= ucnt;
- 		if (waitqueue_active(&ctx->wqh))
- 			wake_up_locked_poll(&ctx->wqh, POLLOUT);
- 	}
-@@ -166,7 +166,7 @@ static ssize_t eventfd_write(struct file
- 		__remove_wait_queue(&ctx->wqh, &wait);
- 		__set_current_state(TASK_RUNNING);
- 	}
--	if (res > 0) {
-+	if (likely(res > 0)) {
- 		ctx->count += ucnt;
- 		if (waitqueue_active(&ctx->wqh))
- 			wake_up_locked_poll(&ctx->wqh, POLLIN);
-@@ -207,7 +207,7 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, 
- 	BUILD_BUG_ON(EFD_CLOEXEC != O_CLOEXEC);
- 	BUILD_BUG_ON(EFD_NONBLOCK != O_NONBLOCK);
- 
--	if (flags & ~(EFD_CLOEXEC | EFD_NONBLOCK))
-+	if (flags & ~EFD_FLAGS_SET)
- 		return -EINVAL;
- 
- 	ctx = kmalloc(sizeof(*ctx), GFP_KERNEL);
-@@ -216,13 +216,14 @@ SYSCALL_DEFINE2(eventfd2, unsigned int, 
- 
- 	init_waitqueue_head(&ctx->wqh);
- 	ctx->count = count;
-+	ctx->flags = flags;
- 
- 	/*
- 	 * When we call this, the initialization must be complete, since
- 	 * anon_inode_getfd() will install the fd.
- 	 */
- 	fd = anon_inode_getfd("[eventfd]", &eventfd_fops, ctx,
--			      flags & (O_CLOEXEC | O_NONBLOCK));
-+			      flags & EFD_SHARED_FCNTL_FLAGS);
- 	if (fd < 0)
- 		kfree(ctx);
- 	return fd;
-@@ -232,3 +233,4 @@ SYSCALL_DEFINE1(eventfd, unsigned int, c
- {
- 	return sys_eventfd2(count, 0);
- }
-+
-Index: linux-2.6.mod/include/linux/eventfd.h
-===================================================================
---- linux-2.6.mod.orig/include/linux/eventfd.h	2009-02-03 18:13:33.000000000 -0800
-+++ linux-2.6.mod/include/linux/eventfd.h	2009-02-04 12:16:32.000000000 -0800
-@@ -13,10 +13,20 @@
- /* For O_CLOEXEC and O_NONBLOCK */
- #include <linux/fcntl.h>
- 
--/* Flags for eventfd2.  */
-+/*
-+ * CAREFUL: Check include/asm-generic/fcntl.h when defining
-+ * new flags, since they might collide with O_* ones. We want
-+ * to re-use O_* flags that couldn't possibly have a meaning
-+ * from eventfd, in order to leave a free define-space for
-+ * shared O_* flags.
-+ */
-+#define EFD_SEMAPHORE (1 << 0)
- #define EFD_CLOEXEC O_CLOEXEC
- #define EFD_NONBLOCK O_NONBLOCK
- 
-+#define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
-+#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
-+
- struct file *eventfd_fget(int fd);
- int eventfd_signal(struct file *file, int n);
- 
+ 	if (lost_ints) {
+ 		if (hpet_rtc_flags & RTC_PIE)
