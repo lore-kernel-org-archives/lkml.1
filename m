@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbZBDKMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZBDKPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbZBDKMV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 05:12:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbZBDKL6
+	id S1755232AbZBDKPV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 05:15:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZBDKPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 05:11:58 -0500
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48878 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754888AbZBDKL5 (ORCPT
+	Wed, 4 Feb 2009 05:15:05 -0500
+Received: from cpsmtpo-eml06.KPNXCHANGE.COM ([213.75.38.155]:35437 "EHLO
+	cpsmtpo-eml06.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752415AbZBDKPE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 05:11:57 -0500
-Date: Wed, 4 Feb 2009 10:11:30 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Karsten Keil <kkeil@suse.de>, linux-kernel@vger.kernel.org,
-       Michal Hocko <mhocko@suse.cz>,
-       richard kennedy <richard@rsk.demon.co.uk>,
-       Dan Williams <dan.j.williams@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, dwmw2@infradead.org,
-       Scott Wood <scottwood@freescale.com>, netdev@vger.kernel.org,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [RFC] Suspicious bug in module refcounting
-Message-ID: <20090204101130.GB19498@flint.arm.linux.org.uk>
-References: <20090203134721.GA11069@pingi.kke.suse.de> <200902041418.09630.rusty@rustcorp.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 4 Feb 2009 05:15:04 -0500
+From: Frans Pop <elendil@planet.nl>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in pci_legacy_suspend
+Date: Wed, 4 Feb 2009 11:14:59 +0100
+User-Agent: KMail/1.9.9
+Cc: rjw@sisk.pl, jbarnes@virtuousgeek.org, torvalds@linux-foundation.org,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+References: <200902040154.36018.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl> <1233712613.16867.136.camel@pasglop>
+In-reply-To: <1233712613.16867.136.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200902041418.09630.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200902041115.00842.elendil@planet.nl>
+X-OriginalArrivalTime: 04 Feb 2009 10:15:01.0205 (UTC) FILETIME=[7087C850:01C986B1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 02:18:08PM +1030, Rusty Russell wrote:
->   gameport.c, serio.c and input.c increment their own refcount, but to get
-> into those init functions someone must be holding a refcount already (ie. a
-> module depends on this module).  Ditto cyber2000fb.c, and MTD.
+Benjamin Herrenschmidt wrote:
+> Minor nit: Should the warning be preceeded by a message ? The reason is,
+> right now, all we get is a backtrace, it doesn't actually tell you which
+> device or driver caused it which makes it pretty pointless.
+> 
+> I think you should add a printk(KERN_ERR... just before that which gives
+> those informations along with a little blurb along the lines of "driver
+> changed device state without saving config space state").
 
-Err, wrong.  cyber2000fb.c does it in its module initialization function
-to prevent the module (when built for Shark) from being unloaded.  It
-does this because it's from the days of 2.2 kernels and no one bothered
-writing the module unload support for Shark.  I'm certainly not in a
-position to do that.
+That is actually already included in the patch (through drv->suspend):
 
-Since you can't unload a module while its initialization function is
-running, so someone else must be holding a refcount (the insmod process).
+> -             if (WARN_ON_ONCE(pci_dev->current_state != PCI_D0))
+> +             if (pci_dev->current_state != PCI_D0
+> +                 && pci_dev->current_state != PCI_UNKNOWN) {
+> +                     WARN_ONCE(pci_dev->current_state != prev,
+> +                             "PCI PM: Device state not saved by %pF\n",
+> +                             drv->suspend);
 
-I'm not saying that it's the right solution, I'm saying that this is how
-it's evolved.
-
-If someone has an idea on what to do about it then patches will be given
-due consideration.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Cheers,
+FJP
