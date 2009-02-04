@@ -1,24 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbZBDXx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbZBDXzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759475AbZBDXx5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:53:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbZBDXxs
+	id S1759723AbZBDXzp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:55:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbZBDXzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 18:53:48 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56142 "EHLO
+	Wed, 4 Feb 2009 18:55:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52274 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754510AbZBDXxr (ORCPT
+	by vger.kernel.org with ESMTP id S1754752AbZBDXzf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:53:47 -0500
-Date: Wed, 4 Feb 2009 15:53:08 -0800
+	Wed, 4 Feb 2009 18:55:35 -0500
+Date: Wed, 4 Feb 2009 15:55:14 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Larry Keegan <lk@pfw.demon.co.uk>
-Cc: linux-kernel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: 'vmap allocation failed' with 2 graphics cards and kernel
- 2.6.28
-Message-Id: <20090204155308.6efa5dc8.akpm@linux-foundation.org>
-In-Reply-To: <20090204194923.30bab978@cs2.al.itld>
-References: <20090204194923.30bab978@cs2.al.itld>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       mtk.manpages@gmail.com, linux-api@vger.kernel.org
+Subject: Re: [patch/rfc] eventfd semaphore-like behavior
+Message-Id: <20090204155514.6abbdc8f.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0902041526590.6214@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
+	<20090204150507.665b5b7c.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>
+	<20090204152434.c8f65d52.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0902041526590.6214@alien.or.mcafeemobile.com>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,68 +31,53 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009 19:49:23 +0000
-Larry Keegan <lk@pfw.demon.co.uk> wrote:
+On Wed, 4 Feb 2009 15:27:45 -0800 (PST)
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-> Dear Chaps,
+> On Wed, 4 Feb 2009, Andrew Morton wrote:
 > 
-> I'm experiencing a problem on a Gigabyte GA-G31M-S2L. The problem did
-> not occur on kernel 2.6.25, but does on 2.6.28 and 2.6.28.2. I am using
-> virgin kernels.
+> > On Wed, 4 Feb 2009 15:18:43 -0800 (PST)
+> > Davide Libenzi <davidel@xmailserver.org> wrote:
+> > 
+> > > > > Simple test here:
+> > > > > 
+> > > > > http://www.xmailserver.org/eventfd-sem.c
+> > > > > 
+> > > > > 
+> > > > > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+> > > > > 
+> > > > > +/*
+> > > > > + * CAREFUL: Check include/asm-generic/fcntl.h when defining
+> > > > > + * new flags, since they might collide with O_* ones. We want
+> > > > > + * to re-use O_* flags that couldn't possibly have a meaning
+> > > > > + * from eventfd, in order to leave a free define-space for
+> > > > > + * shared O_* flags.
+> > > > > + */
+> > > > > +#define EFD_SEMAPHORE (1 << 0)
+> > > > >  #define EFD_CLOEXEC O_CLOEXEC
+> > > > >  #define EFD_NONBLOCK O_NONBLOCK
+> > > > >  
+> > > > > +#define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
+> > > > > +#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
+> > > > 
+> > > > How would you recommend that userspace determine whether its kernel
+> > > > supports this feature, bearing in mind that someone might backport this
+> > > > patch into arbitrarily earlier kernel versions?
+> > > > 
+> > > > What should be userspace's fallback strategy if that support is not
+> > > > present?
+> > > 
+> > > #ifdef EFD_SEMAPHORE, maybe?
+> > 
+> > That's compile-time.  People who ship binaries will probably want
+> > to find a runtime thing for back-compatibility.
 > 
-> During boot I swapon <logical_volume>. This worked fine until 2.6.28
-> came along. Now, the kernel boots fine, but when I run swapon the
-> following error message is displayed:
+> I dunno. How do they actually do when we add new flags, like the O_ ones?
 > 
-> vmap allocation failed: use vmalloc=<size> to increase size.
 
-Nick, we should add a dump_stack() there too.
+Dunno.  Probably try the syscall and see if it returned -EINVAL.  Does
+that work in this case?  If so, it would be sensible to mention this in
+the description somewhere as the approved probing method and to
+maintain it.
 
-> The error seems to be directly related to the second graphics card
-> installed in this machine. Here are the details of the on-board
-> graphics chip:
-> 
-> 00:02.0 VGA compatible controller: Intel Corporation 82G33/G31 Express
-> Integrated Graphics Controller (rev 10) (prog-if 00 [VGA controller])
-> Subsystem: Giga-byte Technology Device d000 Flags: bus master, fast
-> devsel, latency 0, IRQ 2300 Memory at e6200000 (32-bit,
-> non-prefetchable) [size=512K] I/O ports at e400 [size=8]
->         Memory at d0000000 (32-bit, prefetchable) [size=256M]
->         Memory at e6100000 (32-bit, non-prefetchable) [size=1M]
->         Capabilities: [90] MSI: Mask- 64bit- Count=1/1 Enable+
->         Capabilities: [d0] Power Management version 2
-> 
-> and here are the details of the graphics card I added:
-> 
-> 01:00.0 VGA compatible controller: nVidia Corporation G72 [GeForce 7300
-> SE] (rev a1) (prog-if 00 [VGA controller]) Flags: fast devsel, IRQ 16
->         Memory at e0000000 (32-bit, non-prefetchable) [size=16M]
->         Memory at c0000000 (64-bit, prefetchable) [size=256M]
->         Memory at e1000000 (64-bit, non-prefetchable) [size=16M]
->         [virtual] Expansion ROM at e2000000 [disabled] [size=128K]
->         Capabilities: [60] Power Management version 2
->         Capabilities: [68] MSI: Mask- 64bit+ Count=1/1 Enable-
->         Capabilities: [78] Express Endpoint, MSI 00
->         Capabilities: [100] Virtual Channel <?>
->         Capabilities: [128] Power Budgeting <?>
-> 
-> When I set the BIOS to initialise the nVidia PCI-Express graphics card
-> first I see the vmap error. When I set the BIOS to initialise the
-> on-board Intel graphics card first I do not.
-> 
-> I have upgraded to the latest (F9) BIOS revision, but to no avail. Has
-> anyone else come across this before?
 
-This is the first report I've seen.
-
-Unfortunately pre-2.6.28 kernels didn't have /proc/vmallocinfo.
-
-Please send the contents of /proc/vmallocinfo.  Try to avoid
-wordwrapping it.
-
-Did we intend to make /proc/vmallocinfo root-only?
-
-Please gather the contents of /proc/iomem for 2.6.25 and for 2.6.28,
-perhaps we can work something out from that.
-
-Thanks.
