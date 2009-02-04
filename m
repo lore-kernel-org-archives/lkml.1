@@ -1,55 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbZBDWZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760737AbZBDW1E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbZBDWZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 17:25:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZBDWZO
+	id S1760737AbZBDW1E (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 17:27:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755994AbZBDW0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 17:25:14 -0500
-Received: from smtp4.tech.numericable.fr ([82.216.111.40]:33465 "EHLO
-	smtp4.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753489AbZBDWZN (ORCPT
+	Wed, 4 Feb 2009 17:26:50 -0500
+Received: from sj-iport-3.cisco.com ([171.71.176.72]:20418 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755932AbZBDW0t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 17:25:13 -0500
-Message-ID: <498A15C3.30904@numericable.fr>
-Date: Wed, 04 Feb 2009 23:25:07 +0100
-From: etienne <etienne.basset@numericable.fr>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 4 Feb 2009 17:26:49 -0500
+X-IronPort-AV: E=Sophos;i="4.37,381,1231113600"; 
+   d="scan'208";a="133073728"
+From: Roland Dreier <rdreier@cisco.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Floris Kraak <randakar@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>
+Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
+References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
+	<20090204221451.GA27254@uranus.ravnborg.org>
+X-Message-Flag: Warning: May contain useful information
+Date: Wed, 04 Feb 2009 14:26:45 -0800
+In-Reply-To: <20090204221451.GA27254@uranus.ravnborg.org> (Sam Ravnborg's
+	message of "Wed, 4 Feb 2009 23:14:51 +0100")
+Message-ID: <adavdrplty2.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Dave Airlie <airlied@redhat.com>,
-       Soeren Sonnenburg <kernel@nn7.de>
-Subject: Re: [Bug #12613] [Suspend regression][DRM, RADEON]
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.OlD.ouYiJB@chimera>
-In-Reply-To: <pWZw1SZjMCH.A.OlD.ouYiJB@chimera>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 04 Feb 2009 22:26:46.0685 (UTC) FILETIME=[AA3C5CD0:01C98717]
+Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim4002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12613
-> Subject		: [Suspend regression][DRM, RADEON]
-> Submitter	: etienne <etienne.basset@numericable.fr>
-> Date		: 2009-01-28 22:00 (8 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
-> References	: http://marc.info/?l=linux-kernel&m=123318030419558&w=4
-> 		  http://marc.info/?l=linux-kernel&m=123334865404574&w=4
->
->
->   
-hello,
+ > Before judging on this patch could you please post what warning it
+ > triggers and one or a few patches to fix some of them.
 
-yes it is still here with today's git
-regards
-Etienne
+The warnings are things like:
+
+    init/main.c: In function 'start_kernel':
+    init/main.c:557: warning: format not a string literal and no format arguments
+
+where the patch to fix this would be:
+
+diff --git a/init/main.c b/init/main.c
+index 8442094..78fc0d8 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -554,7 +554,7 @@ asmlinkage void __init start_kernel(void)
+ 	boot_cpu_init();
+ 	page_address_init();
+ 	printk(KERN_NOTICE);
+-	printk(linux_banner);
++	printk("%s", linux_banner);
+ 	setup_arch(&command_line);
+ 	mm_init_owner(&init_mm, &init_task);
+ 	setup_command_line(command_line);
+
+with the impact:
+
+add/remove: 0/0 grow/shrink: 1/0 up/down: 7/0 (7)
+function                                     old     new   delta
+start_kernel                                 689     696      +7
+
+
+There are also many warnings like:
+
+    drivers/char/mem.c: In function 'chr_dev_init':
+    drivers/char/mem.c:994: warning: format not a string literal and no format arguments
+
+which require a similar fix but show that we can't just restrict things
+to some trick with printk():
+
+diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+index 3586b3b..ba3bf43 100644
+--- a/drivers/char/mem.c
++++ b/drivers/char/mem.c
+@@ -991,7 +991,7 @@ static int __init chr_dev_init(void)
+ 	for (i = 0; i < ARRAY_SIZE(devlist); i++)
+ 		device_create(mem_class, NULL,
+ 			      MKDEV(MEM_MAJOR, devlist[i].minor), NULL,
+-			      devlist[i].name);
++			      "%s", devlist[i].name);
+ 
+ 	return 0;
+ }
