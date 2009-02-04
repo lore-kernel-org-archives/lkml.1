@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754502AbZBDJNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZBDJP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754502AbZBDJNy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 04:13:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754912AbZBDJNS
+	id S1754673AbZBDJP7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 04:15:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751816AbZBDJPk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 04:13:18 -0500
-Received: from styx.suse.cz ([82.119.242.94]:57330 "EHLO mail.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754582AbZBDJM6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 04:12:58 -0500
-Date: Wed, 4 Feb 2009 10:12:57 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-To: Paul Menage <menage@google.com>,
-       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       kamezawa.hiroyu@jp.fujitsu.com, rdunlap@xenotime.net
-Subject: Re: [PATCH] trivial: fix where cgroup documentation is not correctly
- 	referred to
-In-Reply-To: <6599ad830902032338q7018112cm499b0b6e83308707@mail.gmail.com>
-Message-ID: <alpine.LNX.1.10.0902041012250.11630@jikos.suse.cz>
-References: <498879F1.9040009@xenotime.net>  <1233694085-23893-1-git-send-email-cascardo@holoscopio.com>  <4988EADB.4050508@cn.fujitsu.com> <6599ad830902032338q7018112cm499b0b6e83308707@mail.gmail.com>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 4 Feb 2009 04:15:40 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:36305
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751234AbZBDJPj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 04:15:39 -0500
+Date: Wed, 04 Feb 2009 01:15:35 -0800 (PST)
+Message-Id: <20090204.011535.183331841.davem@davemloft.net>
+To: w@1wt.eu
+Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, jarkao2@gmail.com,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090204091217.GA21385@1wt.eu>
+References: <20090204085907.GA19388@gondor.apana.org.au>
+	<20090204.010146.18100191.davem@davemloft.net>
+	<20090204091217.GA21385@1wt.eu>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 3 Feb 2009, Paul Menage wrote:
+From: Willy Tarreau <w@1wt.eu>
+Date: Wed, 4 Feb 2009 10:12:17 +0100
 
-> >> cgroup documentation was moved to Documentation/cgroups/. There are some
-> >> places that still refer to Documentation/controllers/,
-> >> Documentation/cgroups.txt and Documentation/cpusets.txt. Fix those.
-> > After grep, I think there's no wrong ref anymore.
-> > Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-> Acked-by: Paul Menage <menage@google.com>
+> And the arbitrary choice of 9k for jumbo frames was total crap too.
+> It's clear that no hardware designer was involved in the process.
 
-Applied to trivial tree, thanks.
+Willy, do some reasearch, this also completely wrong.
 
--- 
-Jiri Kosina
-SUSE Labs
+Alteon effectively created jumbo MTUs in their Acenic chips since that
+was the first chip to ever do it.  Those were hardware engineers only
+making those design decisions.
+
+I think this is will I will stop taking part in this part of the
+discussion.  Every posting is full of misinformation and I've got
+better things to do than to refute them every 5 minutes.  :-/
