@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755463AbZBDOwn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZBDO4U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755463AbZBDOwn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 09:52:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751577AbZBDOwe
+	id S1755349AbZBDO4U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 09:56:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZBDO4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 09:52:34 -0500
-Received: from [84.77.67.98] ([84.77.67.98]:1970 "EHLO ventoso.org"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751527AbZBDOwe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 09:52:34 -0500
-Message-ID: <4989ABA8.8010807@ventoso.org>
-Date: Wed, 04 Feb 2009 15:52:24 +0100
-From: Luca Olivetti <luca@ventoso.org>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: Ingo Molnar <mingo@elte.hu>, Greg KH <gregkh@suse.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       linux-kernel@vger.kernel.org, Hans Verkuil <hverkuil@xs4all.nl>,
-       Janne Grunau <janne-dvb@grunau.be>
-Subject: Re: [crash] af9005_usb_module_init(): BUG: unable to handle kernel
- paging request at ff100000
-References: <20090203172836.GA6964@elte.hu>	 <1233685361.5903.131.camel@desktop> <20090203193029.GA13726@elte.hu>	 <4988ABEE.6020703@ventoso.org> <1233710080.15119.37.camel@desktop>
-In-Reply-To: <1233710080.15119.37.camel@desktop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 4 Feb 2009 09:56:11 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:34043 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751942AbZBDO4K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 09:56:10 -0500
+Subject: Re: [PATCH] gfs2/ops_file.c: fix build breakage
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20090204144920.GA13319@orion>
+References: <20090204144920.GA13319@orion>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+	3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+	Street, Windsor, Berkshire, SL4 ITE
+Date: Wed, 04 Feb 2009 14:51:19 +0000
+Message-Id: <1233759079.9571.689.camel@quoit>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-En/na Daniel Walker ha escrit:
-> On Tue, 2009-02-03 at 21:41 +0100, Luca Olivetti wrote:
+Hi,
+
+There is already a patch queued up in -mm to fix this. The issue is not
+that GFS2 should depend upon FILE_LOCKING but that generic_setlease
+should be defined so that this reference to it is correct even when
+FILE_LOCKING is not selected,
+
+Steve.
+
+On Wed, 2009-02-04 at 17:49 +0300, Alexander Beregalov wrote:
+> fs/gfs2/ops_file.c:746: error: 'generic_setlease' undeclared here (not
+> in a function)
 > 
->> No, I don't have 2.6.28, but I guess that maybe once usb_register is
->> called the dvb-usb subsystem asynchronously (is that an smp system?)
->> starts polling the remote before the rc_decode function pointer has been
->> initialized.
->> Could you try to initialize it to NULL before calling usb_register?
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> ---
 > 
-> What happens to the decode function when you have,
+>  fs/gfs2/Kconfig |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> CONFIG_DVB_USB_AF9005=y
-> CONFIG_DVB_USB_AF9005_REMOTE=n
-> 
-> It seems that the decode function is defined inside,
-> drivers/media/dvb/dvb-usb/af9005-remote.c
-> 
-> but that doesn't get compiled in the case above. It looks like you end
-> up with af9005_rc_decode being a function local weak symbol
-> (uninitialized) which then gets assigned to rc_decode .. I think the
-> crash actually happens on rc_keys_size which get assigned another
-> uninitialized local, and it gets de-referenced .
-
-Doesn't symbol_request return a NULL in such a case?
-At the time I didn't try the above configuration 
-(CONFIG_DVB_USB_AF9005_REMOTE=n), but removed the compiled 
-dvb-usb-af9005-remote.ko, and all was well (i.e. the symbol_request 
-returned NULL and the remote handling was disabled).
-
-> Here's a patch I compile tested, and I think it would fix the issue.
-
-But it'd break the alternative rc decoding module (not integrated in the 
-kernel because it uses lirc):
-
-http://ventoso.org/luca/af9005/README.lirc
-
-Not really an issue for me, since I'm using a lirc-serial homebrew 
-device, (besides, my af9005 device is broken, though the remote part is 
-still working, so in a pinch I could use it as an usb remote receiver).
-
-@Ingo, silly question, but do you have an af9005 based device where this 
-is crashing?
-
-Bye
--- 
-Luca
-
+> diff --git a/fs/gfs2/Kconfig b/fs/gfs2/Kconfig
+> index 3a981b7..97cefdf 100644
+> --- a/fs/gfs2/Kconfig
+> +++ b/fs/gfs2/Kconfig
+> @@ -7,6 +7,7 @@ config GFS2_FS
+>  	select IP_SCTP if DLM_SCTP
+>  	select FS_POSIX_ACL
+>  	select CRC32
+> +	select FILE_LOCKING
+>  	help
+>  	  A cluster filesystem.
+>  
 
