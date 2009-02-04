@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZBDXZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756646AbZBDX0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbZBDXZi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:25:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755950AbZBDXZ1
+	id S1756646AbZBDX0t (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:26:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZBDX0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 18:25:27 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33132 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755554AbZBDXZ0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:25:26 -0500
-Date: Wed, 4 Feb 2009 15:24:34 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       mtk.manpages@gmail.com, linux-api@vger.kernel.org
-Subject: Re: [patch/rfc] eventfd semaphore-like behavior
-Message-Id: <20090204152434.c8f65d52.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
-	<20090204150507.665b5b7c.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 4 Feb 2009 18:26:39 -0500
+Received: from mail.vyatta.com ([76.74.103.46]:51677 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751761AbZBDX0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 18:26:38 -0500
+Date: Wed, 4 Feb 2009 15:26:37 -0800
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #12601] virt-manager broken on 2.6.29-rc2
+Message-ID: <20090204152637.125a5f05@extreme>
+In-Reply-To: <pWZw1SZjMCH.A.cuE.5uYiJB@chimera>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+ <pWZw1SZjMCH.A.cuE.5uYiJB@chimera>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,38 +28,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009 15:18:43 -0800 (PST)
-Davide Libenzi <davidel@xmailserver.org> wrote:
+On Wed,  4 Feb 2009 11:24:04 +0100 (CET)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> > > Simple test here:
-> > > 
-> > > http://www.xmailserver.org/eventfd-sem.c
-> > > 
-> > > 
-> > > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-> > > 
-> > > +/*
-> > > + * CAREFUL: Check include/asm-generic/fcntl.h when defining
-> > > + * new flags, since they might collide with O_* ones. We want
-> > > + * to re-use O_* flags that couldn't possibly have a meaning
-> > > + * from eventfd, in order to leave a free define-space for
-> > > + * shared O_* flags.
-> > > + */
-> > > +#define EFD_SEMAPHORE (1 << 0)
-> > >  #define EFD_CLOEXEC O_CLOEXEC
-> > >  #define EFD_NONBLOCK O_NONBLOCK
-> > >  
-> > > +#define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
-> > > +#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
-> > 
-> > How would you recommend that userspace determine whether its kernel
-> > supports this feature, bearing in mind that someone might backport this
-> > patch into arbitrarily earlier kernel versions?
-> > 
-> > What should be userspace's fallback strategy if that support is not
-> > present?
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> #ifdef EFD_SEMAPHORE, maybe?
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12601
+> Subject		: virt-manager broken on 2.6.29-rc2
+> Submitter	: Stephen Hemminger <shemminger@vyatta.com>
+> Date		: 2009-01-29 5:21 (7 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123320655819589&w=4
+> 
+> 
 
-That's compile-time.  People who ship binaries will probably want
-to find a runtime thing for back-compatibility.
+This was in linux-next and already fixed.
