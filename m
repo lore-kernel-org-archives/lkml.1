@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbZBDShV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758641AbZBDShu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758382AbZBDShV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:37:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbZBDSg6
+	id S1758641AbZBDShu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758200AbZBDSg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:36:58 -0500
-Received: from kroah.org ([198.145.64.141]:50855 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:36:59 -0500
+Received: from kroah.org ([198.145.64.141]:50876 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751682AbZBDSg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755040AbZBDSg5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 4 Feb 2009 13:36:57 -0500
-Date: Wed, 4 Feb 2009 10:34:03 -0800
+Date: Wed, 4 Feb 2009 10:34:15 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,71 +22,155 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/33] 2.6.28-stable review
-Message-ID: <20090204183403.GA13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       Rik van Riel <riel@redhat.com>
+Subject: [patch 01/33] Manually revert "mlock: downgrade mmap sem while
+	populating mlocked regions"
+Message-ID: <20090204183415.GB13936@kroah.com>
+References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Disposition: inline; filename="manually-revert-mlock-downgrade-mmap-sem-while-populating-mlocked-regions.patch"
+In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.28.4 release.
-There are 33 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
 
-Responses should be made by Friday, February 6, 19:00:00 UTC.  Anything
-received after that time might be too late.
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.28.4-rc1.gz
-and the diffstat can be found below.
+commit 27421e211a39784694b597dbf35848b88363c248 upstream.
 
+This essentially reverts commit 8edb08caf68184fb170f4f69c7445929e199eaea.
 
-thanks,
+It downgraded our mmap semaphore to a read-lock while mlocking pages, in
+order to allow other threads (and external accesses like "ps" et al) to
+walk the vma lists and take page faults etc.  Which is a nice idea, but
+the implementation does not work.
 
-greg k-h
+Because we cannot upgrade the lock back to a write lock without
+releasing the mmap semaphore, the code had to release the lock entirely
+and then re-take it as a writelock.  However, that meant that the caller
+possibly lost the vma chain that it was following, since now another
+thread could come in and mmap/munmap the range.
 
- Makefile                                   |    2 +-
- arch/m68knommu/Kconfig                     |    4 +
- arch/x86/kernel/acpi/cstate.c              |    4 +-
- arch/x86/lib/usercopy_32.c                 |    4 +-
- arch/x86/lib/usercopy_64.c                 |    4 +-
- arch/x86/pci/irq.c                         |    1 +
- drivers/acpi/battery.c                     |    5 +-
- drivers/acpi/namespace/nsutils.c           |    8 ++-
- drivers/acpi/pci_link.c                    |    4 -
- drivers/acpi/video.c                       |    5 +
- drivers/ata/sata_mv.c                      |    6 +-
- drivers/ata/sata_nv.c                      |   77 +++++++++-----
- drivers/char/selection.c                   |    2 +-
- drivers/cpuidle/governors/menu.c           |   10 ++-
- drivers/input/keyboard/atkbd.c             |   25 +++++
- drivers/net/wireless/iwlwifi/iwl-3945-rs.c |   12 ++-
- drivers/net/wireless/iwlwifi/iwl-agn-rs.c  |   12 ++-
- drivers/net/wireless/orinoco.c             |   30 +++---
- drivers/net/wireless/p54/p54common.c       |   12 ++-
- drivers/net/wireless/p54/p54usb.c          |  149 +++++++++++++++++-----------
- drivers/net/wireless/p54/p54usb.h          |    1 +
- drivers/pci/msi.c                          |   16 ++--
- drivers/serial/jsm/jsm_tty.c               |    6 +
- drivers/video/aty/mach64_ct.c              |   11 ++
- drivers/xen/balloon.c                      |   33 ++++++-
- fs/cifs/connect.c                          |   18 ++--
- fs/dlm/plock.c                             |    2 +
- fs/nfsd/nfs4state.c                        |   31 ++++--
- include/linux/pci_ids.h                    |    1 +
- include/linux/slab_def.h                   |   10 +--
- mm/mlock.c                                 |   47 +---------
- net/mac80211/rc80211_minstrel.c            |   10 +-
- net/netfilter/nf_conntrack_netlink.c       |    3 +
- 33 files changed, 347 insertions(+), 218 deletions(-)
+The code tried to work around that by just looking up the vma again and
+erroring out if that happened, but quite frankly, that was just a buggy
+hack that doesn't actually protect against anything (the other thread
+could just have replaced the vma with another one instead of totally
+unmapping it).
+
+The only way to downgrade to a read map _reliably_ is to do it at the
+end, which is likely the right thing to do: do all the 'vma' operations
+with the write-lock held, then downgrade to a read after completing them
+all, and then do the "populate the newly mlocked regions" while holding
+just the read lock.  And then just drop the read-lock and return to user
+space.
+
+The (perhaps somewhat simpler) alternative is to just make all the
+callers of mlock_vma_pages_range() know that the mmap lock got dropped,
+and just re-grab the mmap semaphore if it needs to mlock more than one
+vma region.
+
+So we can do this "downgrade mmap sem while populating mlocked regions"
+thing right, but the way it was done here was absolutely not correct.
+Thus the revert, in the expectation that we will do it all correctly
+some day.
+
+Cc: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Cc: Rik van Riel <riel@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ mm/mlock.c |   47 ++---------------------------------------------
+ 1 file changed, 2 insertions(+), 45 deletions(-)
+
+--- a/mm/mlock.c
++++ b/mm/mlock.c
+@@ -293,14 +293,10 @@ static inline int __mlock_posix_error_re
+  *
+  * return number of pages [> 0] to be removed from locked_vm on success
+  * of "special" vmas.
+- *
+- * return negative error if vma spanning @start-@range disappears while
+- * mmap semaphore is dropped.  Unlikely?
+  */
+ long mlock_vma_pages_range(struct vm_area_struct *vma,
+ 			unsigned long start, unsigned long end)
+ {
+-	struct mm_struct *mm = vma->vm_mm;
+ 	int nr_pages = (end - start) / PAGE_SIZE;
+ 	BUG_ON(!(vma->vm_flags & VM_LOCKED));
+ 
+@@ -313,20 +309,8 @@ long mlock_vma_pages_range(struct vm_are
+ 	if (!((vma->vm_flags & (VM_DONTEXPAND | VM_RESERVED)) ||
+ 			is_vm_hugetlb_page(vma) ||
+ 			vma == get_gate_vma(current))) {
+-		long error;
+-		downgrade_write(&mm->mmap_sem);
+-
+-		error = __mlock_vma_pages_range(vma, start, end, 1);
+ 
+-		up_read(&mm->mmap_sem);
+-		/* vma can change or disappear */
+-		down_write(&mm->mmap_sem);
+-		vma = find_vma(mm, start);
+-		/* non-NULL vma must contain @start, but need to check @end */
+-		if (!vma ||  end > vma->vm_end)
+-			return -ENOMEM;
+-
+-		return 0;	/* hide other errors from mmap(), et al */
++		return __mlock_vma_pages_range(vma, start, end, 1);
+ 	}
+ 
+ 	/*
+@@ -437,41 +421,14 @@ success:
+ 	vma->vm_flags = newflags;
+ 
+ 	if (lock) {
+-		/*
+-		 * mmap_sem is currently held for write.  Downgrade the write
+-		 * lock to a read lock so that other faults, mmap scans, ...
+-		 * while we fault in all pages.
+-		 */
+-		downgrade_write(&mm->mmap_sem);
+-
+ 		ret = __mlock_vma_pages_range(vma, start, end, 1);
+ 
+-		/*
+-		 * Need to reacquire mmap sem in write mode, as our callers
+-		 * expect this.  We have no support for atomically upgrading
+-		 * a sem to write, so we need to check for ranges while sem
+-		 * is unlocked.
+-		 */
+-		up_read(&mm->mmap_sem);
+-		/* vma can change or disappear */
+-		down_write(&mm->mmap_sem);
+-		*prev = find_vma(mm, start);
+-		/* non-NULL *prev must contain @start, but need to check @end */
+-		if (!(*prev) || end > (*prev)->vm_end)
+-			ret = -ENOMEM;
+-		else if (ret > 0) {
++		if (ret > 0) {
+ 			mm->locked_vm -= ret;
+ 			ret = 0;
+ 		} else
+ 			ret = __mlock_posix_error_return(ret); /* translate if needed */
+ 	} else {
+-		/*
+-		 * TODO:  for unlocking, pages will already be resident, so
+-		 * we don't need to wait for allocations/reclaim/pagein, ...
+-		 * However, unlocking a very large region can still take a
+-		 * while.  Should we downgrade the semaphore for both lock
+-		 * AND unlock ?
+-		 */
+ 		__mlock_vma_pages_range(vma, start, end, 0);
+ 	}
+ 
+
