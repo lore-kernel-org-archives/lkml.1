@@ -1,44 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbZBDALS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZBDAPo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753571AbZBDALS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 19:11:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZBDALF
+	id S1753459AbZBDAPo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 19:15:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751586AbZBDAPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 19:11:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:42022 "EHLO ogre.sisk.pl"
+	Tue, 3 Feb 2009 19:15:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48862 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZBDALE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 19:11:04 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Parag Warudkar <parag.lkml@gmail.com>
-Subject: Re: WARNING: at drivers/pci/pci-driver.c:368
-Date: Wed, 4 Feb 2009 01:10:20 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200902032315.27113.rjw@sisk.pl> <alpine.DEB.2.00.0902031821590.7302@parag-laptop>
-In-Reply-To: <alpine.DEB.2.00.0902031821590.7302@parag-laptop>
+	id S1751476AbZBDAPg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 19:15:36 -0500
+Date: Wed, 4 Feb 2009 01:12:43 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: do_each_pid_task() needs rcu lock
+Message-ID: <20090204001243.GA6567@redhat.com>
+References: <20090203193904.GA23695@redhat.com> <20090203194214.GA23703@redhat.com> <m1fxivw673.fsf@fess.ebiederm.org> <20090203222803.GA31756@redhat.com> <m1zlh3umho.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902040110.21455.rjw@sisk.pl>
+In-Reply-To: <m1zlh3umho.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009, Parag Warudkar wrote:
-> 
-> Today's git triggers the below warning on suspending my laptop, which is -
-> 
-> if (WARN_ON_ONCE(pci_dev->current_state != PCI_D0))
-> 
-> Would it be helpful to also print info about the device that was not in 
-> PCI_D0?
+On 02/03, Eric W. Biederman wrote:
+>
+> Oleg Nesterov <oleg@redhat.com> writes:
+>
+> > Yes, I thought about de_thread() too. But we can't "fix" do_each_pid_task()
+> > to avoid the race?
+>
+> For the case of exec there is that.  There is also the case that
+> ftrace unlike everything else wants to trace be able to trace all of
+> the idle threads with pid 0.  I think that is a special case
+> currently, but for that case the only correct version I can think
+> of do_each_task_pid(), and current do_each_task_pid is wrong because
+> it does not allow that.
 
-Yes, the patch for that is on its way to Jesse.
+Well, yes, I (partly) agree.
 
-BTW, may I ask what about the last patch I sent to you? :-)
+But, if we are talking about idle threads, we should change copy_process()
+first. Because fork_idle()->copy_process(..., pid => init_struct_pid, ...)
+means we don't really attach the idle thread to init_struct_pid.
 
-Rafael
+I must admit, I think we should keep init_struct_pid "special" anyway,
+but in any case you are right imho, there are nasty oddities here.
+
+Oleg.
+
