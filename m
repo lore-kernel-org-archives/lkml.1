@@ -1,174 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbZBDXmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbZBDXm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758286AbZBDXmM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:42:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZBDXl5
+	id S1758838AbZBDXm2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:42:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757624AbZBDXmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 18:41:57 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:59205 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754687AbZBDXl4 (ORCPT
+	Wed, 4 Feb 2009 18:42:04 -0500
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:53174 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755221AbZBDXmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:41:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=MWTwBZ0jZlCtQM5UyyxEKOrlBJXRAU1HskrqY46pw1CmkTxTIxrNpfPvPjgiQXubeW
-         OP5NlJzbrzjU/7N/pdPJJNn+yqPzm12uWdPZ1KGDAGrClXY1CTZZReV1g8+vigVQRvzb
-         jHZa+CraehG/Jv/jyU3ODx/EwSHPJafpM9Sb4=
-Date: Thu, 5 Feb 2009 00:41:51 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 1/1] trace: assign defaults at register_ftrace_event
-Message-ID: <20090204234150.GA11300@nowhere>
-References: <20090204221639.GO3440@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090204221639.GO3440@ghostprotocols.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Feb 2009 18:42:03 -0500
+Subject: Re: Gem GTT mmaps..
+From: Eric Anholt <eric@anholt.net>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>,
+       DRI <dri-devel@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <200902041502.41524.jbarnes@virtuousgeek.org>
+References: <498A1760.7010108@shipmail.org>
+	 <200902041502.41524.jbarnes@virtuousgeek.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZnzI78qpyfGVB73BZ2+t"
+Date: Wed, 04 Feb 2009 15:42:00 -0800
+Message-Id: <1233790920.16368.4.camel@gaiman>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 08:16:39PM -0200, Arnaldo Carvalho de Melo wrote:
-> Impact: simplification of tracers
-> 
-> As all tracers are doing this we might as well do it in
-> register_ftrace_event and save one branch each time we call these
-> callbacks.
-> 
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  block/blktrace.c            |    2 --
->  kernel/trace/trace.c        |   13 +++++--------
->  kernel/trace/trace_branch.c |    3 ---
->  kernel/trace/trace_output.c |   13 +++++++++++--
->  4 files changed, 16 insertions(+), 15 deletions(-)
-> 
-> diff --git a/block/blktrace.c b/block/blktrace.c
-> index c7698d1..1ebd068 100644
-> --- a/block/blktrace.c
-> +++ b/block/blktrace.c
-> @@ -1243,8 +1243,6 @@ static struct trace_event trace_blk_event = {
->  	.type	 	= TRACE_BLK,
->  	.trace		= blk_trace_event_print,
->  	.latency_trace	= blk_trace_event_print,
-> -	.raw		= trace_nop_print,
-> -	.hex		= trace_nop_print,
->  	.binary		= blk_trace_event_print_binary,
->  };
->  
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index fd51cf0..a5e4c0a 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -1412,7 +1412,7 @@ static enum print_line_t print_lat_fmt(struct trace_iterator *iter)
->  			goto partial;
->  	}
->  
-> -	if (event && event->latency_trace)
-> +	if (event)
->  		return event->latency_trace(iter, sym_flags);
->  
->  	if (!trace_seq_printf(s, "Unknown type %d\n", entry->type))
-> @@ -1441,7 +1441,7 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
->  			goto partial;
->  	}
->  
-> -	if (event && event->trace)
-> +	if (event)
->  		return event->trace(iter, sym_flags);
->  
->  	if (!trace_seq_printf(s, "Unknown type %d\n", entry->type))
-> @@ -1467,7 +1467,7 @@ static enum print_line_t print_raw_fmt(struct trace_iterator *iter)
->  	}
->  
->  	event = ftrace_find_event(entry->type);
-> -	if (event && event->raw)
-> +	if (event)
->  		return event->raw(iter, 0);
->  
->  	if (!trace_seq_printf(s, "%d ?\n", entry->type))
-> @@ -1494,7 +1494,7 @@ static enum print_line_t print_hex_fmt(struct trace_iterator *iter)
->  	}
->  
->  	event = ftrace_find_event(entry->type);
-> -	if (event && event->hex) {
-> +	if (event) {
->  		enum print_line_t ret = event->hex(iter, 0);
->  		if (ret != TRACE_TYPE_HANDLED)
->  			return ret;
-> @@ -1536,10 +1536,7 @@ static enum print_line_t print_bin_fmt(struct trace_iterator *iter)
->  	}
->  
->  	event = ftrace_find_event(entry->type);
-> -	if (event && event->binary)
-> -		return event->binary(iter, 0);
-> -
-> -	return TRACE_TYPE_HANDLED;
-> +	return event ? event->binary(iter, 0) : TRACE_TYPE_HANDLED;
->  }
->  
->  static int trace_empty(struct trace_iterator *iter)
-> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-> index 7ac72a4..297deb2 100644
-> --- a/kernel/trace/trace_branch.c
-> +++ b/kernel/trace/trace_branch.c
-> @@ -182,9 +182,6 @@ static struct trace_event trace_branch_event = {
->  	.type	 	= TRACE_BRANCH,
->  	.trace		= trace_branch_print,
->  	.latency_trace	= trace_branch_print,
-> -	.raw		= trace_nop_print,
-> -	.hex		= trace_nop_print,
-> -	.binary		= trace_nop_print,
->  };
->  
->  static struct tracer branch_trace __read_mostly =
-> diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-> index b7380ee..b6e99af 100644
-> --- a/kernel/trace/trace_output.c
-> +++ b/kernel/trace/trace_output.c
-> @@ -435,6 +435,17 @@ int register_ftrace_event(struct trace_event *event)
->  	if (ftrace_find_event(event->type))
->  		goto out;
->  
-> +	if (event->trace == NULL)
-> +		event->trace = trace_nop_print;
-> +	if (event->latency_trace == NULL)
-> +		event->latency_trace = trace_nop_print;
-> +	if (event->raw == NULL)
-> +		event->raw = trace_nop_print;
-> +	if (event->hex == NULL)
-> +		event->hex = trace_nop_print;
-> +	if (event->binary == NULL)
-> +		event->binary = trace_nop_print;
-> +
->  	key = event->type & (EVENT_HASHSIZE - 1);
->  
->  	hlist_add_head_rcu(&event->node, &event_hash[key]);
-> @@ -874,8 +885,6 @@ static struct trace_event trace_print_event = {
->  	.trace		= trace_print_print,
->  	.latency_trace	= trace_print_print,
->  	.raw		= trace_print_raw,
-> -	.hex		= trace_nop_print,
-> -	.binary		= trace_nop_print,
->  };
->  
->  static struct trace_event *events[] __initdata = {
-> -- 
-> 1.6.0.6
-> 
+
+--=-ZnzI78qpyfGVB73BZ2+t
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2009-02-04 at 15:02 -0800, Jesse Barnes wrote:
+> On Wednesday, February 4, 2009 2:32 pm Thomas Hellstr=C3=B6m wrote:
+> > Jesse,
+> >
+> > I have some concerns about the GEM GTT mmap functionality.
+>=20
+> Thanks for looking it over again; you would know since some of this code =
+came=20
+> from you in the first place. :)
+>=20
+> > First, a gem object pointer is copied to map->offset and then to the
+> > vma->vm_private_data without proper reference counting. This pointer is
+> > used in i915_gem_fault() to access the gem object. However if the gem
+> > object is destroyed and a process then tries to access data in a vma
+> > mapping the (now destroyed) object, it would dereference a stale pointe=
+r
+> > into kernel space? Shouldn't those pointers be reference counted, and t=
+o
+> > account for fork(), a vm open and close would be needed to  reference
+> > count corresponding pointers of newly created and destroyed vmas?
+>=20
+> Yeah looks like we don't protect against vm_private_data pointing at a fr=
+eed=20
+> or other object.  But rather than refcounting the pointers I wonder if we=
+=20
+> could make the private data use the GEM object name instead, then do the=20
+> lookup in the fault handler?
+
+The object doesn't necessarily have a public name.  You do need to
+refcount the objects.
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
 
 
-Nice! This avoids one branch for each entry printed.
+
+--=-ZnzI78qpyfGVB73BZ2+t
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmKJ8gACgkQHUdvYGzw6vcwqwCglrRrDfy3AUTpLwS6CVW8E5Fn
+SXUAoJq4v+ro0COA0MExBbCQgYFu0cnW
+=x/EQ
+-----END PGP SIGNATURE-----
+
+--=-ZnzI78qpyfGVB73BZ2+t--
 
