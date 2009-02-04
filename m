@@ -1,125 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754856AbZBDCMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752178AbZBDCPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754856AbZBDCMx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 21:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752254AbZBDCMp
+	id S1752178AbZBDCPw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 21:15:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752131AbZBDCPo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 21:12:45 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48992 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752178AbZBDCMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 21:12:44 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH v2] fix mlocked page counter mistmatch
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux mm <linux-mm@kvack.org>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>
-In-Reply-To: <20090203234408.GA6212@barrios-desktop>
-References: <2f11576a0902030844l64c25496sa5f2892bbb04e47c@mail.gmail.com> <20090203234408.GA6212@barrios-desktop>
-Message-Id: <20090204103648.ECAF.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Tue, 3 Feb 2009 21:15:44 -0500
+Received: from gw.goop.org ([64.81.55.164]:49570 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbZBDCPn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 21:15:43 -0500
+Message-ID: <4988FA4A.6080002@goop.org>
+Date: Tue, 03 Feb 2009 18:15:38 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: "H. Peter Anvin" <hpa@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Stable Kernel <stable@kernel.org>
+Subject: Re: [PATCH] xen: disable interrupts before saving in percpu
+References: <4988DAEA.6040608@goop.org> <4988EE04.7090006@kernel.org>
+In-Reply-To: <4988EE04.7090006@kernel.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Wed,  4 Feb 2009 11:12:37 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, Feb 04, 2009 at 01:44:52AM +0900, KOSAKI Motohiro wrote:
-> > Hi MinChan,
-> > 
-> > I'm confusing now.
-> > Can you teach me?
-> 
-> No problem. :)
-> 
-> > 
-> > > When I tested following program, I found that mlocked counter
-> > > is strange.
-> > > It couldn't free some mlocked pages of test program.
-> > > It is caused that try_to_unmap_file don't check real
-> > > page mapping in vmas.
-> > 
-> > What meanining is "real" page mapping?
-> 
-> What I mean is that if the page is mapped at the vma,
-> I call it's "real" page mapping.
-> I explain it more detaily below.
-> 
-> > 
-> > 
-> > > That's because goal of address_space for file is to find all processes
-> > > into which the file's specific interval is mapped.
-> > > What I mean is that it's not related page but file's interval.
-> > 
-> > hmmm. No.
-> > I ran your reproduce program.
-> > 
-> > two vma pointing the same page cause this leaking.
-> 
-> I don't think so. 
+H. Peter Anvin wrote:
+> Jeremy Fitzhardinge wrote:
+>   
+>> xen_mc_batch has a small preempt race where it takes the address of a
+>> percpu variable immediately before disabling interrupts, thereby
+>> leaving a small window in which we may migrate to another cpu and save
+>> the flags in the wrong percpu variable.  Disable interrupts before
+>> saving the old flags in a percpu.
+>>     
+>
+> Applied to tip:core/xen, thanks!
 
-Please confirm by actual machine and kernel.
-I confirmed by printk debugging.
+Can you push this Linusward too?
 
-
-> > iow, any library have .text and .data segment. then the tail of .text
-> > and the head of .data vma point the same page.
-> > its page was leaked.
-> > 
-> > 
-> > > Even if the page isn't really mapping at the vma, it returns
-> > > SWAP_MLOCK since the vma have VM_LOCKED, then calls
-> > > try_to_mlock_page. After all, mlocked counter is increased again.
-> > >
-> > > COWed anon page in a file-backed vma could be a such case.
-> > > This patch resolves it.
-> > 
-> > What meaning is "anon page in a file-backed"?
-> > As far as I know, if cow happend on private mapping page, new page is
-> > treated truth anon.
-> > 
-> 
-> vm_area_struct's annotation can explain about your question. 
-> 
-> struct vm_area_struct {
->   struct mm_struct * vm_mm; /* The address space we belong to. */
->   ....
->   ....
->   /*  
->    * A file's MAP_PRIVATE vma can be in both i_mmap tree and anon_vma
->    * list, after a COW of one of the file pages.  A MAP_SHARED vma
->    * can only be in the i_mmap tree.  An anonymous MAP_PRIVATE, stack
->    * or brk vma (with NULL file) can only be in an anon_vma list.
->    */
->   struct list_head anon_vma_node; /* Serialized by anon_vma->lock */
->   struct anon_vma *anon_vma;  /* Serialized by page_table_lock */
->   ....
->   ....
-> }
-> 
-> Let us call it anon page in a file-backed. 
-> In this case, the new page is mapped at the vma. 
-> the vma don't include old page any more but i_mmap tree still have 
-> the vma. 
-
-hmhm. thanks. 
-my understanding largely improvement.
-
-I agree page_check_address() checking is necessary.
-
-> So, the i_mmap tree can have the vma which don't include
-> the page if the one is anon page in a file-backed. 
-> 
-> This problem is caused by that. 
-> Is it enough ?
-
-Could you please teach me why this issue doesn't happend on munlockall()?
-your scenario seems to don't depend on exit_mmap().
-
-
-
+Thanks,
+    J
