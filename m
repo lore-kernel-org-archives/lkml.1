@@ -1,79 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754492AbZBDASj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbZBDAUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754492AbZBDASj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 19:18:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZBDASb
+	id S1753428AbZBDAUA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 19:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbZBDATw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 19:18:31 -0500
-Received: from ns.km10614-05.keymachine.de ([87.118.102.170]:44463 "EHLO
-	km10614-05.keymachine.de" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751134AbZBDASa (ORCPT
+	Tue, 3 Feb 2009 19:19:52 -0500
+Received: from an-out-0708.google.com ([209.85.132.251]:32054 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbZBDATw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 19:18:30 -0500
-Date: Wed, 4 Feb 2009 01:18:04 +0100
-From: Harald Braumann <harry@unheit.net>
-To: Paul Menage <menage@google.com>
-Cc: sean finney <seanius@seanius.net>, Gustavo Noronha <kov@debian.org>,
-       debian-devel@lists.debian.org, linux-kernel@vger.kernel.org
-Subject: Re: cgroup mount point
-Message-ID: <20090204011804.08f2b35a@sbs173>
-In-Reply-To: <6599ad830902031540ra4e00dejd844d584b0668a6e@mail.gmail.com>
-References: <20090202200013.GU3643@vespa.holoscopio.com>
-	<20090202214153.GV3643@vespa.holoscopio.com>
-	<20090203102416.GA8886@redhat.com>
-	<87ljsnzo4v.fsf@benfinney.id.au>
-	<1233671913.8902.53.camel@abacate.horta>
-	<6599ad830902030855h1753f4a4o3a303b4dbddf10de@mail.gmail.com>
-	<20090203184915.GA10004@glandium.org>
-	<20090203185117.GB3359@mini-me.seanius.net>
-	<6599ad830902031114t7de1b570p4ed5ec497e2e150e@mail.gmail.com>
-	<20090204003847.308cd0df@sbs173>
-	<6599ad830902031540ra4e00dejd844d584b0668a6e@mail.gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/fz4d6i=jf9XmiMiVynUJ9+J";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Tue, 3 Feb 2009 19:19:52 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
+         :references:user-agent:mime-version:content-type;
+        b=aUh1KaQ+fZ9IGav42U6dmfNS0xd3l42hFmfk+NaQW+8eetPto1KsuVqOXAUoTud50d
+         2ZH2ioZRGMS3Qo1N/2oyiylekvtnmerUIUFuUqkVSoLt0jhC+gyuV2oDWkwXs6o+qsJl
+         xREoPMPZlJr02a0kWcOx6Hm0spc35h0kzpQW8=
+Date: Tue, 3 Feb 2009 19:19:47 -0500 (EST)
+From: Parag Warudkar <parag.lkml@gmail.com>
+X-X-Sender: parag@parag-laptop
+To: Parag Warudkar <parag.lkml@gmail.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: WARNING: at drivers/pci/pci-driver.c:368
+In-Reply-To: <alpine.DEB.2.00.0902031912520.7017@parag-laptop>
+Message-ID: <alpine.DEB.2.00.0902031918260.7017@parag-laptop>
+References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200902032315.27113.rjw@sisk.pl> <alpine.DEB.2.00.0902031821590.7302@parag-laptop> <200902040110.21455.rjw@sisk.pl> <alpine.DEB.2.00.0902031912520.7017@parag-laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/fz4d6i=jf9XmiMiVynUJ9+J
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 3 Feb 2009 15:40:39 -0800
-Paul Menage <menage@google.com> wrote:
-
-> On Tue, Feb 3, 2009 at 3:38 PM, Harald Braumann <harry@unheit.net>
-> wrote:
-> >
-> > So, what's the problem with /dev/cgroups then? If shm/ and pts/
-> > are allowed under /dev, wouldn't it be discriminating against
-> > cgroups/, to not allow it there?
->=20
-> Right, that's what I proposed a couple of emails earlier in this
-> thread.
-
-Sorry, I didn't mean to imply that you'd be against it, on the contrary,
-I took your explanation as another argument for using /dev and
-against /sys (/cgroups should not even be considered, IMHO).=20
-
-The question was targeted at those, who oppose it.
-
-Cheers,
-harry
 
 
---Sig_/fz4d6i=jf9XmiMiVynUJ9+J
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+On Tue, 3 Feb 2009, Parag Warudkar wrote:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> Actually judging by the INT disabled message that appears after the 
+> WARN_ON - 
+> 
+> 0000:01:00.0: PCI INT A disabled
+> 
+> It seems to be the PCI bridge that was in D0 - 
 
-iEYEARECAAYFAkmI3rwACgkQwMFqDB+mz27abgCgqI99o9cgglYAz/fpycAG44BE
-Z3kAn30HqmWowpil0l5Fn2Tao97NHzeg
-=MNL7
------END PGP SIGNATURE-----
+Of course I meant was NOT in D0 ..
 
---Sig_/fz4d6i=jf9XmiMiVynUJ9+J--
+Parag
