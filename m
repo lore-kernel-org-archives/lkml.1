@@ -1,83 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbZBDEFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZBDEIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbZBDEFQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 23:05:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZBDEFE
+	id S1754660AbZBDEIT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 23:08:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBDEII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 23:05:04 -0500
-Received: from hera.kernel.org ([140.211.167.34]:45781 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752524AbZBDEFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 23:05:02 -0500
-Subject: Re: usr/include/linux/soundcard.h warnings for 'make headers_check'
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Takashi Iwai <tiwai@suse.de>,
-       alsa-devel@alsa-project.org, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <200902032127.24526.arnd@arndb.de>
-References: <1232465902.3088.31.camel@localhost.localdomain>
-	 <s5h7i4psepm.wl%tiwai@suse.de> <20090121054138.GA26551@uranus.ravnborg.org>
-	 <200902032127.24526.arnd@arndb.de>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 09:34:12 +0530
-Message-Id: <1233720252.3595.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+	Tue, 3 Feb 2009 23:08:08 -0500
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:48298 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751786AbZBDEIH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 23:08:07 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=ZQrdLrAuQMe/s4sr3ZqQNbvYWswI8JIQ6xcfz1TOktcEP/gDDRiw7NGuXZ0cr1iAMo4MrQuM43UCHtYZLFKBveU3OyLZvsUVvtvulAfhOEJR17rgOrn56JNI6yNfAKk/T/DuOb+9sk81eYvbkMV2zEvCukpgj6ab+BK19uXzV4o=  ;
+X-YMail-OSG: UObAHVYVM1mVGoJwwr8INMtNCz7BR3L769m.AenVgELTglCRu6WyTZH5.joRTfIf1rcThp9f65gSUwTKBJX6ubOJVgiZqbs09eMNHNhei1WDxcRoYZNAfkqCysQD1yPuml.xeyxghlK1P39Ni5OreWx5fp2TG22Jx6I.x0jFcNd8XKs7kmVJigkSckX7Pw--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+Date: Wed, 4 Feb 2009 15:07:32 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Nick Piggin <npiggin@suse.de>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20090114155923.GC1616@wotan.suse.de> <200902031253.28078.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0902031217390.17910@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0902031217390.17910@qirst.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902041507.33464.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 21:27 +0100, Arnd Bergmann wrote:
-> On Wednesday 21 January 2009, Sam Ravnborg wrote:
-> > 
-> > > No, these are declarations for OSS-lib.
-> > > It doesn't belong to kernel, but it's better to keep it for
-> > > compatibility in some way.
-> > 
-> > But not in the kernel for sure.
-> > I just checked and for example: OSS_init is not used anywhere in the kernel.
-> > The kernel headers are not a "dump all your stuff" ground anymore.
-> > 
-> > So I encourage you to find a better home for the user space library definitons.
-> > We can let the definiton stay for a while - but eventually they have to
-> > be dropped from the kernel.
-> 
-> The last free version of OSSlib that matches this header is from ~1997, and
-> no current distro appears to be shipping it. All new OSSlib versions (the
-> oldest I found was from ~2003) contain in their documentation:
-> 
-> "Older versions of some OSS include files are distributed
->  with various operating systems. There is no danger in
->  using them but applications written for more recent OSS
->  versions will not compile with older header files.
-> 
->  The latest versions of these include files (such as
->  soundcard.h) are distributed in ../include/sys. Use
->  the -I/usr/lib/oss/include switch when compiling
->  programs. Alternatively copy these files to /usr/include/sys
->  so that they replace the original ones."
-> 
-> I think it's safe enough to assume that everyone that builds against
-> OSSlib by now also has the correct version of the header installed.
-> Consequently, we should just drop the #ifndef __KERNEL__ section
-> of soundcard.h (all the macros in there depend on the extern
-> declarations), and maybe add an
-> 
-> #ifdef OSSLIB
-> #error need to use <sys/soundcard.h> from libOSSlib
-> #endif
-> 
+On Wednesday 04 February 2009 04:33:14 Christoph Lameter wrote:
+> On Tue, 3 Feb 2009, Nick Piggin wrote:
+> > Quite obviously it should. Behaviour of a slab allocation on behalf of
+> > some task constrained within a given node should not depend on the task
+> > which has previously run on this CPU and made some allocations. Surely
+> > you can see this behaviour is not nice.
+>
+> If you want cache hot objects then its better to use what a prior task
+> has used. This opportunistic use is only done if the task is not asking
+> for memory from a specifc node. There is another tradeoff here.
+>
+> SLABs method there is to ignore all caching advantages even if the task
+> did not ask for memory from a specific node. So it gets cache cold objects
+> and if the node to allow from is remote then it always must use the slow
+> path.
 
-sys/soundcard.h is also pointing to linux/soundcard.h, we need to move
-all this stuff to sys/soundcard.h.
+Yeah, but I don't think you actually demonstrated any real advantages
+to it, and there are obvious failure modes where constraints aren't
+obeyed, so I'm going to leave it as-is in SLQB.
 
-Sam also requested to move this stuff to other place.
+Objects where cache hotness tends to be most important are the shorter
+lived ones, and objects where constraints matter are longer lived ones,
+so I think this is pretty reasonable.
 
-We are waiting for Takashi reply.
+Also, you've just been spending lots of time arguing that cache hotness
+is not so important (because SLUB doesn't do LIFO like SLAB and SLQB).
 
---
-JSR
 
+> > > Which have similar issues since memory policy application is depending
+> > > on a task policy and on memory migration that has been applied to an
+> > > address range.
+> >
+> > What similar issues? If a task ask to have slab allocations constrained
+> > to node 0, then SLUB hands out objects from other nodes, then that's bad.
+>
+> Of course. A task can ask to have allocations from node 0 and it will get
+> the object from node 0. But if the task does not care to ask for data
+> from a specific node then it can be satisfied from the cpu slab which
+> contains cache hot objects.
+
+But if it is using constrained allocations, then it is also asking for
+allocations from node 0.
+
+
+> > > > But that is wrong. The lists obviously have high water marks that
+> > > > get trimmed down. Periodic trimming as I keep saying basically is
+> > > > alrady so infrequent that it is irrelevant (millions of objects
+> > > > per cpu can be allocated anyway between existing trimming interval)
+> > >
+> > > Trimming through water marks and allocating memory from the page
+> > > allocator is going to be very frequent if you continually allocate on
+> > > one processor and free on another.
+> >
+> > Um yes, that's the point. But you previously claimed that it would just
+> > grow unconstrained. Which is obviously wrong. So I don't understand what
+> > your point is.
+>
+> It will grow unconstrained if you elect to defer queue processing. That
+> was what we discussed.
+
+And I just keep pointing out that you are wrong (this must be the 4th time).
+
+We were talking about deferring the periodic queue reaping. SLQB will still
+constrain the queue sizes to the high watermarks.
 
