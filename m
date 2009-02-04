@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZBDIMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754136AbZBDINq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753687AbZBDIMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 03:12:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZBDIMb
+	id S1754136AbZBDINq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:13:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751849AbZBDINg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 03:12:31 -0500
-Received: from harold.telenet-ops.be ([195.130.133.65]:51122 "EHLO
-	harold.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752160AbZBDIMa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 03:12:30 -0500
-Date: Wed, 4 Feb 2009 09:12:27 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Balaji Rao <balajirrao@openmoko.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-cc: =?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: build issue #587 for v2.6.29-rc2-13-gf3b8436 :_set_irq_handler"
- [drivers/mfd/pcf50633-core.ko] undefined!
-In-Reply-To: <20090122173020.GI3171@fedora.yogi>
-Message-ID: <Pine.LNX.4.64.0902040910340.16785@anakin>
-References: <200901221812.20702.toralf.foerster@gmx.de> <20090122173020.GI3171@fedora.yogi>
+	Wed, 4 Feb 2009 03:13:36 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:58500 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbZBDINf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 03:13:35 -0500
+Message-ID: <49894E24.2000908@redhat.com>
+Date: Wed, 04 Feb 2009 10:13:24 +0200
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Herbert Xu <herbert@gondor.apana.org.au>, mingo@elte.hu, x86@kernel.org,
+       sam@ravnborg.org, hpa@zytor.com, jirislaby@gmail.com, gregkh@suse.de,
+       davem@davemloft.net, xyzzy@speakeasy.org, arnd@arndb.de,
+       mchehab@infradead.org, jens.axboe@oracle.com,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL -tip] fix 22 make headers_check - 200901
+References: <20090204064307.GA18415@gondor.apana.org.au> <1233734645.3198.2.camel@localhost.localdomain>
+In-Reply-To: <1233734645.3198.2.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 22 Jan 2009, Balaji Rao wrote:
-> On Thu, Jan 22, 2009 at 06:12:16PM +0100, Toralf Förster wrote:
-> > 
-> > -- 
-> > MfG/Sincerely
-> > 
-> > Toralf Förster
-> > pgp finger print: 7B1A 07F4 EC82 0F90 D4C2 8936 872A E508 7DB6 9DA3
-> > 
-> 
-> Content-Description: Toralf Förster <tfoerste@n22.n22_domain>: build issue #587 for v2.6.29-rc2-13-gf3b8436 :
-> > Date: Thu, 22 Jan 2009 18:10:21 +0100
-> > From: Toralf F�rster <tfoerste@n22.n22_domain>
-> > To: tfoerste@n22.n22_domain
-> > Subject: build issue #587 for v2.6.29-rc2-13-gf3b8436 :
-> > 
-> > Hello,
-> > 
-> > the build (.config attached) failed, make ends with :
-> > ...
-> 
-> Hi,
-> 
-> This is known for more than two weeks. Fixes in various forms have been
-> sent on this list, but somehow it isn't making it to the destination..
-> 
-> Stephen has asked Linus to pull Samuel's tree (which has the fix). Let's
-> hope Linus pulls it soon..
+Jaswinder Singh Rajput wrote:
+> On Wed, 2009-02-04 at 17:43 +1100, Herbert Xu wrote:
+>   
+>> Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+>>     
+>>> diff --git a/arch/x86/include/asm/kvm.h b/arch/x86/include/asm/kvm.h
+>>> index b95162a..d2e3bf3 100644
+>>> --- a/arch/x86/include/asm/kvm.h
+>>> +++ b/arch/x86/include/asm/kvm.h
+>>> @@ -6,7 +6,7 @@
+>>>  *
+>>>  */
+>>>
+>>> -#include <asm/types.h>
+>>> +#include <linux/types.h>
+>>> #include <linux/ioctl.h>
+>>>       
+>> Awesome, you've just broken the userspace build of kvm as the
+>> file linux/types.h conflicts with sys/types.h.
+>>
+>>     
+>
+> What I did is absolutely right.
+>
+>   
 
-Any chance this will happen soon?
+It was, though I'd have been happy to know about it in advance (maybe 
+you did notify me; I was on vacation and haven't cleared the backlog yet).
 
-I'd like to see the m68k build results on
-http://kisskb.ellerman.id.au/kisskb/matrix/ turn green again :-)
+> If there is any conflict then we need to solve it in better way.
+>
+> Can you please share what is the conflict and what you are expecting and
+> what you are getting.
+>   
 
-Gr{oetje,eeting}s,
+I've already fixed kvm-userspace.git.
 
-						Geert
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
