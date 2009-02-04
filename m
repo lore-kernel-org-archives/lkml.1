@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760896AbZBDWR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbZBDWZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760896AbZBDWR3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 17:17:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760223AbZBDWRM
+	id S1759758AbZBDWZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 17:25:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754408AbZBDWZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 17:17:12 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55644 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759558AbZBDWRL (ORCPT
+	Wed, 4 Feb 2009 17:25:14 -0500
+Received: from smtp4.tech.numericable.fr ([82.216.111.40]:33465 "EHLO
+	smtp4.tech.numericable.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753489AbZBDWZN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 17:17:11 -0500
-Date: Wed, 4 Feb 2009 14:16:23 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] timer fix
-In-Reply-To: <alpine.LFD.2.00.0902041400100.3247@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0902041412420.3247@localhost.localdomain>
-References: <20090204192551.GA19539@elte.hu> <alpine.LFD.2.00.0902041400100.3247@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 4 Feb 2009 17:25:13 -0500
+Message-ID: <498A15C3.30904@numericable.fr>
+Date: Wed, 04 Feb 2009 23:25:07 +0100
+From: etienne <etienne.basset@numericable.fr>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Dave Airlie <airlied@linux.ie>, Dave Airlie <airlied@redhat.com>,
+       Soeren Sonnenburg <kernel@nn7.de>
+Subject: Re: [Bug #12613] [Suspend regression][DRM, RADEON]
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.OlD.ouYiJB@chimera>
+In-Reply-To: <pWZw1SZjMCH.A.OlD.ouYiJB@chimera>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12613
+> Subject		: [Suspend regression][DRM, RADEON]
+> Submitter	: etienne <etienne.basset@numericable.fr>
+> Date		: 2009-01-28 22:00 (8 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
+> References	: http://marc.info/?l=linux-kernel&m=123318030419558&w=4
+> 		  http://marc.info/?l=linux-kernel&m=123334865404574&w=4
+>
+>
+>   
+hello,
 
-
-On Wed, 4 Feb 2009, Linus Torvalds wrote:
-> 
-> Either cast the result of the subtract to "s32" (or "int", whatever), or 
-> cast _both_ of them to (s32) so that the subtract is done in a signed 
-> type, and then the expansion to (long) will still be right - but 
-> unnecessary - in the sign.
-
-Btw, doing it with a nice helper macro or function is also perhaps a good 
-idea, at least if these "compare hpet values" things happen more than 
-once. 
-
-Look at "time_after()" in <linux/jiffies.h> to see how to do these kinds 
-of "comparisons of things that may overflow" really carefully. You 
-absolutely need to do the compare in a size that is no larger than the 
-size of the actual values (and in the case of HPET, it's 32-bit, at least 
-the way we do things now - I guess HPET's _could_ be 64-bit, but we don't 
-read more than 32 bits or whatever).
-
-So <linux/jiffies.h> does the cast to "(long)", but it does so because the 
-incoming values really have type "unsigned long" and are valid in all 
-bits.
-
-			Linus
+yes it is still here with today's git
+regards
+Etienne
