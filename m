@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760796AbZBDSqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbZBDSq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760796AbZBDSqi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 13:46:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758188AbZBDShd
+	id S1760054AbZBDSq4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 13:46:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758600AbZBDShf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 13:37:33 -0500
-Received: from kroah.org ([198.145.64.141]:51163 "EHLO coco.kroah.org"
+	Wed, 4 Feb 2009 13:37:35 -0500
+Received: from kroah.org ([198.145.64.141]:51178 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758275AbZBDShW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 13:37:22 -0500
-Date: Wed, 4 Feb 2009 10:35:05 -0800
+	id S1754723AbZBDShX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 13:37:23 -0500
+Date: Wed, 4 Feb 2009 10:35:07 -0800
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,58 +22,84 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Seth Heasley <seth.heasley@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 25/33] PCI: irq and pci_ids patch for Intel Tigerpoint
-	DeviceIDs
-Message-ID: <20090204183505.GZ13936@kroah.com>
+       alan@lxorguk.ukuu.org.uk, Len Brown <len.brown@intel.com>,
+       venkatesh.pallipadi@intel.com, Thomas Renninger <trenn@suse.de>
+Subject: [patch 26/33] cpuidle: Add decaying history logic to menu idle
+	predictor
+Message-ID: <20090204183507.GA13936@kroah.com>
 References: <20090204182823.831027530@mini.kroah.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename="pci-irq-and-pci_ids-patch-for-intel-tigerpoint-deviceids.patch"
+Content-Disposition: inline; filename="cpuidle-add-decaying-history-logic-to-menu-idle-predictor.patch"
 In-Reply-To: <20090204183403.GA13936@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.28-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Seth Heasley <seth.heasley@intel.com>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-commit 57064d213d2e44654d4f13c66df135b5e7389a26 upstream.
+commit 816bb611e41be29b476dc16f6297eb551bf4d747 upstream
 
-This patch adds the Intel Tigerpoint LPC Controller DeviceIDs.
+Add decaying history of predicted idle time, instead of using the last early
+wakeup. This logic helps menu governor do better job of predicting idle time.
 
-Signed-off-by: Seth Heasley <seth.heasley@intel.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+With this change, we also measured noticable (~8%) power savings on
+a DP server system with CPUs supporting deep C states, when system
+was lightly loaded. There was no change to power or perf on other load
+conditions.
+
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Len Brown <len.brown@intel.com>
+Cc: Thomas Renninger <trenn@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/x86/pci/irq.c      |    1 +
- include/linux/pci_ids.h |    1 +
- 2 files changed, 2 insertions(+)
+ drivers/cpuidle/governors/menu.c |   10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
 
---- a/arch/x86/pci/irq.c
-+++ b/arch/x86/pci/irq.c
-@@ -573,6 +573,7 @@ static __init int intel_router_probe(str
- 	case PCI_DEVICE_ID_INTEL_ICH7_1:
- 	case PCI_DEVICE_ID_INTEL_ICH7_30:
- 	case PCI_DEVICE_ID_INTEL_ICH7_31:
-+	case PCI_DEVICE_ID_INTEL_TGP_LPC:
- 	case PCI_DEVICE_ID_INTEL_ESB2_0:
- 	case PCI_DEVICE_ID_INTEL_ICH8_0:
- 	case PCI_DEVICE_ID_INTEL_ICH8_1:
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -2418,6 +2418,7 @@
- #define PCI_DEVICE_ID_INTEL_ICH7_0	0x27b8
- #define PCI_DEVICE_ID_INTEL_ICH7_1	0x27b9
- #define PCI_DEVICE_ID_INTEL_ICH7_30	0x27b0
-+#define PCI_DEVICE_ID_INTEL_TGP_LPC	0x27bc
- #define PCI_DEVICE_ID_INTEL_ICH7_31	0x27bd
- #define PCI_DEVICE_ID_INTEL_ICH7_17	0x27da
- #define PCI_DEVICE_ID_INTEL_ICH7_19	0x27dd
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -15,12 +15,14 @@
+ #include <linux/tick.h>
+ 
+ #define BREAK_FUZZ	4	/* 4 us */
++#define PRED_HISTORY_PCT	50
+ 
+ struct menu_device {
+ 	int		last_state_idx;
+ 
+ 	unsigned int	expected_us;
+ 	unsigned int	predicted_us;
++	unsigned int    current_predicted_us;
+ 	unsigned int	last_measured_us;
+ 	unsigned int	elapsed_us;
+ };
+@@ -47,6 +49,12 @@ static int menu_select(struct cpuidle_de
+ 	data->expected_us =
+ 		(u32) ktime_to_ns(tick_nohz_get_sleep_length()) / 1000;
+ 
++	/* Recalculate predicted_us based on prediction_history_pct */
++	data->predicted_us *= PRED_HISTORY_PCT;
++	data->predicted_us += (100 - PRED_HISTORY_PCT) *
++				data->current_predicted_us;
++	data->predicted_us /= 100;
++
+ 	/* find the deepest idle state that satisfies our constraints */
+ 	for (i = CPUIDLE_DRIVER_STATE_START + 1; i < dev->state_count; i++) {
+ 		struct cpuidle_state *s = &dev->states[i];
+@@ -97,7 +105,7 @@ static void menu_reflect(struct cpuidle_
+ 		measured_us = -1;
+ 
+ 	/* Predict time until next break event */
+-	data->predicted_us = max(measured_us, data->last_measured_us);
++	data->current_predicted_us = max(measured_us, data->last_measured_us);
+ 
+ 	if (last_idle_us + BREAK_FUZZ <
+ 	    data->expected_us - target->exit_latency) {
 
