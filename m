@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZBDCtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754895AbZBDCv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZBDCtm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 21:49:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbZBDCtc
+	id S1754895AbZBDCv4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 21:51:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751713AbZBDCvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 21:49:32 -0500
-Received: from gate.crashing.org ([63.228.1.57]:59817 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751740AbZBDCtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 21:49:31 -0500
-Subject: Re: [PATCH 1/7] PCI PM: Fix handling of devices without drivers
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       Eric Sesterhenn <snakebyte@gmx.de>
-In-Reply-To: <alpine.LFD.2.00.0902031815550.3247@localhost.localdomain>
-References: <200902040154.36018.rjw@sisk.pl>
-	 <200902040156.15200.rjw@sisk.pl>
-	 <alpine.LFD.2.00.0902031815550.3247@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 04 Feb 2009 13:49:15 +1100
-Message-Id: <1233715755.16867.149.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Tue, 3 Feb 2009 21:51:48 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45163 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751358AbZBDCvr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 3 Feb 2009 21:51:47 -0500
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: MinChan Kim <minchan.kim@gmail.com>
+Subject: Re: [PATCH v2] fix mlocked page counter mistmatch
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       linux mm <linux-mm@kvack.org>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>
+In-Reply-To: <20090204024447.GB6212@barrios-desktop>
+References: <20090204103648.ECAF.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090204024447.GB6212@barrios-desktop>
+Message-Id: <20090204115047.ECB5.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.42 [ja]
+Date: Wed,  4 Feb 2009 11:51:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-02-03 at 18:23 -0800, Linus Torvalds wrote:
-> Whaa? This is basically totally obfuscated code both in the caller _and_ 
-> in the callee.
+> > Could you please teach me why this issue doesn't happend on munlockall()?
+> > your scenario seems to don't depend on exit_mmap().
 > 
-> Now, it looks like this all then goes away in PATCH 7/7, so I guess I 
-> shouldn't complain too much, but I just don't see much point in carrying 
-> this broken patch around in the series, since it's then going away and 
-> rewritten almost immediately again.
 > 
-> Apart from that complaints, Acked-by: for the series. 
+> Good question.
+> It's a different issue.
+> It is related to mmap_sem locking issue. 
+> 
+> Actually, I am about to make a patch.
+> But, I can't understand that Why try_do_mlock_page should downgrade mm_sem ?
+> Is it necessary ? 
+> 
+> In munlockall path, mmap_sem already is holding in write-mode of mmap_sem.
+> so, try_to_mlock_page always fail to downgrade mmap_sem.
+> It's why it looks like working well about mlocked counter. 
 
-Same comments. It took me a while to figure the logic out, which I end
-up agreeing with but the code is pretty obfuscated ... And yes, patch 7
-seems to improve things, but then, that makes reading the patch itself
-nearly impossible :-) I ended up patching the file and -then- reading
-it.
+lastest linus tree don't have downgrade mmap_sem.
+(recently it was removed)
 
-I tried the whole thing on various powerbooks, along with some patches
-I'm about to send for radeonfb, atyfb and aty128fb to make them properly
-call pci_save_state() before they hand-change the D state, and things
-appear to be working fine. (well, appart from some unrelated problems
-leading to some might_sleep() hits but as I said, they are unrelated to
-this series)
-
-I need a couple more tests of the fbdev patches on some machine variants
-and once done, I'll post them out. Hopefully tonight.
-
-Cheers,
-Ben.
+please see it.
 
 
