@@ -1,62 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbZBDXNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbZBDXOd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757506AbZBDXNt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:13:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751468AbZBDXNG
+	id S1757569AbZBDXOd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:14:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbZBDXOY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 18:13:06 -0500
-Received: from kroah.org ([198.145.64.141]:59741 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755499AbZBDXND (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:13:03 -0500
-Date: Wed, 4 Feb 2009 15:08:51 -0800
-From: Greg KH <greg@kroah.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: tom.leiming@gmail.com, kay.sievers@vrfy.org, cornelia.huck@de.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] driver core: remove polling for driver_probe_done(v3)
-Message-ID: <20090204230851.GF18484@kroah.com>
-References: <1233319715-4877-1-git-send-email-tom.leiming@gmail.com> <20090130065224.47729f41@infradead.org>
+	Wed, 4 Feb 2009 18:14:24 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:36393 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbZBDXOX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 18:14:23 -0500
+Message-ID: <498A2129.4030408@zytor.com>
+Date: Wed, 04 Feb 2009 15:13:45 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090130065224.47729f41@infradead.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Kirill Korotaev <dev@openvz.org>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] timer fix
+References: <20090204192551.GA19539@elte.hu> <alpine.LFD.2.00.0902041400100.3247@localhost.localdomain> <20090204225848.GA3251@elte.hu>
+In-Reply-To: <20090204225848.GA3251@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 30, 2009 at 06:52:24AM -0800, Arjan van de Ven wrote:
-> On Fri, 30 Jan 2009 20:48:35 +0800
-> tom.leiming@gmail.com wrote:
+Ingo Molnar wrote:
 > 
-> > From: Ming Lei <tom.leiming@gmail.com>
-> > 
-> > This patch adds a function : driver_wait_probe_done,
-> > which waits on condition of probing done to replace
-> > polling for driver_probe_done in fs initialization.
-> > 
-> > There is no better way to avoid polling for
-> > driver_probe_done _and_ existence of the root device,
-> > so we does not replace the driver_probe_done with
-> > driver_wait_probe_done in such special case.
-> > 
-> > Removing polling in fs initialization may lead to
-> > a faster boot.
-> > 
-> > Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> 
-> ok this one will work fine ;)
-> 
-> Reviewed-by: Arjan van de Ven <arjan@linux.intel.com>
-> 
-> thanks for fixing this up 
-> (it will clash with the patch that moves this to one place, but the
-> same cleanup can be done there)
+> The solution is (based on Linus's suggestion) to compare 64-bits
+                                                   ^not, presumably
+> (on 64-bit x86), but to do the comparison on 32-bit signed
+> integers.
 
-What patch is that?  Should i be taking this?  Or are they in some other
-tree?
-
-thanks,
-
-greg k-h
+	-hpa
