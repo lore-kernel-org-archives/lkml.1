@@ -1,90 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbZBDUJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758833AbZBDUNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758977AbZBDUJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 15:09:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbZBDUJM
+	id S1758833AbZBDUNX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 15:13:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZBDUM6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 15:09:12 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33630 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755347AbZBDUJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 15:09:11 -0500
-Date: Wed, 4 Feb 2009 21:08:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jeremy@goop.org, jaswinderrajput@gmail.com, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org, x86@kernel.org, righi.andrea@gmail.com
-Subject: Re: mmotm 2009-02-02-17-12 uploaded (x86/nopmd etc.)
-Message-ID: <20090204200846.GF22608@elte.hu>
-References: <200902030112.n131CNiq010549@imap1.linux-foundation.org> <498893C8.6080506@oracle.com> <20090203191804.GA24698@elte.hu> <20090203121706.423d5cab.akpm@linux-foundation.org> <20090203212538.GB20527@elte.hu> <20090203134128.37042ea8.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203134128.37042ea8.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 4 Feb 2009 15:12:58 -0500
+Received: from hoppy.mcmillan.net.nz ([202.78.240.82]:47769 "EHLO
+	mail.morphoss.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752126AbZBDUM5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 15:12:57 -0500
+X-Greylist: delayed 572 seconds by postgrey-1.27 at vger.kernel.org; Wed, 04 Feb 2009 15:12:56 EST
+Subject: Early crash with 2.6.29-rc3
+From: Andrew McMillan <andrew@morphoss.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-nxw6k/5kDWtKuVhgjPFq"
+Date: Thu, 05 Feb 2009 09:03:15 +1300
+Message-Id: <1233777795.14831.35.camel@happy.mcmillan.net.nz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+--=-nxw6k/5kDWtKuVhgjPFq
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > > This is getting painful.
-> > 
-> > the include file spaghetti is ... interesting there, and it's historic.
-> > 
-> > I could blame it on highmem, PAE or paravirt - but i'll only blame it on 
-> > paravirt for now because those developers are still around! ;-)
-> > 
-> > Jeremy, any ideas how to reduce the historic dependency mess in that area?
-> > I think we should go on three routes at once:
-> > 
-> >  - agressive splitup and separation of type definitions from method
-> >    declaration (+ inline definitions). The spinlock_types.h / spinlock.h 
-> >    splitup was really nice in solving such dependency problems.
-> 
-> I like this one.  The mixing up of declare-something with use-something
-> is often the source of our woes.
+Hi,
 
-yes. I mapped this problem area once and this is how the include file 
-spaghetti gets generated in practice:
+I see the following crash fairly early in the boot with a 2.6.29-rc3
+kernel built with essentially the same options as my working 2.6.28
+kernel on my Asus F3Ke laptop:
 
-  - type A gets declared
-  - type A gets _used_ in the same file in an inline method, BUT,
+Pid: 1, comm: swapper Not tainted (2.6.29-rc3-happy #1) F3Ke
+EIP: 0060:[<c02b6486>] EFLAGS: 00010217 CPU: 1
+EIP is at acpi_ns_delete_node+0x16/0x5e
+EAX: 00000000 EBX: f736a018 ECX: f7012858 EDX: 00000000
+ESI: f736a018 EDI: f7012858 EBP: f704dcf8 ESP: f704dcf4
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+Process swapper (pid: 1, ti=3Df704c000 task=3Df7050000 task.ti=3Df704c000)
+Stack:
+ 00000000 f704dd14 c02b6524 6b000000 00000004 f70133c0 f735a800 f735a800
+ f704dd24 c02aa9d3 f735a800 00000000 f704dd40 c02b8a49 f7363f30 00000000
+ f735a800 00000000 f7002f80 f704dd58 c02b9c33 f7363fc0 f7002f90 f7002f80
+Call Trace:
+ [<c02b6524>] ? acpi_ns_delete_namespace_by_owner+0x56/0xc3
+ [<c02aa9d3>] ? acpi_ds_terminate_control_method+0x60/0xac
+ [<c02b8a49>] ? acpi_ps_parse_aml+0x166/0x281
+ [<c02b9c33>] ? acpi_ps_execute_method+0x19a/0x253
+ [<c02b6693>] ? acpi_ns_evaluate+0xcb/0x17c
+ [<c02bc741>] ? acpi_ut_evaluate_object+0x39/0x140
+ [<c02bae8e>] ? acpi_rs_get_method_data+0x18/0x3c
+ [<c02ba82b>] ? acpi_walk_resources+0x39/0x91
+ [<c0666423>] ? check_mcfg_resource+0x0/0xaf
+ [<c0666410>] ? find_mboard_resource+0x1b/0x2e
+ [<c02b617f>] ? acpi_ns_get_device_callback+0xfe/0x112
+ [<c02b7806>] ? acpi_ns_walk_namespace+0x9a/0x110
+ [<c066639b>] ? is_acpi_reserved+0x0/0x5a
+ [<c02b6005>] ? acpi_get_devices+0x47/0x5d
+ [<c02b6081>] ? acpi_ns_get_device_callback+0x0/0x112
+ [<c06663f5>] ? find_mboard_resource++0x0/0x2e
+ [<c06663ec>] ? is_acpi_reserved+0x51/0x5a
+ [<c0665b9c>] ? is_mmconf_reserved+0x5c/0x128
+ [<c064f842>] ? acpi_parse_mcfg+0x8e/0x12c
+ [<c066635e>] ? __pci_mmcfg_init+0x30c/0x32e
+ [<c01d2783>] ? proc_mkdir_mode+0x33/0x50
+ [<c065ef04>] ? acpi_init+0x0/0x237
+ [<c066638a>] ? pci_mmcfg_late_init+0xa/0xc
+ [<c065f083>] ? acpi_init+0x17f/0x237
+ [<c010111a>] ? do_one_initcall+0x2a/0x150
+ [<c01d26b4>] ? create_proc_entry+0x54/0xa0
+ [<c016367c>] ? register_irq_proc+0x9c/0xb0
+ [<c01636f5>] ? init_irq_proc+0x65/0x80
+ [<c0643355>] ? kernel_init+0x127/0x180
+ [<c064322e>] ? kernel_init+0x0/0x180
+ [<c0103cdb>] ? kernel_thread_helper+0x7/0x1c
+Code: ff ff ff 89 f0 e8 ed 05 00 00 89 c6 85 ff 75 bd 5b 5e 5f c9 55 89 e5 =
+53
+ 89 c3 e8 d7 05 00 00 31 d2 89 c1 8b 40 0c eb 05 89 c2 <8b> 40 10 39 d8 75 =
+f7
+ d2 74 12 f6 43 06 01 8b 43 10 89 42 10
+EIP: [<c02b6486>] acpi_ns_delete_node+016/0x5e SS:ESP 0068:f704dcf4
+---[ end trace 4eaa2a86a8e2da22 ]---
 
-      that usage also brings in instantiated use of type X1, X2 and X3.
 
-if all types are declared like that everywhere, it can be seen (and it's a 
-mathematical certainty) that the only conflict-free way of doing this is to:
+I hope this is useful.  The above was transcribed from a photo and,
+though I checked it, there is of course still the possibility of an
+error somewhere.  Please CC: me (or e-mail privately) if you have any
+further questions about configuration or such, since I am not subscribed
+to LKML.
 
-  - initially add random #include lines to bring in type X1, X2 and X3. 
-    Which brings in recursive dependencies from those X1 X2 and X3 files.
+Thanks,
+					Andrew McMillan.
 
-  - when the stuff hits the fan then folks are in a big mess already and 
-    only a deep restructuring could gets them out of it - which they rarely 
-    do in an iterative environment. So they work it around iteratively: 
-    instead of new nice inline methods [which we really prefer] they delay 
-    all the 'usage' instantiation to .c file via the use of CPP macros 
-    [which we hate because they hide bugs and cause bugs].
+------------------------------------------------------------------------
+andrew (AT) morphoss (DOT) com                            +64(272)DEBIAN
+            Beware of a tall blond man with one black shoe.
+------------------------------------------------------------------------
 
-Repeat that process for 15 years, on a 10 MLOC kernel with 1 MLOC headers 
-spread out in 10,000+ header files and you can see how it builds up to a big 
-pile of goo.
 
-In fact i'm surprised it's not worse than it is - a mitigating factor are 
-uninlining efforts which happen to have the side-effect of reducing the 
-spaghetti.
+--=-nxw6k/5kDWtKuVhgjPFq
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-The only structural change that would solve this situation is a tool that 
-enforces that type definitions and methods related to a type should never 
-mix. We are far from being able to enforce anything like that.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-	Ingo
+iEYEABECAAYFAkmJ9HsACgkQjJA0f48GgBLBhgCfZ4TP+NsGF4qgT0nCc78eZt3s
+CqAAoJ7jafORZ7OAQidikN5I5jlQ73Hj
+=eRnd
+-----END PGP SIGNATURE-----
+
+--=-nxw6k/5kDWtKuVhgjPFq--
+
