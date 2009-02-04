@@ -1,50 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753428AbZBDAUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZBDA1M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753428AbZBDAUA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 3 Feb 2009 19:20:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751071AbZBDATw
+	id S1753977AbZBDA1M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 3 Feb 2009 19:27:12 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZBDA06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 3 Feb 2009 19:19:52 -0500
-Received: from an-out-0708.google.com ([209.85.132.251]:32054 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbZBDATw (ORCPT
+	Tue, 3 Feb 2009 19:26:58 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:43825 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751695AbZBDA06 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 3 Feb 2009 19:19:52 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id
-         :references:user-agent:mime-version:content-type;
-        b=aUh1KaQ+fZ9IGav42U6dmfNS0xd3l42hFmfk+NaQW+8eetPto1KsuVqOXAUoTud50d
-         2ZH2ioZRGMS3Qo1N/2oyiylekvtnmerUIUFuUqkVSoLt0jhC+gyuV2oDWkwXs6o+qsJl
-         xREoPMPZlJr02a0kWcOx6Hm0spc35h0kzpQW8=
-Date: Tue, 3 Feb 2009 19:19:47 -0500 (EST)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-laptop
-To: Parag Warudkar <parag.lkml@gmail.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: WARNING: at drivers/pci/pci-driver.c:368
-In-Reply-To: <alpine.DEB.2.00.0902031912520.7017@parag-laptop>
-Message-ID: <alpine.DEB.2.00.0902031918260.7017@parag-laptop>
-References: <alpine.DEB.2.00.0901281858380.5048@parag-desktop> <200902032315.27113.rjw@sisk.pl> <alpine.DEB.2.00.0902031821590.7302@parag-laptop> <200902040110.21455.rjw@sisk.pl> <alpine.DEB.2.00.0902031912520.7017@parag-laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 3 Feb 2009 19:26:58 -0500
+Message-ID: <4988E001.3000503@kernel.org>
+Date: Tue, 03 Feb 2009 16:23:29 -0800
+From: "H. Peter Anvin" <hpa@kernel.org>
+Organization: Linux Kernel Organization, Inc.
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH] x86/paravirt: return full 64-bit result
+References: <4988DAA6.7000102@goop.org>
+In-Reply-To: <4988DAA6.7000102@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 3 Feb 2009, Parag Warudkar wrote:
-
-> Actually judging by the INT disabled message that appears after the 
-> WARN_ON - 
+Jeremy Fitzhardinge wrote:
+> A hunk went missing in the original patch, and callee-save callsites were
+> not marked as returning the upper 32-bit of result, causing Badness.
 > 
-> 0000:01:00.0: PCI INT A disabled
-> 
-> It seems to be the PCI bridge that was in D0 - 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Of course I meant was NOT in D0 ..
+Applied to tip:x86/paravirt.  Thanks!
 
-Parag
+	-hpa
