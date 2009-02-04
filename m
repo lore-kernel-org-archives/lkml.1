@@ -1,58 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759582AbZBDXvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760668AbZBDXvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759582AbZBDXvW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:51:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759386AbZBDXte
+	id S1760668AbZBDXvn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:51:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759743AbZBDXtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 18:49:34 -0500
-Received: from wa-out-1112.google.com ([209.85.146.180]:17556 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759357AbZBDXtc (ORCPT
+	Wed, 4 Feb 2009 18:49:53 -0500
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:2265 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759699AbZBDXtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:49:32 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=T9jRvCC0PiFkUcT1D7dIMkxD4s2WLWtnqmEiepcjaDrWXOzUCnR+nWD4/knO60tfBG
-         SB0tw3zFxYsXdtLCC1CPfS9UHmqEZLHZTUPkxarn6eNtWqvEtxiMPYArD6ULlbjzimqm
-         wIAJgRDLhhYuu8A5RvCYPBvYwxf2FUSSYZyBE=
+	Wed, 4 Feb 2009 18:49:52 -0500
+Date: Wed, 4 Feb 2009 16:49:49 -0700
+From: Alex Chiang <achiang@hp.com>
+To: Krishna Kothapalli <krishna_sunitha@hotmail.com>
+Cc: kaneshige.kenji@jp.fujitsu.com, ebiederm@xmission.com,
+       linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org, djwong@us.ibm.com,
+       xyzzy@speakeasy.org, linux-kernel@vger.kernel.org
+Subject: Re: Q: state of pci express hotplug
+Message-ID: <20090204234949.GC19517@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	Krishna Kothapalli <krishna_sunitha@hotmail.com>,
+	kaneshige.kenji@jp.fujitsu.com, ebiederm@xmission.com,
+	linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org,
+	djwong@us.ibm.com, xyzzy@speakeasy.org,
+	linux-kernel@vger.kernel.org
+References: <m1fxj06js8.fsf@fess.ebiederm.org> <4986581F.7060704@jp.fujitsu.com> <BAY111-W15F61DA9CA66E14686D5F688C50@phx.gbl> <49879508.4090801@jp.fujitsu.com> <BAY111-W3692AA5F9F7896AA447A1F88C20@phx.gbl> <BAY111-W9013DA1F63973F9E7F8DF88C30@phx.gbl> <49892CDE.9040305@jp.fujitsu.com> <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <a36005b50902041545qb9ce459y710bb3b9b8949b17@mail.gmail.com>
-References: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
-	 <20090204150507.665b5b7c.akpm@linux-foundation.org>
-	 <a36005b50902041545qb9ce459y710bb3b9b8949b17@mail.gmail.com>
-Date: Thu, 5 Feb 2009 12:49:31 +1300
-Message-ID: <cfd18e0f0902041549t393c76d0s635b5e8c17fee2d1@mail.gmail.com>
-Subject: Re: [patch/rfc] eventfd semaphore-like behavior
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, linux-api@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <BAY111-W205B70ED6B226F2F9D8E2088C30@phx.gbl>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 12:45 PM, Ulrich Drepper <drepper@gmail.com> wrote:
-> On Wed, Feb 4, 2009 at 3:05 PM, Andrew Morton <akpm@linux-foundation.org> wrote:
->> How would you recommend that userspace determine whether its kernel
->> supports this feature, bearing in mind that someone might backport this
->> patch into arbitrarily earlier kernel versions?
->
->   fd = eventfd2 (CNT, EFD_SEMAPHORE);
->   if (fd == -1 && errno == EINVAL)
->     puts("cannot handled EFD_SEMAPHORE");
+* Krishna Kothapalli <krishna_sunitha@hotmail.com>:
+> 
+> > o The pciehp's debug output. We can get this as follows.
+>   # /sbin/modprobe pciehp pciehp_debug
+>   # dmesg | grep pciehp 
+> pciehp 0000:00:09.0:pcie02: Hotplug Controller:
+> pciehp 0000:00:09.0:pcie02:   Seg/Bus/Dev/Func/IRQ : 0000:00:09.0 IRQ 2295
+> pciehp 0000:00:09.0:pcie02:   Vendor ID            : 0x8086
+> pciehp 0000:00:09.0:pcie02:   Device ID            : 0x3410
+> pciehp 0000:00:09.0:pcie02:   Subsystem ID         : 0x0000
+> pciehp 0000:00:09.0:pcie02:   Subsystem Vendor ID  : 0x0000
+> pciehp 0000:00:09.0:pcie02:   PCIe Cap offset      : 0x90
+> pciehp 0000:00:09.0:pcie02: Slot Capabilities      : 0x0302005f
+> pciehp 0000:00:09.0:pcie02:   Physical Slot Number : 96
 
-Crossed mails.  Ulrich put the point more succinctly.
+Hm, this is merely an observation, but the slot number here seems
+wacky compared to the one that acpiphp reports later below.
 
+Did we ever get a dmidecode from this machine?
 
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Also, once you insert the card, what happens if you:
+
+	# echo 1 > /sys/bus/pci/slots/96/power
+
+Does that do anything?
+
+> [root@localhost test]#  /sbin/modprobe acpiphp debug
+> [root@localhost test]# dmesg | grep acpiphp
+> acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+> acpiphp_glue: found PCI-to-PCI bridge at PCI 0000:00:09.0
+> acpiphp_glue: found ACPI PCI Hotplug slot 2 at PCI 0000:09:00
+> acpiphp: Slot [2] registered
+
+Here we see that ACPI thinks it's slot 2, not 96.
+
+> acpiphp_glue: Bus 0000:09 has 1 slot
+> acpiphp_glue: Total 1 slots
+> [root@localhost test]# 
+> [root@localhost test]# ls -lt /sys/bus/pci/slots
+> total 0
+> drwxr-xr-x 2 root root 0 2009-02-04 09:59 2
+> ---  Insert PCI express card in the slot
+> [root@localhost test]# dmesg | grep acpiphp
+> [root@localhost test]# lspci | wc
+>     105    1284    9203
+> [root@localhost test]# ls -lt /sys/bus/pci/slots/2/
+> total 0
+> -r--r--r-- 1 root root 4096 2009-02-04 10:01 adapter
+> -r--r--r-- 1 root root 4096 2009-02-04 10:01 address
+> -rw-r--r-- 1 root root 4096 2009-02-04 10:01 attention
+> -r--r--r-- 1 root root 4096 2009-02-04 10:01 latch
+> -rw-r--r-- 1 root root 4096 2009-02-04 10:01 power
+
+Can you echo a 1 into the power file above?
+
+> [root@localhost test]# 
+> [root@localhost test]# /sbin/rmmod acpiphp
+> [root@localhost test]# dmesg | grep acpiphp
+> acpiphp: Slot [2] unregistered
+> acpiphp: release_slot - physical_slot = 2
+> [root@localhost test]# 
+
+Thanks.
+
+/ac
+
