@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759723AbZBDXzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759924AbZBDX47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759723AbZBDXzp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:55:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbZBDXzg
+	id S1759924AbZBDX47 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755571AbZBDX4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 18:55:36 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52274 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754752AbZBDXzf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:55:35 -0500
-Date: Wed, 4 Feb 2009 15:55:14 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       mtk.manpages@gmail.com, linux-api@vger.kernel.org
-Subject: Re: [patch/rfc] eventfd semaphore-like behavior
-Message-Id: <20090204155514.6abbdc8f.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.1.10.0902041526590.6214@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
-	<20090204150507.665b5b7c.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>
-	<20090204152434.c8f65d52.akpm@linux-foundation.org>
-	<alpine.DEB.1.10.0902041526590.6214@alien.or.mcafeemobile.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 4 Feb 2009 18:56:50 -0500
+Received: from gate.crashing.org ([63.228.1.57]:58521 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755446AbZBDX4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 18:56:49 -0500
+Subject: Re: FW: [PATCH] powerpc/mm: Export HPAGE_SHIFT
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland Dreier <rdreier@cisco.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Eli Cohen <eli@mellanox.co.il>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <adad4dym2zp.fsf@cisco.com>
+References: <20090203164930.GA10101@mtls03> <ada8wonnh3t.fsf@cisco.com>
+	 <1233712248.16867.131.camel@pasglop>
+	 <20090203211329.d6190a08.akpm@linux-foundation.org>
+	 <aday6wmn2vr.fsf@cisco.com>
+	 <20090203222601.747ca8b7.akpm@linux-foundation.org>
+	 <adad4dym2zp.fsf@cisco.com>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 10:55:29 +1100
+Message-Id: <1233791729.4612.28.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009 15:27:45 -0800 (PST)
-Davide Libenzi <davidel@xmailserver.org> wrote:
 
-> On Wed, 4 Feb 2009, Andrew Morton wrote:
-> 
-> > On Wed, 4 Feb 2009 15:18:43 -0800 (PST)
-> > Davide Libenzi <davidel@xmailserver.org> wrote:
-> > 
-> > > > > Simple test here:
-> > > > > 
-> > > > > http://www.xmailserver.org/eventfd-sem.c
-> > > > > 
-> > > > > 
-> > > > > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-> > > > > 
-> > > > > +/*
-> > > > > + * CAREFUL: Check include/asm-generic/fcntl.h when defining
-> > > > > + * new flags, since they might collide with O_* ones. We want
-> > > > > + * to re-use O_* flags that couldn't possibly have a meaning
-> > > > > + * from eventfd, in order to leave a free define-space for
-> > > > > + * shared O_* flags.
-> > > > > + */
-> > > > > +#define EFD_SEMAPHORE (1 << 0)
-> > > > >  #define EFD_CLOEXEC O_CLOEXEC
-> > > > >  #define EFD_NONBLOCK O_NONBLOCK
-> > > > >  
-> > > > > +#define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
-> > > > > +#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
-> > > > 
-> > > > How would you recommend that userspace determine whether its kernel
-> > > > supports this feature, bearing in mind that someone might backport this
-> > > > patch into arbitrarily earlier kernel versions?
-> > > > 
-> > > > What should be userspace's fallback strategy if that support is not
-> > > > present?
-> > > 
-> > > #ifdef EFD_SEMAPHORE, maybe?
-> > 
-> > That's compile-time.  People who ship binaries will probably want
-> > to find a runtime thing for back-compatibility.
-> 
-> I dunno. How do they actually do when we add new flags, like the O_ ones?
-> 
+> get_user_pages() also gives us the vma back, and we can see from
+> is_vm_hugetlb_page() (-- BTW can I just say that a function
+> is_xxx_page() that operates on vmas is horribly misnamed --) that these
+> pages all come from a hugetlb mapping, but figuring out the size of that
+> mapping is I guess a challenge.
 
-Dunno.  Probably try the syscall and see if it returned -EINVAL.  Does
-that work in this case?  If so, it would be sensible to mention this in
-the description somewhere as the approved probing method and to
-maintain it.
+Note that g_u_p() has all sort of shortcommings... we were discussing
+some of that recently due to bugs reported from the field.
+
+The problem mostly is that you cannot guarantee that the physical page
+will remain mapped to that virtual address in the process. For example,
+if your code is part of some library used by an application, and that
+application somewhere does a fork/exec (for example, a system() call to
+run a shell helper), copy-on-write will hit, and you may end up with
+the child process getting the original physical page and the original
+process getting the copy...
+
+So your HW will still DMA to a valid page (ie, it's count will have
+been incremented) but it's not going to be the one the application
+uses any more.
+
+There are similar issues that can be cause, afaik, by madvise, etc...
+
+We've been discussing that at KS with various people, Linus says g_u_p()
+sucks, don't do that :-) Most of the time, the other approach should be
+used, ie, the driver allocates memory, and userspace mmap's it, in which
+case you get access to the VMA to set flags such as don't copy on fork.
+
+An option possibly would be to make fork() pre-COW pages with an
+elevated count to ensure that at least the original process is the one
+to keep the original physical page... but that has other potential side
+effects or performance issues.
+
+A can of worms..
+
+Cheers,
+Ben.
 
 
