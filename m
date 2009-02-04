@@ -1,487 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbZBDIDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbZBDIG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752970AbZBDIDc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 03:03:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753088AbZBDIDB
+	id S1753153AbZBDIG3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:06:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750946AbZBDIGT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 03:03:01 -0500
-Received: from leb.cs.unibo.it ([130.136.1.102]:36401 "EHLO leb.cs.unibo.it"
+	Wed, 4 Feb 2009 03:06:19 -0500
+Received: from hera.kernel.org ([140.211.167.34]:45598 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752855AbZBDIC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 03:02:58 -0500
-Date: Wed, 4 Feb 2009 09:02:57 +0100
-From: Renzo Davoli <renzo@cs.unibo.it>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2/2] ptrace_vm: ptrace for syscall emulation virtual
-	machines
-Message-ID: <20090204080256.GC17452@cs.unibo.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1750804AbZBDIGS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 03:06:18 -0500
+Subject: Re: [GIT PULL -tip] fix 22 make headers_check - 200901
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: mingo@elte.hu, x86@kernel.org, sam@ravnborg.org, hpa@zytor.com,
+       jirislaby@gmail.com, gregkh@suse.de, davem@davemloft.net,
+       xyzzy@speakeasy.org, arnd@arndb.de, mchehab@infradead.org,
+       jens.axboe@oracle.com, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>
+In-Reply-To: <20090204064307.GA18415@gondor.apana.org.au>
+References: <20090204064307.GA18415@gondor.apana.org.au>
+Content-Type: text/plain
+Date: Wed, 04 Feb 2009 13:34:04 +0530
+Message-Id: <1233734645.3198.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds the new PTRACE_VM_SKIPCALL and PTRACE_VM_SKIPEXIT
-tags for ptrace's addr parameter.
-In this way it is possible to (eventually) get rid of PTRACE_SYSEMU
-PTRACE_SYSEMU_SINGLESTEP, while providing not only the same features
-but a more general support for Virtual Machines.
-Part#2: user-mode Linux support. 
-User-mode Linux by this patch uses PTRACE_VM of the hosting operating system
-and provides PTRACE_VM to its processes.
-UML tests at startup which features are provided and uses PTRACE_VM or
-PTRACE_SYSEMU (or nothing). PTRACE_VM and/or PTRACE_SYSEMU support can be 
-disabled by command line flags.
-It is possible to test this patch by running a UML inside a UML (note that with
-vanilla kernel UML on UML is currently broken without the patchfix I
-published a few days ago. If you apply just the patch of this message UML on 
-UML works provided that the outer UML provides PTRACE_VM and the support 
-for PTRACE_VM in the inner UML is not disabled, otherwise my previous patch 
-is needed. Shortcut: apply my previous patch before this in any case)
+On Wed, 2009-02-04 at 17:43 +1100, Herbert Xu wrote:
+> Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> >
+> > diff --git a/arch/x86/include/asm/kvm.h b/arch/x86/include/asm/kvm.h
+> > index b95162a..d2e3bf3 100644
+> > --- a/arch/x86/include/asm/kvm.h
+> > +++ b/arch/x86/include/asm/kvm.h
+> > @@ -6,7 +6,7 @@
+> >  *
+> >  */
+> > 
+> > -#include <asm/types.h>
+> > +#include <linux/types.h>
+> > #include <linux/ioctl.h>
+> 
+> Awesome, you've just broken the userspace build of kvm as the
+> file linux/types.h conflicts with sys/types.h.
+> 
 
-renzo
+What I did is absolutely right.
 
-Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
----
-diff -Naur linux-2.6.28.2/arch/um/include/shared/kern_util.h linux-2.6.28.2-vm/arch/um/include/shared/kern_util.h
---- linux-2.6.28.2/arch/um/include/shared/kern_util.h	2009-01-25 01:42:07.000000000 +0100
-+++ linux-2.6.28.2-vm/arch/um/include/shared/kern_util.h	2009-02-02 14:31:32.000000000 +0100
-@@ -57,7 +57,7 @@
- extern unsigned long to_irq_stack(unsigned long *mask_out);
- extern unsigned long from_irq_stack(int nested);
- 
--extern void syscall_trace(struct uml_pt_regs *regs, int entryexit);
-+extern int syscall_trace(struct uml_pt_regs *regs, int entryexit);
- extern int singlestepping(void *t);
- 
- extern void segv_handler(int sig, struct uml_pt_regs *regs);
-diff -Naur linux-2.6.28.2/arch/um/include/shared/ptrace_user.h linux-2.6.28.2-vm/arch/um/include/shared/ptrace_user.h
---- linux-2.6.28.2/arch/um/include/shared/ptrace_user.h	2009-01-25 01:42:07.000000000 +0100
-+++ linux-2.6.28.2-vm/arch/um/include/shared/ptrace_user.h	2009-02-02 14:31:32.000000000 +0100
-@@ -40,9 +40,20 @@
- #define PTRACE_OLDSETOPTIONS PTRACE_SETOPTIONS
- #endif
- 
-+/* these constant should eventually enter in sys/ptrace.h */
-+#ifndef PTRACE_SYSCALL_SKIPCALL
-+#define PTRACE_SYSCALL_SKIPCALL      0x6
-+#endif
-+#ifndef PTRACE_SYSCALL_SKIPEXIT
-+#define PTRACE_SYSCALL_SKIPEXIT      0x2
-+#endif
-+
- void set_using_sysemu(int value);
- int get_using_sysemu(void);
- extern int sysemu_supported;
-+void set_using_sysptvm(int value);
-+int get_using_sysptvm(void);
-+extern int sysptvm_supported;
- 
- #define SELECT_PTRACE_OPERATION(sysemu_mode, singlestep_mode) \
- 	(((int[3][3] ) { \
-diff -Naur linux-2.6.28.2/arch/um/kernel/process.c linux-2.6.28.2-vm/arch/um/kernel/process.c
---- linux-2.6.28.2/arch/um/kernel/process.c	2009-01-25 01:42:07.000000000 +0100
-+++ linux-2.6.28.2-vm/arch/um/kernel/process.c	2009-02-02 14:31:32.000000000 +0100
-@@ -322,7 +322,9 @@
- }
- 
- static atomic_t using_sysemu = ATOMIC_INIT(0);
-+static atomic_t using_sysptvm = ATOMIC_INIT(0);
- int sysemu_supported;
-+int sysptvm_supported;
- 
- void set_using_sysemu(int value)
- {
-@@ -336,6 +338,16 @@
- 	return atomic_read(&using_sysemu);
- }
- 
-+void set_using_sysptvm(int value)
-+{
-+	atomic_set(&using_sysptvm, value);
-+}
-+
-+int get_using_sysptvm(void)
-+{
-+	return atomic_read(&using_sysptvm);
-+}
-+
- static int proc_read_sysemu(char *buf, char **start, off_t offset, int size,int *eof, void *data)
- {
- 	if (snprintf(buf, size, "%d\n", get_using_sysemu()) < size)
-@@ -358,27 +370,63 @@
- 	return count;
- }
- 
--int __init make_proc_sysemu(void)
-+
-+static int proc_read_sysptvm(char *buf, char **start, off_t offset, int size,int *eof, void *data)
- {
--	struct proc_dir_entry *ent;
--	if (!sysemu_supported)
--		return 0;
-+	int sysptvm=(get_using_sysptvm() != 0);
-+	if (snprintf(buf, size, "%d\n", sysptvm) < size)
-+		/* No overflow */
-+		*eof = 1;
- 
--	ent = create_proc_entry("sysemu", 0600, NULL);
-+	return strlen(buf);
-+}
- 
--	if (ent == NULL)
--	{
--		printk(KERN_WARNING "Failed to register /proc/sysemu\n");
--		return 0;
--	}
-+static int proc_write_sysptvm(struct file *file,const char __user *buf, unsigned long count,void *data)
-+{
-+	char tmp[2];
-+
-+	if (copy_from_user(tmp, buf, 1))
-+		return -EFAULT;
-+
-+	if (tmp[0] == '0')
-+		set_using_sysptvm(0);
-+	if (tmp[0] == '1')
-+		set_using_sysemu(/* XXX */ 6);
-+	/* We use the first char, but pretend to write everything */
-+	return count;
-+}
- 
--	ent->read_proc  = proc_read_sysemu;
--	ent->write_proc = proc_write_sysemu;
-+int __init make_proc_sysemu_or_sysptvm(void)
-+{
-+	struct proc_dir_entry *ent;
- 
-+	if (sysptvm_supported) {
-+		ent = create_proc_entry("sysptvm", 0600, NULL);
-+
-+		if (ent == NULL)
-+		{
-+			printk(KERN_WARNING "Failed to register /proc/sysptvm\n");
-+			return 0;
-+		}
-+
-+		ent->read_proc  = proc_read_sysptvm;
-+		ent->write_proc = proc_write_sysptvm;
-+	} else if (sysemu_supported) {
-+		ent = create_proc_entry("sysemu", 0600, NULL);
-+
-+		if (ent == NULL)
-+		{
-+			printk(KERN_WARNING "Failed to register /proc/sysemu\n");
-+			return 0;
-+		}
-+
-+		ent->read_proc  = proc_read_sysemu;
-+		ent->write_proc = proc_write_sysemu;
-+	}
- 	return 0;
- }
- 
--late_initcall(make_proc_sysemu);
-+late_initcall(make_proc_sysemu_or_sysptvm);
- 
- int singlestepping(void * t)
- {
-diff -Naur linux-2.6.28.2/arch/um/kernel/ptrace.c linux-2.6.28.2-vm/arch/um/kernel/ptrace.c
---- linux-2.6.28.2/arch/um/kernel/ptrace.c	2009-01-25 01:42:07.000000000 +0100
-+++ linux-2.6.28.2-vm/arch/um/kernel/ptrace.c	2009-02-02 14:31:32.000000000 +0100
-@@ -64,6 +64,11 @@
- 		ret = poke_user(child, addr, data);
- 		break;
- 
-+	case PTRACE_SYSEMU:
-+	case PTRACE_SYSEMU_SINGLESTEP:
-+		ret=-EIO;
-+		break; 
-+
- 	/* continue and stop at next (return from) syscall */
- 	case PTRACE_SYSCALL:
- 	/* restart after signal. */
-@@ -76,6 +81,8 @@
- 		if (request == PTRACE_SYSCALL)
- 			set_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
- 		else clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
-+		child->ptrace &= ~PT_SYSCALL_MASK;
-+		child->ptrace |= (addr & PTRACE_SYSCALL_MASK) << 28;
- 		child->exit_code = data;
- 		wake_up_process(child);
- 		ret = 0;
-@@ -102,7 +109,9 @@
- 		ret = -EIO;
- 		if (!valid_signal(data))
- 			break;
-+		child->ptrace &= ~PT_SYSCALL_MASK;
- 		clear_tsk_thread_flag(child, TIF_SYSCALL_TRACE);
-+		child->ptrace |= (addr & PTRACE_SYSCALL_MASK) << 28;
- 		set_singlestepping(child, 1);
- 		child->exit_code = data;
- 		/* give it a chance to run. */
-@@ -245,7 +254,7 @@
-  * XXX Check PT_DTRACE vs TIF_SINGLESTEP for singlestepping check and
-  * PT_PTRACED vs TIF_SYSCALL_TRACE for syscall tracing check
-  */
--void syscall_trace(struct uml_pt_regs *regs, int entryexit)
-+int syscall_trace(struct uml_pt_regs *regs, int entryexit)
- {
- 	int is_singlestep = (current->ptrace & PT_DTRACE) && entryexit;
- 	int tracesysgood;
-@@ -267,10 +276,13 @@
- 		send_sigtrap(current, regs, 0);
- 
- 	if (!test_thread_flag(TIF_SYSCALL_TRACE))
--		return;
-+		return 0;
- 
- 	if (!(current->ptrace & PT_PTRACED))
--		return;
-+		return 0;
-+
-+	if (entryexit && (current->ptrace & PT_SYSCALL_SKIPEXIT))
-+		return 0;
- 
- 	/*
- 	 * the 0x80 provides a way for the tracing parent to distinguish
-@@ -291,4 +303,8 @@
- 		send_sig(current->exit_code, current, 1);
- 		current->exit_code = 0;
- 	}
-+	if (!entryexit && (current->ptrace & PT_SYSCALL_SKIPCALL))
-+		return 1;
-+	else
-+		return 0;
- }
-diff -Naur linux-2.6.28.2/arch/um/kernel/skas/syscall.c linux-2.6.28.2-vm/arch/um/kernel/skas/syscall.c
---- linux-2.6.28.2/arch/um/kernel/skas/syscall.c	2009-01-25 01:42:07.000000000 +0100
-+++ linux-2.6.28.2-vm/arch/um/kernel/skas/syscall.c	2009-02-02 14:31:32.000000000 +0100
-@@ -17,8 +17,9 @@
- 	struct pt_regs *regs = container_of(r, struct pt_regs, regs);
- 	long result;
- 	int syscall;
-+	int skip_call;
- 
--	syscall_trace(r, 0);
-+	skip_call=syscall_trace(r, 0);
- 
- 	/*
- 	 * This should go in the declaration of syscall, but when I do that,
-@@ -29,12 +30,14 @@
- 	 *     gcc version 4.0.1 20050727 (Red Hat 4.0.1-5)
- 	 * in case it's a compiler bug.
- 	 */
--	syscall = UPT_SYSCALL_NR(r);
--	if ((syscall >= NR_syscalls) || (syscall < 0))
--		result = -ENOSYS;
--	else result = EXECUTE_SYSCALL(syscall, regs);
-+	if (skip_call == 0) {
-+		syscall = UPT_SYSCALL_NR(r);
-+		if ((syscall >= NR_syscalls) || (syscall < 0))
-+			result = -ENOSYS;
-+		else result = EXECUTE_SYSCALL(syscall, regs);
- 
--	REGS_SET_SYSCALL_RETURN(r->gp, result);
-+		REGS_SET_SYSCALL_RETURN(r->gp, result);
-+	}
- 
- 	syscall_trace(r, 1);
- }
-diff -Naur linux-2.6.28.2/arch/um/os-Linux/skas/process.c linux-2.6.28.2-vm/arch/um/os-Linux/skas/process.c
---- linux-2.6.28.2/arch/um/os-Linux/skas/process.c	2009-01-25 01:42:07.000000000 +0100
-+++ linux-2.6.28.2-vm/arch/um/os-Linux/skas/process.c	2009-02-02 14:31:32.000000000 +0100
-@@ -157,7 +157,7 @@
-  * (in local_using_sysemu
-  */
- static void handle_trap(int pid, struct uml_pt_regs *regs,
--			int local_using_sysemu)
-+			int local_using_sysptvm_or_sysemu)
- {
- 	int err, status;
- 
-@@ -167,7 +167,7 @@
- 	/* Mark this as a syscall */
- 	UPT_SYSCALL_NR(regs) = PT_SYSCALL_NR(regs->gp);
- 
--	if (!local_using_sysemu)
-+	if (!local_using_sysptvm_or_sysemu)
- 	{
- 		err = ptrace(PTRACE_POKEUSR, pid, PT_SYSCALL_NR_OFFSET,
- 			     __NR_getpid);
-@@ -354,6 +354,7 @@
- 	int err, status, op, pid = userspace_pid[0];
- 	/* To prevent races if using_sysemu changes under us.*/
- 	int local_using_sysemu;
-+	int local_using_sysptvm;
- 
- 	if (getitimer(ITIMER_VIRTUAL, &timer))
- 		printk(UM_KERN_ERR "Failed to get itimer, errno = %d\n", errno);
-@@ -375,11 +376,12 @@
- 
- 		/* Now we set local_using_sysemu to be used for one loop */
- 		local_using_sysemu = get_using_sysemu();
-+		local_using_sysptvm = get_using_sysptvm();
- 
- 		op = SELECT_PTRACE_OPERATION(local_using_sysemu,
- 					     singlestepping(NULL));
- 
--		if (ptrace(op, pid, 0, 0)) {
-+		if (ptrace(op, pid, local_using_sysptvm, 0)) {
- 			printk(UM_KERN_ERR "userspace - ptrace continue "
- 			       "failed, op = %d, errno = %d\n", op, errno);
- 			fatal_sigsegv();
-diff -Naur linux-2.6.28.2/arch/um/os-Linux/start_up.c linux-2.6.28.2-vm/arch/um/os-Linux/start_up.c
---- linux-2.6.28.2/arch/um/os-Linux/start_up.c	2009-01-25 01:42:07.000000000 +0100
-+++ linux-2.6.28.2-vm/arch/um/os-Linux/start_up.c	2009-02-02 14:31:32.000000000 +0100
-@@ -198,6 +198,35 @@
- "    See http://perso.wanadoo.fr/laurent.vivier/UML/ for further \n"
- "    information.\n\n");
- 
-+/* Changed only during early boot */
-+static int force_sysptvm_disabled = 0;
-+
-+static int __init nosysptvm_cmd_param(char *str, int* add)
-+{
-+	force_sysptvm_disabled = 1;
-+	return 0;
-+}
-+
-+__uml_setup("nosysptvm", nosysptvm_cmd_param,
-+		"nosysptvm\n"
-+		"    Turns off syscall emulation tags for ptrace (ptrace_vm) on.\n"
-+		"    Ptrace_vm is a feature introduced by Renzo Davoli. It changes\n"
-+		"    behaviour of ptrace() and helps reducing host context switch rate.\n"
-+		"\n");
-+
-+static int use_sysemu = 0;
-+
-+static int __init usesysemu_cmd_param(char *str, int* add)
-+{
-+	use_sysemu = 1;
-+	return 0;
-+}
-+
-+__uml_setup("usesysemu", usesysemu_cmd_param,
-+		"usesysemu\n"
-+		"    Use sysemu instead of sysptvm even when the kernel supports it.\n\n"
-+		);
-+
- static void __init check_sysemu(void)
- {
- 	unsigned long regs[MAX_REG_NR];
-@@ -293,6 +322,102 @@
- 	non_fatal("missing\n");
- }
- 
-+/* test thread code. This thread is started only to test 
-+ * which features are provided by the linux kernel */
-+static int sysptvm_child(void *arg)
-+{
-+	int *featurep=arg;
-+	int p[2]={-1,-1};
-+	pid_t pid=os_getpid();
-+	if(ptrace(PTRACE_TRACEME, 0, 0, 0) < 0){
-+		perror("ptrace test_ptracemulti");
-+		kill(pid, SIGKILL);
-+	}
-+	kill(pid, SIGSTOP);
-+	*featurep=0;
-+	os_getpid();
-+	/* if it reaches this point in 1 stop it means that
-+	 * PTRACE_SYSCALL_SKIPEXIT works */
-+	*featurep=PTRACE_SYSCALL_SKIPEXIT;
-+	pipe(p);
-+	/* if after a PTRACE_SYSCALL_SKIPCALL p[0] is already <0 
-+	 * pipe has been really skipped */
-+	if (p[0] < 0)
-+		*featurep=PTRACE_SYSCALL_SKIPCALL;
-+	else { /* clean up everything */
-+		close(p[0]);
-+		close(p[1]);
-+	}
-+	return 0;
-+}
-+
-+/* kernel feature test: 
-+ * it returns:
-+ *   -1 error 
-+ *   0 old PTRACE_SYSCALL (addr is ignored)
-+ *   PTRACE_SYSCALL_SKIPEXIT: just skip_exit is provided
-+ *   PTRACE_SYSCALL_SKIPCALL: the entire syntax is implemented
-+ *   by the running kernel */
-+static int __init test_ptrace_sysptvm(void) {
-+	int pid, status, rv, feature;
-+	static char stack[1024];
-+	feature=0;
-+
-+	if((pid = clone(sysptvm_child, &stack[1020], SIGCHLD | CLONE_VM, &feature)) < 0)
-+		return 0;
-+	if(waitpid(pid, &status, WUNTRACED) < 0){
-+		kill(pid, SIGKILL);
-+		return 0;
-+	}
-+	/* restart and wait for the next syscall (getpid)*/
-+	rv=ptrace(PTRACE_SYSCALL, pid, 0, 0);
-+	if(waitpid(pid, &status, WUNTRACED) < 0)
-+		goto out;
-+	/* try to skip the exit call */
-+	rv=ptrace(PTRACE_SYSCALL, pid, PTRACE_SYSCALL_SKIPEXIT, 0);
-+	if (rv < 0)
-+		goto out;
-+	/* wait for the next stop */
-+	if(waitpid(pid, &status, WUNTRACED) < 0)
-+		goto out;
-+	/* if feature is already 0 it means that this is the exit call,
-+	 * and it has not been skipped, otherwise this is the
-+	 * entry call for the system call "time" */
-+	if (feature<PTRACE_SYSCALL_SKIPEXIT)
-+		goto out;
-+	/* restart (time) and and try to skip the entire call */
-+	rv=ptrace(PTRACE_SYSCALL, pid, PTRACE_SYSCALL_SKIPCALL, 0);
-+	if(waitpid(pid, &status, WUNTRACED) < 0)
-+		return 0;
-+out:
-+	ptrace(PTRACE_KILL,pid,0,0);
-+	/* eliminate zombie */
-+	if(waitpid(pid, &status, WUNTRACED) < 0)
-+		return 0;
-+	return feature;
-+}
-+
-+static int  __init check_sysptvm(void)
-+{
-+	int feature=test_ptrace_sysptvm();
-+
-+	non_fatal("Checking ptrace new tags for syscall emulation...");
-+	if (feature==PTRACE_SYSCALL_SKIPCALL) {
-+		sysptvm_supported=1;
-+		non_fatal("OK");
-+		if (!force_sysptvm_disabled) {
-+			set_using_sysptvm(PTRACE_SYSCALL_SKIPCALL);
-+			non_fatal("\n");
-+			return 1;
-+		} else {
-+			non_fatal(" (disabled)\n");
-+			return 0;
-+		}
-+	} else
-+		non_fatal("unsupported\n");
-+	return 0;
-+}
-+
- static void __init check_ptrace(void)
- {
- 	int pid, syscall, n, status;
-@@ -330,7 +455,8 @@
- 	}
- 	stop_ptraced_child(pid, 0, 1);
- 	non_fatal("OK\n");
--	check_sysemu();
-+	if (use_sysemu || !check_sysptvm()) 
-+		check_sysemu();
- }
- 
- extern void check_tmpexec(void);
+If there is any conflict then we need to solve it in better way.
+
+Can you please share what is the conflict and what you are expecting and
+what you are getting.
+
+Thanks,
+--
+JSR
+
