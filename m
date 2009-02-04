@@ -1,110 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758831AbZBDXtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759353AbZBDXtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758831AbZBDXtA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 18:49:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbZBDXss
+	id S1759353AbZBDXtb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 18:49:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755388AbZBDXss
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 4 Feb 2009 18:48:48 -0500
-Received: from wa-out-1112.google.com ([209.85.146.176]:15643 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752524AbZBDXsq (ORCPT
+Received: from yx-out-2324.google.com ([74.125.44.30]:31675 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754992AbZBDXsr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 18:48:46 -0500
+	Wed, 4 Feb 2009 18:48:47 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:reply-to:in-reply-to:references:date:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=kzsJwBdndS7415GqdS39NdANxgSnF2DCAaPe9db8FKNAd737A5U+aQ6nm0P6uBIT3H
-         LvnXNXm2JqI5bFe7SNyBTX7lZCfek43dUU5NgFFDTjTNx0MgDDnA0DVsVCtSoOm5IuE7
-         h2pR/6zPEWgxzoimBfX+TkxGITCaAwJrb20Jk=
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=TwMp6H1STG7PYpmqdrYo0RrECNFSzREl9gLJdp+YAt+MSK86Mw59kQQObPi2nkKw6o
+         4UU5Cv9Cw2Gzv8o5ksYraDJMQkP2lHhF1fnkPFGUhDCiHC+06ynDJZzc0mWpqocHNcsQ
+         YyVyatFk0Y8CVLHVrbUKoJSXVa7Slgh8dVIXQ=
+Message-ID: <498A295A.4090008@gmail.com>
+Date: Wed, 04 Feb 2009 17:48:42 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Reply-To: mtk.manpages@gmail.com
-In-Reply-To: <alpine.DEB.1.10.0902041526590.6214@alien.or.mcafeemobile.com>
-References: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
-	 <20090204150507.665b5b7c.akpm@linux-foundation.org>
-	 <alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>
-	 <20090204152434.c8f65d52.akpm@linux-foundation.org>
-	 <alpine.DEB.1.10.0902041526590.6214@alien.or.mcafeemobile.com>
-Date: Thu, 5 Feb 2009 12:48:45 +1300
-Message-ID: <cfd18e0f0902041548q3c392cb0wb642cb00bc58c1b3@mail.gmail.com>
-Subject: Re: [patch/rfc] eventfd semaphore-like behavior
-From: Michael Kerrisk <mtk.manpages@googlemail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+Newsgroups: gmane.linux.kernel
+To: Roland Dreier <rdreier@cisco.com>
+CC: Sam Ravnborg <sam@ravnborg.org>, Floris Kraak <randakar@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-api@vger.kernel.org, Ulrich Drepper <drepper@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+       Trivial Patch Monkey <trivial@kernel.org>
+Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
+References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>	<20090204221451.GA27254@uranus.ravnborg.org> <adavdrplty2.fsf@cisco.com>
+In-Reply-To: <adavdrplty2.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 12:27 PM, Davide Libenzi <davidel@xmailserver.org> wrote:
-> On Wed, 4 Feb 2009, Andrew Morton wrote:
->
->> On Wed, 4 Feb 2009 15:18:43 -0800 (PST)
->> Davide Libenzi <davidel@xmailserver.org> wrote:
->>
->> > > > Simple test here:
->> > > >
->> > > > http://www.xmailserver.org/eventfd-sem.c
->> > > >
->> > > >
->> > > > Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
->> > > >
->> > > > +/*
->> > > > + * CAREFUL: Check include/asm-generic/fcntl.h when defining
->> > > > + * new flags, since they might collide with O_* ones. We want
->> > > > + * to re-use O_* flags that couldn't possibly have a meaning
->> > > > + * from eventfd, in order to leave a free define-space for
->> > > > + * shared O_* flags.
->> > > > + */
->> > > > +#define EFD_SEMAPHORE (1 << 0)
->> > > >  #define EFD_CLOEXEC O_CLOEXEC
->> > > >  #define EFD_NONBLOCK O_NONBLOCK
->> > > >
->> > > > +#define EFD_SHARED_FCNTL_FLAGS (O_CLOEXEC | O_NONBLOCK)
->> > > > +#define EFD_FLAGS_SET (EFD_SHARED_FCNTL_FLAGS | EFD_SEMAPHORE)
->> > >
->> > > How would you recommend that userspace determine whether its kernel
->> > > supports this feature, bearing in mind that someone might backport this
->> > > patch into arbitrarily earlier kernel versions?
->> > >
->> > > What should be userspace's fallback strategy if that support is not
->> > > present?
->> >
->> > #ifdef EFD_SEMAPHORE, maybe?
->>
->> That's compile-time.  People who ship binaries will probably want
->> to find a runtime thing for back-compatibility.
->
-> I dunno. How do they actually do when we add new flags, like the O_ ones?
+Roland Dreier wrote:
+>  > Before judging on this patch could you please post what warning it
+>  > triggers and one or a few patches to fix some of them.
+> 
+> The warnings are things like:
+> 
+>     init/main.c: In function 'start_kernel':
+>     init/main.c:557: warning: format not a string literal and no format arguments
+> 
+> where the patch to fix this would be:
+> 
+> diff --git a/init/main.c b/init/main.c
+> index 8442094..78fc0d8 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -554,7 +554,7 @@ asmlinkage void __init start_kernel(void)
+>  	boot_cpu_init();
+>  	page_address_init();
+>  	printk(KERN_NOTICE);
+> -	printk(linux_banner);
+> +	printk("%s", linux_banner);
+>  	setup_arch(&command_line);
+>  	mm_init_owner(&init_mm, &init_task);
+>  	setup_command_line(command_line);
+> 
+> with the impact:
+> 
+> add/remove: 0/0 grow/shrink: 1/0 up/down: 7/0 (7)
+> function                                     old     new   delta
+> start_kernel                                 689     696      +7
 
-Maybe I missed something, but I think we're okay, aren't we?  Viz:
-
-a) The glibc eventfd() wrapper invokes sys_eventfd2() (which allows a
-flags arg) if it is available, and otherwise fall back to
-sys_eventfd() (which does not support a flags arg).
-
-b) If glibc falls back to sys_eventfd(), then it knows to reject
-non-zero flags.  (The glibc wrapper already does this.)
-
-c) If the old sys_eventfd2() is given a flag that it doesn't
-recognize, then it fails with EINVAL.  (That check is already in the
-code.)
-
-So, userspace can determine whether EFD_SEMAPHORE is supported by not
-getting an EINVAL error.  (Okay, this falls down for binaries that
-bypass glibc's eventfd() wrapper, but there are unlikely to be such
-binaries.)
-
-Cheers,
-
-Michael
--- 
-Michael Kerrisk
-Linux man-pages maintainer; http://www.kernel.org/doc/man-pages/
-git://git.kernel.org/pub/scm/docs/man-pages/man-pages.git
-man-pages online: http://www.kernel.org/doc/man-pages/online_pages.html
-Found a bug? http://www.kernel.org/doc/man-pages/reporting_bugs.html
+Just how many of these warnings are showing up? In the cases you posted 
+it's presumably no problem, but if the string could either a) be 
+potentially set by a malicious user or b) accidentally contain printk 
+format characters then this code has a risk that things could blow up..
