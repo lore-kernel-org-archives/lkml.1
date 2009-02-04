@@ -1,75 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbZBDIfo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754645AbZBDIf6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751584AbZBDIfo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 03:35:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZBDIfe
+	id S1754645AbZBDIf6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:35:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZBDIfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 4 Feb 2009 03:35:34 -0500
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:43227 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751572AbZBDIfc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 03:35:32 -0500
-Date: Wed, 4 Feb 2009 14:05:24 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, heiko.carstens@de.ibm.com,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] use __GFP_NOWARN in page cgroup allocation
-Message-ID: <20090204083524.GJ4456@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090204170944.c93772d2.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090204170944.c93772d2.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Received: from hera.kernel.org ([140.211.167.34]:38381 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751568AbZBDIfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 03:35:33 -0500
+Subject: Re: usr/include/linux/soundcard.h warnings for 'make headers_check'
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
+       alsa-devel@alsa-project.org, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <s5hhc3ak8ns.wl%tiwai@suse.de>
+References: <1232465902.3088.31.camel@localhost.localdomain>
+	 <s5h7i4psepm.wl%tiwai@suse.de> <20090121054138.GA26551@uranus.ravnborg.org>
+	 <200902032127.24526.arnd@arndb.de>
+	 <1233720252.3595.5.camel@localhost.localdomain>
+	 <s5hhc3ak8ns.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Wed, 04 Feb 2009 14:04:54 +0530
+Message-Id: <1233736494.3198.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-02-04 17:09:44]:
-
-> This was recommended in
-> "kmalloc-return-null-instead-of-link-failure.patch added to -mm tree" thread
-> in the last month.
-> Thanks,
-> -Kame
-> =
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Wed, 2009-02-04 at 07:39 +0100, Takashi Iwai wrote:
+> At Wed, 04 Feb 2009 09:34:12 +0530,
+> Jaswinder Singh Rajput wrote:
+> > 
+> > On Tue, 2009-02-03 at 21:27 +0100, Arnd Bergmann wrote:
+> > > On Wednesday 21 January 2009, Sam Ravnborg wrote:
+> > > > 
+> > > > > No, these are declarations for OSS-lib.
+> > > > > It doesn't belong to kernel, but it's better to keep it for
+> > > > > compatibility in some way.
+> > > > 
+> > > > But not in the kernel for sure.
+> > > > I just checked and for example: OSS_init is not used anywhere in the kernel.
+> > > > The kernel headers are not a "dump all your stuff" ground anymore.
+> > > > 
+> > > > So I encourage you to find a better home for the user space library definitons.
+> > > > We can let the definiton stay for a while - but eventually they have to
+> > > > be dropped from the kernel.
+> > > 
+> > > The last free version of OSSlib that matches this header is from ~1997, and
+> > > no current distro appears to be shipping it. All new OSSlib versions (the
+> > > oldest I found was from ~2003) contain in their documentation:
+> > > 
+> > > "Older versions of some OSS include files are distributed
+> > >  with various operating systems. There is no danger in
+> > >  using them but applications written for more recent OSS
+> > >  versions will not compile with older header files.
+> > > 
+> > >  The latest versions of these include files (such as
+> > >  soundcard.h) are distributed in ../include/sys. Use
+> > >  the -I/usr/lib/oss/include switch when compiling
+> > >  programs. Alternatively copy these files to /usr/include/sys
+> > >  so that they replace the original ones."
+> > > 
+> > > I think it's safe enough to assume that everyone that builds against
+> > > OSSlib by now also has the correct version of the header installed.
+> > > Consequently, we should just drop the #ifndef __KERNEL__ section
+> > > of soundcard.h (all the macros in there depend on the extern
+> > > declarations), and maybe add an
+> > > 
+> > > #ifdef OSSLIB
+> > > #error need to use <sys/soundcard.h> from libOSSlib
+> > > #endif
+> > > 
+> > 
+> > sys/soundcard.h is also pointing to linux/soundcard.h, we need to move
+> > all this stuff to sys/soundcard.h.
 > 
-> page_cgroup's page allocation at init/memory hotplug uses kmalloc() and
-> vmalloc(). If kmalloc() failes, vmalloc() is used.
+> All which stuff?
+> If you are referring to OSS-lib stuff in soundcard.h, then I'm for
+> it.
 > 
-> This is because vmalloc() is very limited resource on 32bit systems.
-> We want to use kmalloc() first.
+
+We need to fix things in such a way that we can replace:
+#if (!defined(__KERNEL__) && !defined(KERNEL) && !defined(INKERNEL) && !defined(_KERNEL)) || defined(USE_SEQ_MACROS)
+with
+#ifdef __KERNEL__
+and only keep those things in this file which we need in kernel and move
+userspace declarations which are not required for kernel to
+sys/soundcard.h
+
+
+> Also giving an error with an ifdef OSSLIB like Arnd suggested would be
+> nice, too.  But maybe we need one more ifdef such as
 > 
-> But in this kind of call, __GFP_NOWARN should be specified.
+> #ifdef OSSLIB
+> #ifndef _SYS_SOUNDCARD_H
+> #error ...
+> #endif
+> #endif
 > 
-> Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
-> Index: mmotm-2.6.29-Feb03/mm/page_cgroup.c
-> ===================================================================
-> --- mmotm-2.6.29-Feb03.orig/mm/page_cgroup.c
-> +++ mmotm-2.6.29-Feb03/mm/page_cgroup.c
-> @@ -114,7 +114,8 @@ static int __init_refok init_section_pag
->  		nid = page_to_nid(pfn_to_page(pfn));
->  		table_size = sizeof(struct page_cgroup) * PAGES_PER_SECTION;
->  		if (slab_is_available()) {
-> -			base = kmalloc_node(table_size, GFP_KERNEL, nid);
-> +			base = kmalloc_node(table_size,
-> +					GFP_KERNEL | __GFP_NOWARN, nid);
 
-Thanks for getting to this.
+hmm, so you want to confirm that we only come through sys/soundcard.h
+for OSSLIB
 
->  			if (!base)
->  				base = vmalloc_node(table_size, nid);
->  		} else {
+Thanks,
+--
+JSR
 
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-
-
--- 
-	Balbir
