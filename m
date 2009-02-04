@@ -1,69 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZBDPX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756557AbZBDPYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbZBDPX6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 10:23:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZBDPXt
+	id S1756557AbZBDPYw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 10:24:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752343AbZBDPYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 10:23:49 -0500
-Received: from yx-out-2324.google.com ([74.125.44.28]:60561 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751472AbZBDPXs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 10:23:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FdNea7/JvVmbneQbgv227U6u0lXj6qKA5J77RvkLrJ6GYVJovsigsUfrb1AQUjesa3
-         cn7Al9wueICffhe2jRLgGCTbPs5vjVAzhZRViXavNgLpgr0F54d/6K/Eocjm9cbBqhOu
-         BOaT21uZn3MIaDvOkT/P1URSiZhH8b8M2PCHU=
-MIME-Version: 1.0
-In-Reply-To: <pWZw1SZjMCH.A.nXG.evYiJB@chimera>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
-	 <pWZw1SZjMCH.A.nXG.evYiJB@chimera>
-Date: Wed, 4 Feb 2009 07:23:46 -0800
-Message-ID: <dd18b0c30902040723m70f87f7fp4af32702410036d7@mail.gmail.com>
-Subject: Re: [Bug #12505] 2.6.29-rc1 Firefox crashing on page load
-From: Justin Mattock <justinmattock@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Ingo Molnar <mingo@elte.hu>, Justin Madru <jdm64@gawab.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 4 Feb 2009 10:24:40 -0500
+Received: from mga02.intel.com ([134.134.136.20]:58421 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752261AbZBDPYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 10:24:39 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,379,1231142400"; 
+   d="scan'208";a="383876728"
+Subject: Re: [PATCH NET-NEXT 01/10] clocksource: allow usage independent of
+	timekeeping.c
+From: Patrick Ohly <patrick.ohly@intel.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       David Miller <davem@davemloft.net>, John Stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <1233760170.15119.76.camel@desktop>
+References: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
+	 <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
+	 <1233756235.15119.54.camel@desktop> <1233758796.15940.198.camel@ecld0pohly>
+	 <1233760170.15119.76.camel@desktop>
+Content-Type: text/plain
+Date: Wed, 04 Feb 2009 16:24:34 +0100
+Message-Id: <1233761074.15940.230.camel@ecld0pohly>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 4, 2009 at 2:24 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.28.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12505
-> Subject         : 2.6.29-rc1 Firefox crashing on page load
-> Submitter       : Justin Madru <jdm64@gawab.com>
-> Date            : 2009-01-16 20:56 (20 days old)
-> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=4217458dafaa57d8e26a46f5d05ab8c53cf64191
-> References      : http://marc.info/?l=linux-kernel&m=123213941914274&w=4
-> Handled-By      : Justin P. Mattock <justinmattock@gmail.com>
->
->
->
+On Wed, 2009-02-04 at 15:09 +0000, Daniel Walker wrote:
+> On Wed, 2009-02-04 at 15:46 +0100, Patrick Ohly wrote:
+> > On Wed, 2009-02-04 at 14:03 +0000, Daniel Walker wrote:
+> > > On Wed, 2009-02-04 at 14:01 +0100, Patrick Ohly wrote:
+> > >
+> > > >  /**
+> > > > + * struct cyclecounter - hardware abstraction for a free running counter
+> > > > + *       Provides completely state-free accessors to the underlying hardware.
+> > > > + *       Depending on which hardware it reads, the cycle counter may wrap
+> > > > + *       around quickly. Locking rules (if necessary) have to be defined
+> > > > + *       by the implementor and user of specific instances of this API.
+> > > > + *
+> > > > + * @read:                returns the current cycle value
+> > > > + * @mask:                bitmask for two's complement
+> > > > + *                       subtraction of non 64 bit counters,
+> > > > + *                       see CLOCKSOURCE_MASK() helper macro
+> > > > + * @mult:                cycle to nanosecond multiplier
+> > > > + * @shift:               cycle to nanosecond divisor (power of two)
+> > > > + */
+> > > > +struct cyclecounter {
+> > > > + cycle_t (*read)(const struct cyclecounter *cc);
+> > > > + cycle_t mask;
+> > > > + u32 mult;
+> > > > + u32 shift;
+> > > > +};
+> > >
+> > > Where are these defined? I don't see any in created in your code.
+> >
+> > What do you mean with "these"? cycle_t? That type is defined in
+> > clocksource.h. This patch intentionally adds these definitions to the
+> > existing file because of the large conceptual overlap.
+> 
+> No, your creating a new structure here that wasn't declared. I was
+> referring to "struct cyclecounter".
 
-Well the hardest for this, was to reproduce
-the error.(never did). I guess it can be taken
-of if there was a patch for the fix, and the patch
-made it into the main tree. but if this  is a firefox
-issue, then a report needs to be filed with them.
-so overall my answer is "I don't know."
-:^)
+Sorry, I still don't see the problem. I'm declaring and defining struct
+cyclecounter here. Why should it also be declared (= "struct
+cyclecounter;") elsewhere?
 
-regards;
+>  I did look up one of your prior
+> submission (Dec. 15) and reviewed that.
+
+Right, I saw that a bit later.
+
+> > In an earlier revision of the patch I had adapted clocksource itself so
+> > that it could be used outside of the time keeping code; John wanted me
+> > to use these smaller structs instead that you now find in the current
+> > patch.
+> 
+> Well, I think your original idea was better.. I don't think we need the
+> duplication of underlying clocksource mechanics.
+
+Please discuss this with John. I'd prefer to not get caught in the
+cross-fire of a discussion that I don't know enough about :-/
+
 -- 
-Justin P. Mattock
+Best Regards, Patrick Ohly
+
+The content of this message is my personal opinion only and although
+I am an employee of Intel, the statements I make here in no way
+represent Intel's position on the issue, nor am I authorized to speak
+on behalf of Intel on this matter.
+
