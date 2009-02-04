@@ -1,19 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZBDNEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbZBDNFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887AbZBDNEt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 08:04:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756445AbZBDMvH
+	id S1760127AbZBDNFl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 08:05:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756469AbZBDMvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 07:51:07 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:45076 "EHLO ogre.sisk.pl"
+	Wed, 4 Feb 2009 07:51:12 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:45089 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756355AbZBDMvC convert rfc822-to-8bit (ORCPT
+	id S1756297AbZBDMvK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 07:51:02 -0500
+	Wed, 4 Feb 2009 07:51:10 -0500
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dave Airlie" <airlied@linux.ie>, "Dave Airlie" <airlied@redhat.com>,
-       "etienne" <etienne.basset@numericable.fr>,
-       "Soeren Sonnenburg" <kernel@nn7.de>
+       "Randy Dunlap" <randy.dunlap@oracle.com>
 References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
 In-Reply-To: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <pWZw1SZjMCH.A.OlD.ouYiJB@chimera>
-Subject: [Bug #12613] [Suspend regression][DRM, RADEON]
+Message-ID: <pWZw1SZjMCH.A.xUD.kuYiJB@chimera>
+Subject: [Bug #12616] boot hang: async vs. kexec
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Wed,  4 Feb 2009 11:24:08 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -37,12 +35,10 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12613
-Subject		: [Suspend regression][DRM, RADEON]
-Submitter	: etienne <etienne.basset@numericable.fr>
-Date		: 2009-01-28 22:00 (8 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
-References	: http://marc.info/?l=linux-kernel&m=123318030419558&w=4
-		  http://marc.info/?l=linux-kernel&m=123334865404574&w=4
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12616
+Subject		: boot hang: async vs. kexec
+Submitter	: Randy Dunlap <randy.dunlap@oracle.com>
+Date		: 2009-01-29 13:15 (7 days old)
+References	: http://lkml.org/lkml/2009/1/29/359
 
 
