@@ -1,74 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZBDH5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752554AbZBDICx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbZBDH5q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 02:57:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZBDH5g
+	id S1752554AbZBDICx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 03:02:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZBDICn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 02:57:36 -0500
-Received: from smtp-out002.kontent.com ([81.88.40.216]:42555 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbZBDH5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 02:57:35 -0500
-From: Oliver Neukum <oliver@neukum.org>
-Organization: Novell
-To: Greg KH <greg@kroah.com>
-Subject: Re: [stable]  A patch in 2.6.27.9 caused device names to change
-Date: Wed, 4 Feb 2009 08:28:44 +0100
-User-Agent: KMail/1.9.10
-Cc: Dan Williams <dcbw@redhat.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-References: <20090202170238.348af36a@dhcp-100-2-144.bos.redhat.com> <1233672611.11344.6.camel@localhost.localdomain> <20090204000342.GB22380@kroah.com>
-In-Reply-To: <20090204000342.GB22380@kroah.com>
+	Wed, 4 Feb 2009 03:02:43 -0500
+Received: from leb.cs.unibo.it ([130.136.1.102]:36394 "EHLO leb.cs.unibo.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750804AbZBDICm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 03:02:42 -0500
+Date: Wed, 4 Feb 2009 09:02:36 +0100
+From: Renzo Davoli <renzo@cs.unibo.it>
+To: LKML <linux-kernel@vger.kernel.org>, Jeff Dike <jdike@addtoit.com>,
+       Roland McGrath <roland@redhat.com>
+Subject: [PATCH 0/2] ptrace_vm: ptrace for syscall emulation virtual
+	machines
+Message-ID: <20090204080236.GA17452@cs.unibo.it>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902040828.45615.oliver@neukum.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Wednesday 04 February 2009 01:03:42 schrieb Greg KH:
-> On Tue, Feb 03, 2009 at 09:50:11AM -0500, Dan Williams wrote:
- 
-> > For a long time we've been operating under the assumption that mobile
-> > broadband devices should be driven by option and sierra, since those
-> > drivers had the necessary buffering optimizations to support
-> > higher-speed mobile broadband devices.
-> 
-> Who is "we" here?  Not me :)
+I have updated the patch already proposed on LKML last summer.
 
-We currently have three drivers that can handle high speed serial
-connections in USB, option, sierra and cdc-acm.
- 
-> > That was true at least up until 2.6.24.
-> 
-> It all depends on the type of device.  If it says it is a cdc-acm modem,
-> by all means, let that driver handle it, don't try to bind it to a
-> different driver (that way lies races and madness...)
-> 
-> > Furthermore, up until this point, I have not seen mobile broadband
-> > adapters (that aren't cellphones connected via USB) that *are* CDC-ACM
-> > compliant.  Everything previously has advertised proprietary interfaces,
-> > some of which are serial ports and some of which are not.
-> 
-> Probably because we never see those devices being reported, because they
-> "just work" with no interaction from us.
+I have split the patch into two parts.
 
-As far as I can tell, devices implementing the class specification are
-new and still quite rare. This is probably related to the relative newness
-of the WHC specification.
-  
-> > Plus, are we expected to keep device names stable these days?  cdc-acm
-> > is the catch-all driver, but if that driver is more "generic" and a
-> > better driver is found, can we not update IDs just because the device
-> > name may change?
+The first one is for all those application where PTRACE_SYSCALL is
+managed via tracehook.
+Given the wonderful work by Roland McGrath this patch is now
+architecture independent and straightforward simple.
 
-There is no such thing as a better driver for a device that correctly
-implements the class specification than the class driver. You haven't
-seen complaints about cdc-acm's performance in a long time, have you?
+The second one is the support of PTRACE_VM for user-mode-linux.
+It provides PTRACE_VM for UML processes and uses PTRACE_VM of the hosting 
+kernel.
 
-	Regards
-		Oliver
+The patches are against 2.6.28.2 but apply to 2.6.28.3 and 2.6.29-pre3 (this
+latter with some line offsets).
+
+The description and motivation follows.
+-----
+Proposal: let us simplify
+PTRACE_SYSCALL/PTRACE_SINGLESTEP/PTRACE_SYSEMU/PTRACE_SYSEMU_SINGLESTEP,
+and now PTRACE_BLOCKSTEP (which will require soon a PTRACE_SYSEMU_BLOCKSTEP),
+my PTRACE_SYSVM...etc. etc.
+
+Summary of the solution:
+Use tags in the "addr" parameter of existing
+PTRACE_SYSCALL/PTRACE_SINGLESTEP/PTRACE_CONT/PTRACE_BLOCKSTEP calls
+to skip the current call (PTRACE_VM_SKIPCALL) or skip the second upcall to 
+the VM/debugger after the syscall execution (PTRACE_VM_SKIPEXIT).
+
+Motivation:
+
+The ptrace tag PTRACE_SYSEMU is a feature mainly used for User-Mode Linux,
+or at most for other virtual machines aiming to virtualize *all* the syscalls
+(total virtual machines).
+
+In fact:
+ptrace(PTRACE_SYSEMU, pid, 0, 0)
+means that the *next* system call will not be executed.
+PTRACE_SYSEMU AFAIK has been implemented only for x86_32.
+
+I already proposed some time ago a different tag: PTRACE_SYSVM 
+(and I maintain a patch for it) where:
+ptrace(PTRACE_SYSVM, pid, XXX, 0)
+1* is the same as PTRACE_SYSCALL when XXX==0,
+2* skips the call (and stops before entering the next syscall) when
+  PTRACE_VM_SKIPCALL | PTRACE_VM_SKIPEXIT
+3* skips the ptrace call after the system call if PTRACE_VM_SKIPEXIT.
+  PTRACE_SYSVM has been implemented for x86_32, powerpc_32, um+x86_32.
+(x86_64 and ppc64 exist too, but are less tested).
+
+The main difference between SYSEMU and SYSVM is that with SYSVM it is possible
+to decide if *this* system call should be executed or not (instead of the next
+one).
+SYSVM can be used also for partial virtual machines (some syscall gets
+virtualized and some others do not), like our umview.
+
+PTRACE_SYSVM above can be used instead of PTRACE_SYSEMU in user-mode linux
+and in all the others total virtual machines. In fact, provided user-mode linux
+skips *all* the syscalls it does not matter if the upcall happens just after
+(SYSEMU) or just before (SYSVM) having skipped the syscall.
+
+Briefly I would like to unify SYSCALL, SYSEMU and SYSVM.
+We don't need three different tags (and all their "variations", 
+SINGLESTEP->SYSEMU_SINGLESTEP etc).
+
+We could keep PTRACE_SYSCALL, using the addr parameter as in PTRACE_SYSVM.
+In this case all the code I have seen (user-mode linux, strace, umview
+and googling around) use 0 or 1 for addr (being defined unused).
+defining PTRACE_VM_SKIPCALL=4 and PTRACE_VM_SKIPEXIT=2 (i.e. by ignoring
+the lsb) everything previously coded using PTRACE_SYSCALL should continue 
+to work.
+In the same way PTRACE_SINGLESTEP, PTRACE_CONT and PTRACE_BLOCKSTEP can use 
+the same tags restarting after a SYSCALL.
+
+This change would eventually simplify both the kernel code
+(reducing tags and exceptions) and even user-mode linux and umview.
+
+The skip-exit feature can be implemented in a arch-independent
+manner, while for skip_call some simple changes are needed
+(the entry assembly code should process the return value of the syscall
+tracing function call, like in arch/x86/kernel/Entry_32.S).
+
+Motivation summary:
+1) (eventually) Reduce the number of PTRACE tags. The proposed patch
+does not add any tag. On the contrary after a period of deprecation
+SYSEMU* tags can be eliminated.
+2) Backward compatible with existing software (existing UML kernels,
+strace already tested). Only software using strange "addr" values
+(the addr parameter is currently ignored) could have portability problems.
+3) (eventually) simplify kernel code. SYSEMU support is a bit messy and
+x86/32 only. These new PTRACE_VM tags for the addr parameter will allow to
+get rid of SYSEMU code.
+4) It is simple to be ported across the architecture.
+It is directly supported by the tracehook mechanism.
+5) It is more powerful than PTRACE_SYSEMU. It provides an optimized support for
+partial virtualization (some syscalls gets virtualized some other do
+not) while keeping support for total virtualization a' la UML.
+6) Software currently using PTRACE_SYSEMU can be easily ported to this
+new support. The porting for UML (client side) is already in the patch.
+All the calls like:
+ptrace(PTRACE_SYSEMU, pid, 0, 0)
+can be converted into
+ptrace(PTRACE_SYSCALL, pid, PTRACE_VM_SKIPCALL, 0)
+(but the first PTRACE_SYSCALL, the one which starts up the emulation.
+In practice it is possible to set PTRACE_VM_SKIPCALL for the first call,
+too. The "addr" tag is ignored being no syscalls pending).
+
+		renzo
