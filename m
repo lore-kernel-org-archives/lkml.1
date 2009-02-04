@@ -1,165 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753069AbZBDHyM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZBDH47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753069AbZBDHyM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 02:54:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZBDHxz
+	id S1753368AbZBDH47 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 02:56:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751513AbZBDH4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 02:53:55 -0500
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:35907 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751540AbZBDHxy (ORCPT
+	Wed, 4 Feb 2009 02:56:47 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:55750 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbZBDH4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 02:53:54 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=RQDb/YUy/pFidyo+eruSl+NFjXfqJNldUBJUr3RAtI7s3//IESJLBDmho2AWjk7u92hMGyw8SJCRpCzVefbnQQhxh4DWnbszuqjTP5/StfYp/qBvIscZdPM8bqLOns77ClSXZUGLy8gXGuWhIhtREyVsLcDtgWRNH7iLbZ95ez0=  ;
-X-YMail-OSG: e6_V37EVM1l0NRKKa1wnwyMlSAb3YDMTI1rRSrkuxg792KrJVGRbqezq2xpw5Cb5xhhSmacJFMGhP8PK4XZvKaVJGFHl0IzDAznf0orgvKp1wO98dI4_zkBX0CrJgSjJMJk5B8kW6AlOqO1vdZnWS3iS6s9G1VsIJ7aL2xLNQh4ACLrByuWA6EqJHJCK1FJbx63XaE5Mhlq64nwvZv1fbYYBpECX0.ue3z4olQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 2.6.29-rc3] gpio:  gpio_{request,free}() now required (feature removal)
-Date: Tue, 3 Feb 2009 14:35:22 -0800
-User-Agent: KMail/1.9.10
-Cc: lkml <linux-kernel@vger.kernel.org>
+	Wed, 4 Feb 2009 02:56:46 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=k4rhfYrQLmsyeZvxKtKz69fzNWlCV/xE6H2J5tkWWcOegxZWiKS7746zInOtCM8BRc
+         KeN0AASlDWGQE3/2A6QAVklV8QK299JLK/nRNr8Fadi518BCpeb8Aq5CVnwtQ6LEMHEO
+         p6lPjsDXtri6fIdNiX2lONo7z7Ra5HVd/IBvA=
+Date: Wed, 4 Feb 2009 07:56:37 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090204075637.GA4279@ff.dom.local>
+References: <20090202080855.GA4129@ff.dom.local> <20090202.001854.261399333.davem@davemloft.net> <20090202084358.GB4129@ff.dom.local> <20090202.235017.253437221.davem@davemloft.net> <20090203094108.GA4639@ff.dom.local>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902031435.22293.david-b@pacbell.net>
+In-Reply-To: <20090203094108.GA4639@ff.dom.local>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Brownell <dbrownell@users.sourceforge.net>
+On Tue, Feb 03, 2009 at 09:41:08AM +0000, Jarek Poplawski wrote:
+> On Mon, Feb 02, 2009 at 11:50:17PM -0800, David Miller wrote:
+> > From: Jarek Poplawski <jarkao2@gmail.com>
+> > Date: Mon, 2 Feb 2009 08:43:58 +0000
+> > 
+> > > On Mon, Feb 02, 2009 at 12:18:54AM -0800, David Miller wrote:
+> > > > Allocating 4096 or 8192 bytes for a 1500 byte frame is wasteful.
+> > > 
+> > > I mean allocating chunks of cached pages similarly to sk_sndmsg_page
+> > > way. I guess the similar problem is to be worked out in any case. But
+> > > it seems doing it on the linear area requires less changes in other
+> > > places.
+> > 
+> > This is a very interesting idea, but it has some drawbacks:
+> > 
+> > 1) Just like any other allocator we'll need to find a way to
+> >    handle > PAGE_SIZE allocations, and thus add handling for
+> >    compound pages etc.
+> >  
+> >    And exactly the drivers that want such huge SKB data areas
+> >    on receive should be converted to use scatter gather page
+> >    vectors in order to avoid multi-order pages and thus strains
+> >    on the page allocator.
+> 
+> I guess compound pages are handled by put_page() enough, but I don't
+> think they should be main argument here, and I agree: scatter gather
+> should be used where possible.
+> 
+> > 
+> > 2) Space wastage and poor packing can be an issue.
+> > 
+> >    Even with SLAB/SLUB we get poor packing, look at Evegeniy's
+> >    graphs that he made when writing his NTA patches.
+> 
+> I'm a bit lost here: could you "remind" the way page space would be
+> used/saved in your paged variant e.g. for ~1500B skbs?
 
-We want to phase out the GPIO "autorequest" mechanism in gpiolib
-and require all callers to use gpio_request().  
+Here is some proof of concept to make sure I wasn't misunderstood.
+alloc_paged() is used only for "normal" size skbs (2x ~1500B per page;
+I think Herbert mentioned something like this at the beginning; it
+also avoids allocs other than GFP_ATOMIC and GFP_KERNEL for
+simplicity.)
 
- - Update feature-removal-schedule
- - Update the documentation now
- - Convert the relevant pr_warning() in gpiolib to a WARN()
-   so folk using this mechanism get a noisy stack dump
+I guess it could be replaced with any other mechanizm allocting to a
+fragment or Evgeniy's allocator when it's ready.
+ 
+Alas it's not tested, but if it works, I think it should show how
+much gain is expected here for most common traffic.
 
-Some drivers and board init code will probably need to change.
-Implementations not using gpiolib will still be fine; they are
-already required to implement gpio_{request,free}() stubs.
-
-Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Jarek P.
 ---
- Documentation/feature-removal-schedule.txt |   12 ++++++++++++
- Documentation/gpio.txt                     |   23 +++++++++--------------
- drivers/gpio/gpiolib.c                     |   12 ++++++++----
- 3 files changed, 29 insertions(+), 18 deletions(-)
 
---- a/Documentation/feature-removal-schedule.txt
-+++ b/Documentation/feature-removal-schedule.txt
-@@ -335,3 +335,15 @@ Why:	In 2.6.18 the Secmark concept was i
- 	Secmark, it is time to deprecate the older mechanism and start the
- 	process of removing the old code.
- Who:	Paul Moore <paul.moore@hp.com>
+diff -Nurp a/include/linux/netdevice.h b/include/linux/netdevice.h
+--- a/include/linux/netdevice.h	2009-02-02 20:23:46.000000000 +0100
++++ b/include/linux/netdevice.h	2009-02-02 21:52:46.000000000 +0100
+@@ -1154,6 +1154,9 @@ struct softnet_data
+ 	struct sk_buff		*completion_queue;
+ 
+ 	struct napi_struct	backlog;
 +
-+---------------------------
++	struct page		*alloc_skb_page[2];
++	unsigned int		alloc_skb_off[2];
+ };
+ 
+ DECLARE_PER_CPU(struct softnet_data,softnet_data);
+diff -Nurp a/include/linux/skbuff.h b/include/linux/skbuff.h
+--- a/include/linux/skbuff.h	2009-02-02 20:23:46.000000000 +0100
++++ b/include/linux/skbuff.h	2009-02-02 22:12:04.000000000 +0100
+@@ -144,7 +144,8 @@ struct skb_shared_info {
+ 	unsigned short	gso_size;
+ 	/* Warning: this field is not always filled in (UFO)! */
+ 	unsigned short	gso_segs;
+-	unsigned short  gso_type;
++	__u8		gso_type;
++	__u8		alloc_paged;
+ 	__be32          ip6_frag_id;
+ #ifdef CONFIG_HAS_DMA
+ 	unsigned int	num_dma_maps;
+diff -Nurp a/net/core/dev.c b/net/core/dev.c
+--- a/net/core/dev.c	2009-02-02 19:37:33.000000000 +0100
++++ b/net/core/dev.c	2009-02-02 23:15:55.000000000 +0100
+@@ -5243,6 +5243,9 @@ static int __init net_dev_init(void)
+ 		queue->backlog.poll = process_backlog;
+ 		queue->backlog.weight = weight_p;
+ 		queue->backlog.gro_list = NULL;
 +
-+What:	GPIO autorequest on gpio_direction_{input,output}() in gpiolib
-+When:	February 2010
-+Why:	All callers should use explicit gpio_request()/gpio_free().
-+	The autorequest mechanism in gpiolib was provided mostly as a
-+	migration aid for legacy GPIO interfaces (for SOC based GPIOs).
-+	Those users have now largely migrated.  Platforms implementing
-+	the GPIO interfaces without using gpiolib will see no changes.
-+Who:	David Brownell <dbrownell@users.sourceforge.net>
++		queue->alloc_skb_page[0] = NULL;
++		queue->alloc_skb_page[1] = NULL;
+ 	}
+ 
+ 	dev_boot_phase = 0;
+diff -Nurp a/net/core/skbuff.c b/net/core/skbuff.c
+--- a/net/core/skbuff.c	2009-02-02 20:23:46.000000000 +0100
++++ b/net/core/skbuff.c	2009-02-02 23:57:10.000000000 +0100
+@@ -151,6 +151,55 @@ void skb_truesize_bug(struct sk_buff *sk
+ }
+ EXPORT_SYMBOL(skb_truesize_bug);
+ 
++static inline void *alloc_paged(unsigned int size, gfp_t gfp_mask)
++{
++	struct softnet_data *sd;
++	unsigned long flags;
++	unsigned int off;
++	struct page *p;
++	void *ret;
++	int i;
 +
---- a/Documentation/gpio.txt
-+++ b/Documentation/gpio.txt
-@@ -123,7 +123,10 @@ platform-specific implementation issue.
- 
- Using GPIOs
- -----------
--One of the first things to do with a GPIO, often in board setup code when
-+The first thing a system should do with a GPIO is allocate it, using
-+the gpio_request() call; see later.
++	if (size < 1400 || size > 2000)
++		return NULL;
 +
-+One of the next things to do with a GPIO, often in board setup code when
- setting up a platform_device using the GPIO, is mark its direction:
++	if (gfp_mask == GFP_ATOMIC)
++		i = 0;
++	else if (gfp_mask == GFP_KERNEL)
++		i = 1;
++	else
++		return NULL;
++
++	local_irq_save(flags);
++	sd = &__get_cpu_var(softnet_data);
++	p = sd->alloc_skb_page[i];
++
++	if (p) {
++		off = sd->alloc_skb_off[i];
++		if (off + size > PAGE_SIZE) {
++			put_page(p);
++			goto new_page;
++		}
++	} else {
++new_page:
++		p = sd->alloc_skb_page[i] = alloc_pages(gfp_mask, 0);
++		if (!p) {
++			ret = NULL;
++			goto out;
++		}
++
++		off = 0;
++		/* hold one ref to this page until it's full */
++	}
++
++	get_page(p);
++	ret = page_address(p) + off;
++	sd->alloc_skb_off[i] = off + size;
++out:
++	local_irq_restore(flags);
++	return ret;
++}
++
+ /* 	Allocate a new skbuff. We do this ourselves so we can fill in a few
+  *	'private' fields and also do memory statistics to find all the
+  *	[BEEP] leaks.
+@@ -178,7 +227,7 @@ struct sk_buff *__alloc_skb(unsigned int
+ 	struct kmem_cache *cache;
+ 	struct skb_shared_info *shinfo;
+ 	struct sk_buff *skb;
+-	u8 *data;
++	u8 *data, paged = 0;
  
- 	/* set as input or output, returning 0 or negative errno */
-@@ -141,8 +144,8 @@ This helps avoid signal glitching during
+ 	cache = fclone ? skbuff_fclone_cache : skbuff_head_cache;
  
- For compatibility with legacy interfaces to GPIOs, setting the direction
- of a GPIO implicitly requests that GPIO (see below) if it has not been
--requested already.  That compatibility may be removed in the future;
--explicitly requesting GPIOs is strongly preferred.
-+requested already.  That compatibility is being removed from the optional
-+gpiolib framework.
+@@ -188,8 +237,13 @@ struct sk_buff *__alloc_skb(unsigned int
+ 		goto out;
  
- Setting the direction can fail if the GPIO number is invalid, or when
- that particular GPIO can't be used in that mode.  It's generally a bad
-@@ -195,7 +198,7 @@ This requires sleeping, which can't be d
+ 	size = SKB_DATA_ALIGN(size);
+-	data = kmalloc_node_track_caller(size + sizeof(struct skb_shared_info),
+-			gfp_mask, node);
++	data = alloc_paged(size + sizeof(struct skb_shared_info), gfp_mask);
++	if (data)
++		paged = 1;
++	else
++		data = kmalloc_node_track_caller(size +
++						 sizeof(struct skb_shared_info),
++						 gfp_mask, node);
+ 	if (!data)
+ 		goto nodata;
  
- Platforms that support this type of GPIO distinguish them from other GPIOs
- by returning nonzero from this call (which requires a valid GPIO number,
--either explicitly or implicitly requested):
-+which should have been previously allocated with gpio_request):
+@@ -214,6 +268,7 @@ struct sk_buff *__alloc_skb(unsigned int
+ 	shinfo->gso_type = 0;
+ 	shinfo->ip6_frag_id = 0;
+ 	shinfo->frag_list = NULL;
++	shinfo->alloc_paged = paged;
  
- 	int gpio_cansleep(unsigned gpio);
+ 	if (fclone) {
+ 		struct sk_buff *child = skb + 1;
+@@ -341,7 +396,10 @@ static void skb_release_data(struct sk_b
+ 		if (skb_shinfo(skb)->frag_list)
+ 			skb_drop_fraglist(skb);
  
-@@ -212,10 +215,9 @@ for GPIOs that can't be accessed from IR
- same as the spinlock-safe calls.
+-		kfree(skb->head);
++		if (skb_shinfo(skb)->alloc_paged)
++			put_page(virt_to_page(skb->head));
++		else
++			kfree(skb->head);
+ 	}
+ }
  
+@@ -1380,7 +1438,7 @@ static inline int spd_fill_page(struct s
+ 	if (unlikely(spd->nr_pages == PIPE_BUFFERS))
+ 		return 1;
  
--Claiming and Releasing GPIOs (OPTIONAL)
-----------------------------------------
-+Claiming and Releasing GPIOs
-+----------------------------
- To help catch system configuration errors, two calls are defined.
--However, many platforms don't currently support this mechanism.
- 
- 	/* request GPIO, returning 0 or negative errno.
- 	 * non-null labels may be useful for diagnostics.
-@@ -244,13 +246,6 @@ Some platforms may also use knowledge ab
- power management, such as by powering down unused chip sectors and, more
- easily, gating off unused clocks.
- 
--These two calls are optional because not not all current Linux platforms
--offer such functionality in their GPIO support; a valid implementation
--could return success for all gpio_request() calls.  Unlike the other calls,
--the state they represent doesn't normally match anything from a hardware
--register; it's just a software bitmap which clearly is not necessary for
--correct operation of hardware or (bug free) drivers.
--
- Note that requesting a GPIO does NOT cause it to be configured in any
- way; it just marks that GPIO as in use.  Separate code must handle any
- pin setup (e.g. controlling which pin the GPIO uses, pullup/pulldown).
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -69,20 +69,24 @@ static inline void desc_set_label(struct
-  * those calls have no teeth) we can't avoid autorequesting.  This nag
-  * message should motivate switching to explicit requests... so should
-  * the weaker cleanup after faults, compared to gpio_request().
-+ *
-+ * NOTE: the autorequest mechanism is going away; at this point it's
-+ * only "legal" in the sense that (old) code using it won't break yet,
-+ * but instead only triggers a WARN() stack dump.
-  */
- static int gpio_ensure_requested(struct gpio_desc *desc, unsigned offset)
- {
--	if (test_and_set_bit(FLAG_REQUESTED, &desc->flags) == 0) {
--		struct gpio_chip *chip = desc->chip;
--		int gpio = chip->base + offset;
-+	const struct gpio_chip *chip = desc->chip;
-+	const int gpio = chip->base + offset;
- 
-+	if (WARN(test_and_set_bit(FLAG_REQUESTED, &desc->flags) == 0,
-+			"autorequest GPIO-%d\n", gpio)) {
- 		if (!try_module_get(chip->owner)) {
- 			pr_err("GPIO-%d: module can't be gotten \n", gpio);
- 			clear_bit(FLAG_REQUESTED, &desc->flags);
- 			/* lose */
- 			return -EIO;
- 		}
--		pr_warning("GPIO-%d autorequested\n", gpio);
- 		desc_set_label(desc, "[auto]");
- 		/* caller must chip->request() w/o spinlock */
- 		if (chip->request)
+-	if (linear) {
++	if (linear && !skb_shinfo(skb)->alloc_paged) {
+ 		page = linear_to_page(page, len, &offset, skb);
+ 		if (!page)
+ 			return 1;
