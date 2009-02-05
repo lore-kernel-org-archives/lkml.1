@@ -1,65 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760970AbZBESQb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760263AbZBESSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760970AbZBESQb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 13:16:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760339AbZBESPt
+	id S1760263AbZBESSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 13:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZBESSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 13:15:49 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42104 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760823AbZBESPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 13:15:47 -0500
-Date: Thu, 5 Feb 2009 19:15:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Ed Swierk <eswierk@aristanetworks.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lenb@kernel.org, linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH] x86/pci: host mmconfig detect clean up v2
-Message-ID: <20090205181534.GC5661@elte.hu>
-References: <1233765552.16414.6.camel@localhost.localdomain> <86802c440902041212q51f2a444l84e1ac29ee6f702e@mail.gmail.com> <20090204212517.GM22608@elte.hu> <498A4DFB.7040608@kernel.org>
+	Thu, 5 Feb 2009 13:18:05 -0500
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:25535 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbZBESSD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 13:18:03 -0500
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Randy Dunlap <randy.dunlap@oracle.com>,
+       ISS StorageDev <iss_storagedev@hp.com>,
+       scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Date: Thu, 5 Feb 2009 18:16:53 +0000
+Subject: RE: cciss: WARNING/BUG in do_cciss_intr (it's back)
+Thread-Topic: cciss: WARNING/BUG in do_cciss_intr (it's back)
+Thread-Index: AcmG8GIvH4lN6GtQSvi1ZpbxOS0TJQAzP8TQ
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A778859F9EAD9D5@GVW0547EXC.americas.hpqcorp.net>
+References: <4989D435.7010003@oracle.com>
+In-Reply-To: <4989D435.7010003@oracle.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <498A4DFB.7040608@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+ 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+> -----Original Message-----
+> From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
+> Sent: Wednesday, February 04, 2009 11:45 AM
+> To: Miller, Mike (OS Dev); ISS StorageDev; scsi; Linux Kernel 
+> Mailing List
+> Subject: cciss: WARNING/BUG in do_cciss_intr (it's back)
+> 
+> Hi Mike,
+> 
+> Was there any debugging code added to try to help with this problem?
+> or is that the WARNING before the BUG?
+> 
 
-> Impact: not assume one place for mmconfig in nb
-> 
-> prepare for following case: amd fam10h + mcp55
-> CPU MSR has some range, mcp55 pci config will have another one.
-> 
-> also prepare for mcp55 + io55 system. every one will have one range.
-> 
-> if it s mcp55 detect duties to execlude range that is used by CPU MSR
-> aka, if CPU state bus 0-255, range in mcp55 need to be dropped.
-> because HW in CPU will not route that mcp55 mmconfig to handle it.
-> 
-> v2: fix e7520 exit path
-> 
-> Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
-> 
-> ---
->  arch/x86/pci/mmconfig-shared.c |   98 ++++++++++++++++++++++-------------------
->  1 file changed, 54 insertions(+), 44 deletions(-)
+Randy,
+I think this is a different bug than the one you reported previously. Please open a new bugzilla.
 
-looks good to me. One for the PCI tree?
+Thanks,
+-- mikem
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+> 
+> Booting 2.6.29-rc3-git6 oopsed with:
+> 
+> calling  cciss_init+0x0/0x2e [cciss] @ 733 HP CISS Driver (v 3.6.20)
+> ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54 cciss 
+> 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) 
+> -> IRQ 54 cciss 0000:42:08.0: irq 56 for MSI/MSI-X IRQ 
+> 56/cciss0: IRQF_DISABLED is not guaranteed on shared IRQs
+> cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 56 using DAC 
+> ------------[ cut here ]------------
+> WARNING: at drivers/block/cciss.c:225 
+> do_cciss_intr+0x58f/0x99a [cciss]() Hardware name: ProLiant 
+> BL685c G1 Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+> Pid: 0, comm: swapper Not tainted 2.6.29-rc3-git6 #1 Call Trace:
+>  <IRQ>  [<ffffffff8023a741>] warn_slowpath+0xd3/0xf2  
+> [<ffffffff80243a44>] ? __mod_timer+0xc1/0xd3  
+> [<ffffffff8041469f>] ? smi_timeout+0xd9/0xe5  
+> [<ffffffff8024f86a>] ? ktime_get_ts+0x49/0x4e  
+> [<ffffffff804145c6>] ? smi_timeout+0x0/0xe5  
+> [<ffffffffa0024c4b>] do_cciss_intr+0x58f/0x99a [cciss]  
+> [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57  
+> [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f  
+> [<ffffffff8020e302>] do_IRQ+0xdc/0x152  [<ffffffff8020ca13>] 
+> ret_from_intr+0x0/0xa  <EOI> <4>---[ end trace a8b437cd48391e28 ]---
+> BUG: unable to handle kernel NULL pointer dereference at 
+> 00000000000000f4
+> IP: [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss] PGD 0
+> Oops: 0002 [#1] SMP
+> last sysfs file: /sys/block/ram15/dev
+> CPU 2
+> Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+> Pid: 0, comm: swapper Tainted: G        W  2.6.29-rc3-git6 #1
+> RIP: 0010:[<ffffffffa0024c93>]  [<ffffffffa0024c93>] 
+> do_cciss_intr+0x5d7/0x99a [cciss]
+> RSP: 0018:ffff88027f12fef0  EFLAGS: 00010046
+> RAX: 0000000000000000 RBX: ffff88007f840270 RCX: 0000000000013888
+> RDX: 0000000000008080 RSI: 0000000000000046 RDI: 0000000000000009
+> RBP: ffff88027f12ff20 R08: 000000447f12fa70 R09: ffff88017e540700
+> R10: 0000000000000000 R11: 0000000000000000 R12: ffff88007f8404b0
+> R13: ffff88027e1a0000 R14: 0000000000000000 R15: 0000000000000086
+> FS:  0000000000680850(0000) GS:ffff88017f121380(0000) 
+> knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00000000000000f4 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
+> 0000000000000400 Process swapper (pid: 0, threadinfo 
+> ffff88017f164000, task ffff88017fa5d4c0)
+> Stack:
+>  0000000000000001 ffff88027f126280 0000000000000000 0000000000000000
+>  0000000000000038 0000000000000000 ffff88027f12ff50 
+> ffffffff8026ed21  ffffffff8076e000 0000000000000038 
+> ffff88027f126280 ffffffff8076e054 Call Trace:
+>  <IRQ> <0> [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57  
+> [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f  
+> [<ffffffff8020e302>] do_IRQ+0xdc/0x152  [<ffffffff8020ca13>] 
+> ret_from_intr+0x0/0xa  <EOI> <0>Code: 50 08 48 c7 83 40 02 00 
+> 00 00 00 00 00 49 c7 44 24 08 00 00 00 00 8b 83 34 02 00 00 
+> 85 c0 0f 85 49 03 00 00 4c 8b b3 50 02 00 00 <41> c7 86 f4 00 
+> 00 00 00 00 00 00 4c 8b 83 28 02 00 00 66 41 8b RIP  
+> [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss]  RSP 
+> <ffff88027f12fef0>
+> CR2: 00000000000000f4
+> ---[ end trace a8b437cd48391e29 ]---
+> Kernel panic - not syncing: Fatal exception in interrupt
+> 
+> 
+> 
+> This is on an HP ProLiant BL685c G1, 4-proc system with
+> 8 GB of RAM.  (same as previous reports)
+> 
+> 
+> Rebooting worked successfully.
+> 
+> Thanks,
+> --
+> ~Randy
+> 
