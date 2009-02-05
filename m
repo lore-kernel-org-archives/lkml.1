@@ -1,128 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758859AbZBEQYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbZBEQZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758859AbZBEQYu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 11:24:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbZBEQYk
+	id S1757268AbZBEQZP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 11:25:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbZBEQYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 11:24:40 -0500
-Received: from rn-out-0910.google.com ([64.233.170.189]:12835 "EHLO
-	rn-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751568AbZBEQYj (ORCPT
+	Thu, 5 Feb 2009 11:24:55 -0500
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:48521 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754185AbZBEQYy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 11:24:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=TmXqmCjys1N/kSnDHiDp9Y4UBPFjIYD/ujmBzqvtKRhag0Y3YBu+PFDeqA42KDRdRZ
-         wEk7sjVoXXIK4OgSJL+aR8UwxAwlspzQMmNoI5RHQ50C1GC8lmGQRy0yteGB0ycVapZi
-         iL2HJ5bTP8ZzlJ5SwvC16rNgdJWnvIes8xOa8=
+	Thu, 5 Feb 2009 11:24:54 -0500
+Date: Thu, 5 Feb 2009 17:24:51 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto: compress - Add pcomp interface
+In-Reply-To: <20090115030526.GA27726@gondor.apana.org.au>
+Message-ID: <alpine.LRH.2.00.0902051703150.4290@vixen.sonytel.be>
+References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090114031613.GA7429@gondor.apana.org.au> <Pine.LNX.4.64.0901141528010.31703@vixen.sonytel.be>
+ <20090115030526.GA27726@gondor.apana.org.au>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1233848265.7161.101.camel@heimdal.trondhjem.org>
-References: <1225962921-6424-1-git-send-email-cooloney@kernel.org>
-	 <386072610902050102r3c3e41a3yfbb424411f2f40dc@mail.gmail.com>
-	 <1233840498.7161.97.camel@heimdal.trondhjem.org>
-	 <1233848265.7161.101.camel@heimdal.trondhjem.org>
-Date: Fri, 6 Feb 2009 00:24:37 +0800
-X-Google-Sender-Auth: 0052bebcd92f187a
-Message-ID: <386072610902050824j6eeb8e9asde2c41ac5cf9815a@mail.gmail.com>
-Subject: Re: [PATCH] nfs client: kill compile warning on NOMMU machine
-From: Bryan Wu <cooloney@kernel.org>
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 11:37 PM, Trond Myklebust
-<Trond.Myklebust@netapp.com> wrote:
-> On Thu, 2009-02-05 at 08:28 -0500, Trond Myklebust wrote:
->> On Thu, 2009-02-05 at 17:02 +0800, Bryan Wu wrote:
->> > Hi guys,
->> >
->> > Is it possible to merge this patch?
->>
->> NACK. Although it would be nice to get rid of the warning, this patch
->> does so at the price of even further obfuscating the fact that we're
->> just returning -ENOSYS in the no MMU case, and by causing
->> nfs_file_vm_ops (which is currently optimised away) to be compiled in
->> for no good reason at all.
->>
->> Trond
->
-> How about the following compromise: we get rid of the special casing
-> altogether and just always call generic_file_mmap. If the noMMU folks
-> want further optimisations, then they can inline generic_file_mmap(), so
-> that the compiler always takes the 'generic_file_mmap() failed' path.
->
+	Hi Herbert,
 
-Beautiful, I do love this one and would like to test it on our platform.
+On Thu, 15 Jan 2009, Herbert Xu wrote:
+> On Wed, Jan 14, 2009 at 04:01:34PM +0100, Geert Uytterhoeven wrote:
+> > On Wed, 14 Jan 2009, Herbert Xu wrote:
+> > > Also, this is something that we'll potentially export to user-space,
+> > > so we need to ensure that it is invariant to word length.
+> > > 
+> > > So something like this would be good
+> > > 
+> > > 	int (*setup_comp)(struct crypto_pcomp *tfm, const void *params,
+> > > 			  unsigned int length);
+> > > 	int (*setup_decomp)(struct crypto_pcomp *tfm, const void *params,
+> > > 			    unsigned int length);
+> > 
+> > I assume "length" is the size of the passed params, so the algorithms can
+> > return -EINVAL if they're passed the wrong size?
+> > 
+> > > The actual parameters should be formatted using the netlink helpers
+> > > (nla_*).  So each parameter that you want to set should show up as
+> > > a netlink attribute.  If a paramter is absent then you'd just use
+> > > the default, etc.
+>
+> > I assume "length" is the size of the passed params, so the algorithms can
+> > return -EINVAL if they're passed the wrong size?
+> 
+> Well with the netlink parameters these can have variable lengths
+> depending on how many parameters the user supplies.
 
-Thanks
--Bryan
+How can this be exported to userspace?
+How does this variable length parameter passing work? Do you have an example?
+Nothing in crypto/ seems to already use nla_*?
 
-> Cheers
->  Trond
-> ------------------------------------------------------------
-> From: Trond Myklebust <Trond.Myklebust@netapp.com>
-> Date: Thu, 5 Feb 2009 10:23:36 -0500
-> NFS: Kill the "defined but not used" compile error on nommu machines
->
-> Bryan Wu reports that when compiling NFS on nommu machines he gets a
-> "defined but not used" error on nfs_file_mmap().
->
-> The easiest fix is simply to get rid of the special casing in NFS, and
-> just always call generic_file_mmap() to set up the file.
->
-> Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> ---
->
->  fs/nfs/file.c |   12 +++++-------
->  1 files changed, 5 insertions(+), 7 deletions(-)
->
->
-> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-> index 404c19c..1eab9c9 100644
-> --- a/fs/nfs/file.c
-> +++ b/fs/nfs/file.c
-> @@ -64,11 +64,7 @@ const struct file_operations nfs_file_operations = {
->        .write          = do_sync_write,
->        .aio_read       = nfs_file_read,
->        .aio_write      = nfs_file_write,
-> -#ifdef CONFIG_MMU
->        .mmap           = nfs_file_mmap,
-> -#else
-> -       .mmap           = generic_file_mmap,
-> -#endif
->        .open           = nfs_file_open,
->        .flush          = nfs_file_flush,
->        .release        = nfs_file_release,
-> @@ -304,11 +300,13 @@ nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
->        dprintk("NFS: mmap(%s/%s)\n",
->                dentry->d_parent->d_name.name, dentry->d_name.name);
->
-> -       status = nfs_revalidate_mapping(inode, file->f_mapping);
-> +       /* Note: generic_file_mmap() returns ENOSYS on nommu systems
-> +        *       so we call that before revalidating the mapping
-> +        */
-> +       status = generic_file_mmap(file, vma);
->        if (!status) {
->                vma->vm_ops = &nfs_file_vm_ops;
-> -               vma->vm_flags |= VM_CAN_NONLINEAR;
-> -               file_accessed(file);
-> +               status = nfs_revalidate_mapping(inode, file->f_mapping);
->        }
->        return status;
->  }
->
-> --
-> Trond Myklebust
-> Linux NFS client maintainer
->
-> NetApp
-> Trond.Myklebust@netapp.com
-> www.netapp.com
->
+> Ah yes because crypto_comp is one of the original types that's
+> still built-in.  Because there are so few compression users and
+> algorithms (exactly 3 if you include null compression), I think
+> we can dispense with the compatibility stuff altogether since
+> we'll likely rip out fairly soon anyway.
+> 
+> So just create the new type, readd deflate using the new type
+> alongside the existing deflate algorithm.  The system is capable
+> of supporting two algorithms of the same name with different types.
+
+While the core of the crypto system supports two algorithms of the same name
+with different types, the testmgr doesn't.
+
+As I removed the backwards-compatility layer at your request, I'll use "zlib"
+for the name of the new module. It's more flexible than the fixed "deflate"
+one anyway.
+
+Is this OK for you?
+
+Thanks!
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+
+Sony Techsoft Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
