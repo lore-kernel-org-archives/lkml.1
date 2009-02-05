@@ -1,73 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZBEK1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbZBEKae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbZBEK1X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 05:27:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZBEK1O
+	id S1756169AbZBEKae (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 05:30:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751407AbZBEKaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 05:27:14 -0500
-Received: from ns2.suse.de ([195.135.220.15]:35764 "EHLO mx2.suse.de"
+	Thu, 5 Feb 2009 05:30:25 -0500
+Received: from hera.kernel.org ([140.211.167.34]:44660 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751120AbZBEK1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 05:27:13 -0500
-From: Andreas Schwab <schwab@suse.de>
-To: Floris Kraak <randakar@gmail.com>
-Cc: Roland Dreier <rdreier@cisco.com>, Robert Hancock <hancockrwd@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>
-Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
-References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
-	<20090204221451.GA27254@uranus.ravnborg.org>
-	<adavdrplty2.fsf@cisco.com> <498A295A.4090008@gmail.com>
-	<adaskmtjsnn.fsf@cisco.com>
-	<56e1b5710902050026s5a8fd48fhf4a65c05a533dbc3@mail.gmail.com>
-	<56e1b5710902050215l5b34adb1ofb8a972318ebe353@mail.gmail.com>
-X-Yow: Toes, knees, NIPPLES.  Toes, knees, nipples, KNUCKLES...
- Nipples, dimples, knuckles, NICKLES, wrinkles, pimples!!
- I don't like FRANK SINATRA or his CHILDREN.
-Date: Thu, 05 Feb 2009 11:27:10 +0100
-In-Reply-To: <56e1b5710902050215l5b34adb1ofb8a972318ebe353@mail.gmail.com>
-	(Floris Kraak's message of "Thu, 5 Feb 2009 11:15:12 +0100")
-Message-ID: <jeab91w54x.fsf@sykes.suse.de>
-User-Agent: Gnus/5.110009 (No Gnus v0.9) Emacs/22.3 (gnu/linux)
+	id S1750866AbZBEKaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 05:30:23 -0500
+Message-ID: <498ABFA9.7060203@kernel.org>
+Date: Thu, 05 Feb 2009 19:30:01 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH 1/3] xen: setup percpu data pointers
+References: <49876BD3.5070804@goop.org> <498A8738.9050200@gmail.com> <498A8C05.30704@kernel.org> <498A9284.8050805@goop.org>
+In-Reply-To: <498A9284.8050805@goop.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Feb 2009 10:29:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Floris Kraak <randakar@gmail.com> writes:
+Jeremy Fitzhardinge wrote:
+> Tejun Heo wrote:
+>> Tejun Heo wrote:
+>>  
+>>> Applied 1-3 to #tj-percpu with trivial modification on #2 (will reply
+>>> to the message).
+>>>     
+>>
+>> Oh... hpa already merged them into x86/paravirt.  I'll just pull
+>> x86/paravirt into core/percpu because the first patch needs to be in
+>> core/percpu to keep xen working.
+>>
+>> hpa, can you please take the other xen patch[1] into x86/paravirt too?
+>> So that I can receive it via you?
+> 
+> Looks like its already there.
 
-> Example:
->
-> kernel/power/main.c:717: warning: format not a string literal and no
-> format arguments
->
-> This complains about:
-> ..
->         if (!rtc) {
->                 printk(warn_no_rtc);
->                 goto done;
->         }
-> ..
->
-> So what is this "warn_no_rtc" thing?
->
->         static char             warn_no_rtc[] __initdata =
->                 KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
+Yes, right, which means tj-percpu == x86/paravirt for the time being.
+Ingo, please pull from the following to fast forward core/percpu to
+x86/paravirt (or you can just do it yourself :-)
 
-Does it help to make it const?
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
 
-> That's pretty much GCC failing to recognize that the format is a
-> string literal and then complaining that it isn't.
-
-Since it's a non-const variable it cannot be a string literal.
-
-Andreas.
+Thanks.
 
 -- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+tejun
