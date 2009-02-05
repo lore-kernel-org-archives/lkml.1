@@ -1,76 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbZBEIBX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZBEIEN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbZBEIBX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:01:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbZBEIBL
+	id S1757472AbZBEIEN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:04:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754626AbZBEIDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:01:11 -0500
-Received: from relay.parallels.com ([195.214.232.42]:47419 "EHLO
-	relay.parallels.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754267AbZBEIBK convert rfc822-to-8bit (ORCPT
+	Thu, 5 Feb 2009 03:03:54 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:43806 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754390AbZBEIDw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:01:10 -0500
-From: Kirill Korotaev <dev@parallels.com>
-To: Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>
-CC: Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@openvz.org>
-Date: Thu, 5 Feb 2009 11:01:07 +0300
-Subject: Re: [PATCH] x86: fix hpet timer reinit for x86_64
-Thread-Topic: [PATCH] x86: fix hpet timer reinit for x86_64
-Thread-Index: AcmG1TNNUgumlXiATbqPubaEwBGh2gAkrLio
-Message-ID: <C5B07773.B781%dev@parallels.com>
-In-Reply-To: <20090204134933.GC17024@elte.hu>
-Accept-Language: en-US, ru-RU
-Content-Language: en
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US, ru-RU
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-MIME-Version: 1.0
+	Thu, 5 Feb 2009 03:03:52 -0500
+X-IronPort-AV: E=Sophos;i="4.37,384,1231131600"; 
+   d="scan'208";a="82345590"
+From: Bryan Wu <cooloney@kernel.org>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Graf Yang <graf.yang@analog.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] net: fix some trailing whitespaces
+Date: Thu,  5 Feb 2009 16:05:44 +0800
+Message-Id: <1233821144-8764-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Graf Yang <graf.yang@analog.com>
 
+Signed-off-by: Graf Yang <graf.yang@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ include/linux/if_ether.h  |    8 ++++----
+ include/linux/netdevice.h |   10 +++++-----
+ 2 files changed, 9 insertions(+), 9 deletions(-)
 
-
-On 2/4/09 4:49 PM, "Ingo Molnar" <mingo@elte.hu> wrote:
-
-> 
-> 
-> * Pavel Emelyanov <xemul@openvz.org> wrote:
-> 
->> There's a small problem with hpet_rtc_reinit function - it checks
->> for the
->>       hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
->> to continue increasing both the HPET_T1_CMP (register) and the
->> hpet_t1_cmp (variable).
->> 
->> But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
->> is 64-bit this condition will always be FALSE once the latter hits
->> the 32-bit boundary, and we can have a situation, when we don't
->> increase the HPET_T1_CMP register high enough.
->> 
->> The result - timer stops ticking, since HPET_T1_CMP becomes less,
->> than the COUNTER and never increased again.
->> 
->> The solution is to cut the upper 32-bit from the hpet_t1_cmp
->> variable to make the comparison to HPET_COUNTER correct.
->> 
->> Reported-by: Kirill Korotaev <dev@openvz.org>
->> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> 
-> applied to tip/timers/urgent, thanks Pavel!
-> 
-> I'm wondering, what symptoms were seen due to the bug? Did system time stop,
-> or did it become erratic, or were there outright lockups?
-
-Symptoms were observed in user space. An application doing read() on
-/dev/rtc blocked sometimes for a long periods of time (as turned out - until
-counter gets wrap around).
-
-Regards,
-Kirill
-
+diff --git a/include/linux/if_ether.h b/include/linux/if_ether.h
+index 7f3c735..0216e1b 100644
+--- a/include/linux/if_ether.h
++++ b/include/linux/if_ether.h
+@@ -17,7 +17,7 @@
+  *		as published by the Free Software Foundation; either version
+  *		2 of the License, or (at your option) any later version.
+  */
+- 
++
+ #ifndef _LINUX_IF_ETHER_H
+ #define _LINUX_IF_ETHER_H
+ 
+@@ -25,7 +25,7 @@
+ 
+ /*
+  *	IEEE 802.3 Ethernet magic constants.  The frame sizes omit the preamble
+- *	and FCS/CRC (frame check sequence). 
++ *	and FCS/CRC (frame check sequence).
+  */
+ 
+ #define ETH_ALEN	6		/* Octets in one ethernet addr	 */
+@@ -83,7 +83,7 @@
+ /*
+  *	Non DIX types. Won't clash for 1500 types.
+  */
+- 
++
+ #define ETH_P_802_3	0x0001		/* Dummy type for 802.3 frames  */
+ #define ETH_P_AX25	0x0002		/* Dummy protocol id for AX.25  */
+ #define ETH_P_ALL	0x0003		/* Every packet (be careful!!!) */
+@@ -109,7 +109,7 @@
+ /*
+  *	This is an Ethernet frame header.
+  */
+- 
++
+ struct ethhdr {
+ 	unsigned char	h_dest[ETH_ALEN];	/* destination eth addr	*/
+ 	unsigned char	h_source[ETH_ALEN];	/* source ether addr	*/
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index ec54785..2ddd625 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -96,7 +96,7 @@ struct wireless_dev;
+  *	Compute the worst case header length according to the protocols
+  *	used.
+  */
+- 
++
+ #if defined(CONFIG_WLAN_80211) || defined(CONFIG_AX25) || defined(CONFIG_AX25_MODULE)
+ # if defined(CONFIG_MAC80211_MESH)
+ #  define LL_MAX_HEADER 128
+@@ -124,7 +124,7 @@ struct wireless_dev;
+  *	Network device statistics. Akin to the 2.0 ether stats but
+  *	with byte counters.
+  */
+- 
++
+ struct net_device_stats
+ {
+ 	unsigned long	rx_packets;		/* total packets received	*/
+@@ -285,7 +285,7 @@ enum netdev_state_t
+ 
+ /*
+  * This structure holds at boot time configured netdevice settings. They
+- * are then used in the device probing. 
++ * are then used in the device probing.
+  */
+ struct netdev_boot_setup {
+ 	char name[IFNAMSIZ];
+@@ -740,7 +740,7 @@ struct net_device
+ 	void			*dsa_ptr;	/* dsa specific data */
+ #endif
+ 	void 			*atalk_ptr;	/* AppleTalk link 	*/
+-	void			*ip_ptr;	/* IPv4 specific data	*/  
++	void			*ip_ptr;	/* IPv4 specific data	*/
+ 	void                    *dn_ptr;        /* DECnet specific data */
+ 	void                    *ip6_ptr;       /* IPv6 specific data */
+ 	void			*ec_ptr;	/* Econet specific data	*/
+@@ -753,7 +753,7 @@ struct net_device
+  */
+ 	unsigned long		last_rx;	/* Time of last Rx	*/
+ 	/* Interface address info used in eth_type_trans() */
+-	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast 
++	unsigned char		dev_addr[MAX_ADDR_LEN];	/* hw address, (before bcast
+ 							   because most packets are unicast) */
+ 
+ 	unsigned char		broadcast[MAX_ADDR_LEN];	/* hw bcast add	*/
+-- 
+1.5.6.3
