@@ -1,121 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbZBELQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754724AbZBEL1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754000AbZBELQU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 06:16:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZBELQG
+	id S1754724AbZBEL1R (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 06:27:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752436AbZBEL07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 06:16:06 -0500
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36834 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752057AbZBELQF (ORCPT
+	Thu, 5 Feb 2009 06:26:59 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:37475 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751583AbZBEL07 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 06:16:05 -0500
-Date: Thu, 5 Feb 2009 20:14:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: David Miller <davem@davemloft.net>, heiko.carstens@de.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: [BUGFIX][PATCH] fix memmap init to initialize  valid memmap for
- memory hole. (Was Re: HOLES_IN_ZONE...
-Message-Id: <20090205201448.3a0f4182.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090205103925.GE26878@csn.ul.ie>
-References: <20090204.222651.26527737.davem@davemloft.net>
-	<20090205180617.8ee3dfb5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090205.012123.141238531.davem@davemloft.net>
-	<20090205183409.1a12c23b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090205103925.GE26878@csn.ul.ie>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 5 Feb 2009 06:26:59 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rz22gsj2GhykFe4dhY6g5wmjGVfJx+pimd2L6rh4wc2Cj857r6DFGlD2HVco+mqI9z
+         CHS7vgw4Sgit4OZL4OpiKklMHQ/syzzIlij0BTBYXXupd+uKtxtgHfLW//MbVO/rtnJH
+         eYhRjvagPKs7I/uWkvXr00C33bLDz9ABuMESQ=
+MIME-Version: 1.0
+In-Reply-To: <20090201130058.GA486@elte.hu>
+References: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com>
+	 <Pine.LNX.4.64.0901221658550.14302@blonde.anvils>
+	 <8c5a844a0901221500m7af8ff45v169b6523ad9d7ad3@mail.gmail.com>
+	 <20090122231358.GA27033@elte.hu>
+	 <8c5a844a0901230310h7aa1ec83h60817de2b36212d8@mail.gmail.com>
+	 <8c5a844a0901281331w4cea7ab2y305d5a1af96e313e@mail.gmail.com>
+	 <20090129141929.GP24391@elte.hu>
+	 <8c5a844a0902010319t20b853d0t6c156ecc84543f30@mail.gmail.com>
+	 <20090201130058.GA486@elte.hu>
+Date: Thu, 5 Feb 2009 13:26:58 +0200
+Message-ID: <8c5a844a0902050326v2155dbeaq5449f1e373f4245d@mail.gmail.com>
+Subject: Re: [PATCH 2.6.28 1/2] memory: improve find_vma
+From: Daniel Lowengrub <lowdanie@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009 10:39:25 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
+On Sun, Feb 1, 2009 at 3:00 PM, Ingo Molnar <mingo@elte.hu> wrote:
+>
+>  you should time it:
+>
+>  time ./mmap-perf
+>
+> and compare the before/after results.
+>
+>        Ingo
+>
 
-> ====
-> If a PFN is not in early_node_map[] then the struct page for it is not
-> initialised. If there are holes within a MAX_ORDER_NR_PAGES range of
-> pages, then PG_reserved will not be set. Code that walks PFNs within
-> MAX_ORDER_NR_PAGES will then use uninitialised struct pages.
-> 
-> To avoid any problems, this patch initialises holes within a MAX_ORDER_NR_PAGES
-> that valid memmap exists but is otherwise unused.
-> ====
-> 
-Thank you, I use this text.
-==
-If PFN is not in early_node_map[] then struct page for it is not initialized.
-If there are holes within a MAX_ORDER_NE_PAGES range of pages, then PG_reserved
-will not be set. Code that walks PFNs within MAX_ORDER_NR_PAGES will the use
-uninitialized struct pages.
-
-To avoid any problems, this patch initializes holes within a MAX_ORDER_NR_PAGES
-that valid memmap exists but is otherwise unused.
-
-Changelog:
-  - renamed variable from "tmp" to "actual_nid"
-
-Reported-by: David Miller <davem@davemlloft.net>
-Acked-by: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- include/linux/mmzone.h |    6 ------
- mm/page_alloc.c        |   13 +++++++++++--
- 2 files changed, 11 insertions(+), 8 deletions(-)
-
-Index: linux-2.6.28-rc3/mm/page_alloc.c
-===================================================================
---- linux-2.6.28-rc3.orig/mm/page_alloc.c
-+++ linux-2.6.28-rc3/mm/page_alloc.c
-@@ -2632,9 +2632,18 @@ void __meminit memmap_init_zone(unsigned
- 		 * exist on hotplugged memory.
- 		 */
- 		if (context == MEMMAP_EARLY) {
-+			int nid_from_node_memory_map;
-+
- 			if (!early_pfn_valid(pfn))
- 				continue;
--			if (!early_pfn_in_nid(pfn, nid))
-+			/*
-+			 * early_pfn_to_nid() returns -1 if the page doesn't
-+			 * exist in early_node_map[]. Initialize it in force
-+			 * and set PG_reserved at el.
-+			 */
-+			nid_from_node_memory_map = early_pfn_to_nid(pfn);
-+			if (nid_from_node_memory_map > -1 &&
-+				nid_from_node_memory_map != nid)
- 				continue;
- 		}
- 		page = pfn_to_page(pfn);
-@@ -3001,7 +3010,7 @@ int __meminit early_pfn_to_nid(unsigned 
- 			return early_node_map[i].nid;
- 	}
- 
--	return 0;
-+	return -1;
- }
- #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
- 
-Index: linux-2.6.28-rc3/include/linux/mmzone.h
-===================================================================
---- linux-2.6.28-rc3.orig/include/linux/mmzone.h
-+++ linux-2.6.28-rc3/include/linux/mmzone.h
-@@ -1070,12 +1070,6 @@ void sparse_init(void);
- #define sparse_index_init(_sec, _nid)  do {} while (0)
- #endif /* CONFIG_SPARSEMEM */
- 
--#ifdef CONFIG_NODES_SPAN_OTHER_NODES
--#define early_pfn_in_nid(pfn, nid)	(early_pfn_to_nid(pfn) == (nid))
--#else
--#define early_pfn_in_nid(pfn, nid)	(1)
--#endif
--
- #ifndef early_pfn_valid
- #define early_pfn_valid(pfn)	(1)
- #endif
-
+I made a script that runs 'time ./mmap-perf' 100 times and outputs the
+average.  The output on the standard kernel was:
+real: 1.022600
+user: 0.135900
+system: 0.852600
+The output after the patch was:
+real: 0.815400
+user: 0.113200
+system: 0.622200
+These results were consistent which isn't surprising considering the
+fact that they themselves are averages.
+What do you think?
+Daniel
