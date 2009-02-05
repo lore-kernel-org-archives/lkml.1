@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762031AbZBETiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762127AbZBETij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762031AbZBETiS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:38:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759408AbZBETcb
+	id S1762127AbZBETij (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:38:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbZBETcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:32:31 -0500
-Received: from gw.goop.org ([64.81.55.164]:40062 "EHLO mail.goop.org"
+	Thu, 5 Feb 2009 14:32:32 -0500
+Received: from gw.goop.org ([64.81.55.164]:40055 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759455AbZBETcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759459AbZBETcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Feb 2009 14:32:22 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 22 of 36] x86: unify pmd_pfn
-X-Mercurial-Node: e92b7b826663bcd558bae7b761ab02b2a53cd785
-Message-Id: <e92b7b826663bcd558ba.1233862264@abulafia.goop.org>
+Subject: [PATCH 25 of 36] x86: unify pte_offset_kernel
+X-Mercurial-Node: e62b48cd3d4b959622147e6c59e15a350d961ef2
+Message-Id: <e62b48cd3d4b95962214.1233862267@abulafia.goop.org>
 In-Reply-To: <patchbomb.1233862242@abulafia.goop.org>
 References: <patchbomb.1233862242@abulafia.goop.org>
-Date: Thu, 05 Feb 2009 11:31:04 -0800
+Date: Thu, 05 Feb 2009 11:31:07 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
@@ -27,40 +27,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-Unify and demacro pmd_pfn.
+Unify and demacro pte_offset_kernel.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
  arch/x86/include/asm/pgtable.h    |    5 +++++
- arch/x86/include/asm/pgtable_64.h |    2 --
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/pgtable_32.h |    3 ---
+ arch/x86/include/asm/pgtable_64.h |    3 ---
+ 3 files changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
 --- a/arch/x86/include/asm/pgtable.h
 +++ b/arch/x86/include/asm/pgtable.h
-@@ -548,6 +548,11 @@
- {
- 	return (pmd_t *)pud_page_vaddr(*pud) + pmd_index(address);
+@@ -547,6 +547,11 @@
+ 	return (address >> PAGE_SHIFT) & (PTRS_PER_PTE - 1);
  }
-+
-+static inline unsigned long pmd_pfn(pmd_t pmd)
-+{
-+	return (pmd_val(pmd) & PTE_PFN_MASK) >> PAGE_SHIFT;
-+}
- #endif	/* PAGETABLE_LEVELS > 2 */
  
- #if PAGETABLE_LEVELS > 3
++static inline pte_t *pte_offset_kernel(pmd_t *pmd, unsigned long address)
++{
++	return (pte_t *)pmd_page_vaddr(*pmd) + pte_index(address);
++}
++
+ #if PAGETABLE_LEVELS > 2
+ static inline int pud_present(pud_t pud)
+ {
+diff --git a/arch/x86/include/asm/pgtable_32.h b/arch/x86/include/asm/pgtable_32.h
+--- a/arch/x86/include/asm/pgtable_32.h
++++ b/arch/x86/include/asm/pgtable_32.h
+@@ -97,9 +97,6 @@
+ 
+ static inline int pud_large(pud_t pud) { return 0; }
+ 
+-#define pte_offset_kernel(dir, address)				\
+-	((pte_t *)pmd_page_vaddr(*(dir)) +  pte_index((address)))
+-
+ #if defined(CONFIG_HIGHPTE)
+ #define pte_offset_map(dir, address)					\
+ 	((pte_t *)kmap_atomic_pte(pmd_page(*(dir)), KM_PTE0) +		\
 diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
 --- a/arch/x86/include/asm/pgtable_64.h
 +++ b/arch/x86/include/asm/pgtable_64.h
-@@ -190,8 +190,6 @@
- }
+@@ -197,9 +197,6 @@
  
- /* PMD  - Level 2 access */
--#define pmd_pfn(x)  ((pmd_val((x)) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+ /* PTE - Level 1 access. */
+ 
+-#define pte_offset_kernel(dir, address) ((pte_t *) pmd_page_vaddr(*(dir)) + \
+-					 pte_index((address)))
 -
- #define pte_to_pgoff(pte) ((pte_val((pte)) & PHYSICAL_PAGE_MASK) >> PAGE_SHIFT)
- #define pgoff_to_pte(off) ((pte_t) { .pte = ((off) << PAGE_SHIFT) |	\
- 					    _PAGE_FILE })
+ /* x86-64 always has all page tables mapped. */
+ #define pte_offset_map(dir, address) pte_offset_kernel((dir), (address))
+ #define pte_offset_map_nested(dir, address) pte_offset_kernel((dir), (address))
 
 
