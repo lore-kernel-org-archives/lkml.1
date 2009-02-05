@@ -1,91 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbZBEQCn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbZBEQE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757917AbZBEQCn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 11:02:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752466AbZBEQCf
+	id S1758211AbZBEQE2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 11:04:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZBEQES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 11:02:35 -0500
-Received: from an-out-0708.google.com ([209.85.132.246]:3283 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbZBEQCe (ORCPT
+	Thu, 5 Feb 2009 11:04:18 -0500
+Received: from wf-out-1314.google.com ([209.85.200.174]:38326 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752698AbZBEQER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 11:02:34 -0500
+	Thu, 5 Feb 2009 11:04:17 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=jvzZ0mvbpRSAhZLpqD6uHC7NYKymttvQ7tnDHB7JN62obdwFB9DgYG3ZK97M/bE+pc
-         Vn5wpd41s1eDSk4mUjiP9gBSL3ENJAPN0ar0/q1HEfYX71mrhv3JRrtXJQ9+YYt91uBq
-         LFewvNrx13OEtHXcpK5K7hAOROIC1sF2KG6Vk=
-Date: Thu, 5 Feb 2009 10:01:28 -0600
-From: Shawn Bohrer <shawn.bohrer@gmail.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/6] module: make modversion_info contain a pointer,
-	not an array.
-Message-ID: <20090205160128.GA9486@mediacenter>
-References: <200901290005.52819.rusty@rustcorp.com.au>
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Xm4a+AQuyGHPWDCiN0dacmud2CXnF7YXtw58Zvd7UrACUw7StgPDmkHOoq5RMisyf8
+         K/Z69/RzFBv4q4354j3cKsSnUM1ldqfoUS+oJvPMFaX9trMOoMsyeBzfhK5wE3L6aROQ
+         GUrIaMetRjE0gqMJR5daqnKFSsp699CMP/DmA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200901290005.52819.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <498AB837.1040404@openvz.org>
+References: <C5B07536.B77D%dev@parallels.com> <498AB837.1040404@openvz.org>
+Date: Thu, 5 Feb 2009 08:04:15 -0800
+X-Google-Sender-Auth: 681ea0a70d98703d
+Message-ID: <2c0942db0902050804w2e1adc12hbeae29582e5f7193@mail.gmail.com>
+Subject: Re: [git pull] timer fix
+From: Ray Lee <ray-lk@madrabbit.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Kirill Korotaev <dev@parallels.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kirill Korotaev <dev@openvz.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 29, 2009 at 12:05:52AM +1030, Rusty Russell wrote:
-> With allmodconfig (minus non-building modules) on 32-bit x86:
-> Total size of modules before: 60009790 bytes
-> Total size of modules after: 55927866 bytes
-> 
-> Saving 7% of module size for CONFIG_MODVERSIONS=y; and these sections
-> are kept resident as well.
-> 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> ---
->  include/linux/module.h |    4 +++-
->  1 file changed, 3 insertions(+), 1 deletion(-)
-> 
-> diff --git a/include/linux/module.h b/include/linux/module.h
-> --- a/include/linux/module.h
-> +++ b/include/linux/module.h
-> @@ -37,10 +37,12 @@ struct kernel_symbol
->  	const char *name;
->  };
->  
-> +/* This is put in the __versions section of a module to indicate the version
-> + * it expects for unknown symbols. */
->  struct modversion_info
->  {
->  	unsigned long crc;
-> -	char name[MODULE_NAME_LEN];
-> +	char *name;
->  };
+On Thu, Feb 5, 2009 at 1:58 AM, Pavel Emelyanov <xemul@openvz.org> wrote:
+> Kirill Korotaev wrote:
+>> ACK, it works. Why not save another 4 bytes of .bss then by changing
+>> hept_t1_cmp to u32? ;-)
+>
+> Hm... .bss you say? :) The bloat-o-meter results would be:
+>
+> For the original fix with casting hpet_t1_cmp to u32 inside the loop
+> add/remove: 0/0 grow/shrink: 1/0 up/down: 2/0 (2)
+> function                                     old     new   delta
+> hpet_rtc_interrupt                           741     743      +2
+>
+> For the fix with casting the substitution result to s32
+> add/remove: 0/0 grow/shrink: 0/1 up/down: 0/-2 (-2)
+> function                                     old     new   delta
+> hpet_rtc_interrupt                           741     739      -2
+>
+> For the proposed by Kirill type change of the hpet_t1_cmp
+> add/remove: 0/0 grow/shrink: 0/3 up/down: 0/-6 (-6)
+> function                                     old     new   delta
+> hpet_rtc_timer_init                          186     185      -1
+> hpet_rtc_interrupt                           741     740      -1
+> hpet_t1_cmp                                    8       4      -4
+>
+> That's the fix:
+>
+> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+> index 64d5ad0..dfbbb94 100644
+> --- a/arch/x86/kernel/hpet.c
+> +++ b/arch/x86/kernel/hpet.c
+> @@ -897,7 +897,7 @@ static unsigned long hpet_rtc_flags;
+>  static int hpet_prev_update_sec;
+>  static struct rtc_time hpet_alarm_time;
+>  static unsigned long hpet_pie_count;
+> -static unsigned long hpet_t1_cmp;
+> +static u32 hpet_t1_cmp;
+>  static unsigned long hpet_default_delta;
+>  static unsigned long hpet_pie_delta;
+>  static unsigned long hpet_pie_limit;
+>
+> Reported-by: Kirill Korotaev <dev@openvz.org>
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+>
+> This one also works. Should I re-send this patch in a proper way?
 
-Hey Rusty thanks for the change, but I just got around to testing this
-and I have a few observations/questions.  First this breaks:
+Ugh. This version seems too subtle for a new reader coming into this
+code. I'd prefer the fix be kept in the comparison site, where people
+already expect wraparound issues.
 
-modprobe --dump-modversions foo.ko
+If you don't have time to add the helper, I'd really rather see the
+version with the explicit cast acting as documentation, rather than a
+test that magically works due to type issues.
 
-I actually don't care, but just happened to stumble upon it when I also
-noticed that your changes seemed to be working a little too well.  I
-currently happen to be building my modules out of order for example
-module B depends on symbols from module A, but I build module B first.
-This means that the exported symbols are not in the Module.symvers file
-when module B is compiled.  I would expect module B to fail to load yet
-with your patches it magically works and I don't see any errors in the
-logs.  If I run:
-
-objdump -s --section __versions B.ko
-
-I only get something like:
-
-Contents of section __versions:
- 0000 d782ec86 00000000
-
-Of course if I build the modules in the correct order and dump the
-__versions section I see the correct number of crc/char* pairs.
-
---
-Shawn
+Dunno, maybe it's just me.
