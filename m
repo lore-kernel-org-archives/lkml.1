@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbZBEFkB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755110AbZBEFo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbZBEFkB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 00:40:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753474AbZBEFjv
+	id S1755110AbZBEFo3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 00:44:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZBEFoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 00:39:51 -0500
-Received: from kroah.org ([198.145.64.141]:34383 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753266AbZBEFjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 00:39:51 -0500
-Date: Wed, 4 Feb 2009 21:38:02 -0800
-From: Greg KH <greg@kroah.com>
-To: "Zhao, Yu" <yu.zhao@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 7: slab corruptions
-Message-ID: <20090205053802.GA8355@kroah.com>
-References: <498A7463.4010603@intel.com>
+	Thu, 5 Feb 2009 00:44:20 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:52096 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751476AbZBEFoT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 00:44:19 -0500
+Message-ID: <498A7BE3.40405@zytor.com>
+Date: Wed, 04 Feb 2009 21:40:51 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <498A7463.4010603@intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: __supported_pte_mask breaks PROT_NONE pages
+References: <498A5002.9080408@goop.org>
+In-Reply-To: <498A5002.9080408@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 01:08:51PM +0800, Zhao, Yu wrote:
-> Hi Greg,
->
-> It looks like following fix is not in Linus' tree. Can you please queue it?
->
-> http://lkml.org/lkml/2008/3/8/155
+[Dropped wli from the Cc: list because holomorphy.com doesn't resolve]
 
-Queue what?  That is a message from over a year ago, are you seeing a
-problem in mainline in this area?  If so, do you have a proposed fix for
-it?
+Jeremy Fitzhardinge wrote:
+> 
+> I guess the best fix is to only apply __supported_pte_mask to present
+> ptes.  This seems like the right solution to me, as it means we can
+> completely ignore the issue of overlaps between the present pte bits and
+> the non-present pte-as-swap entry use of the bits.  (Patch below.)
+> 
 
-totally confused,
+It certainly looks reasonable, so I have applied this patch to
+tip:x86/urgent.  However, since I'm on the way out to FOSDEM I won't be
+able to run any tests on this.
 
-greg k-h
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
