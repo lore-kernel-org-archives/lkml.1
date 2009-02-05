@@ -1,81 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758093AbZBEROl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757452AbZBERS7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758093AbZBEROl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 12:14:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbZBEROa
+	id S1757452AbZBERS7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 12:18:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZBERSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 12:14:30 -0500
-Received: from pmx1.sophos.com ([213.31.172.16]:54346 "EHLO pmx1.sophos.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752271AbZBERO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 12:14:29 -0500
-X-Greylist: delayed 530 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 12:14:28 EST
-From: Tvrtko Ursulin <tvrtko.ursulin@sophos.com>
-Organization: Sophos Plc
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Detect mmconfig on nVidia MCP55
-Date: Thu, 5 Feb 2009 17:05:32 +0000
-User-Agent: KMail/1.9.10
-Cc: Ed Swierk <eswierk@aristanetworks.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "lenb@kernel.org" <lenb@kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
-References: <1233765552.16414.6.camel@localhost.localdomain> <20090204170440.GA31973@elte.hu>
-In-Reply-To: <20090204170440.GA31973@elte.hu>
+	Thu, 5 Feb 2009 12:18:50 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:65531 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbZBERSt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 12:18:49 -0500
+Message-ID: <498B1F2A.70209@oracle.com>
+Date: Thu, 05 Feb 2009 09:17:30 -0800
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Message-Id: <200902051705.33410.tvrtko.ursulin@sophos.com>
-X-MIMETrack: Itemize by SMTP Server on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 05/02/2009 17:05:33,
-	Serialize by Router on Mercury/Servers/Sophos(Release 7.0.3|September 26, 2007) at
- 05/02/2009 17:05:34,
-	Serialize complete at 05/02/2009 17:05:34
-X-TNEFEvaluated: 1
+To: Eric Anholt <eric@anholt.net>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Norbert Preining <preining@logic.at>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, samr <sam@ravnborg.org>
+Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>	 <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain>	 <20090204181109.GR21085@gamma.logic.tuwien.ac.at>	 <alpine.LFD.2.00.0902041012440.3247@localhost.localdomain>	 <20090204185606.GA12991@elte.hu> <1233809147.13118.8.camel@gaiman>
+In-Reply-To: <1233809147.13118.8.camel@gaiman>
+Content-Type: text/plain; charset=KOI8-R
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Disposition: inline
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.498B1F25.026E:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009 17:04:40 Ingo Molnar wrote:
-> 2) Please use vertical spaces when initializing structure fields. Instead
-> of the messy looking (and over-long-line generating) construct of:
->
->         pci_mmcfg_config[0].address = (extcfg & 0x00007fff) << 25;
->         pci_mmcfg_config[0].pci_segment = 0;
->         pci_mmcfg_config[0].start_bus_number = 0;
->         pci_mmcfg_config[0].end_bus_number = (1 << (8 - ((extcfg >> 28) &
-> 3))) - 1; pci_mmcfg_config_num = 1;
->
->    You will get something like:
->
->         config->address                 = (extcfg & 0x00007fff) << 25;
->         config->pci_segment             = 0;
->         config->start_bus_number        = 0;
->         config->end_bus_number          = (1 << (8 - ((extcfg >> 28) &
-> 3)));
->
->         pci_mmcfg_config = config;
->         pci_mmcfg_config_num = 1;
->
->    Which makes it more structured, more reviewable - and more pleasant to
->    look at as well.
+Eric Anholt wrote:
+> On Wed, 2009-02-04 at 19:56 +0100, Ingo Molnar wrote:
+>> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>>
+>>> On Wed, 4 Feb 2009, Norbert Preining wrote:
+>>>> The problem is that if you have a configuration under 2.6.28 without 
+>>>> CONFIG_FB and just call make oldconfig, or even make config and don't 
+>>>> know that you loose the DRM. And I was using make oldconfig (there is a 
+>>>> graphical config?? ;-))
+>>> Sure. It's inconvenient, no question about that. I asked the i915 people 
+>>> to look into not requiring CONFIG_FB, and I hope they will, but my point 
+>>> is that I don't think we can consider "small one-time inconvenience" to be 
+>>> a "regression".
+>> if you mean that as a general principle, there's four very real downsides in 
+>> my opinion.
+>>
+>> Firstly, we could have done better (and still can do better), via various 
+>> easy and non-intrusive measures:
+>>
+>>    - We could add a runtime warning:
+>>
+>>       for example a WARN_ONCE("please enable CONFIG_DRM_I915 and CONFIG_FB") 
+>>       that there's no DRM because CONFIG_FB is not selected and oldconfig 
+>>       loses the I915 setting silently - placed in a key DRM ioctl, would 
+>>       have gone a long way addressing the issue. Testers do notice kernel 
+>>       warnings that pop up when their X gets slow. (This approach might also 
+>>       have the added bonus of warning folks who enable the wrong driver for 
+>>       the hardware.)
+>>
+>>    - Or we could add a more thoughtful Kconfig migration:
+>>
+>>       Rename DRM_I915 to DRM_I915_FB [which it really is now], and keep
+>>       DRM_I915 as a non-interactive migration helper: if set, it 
+>>       auto-selects both FB and DRM_I915_FB.
+>>
+>>       While CONFIG_FB is an interactive Kconfig option so a select can be 
+>>       dangerous to a correct dependency tree, it seems safe to do in this 
+>>       specific case because it seems to be a rather leaf entry with no 
+>>       dependencies.
+> 
+> I tried select FB.  It's the right thing to do.  It doesn't work.  I
+> posted to the mailing list two weeks ago about the insane dependency
+> chain that kbuild comes up with and fails on when we do this, and got
+> silence.
 
-Is this in CodingStyle now? Since I have noticed you are pushing for this 
-quite a lot lately. And only for structure initialisation and not also for 
-example for variable declarations?
+I tried what you had described in that email (from 2 weeks ago), got the
+same results that you did, but kbuild does seem very confused (to me).
 
-I find it a matter of personal preference whether it is more pleasant to look 
-at and whether it is more or less readable.
+reference email from 2+ weeks ago:
+  http://marc.info/?l=linux-kernel&m=123197341316461&w=2
 
-It is also worse from diff/patch point of view since it can happen in the 
-future that what would be a one line change now becomes multiline. 
+Adding Sam to cc.
 
-Regards,
+> Believe me, I hate this inconvenience to users even more than each of
+> you do, because I get to deal with the reports.  But I haven't had the
+> time to sit down and figure out what drugs kbuild is on, or even how to
+> work around it (despite IRC help from a few other kernel guys).
+> 
+> The alternative I can see is to ifdef the code for something that will
+> be on by default and which stable userland will require in 6 months.
+> That seems wrong.
+> 
 
-Tvrtko
+
+-- 
+~Randy
