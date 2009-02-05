@@ -1,384 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759932AbZBEQ4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759406AbZBEQ5t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759932AbZBEQ4l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 11:56:41 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755899AbZBEQy2
+	id S1759406AbZBEQ5t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 11:57:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZBEQ5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 11:54:28 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:38798 "EHLO mx2.redhat.com"
+	Thu, 5 Feb 2009 11:57:39 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55377 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759118AbZBEQy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 11:54:26 -0500
-Date: Thu, 5 Feb 2009 11:53:15 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: linux-kernel@vger.kernel.org, gnb@sgi.com, gregkh@suse.de
-Cc: nfsv4@linux-nfs.org, systemtap@sources.redhat.com
-Subject: [Patch 2/2] update docs
-Message-ID: <20090205165315.GD3114@redhat.com>
+	id S1752109AbZBEQ5i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 11:57:38 -0500
+Date: Thu, 5 Feb 2009 17:56:57 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Anholt <eric@anholt.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Norbert Preining <preining@logic.at>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: [PATCH] drm, i915: select framebuffer support automatically
+Message-ID: <20090205165657.GA15490@elte.hu>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain> <20090204181109.GR21085@gamma.logic.tuwien.ac.at> <alpine.LFD.2.00.0902041012440.3247@localhost.localdomain> <20090204185606.GA12991@elte.hu> <1233809147.13118.8.camel@gaiman>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1233809147.13118.8.camel@gaiman>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-updates the documentation for 'dynamic debug' feature.
+* Eric Anholt <eric@anholt.net> wrote:
 
-Signed-off-by: Greg Banks <gnb@sgi.com>
-Signed-off-by: Jason Baron <jbaron@redhat.com>
+> On Wed, 2009-02-04 at 19:56 +0100, Ingo Molnar wrote:
+> > * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > 
+> > > On Wed, 4 Feb 2009, Norbert Preining wrote:
+> > > > 
+> > > > The problem is that if you have a configuration under 2.6.28 without 
+> > > > CONFIG_FB and just call make oldconfig, or even make config and don't 
+> > > > know that you loose the DRM. And I was using make oldconfig (there is a 
+> > > > graphical config?? ;-))
+> > > 
+> > > Sure. It's inconvenient, no question about that. I asked the i915 people 
+> > > to look into not requiring CONFIG_FB, and I hope they will, but my point 
+> > > is that I don't think we can consider "small one-time inconvenience" to be 
+> > > a "regression".
+> > 
+> > if you mean that as a general principle, there's four very real downsides in 
+> > my opinion.
+> > 
+> > Firstly, we could have done better (and still can do better), via various 
+> > easy and non-intrusive measures:
+> > 
+> >    - We could add a runtime warning:
+> > 
+> >       for example a WARN_ONCE("please enable CONFIG_DRM_I915 and CONFIG_FB") 
+> >       that there's no DRM because CONFIG_FB is not selected and oldconfig 
+> >       loses the I915 setting silently - placed in a key DRM ioctl, would 
+> >       have gone a long way addressing the issue. Testers do notice kernel 
+> >       warnings that pop up when their X gets slow. (This approach might also 
+> >       have the added bonus of warning folks who enable the wrong driver for 
+> >       the hardware.)
+> > 
+> >    - Or we could add a more thoughtful Kconfig migration:
+> > 
+> >       Rename DRM_I915 to DRM_I915_FB [which it really is now], and keep
+> >       DRM_I915 as a non-interactive migration helper: if set, it 
+> >       auto-selects both FB and DRM_I915_FB.
+> > 
+> >       While CONFIG_FB is an interactive Kconfig option so a select can be 
+> >       dangerous to a correct dependency tree, it seems safe to do in this 
+> >       specific case because it seems to be a rather leaf entry with no 
+> >       dependencies.
+> 
+> I tried select FB.  It's the right thing to do.  It doesn't work.  I
+> posted to the mailing list two weeks ago about the insane dependency
+> chain that kbuild comes up with and fails on when we do this, and got
+> silence.
 
+I mean the patch below.
+
+I have tested it here it works fine and has no dependency problems, nor any 
+build breakages on 32-bit or 64-bit x86. When you tried this you probably 
+ran into the FB_I810 and FB_INTEL complication - this patch solves that too.
+
+What do you think?
+
+	Ingo
+
+--------------->
+>From ca835567dcb7c513a26a4396d86f12848e62de8d Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu, 5 Feb 2009 16:03:34 +0100
+Subject: [PATCH] drm, i915: select framebuffer support automatically
+
+Migration helper.
+
+The i915 driver recently added a 'depends on FB' rule to its
+Kconfig entry - which silently turns off DRM_I915 if someone
+has a working config but no CONFIG_FB selected, and upgrades
+to the latest upstream kernel.
+
+Norbert Preining reported this problem:
+
+   Bug-Entry   : http://bugzilla.kernel.org/show_bug.cgi?id=12599
+   Subject     : dri /dev node disappeared with 2.6.29-rc1
+
+So change it to "select FB", which auto-selects framebuffer
+support. This way the driver keeps working, regardless of
+whether FB was enabled before or not.
+
+Kconfig select's of interactive options can be problematic to
+dependencies and can cause build breakages - but in this case
+it's safe because it's a leaf entry with no dependencies of its
+own.
+
+( There is some minor circular dependency fallout as FB_I810
+  and FB_INTEL also used 'depends on FB' constructs - update
+  those to "select FB" too. )
+
+Reported-by: Norbert Preining <preining@logic.at>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
+ drivers/gpu/drm/Kconfig |    2 +-
+ drivers/video/Kconfig   |    6 ++++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
- Documentation/dynamic-debug-howto.txt |  232 +++++++++++++++++++++++++++++++++
- lib/Kconfig.debug                     |   74 ++++++-----
- 2 files changed, 274 insertions(+), 32 deletions(-)
- create mode 100644 Documentation/dynamic-debug-howto.txt
-
-
-diff --git a/Documentation/dynamic-debug-howto.txt b/Documentation/dynamic-debug-howto.txt
-new file mode 100644
-index 0000000..37b9a49
---- /dev/null
-+++ b/Documentation/dynamic-debug-howto.txt
-@@ -0,0 +1,232 @@
-+
-+Introduction
-+============
-+
-+This document describes how to use the dynamic debug (ddebug) feature.
-+
-+Dynamic debug is designed to allow you to dynamically enable/disable kernel
-+code to obtain additional kernel information. Currently, if 
-+CONFIG_DYNAMIC_DEBUG is set, then all pr_debug()/dev_debug() calls can be
-+dynamically enabled per-callsite.
-+
-+Dynamic debug has even more useful features:
-+
-+ * Simple query language allows turning on and off debugging statements by 
-+   matching any combination of:
-+
-+   - source filename
-+   - function name
-+   - line number (including ranges of line numbers)
-+   - module name
-+   - format string
-+
-+ * Provides a debugfs control file: <debugfs>/dynamic_debug/control which can be 
-+   read to display the complete list of known debug statements, to help guide you
-+
-+Controlling dynamic debug Behaviour
-+===============================
-+
-+The behaviour of pr_debug()/dev_debug()s are controlled via writing to a
-+control file in the 'debugfs' filesystem. Thus, you must first mount the debugfs
-+filesystem, in order to make use of this feature. Subsequently, we refer to the
-+control file as: <debugfs>/dynamic_debug/control. For example, if you want to
-+enable printing from source file 'svcsock.c', line 1603 you simply do:
-+
-+nullarbor:~ # echo 'file svcsock.c line 1603 +p' > 
-+				<debugfs>/dynamic_debug/control
-+
-+If you make a mistake with the syntax, the write will fail thus:
-+
-+nullarbor:~ # echo 'file svcsock.c wtf 1 +p' >
-+				<debugfs>/dynamic_debug/control
-+-bash: echo: write error: Invalid argument
-+
-+Viewing Dynamic Debug Behaviour
-+===========================
-+
-+You can view the currently configured behaviour of all the debug statements
-+via:
-+
-+nullarbor:~ # cat <debugfs>/dynamic_debug/control
-+# filename:lineno [module]function flags format
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:323 [svcxprt_rdma]svc_rdma_cleanup - "SVCRDMA\040Module\040Removed,\040deregister\040RPC\040RDMA\040transport\012"
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:341 [svcxprt_rdma]svc_rdma_init - "\011max_inline\040\040\040\040\040\040\040:\040%d\012"
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:340 [svcxprt_rdma]svc_rdma_init - "\011sq_depth\040\040\040\040\040\040\040\040\040:\040%d\012"
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:338 [svcxprt_rdma]svc_rdma_init - "\011max_requests\040\040\040\040\040:\040%d\012"
-+...
-+
-+
-+You can also apply standard Unix text manipulation filters to this
-+data, e.g.
-+
-+nullarbor:~ # grep -i rdma <debugfs>/dynamic_debug/control  | wc -l
-+62
-+
-+nullarbor:~ # grep -i tcp <debugfs>/dynamic_debug/control | wc -l
-+42
-+
-+Note in particular that the third column shows the enabled behaviour
-+flags for each debug statement callsite (see below for definitions of the
-+flags).  The default value, no extra behaviour enabled, is "-".  So
-+you can view all the debug statement callsites with any non-default flags:
-+
-+nullarbor:~ # awk '$3 != "-"' <debugfs>/dynamic_debug/control
-+# filename:lineno [module]function flags format
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svcsock.c:1603 [sunrpc]svc_send p "svc_process:\040st_sendto\040returned\040%d\012"
-+
-+
-+Command Language Reference
-+==========================
-+
-+At the lexical level, a command comprises a sequence of words separated
-+by whitespace characters.  Note that newlines are treated as word
-+separators and do *not* end a command or allow multiple commands to
-+be done together.  So these are all equivalent:
-+
-+nullarbor:~ # echo -c 'file svcsock.c line 1603 +p' >
-+				<debugfs>/dynamic_debug/control
-+nullarbor:~ # echo -c '  file   svcsock.c     line  1603 +p  ' >
-+				<debugfs>/dynamic_debug/control
-+nullarbor:~ # echo -c 'file svcsock.c\nline 1603 +p' >
-+				<debugfs>/dynamic_debug/control
-+nullarbor:~ # echo -n 'file svcsock.c line 1603 +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+Commands are bounded by a write() system call.  If you want to do
-+multiple commands you need to do a separate "echo" for each, like:
-+
-+nullarbor:~ # echo 'file svcsock.c line 1603 +p' > /proc/dprintk ;\
-+> echo 'file svcsock.c line 1563 +p' > /proc/dprintk
-+
-+or even like:
-+
-+nullarbor:~ # (
-+> echo 'file svcsock.c line 1603 +p' ;\
-+> echo 'file svcsock.c line 1563 +p' ;\
-+> ) > /proc/dprintk
-+
-+At the syntactical level, a command comprises a sequence of match
-+specifications, followed by a flags change specification.
-+
-+command ::= match-spec* flags-spec
-+
-+The match-spec's are used to choose a subset of the known dprintk()
-+callsites to which to apply the flags-spec.  Think of them as a query
-+with implicit ANDs between each pair.  Note that an empty list of
-+match-specs is possible, but is not very useful because it will not
-+match any debug statement callsites.
-+
-+A match specification comprises a keyword, which controls the attribute
-+of the callsite to be compared, and a value to compare against.  Possible
-+keywords are:
-+
-+match-spec ::= 'func' string |
-+	       'file' string |
-+	       'module' string |
-+	       'format' string |
-+	       'line' line-range
-+
-+line-range ::= lineno |
-+	       '-'lineno |
-+	       lineno'-' |
-+	       lineno'-'lineno
-+// Note: line-range cannot contain space, e.g.
-+// "1-30" is valid range but "1 - 30" is not.
-+
-+lineno ::= unsigned-int
-+
-+The meanings of each keyword are:
-+
-+func
-+    The given string is compared against the function name
-+    of each callsite.  Example:
-+
-+    func svc_tcp_accept
-+
-+file
-+    The given string is compared against either the full
-+    pathname or the basename of the source file of each
-+    callsite.  Examples:
-+
-+    file svcsock.c
-+    file /usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svcsock.c
-+
-+module
-+    The given string is compared against the module name
-+    of each callsite.  The module name is the string as
-+    seen in "lsmod", i.e. without the directory or the .ko
-+    suffix and with '-' changed to '_'.  Examples:
-+
-+    module sunrpc
-+    module nfsd
-+
-+format
-+    The given string is searched for in the dynamic debug format
-+    string.  Note that the string does not need to match the
-+    entire format, only some part.  Whitespace and other
-+    special characters can be escaped using C octal character
-+    escape \ooo notation, e.g. the space character is \040.
-+    Examples:
-+
-+    format svcrdma:	    // many of the NFS/RDMA server dprintks
-+    format readahead	    // some dprintks in the readahead cache
-+    format nfsd:\040SETATTR // how to match a format with whitespace
-+
-+line
-+    The given line number or range of line numbers is compared
-+    against the line number of each dprintk() callsite.  A single
-+    line number matches the callsite line number exactly.  A
-+    range of line numbers matches any callsite between the first
-+    and last line number inclusive.  An empty first number means
-+    the first line in the file, an empty line number means the
-+    last number in the file.  Examples:
-+
-+    line 1603	    // exactly line 1603
-+    line 1600-1605  // the six lines from line 1600 to line 1605
-+    line -1605	    // the 1605 lines from line 1 to line 1605
-+    line 1600-	    // all lines from line 1600 to the end of the file
-+
-+The flags specification comprises a change operation followed
-+by one or more flag characters.  The change operation is one
-+of the characters:
-+
-+-
-+    remove the given flags
-+
-++
-+    add the given flags
-+
-+=
-+    set the flags to the given flags
-+
-+The flags are:
-+
-+p
-+    Causes a printk() message to be emitted to dmesg
-+
-+Note the regexp ^[-+=][scp]+$ matches a flags specification.
-+Note also that there is no convenient syntax to remove all
-+the flags at once, you need to use "-psc".
-+
-+Examples
-+========
-+
-+// enable the message at line 1603 of file svcsock.c
-+nullarbor:~ # echo -n 'file svcsock.c line 1603 +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+// enable all the messages in file svcsock.c
-+nullarbor:~ # echo -n 'file svcsock.c +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+// enable all the messages in the NFS server module
-+nullarbor:~ # echo -n 'module nfsd +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+// enable all 12 messages in the function svc_process()
-+nullarbor:~ # echo -n 'func svc_process +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+// disable all 12 messages in the function svc_process()
-+nullarbor:~ # echo -n 'func svc_process -p' >
-+				<debugfs>/dynamic_debug/control
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 498fed5..e01c5af 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -852,59 +852,69 @@ menuconfig BUILD_DOCSRC
- 	  Say N if you are unsure.
- 
- config DYNAMIC_DEBUG
--	bool "Enable dynamic printk() call support"
-+	bool "Enable dynamic printk() support"
- 	default n
- 	depends on PRINTK
-+	depends on DEBUG_FS
- 	select PRINTK_DEBUG
+diff --git a/drivers/gpu/drm/Kconfig b/drivers/gpu/drm/Kconfig
+index 5130b72..4be3acb 100644
+--- a/drivers/gpu/drm/Kconfig
++++ b/drivers/gpu/drm/Kconfig
+@@ -70,7 +70,7 @@ config DRM_I915
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+-	depends on FB
++	select FB
+ 	tristate "i915 driver"
  	help
+ 	  Choose this option if you have a system that has Intel 830M, 845G,
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index f026770..bf0af66 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1054,9 +1054,10 @@ config FB_RIVA_BACKLIGHT
  
- 	  Compiles debug level messages into the kernel, which would not
- 	  otherwise be available at runtime. These messages can then be
--	  enabled/disabled on a per module basis. This mechanism implicitly
--	  enables all pr_debug() and dev_dbg() calls. The impact of this
--	  compile option is a larger kernel text size of about 2%.
-+	  enabled/disabled based on various levels of scope - per source file,
-+	  function, module, format string, and line number. This mechanism 
-+	  implicitly enables all pr_debug() and dev_dbg() calls. The impact of
-+	  this compile option is a larger kernel text size of about 2%.
+ config FB_I810
+ 	tristate "Intel 810/815 support (EXPERIMENTAL)"
+-	depends on FB && EXPERIMENTAL && PCI && X86_32
++	depends on EXPERIMENTAL && PCI && X86_32
+ 	select AGP
+ 	select AGP_INTEL
++	select FB
+ 	select FB_MODE_HELPERS
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+@@ -1119,7 +1120,8 @@ config FB_CARILLO_RANCH
  
- 	  Usage:
- 
--	  Dynamic debugging is controlled by the debugfs file,
--	  dynamic_printk/modules. This file contains a list of the modules that
--	  can be enabled. The format of the file is the module name, followed
--	  by a set of flags that can be enabled. The first flag is always the
--	  'enabled' flag. For example:
-+	  Dynamic debugging is controlled via the 'dynamic_debug/ddebug' file,
-+	  which is contained in the 'debugfs' filesystem. Thus, the debugfs
-+	  filesystem must first be mounted before making use of this feature.
-+	  We refer the control file as: <debugfs>/dynamic_debug/ddebug. This 
-+	  file contains a list of the debug statements that can be enabled. The
-+	  format for each line of the file is:
- 
--		<module_name> <enabled=0/1>
--				.
--				.
--				.
-+		filename:lineno [module]function flags format
- 
--	  <module_name> : Name of the module in which the debug call resides
--	  <enabled=0/1> : whether the messages are enabled or not
-+	  filename : source file of the debug statement
-+	  lineno : line number of the debug statement
-+	  module : module that contains the debug statement
-+	  function : function that contains the debug statement
-+          flags : 'p' means the line is turned 'on' for printing
-+          format : the format used for the debug statement
- 
- 	  From a live system:
- 
--		snd_hda_intel enabled=0
--		fixup enabled=0
--		driver enabled=0
-+		nullarbor:~ # cat <debugfs>/dynamic_debug/ddebug
-+		# filename:lineno [module]function flags format
-+		fs/aio.c:222 [aio]__put_ioctx - "__put_ioctx:\040freeing\040%p\012"
-+		fs/aio.c:248 [aio]ioctx_alloc - "ENOMEM:\040nr_events\040too\040high\012"
-+		fs/aio.c:1770 [aio]sys_io_cancel - "calling\040cancel\012"
-+		
-+	  Example usage:
- 
--	  Enable a module:
-+		// enable the message at line 1603 of file svcsock.c
-+		nullarbor:~ # echo -n 'file svcsock.c line 1603 +p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--	  	$echo "set enabled=1 <module_name>" > dynamic_printk/modules
-+		// enable all the messages in file svcsock.c
-+		nullarbor:~ # echo -n 'file svcsock.c +p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--	  Disable a module:
-+		// enable all the messages in the NFS server module
-+		nullarbor:~ # echo -n 'module nfsd +p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--	  	$echo "set enabled=0 <module_name>" > dynamic_printk/modules
-+		// enable all 12 messages in the function svc_process()
-+		nullarbor:~ # echo -n 'func svc_process +p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--	  Enable all modules:
-+		// disable all 12 messages in the function svc_process()
-+		nullarbor:~ # echo -n 'func svc_process -p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--		$echo "set enabled=1 all" > dynamic_printk/modules
--
--	  Disable all modules:
--
--		$echo "set enabled=0 all" > dynamic_printk/modules
--
--	  Finally, passing "dynamic_printk" at the command line enables
--	  debugging for all modules. This mode can be turned off via the above
--	  disable command.
-+	  See Documentation/dynamic-debug-howto.txt for additional information.
- 
- source "samples/Kconfig"
- 
-
+ config FB_INTEL
+ 	tristate "Intel 830M/845G/852GM/855GM/865G/915G/945G/945GM/965G/965GM support (EXPERIMENTAL)"
+-	depends on FB && EXPERIMENTAL && PCI && X86
++	depends on EXPERIMENTAL && PCI && X86
++	select FB
+ 	select AGP
+ 	select AGP_INTEL
+ 	select FB_MODE_HELPERS
