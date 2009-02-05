@@ -1,276 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757952AbZBEIRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758110AbZBEISY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757952AbZBEIRV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:17:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756177AbZBEIRI
+	id S1758110AbZBEISY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:18:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbZBEISM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:17:08 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:46847 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755078AbZBEIRF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:17:05 -0500
-Date: Thu, 5 Feb 2009 19:16:58 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for February 5
-Message-Id: <20090205191658.41161afc.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__5_Feb_2009_19_16_58_+1100_MzefNPBmfcn.eQ83"
+	Thu, 5 Feb 2009 03:18:12 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:53777 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756111AbZBEISL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 03:18:11 -0500
+Date: Thu, 5 Feb 2009 01:18:09 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: linux@arm.linux.org.uk
+cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, tero.kristo@nokia.com,
+       khilman@deeprootsystems.com, tony@atomide.com
+Subject: [PATCH] OMAP2/3 clock: fix CONFIG_OMAP_RESET_CLOCKS
+Message-ID: <alpine.DEB.2.00.0902050103210.3715@utopia.booyaka.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__5_Feb_2009_19_16_58_+1100_MzefNPBmfcn.eQ83
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi all,
+Hello Russell,
 
-Changes since 20090204:
+Kevin Hilman kindly alerted me to a bugfix patch that I had omitted from 
+the sets that I sent to you recently.  It's inserted below.  Perhaps you 
+might consider merging it along with the other sets that you are working 
+on?  Without it, chip power management won't work correctly.
 
-Undropped trees:
-	drm
+The good news is that it is a small and self-contained patch that should 
+be possible to apply at any point after patch D 08.
 
-Dropped trees (temporarily):
-	cpu_alloc (build problem)
-	audit (difficult conflicts)
 
-The driver-core tree lost its 3 conflicts.
+thanks,
 
-The tip-core tree lost its 4 conflicts.
+- Paul
 
-The net tree gained 2 conflicts against the wireless-current tree.
 
-The cpufreq tree lost its conflict, but gained a build failure so I
-reverted a commit.
+From: Paul Walmsley <paul@pwsan.com>
+Date: Thu, 5 Feb 2009 00:58:23 -0700
 
-The rr tree gained a conflict against the cpufreq tree.
+OMAP2/3 clock: fix CONFIG_OMAP_RESET_CLOCKS
 
-The drm tree lost its build failure.
+plat-omap/clock.c was skipping clocks with enable_reg == 0.  This no longer
+works now that we use enable_reg as an offset from a PRCM module.
 
-----------------------------------------------------------------------------
+Problem found and traced by Tero Kristo <tero.kristo@nokia.com> -
+thanks Tero.
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+linux-omap source commit is 4c1cb27545d19642d43874ebeacef83bf3566b86.
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+Cc: Tero Kristo <tero.kristo@nokia.com>
+---
+ arch/arm/plat-omap/clock.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
 
-Below is a summary of the state of the merge.
-
-We are up to 132 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
-CONFLICT (content): Merge conflict in kernel/auditsc.c
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-CONFLICT (content): Merge conflict in arch/arm/configs/magician_defconfig
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-CONFLICT (content): Merge conflict in drivers/ide/ide-acpi.c
-CONFLICT (content): Merge conflict in drivers/ide/via82cxxx.c
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Created commit 2725e12: Revert "platform/x86: Add oqo-wmi driver for model =
-2 OQO backlight and rfkill control"
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-CONFLICT (content): Merge conflict in fs/ext4/ext4.h
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-agn.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl3945-=
-base.c
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
-k8.c
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in sound/isa/Kconfig
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-CONFLICT (content): Merge conflict in include/linux/slub_def.h
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/mm/fault.c
-CONFLICT (content): Merge conflict in mm/Makefile
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-CONFLICT (content): Merge conflict in kernel/irq/handle.c
-Merging iommu/auto-iommu-next
-CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-CONFLICT (content): Merge conflict in security/selinux/hooks.c
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-CONFLICT (content): Merge conflict in include/linux/libata.h
-Merging squashfs/master
-Merging omap/for-next
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in include/linux/slab.h
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging quilt/staging
-Merging scsi-post-merge/master
-Created commit fb4f95b: Revert "[CPUFREQ] ondemand/conservative: sanitize s=
-ampling_rate restrictions"
-
---Signature=_Thu__5_Feb_2009_19_16_58_+1100_MzefNPBmfcn.eQ83
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmKoHoACgkQjjKRsyhoI8ygaQCfbjNQvNtAGjZSwah//xTdT7lp
-lyMAoJWhNlcLvQqezwFQd0D7arhq00Rx
-=UsDl
------END PGP SIGNATURE-----
-
---Signature=_Thu__5_Feb_2009_19_16_58_+1100_MzefNPBmfcn.eQ83--
+diff --git a/arch/arm/plat-omap/clock.c b/arch/arm/plat-omap/clock.c
+index c1fad02..bdf2cd4 100644
+--- a/arch/arm/plat-omap/clock.c
++++ b/arch/arm/plat-omap/clock.c
+@@ -547,8 +547,11 @@ static int __init clk_disable_unused(void)
+ 	unsigned long flags;
+ 
+ 	list_for_each_entry(ck, &clocks, node) {
+-		if (ck->usecount > 0 || (ck->flags & ALWAYS_ENABLED) ||
+-			ck->enable_reg == 0)
++		if (ck->usecount > 0 ||
++		    (ck->flags & (ALWAYS_ENABLED | PARENT_CONTROLS_CLOCK)))
++			continue;
++
++		if (cpu_class_is_omap1() && ck->enable_reg == 0)
+ 			continue;
+ 
+ 		spin_lock_irqsave(&clockfw_lock, flags);
+-- 
+1.6.0.2.GIT
