@@ -1,65 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756820AbZBEXp6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZBEXvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756820AbZBEXp6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 18:45:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755901AbZBEXpl
+	id S1755873AbZBEXvZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 18:51:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZBEXvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 18:45:41 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54763 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754684AbZBEXpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 18:45:40 -0500
-Date: Fri, 6 Feb 2009 00:45:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-Cc: linux-kernel@vger.kernel.org, glommer@redhat.com,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 6/6] x86: unify fixmap.h
-Message-ID: <20090205234529.GC14203@elte.hu>
-References: <1233873586-7149-1-git-send-email-gustavo@las.ic.unicamp.br> <1233873586-7149-2-git-send-email-gustavo@las.ic.unicamp.br> <1233873586-7149-3-git-send-email-gustavo@las.ic.unicamp.br> <1233873586-7149-4-git-send-email-gustavo@las.ic.unicamp.br> <1233873586-7149-5-git-send-email-gustavo@las.ic.unicamp.br> <1233873586-7149-6-git-send-email-gustavo@las.ic.unicamp.br> <1233873586-7149-7-git-send-email-gustavo@las.ic.unicamp.br>
+	Thu, 5 Feb 2009 18:51:17 -0500
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:37483 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753014AbZBEXvQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 18:51:16 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=EsnwZVP+BNUYIpc85G6SuekBrUXQrUs5ob37Qe3uPsh7KKh8WKe2XUnhku9VzSzo15zsl7fT1MOYfTO9H7WgMqi0tTAaVA9XFwP/Pq1BrRDUxN1oUkWo4skYVwC3qKgh8jXk0NtwI5cDq0YqgpSBr87HpN31Brmeni3yjasSPng=  ;
+X-YMail-OSG: stcfbucVM1nq7FwweFySE99kjuBeE9_yJ_CZuAaRmQCrVLVaAZarNDhPjxqypByg461E8Q33Rd9QR1niCv86cM6KwrslNUjkp_qLV6sGzltbNBT37q2W6xSpJWmjsARI4mtY3tgzBW_Ytgej9lHe0ot6Bu8N.GRFWk.j9HE_M62iz.5uMQOLQKB4FAFN
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH 01/16] Blackfin SPI Driver: ensure cache coherency before  doing DMA
+Date: Thu, 5 Feb 2009 15:51:13 -0800
+User-Agent: KMail/1.9.10
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Mike Frysinger <vapier.adi@gmail.com>,
+       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Vitja Makarov <vitja.makarov@gmail.com>
+References: <1226994760-4301-1-git-send-email-cooloney@kernel.org> <200811201405.06811.david-b@pacbell.net> <386072610902050130k27c6d7far752ac49183bf36ae@mail.gmail.com>
+In-Reply-To: <386072610902050130k27c6d7far752ac49183bf36ae@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1233873586-7149-7-git-send-email-gustavo@las.ic.unicamp.br>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902051551.14146.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 05 February 2009, Bryan Wu wrote:
+> As you acked this patchset, is that possible to merge it?
+> Or need Andrew to keep them in -mm for a while.
 
-* Gustavo F. Padovan <gustavo@las.ic.unicamp.br> wrote:
+ISTR *NOT* acking the whole series though.  In fact, I recall
+giving a generic NAK part way through because of patches that
+didn't include comments (after manually NAKing many individual
+patches) and ones where $SUBJECT didn't match the patch comments.
+Plus even a few which seemed to be wrong.
 
-> This patch unify fixmap_32.h and fixmap_64.h into fixmap.h.
-> Things that we can't merge now are using CONFIG_X86_{32,64}
-> (e.g.:vsyscall and EFI)
-> 
-> Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-> Acked-by: Glauber Costa <gcosta@redhat.com>
-> ---
->  arch/x86/include/asm/fixmap.h    |  153 +++++++++++++++++++++++++++++++++++++-
->  arch/x86/include/asm/fixmap_32.h |  119 -----------------------------
->  arch/x86/include/asm/fixmap_64.h |   94 -----------------------
->  3 files changed, 151 insertions(+), 215 deletions(-)
->  delete mode 100644 arch/x86/include/asm/fixmap_32.h
->  delete mode 100644 arch/x86/include/asm/fixmap_64.h
+(And I've said the same thing about Blackfin patches before,
+too.  Please help the message get through to your co-workers:
+make sure the patches come with useful public descriptions.)
 
-Please split this patch up into 3 parts:
+At this point, best to resend the whole series, with the
+updates I requested.  The few patches which I did ack can
+include that ack.
 
- #1: "x86: prepare fixmap_32.h for unification"
- #2: "x86: prepare fixmap_64.h for unification"
- #3: "x86: mechanic unification of fixmap_32/64.h => fixmap.h"
+- Dave
 
-ok?
-
-That way it's reviewable what happened during the unification,
-with the above patch it isnt.
-
-	Ingo
