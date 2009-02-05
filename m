@@ -1,130 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbZBEHvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZBEHwe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757027AbZBEHvv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 02:51:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZBEHvm
+	id S1757397AbZBEHwe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 02:52:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZBEHwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 02:51:42 -0500
-Received: from relay.parallels.com ([195.214.232.42]:46484 "EHLO
-	relay.parallels.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbZBEHvl convert rfc822-to-8bit (ORCPT
+	Thu, 5 Feb 2009 02:52:23 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:34508 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751761AbZBEHwW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 02:51:41 -0500
-From: Kirill Korotaev <dev@parallels.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pavel Emelyanov <xemul@openvz.org>, Kirill Korotaev <dev@openvz.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Date: Thu, 5 Feb 2009 10:51:34 +0300
-Subject: Re: [git pull] timer fix
-Thread-Topic: [git pull] timer fix
-Thread-Index: AcmHHDKCNcHpXGZmTfqZcAI+1DKYBAASl4ly
-Message-ID: <C5B07536.B77D%dev@parallels.com>
-In-Reply-To: <20090204225848.GA3251@elte.hu>
-Accept-Language: en-US, ru-RU
-Content-Language: en
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US, ru-RU
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Thu, 5 Feb 2009 02:52:22 -0500
+Date: Thu, 5 Feb 2009 00:52:20 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+cc: linux-omap@vger.kernel.org, r-woodruff2@ti.com,
+       linux-kernel@vger.kernel.org, catalin.marinas@arm.com
+Subject: [REPOST] [PATCH] ARM: MMU: add a Non-cacheable Normal executable
+ memory type 
+Message-ID: <alpine.DEB.2.00.0902050043060.20959@utopia.booyaka.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACK, it works. Why not save another 4 bytes of .bss then by changing
-hept_t1_cmp to u32? ;-)
 
-Kirill
+Hello,
+
+Any comments on this patch?  It is an unusual use for executable, uncached 
+memory; but for our purposes, it should be much faster than a full cache 
+flush, and conceptually cleaner than strongly-ordered executable memory, 
+which appear to be our only other options in this situation.
+
+We've tested this on ARMv7 (OMAP3).  If anyone would care to doublecheck 
+the setup for architectures below ARMv7, it would be much appreciated.
+
+This patch has been entered into rmk's parch system as patch 5356/1. 
+Unfortunately, we can't merge any of the OMAP3 CORE DVFS code until this 
+patch, or one like it, is merged.  Any reason why this patch, or one like 
+it, shouldn't be merged?
+
+thanks for any review and comment,
 
 
-On 2/5/09 1:58 AM, "Ingo Molnar" <mingo@elte.hu> wrote:
+- Paul
 
-> 
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
->>       } while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
-> 
-> that is also more efficient code by 6 bytes:
-> 
-> before:
-> 
-> ffffffff81020856:       ff c3                   inc    %ebx
-> ffffffff81020858:       48 05 f0 00 00 00       add    $0xf0,%rax
-> ffffffff8102085e:       8b 00                   mov    (%rax),%eax
-> ffffffff81020860:       8b 15 2a 79 85 00       mov    0x85792a(%rip),%edx
-> # ffffffff81878190 <hpet_t1_cmp>
-> ffffffff81020866:       89 c0                   mov    %eax,%eax
-> ffffffff81020868:       48 29 d0                sub    %rdx,%rax
-> ffffffff8102086b:       48 85 c0                test   %rax,%rax
-> ffffffff8102086e:       7f bf                   jg     ffffffff8102082f
-> <hpet_rtc_interrupt+0x68>
-> ffffffff81020870:       85 db                   test   %ebx,%ebx
-> 
-> after:
-> 
-> ffffffff81020856:       ff c3                   inc    %ebx
-> ffffffff81020858:       48 05 f0 00 00 00       add    $0xf0,%rax
-> ffffffff8102085e:       8b 00                   mov    (%rax),%eax
-> ffffffff81020860:       2b 05 2a 79 85 00       sub    0x85792a(%rip),%eax
-> # ffffffff81878190 <hpet_t1_cmp>
-> ffffffff81020866:       85 c0                   test   %eax,%eax
-> ffffffff81020868:       7f c5                   jg     ffffffff8102082f
-> <hpet_rtc_interrupt+0x68>
-> ffffffff8102086a:       85 db                   test   %ebx,%ebx
-> 
-> Kirill, Pavel, could you please re-test the updated commit attached below?
-> 
->         Ingo
-> 
-> ---------------->
-> From 66a36a1e95fe9de9c6a56f0bcd01f4ba21929f86 Mon Sep 17 00:00:00 2001
-> From: Pavel Emelyanov <xemul@openvz.org>
-> Date: Wed, 4 Feb 2009 13:40:31 +0300
-> Subject: [PATCH] x86: fix hpet timer reinit for x86_64
-> 
-> There's a small problem with hpet_rtc_reinit function - it checks
-> for the:
-> 
->         hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
-> 
-> to continue increasing both the HPET_T1_CMP (register) and the
-> hpet_t1_cmp (variable).
-> 
-> But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
-> is 64-bit this condition will always be FALSE once the latter hits
-> the 32-bit boundary, and we can have a situation, when we don't
-> increase the HPET_T1_CMP register high enough.
-> 
-> The result - timer stops ticking, since HPET_T1_CMP becomes less,
-> than the COUNTER and never increased again.
-> 
-> The solution is (based on Linus's suggestion) to compare 64-bits
-> (on 64-bit x86), but to do the comparison on 32-bit signed
-> integers.
-> 
-> Reported-by: Kirill Korotaev <dev@openvz.org>
-> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  arch/x86/kernel/hpet.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-> index 64d5ad0..c761f91 100644
-> --- a/arch/x86/kernel/hpet.c
-> +++ b/arch/x86/kernel/hpet.c
-> @@ -1075,7 +1075,7 @@ static void hpet_rtc_timer_reinit(void)
->                 hpet_t1_cmp += delta;
->                 hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
->                 lost_ints++;
-> -       } while ((long)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
-> +       } while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
-> 
->         if (lost_ints) {
->                 if (hpet_rtc_flags & RTC_PIE)
+---------- Forwarded message ----------
+Date: Mon, 15 Dec 2008 14:07:07 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-omap@vger.kernel.org, r-woodruff2@ti.com
+Subject: [PATCH] ARM: MMU: add a Non-cacheable Normal executable memory type
 
+
+This patch adds a Non-cacheable Normal ARM executable memory type, 
+MT_MEMORY_NONCACHED.
+
+On OMAP3, this is used for rapid dynamic voltage/frequency scaling in the 
+VDD2 voltage domain.  OMAP3's SDRAM controller (SDRC) is in the VDD2 
+voltage domain, and its clock frequency must change along with voltage.  
+The SDRC clock change code cannot run from SDRAM itself, since SDRAM 
+accesses are paused during the clock change.  So the current 
+implementation of the DVFS code executes from OMAP on-chip SRAM, aka "OCM 
+RAM."
+
+If the OCM RAM pages are marked as Cacheable, the ARM cache controller 
+will attempt to flush dirty cache lines to the SDRC, so it can fill those 
+lines with OCM RAM instruction code.  The problem is that the SDRC is 
+paused during DVFS, and so any SDRAM access causes the ARM MPU subsystem 
+to hang.
+
+TI's original solution to this problem was to mark the OCM RAM sections as 
+Strongly Ordered memory, thus preventing caching.  This is overkill: since 
+the memory is marked as non-bufferable, OCM RAM writes become quite 
+needlessly slow.  The idea of "Strongly Ordered SRAM" is also conceptually 
+disturbing.  Previous LAKML list discussion is here:
+
+   http://www.spinics.net/lists/arm-kernel/msg54312.html
+
+Now this memory type MT_MEMORY_NONCACHED is used by a future patch for OCM 
+RAM.
+
+Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Cc: Richard Woodruff <r-woodruff2@ti.com>
+---
+ arch/arm/include/asm/mach/map.h |    1 +
+ arch/arm/mm/mmu.c               |   23 +++++++++++++++++++++++
+ 2 files changed, 24 insertions(+), 0 deletions(-)
+
+diff --git a/arch/arm/include/asm/mach/map.h b/arch/arm/include/asm/mach/map.h
+index 39d949b..58cf91f 100644
+--- a/arch/arm/include/asm/mach/map.h
++++ b/arch/arm/include/asm/mach/map.h
+@@ -26,6 +26,7 @@ struct map_desc {
+ #define MT_HIGH_VECTORS		8
+ #define MT_MEMORY		9
+ #define MT_ROM			10
++#define MT_MEMORY_NONCACHED	11
+ 
+ #ifdef CONFIG_MMU
+ extern void iotable_init(struct map_desc *, int);
+diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+index 7f36c82..9ad6413 100644
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -242,6 +242,10 @@ static struct mem_type mem_types[] = {
+ 		.prot_sect = PMD_TYPE_SECT,
+ 		.domain    = DOMAIN_KERNEL,
+ 	},
++	[MT_MEMORY_NONCACHED] = {
++		.prot_sect = PMD_TYPE_SECT | PMD_SECT_AP_WRITE,
++		.domain    = DOMAIN_KERNEL,
++	},
+ };
+ 
+ const struct mem_type *get_mem_type(unsigned int type)
+@@ -405,9 +409,28 @@ static void __init build_mem_type_table(void)
+ 		kern_pgprot |= L_PTE_SHARED;
+ 		vecs_pgprot |= L_PTE_SHARED;
+ 		mem_types[MT_MEMORY].prot_sect |= PMD_SECT_S;
++		mem_types[MT_MEMORY_NONCACHED].prot_sect |= PMD_SECT_S;
+ #endif
+ 	}
+ 
++	/*
++	 * Non-cacheable Normal - intended for memory areas that must
++	 * not cause dirty cache line writebacks when used
++	 */
++	if (cpu_arch >= CPU_ARCH_ARMv6) {
++		if (cpu_arch >= CPU_ARCH_ARMv7 && (cr & CR_TRE)) {
++			/* Non-cacheable Normal is XCB = 001 */
++			mem_types[MT_MEMORY_NONCACHED].prot_sect |=
++				PMD_SECT_BUFFERED;
++		} else {
++			/* For both ARMv6 and non-TEX-remapping ARMv7 */
++			mem_types[MT_MEMORY_NONCACHED].prot_sect |=
++				PMD_SECT_TEX(1);
++		}
++	} else {
++		mem_types[MT_MEMORY_NONCACHED].prot_sect |= PMD_SECT_BUFFERABLE;
++	}
++
+ 	for (i = 0; i < 16; i++) {
+ 		unsigned long v = pgprot_val(protection_map[i]);
+ 		protection_map[i] = __pgprot(v | user_pgprot);
+
+-------------------------------------------------------------------
+List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
