@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbZBESpY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760772AbZBESop@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760130AbZBESpY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 13:45:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759403AbZBESo7
+	id S1760772AbZBESop (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 13:44:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbZBESof
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 13:44:59 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:33116 "EHLO e4.ny.us.ibm.com"
+	Thu, 5 Feb 2009 13:44:35 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59185 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755627AbZBESo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 13:44:58 -0500
-Date: Thu, 5 Feb 2009 10:44:56 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090205184456.GK6915@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090130200757.GA14999@Krystal> <20090205140432.GE6915@linux.vnet.ibm.com> <20090205150242.GA27895@Krystal> <20090205151841.GF6915@linux.vnet.ibm.com> <20090205153825.GA30255@Krystal> <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal>
+	id S1754873AbZBESof (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 13:44:35 -0500
+Date: Thu, 5 Feb 2009 19:43:55 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: William Lee Irwin III <wli@holomorphy.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: pud_bad vs pud_bad
+Message-ID: <20090205184355.GF5661@elte.hu>
+References: <498B2EBC.60700@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090205183158.GA1969@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <498B2EBC.60700@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
-> > > Hi Paul,
-> > > 
-> > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
-> > > <paulmck@linux.vnet.ibm.com> wrote:
-> > > >>
-> > > >> Are you using quilt to apply the patchset series file in the right order ?
-> > > >
-> > > > Ummm...  No.  I never have used quilt.
-> > > >
-> > > > Ah, there is a series file.  I guess it would not be too hard to make
-> > > > an appropriate "sh" command:
-> > > 
-> > > How about trying?
-> > > 
-> > > #quilt push -a
-> > 
-> > Is the appropriate incantation as follows?
-> > 
-> > 	cd <top of git tree>
-> > 	mkdir patches
-> > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
-> > 	quilt push -a
-> > 
-> 
-> Yes, exactly.
 
-Whew!  ;-)
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> And from there you can follow the LTTng manual here :
-> 
-> http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
+> I'm looking at unifying the 32 and 64-bit versions of pud_bad.
+>
+> 32-bits defines it as:
+>
+> static inline int pud_bad(pud_t pud)
+> {
+> 	return (pud_val(pud) & ~(PTE_PFN_MASK | _KERNPG_TABLE | _PAGE_USER)) != 0;
+> }
+>
+> and 64 as:
+>
+> static inline int pud_bad(pud_t pud)
+> {
+> 	return (pud_val(pud) & ~(PTE_PFN_MASK | _PAGE_USER)) != _KERNPG_TABLE;
+> }
+>
+>
+> I'm inclined to go with the 64-bit version, but I'm wondering if there's 
+> something subtle I'm missing here.
 
-I get some fuzz and the following:
+Why go with the 64-bit version? The 32-bit check looks more compact and 
+should result in smaller code.
 
-	patching file kernel/trace/trace-clock-32-to-64.c
-	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
-	which already exists.
-	Hunk #1 FAILED at 1.
-	1 out of 1 hunk FAILED -- rejects in file
-	kernel/trace/trace-clock-32-to-64.c
-
-Should I be starting from somewhere other than v2.6.29-rc3?
-
-							Thanx, Paul
+	Ingo
