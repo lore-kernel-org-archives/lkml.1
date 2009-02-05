@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbZBEQGh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbZBEQKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759024AbZBEQGh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 11:06:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757077AbZBEQGM
+	id S1758491AbZBEQKE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 11:10:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZBEQJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 11:06:12 -0500
-Received: from e24smtp01.br.ibm.com ([32.104.18.85]:57779 "EHLO
-	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756883AbZBEQGK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 11:06:10 -0500
-Message-ID: <498B0E67.8050402@linux.vnet.ibm.com>
-Date: Thu, 05 Feb 2009 14:05:59 -0200
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080722)
+	Thu, 5 Feb 2009 11:09:53 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:53491 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751166AbZBEQJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 11:09:52 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Michal Suchanek <hramrach@centrum.cz>
+Subject: Re: [Bug #12393] debugging in dosemu causes lots of 'scheduling while atomic'
+Date: Thu, 5 Feb 2009 17:09:12 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+References: <a47yn9c9JrF.A.hz.L5YiJB@chimera> <CGyEB0S4BpO.A.C8C.-5YiJB@chimera> <a5d587fb0902041844v40f1d441s535d070437aa9823@mail.gmail.com>
+In-Reply-To: <a5d587fb0902041844v40f1d441s535d070437aa9823@mail.gmail.com>
 MIME-Version: 1.0
-To: James Morris <jmorris@namei.org>
-CC: Mimi Zohar <zohar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Safford <safford@watson.ibm.com>, Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 0/7] integrity
-References: <cover.1233750611.git.zohar@linux.vnet.ibm.com> <alpine.LRH.1.10.0902051013430.4638@tundra.namei.org> <1233794297.2962.7.camel@localhost.localdomain> <alpine.LRH.1.10.0902051159560.5539@tundra.namei.org> <1233803196.3574.3.camel@localhost.localdomain> <alpine.LRH.1.10.0902052010580.7359@tundra.namei.org>
-In-Reply-To: <alpine.LRH.1.10.0902052010580.7359@tundra.namei.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902051709.12967.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Morris wrote:
-> On Wed, 4 Feb 2009, Mimi Zohar wrote:
->
->   
->> On Thu, 2009-02-05 at 12:00 +1100, James Morris wrote:
->>     
->>> On Wed, 4 Feb 2009, Mimi Zohar wrote:
->>>
->>>       
->>>> On Thu, 2009-02-05 at 10:16 +1100, James Morris wrote:
->>>>         
->>>>> I get an oops on boot with this.
->>>>>
->>>>> Do you have lock and list debugging enabled?
->>>>>           
->>>> In the past I had them enabled.  Just recompiled now with them enabled
->>>> and was able to boot without problems.
->>>>         
->>> Do you have CONFIG_PREEMPT_RCU and SMP ?
->>>       
->> I've recompiled with both CONFIG_PREEMPT_RCU and SMP and didn't
->> get the oops.  Is your TPM enabled? 
->>     
->
-> It was disabled in bios, and the system boots ok with it enabled.
->
->   
-Hi James, I've just submitted the fix.
+On Thursday 05 February 2009, Michal Suchanek wrote:
+> As I said earlier I have received a patch that I applied locally and
+> that fixes the problem.
+> 
+> As to if and when the patch actually appears in the kernel is out of
+> my control, and nobody told me that it was applied.
+> 
+> If you believe it was applied to a kernel version that is readily
+> available for download I am wiling to test such version.
 
-Thanks,
-Rajiv Andrade
-IBM LTC Security Dev.
+I don't at the moment.
 
+Can you send me a URL to the patch, please?
+
+Rafael
