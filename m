@@ -1,306 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753038AbZBEUoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753459AbZBEUoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753038AbZBEUoV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 15:44:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZBEUoM
+	id S1753459AbZBEUoh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 15:44:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbZBEUoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 15:44:12 -0500
-Received: from nf-out-0910.google.com ([64.233.182.185]:40466 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbZBEUoK (ORCPT
+	Thu, 5 Feb 2009 15:44:13 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:45492 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751983AbZBEUoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 15:44:10 -0500
+	Thu, 5 Feb 2009 15:44:12 -0500
 From: "Kirill A. Shutemov" <kirill@shutemov.name>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org, "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: [PATCH 1/3] parse_shell_args.c: shell-like argument list parser
-Date: Thu,  5 Feb 2009 22:47:42 +0200
-Message-Id: <1233866864-14422-1-git-send-email-kirill@shutemov.name>
+Subject: [PATCH 2/3] binfmt_script: rewrite using parse_shell_args()
+Date: Thu,  5 Feb 2009 22:47:43 +0200
+Message-Id: <1233866864-14422-2-git-send-email-kirill@shutemov.name>
 X-Mailer: git-send-email 1.6.0.2.GIT
+In-Reply-To: <1233866864-14422-1-git-send-email-kirill@shutemov.name>
+References: <1233866864-14422-1-git-send-email-kirill@shutemov.name>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's implementation of argument list parser using shell rules.
+parse_shell_args() allows to use more than one argument in shebang
 
 Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
 ---
- include/linux/kernel.h |    2 +
- lib/Makefile           |    2 +-
- lib/parse_shell_args.c |  238 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 241 insertions(+), 1 deletions(-)
- create mode 100644 lib/parse_shell_args.c
+ fs/binfmt_script.c |   88 +++++++++++++++++++---------------------------------
+ 1 files changed, 32 insertions(+), 56 deletions(-)
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index 343df9e..6095a84 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -208,6 +208,8 @@ extern int func_ptr_is_kernel_text(void *ptr);
- struct pid;
- extern struct pid *session_of_pgrp(struct pid *pgrp);
- 
-+extern int parse_shell_args(const char *in, char *out, size_t out_size);
-+
+diff --git a/fs/binfmt_script.c b/fs/binfmt_script.c
+index 0834350..ab6a6b2 100644
+--- a/fs/binfmt_script.c
++++ b/fs/binfmt_script.c
+@@ -1,93 +1,69 @@
  /*
-  * FW_BUG
-  * Add this to a message where you are sure the firmware is buggy or behaves
-diff --git a/lib/Makefile b/lib/Makefile
-index 32b0e64..3aaf2f3 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -20,7 +20,7 @@ lib-y	+= kobject.o kref.o klist.o
+  *  linux/fs/binfmt_script.c
+  *
++ *  Copyright (C) 2009  Kirill A. Shutemov
+  *  Copyright (C) 1996  Martin von Löwis
+  *  original #!-checking implemented by tytso.
+  */
  
- obj-y += bcd.o div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
- 	 bust_spinlocks.o hexdump.o kasprintf.o bitmap.o scatterlist.o \
--	 string_helpers.o
-+	 string_helpers.o parse_shell_args.o
+ #include <linux/module.h>
+-#include <linux/string.h>
+-#include <linux/stat.h>
+-#include <linux/slab.h>
+ #include <linux/binfmts.h>
+-#include <linux/init.h>
+ #include <linux/file.h>
+-#include <linux/err.h>
+ #include <linux/fs.h>
  
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
-diff --git a/lib/parse_shell_args.c b/lib/parse_shell_args.c
-new file mode 100644
-index 0000000..2b32cab
---- /dev/null
-+++ b/lib/parse_shell_args.c
-@@ -0,0 +1,238 @@
-+/*
-+ * lib/parse_shell_args.c
-+ *
-+ * Copiright (C) 2009 Kirill A. Shutemov
-+ *
-+ * Shell-like argument list parser
-+ */
+ static int load_script(struct linux_binprm *bprm,struct pt_regs *regs)
+ {
+-	char *cp, *i_name, *i_arg;
+ 	struct file *file;
+-	char interp[BINPRM_BUF_SIZE];
+-	int retval;
++	char out[BINPRM_BUF_SIZE];
++	int argc, retval;
+ 
+ 	if ((bprm->buf[0] != '#') || (bprm->buf[1] != '!') ||
+ 	    (bprm->recursion_depth > BINPRM_MAX_RECURSION))
+ 		return -ENOEXEC;
+-	/*
+-	 * This section does the #! interpretation.
+-	 * Sorta complicated, but hopefully it will work.  -TYT
+-	 */
+ 
+ 	bprm->recursion_depth++;
+ 	allow_write_access(bprm->file);
+ 	fput(bprm->file);
+ 	bprm->file = NULL;
+ 
+-	bprm->buf[BINPRM_BUF_SIZE - 1] = '\0';
+-	if ((cp = strchr(bprm->buf, '\n')) == NULL)
+-		cp = bprm->buf+BINPRM_BUF_SIZE-1;
+-	*cp = '\0';
+-	while (cp > bprm->buf) {
+-		cp--;
+-		if ((*cp == ' ') || (*cp == '\t'))
+-			*cp = '\0';
+-		else
+-			break;
+-	}
+-	for (cp = bprm->buf+2; (*cp == ' ') || (*cp == '\t'); cp++);
+-	if (*cp == '\0') 
+-		return -ENOEXEC; /* No interpreter name found */
+-	i_name = cp;
+-	i_arg = NULL;
+-	for ( ; *cp && (*cp != ' ') && (*cp != '\t'); cp++)
+-		/* nothing */ ;
+-	while ((*cp == ' ') || (*cp == '\t'))
+-		*cp++ = '\0';
+-	if (*cp)
+-		i_arg = cp;
+-	strcpy (interp, i_name);
+-	/*
+-	 * OK, we've parsed out the interpreter name and
+-	 * (optional) argument.
+-	 * Splice in (1) the interpreter's name for argv[0]
+-	 *           (2) (optional) argument to interpreter
+-	 *           (3) filename of shell script (replace argv[0])
+-	 *
+-	 * This is done in reverse order, because of how the
+-	 * user environment and arguments are stored.
+-	 */
+ 	retval = remove_arg_zero(bprm);
+ 	if (retval)
+ 		return retval;
 +
-+#ifdef __KERNEL__
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#else
-+#include <sys/types.h>
-+#endif
+ 	retval = copy_strings_kernel(1, &bprm->interp, bprm);
+-	if (retval < 0) return retval; 
++	if (retval < 0)
++		return retval;
+ 	bprm->argc++;
+-	if (i_arg) {
+-		retval = copy_strings_kernel(1, &i_arg, bprm);
+-		if (retval < 0) return retval; 
+-		bprm->argc++;
 +
-+#define S_START		0
-+#define S_DONE		1
-+#define S_NORMAL	2
-+#define S_QUOTE		3
-+#define S_DQUOTE	4
++	bprm->buf[BINPRM_BUF_SIZE - 1] = '\0';
 +
-+/**
-+ * parse_shell_args - parse shell-like argument list
-+ *
-+ * @in:		null-terminated input string
-+ * @out:	output buffer
-+ * @out_size:	output buffer size in byte
-+ *
-+ * Returns number of arguments or 0 on error.
-+ * Parsed arguments store in @out separated by '\0'
-+ */
-+int parse_shell_args(const char *in, char *out, size_t out_size)
-+{
-+	int state = S_START;
-+	const char *in_p = in;
-+	char *out_p = out;
-+	int argc = 0;
-+	int escape = 0;
++	argc = parse_shell_args(bprm->buf+2, out, BINPRM_BUF_SIZE);
 +
-+	while (state != S_DONE) {
-+		if (out_p - out >= out_size)
-+			return 0;
++	if (!argc)
++		return -ENOEXEC;
 +
-+		if (escape) {
-+			*out_p++ = *in_p++;
-+			escape = 0;
-+			continue;
++	{
++		char *argv[argc];
++		char *out_p = out;
++		int i;
++
++		for(i=0; i < argc; i++) {
++			argv[i] = out_p;
++			out_p += strlen(out_p) + 1;
 +		}
 +
-+		switch (state) {
-+			case S_START:
-+				switch (*in_p) {
-+					case '\n':
-+					case '\0':
-+						state = S_DONE;
-+						*out_p = '\0';
-+						break;
-+					case ' ':
-+					case '\t':
-+						in_p++;
-+						break;
-+					case '\'':
-+						state = S_QUOTE;
-+						in_p++;
-+						argc++;
-+						break;
-+					case '"':
-+						state = S_DQUOTE;
-+						in_p++;
-+						argc++;
-+						break;
-+					default:
-+						state = S_NORMAL;
-+						argc++;
-+						break;
-+				}
-+				break;
++		retval = copy_strings_kernel(argc, argv, bprm);
++		if (retval)
++			return retval;
++		bprm->argc += argc;
+ 	}
+-	retval = copy_strings_kernel(1, &i_name, bprm);
+-	if (retval) return retval; 
+-	bprm->argc++;
+-	bprm->interp = interp;
 +
-+			case S_NORMAL:
-+				switch (*in_p) {
-+					case '\n':
-+					case '\0':
-+						state = S_DONE;
-+						*out_p = '\0';
-+						break;
-+					case ' ':
-+					case '\t':
-+						state = S_START;
-+						*out_p++ = '\0';
-+						break;
-+					case '\'':
-+						state = S_QUOTE;
-+						in_p++;
-+						break;
-+					case '\"':
-+						state = S_DQUOTE;
-+						in_p++;
-+						break;
-+					case '\\':
-+						in_p++;
-+						escape = 1;
-+						break;
-+					default:
-+						*out_p++ = *in_p++;
-+						break;
-+				}
-+				break;
-+
-+			case S_QUOTE:
-+				switch (*in_p) {
-+					case '\'':
-+						state = S_NORMAL;
-+						in_p++;
-+						break;
-+					case '\n':
-+					case '\0':
-+						return 0;
-+						break;
-+					default:
-+						*out_p++ = *in_p++;
-+						break;
-+				}
-+				break;
-+			case S_DQUOTE:
-+				switch (*in_p) {
-+					case '\"':
-+						state = S_NORMAL;
-+						in_p++;
-+						break;
-+					case '\n':
-+					case '\0':
-+						return 0;
-+						break;
-+					case '\\':
-+						if (*(in_p+1) == '$' ||
-+								*(in_p+1) == '`' ||
-+								*(in_p+1) == '"' ||
-+								*(in_p+1) == '\\' ||
-+								*(in_p+1) == '\n') {
-+							in_p++;
-+							escape = 1;
-+						} else
-+							*out_p++ = *in_p++;
-+						break;
-+					default:
-+						*out_p++ = *in_p++;
-+						break;
-+				}
-+				break;
-+			default:
-+				return 0;
-+				break;
-+		}
-+	}
-+
-+	return argc;
-+}
-+
-+#ifdef __KERNEL__
-+EXPORT_SYMBOL(parse_shell_args);
-+#else
-+/* Unit tests */
-+
-+#include <limits.h>
-+#include <stdio.h>
-+#include <string.h>
-+
-+static void test_parse(const char *in, const char *expected_out, int expected_argc)
-+{
-+	char out[PATH_MAX];
-+	char *out_p = out;
-+	int i;
-+	int argc;
-+
-+	argc = parse_shell_args(in, out, PATH_MAX);
-+
-+	if (argc != expected_argc) {
-+		printf("%s: wrong argc: %d, but expected %d\n", in, argc, expected_argc);
-+		return;
-+	}
-+
-+	for(i=0; i < argc; i++) {
-+		int len;
-+
-+		if (strcmp(expected_out, out_p)) {
-+			printf("%s: %s, but expected %s\n", in , out_p, expected_out);
-+			return;
-+		}
-+
-+		len = strlen(expected_out);
-+		expected_out += len + 1;
-+		out_p += len + 1;
-+	}
-+
-+	printf("%s:\tOK\n", in);
-+}
-+
-+int main(void)
-+{
-+	test_parse("", "", 0);
-+
-+	test_parse("/bin/ls", "/bin/ls", 1);
-+	test_parse("/bin\\ ls", "/bin ls", 1);
-+	test_parse("/bin/ls\n", "/bin/ls", 1);
-+	test_parse("/bin/ls\\\n", "/bin/ls\n", 1);
-+	test_parse(" /bin/ls", "/bin/ls", 1);
-+	test_parse("\t/bin/ls", "/bin/ls", 1);
-+	test_parse("/bin/ls ", "/bin/ls", 1);
-+	test_parse("/bin/ls\t", "/bin/ls", 1);
-+	test_parse("\\'/bin/ls", "\'/bin/ls", 1);
-+	test_parse("/bin\\'/ls", "/bin\'/ls", 1);
-+	test_parse("/bin'/ls", "", 0);
-+	test_parse("/bin\"/ls", "", 0);
-+
-+	test_parse("'/bin/ls'", "/bin/ls", 1);
-+	test_parse("'/bin ls'", "/bin ls", 1);
-+	test_parse("'/bin\tls'", "/bin\tls", 1);
-+	test_parse("'/bin''/ls'", "/bin/ls", 1);
-+	test_parse("/bin'/ls'", "/bin/ls", 1);
-+	test_parse("'/bin'/ls", "/bin/ls", 1);
-+	test_parse("'/bin \t\"%$#@/ls'", "/bin \t\"%$#@/ls", 1);
-+
-+	test_parse("\"/bin/ls\"", "/bin/ls", 1);
-+	test_parse("\"/bin\"\"/ls\"", "/bin/ls", 1);
-+	test_parse("/bin\"/ls\"", "/bin/ls", 1);
-+	test_parse("\"/bin\"/ls", "/bin/ls", 1);
-+	test_parse("\"\\$\\`\\\"\\\\\\\n\\\\!\\@\\#\\%\\a\"", "$`\"\\\n\\!\\@\\#\\%\\a", 1);
-+	test_parse("\"/bin/ls\\\"", "", 0);
-+
-+	test_parse("/bin/ls -a", "/bin/ls\0-a", 2);
-+	test_parse("/bin/ls\t-a", "/bin/ls\0-a", 2);
-+	test_parse("/bin/ls  \t \t-a", "/bin/ls\0-a", 2);
-+	test_parse("/bin/ls -a -l", "/bin/ls\0-a\0-l", 3);
-+	test_parse("/bin/ls '-a -l'", "/bin/ls\0-a -l", 2);
-+
-+	return 0;
-+}
-+#endif
++	bprm->interp = out;
+ 
+ 	/*
+ 	 * OK, now restart the process with the interpreter's dentry.
+ 	 */
+-	file = open_exec(interp);
++	file = open_exec(out);
+ 	if (IS_ERR(file))
+ 		return PTR_ERR(file);
+ 
+@@ -95,7 +71,7 @@ static int load_script(struct linux_binprm *bprm,struct pt_regs *regs)
+ 	retval = prepare_binprm(bprm);
+ 	if (retval < 0)
+ 		return retval;
+-	return search_binary_handler(bprm,regs);
++	return search_binary_handler(bprm, regs);
+ }
+ 
+ static struct linux_binfmt script_format = {
 -- 
 1.6.0.2.GIT
 
