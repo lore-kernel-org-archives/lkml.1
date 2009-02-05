@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753454AbZBEVS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753897AbZBEVUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753454AbZBEVS5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:18:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbZBEVSt
+	id S1753897AbZBEVUs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:20:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZBEVUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:18:49 -0500
-Received: from hpsmtp-eml20.KPNXCHANGE.COM ([213.75.38.85]:1511 "EHLO
-	hpsmtp-eml20.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752008AbZBEVSs (ORCPT
+	Thu, 5 Feb 2009 16:20:40 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:45365 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751762AbZBEVUj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:18:48 -0500
-From: Frans Pop <elendil@planet.nl>
-To: Ben Greear <greearb@candelatech.com>
-Subject: Re: PATCH:  Allow user to force 'tsc' to be treated as stable.
-Date: Thu, 5 Feb 2009 22:18:45 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au
-References: <498B42C5.7010905@candelatech.com>
-In-reply-To: <498B42C5.7010905@candelatech.com>
+	Thu, 5 Feb 2009 16:20:39 -0500
+Date: Thu, 5 Feb 2009 21:20:04 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
+In-Reply-To: <1233867944.4612.104.camel@pasglop>
+Message-ID: <Pine.LNX.4.64.0902052113270.23510@blonde.anvils>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>  <pWZw1SZjMCH.A.sIE.wuYiJB@chimera>
+ <1233791329.4612.23.camel@pasglop>  <Pine.LNX.4.64.0902051713550.1445@blonde.anvils>
+ <1233867944.4612.104.camel@pasglop>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902052218.46235.elendil@planet.nl>
-X-OriginalArrivalTime: 05 Feb 2009 21:18:46.0662 (UTC) FILETIME=[54C40260:01C987D7]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Greear wrote:
-> +       if (force_tsc_stable && (strcmp(cs->name, "tsc") == 0))
-> +               printk(KERN_WARNING "Forcing tsc to be treated as stable due to force_tsc_stable=1\n");
-> +       else { 
-> +               printk(KERN_WARNING "  This clock is no longer valid for WATCHDOG or HIGH-RES.\n");
-> +               if (strcmp(cs->name, "tsc") == 0)
-> +                       printk(KERN_WARNING "  Use force_tsc_stable=1 to override.\n");
+On Fri, 6 Feb 2009, Benjamin Herrenschmidt wrote:
+> 
+> It should be a trivial fix on X side tho.
 
-Do we really want to be so verbose?
+It will be unusual to require users of a new kernel to install a new X.
 
-Loads of users get these messages (I get it on both my laptops) and IIUC
-the workaround is only valid for a very limited group of users.
-
-I'd suggest dropping the "else" branch. It seems inadvisable to encourage
-workarounds that may not be valid (or even safe).
-
-Cheers,
-FJP
+Hugh
