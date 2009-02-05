@@ -1,113 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbZBEWlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZBEWoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbZBEWlp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 17:41:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbZBEWlh
+	id S1755343AbZBEWoa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 17:44:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZBEWoT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 17:41:37 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:35622 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbZBEWlh (ORCPT
+	Thu, 5 Feb 2009 17:44:19 -0500
+Received: from casper.infradead.org ([85.118.1.10]:35893 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752805AbZBEWoS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 17:41:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bJOC36H4OqLo8dgoBangSEHuekTizH3xeZUjsR7VXWTTS4D4CZfh/IWPTzzdxKT8rQ
-         hDD392261vQhWWmhZdDvWbCshQOgjzUXU7rixIdvyLfI1yCD8JQ9by2J1cNUtMD3rBJd
-         rb8ZydQm7raT5OakGVR85wtxmnVu26571dCqE=
-MIME-Version: 1.0
-In-Reply-To: <adak584jzw3.fsf@cisco.com>
-References: <56e1b5710902050641l5ece10e5hedd11fb3f4292886@mail.gmail.com>
-	 <adak584jzw3.fsf@cisco.com>
-Date: Thu, 5 Feb 2009 23:41:34 +0100
-Message-ID: <56e1b5710902051441g69b2df61n6f6b77a3dc59ac42@mail.gmail.com>
-Subject: Re: [PATCH]: Cleanup: Remove gcc format string warnings when 
-	compiling with -Wformat-security
-From: Floris Kraak <randakar@gmail.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       Andreas Schwab <schwab@suse.de>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 5 Feb 2009 17:44:18 -0500
+Subject: Re: [PATCH 0/10] DMA-API debugging facility
+From: David Woodhouse <dwmw2@infradead.org>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Ingo Molnar <mingo@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20081121172722.GG1386@amd.com>
+References: <1227284770-19215-1-git-send-email-joerg.roedel@amd.com>
+	 <1227286492.4901.208.camel@macbook.infradead.org>
+	 <20081121165722.GD1386@amd.com>
+	 <1227287215.4901.213.camel@macbook.infradead.org>
+	 <20081121171802.GK733@elte.hu> <20081121172046.GF1386@amd.com>
+	 <1227288269.4901.222.camel@macbook.infradead.org>
+	 <20081121172722.GG1386@amd.com>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 22:44:02 +0000
+Message-Id: <1233873842.8135.6.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 11:13 PM, Roland Dreier <rdreier@cisco.com> wrote:
->
-> I would strongly prefer to do this with a little more care.  For example
-> the b43/main.c change:
->
->  > --- a/drivers/net/wireless/b43/main.c
->  > +++ b/drivers/net/wireless/b43/main.c
->  > @@ -2005,9 +2005,9 @@ static void b43_print_fw_helptext(struct b43_wl
->  > *wl, bool error)
->  >             "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
->  >             "and download the latest firmware (version 4).\n";
->  >      if (error)
->  > -            b43err(wl, text);
->  > +            b43err(wl, "%s", text);
->  >      else
->  > -            b43warn(wl, text);
->  > +            b43warn(wl, "%s", text);
->  >  }
-> would probably be better solved by doing
->
-> --- a/drivers/net/wireless/b43/main.c
-> +++ b/drivers/net/wireless/b43/main.c
-> @@ -1999,11 +1999,11 @@ static void b43_release_firmware(struct b43_wldev *dev)
->
->  static void b43_print_fw_helptext(struct b43_wl *wl, bool error)
->  {
-> -       const char *text;
-> +       static const char text[] =
-> +               "You must go to "
-> +               "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
-> +               "and download the latest firmware (version 4).\n";
->
-> -       text = "You must go to "
-> -              "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
-> -              "and download the latest firmware (version 4).\n";
->        if (error)
->                b43err(wl, text);
->        else
->
+On Fri, 2008-11-21 at 18:27 +0100, Joerg Roedel wrote:
+> On Fri, Nov 21, 2008 at 05:24:29PM +0000, David Woodhouse wrote:
+> > On Fri, 2008-11-21 at 18:20 +0100, Joerg Roedel wrote:
+> > > Ok, I will move the generic bits to lib/ and include/linux and let
+> > > architectures decide if they want to use it.
+> > 
+> > Once you've done that, I'll try to hook it up on PowerPC to make sure it
+> > works there.
+> 
+> Ok, cool. Thanks
 
-Fair enough. I'm going to have to break this down into categories of
-bugs probably anyway. - "trivial just makes the compiler stops
-whining" vs "omg security hole" and the shades in between. From what
-I've seen so far the vast majority of this falls into the first
-category though ;-)
+This builds; I haven't actually tried booting it yet. Will do that in
+the morning.
 
-> and in any case I'm not totally convinced that we want to add the bloat
-> for trivial cases like
->
->        char *safe = "foo";
->        printk(safe);
->
-> Would be nice to think of a cleverer way to handle that...
->
+I'm not so fond of the way each architecture gets to define
+PREALLOC_DMA_DEBUG_ENTRIES for itself... and also call dma_debug_init(),
+for that matter. Couldn't we do that in lib/dma-debug.c directly?
 
-It would help if GCC was a little smarter in the detection, right now
-it gives a lot of false positives even on code like that.
-When I was playing around with coccinelle tonight in a (probably
-misguided) attempt to automate this I found a few new possible cases
-where macro wrappers around printk() seem to make avoiding this check
-possible. Haven't looked deeply yet, I'm doing this on my spare time
-which I don't have tons of ;-)
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
-Regards,
-Floris
----
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."
-  -- Ben Franklin
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 74cc312..11db356 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -124,6 +124,7 @@ config PPC
+ 	select USE_GENERIC_SMP_HELPERS if SMP
+ 	select HAVE_OPROFILE
+ 	select HAVE_SYSCALL_WRAPPERS if PPC64
++	select HAVE_DMA_API_DEBUG
+ 
+ config EARLY_PRINTK
+ 	bool
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 86cef7d..b49107a 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -13,6 +13,7 @@
+ /* need struct page definitions */
+ #include <linux/mm.h>
+ #include <linux/scatterlist.h>
++#include <linux/dma-debug.h>
+ #include <linux/dma-attrs.h>
+ #include <asm/io.h>
+ 
+@@ -170,12 +171,17 @@ static inline dma_addr_t dma_map_single_attrs(struct device *dev,
+ 					      struct dma_attrs *attrs)
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
++	dma_addr_t addr;
+ 
+ 	BUG_ON(!dma_ops);
+ 
+-	return dma_ops->map_page(dev, virt_to_page(cpu_addr),
++	addr = dma_ops->map_page(dev, virt_to_page(cpu_addr),
+ 				 (unsigned long)cpu_addr % PAGE_SIZE, size,
+ 				 direction, attrs);
++	debug_dma_map_page(dev, virt_to_page(cpu_addr),
++			   (unsigned long)cpu_addr & PAGE_SIZE, size,
++			   direction, addr, true);
++	return addr;
+ }
+ 
+ static inline void dma_unmap_single_attrs(struct device *dev,
+@@ -189,6 +195,7 @@ static inline void dma_unmap_single_attrs(struct device *dev,
+ 	BUG_ON(!dma_ops);
+ 
+ 	dma_ops->unmap_page(dev, dma_addr, size, direction, attrs);
++	debug_dma_unmap_page(dev, dma_addr, size, direction, true);
+ }
+ 
+ static inline dma_addr_t dma_map_page_attrs(struct device *dev,
+@@ -198,10 +205,13 @@ static inline dma_addr_t dma_map_page_attrs(struct device *dev,
+ 					    struct dma_attrs *attrs)
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
++	dma_addr_t addr;
+ 
+ 	BUG_ON(!dma_ops);
+ 
+-	return dma_ops->map_page(dev, page, offset, size, direction, attrs);
++	addr = dma_ops->map_page(dev, page, offset, size, direction, attrs);
++	debug_dma_map_page(dev, page, offset, size, direction, addr, false);
++	return addr;
+ }
+ 
+ static inline void dma_unmap_page_attrs(struct device *dev,
+@@ -215,6 +225,7 @@ static inline void dma_unmap_page_attrs(struct device *dev,
+ 	BUG_ON(!dma_ops);
+ 
+ 	dma_ops->unmap_page(dev, dma_address, size, direction, attrs);
++	debug_dma_unmap_page(dev, dma_address, size, direction, false);
+ }
+ 
+ static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+@@ -222,9 +233,12 @@ static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sg,
+ 				   struct dma_attrs *attrs)
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
++	int ents;
+ 
+ 	BUG_ON(!dma_ops);
+-	return dma_ops->map_sg(dev, sg, nents, direction, attrs);
++	ents = dma_ops->map_sg(dev, sg, nents, direction, attrs);
++	debug_dma_map_sg(dev, sg, ents, direction);
++	return ents;
+ }
+ 
+ static inline void dma_unmap_sg_attrs(struct device *dev,
+@@ -237,15 +251,19 @@ static inline void dma_unmap_sg_attrs(struct device *dev,
+ 
+ 	BUG_ON(!dma_ops);
+ 	dma_ops->unmap_sg(dev, sg, nhwentries, direction, attrs);
++	debug_dma_unmap_sg(dev, sg, nhwentries, direction);
+ }
+ 
+ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+ 				       dma_addr_t *dma_handle, gfp_t flag)
+ {
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
++	void *mem;
+ 
+ 	BUG_ON(!dma_ops);
+-	return dma_ops->alloc_coherent(dev, size, dma_handle, flag);
++	mem = dma_ops->alloc_coherent(dev, size, dma_handle, flag);
++	debug_dma_alloc_coherent(dev, size, *dma_handle, mem);
++	return mem;
+ }
+ 
+ static inline void dma_free_coherent(struct device *dev, size_t size,
+@@ -254,6 +272,7 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_free_coherent(dev, size, cpu_addr, dma_handle);
+ 	dma_ops->free_coherent(dev, size, cpu_addr, dma_handle);
+ }
+ 
+@@ -306,6 +325,8 @@ static inline void dma_sync_single_for_cpu(struct device *dev,
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_single_range_for_cpu(dev, dma_handle, 0,
++					    size, direction);
+ 	dma_ops->sync_single_range_for_cpu(dev, dma_handle, 0,
+ 					   size, direction);
+ }
+@@ -317,6 +338,8 @@ static inline void dma_sync_single_for_device(struct device *dev,
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_single_range_for_device(dev, dma_handle,
++					       0, size, direction);
+ 	dma_ops->sync_single_range_for_device(dev, dma_handle,
+ 					      0, size, direction);
+ }
+@@ -328,6 +351,7 @@ static inline void dma_sync_sg_for_cpu(struct device *dev,
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_sg_for_cpu(dev, sgl, nents, direction);
+ 	dma_ops->sync_sg_for_cpu(dev, sgl, nents, direction);
+ }
+ 
+@@ -338,6 +362,7 @@ static inline void dma_sync_sg_for_device(struct device *dev,
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_sg_for_device(dev, sgl, nents, direction);
+ 	dma_ops->sync_sg_for_device(dev, sgl, nents, direction);
+ }
+ 
+@@ -348,6 +373,8 @@ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
++					    offset, size, direction);
+ 	dma_ops->sync_single_range_for_cpu(dev, dma_handle,
+ 					   offset, size, direction);
+ }
+@@ -359,6 +386,8 @@ static inline void dma_sync_single_range_for_device(struct device *dev,
+ 	struct dma_mapping_ops *dma_ops = get_dma_ops(dev);
+ 
+ 	BUG_ON(!dma_ops);
++	debug_dma_sync_single_range_for_device(dev, dma_handle, offset,
++					       size, direction);
+ 	dma_ops->sync_single_range_for_device(dev, dma_handle, offset,
+ 					      size, direction);
+ }
+@@ -367,36 +396,46 @@ static inline void dma_sync_single_for_cpu(struct device *dev,
+ 		dma_addr_t dma_handle, size_t size,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_single_range_for_cpu(dev, dma_handle, 0,
++					    size, direction);
+ }
+ 
+ static inline void dma_sync_single_for_device(struct device *dev,
+ 		dma_addr_t dma_handle, size_t size,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_single_range_for_device(dev, dma_handle,
++					       0, size, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_cpu(struct device *dev,
+ 		struct scatterlist *sgl, int nents,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_sg_for_cpu(dev, sgl, nents, direction);
+ }
+ 
+ static inline void dma_sync_sg_for_device(struct device *dev,
+ 		struct scatterlist *sgl, int nents,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_sg_for_device(dev, sgl, nents, direction);
+ }
+ 
+ static inline void dma_sync_single_range_for_cpu(struct device *dev,
+ 		dma_addr_t dma_handle, unsigned long offset, size_t size,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_single_range_for_cpu(dev, dma_handle,
++					    offset, size, direction);
+ }
+ 
+ static inline void dma_sync_single_range_for_device(struct device *dev,
+ 		dma_addr_t dma_handle, unsigned long offset, size_t size,
+ 		enum dma_data_direction direction)
+ {
++	debug_dma_sync_single_range_for_device(dev, dma_handle, offset,
++					       size, direction);
+ }
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 1c5c8a6..90bb016 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -6,7 +6,9 @@
+  */
+ 
+ #include <linux/device.h>
++#include <linux/dma-debug.h>
+ #include <linux/dma-mapping.h>
++#include <linux/init.h>
+ #include <asm/bug.h>
+ #include <asm/abs_addr.h>
+ 
+@@ -156,3 +158,12 @@ struct dma_mapping_ops dma_direct_ops = {
+ #endif
+ };
+ EXPORT_SYMBOL(dma_direct_ops);
++
++#define PREALLOC_DMA_DEBUG_ENTRIES		8192
++
++static int __init dma_debug_init_ppc(void)
++{
++	dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
++	return 0;
++}
++fs_initcall(dma_debug_init_ppc);
 
-"The course of history shows that as a government grows, liberty
-decreases."
-  -- Thomas Jefferson
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
