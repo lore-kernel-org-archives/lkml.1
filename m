@@ -1,61 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756014AbZBEJEL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZBEJFO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756014AbZBEJEL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 04:04:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752034AbZBEJDr
+	id S1758174AbZBEJFO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 04:05:14 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZBEJEk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 04:03:47 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:34099 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754298AbZBEJDp (ORCPT
+	Thu, 5 Feb 2009 04:04:40 -0500
+Received: from ms0.nttdata.co.jp ([163.135.193.231]:53381 "EHLO
+	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752183AbZBEJEi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 04:03:45 -0500
-Date: Thu, 5 Feb 2009 02:03:43 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: "Woodruff, Richard" <r-woodruff2@ti.com>
-cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       Tony Lindgren <tony@atomide.com>
-Subject: RE: [PATCH F 06/12] OMAP2/3 clock: every clock must have a clkdm
-In-Reply-To: <13B9B4C6EF24D648824FF11BE89671620376F47DFB@dlee02.ent.ti.com>
-Message-ID: <alpine.DEB.2.00.0902050201250.8567@utopia.booyaka.com>
-References: <20090128193326.2396.9437.stgit@localhost.localdomain> <20090128193512.2396.75340.stgit@localhost.localdomain> <20090131140804.GH1394@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902030011320.5741@utopia.booyaka.com>
- <13B9B4C6EF24D648824FF11BE89671620376F47DFB@dlee02.ent.ti.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Feb 2009 04:04:38 -0500
+Message-Id: <20090205082235.917519942@nttdata.co.jp>
+References: <20090205081810.331987920@nttdata.co.jp>
+User-Agent: quilt/0.45-1
+Date: Thu, 05 Feb 2009 17:18:18 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+To: jmorris@namei.org
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, haradats@nttdata.co.jp,
+       Kentaro Takeda <takedakn@nttdata.co.jp>
+Subject: [TOMOYO #15 8/8] MAINTAINERS info
+X-OriginalArrivalTime: 05 Feb 2009 08:22:37.0073 (UTC) FILETIME=[E720A810:01C9876A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Richard,
+The archive of tomoyo-users-en mailing list is available at
+http://lists.sourceforge.jp/mailman/archives/tomoyo-users-en/ .
+Mailing lists for Japanese users are at
+http://lists.sourceforge.jp/mailman/archives/tomoyo-users/ and
+http://lists.sourceforge.jp/mailman/archives/tomoyo-dev/ .
 
-On Tue, 3 Feb 2009, Woodruff, Richard wrote:
+TOMOYO Linux English portal is at
+http://elinux.org/TomoyoLinux .
 
-> > Virtual clocks should soon be eliminated from the OMAP clock tree.  (
-> > "Virtual clocks" is here used to refer a clock that does not have a
-> > referent in the hardware; the usage of the term in the code is loose.)
-> > So far as I know, all of the OMAP virtual clocks have either turned out to
-> > be superfluous (and prone to spinlock recursion bugs), or to be better
-> > implemented outside of the clock framework (such as the virtual OPP
-> > clocks).  We've eliminated the former.  We should be able to eliminate the
-> > latter in a few months.
-> 
-> What is your idea for replacement of virtual OPPs?
-> 
-> Especially on OMAP2 they were useful with tightly coupled clock sets.  
-> Some later versions of 2420 were characterized such that some of the 
-> dependencies could be ignored but that is not the case for all of them.  
-> The centerline design as I understand it wasn't for this. It just 
-> happened that enough margin was there in some binn'ed lots to do this.
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+---
+ MAINTAINERS |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-The rates and voltages would still be tightly coupled; the OPP change just 
-wouldn't be handled by the clock framework.  Will send patches to you once 
-the code is fully baked, the patches would probably the best thing to 
-comment on...
+--- security-testing-2.6.git.orig/MAINTAINERS
++++ security-testing-2.6.git/MAINTAINERS
+@@ -4257,6 +4257,19 @@ L:	tlan-devel@lists.sourceforge.net (sub
+ W:	http://sourceforge.net/projects/tlan/
+ S:	Maintained
+ 
++TOMOYO SECURITY MODULE
++P:	Kentaro Takeda
++M:	takedakn@nttdata.co.jp
++P:	Tetsuo Handa
++M:	penguin-kernel@I-love.SAKURA.ne.jp
++L:	linux-kernel@vger.kernel.org (kernel issues)
++L:	tomoyo-users-en@lists.sourceforge.jp (subscribers-only, for developers and users in English)
++L:	tomoyo-dev@lists.sourceforge.jp (subscribers-only, for developers in Japanese)
++L:	tomoyo-users@lists.sourceforge.jp (subscribers-only, for users in Japanese)
++W:	http://tomoyo.sourceforge.jp/
++T:	quilt http://svn.sourceforge.jp/svnroot/tomoyo/trunk/2.2.x/tomoyo-lsm/patches/
++S:	Maintained
++
+ TOSHIBA ACPI EXTRAS DRIVER
+ P:	John Belmonte
+ M:	toshiba_acpi@memebeam.org
 
+--
 
-- Paul
