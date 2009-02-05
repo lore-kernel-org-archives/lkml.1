@@ -1,83 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760614AbZBESDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760684AbZBESDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760614AbZBESDX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 13:03:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755933AbZBESDN
+	id S1760684AbZBESDr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 13:03:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZBESDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 13:03:13 -0500
-Received: from ns2.suse.de ([195.135.220.15]:49865 "EHLO mx2.suse.de"
+	Thu, 5 Feb 2009 13:03:32 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:48966 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755163AbZBESDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 13:03:12 -0500
-Message-ID: <498B29CC.2030000@suse.de>
-Date: Thu, 05 Feb 2009 19:02:52 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1756098AbZBESDa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 13:03:30 -0500
+Date: Thu, 5 Feb 2009 19:00:15 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+Message-ID: <20090205180015.GA28738@redhat.com>
+References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere> <20090122093649.GD24758@elte.hu> <c62985530901220306p78ea541cs28912a844297b304@mail.gmail.com> <1232622615.4890.114.camel@laptop> <498AA0F1.2030003@cn.fujitsu.com> <20090205170156.GA25517@redhat.com> <20090205172429.GA23531@nowhere>
 MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-Cc: linux-pci@vger.kernel.org, jbarnes@virtuousgeek.org, greg@kroah.com,
-       kristen.c.accardi@intel.com, ashok.raj@intel.com, shaohua.li@intel.com,
-       anil.s.keshavamurthy@intel.com, fenghua.yu@intel.com,
-       akpm@linux-foundation.org, frank@f-seidel.de,
-       Frans Pop <elendil@planet.nl>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: [PATCHv2] PCI: add missing KERN_* constants to printks
-References: <498B2116.6010707@suse.de>
-In-Reply-To: <498B2116.6010707@suse.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090205172429.GA23531@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Seidel <frank@f-seidel.de>
+On 02/05, Frederic Weisbecker wrote:
+>
+> On Thu, Feb 05, 2009 at 06:01:56PM +0100, Oleg Nesterov wrote:
+> > On 02/05, Lai Jiangshan wrote:
+> > >
+> > > DEADLOCK EXAMPLE for explain my above option:
+> > >
+> > > (work_func0() and work_func1() are work callback, and they
+> > > calls flush_workqueue())
+> > >
+> > > CPU#0					CPU#1
+> > > run_workqueue()                         run_workqueue()
+> > >   work_func0()                            work_func1()
+> > >     flush_workqueue()                       flush_workqueue()
+> > >       flush_cpu_workqueue(0)                  .
+> > >       flush_cpu_workqueue(cpu#1)              flush_cpu_workqueue(cpu#0)
+> > >         waiting work_func1() in cpu#1           waiting work_func0 in cpu#0
+> > >
+> > > DEADLOCK!
+> > 
+> > I am not sure. Note that when work_func0() calls run_workqueue(),
+> > it will clear cwq->current_work, so another flush_ on CPU#1 will
+> > not wait for work_func0, no?
+>
+> No but CPU#1 can wait for a completion that will never be done, because
+> CWQ#0 is waiting for CWQ#1.
 
-According to kerneljanitors todo list all printk calls (beginning
-a new line) should have an according KERN_* constant.
-Those are the missing pieces here for the pci subsystem.
+Still can't understand. When work_func0()->run_workqueue() returns,
+we should have no works in ->worklist and ->current_work must be NULL.
+If we have a barrier which was inserted before - it should be flushed.
 
-Signed-off-by: Frank Seidel <frank@f-seidel.de>
----
- drivers/pci/hotplug/pciehp.h |    3 ++-
- drivers/pci/hotplug/shpchp.h |    3 ++-
- drivers/pci/intel-iommu.c    |    2 +-
- 3 files changed, 5 insertions(+), 3 deletions(-)
 
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -1960,7 +1960,7 @@ static inline void iommu_prepare_isa(voi
- 	ret = iommu_prepare_identity_map(pdev, 0, 16*1024*1024);
- 
- 	if (ret)
--		printk("IOMMU: Failed to create 0-64M identity map, "
-+		printk(KERN_ERR "IOMMU: Failed to create 0-64M identity map, "
- 			"floppy might not work\n");
- 
- }
---- a/drivers/pci/hotplug/pciehp.h
-+++ b/drivers/pci/hotplug/pciehp.h
-@@ -48,7 +48,8 @@ extern struct workqueue_struct *pciehp_w
- #define dbg(format, arg...)						\
- 	do {								\
- 		if (pciehp_debug)					\
--			printk("%s: " format, MY_NAME , ## arg);	\
-+			printk(KERN_DEBUG "%s: " format, MY_NAME ,	\
-+			       ## arg);					\
- 	} while (0)
- #define err(format, arg...)						\
- 	printk(KERN_ERR "%s: " format, MY_NAME , ## arg)
---- a/drivers/pci/hotplug/shpchp.h
-+++ b/drivers/pci/hotplug/shpchp.h
-@@ -50,7 +50,8 @@ extern struct workqueue_struct *shpchp_w
- #define dbg(format, arg...)						\
- 	do {								\
- 		if (shpchp_debug)					\
--			printk("%s: " format, MY_NAME , ## arg);	\
-+			printk(KERN_DEBUG "%s: " format, MY_NAME ,	\
-+			       ## arg);					\
- 	} while (0)
- #define err(format, arg...)						\
- 	printk(KERN_ERR "%s: " format, MY_NAME , ## arg)
+But yes, deadlock is possible, if other works come after run_workqueue()
+returns and before work_func1() starts the flush. Just the description is
+not exactly accurate, imho.
 
+And we have other problems. Just to say, nothing can guarantee that
+run_workqueue() will ever return. It is correct if some work_struct
+always re-queues itself and should be cancelled before destroy_workqueue().
+
+Oleg.
 
