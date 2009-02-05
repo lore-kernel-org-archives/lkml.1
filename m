@@ -1,87 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZBEFwA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756410AbZBEF5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZBEFwA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 00:52:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZBEFvu
+	id S1756410AbZBEF5z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 00:57:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZBEF5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 00:51:50 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:33093 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753474AbZBEFvu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 00:51:50 -0500
-Date: Thu, 5 Feb 2009 06:53:37 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Missing unistd_no.h and unistd_mm.h export on m68k
-Message-ID: <20090205055337.GA30333@uranus.ravnborg.org>
-References: <20090204181453.GE26064@csclub.uwaterloo.ca> <20090204183142.GF26064@csclub.uwaterloo.ca> <20090204184659.GG26064@csclub.uwaterloo.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090204184659.GG26064@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 5 Feb 2009 00:57:46 -0500
+Received: from hera.kernel.org ([140.211.167.34]:34334 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753113AbZBEF5q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 00:57:46 -0500
+Message-ID: <498A7FD3.5030900@kernel.org>
+Date: Thu, 05 Feb 2009 14:57:39 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Cliff Wickman <cpw@sgi.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu
+Subject: Re: [PATCH v2] x86: UV uv_flush_tlb_others WARN_ON
+References: <E1LU7sT-0004ZT-9G@eag09.americas.sgi.com>
+In-Reply-To: <E1LU7sT-0004ZT-9G@eag09.americas.sgi.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 05 Feb 2009 05:57:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 01:46:59PM -0500, Lennart Sorensen wrote:
-> On Wed, Feb 04, 2009 at 01:31:42PM -0500, Lennart Sorensen wrote:
-> > On Wed, Feb 04, 2009 at 01:14:53PM -0500, Lennart Sorensen wrote:
-> > > make header_install fails to include the files unistd_no.h and
-> > > unistd_mm.h on m68k, while those two files are included by unistd.h.
-> > > 
-> > > This patch fixes this by adding these two files to the list of m68k
-> > > specific headers to export.
-> > > 
-> > > Signed-off-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
-> > > 
-> > > Signed
-> > > diff --git a/arch/m68k/include/asm/Kbuild b/arch/m68k/include/asm/Kbuild
-> > > index 1a922fa..2bb4738 100644
-> > > --- a/arch/m68k/include/asm/Kbuild
-> > > +++ b/arch/m68k/include/asm/Kbuild
-> > > @@ -1,2 +1,2 @@
-> > >  include include/asm-generic/Kbuild.asm
-> > > -header-y += cachectl.h
-> > > +header-y += cachectl.h unistd_no.h unistd_mm.h
-> > 
-> > Hmm, seems it is actually much worse than I thought.  All _no.h and
-> > _mm.h are being missed, making m68k compiles of things like uclibc
-> > rather broken.  Yuck.
+Cliff Wickman wrote:
+> From: Cliff Wickman <cpw@sgi.com>
 > 
-> So updated patch that makes uclibc actually compile for m68k.
+> uv_flush_tlb_others() (arch/x86/kernel/tlb_uv.c)
+> The "WARN_ON(!in_atomic())" fails if CONFIG_PREEMPT is not enabled.
+> And CONFIG_PREEMPT is not enabled by default in the distribution that
+> most UV owners will use.
 > 
-> -- 
-> Len Sorensen
+> We could #ifdef CONFIG_PREEMPT the warning, but that is not good form.
 > 
+> And there seems to be no suitable fix to in_atomic() when CONFIG_PREMPT
+> is not on.
+>   As you commented, Ingo:
+>   > and we have no proper primitive to test for atomicity. (mainly
+>   > because we dont know about atomicity on a non-preempt kernel)
 > 
+> I propose that we drop the WARN_ON.
 > 
-> make header_install fails to include the files *_no.h and
-> *_mm.h on m68k, while those files are included by the matching *.h
+> Diffed against 2.6.29-rc2
 > 
-> This patch fixes this by adding these missing files to the list of m68k
-> specific headers to export.  With this patch, uclibc compiles again.
+> Signed-off-by: Cliff Wickman <cpw@sgi.com>
 
-Hi Len.
+Heh.. I included it in the first two merges but forgot it in the final
+round.  Applying to tj-percpu.
 
-Indeed the *_no.h, *_mm.h is missing from Kbuild.h.
-But looking at your patch you added much more than the
-missing *_no.h, *_mm.h.
-When doing this do it in steps:
-1) fix make headers_check
-   This is fixed by adding the *_no.h,*_mm.h for files that
-   are exported. And that is the files lited in include/asm-generic/Kbuild.asm
-   plus the single file listed in the m68k Kbuld file.
+Thanks.
 
-2) then as a separate patch export the additional files needed to build
-   ulibc.
-   Do it file-by-file so you are sure you do not add a single file
-   that is not needed. We want to have a minimal set of files exported.
-
-And when you prepare your patch please use one line per header file,
-as we do in all the ohter Kbuild files.
-
-	Sam
-
+-- 
+tejun
