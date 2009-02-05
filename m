@@ -1,58 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbZBEPre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756952AbZBEPvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757903AbZBEPre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:47:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752417AbZBEPr0
+	id S1756952AbZBEPvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZBEPvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:47:26 -0500
-Received: from casper.infradead.org ([85.118.1.10]:43674 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbZBEPr0 (ORCPT
+	Thu, 5 Feb 2009 10:51:07 -0500
+Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:36300 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752109AbZBEPvG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:47:26 -0500
-Date: Thu, 5 Feb 2009 07:47:40 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: Bill Nottingham <notting@redhat.com>
-Cc: Harald Hoyer <harald@redhat.com>, linux-kernel@vger.kernel.org,
-       power@bughost.org
-Subject: Re: [PATCH] tracer for sys_open() - sreadahead
-Message-ID: <20090205074740.224f7b1f@infradead.org>
-In-Reply-To: <20090205152442.GE6865@nostromo.devel.redhat.com>
-References: <497F69A4.2070007@intel.com>
-	<20090130202219.GA1253@ucw.cz>
-	<20090203133251.GD29046@elte.hu>
-	<gmeu0q$n13$1@ger.gmane.org>
-	<20090205150705.GC6865@nostromo.devel.redhat.com>
-	<20090205071444.390c19bc@infradead.org>
-	<20090205152442.GE6865@nostromo.devel.redhat.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 5 Feb 2009 10:51:06 -0500
+Date: Thu, 5 Feb 2009 10:51:04 -0500
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Missing unistd_no.h and unistd_mm.h export on m68k
+Message-ID: <20090205155104.GM26064@csclub.uwaterloo.ca>
+References: <20090204181453.GE26064@csclub.uwaterloo.ca> <20090204183142.GF26064@csclub.uwaterloo.ca> <20090204184659.GG26064@csclub.uwaterloo.ca> <20090205055337.GA30333@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090205055337.GA30333@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009 10:24:42 -0500
-Bill Nottingham <notting@redhat.com> wrote:
-
-> Arjan van de Ven (arjan@infradead.org) said: 
-> > you can strace init but you can't strace X
-> > (at least... last I tried it locked my box ;0)
+On Thu, Feb 05, 2009 at 06:53:37AM +0100, Sam Ravnborg wrote:
+> Indeed the *_no.h, *_mm.h is missing from Kbuild.h.
+> But looking at your patch you added much more than the
+> missing *_no.h, *_mm.h.
+> When doing this do it in steps:
+> 1) fix make headers_check
+>    This is fixed by adding the *_no.h,*_mm.h for files that
+>    are exported. And that is the files lited in include/asm-generic/Kbuild.asm
+>    plus the single file listed in the m68k Kbuld file.
 > 
-> You should be able to strace X, as long as you're not doing it *from*
-> X.
+> 2) then as a separate patch export the additional files needed to build
+>    ulibc.
+>    Do it file-by-file so you are sure you do not add a single file
+>    that is not needed. We want to have a minimal set of files exported.
 > 
-last I tried it b0rked (yeah I'm not stupid enuogh to do that from X,
-at least not a second time ;-)
+> And when you prepare your patch please use one line per header file,
+> as we do in all the ohter Kbuild files.
 
-another issue with the "use strace" approach is selinux... 
-(this is in addition to the performance and behavioral changes)
+Well if the exported unistd.h file says:
+
+#ifdef __uClinux__
+#include "unistd_no.h"
+#else
+#include "unistd_mm.h"
+#endif
+
+Then I expect BOTH files to be present since I might want to compile
+both glibc and uclibc against this set of headers.
+
+Leaving out either would be broken.
+
+I do seem to have got carried away after I encountered one after
+another.  I will try to find a smaller list of what should actually be
+exported.  Now perhaps some of the headers don't need this split, which
+would simplify things.
+
+So here is an updated patch that isn't carried away.  This includes the
+8 pairs of files that are included by header files that are in fact
+exported already.  This makes the header files consistent on m68k no
+matter what you are compiling against them.
+
+Does this look better?
+
+I checked this way:
+linux-headers/include/asm# grep _no.h *
+param.h:#include "param_no.h"
+ptrace.h:#include "ptrace_no.h"
+setup.h:#include "setup_no.h"
+sigcontext.h:#include "sigcontext_no.h"
+siginfo.h:#include "siginfo_no.h"
+signal.h:#include "signal_no.h"
+swab.h:#include "swab_no.h"
+unistd.h:#include "unistd_no.h"
+
+linux-headers/include/asm# ls *_no.h|cat
+param_no.h
+ptrace_no.h
+setup_no.h
+sigcontext_no.h
+siginfo_no.h
+signal_no.h
+swab_no.h
+unistd_no.h
+
+linux-headers/include/asm# ls *_mm.h|cat
+param_mm.h
+ptrace_mm.h
+setup_mm.h
+sigcontext_mm.h
+siginfo_mm.h
+signal_mm.h
+swab_mm.h
+unistd_mm.h
+
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Len Sorensen
 
+The header files exported on m68k are missing dependant header files
+that are included by some of the epxorted files.  This includes the 8
+missing pairs of files needed by normal and uclibc builds against the
+headers files.
+
+Signed-of-by: Len Sorensen <lsorense@csclub.uwaterloo.ca>
+
+diff --git a/arch/m68k/include/asm/Kbuild b/arch/m68k/include/asm/Kbuild
+index 1a922fa..f13d614 100644
+--- a/arch/m68k/include/asm/Kbuild
++++ b/arch/m68k/include/asm/Kbuild
+@@ -1,2 +1,2 @@
+ include include/asm-generic/Kbuild.asm
+-header-y += cachectl.h
++header-y += cachectl.h param_mm.h param_no.h ptrace_mm.h ptrace_no.h setup_mm.h setup_no.h sigcontext_mm.h sigcontext_no.h siginfo_mm.h siginfo_no.h signal_mm.h signal_no.h swab_mm.h swab_no.h unistd_mm.h unistd_no.h
