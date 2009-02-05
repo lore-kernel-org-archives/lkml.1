@@ -1,62 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753823AbZBEUph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZBEUwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753823AbZBEUph (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 15:45:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZBEUp1
+	id S1753225AbZBEUwN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 15:52:13 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZBEUv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 15:45:27 -0500
-Received: from mail.candelatech.com ([208.74.158.172]:34976 "EHLO
-	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751984AbZBEUp0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 15:45:26 -0500
-Message-ID: <498B4FD1.9000804@candelatech.com>
-Date: Thu, 05 Feb 2009 12:45:05 -0800
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Thu, 5 Feb 2009 15:51:57 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:44383 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752034AbZBEUv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 15:51:56 -0500
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, len.brown@intel.com
-Subject: Re: PATCH:  Allow over-ride of smp_found_cfg with kernel cmd-line
- option.
-References: <498B421D.9090609@candelatech.com> <20090205195832.GD3129@elte.hu>
-In-Reply-To: <20090205195832.GD3129@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] posix-cpu-timers: use ->sighand instead of
+	->signal to check the task is alive
+In-Reply-To: Oleg Nesterov's message of  Thursday, 5 February 2009 16:54:54 +0100 <20090205155454.GD20953@redhat.com>
+References: <20090203231717.GA5028@redhat.com>
+	<20090205033120.2294BFC381@magilla.sf.frob.com>
+	<20090205155454.GD20953@redhat.com>
+X-Zippy-Says: Yow!  I like my new DENTIST...
+Message-Id: <20090205204521.E1642FC381@magilla.sf.frob.com>
+Date: Thu,  5 Feb 2009 12:45:21 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
+> We can't use them as refcounts. You can't bump ->live or ->count without
+> breaking group_dead or exec logic. Perhaps we can use ->count, but then
+> we need other changes. 
 
-> I'd _much_ rather have a warning message printed and have a default, 
-> unconditional fallback to mptable parsing in this case.
-> 
-> I.e. same end result just no ugly and inconvenient force_smp_found_cfg.
-> 
-> The mptable works fine in most such cases to enumerate apic details. (as it 
-> does in your case, evidently)
-> 
-> And if both the ACPI and the MPTABLE is hosed on a box, it cannot be of much 
-> use on other OSs either, right?
-> 
-> So please do a patch that removes the 'smp_found_config' and which changes 
-> the warning message to warn about no ACPI table in the MADT table. Ok?
+We certainly need to clean up exec anyway.
 
-That is fine with me, but I know next to zero about the deep logic
-of this code.  I'd be worried that Len put in the change to fix something
-more critical than my problem on my particular board.
+> But this has nothing to do with this patch.
 
-If no one argues otherwise, I'll get a patch together & tested this evening.
+Agreed.
+
+> The goal is to keep task->signal after release_task(), it will be freed
+> by __put_task_struct(). This allows a lot of simplifications and we can
+> move some fields from task_struct to signal_struct.
+
+That sounds fine to me in theory, but I still wonder what the story will be
+about the use of siglock.
+
+> But first we should change the code which does [...]
+
+I did understand the rationale given the signal_struct lifetime change.
+
+> > Uses here protecting cpu_clock_sample_group() e.g., are
+> > around looking at ->signal->foobar, so if ->signal is still there, why not
+> > look at it and be able to get the sample in whatever small window this is?
+> 
+> What if arm_timer() sees ->signal != NULL, proceeds, and attaches the
+> timer to the signal_struct of the already dead task? This signal_strcut
+> will be released with the pending timer.
+
+Of course.  I distinctly mentioned the read-only uses (sample).
+
+> Even cpu_clock_sample_group() is not safe, unless we add other changes.
+
+Why?  It does no locking and only relies on the signal_struct lifetime.
+
+> But in any case. Even if we don't need the further changes, do you
+> agree this patch is correct and doesn't change the behaviour?
+
+Yes.
+
 
 Thanks,
-Ben
-
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
-
+Roland
