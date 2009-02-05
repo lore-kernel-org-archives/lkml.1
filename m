@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZBEXZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755215AbZBEX1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbZBEXZF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 18:25:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZBEXYx
+	id S1755215AbZBEX1c (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 18:27:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZBEX1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 18:24:53 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:53926 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751863AbZBEXYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 18:24:51 -0500
-Date: Fri, 6 Feb 2009 00:22:23 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Kaz Kylheku <kkylheku@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: main thread pthread_exit/sys_exit bug!
-Message-ID: <20090205232223.GB10345@redhat.com>
-References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com> <20090201174159.4a52e15c.akpm@linux-foundation.org> <20090202064509.GA20237@redhat.com> <3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com> <20090202165606.GA13346@redhat.com> <20090205030553.49650FC381@magilla.sf.frob.com> <3f43f78b0902042055p37ff9ab2u84840273b34c7373@mail.gmail.com> <20090205161544.GA24799@redhat.com> <20090205212234.934D1FC381@magilla.sf.frob.com>
+	Thu, 5 Feb 2009 18:27:24 -0500
+Received: from fk-out-0910.google.com ([209.85.128.188]:19248 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751863AbZBEX1X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 18:27:23 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QMHO13OkfMqee4uKh5DueJqsq4EL5F2xitvJTDcRtH+NX7c1g88GQAv7b3Ep/x5qZD
+         +HUiWW1xMY/NdJnbx4BqqXzPp52/OQjsxg3kXtZ+rgju8GHQSFwpTe7YPsuqcXqmub68
+         Pvw4ookmP1nl6jPhFokaw7qMK17p+Ag1stP3A=
+Date: Fri, 6 Feb 2009 00:27:18 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/2] ring_buffer: remove unused flags parameter
+Message-ID: <20090205232717.GD23999@nowhere>
+References: <20090205181256.GH17653@ghostprotocols.net> <20090205221701.GA23999@nowhere> <alpine.DEB.1.10.0902051737360.27358@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090205212234.934D1FC381@magilla.sf.frob.com>
+In-Reply-To: <alpine.DEB.1.10.0902051737360.27358@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/05, Roland McGrath wrote:
->
-> I wrote this test case for it.  Is there any problem other than this one?
+On Thu, Feb 05, 2009 at 05:39:04PM -0500, Steven Rostedt wrote:
+> 
+> On Thu, 5 Feb 2009, Frederic Weisbecker wrote:
+> > >  
+> > > -	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry),
+> > > -					 &irq_flags);
+> > > +	event = ring_buffer_lock_reserve(tr->buffer, sizeof(*entry));
+> > >  	if (!event)
+> > >  		goto out;
+> > >  	entry	= ring_buffer_event_data(event);
+> > >  	tracing_generic_entry_update(&entry->ent, 0, 0);
+> > >  	entry->ent.type = TRACE_POWER;
+> > >  	entry->state_data = *it;
+> > > -	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+> > > +	ring_buffer_unlock_commit(tr->buffer, event);
+> > >  
+> > >  	trace_wake_up();
+> > >  
+> > > -- 
+> > > 1.6.0.6
+> > > 
+> > 
+> > 
+> > I don't what Steven planned (or not) with this flag.
+> > If it's not related to his lockless ring buffer project or anything, this
+> > cleanup is welcome.
+> 
+> The irq_flags is legacy from the original implementation. Arnaldo is just 
+> going through my todo list (without even me telling him what it is ;-)
+> 
+> Now only if I can get Arnaldo to do the TODO list my wife gives me ;-)
 
-I don't know about other problems with the zombie leaders.
 
-Except, I am worried whether the fix I have in mind is correct ;)
-It is simple, wait_task_stopped() should do
-
-	if we tracer:
-
-		check ->state, eat ->exit_code
-
-	else:
-		check SIGNAL_STOP_STOPPED, use ->group_exit_code
-
-This looks logical, and should fix the problem. But this is
-the user-visible change. For example,
-
-	$ sleep 100
-	^Z
-	[1]+  Stopped                 sleep 100
-	$ strace -p `pidof sleep`
-	Process 11442 attached - interrupt to quit
-
-strace hangs in do_wait(). But after the fix strace will happily
-proceed. I can't know whether this behaviour change is bad or not.
-
-Oleg.
+Can we pull it from somewhere? :-)
+ 
+> -- Steve
+> 
 
