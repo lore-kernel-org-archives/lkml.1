@@ -1,99 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZBENSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756904AbZBENYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbZBENSV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 08:18:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbZBENSD
+	id S1756904AbZBENYB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 08:24:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbZBENXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 08:18:03 -0500
-Received: from mailbackup.inode.at ([213.229.60.24]:39875 "EHLO
-	mailbackup.inode.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754869AbZBENR7 (ORCPT
+	Thu, 5 Feb 2009 08:23:52 -0500
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:34874 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754707AbZBENXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 08:17:59 -0500
-Date: Thu, 5 Feb 2009 14:16:44 +0100
-From: Matthias Reichl <hias@horus.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [Bug #12612] hard lockup when interrupting cdda2wav
-Message-ID: <20090205131644.GA5731@horus.com>
-Mail-Followup-To: Matthias Reichl <hias@horus.com>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-References: <a47yn9c9JrF.A.hz.L5YiJB@chimera> <CGyEB0S4BpO.A.fLB.T5YiJB@chimera>
+	Thu, 5 Feb 2009 08:23:51 -0500
+Message-ID: <74935449f7bd1248f959a526d56ca02a.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <498ADA5D.90201@virident.com>
+References: <28631E6913C8074E95A698E8AC93D091B21561@caexch1.virident.info>
+    <20090204183600.f41e8b7e.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090204184028.09a4bbae.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090204185501.837ff5d6.kamezawa.hiroyu@jp.fujitsu.com>
+    <alpine.DEB.1.10.0902041037150.19633@qirst.com>
+    <20090205101503.b1fd7df6.kamezawa.hiroyu@jp.fujitsu.com>
+    <498ADA5D.90201@virident.com>
+Date: Thu, 5 Feb 2009 22:23:45 +0900 (JST)
+Subject: Re: [RFC][PATCH] release mmap_sem before starting migration (Was
+ Re: Need to take mmap_sem lock in move_pages.
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: "Swamy Gowda" <swamy@virident.com>
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "Christoph Lameter" <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, brice.goglin@inria.fr,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+User-Agent: SquirrelMail/1.4.16
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <CGyEB0S4BpO.A.fLB.T5YiJB@chimera>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 04, 2009 at 11:58:51AM +0100, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12612
-> Subject		: hard lockup when interrupting cdda2wav
-> Submitter	: Matthias Reichl <hias@horus.com>
-> Date		: 2009-01-28 16:41 (8 days old)
-> References	: http://marc.info/?l=linux-kernel&m=123316111415677&w=4
-> Handled-By	: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Swamy Gowda wrote:
+> KAMEZAWA Hiroyuki wrote:
+>> On Wed, 4 Feb 2009 10:39:19 -0500 (EST)
+>> Christoph Lameter <cl@linux-foundation.org> wrote:
+>>
+>>> On Wed, 4 Feb 2009, KAMEZAWA Hiroyuki wrote:
+>>>
+>>> > mmap_sem can be released after page table walk ends.
+>>>
+>>> No. read lock on mmap_sem must be held since the migrate functions
+>>> manipulate page table entries. Concurrent large scale changes to the
+>>> page
+>>> tables (splitting vmas, remapping etc) must not be possible.
+>>>
+>> Just for clarification:
+>>
+>> 1. changes in page table is not problem from the viewpoint of kernel.
+>>   (means no panic, no leak,...)
+>> 2. But this loses "atomic" aspect of migration and will allow unexpected
+>>   behaviors.
+>>   (means the page-mapping status after sys_move may not be what user
+>> expects.)
+>>
+>>
+>> Thanks,
+>> -Kame
+>>
+>>
+> But I can't understand how user can see different page->mapping , since
+> new page->mapping still holds the anon_vma pointer which should still
+> contain the changes in the vma list( due to split vma etc). But,
+> considering it as a problem how is it avoided in case of hotremove?
+>
+I'm sorry page-mapping in my text is not page->mapping. Just means
+process's memory map.
 
-This bug is still present in 2.6.28.3.
+In my point of view, no problems (I wrote no problem in the kernel.)
 
-so long,
+One big difference between sys_move_pages and hot remove is
+hot-remove retries many times but sys_move_pages() doesn't.
+So, race/contention in migrate_page() will dramatically decrease
+success-rate of page migration by system call.
 
-Hias
+In user side, sys_move_pages(), we may have to think more.
+I wonder that there may be much more contentions of pte_lock and
+page_lock() etc... if we remove mmap_sem.
+The good point of mmap_sem is the waiter can sleep without any troubles
+and nest of locks.
 
-=============================================
-[ INFO: possible recursive locking detected ]
-2.6.28.3-dbg #1
----------------------------------------------
-swapper/0 is trying to acquire lock:
- (&q->__queue_lock){.+..}, at: [<ffffffff8040e5f5>] blk_put_request+0x25/0x60
+Thanks,
+-Kame
 
-but task is already holding lock:
- (&q->__queue_lock){.+..}, at: [<ffffffff8040e4da>] blk_end_io+0x5a/0xa0
-
-other info that might help us debug this:
-1 lock held by swapper/0:
- #0:  (&q->__queue_lock){.+..}, at: [<ffffffff8040e4da>] blk_end_io+0x5a/0xa0
-
-stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.28.3-dbg #1
-Call Trace:
- <IRQ>  [<ffffffff8026cc87>] __lock_acquire+0x1797/0x1930
- [<ffffffff806abd7b>] error_exit+0x29/0xa9
- [<ffffffff80521e20>] sg_rq_end_io+0x0/0x2e0
- [<ffffffff8026ceba>] lock_acquire+0x9a/0xe0
- [<ffffffff8040e5f5>] blk_put_request+0x25/0x60
- [<ffffffff806ab763>] _spin_lock_irqsave+0x43/0x90
- [<ffffffff8040e5f5>] blk_put_request+0x25/0x60
- [<ffffffff8040e5f5>] blk_put_request+0x25/0x60
- [<ffffffff80520974>] sg_finish_rem_req+0xa4/0x100
- [<ffffffff80522098>] sg_rq_end_io+0x278/0x2e0
- [<ffffffff8040e281>] end_that_request_last+0x61/0x260
- [<ffffffff8040e4e8>] blk_end_io+0x68/0xa0
- [<ffffffff80508061>] scsi_end_request+0x41/0xd0
- [<ffffffff80508750>] scsi_io_completion+0x130/0x470
- [<ffffffff804133e5>] blk_done_softirq+0x75/0x90
- [<ffffffff802488ab>] __do_softirq+0x9b/0x180
- [<ffffffff80213df3>] native_sched_clock+0x13/0x70
- [<ffffffff8020d6ec>] call_softirq+0x1c/0x30
- [<ffffffff8020f175>] do_softirq+0x65/0xa0
- [<ffffffff80248345>] irq_exit+0xa5/0xb0
- [<ffffffff8020f467>] do_IRQ+0x107/0x1d0
- [<ffffffff8020c7fb>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff80214ba6>] mwait_idle+0x56/0x60
- [<ffffffff80214b9d>] mwait_idle+0x4d/0x60
- [<ffffffff8020b353>] cpu_idle+0x63/0xc0
