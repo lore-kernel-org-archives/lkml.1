@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbZBEVwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754834AbZBEVxF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754644AbZBEVwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZBEVw0
+	id S1754834AbZBEVxF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:53:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZBEVwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:52:26 -0500
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:41742 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751804AbZBEVwZ (ORCPT
+	Thu, 5 Feb 2009 16:52:53 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57702 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752098AbZBEVww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:52:25 -0500
-X-IronPort-AV: E=Sophos;i="4.37,387,1231113600"; 
-   d="scan'208";a="133409096"
-From: Roland Dreier <rdreier@cisco.com>
-To: Andreas Schwab <schwab@suse.de>
-Cc: Floris Kraak <randakar@gmail.com>, Robert Hancock <hancockrwd@gmail.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>
-Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
-References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
-	<20090204221451.GA27254@uranus.ravnborg.org>
-	<adavdrplty2.fsf@cisco.com> <498A295A.4090008@gmail.com>
-	<adaskmtjsnn.fsf@cisco.com>
-	<56e1b5710902050026s5a8fd48fhf4a65c05a533dbc3@mail.gmail.com>
-	<56e1b5710902050215l5b34adb1ofb8a972318ebe353@mail.gmail.com>
-	<jeab91w54x.fsf@sykes.suse.de>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 05 Feb 2009 13:52:23 -0800
-In-Reply-To: <jeab91w54x.fsf@sykes.suse.de> (Andreas Schwab's message of "Thu,
-	05 Feb 2009 11:27:10 +0100")
-Message-ID: <adaocxgk0vc.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 05 Feb 2009 21:52:24.0418 (UTC) FILETIME=[07712420:01C987DC]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Thu, 5 Feb 2009 16:52:52 -0500
+Date: Thu, 5 Feb 2009 13:52:29 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-input@vger.kernel.org, arjan@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] input: introduce a tougher i8042.reset
+Message-Id: <20090205135229.e4d5efc3.akpm@linux-foundation.org>
+In-Reply-To: <20090204191631.21783c62@infradead.org>
+References: <20090204191540.2d6abd87@infradead.org>
+	<20090204191631.21783c62@infradead.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > > So what is this "warn_no_rtc" thing?
- > >
- > >         static char             warn_no_rtc[] __initdata =
- > >                 KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
- > 
- > Does it help to make it const?
+On Wed, 4 Feb 2009 19:16:31 -0800
+Arjan van de Ven <arjan@infradead.org> wrote:
 
-You can't make __initdata const, because the initdata section is not
-read-only.
+> Some touchpads don't reset right the first time (MSI Wind U-100 for
+> example). This patch will retry the reset up to 5 times.
 
- - R.
+Sigh, real life sucks.  I wonder what the windows driver does.
+
+> In addition, this patch also adds a module parameter to not treat
+> reset failures as fatal to the usage of the device. This prevents
+> a touchpad failure from also disabling the keyboard....
+> 
+
+Is there any reason why we shouldn't just do this all the time?
+
+IOW, is there any benefit in marking the 8042 as dead?
+
