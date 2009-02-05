@@ -1,48 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZBEAdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760240AbZBEAfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbZBEAdT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 19:33:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758283AbZBEAcz
+	id S1760240AbZBEAfr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 19:35:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZBEAfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 19:32:55 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33986
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754383AbZBEAcy (ORCPT
+	Wed, 4 Feb 2009 19:35:38 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56891 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754742AbZBEAfh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 19:32:54 -0500
-Date: Wed, 04 Feb 2009 16:32:50 -0800 (PST)
-Message-Id: <20090204.163250.127196315.davem@davemloft.net>
-To: divy@chelsio.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       swise@opengridcomputing.com, kxie@chelsio.com
-Subject: Re: [PATCH 2.6.29] cxgb3 - Fix lro switch
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090205002547.26126.47373.stgit@speedy5>
-References: <20090205002547.26126.47373.stgit@speedy5>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 4 Feb 2009 19:35:37 -0500
+Date: Wed, 4 Feb 2009 16:34:34 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: mtk.manpages@gmail.com, mtk.manpages@googlemail.com,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       linux-api@vger.kernel.org
+Subject: Re: [patch/rfc] eventfd semaphore-like behavior
+Message-Id: <20090204163434.1395a928.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.1.10.0902041621360.6214@alien.or.mcafeemobile.com>
+References: <alpine.DEB.1.10.0902041349180.6214@alien.or.mcafeemobile.com>
+	<20090204150507.665b5b7c.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0902041509060.6214@alien.or.mcafeemobile.com>
+	<20090204152434.c8f65d52.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0902041526590.6214@alien.or.mcafeemobile.com>
+	<20090204155514.6abbdc8f.akpm@linux-foundation.org>
+	<cfd18e0f0902041559l4c40d9b6k704068337a00df7a@mail.gmail.com>
+	<20090204161816.b93a4588.akpm@linux-foundation.org>
+	<alpine.DEB.1.10.0902041621360.6214@alien.or.mcafeemobile.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Divy Le Ray <divy@chelsio.com>
-Date: Wed, 04 Feb 2009 16:25:47 -0800
+On Wed, 4 Feb 2009 16:25:52 -0800 (PST)
+Davide Libenzi <davidel@xmailserver.org> wrote:
 
-> The LRO switch is always set to 1 in the rx processing loop.
-> It breaks the accelerated iSCSI receive traffic.
-> Fix its computation.
+> On Wed, 4 Feb 2009, Andrew Morton wrote:
 > 
-> Signed-off-by: Divy Le Ray <divy@chelsio.com>
+> > On Thu, 5 Feb 2009 12:59:07 +1300
+> > Michael Kerrisk <mtk.manpages@googlemail.com> wrote:
+> > 
+> > > >> > > > What should be userspace's fallback strategy if that support is not
+> > > >> > > > present?
+> > > >> > >
+> > > >> > > #ifdef EFD_SEMAPHORE, maybe?
+> > > >> >
+> > > >> > That's compile-time.  People who ship binaries will probably want
+> > > >> > to find a runtime thing for back-compatibility.
+> > > >>
+> > > >> I dunno. How do they actually do when we add new flags, like the O_ ones?
+> > > >>
+> > > >
+> > > > Dunno.  Probably try the syscall and see if it returned -EINVAL.  Does
+> > > > that work in this case?
+> > > 
+> > > As youll have seen by now, Ulrich and I noted that it works.
+> > 
+> > I think you means "should work" ;)
+> > 
+> > We're talking about this, yes?
+> > 
+> > SYSCALL_DEFINE2(eventfd2, unsigned int, count, int, flags)
+> > {
+> > 	int fd;
+> > 	struct eventfd_ctx *ctx;
+> > 
+> > 	/* Check the EFD_* constants for consistency.  */
+> > 	BUILD_BUG_ON(EFD_CLOEXEC != O_CLOEXEC);
+> > 	BUILD_BUG_ON(EFD_NONBLOCK != O_NONBLOCK);
+> > 
+> > 	if (flags & ~(EFD_CLOEXEC | EFD_NONBLOCK))
+> > 		return -EINVAL;
+> > 
+> > That looks like it should work to me.
+> 
+> I lost you guys. On old kernels you'd get -EINVAL when using the new flag. 
+> Wasn't it clear? Or is there some side-band traffic in this conversation 
+> that I missed? :)
+> 
 
-Applied, thank you.
+Well yes, that.  What I was trying to establish here is that we have
+thought about (and preferably tested) userspace's back-compatibility
+arrangements.
 
-Could you slightly reformat your Subject lines for patches?  Please
-use something like "cxgb3: $(description)" instead of the "cxgb3 -
-$(description)" you're using now.
-
-It'll be one less thing I need to edit when applying your
-patches :-)
-
-Thanks!
+We have now done that.
