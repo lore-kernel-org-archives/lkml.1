@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759439AbZBERFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759284AbZBERFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759439AbZBERFV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 12:05:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZBERE7
+	id S1759284AbZBERFo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 12:05:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbZBERF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 12:04:59 -0500
-Received: from fg-out-1718.google.com ([72.14.220.156]:22234 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758841AbZBERE6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 12:04:58 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XIVm480QiVV1/pFoDnluJ77IhTLJjFusdzgy5lpZXHwda7NhZARNfpIbpYv31jByOP
-         gnRbd9ZKUV6nuXIjlX/SHnTn/HQAb2vwUJ6xk4Tc2uKBOJDYWpZFbDevLa7qpdo58hB9
-         FSFqCDIqsWboP82Fbc2ecU7ctbl9ahXPkb/wA=
-Date: Thu, 5 Feb 2009 20:10:55 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Kentaro Takeda <takedakn@nttdata.co.jp>
-Cc: jmorris@namei.org, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       haradats@nttdata.co.jp,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: Re: [TOMOYO #15 6/8] LSM adapter functions.
-Message-ID: <20090205171055.GA2809@x200.localdomain>
-References: <20090205081810.331987920@nttdata.co.jp> <20090205082232.562805442@nttdata.co.jp>
+	Thu, 5 Feb 2009 12:05:27 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:39654 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759532AbZBERF0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 12:05:26 -0500
+Date: Thu, 5 Feb 2009 18:01:56 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+Message-ID: <20090205170156.GA25517@redhat.com>
+References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere> <20090122093649.GD24758@elte.hu> <c62985530901220306p78ea541cs28912a844297b304@mail.gmail.com> <1232622615.4890.114.camel@laptop> <498AA0F1.2030003@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090205082232.562805442@nttdata.co.jp>
+In-Reply-To: <498AA0F1.2030003@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 05:18:16PM +0900, Kentaro Takeda wrote:
-> +/**
-> + * tomoyo_sysctl_path - return the realpath of a ctl_table.
-> + * @table: pointer to "struct ctl_table".
-> + *
-> + * Returns realpath(3) of the @table on success.
-> + * Returns NULL on failure.
-> + *
-> + * This function uses tomoyo_alloc(), so the caller must call tomoyo_free()
-> + * if this function didn't return NULL.
-> + */
-> +static char *tomoyo_sysctl_path(struct ctl_table *table)
-> +{
-> +	int buflen = TOMOYO_MAX_PATHNAME_LEN;
-> +	char *buf = tomoyo_alloc(buflen);
-> +	char *end = buf + buflen;
-> +	int error = -ENOMEM;
-> +
-> +	if (!buf)
-> +		return NULL;
-> +
-> +	*--end = '\0';
-> +	buflen--;
-> +	while (table) {
-> +		char buf[32];
-> +		const char *sp = table->procname;
-> +
-> +		if (!sp) {
-> +			memset(buf, 0, sizeof(buf));
-> +			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
-> +			sp = buf;
-> +		}
-> +		if (tomoyo_prepend(&end, &buflen, sp) ||
-> +		    tomoyo_prepend(&end, &buflen, "/"))
-> +			goto out;
-> +		table = table->parent;
-> +	}
-> +	if (tomoyo_prepend(&end, &buflen, "/proc/sys"))
+On 02/05, Lai Jiangshan wrote:
+>
+> DEADLOCK EXAMPLE for explain my above option:
+>
+> (work_func0() and work_func1() are work callback, and they
+> calls flush_workqueue())
+>
+> CPU#0					CPU#1
+> run_workqueue()                         run_workqueue()
+>   work_func0()                            work_func1()
+>     flush_workqueue()                       flush_workqueue()
+>       flush_cpu_workqueue(0)                  .
+>       flush_cpu_workqueue(cpu#1)              flush_cpu_workqueue(cpu#0)
+>         waiting work_func1() in cpu#1           waiting work_func0 in cpu#0
+>
+> DEADLOCK!
 
-Hardcoded path?
+I am not sure. Note that when work_func0() calls run_workqueue(),
+it will clear cwq->current_work, so another flush_ on CPU#1 will
+not wait for work_func0, no?
 
-> +		goto out;
-> +	error = tomoyo_encode(buf, end - buf, end);
-> + out:
-> +	if (!error)
-> +		return buf;
-> +	tomoyo_free(buf);
-> +	return NULL;
-> +}
+But anyway. Nobody argues, "if (cwq->thread == current) {...}" code in
+flush_cpu_workqueue() is bad and should die. Otrherwise, we should
+fix the lockdep warning ;)
+
+The only problem: if we still have the users of this hack, they will
+deadlock. But perhaps it is time to fix them.
+
+And, if it was not clear, I do agree with this change. And Peter
+seems to agree as well.
+
+Oleg.
+
