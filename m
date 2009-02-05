@@ -1,32 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756977AbZBETT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbZBETV1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756977AbZBETT7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:19:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZBETTv
+	id S1758562AbZBETV1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:21:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZBETVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:19:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33604 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Feb 2009 14:21:19 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44776 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751057AbZBETTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 14:19:50 -0500
-Date: Thu, 5 Feb 2009 20:19:07 +0100
+	id S1751057AbZBETVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 14:21:18 -0500
+Date: Thu, 5 Feb 2009 20:20:59 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tony Luck <tony.luck@intel.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull -tip] headers_check fixes for other architectures
-Message-ID: <20090205191907.GA27422@elte.hu>
-References: <1233385816.17794.16.camel@localhost.localdomain> <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com> <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Eric Anholt <eric@anholt.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Norbert Preining <preining@logic.at>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>, samr <sam@ravnborg.org>
+Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
+Message-ID: <20090205192059.GB27422@elte.hu>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain> <20090204181109.GR21085@gamma.logic.tuwien.ac.at> <alpine.LFD.2.00.0902041012440.3247@localhost.localdomain> <20090204185606.GA12991@elte.hu> <1233809147.13118.8.camel@gaiman> <498B1F2A.70209@oracle.com> <20090205191234.GG20470@elte.hu> <498B3A8F.3040801@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain>
+In-Reply-To: <498B3A8F.3040801@oracle.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,58 +39,73 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+* Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> On Thu, 5 Feb 2009, Tony Luck wrote:
+> Ingo Molnar wrote:
+> > * Randy Dunlap <randy.dunlap@oracle.com> wrote:
 > > 
-> > Either revert this part ... or wrap the #include like this in fpu.h:
+> >> Eric Anholt wrote:
+> >>> On Wed, 2009-02-04 at 19:56 +0100, Ingo Molnar wrote:
+> >>>> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> >>>>
+> >>>>> On Wed, 4 Feb 2009, Norbert Preining wrote:
+> >>>>>> The problem is that if you have a configuration under 2.6.28 without 
+> >>>>>> CONFIG_FB and just call make oldconfig, or even make config and don't 
+> >>>>>> know that you loose the DRM. And I was using make oldconfig (there is a 
+> >>>>>> graphical config?? ;-))
+> >>>>> Sure. It's inconvenient, no question about that. I asked the i915 people 
+> >>>>> to look into not requiring CONFIG_FB, and I hope they will, but my point 
+> >>>>> is that I don't think we can consider "small one-time inconvenience" to be 
+> >>>>> a "regression".
+> >>>> if you mean that as a general principle, there's four very real downsides in 
+> >>>> my opinion.
+> >>>>
+> >>>> Firstly, we could have done better (and still can do better), via various 
+> >>>> easy and non-intrusive measures:
+> >>>>
+> >>>>    - We could add a runtime warning:
+> >>>>
+> >>>>       for example a WARN_ONCE("please enable CONFIG_DRM_I915 and CONFIG_FB") 
+> >>>>       that there's no DRM because CONFIG_FB is not selected and oldconfig 
+> >>>>       loses the I915 setting silently - placed in a key DRM ioctl, would 
+> >>>>       have gone a long way addressing the issue. Testers do notice kernel 
+> >>>>       warnings that pop up when their X gets slow. (This approach might also 
+> >>>>       have the added bonus of warning folks who enable the wrong driver for 
+> >>>>       the hardware.)
+> >>>>
+> >>>>    - Or we could add a more thoughtful Kconfig migration:
+> >>>>
+> >>>>       Rename DRM_I915 to DRM_I915_FB [which it really is now], and keep
+> >>>>       DRM_I915 as a non-interactive migration helper: if set, it 
+> >>>>       auto-selects both FB and DRM_I915_FB.
+> >>>>
+> >>>>       While CONFIG_FB is an interactive Kconfig option so a select can be 
+> >>>>       dangerous to a correct dependency tree, it seems safe to do in this 
+> >>>>       specific case because it seems to be a rather leaf entry with no 
+> >>>>       dependencies.
+> >>> I tried select FB.  It's the right thing to do.  It doesn't work.  I
+> >>> posted to the mailing list two weeks ago about the insane dependency
+> >>> chain that kbuild comes up with and fails on when we do this, and got
+> >>> silence.
+> >> I tried what you had described in that email (from 2 weeks ago), got the
+> >> same results that you did, but kbuild does seem very confused (to me).
+> >>
+> >> reference email from 2+ weeks ago:
+> >>   http://marc.info/?l=linux-kernel&m=123197341316461&w=2
+> >>
+> >> Adding Sam to cc.
 > > 
-> > #ifndef __ASSEMBLY__
-> > #include <linux/types.h>
-> > #endif
+> > Check the patch i posted in this thread earlier today, it solves this 
+> > problem.
 > 
-> That loses the
-> 
-> 	arch/ia64/include/asm/types.h:# define __IA64_UL(x)             (x)
-> 
-> thing from <asm/types.h>, and makes some of the constants unusable from 
-> asm. Maybe nobody cares.
-> 
-> But it looks like that core really needs to use <asm/types.h> right now.
+> I saw it.  I'd rather kconfig be fixed instead, if possible.
 
-Note that these bits are not mainline yet, they are still being refined.
+kconfig was not broken at all in this case. It detected a circular 
+dependency and did its work well.
 
-Jaswinder, because they can break the build we should proactively drop all 
-architecture patches that do asm/types.h conversions.
-
-I did build all the affected architectures via their defconfigs and they 
-built just fine - but i cannot do wide coverage testing of them.
-
-So i think we should drop these bits:
-
- earth4:~/tip> gll --grep='asm/types.h' linus..core/header-fixes
- 1ff8f73: headers_check fix: xtensa, swab.h
- 4810987: headers_check fix: powerpc, swab.h
- 9f2cd96: headers_check fix: powerpc, kvm.h
- 785857f: headers_check fix: powerpc, elf.h
- 4be2c7f: headers_check fix: powerpc, bootx.h
- 726da1e: headers_check fix: parisc, swab.h
- bef53ca: headers_check fix: mn10300, swab.h
- a9f6acc: headers_check fix: mips, swab.h
- d8cbec1: headers_check fix: m32r, swab.h
- 040c92b: headers_check fix: ia64, swab.h
- 6ce7950: headers_check fix: ia64, kvm.h
- fa9ea6c: headers_check fix: ia64, fpu.h
- 295803e: headers_check fix: h8300, swab.h
- dacd762: headers_check fix: frv, swab.h
- 350eb8b: headers_check fix: blackfin, swab.h
- 1c6ce70: headers_check fix: avr32, swab.h
- e42ec24: headers_check fix: arm, swab.h
- 4af3bf6: headers_check fix: arm, setup.h
- f100e6d: headers_check fix: arm, a.out.h
- 3fd5906: headers_check fix: alpha, swab.h
-
-and send the rest to Linus if all outstanding observations have been 
-addressed. What do you think?
+( kconfig is broken in some areas - for example its misfeature of not 
+  propagating selects along dependency chains is annoying. It should at 
+  minimum warn when it sees such partial selects. But this is not one of 
+  those breakages. )
 
 	Ingo
