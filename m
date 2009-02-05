@@ -1,132 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZBEIdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbZBEIrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758317AbZBEIdn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:33:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756662AbZBEIda
+	id S1756660AbZBEIrb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:47:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbZBEIrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:33:30 -0500
-Received: from elasmtp-banded.atl.sa.earthlink.net ([209.86.89.70]:47216 "EHLO
-	elasmtp-banded.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756612AbZBEId3 (ORCPT
+	Thu, 5 Feb 2009 03:47:21 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:58645 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbZBEIrU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:33:29 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=adADRWjvo5cuSs85896lfdFa9VURpkwA5/qKNO4NQjHuESIf9qy+39vMh/gHC3xH;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Thu, 5 Feb 2009 03:32:41 -0500
-From: Bill Fink <billfink@mindspring.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
-       zbr@ioremap.net, jarkao2@gmail.com, dada1@cosmosbay.com, ben@zeus.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-Id: <20090205033241.a99121fe.billfink@mindspring.com>
-In-Reply-To: <20090204091217.GA21385@1wt.eu>
-References: <20090204081201.GB10445@ioremap.net>
-	<20090204085432.GA21638@1wt.eu>
-	<20090204085907.GA19388@gondor.apana.org.au>
-	<20090204.010146.18100191.davem@davemloft.net>
-	<20090204091217.GA21385@1wt.eu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 5 Feb 2009 03:47:20 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=nr19IYSRzPUM/v3XN/f4fx2YDMmp6PAQAAOC/SG2GZhmyzaM/qINeZvjXHyiIax6V+
+         M2Po2CklzG1DGXJAyQUjPNJxbyykMadUy2HlwSfTDDnNijt8zYW0JSA6i8joZSHp+UTd
+         yUiHiO3sCwzBeqECHn2oKKK8faxqi5GmOjyso=
+MIME-Version: 1.0
+Date: Thu, 5 Feb 2009 09:47:18 +0100
+Message-ID: <56e1b5710902050047h2c58eec7l812a838491a0256a@mail.gmail.com>
+Subject: [PATCH] Kbuild: Enable the gcc flag -Wformat-security (was: Re: 
+	[PATCH] Kbuild: Disable the -Wformat-security gcc flag)
+From: Floris Kraak <randakar@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Robert Hancock <hancockrwd@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       Roland Dreier <rdreier@cisco.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4dc68c7bd13ad8f7c14d98c7689124bcf8350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 96.234.158.88
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009, Willy Tarreau wrote:
+On Thu, Feb 5, 2009 at 9:26 AM, Floris Kraak <randakar@gmail.com> wrote:
+>
+> As I noted applying a patch that does the reverse and enables the
+> check instead is perfectly acceptable to me. Long term somebody
+> probably needs to go through all of them and fix (most of) them
+> anyway.
+>
 
-> On Wed, Feb 04, 2009 at 01:01:46AM -0800, David Miller wrote:
-> > From: Herbert Xu <herbert@gondor.apana.org.au>
-> > Date: Wed, 4 Feb 2009 19:59:07 +1100
-> > 
-> > > On Wed, Feb 04, 2009 at 09:54:32AM +0100, Willy Tarreau wrote:
-> > > >
-> > > > My server is running 2.4 :-), but I observed the same issues with older
-> > > > 2.6 as well. I can certainly imagine that things have changed a lot since,
-> > > > but the initial point remains : jumbo frames are expensive to deal with,
-> > > > and with recent NICs and drivers, we might get close performance for
-> > > > little additional cost. After all, initial justification for jumbo frames
-> > > > was the devastating interrupt rate and all NICs coalesce interrupts now.
-> > > 
-> > > This is total crap! Jumbo frames are way better than any of the
-> > > hacks (such as GSO) that people have come up with to get around it.
-> > > The only reason we are not using it as much is because of this
-> > > nasty thing called the Internet.
-> > 
-> > Completely agreed.
-> > 
-> > If Jumbo frames are slower, it is NOT some fundamental issue.  It is
-> > rather due to some misdesign of the hardware or it's driver.
-> 
-> Agreed we can't use them *because* of the internet, but this
-> limitation has forced hardware designers to find valid alternatives.
-> For instance, having the ability to reach 10 Gbps with 1500 bytes
-> frames on myri10ge with a low CPU usage is a real achievement. This
-> is "only" 800 kpps after all.
-> 
-> And the arbitrary choice of 9k for jumbo frames was total crap too.
-> It's clear that no hardware designer was involved in the process.
-> They have to stuff 16kB of RAM on a NIC to use only 9. And we need
-> to allocate 3 pages for slightly more than 2. 7.5 kB would have been
-> better in this regard.
-> 
-> I still find it nice to lower CPU usage with frames larger than 1500,
-> but given the fact that this is rarely used (even in datacenters), I
-> think our efforts should concentrate on where the real users are, ie
-> <1500.
+Here goes:
 
-Those in the HPC realm use 9000 byte jumbo frames because it makes
-a major performance difference, especially across large RTT paths,
-and the Internet2 backbone fully supports 9000 byte jumbo frames
-(with some wishing we could support much larger frame sizes).
+[PATCH] Kbuild: Enable the gcc flag -Wformat-security
 
-Local environment:
+Some distributions have enabled the gcc flag -Wformat-security by
+default. This causes about 150 new warnings to show up in an
+allyesconfig kernel build that are never seen by the majority of the
+developers. However there is some value to having this warning. In
+some cases there are potential (security) bugs involved where
+malicious or simply malformed data from outside the kernel could
+trigger stack overflows or other nastyness. Instead of having a
+cleanup team running around in perpetuity going over all new format
+strings in code it's better to just emit the warning in all cases.
 
-9000 byte jumbo frames:
+Signed-off-by: Floris Kraak <randakar@gmail.com>
+---
+diff --git a/Makefile b/Makefile
+index 7715b2c..ed3b973 100644
+--- a/Makefile
++++ b/Makefile
+@@ -346,7 +346,8 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 
-[root@lang2 ~]# nuttcp -w10m 192.168.88.16
-11818.1875 MB /  10.01 sec = 9905.9707 Mbps 100 %TX 76 %RX 0 retrans 0.15 msRTT
+ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+ 		   -fno-strict-aliasing -fno-common \
+-		   -Werror-implicit-function-declaration
++		   -Werror-implicit-function-declaration \
++		   -Wformat-security
+ KBUILD_AFLAGS   := -D__ASSEMBLY__
 
-4080 byte MTU:
+ # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+---
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."
+  -- Ben Franklin
 
-[root@lang2 ~]# nuttcp -w10m 192.168.88.16
- 9171.6875 MB /  10.02 sec = 7680.7663 Mbps 100 %TX 99 %RX 0 retrans 0.19 msRTT
-
-The performance impact is even more pronounced on a large RTT path
-such as the following netem emulated 80 ms RTT path:
-
-9000 byte jumbo frames:
-
-[root@lang2 ~]# nuttcp -T30 -w80m 192.168.89.15
-25904.2500 MB /  30.16 sec = 7205.8755 Mbps 96 %TX 55 %RX 0 retrans 82.73 msRTT
-
-4080 byte MTU:
-
-[root@lang2 ~]# nuttcp -T30 -w80m 192.168.89.15
- 8650.0129 MB /  30.25 sec = 2398.8862 Mbps 33 %TX 19 %RX 2371 retrans 81.98 msRTT
-
-And if there's any loss in the path, the performance difference is also
-dramatic, such as here across a real MAN environment with about a 1 ms RTT:
-
-9000 byte jumbo frames:
-
-[root@chance9 ~]# nuttcp -w20m 192.168.88.8
- 7711.8750 MB /  10.05 sec = 6436.2406 Mbps 82 %TX 96 %RX 261 retrans 0.92 msRTT
-
-4080 byte MTU:
-
-[root@chance9 ~]# nuttcp -w20m 192.168.88.8
- 4551.0625 MB /  10.08 sec = 3786.2108 Mbps 50 %TX 95 %RX 42 retrans 0.95 msRTT
-
-All testing was with myri10ge on the transmitter side (2.6.20.7 kernel).
-
-So my experience has definitely been that 9000 byte jumbo frames are a
-major performance win for high throughput applications.
-
-						-Bill
+"The course of history shows that as a government grows, liberty
+decreases."
+  -- Thomas Jefferson
