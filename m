@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756911AbZBEOEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbZBEOTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756911AbZBEOEv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 09:04:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751593AbZBEOEk
+	id S1755248AbZBEOTo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 09:19:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZBEOTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 09:04:40 -0500
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:58826 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751057AbZBEOEj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 09:04:39 -0500
-Date: Thu, 5 Feb 2009 06:04:33 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090205140432.GE6915@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090130200757.GA14999@Krystal>
+	Thu, 5 Feb 2009 09:19:33 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:11118 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbZBEOTc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 09:19:32 -0500
+Message-ID: <498AF570.9030803@hp.com>
+Date: Thu, 05 Feb 2009 09:19:28 -0500
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090130200757.GA14999@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Pavel Machek <pavel@suse.cz>
+CC: Chris Mason <chris.mason@oracle.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Eric Sesterhenn <snakebyte@gmx.de>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: Warning and BUG with btrfs and corrupted image
+References: <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org> <20090120222019.GB2320@elf.ucw.cz> <20090121040042.GI10158@disturbed> <20090126162711.GA2083@elf.ucw.cz> <20090201014050.GD24173@disturbed> <20090204182951.GC4797@elf.ucw.cz> <20090205085916.GP24173@disturbed> <20090205090229.GA2011@elf.ucw.cz> <1233838959.15948.6.camel@think.oraclecorp.com> <20090205135011.GA2294@elf.ucw.cz>
+In-Reply-To: <20090205135011.GA2294@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 30, 2009 at 03:07:57PM -0500, Mathieu Desnoyers wrote:
-> Hi,
+Pavel Machek wrote:
+>> If you don't want it, don't compile it in.  The Kconfig text is very
+>> clear.
 > 
-> I just ported LTTng to the 2.6.29-rc3 kernel. It includes the following
-> changes :
+> No, I'd not expect that option to panic systems. That's why I
+> suggested:
 > 
-> - Tree RCU instrumentation
-> - Updated ext4 and jbd2 instrumentation
-> 
-> Please feel free to try it and report any success/problem you may have.
-> Note that cross-build has been slightly less tested this time because
-> I'll have to upgrade many of my compilers to a version compatible with
-> kernel 2.6.29-rc.
-> 
-> It also includes the recently added kprobes support through a simple
-> 
-> echo symbol_name > /mnt/debugfs/ltt/kprobes/enable
-> 
-> It's available at the new LTTng website :
-> 
-> http://www.lttng.org/
+> diff --git a/fs/xfs/Kconfig b/fs/xfs/Kconfig
+> index 29228f5..b7ac847 100644
+> --- a/fs/xfs/Kconfig
+> +++ b/fs/xfs/Kconfig
+> @@ -77,4 +77,7 @@ config XFS_DEBUG
+>  	  Note that the resulting code will be HUGE and SLOW, and probably
+>  	  not useful unless you are debugging a particular problem.
+>  
+> +	  Turning this option on will result in kernel panicking any time
+> +	  it detects on-disk corruption.
+> +
+>  	  Say N unless you are an XFS developer, or you play one on TV.
 
-Hello, Matheiu,
+If you really want a better warning it should simply be:
 
-When I try to apply this to v2.6.29-rc3, I get the following:
+           Choosing Y will make XFS panic on survivable events.
 
-	can't find file to patch at input line 61
-	Perhaps you used the wrong -p or --strip option?
-	The text leading up to this was:
-	--------------------------
-	|get_ltt_root() is necessary for ltt-trace-control to create subdirs in
-	ltt's
-	|debugfs dir.
-	|
-	|From: Zhao Lei <zhaolei@cn.fujitsu.com>
-	|Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-	|Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-	|---
-	| include/linux/ltt-core.h |    8 ++++++++
-	| ltt/ltt-core.c           |   14 ++++++++++++++
-	| ltt/ltt-relay.c          |    8 +-------
-	| 3 files changed, 23 insertions(+), 7 deletions(-)
-	|
-	|Index: linux-2.6-lttng/include/linux/ltt-core.h
-	|===================================================================
-	|--- linux-2.6-lttng.orig/include/linux/ltt-core.h      2009-01-15
-	15:55:18.000000000 -0500
-	|+++ linux-2.6-lttng/include/linux/ltt-core.h   2009-01-15
-	15:55:24.000000000 -0500
+I understand you may have a concern that "normal users" will select
+the debug option by mistake, but I don't think that is realistic.
+My experience is they will not build custom debug kernels even if
+you beg them to.  They will only use the distro build and a
+distro should never turn this option on outside their own labs.
 
-Help?
+Any non-xfs kernel developer who turns this on and gets
+snake bit will only do it once.
 
-							Thanx, Paul
+jim
