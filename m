@@ -1,124 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbZBEP25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757179AbZBEPeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758567AbZBEP25 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:28:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbZBEP2n
+	id S1757179AbZBEPeR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:34:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZBEPeB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:28:43 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:46811 "EHLO e4.ny.us.ibm.com"
+	Thu, 5 Feb 2009 10:34:01 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:48283 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758314AbZBEP2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:28:42 -0500
-Date: Thu, 5 Feb 2009 07:18:41 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090205151841.GF6915@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090130200757.GA14999@Krystal> <20090205140432.GE6915@linux.vnet.ibm.com> <20090205150242.GA27895@Krystal>
+	id S1751699AbZBEPeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:34:00 -0500
+Date: Thu, 5 Feb 2009 09:26:24 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, jmorris@namei.org, akpm@linux-foundation.org,
+       safford@watson.ibm.com, Mimi Zohar <zohar@linux.vnet.ibm.com>
+Subject: Re: [PATCH] TPM: integrity fix
+Message-ID: <20090205152624.GA27410@us.ibm.com>
+References: <1233846390-21146-1-git-send-email-srajiv@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090205150242.GA27895@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1233846390-21146-1-git-send-email-srajiv@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 10:02:42AM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Fri, Jan 30, 2009 at 03:07:57PM -0500, Mathieu Desnoyers wrote:
-> > > Hi,
-> > > 
-> > > I just ported LTTng to the 2.6.29-rc3 kernel. It includes the following
-> > > changes :
-> > > 
-> > > - Tree RCU instrumentation
-> > > - Updated ext4 and jbd2 instrumentation
-> > > 
-> > > Please feel free to try it and report any success/problem you may have.
-> > > Note that cross-build has been slightly less tested this time because
-> > > I'll have to upgrade many of my compilers to a version compatible with
-> > > kernel 2.6.29-rc.
-> > > 
-> > > It also includes the recently added kprobes support through a simple
-> > > 
-> > > echo symbol_name > /mnt/debugfs/ltt/kprobes/enable
-> > > 
-> > > It's available at the new LTTng website :
-> > > 
-> > > http://www.lttng.org/
-> > 
-> > Hello, Matheiu,
-> > 
-> > When I try to apply this to v2.6.29-rc3, I get the following:
-> > 
-> > 	can't find file to patch at input line 61
-> > 	Perhaps you used the wrong -p or --strip option?
-> > 	The text leading up to this was:
-> > 	--------------------------
-> > 	|get_ltt_root() is necessary for ltt-trace-control to create subdirs in
-> > 	ltt's
-> > 	|debugfs dir.
-> > 	|
-> > 	|From: Zhao Lei <zhaolei@cn.fujitsu.com>
-> > 	|Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> > 	|Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > 	|---
-> > 	| include/linux/ltt-core.h |    8 ++++++++
-> > 	| ltt/ltt-core.c           |   14 ++++++++++++++
-> > 	| ltt/ltt-relay.c          |    8 +-------
-> > 	| 3 files changed, 23 insertions(+), 7 deletions(-)
-> > 	|
-> > 	|Index: linux-2.6-lttng/include/linux/ltt-core.h
-> > 	|===================================================================
-> > 	|--- linux-2.6-lttng.orig/include/linux/ltt-core.h      2009-01-15
-> > 	15:55:18.000000000 -0500
-> > 	|+++ linux-2.6-lttng/include/linux/ltt-core.h   2009-01-15
-> > 	15:55:24.000000000 -0500
-> > 
-> > Help?
-> > 
+Quoting Rajiv Andrade (srajiv@linux.vnet.ibm.com):
+> Fix to function which is called by IMA, now tpm_chip_find_get() considers the case in which the machine doesn't have a TPM or, if it has, its TPM isn't enabled.
 > 
-> Hi Paul,
-> 
-> I must admit I'm a bit puzzled. I've tried to quilt push -a both 
-> LTTng 0.89 and LTTng 0.92 taken from the website and they both apply
-> correctly on 2.6.29-rc3. When I quilt pop -a, neither of those 3 files
-> (include/linux/ltt-core.h, ltt/ltt-core.c, ltt/ltt-relay.c) are stucked
-> in my tree.
-> 
-> I've used files from :
-> 
-> http://www.lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
-> 
-> Which tarballs are you using exactly ?
+> Signed-off-by: Mimi Zohar <zohar@linux.vnet.ibm.com>
+> Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 
-That is indeed the one that I am using.
+Is this to fix James' problem with IMA on bootup?
 
-> I guess you need to apply them to your existing tree, so pointing you to
-> git.kernel.org lttng tree won't help much here.
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
-I am attempting to apply to v2.6.29-rc3, which is commit
-18e352e4a73465349711a9324767e1b2453383e2 in the linux-2.6 git tree.
-
-Later on, I might well want to apply on top of some other stuff, but
-figured I should try it straight first.  ;-)
-
-							Thanx, Paul
-
-> Mathieu
+> ---
+>  drivers/char/tpm/tpm.c |    8 +++++---
+>  1 files changed, 5 insertions(+), 3 deletions(-)
 > 
-> > 							Thanx, Paul
+> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+> index 0387965..912a473 100644
+> --- a/drivers/char/tpm/tpm.c
+> +++ b/drivers/char/tpm/tpm.c
+> @@ -666,18 +666,20 @@ EXPORT_SYMBOL_GPL(tpm_show_temp_deactivated);
+>   */
+>  static struct tpm_chip *tpm_chip_find_get(int chip_num)
+>  {
+> -	struct tpm_chip *pos;
+> +	struct tpm_chip *pos, *chip = NULL;
 > 
+>  	rcu_read_lock();
+>  	list_for_each_entry_rcu(pos, &tpm_chip_list, list) {
+
+Crap I even paused for a second when I reviewed the original
+patch.  I think the conversation in my head went something like
+"but will pos be NULL at the end of the loop?"  "Oh, it must".  gah.
+
+>  		if (chip_num != TPM_ANY_NUM && chip_num != pos->dev_num)
+>  			continue;
+> 
+> -		if (try_module_get(pos->dev->driver->owner))
+> +		if (try_module_get(pos->dev->driver->owner)) {
+> +			chip = pos;
+>  			break;
+> +		}
+>  	}
+>  	rcu_read_unlock();
+> -	return pos;
+> +	return chip;
+>  }
+> 
+>  #define TPM_ORDINAL_PCRREAD cpu_to_be32(21)
 > -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> 1.5.6.3
