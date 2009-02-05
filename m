@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758625AbZBETIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbZBETIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758625AbZBETIV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:08:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751467AbZBETIM
+	id S1754785AbZBETIp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:08:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZBETIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:08:12 -0500
-Received: from wind.enjellic.com ([209.243.13.15]:57207 "EHLO
-	wind.enjellic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbZBETIL (ORCPT
+	Thu, 5 Feb 2009 14:08:32 -0500
+Received: from mail-gx0-f21.google.com ([209.85.217.21]:47422 "EHLO
+	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751775AbZBETIb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 14:08:11 -0500
-X-Greylist: delayed 1558 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 14:08:10 EST
-Message-Id: <200902051841.n15IfatX032223@wind.enjellic.com>
-From: greg@enjellic.com
-Date: Thu, 5 Feb 2009 12:41:36 -0600
-In-Reply-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-       "[Bug #12208] uml is very slow on 2.6.28 host" (Feb  4, 11:58am)
-Reply-To: greg@enjellic.com
-X-Mailer: Mail User's Shell (7.2.5 10/14/92)
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #12208] uml is very slow on 2.6.28 host
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Miklos Szeredi" <miklos@szeredi.hu>
+	Thu, 5 Feb 2009 14:08:31 -0500
+Message-ID: <498B3913.2010701@codemonkey.ws>
+Date: Thu, 05 Feb 2009 13:08:03 -0600
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, avi@redhat.com, akataria@vmware.com,
+       Glauber Costa <gcosta@redhat.com>
+Subject: Re: [PATCH 1/2] show hypervisor information on cpuinfo
+References: <1233859341-10419-1-git-send-email-glommer@redhat.com> <1233859341-10419-2-git-send-email-glommer@redhat.com> <20090205190250.GE20470@elte.hu>
+In-Reply-To: <20090205190250.GE20470@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Feb 4, 11:58am, "Rafael J. Wysocki" wrote:
-} Subject: [Bug #12208] uml is very slow on 2.6.28 host
+Ingo Molnar wrote:
+> * Glauber Costa <glommer@redhat.com> wrote:
+>
+>   
+>> +char * __cpuinit hypervisor_str(struct cpuinfo_x86 *c)
+>> +{
+>> +	if (c->x86_hyper_vendor == X86_HYPER_VENDOR_VMWARE)
+>> +		return "VMWare";
+>> +	else
+>> +		return "none";
+>> +}
+>>     
+>
+> i'd suggest these variants instead:
+>
+>  virtualization:	native kernel
+>   
 
-Good day to everyone.
+I don't think "native kernel" really ports well to other architectures 
+(like s390 or PPC) that always have hypervisors present in some form.  I 
+think "none" makes more sense in the case of bare metal x86.
 
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.27 and 2.6.28.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
-> Subject		: uml is very slow on 2.6.28 host
-> Submitter	: Miklos Szeredi <miklos@szeredi.hu>
-> Date		: 2008-12-12 9:35 (55 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
+Regards,
 
-I'm not convinced its as fast as it should be on 2.6.27.
+Anthony Liguori
 
-I'm currently testing 2.6.27.14 hosts on several different pieces of
-hardware with a common 2.6.23.17 guest.
+>  virtualization:	KVM guest
+>  virtualization:	VMWare guest
+>  virtualization:	Linux guest
+>
+> 	Ingo
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   
 
-Currently the UML guest on my desktop machine which is an 11 year old
-300Mhz dual-processor Pentium-II with 256MB of RAM running 2.6.22.14
-is giving a rather sound performance drubbing to the identical UML
-guest running on a 2.5GHZ dual-quad 5420 with 16GB of RAM running a
-32-bit 2.6.27.14.
-
-}-- End of excerpt from "Rafael J. Wysocki"
-
-As always,
-Dr. G.W. Wettstein, Ph.D.   Enjellic Systems Development, LLC.
-4206 N. 19th Ave.           Specializing in information infra-structure
-Fargo, ND  58102            development.
-PH: 701-281-1686
-FAX: 701-281-3949           EMAIL: greg@enjellic.com
-------------------------------------------------------------------------------
-"There's no such thing as a wizard who minds his own business."
-                                -- Berengis the Black Court Mage
-                                   to the Earls Caeline
