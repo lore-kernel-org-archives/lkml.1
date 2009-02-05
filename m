@@ -1,87 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZBEVpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZBEVt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753863AbZBEVpX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:45:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZBEVpJ
+	id S1753960AbZBEVt1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:49:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZBEVtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:45:09 -0500
-Received: from yx-out-2324.google.com ([74.125.44.30]:38206 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751937AbZBEVpG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:45:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xgd2w3ux18yrJbTKP9JzdZGEEB4TmQtqbb6jIFAeGi/BBzwAsdN3lEgwCPUkKfzQ/3
-         PJNm7FUkanE/WlWpywWt/7Ab2JQHEXnHvMCUCS+CW/0/Cs3emMxqbb30Z3711xac48dg
-         1C+YFqEbIbj1UDI3wyFPXH5YyRCISdKSeqpIg=
+	Thu, 5 Feb 2009 16:49:20 -0500
+Received: from ns2.gothnet.se ([82.193.160.251]:9964 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752098AbZBEVtT convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 16:49:19 -0500
+X-Greylist: delayed 1016 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 16:49:18 EST
+Message-ID: <498B5ADE.3090602@vmware.com>
+Date: Thu, 05 Feb 2009 22:32:14 +0100
+From: Thomas Hellstrom <thellstrom@vmware.com>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-In-Reply-To: <1233867944.4612.104.camel@pasglop>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
-	 <pWZw1SZjMCH.A.sIE.wuYiJB@chimera> <1233791329.4612.23.camel@pasglop>
-	 <Pine.LNX.4.64.0902051713550.1445@blonde.anvils>
-	 <1233867944.4612.104.camel@pasglop>
-Date: Fri, 6 Feb 2009 07:45:05 +1000
-Message-ID: <21d7e9970902051345h76fb26c1hc0397f6262f70eae@mail.gmail.com>
-Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
-From: Dave Airlie <airlied@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Hugh Dickins <hugh@veritas.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: 2.6.29 pat issue
+References: <498ADFE3.9020907@vmware.com> <1233856988.4286.83.camel@localhost.localdomain>
+In-Reply-To: <1233856988.4286.83.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+X-BitDefender-Scanner: Mail not scanned due to license constraints
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 6, 2009 at 7:05 AM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
->
->> Is it a really a bug in X, or a misunderstanding between X and
->> the kernel as to what existence of the legacy_mem file implies?
+Pallipadi, Venkatesh wrote:
+> On Thu, 2009-02-05 at 04:47 -0800, Thomas Hellström wrote:
+>> Hi!
 >>
->> I may have got this quite wrong, but to me it appears that X assumes
->> that existence of the legacy_mem file implies that it will be useful;
->> whereas the kernel thinks it can make the legacy_mem file available,
->> even if it cannot be used for mmapping mem - which is its sole purpose?
+>> The function in include/linux/mm.h:
+>> is_linear_pfn_mapping()
 >>
->> What if pci_create_legacy_files() were to call some new verification
->> routine, and only create the legacy_mem file if it would be usable?
->> (But perhaps that cannot be known at the time it needs to be created.)
->
-> Well, first X should certainly not -fail- to launch if it fails to map
-> legacy memory, which is generally not useful anyway. That's where the
-> bug is. Jesse, did you have a chance to fix that yet or should I give it
-> a go ?
->
-> The second problem is that if I just don't expose the legacy_mem file,
-> then X has no way to know whether the kernel doesn't support the
-> interface or whether the HW doesn't support legacy memory access. So X
-> will fallback to whacking /dev/mem which is even more bogus. At least
-> that's what I remember from last I looked at that part of X code.
->
-> It should be a trivial fix on X side tho.
+>> doesn't seem valid to me.
+>>
+>> In particular, we have VMAs to graphics devices in which vma->vm_pgoff
+>> is non-zero (Points to an offset in the drm device node), and the VMA is
+>> sparsely populated with pfns pointing to uncached discontigous RAM pages.
+>>
+>> This causes the X86 PAT code to hit the optimized path when it
+>> shouldn't, and issue a warning.
+> 
+> Only place where vm_pgoff is getting set for a PFNMAP vma is in
+> remap_pfn_range() which maps the entire range. vm_insert_pfn() which may
+> have sparsely populated ranges does not set vm_pgoff. What interface are
+> you using to map discontig pages, where you are seeing these errors?
+> 
 
-I think the correct answer is the ugly one, try again.
+Since vm_pgoff can be nonzero upon every call to a device driver's mmap 
+method (It corresponds to the @offset parameter, page shifted, given by 
+the user's mmap call), _Any_ VM_PFNMAP vma can practically be assumed to 
+be linear by is_linear_pfn_mapping(), and that's an invalid assumption.
 
-Add a new legacy_mem interface that works cleanly, update X to use it,
-leave the old
-broken one broken as it for older X to use.
+In this particular case, We set VM_PFNMAP explicitly in the mmap method 
+and use fault() and vm_insert_pfn() to populate the vmas with PTEs 
+pointing to private memory pages or io-space depending on where the data 
+is currently located. The member vma->vm_pgoff is, as mentioned, set by 
+the user-space mmap call, indicating what part of the device address 
+space needs to be mapped.
 
-Dave.
+So in the end, we're hitting the WARN_ON_ONCE(1) near line 637 in 
+arch/x86/mm/pat.c. We should never have ended up in reserve_pfn_range() 
+in the first place.
 
->
-> Cheers,
-> Ben.
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+
+>> Also a question about the philosofy behind this strict checking that all
+>> PTEs have the same caching attributes: I guess this is only to catch
+>> bugs in kernel drivers that don't get this right. At the same time, now
+>> that also user-space VMAs are checked this will probably have a
+>> significant performance impact. Shouldn't this checking really live
+>> behind a debug define?
+> 
+> The result of not having the caching attribute right can be really bad
+> as to hang/crash the system. So, having this only in debug is not the
+> enough, IM0. Kernel has to enforce UC and WC caching types are
+> consistent at all times. And we also have to keep the indentity map and
+> other mappings that may be present for that address consistent.
+
+Indeed, it's crucial to keep the mappings consistent, but failure to do 
+so is a kernel driver bug, it should never be the result of invalid user 
+data.
+
+There are other more common kernel bugs that can be even worse and hang 
+/ crash the system. For example using uninitialized spinlocks, writing 
+to kfreed memory etc. There is code in the kernel to detect these as 
+well, but this code is behind debug defines.
+
+IMHO checking each vm_insert_pfn() for caching attribute correctness is 
+not something that should be enabled by default, due to the CPU 
+overhead. Production drivers should never violate this.
+
+Thanks,
+Thomas.
+
+> 
+> Thanks,
+> Venki
+> 
+> 
+
+
+
