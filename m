@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761578AbZBEA5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761193AbZBEA5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761578AbZBEA5b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 19:57:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761481AbZBEA5L
+	id S1761193AbZBEA5q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 19:57:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761504AbZBEA5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 19:57:11 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:59592 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757749AbZBEA5I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 19:57:08 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=mdNGzAUVfThZ3u7nnXmsGvM/tubyxbnyrcI8/AQQGGG2fyFPleiCXFUFILahIEo7qJ
-         ThXBot1Eq+9J/AiCv2usDU3wmqS1VzLXEzUEv36xnPQpNiM1DeY8uruYAWrI/Uo8X9DL
-         l1m8FQMa6G8J/hxspuc/il+Fa2SmGl1Cc4gT4=
-MIME-Version: 1.0
-In-Reply-To: <20090203214609.39c9c6b2.akpm@linux-foundation.org>
-References: <4e5e476b0901310542n796dafbem5c656da07a2f8a56@mail.gmail.com>
-	 <20090202205545.4e1a32ea.akpm@linux-foundation.org>
-	 <20090203161648.361a924a@infradead.org>
-	 <20090203214609.39c9c6b2.akpm@linux-foundation.org>
-Date: Wed, 4 Feb 2009 16:57:05 -0800
-X-Google-Sender-Auth: 044bb7429362dd64
-Message-ID: <eada2a070902041657r56bdabear46fdf1ce61edd574@mail.gmail.com>
-Subject: Re: Negative values in /proc/latency_stats
-From: Tim Pepper <lnxninja@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Corrado Zoccolo <czoccolo@gmail.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 4 Feb 2009 19:57:15 -0500
+Received: from ozlabs.org ([203.10.76.45]:40710 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757816AbZBEA5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 19:57:13 -0500
+Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in
+ pci_legacy_suspend
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, rjw@sisk.pl, jbarnes@virtuousgeek.org,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+In-Reply-To: <1233794410.4612.34.camel@pasglop>
+References: <200902040154.36018.rjw@sisk.pl>
+	 <200902040159.10258.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl>
+	 <1233712613.16867.136.camel@pasglop> <200902041115.00842.elendil@planet.nl>
+	 <1233783502.4612.7.camel@pasglop>
+	 <alpine.LFD.2.00.0902041355320.3247@localhost.localdomain>
+	 <1233794410.4612.34.camel@pasglop>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-DeYx9UdJZLhLbSjmSSO5"
+Date: Thu, 05 Feb 2009 11:57:11 +1100
+Message-Id: <1233795431.15714.13.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Feb 3, 2009 at 4:16 PM, Arjan van de Ven <arjan@infradead.org> wrote:
 
-> + * Latency Top version : v0.1
-> + * 70 59433 4897 i915_irq_wait drm_ioctl vfs_ioctl do_vfs_ioctl sys_ioctl
-> + * |    |    |    |
-> + * |    |    |    +----> the stringified backtrace
-> + * |    |    +---------> The maximum latency for this entry in microseconds
-> + * |    +--------------> The accumulated latency for this entry (microseconds)
-> + * +-------------------> The number of times this entry is hit
-> + *
-> + * (note: the average latency is the acummulated latency deviced by the number
-> + * of times)
+--=-DeYx9UdJZLhLbSjmSSO5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Perhaps:
+On Thu, 2009-02-05 at 11:40 +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2009-02-04 at 13:56 -0800, Linus Torvalds wrote:
+> >=20
+> > On Thu, 5 Feb 2009, Benjamin Herrenschmidt wrote:
+> > >=20
+> > > How so ? I've had such backtraces with no other info in my log...
+> >=20
+> > _with_ that patch?
+> >=20
+> > It very much replaces a warning with no further info with
+> >=20
+> > +                       WARN_ONCE(pci_dev->current_state !=3D prev,
+> > +                               "PCI PM: Device state not saved by %pF\=
+n",
+> > +                               drv->suspend);
+> >=20
+> > And notice the "%pF" and the 'drv->suspend': it should tell you exactly=
+=20
+> > which suspend routine it was that messed up.
+>=20
+> Yup, missed that change in the patch. In fact, I even missed the
+> existence of a WARN_ONCE that takes those text arguments... baaaah. I
+> suppose I should try to read more of lkml :-)
 
-     s/acummulated/accumulated
-     s/deviced/divided
+But don't expect to see them on powerpc, they never make it to the
+console.
 
-...jet lag?  :)
+cheers
 
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-Tim
+--=-DeYx9UdJZLhLbSjmSSO5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkmKOWcACgkQdSjSd0sB4dIFgQCfYInwPROG3x1tbaYMnagL8uu9
+okgAnRJgy7ujTkYPvYjhbnB0hLOVjhiX
+=j8Z9
+-----END PGP SIGNATURE-----
+
+--=-DeYx9UdJZLhLbSjmSSO5--
+
