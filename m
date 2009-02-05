@@ -1,41 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761416AbZBEUCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758600AbZBEUGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761416AbZBEUCp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 15:02:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZBEUCS
+	id S1758600AbZBEUGH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 15:06:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZBEUFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 15:02:18 -0500
-Received: from relay2.sgi.com ([192.48.179.30]:55472 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754402AbZBEUCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 15:02:16 -0500
-Date: Thu, 5 Feb 2009 14:02:14 -0600
-From: Robin Holt <holt@sgi.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Robin Holt <holt@sgi.com>, linux-mm@kvack.org,
-       Andrea Arcangeli <andrea@qumranet.com>, Nick Piggin <npiggin@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [Patch] mmu_notifiers destroyed by __mmu_notifier_release()
-	retain extra mm_count.
-Message-ID: <20090205200214.GN8577@sgi.com>
-References: <20090205172303.GB8559@sgi.com> <alpine.DEB.1.10.0902051427280.13692@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0902051427280.13692@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 5 Feb 2009 15:05:52 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55339 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750990AbZBEUFv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 15:05:51 -0500
+Date: Thu, 5 Feb 2009 12:05:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [RESEND] [PATCH] lseek: remove i_mutex
+Message-Id: <20090205120519.a62e8c4f.akpm@linux-foundation.org>
+In-Reply-To: <6.0.0.20.2.20090203165430.06ae1cd8@172.19.0.2>
+References: <6.0.0.20.2.20090203165430.06ae1cd8@172.19.0.2>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 02:30:29PM -0500, Christoph Lameter wrote:
-> The drop of the refcount needs to occur  after the last use of
-> data in the mmstruct because mmdrop() may free the mmstruct.
+On Tue, 03 Feb 2009 17:04:40 +0900
+Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp> wrote:
 
-Not this time.  We are being called from process termination and the
-calling function is assured to hold one reference count.
+> I removed i_mutex from generic_file_llseek.
+> I think that the reason of protecting lseek with i_mutex is just
+> touching i_size atomically.
+> 
+> So I introduce i_size_read here so i_mutex is no longer needed.
+> 
+> Following patch removes i_mutex from generic_file_llseek, and deletes 
+> generic_file_llseek_nolock totally.
+> 
+> Currently there is i_mutex contention not only around lseek, but also fsync or write.
+> So,  I think we can mitigate i_mutex contention between fsync lseek and write by
+> removing i_mutex.
 
-We would also have to track how many callouts were made and then do
-drops in a loop, but as stated above, I don't think it is needed.
+Prior to this change, generic_file_llseek() modified file->f_pos
+atomically with respect to other i_mutex holders.
 
-Robin
+After this change, it doesn't.
