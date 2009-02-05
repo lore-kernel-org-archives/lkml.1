@@ -1,50 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762191AbZBETxV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762530AbZBETx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762191AbZBETxV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:53:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbZBETxM
+	id S1762530AbZBETx6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:53:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759459AbZBETxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:53:12 -0500
-Received: from pfepb.post.tele.dk ([195.41.46.236]:50765 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756640AbZBETxL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 14:53:11 -0500
-Date: Thu, 5 Feb 2009 20:54:59 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Floris Kraak <randakar@gmail.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH] Kbuild: Enable the gcc flag -Wformat-security (was: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag)
-Message-ID: <20090205195459.GB2617@uranus.ravnborg.org>
-References: <56e1b5710902050047h2c58eec7l812a838491a0256a@mail.gmail.com> <56e1b5710902050057r598f03ddhf3de4aa835071832@mail.gmail.com>
-Mime-Version: 1.0
+	Thu, 5 Feb 2009 14:53:47 -0500
+Received: from sous-sol.org ([216.99.217.87]:55188 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752948AbZBETxq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 14:53:46 -0500
+Date: Thu, 5 Feb 2009 10:52:07 -0800
+From: Chris Wright <chrisw@sous-sol.org>
+To: Glauber Costa <glommer@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       avi@redhat.com, akataria@vmware.com
+Subject: Re: [PATCH 0/2] expose hypervisor information on cpuid
+Message-ID: <20090205185207.GB27684@sequoia.sous-sol.org>
+References: <1233859341-10419-1-git-send-email-glommer@redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <56e1b5710902050057r598f03ddhf3de4aa835071832@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <1233859341-10419-1-git-send-email-glommer@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 09:57:28AM +0100, Floris Kraak wrote:
-> On Thu, Feb 5, 2009 at 9:47 AM, Floris Kraak <randakar@gmail.com> wrote:
-> >
-> > Here goes:
-> >
-> 
-> Resend, seems like the earlier patch doesn't quite actually work as
-> advertised; -Wformat-security needs -Wformat enabled as well.
-> ---
-> [PATCH] Kbuild: Enable the gcc flag -Wformat-security
+* Glauber Costa (glommer@redhat.com) wrote:
+> This discussion happened some days ago in kvm list.
+> We believe it's useful to advertise hypervisor information
+> somewhere. /proc/cpuinfo appears as one good candidate.
 
-We need to sort out the ~150 warnings you see in your
-allyesconfig build before applying this one.
-We try to avoid applying patches that increases the warning count
-without some effort done to fix it first.
+What's wrong with /sys/hypervisor?  That's what it's there for.
 
-So let see what the other patch end up with.
-
-	Sam
+thanks,
+-chris
