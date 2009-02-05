@@ -1,44 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbZBEP5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758480AbZBEP6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757825AbZBEP5S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:57:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbZBEP5D
+	id S1758480AbZBEP6a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:58:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZBEP6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:57:03 -0500
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:55846 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751890AbZBEP5D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:57:03 -0500
-X-Greylist: delayed 1750 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 10:57:03 EST
-Date: Thu, 5 Feb 2009 10:57:00 -0500
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org, uClinux list <uclinux-dev@uclinux.org>
-Subject: Re: Fix support for console port other than ttyS0 on mcf.c
-Message-ID: <20090205155700.GO26064@csclub.uwaterloo.ca>
-References: <20090204201518.GH26064@csclub.uwaterloo.ca> <20090204202009.GI26064@csclub.uwaterloo.ca> <Pine.LNX.4.64.0902042200340.25136@anakin> <20090205152751.GL26064@csclub.uwaterloo.ca> <Pine.LNX.4.64.0902051652080.5127@anakin>
+	Thu, 5 Feb 2009 10:58:21 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:49189 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751568AbZBEP6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:58:20 -0500
+Date: Thu, 5 Feb 2009 16:54:54 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] posix-cpu-timers: use ->sighand instead of
+	->signal to check the task is alive
+Message-ID: <20090205155454.GD20953@redhat.com>
+References: <20090203231717.GA5028@redhat.com> <20090205033120.2294BFC381@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0902051652080.5127@anakin>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+In-Reply-To: <20090205033120.2294BFC381@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 04:53:50PM +0100, Geert Uytterhoeven wrote:
-> linux-m68k@lists.linux-m68k.org handles m68k (with MMU) only.
-> uclinux-dev@uclinux.org handles m68knommu.
+On 02/04, Roland McGrath wrote:
+>
+> > It doesn't matter which pointer to check under tasklist to ensure the task
+> > was not released, ->signal or ->sighand. But we are going to make ->signal
+> > refcountable, change the code to use ->sighand.
+>
+> I haven't been following what that's about (signal_struct already has two
+> atomic counts!).
 
-Oh.  I think I got confused by the fact the same arch/m68k/include is
-used for both. so I looked up m68k in MAINTAINERS.
+We can't use them as refcounts. You can't bump ->live or ->count without
+breaking group_dead or exec logic. Perhaps we can use ->count, but then
+we need other changes. But this has nothing to do with this patch.
 
-I will start bothering uclinux-dev@uclinux.org instead.
+The goal is to keep task->signal after release_task(), it will be freed
+by __put_task_struct(). This allows a lot of simplifications and we can
+move some fields from task_struct to signal_struct.
 
-So by uclinux driver you meant m68knommu uclinux driver.  I was thinking
-uclibc for some reason.
+But first we should change the code which does
 
--- 
-Len Sorensen
+	lock(tasklist);
+	if (task->signal != NULL)
+		/* Great! the task was not released */
+		do_something(task);
+
+This patch does not change the current behaviour, but makes possible
+to change the "scope" of ->signal without breaking the current code.
+
+> Uses here protecting cpu_clock_sample_group() e.g., are
+> around looking at ->signal->foobar, so if ->signal is still there, why not
+> look at it and be able to get the sample in whatever small window this is?
+
+What if arm_timer() sees ->signal != NULL, proceeds, and attaches the
+timer to the signal_struct of the already dead task? This signal_strcut
+will be released with the pending timer.
+
+Even cpu_clock_sample_group() is not safe, unless we add other changes.
+
+> I don't really understand what this new case might mean though.  Most
+> things that look at ->signal need to lock it, so access doesn't make any
+> sense if there is no siglock because ->sighand is clear while ->signal is not.
+
+For example. __sched_setscheduler() needs to read a single word,
+signal->rlim[RLIMIT_RTPRIO].rlim_cur, but it has to lock ->siglock
+to access ->signal.
+
+Worse. Please look at __exit_signal()->task_rq_unlock_wait(). This hack
+is absolutely stupid and mmust die.
+
+
+But in any case. Even if we don't need the further changes, do you
+agree this patch is correct and doesn't change the behaviour?
+
+Oleg.
+
