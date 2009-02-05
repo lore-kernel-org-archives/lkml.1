@@ -1,102 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZBEVE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753827AbZBEVFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675AbZBEVE0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:04:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZBEVER
+	id S1753827AbZBEVFu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:05:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752523AbZBEVFm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:04:17 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56788 "EHLO e4.ny.us.ibm.com"
+	Thu, 5 Feb 2009 16:05:42 -0500
+Received: from gw.goop.org ([64.81.55.164]:51449 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752281AbZBEVEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:04:16 -0500
-Date: Thu, 5 Feb 2009 13:04:15 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090205210415.GM6915@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090205140432.GE6915@linux.vnet.ibm.com> <20090205150242.GA27895@Krystal> <20090205151841.GF6915@linux.vnet.ibm.com> <20090205153825.GA30255@Krystal> <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal> <20090205184456.GK6915@linux.vnet.ibm.com> <20090205202249.GA26964@Krystal>
+	id S1752445AbZBEVFl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 16:05:41 -0500
+Message-ID: <498B54A0.7040005@goop.org>
+Date: Thu, 05 Feb 2009 13:05:36 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090205202249.GA26964@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Hugh Dickins <hugh@veritas.com>
+CC: Ingo Molnar <mingo@elte.hu>, William Lee Irwin III <wli@movementarian.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: pud_bad vs pud_bad
+References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu> <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu> <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <498B4F1F.5070306@goop.org> <Pine.LNX.4.64.0902052046240.18431@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0902052046240.18431@blonde.anvils>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 03:22:49PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
-> > > > > Hi Paul,
-> > > > > 
-> > > > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
-> > > > > <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > >>
-> > > > > >> Are you using quilt to apply the patchset series file in the right order ?
-> > > > > >
-> > > > > > Ummm...  No.  I never have used quilt.
-> > > > > >
-> > > > > > Ah, there is a series file.  I guess it would not be too hard to make
-> > > > > > an appropriate "sh" command:
-> > > > > 
-> > > > > How about trying?
-> > > > > 
-> > > > > #quilt push -a
-> > > > 
-> > > > Is the appropriate incantation as follows?
-> > > > 
-> > > > 	cd <top of git tree>
-> > > > 	mkdir patches
-> > > > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
-> > > > 	quilt push -a
-> > > > 
-> > > 
-> > > Yes, exactly.
-> > 
-> > Whew!  ;-)
-> > 
-> > > And from there you can follow the LTTng manual here :
-> > > 
-> > > http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
-> > 
-> > I get some fuzz and the following:
-> > 
-> > 	patching file kernel/trace/trace-clock-32-to-64.c
-> > 	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
-> > 	which already exists.
-> > 	Hunk #1 FAILED at 1.
-> > 	1 out of 1 hunk FAILED -- rejects in file
-> > 	kernel/trace/trace-clock-32-to-64.c
-> > 
-> > Should I be starting from somewhere other than v2.6.29-rc3?
-> > 
-> 
-> Let's see it step by step, that should get us there.
-> 
-> With patches :
-> 
-> mkdir ~/lttng
-> cd ~/lttng
-> wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2
-> wget http://lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
-> bzip2 -cd linux-2.6.29-rc3.tar.bz2 |tar xvof -
-> bzip2 -cd patch-2.6.29-rc3-lttng-0.92.tar.bz2  |tar xvof -
-> cd linux-2.6.29-rc3
-> mkdir patches
-> ln -s ../patch-2.6.29-rc3-lttng-0.92 patches
-> quilt push -a
-> 
-> Does this work ?
+Hugh Dickins wrote:
+>> Hardware doesn't allow it.  It will explode (well, trap) if you set anything
+>> other than P in the top level.
+>>     
+>
+> Oh, interesting, I'd never realized that.
+>   
 
-Leaving out the "mkdir", yes.  My apologies -- I was forgetting that
-"git reset --hard" doesn't get rid of untracked files.  I do see fuzz
-in a few places, but hopefully this is non-fatal.  And in any case, I
-can now make the patch required to actually try this out.  ;-)
+There are some later extensions to reuse some of the bits for things 
+like tlb reload policy (I think; I'd have to check to be sure), so 
+they're fairly non-pte-like.
 
-						Thanx, Paul
+>> By the by, what are the chances we'll be able to deprecate non-PAE 32-bit?
+>>     
+>
+> I sincerely hope 0!  I shed no tears at losing support for NUMAQ,
+> but why should we be forced to double all the 32-bit ptes?  You want
+> us all to be using NX?  Or you just want to cut your test/edit matrix -
+> that I can well understand!
+>   
+
+Yes, that's the gist of it.  We could simplify things by having only one 
+pte format and only have to parameterise with 3/4 level pagetables.  
+We'd lose support for non-PAE cpus, including the first Pentium M (which 
+is probably still in fairly wide use, unfortunately).
+
+    J
