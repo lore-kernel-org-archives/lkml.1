@@ -1,58 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756270AbZBEWxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756700AbZBEWxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756270AbZBEWxS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 17:53:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753349AbZBEWwO
+	id S1756700AbZBEWxu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 17:53:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbZBEWwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 17:52:14 -0500
-Received: from everest.las.ic.unicamp.br ([143.106.60.118]:52321 "EHLO
-	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752514AbZBEWwN (ORCPT
+	Thu, 5 Feb 2009 17:52:38 -0500
+Received: from casper.infradead.org ([85.118.1.10]:45725 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755983AbZBEWwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 17:52:13 -0500
-From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-To: linux-kernel@vger.kernel.org
-Cc: glommer@redhat.com, mingo@elte.hu
-Subject: [PATCH 2/6] x86: define FIXADDR_BOOT_* and redefine FIX_ADDR_SIZE
-Date: Thu,  5 Feb 2009 20:39:42 -0200
-Message-Id: <1233873586-7149-3-git-send-email-gustavo@las.ic.unicamp.br>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1233873586-7149-2-git-send-email-gustavo@las.ic.unicamp.br>
-References: <1233873586-7149-1-git-send-email-gustavo@las.ic.unicamp.br>
- <1233873586-7149-2-git-send-email-gustavo@las.ic.unicamp.br>
+	Thu, 5 Feb 2009 17:52:36 -0500
+Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
+From: David Woodhouse <dwmw2@infradead.org>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Cc: linux-kernel@vger.kernel.org, mingo@redhat.com,
+       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
+       iommu@lists.linux-foundation.org
+In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 22:52:32 +0000
+Message-Id: <1233874352.8135.12.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now, with these macros, x86_64 code can know where start the
-permanent and non-permanent fixed mapped address.
-This patch make these macros equal fixmap_32.h for future
-x86 integration.
+This adds a function to dump the DMA mappings that the debugging code is
+aware of -- either for a single device, or for _all_ devices.
 
-Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-Acked-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/include/asm/fixmap_64.h |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+This can be useful for debugging -- sticking a call to it in the DMA
+page fault handler, for example, to see if the faulting address _should_
+be mapped or not, and hence work out whether it's IOMMU bugs we're
+seeing, or driver bugs.
 
-diff --git a/arch/x86/include/asm/fixmap_64.h b/arch/x86/include/asm/fixmap_64.h
-index 00a30ab..678b9c5 100644
---- a/arch/x86/include/asm/fixmap_64.h
-+++ b/arch/x86/include/asm/fixmap_64.h
-@@ -73,8 +73,11 @@ enum fixed_addresses {
- };
+I'd also like to make it answer the question 'should address X be mapped
+for device Y', but I'll get to that next.
+
+Do we have a %pX format for printing dma_addr_t yet? 
+
+Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
+
+diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
+index 8a8aae4..5f4fc9f 100644
+--- a/include/linux/dma-debug.h
++++ b/include/linux/dma-debug.h
+@@ -75,6 +75,8 @@ extern void debug_dma_sync_sg_for_device(struct device *dev,
+ 					 struct scatterlist *sg,
+ 					 int nelems, int direction);
  
- #define FIXADDR_TOP	(VSYSCALL_END-PAGE_SIZE)
--#define FIXADDR_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
--#define FIXADDR_START	(FIXADDR_TOP - FIXADDR_SIZE)
++extern void debug_dma_dump_mappings(struct device *dev);
 +
-+#define FIXADDR_SIZE	(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
-+#define FIXADDR_BOOT_SIZE	(__end_of_fixed_addresses << PAGE_SHIFT)
-+#define FIXADDR_START		(FIXADDR_TOP - FIXADDR_SIZE)
-+#define FIXADDR_BOOT_START	(FIXADDR_TOP - FIXADDR_BOOT_SIZE)
+ #else /* CONFIG_DMA_API_DEBUG */
  
- /* Only covers 32bit vsyscalls currently. Need another set for 64bit. */
- #define FIXADDR_USER_START	((unsigned long)VSYSCALL32_VSYSCALL)
+ static inline void dma_debug_init(u32 num_entries)
+@@ -155,6 +157,10 @@ static inline void debug_dma_sync_sg_for_device(struct device *dev,
+ {
+ }
+ 
++static inline void debug_dma_dump_mappings(struct device *dev)
++{
++}
++
+ #endif /* CONFIG_DMA_API_DEBUG */
+ 
+ #endif /* __DMA_DEBUG_H */
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index 469e5b9..127d108 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -191,6 +191,36 @@ static void hash_bucket_del(struct dma_debug_entry *entry)
+ }
+ 
+ /*
++ * Dump mapping entries for debugging purposes
++ */
++void debug_dma_dump_mappings(struct device *dev)
++{
++	int idx;
++
++	for (idx = 0; idx < HASH_SIZE; idx++) {
++		struct hash_bucket *bucket = &dma_entry_hash[idx];
++		struct dma_debug_entry *entry;
++		unsigned long flags;
++
++		spin_lock_irqsave(&bucket->lock, flags);
++
++		list_for_each_entry(entry, &bucket->list, list) {
++			if (!dev || dev == entry->dev) {
++				dev_info(entry->dev,
++					 "%s idx %d P=%Lx D=%Lx L=%Lx %s\n",
++					 type2name[entry->type], idx,
++					 (unsigned long long)entry->paddr,
++					 entry->dev_addr, entry->size,
++					 dir2name[entry->direction]);
++			}
++		}
++
++			spin_unlock_irqrestore(&bucket->lock, flags);
++	}
++}
++EXPORT_SYMBOL(debug_dma_dump_mappings);
++
++/*
+  * Wrapper function for adding an entry to the hash.
+  * This function takes care of locking itself.
+  */
+
+
 -- 
-1.5.6.4
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
