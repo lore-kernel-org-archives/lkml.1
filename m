@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbZBEX6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756861AbZBEX7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756729AbZBEX6t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 18:58:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZBEX6Z
+	id S1756861AbZBEX7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 18:59:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZBEX7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 18:58:25 -0500
-Received: from gate.crashing.org ([63.228.1.57]:37840 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755949AbZBEX6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 18:58:23 -0500
-Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Hugh Dickins <hugh@veritas.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-In-Reply-To: <200902051433.23294.jbarnes@virtuousgeek.org>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
-	 <Pine.LNX.4.64.0902051713550.1445@blonde.anvils>
-	 <1233867944.4612.104.camel@pasglop>
-	 <200902051433.23294.jbarnes@virtuousgeek.org>
+	Thu, 5 Feb 2009 18:59:11 -0500
+Received: from casper.infradead.org ([85.118.1.10]:47278 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753562AbZBEX7K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 18:59:10 -0500
+Subject: Re: [PATCH 2/2] sched_rt: protect rt_rq->rt_time by rt_runtime_lock
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <498B7862.2040004@ct.jp.nec.com>
+References: <498B77F6.4020702@ct.jp.nec.com>
+	 <498B7862.2040004@ct.jp.nec.com>
 Content-Type: text/plain
-Date: Fri, 06 Feb 2009 10:57:52 +1100
-Message-Id: <1233878272.4612.106.camel@pasglop>
+Date: Fri, 06 Feb 2009 00:59:03 +0100
+Message-Id: <1233878343.4620.44.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -30,44 +27,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> No, sorry, but I just took a look and as long as the various callers can 
-> handle it (haven't checked), this patch would work.
+On Thu, 2009-02-05 at 15:38 -0800, Hiroshi Shimamoto wrote:
+> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
 > 
-> > The second problem is that if I just don't expose the legacy_mem file,
-> > then X has no way to know whether the kernel doesn't support the
-> > interface or whether the HW doesn't support legacy memory access. So X
-> > will fallback to whacking /dev/mem which is even more bogus. At least
-> > that's what I remember from last I looked at that part of X code.
-> >
-> > It should be a trivial fix on X side tho.
+> Impact: fix possible race condition
 > 
-> One option there would be to provide the file but just use anonymous memory to 
-> back it.  X will happily think it's messing with legacy VGA memory, but it 
-> shouldn't matter that it's not actually affecting hw.
+> rt_rq->rt_time should be protected.
 
-That might be the best approach ... I'll have a look.
+Don't think so, all we do is check the value for non-zero outside the
+lock, that should be ok.
 
-Ben.
+If there's still a race, your changelog utterly fails to mention the
+race scenario.
 
-> diff --git a/hw/xfree86/os-support/bus/linuxPci.c 
-> b/hw/xfree86/os-support/bus/li
-> index 263fd8f..5d2da32 100644
-> --- a/hw/xfree86/os-support/bus/linuxPci.c
-> +++ b/hw/xfree86/os-support/bus/linuxPci.c
-> @@ -484,8 +484,9 @@ xf86MapDomainMemory(int ScreenNum, int Flags, struct 
-> pci_dev
->      if (fd >= 0)
->         close(fd);
->      if (addr == NULL || addr == MAP_FAILED) {
-> -       perror("mmap failure");
-> -       FatalError("xf86MapDomainMem():  mmap() failure\n");
-> +       xf86Msg(X_WARNING, "xf86MapDomainMem():  mmap() failure: %s\n",
-> +               strerror(errno));
-> +       return NULL;
->      }
->      return addr;
->  }
+> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+> ---
+>  kernel/sched_rt.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
 > 
-> 
+> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+> index 299d012..d7654a3 100644
+> --- a/kernel/sched_rt.c
+> +++ b/kernel/sched_rt.c
+> @@ -496,10 +496,10 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
+>  		struct rq *rq = rq_of_rt_rq(rt_rq);
+>  
+>  		spin_lock(&rq->lock);
+> +		spin_lock(&rt_rq->rt_runtime_lock);
+>  		if (rt_rq->rt_time) {
+>  			u64 runtime;
+>  
+> -			spin_lock(&rt_rq->rt_runtime_lock);
+>  			if (rt_rq->rt_throttled)
+>  				balance_runtime(rt_rq);
+>  			runtime = rt_rq->rt_runtime;
+> @@ -510,9 +510,9 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
+>  			}
+>  			if (rt_rq->rt_time || rt_rq->rt_nr_running)
+>  				idle = 0;
+> -			spin_unlock(&rt_rq->rt_runtime_lock);
+>  		} else if (rt_rq->rt_nr_running)
+>  			idle = 0;
+> +		spin_unlock(&rt_rq->rt_runtime_lock);
+>  
+>  		if (enqueue)
+>  			sched_rt_rq_enqueue(rt_rq);
 
