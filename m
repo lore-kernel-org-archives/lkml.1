@@ -1,107 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758398AbZBEDSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757898AbZBEDTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758398AbZBEDSQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 22:18:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbZBEDR0
+	id S1757898AbZBEDTY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 22:19:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZBEDTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 22:17:26 -0500
-Received: from casper.infradead.org ([85.118.1.10]:57104 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755163AbZBEDRZ (ORCPT
+	Wed, 4 Feb 2009 22:19:15 -0500
+Received: from smtp114.mail.mud.yahoo.com ([209.191.84.67]:43944 "HELO
+	smtp114.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753262AbZBEDTO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 22:17:25 -0500
-Date: Wed, 4 Feb 2009 19:17:28 -0800
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-input@vger.kernel.org
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: [patch 2/2] input: add a DMI table for the i8042.reset option; make
- MSI Wind U-100 work
-Message-ID: <20090204191728.7ed66e58@infradead.org>
-In-Reply-To: <20090204191540.2d6abd87@infradead.org>
-References: <20090204191540.2d6abd87@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.5; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 4 Feb 2009 22:19:14 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=chuw98oIOeehc+D2xHCW8nZvIhyjfyVtreqpYieyO3UAvXpbZzcCnW26ZncJOe5FgG1nuKF11btGMh5PDehSnzNdG8Ak6h/OnmfQF8xjeUfzmeKgmcR5imay9v7fKFlAeaHJazvEJOFB4Y9pkqQug2nXMlJxvL1dAC3PrgMYMms=  ;
+X-YMail-OSG: .Vzupf4VM1l2s7LKsUaufJ7MExtkzkz1kG0E8dPYaqgwJAsNLdcYjOeU_8Rfj.VWNPsffHuW3JIF45LZzde41mvJeU6mslvBKmYSLLif3Uv4kmJ6rt6HIh6OOGEku9hZCp06gWe9uxVCcvovAsI6fL2yYsyZrsuMwZ2VPxe_AcHpc0feMwwc3iHn53vUeA--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [patch] SLQB slab allocator
+Date: Thu, 5 Feb 2009 14:18:46 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       Lin Ming <ming.m.lin@intel.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+References: <20090114155923.GC1616@wotan.suse.de> <200902041522.01307.nickpiggin@yahoo.com.au> <alpine.DEB.1.10.0902041507050.8154@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0902041507050.8154@qirst.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200902051418.47523.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: input: add a DMI table for the i8042.reset option; make MSI Wind U-100 work
+On Thursday 05 February 2009 07:09:15 Christoph Lameter wrote:
+> On Wed, 4 Feb 2009, Nick Piggin wrote:
+> > That's very true, and we touched on this earlier. It is I guess
+> > you can say a downside of queueing. But an analogous situation
+> > in SLUB would be that lots of pages on the partial list with
+> > very few free objects, or freeing objects to pages with few
+> > objects in them. Basically SLUB will have to do the extra work
+> > in the fastpath.
+>
+> But these are pages with mostly allocated objects and just a few objects
+> free. The SLAB case is far worse: You have N objects on a queue and they
+> are keeping possibly N pages away from the page allocator and in those
+> pages *nothing* is used.
 
-There are several DMI tables in the i8042 (keyboard) driver already,
-but not one for the i8042.reset option. This patch adds such an option
-(which also sets the nonfatal flag so that if the reset fails, the keyboard
-still works).
+Periodic queue trimming should prevent this from becoming a big problem.
+It will trim away those objects, and so subsequent allocations will come
+from new pages and be densely packed. I don't think I've seen a problem
+in SLAB reported from this phenomenon, so I'm not too concerned about it
+at the moment.
 
-Two users for this table are added as well, the MSI Wind U-100 and the
-LG X110. The MSI Wind also needs to be in the "don't trust the pnp data"
-for the touchpad to work on my machine.
 
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-
---- linux-2.6.28/drivers/input/serio/i8042-x86ia64io.h.org	2009-02-01 18:31:29.000000000 -0800
-+++ linux-2.6.28/drivers/input/serio/i8042-x86ia64io.h	2009-02-01 18:35:26.000000000 -0800
-@@ -378,6 +378,13 @@ static struct dmi_system_id __initdata i
- 			DMI_MATCH(DMI_BOARD_VENDOR, "Intel Corporation"),
- 		},
- 	},
-+	{
-+		.ident = "MSI Wind U-100",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_NAME, "U-100"),
-+			DMI_MATCH(DMI_BOARD_VENDOR, "MICRO-STAR INTERNATIONAL CO., LTD"),
-+		},
-+	},
- 	{ }
- };
- #endif
-@@ -448,6 +455,25 @@ static struct dmi_system_id __initdata i
- 	{ }
- };
- 
-+static struct dmi_system_id __initdata i8042_dmi_reset_table[] = {
-+	{
-+		.ident = "MSI Wind U-100",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_NAME, "U-100"),
-+			DMI_MATCH(DMI_BOARD_VENDOR, "MICRO-STAR INTERNATIONAL CO., LTD"),
-+		},
-+	},
-+	{
-+		.ident = "LG Electronics X110",
-+		.matches = {
-+			DMI_MATCH(DMI_BOARD_NAME, "X110"),
-+			DMI_MATCH(DMI_BOARD_VENDOR, "LG Electronics Inc."),
-+		},
-+	},
-+	{ }
-+};
-+
-+
- #endif /* CONFIG_X86 */
- 
- #ifdef CONFIG_PNP
-@@ -564,6 +583,11 @@ static int __init i8042_pnp_init(void)
- 		i8042_nopnp = 1;
- #endif
- 
-+	if (dmi_check_system(i8042_dmi_reset_table)) {
-+		i8042_reset = 1;
-+		i8042_nonfatal = 1;
-+	}
-+
- 	if (i8042_nopnp) {
- 		printk(KERN_INFO "i8042: PNP detection disabled\n");
- 		return 0;
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
