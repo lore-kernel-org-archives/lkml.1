@@ -1,75 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZBEShb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbZBESl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759531AbZBEShb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 13:37:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZBEShX
+	id S1759130AbZBESl2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 13:41:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZBESlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 13:37:23 -0500
-Received: from outbound-mail-136.bluehost.com ([67.222.39.26]:32827 "HELO
-	outbound-mail-136.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753111AbZBEShW convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 13:37:22 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=hVQHtmKqsECTf5KutKT4Fv9tLDdNpxYlkUs3AWuQk2Q/I/80+CNjL784dNwVVKDGc5JMtFODQQzLKfr3iMnAIQgzqoO2bGKOYiysSqOO8tTewb2rObDbx7D3kuu1rlS6;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Eric Anholt <eric@anholt.net>
-Subject: Re: Gem GTT mmaps..
-Date: Thu, 5 Feb 2009 10:37:19 -0800
-User-Agent: KMail/1.9.10
-Cc: Thomas =?iso-8859-15?q?Hellstr=F6m?= <thomas@shipmail.org>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <498A1760.7010108@shipmail.org> <200902041502.41524.jbarnes@virtuousgeek.org> <1233790920.16368.4.camel@gaiman>
-In-Reply-To: <1233790920.16368.4.camel@gaiman>
+	Thu, 5 Feb 2009 13:41:19 -0500
+Received: from smtp-out.google.com ([216.239.33.17]:18611 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752417AbZBESlS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 13:41:18 -0500
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:to:cc:subject:message-id:references:
+	mime-version:content-type:content-disposition:in-reply-to:
+	x-operating-system:user-agent:x-gmailtapped-by:x-gmailtapped;
+	b=EG0nKEPvWS2DAR+aknHDjZtrporJzXHf+LDS7JYhnhosgPbnLAHh63PPeaEhr+qfX
+	S7+u4pqmHjxWSsPDgLp1Q==
+Date: Thu, 5 Feb 2009 10:40:03 -0800
+From: Mandeep Singh Baines <msb@google.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       rientjes@google.com, mbligh@google.com, thockin@google.com
+Subject: Re: [PATCH 2/2 v4] softlockup: check all tasks in hung_task
+Message-ID: <20090205184003.GB10819@google.com>
+References: <20090204194339.GB22608@elte.hu> <20090205043548.GA18933@google.com> <20090205143453.GG28443@elte.hu> <20090205094834.0dd9cfaa.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902051037.20590.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20090205094834.0dd9cfaa.akpm@linux-foundation.org>
+X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
+User-Agent: Mutt/1.5.11
+X-GMailtapped-By: 172.25.146.78
+X-GMailtapped: msb
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, February 4, 2009 3:42 pm Eric Anholt wrote:
-> On Wed, 2009-02-04 at 15:02 -0800, Jesse Barnes wrote:
-> > On Wednesday, February 4, 2009 2:32 pm Thomas Hellström wrote:
-> > > Jesse,
-> > >
-> > > I have some concerns about the GEM GTT mmap functionality.
-> >
-> > Thanks for looking it over again; you would know since some of this code
-> > came from you in the first place. :)
-> >
-> > > First, a gem object pointer is copied to map->offset and then to the
-> > > vma->vm_private_data without proper reference counting. This pointer is
-> > > used in i915_gem_fault() to access the gem object. However if the gem
-> > > object is destroyed and a process then tries to access data in a vma
-> > > mapping the (now destroyed) object, it would dereference a stale
-> > > pointer into kernel space? Shouldn't those pointers be reference
-> > > counted, and to account for fork(), a vm open and close would be needed
-> > > to  reference count corresponding pointers of newly created and
-> > > destroyed vmas?
-> >
-> > Yeah looks like we don't protect against vm_private_data pointing at a
-> > freed or other object.  But rather than refcounting the pointers I wonder
-> > if we could make the private data use the GEM object name instead, then
-> > do the lookup in the fault handler?
->
-> The object doesn't necessarily have a public name.  You do need to
-> refcount the objects.
+Andrew Morton (akpm@linux-foundation.org) wrote:
+> On Thu, 5 Feb 2009 15:34:53 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > Subject: [PATCH] softlockup: check all tasks in hung_task
+> > 
+> > Impact: extend the scope of hung-task checks
+> > 
+> 
+> A nanonit:
+> 
+> > +static const int hung_task_batching = 1024;
+> 
+> static const definitions look pretty but they're a bit misleading.
+> 
+> >  static void check_hung_uninterruptible_tasks(unsigned long timeout)
+> >  {
+> > +	int batch_count = hung_task_batching;
+> >  	int max_count = sysctl_hung_task_check_count;
+> >  	unsigned long now = get_timestamp();
+> >  	struct task_struct *g, *t;
+> > @@ -131,6 +159,13 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
+> >  	do_each_thread(g, t) {
+> >  		if (!--max_count)
+> >  			goto unlock;
+> > +		if (!--batch_count) {
+> > +			batch_count = hung_task_batching;
+> > +			rcu_lock_break(g, t);
+> > +			/* Exit if t or g was unhashed during refresh. */
+> > +			if (t->state == TASK_DEAD || g->state == TASK_DEAD)
+> > +				goto unlock;
+> > +		}
+> >  		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
+> >  		if (t->state == TASK_UNINTERRUPTIBLE)
+> >  			check_hung_task(t, now, timeout);
+> 
+> The reader of this area of the code will expect that hung_task_batching
+> is a variable.  It _looks_ like the value of that variable can be altered
+> at any time by some other thread.  It _looks_ like this code will explode
+> if someone has accidentally set hung_task_batching to zero, etc.
+> 
 
-So if we leave the lookup reference around from the GTT mapping ioctl, that 
-would take care of new mappings.  And if we added/removed references at VM 
-open/close time, we should be covered for fork.  But is it ok to add a new 
-unref in the finish ioctl for GTT mapped objects?  I don't think so, because 
-we don't know for sure if the caller was the one that created the new fake 
-offset (which would be one way of detecting whether it was GTT mapped).  
-Seems like we need a new unmap ioctl?  Or we could put the mapping ref/unref 
-in libdrm, where it would be tracked on a per-process basis...
+The code would not break if hung_task_batching was exported out as a sysctl.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+If hung_task_batching is set to zero at any time, the behavior will be
+to process all tasks in one batch. This seems like a reasonable behavior
+for the  zero case. It is also consistent with the behavior of
+sysctl_hung_task_check_count.
+
+Maybe a comment should be added by the declaration of both variables explaining
+the zero behavior?
+
+> But none of that is actually true, because hung_task_batching is, surprisingly,
+> a compile-time constant.
+> 
+> All this misleadingness would be fixed if it were called
+> HUNG_TASK_BATCHING.  But then it wouldn't be pretty.
+> 
