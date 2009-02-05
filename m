@@ -1,67 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbZBEDbP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758206AbZBEDbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756718AbZBEDbP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 22:31:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZBEDa6
+	id S1758206AbZBEDbu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 22:31:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZBEDbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 22:30:58 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:49649 "EHLO mx1.redhat.com"
+	Wed, 4 Feb 2009 22:31:40 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:49683 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751143AbZBEDa6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 22:30:58 -0500
+	id S1753354AbZBEDbj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 22:31:39 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
 To: Oleg Nesterov <oleg@redhat.com>
 X-Fcc: ~/Mail/linus
-Cc: Kaz Kylheku <kkylheku@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: main thread pthread_exit/sys_exit bug!
-In-Reply-To: Oleg Nesterov's message of  Monday, 2 February 2009 17:56:06 +0100 <20090202165606.GA13346@redhat.com>
-References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com>
-	<20090201174159.4a52e15c.akpm@linux-foundation.org>
-	<20090202064509.GA20237@redhat.com>
-	<3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com>
-	<20090202165606.GA13346@redhat.com>
-X-Shopping-List: (1) E-Z-Grip Seducers
-   (2) Groundless resplendent chase dogs
-   (3) Civil rooster hay
-   (4) Recoilless neglecters
-Message-Id: <20090205030553.49650FC381@magilla.sf.frob.com>
-Date: Wed,  4 Feb 2009 19:05:53 -0800 (PST)
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Lin Ming <ming.m.lin@intel.com>, Peter Zijlstra <peterz@infradead.org>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] posix-cpu-timers: use ->sighand instead of ->signal to
+	check the task is alive
+In-Reply-To: Oleg Nesterov's message of  Wednesday, 4 February 2009 00:17:17 +0100 <20090203231717.GA5028@redhat.com>
+References: <20090203231717.GA5028@redhat.com>
+X-Windows: power tools for power losers.
+Message-Id: <20090205033120.2294BFC381@magilla.sf.frob.com>
+Date: Wed,  4 Feb 2009 19:31:20 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I haven't seen the clear explanation of what specific actual problems there
-are here.  But I'm quite sure this is not the right approach to address them.
+> It doesn't matter which pointer to check under tasklist to ensure the task
+> was not released, ->signal or ->sighand. But we are going to make ->signal
+> refcountable, change the code to use ->sighand.
 
-Kaz has said things that seemed to imply that the behavior is erratic or
-the semantics are somehow ill-defined when the group leader has died with
-other threads living on.  In fact, this case is perfectly well-specified
-and there is no mystery about it.
+I haven't been following what that's about (signal_struct already has two
+atomic counts!).  Uses here protecting cpu_clock_sample_group() e.g., are
+around looking at ->signal->foobar, so if ->signal is still there, why not
+look at it and be able to get the sample in whatever small window this is?
 
-The group leader dies and becomes a zombie.  The zombie group leader is
-kept from reaping and parent notification by the delayed_group_leader()
-logic and related code, until the last thread in the group dies.  The tgid
-(leader's tid), aka PID in POSIX terms, remains as the PID for the process
-as a whole and signals to it work fine, etc.
-
-Quite some time ago, there was some /proc bug wherein /proc/pid/task could
-not be listed when the group leader had died.  That prevented strace or gdb
-from attaching to the process after its initial thread used pthread_exit.
-I don't recall when that was fixed, but it's been fine for a good while.
-That is the only problem for debuggability of this case that I recall
-knowing about.
-
-Certainly long ago there were many problems with job control signals in
-multi-thread groups, and there have been many little corner cases fixed in
-that over the 2.6.x period.  I'm not aware of any such problems remaining.
-But if there are some, they need to be fixed in the signals code.  It's
-certainly clear how it's supposed to work, and that's no different when the
-group leader is dead.
+I don't really understand what this new case might mean though.  Most
+things that look at ->signal need to lock it, so access doesn't make any
+sense if there is no siglock because ->sighand is clear while ->signal is not.
 
 
 Thanks,
