@@ -1,159 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbZBENuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758106AbZBENus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757893AbZBENuT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 08:50:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbZBENuD
+	id S1758106AbZBENus (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 08:50:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756575AbZBENug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 08:50:03 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:48730 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755533AbZBENuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 08:50:00 -0500
-Date: Thu, 5 Feb 2009 13:49:56 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [patch] SLQB slab allocator (try 2)
-Message-ID: <20090205134956.GC12132@csn.ul.ie>
-References: <20090123154653.GA14517@wotan.suse.de> <200902041748.41801.nickpiggin@yahoo.com.au> <20090204152709.GA4799@csn.ul.ie> <200902051459.30064.nickpiggin@yahoo.com.au>
+	Thu, 5 Feb 2009 08:50:36 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53495 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756723AbZBENue (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 08:50:34 -0500
+Date: Thu, 5 Feb 2009 14:50:11 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Eric Sesterhenn <snakebyte@gmx.de>,
+       linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org
+Subject: Re: Warning and BUG with btrfs and corrupted image
+Message-ID: <20090205135011.GA2294@elf.ucw.cz>
+References: <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org> <20090120222019.GB2320@elf.ucw.cz> <20090121040042.GI10158@disturbed> <20090126162711.GA2083@elf.ucw.cz> <20090201014050.GD24173@disturbed> <20090204182951.GC4797@elf.ucw.cz> <20090205085916.GP24173@disturbed> <20090205090229.GA2011@elf.ucw.cz> <1233838959.15948.6.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200902051459.30064.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1233838959.15948.6.camel@think.oraclecorp.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 02:59:29PM +1100, Nick Piggin wrote:
-> On Thursday 05 February 2009 02:27:10 Mel Gorman wrote:
-> > On Wed, Feb 04, 2009 at 05:48:40PM +1100, Nick Piggin wrote:
+On Thu 2009-02-05 08:02:39, Chris Mason wrote:
+> On Thu, 2009-02-05 at 10:02 +0100, Pavel Machek wrote:
+> > > > > CONFIG_*_DEBUG means include *debug* code there to help developers,
+> > > > > including adding additional failure tests into the kernel. Besides,
+> > > > > which bit of "don't turn it on unless you are an XFS developer"
+> > > > > don't you understand?
+> > > > 
+> > > > Yes, but DEBUG code is normally to help debugging, not to crash
+> > > > kernels.
+> > > 
+> > > Crashing the kernel at exactly the point a problem is detected
+> > > is often the simplest way of debugging the problem.
+> > > 
+> > > e.g. CONFIG_VM_DEBUG=y turns on VM_BUG_ON() which crashes the kernel
+> > > whenever it detects something wrong. Do I turn it on? Yes. Do i
+> > 
+> > That's different. User is not supposed to be able to trigger
+> > VM_BUG_ON().
+> > 
+> > > complain about it when I hit a VM_BUG_ON()? No, I report the
+> > > bug and move on. If you turn on a DEBUG option, then you are
+> > > asking the system to behave in a way useful to a developer,
+> > > not an end user. That includes panicing when something wrong
+> > > is detected.
+> > 
+> > Imagine vm going panic() on mkdir("/lost+found")...
 > 
-> > > It couldn't hurt, but it's usually tricky to read anything out of these
-> > > from CPU cycle profiles. Especially if they are due to cache or tlb
-> > > effects (which tend to just get spread out all over the profile).
-> >
-> > Indeed. To date, I've used them for comparing relative counts of things
-> > like TLB and cache misses on the basis "relatively more misses running test
-> > X is bad" or working out things like tlb-misses-per-instructions but it's a
-> > bit vague. We might notice if one of the allocators is being particularly
-> > cache unfriendly due to a spike in cache misses.
+> It is up to the XFS developers to decide what their debugging options
+> do.  
+
+Eh?
+
+> The whole point of panicing is so that you can collect important
+> information about the system at the time of the error condition.  When
+> this option is compiled on, panic on mkdir is exactly what they are
+> asking for.
 > 
-> Very true. Total counts of TLB and cache misses could show some insight.
-> 
+> If you don't want it, don't compile it in.  The Kconfig text is very
+> clear.
 
-Agreed. I'm collecting just cache misses in this run. Due to limitations
-on the ppc970 PMU, I can't collect TLB and cache at the same time. I
-can't remember if it can or not on the x86-64 but I went with the lowest
-common denominator in any case.
+No, I'd not expect that option to panic systems. That's why I
+suggested:
 
-> 
-> > PPC64 Test Machine
-> > Sysbench-Postgres
-> > -----------------
-> > Client           slab  slub-default  slub-minorder            slqb
-> >      1         1.0000        1.0153         1.0179          1.0051
-> >      2         1.0000        1.0273         1.0181          1.0269
-> >      3         1.0000        1.0299         1.0195          1.0234
-> >      4         1.0000        1.0159         1.0130          1.0146
-> >      5         1.0000        1.0232         1.0192          1.0264
-> >      6         1.0000        1.0238         1.0142          1.0088
-> >      7         1.0000        1.0240         1.0063          1.0076
-> >      8         1.0000        1.0134         0.9842          1.0024
-> >      9         1.0000        1.0154         1.0152          1.0077
-> >     10         1.0000        1.0126         1.0018          1.0009
-> >     11         1.0000        1.0100         0.9971          0.9933
-> >     12         1.0000        1.0112         0.9985          0.9993
-> >     13         1.0000        1.0131         1.0060          1.0035
-> >     14         1.0000        1.0237         1.0074          1.0071
-> >     15         1.0000        1.0098         0.9997          0.9997
-> >     16         1.0000        1.0110         0.9899          0.9994
-> > Geo. mean      1.0000        1.0175         1.0067          1.0078
-> >
-> > The order SLUB uses does not make much of a difference to SPEC CPU on
-> > either test machine or sysbench on x86-64. Howeer, on the ppc64 machine,
-> > the performance advantage SLUB has over SLAB appears to be eliminated if
-> > high-order pages are not used. I think I might run SLUB again incase the
-> > higher average performance was a co-incidence due to lucky cache layout.
-> > Otherwise, Christoph can probably put together a plausible theory on this
-> > result faster than I can.
-> 
-> It's interesting, thanks. It's a good result for SLQB I guess. 1% is fairly
-> large here (if it is statistically significant),
+diff --git a/fs/xfs/Kconfig b/fs/xfs/Kconfig
+index 29228f5..b7ac847 100644
+--- a/fs/xfs/Kconfig
++++ b/fs/xfs/Kconfig
+@@ -77,4 +77,7 @@ config XFS_DEBUG
+ 	  Note that the resulting code will be HUGE and SLOW, and probably
+ 	  not useful unless you are debugging a particular problem.
+ 
++	  Turning this option on will result in kernel panicking any time
++	  it detects on-disk corruption.
++
+ 	  Say N unless you are an XFS developer, or you play one on TV.
 
-I believe it is. I don't recall the figures deviating much for sysbench but
-I have to alter the scripts to do multiple runs just in case.
-
-> but I don't think the
-> drawbacks of using higher order pages warrant changing anything by default
-> in SLQB. It does encourage me to add a boot or runtime parameter, though
-> (even if just for testing purposes).
-> 
-
-Based on this test-machine, it's not justified by default but as the tests are
-not allocator intensive it doesn't say much. tbench (or netperf or anything
-that is more slab intensive) might reveal something but it'll be Monday at
-the earliest before I can find out.
-
-> > On the TLB front, it is perfectly possible that the workloads on x86-64 are
-> > not allocator or memory intensive enough to take advantage of fewer calls
-> > to the page allocator or potentially reduced TLB pressure. As the kernel
-> > portion of the address space already uses huge pages slab objects may have
-> > to occupy a very large percentage of memory before TLB pressure became an
-> > issue. The L1 TLBs on both test machines are fully associative making
-> > testing reduced TLB pressure practically impossible. For bonus points, 1G
-> > pages are being used on the x86-64 so I have nowhere near enough memory to
-> > put that under TLB pressure.
-> 
-> TLB pressure... I would be interested in. I'm not exactly sold on the idea
-> that higher order allocations will give a significant TLB improvement.
-
-Currently, I suspect the machine has to be running a very long time and the
-memory footprint used by SLAB has to be significant before a large enough
-number of TLB entries are being used. A side-effect of anti-fragmentation
-is that kernel allocations get grouped into hugepages as much as possible
-without using high-order pages. This makes it even harder to cause TLB
-pressure within the kernel (a good thing in general).
-
-> Although for benchmark runs, maybe it is more likely (ie. if memory hasn't
-> been too fragmented).
-> 
-> Suppose you have a million slab objects scattered all over memory, the fact
-> you might have them clumped into 64K regions rather than 4K regions... is
-> it going to be significant?
-
-I doubt it's significant from a TLB perspective. Anti-frag will be clumping the
-the 4K pages together in 2MB (on x86-64) and 16MB (on ppc64) already. It would
-actually be pretty tricky to form an allocation pattern from userspace that
-would force use of multiple huge pages. While it is possible thh situation
-does occur, I don't think a realistic test-case can be put together that
-demonstrates it.
-
-What 64K regions will do is reduce the amount of management data needed by
-slab and reduce the number of calls to the page allocator. This is likely
-to be much more significant in general than TLBs.
-
-> How many access patterns are likely to soon touch
-> exactly those objects that are in the same page?
-> 
-> Sure it is possible to come up with a scenario where it does help. But also
-> others where it will not.
-> 
-> OTOH, if it is a win on ppc but not x86-64, then that may point to TLB...
-> 
-
-I'm not sure what it is, but I'm not convinced right now that TLB could make
-a 1% difference. Maybe the cache miss figures will show something up and
-if not, and there is nothign obvious in the profiles, I'll rerun with
-TLB profiling and see what pops up.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
