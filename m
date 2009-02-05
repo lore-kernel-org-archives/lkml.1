@@ -1,205 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762123AbZBEB4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762143AbZBEB5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762123AbZBEB4W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 20:56:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbZBEB4L
+	id S1762143AbZBEB5l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 20:57:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753036AbZBEB5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 20:56:11 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40587 "EHLO mx2.mail.elte.hu"
+	Wed, 4 Feb 2009 20:57:31 -0500
+Received: from thunk.org ([69.25.196.29]:44374 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756169AbZBEB4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 20:56:09 -0500
-Date: Thu, 5 Feb 2009 02:55:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 1/1] trace: assign defaults at register_ftrace_event
-Message-ID: <20090205015547.GA19742@elte.hu>
-References: <20090204221639.GO3440@ghostprotocols.net> <20090204234150.GA11300@nowhere> <20090205012210.GQ3440@ghostprotocols.net> <20090205012430.GA12067@elte.hu> <20090205014133.GB11300@nowhere>
+	id S1752430AbZBEB5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 20:57:30 -0500
+Date: Wed, 4 Feb 2009 20:57:25 -0500
+From: Theodore Tso <tytso@mit.edu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [Bug #12416] Recent change to kernel spikes out ccache/distcc
+Message-ID: <20090205015725.GF8945@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.5f.SwYiJB@chimera>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090205014133.GB11300@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <pWZw1SZjMCH.A.5f.SwYiJB@chimera>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Thu, Feb 05, 2009 at 02:24:30AM +0100, Ingo Molnar wrote:
-> > 
-> > * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
-> > 
-> > > Em Thu, Feb 05, 2009 at 12:41:51AM +0100, Frederic Weisbecker escreveu:
-> > > > On Wed, Feb 04, 2009 at 08:16:39PM -0200, Arnaldo Carvalho de Melo wrote:
-> > > > > Impact: simplification of tracers
-> > > > > 
-> > > > > As all tracers are doing this we might as well do it in
-> > > > > register_ftrace_event and save one branch each time we call these
-> > > > > callbacks.
-> > > > > 
-> > > > > Cc: Ingo Molnar <mingo@elte.hu>
-> > > > > Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> > > > > Cc: Jens Axboe <jens.axboe@oracle.com>
-> > > > > Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > > > > ---
-> > > > >  block/blktrace.c            |    2 --
-> > > > >  kernel/trace/trace.c        |   13 +++++--------
-> > > > >  kernel/trace/trace_branch.c |    3 ---
-> > > > >  kernel/trace/trace_output.c |   13 +++++++++++--
-> > > > >  4 files changed, 16 insertions(+), 15 deletions(-)
-> > > > > 
-> > > > > diff --git a/block/blktrace.c b/block/blktrace.c
-> > > > > index c7698d1..1ebd068 100644
-> > > > > --- a/block/blktrace.c
-> > > > > +++ b/block/blktrace.c
-> > > > > @@ -1243,8 +1243,6 @@ static struct trace_event trace_blk_event = {
-> > > > >  	.type	 	= TRACE_BLK,
-> > > > >  	.trace		= blk_trace_event_print,
-> > > > >  	.latency_trace	= blk_trace_event_print,
-> > > > > -	.raw		= trace_nop_print,
-> > > > > -	.hex		= trace_nop_print,
-> > > > >  	.binary		= blk_trace_event_print_binary,
-> > > > >  };
-> > > > >  
-> > > > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > > > > index fd51cf0..a5e4c0a 100644
-> > > > > --- a/kernel/trace/trace.c
-> > > > > +++ b/kernel/trace/trace.c
-> > > > > @@ -1412,7 +1412,7 @@ static enum print_line_t print_lat_fmt(struct trace_iterator *iter)
-> > > > >  			goto partial;
-> > > > >  	}
-> > > > >  
-> > > > > -	if (event && event->latency_trace)
-> > > > > +	if (event)
-> > > > >  		return event->latency_trace(iter, sym_flags);
-> > > > >  
-> > > > >  	if (!trace_seq_printf(s, "Unknown type %d\n", entry->type))
-> > > > > @@ -1441,7 +1441,7 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
-> > > > >  			goto partial;
-> > > > >  	}
-> > > > >  
-> > > > > -	if (event && event->trace)
-> > > > > +	if (event)
-> > > > >  		return event->trace(iter, sym_flags);
-> > > > >  
-> > > > >  	if (!trace_seq_printf(s, "Unknown type %d\n", entry->type))
-> > > > > @@ -1467,7 +1467,7 @@ static enum print_line_t print_raw_fmt(struct trace_iterator *iter)
-> > > > >  	}
-> > > > >  
-> > > > >  	event = ftrace_find_event(entry->type);
-> > > > > -	if (event && event->raw)
-> > > > > +	if (event)
-> > > > >  		return event->raw(iter, 0);
-> > > > >  
-> > > > >  	if (!trace_seq_printf(s, "%d ?\n", entry->type))
-> > > > > @@ -1494,7 +1494,7 @@ static enum print_line_t print_hex_fmt(struct trace_iterator *iter)
-> > > > >  	}
-> > > > >  
-> > > > >  	event = ftrace_find_event(entry->type);
-> > > > > -	if (event && event->hex) {
-> > > > > +	if (event) {
-> > > > >  		enum print_line_t ret = event->hex(iter, 0);
-> > > > >  		if (ret != TRACE_TYPE_HANDLED)
-> > > > >  			return ret;
-> > > > > @@ -1536,10 +1536,7 @@ static enum print_line_t print_bin_fmt(struct trace_iterator *iter)
-> > > > >  	}
-> > > > >  
-> > > > >  	event = ftrace_find_event(entry->type);
-> > > > > -	if (event && event->binary)
-> > > > > -		return event->binary(iter, 0);
-> > > > > -
-> > > > > -	return TRACE_TYPE_HANDLED;
-> > > > > +	return event ? event->binary(iter, 0) : TRACE_TYPE_HANDLED;
-> > > > >  }
-> > > > >  
-> > > > >  static int trace_empty(struct trace_iterator *iter)
-> > > > > diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-> > > > > index 7ac72a4..297deb2 100644
-> > > > > --- a/kernel/trace/trace_branch.c
-> > > > > +++ b/kernel/trace/trace_branch.c
-> > > > > @@ -182,9 +182,6 @@ static struct trace_event trace_branch_event = {
-> > > > >  	.type	 	= TRACE_BRANCH,
-> > > > >  	.trace		= trace_branch_print,
-> > > > >  	.latency_trace	= trace_branch_print,
-> > > > > -	.raw		= trace_nop_print,
-> > > > > -	.hex		= trace_nop_print,
-> > > > > -	.binary		= trace_nop_print,
-> > > > >  };
-> > > > >  
-> > > > >  static struct tracer branch_trace __read_mostly =
-> > > > > diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-> > > > > index b7380ee..b6e99af 100644
-> > > > > --- a/kernel/trace/trace_output.c
-> > > > > +++ b/kernel/trace/trace_output.c
-> > > > > @@ -435,6 +435,17 @@ int register_ftrace_event(struct trace_event *event)
-> > > > >  	if (ftrace_find_event(event->type))
-> > > > >  		goto out;
-> > > > >  
-> > > > > +	if (event->trace == NULL)
-> > > > > +		event->trace = trace_nop_print;
-> > > > > +	if (event->latency_trace == NULL)
-> > > > > +		event->latency_trace = trace_nop_print;
-> > > > > +	if (event->raw == NULL)
-> > > > > +		event->raw = trace_nop_print;
-> > > > > +	if (event->hex == NULL)
-> > > > > +		event->hex = trace_nop_print;
-> > > > > +	if (event->binary == NULL)
-> > > > > +		event->binary = trace_nop_print;
-> > > > > +
-> > > > >  	key = event->type & (EVENT_HASHSIZE - 1);
-> > > > >  
-> > > > >  	hlist_add_head_rcu(&event->node, &event_hash[key]);
-> > > > > @@ -874,8 +885,6 @@ static struct trace_event trace_print_event = {
-> > > > >  	.trace		= trace_print_print,
-> > > > >  	.latency_trace	= trace_print_print,
-> > > > >  	.raw		= trace_print_raw,
-> > > > > -	.hex		= trace_nop_print,
-> > > > > -	.binary		= trace_nop_print,
-> > > > >  };
-> > > > >  
-> > > > >  static struct trace_event *events[] __initdata = {
-> > > > > -- 
-> > > > > 1.6.0.6
-> > > > > 
-> > > > 
-> > > > 
-> > > > Nice! This avoids one branch for each entry printed.
-> > > 
-> > > Is that an Acked-by in response to that CC? :-)
-> > 
-> > yes, i generally treat such replies as an implicit Acked-by and add them - 
-> > already added Fredric's acks to two other commits of yours earlier today. An 
-> > explicit Acked-by is even more helpful though :-)
-> > 
-> > 	Ingo
+On Wed, Feb 04, 2009 at 11:23:55AM +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
 > 
 > 
-> Heh, I'm not a tracing/core/ftrace maintainer, so I wouldn't dare put my 
-> Acked-by unless it touches a file I started :-) Concerning 
-> tracing/core/ftrace/tracers, I review the patches that come if I have the 
-> time to and tell what I think about it. But in my opinion, the Acked-by on 
-> this area are more appropriate if they come from Steven :-)
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12416
+> Subject		: Recent change to kernel spikes out ccache/distcc
+> Submitter	: Theodore Ts'o <tytso@mit.edu>
+> Date		: 2009-01-06 15:15 (30 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123125495000603&w=4
+> Patch		: http://lkml.org/lkml/2009/1/20/78
 
-if you read a patch, in an area of code that you know well (which you do in 
-this case), and if you find the patch it a step forward with no defects then 
-feel free to post an Acked-by.
+This can be closed; Sam reverted the necessary patch the relevent
+commits in 2ea03891, which is in Linus's tree.
 
-You absolutely dont have to be the primary author of a file to do that. All 
-such help makes maintenance easier and is much appreciated.
+Rafael, I've closed the bug in the Kernel Bugzilla for your convenience.
 
-	Ingo
+Thanks,
+
+	     	    	       	   	  	   - Ted
