@@ -1,125 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760249AbZBETJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbZBETJx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760249AbZBETJf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:09:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760058AbZBETJA
+	id S1760561AbZBETJx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:09:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759534AbZBETJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:09:00 -0500
-Received: from byss.tchmachines.com ([208.76.80.75]:38707 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760022AbZBETI7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 14:08:59 -0500
-Date: Thu, 5 Feb 2009 11:08:51 -0800
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: wli@movementarian.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, shai@scalex86.org
-Subject: Re: [patch] mm: Fix SHM_HUGETLB to work with users in
-	hugetlb_shm_group
-Message-ID: <20090205190851.GA6692@localdomain>
-References: <20090204220428.GA6794@localdomain> <20090204221121.GD10229@movementarian.org> <20090205004157.GC6794@localdomain> <20090205132529.GA12132@csn.ul.ie>
+	Thu, 5 Feb 2009 14:09:17 -0500
+Received: from smtp2-g21.free.fr ([212.27.42.2]:48851 "EHLO smtp2-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753388AbZBETJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 14:09:13 -0500
+X-Greylist: delayed 167558 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 14:09:11 EST
+To: ZhangRui <rui.zhang@intel.com>, yakui_zhao <yakui.zhao@intel.com>,
+       Pavel Machek <pavel@ucw.cz>
+Cc: "linux-acpi\@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-pm\@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>
+Subject: Re: [linux-pm] Acer 6592 TM, suspend to ram and resume freeze
+References: <873aevl0l8.fsf@free.fr> <1233712347.6643.7.camel@rzhang-desktop>
+From: Robert Jarzmik <robert.jarzmik@free.fr>
+Date: Thu, 05 Feb 2009 20:08:58 +0100
+In-Reply-To: <1233712347.6643.7.camel@rzhang-desktop> (ZhangRui's message of "Wed\, 04 Feb 2009 09\:52\:27 +0800")
+Message-ID: <8763jo1z1x.fsf@free.fr>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090205132529.GA12132@csn.ul.ie>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for your comments Mel.
+ZhangRui <rui.zhang@intel.com> writes:
+> what if you build in the ACPI processor driver (CONFIG_ACPI_PROCESSOR=y)
+> and boot with "processor.max_cstate=1"?
+That doesn't help, thanks for the hint.
 
-On Thu, Feb 05, 2009 at 01:25:29PM +0000, Mel Gorman wrote:
->On Wed, Feb 04, 2009 at 04:41:57PM -0800, Ravikiran G Thirumalai wrote:
->
->========
->> Fix hugetlb subsystem so that non root users belonging to hugetlb_shm_group
->> can actually allocate hugetlb backed shm.
+>> Now, I notice that loading acpi-cpufreq triggers the following message :
+>> > log: Jan 19 18:23:42 velvet kernel: ACPI: EC: non-query interrupt received, switching to interrupt mode
 >> 
->> Currently non root users cannot even map one large page using SHM_HUGETLB
->> when they belong to the gid in /proc/sys/vm/hugetlb_shm_group.
->> This is because allocation size is verified against RLIMIT_MEMLOCK resource
->> limit even if the user belongs to hugetlb_shm_group.
->> 
->> This patch
->> 1. Fixes hugetlb subsystem so that users with CAP_IPC_LOCK and users
->>    belonging to hugetlb_shm_group don't need to be restricted with
->>    RLIMIT_MEMLOCK resource limits
->> 2. If a user has sufficient memlock limit he can still allocate the hugetlb
->>    shm segment.
->>  
->
->Point 1 I'm happy with, point 2 less so. It alters the semantics of the
->locked rlimit beyond what is necessary to fix the problem - i.e. a user
->in the group should be allowed to use hugepages with shmget(). Minimally,
->there should be two separate patches.
+> I don't think these two are related. can you please make a double check?
+You're right. Loading thermal.ko leads to the same message, yet the suspend to
+ram works.
 
-I see your point, and I was initially leaning towards 1. only -- that is not
-validate against memlock rlimit at all.  But, I kinda understand Bill's
-comments about still honoring the rlimit because this is the only way to map
-SHM_HUGETLB currently, and seems like all oracle users currently do that.
-This is a compatibility issue and sysadmins will have to change from using
-/etc/security/limits.conf  to a gid based sysctl in /etc/sysctl.conf
-(both based on distros) to let users use hugetlb backed shm. I agree this
-still keeps some inconsistency around, so how about letting people still use
-rlimit based checks, but marking it deprecated by adding this to
-feature-removal-schedule.txt?
+yakui_zhao <yakui.zhao@intel.com> writes:
+> Will you please try the latest kernel(2.6.29-rc3)?
+>      If the problem still exists, please attach the output of dmesg,
+> acpidump.
+Yes, great, it works in 2.6.29-rc3!!! It's amazing, because, when I check acpi
+in [1], I see no change which could have led to the fix.
+I provided acpidump in [2] as information.
 
->
->> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
->> 
->> ---
->> 
->>  Documentation/vm/hugetlbpage.txt |   11 ++++++-----
->>  fs/hugetlbfs/inode.c             |   18 ++++++++++++------
->>  include/linux/mm.h               |    2 ++
->>  mm/mlock.c                       |   11 ++++++++---
->>  4 files changed, 28 insertions(+), 14 deletions(-)
->> 
->> Index: linux-2.6-tip/fs/hugetlbfs/inode.c
->> ===================================================================
->> --- linux-2.6-tip.orig/fs/hugetlbfs/inode.c	2009-02-04 15:21:45.000000000 -0800
->> +++ linux-2.6-tip/fs/hugetlbfs/inode.c	2009-02-04 15:23:19.000000000 -0800
->> @@ -943,8 +943,15 @@ static struct vfsmount *hugetlbfs_vfsmou
->>  static int can_do_hugetlb_shm(void)
->>  {
->>  	return likely(capable(CAP_IPC_LOCK) ||
->> -			in_group_p(sysctl_hugetlb_shm_group) ||
->> -			can_do_mlock());
->> +			in_group_p(sysctl_hugetlb_shm_group));
->> +}
->> +
->> +static void acct_huge_shm_lock(size_t size, struct user_struct *user)
->> +{
->> +	unsigned long pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
->> +	spin_lock(&shmlock_user_lock);
->> +	acct_shm_lock(pages, user);
->> +	spin_unlock(&shmlock_user_lock);
->>  }
->
->This should be split into another patch (i.e. three in all). The first patch
->allows users in thh shm_group to use huge pages. The second that accounts
->for locked_shm properly. The third allows users with a high enough locked
->rlimit to use shmget() with hugepages. However, my feeling right now would
->be to ack 1, re-reread 2 and nak 3.
+Well, I' consider the topic solved. I'll make further tests this weekend to test
+all of my laptop functions, but my hopes are quite high.
 
-I totally agree.  In fact yesterday I was thinking of resending this patch
-to not account for shm memory when a user is not validated against rlimits
-(when he has CAP_IPC_LOCK or if he belongs to the sysctl_hugetlb_shm_group).
+Thanks a lot, the three of you.
 
-As I see it there must be two parts:
-1. Free ticket to CAP_IPC_LOCK and users belonging to sysctl_hugetlb_shm_group
-2. Patch to have users not having CAP_IPC_LOCK or sysctl_hugetlb_shm_group
-   to check against memlock rlimits, and account it.  Also mark this
-   deprecated in feature-removal-schedule.txt
+--
+Robert
 
-Would this be OK?
+[1] : Git ACPI check
+velvet:~/kernel_src/linux-2.6# git-log --pretty=oneline v2.6.29-rc3 ^v2.6.29-rc1 drivers/acpi/
+88d998c264722cd6e8fafa42aee191f7d9194960 Merge branch 'misc' into release
+f1f055f1036a20742608c28ee82139f572dfd031 Merge branches 'bugzilla-11884' and 'bugzilla-8544' into release
+d08ca2ca743f324eceba59e93188f9439e966bce ACPI: rename main.c to sleep.c
+0e4240d94628530a912d216cad1e32d2e3827327 thermal fixup for broken BIOS which has invalid trip points.
+c6cb0e878446c79f42e7833d7bb69ed6bfbb381f ACPI: EC: Don't trust ECDT tables from ASUS
+235c4a59278eb07e61d909f1f0c233733034a8b3 ACPI: EC: Limit workaround for ASUS notebooks even more
 
-Thanks,
-Kiran
+[2] http://belgarath.hd.free.fr/download/acer6592tm/acpidump.txt.gz
