@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZBEWHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbZBEWJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754158AbZBEWHp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 17:07:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZBEWHi
+	id S1754684AbZBEWJv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 17:09:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752678AbZBEWJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 17:07:38 -0500
-Received: from gw.goop.org ([64.81.55.164]:46251 "EHLO mail.goop.org"
+	Thu, 5 Feb 2009 17:09:42 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:37297 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751815AbZBEWHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 17:07:37 -0500
-Message-ID: <498B6325.1040401@goop.org>
-Date: Thu, 05 Feb 2009 14:07:33 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1752530AbZBEWJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 17:09:41 -0500
+Date: Thu, 5 Feb 2009 23:06:56 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jerome Marchand <jmarchan@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] ptrace: reintroduce __ptrace_detach() as a callee
+	of ptrace_exit()
+Message-ID: <20090205220656.GA7660@redhat.com>
+References: <20090129042920.GA5111@redhat.com> <20090205012334.9E60FFC381@magilla.sf.frob.com> <20090205143959.GA20953@redhat.com> <20090205203731.1E02BFC381@magilla.sf.frob.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Hugh Dickins <hugh@veritas.com>,
-       William Lee Irwin III <wli@movementarian.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: pud_bad vs pud_bad
-References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu> <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu> <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <498B4F1F.5070306@goop.org> <Pine.LNX.4.64.0902052046240.18431@blonde.anvils> <498B54A0.7040005@goop.org> <20090205215050.GB28097@elte.hu>
-In-Reply-To: <20090205215050.GB28097@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090205203731.1E02BFC381@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> We'd also lose a fair bit of performance (not to mention the pagetable 
-> footprint doubling that Hugh already mentioned) on 32-bit PAE capable 
-> systems that dont actually have RAM above 4G physical.
->   
+On 02/05, Roland McGrath wrote:
+>
+> > > Given its content, this function now better belongs in ptrace.c, I think.
+> >
+> > I don't completely agree... This helper imho has nothing to do with
+> > ptracing, except it does __ptrace_unlink(). But OK, I will move it
+> > if you prefer.
+>
+> Obviously where it goes is not a big deal.  But I think it's clear that it
+> has everything to do with ptrace and nothing to do with anything else.
+> It resolves a situation that can only arise because of ptrace magic.
 
-Why's that?  Do you mean directly from using PAE, or as a side-effect of 
-highmem?
+OK, OK, I will move it.
 
-    J
+> > In that case we should export task_detached().
+>
+> Or just recognize that this trivial wrapper around == -1 has little
+> value two lines away from a place where = -1 is done explicitly.
+> Really, the "abstraction" is more confusing than not in this function, IMHO.
+
+Well, yes. The only problem it is not easy to grep for this check
+without a helper.
+
+
+(And I still hope we can change the rules sometimes, I think there
+ is no good reason to have task_detached() or EXIT_DEAD tasks on
+ ->children list. But this is offtopic.)
+
+Oleg.
+
