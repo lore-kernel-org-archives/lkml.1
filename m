@@ -1,93 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761786AbZBETrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763870AbZBETsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761786AbZBETrz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761145AbZBETki
+	id S1763870AbZBETsX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:48:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762859AbZBETli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:40:38 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:33655 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762636AbZBETkh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 14:40:37 -0500
-Date: Thu, 5 Feb 2009 19:38:42 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       William Lee Irwin III <wli@movementarian.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: pud_bad vs pud_bad
-In-Reply-To: <20090205191017.GF20470@elte.hu>
-Message-ID: <Pine.LNX.4.64.0902051921150.30938@blonde.anvils>
-References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu>
- <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu>
+	Thu, 5 Feb 2009 14:41:38 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43111 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762850AbZBETlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 14:41:37 -0500
+Date: Thu, 5 Feb 2009 20:41:25 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Daniel Lowengrub <lowdanie@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2.6.28 1/2] memory: improve find_vma
+Message-ID: <20090205194125.GA3129@elte.hu>
+References: <8c5a844a0901220851g1c21169al4452825564487b9a@mail.gmail.com> <Pine.LNX.4.64.0901221658550.14302@blonde.anvils> <8c5a844a0901221500m7af8ff45v169b6523ad9d7ad3@mail.gmail.com> <20090122231358.GA27033@elte.hu> <8c5a844a0901230310h7aa1ec83h60817de2b36212d8@mail.gmail.com> <8c5a844a0901281331w4cea7ab2y305d5a1af96e313e@mail.gmail.com> <20090129141929.GP24391@elte.hu> <8c5a844a0902010319t20b853d0t6c156ecc84543f30@mail.gmail.com> <20090201130058.GA486@elte.hu> <8c5a844a0902050326v2155dbeaq5449f1e373f4245d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8c5a844a0902050326v2155dbeaq5449f1e373f4245d@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009, Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> > Ingo Molnar wrote:
-> >> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >>   
-> >>> I'm looking at unifying the 32 and 64-bit versions of pud_bad.
-> >>>
-> >>> 32-bits defines it as:
-> >>>
-> >>> static inline int pud_bad(pud_t pud)
-> >>> {
-> >>> 	return (pud_val(pud) & ~(PTE_PFN_MASK | _KERNPG_TABLE | _PAGE_USER)) != 0;
-> >>> }
-> >>>
-> >>> and 64 as:
-> >>>
-> >>> static inline int pud_bad(pud_t pud)
-> >>> {
-> >>> 	return (pud_val(pud) & ~(PTE_PFN_MASK | _PAGE_USER)) != _KERNPG_TABLE;
-> >>> }
-> >>>
-> >>>
-> >>> I'm inclined to go with the 64-bit version, but I'm wondering if 
-> >>> there's something subtle I'm missing here.
-> >>>     
-> >>
-> >> Why go with the 64-bit version? The 32-bit check looks more compact and 
-> >> should result in smaller code.
-> >>   
+
+* Daniel Lowengrub <lowdanie@gmail.com> wrote:
+
+> On Sun, Feb 1, 2009 at 3:00 PM, Ingo Molnar <mingo@elte.hu> wrote:
 > >
-> > Well, its stricter.  But I don't really understand what condition its  
-> > actually testing for.
+> >  you should time it:
+> >
+> >  time ./mmap-perf
+> >
+> > and compare the before/after results.
+> >
+> >        Ingo
+> >
 > 
-> Well it tests: "beyond the bits covered by PTE_PFN|_PAGE_USER, the rest 
-> must only be _KERNPG_TABLE".
-> 
-> The _KERNPG_TABLE bits are disjunct from PTE_PFN|_PAGE_USER bits, so this 
-> makes sense.
-> 
-> But the 32-bit check does the exact same thing but via a single binary 
-> operation: it checks whether any bits outside of those bits are zero -
-> just via a simpler test that compiles to more compact code.
+> I made a script that runs 'time ./mmap-perf' 100 times and outputs the
+> average.  The output on the standard kernel was:
+>
+>  real: 1.022600
+>  user: 0.135900
+>  system: 0.852600
+>
+> The output after the patch was:
+>
+>  real: 0.815400
+>  user: 0.113200
+>  system: 0.622200
+>
+> These results were consistent which isn't surprising considering the
+> fact that they themselves are averages.
+> What do you think?
 
-Simpler and more compact, but not as strict: in particular, a value of
-0 or 1 is identified as bad by that 64-bit test, but not by the 32-bit.
+Those nymbers look very convincing to me, a cool 25.4% speedup!
+mmap-perf is very MM intense - including vma lookup.
 
-I most definitely prefer the stricter 64-bit version.  I thought we'd
-gone around this all before, but maybe that was for pmd_bad(): there
-too one variant was weaker than the other and we went for the stronger.
-
-However... I forget how the folding works out.  The pgd in the 32-bit
-PAE case used to have just the pfn and the present bit set in that
-little array of four entries: if pud_bad() ends up getting applied
-to that, I guess it will blow up.
-
-If so, my preferred answer would actually be to make those 4 entries
-look more like real ptes; but you may think I'm being a bit silly.
-
-Not quite sure why wli is Cc'ed but I've fixed his address:
-it's good to see you back, Bill.
-
-Hugh
+	Ingo
