@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753161AbZBER4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbZBER5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753161AbZBER4g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 12:56:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759506AbZBER4V
+	id S1759602AbZBER5o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 12:57:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZBER5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 12:56:21 -0500
-Received: from smtp-out.google.com ([216.239.45.13]:26576 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759346AbZBER4U (ORCPT
+	Thu, 5 Feb 2009 12:57:34 -0500
+Received: from terminus.zytor.com ([198.137.202.10]:53416 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752368AbZBER5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 12:56:20 -0500
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:in-reply-to:x-operating-system:
-	user-agent:x-gmailtapped-by:x-gmailtapped;
-	b=X2vdLbQRHF48TNqoY8WIg0nuZ1fuSB04HueNDzKD9krEAJQ4aPbyPm3AsYho3eImz
-	x0P+x54eWJcTlLU3JWcMA==
-Date: Thu, 5 Feb 2009 09:56:08 -0800
-From: Mandeep Singh Baines <msb@google.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       rientjes@google.com, mbligh@google.com, thockin@google.com,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] softlockup: convert read_lock in hung_task to rcu_read_lock
-Message-ID: <20090205175608.GA10819@google.com>
+	Thu, 5 Feb 2009 12:57:33 -0500
+Message-ID: <498B27DB.9000808@zytor.com>
+Date: Thu, 05 Feb 2009 09:54:35 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090205143453.GG28443@elte.hu>
-X-Operating-System: Linux/2.6.18.5-gg42workstation-mixed64-32 (x86_64)
-User-Agent: Mutt/1.5.11
-X-GMailtapped-By: 172.25.146.78
-X-GMailtapped: msb
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>, mingo@elte.hu, x86@kernel.org,
+       sam@ravnborg.org, jirislaby@gmail.com, gregkh@suse.de,
+       davem@davemloft.net, xyzzy@speakeasy.org, mchehab@infradead.org,
+       jens.axboe@oracle.com, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH] Make exported headers use strict posix types
+References: <20090204064307.GA18415@gondor.apana.org.au> <200902051530.25897.arnd@arndb.de> <498B0315.5080804@zytor.com> <200902051707.55457.arnd@arndb.de>
+In-Reply-To: <200902051707.55457.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar (mingo@elte.hu) wrote:
+Arnd Bergmann wrote:
+> A number of standard posix types are used in exported headers, which
+> is not allowed if __STRICT_KERNEL_NAMES is defined. Change them all
+> to use the safe __kernel variant so that we can make __STRICT_KERNEL_NAMES
+> the default.
 > 
-> I've applied your patch to tip:core/softlockup, thanks Mandeep!
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> 
+> ---
+> On Thursday 05 February 2009, H. Peter Anvin wrote:
+> 
+>> I have been advocating for hacking headers_install for a while.  That
+>> takes care of the 106.  The 15 *need* to be audited immediately, because
+>> that is even likely to be actual manifest bugs.
+> 
+> This is what I found, please review.
 > 
 
-Oops, I put the conversion to rcu_read_lock in a seperate patch. I
-understand now the convention is to use a patch series only when the
-patches can be applied independently.
+Indeed a lot of these look like real bugs, e.g. the use of off_t (which 
+may be 32 bits in userspace while __kernel_off_t is 64 bits.)
 
----
-Since the tasklist is protected by rcu list operations, it is safe
-to convert the read_lock()s to rcu_read_lock().
+So these are, indeed, critical bug fixes and should go into 2.6.29.
 
-Suggested-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Mandeep Singh Baines <msb@google.com>
----
- kernel/hung_task.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Some of these changes may require changes in userspace code if userspace 
+has hacked around the problems.  Those changes, though, really should 
+happen, too.
 
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-index d32d293..34b678c 100644
---- a/kernel/hung_task.c
-+++ b/kernel/hung_task.c
-@@ -155,7 +155,7 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
- 	if (test_taint(TAINT_DIE) || did_panic)
- 		return;
- 
--	read_lock(&tasklist_lock);
-+	rcu_read_lock();
- 	do_each_thread(g, t) {
- 		if (!--max_count)
- 			goto unlock;
-@@ -171,7 +171,7 @@ static void check_hung_uninterruptible_tasks(unsigned long timeout)
- 			check_hung_task(t, now, timeout);
- 	} while_each_thread(g, t);
-  unlock:
--	read_unlock(&tasklist_lock);
-+	rcu_read_unlock();
- }
- 
- static void update_poll_jiffies(void)
--- 
-1.5.4.5
-
+	-hpa
