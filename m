@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZBEVGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZBEVIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbZBEVGo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZBEVGa
+	id S1754010AbZBEVIS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBEVIG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:06:30 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49189 "EHLO
+	Thu, 5 Feb 2009 16:08:06 -0500
+Received: from casper.infradead.org ([85.118.1.10]:49197 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752812AbZBEVG3 (ORCPT
+	with ESMTP id S1752619AbZBEVIE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:06:29 -0500
-Subject: Re: [PATCH 09/16] dma-debug: add checking for map/unmap_page/single
+	Thu, 5 Feb 2009 16:08:04 -0500
+Subject: Re: [PATCH 08/16] dma-debug: add core checking functions
 From: David Woodhouse <dwmw2@infradead.org>
 To: Joerg Roedel <joerg.roedel@amd.com>
 Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, iommu@lists.linux-foundation.org
-In-Reply-To: <1232376423-11067-10-git-send-email-joerg.roedel@amd.com>
+       fujita.tomonori@lab.ntt.co.jp, iommu@lists.linux-foundation.org,
+       davem@davemloft.net
+In-Reply-To: <1232376423-11067-9-git-send-email-joerg.roedel@amd.com>
 References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
-	 <1232376423-11067-10-git-send-email-joerg.roedel@amd.com>
+	 <1232376423-11067-9-git-send-email-joerg.roedel@amd.com>
 Content-Type: text/plain
-Date: Thu, 05 Feb 2009 21:06:22 +0000
-Message-Id: <1233867982.3548.697.camel@macbook.infradead.org>
+Date: Thu, 05 Feb 2009 21:07:59 +0000
+Message-Id: <1233868079.3548.699.camel@macbook.infradead.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
@@ -32,15 +33,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 2009-01-19 at 15:46 +0100, Joerg Roedel wrote:
 >  
-> +static inline void debug_dma_map_page(struct device *dev, struct page *page,
-> +                                     size_t offset size_t size,
+> +       if (ref->type != entry->type) {
+> +               err_printk(ref->dev, "DMA-API: device driver frees "
+> +                          "DMA memory with wrong function "
+> +                          "[device address=0x%016llx] [size=%llu bytes] "
+> +                          "[mapped as %s] [unmapped as %s]\n",
+> +                          ref->dev_addr, ref->size,
+> +                          type2name[entry->type], type2name[ref->type]);
 
-A missing comma between those two arguments...       ^
+e1000e 0000:00:19.0: DMA-API: device driver frees DMA memory with wrong
+function [device address=0x00000000ffedc002] [size=90 bytes] [mapped as
+single] [unmapped as page]
 
-> +                                     int direction, dma_addr_t dma_addr,
-> +                                     bool map_single)
 
+<davem> That debug check is excessive, substituting those two things
+works for every DMA API implementation I am aware of
 
 -- 
-dwmw2
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
