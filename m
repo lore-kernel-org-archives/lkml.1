@@ -1,90 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756458AbZBEX6e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756729AbZBEX6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756458AbZBEX6e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 18:58:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbZBEX6V
+	id S1756729AbZBEX6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 18:58:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZBEX6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 18:58:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36902 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Feb 2009 18:58:25 -0500
+Received: from gate.crashing.org ([63.228.1.57]:37840 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755751AbZBEX6T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 18:58:19 -0500
-Date: Fri, 6 Feb 2009 00:57:27 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <greg@kroah.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>
-Subject: Re: [BUGFIX][PATCH -rc/-mm] prevent kprobes from catching spurious
-	page  faults
-Message-ID: <20090205235727.GA16040@elte.hu>
-References: <497FC3B1.7050805@redhat.com> <497FE895.1080708@redhat.com> <20090128154824.GA6025@Krystal> <49808EEF.1020700@redhat.com> <20090128171331.GA9006@Krystal> <49809CCE.40409@redhat.com> <20090128181053.GC9908@Krystal> <498B6457.20302@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <498B6457.20302@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1755949AbZBEX6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 18:58:23 -0500
+Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Hugh Dickins <hugh@veritas.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <200902051433.23294.jbarnes@virtuousgeek.org>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+	 <Pine.LNX.4.64.0902051713550.1445@blonde.anvils>
+	 <1233867944.4612.104.camel@pasglop>
+	 <200902051433.23294.jbarnes@virtuousgeek.org>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 10:57:52 +1100
+Message-Id: <1233878272.4612.106.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
-
-> -	if (notify_page_fault(regs))
-> -		return;
->  	if (unlikely(kmmio_fault(regs, address)))
->  		return;
+> No, sorry, but I just took a look and as long as the various callers can 
+> handle it (haven't checked), this patch would work.
 > 
-> @@ -634,6 +632,9 @@ void __kprobes do_page_fault(struct pt_r
->  		if (spurious_fault(address, error_code))
->  			return;
+> > The second problem is that if I just don't expose the legacy_mem file,
+> > then X has no way to know whether the kernel doesn't support the
+> > interface or whether the HW doesn't support legacy memory access. So X
+> > will fallback to whacking /dev/mem which is even more bogus. At least
+> > that's what I remember from last I looked at that part of X code.
+> >
+> > It should be a trivial fix on X side tho.
 > 
-> +		/* kprobes don't want to hook the spurious faults. */
-> +		if (notify_page_fault(regs))
-> +			return;
->  		/*
->  		 * Don't take the mm semaphore here. If we fixup a prefetch
->  		 * fault we could otherwise deadlock.
-> @@ -641,6 +642,9 @@ void __kprobes do_page_fault(struct pt_r
->  		goto bad_area_nosemaphore;
->  	}
+> One option there would be to provide the file but just use anonymous memory to 
+> back it.  X will happily think it's messing with legacy VGA memory, but it 
+> shouldn't matter that it's not actually affecting hw.
+
+That might be the best approach ... I'll have a look.
+
+Ben.
+
+> diff --git a/hw/xfree86/os-support/bus/linuxPci.c 
+> b/hw/xfree86/os-support/bus/li
+> index 263fd8f..5d2da32 100644
+> --- a/hw/xfree86/os-support/bus/linuxPci.c
+> +++ b/hw/xfree86/os-support/bus/linuxPci.c
+> @@ -484,8 +484,9 @@ xf86MapDomainMemory(int ScreenNum, int Flags, struct 
+> pci_dev
+>      if (fd >= 0)
+>         close(fd);
+>      if (addr == NULL || addr == MAP_FAILED) {
+> -       perror("mmap failure");
+> -       FatalError("xf86MapDomainMem():  mmap() failure\n");
+> +       xf86Msg(X_WARNING, "xf86MapDomainMem():  mmap() failure: %s\n",
+> +               strerror(errno));
+> +       return NULL;
+>      }
+>      return addr;
+>  }
 > 
-> +	/* kprobes don't want to hook the spurious faults. */
-> +	if (notify_page_fault(regs))
-> +		return;
+> 
 
-I dont know - this spreads that callback to two places now. Any
-reason why kprobes cannot call spurious_fault(), if there's a
-probe active?
-
-Also, moving that would remove the planned cleanup of merging these
-two into one call:
-
- 	if (notify_page_fault(regs))
- 		return;
-  	if (unlikely(kmmio_fault(regs, address)))
-  		return;
-
-We should reduce the probing cross section, not increase it,
-especially in such a critical codepath as the pagefault handler.
-
-Btw., why cannot kprobes install a dynamic probe to the fault
-handler itself? That way the default path would have no such
-callbacks and checks at all.
-
-	Ingo
