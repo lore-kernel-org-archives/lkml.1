@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758182AbZBEPwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757961AbZBEPyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758182AbZBEPwV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:52:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZBEPwG
+	id S1757961AbZBEPyE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:54:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZBEPxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:52:06 -0500
-Received: from mx3.schottelius.org ([77.109.138.221]:59147 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbZBEPwF (ORCPT
+	Thu, 5 Feb 2009 10:53:52 -0500
+Received: from edna.telenet-ops.be ([195.130.132.58]:50892 "EHLO
+	edna.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753683AbZBEPxw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:52:05 -0500
-Date: Thu, 5 Feb 2009 16:52:03 +0100
-From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: X200: not resuming, cryptswap fails (was: linux-next: Tree for
-	February 5)
-Message-ID: <20090205155203.GA4549@denkbrett.schottelius.org>
-Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20090205191658.41161afc.sfr@canb.auug.org.au>
+	Thu, 5 Feb 2009 10:53:52 -0500
+Date: Thu, 5 Feb 2009 16:53:50 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-m68k@vger.kernel.org, uClinux list <uclinux-dev@uclinux.org>
+Subject: Re: Fix support for console port other than ttyS0 on mcf.c
+In-Reply-To: <20090205152751.GL26064@csclub.uwaterloo.ca>
+Message-ID: <Pine.LNX.4.64.0902051652080.5127@anakin>
+References: <20090204201518.GH26064@csclub.uwaterloo.ca>
+ <20090204202009.GI26064@csclub.uwaterloo.ca> <Pine.LNX.4.64.0902042200340.25136@anakin>
+ <20090205152751.GL26064@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="cNdxnHkX5QqsyA0e"
-Content-Disposition: inline
-In-Reply-To: <20090205191658.41161afc.sfr@canb.auug.org.au>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.28-rc9-wl-denkbrett-24896-gf4f5c96 x86_64)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 5 Feb 2009, Lennart Sorensen wrote:
+> On Wed, Feb 04, 2009 at 10:00:58PM +0100, Geert Uytterhoeven wrote:
+> > On Wed, 4 Feb 2009, Lennart Sorensen wrote:
+> > > Perhaps CCing linux-m68k@lists.linux-m68k.org would be a good idea.
+> > 
+> > Thanks, but this is a uClinux driver.
+> 
+> This is a patch against Linus's current tree.  How is that a uClinux
+> driver?  I am using a build of yesterday's git tree from Linus on a
+> 5271evb board and this fixes the console port with it.  I have no user
+> space yet, so whatever does uClinux have to do with anything?
 
---cNdxnHkX5QqsyA0e
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+linux-m68k@lists.linux-m68k.org handles m68k (with MMU) only.
+uclinux-dev@uclinux.org handles m68knommu.
 
-Stephen Rothwell [Thu, Feb 05, 2009 at 07:16:58PM +1100]:
-> Hi all,
->=20
-> Changes since 20090204:
+Gr{oetje,eeting}s,
 
-20090205 on Lenovo X200:
+						Geert
 
-  - on bootup the cryptsetup call for my home works, for
-    swap not anymore (hangs, but can be canceled via ctrl-c;
-    saw that in previously, beginning with next-20090122;
-    standard Debian randomkey swap via cryptsetup)
-  - suspend works; resume not: the moon is still seen,
-    the fans start working, screen is black, network not
-    up again -> no ping/ssh possible.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Back on 2.6.28-rc9-wl-denkbrett-24896-gf4f5c96, last working
-version on X200.
-
-Sincerly,
-
-Nico
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---cNdxnHkX5QqsyA0e
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkmLCyIACgkQuL75KpiFGIxgRgCdE0SVJxnM9a3dkStOgYF2GMwD
-5pQAoMYUJegvOJTzGSmbaVaXYWu/5MZk
-=lre1
------END PGP SIGNATURE-----
-
---cNdxnHkX5QqsyA0e--
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
