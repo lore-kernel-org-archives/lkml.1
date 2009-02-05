@@ -1,117 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbZBERov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759103AbZBERtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755173AbZBERov (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 12:44:51 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbZBERok
+	id S1759103AbZBERtR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 12:49:17 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbZBERtD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 12:44:40 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:51521 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752064AbZBERoj (ORCPT
+	Thu, 5 Feb 2009 12:49:03 -0500
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:45435 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754092AbZBERtB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 12:44:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Vehpyd1/iAvm4U9l7wPh1TbZZABIsKrgdoTqhTFwWLm9Ea6V+FMNd1PJe/zJ3c9Dxh
-         ULyLrhxlcMIRLeflUJR6GCtYo1U5KX9G44mBBuW1Nu+VCYKDQNpyn8cpXGrzA1A47yal
-         F+6Pz+1mKvl9AsKW9uZFcs4SwrK6EclXRjLF0=
-MIME-Version: 1.0
-In-Reply-To: <20090204134823.8eefa728.akpm@linux-foundation.org>
-References: <20090116191108.135927000@polaris-admin.engr.sgi.com>
-	 <200902041314.32277.rusty@rustcorp.com.au>
-	 <20090203190111.2ec31cef.akpm@linux-foundation.org>
-	 <200902042111.35543.rusty@rustcorp.com.au>
-	 <20090204073636.30f15339.akpm@linux-foundation.org>
-	 <20090204213519.GR22608@elte.hu>
-	 <20090204134823.8eefa728.akpm@linux-foundation.org>
-Date: Thu, 5 Feb 2009 18:44:36 +0100
-Message-ID: <b647ffbd0902050944m40d69bc6m3b031b7a0ea80c7c@mail.gmail.com>
-Subject: Re: [PATCH 2/3] work_on_cpu: Use our own workqueue.
-From: Dmitry Adamushko <dmitry.adamushko@gmail.com>
+	Thu, 5 Feb 2009 12:49:01 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Subject: [PATCH] floppy: request only the ports we actually use
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, rusty@rustcorp.com.au, travis@sgi.com,
-       mingo@redhat.com, davej@redhat.com, cpufreq@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, Philippe De Muyter <phdm@macqel.be>,
+       Robert Hancock <hancockrwd@gmail.com>, Adam M Belay <abelay@mit.edu>,
+       Len Brown <lenb@kernel.org>
+Date: Thu, 05 Feb 2009 10:48:59 -0700
+Message-ID: <20090205174859.18396.68512.stgit@bob.kio>
+User-Agent: StGIT/0.14.3.215.gff3d
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/2/4 Andrew Morton <akpm@linux-foundation.org>:
-> On Wed, 4 Feb 2009 22:35:19 +0100
-> Ingo Molnar <mingo@elte.hu> wrote:
->
->>
->> * Andrew Morton <akpm@linux-foundation.org> wrote:
->>
->> > mm/pdflush.c:
->> >
->> >   wtf what the heck is all that stuff and who added it?  weird.
->> >
->> >   Leave it alone I guess.  Can admins manually move kernel threads to
->> >   other CPUs?
->>
->> they can - and there's even tools that do that (there's some -rt tools where
->> you can put kernel thread priorities into a config file).
->>
->
-> Oh well, DontDoThatThen.
->
-> I expect that the same argument applies to most of the set_cpus_allowed()
-> callsites - they're run by root-only code.  Sure, root can (with
-> careful timing) move root's own thread onto the wrong CPU in the middle
-> of microcode loading.  In which case root gets to own both pieces.
+The floppy driver requests an I/O port it doesn't need, and
+sometimes this causes a conflict with a motherboard device
+reported by PNPBIOS.
 
-Another issue is that those set_cpus_allowed() callsites may
-effectivelly cancel the effect of sched_setaffinity() being run by an
-administrator in parallel with a target process calling e.g.
-cpufreq_get(0)
+This patch makes the floppy driver request only the ports it
+actually uses.
 
-[ there are a couple of callsites in drivers/{video,pcmcia}, possibly
-running in a process context for which sched_setaffinity() with mask
-!= 'all_cpus_set' may be legitimate from admin's POV :-) ]
+The current floppy driver uses only these ports:
+    0x3f2 (FD_DOR)
+    0x3f4 (FD_STATUS)
+    0x3f5 (FD_DATA)
+    0x3f7 (FD_DCR/FD_DIR)
+but it requests 0x3f2-0x3f5 and 0x3f7, which includes the
+unused port 0x3f3.
 
-iow, not all use-cases are so obvious (like microcode) to fall into
-the category of "didn't you know that this action could do some
-unsynchronized cpu-mask-fiddling work behind your back". Not to say
-that the existence of sych category is wrong, imho.
+Some BIOSes report 0x3f3 as a motherboard resource.  The PNP system
+driver reserves that, which causes a conflict when the floppy driver
+requests 0x3f2-0x3f5 later.
 
-(regarding microcode)
+Philippe reported that this conflict broke the floppy driver between
+2.6.11 and 2.6.22.  His PNPBIOS reports these devices:
 
-> This code is just nuts.  What's the point in pinning itself to > a CPU for the act of loading the microcode into main
-> memory?  It's only
-> the loading of the microcode which should care about
-> which CPU
-> executes the code.  ie: apply_microcode().
+    $ cat 00:07/id 00:07/resources	# motherboard device
+    PNP0c02
+    state = active
+    io 0x80-0x80
+    io 0x10-0x1f
+    io 0x22-0x3f
+    io 0x44-0x5f
+    io 0x90-0x9f
+    io 0xa2-0xbf
+    io 0x3f0-0x3f1
+    io 0x3f3-0x3f3
 
-Well, basically I tried to preserve the existing mechanisms/schemes as
-much as possible when reworking this code and yes, I'm the person to
-be blamed for this 'nuts' code.
+    $ cat 00:03/id 00:03/resources	# floppy device
+    PNP0700
+    state = active
+    io 0x3f4-0x3f5
+    io 0x3f2-0x3f2
 
-> The code needs some laundering, switch to >schedule_work_on().
+Reference:
+    http://lkml.org/lkml/2009/1/31/162
 
-I had a patch doing exactly this but then there were other concerns
-with the 'schedule_work_on()' approach
-(e.g. http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-08/msg02827.html)
+Signed-off-by: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Reported-by: Philippe De Muyter <phdm@macqel.be>
+Tested-by: Philippe De Muyter <phdm@macqel.be>
+CC: Adam M Belay <abelay@mit.edu>
+CC: Robert Hancock <hancockrwd@gmail.com>
+---
+ drivers/block/floppy.c |   16 ++++++++++++----
+ 1 files changed, 12 insertions(+), 4 deletions(-)
 
-then I had another idea (run it from start_secondary() or something
-like this), but I never managed to look at this issue again
-(and noone else seemed to care about really running "it as early as
-possible" ;-)
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index cf29cc4..44f711b 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -4399,15 +4399,20 @@ static int floppy_grab_irq_and_dma(void)
+ 
+ 	for (fdc = 0; fdc < N_FDC; fdc++) {
+ 		if (FDCS->address != -1) {
+-			if (!request_region(FDCS->address + 2, 4, "floppy")) {
++			if (!request_region(FDCS->address + 2, 1, "floppy")) {
+ 				DPRINT("Floppy io-port 0x%04lx in use\n",
+ 				       FDCS->address + 2);
+ 				goto cleanup1;
+ 			}
++			if (!request_region(FDCS->address + 4, 2, "floppy")) {
++				DPRINT("Floppy io-port 0x%04lx in use\n",
++				       FDCS->address + 4);
++				goto cleanup2;
++			}
+ 			if (!request_region(FDCS->address + 7, 1, "floppy DIR")) {
+ 				DPRINT("Floppy io-port 0x%04lx in use\n",
+ 				       FDCS->address + 7);
+-				goto cleanup2;
++				goto cleanup3;
+ 			}
+ 			/* address + 6 is reserved, and may be taken by IDE.
+ 			 * Unfortunately, Adaptec doesn't know this :-(, */
+@@ -4432,13 +4437,16 @@ static int floppy_grab_irq_and_dma(void)
+ 	fdc = 0;
+ 	irqdma_allocated = 1;
+ 	return 0;
++cleanup3:
++	release_region(FDCS->address + 4, 2);
+ cleanup2:
+-	release_region(FDCS->address + 2, 4);
++	release_region(FDCS->address + 2, 1);
+ cleanup1:
+ 	fd_free_irq();
+ 	fd_free_dma();
+ 	while (--fdc >= 0) {
+-		release_region(FDCS->address + 2, 4);
++		release_region(FDCS->address + 2, 1);
++		release_region(FDCS->address + 4, 2);
+ 		release_region(FDCS->address + 7, 1);
+ 	}
+ 	spin_lock_irqsave(&floppy_usage_lock, flags);
 
-In any case, it should be fixable one way or another.
-
-> Ensure that the callback functions don't take >microcode_mutex.
-
-yes, these actually look redundant in cpu-hotplug paths (other callers
-call get/put_online_cpus() so this part should be ok).
-
-Will fix. Thanks for your comments!
-
-
--- 
-Best regards,
-Dmitry Adamushko
