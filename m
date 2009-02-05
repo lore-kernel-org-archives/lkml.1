@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbZBEXoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756464AbZBEXpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756180AbZBEXoY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 18:44:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZBEXoJ
+	id S1756464AbZBEXpp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 18:45:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753407AbZBEXpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 18:44:09 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34136
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753069AbZBEXoH (ORCPT
+	Thu, 5 Feb 2009 18:45:36 -0500
+Received: from rex.securecomputing.com ([203.24.151.4]:53116 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752353AbZBEXpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 18:44:07 -0500
-Date: Thu, 05 Feb 2009 15:44:03 -0800 (PST)
-Message-Id: <20090205.154403.200370311.davem@davemloft.net>
-To: heiko.carstens@de.ibm.com
-Cc: mel@csn.ul.ie, kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: HOLES_IN_ZONE...
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090205090016.6197d588@osiris.boeblingen.de.ibm.com>
-References: <20090204.222651.26527737.davem@davemloft.net>
-	<20090205090016.6197d588@osiris.boeblingen.de.ibm.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 5 Feb 2009 18:45:35 -0500
+Message-ID: <498B7A1D.8060303@snapgear.com>
+Date: Fri, 06 Feb 2009 09:45:33 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: uClinux development list <uclinux-dev@uclinux.org>
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       linux-m68k@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [uClinux-dev] Re: Fix support for console port other than ttyS0
+ on	mcf.c
+References: <20090204201518.GH26064@csclub.uwaterloo.ca>	<20090204202009.GI26064@csclub.uwaterloo.ca>	<Pine.LNX.4.64.0902042200340.25136@anakin>	<20090205152751.GL26064@csclub.uwaterloo.ca>	<Pine.LNX.4.64.0902051652080.5127@anakin>	<20090205155700.GO26064@csclub.uwaterloo.ca> <Pine.LNX.4.64.0902051734500.5127@anakin>
+In-Reply-To: <Pine.LNX.4.64.0902051734500.5127@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-Date: Thu, 5 Feb 2009 09:00:16 +0100
 
-> On Wed, 04 Feb 2009 22:26:51 -0800 (PST)
-> David Miller <davem@davemloft.net> wrote:
+Geert Uytterhoeven wrote:
+> On Thu, 5 Feb 2009, Lennart Sorensen wrote:
+>> On Thu, Feb 05, 2009 at 04:53:50PM +0100, Geert Uytterhoeven wrote:
+>>> linux-m68k@lists.linux-m68k.org handles m68k (with MMU) only.
+>>> uclinux-dev@uclinux.org handles m68knommu.
+>> Oh.  I think I got confused by the fact the same arch/m68k/include is
+>> used for both. so I looked up m68k in MAINTAINERS.
+
+Well, you could try sending to the listed author at the top of mcf.c
+as well :-)
+
+Regards
+Greg
+
+
+
+> Yeah, we just merged it a few day ago :-)
 > 
-> > Later this HOLES_IN_ZONE requirement was removed on s390 by commit:
-> > 
-> > commit 9f4b0ba81f158df459fa2cfc98ab1475c090f29c
-> > Author: Heiko Carstens <heiko.carstens@de.ibm.com>
-> > Date:   Sat Jan 26 14:11:02 2008 +0100
-> > 
-> >     [S390] Get rid of HOLES_IN_ZONE requirement.
+> The goal is to merge arch/m68k{,nommu}, too (eventually)...
 > 
-> This just made sure that all zones start on a MAX_ORDER boundary and
-> just leaves memory that doesn't fit unused. So the requirement for
-> HOLES_IN_ZONE went away.
+>> I will start bothering uclinux-dev@uclinux.org instead.
+>>
+>> So by uclinux driver you meant m68knommu uclinux driver.  I was thinking
+>> uclibc for some reason.
 > 
-> Later I reduced MAX_ORDER to 9 on s390, so we don't leave large
-> portions of memory unused.
+> Yes, m68knommu uclinux driver.
+> 
+> Gr{oetje,eeting}s,
+> 
+> 						Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+> 							    -- Linus Torvalds
+> _______________________________________________
+> uClinux-dev mailing list
+> uClinux-dev@uclinux.org
+> http://mailman.uclinux.org/mailman/listinfo/uclinux-dev
+> This message was resent by uclinux-dev@uclinux.org
+> To unsubscribe see:
+> http://mailman.uclinux.org/mailman/options/uclinux-dev
+> 
 
-Isn't is easier to just make sure your vmemmap mappings extend to such
-boundaries, whether they contain available memory or not?
-
-That's the only requirement you have to satisfy to avoid having to
-specify HOLES_IN_ZONE.  You don't have to have memory there, just
-some vmmemmap page structs have to be mapped at those indices.
-
-And then you won't need waste memory with these MAX_ORDER boundary
-adjustments.
-
-Really, I think IA64 should do this too (it's the only remaining
-HOLES_IN_ZONE setting arch), then we can just delete this whole thing
-completely.
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear, a McAfee Company                  PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
