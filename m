@@ -1,65 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbZBEIAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbZBEIBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbZBEIAe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:00:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbZBEIAY
+	id S1757528AbZBEIBX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:01:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753962AbZBEIBL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:00:24 -0500
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:43420 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751664AbZBEIAX (ORCPT
+	Thu, 5 Feb 2009 03:01:11 -0500
+Received: from relay.parallels.com ([195.214.232.42]:47419 "EHLO
+	relay.parallels.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754267AbZBEIBK convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:00:23 -0500
-Date: Thu, 5 Feb 2009 09:00:16 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: David Miller <davem@davemloft.net>
-Cc: mel@csn.ul.ie, kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: HOLES_IN_ZONE...
-Message-ID: <20090205090016.6197d588@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20090204.222651.26527737.davem@davemloft.net>
-References: <20090204.222651.26527737.davem@davemloft.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
+	Thu, 5 Feb 2009 03:01:10 -0500
+From: Kirill Korotaev <dev@parallels.com>
+To: Ingo Molnar <mingo@elte.hu>, Pavel Emelyanov <xemul@openvz.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>
+Date: Thu, 5 Feb 2009 11:01:07 +0300
+Subject: Re: [PATCH] x86: fix hpet timer reinit for x86_64
+Thread-Topic: [PATCH] x86: fix hpet timer reinit for x86_64
+Thread-Index: AcmG1TNNUgumlXiATbqPubaEwBGh2gAkrLio
+Message-ID: <C5B07773.B781%dev@parallels.com>
+In-Reply-To: <20090204134933.GC17024@elte.hu>
+Accept-Language: en-US, ru-RU
+Content-Language: en
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US, ru-RU
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Feb 2009 22:26:51 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
 
-> I also noticed that when S390 got virtual memmap support, it acquired
-> the HOLES_IN_ZONE setting as well, in this commit:
-> 
-> commit f4eb07c17df2e6cf9bd58bfcd9cc9e05e9489d07
-> Author: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Date:   Fri Dec 8 15:56:07 2006 +0100
-> 
->     [S390] Virtual memmap for s390.
-> 
-> This is confusing.  Is HOLES_IN_ZONE only required when virtual mmap
-> is being used?  If so, why is that?  This is a very poorly documented
-> flag, and I'm saying this after pouring over every commit referencing
-> it.
 
-I should have split that into two commits back then. When writing the
-vmemmap code for s390 I realized that we never guaranteed that zones
-start on a MAX_ORDER boundary or have a size that is a multiple of
-MAX_ORDER. So I just added HOLES_IN_ZONE.
 
-> Later this HOLES_IN_ZONE requirement was removed on s390 by commit:
+On 2/4/09 4:49 PM, "Ingo Molnar" <mingo@elte.hu> wrote:
+
 > 
-> commit 9f4b0ba81f158df459fa2cfc98ab1475c090f29c
-> Author: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Date:   Sat Jan 26 14:11:02 2008 +0100
 > 
->     [S390] Get rid of HOLES_IN_ZONE requirement.
+> * Pavel Emelyanov <xemul@openvz.org> wrote:
+> 
+>> There's a small problem with hpet_rtc_reinit function - it checks
+>> for the
+>>       hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
+>> to continue increasing both the HPET_T1_CMP (register) and the
+>> hpet_t1_cmp (variable).
+>> 
+>> But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
+>> is 64-bit this condition will always be FALSE once the latter hits
+>> the 32-bit boundary, and we can have a situation, when we don't
+>> increase the HPET_T1_CMP register high enough.
+>> 
+>> The result - timer stops ticking, since HPET_T1_CMP becomes less,
+>> than the COUNTER and never increased again.
+>> 
+>> The solution is to cut the upper 32-bit from the hpet_t1_cmp
+>> variable to make the comparison to HPET_COUNTER correct.
+>> 
+>> Reported-by: Kirill Korotaev <dev@openvz.org>
+>> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> applied to tip/timers/urgent, thanks Pavel!
+> 
+> I'm wondering, what symptoms were seen due to the bug? Did system time stop,
+> or did it become erratic, or were there outright lockups?
 
-This just made sure that all zones start on a MAX_ORDER boundary and
-just leaves memory that doesn't fit unused. So the requirement for
-HOLES_IN_ZONE went away.
+Symptoms were observed in user space. An application doing read() on
+/dev/rtc blocked sometimes for a long periods of time (as turned out - until
+counter gets wrap around).
 
-Later I reduced MAX_ORDER to 9 on s390, so we don't leave large
-portions of memory unused.
+Regards,
+Kirill
+
