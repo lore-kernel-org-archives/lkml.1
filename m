@@ -1,137 +1,415 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762558AbZBEC1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762708AbZBEC1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762558AbZBEC1U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 21:27:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbZBEC07
+	id S1762708AbZBEC1h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 21:27:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762379AbZBEC1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 21:26:59 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49685 "EHLO ogre.sisk.pl"
+	Wed, 4 Feb 2009 21:27:16 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56058 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753170AbZBEC06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 21:26:58 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug 12561] hang during suspend to RAM
-Date: Thu, 5 Feb 2009 03:26:14 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: bugme-daemon@bugzilla.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>, jakethompson1@gmail.com,
-       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
-       Mike Travis <travis@sgi.com>
-References: <20090204153842.C703C108042@picon.linux-foundation.org>
-In-Reply-To: <20090204153842.C703C108042@picon.linux-foundation.org>
+	id S1762333AbZBEC1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 21:27:15 -0500
+Date: Thu, 5 Feb 2009 00:27:05 -0200
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH tip 2/2] trace: Remove unused trace_array_cpu parameter
+Message-ID: <20090205022705.GS3440@ghostprotocols.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902050326.15583.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Impact: cleanup
 
-We seem to have problems with cpufreq_suspend and later with hres_timers_resume
-on the Jake's machine:
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ block/blktrace.c                  |    2 +-
+ kernel/trace/trace.c              |   47 ++++++++++++++----------------------
+ kernel/trace/trace.h              |    4 ---
+ kernel/trace/trace_functions.c    |    8 +++---
+ kernel/trace/trace_irqsoff.c      |   10 ++++----
+ kernel/trace/trace_sched_switch.c |    4 +-
+ kernel/trace/trace_sched_wakeup.c |   12 ++++-----
+ 7 files changed, 35 insertions(+), 52 deletions(-)
 
-On Wednesday 04 February 2009, bugme-daemon@bugzilla.kernel.org wrote:
-> ------- Comment #15 from jakethompson1@gmail.com  2009-02-04 07:38 -------
-> 2.6.29-rc3 without acpi_sleep=old_ordering -> still freezes during suspend
-> 
-> 2.6.29-rc3 with acpi_sleep=old_ordering produces the same symptoms as 2.6.28.2,
-> and the dmesg includes the following errors:
-> 
-> BUG: sleeping function called from invalid context at kernel/workqueue.c:440
-> in_atomic(): 0, irqs_disabled(): 1, pid: 2431, name: pm-suspend
-> Pid: 2431, comm: pm-suspend Not tainted 2.6.29-rc3 #1
-> Call Trace:
->  [<c04286fc>] __might_sleep+0xdf/0xe4
->  [<c043c6a4>] flush_work+0x1a/0x93
->  [<c06c2d9e>] ? _spin_unlock_irqrestore+0x22/0x38
->  [<c043c871>] ? __queue_work+0x26/0x2b
->  [<c043c926>] work_on_cpu+0x3c/0x46
->  [<c043bf75>] ? do_work_for_cpu+0x0/0x12
->  [<f045144a>] ? do_drv_read+0x0/0x3e [acpi_cpufreq]
->  [<f0451391>] get_cur_val+0x9a/0xbf [acpi_cpufreq]
->  [<f045140a>] get_cur_freq_on_cpu+0x54/0x94 [acpi_cpufreq]
->  [<c0626b80>] cpufreq_suspend+0x9c/0x114
->  [<c05a4c98>] sysdev_suspend+0x3e/0x175
->  [<c05a8e04>] device_power_down+0xb4/0xf0
->  [<c045037d>] suspend_devices_and_enter+0xcf/0x16d
->  [<c0450570>] enter_state+0x130/0x190
->  [<c045065f>] state_store+0x8f/0xa2
->  [<c04505d0>] ? state_store+0x0/0xa2
->  [<c0527bc1>] kobj_attr_store+0x1a/0x22
->  [<c04d3a7b>] sysfs_write_file+0xb4/0xdf
->  [<c04d39c7>] ? sysfs_write_file+0x0/0xdf
->  [<c04973da>] vfs_write+0x84/0xdf
->  [<c04974ce>] sys_write+0x3b/0x60
->  [<c04038df>] sysenter_do_call+0x12/0x34
-> ------------[ cut here ]------------
-> WARNING: at kernel/hrtimer.c:618 hres_timers_resume+0x2f/0x45()
-> Hardware name: CF-51LCMDDBM
-> hres_timers_resume() called with IRQs enabled!Modules linked in: i915 drm
-> i2c_al
-> go_bit ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6
-> cpufreq_ond
-> emand acpi_cpufreq dm_multipath uinput snd_intel8x0 snd_intel8x0m snd_seq_dummy 
-> snd_ac97_codec ac97_bus snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device
-> sn
-> d_pcm_oss snd_mixer_oss snd_pcm snd_timer ppdev parport_pc snd soundcore
-> yenta_s
-> ocket snd_page_alloc i2c_i801 rsrc_nonstatic ipw2200 serio_raw firewire_ohci
-> par
-> port video i2c_core iTCO_wdt iTCO_vendor_support libipw sky2 pcspkr
-> firewire_cor
-> e crc_itu_t output lib80211 joydev ata_generic pata_acpi [last unloaded:
-> microco
-> de]
-> Pid: 2431, comm: pm-suspend Not tainted 2.6.29-rc3 #1
-> Call Trace:
->  [<c042e4e1>] warn_slowpath+0x71/0xa8
->  [<c0414740>] ? lapic_next_event+0x13/0x17
->  [<c044769b>] ? clockevents_program_event+0xdb/0xea
->  [<c044848d>] ? tick_dev_program_event+0x28/0x95
->  [<c0448544>] ? tick_program_event+0x22/0x29
->  [<c0447b2e>] ? tick_notify+0x2e1/0x2f0
->  [<c043c21f>] ? insert_work+0x3d/0x45
->  [<c06c4e4c>] ? notifier_call_chain+0x2b/0x4a
->  [<c04416ef>] hres_timers_resume+0x2f/0x45
->  [<c0444d3a>] timekeeping_resume+0x13c/0x142
->  [<c05a4b4c>] __sysdev_resume+0x14/0x38
->  [<c05a4b91>] sysdev_resume+0x21/0x54
->  [<c05a915a>] device_power_up+0xb/0x15
->  [<c04503b1>] suspend_devices_and_enter+0x103/0x16d
->  [<c0450570>] enter_state+0x130/0x190
->  [<c045065f>] state_store+0x8f/0xa2
->  [<c04505d0>] ? state_store+0x0/0xa2
->  [<c0527bc1>] kobj_attr_store+0x1a/0x22
->  [<c04d3a7b>] sysfs_write_file+0xb4/0xdf
->  [<c04d39c7>] ? sysfs_write_file+0x0/0xdf
->  [<c04973da>] vfs_write+0x84/0xdf
->  [<c04974ce>] sys_write+0x3b/0x60
->  [<c04038df>] sysenter_do_call+0x12/0x34
-> ---[ end trace 104058e15f9549d5 ]---
-> pcmcia_socket pcmcia_socket0: *** DANGER *** unable to remove socket power
-> pcmcia_socket pcmcia_socket1: *** DANGER *** unable to remove socket power
-> firewire_ohci: Failed to reset ohci card.
-> pm_op(): pci_pm_resume+0x0/0x4f returns -16
-> PM: Device 0000:06:00.2 failed to resume: error -16
-> irq 23: nobody cared (try booting with the "irqpoll" option)
-> Pid: 0, comm: swapper Tainted: G        W  2.6.29-rc3 #1
-> Call Trace:
->  [<c04653e6>] __report_bad_irq+0x2e/0x6f
->  [<c0465517>] note_interrupt+0xf0/0x149
->  [<c0465a4d>] handle_fasteoi_irq+0x8f/0xb5
->  [<c04659be>] ? handle_fasteoi_irq+0x0/0xb5
->  <IRQ>  [<c0403fac>] ? common_interrupt+0x2c/0x34
->  [<c0574e13>] ? acpi_idle_enter_simple+0x150/0x18b
->  [<c0628658>] ? cpuidle_idle_call+0x60/0x94
->  [<c0402a23>] ? cpu_idle+0x7f/0xa0
->  [<c06b2116>] ? rest_init+0x4e/0x50
-> handlers:
-> [<c05e441b>] (usb_hcd_irq+0x0/0xa3)
-> [<c05e441b>] (usb_hcd_irq+0x0/0xa3)
-> Disabling IRQ #23
+diff --git a/block/blktrace.c b/block/blktrace.c
+index 1ebd068..d9d7146 100644
+--- a/block/blktrace.c
++++ b/block/blktrace.c
+@@ -245,7 +245,7 @@ record_it:
+ 			if (pid != 0 &&
+ 			    !(blk_tracer_flags.val & TRACE_BLK_OPT_CLASSIC) &&
+ 			    (trace_flags & TRACE_ITER_STACKTRACE) != 0)
+-				__trace_stack(blk_tr, NULL, flags, 5, pc);
++				__trace_stack(blk_tr, flags, 5, pc);
+ 			trace_wake_up();
+ 			return;
+ 		}
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index a5e4c0a..1d4ff56 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -776,7 +776,7 @@ tracing_generic_entry_update(struct trace_entry *entry, unsigned long flags,
+ }
+ 
+ void
+-trace_function(struct trace_array *tr, struct trace_array_cpu *data,
++trace_function(struct trace_array *tr,
+ 	       unsigned long ip, unsigned long parent_ip, unsigned long flags,
+ 	       int pc)
+ {
+@@ -802,7 +802,6 @@ trace_function(struct trace_array *tr, struct trace_array_cpu *data,
+ 
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ static void __trace_graph_entry(struct trace_array *tr,
+-				struct trace_array_cpu *data,
+ 				struct ftrace_graph_ent *trace,
+ 				unsigned long flags,
+ 				int pc)
+@@ -826,7 +825,6 @@ static void __trace_graph_entry(struct trace_array *tr,
+ }
+ 
+ static void __trace_graph_return(struct trace_array *tr,
+-				struct trace_array_cpu *data,
+ 				struct ftrace_graph_ret *trace,
+ 				unsigned long flags,
+ 				int pc)
+@@ -856,11 +854,10 @@ ftrace(struct trace_array *tr, struct trace_array_cpu *data,
+        int pc)
+ {
+ 	if (likely(!atomic_read(&data->disabled)))
+-		trace_function(tr, data, ip, parent_ip, flags, pc);
++		trace_function(tr, ip, parent_ip, flags, pc);
+ }
+ 
+ static void __ftrace_trace_stack(struct trace_array *tr,
+-				 struct trace_array_cpu *data,
+ 				 unsigned long flags,
+ 				 int skip, int pc)
+ {
+@@ -891,27 +888,24 @@ static void __ftrace_trace_stack(struct trace_array *tr,
+ }
+ 
+ static void ftrace_trace_stack(struct trace_array *tr,
+-			       struct trace_array_cpu *data,
+ 			       unsigned long flags,
+ 			       int skip, int pc)
+ {
+ 	if (!(trace_flags & TRACE_ITER_STACKTRACE))
+ 		return;
+ 
+-	__ftrace_trace_stack(tr, data, flags, skip, pc);
++	__ftrace_trace_stack(tr, flags, skip, pc);
+ }
+ 
+ void __trace_stack(struct trace_array *tr,
+-		   struct trace_array_cpu *data,
+ 		   unsigned long flags,
+ 		   int skip, int pc)
+ {
+-	__ftrace_trace_stack(tr, data, flags, skip, pc);
++	__ftrace_trace_stack(tr, flags, skip, pc);
+ }
+ 
+ static void ftrace_trace_userstack(struct trace_array *tr,
+-		   struct trace_array_cpu *data,
+-		   unsigned long flags, int pc)
++				   unsigned long flags, int pc)
+ {
+ #ifdef CONFIG_STACKTRACE
+ 	struct ring_buffer_event *event;
+@@ -942,20 +936,17 @@ static void ftrace_trace_userstack(struct trace_array *tr,
+ #endif
+ }
+ 
+-void __trace_userstack(struct trace_array *tr,
+-		   struct trace_array_cpu *data,
+-		   unsigned long flags)
++void __trace_userstack(struct trace_array *tr, unsigned long flags)
+ {
+-	ftrace_trace_userstack(tr, data, flags, preempt_count());
++	ftrace_trace_userstack(tr, flags, preempt_count());
+ }
+ 
+ static void
+-ftrace_trace_special(void *__tr, void *__data,
++ftrace_trace_special(void *__tr,
+ 		     unsigned long arg1, unsigned long arg2, unsigned long arg3,
+ 		     int pc)
+ {
+ 	struct ring_buffer_event *event;
+-	struct trace_array_cpu *data = __data;
+ 	struct trace_array *tr = __tr;
+ 	struct special_entry *entry;
+ 	unsigned long irq_flags;
+@@ -971,8 +962,8 @@ ftrace_trace_special(void *__tr, void *__data,
+ 	entry->arg2			= arg2;
+ 	entry->arg3			= arg3;
+ 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+-	ftrace_trace_stack(tr, data, irq_flags, 4, pc);
+-	ftrace_trace_userstack(tr, data, irq_flags, pc);
++	ftrace_trace_stack(tr, irq_flags, 4, pc);
++	ftrace_trace_userstack(tr, irq_flags, pc);
+ 
+ 	trace_wake_up();
+ }
+@@ -981,12 +972,11 @@ void
+ __trace_special(void *__tr, void *__data,
+ 		unsigned long arg1, unsigned long arg2, unsigned long arg3)
+ {
+-	ftrace_trace_special(__tr, __data, arg1, arg2, arg3, preempt_count());
++	ftrace_trace_special(__tr, arg1, arg2, arg3, preempt_count());
+ }
+ 
+ void
+ tracing_sched_switch_trace(struct trace_array *tr,
+-			   struct trace_array_cpu *data,
+ 			   struct task_struct *prev,
+ 			   struct task_struct *next,
+ 			   unsigned long flags, int pc)
+@@ -1010,13 +1000,12 @@ tracing_sched_switch_trace(struct trace_array *tr,
+ 	entry->next_state		= next->state;
+ 	entry->next_cpu	= task_cpu(next);
+ 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+-	ftrace_trace_stack(tr, data, flags, 5, pc);
+-	ftrace_trace_userstack(tr, data, flags, pc);
++	ftrace_trace_stack(tr, flags, 5, pc);
++	ftrace_trace_userstack(tr, flags, pc);
+ }
+ 
+ void
+ tracing_sched_wakeup_trace(struct trace_array *tr,
+-			   struct trace_array_cpu *data,
+ 			   struct task_struct *wakee,
+ 			   struct task_struct *curr,
+ 			   unsigned long flags, int pc)
+@@ -1040,8 +1029,8 @@ tracing_sched_wakeup_trace(struct trace_array *tr,
+ 	entry->next_state		= wakee->state;
+ 	entry->next_cpu			= task_cpu(wakee);
+ 	ring_buffer_unlock_commit(tr->buffer, event, irq_flags);
+-	ftrace_trace_stack(tr, data, flags, 6, pc);
+-	ftrace_trace_userstack(tr, data, flags, pc);
++	ftrace_trace_stack(tr, flags, 6, pc);
++	ftrace_trace_userstack(tr, flags, pc);
+ 
+ 	trace_wake_up();
+ }
+@@ -1064,7 +1053,7 @@ ftrace_special(unsigned long arg1, unsigned long arg2, unsigned long arg3)
+ 	data = tr->data[cpu];
+ 
+ 	if (likely(atomic_inc_return(&data->disabled) == 1))
+-		ftrace_trace_special(tr, data, arg1, arg2, arg3, pc);
++		ftrace_trace_special(tr, arg1, arg2, arg3, pc);
+ 
+ 	atomic_dec(&data->disabled);
+ 	local_irq_restore(flags);
+@@ -1092,7 +1081,7 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
+ 	disabled = atomic_inc_return(&data->disabled);
+ 	if (likely(disabled == 1)) {
+ 		pc = preempt_count();
+-		__trace_graph_entry(tr, data, trace, flags, pc);
++		__trace_graph_entry(tr, trace, flags, pc);
+ 	}
+ 	/* Only do the atomic if it is not already set */
+ 	if (!test_tsk_trace_graph(current))
+@@ -1118,7 +1107,7 @@ void trace_graph_return(struct ftrace_graph_ret *trace)
+ 	disabled = atomic_inc_return(&data->disabled);
+ 	if (likely(disabled == 1)) {
+ 		pc = preempt_count();
+-		__trace_graph_return(tr, data, trace, flags, pc);
++		__trace_graph_return(tr, trace, flags, pc);
+ 	}
+ 	if (!trace->depth)
+ 		clear_tsk_trace_graph(current);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index f0c7a0f..df627a9 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -419,14 +419,12 @@ void ftrace(struct trace_array *tr,
+ 			    unsigned long parent_ip,
+ 			    unsigned long flags, int pc);
+ void tracing_sched_switch_trace(struct trace_array *tr,
+-				struct trace_array_cpu *data,
+ 				struct task_struct *prev,
+ 				struct task_struct *next,
+ 				unsigned long flags, int pc);
+ void tracing_record_cmdline(struct task_struct *tsk);
+ 
+ void tracing_sched_wakeup_trace(struct trace_array *tr,
+-				struct trace_array_cpu *data,
+ 				struct task_struct *wakee,
+ 				struct task_struct *cur,
+ 				unsigned long flags, int pc);
+@@ -436,7 +434,6 @@ void trace_special(struct trace_array *tr,
+ 		   unsigned long arg2,
+ 		   unsigned long arg3, int pc);
+ void trace_function(struct trace_array *tr,
+-		    struct trace_array_cpu *data,
+ 		    unsigned long ip,
+ 		    unsigned long parent_ip,
+ 		    unsigned long flags, int pc);
+@@ -462,7 +459,6 @@ void update_max_tr_single(struct trace_array *tr,
+ 			  struct task_struct *tsk, int cpu);
+ 
+ void __trace_stack(struct trace_array *tr,
+-		   struct trace_array_cpu *data,
+ 		   unsigned long flags,
+ 		   int skip, int pc);
+ 
+diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
+index b3a320f..d067cea 100644
+--- a/kernel/trace/trace_functions.c
++++ b/kernel/trace/trace_functions.c
+@@ -78,7 +78,7 @@ function_trace_call_preempt_only(unsigned long ip, unsigned long parent_ip)
+ 	disabled = atomic_inc_return(&data->disabled);
+ 
+ 	if (likely(disabled == 1))
+-		trace_function(tr, data, ip, parent_ip, flags, pc);
++		trace_function(tr, ip, parent_ip, flags, pc);
+ 
+ 	atomic_dec(&data->disabled);
+ 	ftrace_preempt_enable(resched);
+@@ -108,7 +108,7 @@ function_trace_call(unsigned long ip, unsigned long parent_ip)
+ 
+ 	if (likely(disabled == 1)) {
+ 		pc = preempt_count();
+-		trace_function(tr, data, ip, parent_ip, flags, pc);
++		trace_function(tr, ip, parent_ip, flags, pc);
+ 	}
+ 
+ 	atomic_dec(&data->disabled);
+@@ -139,7 +139,7 @@ function_stack_trace_call(unsigned long ip, unsigned long parent_ip)
+ 
+ 	if (likely(disabled == 1)) {
+ 		pc = preempt_count();
+-		trace_function(tr, data, ip, parent_ip, flags, pc);
++		trace_function(tr, ip, parent_ip, flags, pc);
+ 		/*
+ 		 * skip over 5 funcs:
+ 		 *    __ftrace_trace_stack,
+@@ -148,7 +148,7 @@ function_stack_trace_call(unsigned long ip, unsigned long parent_ip)
+ 		 *    ftrace_list_func
+ 		 *    ftrace_call
+ 		 */
+-		__trace_stack(tr, data, flags, 5, pc);
++		__trace_stack(tr, flags, 5, pc);
+ 	}
+ 
+ 	atomic_dec(&data->disabled);
+diff --git a/kernel/trace/trace_irqsoff.c b/kernel/trace/trace_irqsoff.c
+index ed344b0..c6b442d 100644
+--- a/kernel/trace/trace_irqsoff.c
++++ b/kernel/trace/trace_irqsoff.c
+@@ -95,7 +95,7 @@ irqsoff_tracer_call(unsigned long ip, unsigned long parent_ip)
+ 	disabled = atomic_inc_return(&data->disabled);
+ 
+ 	if (likely(disabled == 1))
+-		trace_function(tr, data, ip, parent_ip, flags, preempt_count());
++		trace_function(tr, ip, parent_ip, flags, preempt_count());
+ 
+ 	atomic_dec(&data->disabled);
+ }
+@@ -153,7 +153,7 @@ check_critical_timing(struct trace_array *tr,
+ 	if (!report_latency(delta))
+ 		goto out_unlock;
+ 
+-	trace_function(tr, data, CALLER_ADDR0, parent_ip, flags, pc);
++	trace_function(tr, CALLER_ADDR0, parent_ip, flags, pc);
+ 
+ 	latency = nsecs_to_usecs(delta);
+ 
+@@ -177,7 +177,7 @@ out:
+ 	data->critical_sequence = max_sequence;
+ 	data->preempt_timestamp = ftrace_now(cpu);
+ 	tracing_reset(tr, cpu);
+-	trace_function(tr, data, CALLER_ADDR0, parent_ip, flags, pc);
++	trace_function(tr, CALLER_ADDR0, parent_ip, flags, pc);
+ }
+ 
+ static inline void
+@@ -210,7 +210,7 @@ start_critical_timing(unsigned long ip, unsigned long parent_ip)
+ 
+ 	local_save_flags(flags);
+ 
+-	trace_function(tr, data, ip, parent_ip, flags, preempt_count());
++	trace_function(tr, ip, parent_ip, flags, preempt_count());
+ 
+ 	per_cpu(tracing_cpu, cpu) = 1;
+ 
+@@ -244,7 +244,7 @@ stop_critical_timing(unsigned long ip, unsigned long parent_ip)
+ 	atomic_inc(&data->disabled);
+ 
+ 	local_save_flags(flags);
+-	trace_function(tr, data, ip, parent_ip, flags, preempt_count());
++	trace_function(tr, ip, parent_ip, flags, preempt_count());
+ 	check_critical_timing(tr, data, parent_ip ? : ip, cpu);
+ 	data->critical_start = 0;
+ 	atomic_dec(&data->disabled);
+diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
+index df175cb..c4f9add 100644
+--- a/kernel/trace/trace_sched_switch.c
++++ b/kernel/trace/trace_sched_switch.c
+@@ -43,7 +43,7 @@ probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+ 	data = ctx_trace->data[cpu];
+ 
+ 	if (likely(!atomic_read(&data->disabled)))
+-		tracing_sched_switch_trace(ctx_trace, data, prev, next, flags, pc);
++		tracing_sched_switch_trace(ctx_trace, prev, next, flags, pc);
+ 
+ 	local_irq_restore(flags);
+ }
+@@ -66,7 +66,7 @@ probe_sched_wakeup(struct rq *__rq, struct task_struct *wakee, int success)
+ 	data = ctx_trace->data[cpu];
+ 
+ 	if (likely(!atomic_read(&data->disabled)))
+-		tracing_sched_wakeup_trace(ctx_trace, data, wakee, current,
++		tracing_sched_wakeup_trace(ctx_trace, wakee, current,
+ 					   flags, pc);
+ 
+ 	local_irq_restore(flags);
+diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
+index a48c9b4..96d7164 100644
+--- a/kernel/trace/trace_sched_wakeup.c
++++ b/kernel/trace/trace_sched_wakeup.c
+@@ -72,7 +72,7 @@ wakeup_tracer_call(unsigned long ip, unsigned long parent_ip)
+ 	if (task_cpu(wakeup_task) != cpu)
+ 		goto unlock;
+ 
+-	trace_function(tr, data, ip, parent_ip, flags, pc);
++	trace_function(tr, ip, parent_ip, flags, pc);
+ 
+  unlock:
+ 	__raw_spin_unlock(&wakeup_lock);
+@@ -152,8 +152,8 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
+ 	if (unlikely(!tracer_enabled || next != wakeup_task))
+ 		goto out_unlock;
+ 
+-	trace_function(wakeup_trace, data, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
+-	tracing_sched_switch_trace(wakeup_trace, data, prev, next, flags, pc);
++	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
++	tracing_sched_switch_trace(wakeup_trace, prev, next, flags, pc);
+ 
+ 	/*
+ 	 * usecs conversion is slow so we try to delay the conversion
+@@ -254,10 +254,8 @@ probe_wakeup(struct rq *rq, struct task_struct *p, int success)
+ 
+ 	data = wakeup_trace->data[wakeup_cpu];
+ 	data->preempt_timestamp = ftrace_now(cpu);
+-	tracing_sched_wakeup_trace(wakeup_trace, data, p, current,
+-				   flags, pc);
+-	trace_function(wakeup_trace, data, CALLER_ADDR1, CALLER_ADDR2,
+-		       flags, pc);
++	tracing_sched_wakeup_trace(wakeup_trace, p, current, flags, pc);
++	trace_function(wakeup_trace, CALLER_ADDR1, CALLER_ADDR2, flags, pc);
+ 
+ out_locked:
+ 	__raw_spin_unlock(&wakeup_lock);
+-- 
+1.6.0.6
+
