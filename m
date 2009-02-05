@@ -1,99 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757268AbZBEQZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759477AbZBEQZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757268AbZBEQZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 11:25:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758929AbZBEQYz
+	id S1759477AbZBEQZn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 11:25:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbZBEQZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 11:24:55 -0500
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:48521 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754185AbZBEQYy (ORCPT
+	Thu, 5 Feb 2009 11:25:10 -0500
+Received: from yw-out-2324.google.com ([74.125.46.29]:63322 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759373AbZBEQZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 11:24:54 -0500
-Date: Thu, 5 Feb 2009 17:24:51 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: compress - Add pcomp interface
-In-Reply-To: <20090115030526.GA27726@gondor.apana.org.au>
-Message-ID: <alpine.LRH.2.00.0902051703150.4290@vixen.sonytel.be>
-References: <1231862386-11128-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1231862386-11128-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090114031613.GA7429@gondor.apana.org.au> <Pine.LNX.4.64.0901141528010.31703@vixen.sonytel.be>
- <20090115030526.GA27726@gondor.apana.org.au>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 5 Feb 2009 11:25:07 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=n2d3IncTbiXVJZpSx26XSqyBnuRl8WorXOkWWfa7PnXidzU4O1o3Z3kV64kt492qb9
+         iIBXddofZlCWvFaNw72W9bRUNHInmp6cUVnj8PUnzbAqKwv9YWwJ40WvTV6iFmdYiBTS
+         KKJIXwGFbeHyB/M51NtpYvKqA0Kyn7jq/2ayE=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <200902051709.12967.rjw@sisk.pl>
+References: <a47yn9c9JrF.A.hz.L5YiJB@chimera>
+	 <CGyEB0S4BpO.A.C8C.-5YiJB@chimera>
+	 <a5d587fb0902041844v40f1d441s535d070437aa9823@mail.gmail.com>
+	 <200902051709.12967.rjw@sisk.pl>
+Date: Thu, 5 Feb 2009 08:25:05 -0800
+Message-ID: <2c0942db0902050825q90be8d3uf16cafa2e24115bd@mail.gmail.com>
+Subject: Re: [Bug #12393] debugging in dosemu causes lots of 'scheduling while 
+	atomic'
+From: Ray Lee <madrabbit@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Michal Suchanek <hramrach@centrum.cz>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Herbert,
-
-On Thu, 15 Jan 2009, Herbert Xu wrote:
-> On Wed, Jan 14, 2009 at 04:01:34PM +0100, Geert Uytterhoeven wrote:
-> > On Wed, 14 Jan 2009, Herbert Xu wrote:
-> > > Also, this is something that we'll potentially export to user-space,
-> > > so we need to ensure that it is invariant to word length.
-> > > 
-> > > So something like this would be good
-> > > 
-> > > 	int (*setup_comp)(struct crypto_pcomp *tfm, const void *params,
-> > > 			  unsigned int length);
-> > > 	int (*setup_decomp)(struct crypto_pcomp *tfm, const void *params,
-> > > 			    unsigned int length);
-> > 
-> > I assume "length" is the size of the passed params, so the algorithms can
-> > return -EINVAL if they're passed the wrong size?
-> > 
-> > > The actual parameters should be formatted using the netlink helpers
-> > > (nla_*).  So each parameter that you want to set should show up as
-> > > a netlink attribute.  If a paramter is absent then you'd just use
-> > > the default, etc.
+On Thu, Feb 5, 2009 at 8:09 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday 05 February 2009, Michal Suchanek wrote:
+>> As I said earlier I have received a patch that I applied locally and
+>> that fixes the problem.
+>>
+>> As to if and when the patch actually appears in the kernel is out of
+>> my control, and nobody told me that it was applied.
+>>
+>> If you believe it was applied to a kernel version that is readily
+>> available for download I am wiling to test such version.
 >
-> > I assume "length" is the size of the passed params, so the algorithms can
-> > return -EINVAL if they're passed the wrong size?
-> 
-> Well with the netlink parameters these can have variable lengths
-> depending on how many parameters the user supplies.
+> I don't at the moment.
+>
+> Can you send me a URL to the patch, please?
 
-How can this be exported to userspace?
-How does this variable length parameter passing work? Do you have an example?
-Nothing in crypto/ seems to already use nla_*?
-
-> Ah yes because crypto_comp is one of the original types that's
-> still built-in.  Because there are so few compression users and
-> algorithms (exactly 3 if you include null compression), I think
-> we can dispense with the compatibility stuff altogether since
-> we'll likely rip out fairly soon anyway.
-> 
-> So just create the new type, readd deflate using the new type
-> alongside the existing deflate algorithm.  The system is capable
-> of supporting two algorithms of the same name with different types.
-
-While the core of the crypto system supports two algorithms of the same name
-with different types, the testmgr doesn't.
-
-As I removed the backwards-compatility layer at your request, I'll use "zlib"
-for the name of the new module. It's more flexible than the fixed "deflate"
-one anyway.
-
-Is this OK for you?
-
-Thanks!
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+http://lkml.org/lkml/2009/1/13/445
