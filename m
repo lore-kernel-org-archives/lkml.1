@@ -1,53 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZBEVKG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753548AbZBEVNo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753977AbZBEVKG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:10:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZBEVJz
+	id S1753548AbZBEVNo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:13:44 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752152AbZBEVNg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:09:55 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:44246 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbZBEVJz (ORCPT
+	Thu, 5 Feb 2009 16:13:36 -0500
+Received: from fg-out-1718.google.com ([72.14.220.155]:23016 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbZBEVNf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:09:55 -0500
-Date: Thu, 5 Feb 2009 21:09:04 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: wli@movementarian.org
-cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: pud_bad vs pud_bad
-In-Reply-To: <20090205205606.GG10229@movementarian.org>
-Message-ID: <Pine.LNX.4.64.0902052103080.20627@blonde.anvils>
-References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu>
- <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu>
- <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <20090205194932.GB3129@elte.hu>
- <20090205195817.GF10229@movementarian.org> <Pine.LNX.4.64.0902052013230.12955@blonde.anvils>
- <20090205205606.GG10229@movementarian.org>
+	Thu, 5 Feb 2009 16:13:35 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=RvwS9ifUseOPg6sECnZ7XAAvkplz4gURHtFwMf03Xswt625DaWMMd+tP9Sv6OXJ3th
+         VXUiOxv6zw9EJT/TmVVljhqe1s5LtGA6wfcxWwQdGJ2AN1WVkv3brT40gdLu9zfVJwlv
+         CIk1V9opXbsS0hTM+7MqP1T8p9V5evxTbJKFo=
+Date: Fri, 6 Feb 2009 00:19:34 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Shakesh Jain <shjain@akamai.com>, ShakeshJain@akamai.com,
+       linux-kernel@vger.kernel.org, juhlenko@akamai.com
+Subject: Re: [PATCH] sysctl: min-max range check is broken
+Message-ID: <20090205211933.GA13312@x200.localdomain>
+References: <20090204084022.GB14071@akamai.com> <20090205122941.17805ff1.akpm@linux-foundation.org> <m1zlh0txgj.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m1zlh0txgj.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009, wli@movementarian.org wrote:
-> On Thu, 5 Feb 2009, wli@movementarian.org wrote:
-> >> The RW bit needs to be allowed to become read-only for hugetlb COW.
-> >> Changing it over to the 32-bit method is a bugfix by that token.
+On Thu, Feb 05, 2009 at 12:55:56PM -0800, Eric W. Biederman wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
 > 
-> On Thu, Feb 05, 2009 at 08:14:42PM +0000, Hugh Dickins wrote:
-> > If there's a bugfix to be made there, of course I'm in favour:
-> > but how come we've never seen such a bug?  hugetlb COW has been
-> > around for a year or two by now, hasn't it?
+> > On Wed, 4 Feb 2009 00:40:22 -0800
+> > Shakesh Jain <shjain@akamai.com>, ShakeshJain@akamai.com wrote:
+> >
+> >> do_proc_dointvec_minmax_conv() which gets callled from
+> >> proc_dointvec_minmax proc_handler doesn't increment the pointer to
+> >> the 'min' (extra1) and 'max' (extra2) after each range check which
+> >> results in doing the check against same set of min and max values.
+> >> 
+> >> This breaks the range checking for those sysctl's where you can
+> >> write multiple values to /proc with each variable having its own range
+> >> specification.
 > 
-> We can tell from the code that a write-protected pte mapping of a
-> 1GB hugetlb page would be flagged as bad. It must not be called on
-> ptes mapping hugetlb pages if they're not getting flagged.
+> I just did a quick grep for .extra1 and I don't see anywhere we use
+> the code as described.
+> 
+> >> It seems to be implemented for the sysctl() system call strategy in
+> >> sysctl_intvec() where min and max are treated as arrays.
+> 
+> Yep.  There is an inconsistency here.  Given how sysctl is used and
+> tested, and the fact I could not find where it appears that anyone is
+> passing an array into min/max I would say that the proc version is
+> correct and the sysctl version is wrong.
+> 
+> The untested patch below looks like it will fix the this.
+> 
+> I don't know if there are any cases where we use minmax with an array
+> of integers but I don't see the point of using an array of minmax
+> values at this point.
 
-Ah, I see what you mean now.  Yes, the hugetlb case goes its own way
-and doesn't normally hit those p??_bad() macro/inlines; but we got
-caught out in follow_page() a year ago, a bad looked huge or a
-huge looked bad, but I forget the details at this instant.
+Multiple values, each one is bounded by it's own set of values.
 
-Hugh
+> For the original sysctl design it may have made
+> some sense.  New code should be one value per file.
+
+So leave them alone.
+
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -2916,9 +2916,9 @@ int sysctl_intvec(struct ctl_table *table,
+>  			int value;
+>  			if (get_user(value, vec + i))
+>  				return -EFAULT;
+> -			if (min && value < min[i])
+> +			if (min && value < *min)
+>  				return -EINVAL;
+> -			if (max && value > max[i])
+> +			if (max && value > *max)
+>  				return -EINVAL;
+
+Correct way is:
+
+	min[i] <= val[i] <= max[i]
+
+This is what sysctl_intvec() does.
