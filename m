@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbZBEUPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbZBEUSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759180AbZBEUPe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 15:15:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZBEUP0
+	id S1759618AbZBEUSq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 15:18:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZBEUSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 15:15:26 -0500
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:38503 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488AbZBEUP0 (ORCPT
+	Thu, 5 Feb 2009 15:18:36 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42202 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750990AbZBEUSf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 15:15:26 -0500
-Date: Thu, 5 Feb 2009 20:14:42 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: wli@movementarian.org
-cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: pud_bad vs pud_bad
-In-Reply-To: <20090205195817.GF10229@movementarian.org>
-Message-ID: <Pine.LNX.4.64.0902052013230.12955@blonde.anvils>
-References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu>
- <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu>
- <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <20090205194932.GB3129@elte.hu>
- <20090205195817.GF10229@movementarian.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Feb 2009 15:18:35 -0500
+Date: Thu, 5 Feb 2009 12:10:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jean Pihet <jpihet@mvista.com>
+Cc: tony@atomide.com, ext-adrian.hunter@nokia.com,
+       linux-arm-kernel@lists.arm.linux.org.uk, linux-omap@vger.kernel.org,
+       jarkko.lavinen@nokia.com, drzeus-mmc@drzeus.cx,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] OMAP: MMC: recover from transfer failures - Resend
+Message-Id: <20090205121045.4022c319.akpm@linux-foundation.org>
+In-Reply-To: <200902031505.58697.jpihet@mvista.com>
+References: <20081207213617.10456.43951.stgit@localhost>
+	<200902020946.16508.jpihet@mvista.com>
+	<20090202190503.GT7215@atomide.com>
+	<200902031505.58697.jpihet@mvista.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009, wli@movementarian.org wrote:
-> 
-> The RW bit needs to be allowed to become read-only for hugetlb COW.
-> Changing it over to the 32-bit method is a bugfix by that token.
+On Tue, 3 Feb 2009 15:05:58 +0100
+Jean Pihet <jpihet@mvista.com> wrote:
 
-If there's a bugfix to be made there, of course I'm in favour:
-but how come we've never seen such a bug?  hugetlb COW has been
-around for a year or two by now, hasn't it?
+> +	while (OMAP_HSMMC_READ(host->base,
+> + 			SYSCTL) & SRD)
+> + 		;
 
-Hugh
+Is a __raw_readl() sufficient to prevent the cpu from burning up here,
+or should we add cpu_relax()?
+
+An infinite loop which assumes the hardware is perfect is always a
+worry.  But I see the driver already does that, so we're no worse off..
+
