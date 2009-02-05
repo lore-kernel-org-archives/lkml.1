@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756538AbZBEHaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZBEHmh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756538AbZBEHaV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 02:30:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZBEHaG
+	id S1756192AbZBEHmh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 02:42:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZBEHm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 02:30:06 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:65402 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752905AbZBEHaF (ORCPT
+	Thu, 5 Feb 2009 02:42:29 -0500
+Received: from mail.openmoko.org ([88.198.124.205]:34107 "EHLO
+	mail.openmoko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751932AbZBEHm2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 02:30:05 -0500
-X-IronPort-AV: E=Sophos;i="4.37,384,1231131600"; 
-   d="scan'208";a="82344248"
-From: Bryan Wu <cooloney@kernel.org>
-To: drzeus-mmc@drzeus.cx
-Cc: linux-kernel@vger.kernel.org, Yi Li <yi.li@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH] MMC: fix bug - SDHC card capacity not correct
-Date: Thu,  5 Feb 2009 15:31:57 +0800
-Message-Id: <1233819117-7102-1-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
+	Thu, 5 Feb 2009 02:42:28 -0500
+Date: Thu, 5 Feb 2009 13:12:03 +0530
+From: Balaji Rao <balajirrao@openmoko.org>
+To: Adrian Bunk <bunk@kernel.org>
+Cc: Andy Green <andy@openmoko.com>, Samuel Ortiz <sameo@openedhand.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: mfd/pcf50633-gpio.c is completely unused
+Message-ID: <20090205074202.GB3159@fedora.yogi>
+References: <20090204194844.GA26138@localhost.pp.htv.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090204194844.GA26138@localhost.pp.htv.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yi Li <yi.li@analog.com>
+On Wed, Feb 04, 2009 at 09:48:51PM +0200, Adrian Bunk wrote:
+> I'm wondering:
+> 
+> Is any user for the code in drivers/mfd/pcf50633-gpio.c pending, or did 
+> something go wrong when merging it?
+> 
+> Currently it is completely unused.
+> 
 
-Signed-off-by: Yi Li <yi.li@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- drivers/mmc/card/block.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Hi Adrian,
 
-diff --git a/drivers/mmc/card/block.c b/drivers/mmc/card/block.c
-index 45b1f43..513eb09 100644
---- a/drivers/mmc/card/block.c
-+++ b/drivers/mmc/card/block.c
-@@ -584,7 +584,7 @@ static int mmc_blk_probe(struct mmc_card *card)
- 	if (err)
- 		goto out;
- 
--	string_get_size(get_capacity(md->disk) << 9, STRING_UNITS_2,
-+	string_get_size((u64)get_capacity(md->disk) << 9, STRING_UNITS_2,
- 			cap_str, sizeof(cap_str));
- 	printk(KERN_INFO "%s: %s %s %s %s\n",
- 		md->disk->disk_name, mmc_card_id(card), mmc_card_name(card),
--- 
-1.5.6.3
+Yes, there are no users on mainline yet.
+
+Regards,
+Balaji
+
