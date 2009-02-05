@@ -1,166 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758672AbZBEKAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZBEKBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758672AbZBEKAM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 05:00:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755679AbZBEJ75
+	id S1758913AbZBEKBY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 05:01:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZBEKBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 04:59:57 -0500
-Received: from mailhub.sw.ru ([195.214.232.25]:49097 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755628AbZBEJ74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 04:59:56 -0500
-Message-ID: <498AB837.1040404@openvz.org>
-Date: Thu, 05 Feb 2009 12:58:15 +0300
-From: Pavel Emelyanov <xemul@openvz.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Kirill Korotaev <dev@parallels.com>, Ingo Molnar <mingo@elte.hu>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Kirill Korotaev <dev@openvz.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [git pull] timer fix
-References: <C5B07536.B77D%dev@parallels.com>
-In-Reply-To: <C5B07536.B77D%dev@parallels.com>
-Content-Type: text/plain; charset=KOI8-R
+	Thu, 5 Feb 2009 05:01:15 -0500
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46000 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755679AbZBEKBO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 05:01:14 -0500
+Date: Thu, 5 Feb 2009 18:59:59 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] Reduce size of swap_cgroup by CSS ID
+Message-Id: <20090205185959.7971dee4.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kirill Korotaev wrote:
-> ACK, it works. Why not save another 4 bytes of .bss then by changing
-> hept_t1_cmp to u32? ;-)
+!!EXPERIMENTAL!!
 
-Hm... .bss you say? :) The bloat-o-meter results would be:
+against mmotm.
 
-For the original fix with casting hpet_t1_cmp to u32 inside the loop
-add/remove: 0/0 grow/shrink: 1/0 up/down: 2/0 (2)
-function                                     old     new   delta
-hpet_rtc_interrupt                           741     743      +2
+This patch tires to use CSS ID for records in swap_cgroup instead of pointer.
+By this, on 64bit machine, size of swap_cgroup goes down to 2 bytes from 8bytes.
 
-For the fix with casting the substitution result to s32
-add/remove: 0/0 grow/shrink: 0/1 up/down: 0/-2 (-2)
-function                                     old     new   delta
-hpet_rtc_interrupt                           741     739      -2
+This means, when 2GB of swap is equipped, (assume the page size is 4096bytes)
+	From size of swap_cgroup = 2G/4k * 8 = 4Mbytes.
+	To   size of swap_cgroup = 2G/4k * 2 = 1Mbytes.
+Reduction is large. Of course, there are trade-offs. This CSS ID will add
+overhead to swap-in/swap-out/swap-free.
 
-For the proposed by Kirill type change of the hpet_t1_cmp
-add/remove: 0/0 grow/shrink: 0/3 up/down: 0/-6 (-6)
-function                                     old     new   delta
-hpet_rtc_timer_init                          186     185      -1
-hpet_rtc_interrupt                           741     740      -1
-hpet_t1_cmp                                    8       4      -4
+But in general,
+  - swap is a resource which the user tend to avoid use.
+  - If swap is never used, swap_cgroup area is not used.
+  - Reading traditional manuals, size of swap should be proportional to
+    size of memory. Memory size of machine is increasing now. So, reducing
+    size of swap_cgroup makes sense.
+Note:
+  ID->CSS lookup routine has no locks, it's under RCU-Read-Side.
 
-That's the fix:
+This is still under test. Any comments are welcome.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/page_cgroup.h |    9 +++----
+ mm/memcontrol.c             |   55 +++++++++++++++++++++++++++++++++++---------
+ mm/page_cgroup.c            |   22 ++++++++---------
+ 3 files changed, 59 insertions(+), 27 deletions(-)
 
-diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
-index 64d5ad0..dfbbb94 100644
---- a/arch/x86/kernel/hpet.c
-+++ b/arch/x86/kernel/hpet.c
-@@ -897,7 +897,7 @@ static unsigned long hpet_rtc_flags;
- static int hpet_prev_update_sec;
- static struct rtc_time hpet_alarm_time;
- static unsigned long hpet_pie_count;
--static unsigned long hpet_t1_cmp;
-+static u32 hpet_t1_cmp;
- static unsigned long hpet_default_delta;
- static unsigned long hpet_pie_delta;
- static unsigned long hpet_pie_limit;
-
-Reported-by: Kirill Korotaev <dev@openvz.org>
-Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
-
-This one also works. Should I re-send this patch in a proper way?
-
-> Kirill
-> 
-> 
-> On 2/5/09 1:58 AM, "Ingo Molnar" <mingo@elte.hu> wrote:
-> 
->>
->> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
->>
->>>       } while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
->> that is also more efficient code by 6 bytes:
->>
->> before:
->>
->> ffffffff81020856:       ff c3                   inc    %ebx
->> ffffffff81020858:       48 05 f0 00 00 00       add    $0xf0,%rax
->> ffffffff8102085e:       8b 00                   mov    (%rax),%eax
->> ffffffff81020860:       8b 15 2a 79 85 00       mov    0x85792a(%rip),%edx
->> # ffffffff81878190 <hpet_t1_cmp>
->> ffffffff81020866:       89 c0                   mov    %eax,%eax
->> ffffffff81020868:       48 29 d0                sub    %rdx,%rax
->> ffffffff8102086b:       48 85 c0                test   %rax,%rax
->> ffffffff8102086e:       7f bf                   jg     ffffffff8102082f
->> <hpet_rtc_interrupt+0x68>
->> ffffffff81020870:       85 db                   test   %ebx,%ebx
->>
->> after:
->>
->> ffffffff81020856:       ff c3                   inc    %ebx
->> ffffffff81020858:       48 05 f0 00 00 00       add    $0xf0,%rax
->> ffffffff8102085e:       8b 00                   mov    (%rax),%eax
->> ffffffff81020860:       2b 05 2a 79 85 00       sub    0x85792a(%rip),%eax
->> # ffffffff81878190 <hpet_t1_cmp>
->> ffffffff81020866:       85 c0                   test   %eax,%eax
->> ffffffff81020868:       7f c5                   jg     ffffffff8102082f
->> <hpet_rtc_interrupt+0x68>
->> ffffffff8102086a:       85 db                   test   %ebx,%ebx
->>
->> Kirill, Pavel, could you please re-test the updated commit attached below?
->>
->>         Ingo
->>
->> ---------------->
->> From 66a36a1e95fe9de9c6a56f0bcd01f4ba21929f86 Mon Sep 17 00:00:00 2001
->> From: Pavel Emelyanov <xemul@openvz.org>
->> Date: Wed, 4 Feb 2009 13:40:31 +0300
->> Subject: [PATCH] x86: fix hpet timer reinit for x86_64
->>
->> There's a small problem with hpet_rtc_reinit function - it checks
->> for the:
->>
->>         hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
->>
->> to continue increasing both the HPET_T1_CMP (register) and the
->> hpet_t1_cmp (variable).
->>
->> But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
->> is 64-bit this condition will always be FALSE once the latter hits
->> the 32-bit boundary, and we can have a situation, when we don't
->> increase the HPET_T1_CMP register high enough.
->>
->> The result - timer stops ticking, since HPET_T1_CMP becomes less,
->> than the COUNTER and never increased again.
->>
->> The solution is (based on Linus's suggestion) to compare 64-bits
->> (on 64-bit x86), but to do the comparison on 32-bit signed
->> integers.
->>
->> Reported-by: Kirill Korotaev <dev@openvz.org>
->> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
->> Signed-off-by: Ingo Molnar <mingo@elte.hu>
->> ---
->>  arch/x86/kernel/hpet.c |    2 +-
->>  1 files changed, 1 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
->> index 64d5ad0..c761f91 100644
->> --- a/arch/x86/kernel/hpet.c
->> +++ b/arch/x86/kernel/hpet.c
->> @@ -1075,7 +1075,7 @@ static void hpet_rtc_timer_reinit(void)
->>                 hpet_t1_cmp += delta;
->>                 hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
->>                 lost_ints++;
->> -       } while ((long)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
->> +       } while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
->>
->>         if (lost_ints) {
->>                 if (hpet_rtc_flags & RTC_PIE)
-> 
-> 
-> 
+Index: mmotm-2.6.29-Feb03/include/linux/page_cgroup.h
+===================================================================
+--- mmotm-2.6.29-Feb03.orig/include/linux/page_cgroup.h
++++ mmotm-2.6.29-Feb03/include/linux/page_cgroup.h
+@@ -91,22 +91,21 @@ static inline void page_cgroup_init(void
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ #include <linux/swap.h>
+-extern struct mem_cgroup *
+-swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem);
+-extern struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent);
++extern unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id);
++extern unsigned short lookup_swap_cgroup(swp_entry_t ent);
+ extern int swap_cgroup_swapon(int type, unsigned long max_pages);
+ extern void swap_cgroup_swapoff(int type);
+ #else
+ #include <linux/swap.h>
+ 
+ static inline
+-struct mem_cgroup *swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem)
++unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id)
+ {
+ 	return NULL;
+ }
+ 
+ static inline
+-struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent)
++unsigned short lookup_swap_cgroup(swp_entry_t ent)
+ {
+ 	return NULL;
+ }
+Index: mmotm-2.6.29-Feb03/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.29-Feb03.orig/mm/memcontrol.c
++++ mmotm-2.6.29-Feb03/mm/memcontrol.c
+@@ -1001,20 +1001,38 @@ nomem:
+ 	return -ENOMEM;
+ }
+ 
++/*
++ * A helper function to get mem_cgroup from ID. must be called under
++ * rcu_read_lock(). Because css_tryget() is called under this, css_put
++ * should be called later.
++ */
++static struct mem_cgroup *mem_cgroup_lookup_get(unsigned short id)
++{
++	struct cgroup_subsys_state *css;
++
++	/* ID 0 is unused ID */
++	if (!id)
++		return NULL;
++	css = css_lookup(&mem_cgroup_subsys, id);
++	if (css && css_tryget(css))
++		return container_of(css, struct mem_cgroup, css);
++	return NULL;
++}
++
+ static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
+ {
+-	struct mem_cgroup *mem;
++	unsigned short id;
++	struct mem_cgroup *mem = NULL;
+ 	swp_entry_t ent;
+ 
+ 	if (!PageSwapCache(page))
+ 		return NULL;
+ 
+ 	ent.val = page_private(page);
+-	mem = lookup_swap_cgroup(ent);
+-	if (!mem)
+-		return NULL;
+-	if (!css_tryget(&mem->css))
+-		return NULL;
++	id = lookup_swap_cgroup(ent);
++	rcu_read_lock();
++	mem = mem_cgroup_lookup_get(id);
++	rcu_read_unlock();
+ 	return mem;
+ }
+ 
+@@ -1275,11 +1293,16 @@ int mem_cgroup_cache_charge(struct page 
+ 
+ 	if (do_swap_account && !ret && PageSwapCache(page)) {
+ 		swp_entry_t ent = {.val = page_private(page)};
++		unsigned short id;
+ 		/* avoid double counting */
+-		mem = swap_cgroup_record(ent, NULL);
++		id = swap_cgroup_record(ent, 0);
++		rcu_read_lock();
++		mem = mem_cgroup_lookup_get(id);
++		rcu_read_unlock();
+ 		if (mem) {
+ 			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+ 			mem_cgroup_put(mem);
++			css_put(&mem->css);
+ 		}
+ 	}
+ 	return ret;
+@@ -1345,13 +1368,18 @@ void mem_cgroup_commit_charge_swapin(str
+ 	 */
+ 	if (do_swap_account && PageSwapCache(page)) {
+ 		swp_entry_t ent = {.val = page_private(page)};
++		unsigned short id;
+ 		struct mem_cgroup *memcg;
+-		memcg = swap_cgroup_record(ent, NULL);
++
++		id = swap_cgroup_record(ent, 0);
++		rcu_read_lock();
++		memcg = mem_cgroup_lookup_get(id);
++		rcu_read_unlock();
+ 		if (memcg) {
+ 			res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
+ 			mem_cgroup_put(memcg);
++			css_put(&memcg->css);
+ 		}
+-
+ 	}
+ 	/* add this page(page_cgroup) to the LRU we want. */
+ 
+@@ -1472,7 +1500,7 @@ void mem_cgroup_uncharge_swapcache(struc
+ 					MEM_CGROUP_CHARGE_TYPE_SWAPOUT);
+ 	/* record memcg information */
+ 	if (do_swap_account && memcg) {
+-		swap_cgroup_record(ent, memcg);
++		swap_cgroup_record(ent, css_id(&memcg->css));
+ 		mem_cgroup_get(memcg);
+ 	}
+ 	if (memcg)
+@@ -1487,14 +1515,19 @@ void mem_cgroup_uncharge_swapcache(struc
+ void mem_cgroup_uncharge_swap(swp_entry_t ent)
+ {
+ 	struct mem_cgroup *memcg;
++	unsigned short id;
+ 
+ 	if (!do_swap_account)
+ 		return;
+ 
+-	memcg = swap_cgroup_record(ent, NULL);
++	id = swap_cgroup_record(ent, 0);
++	rcu_read_lock();
++	memcg = mem_cgroup_lookup_get(id);
++	rcu_read_unlock();
+ 	if (memcg) {
+ 		res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
+ 		mem_cgroup_put(memcg);
++		css_put(&memcg->css);
+ 	}
+ }
+ #endif
+Index: mmotm-2.6.29-Feb03/mm/page_cgroup.c
+===================================================================
+--- mmotm-2.6.29-Feb03.orig/mm/page_cgroup.c
++++ mmotm-2.6.29-Feb03/mm/page_cgroup.c
+@@ -290,7 +290,7 @@ struct swap_cgroup_ctrl swap_cgroup_ctrl
+  * cgroup rather than pointer.
+  */
+ struct swap_cgroup {
+-	struct mem_cgroup	*val;
++	unsigned short		id;
+ };
+ #define SC_PER_PAGE	(PAGE_SIZE/sizeof(struct swap_cgroup))
+ #define SC_POS_MASK	(SC_PER_PAGE - 1)
+@@ -345,7 +345,7 @@ not_enough_page:
+  * Returns old value at success, NULL at failure.
+  * (Of course, old value can be NULL.)
+  */
+-struct mem_cgroup *swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem)
++unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id)
+ {
+ 	int type = swp_type(ent);
+ 	unsigned long offset = swp_offset(ent);
+@@ -354,18 +354,18 @@ struct mem_cgroup *swap_cgroup_record(sw
+ 	struct swap_cgroup_ctrl *ctrl;
+ 	struct page *mappage;
+ 	struct swap_cgroup *sc;
+-	struct mem_cgroup *old;
++	unsigned short old;
+ 
+ 	if (!do_swap_account)
+-		return NULL;
++		return 0;
+ 
+ 	ctrl = &swap_cgroup_ctrl[type];
+ 
+ 	mappage = ctrl->map[idx];
+ 	sc = page_address(mappage);
+ 	sc += pos;
+-	old = sc->val;
+-	sc->val = mem;
++	old = sc->id;
++	sc->id = id;
+ 
+ 	return old;
+ }
+@@ -374,9 +374,9 @@ struct mem_cgroup *swap_cgroup_record(sw
+  * lookup_swap_cgroup - lookup mem_cgroup tied to swap entry
+  * @ent: swap entry to be looked up.
+  *
+- * Returns pointer to mem_cgroup at success. NULL at failure.
++ * Returns CSS ID of mem_cgroup at success. NULL at failure.
+  */
+-struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent)
++unsigned short lookup_swap_cgroup(swp_entry_t ent)
+ {
+ 	int type = swp_type(ent);
+ 	unsigned long offset = swp_offset(ent);
+@@ -385,16 +385,16 @@ struct mem_cgroup *lookup_swap_cgroup(sw
+ 	struct swap_cgroup_ctrl *ctrl;
+ 	struct page *mappage;
+ 	struct swap_cgroup *sc;
+-	struct mem_cgroup *ret;
++	unsigned short ret;
+ 
+ 	if (!do_swap_account)
+-		return NULL;
++		return 0; /* 0 is invalid ID */
+ 
+ 	ctrl = &swap_cgroup_ctrl[type];
+ 	mappage = ctrl->map[idx];
+ 	sc = page_address(mappage);
+ 	sc += pos;
+-	ret = sc->val;
++	ret = sc->id;
+ 	return ret;
+ }
+ 
 
