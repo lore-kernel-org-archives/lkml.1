@@ -1,82 +1,634 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756660AbZBEIrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbZBEIzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756660AbZBEIrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:47:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbZBEIrV
+	id S1756969AbZBEIzc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:55:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZBEIzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:47:21 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:58645 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbZBEIrU (ORCPT
+	Thu, 5 Feb 2009 03:55:12 -0500
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:40511 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbZBEIzJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:47:20 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=nr19IYSRzPUM/v3XN/f4fx2YDMmp6PAQAAOC/SG2GZhmyzaM/qINeZvjXHyiIax6V+
-         M2Po2CklzG1DGXJAyQUjPNJxbyykMadUy2HlwSfTDDnNijt8zYW0JSA6i8joZSHp+UTd
-         yUiHiO3sCwzBeqECHn2oKKK8faxqi5GmOjyso=
-MIME-Version: 1.0
-Date: Thu, 5 Feb 2009 09:47:18 +0100
-Message-ID: <56e1b5710902050047h2c58eec7l812a838491a0256a@mail.gmail.com>
-Subject: [PATCH] Kbuild: Enable the gcc flag -Wformat-security (was: Re: 
-	[PATCH] Kbuild: Disable the -Wformat-security gcc flag)
-From: Floris Kraak <randakar@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       Roland Dreier <rdreier@cisco.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Feb 2009 03:55:09 -0500
+X-Greylist: delayed 1959 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 03:55:09 EST
+Message-Id: <20090205082226.069361474@nttdata.co.jp>
+References: <20090205081810.331987920@nttdata.co.jp>
+User-Agent: quilt/0.45-1
+Date: Thu, 05 Feb 2009 17:18:12 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+To: jmorris@namei.org
+Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, haradats@nttdata.co.jp,
+       Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: [TOMOYO #15 2/8] Memory and pathname management functions.
+X-OriginalArrivalTime: 05 Feb 2009 08:22:27.0386 (UTC) FILETIME=[E15A89A0:01C9876A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 9:26 AM, Floris Kraak <randakar@gmail.com> wrote:
->
-> As I noted applying a patch that does the reverse and enables the
-> check instead is perfectly acceptable to me. Long term somebody
-> probably needs to go through all of them and fix (most of) them
-> anyway.
->
+TOMOYO Linux performs pathname based access control.
+To remove factors that make pathname based access control difficult
+(e.g. symbolic links, "..", "//" etc.), TOMOYO Linux derives realpath
+of requested pathname from "struct dentry" and "struct vfsmount".
 
-Here goes:
+The maximum length of string data is limited to 4000 including trailing '\0'.
+Since TOMOYO Linux uses '\ooo' style representation for non ASCII printable
+characters, maybe TOMOYO Linux should be able to support 16336 (which means
+(NAME_MAX * (PATH_MAX / (NAME_MAX + 1)) * 4 + (PATH_MAX / (NAME_MAX + 1)))
+including trailing '\0'), but I think 4000 is enough for practical use.
 
-[PATCH] Kbuild: Enable the gcc flag -Wformat-security
+TOMOYO uses only 0x21 - 0x7E (as printable characters) and 0x20 (as word
+delimiter) and 0x0A (as line delimiter).
+0x01 - 0x20 and 0x80 - 0xFF is handled in \ooo style representation.
+The reason to use \ooo is to guarantee that "%s" won't damage logs.
+Userland program can request
 
-Some distributions have enabled the gcc flag -Wformat-security by
-default. This causes about 150 new warnings to show up in an
-allyesconfig kernel build that are never seen by the majority of the
-developers. However there is some value to having this warning. In
-some cases there are potential (security) bugs involved where
-malicious or simply malformed data from outside the kernel could
-trigger stack overflows or other nastyness. Instead of having a
-cleanup team running around in perpetuity going over all new format
-strings in code it's better to just emit the warning in all cases.
+ open("/tmp/file granted.\nAccess /tmp/file ", O_WRONLY | O_CREAT, 0600)
 
-Signed-off-by: Floris Kraak <randakar@gmail.com>
+and logging such crazy pathname using "Access %s denied.\n" format will cause
+"fabrication of logs" like
+
+ Access /tmp/file granted.
+ Access /tmp/file denied.
+
+TOMOYO converts such characters to \ooo so that the logs will become
+
+ Access /tmp/file\040granted.\012Access\040/tmp/file denied.
+
+and the administrator can read the logs safely using /bin/cat .
+Likewise, a crazy request like
+
+ open("/tmp/\x01\x02\x03\x04\x05\x06\x07\x08\x09", O_WRONLY | O_CREAT, 0600)
+
+will be processed safely by converting to
+
+ Access /tmp/\001\002\003\004\005\006\007\010\011 denied.
+
+Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
-diff --git a/Makefile b/Makefile
-index 7715b2c..ed3b973 100644
---- a/Makefile
-+++ b/Makefile
-@@ -346,7 +346,8 @@ KBUILD_CPPFLAGS := -D__KERNEL__
+ security/tomoyo/realpath.c |  487 +++++++++++++++++++++++++++++++++++++++++++++
+ security/tomoyo/realpath.h |   63 +++++
+ 2 files changed, 550 insertions(+)
 
- KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		   -fno-strict-aliasing -fno-common \
--		   -Werror-implicit-function-declaration
-+		   -Werror-implicit-function-declaration \
-+		   -Wformat-security
- KBUILD_AFLAGS   := -D__ASSEMBLY__
+--- /dev/null
++++ security-testing-2.6.git/security/tomoyo/realpath.c
+@@ -0,0 +1,487 @@
++/*
++ * security/tomoyo/realpath.c
++ *
++ * Get the canonicalized absolute pathnames. The basis for TOMOYO.
++ *
++ * Copyright (C) 2005-2009  NTT DATA CORPORATION
++ *
++ * Version: 2.2.0-pre   2009/02/01
++ *
++ */
++
++#include <linux/types.h>
++#include <linux/mount.h>
++#include <linux/mnt_namespace.h>
++#include "common.h"
++#include "realpath.h"
++
++/**
++ * tomoyo_encode: Convert binary string to ascii string.
++ *
++ * @buffer:  Buffer for ASCII string.
++ * @buflen:  Size of @buffer.
++ * @str:     Binary string.
++ *
++ * Returns 0 on success, -ENOMEM otherwise.
++ */
++int tomoyo_encode(char *buffer, int buflen, const char *str)
++{
++	while (1) {
++		const unsigned char c = *(unsigned char *) str++;
++
++		if (tomoyo_is_valid(c)) {
++			if (--buflen <= 0)
++				break;
++			*buffer++ = (char) c;
++			if (c != '\\')
++				continue;
++			if (--buflen <= 0)
++				break;
++			*buffer++ = (char) c;
++			continue;
++		}
++		if (!c) {
++			if (--buflen <= 0)
++				break;
++			*buffer = '\0';
++			return 0;
++		}
++		buflen -= 4;
++		if (buflen <= 0)
++			break;
++		*buffer++ = '\\';
++		*buffer++ = (c >> 6) + '0';
++		*buffer++ = ((c >> 3) & 7) + '0';
++		*buffer++ = (c & 7) + '0';
++	}
++	return -ENOMEM;
++}
++
++/**
++ * tomoyo_realpath_from_path2 - Returns realpath(3) of the given dentry but ignores chroot'ed root.
++ *
++ * @path:        Pointer to "struct path".
++ * @newname:     Pointer to buffer to return value in.
++ * @newname_len: Size of @newname.
++ *
++ * Returns 0 on success, negative value otherwise.
++ *
++ * If dentry is a directory, trailing '/' is appended.
++ * Characters out of 0x20 < c < 0x7F range are converted to
++ * \ooo style octal string.
++ * Character \ is converted to \\ string.
++ */
++int tomoyo_realpath_from_path2(struct path *path, char *newname,
++			       int newname_len)
++{
++	int error = -ENOMEM;
++	struct dentry *dentry = path->dentry;
++	char *sp;
++
++	if (!dentry || !path->mnt || !newname || newname_len <= 2048)
++		return -EINVAL;
++	if (dentry->d_op && dentry->d_op->d_dname) {
++		/* For "socket:[\$]" and "pipe:[\$]". */
++		static const int offset = 1536;
++		sp = dentry->d_op->d_dname(dentry, newname + offset,
++					   newname_len - offset);
++	} else {
++		/* Taken from d_namespace_path(). */
++		struct path root;
++		struct path ns_root = { };
++		struct path tmp;
++
++		read_lock(&current->fs->lock);
++		root = current->fs->root;
++		path_get(&root);
++		read_unlock(&current->fs->lock);
++		spin_lock(&vfsmount_lock);
++		if (root.mnt && root.mnt->mnt_ns)
++			ns_root.mnt = mntget(root.mnt->mnt_ns->root);
++		if (ns_root.mnt)
++			ns_root.dentry = dget(ns_root.mnt->mnt_root);
++		spin_unlock(&vfsmount_lock);
++		spin_lock(&dcache_lock);
++		tmp = ns_root;
++		sp = __d_path(path, &tmp, newname, newname_len);
++		spin_unlock(&dcache_lock);
++		path_put(&root);
++		path_put(&ns_root);
++	}
++	if (IS_ERR(sp))
++		error = PTR_ERR(sp);
++	else
++		error = tomoyo_encode(newname, sp - newname, sp);
++	/* Append trailing '/' if dentry is a directory. */
++	if (!error && dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode)
++	    && *newname) {
++		sp = newname + strlen(newname);
++		if (*(sp - 1) != '/') {
++			if (sp < newname + newname_len - 4) {
++				*sp++ = '/';
++				*sp = '\0';
++			} else {
++				error = -ENOMEM;
++			}
++		}
++	}
++	if (error)
++		printk(KERN_WARNING "tomoyo_realpath: Pathname too long.\n");
++	return error;
++}
++
++/**
++ * tomoyo_realpath_from_path - Returns realpath(3) of the given pathname but ignores chroot'ed root.
++ *
++ * @path: Pointer to "struct path".
++ *
++ * Returns the realpath of the given @path on success, NULL otherwise.
++ *
++ * These functions use tomoyo_alloc(), so the caller must call tomoyo_free()
++ * if these functions didn't return NULL.
++ */
++char *tomoyo_realpath_from_path(struct path *path)
++{
++	char *buf = tomoyo_alloc(sizeof(struct tomoyo_page_buffer));
++
++	BUILD_BUG_ON(sizeof(struct tomoyo_page_buffer)
++		     <= TOMOYO_MAX_PATHNAME_LEN - 1);
++	if (!buf)
++		return NULL;
++	if (tomoyo_realpath_from_path2(path, buf,
++				       TOMOYO_MAX_PATHNAME_LEN - 1) == 0)
++		return buf;
++	tomoyo_free(buf);
++	return NULL;
++}
++
++/**
++ * tomoyo_realpath - Get realpath of a pathname.
++ *
++ * @pathname: The pathname to solve.
++ *
++ * Returns the realpath of @pathname on success, NULL otherwise.
++ */
++char *tomoyo_realpath(const char *pathname)
++{
++	struct nameidata nd;
++
++	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
++		char *buf = tomoyo_realpath_from_path(&nd.path);
++		path_put(&nd.path);
++		return buf;
++	}
++	return NULL;
++}
++
++/**
++ * tomoyo_realpath_nofollow - Get realpath of a pathname.
++ *
++ * @pathname: The pathname to solve.
++ *
++ * Returns the realpath of @pathname on success, NULL otherwise.
++ */
++char *tomoyo_realpath_nofollow(const char *pathname)
++{
++	struct nameidata nd;
++
++	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
++		char *buf = tomoyo_realpath_from_path(&nd.path);
++		path_put(&nd.path);
++		return buf;
++	}
++	return NULL;
++}
++
++/* Memory allocated for non-string data. */
++static unsigned int tomoyo_allocated_memory_for_elements;
++/* Quota for holding non-string data. */
++static unsigned int tomoyo_quota_for_elements;
++
++/**
++ * tomoyo_alloc_element - Allocate permanent memory for structures.
++ *
++ * @size: Size in bytes.
++ *
++ * Returns pointer to allocated memory on success, NULL otherwise.
++ *
++ * Memory has to be zeroed.
++ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
++ */
++void *tomoyo_alloc_element(const unsigned int size)
++{
++	static char *buf;
++	static DEFINE_MUTEX(lock);
++	static unsigned int buf_used_len = PATH_MAX;
++	char *ptr = NULL;
++	/*Assumes sizeof(void *) >= sizeof(long) is true. */
++	const unsigned int word_aligned_size
++		= roundup(size, max(sizeof(void *), sizeof(long)));
++	if (word_aligned_size > PATH_MAX)
++		return NULL;
++	/***** EXCLUSIVE SECTION START *****/
++	mutex_lock(&lock);
++	if (buf_used_len + word_aligned_size > PATH_MAX) {
++		if (!tomoyo_quota_for_elements ||
++		    tomoyo_allocated_memory_for_elements
++		    + PATH_MAX <= tomoyo_quota_for_elements)
++			ptr = kzalloc(PATH_MAX, GFP_KERNEL);
++		if (!ptr) {
++			printk(KERN_WARNING "ERROR: Out of memory "
++			       "for tomoyo_alloc_element().\n");
++			if (!tomoyo_policy_loaded)
++				panic("MAC Initialization failed.\n");
++		} else {
++			buf = ptr;
++			tomoyo_allocated_memory_for_elements += PATH_MAX;
++			buf_used_len = word_aligned_size;
++			ptr = buf;
++		}
++	} else if (word_aligned_size) {
++		int i;
++		ptr = buf + buf_used_len;
++		buf_used_len += word_aligned_size;
++		for (i = 0; i < word_aligned_size; i++) {
++			if (!ptr[i])
++				continue;
++			printk(KERN_ERR "WARNING: Reserved memory was tainted! "
++			       "The system might go wrong.\n");
++			ptr[i] = '\0';
++		}
++	}
++	mutex_unlock(&lock);
++	/***** EXCLUSIVE SECTION END *****/
++	return ptr;
++}
++
++/* Memory allocated for string data in bytes. */
++static unsigned int tomoyo_allocated_memory_for_savename;
++/* Quota for holding string data in bytes. */
++static unsigned int tomoyo_quota_for_savename;
++
++/*
++ * TOMOYO uses this hash only when appending a string into the string
++ * table. Frequency of appending strings is very low. So we don't need
++ * large (e.g. 64k) hash size. 256 will be sufficient.
++ */
++#define TOMOYO_MAX_HASH 256
++
++/* Structure for string data. */
++struct tomoyo_name_entry {
++	struct list_head list;
++	struct tomoyo_path_info entry;
++};
++
++/* Structure for available memory region. */
++struct tomoyo_free_memory_block_list {
++	struct list_head list;
++	char *ptr;             /* Pointer to a free area. */
++	int len;               /* Length of the area.     */
++};
++
++/*
++ * The list for "struct tomoyo_name_entry".
++ *
++ * This list is updated only inside tomoyo_save_name(), thus
++ * no global mutex exists.
++ */
++static struct list_head tomoyo_name_list[TOMOYO_MAX_HASH];
++
++/**
++ * tomoyo_save_name - Allocate permanent memory for string data.
++ *
++ * @name: The string to store into the permernent memory.
++ *
++ * Returns pointer to "struct tomoyo_path_info" on success, NULL otherwise.
++ *
++ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
++ */
++const struct tomoyo_path_info *tomoyo_save_name(const char *name)
++{
++	static LIST_HEAD(fmb_list);
++	static DEFINE_MUTEX(lock);
++	struct tomoyo_name_entry *ptr;
++	unsigned int hash;
++	/* fmb contains available size in bytes.
++	   fmb is removed from the fmb_list when fmb->len becomes 0. */
++	struct tomoyo_free_memory_block_list *fmb;
++	int len;
++	char *cp;
++
++	if (!name)
++		return NULL;
++	len = strlen(name) + 1;
++	if (len > TOMOYO_MAX_PATHNAME_LEN) {
++		printk(KERN_WARNING "ERROR: Name too long "
++		       "for tomoyo_save_name().\n");
++		return NULL;
++	}
++	hash = full_name_hash((const unsigned char *) name, len - 1);
++	/***** EXCLUSIVE SECTION START *****/
++	mutex_lock(&lock);
++	list_for_each_entry(ptr, &tomoyo_name_list[hash % TOMOYO_MAX_HASH],
++			     list) {
++		if (hash == ptr->entry.hash && !strcmp(name, ptr->entry.name))
++			goto out;
++	}
++	list_for_each_entry(fmb, &fmb_list, list) {
++		if (len <= fmb->len)
++			goto ready;
++	}
++	if (!tomoyo_quota_for_savename ||
++	    tomoyo_allocated_memory_for_savename + PATH_MAX
++	    <= tomoyo_quota_for_savename)
++		cp = kzalloc(PATH_MAX, GFP_KERNEL);
++	else
++		cp = NULL;
++	fmb = kzalloc(sizeof(*fmb), GFP_KERNEL);
++	if (!cp || !fmb) {
++		kfree(cp);
++		kfree(fmb);
++		printk(KERN_WARNING "ERROR: Out of memory "
++		       "for tomoyo_save_name().\n");
++		if (!tomoyo_policy_loaded)
++			panic("MAC Initialization failed.\n");
++		ptr = NULL;
++		goto out;
++	}
++	tomoyo_allocated_memory_for_savename += PATH_MAX;
++	list_add(&fmb->list, &fmb_list);
++	fmb->ptr = cp;
++	fmb->len = PATH_MAX;
++ ready:
++	ptr = tomoyo_alloc_element(sizeof(*ptr));
++	if (!ptr)
++		goto out;
++	ptr->entry.name = fmb->ptr;
++	memmove(fmb->ptr, name, len);
++	tomoyo_fill_path_info(&ptr->entry);
++	fmb->ptr += len;
++	fmb->len -= len;
++	list_add_tail(&ptr->list, &tomoyo_name_list[hash % TOMOYO_MAX_HASH]);
++	if (fmb->len == 0) {
++		list_del(&fmb->list);
++		kfree(fmb);
++	}
++ out:
++	mutex_unlock(&lock);
++	/***** EXCLUSIVE SECTION END *****/
++	return ptr ? &ptr->entry : NULL;
++}
++
++/**
++ * tomoyo_realpath_init - Initialize realpath related code.
++ *
++ * Returns 0.
++ */
++static int __init tomoyo_realpath_init(void)
++{
++	int i;
++
++	BUILD_BUG_ON(TOMOYO_MAX_PATHNAME_LEN > PATH_MAX);
++	for (i = 0; i < TOMOYO_MAX_HASH; i++)
++		INIT_LIST_HEAD(&tomoyo_name_list[i]);
++	INIT_LIST_HEAD(&tomoyo_kernel_domain.acl_info_list);
++	tomoyo_kernel_domain.domainname = tomoyo_save_name(TOMOYO_ROOT_NAME);
++	list_add_tail(&tomoyo_kernel_domain.list, &tomoyo_domain_list);
++	down_read(&tomoyo_domain_list_lock);
++	if (tomoyo_find_domain(TOMOYO_ROOT_NAME) != &tomoyo_kernel_domain)
++		panic("Can't register tomoyo_kernel_domain");
++	up_read(&tomoyo_domain_list_lock);
++	return 0;
++}
++
++security_initcall(tomoyo_realpath_init);
++
++/* Memory allocated for temporary purpose. */
++static atomic_t tomoyo_dynamic_memory_size;
++
++/**
++ * tomoyo_alloc - Allocate memory for temporary purpose.
++ *
++ * @size: Size in bytes.
++ *
++ * Returns pointer to allocated memory on success, NULL otherwise.
++ */
++void *tomoyo_alloc(const size_t size)
++{
++	void *p = kzalloc(size, GFP_KERNEL);
++	if (p)
++		atomic_add(ksize(p), &tomoyo_dynamic_memory_size);
++	return p;
++}
++
++/**
++ * tomoyo_free - Release memory allocated by tomoyo_alloc().
++ *
++ * @p: Pointer returned by tomoyo_alloc(). May be NULL.
++ *
++ * Returns nothing.
++ */
++void tomoyo_free(const void *p)
++{
++	if (p) {
++		atomic_sub(ksize(p), &tomoyo_dynamic_memory_size);
++		kfree(p);
++	}
++}
++
++/**
++ * tomoyo_read_memory_counter - Check for memory usage in bytes.
++ *
++ * @head: Pointer to "struct tomoyo_io_buffer".
++ *
++ * Returns memory usage.
++ */
++int tomoyo_read_memory_counter(struct tomoyo_io_buffer *head)
++{
++	if (!head->read_eof) {
++		const unsigned int shared
++			= tomoyo_allocated_memory_for_savename;
++		const unsigned int private
++			= tomoyo_allocated_memory_for_elements;
++		const unsigned int dynamic
++			= atomic_read(&tomoyo_dynamic_memory_size);
++		char buffer[64];
++
++		memset(buffer, 0, sizeof(buffer));
++		if (tomoyo_quota_for_savename)
++			snprintf(buffer, sizeof(buffer) - 1,
++				 "   (Quota: %10u)",
++				 tomoyo_quota_for_savename);
++		else
++			buffer[0] = '\0';
++		tomoyo_io_printf(head, "Shared:  %10u%s\n", shared, buffer);
++		if (tomoyo_quota_for_elements)
++			snprintf(buffer, sizeof(buffer) - 1,
++				 "   (Quota: %10u)",
++				 tomoyo_quota_for_elements);
++		else
++			buffer[0] = '\0';
++		tomoyo_io_printf(head, "Private: %10u%s\n", private, buffer);
++		tomoyo_io_printf(head, "Dynamic: %10u\n", dynamic);
++		tomoyo_io_printf(head, "Total:   %10u\n",
++				 shared + private + dynamic);
++		head->read_eof = true;
++	}
++	return 0;
++}
++
++/**
++ * tomoyo_write_memory_quota - Set memory quota.
++ *
++ * @head: Pointer to "struct tomoyo_io_buffer".
++ *
++ * Returns 0.
++ */
++int tomoyo_write_memory_quota(struct tomoyo_io_buffer *head)
++{
++	char *data = head->write_buf;
++	unsigned int size;
++
++	if (sscanf(data, "Shared: %u", &size) == 1)
++		tomoyo_quota_for_savename = size;
++	else if (sscanf(data, "Private: %u", &size) == 1)
++		tomoyo_quota_for_elements = size;
++	return 0;
++}
+--- /dev/null
++++ security-testing-2.6.git/security/tomoyo/realpath.h
+@@ -0,0 +1,63 @@
++/*
++ * security/tomoyo/realpath.h
++ *
++ * Get the canonicalized absolute pathnames. The basis for TOMOYO.
++ *
++ * Copyright (C) 2005-2009  NTT DATA CORPORATION
++ *
++ * Version: 2.2.0-pre   2009/02/01
++ *
++ */
++
++#ifndef _SECURITY_TOMOYO_REALPATH_H
++#define _SECURITY_TOMOYO_REALPATH_H
++
++struct path;
++struct tomoyo_path_info;
++struct tomoyo_io_buffer;
++
++/* Convert binary string to ascii string. */
++int tomoyo_encode(char *buffer, int buflen, const char *str);
++
++/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
++int tomoyo_realpath_from_path2(struct path *path, char *newname,
++			       int newname_len);
++
++/*
++ * Returns realpath(3) of the given pathname but ignores chroot'ed root.
++ * These functions use tomoyo_alloc(), so the caller must call tomoyo_free()
++ * if these functions didn't return NULL.
++ */
++char *tomoyo_realpath(const char *pathname);
++/*
++ * Same with tomoyo_realpath() except that it doesn't follow the final symlink.
++ */
++char *tomoyo_realpath_nofollow(const char *pathname);
++/* Same with tomoyo_realpath() except that the pathname is already solved. */
++char *tomoyo_realpath_from_path(struct path *path);
++
++/*
++ * Allocate memory for ACL entry.
++ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
++ */
++void *tomoyo_alloc_element(const unsigned int size);
++
++/*
++ * Keep the given name on the RAM.
++ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
++ */
++const struct tomoyo_path_info *tomoyo_save_name(const char *name);
++
++/* Allocate memory for temporary use (e.g. permission checks). */
++void *tomoyo_alloc(const size_t size);
++
++/* Free memory allocated by tomoyo_alloc(). */
++void tomoyo_free(const void *p);
++
++/* Check for memory usage. */
++int tomoyo_read_memory_counter(struct tomoyo_io_buffer *head);
++
++/* Set memory quota. */
++int tomoyo_write_memory_quota(struct tomoyo_io_buffer *head);
++
++#endif /* !defined(_SECURITY_TOMOYO_REALPATH_H) */
 
- # Read KERNELRELEASE from include/config/kernel.release (if it exists)
----
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."
-  -- Ben Franklin
+--
 
-"The course of history shows that as a government grows, liberty
-decreases."
-  -- Thomas Jefferson
