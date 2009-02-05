@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZBEXnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbZBEXnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbZBEXnX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 18:43:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbZBEXm5
+	id S1754444AbZBEXnr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 18:43:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZBEXnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 18:42:57 -0500
-Received: from el-out-1112.google.com ([209.85.162.176]:62957 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754163AbZBEXm4 (ORCPT
+	Thu, 5 Feb 2009 18:43:37 -0500
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:4892 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753977AbZBEXng (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 18:42:56 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=mXR5fv99znqZdkr+3wsDT4jYnnZGmXcWNLwyGk7Y3JHlg/W6fqBUd9gn0q+av+kWxv
-         MQqGRYCHsrByps7Ec9JJkbt7xGA/VA1YxZpogHqD+9vEnJZsrNv+XyD6+JHgVt/skYq1
-         lcHyWDhZOPPFXi6OcYMdke0HfSLcSwmu5BpJU=
-Message-ID: <498B797C.4060202@gmail.com>
-Date: Thu, 05 Feb 2009 17:42:52 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Feb 2009 18:43:36 -0500
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] floppy: request only the ports we actually use
+Date: Thu, 5 Feb 2009 16:43:31 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, phdm@macqel.be, hancockrwd@gmail.com,
+       abelay@mit.edu, lenb@kernel.org, stable@kernel.org
+References: <20090205174859.18396.68512.stgit@bob.kio> <200902051055.34149.bjorn.helgaas@hp.com> <20090205142948.1a48d983.akpm@linux-foundation.org>
+In-Reply-To: <20090205142948.1a48d983.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: Floris Kraak <randakar@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       Andreas Schwab <schwab@suse.de>
-Subject: Re: [PATCH]: Cleanup: Remove gcc format string warnings when compiling
-  with -Wformat-security
-References: <56e1b5710902050641l5ece10e5hedd11fb3f4292886@mail.gmail.com> <adak584jzw3.fsf@cisco.com>
-In-Reply-To: <adak584jzw3.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902051643.32591.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > Here's the patch that I get when I blindly patch every single location
->  > that emits this warning.
+On Thursday 05 February 2009 03:29:48 pm Andrew Morton wrote:
+> On Thu, 5 Feb 2009 10:55:33 -0700
+> Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 > 
-> I would strongly prefer to do this with a little more care.  For example
-> the b43/main.c change:
+> > On Thursday 05 February 2009 10:48:59 am Bjorn Helgaas wrote:
+> > > The floppy driver requests an I/O port it doesn't need, and
+> > > sometimes this causes a conflict with a motherboard device
+> > > reported by PNPBIOS.
+> > > 
+> > > This patch makes the floppy driver request only the ports it
+> > > actually uses.
+> > > ...
+> > > Philippe reported that this conflict broke the floppy driver between
+> > > 2.6.11 and 2.6.22.  ...
+> > 
+> > While this is old and BIOS-specific, it is a regression, so we might
+> > consider it for 2.6.29.
 > 
->  > --- a/drivers/net/wireless/b43/main.c
->  > +++ b/drivers/net/wireless/b43/main.c
->  > @@ -2005,9 +2005,9 @@ static void b43_print_fw_helptext(struct b43_wl
->  > *wl, bool error)
->  >  	       "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
->  >  	       "and download the latest firmware (version 4).\n";
->  >  	if (error)
->  > -		b43err(wl, text);
->  > +		b43err(wl, "%s", text);
->  >  	else
->  > -		b43warn(wl, text);
->  > +		b43warn(wl, "%s", text);
->  >  }
-> would probably be better solved by doing
-> 
-> --- a/drivers/net/wireless/b43/main.c
-> +++ b/drivers/net/wireless/b43/main.c
-> @@ -1999,11 +1999,11 @@ static void b43_release_firmware(struct b43_wldev *dev)
->  
->  static void b43_print_fw_helptext(struct b43_wl *wl, bool error)
->  {
-> -	const char *text;
-> +	static const char text[] =
-> +		"You must go to "
-> +		"http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
-> +		"and download the latest firmware (version 4).\n";
->  
-> -	text = "You must go to "
-> -	       "http://linuxwireless.org/en/users/Drivers/b43#devicefirmware "
-> -	       "and download the latest firmware (version 4).\n";
->  	if (error)
->  		b43err(wl, text);
->  	else
+> And earlier, surely?
 
-"const char* const" text would likely work as well..
+Sure, I'm OK with that.  I haven't heard any complaints, so maybe we
+want it in -mm for a while before putting it in stable?
 
+> I tagged it
 > 
-> and in any case I'm not totally convinced that we want to add the bloat
-> for trivial cases like
+> Cc: <stable@kernel.org> [2.6.25.x, 2.6.26.x, 2.6.27.x, 2.6.28.x]
 > 
-> 	char *safe = "foo";
-> 	printk(safe);
-
-Well, in that case, printk("foo") would be the obvious solution :-)
-
-> 
-> Would be nice to think of a cleverer way to handle that...
-> 
->  - R.
+> (I'm not sure if 2.6.25.x is still being maintained by Greg & Chris,
+> but other parties are maintaining 2.6.25-based kernels, and such
+> tagging might help them).
 
