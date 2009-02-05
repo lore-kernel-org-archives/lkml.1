@@ -1,119 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761042AbZBEU0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761848AbZBEU0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761042AbZBEU0F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 15:26:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760783AbZBEUXy
+	id S1761848AbZBEU0v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 15:26:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbZBEU0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 15:23:54 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:33486 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760774AbZBEUXx (ORCPT
+	Thu, 5 Feb 2009 15:26:41 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53761 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754126AbZBEU0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 15:23:53 -0500
-X-AuthUser: davidel@xmailserver.org
-From: Davide Libenzi <davidel@xmailserver.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>
-Date: Thu, 05 Feb 2009 12:23:39 -0800
-Subject: [patch 6/6] epoll keyed wakeups v3 - make tty use keyed wakeups
+	Thu, 5 Feb 2009 15:26:40 -0500
+Date: Thu, 5 Feb 2009 20:25:48 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 36 of 36] x86: make the X_bad functions consistent
+In-Reply-To: <d0b8ae3ef338132ad60d.1233862278@abulafia.goop.org>
+Message-ID: <Pine.LNX.4.64.0902052024470.13998@blonde.anvils>
+References: <patchbomb.1233862242@abulafia.goop.org>
+ <d0b8ae3ef338132ad60d.1233862278@abulafia.goop.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.21761.1233865424.6>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch introduces keyed event wakeups inside the TTY code.
+On Thu, 5 Feb 2009, Jeremy Fitzhardinge wrote:
 
+> Impact: cleanup
+> 
+> Use the same logic to implement all 3 _bad() functions.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+A backward step in my opinion.
 
+Hugh
 
-- Davide
-
-
----
- drivers/char/tty_io.c |   20 ++++++++++----------
- 1 file changed, 10 insertions(+), 10 deletions(-)
-
-Index: linux-2.6.mod/drivers/char/tty_io.c
-===================================================================
---- linux-2.6.mod.orig/drivers/char/tty_io.c	2009-02-03 13:43:52.000000000 -0800
-+++ linux-2.6.mod/drivers/char/tty_io.c	2009-02-03 13:44:07.000000000 -0800
-@@ -464,7 +464,7 @@ void tty_wakeup(struct tty_struct *tty)
- 			tty_ldisc_deref(ld);
- 		}
- 	}
--	wake_up_interruptible(&tty->write_wait);
-+	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
- }
- 
- EXPORT_SYMBOL_GPL(tty_wakeup);
-@@ -587,8 +587,8 @@ static void do_tty_hangup(struct work_st
- 	 * FIXME: Once we trust the LDISC code better we can wait here for
- 	 * ldisc completion and fix the driver call race
- 	 */
--	wake_up_interruptible(&tty->write_wait);
--	wake_up_interruptible(&tty->read_wait);
-+	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
-+	wake_up_interruptible_poll(&tty->read_wait, POLLIN);
- 	/*
- 	 * Shutdown the current line discipline, and reset it to
- 	 * N_TTY.
-@@ -879,7 +879,7 @@ void stop_tty(struct tty_struct *tty)
- 	if (tty->link && tty->link->packet) {
- 		tty->ctrl_status &= ~TIOCPKT_START;
- 		tty->ctrl_status |= TIOCPKT_STOP;
--		wake_up_interruptible(&tty->link->read_wait);
-+		wake_up_interruptible_poll(&tty->link->read_wait, POLLIN);
- 	}
- 	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
- 	if (tty->ops->stop)
-@@ -913,7 +913,7 @@ void start_tty(struct tty_struct *tty)
- 	if (tty->link && tty->link->packet) {
- 		tty->ctrl_status &= ~TIOCPKT_STOP;
- 		tty->ctrl_status |= TIOCPKT_START;
--		wake_up_interruptible(&tty->link->read_wait);
-+		wake_up_interruptible_poll(&tty->link->read_wait, POLLIN);
- 	}
- 	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
- 	if (tty->ops->start)
-@@ -970,7 +970,7 @@ static ssize_t tty_read(struct file *fil
- void tty_write_unlock(struct tty_struct *tty)
- {
- 	mutex_unlock(&tty->atomic_write_lock);
--	wake_up_interruptible(&tty->write_wait);
-+	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
- }
- 
- int tty_write_lock(struct tty_struct *tty, int ndelay)
-@@ -1623,21 +1623,21 @@ void tty_release_dev(struct file *filp)
- 
- 		if (tty_closing) {
- 			if (waitqueue_active(&tty->read_wait)) {
--				wake_up(&tty->read_wait);
-+				wake_up_poll(&tty->read_wait, POLLIN);
- 				do_sleep++;
- 			}
- 			if (waitqueue_active(&tty->write_wait)) {
--				wake_up(&tty->write_wait);
-+				wake_up_poll(&tty->write_wait, POLLOUT);
- 				do_sleep++;
- 			}
- 		}
- 		if (o_tty_closing) {
- 			if (waitqueue_active(&o_tty->read_wait)) {
--				wake_up(&o_tty->read_wait);
-+				wake_up_poll(&o_tty->read_wait, POLLIN);
- 				do_sleep++;
- 			}
- 			if (waitqueue_active(&o_tty->write_wait)) {
--				wake_up(&o_tty->write_wait);
-+				wake_up_poll(&o_tty->write_wait, POLLOUT);
- 				do_sleep++;
- 			}
- 		}
-
+> ---
+>  arch/x86/include/asm/pgtable.h |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+> --- a/arch/x86/include/asm/pgtable.h
+> +++ b/arch/x86/include/asm/pgtable.h
+> @@ -554,7 +554,7 @@
+>  
+>  static inline int pmd_bad(pmd_t pmd)
+>  {
+> -	return (pmd_flags(pmd) & ~_PAGE_USER) != _KERNPG_TABLE;
+> +	return (pmd_flags(pmd) & ~(_KERNPG_TABLE | _PAGE_USER)) != 0;
+>  }
+>  
+>  static inline unsigned long pages_to_mb(unsigned long npg)
+> @@ -638,7 +638,7 @@
+>  
+>  static inline int pgd_bad(pgd_t pgd)
+>  {
+> -	return (pgd_flags(pgd) & ~_PAGE_USER) != _KERNPG_TABLE;
+> +	return (pgd_flags(pgd) & ~(_KERNPG_TABLE | _PAGE_USER)) != 0;
+>  }
+>  
+>  static inline int pgd_none(pgd_t pgd)
