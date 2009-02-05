@@ -1,54 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758291AbZBEP2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758567AbZBEP25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758291AbZBEP2g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:28:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757685AbZBEP2B
+	id S1758567AbZBEP25 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:28:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbZBEP2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:28:01 -0500
-Received: from kroah.org ([198.145.64.141]:58611 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757637AbZBEP2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:28:00 -0500
-Date: Thu, 5 Feb 2009 07:26:30 -0800
-From: Greg KH <greg@kroah.com>
-To: "Zhao, Yu" <yu.zhao@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       balajirrao@gmail.com, laurent.riffard@free.fr, balajirrao@openmoko.org
-Subject: Re: linux-next: Tree for March 7: slab corruptions
-Message-ID: <20090205152630.GB4099@kroah.com>
-References: <498A7463.4010603@intel.com> <20090205053802.GA8355@kroah.com> <498A94E0.2080306@intel.com>
+	Thu, 5 Feb 2009 10:28:43 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:46811 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758314AbZBEP2m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:28:42 -0500
+Date: Thu, 5 Feb 2009 07:18:41 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       "Theodore Ts'o" <tytso@mit.edu>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: LTTng 0.89 for Linux 2.6.29-rc3
+Message-ID: <20090205151841.GF6915@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090130200757.GA14999@Krystal> <20090205140432.GE6915@linux.vnet.ibm.com> <20090205150242.GA27895@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498A94E0.2080306@intel.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090205150242.GA27895@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 03:27:28PM +0800, Zhao, Yu wrote:
-> Greg KH wrote:
->> On Thu, Feb 05, 2009 at 01:08:51PM +0800, Zhao, Yu wrote:
->>> Hi Greg,
->>>
->>> It looks like following fix is not in Linus' tree. Can you please queue 
->>> it?
->>>
->>> http://lkml.org/lkml/2008/3/8/155
->> Queue what?  That is a message from over a year ago, are you seeing a
->> problem in mainline in this area?  If so, do you have a proposed fix for
->> it?
->
-> Yes, I'm seeing 'kobject (ffff8800bf03b908): tried to init an initialized
-> object, something is seriously wrong'. The warning is fired when 
-> re-initializing
-> a kobject that has been deleted while its state remains `initialized'. 
+On Thu, Feb 05, 2009 at 10:02:42AM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Fri, Jan 30, 2009 at 03:07:57PM -0500, Mathieu Desnoyers wrote:
+> > > Hi,
+> > > 
+> > > I just ported LTTng to the 2.6.29-rc3 kernel. It includes the following
+> > > changes :
+> > > 
+> > > - Tree RCU instrumentation
+> > > - Updated ext4 and jbd2 instrumentation
+> > > 
+> > > Please feel free to try it and report any success/problem you may have.
+> > > Note that cross-build has been slightly less tested this time because
+> > > I'll have to upgrade many of my compilers to a version compatible with
+> > > kernel 2.6.29-rc.
+> > > 
+> > > It also includes the recently added kprobes support through a simple
+> > > 
+> > > echo symbol_name > /mnt/debugfs/ltt/kprobes/enable
+> > > 
+> > > It's available at the new LTTng website :
+> > > 
+> > > http://www.lttng.org/
+> > 
+> > Hello, Matheiu,
+> > 
+> > When I try to apply this to v2.6.29-rc3, I get the following:
+> > 
+> > 	can't find file to patch at input line 61
+> > 	Perhaps you used the wrong -p or --strip option?
+> > 	The text leading up to this was:
+> > 	--------------------------
+> > 	|get_ltt_root() is necessary for ltt-trace-control to create subdirs in
+> > 	ltt's
+> > 	|debugfs dir.
+> > 	|
+> > 	|From: Zhao Lei <zhaolei@cn.fujitsu.com>
+> > 	|Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> > 	|Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > 	|---
+> > 	| include/linux/ltt-core.h |    8 ++++++++
+> > 	| ltt/ltt-core.c           |   14 ++++++++++++++
+> > 	| ltt/ltt-relay.c          |    8 +-------
+> > 	| 3 files changed, 23 insertions(+), 7 deletions(-)
+> > 	|
+> > 	|Index: linux-2.6-lttng/include/linux/ltt-core.h
+> > 	|===================================================================
+> > 	|--- linux-2.6-lttng.orig/include/linux/ltt-core.h      2009-01-15
+> > 	15:55:18.000000000 -0500
+> > 	|+++ linux-2.6-lttng/include/linux/ltt-core.h   2009-01-15
+> > 	15:55:24.000000000 -0500
+> > 
+> > Help?
+> > 
+> 
+> Hi Paul,
+> 
+> I must admit I'm a bit puzzled. I've tried to quilt push -a both 
+> LTTng 0.89 and LTTng 0.92 taken from the website and they both apply
+> correctly on 2.6.29-rc3. When I quilt pop -a, neither of those 3 files
+> (include/linux/ltt-core.h, ltt/ltt-core.c, ltt/ltt-relay.c) are stucked
+> in my tree.
+> 
+> I've used files from :
+> 
+> http://www.lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
+> 
+> Which tarballs are you using exactly ?
 
-What kobject is causing this to happen?
+That is indeed the one that I am using.
 
-kobjects should not be static, which it sounds like is the root of your
-problem here.  If they are properly dynamic, this can not happen.
+> I guess you need to apply them to your existing tree, so pointing you to
+> git.kernel.org lttng tree won't help much here.
 
-thanks,
+I am attempting to apply to v2.6.29-rc3, which is commit
+18e352e4a73465349711a9324767e1b2453383e2 in the linux-2.6 git tree.
 
-greg k-h
+Later on, I might well want to apply on top of some other stuff, but
+figured I should try it straight first.  ;-)
+
+							Thanx, Paul
+
+> Mathieu
+> 
+> > 							Thanx, Paul
+> 
+> -- 
+> Mathieu Desnoyers
+> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
