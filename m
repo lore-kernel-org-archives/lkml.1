@@ -1,85 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbZBEJGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758830AbZBEJHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbZBEJGa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 04:06:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757782AbZBEJEp
+	id S1758830AbZBEJHA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 04:07:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbZBEJEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 04:04:45 -0500
+	Thu, 5 Feb 2009 04:04:47 -0500
 Received: from ms0.nttdata.co.jp ([163.135.193.231]:53381 "EHLO
 	ms0.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756531AbZBEJEn (ORCPT
+	with ESMTP id S1757429AbZBEJEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 04:04:43 -0500
-Message-Id: <20090205082234.211966947@nttdata.co.jp>
+	Thu, 5 Feb 2009 04:04:45 -0500
+Message-Id: <20090205082224.360343106@nttdata.co.jp>
 References: <20090205081810.331987920@nttdata.co.jp>
 User-Agent: quilt/0.45-1
-Date: Thu, 05 Feb 2009 17:18:17 +0900
+Date: Thu, 05 Feb 2009 17:18:11 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: jmorris@namei.org
 Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, haradats@nttdata.co.jp,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #15 7/8] Kconfig and Makefile
-X-OriginalArrivalTime: 05 Feb 2009 08:22:35.0589 (UTC) FILETIME=[E63E3750:01C9876A]
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       David Howells <dhowells@redhat.com>
+Subject: [TOMOYO #15 1/8] Add in_execve flag into task_struct.
+X-OriginalArrivalTime: 05 Feb 2009 08:22:25.0808 (UTC) FILETIME=[E069C100:01C9876A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO uses LSM hooks for pathname based access control and securityfs support.
+This patch allows LSM modules to determine whether current process is in an
+execve operation or not so that they can behave differently while an execve
+operation is in progress.
 
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+This patch is needed by TOMOYO. Please see another patch titled "LSM adapter
+functions." for backgrounds.
+
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Signed-off-by: David Howells <dhowells@redhat.com>
 ---
- security/Kconfig         |    1 +
- security/Makefile        |    2 ++
- security/tomoyo/Kconfig  |   11 +++++++++++
- security/tomoyo/Makefile |    1 +
- 4 files changed, 15 insertions(+)
+ fs/compat.c           |    3 +++
+ fs/exec.c             |    3 +++
+ include/linux/sched.h |    2 ++
+ 3 files changed, 8 insertions(+)
 
---- security-testing-2.6.git.orig/security/Kconfig
-+++ security-testing-2.6.git/security/Kconfig
-@@ -134,6 +134,7 @@ config SECURITY_DEFAULT_MMAP_MIN_ADDR
+--- security-testing-2.6.git.orig/fs/compat.c
++++ security-testing-2.6.git/fs/compat.c
+@@ -1402,6 +1402,7 @@ int compat_do_execve(char * filename,
+ 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
+ 	if (retval < 0)
+ 		goto out_free;
++	current->in_execve = 1;
  
- source security/selinux/Kconfig
- source security/smack/Kconfig
-+source security/tomoyo/Kconfig
+ 	retval = -ENOMEM;
+ 	bprm->cred = prepare_exec_creds();
+@@ -1454,6 +1455,7 @@ int compat_do_execve(char * filename,
+ 		goto out;
  
- endmenu
+ 	/* execve succeeded */
++	current->in_execve = 0;
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 	acct_update_integrals(current);
+ 	free_bprm(bprm);
+@@ -1470,6 +1472,7 @@ out_file:
+ 	}
  
---- security-testing-2.6.git.orig/security/Makefile
-+++ security-testing-2.6.git/security/Makefile
-@@ -5,6 +5,7 @@
- obj-$(CONFIG_KEYS)			+= keys/
- subdir-$(CONFIG_SECURITY_SELINUX)	+= selinux
- subdir-$(CONFIG_SECURITY_SMACK)		+= smack
-+subdir-$(CONFIG_SECURITY_TOMOYO)        += tomoyo
+ out_unlock:
++	current->in_execve = 0;
+ 	mutex_unlock(&current->cred_exec_mutex);
  
- # always enable default capabilities
- obj-y		+= commoncap.o
-@@ -17,3 +18,4 @@ obj-$(CONFIG_SECURITY_SELINUX)		+= selin
- obj-$(CONFIG_SECURITY_SMACK)		+= smack/built-in.o
- obj-$(CONFIG_SECURITY_ROOTPLUG)		+= root_plug.o
- obj-$(CONFIG_CGROUP_DEVICE)		+= device_cgroup.o
-+obj-$(CONFIG_SECURITY_TOMOYO)		+= tomoyo/built-in.o
---- /dev/null
-+++ security-testing-2.6.git/security/tomoyo/Kconfig
-@@ -0,0 +1,11 @@
-+config SECURITY_TOMOYO
-+	bool "TOMOYO Linux Support"
-+	depends on SECURITY
-+	select SECURITYFS
-+	select SECURITY_PATH
-+	default n
-+	help
-+	  This selects TOMOYO Linux, pathname-based access control.
-+	  Required userspace tools and further information may be
-+	  found at <http://tomoyo.sourceforge.jp/>.
-+	  If you are unsure how to answer this question, answer N.
---- /dev/null
-+++ security-testing-2.6.git/security/tomoyo/Makefile
-@@ -0,0 +1 @@
-+obj-y = common.o realpath.o tomoyo.o domain.o file.o
+ out_free:
+--- security-testing-2.6.git.orig/fs/exec.c
++++ security-testing-2.6.git/fs/exec.c
+@@ -1268,6 +1268,7 @@ int do_execve(char * filename,
+ 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
+ 	if (retval < 0)
+ 		goto out_free;
++	current->in_execve = 1;
+ 
+ 	retval = -ENOMEM;
+ 	bprm->cred = prepare_exec_creds();
+@@ -1321,6 +1322,7 @@ int do_execve(char * filename,
+ 		goto out;
+ 
+ 	/* execve succeeded */
++	current->in_execve = 0;
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 	acct_update_integrals(current);
+ 	free_bprm(bprm);
+@@ -1339,6 +1341,7 @@ out_file:
+ 	}
+ 
+ out_unlock:
++	current->in_execve = 0;
+ 	mutex_unlock(&current->cred_exec_mutex);
+ 
+ out_free:
+--- security-testing-2.6.git.orig/include/linux/sched.h
++++ security-testing-2.6.git/include/linux/sched.h
+@@ -1157,6 +1157,8 @@ struct task_struct {
+ 	/* ??? */
+ 	unsigned int personality;
+ 	unsigned did_exec:1;
++	unsigned in_execve:1;	/* Tell the LSMs that the process is doing an
++				 * execve */
+ 	pid_t pid;
+ 	pid_t tgid;
+ 
 
 --
 
