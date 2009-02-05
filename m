@@ -1,123 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZBEPEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZBEPGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbZBEPEz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:04:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZBEPEp
+	id S1757287AbZBEPGX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:06:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753262AbZBEPGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:04:45 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:42737 "EHLO mx2.redhat.com"
+	Thu, 5 Feb 2009 10:06:13 -0500
+Received: from cantor2.suse.de ([195.135.220.15]:43251 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752906AbZBEPEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:04:44 -0500
-Subject: Re: [PATCH] wireless: introduce POWEROF2_BLOCKSIZE_ONLY option
-From: Dan Williams <dcbw@redhat.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>
-In-Reply-To: <1233819002-6912-1-git-send-email-cooloney@kernel.org>
-References: <1233819002-6912-1-git-send-email-cooloney@kernel.org>
-Content-Type: text/plain
-Date: Thu, 05 Feb 2009 10:03:15 -0500
-Message-Id: <1233846195.3028.14.camel@localhost>
-Mime-Version: 1.0
+	id S1753170AbZBEPGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:06:12 -0500
+From: Thomas Renninger <trenn@suse.de>
+Organization: SUSE Products GmbH
+To: Greg KH <gregkh@suse.de>
+Subject: Re: [patch 30/41] ACPI EC: Fix regression due to use of uninitialized variable
+Date: Thu, 5 Feb 2009 16:06:02 +0100
+User-Agent: KMail/1.10.3 (Linux/2.6.27.13-HEAD_20090130075504_71baee03-default; KDE/4.1.3; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Alexey Starikovskiy <astarikovskiy@suse.de>,
+       Len Brown <len.brown@intel.com>
+References: <20090204184029.881610776@mini.kroah.org> <20090204184648.GE25246@kroah.com> <200902050908.45994.trenn@suse.de>
+In-Reply-To: <200902050908.45994.trenn@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902051606.05657.trenn@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-05 at 15:30 +0800, Bryan Wu wrote:
-> From: Cliff Cai <cliff.cai@analog.com>
+On Thursday 05 February 2009 09:08:42 Thomas Renninger wrote:
+> Hi,
 > 
-> Introduce POWEROF2_BLOCKSIZE_ONLY option for those SD/SDIO host
-> which only support transferring block with size of power-of-2
+> On Wednesday 04 February 2009 19:46:48 Greg KH wrote:
+> > 2.6.27-stable review patch.  If anyone has any objections, please let us
+> > know.
+> Does this one patch cleanly in 2.6.27-stable?
+> I had it on my list, but this seem to have been introduced after
+> 2.6.27 and I thought I removed this one again?
+> Or this is a follow up of another fix that should go in?
+Yes this got in by another patch.
+The huge "make ACPI integer 64 bit aware" one. Which looked like
+it could fix really nasty bugs and is safe due to only long to long long
+conversions. But maybe this wasn't such a good idea, as exported
+kernel functions change from long to long long...
 
-Is the point here to avoid copying in the controller code?  As with the
-other patches on libertas-dev, I really dislike adding code to *every
-SDIO driver* just because the host has certain restrictions.  I'd much
-rather that the host/controller code became aware of it's own
-restrictions, and exposed those generically to drivers above it.
-Without a KConfig option.
-
-Seriously.  The host knows what it needs.  The code to handle that
-should go in the host.
-
-How about adding a method like "sdio_align_size" that takes the
-controller's constraints into account?  That seems a lot cleaner than
-adding #define/KConfig junk to every SDIO driver in the kernel.  One
-less codepath to test, makes your life and all our lives easier.
-
-Dan
-
-> [ Bryan Wu <cooloney@kernel.org>:
->  - remove some useless coding style cleanup
->  - using roundup() function as upstream does
-> ]
+    Thomas
 > 
-> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  drivers/net/wireless/Kconfig            |    6 ++++++
->  drivers/net/wireless/libertas/if_sdio.c |   16 ++++++++++++++++
->  2 files changed, 22 insertions(+), 0 deletions(-)
+>    Thomas
 > 
-> diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
-> index e4f9f74..a2685fa 100644
-> --- a/drivers/net/wireless/Kconfig
-> +++ b/drivers/net/wireless/Kconfig
-> @@ -151,6 +151,12 @@ config LIBERTAS_SDIO
->  	---help---
->  	  A driver for Marvell Libertas 8385 and 8686 SDIO devices.
->  
-> +config POWEROF2_BLOCKSIZE_ONLY
-> +	bool "Support transferring block with size of power-of-2 only"
-> +	depends on LIBERTAS_SDIO
-> +	---help---
-> +	  For SD/SDIO host which only supports transferring block with size of power-of-2.
-> +
->  config LIBERTAS_DEBUG
->  	bool "Enable full debugging output in the Libertas module."
->  	depends on LIBERTAS
-> diff --git a/drivers/net/wireless/libertas/if_sdio.c b/drivers/net/wireless/libertas/if_sdio.c
-> index 4519d73..5efc056 100644
-> --- a/drivers/net/wireless/libertas/if_sdio.c
-> +++ b/drivers/net/wireless/libertas/if_sdio.c
-> @@ -272,6 +272,11 @@ static int if_sdio_card_to_host(struct if_sdio_card *card)
->  	 */
->  	chunk = sdio_align_size(card->func, size);
->  
-> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
-> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
-> +	chunk = (chunk + card->func->cur_blksize - 1) /
-> +			card->func->cur_blksize * card->func->cur_blksize;
-> +#endif
->  	ret = sdio_readsb(card->func, card->buffer, card->ioport, chunk);
->  	if (ret)
->  		goto out;
-> @@ -581,8 +586,14 @@ static int if_sdio_prog_real(struct if_sdio_card *card)
->  			lbs_deb_sdio("sending %d bytes (%d bytes) chunk\n",
->  				chunk_size, (chunk_size + 31) / 32 * 32);
->  */
-> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
-> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
-> +  			ret = sdio_writesb(card->func, card->ioport,
-> + 				chunk_buffer, roundup(chunk_size, 256);
-> +#else
->  			ret = sdio_writesb(card->func, card->ioport,
->  				chunk_buffer, roundup(chunk_size, 32));
-> +#endif
->  			if (ret)
->  				goto release;
->  
-> @@ -699,6 +710,11 @@ static int if_sdio_host_to_card(struct lbs_private *priv,
->  	 */
->  	size = sdio_align_size(card->func, nb + 4);
->  
-> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
-> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
-> +	size = (size + card->func->cur_blksize - 1) /
-> +			card->func->cur_blksize * card->func->cur_blksize;
-> +#endif
->  	packet = kzalloc(sizeof(struct if_sdio_packet) + size,
->  			GFP_ATOMIC);
->  	if (!packet) {
+> > ------------------
+> >
+> > From: Alexey Starikovskiy <astarikovskiy@suse.de>
+> >
+> > commit d21cf3c16b1191f3154a51e0b20c82bf851cc553 upstream.
+> >
+> > breakage introduced by following patch
+> > commit 27663c5855b10af9ec67bc7dfba001426ba21222
+> > Author: Matthew Wilcox <willy@linux.intel.com>
+> > Date:   Fri Oct 10 02:22:59 2008 -0400
+> >
+> > acpi_evaluate_integer() does not clear passed variable if
+> > there is an error at evaluation.
+> > So if we ignore error, we must supply initialized variable.
+> >
+> > http://bugzilla.kernel.org/show_bug.cgi?id=11917
+> >
+> > Signed-off-by: Alexey Starikovskiy <astarikovskiy@suse.de>
+> > Tested-by: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+> > Signed-off-by: Len Brown <len.brown@intel.com>
+> > Cc: Thomas Renninger <trenn@suse.de>
+> > Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+> >
+> > ---
+> >  drivers/acpi/ec.c |    3 ++-
+> >  1 file changed, 2 insertions(+), 1 deletion(-)
+> >
+> > --- a/drivers/acpi/ec.c
+> > +++ b/drivers/acpi/ec.c
+> > @@ -769,7 +769,7 @@ static acpi_status
+> >  ec_parse_device(acpi_handle handle, u32 Level, void *context, void
+> > **retval) {
+> >  	acpi_status status;
+> > -	unsigned long long tmp;
+> > +	unsigned long long tmp = 0;
+> >
+> >  	struct acpi_ec *ec = context;
+> >  	status = acpi_walk_resources(handle, METHOD_NAME__CRS,
+> > @@ -784,6 +784,7 @@ ec_parse_device(acpi_handle handle, u32
+> >  		return status;
+> >  	ec->gpe = tmp;
+> >  	/* Use the global lock for all EC transactions? */
+> > +	tmp = 0;
+> >  	acpi_evaluate_integer(handle, "_GLK", NULL, &tmp);
+> >  	ec->global_lock = tmp;
+> >  	ec->handle = handle;
+> 
+> 
 
