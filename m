@@ -1,130 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756213AbZBEEqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbZBEEwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756213AbZBEEqA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 23:46:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZBEEpu
+	id S1756611AbZBEEwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 23:52:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752889AbZBEEwk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 23:45:50 -0500
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:54305 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752952AbZBEEpt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 23:45:49 -0500
-Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
-From: Eric Anholt <eric@anholt.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Norbert Preining <preining@logic.at>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-In-Reply-To: <20090204185606.GA12991@elte.hu>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
-	 <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain>
-	 <20090204181109.GR21085@gamma.logic.tuwien.ac.at>
-	 <alpine.LFD.2.00.0902041012440.3247@localhost.localdomain>
-	 <20090204185606.GA12991@elte.hu>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2amFikqmhmOfz6IJgjRK"
-Date: Wed, 04 Feb 2009 20:45:47 -0800
-Message-Id: <1233809147.13118.8.camel@gaiman>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 4 Feb 2009 23:52:40 -0500
+Received: from ozlabs.org ([203.10.76.45]:34183 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752753AbZBEEwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 23:52:39 -0500
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18826.28805.120988.303819@drongo.ozlabs.ibm.com>
+Date: Thu, 5 Feb 2009 15:52:21 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>,
+       "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] perf_counter: Prevent oopses from per-cpu software counters
+X-Mailer: VM 8.0.12 under 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: oops fix
 
---=-2amFikqmhmOfz6IJgjRK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Yanmin Zhang reported that using a PERF_COUNT_TASK_CLOCK software
+counter as a per-cpu counter would reliably crash the system, because
+it calls __task_delta_exec with a null pointer.  And indeed, a "task
+clock" counter only makes sense as a per-task counter.  Similarly,
+counting page faults, context switches or cpu migrations only makes
+sense for a per-task counter.
 
-On Wed, 2009-02-04 at 19:56 +0100, Ingo Molnar wrote:
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
->=20
-> > On Wed, 4 Feb 2009, Norbert Preining wrote:
-> > >=20
-> > > The problem is that if you have a configuration under 2.6.28 without=20
-> > > CONFIG_FB and just call make oldconfig, or even make config and don't=
-=20
-> > > know that you loose the DRM. And I was using make oldconfig (there is=
- a=20
-> > > graphical config?? ;-))
-> >=20
-> > Sure. It's inconvenient, no question about that. I asked the i915 peopl=
-e=20
-> > to look into not requiring CONFIG_FB, and I hope they will, but my poin=
-t=20
-> > is that I don't think we can consider "small one-time inconvenience" to=
- be=20
-> > a "regression".
->=20
-> if you mean that as a general principle, there's four very real downsides=
- in=20
-> my opinion.
->=20
-> Firstly, we could have done better (and still can do better), via various=
-=20
-> easy and non-intrusive measures:
->=20
->    - We could add a runtime warning:
->=20
->       for example a WARN_ONCE("please enable CONFIG_DRM_I915 and CONFIG_F=
-B")=20
->       that there's no DRM because CONFIG_FB is not selected and oldconfig=
-=20
->       loses the I915 setting silently - placed in a key DRM ioctl, would=20
->       have gone a long way addressing the issue. Testers do notice kernel=
-=20
->       warnings that pop up when their X gets slow. (This approach might a=
-lso=20
->       have the added bonus of warning folks who enable the wrong driver f=
-or=20
->       the hardware.)
->=20
->    - Or we could add a more thoughtful Kconfig migration:
->=20
->       Rename DRM_I915 to DRM_I915_FB [which it really is now], and keep
->       DRM_I915 as a non-interactive migration helper: if set, it=20
->       auto-selects both FB and DRM_I915_FB.
->=20
->       While CONFIG_FB is an interactive Kconfig option so a select can be=
-=20
->       dangerous to a correct dependency tree, it seems safe to do in this=
-=20
->       specific case because it seems to be a rather leaf entry with no=20
->       dependencies.
+This fixes the problem by disallowing the use of the task clock,
+page fault, context switch and cpu migration software counters as
+per-cpu counters, since they all require a task context to obtain their
+data.  The only software counter that can be used as a per-cpu counter
+is the cpu clock counter (PERF_COUNT_CPU_CYCLES).
 
-I tried select FB.  It's the right thing to do.  It doesn't work.  I
-posted to the mailing list two weeks ago about the insane dependency
-chain that kbuild comes up with and fails on when we do this, and got
-silence.
+In order for sw_perf_counter_init to be able to tell whether we are
+setting up a per-task or a per-cpu counter, this arranges for counter->ctx
+to be initialized earlier, in perf_counter_alloc.
 
-Believe me, I hate this inconvenience to users even more than each of
-you do, because I get to deal with the reports.  But I haven't had the
-time to sit down and figure out what drugs kbuild is on, or even how to
-work around it (despite IRC help from a few other kernel guys).
+The other minor change this makes is to ensure that if sw_perf_counter_init
+fails, we don't try to initialize the counter as a hardware counter.
+Since the user has passed a negative event type (and it isn't raw), they
+clearly don't intend it to be interpreted as a hardware event.  This
+matters now that sw_perf_counter_init can fail for valid software event
+types (because of the check that the counter is a per-task counter).
 
-The alternative I can see is to ifdef the code for something that will
-be on by default and which stable userland will require in 6 months.
-That seems wrong.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+This is in my perfcounters.git tree master branch at:
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git master
 
+Ingo - pull if you agree with it.  The check in sw_perf_counter_init
+may need to be modified if we add more software counters, of course,
+but that can happen later.
 
-
---=-2amFikqmhmOfz6IJgjRK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkmKbvkACgkQHUdvYGzw6vdghwCeMWKDqGkPoFWLjy0BsZXXU5r2
-pz4Anjww3uKIYKjNRFgV5qISSTuDh+PC
-=yIaF
------END PGP SIGNATURE-----
-
---=-2amFikqmhmOfz6IJgjRK--
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index f27a7e9..47d91da 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -502,7 +502,6 @@ perf_install_in_context(struct perf_counter_context *ctx,
+ {
+ 	struct task_struct *task = ctx->task;
+ 
+-	counter->ctx = ctx;
+ 	if (!task) {
+ 		/*
+ 		 * Per cpu counters are installed via an smp call and
+@@ -1564,6 +1563,15 @@ sw_perf_counter_init(struct perf_counter *counter)
+ {
+ 	const struct hw_perf_counter_ops *hw_ops = NULL;
+ 
++	/*
++	 * PERF_COUNT_CPU_CLOCK is the only type that is valid
++	 * for a per-cpu counter.  All the others require a task
++	 * context and thus can only be used as per-task counters.
++	 */
++	if (!counter->ctx->task &&
++	    counter->hw_event.type != PERF_COUNT_CPU_CLOCK)
++		return NULL;
++
+ 	switch (counter->hw_event.type) {
+ 	case PERF_COUNT_CPU_CLOCK:
+ 		hw_ops = &perf_ops_cpu_clock;
+@@ -1592,6 +1600,7 @@ sw_perf_counter_init(struct perf_counter *counter)
+ static struct perf_counter *
+ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
+ 		   int cpu,
++		   struct perf_counter_context *ctx,
+ 		   struct perf_counter *group_leader,
+ 		   gfp_t gfpflags)
+ {
+@@ -1623,6 +1632,7 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
+ 	counter->wakeup_pending		= 0;
+ 	counter->group_leader		= group_leader;
+ 	counter->hw_ops			= NULL;
++	counter->ctx			= ctx;
+ 
+ 	counter->state = PERF_COUNTER_STATE_INACTIVE;
+ 	if (hw_event->disabled)
+@@ -1631,7 +1641,7 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
+ 	hw_ops = NULL;
+ 	if (!hw_event->raw && hw_event->type < 0)
+ 		hw_ops = sw_perf_counter_init(counter);
+-	if (!hw_ops)
++	else
+ 		hw_ops = hw_perf_counter_init(counter);
+ 
+ 	if (!hw_ops) {
+@@ -1707,7 +1717,8 @@ sys_perf_counter_open(struct perf_counter_hw_event *hw_event_uptr __user,
+ 	}
+ 
+ 	ret = -EINVAL;
+-	counter = perf_counter_alloc(&hw_event, cpu, group_leader, GFP_KERNEL);
++	counter = perf_counter_alloc(&hw_event, cpu, ctx, group_leader,
++				     GFP_KERNEL);
+ 	if (!counter)
+ 		goto err_put_context;
+ 
+@@ -1777,15 +1788,14 @@ inherit_counter(struct perf_counter *parent_counter,
+ 		parent_counter = parent_counter->parent;
+ 
+ 	child_counter = perf_counter_alloc(&parent_counter->hw_event,
+-					    parent_counter->cpu, group_leader,
+-					    GFP_KERNEL);
++					   parent_counter->cpu, child_ctx,
++					   group_leader, GFP_KERNEL);
+ 	if (!child_counter)
+ 		return NULL;
+ 
+ 	/*
+ 	 * Link it up in the child's context:
+ 	 */
+-	child_counter->ctx = child_ctx;
+ 	child_counter->task = child;
+ 	list_add_counter(child_counter, child_ctx);
+ 	child_ctx->nr_counters++;
 
