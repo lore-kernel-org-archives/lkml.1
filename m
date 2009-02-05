@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbZBEJDA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758334AbZBEJDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbZBEJDA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 04:03:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZBEJCl
+	id S1758334AbZBEJDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 04:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756166AbZBEJCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 04:02:41 -0500
-Received: from rv-out-0506.google.com ([209.85.198.236]:36194 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752472AbZBEJCj (ORCPT
+	Thu, 5 Feb 2009 04:02:49 -0500
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53064 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755620AbZBEJCs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 04:02:39 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=inEzusozNjeLdnPi6A7UVvwh5ilVSG3tJSoqCemYLa3BxNOlpOZsNtxjx8g9al77jU
-         J+7nY/+wJ8m1KCOtGJ275PiX+AEoCA/HyAJFaoAJVNfSQDUmxbwpJIjhUhE04bEGbL3G
-         /5vjPg8hfu9MdLjk3/R/viogco9PG3a8i61+o=
+	Thu, 5 Feb 2009 04:02:48 -0500
+Date: Thu, 5 Feb 2009 10:02:29 +0100
+From: Pavel Machek <pavel@suse.cz>
+To: Christoph Hellwig <hch@infradead.org>, Eric Sesterhenn <snakebyte@gmx.de>,
+       Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-btrfs@vger.kernel.org
+Subject: Re: Warning and BUG with btrfs and corrupted image
+Message-ID: <20090205090229.GA2011@elf.ucw.cz>
+References: <20090120101119.GB10158@disturbed> <20090120101503.GC17377@alice> <20090120125944.GC10158@disturbed> <20090120132829.GA27429@infradead.org> <20090120222019.GB2320@elf.ucw.cz> <20090121040042.GI10158@disturbed> <20090126162711.GA2083@elf.ucw.cz> <20090201014050.GD24173@disturbed> <20090204182951.GC4797@elf.ucw.cz> <20090205085916.GP24173@disturbed>
 MIME-Version: 1.0
-In-Reply-To: <1225962921-6424-1-git-send-email-cooloney@kernel.org>
-References: <1225962921-6424-1-git-send-email-cooloney@kernel.org>
-Date: Thu, 5 Feb 2009 17:02:37 +0800
-X-Google-Sender-Auth: 79dfb874d0a50859
-Message-ID: <386072610902050102r3c3e41a3yfbb424411f2f40dc@mail.gmail.com>
-Subject: Re: [PATCH] nfs client: kill compile warning on NOMMU machine
-From: Bryan Wu <cooloney@kernel.org>
-To: Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Bryan Wu <cooloney@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090205085916.GP24173@disturbed>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi guys,
 
-Is it possible to merge this patch?
+> > > CONFIG_*_DEBUG means include *debug* code there to help developers,
+> > > including adding additional failure tests into the kernel. Besides,
+> > > which bit of "don't turn it on unless you are an XFS developer"
+> > > don't you understand?
+> > 
+> > Yes, but DEBUG code is normally to help debugging, not to crash
+> > kernels.
+> 
+> Crashing the kernel at exactly the point a problem is detected
+> is often the simplest way of debugging the problem.
+> 
+> e.g. CONFIG_VM_DEBUG=y turns on VM_BUG_ON() which crashes the kernel
+> whenever it detects something wrong. Do I turn it on? Yes. Do i
 
-Thanks
--Bryan
+That's different. User is not supposed to be able to trigger
+VM_BUG_ON().
 
-On Thu, Nov 6, 2008 at 5:15 PM, Bryan Wu <cooloney@kernel.org> wrote:
-> On nommu machine such as Blackfin, when compling NFS we got an warning about
-> nfs_file_mmap() function defined but not used.
->
-> This patch kills this warning.
->
-> Signed-off-by: Bryan Wu <cooloney@kernel.org>
-> ---
->  fs/nfs/file.c |   16 ++++++++++++----
->  1 files changed, 12 insertions(+), 4 deletions(-)
->
-> diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-> index d319b49..66b8b8e 100644
-> --- a/fs/nfs/file.c
-> +++ b/fs/nfs/file.c
-> @@ -64,11 +64,7 @@ const struct file_operations nfs_file_operations = {
->        .write          = do_sync_write,
->        .aio_read       = nfs_file_read,
->        .aio_write      = nfs_file_write,
-> -#ifdef CONFIG_MMU
->        .mmap           = nfs_file_mmap,
-> -#else
-> -       .mmap           = generic_file_mmap,
-> -#endif
->        .open           = nfs_file_open,
->        .flush          = nfs_file_flush,
->        .release        = nfs_file_release,
-> @@ -294,6 +290,7 @@ nfs_file_splice_read(struct file *filp, loff_t *ppos,
->        return res;
->  }
->
-> +#ifdef CONFIG_MMU
->  static int
->  nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
->  {
-> @@ -312,6 +309,17 @@ nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
->        }
->        return status;
->  }
-> +#else
-> +static int
-> +nfs_file_mmap(struct file *file, struct vm_area_struct *vma)
-> +{
-> +       /* Kill warning: 'nfs_file_vm_ops' defined but not used */
-> +       struct vm_operations_struct *vm_ops;
-> +       vm_ops = &nfs_file_vm_ops;
-> +
-> +       return generic_file_mmap(file, vma);
-> +}
-> +#endif
->
->  /*
->  * Flush any dirty pages for this process, and check for write errors.
-> --
-> 1.5.6.3
->
+> complain about it when I hit a VM_BUG_ON()? No, I report the
+> bug and move on. If you turn on a DEBUG option, then you are
+> asking the system to behave in a way useful to a developer,
+> not an end user. That includes panicing when something wrong
+> is detected.
+
+Imagine vm going panic() on mkdir("/lost+found")...
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
