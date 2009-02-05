@@ -1,47 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754683AbZBEFCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755096AbZBEFFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754683AbZBEFCL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 00:02:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZBEFBz
+	id S1755096AbZBEFFl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 00:05:41 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZBEFFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 00:01:55 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:44090 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750707AbZBEFBy (ORCPT
+	Thu, 5 Feb 2009 00:05:31 -0500
+Received: from smtp-out0.tiscali.nl ([195.241.79.175]:40345 "EHLO
+	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751833AbZBEFFa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 00:01:54 -0500
-Date: Thu, 5 Feb 2009 16:01:50 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: Force panic on continuous CPRNG test failure
-	when in FIPS mode
-Message-ID: <20090205050150.GA22749@gondor.apana.org.au>
-References: <20090123155817.GA29548@hmsreliant.think-freely.org> <20090128041828.GB13157@gondor.apana.org.au> <20090128121511.GA6361@hmsreliant.think-freely.org> <20090128121741.GA17496@gondor.apana.org.au> <20090128125848.GC6361@hmsreliant.think-freely.org>
+	Thu, 5 Feb 2009 00:05:30 -0500
+Date: Thu, 5 Feb 2009 06:05:24 +0100
+From: Arjan Opmeer <arjan@opmeer.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: apw@canonical.com, patrakov@gmail.com, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org
+Message-ID: <20090205050524.GA31737@adopmeer.homeip.net>
+References: <20090126150821.GC31179@shadowen.org> <20090126162303.GA11618@adopmeer.homeip.net> <20090130152330.4ff2cbb2.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090128125848.GC6361@hmsreliant.think-freely.org>
+In-Reply-To: <20090130152330.4ff2cbb2.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: elantech touchpad driver miss-recognising logitech mice
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Jan 28, 2009 at 07:58:48AM -0500, Neil Horman wrote:
+On Fri, Jan 30, 2009 at 03:23:30PM -0800, Andrew Morton wrote:
 > 
-> FIPS 140-2 specifies that all access to various cryptographic modules be
-> prevented in the event that any of the provided self tests fail on the various
-> implemented algorithms.  We already panic when any of the test in testmgr.c
-> fail when we are operating in fips mode.  The continuous test in the cprng here
-> was missed when that was implmented.  This code simply checks for the
-> fips_enabled flag if the test fails, and warns us via syslog or panics the box
-> accordingly.
-> 
-> Signed-off-by: Neil Horman <nhorman@tuxdriver.com>
+> blah. 
 
-Patch applied.  Thanks Neil.
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Very eloquent and very motivational...
+
+> Please propose a final patch for me to stash away, lest the issue get
+> forgotten about.
+
+How about you stash away my original proposal? Andy has proof that it works. 
+Some of the debug messages can always be removed later when no other
+regressions surface and people find the current detection routine too
+verbose.
+
+From: Arjan Opmeer <arjan@opmeer.net>
+
+Some Logitech mice react to the magic knock like an Elantech touchpad would. 
+This leads to those mice being misdetected as Elantech touchpads.  Add a
+version query to elantech_detect() to distinguish the two.
+
+Signed-off-by: Arjan Opmeer <arjan@opmeer.net>
+---
+diff --git a/drivers/input/mouse/elantech.c b/drivers/input/mouse/elantech.c
+index b9a25d5..5abc5f7 100644
+--- a/drivers/input/mouse/elantech.c
++++ b/drivers/input/mouse/elantech.c
+@@ -556,6 +556,22 @@ int elantech_detect(struct psmouse *psmouse, int set_properties)
+ 		return -1;
+ 	}
+ 
++	/*
++	 * There are Logitech mice that react to the magic knock exactly
++	 * like an Elantech touchpad would, so do a version query here to
++	 * try to distinguish the two
++	 */
++	if (synaptics_send_cmd(psmouse, ETP_FW_VERSION_QUERY, param)) {
++		pr_err("elantech.c: failed to query firmware version.\n");
++		return -1;
++	}
++	pr_info("elantech.c: Elantech version query result 0x%02x, 0x%02x, 0x%02x.\n",
++		param[0], param[1], param[2]);
++	if (param[0] == 0 || param[1] != 0) {
++		pr_info("elantech.c: Probably not a real Elantech touchpad. Aborting.\n");
++		return -1;
++	}
++
+ 	if (set_properties) {
+ 		psmouse->vendor = "Elantech";
+ 		psmouse->name = "Touchpad";
+@@ -610,14 +626,12 @@ int elantech_init(struct psmouse *psmouse)
+ 		etd->parity[i] = etd->parity[i & (i - 1)] ^ 1;
+ 
+ 	/*
+-	 * Find out what version hardware this is
++	 * Do the version query again so we can store the result
+ 	 */
+ 	if (synaptics_send_cmd(psmouse, ETP_FW_VERSION_QUERY, param)) {
+ 		pr_err("elantech.c: failed to query firmware version.\n");
+ 		goto init_fail;
+ 	}
+-	pr_info("elantech.c: Elantech version query result 0x%02x, 0x%02x, 0x%02x.\n",
+-		param[0], param[1], param[2]);
+ 	etd->fw_version_maj = param[0];
+ 	etd->fw_version_min = param[2];
+ 
