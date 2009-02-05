@@ -1,203 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762293AbZBECDY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762360AbZBECFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762293AbZBECDY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 21:03:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753327AbZBECDP
+	id S1762360AbZBECFz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 21:05:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbZBECFp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 21:03:15 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60991 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752565AbZBECDO (ORCPT
+	Wed, 4 Feb 2009 21:05:45 -0500
+Received: from fg-out-1718.google.com ([72.14.220.157]:22354 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753932AbZBECFo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 21:03:14 -0500
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Subject: Re: [patch] mm: Fix SHM_HUGETLB to work with users in hugetlb_shm_group
-Cc: kosaki.motohiro@jp.fujitsu.com, wli@movementarian.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, shai@scalex86.org, Mel Gorman <mel@csn.ul.ie>,
-       Nishanth Aravamudan <nacc@us.ibm.com>
-In-Reply-To: <20090205004157.GC6794@localdomain>
-References: <20090204221121.GD10229@movementarian.org> <20090205004157.GC6794@localdomain>
-Message-Id: <20090205104735.ECDA.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Wed, 4 Feb 2009 21:05:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=fBxCm0gWO6krNJH667EtDbW0UFB+ThNkHDuEz9H/Pksb38elE5Bw4Ymrq4f52zZffL
+         Qo5VJnW2vPzLL0dIbwvMjjlV2J7wP7/VPbPwTOJlcc2gpfqPv6Yk+jVFreSXk3w2nE56
+         K3Qq9zNY7GHtAtr1u/QUWF38jbCrMOELLaDMs=
+Date: Thu, 5 Feb 2009 03:05:40 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH tip 1/1] trace: assign defaults at register_ftrace_event
+Message-ID: <20090205020539.GC11300@nowhere>
+References: <20090204221639.GO3440@ghostprotocols.net> <20090204234150.GA11300@nowhere> <20090205012210.GQ3440@ghostprotocols.net> <20090205012430.GA12067@elte.hu> <20090205014133.GB11300@nowhere> <20090205015547.GA19742@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.42 [ja]
-Date: Thu,  5 Feb 2009 11:03:09 +0900 (JST)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090205015547.GA19742@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc to Mel and Nishanth)
-
-I think this requirement is reasonable. but I also hope Mel or Nishanth
-review this.
-
-
-<<intentionally full quote>>
-
-> On Wed, Feb 04, 2009 at 05:11:21PM -0500, wli@movementarian.org wrote:
-> >On Wed, Feb 04, 2009 at 02:04:28PM -0800, Ravikiran G Thirumalai wrote:
-> >> ...
-> >> As I see it we have the following options to fix this inconsistency:
-> >> 1. Do not depend on RLIMIT_MEMLOCK for hugetlb shm mappings.  If a user
-> >>    has CAP_IPC_LOCK or if user belongs to /proc/sys/vm/hugetlb_shm_group,
-> >>    he should be able to use shm memory according to shmmax and shmall OR
-> >> 2. Update the hugetlbpage documentation to mention the resource limit based
-> >>    limitation, and remove the useless /proc/sys/vm/hugetlb_shm_group sysctl
-> >> Which one is better?  I am leaning towards 1. and have a patch ready for 1.
-> >> but I might be missing some historical reason for using RLIMIT_MEMLOCK with
-> >> SHM_HUGETLB.
-> >
-> >We should do (1) because the hugetlb_shm_group and CAP_IPC_LOCK bits
-> >should both continue to work as they did prior to RLIMIT_MEMLOCK -based
-> >management of hugetlb. Please make sure the new RLIMIT_MEMLOCK -based
-> >management still enables hugetlb shm when hugetlb_shm_group and
-> >CAP_IPC_LOCK don't apply.
-> >
+On Thu, Feb 05, 2009 at 02:55:47AM +0100, Ingo Molnar wrote:
 > 
-> OK, here's the patch.
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> Thanks,
-> Kiran
+> > On Thu, Feb 05, 2009 at 02:24:30AM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+> > > 
+> > > > Em Thu, Feb 05, 2009 at 12:41:51AM +0100, Frederic Weisbecker escreveu:
+> > > > > On Wed, Feb 04, 2009 at 08:16:39PM -0200, Arnaldo Carvalho de Melo wrote:
+> > > > > > Impact: simplification of tracers
+> > > > > > 
+> > > > > > As all tracers are doing this we might as well do it in
+> > > > > > register_ftrace_event and save one branch each time we call these
+> > > > > > callbacks.
+> > > > > > 
+> > > > > > Cc: Ingo Molnar <mingo@elte.hu>
+> > > > > > Cc: Frédéric Weisbecker <fweisbec@gmail.com>
+> > > > > > Cc: Jens Axboe <jens.axboe@oracle.com>
+> > > > > > Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+> > > > > > ---
+> > > > > >  block/blktrace.c            |    2 --
+> > > > > >  kernel/trace/trace.c        |   13 +++++--------
+> > > > > >  kernel/trace/trace_branch.c |    3 ---
+> > > > > >  kernel/trace/trace_output.c |   13 +++++++++++--
+> > > > > >  4 files changed, 16 insertions(+), 15 deletions(-)
+> > > > > > 
+> > > > > > diff --git a/block/blktrace.c b/block/blktrace.c
+> > > > > > index c7698d1..1ebd068 100644
+> > > > > > --- a/block/blktrace.c
+> > > > > > +++ b/block/blktrace.c
+> > > > > > @@ -1243,8 +1243,6 @@ static struct trace_event trace_blk_event = {
+> > > > > >  	.type	 	= TRACE_BLK,
+> > > > > >  	.trace		= blk_trace_event_print,
+> > > > > >  	.latency_trace	= blk_trace_event_print,
+> > > > > > -	.raw		= trace_nop_print,
+> > > > > > -	.hex		= trace_nop_print,
+> > > > > >  	.binary		= blk_trace_event_print_binary,
+> > > > > >  };
+> > > > > >  
+> > > > > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> > > > > > index fd51cf0..a5e4c0a 100644
+> > > > > > --- a/kernel/trace/trace.c
+> > > > > > +++ b/kernel/trace/trace.c
+> > > > > > @@ -1412,7 +1412,7 @@ static enum print_line_t print_lat_fmt(struct trace_iterator *iter)
+> > > > > >  			goto partial;
+> > > > > >  	}
+> > > > > >  
+> > > > > > -	if (event && event->latency_trace)
+> > > > > > +	if (event)
+> > > > > >  		return event->latency_trace(iter, sym_flags);
+> > > > > >  
+> > > > > >  	if (!trace_seq_printf(s, "Unknown type %d\n", entry->type))
+> > > > > > @@ -1441,7 +1441,7 @@ static enum print_line_t print_trace_fmt(struct trace_iterator *iter)
+> > > > > >  			goto partial;
+> > > > > >  	}
+> > > > > >  
+> > > > > > -	if (event && event->trace)
+> > > > > > +	if (event)
+> > > > > >  		return event->trace(iter, sym_flags);
+> > > > > >  
+> > > > > >  	if (!trace_seq_printf(s, "Unknown type %d\n", entry->type))
+> > > > > > @@ -1467,7 +1467,7 @@ static enum print_line_t print_raw_fmt(struct trace_iterator *iter)
+> > > > > >  	}
+> > > > > >  
+> > > > > >  	event = ftrace_find_event(entry->type);
+> > > > > > -	if (event && event->raw)
+> > > > > > +	if (event)
+> > > > > >  		return event->raw(iter, 0);
+> > > > > >  
+> > > > > >  	if (!trace_seq_printf(s, "%d ?\n", entry->type))
+> > > > > > @@ -1494,7 +1494,7 @@ static enum print_line_t print_hex_fmt(struct trace_iterator *iter)
+> > > > > >  	}
+> > > > > >  
+> > > > > >  	event = ftrace_find_event(entry->type);
+> > > > > > -	if (event && event->hex) {
+> > > > > > +	if (event) {
+> > > > > >  		enum print_line_t ret = event->hex(iter, 0);
+> > > > > >  		if (ret != TRACE_TYPE_HANDLED)
+> > > > > >  			return ret;
+> > > > > > @@ -1536,10 +1536,7 @@ static enum print_line_t print_bin_fmt(struct trace_iterator *iter)
+> > > > > >  	}
+> > > > > >  
+> > > > > >  	event = ftrace_find_event(entry->type);
+> > > > > > -	if (event && event->binary)
+> > > > > > -		return event->binary(iter, 0);
+> > > > > > -
+> > > > > > -	return TRACE_TYPE_HANDLED;
+> > > > > > +	return event ? event->binary(iter, 0) : TRACE_TYPE_HANDLED;
+> > > > > >  }
+> > > > > >  
+> > > > > >  static int trace_empty(struct trace_iterator *iter)
+> > > > > > diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+> > > > > > index 7ac72a4..297deb2 100644
+> > > > > > --- a/kernel/trace/trace_branch.c
+> > > > > > +++ b/kernel/trace/trace_branch.c
+> > > > > > @@ -182,9 +182,6 @@ static struct trace_event trace_branch_event = {
+> > > > > >  	.type	 	= TRACE_BRANCH,
+> > > > > >  	.trace		= trace_branch_print,
+> > > > > >  	.latency_trace	= trace_branch_print,
+> > > > > > -	.raw		= trace_nop_print,
+> > > > > > -	.hex		= trace_nop_print,
+> > > > > > -	.binary		= trace_nop_print,
+> > > > > >  };
+> > > > > >  
+> > > > > >  static struct tracer branch_trace __read_mostly =
+> > > > > > diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+> > > > > > index b7380ee..b6e99af 100644
+> > > > > > --- a/kernel/trace/trace_output.c
+> > > > > > +++ b/kernel/trace/trace_output.c
+> > > > > > @@ -435,6 +435,17 @@ int register_ftrace_event(struct trace_event *event)
+> > > > > >  	if (ftrace_find_event(event->type))
+> > > > > >  		goto out;
+> > > > > >  
+> > > > > > +	if (event->trace == NULL)
+> > > > > > +		event->trace = trace_nop_print;
+> > > > > > +	if (event->latency_trace == NULL)
+> > > > > > +		event->latency_trace = trace_nop_print;
+> > > > > > +	if (event->raw == NULL)
+> > > > > > +		event->raw = trace_nop_print;
+> > > > > > +	if (event->hex == NULL)
+> > > > > > +		event->hex = trace_nop_print;
+> > > > > > +	if (event->binary == NULL)
+> > > > > > +		event->binary = trace_nop_print;
+> > > > > > +
+> > > > > >  	key = event->type & (EVENT_HASHSIZE - 1);
+> > > > > >  
+> > > > > >  	hlist_add_head_rcu(&event->node, &event_hash[key]);
+> > > > > > @@ -874,8 +885,6 @@ static struct trace_event trace_print_event = {
+> > > > > >  	.trace		= trace_print_print,
+> > > > > >  	.latency_trace	= trace_print_print,
+> > > > > >  	.raw		= trace_print_raw,
+> > > > > > -	.hex		= trace_nop_print,
+> > > > > > -	.binary		= trace_nop_print,
+> > > > > >  };
+> > > > > >  
+> > > > > >  static struct trace_event *events[] __initdata = {
+> > > > > > -- 
+> > > > > > 1.6.0.6
+> > > > > > 
+> > > > > 
+> > > > > 
+> > > > > Nice! This avoids one branch for each entry printed.
+> > > > 
+> > > > Is that an Acked-by in response to that CC? :-)
+> > > 
+> > > yes, i generally treat such replies as an implicit Acked-by and add them - 
+> > > already added Fredric's acks to two other commits of yours earlier today. An 
+> > > explicit Acked-by is even more helpful though :-)
+> > > 
+> > > 	Ingo
+> > 
+> > 
+> > Heh, I'm not a tracing/core/ftrace maintainer, so I wouldn't dare put my 
+> > Acked-by unless it touches a file I started :-) Concerning 
+> > tracing/core/ftrace/tracers, I review the patches that come if I have the 
+> > time to and tell what I think about it. But in my opinion, the Acked-by on 
+> > this area are more appropriate if they come from Steven :-)
 > 
+> if you read a patch, in an area of code that you know well (which you do in 
+> this case), and if you find the patch it a step forward with no defects then 
+> feel free to post an Acked-by.
 > 
-> Fix hugetlb subsystem so that non root users belonging to hugetlb_shm_group
-> can actually allocate hugetlb backed shm.
+> You absolutely dont have to be the primary author of a file to do that. All 
+> such help makes maintenance easier and is much appreciated.
 > 
-> Currently non root users cannot even map one large page using SHM_HUGETLB
-> when they belong to the gid in /proc/sys/vm/hugetlb_shm_group.
-> This is because allocation size is verified against RLIMIT_MEMLOCK resource
-> limit even if the user belongs to hugetlb_shm_group.
-> 
-> This patch
-> 1. Fixes hugetlb subsystem so that users with CAP_IPC_LOCK and users
->    belonging to hugetlb_shm_group don't need to be restricted with
->    RLIMIT_MEMLOCK resource limits
-> 2. If a user has sufficient memlock limit he can still allocate the hugetlb
->    shm segment.
-> 
-> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-> 
-> ---
-> 
->  Documentation/vm/hugetlbpage.txt |   11 ++++++-----
->  fs/hugetlbfs/inode.c             |   18 ++++++++++++------
->  include/linux/mm.h               |    2 ++
->  mm/mlock.c                       |   11 ++++++++---
->  4 files changed, 28 insertions(+), 14 deletions(-)
-> 
-> Index: linux-2.6-tip/fs/hugetlbfs/inode.c
-> ===================================================================
-> --- linux-2.6-tip.orig/fs/hugetlbfs/inode.c	2009-02-04 15:21:45.000000000 -0800
-> +++ linux-2.6-tip/fs/hugetlbfs/inode.c	2009-02-04 15:23:19.000000000 -0800
-> @@ -943,8 +943,15 @@ static struct vfsmount *hugetlbfs_vfsmou
->  static int can_do_hugetlb_shm(void)
->  {
->  	return likely(capable(CAP_IPC_LOCK) ||
-> -			in_group_p(sysctl_hugetlb_shm_group) ||
-> -			can_do_mlock());
-> +			in_group_p(sysctl_hugetlb_shm_group));
-> +}
-> +
-> +static void acct_huge_shm_lock(size_t size, struct user_struct *user)
-> +{
-> +	unsigned long pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
-> +	spin_lock(&shmlock_user_lock);
-> +	acct_shm_lock(pages, user);
-> +	spin_unlock(&shmlock_user_lock);
->  }
->  
->  struct file *hugetlb_file_setup(const char *name, size_t size)
-> @@ -959,12 +966,11 @@ struct file *hugetlb_file_setup(const ch
->  	if (!hugetlbfs_vfsmount)
->  		return ERR_PTR(-ENOENT);
->  
-> -	if (!can_do_hugetlb_shm())
-> +	if (can_do_hugetlb_shm())
-> +		acct_huge_shm_lock(size, user);
-> +	else if (!user_shm_lock(size, user))
->  		return ERR_PTR(-EPERM);
->  
-> -	if (!user_shm_lock(size, user))
-> -		return ERR_PTR(-ENOMEM);
-> -
->  	root = hugetlbfs_vfsmount->mnt_root;
->  	quick_string.name = name;
->  	quick_string.len = strlen(quick_string.name);
-> Index: linux-2.6-tip/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6-tip.orig/include/linux/mm.h	2009-02-04 15:21:45.000000000 -0800
-> +++ linux-2.6-tip/include/linux/mm.h	2009-02-04 15:23:19.000000000 -0800
-> @@ -737,8 +737,10 @@ extern unsigned long shmem_get_unmapped_
->  #endif
->  
->  extern int can_do_mlock(void);
-> +extern void acct_shm_lock(unsigned long, struct user_struct *);
->  extern int user_shm_lock(size_t, struct user_struct *);
->  extern void user_shm_unlock(size_t, struct user_struct *);
-> +extern spinlock_t shmlock_user_lock;
->  
->  /*
->   * Parameter block passed down to zap_pte_range in exceptional cases.
-> Index: linux-2.6-tip/mm/mlock.c
-> ===================================================================
-> --- linux-2.6-tip.orig/mm/mlock.c	2009-02-04 15:21:45.000000000 -0800
-> +++ linux-2.6-tip/mm/mlock.c	2009-02-04 15:23:19.000000000 -0800
-> @@ -637,7 +637,13 @@ SYSCALL_DEFINE0(munlockall)
->   * Objects with different lifetime than processes (SHM_LOCK and SHM_HUGETLB
->   * shm segments) get accounted against the user_struct instead.
->   */
-> -static DEFINE_SPINLOCK(shmlock_user_lock);
-> +DEFINE_SPINLOCK(shmlock_user_lock);
-> +
-> +void acct_shm_lock(unsigned long pages, struct user_struct *user)
-> +{
-> +	get_uid(user);
-> +	user->locked_shm += pages;
-> +}
->  
->  int user_shm_lock(size_t size, struct user_struct *user)
->  {
-> @@ -653,8 +659,7 @@ int user_shm_lock(size_t size, struct us
->  	if (!allowed &&
->  	    locked + user->locked_shm > lock_limit && !capable(CAP_IPC_LOCK))
->  		goto out;
-> -	get_uid(user);
-> -	user->locked_shm += locked;
-> +	acct_shm_lock(locked, user);
->  	allowed = 1;
->  out:
->  	spin_unlock(&shmlock_user_lock);
-> Index: linux-2.6-tip/Documentation/vm/hugetlbpage.txt
-> ===================================================================
-> --- linux-2.6-tip.orig/Documentation/vm/hugetlbpage.txt	2009-02-04 15:21:45.000000000 -0800
-> +++ linux-2.6-tip/Documentation/vm/hugetlbpage.txt	2009-02-04 15:23:19.000000000 -0800
-> @@ -147,11 +147,12 @@ used to change the file attributes on hu
->  
->  Also, it is important to note that no such mount command is required if the
->  applications are going to use only shmat/shmget system calls.  Users who
-> -wish to use hugetlb page via shared memory segment should be a member of
-> -a supplementary group and system admin needs to configure that gid into
-> -/proc/sys/vm/hugetlb_shm_group.  It is possible for same or different
-> -applications to use any combination of mmaps and shm* calls, though the
-> -mount of filesystem will be required for using mmap calls.
-> +wish to use hugetlb page via shared memory segment should either have
-> +sufficient memlock resource limits or, they need to be a member of
-> +a supplementary group, and system admin needs to configure that gid into
-> +/proc/sys/vm/hugetlb_shm_group. It is possible for same or different
-> +applications to use any combination of mmaps and shm* calls, though
-> +the mount of filesystem will be required for using mmap calls.
->  
->  *******************************************************************
->  
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> 	Ingo
 
 
+Ok, I will remember that.
+Thanks!
 
