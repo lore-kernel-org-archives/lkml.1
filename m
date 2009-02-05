@@ -1,115 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZBEVkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753863AbZBEVpX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754159AbZBEVkZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:40:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZBEVkK
+	id S1753863AbZBEVpX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:45:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751983AbZBEVpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:40:10 -0500
-Received: from out02.mta.xmission.com ([166.70.13.232]:52115 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752537AbZBEVkJ (ORCPT
+	Thu, 5 Feb 2009 16:45:09 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:38206 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751937AbZBEVpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:40:09 -0500
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Shakesh Jain <shjain@akamai.com>, ShakeshJain@akamai.com,
-       linux-kernel@vger.kernel.org, juhlenko@akamai.com
-References: <20090204084022.GB14071@akamai.com>
-	<20090205122941.17805ff1.akpm@linux-foundation.org>
-	<m1zlh0txgj.fsf@fess.ebiederm.org>
-	<20090205211933.GA13312@x200.localdomain>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 05 Feb 2009 13:40:05 -0800
-In-Reply-To: <20090205211933.GA13312@x200.localdomain> (Alexey Dobriyan's message of "Fri\, 6 Feb 2009 00\:19\:34 +0300")
-Message-ID: <m1fxissgui.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 5 Feb 2009 16:45:06 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=xgd2w3ux18yrJbTKP9JzdZGEEB4TmQtqbb6jIFAeGi/BBzwAsdN3lEgwCPUkKfzQ/3
+         PJNm7FUkanE/WlWpywWt/7Ab2JQHEXnHvMCUCS+CW/0/Cs3emMxqbb30Z3711xac48dg
+         1C+YFqEbIbj1UDI3wyFPXH5YyRCISdKSeqpIg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.180.49.163;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.180.49.163
-X-SA-Exim-Rcpt-To: adobriyan@gmail.com, juhlenko@akamai.com, linux-kernel@vger.kernel.org, ShakeshJain@akamai.com, shjain@akamai.com, akpm@linux-foundation.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Alexey Dobriyan <adobriyan@gmail.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [PATCH] sysctl: min-max range check is broken
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+In-Reply-To: <1233867944.4612.104.camel@pasglop>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera>
+	 <pWZw1SZjMCH.A.sIE.wuYiJB@chimera> <1233791329.4612.23.camel@pasglop>
+	 <Pine.LNX.4.64.0902051713550.1445@blonde.anvils>
+	 <1233867944.4612.104.camel@pasglop>
+Date: Fri, 6 Feb 2009 07:45:05 +1000
+Message-ID: <21d7e9970902051345h76fb26c1hc0397f6262f70eae@mail.gmail.com>
+Subject: Re: [Bug #12608] 2.6.29-rc powerpc G5 Xorg legacy_mem regression
+From: Dave Airlie <airlied@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Hugh Dickins <hugh@veritas.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan <adobriyan@gmail.com> writes:
-
->> Yep.  There is an inconsistency here.  Given how sysctl is used and
->> tested, and the fact I could not find where it appears that anyone is
->> passing an array into min/max I would say that the proc version is
->> correct and the sysctl version is wrong.
->> 
->> The untested patch below looks like it will fix the this.
->> 
->> I don't know if there are any cases where we use minmax with an array
->> of integers but I don't see the point of using an array of minmax
->> values at this point.
+On Fri, Feb 6, 2009 at 7:05 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
 >
-> Multiple values, each one is bounded by it's own set of values.
-
-Nack.  That is a change to the users of sysctl.   An array
-of minmax values appears to be a brand new extension therefore
-we should not make this change.
-
-If we want new behavior we should introduce new helpers.
-
->> For the original sysctl design it may have made
->> some sense.  New code should be one value per file.
+>> Is it a really a bug in X, or a misunderstanding between X and
+>> the kernel as to what existence of the legacy_mem file implies?
+>>
+>> I may have got this quite wrong, but to me it appears that X assumes
+>> that existence of the legacy_mem file implies that it will be useful;
+>> whereas the kernel thinks it can make the legacy_mem file available,
+>> even if it cannot be used for mmapping mem - which is its sole purpose?
+>>
+>> What if pci_create_legacy_files() were to call some new verification
+>> routine, and only create the legacy_mem file if it would be usable?
+>> (But perhaps that cannot be known at the time it needs to be created.)
 >
-> So leave them alone.
-
-Sure. My point is that we don't care about this for new code.
-Old code was tested and used with the proc version.
-
-NO ONE uses sys_sysctl NO ONE.
-
->> --- a/kernel/sysctl.c
->> +++ b/kernel/sysctl.c
->> @@ -2916,9 +2916,9 @@ int sysctl_intvec(struct ctl_table *table,
->>  			int value;
->>  			if (get_user(value, vec + i))
->>  				return -EFAULT;
->> -			if (min && value < min[i])
->> +			if (min && value < *min)
->>  				return -EINVAL;
->> -			if (max && value > max[i])
->> +			if (max && value > *max)
->>  				return -EINVAL;
+> Well, first X should certainly not -fail- to launch if it fails to map
+> legacy memory, which is generally not useful anyway. That's where the
+> bug is. Jesse, did you have a chance to fix that yet or should I give it
+> a go ?
 >
-> Correct way is:
+> The second problem is that if I just don't expose the legacy_mem file,
+> then X has no way to know whether the kernel doesn't support the
+> interface or whether the HW doesn't support legacy memory access. So X
+> will fallback to whacking /dev/mem which is even more bogus. At least
+> that's what I remember from last I looked at that part of X code.
 >
-> 	min[i] <= val[i] <= max[i]
+> It should be a trivial fix on X side tho.
+
+I think the correct answer is the ugly one, try again.
+
+Add a new legacy_mem interface that works cleanly, update X to use it,
+leave the old
+broken one broken as it for older X to use.
+
+Dave.
+
 >
-> This is what sysctl_intvec() does.
-
-Therefore sysctl_intvec is wrong because it does not match
-proc_dointvec_minmax.  proc_dointvec_minmax is definitive as that what
-people use and test.  sysctl_intvec is a vestigial appendage that
-was never really used, and it is already deprecated and scheduled for
-remove because of this.
-
-The only way to support the case of arrays of minmax values is to
-show code that cares.  I did not see anyone passing in an array
-in .extra one.  So you are advocating code that will walk around
-and read random values from the kernels .data section.  Which
-is VERY broken.
-
-Eric
-
-
-
-
+> Cheers,
+> Ben.
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
