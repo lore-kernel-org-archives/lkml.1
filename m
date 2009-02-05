@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932101AbZBEBaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757005AbZBEBbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932101AbZBEBaj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 20:30:39 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755963AbZBEBa2
+	id S1757005AbZBEBbB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 20:31:01 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761823AbZBEBap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 20:30:28 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:61762 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755544AbZBEBa1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 20:30:27 -0500
-Date: Thu, 5 Feb 2009 04:30:23 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
-Subject: Re: [PATCH 2/3] powerpc: Make it possible to safely select
-	CONFIG_FRAME_POINTER
-Message-ID: <20090205013023.GA31417@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090204150755.GA24163@oksana.dev.rtsoft.ru> <20090204150838.GB30027@oksana.dev.rtsoft.ru> <1233793889.4612.33.camel@pasglop> <1233794154.16878.20.camel@localhost.localdomain> <1233796531.4612.35.camel@pasglop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <1233796531.4612.35.camel@pasglop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 4 Feb 2009 20:30:45 -0500
+Received: from gate.crashing.org ([63.228.1.57]:44782 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755963AbZBEBao (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 20:30:44 -0500
+Subject: Re: [PATCH 3/7] PCI PM: Fix saving of device state in
+ pci_legacy_suspend
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: michael@ellerman.id.au
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Frans Pop <elendil@planet.nl>, rjw@sisk.pl, jbarnes@virtuousgeek.org,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+In-Reply-To: <1233795431.15714.13.camel@localhost>
+References: <200902040154.36018.rjw@sisk.pl>
+	 <200902040159.10258.rjw@sisk.pl> <200902040159.10258.rjw@sisk.pl>
+	 <1233712613.16867.136.camel@pasglop> <200902041115.00842.elendil@planet.nl>
+	 <1233783502.4612.7.camel@pasglop>
+	 <alpine.LFD.2.00.0902041355320.3247@localhost.localdomain>
+	 <1233794410.4612.34.camel@pasglop>  <1233795431.15714.13.camel@localhost>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 12:29:23 +1100
+Message-Id: <1233797363.4612.49.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 12:15:31PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-02-04 at 19:35 -0500, Steven Rostedt wrote:
-> > On Thu, 2009-02-05 at 11:31 +1100, Benjamin Herrenschmidt wrote:
-> > > On Wed, 2009-02-04 at 18:08 +0300, Anton Vorontsov wrote:
-> > > > Remove -fno-omit-frame-pointer flag from CFLAGS.
-> > > > Remove -fno-omit-frame-pointer workarounds.
-> > > 
-> > > But what about -pg -requires -fno-omit-frame-pointer ?
-> > 
-> > I don't think it requires -fno-omit-frame-pointer. It is just
-> > incompatible with -fomit-frame-pointer.
+
+> > Yup, missed that change in the patch. In fact, I even missed the
+> > existence of a WARN_ONCE that takes those text arguments... baaaah. I
+> > suppose I should try to read more of lkml :-)
 > 
-> From a quick test, you seem to be right.
-> 
-> Now the question of course is whether -pg will internally trigger
-> the bug for which we need the workaround tho...
+> But don't expect to see them on powerpc, they never make it to the
+> console.
 
-According to http://marc.info/?l=linux-kernel&m=121958694215835&w=4
-just removing -fno-omit-frame-pointer solved the problem.
+Allright, that's the problem with our implementation of WARN using a
+conditional trap, we don't carry all the variable arguments for the
+printf over.
 
-But I'll double check that on the actual hardware.
+I'm tempted to turn our implementation back to normal C code with an if
+and a branch out of line, but Michael seems to say that even with
+appropriate use of unlikely() etc... gcc decides to generate the worst
+possible code every single time ...
 
-Thanks,
+<rant>
+such as always inlining the whole printf mumbo jumbo and having the
+not-warning case branch over it, not -all- CPUs have good branch
+prediction dude, so the icache is going to scream but gcc folks know
+better of course....
+</rant>
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+Anyway, I'll see Michael what exactly the situation is here and if we
+can fix it a way or another.
+
+Ben.
+
+
