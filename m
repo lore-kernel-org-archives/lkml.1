@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758766AbZBEScp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZBEShb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758766AbZBEScp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 13:32:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759961AbZBEScG
+	id S1759531AbZBEShb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 13:37:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZBEShX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 13:32:06 -0500
-Received: from tomts20.bellnexxia.net ([209.226.175.74]:37123 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759748AbZBEScC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 13:32:02 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEAEO+iklMQWt2/2dsb2JhbACBbs8IhBYG
-Date: Thu, 5 Feb 2009 13:31:59 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090205183158.GA1969@Krystal>
-References: <20090130200757.GA14999@Krystal> <20090205140432.GE6915@linux.vnet.ibm.com> <20090205150242.GA27895@Krystal> <20090205151841.GF6915@linux.vnet.ibm.com> <20090205153825.GA30255@Krystal> <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Feb 2009 13:37:23 -0500
+Received: from outbound-mail-136.bluehost.com ([67.222.39.26]:32827 "HELO
+	outbound-mail-136.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753111AbZBEShW convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 13:37:22 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=hVQHtmKqsECTf5KutKT4Fv9tLDdNpxYlkUs3AWuQk2Q/I/80+CNjL784dNwVVKDGc5JMtFODQQzLKfr3iMnAIQgzqoO2bGKOYiysSqOO8tTewb2rObDbx7D3kuu1rlS6;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Eric Anholt <eric@anholt.net>
+Subject: Re: Gem GTT mmaps..
+Date: Thu, 5 Feb 2009 10:37:19 -0800
+User-Agent: KMail/1.9.10
+Cc: Thomas =?iso-8859-15?q?Hellstr=F6m?= <thomas@shipmail.org>,
+       DRI <dri-devel@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <498A1760.7010108@shipmail.org> <200902041502.41524.jbarnes@virtuousgeek.org> <1233790920.16368.4.camel@gaiman>
+In-Reply-To: <1233790920.16368.4.camel@gaiman>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090205180132.GJ6915@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 13:30:30 up 35 days, 18:28,  3 users,  load average: 0.12, 0.25,
-	0.18
-User-Agent: Mutt/1.5.16 (2007-06-11)
+Message-Id: <200902051037.20590.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
-> > Hi Paul,
-> > 
-> > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
-> > <paulmck@linux.vnet.ibm.com> wrote:
-> > >>
-> > >> Are you using quilt to apply the patchset series file in the right order ?
+On Wednesday, February 4, 2009 3:42 pm Eric Anholt wrote:
+> On Wed, 2009-02-04 at 15:02 -0800, Jesse Barnes wrote:
+> > On Wednesday, February 4, 2009 2:32 pm Thomas Hellström wrote:
+> > > Jesse,
 > > >
-> > > Ummm...  No.  I never have used quilt.
-> > >
-> > > Ah, there is a series file.  I guess it would not be too hard to make
-> > > an appropriate "sh" command:
-> > 
-> > How about trying?
-> > 
-> > #quilt push -a
-> 
-> Is the appropriate incantation as follows?
-> 
-> 	cd <top of git tree>
-> 	mkdir patches
-> 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
-> 	quilt push -a
-> 
+> > > I have some concerns about the GEM GTT mmap functionality.
+> >
+> > Thanks for looking it over again; you would know since some of this code
+> > came from you in the first place. :)
+> >
+> > > First, a gem object pointer is copied to map->offset and then to the
+> > > vma->vm_private_data without proper reference counting. This pointer is
+> > > used in i915_gem_fault() to access the gem object. However if the gem
+> > > object is destroyed and a process then tries to access data in a vma
+> > > mapping the (now destroyed) object, it would dereference a stale
+> > > pointer into kernel space? Shouldn't those pointers be reference
+> > > counted, and to account for fork(), a vm open and close would be needed
+> > > to  reference count corresponding pointers of newly created and
+> > > destroyed vmas?
+> >
+> > Yeah looks like we don't protect against vm_private_data pointing at a
+> > freed or other object.  But rather than refcounting the pointers I wonder
+> > if we could make the private data use the GEM object name instead, then
+> > do the lookup in the fault handler?
+>
+> The object doesn't necessarily have a public name.  You do need to
+> refcount the objects.
 
-Yes, exactly.
-
-And from there you can follow the LTTng manual here :
-
-http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
-
-Mathieu
-
-> 							Thanx, Paul
-> 
+So if we leave the lookup reference around from the GTT mapping ioctl, that 
+would take care of new mappings.  And if we added/removed references at VM 
+open/close time, we should be covered for fork.  But is it ok to add a new 
+unref in the finish ioctl for GTT mapped objects?  I don't think so, because 
+we don't know for sure if the caller was the one that created the new fake 
+offset (which would be one way of detecting whether it was GTT mapped).  
+Seems like we need a new unmap ioctl?  Or we could put the mapping ref/unref 
+in libdrm, where it would be tracked on a per-process basis...
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jesse Barnes, Intel Open Source Technology Center
