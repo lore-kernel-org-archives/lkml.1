@@ -1,107 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753960AbZBEVt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbZBEVvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753960AbZBEVt1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:49:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZBEVtU
+	id S1754400AbZBEVvS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:51:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZBEVvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:49:20 -0500
-Received: from ns2.gothnet.se ([82.193.160.251]:9964 "EHLO
-	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752098AbZBEVtT convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:49:19 -0500
-X-Greylist: delayed 1016 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 16:49:18 EST
-Message-ID: <498B5ADE.3090602@vmware.com>
-Date: Thu, 05 Feb 2009 22:32:14 +0100
-From: Thomas Hellstrom <thellstrom@vmware.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Thu, 5 Feb 2009 16:51:04 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38345 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751804AbZBEVvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 16:51:02 -0500
+Date: Thu, 5 Feb 2009 22:50:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: pud_bad vs pud_bad
+Message-ID: <20090205215050.GB28097@elte.hu>
+References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu> <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu> <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <498B4F1F.5070306@goop.org> <Pine.LNX.4.64.0902052046240.18431@blonde.anvils> <498B54A0.7040005@goop.org>
 MIME-Version: 1.0
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: 2.6.29 pat issue
-References: <498ADFE3.9020907@vmware.com> <1233856988.4286.83.camel@localhost.localdomain>
-In-Reply-To: <1233856988.4286.83.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-X-BitDefender-Scanner: Mail not scanned due to license constraints
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <498B54A0.7040005@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pallipadi, Venkatesh wrote:
-> On Thu, 2009-02-05 at 04:47 -0800, Thomas Hellström wrote:
->> Hi!
->>
->> The function in include/linux/mm.h:
->> is_linear_pfn_mapping()
->>
->> doesn't seem valid to me.
->>
->> In particular, we have VMAs to graphics devices in which vma->vm_pgoff
->> is non-zero (Points to an offset in the drm device node), and the VMA is
->> sparsely populated with pfns pointing to uncached discontigous RAM pages.
->>
->> This causes the X86 PAT code to hit the optimized path when it
->> shouldn't, and issue a warning.
-> 
-> Only place where vm_pgoff is getting set for a PFNMAP vma is in
-> remap_pfn_range() which maps the entire range. vm_insert_pfn() which may
-> have sparsely populated ranges does not set vm_pgoff. What interface are
-> you using to map discontig pages, where you are seeing these errors?
-> 
 
-Since vm_pgoff can be nonzero upon every call to a device driver's mmap 
-method (It corresponds to the @offset parameter, page shifted, given by 
-the user's mmap call), _Any_ VM_PFNMAP vma can practically be assumed to 
-be linear by is_linear_pfn_mapping(), and that's an invalid assumption.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-In this particular case, We set VM_PFNMAP explicitly in the mmap method 
-and use fault() and vm_insert_pfn() to populate the vmas with PTEs 
-pointing to private memory pages or io-space depending on where the data 
-is currently located. The member vma->vm_pgoff is, as mentioned, set by 
-the user-space mmap call, indicating what part of the device address 
-space needs to be mapped.
+>> I sincerely hope 0!  I shed no tears at losing support for NUMAQ, but why 
+>> should we be forced to double all the 32-bit ptes?  You want us all to be 
+>> using NX?  Or you just want to cut your test/edit matrix - that I can 
+>> well understand!
+>
+> Yes, that's the gist of it.  We could simplify things by having only one 
+> pte format and only have to parameterise with 3/4 level pagetables.  We'd 
+> lose support for non-PAE cpus, including the first Pentium M (which is 
+> probably still in fairly wide use, unfortunately).
 
-So in the end, we're hitting the WARN_ON_ONCE(1) near line 637 in 
-arch/x86/mm/pat.c. We should never have ended up in reserve_pfn_range() 
-in the first place.
+We'd also lose a fair bit of performance (not to mention the pagetable 
+footprint doubling that Hugh already mentioned) on 32-bit PAE capable 
+systems that dont actually have RAM above 4G physical.
 
+Bad idea really ...
 
->> Also a question about the philosofy behind this strict checking that all
->> PTEs have the same caching attributes: I guess this is only to catch
->> bugs in kernel drivers that don't get this right. At the same time, now
->> that also user-space VMAs are checked this will probably have a
->> significant performance impact. Shouldn't this checking really live
->> behind a debug define?
-> 
-> The result of not having the caching attribute right can be really bad
-> as to hang/crash the system. So, having this only in debug is not the
-> enough, IM0. Kernel has to enforce UC and WC caching types are
-> consistent at all times. And we also have to keep the indentity map and
-> other mappings that may be present for that address consistent.
-
-Indeed, it's crucial to keep the mappings consistent, but failure to do 
-so is a kernel driver bug, it should never be the result of invalid user 
-data.
-
-There are other more common kernel bugs that can be even worse and hang 
-/ crash the system. For example using uninitialized spinlocks, writing 
-to kfreed memory etc. There is code in the kernel to detect these as 
-well, but this code is behind debug defines.
-
-IMHO checking each vm_insert_pfn() for caching attribute correctness is 
-not something that should be enabled by default, due to the CPU 
-overhead. Production drivers should never violate this.
-
-Thanks,
-Thomas.
-
-> 
-> Thanks,
-> Venki
-> 
-> 
-
-
-
+	Ingo
