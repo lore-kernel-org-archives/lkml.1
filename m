@@ -1,110 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZBEPfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbZBEPif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757570AbZBEPfq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:35:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZBEPfi
+	id S1757776AbZBEPif (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:38:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZBEPiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:35:38 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:33908 "EHLO mx2.redhat.com"
+	Thu, 5 Feb 2009 10:38:25 -0500
+Received: from mx2.netapp.com ([216.240.18.37]:41297 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751699AbZBEPfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:35:37 -0500
-Date: Thu, 5 Feb 2009 16:33:01 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] forget_original_parent: cleanup ptrace pathes
-Message-ID: <20090205153301.GC20953@redhat.com>
-References: <20090129080603.GA26882@redhat.com> <20090205024021.04DDDFC381@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090205024021.04DDDFC381@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753376AbZBEPiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:38:24 -0500
+X-IronPort-AV: E=Sophos;i="4.37,385,1231142400"; 
+   d="scan'208";a="123208329"
+Subject: Re: [PATCH] nfs client: kill compile warning on NOMMU machine
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1233840498.7161.97.camel@heimdal.trondhjem.org>
+References: <1225962921-6424-1-git-send-email-cooloney@kernel.org>
+	 <386072610902050102r3c3e41a3yfbb424411f2f40dc@mail.gmail.com>
+	 <1233840498.7161.97.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Thu, 05 Feb 2009 10:37:45 -0500
+Message-Id: <1233848265.7161.101.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+X-OriginalArrivalTime: 05 Feb 2009 15:38:09.0629 (UTC) FILETIME=[BF5840D0:01C987A7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04, Roland McGrath wrote:
->
-> > - Fold ptrace_exit() into forget_original_parent(), it is trivial
-> >   now. More importantly, this makes the code more symmetrical with
-> >   reparent_thread().
->
-> Please don't do this.
+On Thu, 2009-02-05 at 08:28 -0500, Trond Myklebust wrote:
+> On Thu, 2009-02-05 at 17:02 +0800, Bryan Wu wrote:
+> > Hi guys,
+> > 
+> > Is it possible to merge this patch?
+> 
+> NACK. Although it would be nice to get rid of the warning, this patch
+> does so at the price of even further obfuscating the fact that we're
+> just returning -ENOSYS in the no MMU case, and by causing
+> nfs_file_vm_ops (which is currently optimised away) to be compiled in
+> for no good reason at all.
+> 
+> Trond
 
-Roland, I don't know how to reply ;) Because you didn't comment the
-previois patch
+How about the following compromise: we get rid of the special casing
+altogether and just always call generic_file_mmap. If the noMMU folks
+want further optimisations, then they can inline generic_file_mmap(), so
+that the compiler always takes the 'generic_file_mmap() failed' path.
 
-	[PATCH 3/4] reparent_thread: fix a zombie leak if /sbin/init ignores SIGCHLD
-	http://marc.info/?l=linux-kernel&m=123321657429797
+Cheers
+  Trond
+------------------------------------------------------------
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Thu, 5 Feb 2009 10:23:36 -0500
+NFS: Kill the "defined but not used" compile error on nommu machines
 
-which hopefully fixes the ancient (but yes, minor) bug.
+Bryan Wu reports that when compiling NFS on nommu machines he gets a
+"defined but not used" error on nfs_file_mmap().
 
+The easiest fix is simply to get rid of the special casing in NFS, and
+just always call generic_file_mmap() to set up the file.
 
-But I must admit, I disagree.
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
 
-> The ptrace functions are separated not because they
-> are large, but because they are the ptrace innards.  We have been moving
-> away from the core task handling innards having intimate ptrace magic
-> knowledge directly intertwined, and we don't want to move back the other
-> way.
-
-Yes. But The code becomes much more readable for the new readers,
-it is immediately obvious waht forget_original_parent() does.
-
-And we don't mix things, imho. The "ptrace" logic is lives in
-the __ptrace_deatch(), so it stays separated.
-
-> In later cleanups, we will eventually separate ptrace linkage from
-> the tasklist_lock'd parent/child linkage more thoroughly.
-
-Well, who knows how the code will involve ;) And when. But yes, sure,
-in that case we will need a lot of changes, including the new helper.
-
-> > - The same for ptrace_exit_finish(), and "ptrace_" is not correct
-> >   any longer.
-> >
-> > - "ptrace_dead" doesn't match the reality, rename to "dead_list".
->
-> For the same reasons, I am not entirely sanguine about overloading
-> ptrace_entry for any case not related to ptrace.
-
-Yes. But I don't see a better soulution for now.
-
-But if reparent_thread returns true, we know the task is not traced
-and detached, so it must be safe to use ->ptrace_entry. And in fact
-this is not much worse than ptrace_exit() currently does.
-
-And I think this is actually another reason to do all this work in
-forget_original_parent(), this way we keep this hack "local".
-
-> We want to be able to
-> clean up the ptrace data structures in the future such that there may well
-> not be any such list_head allocated in an untraced task_struct.
-
-Yes, perhaps. But again, in that case we need a lot of other changes.
+ fs/nfs/file.c |   12 +++++-------
+ 1 files changed, 5 insertions(+), 7 deletions(-)
 
 
-And. After the "[PATCH 3/4]" the code looks really bad. At least we
-should rename ptrace_exit_finish and ptrace_dead. But if you think
-this patch is buggy or you see the better fix, then of course this
-patch should be dropped too.
+diff --git a/fs/nfs/file.c b/fs/nfs/file.c
+index 404c19c..1eab9c9 100644
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -64,11 +64,7 @@ const struct file_operations nfs_file_operations = {
+ 	.write		= do_sync_write,
+ 	.aio_read	= nfs_file_read,
+ 	.aio_write	= nfs_file_write,
+-#ifdef CONFIG_MMU
+ 	.mmap		= nfs_file_mmap,
+-#else
+-	.mmap		= generic_file_mmap,
+-#endif
+ 	.open		= nfs_file_open,
+ 	.flush		= nfs_file_flush,
+ 	.release	= nfs_file_release,
+@@ -304,11 +300,13 @@ nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
+ 	dprintk("NFS: mmap(%s/%s)\n",
+ 		dentry->d_parent->d_name.name, dentry->d_name.name);
+ 
+-	status = nfs_revalidate_mapping(inode, file->f_mapping);
++	/* Note: generic_file_mmap() returns ENOSYS on nommu systems
++	 *       so we call that before revalidating the mapping
++	 */
++	status = generic_file_mmap(file, vma);
+ 	if (!status) {
+ 		vma->vm_ops = &nfs_file_vm_ops;
+-		vma->vm_flags |= VM_CAN_NONLINEAR;
+-		file_accessed(file);
++		status = nfs_revalidate_mapping(inode, file->f_mapping);
+ 	}
+ 	return status;
+ }
 
-> This case is sufficiently obscure, I can't see that anyone would really
-> care about the marginal performance hit for just dropping the lock after
-> reparent_thread returns true, call release_task(), re-lock and restart the
-> loop on remaining children.  (And I don't see any atomicity problem with
-> this unlock/relock.)
+-- 
+Trond Myklebust
+Linux NFS client maintainer
 
-Oh. We can do this right now. But I don't think this makes the code
-better. We should restart the list_for_each_entry_safe() loop again
-and againg until we can't find the task to reap.
-
-And we have the small problem with atomicity, we should call
-find_new_reaper() every time we re-lock tasklist.
-
-Oleg.
-
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
