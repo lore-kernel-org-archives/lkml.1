@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbZBEULQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758929AbZBEUNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759355AbZBEULQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 15:11:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbZBEUK7
+	id S1758929AbZBEUNr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 15:13:47 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZBEUNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 15:10:59 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:38079 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752494AbZBEUK7 (ORCPT
+	Thu, 5 Feb 2009 15:13:38 -0500
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:52427 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750866AbZBEUNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 15:10:59 -0500
-Date: Thu, 5 Feb 2009 21:27:30 +0100
-From: Andi Kleen <andi@firstfloor.org>
+	Thu, 5 Feb 2009 15:13:37 -0500
+Date: Thu, 5 Feb 2009 20:12:44 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Tim Pepper <tpepper@gmail.com>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Genapic cleanup & NUMAQ/es7000 removal
-Message-ID: <20090205202730.GJ14832@one.firstfloor.org>
-References: <1233310639-27916-1-git-send-email-andi@firstfloor.org> <eada2a070902050815h6ba682e2u158c4bb7c32f89ef@mail.gmail.com> <20090205172941.GA24599@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090205172941.GA24599@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: pud_bad vs pud_bad
+In-Reply-To: <20090205194932.GB3129@elte.hu>
+Message-ID: <Pine.LNX.4.64.0902052004550.12955@blonde.anvils>
+References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu>
+ <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu>
+ <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <20090205194932.GB3129@elte.hu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I'm not going to apply that series for the reasons i outlined in the NUMAQ 
-> discussion already. The runtime callbacks arent really a maintenance 
-> problem: most of them are in boot code so it's not a runtime overhead issue.
+On Thu, 5 Feb 2009, Ingo Molnar wrote:
+> * Hugh Dickins <hugh@veritas.com> wrote:
+> > 
+> > Simpler and more compact, but not as strict: in particular, a value of
+> > 0 or 1 is identified as bad by that 64-bit test, but not by the 32-bit.
+> 
+> yes, indeed you are right - the 64-bit test does not allow the KERNPG_TABLE 
+> bits to go zero.
+> 
+> Those are the present, rw, accessed and dirty bits. Do they really matter 
+> that much? If a toplevel entry goes !present or readonly, we notice that 
+> _fast_, without any checks. If it goes !access or !dirty - does that matter?
 
-Ok.  It's basically dead code now, dropping it would just make
-the kernels a little smaller and also the code somewhat easier
-to read.
+I've not given it a great deal of thought, why this or that bit.
+These p??_bad checks originate from 2.4 or earlier, and by mistake
+got weakened somewhere along the way, and last time it was discussed
+we agreed to strenghthen them (and IIRC Jeremy himself did so).
 
-If you keep them I would be interested in hearing about your testing plan 
-for es7000 and NUMAQ AFAIK there is noone currently running them which
-makes that likely challenging.
+> 
+> These checks are done all the time, and even a single instruction can count. 
+> The bits that are checked are enough to notice random memory corruption.
 
-Also the first two patches in the series were independent cleanups
-not directly related and should be applied anyways independent
-whether unused code should be dropped or not.
+Well, I am surprised that you would be arguing for weakening such
+a very simple check.
 
-commit fa9b9131b555b1d72d6bbfa8c1d6cb22659cc011
-
-    Remove empty setup_portio_remap inlines in bigsmp/summit
-
-    These are all unused inlines
-
-commit 47e05d047c0e9c5c75003ec7ce97de753b264ed6
-
-    Move wakeup_secondary_via_nmi into numaq_32.c
-
-    It's only used there.
-
--Andi
+Hugh
