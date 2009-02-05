@@ -1,118 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756700AbZBEWxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZBEWxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756700AbZBEWxu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 17:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755999AbZBEWwi
+	id S1756505AbZBEWxg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 17:53:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZBEWwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 17:52:38 -0500
-Received: from casper.infradead.org ([85.118.1.10]:45725 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755983AbZBEWwg (ORCPT
+	Thu, 5 Feb 2009 17:52:15 -0500
+Received: from everest.las.ic.unicamp.br ([143.106.60.118]:52322 "EHLO
+	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752853AbZBEWwN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 17:52:36 -0500
-Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com,
-       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-In-Reply-To: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain
-Date: Thu, 05 Feb 2009 22:52:32 +0000
-Message-Id: <1233874352.8135.12.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 5 Feb 2009 17:52:13 -0500
+From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
+To: linux-kernel@vger.kernel.org
+Cc: glommer@redhat.com, mingo@elte.hu
+Subject: [PATCH 3/6] x86: define reserve_top_address for x86_64
+Date: Thu,  5 Feb 2009 20:39:43 -0200
+Message-Id: <1233873586-7149-4-git-send-email-gustavo@las.ic.unicamp.br>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1233873586-7149-3-git-send-email-gustavo@las.ic.unicamp.br>
+References: <1233873586-7149-1-git-send-email-gustavo@las.ic.unicamp.br>
+ <1233873586-7149-2-git-send-email-gustavo@las.ic.unicamp.br>
+ <1233873586-7149-3-git-send-email-gustavo@las.ic.unicamp.br>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds a function to dump the DMA mappings that the debugging code is
-aware of -- either for a single device, or for _all_ devices.
+Only for later x86 integration.
 
-This can be useful for debugging -- sticking a call to it in the DMA
-page fault handler, for example, to see if the faulting address _should_
-be mapped or not, and hence work out whether it's IOMMU bugs we're
-seeing, or driver bugs.
+Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
+Acked-by: Glauber Costa <gcosta@redhat.com>
+---
+ arch/x86/include/asm/fixmap_64.h |    2 ++
+ arch/x86/mm/pgtable.c            |   18 ++++++++++++++++++
+ arch/x86/mm/pgtable_32.c         |   16 ----------------
+ 3 files changed, 20 insertions(+), 16 deletions(-)
 
-I'd also like to make it answer the question 'should address X be mapped
-for device Y', but I'll get to that next.
-
-Do we have a %pX format for printing dma_addr_t yet? 
-
-Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-diff --git a/include/linux/dma-debug.h b/include/linux/dma-debug.h
-index 8a8aae4..5f4fc9f 100644
---- a/include/linux/dma-debug.h
-+++ b/include/linux/dma-debug.h
-@@ -75,6 +75,8 @@ extern void debug_dma_sync_sg_for_device(struct device *dev,
- 					 struct scatterlist *sg,
- 					 int nelems, int direction);
+diff --git a/arch/x86/include/asm/fixmap_64.h b/arch/x86/include/asm/fixmap_64.h
+index 678b9c5..773b657 100644
+--- a/arch/x86/include/asm/fixmap_64.h
++++ b/arch/x86/include/asm/fixmap_64.h
+@@ -72,6 +72,8 @@ enum fixed_addresses {
+ 	__end_of_fixed_addresses
+ };
  
-+extern void debug_dma_dump_mappings(struct device *dev);
++extern void reserve_top_address(unsigned long reserve);
 +
- #else /* CONFIG_DMA_API_DEBUG */
+ #define FIXADDR_TOP	(VSYSCALL_END-PAGE_SIZE)
  
- static inline void dma_debug_init(u32 num_entries)
-@@ -155,6 +157,10 @@ static inline void debug_dma_sync_sg_for_device(struct device *dev,
- {
+ #define FIXADDR_SIZE	(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
+diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
+index 86f2ffc..5b7c7c8 100644
+--- a/arch/x86/mm/pgtable.c
++++ b/arch/x86/mm/pgtable.c
+@@ -313,6 +313,24 @@ int ptep_clear_flush_young(struct vm_area_struct *vma,
+ 	return young;
  }
  
-+static inline void debug_dma_dump_mappings(struct device *dev)
-+{
-+}
-+
- #endif /* CONFIG_DMA_API_DEBUG */
- 
- #endif /* __DMA_DEBUG_H */
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index 469e5b9..127d108 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -191,6 +191,36 @@ static void hash_bucket_del(struct dma_debug_entry *entry)
- }
- 
- /*
-+ * Dump mapping entries for debugging purposes
++/**
++ * reserve_top_address - reserves a hole in the top of kernel address space
++ * @reserve - size of hole to reserve
++ *
++ * Can be used to relocate the fixmap area and poke a hole in the top
++ * of kernel address space to make room for a hypervisor.
 + */
-+void debug_dma_dump_mappings(struct device *dev)
++void __init reserve_top_address(unsigned long reserve)
 +{
-+	int idx;
-+
-+	for (idx = 0; idx < HASH_SIZE; idx++) {
-+		struct hash_bucket *bucket = &dma_entry_hash[idx];
-+		struct dma_debug_entry *entry;
-+		unsigned long flags;
-+
-+		spin_lock_irqsave(&bucket->lock, flags);
-+
-+		list_for_each_entry(entry, &bucket->list, list) {
-+			if (!dev || dev == entry->dev) {
-+				dev_info(entry->dev,
-+					 "%s idx %d P=%Lx D=%Lx L=%Lx %s\n",
-+					 type2name[entry->type], idx,
-+					 (unsigned long long)entry->paddr,
-+					 entry->dev_addr, entry->size,
-+					 dir2name[entry->direction]);
-+			}
-+		}
-+
-+			spin_unlock_irqrestore(&bucket->lock, flags);
-+	}
++#ifdef CONFIG_X86_32
++	BUG_ON(fixmaps_set > 0);
++	printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
++	       (int)-reserve);
++	__FIXADDR_TOP = -reserve - PAGE_SIZE;
++	__VMALLOC_RESERVE += reserve;
++#endif
 +}
-+EXPORT_SYMBOL(debug_dma_dump_mappings);
 +
-+/*
-  * Wrapper function for adding an entry to the hash.
-  * This function takes care of locking itself.
-  */
-
-
+ int fixmaps_set;
+ 
+ void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
+diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
+index 0951db9..c3cf6e1 100644
+--- a/arch/x86/mm/pgtable_32.c
++++ b/arch/x86/mm/pgtable_32.c
+@@ -97,22 +97,6 @@ void set_pmd_pfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags)
+ unsigned long __FIXADDR_TOP = 0xfffff000;
+ EXPORT_SYMBOL(__FIXADDR_TOP);
+ 
+-/**
+- * reserve_top_address - reserves a hole in the top of kernel address space
+- * @reserve - size of hole to reserve
+- *
+- * Can be used to relocate the fixmap area and poke a hole in the top
+- * of kernel address space to make room for a hypervisor.
+- */
+-void __init reserve_top_address(unsigned long reserve)
+-{
+-	BUG_ON(fixmaps_set > 0);
+-	printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
+-	       (int)-reserve);
+-	__FIXADDR_TOP = -reserve - PAGE_SIZE;
+-	__VMALLOC_RESERVE += reserve;
+-}
+-
+ /*
+  * vmalloc=size forces the vmalloc area to be exactly 'size'
+  * bytes. This can be used to increase (or decrease) the
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
+1.5.6.4
 
