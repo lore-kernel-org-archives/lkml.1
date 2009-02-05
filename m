@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759578AbZBEKVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbZBEKXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759578AbZBEKVz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 05:21:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbZBEKVl
+	id S1758178AbZBEKXW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 05:23:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754814AbZBEKXN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 05:21:41 -0500
-Received: from mga09.intel.com ([134.134.136.24]:59944 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756040AbZBEKVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 05:21:39 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,384,1231142400"; 
-   d="scan'208";a="384162368"
-Subject: Re: [PATCH NET-NEXT 01/10] clocksource: allow usage independent of
-	timekeeping.c
-From: Patrick Ohly <patrick.ohly@intel.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: john stultz <johnstul@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       David Miller <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <1233793093.15119.147.camel@desktop>
-References: <1233752517-30010-1-git-send-email-patrick.ohly@intel.com>
-	 <1233752517-30010-2-git-send-email-patrick.ohly@intel.com>
-	 <1233756235.15119.54.camel@desktop> <1233758796.15940.198.camel@ecld0pohly>
-	 <1233760170.15119.76.camel@desktop>
-	 <1233775542.6994.13.camel@localhost.localdomain>
-	 <1233776421.15119.125.camel@desktop>
-	 <1233777982.6994.51.camel@localhost.localdomain>
-	 <1233781499.15119.135.camel@desktop>
-	 <1233782100.6994.82.camel@localhost.localdomain>
-	 <1233793093.15119.147.camel@desktop>
-Content-Type: text/plain
-Date: Thu, 05 Feb 2009 11:21:05 +0100
-Message-Id: <1233829265.20435.38.camel@pohly-MOBL>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 5 Feb 2009 05:23:13 -0500
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:55558 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754282AbZBEKXM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 05:23:12 -0500
+X-Greylist: delayed 1711 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 05:23:11 EST
+Date: Thu, 5 Feb 2009 18:51:31 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [GIT PULL] sh updates for 2.6.29-rc4
+Message-ID: <20090205095131.GA23256@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-05 at 02:18 +0200, Daniel Walker wrote:
-> > Plus he adds other accessors to the clocksource structure that are not
-> > compatible with the clocksources registered for timekeeping.
-> 
-> It's akin to vread, I think. I'd prefer to see the read() used
-> instead,
-> but I can see why there could be a need for a structure getting
-> passed.
+Please pull from:
 
-There is indeed: the igb driver supports multiple different interfaces.
-Each interface has its own NIC time, so the callback needs the
-additional pointer to find out which NIC time it is expected to read.
+	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git sh/for-2.6.29
 
-Regarding the rest of the discussion: I understand that it is useful to
-have it and perhaps get serious about refactoring clocksource, but I
-also hope that this will not delay including the patches. They are
-needed for HW time stamping now and cannot wait for the clocksource
-refactoring.
+Which contains:
 
--- 
-Best Regards, Patrick Ohly
+Carmelo AMOROSO (1):
+      sh: fcnvds fix with denormalized numbers on SH-4 FPU.
 
-The content of this message is my personal opinion only and although
-I am an employee of Intel, the statements I make here in no way
-represent Intel's position on the issue, nor am I authorized to speak
-on behalf of Intel on this matter.
+Christopher SMITH (1):
+      sh: Only reserve memory under CONFIG_ZERO_PAGE_OFFSET when it != 0.
 
+Kuninori Morimoto (4):
+      sh: mach-migor: Enable ov772x and tw9910 in defconfig.
+      sh: ap325rxa: control camera power toggling.
+      sh: ap325rxa: Add ov772x support.
+      sh: ap325rxa: Enable ov772x in defconfig.
 
+Paul Mundt (1):
+      sh: Fix up spurious syscall restarting.
+
+Stuart Menefy (1):
+      sh: Handle calling csum_partial with misaligned data
+
+Takashi Yoshii (1):
+      sh: Fix up T-bit error handling in SH-4A mutex fastpath.
+
+ arch/sh/boards/board-ap325rxa.c    |   63 ++++++++++++++++++++++++++++++--
+ arch/sh/configs/ap325rxa_defconfig |   27 ++++++++++----
+ arch/sh/configs/migor_defconfig    |   42 +++++++++++++++++-----
+ arch/sh/include/asm/mutex-llsc.h   |   21 +++++------
+ arch/sh/include/asm/syscall_32.h   |   22 ++----------
+ arch/sh/include/asm/syscall_64.h   |   22 ++----------
+ arch/sh/kernel/cpu/sh4/fpu.c       |    2 +-
+ arch/sh/kernel/setup.c             |    8 ++--
+ arch/sh/kernel/signal_32.c         |    4 +--
+ arch/sh/kernel/signal_64.c         |    4 +--
+ arch/sh/lib/checksum.S             |   69 ++++++++++++++++++++++++++----------
+ 11 files changed, 184 insertions(+), 100 deletions(-)
