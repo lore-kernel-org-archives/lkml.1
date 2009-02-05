@@ -1,57 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758996AbZBEBCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbZBEBDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758996AbZBEBCd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 20:02:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755086AbZBEBCX
+	id S1757236AbZBEBDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 20:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754481AbZBEBDZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 20:02:23 -0500
-Received: from mx2.suse.de ([195.135.220.15]:54593 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754040AbZBEBCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 20:02:22 -0500
-Date: Wed, 4 Feb 2009 16:02:32 -0800
-From: Greg KH <gregkh@suse.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Risto Suominen <Risto.Suominen@gmail.com>
-Subject: Re: [patch 07/41] fbdev/atyfb: Fix DSP config on some PowerMacs &
-	PowerBooks
-Message-ID: <20090205000232.GA363@suse.de>
-References: <20090204184029.881610776@mini.kroah.org> <20090204184602.GH25246@kroah.com> <1233791475.4612.24.camel@pasglop>
+	Wed, 4 Feb 2009 20:03:25 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:51281 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751655AbZBEBDY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 20:03:24 -0500
+Message-ID: <498A3AB7.9060701@cn.fujitsu.com>
+Date: Thu, 05 Feb 2009 09:02:47 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233791475.4612.24.camel@pasglop>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Paul Menage <menage@google.com>
+Subject: Re: [Bug #12611] kernel BUG at kernel/cgroup.c:398!
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.TrD.quYiJB@chimera>
+In-Reply-To: <pWZw1SZjMCH.A.TrD.quYiJB@chimera>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 10:51:15AM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2009-02-04 at 10:46 -0800, Greg KH wrote:
-> > plain text document attachment
-> > (fbdev-atyfb-fix-dsp-config-on-some-powermacs-powerbooks.patch)
-> > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
-> My only possible worry with that one is the first generation clamshell
-> iBook which uses a Mobility M1 chip, for which we haven't had anybody
-> testing whether this would break it or not ... 
+> The following bug entry is on the current list of known regressions
+> from 2.6.28.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> So if anybody with such a machine is reading this, please holler...
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12611
+> Subject		: kernel BUG at kernel/cgroup.c:398!
+> Submitter	: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Date		: 2009-01-28 15:49 (8 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123315721707796&w=4
+> 
 
-But this patch is already in Linus's tree, so why would you worry about
-this?
+It has been fixed by the following commit:
 
-thanks,
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=839ec5452ebfd5905b9c69b20ceb640903a8ea1a
 
-greg k-h
