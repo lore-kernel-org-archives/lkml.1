@@ -1,59 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761611AbZBEBTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932291AbZBEBTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761611AbZBEBTV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 20:19:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752332AbZBEBTF
+	id S932291AbZBEBTi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 20:19:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759639AbZBEBTQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 20:19:05 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49230 "EHLO ogre.sisk.pl"
+	Wed, 4 Feb 2009 20:19:16 -0500
+Received: from gate.crashing.org ([63.228.1.57]:48957 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbZBEBTD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 20:19:03 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: etienne <etienne.basset@numericable.fr>
-Subject: Re: [Bug #12613] [Suspend regression][DRM, RADEON]
-Date: Thu, 5 Feb 2009 02:18:45 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Dave Airlie <airlied@linux.ie>, Dave Airlie <airlied@redhat.com>,
-       Soeren Sonnenburg <kernel@nn7.de>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.OlD.ouYiJB@chimera> <498A15C3.30904@numericable.fr>
-In-Reply-To: <498A15C3.30904@numericable.fr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	id S1759141AbZBEBTP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 20:19:15 -0500
+Subject: Re: [PATCH 2/3] powerpc: Make it possible to safely select
+ CONFIG_FRAME_POINTER
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+In-Reply-To: <1233794154.16878.20.camel@localhost.localdomain>
+References: <20090204150755.GA24163@oksana.dev.rtsoft.ru>
+	 <20090204150838.GB30027@oksana.dev.rtsoft.ru>
+	 <1233793889.4612.33.camel@pasglop>
+	 <1233794154.16878.20.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 12:15:31 +1100
+Message-Id: <1233796531.4612.35.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902050218.46248.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009, etienne wrote:
-> Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.28.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12613
-> > Subject		: [Suspend regression][DRM, RADEON]
-> > Submitter	: etienne <etienne.basset@numericable.fr>
-> > Date		: 2009-01-28 22:00 (8 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=a9d51a5ad1154b5b20add1e8d30a5564f8aabbe9
-> > References	: http://marc.info/?l=linux-kernel&m=123318030419558&w=4
-> > 		  http://marc.info/?l=linux-kernel&m=123334865404574&w=4
-> >
-> >
-> >   
-> hello,
+On Wed, 2009-02-04 at 19:35 -0500, Steven Rostedt wrote:
+> On Thu, 2009-02-05 at 11:31 +1100, Benjamin Herrenschmidt wrote:
+> > On Wed, 2009-02-04 at 18:08 +0300, Anton Vorontsov wrote:
+> > > Remove -fno-omit-frame-pointer flag from CFLAGS.
+> > > Remove -fno-omit-frame-pointer workarounds.
+> > 
+> > But what about -pg -requires -fno-omit-frame-pointer ?
 > 
-> yes it is still here with today's git
+> I don't think it requires -fno-omit-frame-pointer. It is just
+> incompatible with -fomit-frame-pointer.
 
-Thanks for the update.
+>From a quick test, you seem to be right.
 
-Rafael
+Now the question of course is whether -pg will internally trigger
+the bug for which we need the workaround tho...
+
+Ben.
+
