@@ -1,45 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbZBEIaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZBEIdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758636AbZBEIaU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:30:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZBEIaF
+	id S1758317AbZBEIdn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:33:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756662AbZBEIda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:30:05 -0500
-Received: from one.firstfloor.org ([213.235.205.2]:52407 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752461AbZBEIaE (ORCPT
+	Thu, 5 Feb 2009 03:33:30 -0500
+Received: from elasmtp-banded.atl.sa.earthlink.net ([209.86.89.70]:47216 "EHLO
+	elasmtp-banded.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756612AbZBEId3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:30:04 -0500
-Date: Thu, 5 Feb 2009 09:46:27 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
-       Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: [PATCH] add b+tree library
-Message-ID: <20090205084627.GF14832@one.firstfloor.org>
-References: <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com> <20090110183921.GD20611@logfs.org> <1231613042.3706.16.camel@johannes> <87fxjrgd9s.fsf@basil.nowhere.org> <20090110202315.GE20611@logfs.org> <20090110212740.GE31579@mit.edu> <20090110220135.GF20611@logfs.org> <20090110142330.295a8847.akpm@linux-foundation.org> <1231631840.13420.24.camel@twins> <1233793066.7390.34.camel@johannes.local>
+	Thu, 5 Feb 2009 03:33:29 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=dk20050327; d=mindspring.com;
+  b=adADRWjvo5cuSs85896lfdFa9VURpkwA5/qKNO4NQjHuESIf9qy+39vMh/gHC3xH;
+  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
+Date: Thu, 5 Feb 2009 03:32:41 -0500
+From: Bill Fink <billfink@mindspring.com>
+To: Willy Tarreau <w@1wt.eu>
+Cc: David Miller <davem@davemloft.net>, herbert@gondor.apana.org.au,
+       zbr@ioremap.net, jarkao2@gmail.com, dada1@cosmosbay.com, ben@zeus.com,
+       mingo@elte.hu, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-Id: <20090205033241.a99121fe.billfink@mindspring.com>
+In-Reply-To: <20090204091217.GA21385@1wt.eu>
+References: <20090204081201.GB10445@ioremap.net>
+	<20090204085432.GA21638@1wt.eu>
+	<20090204085907.GA19388@gondor.apana.org.au>
+	<20090204.010146.18100191.davem@davemloft.net>
+	<20090204091217.GA21385@1wt.eu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233793066.7390.34.camel@johannes.local>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4dc68c7bd13ad8f7c14d98c7689124bcf8350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
+X-Originating-IP: 96.234.158.88
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In my use case, tracking the wifi APs around you, you have to scale from
-> a single one to >1k (yes, it's happening!), and lookups better be fast
-> because you might be doing them a lot (dozens of times per second).
+On Wed, 4 Feb 2009, Willy Tarreau wrote:
 
-dozens of times per second is actually not a lot on any reasonable system.
-anything that's not totally screwed up (like the rbtrees) should be fine.
+> On Wed, Feb 04, 2009 at 01:01:46AM -0800, David Miller wrote:
+> > From: Herbert Xu <herbert@gondor.apana.org.au>
+> > Date: Wed, 4 Feb 2009 19:59:07 +1100
+> > 
+> > > On Wed, Feb 04, 2009 at 09:54:32AM +0100, Willy Tarreau wrote:
+> > > >
+> > > > My server is running 2.4 :-), but I observed the same issues with older
+> > > > 2.6 as well. I can certainly imagine that things have changed a lot since,
+> > > > but the initial point remains : jumbo frames are expensive to deal with,
+> > > > and with recent NICs and drivers, we might get close performance for
+> > > > little additional cost. After all, initial justification for jumbo frames
+> > > > was the devastating interrupt rate and all NICs coalesce interrupts now.
+> > > 
+> > > This is total crap! Jumbo frames are way better than any of the
+> > > hacks (such as GSO) that people have come up with to get around it.
+> > > The only reason we are not using it as much is because of this
+> > > nasty thing called the Internet.
+> > 
+> > Completely agreed.
+> > 
+> > If Jumbo frames are slower, it is NOT some fundamental issue.  It is
+> > rather due to some misdesign of the hardware or it's driver.
+> 
+> Agreed we can't use them *because* of the internet, but this
+> limitation has forced hardware designers to find valid alternatives.
+> For instance, having the ability to reach 10 Gbps with 1500 bytes
+> frames on myri10ge with a low CPU usage is a real achievement. This
+> is "only" 800 kpps after all.
+> 
+> And the arbitrary choice of 9k for jumbo frames was total crap too.
+> It's clear that no hardware designer was involved in the process.
+> They have to stuff 16kB of RAM on a NIC to use only 9. And we need
+> to allocate 3 pages for slightly more than 2. 7.5 kB would have been
+> better in this regard.
+> 
+> I still find it nice to lower CPU usage with frames larger than 1500,
+> but given the fact that this is rarely used (even in datacenters), I
+> think our efforts should concentrate on where the real users are, ie
+> <1500.
 
--Andi
+Those in the HPC realm use 9000 byte jumbo frames because it makes
+a major performance difference, especially across large RTT paths,
+and the Internet2 backbone fully supports 9000 byte jumbo frames
+(with some wishing we could support much larger frame sizes).
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Local environment:
+
+9000 byte jumbo frames:
+
+[root@lang2 ~]# nuttcp -w10m 192.168.88.16
+11818.1875 MB /  10.01 sec = 9905.9707 Mbps 100 %TX 76 %RX 0 retrans 0.15 msRTT
+
+4080 byte MTU:
+
+[root@lang2 ~]# nuttcp -w10m 192.168.88.16
+ 9171.6875 MB /  10.02 sec = 7680.7663 Mbps 100 %TX 99 %RX 0 retrans 0.19 msRTT
+
+The performance impact is even more pronounced on a large RTT path
+such as the following netem emulated 80 ms RTT path:
+
+9000 byte jumbo frames:
+
+[root@lang2 ~]# nuttcp -T30 -w80m 192.168.89.15
+25904.2500 MB /  30.16 sec = 7205.8755 Mbps 96 %TX 55 %RX 0 retrans 82.73 msRTT
+
+4080 byte MTU:
+
+[root@lang2 ~]# nuttcp -T30 -w80m 192.168.89.15
+ 8650.0129 MB /  30.25 sec = 2398.8862 Mbps 33 %TX 19 %RX 2371 retrans 81.98 msRTT
+
+And if there's any loss in the path, the performance difference is also
+dramatic, such as here across a real MAN environment with about a 1 ms RTT:
+
+9000 byte jumbo frames:
+
+[root@chance9 ~]# nuttcp -w20m 192.168.88.8
+ 7711.8750 MB /  10.05 sec = 6436.2406 Mbps 82 %TX 96 %RX 261 retrans 0.92 msRTT
+
+4080 byte MTU:
+
+[root@chance9 ~]# nuttcp -w20m 192.168.88.8
+ 4551.0625 MB /  10.08 sec = 3786.2108 Mbps 50 %TX 95 %RX 42 retrans 0.95 msRTT
+
+All testing was with myri10ge on the transmitter side (2.6.20.7 kernel).
+
+So my experience has definitely been that 9000 byte jumbo frames are a
+major performance win for high throughput applications.
+
+						-Bill
