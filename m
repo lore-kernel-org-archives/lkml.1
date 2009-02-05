@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759209AbZBEJNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbZBEJVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759209AbZBEJNG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 04:13:06 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758191AbZBEJMr
+	id S1758587AbZBEJVs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 04:21:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZBEJV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 04:12:47 -0500
-Received: from tundra.namei.org ([65.99.196.166]:3503 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757621AbZBEJMq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 04:12:46 -0500
-Date: Thu, 5 Feb 2009 20:12:36 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       David Safford <safford@watson.ibm.com>, Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 0/7] integrity
-In-Reply-To: <1233803196.3574.3.camel@localhost.localdomain>
-Message-ID: <alpine.LRH.1.10.0902052010580.7359@tundra.namei.org>
-References: <cover.1233750611.git.zohar@linux.vnet.ibm.com>  <alpine.LRH.1.10.0902051013430.4638@tundra.namei.org>  <1233794297.2962.7.camel@localhost.localdomain>  <alpine.LRH.1.10.0902051159560.5539@tundra.namei.org>
- <1233803196.3574.3.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Feb 2009 04:21:29 -0500
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44562
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752466AbZBEJV2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 04:21:28 -0500
+Date: Thu, 05 Feb 2009 01:21:23 -0800 (PST)
+Message-Id: <20090205.012123.141238531.davem@davemloft.net>
+To: kamezawa.hiroyu@jp.fujitsu.com
+Cc: mel@csn.ul.ie, heiko.carstens@de.ibm.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: HOLES_IN_ZONE...
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090205180617.8ee3dfb5.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090204.222651.26527737.davem@davemloft.net>
+	<20090205180617.8ee3dfb5.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 4 Feb 2009, Mimi Zohar wrote:
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 5 Feb 2009 18:06:17 +0900
 
-> On Thu, 2009-02-05 at 12:00 +1100, James Morris wrote:
-> > On Wed, 4 Feb 2009, Mimi Zohar wrote:
-> > 
-> > > On Thu, 2009-02-05 at 10:16 +1100, James Morris wrote:
-> > > > I get an oops on boot with this.
-> > > > 
-> > > > Do you have lock and list debugging enabled?
-> > > 
-> > > In the past I had them enabled.  Just recompiled now with them enabled
-> > > and was able to boot without problems.
-> > 
-> > Do you have CONFIG_PREEMPT_RCU and SMP ?
-> 
-> I've recompiled with both CONFIG_PREEMPT_RCU and SMP and didn't
-> get the oops.  Is your TPM enabled? 
+> @@ -2632,7 +2633,8 @@ void __meminit memmap_init_zone(unsigned
+>  		if (context == MEMMAP_EARLY) {
+>  			if (!early_pfn_valid(pfn))
+>  				continue;
+> -			if (!early_pfn_in_nid(pfn, nid))
+> +			tmp = early_pfn_in_nid(pfn, nid);
+> +			if (tmp > -1 && tmp != nid)
 
-It was disabled in bios, and the system boots ok with it enabled.
+early_pfn_in_nid() returns true or false, not the found nid
 
--- 
-James Morris
-<jmorris@namei.org>
+I think you meant to change this to call early_pfn_to_nid()
+
+I'll make that correction and test your patch.
+
+BTW, if you make that conversion there is no need for
+early_pfn_in_nid() since there will be no other users.
