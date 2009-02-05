@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZBEVIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753977AbZBEVKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbZBEVIS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:08:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBEVIG
+	id S1753977AbZBEVKG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:10:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZBEVJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:08:06 -0500
-Received: from casper.infradead.org ([85.118.1.10]:49197 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZBEVIE (ORCPT
+	Thu, 5 Feb 2009 16:09:55 -0500
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:44246 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751384AbZBEVJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:08:04 -0500
-Subject: Re: [PATCH 08/16] dma-debug: add core checking functions
-From: David Woodhouse <dwmw2@infradead.org>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, iommu@lists.linux-foundation.org,
-       davem@davemloft.net
-In-Reply-To: <1232376423-11067-9-git-send-email-joerg.roedel@amd.com>
-References: <1232376423-11067-1-git-send-email-joerg.roedel@amd.com>
-	 <1232376423-11067-9-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain
-Date: Thu, 05 Feb 2009 21:07:59 +0000
-Message-Id: <1233868079.3548.699.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 5 Feb 2009 16:09:55 -0500
+Date: Thu, 5 Feb 2009 21:09:04 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: wli@movementarian.org
+cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: pud_bad vs pud_bad
+In-Reply-To: <20090205205606.GG10229@movementarian.org>
+Message-ID: <Pine.LNX.4.64.0902052103080.20627@blonde.anvils>
+References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu>
+ <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu>
+ <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <20090205194932.GB3129@elte.hu>
+ <20090205195817.GF10229@movementarian.org> <Pine.LNX.4.64.0902052013230.12955@blonde.anvils>
+ <20090205205606.GG10229@movementarian.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-01-19 at 15:46 +0100, Joerg Roedel wrote:
->  
-> +       if (ref->type != entry->type) {
-> +               err_printk(ref->dev, "DMA-API: device driver frees "
-> +                          "DMA memory with wrong function "
-> +                          "[device address=0x%016llx] [size=%llu bytes] "
-> +                          "[mapped as %s] [unmapped as %s]\n",
-> +                          ref->dev_addr, ref->size,
-> +                          type2name[entry->type], type2name[ref->type]);
+On Thu, 5 Feb 2009, wli@movementarian.org wrote:
+> On Thu, 5 Feb 2009, wli@movementarian.org wrote:
+> >> The RW bit needs to be allowed to become read-only for hugetlb COW.
+> >> Changing it over to the 32-bit method is a bugfix by that token.
+> 
+> On Thu, Feb 05, 2009 at 08:14:42PM +0000, Hugh Dickins wrote:
+> > If there's a bugfix to be made there, of course I'm in favour:
+> > but how come we've never seen such a bug?  hugetlb COW has been
+> > around for a year or two by now, hasn't it?
+> 
+> We can tell from the code that a write-protected pte mapping of a
+> 1GB hugetlb page would be flagged as bad. It must not be called on
+> ptes mapping hugetlb pages if they're not getting flagged.
 
-e1000e 0000:00:19.0: DMA-API: device driver frees DMA memory with wrong
-function [device address=0x00000000ffedc002] [size=90 bytes] [mapped as
-single] [unmapped as page]
+Ah, I see what you mean now.  Yes, the hugetlb case goes its own way
+and doesn't normally hit those p??_bad() macro/inlines; but we got
+caught out in follow_page() a year ago, a bad looked huge or a
+huge looked bad, but I forget the details at this instant.
 
-
-<davem> That debug check is excessive, substituting those two things
-works for every DMA API implementation I am aware of
-
--- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+Hugh
