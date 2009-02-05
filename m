@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbZBET7Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760554AbZBEUAP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760284AbZBET7Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:59:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZBET66
+	id S1760554AbZBEUAP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 15:00:15 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZBET77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:58:58 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35719 "EHLO mx3.mail.elte.hu"
+	Thu, 5 Feb 2009 14:59:59 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59613 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752064AbZBET65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 14:58:57 -0500
-Date: Thu, 5 Feb 2009 20:58:32 +0100
+	id S1752845AbZBET76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 14:59:58 -0500
+Date: Thu, 5 Feb 2009 20:59:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Ben Greear <greearb@candelatech.com>, Yinghai Lu <yinghai@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, len.brown@intel.com
-Subject: Re: PATCH:  Allow over-ride of smp_found_cfg with kernel cmd-line
-	option.
-Message-ID: <20090205195832.GD3129@elte.hu>
-References: <498B421D.9090609@candelatech.com>
+To: Ben Greear <greearb@candelatech.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, rusty@rustcorp.com.au
+Subject: Re: PATCH:  Allow user to force 'tsc' to be treated as stable.
+Message-ID: <20090205195945.GE3129@elte.hu>
+References: <498B42C5.7010905@candelatech.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498B421D.9090609@candelatech.com>
+In-Reply-To: <498B42C5.7010905@candelatech.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -39,83 +37,12 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Ben Greear <greearb@candelatech.com> wrote:
 
-> Allow user to keep smp_found_cfg set to 1 even if MADT
-> cannot be parsed.  This works around funky BIOS on FWA-7304
-> (VIA CN700 chipset) system, and possibly other systems as well.
-> Without this override, performance drops by around 15% on
-> network throughput tests on this system.
+> Allow user to force TSC as stable clock-source.
+> Works around BIOS issues in the FWA-7304 (Via CN700 chipset)
+> system, and possibly others.
 >
-> This is based on 2.6.29-rc3
->
-> Signed-Off-By:  Ben Greear <greearb@candelatech.com>
->
->
-> Thanks,
-> Ben
->
-> -- 
-> Ben Greear <greearb@candelatech.com>
-> Candela Technologies Inc  http://www.candelatech.com
->
+> This is against 2.6.29-rc3.
 
-> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
-> index d37593c..e96bf19 100644
-> --- a/arch/x86/kernel/acpi/boot.c
-> +++ b/arch/x86/kernel/acpi/boot.c
-> @@ -87,6 +87,7 @@ u8 acpi_sci_flags __initdata;
->  int acpi_sci_override_gsi __initdata;
->  int acpi_skip_timer_override __initdata;
->  int acpi_use_timer_override __initdata;
-> +int force_smp_found_cfg __initdata;
->  
->  #ifdef CONFIG_X86_LOCAL_APIC
->  static u64 acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
-> @@ -1335,6 +1336,14 @@ static void __init early_acpi_process_madt(void)
->  #endif
->  }
->  
-> +static int __init parse_force_smp_found_cfg(char *arg)
-> +{
-> +	force_smp_found_cfg = 1;
-> +	return 0;
-> +}
-> +early_param("force_smp_found_cfg", parse_force_smp_found_cfg);
-> +
-> +
->  static void __init acpi_process_madt(void)
->  {
->  #ifdef CONFIG_X86_LOCAL_APIC
-> @@ -1381,9 +1390,14 @@ static void __init acpi_process_madt(void)
->   		 * Boot with "acpi=off" to use MPS on such a system.
->   		 */
->  		if (smp_found_config) {
-> -			printk(KERN_WARNING PREFIX
-> -				"No APIC-table, disabling MPS\n");
-> -			smp_found_config = 0;
-> +			if (force_smp_found_cfg)
-> +				printk(KERN_WARNING PREFIX
-> +				       "No APIC-table, wanted to disable MPS, but will not\n  due to force_smp_found_cfg=1\n");
-> +			else {
-> +				printk(KERN_WARNING PREFIX
-> +				       "No APIC-table, disabling MPS.  Use force_smp_found_cfg=1 to override\n");
-> +				smp_found_config = 0;
-> +			}
->  		}
->  	}
->  
-
-I'd _much_ rather have a warning message printed and have a default, 
-unconditional fallback to mptable parsing in this case.
-
-I.e. same end result just no ugly and inconvenient force_smp_found_cfg.
-
-The mptable works fine in most such cases to enumerate apic details. (as it 
-does in your case, evidently)
-
-And if both the ACPI and the MPTABLE is hosed on a box, it cannot be of much 
-use on other OSs either, right?
-
-So please do a patch that removes the 'smp_found_config' and which changes 
-the warning message to warn about no ACPI table in the MADT table. Ok?
+What 'issues' does that work around, exactly?
 
 	Ingo
