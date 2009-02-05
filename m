@@ -1,113 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757776AbZBEPif@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbZBEPjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757776AbZBEPif (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:38:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZBEPiZ
+	id S1758253AbZBEPjD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:39:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757895AbZBEPip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:38:25 -0500
-Received: from mx2.netapp.com ([216.240.18.37]:41297 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753376AbZBEPiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:38:24 -0500
-X-IronPort-AV: E=Sophos;i="4.37,385,1231142400"; 
-   d="scan'208";a="123208329"
-Subject: Re: [PATCH] nfs client: kill compile warning on NOMMU machine
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Bryan Wu <cooloney@kernel.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <1233840498.7161.97.camel@heimdal.trondhjem.org>
-References: <1225962921-6424-1-git-send-email-cooloney@kernel.org>
-	 <386072610902050102r3c3e41a3yfbb424411f2f40dc@mail.gmail.com>
-	 <1233840498.7161.97.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Thu, 05 Feb 2009 10:37:45 -0500
-Message-Id: <1233848265.7161.101.camel@heimdal.trondhjem.org>
+	Thu, 5 Feb 2009 10:38:45 -0500
+Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:36134 "EHLO
+	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753491AbZBEPio (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:38:44 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsIEAI+QiklMQWt2/2dsb2JhbACBbs9FhBYGgjM
+Date: Thu, 5 Feb 2009 10:38:25 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       ltt-dev@lists.casi.polymtl.ca, "Theodore Ts'o" <tytso@mit.edu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
+Message-ID: <20090205153825.GA30255@Krystal>
+References: <20090130200757.GA14999@Krystal> <20090205140432.GE6915@linux.vnet.ibm.com> <20090205150242.GA27895@Krystal> <20090205151841.GF6915@linux.vnet.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-X-OriginalArrivalTime: 05 Feb 2009 15:38:09.0629 (UTC) FILETIME=[BF5840D0:01C987A7]
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090205151841.GF6915@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:38:03 up 35 days, 15:36,  3 users,  load average: 0.43, 0.42,
+	0.42
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-05 at 08:28 -0500, Trond Myklebust wrote:
-> On Thu, 2009-02-05 at 17:02 +0800, Bryan Wu wrote:
-> > Hi guys,
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Thu, Feb 05, 2009 at 10:02:42AM -0500, Mathieu Desnoyers wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > On Fri, Jan 30, 2009 at 03:07:57PM -0500, Mathieu Desnoyers wrote:
+> > > > Hi,
+> > > > 
+> > > > I just ported LTTng to the 2.6.29-rc3 kernel. It includes the following
+> > > > changes :
+> > > > 
+> > > > - Tree RCU instrumentation
+> > > > - Updated ext4 and jbd2 instrumentation
+> > > > 
+> > > > Please feel free to try it and report any success/problem you may have.
+> > > > Note that cross-build has been slightly less tested this time because
+> > > > I'll have to upgrade many of my compilers to a version compatible with
+> > > > kernel 2.6.29-rc.
+> > > > 
+> > > > It also includes the recently added kprobes support through a simple
+> > > > 
+> > > > echo symbol_name > /mnt/debugfs/ltt/kprobes/enable
+> > > > 
+> > > > It's available at the new LTTng website :
+> > > > 
+> > > > http://www.lttng.org/
+> > > 
+> > > Hello, Matheiu,
+> > > 
+> > > When I try to apply this to v2.6.29-rc3, I get the following:
+> > > 
+> > > 	can't find file to patch at input line 61
+> > > 	Perhaps you used the wrong -p or --strip option?
+> > > 	The text leading up to this was:
+> > > 	--------------------------
+> > > 	|get_ltt_root() is necessary for ltt-trace-control to create subdirs in
+> > > 	ltt's
+> > > 	|debugfs dir.
+> > > 	|
+> > > 	|From: Zhao Lei <zhaolei@cn.fujitsu.com>
+> > > 	|Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> > > 	|Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > > 	|---
+> > > 	| include/linux/ltt-core.h |    8 ++++++++
+> > > 	| ltt/ltt-core.c           |   14 ++++++++++++++
+> > > 	| ltt/ltt-relay.c          |    8 +-------
+> > > 	| 3 files changed, 23 insertions(+), 7 deletions(-)
+> > > 	|
+> > > 	|Index: linux-2.6-lttng/include/linux/ltt-core.h
+> > > 	|===================================================================
+> > > 	|--- linux-2.6-lttng.orig/include/linux/ltt-core.h      2009-01-15
+> > > 	15:55:18.000000000 -0500
+> > > 	|+++ linux-2.6-lttng/include/linux/ltt-core.h   2009-01-15
+> > > 	15:55:24.000000000 -0500
+> > > 
+> > > Help?
+> > > 
 > > 
-> > Is it possible to merge this patch?
+> > Hi Paul,
+> > 
+> > I must admit I'm a bit puzzled. I've tried to quilt push -a both 
+> > LTTng 0.89 and LTTng 0.92 taken from the website and they both apply
+> > correctly on 2.6.29-rc3. When I quilt pop -a, neither of those 3 files
+> > (include/linux/ltt-core.h, ltt/ltt-core.c, ltt/ltt-relay.c) are stucked
+> > in my tree.
+> > 
+> > I've used files from :
+> > 
+> > http://www.lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
+> > 
+> > Which tarballs are you using exactly ?
 > 
-> NACK. Although it would be nice to get rid of the warning, this patch
-> does so at the price of even further obfuscating the fact that we're
-> just returning -ENOSYS in the no MMU case, and by causing
-> nfs_file_vm_ops (which is currently optimised away) to be compiled in
-> for no good reason at all.
+> That is indeed the one that I am using.
 > 
-> Trond
+> > I guess you need to apply them to your existing tree, so pointing you to
+> > git.kernel.org lttng tree won't help much here.
+> 
+> I am attempting to apply to v2.6.29-rc3, which is commit
+> 18e352e4a73465349711a9324767e1b2453383e2 in the linux-2.6 git tree.
+> 
+> Later on, I might well want to apply on top of some other stuff, but
+> figured I should try it straight first.  ;-)
+> 
 
-How about the following compromise: we get rid of the special casing
-altogether and just always call generic_file_mmap. If the noMMU folks
-want further optimisations, then they can inline generic_file_mmap(), so
-that the compiler always takes the 'generic_file_mmap() failed' path.
+Are you using quilt to apply the patchset series file in the right order ?
 
-Cheers
-  Trond
-------------------------------------------------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date: Thu, 5 Feb 2009 10:23:36 -0500
-NFS: Kill the "defined but not used" compile error on nommu machines
+Mathieu
 
-Bryan Wu reports that when compiling NFS on nommu machines he gets a
-"defined but not used" error on nfs_file_mmap().
-
-The easiest fix is simply to get rid of the special casing in NFS, and
-just always call generic_file_mmap() to set up the file.
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-
- fs/nfs/file.c |   12 +++++-------
- 1 files changed, 5 insertions(+), 7 deletions(-)
-
-
-diff --git a/fs/nfs/file.c b/fs/nfs/file.c
-index 404c19c..1eab9c9 100644
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -64,11 +64,7 @@ const struct file_operations nfs_file_operations = {
- 	.write		= do_sync_write,
- 	.aio_read	= nfs_file_read,
- 	.aio_write	= nfs_file_write,
--#ifdef CONFIG_MMU
- 	.mmap		= nfs_file_mmap,
--#else
--	.mmap		= generic_file_mmap,
--#endif
- 	.open		= nfs_file_open,
- 	.flush		= nfs_file_flush,
- 	.release	= nfs_file_release,
-@@ -304,11 +300,13 @@ nfs_file_mmap(struct file * file, struct vm_area_struct * vma)
- 	dprintk("NFS: mmap(%s/%s)\n",
- 		dentry->d_parent->d_name.name, dentry->d_name.name);
- 
--	status = nfs_revalidate_mapping(inode, file->f_mapping);
-+	/* Note: generic_file_mmap() returns ENOSYS on nommu systems
-+	 *       so we call that before revalidating the mapping
-+	 */
-+	status = generic_file_mmap(file, vma);
- 	if (!status) {
- 		vma->vm_ops = &nfs_file_vm_ops;
--		vma->vm_flags |= VM_CAN_NONLINEAR;
--		file_accessed(file);
-+		status = nfs_revalidate_mapping(inode, file->f_mapping);
- 	}
- 	return status;
- }
+> 							Thanx, Paul
+> 
+> > Mathieu
+> > 
+> > > 							Thanx, Paul
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> _______________________________________________
+> ltt-dev mailing list
+> ltt-dev@lists.casi.polymtl.ca
+> http://lists.casi.polymtl.ca/cgi-bin/mailman/listinfo/ltt-dev
+> 
 
 -- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
