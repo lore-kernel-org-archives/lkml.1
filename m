@@ -1,95 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760713AbZBESoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbZBESpY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760713AbZBESoP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 13:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbZBESn5
+	id S1760130AbZBESpY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 13:45:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759403AbZBESo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 13:43:57 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:35705 "EHLO mx2.redhat.com"
+	Thu, 5 Feb 2009 13:44:59 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:33116 "EHLO e4.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755789AbZBESn4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 13:43:56 -0500
-Date: Thu, 5 Feb 2009 13:43:04 -0500
-From: Jason Baron <jbaron@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, gnb@sgi.com, gregkh@suse.de,
-       nfsv4@linux-nfs.org, systemtap@sources.redhat.com
-Subject: Re: [Patch 0/2] dynamic debug
-Message-ID: <20090205184304.GF3114@redhat.com>
-References: <20090205164520.GB3114@redhat.com> <20090205175849.GA936@kroah.com>
+	id S1755627AbZBESo6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 13:44:58 -0500
+Date: Thu, 5 Feb 2009 10:44:56 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
+Message-ID: <20090205184456.GK6915@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090130200757.GA14999@Krystal> <20090205140432.GE6915@linux.vnet.ibm.com> <20090205150242.GA27895@Krystal> <20090205151841.GF6915@linux.vnet.ibm.com> <20090205153825.GA30255@Krystal> <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090205175849.GA936@kroah.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090205183158.GA1969@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 09:58:49AM -0800, Greg KH wrote:
-> On Thu, Feb 05, 2009 at 11:45:20AM -0500, Jason Baron wrote:
-> > hi,
+On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
+> > > Hi Paul,
+> > > 
+> > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
+> > > <paulmck@linux.vnet.ibm.com> wrote:
+> > > >>
+> > > >> Are you using quilt to apply the patchset series file in the right order ?
+> > > >
+> > > > Ummm...  No.  I never have used quilt.
+> > > >
+> > > > Ah, there is a series file.  I guess it would not be too hard to make
+> > > > an appropriate "sh" command:
+> > > 
+> > > How about trying?
+> > > 
+> > > #quilt push -a
 > > 
-> > This patchset combines Greg Bank's dprintk() patchset with the dynamic printk
-> > patchset. We are renaming the combined solution 'dynamic debug'. As a reminder,
-> > the patchset allows debug printk style statements to be dynamically 
-> > enabled/disabled at runtime.
+> > Is the appropriate incantation as follows?
 > > 
-> > The key new feature of this patchset is a richer /debugfs control file
-> > interface, (an example output from my system is at the bottom), which allows
-> > fined grained control over the the debug output. The output can be controlled by
-> > function, file and line number, module, and format string. 
+> > 	cd <top of git tree>
+> > 	mkdir patches
+> > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
+> > 	quilt push -a
+> > 
 > 
-> That's nice, but do we really need to have that kind of control?  It
-> seems like overkill.
+> Yes, exactly.
+
+Whew!  ;-)
+
+> And from there you can follow the LTTng manual here :
 > 
+> http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
 
-given the ability of this feature to very quickly fill the logs, I think
-it makes sense for some cases. Also, Greg found it very useful in his debugging
-work...
+I get some fuzz and the following:
 
-> > For example, to enable all debug statement in module 'nf_conntrack':
-> > 
-> > #echo -n 'module nf_conntrack +p' > /mnt/debugfs/dynamic_debug/control
-> > 
-> > A further explanation can be found in the documentation patch.
-> > 
-> > While adding these new features we have dropped a couple that we intend to add
-> > back in subsequent patches. The ability to turn on/off all debugging at once,
-> > either via the /debugfs control file, or via the kernel command line.
-> > 
-> > thanks,
-> > 
-> > -Jason and Greg
-> > 
-> > 
-> > # filename:lineno [module]function flags format
-> > arch/x86/kernel/setup_percpu.c:260 [setup_percpu]numa_set_node - "Setting\040node\040for\040non-present\040cpu\040%d\012"
-> 
-> Why the \040 syntax?  Can't we handle a space in a string?  Makes it
-> very hard to grep for things...
-> 
+	patching file kernel/trace/trace-clock-32-to-64.c
+	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
+	which already exists.
+	Hunk #1 FAILED at 1.
+	1 out of 1 hunk FAILED -- rejects in file
+	kernel/trace/trace-clock-32-to-64.c
 
-ok, patch below resolves the space issue.
+Should I be starting from somewhere other than v2.6.29-rc3?
 
-thanks,
-
--Jason
-
-Signed-off-by: Jason Baron <jbaron@redhat.com>
-
-diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
-index 7db55ce..9e123ae 100644
---- a/lib/dynamic_debug.c
-+++ b/lib/dynamic_debug.c
-@@ -572,7 +572,7 @@ static int ddebug_proc_show(struct seq_file *m, void *p)
- 		   dp->filename, dp->lineno,
- 		   iter->table->mod_name, dp->function,
- 		   ddebug_describe_flags(dp, flagsbuf, sizeof(flagsbuf)));
--	seq_escape(m, dp->format, " \t\r\n\"");
-+	seq_escape(m, dp->format, "\t\r\n\"");
- 	seq_puts(m, "\"\n");
- 
- 	return 0;
-
-
+							Thanx, Paul
