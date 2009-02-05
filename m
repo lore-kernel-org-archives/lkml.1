@@ -1,305 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756731AbZBENRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZBENSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756731AbZBENRy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 08:17:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbZBENRp
+	id S1757174AbZBENSV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 08:18:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756829AbZBENSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 08:17:45 -0500
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:51001 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754869AbZBENRo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 08:17:44 -0500
-Date: Thu, 5 Feb 2009 05:17:41 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Reduce size of swap_cgroup by CSS ID
-Message-ID: <20090205131741.GC6915@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090205185959.7971dee4.kamezawa.hiroyu@jp.fujitsu.com>
+	Thu, 5 Feb 2009 08:18:03 -0500
+Received: from mailbackup.inode.at ([213.229.60.24]:39875 "EHLO
+	mailbackup.inode.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754869AbZBENR7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 08:17:59 -0500
+Date: Thu, 5 Feb 2009 14:16:44 +0100
+From: Matthias Reichl <hias@horus.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [Bug #12612] hard lockup when interrupting cdda2wav
+Message-ID: <20090205131644.GA5731@horus.com>
+Mail-Followup-To: Matthias Reichl <hias@horus.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+References: <a47yn9c9JrF.A.hz.L5YiJB@chimera> <CGyEB0S4BpO.A.fLB.T5YiJB@chimera>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090205185959.7971dee4.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <CGyEB0S4BpO.A.fLB.T5YiJB@chimera>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 06:59:59PM +0900, KAMEZAWA Hiroyuki wrote:
-> !!EXPERIMENTAL!!
+On Wed, Feb 04, 2009 at 11:58:51AM +0100, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.27 and 2.6.28.
 > 
-> against mmotm.
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> be listed and let me know (either way).
 > 
-> This patch tires to use CSS ID for records in swap_cgroup instead of pointer.
-> By this, on 64bit machine, size of swap_cgroup goes down to 2 bytes from 8bytes.
 > 
-> This means, when 2GB of swap is equipped, (assume the page size is 4096bytes)
-> 	From size of swap_cgroup = 2G/4k * 8 = 4Mbytes.
-> 	To   size of swap_cgroup = 2G/4k * 2 = 1Mbytes.
-> Reduction is large. Of course, there are trade-offs. This CSS ID will add
-> overhead to swap-in/swap-out/swap-free.
-> 
-> But in general,
->   - swap is a resource which the user tend to avoid use.
->   - If swap is never used, swap_cgroup area is not used.
->   - Reading traditional manuals, size of swap should be proportional to
->     size of memory. Memory size of machine is increasing now. So, reducing
->     size of swap_cgroup makes sense.
-> Note:
->   ID->CSS lookup routine has no locks, it's under RCU-Read-Side.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12612
+> Subject		: hard lockup when interrupting cdda2wav
+> Submitter	: Matthias Reichl <hias@horus.com>
+> Date		: 2009-01-28 16:41 (8 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123316111415677&w=4
+> Handled-By	: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-One question about css_tryget() below.
+This bug is still present in 2.6.28.3.
 
-							Thanx, Paul
+so long,
 
-> This is still under test. Any comments are welcome.
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  include/linux/page_cgroup.h |    9 +++----
->  mm/memcontrol.c             |   55 +++++++++++++++++++++++++++++++++++---------
->  mm/page_cgroup.c            |   22 ++++++++---------
->  3 files changed, 59 insertions(+), 27 deletions(-)
-> 
-> Index: mmotm-2.6.29-Feb03/include/linux/page_cgroup.h
-> ===================================================================
-> --- mmotm-2.6.29-Feb03.orig/include/linux/page_cgroup.h
-> +++ mmotm-2.6.29-Feb03/include/linux/page_cgroup.h
-> @@ -91,22 +91,21 @@ static inline void page_cgroup_init(void
-> 
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  #include <linux/swap.h>
-> -extern struct mem_cgroup *
-> -swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem);
-> -extern struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent);
-> +extern unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id);
-> +extern unsigned short lookup_swap_cgroup(swp_entry_t ent);
->  extern int swap_cgroup_swapon(int type, unsigned long max_pages);
->  extern void swap_cgroup_swapoff(int type);
->  #else
->  #include <linux/swap.h>
-> 
->  static inline
-> -struct mem_cgroup *swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem)
-> +unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id)
->  {
->  	return NULL;
->  }
-> 
->  static inline
-> -struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent)
-> +unsigned short lookup_swap_cgroup(swp_entry_t ent)
->  {
->  	return NULL;
->  }
-> Index: mmotm-2.6.29-Feb03/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.29-Feb03.orig/mm/memcontrol.c
-> +++ mmotm-2.6.29-Feb03/mm/memcontrol.c
-> @@ -1001,20 +1001,38 @@ nomem:
->  	return -ENOMEM;
->  }
-> 
-> +/*
-> + * A helper function to get mem_cgroup from ID. must be called under
-> + * rcu_read_lock(). Because css_tryget() is called under this, css_put
-> + * should be called later.
-> + */
-> +static struct mem_cgroup *mem_cgroup_lookup_get(unsigned short id)
-> +{
-> +	struct cgroup_subsys_state *css;
-> +
-> +	/* ID 0 is unused ID */
-> +	if (!id)
-> +		return NULL;
-> +	css = css_lookup(&mem_cgroup_subsys, id);
-> +	if (css && css_tryget(css))
-> +		return container_of(css, struct mem_cgroup, css);
+Hias
 
-So css_tryget(), if successful, prevents the structure referenced by
-css from being freed, correct?  (If not, the range of the RCU read-side
-critical sections surrounding calls to mem_cgroup_lookup_get() must be
-extended.)
+=============================================
+[ INFO: possible recursive locking detected ]
+2.6.28.3-dbg #1
+---------------------------------------------
+swapper/0 is trying to acquire lock:
+ (&q->__queue_lock){.+..}, at: [<ffffffff8040e5f5>] blk_put_request+0x25/0x60
 
-> +	return NULL;
-> +}
-> +
->  static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
->  {
-> -	struct mem_cgroup *mem;
-> +	unsigned short id;
-> +	struct mem_cgroup *mem = NULL;
->  	swp_entry_t ent;
-> 
->  	if (!PageSwapCache(page))
->  		return NULL;
-> 
->  	ent.val = page_private(page);
-> -	mem = lookup_swap_cgroup(ent);
-> -	if (!mem)
-> -		return NULL;
-> -	if (!css_tryget(&mem->css))
-> -		return NULL;
-> +	id = lookup_swap_cgroup(ent);
-> +	rcu_read_lock();
-> +	mem = mem_cgroup_lookup_get(id);
-> +	rcu_read_unlock();
->  	return mem;
->  }
-> 
-> @@ -1275,11 +1293,16 @@ int mem_cgroup_cache_charge(struct page 
-> 
->  	if (do_swap_account && !ret && PageSwapCache(page)) {
->  		swp_entry_t ent = {.val = page_private(page)};
-> +		unsigned short id;
->  		/* avoid double counting */
-> -		mem = swap_cgroup_record(ent, NULL);
-> +		id = swap_cgroup_record(ent, 0);
-> +		rcu_read_lock();
-> +		mem = mem_cgroup_lookup_get(id);
-> +		rcu_read_unlock();
->  		if (mem) {
->  			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
->  			mem_cgroup_put(mem);
-> +			css_put(&mem->css);
->  		}
->  	}
->  	return ret;
-> @@ -1345,13 +1368,18 @@ void mem_cgroup_commit_charge_swapin(str
->  	 */
->  	if (do_swap_account && PageSwapCache(page)) {
->  		swp_entry_t ent = {.val = page_private(page)};
-> +		unsigned short id;
->  		struct mem_cgroup *memcg;
-> -		memcg = swap_cgroup_record(ent, NULL);
-> +
-> +		id = swap_cgroup_record(ent, 0);
-> +		rcu_read_lock();
-> +		memcg = mem_cgroup_lookup_get(id);
-> +		rcu_read_unlock();
->  		if (memcg) {
->  			res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
->  			mem_cgroup_put(memcg);
-> +			css_put(&memcg->css);
->  		}
-> -
->  	}
->  	/* add this page(page_cgroup) to the LRU we want. */
-> 
-> @@ -1472,7 +1500,7 @@ void mem_cgroup_uncharge_swapcache(struc
->  					MEM_CGROUP_CHARGE_TYPE_SWAPOUT);
->  	/* record memcg information */
->  	if (do_swap_account && memcg) {
-> -		swap_cgroup_record(ent, memcg);
-> +		swap_cgroup_record(ent, css_id(&memcg->css));
->  		mem_cgroup_get(memcg);
->  	}
->  	if (memcg)
-> @@ -1487,14 +1515,19 @@ void mem_cgroup_uncharge_swapcache(struc
->  void mem_cgroup_uncharge_swap(swp_entry_t ent)
->  {
->  	struct mem_cgroup *memcg;
-> +	unsigned short id;
-> 
->  	if (!do_swap_account)
->  		return;
-> 
-> -	memcg = swap_cgroup_record(ent, NULL);
-> +	id = swap_cgroup_record(ent, 0);
-> +	rcu_read_lock();
-> +	memcg = mem_cgroup_lookup_get(id);
-> +	rcu_read_unlock();
->  	if (memcg) {
->  		res_counter_uncharge(&memcg->memsw, PAGE_SIZE);
->  		mem_cgroup_put(memcg);
-> +		css_put(&memcg->css);
->  	}
->  }
->  #endif
-> Index: mmotm-2.6.29-Feb03/mm/page_cgroup.c
-> ===================================================================
-> --- mmotm-2.6.29-Feb03.orig/mm/page_cgroup.c
-> +++ mmotm-2.6.29-Feb03/mm/page_cgroup.c
-> @@ -290,7 +290,7 @@ struct swap_cgroup_ctrl swap_cgroup_ctrl
->   * cgroup rather than pointer.
->   */
->  struct swap_cgroup {
-> -	struct mem_cgroup	*val;
-> +	unsigned short		id;
->  };
->  #define SC_PER_PAGE	(PAGE_SIZE/sizeof(struct swap_cgroup))
->  #define SC_POS_MASK	(SC_PER_PAGE - 1)
-> @@ -345,7 +345,7 @@ not_enough_page:
->   * Returns old value at success, NULL at failure.
->   * (Of course, old value can be NULL.)
->   */
-> -struct mem_cgroup *swap_cgroup_record(swp_entry_t ent, struct mem_cgroup *mem)
-> +unsigned short swap_cgroup_record(swp_entry_t ent, unsigned short id)
->  {
->  	int type = swp_type(ent);
->  	unsigned long offset = swp_offset(ent);
-> @@ -354,18 +354,18 @@ struct mem_cgroup *swap_cgroup_record(sw
->  	struct swap_cgroup_ctrl *ctrl;
->  	struct page *mappage;
->  	struct swap_cgroup *sc;
-> -	struct mem_cgroup *old;
-> +	unsigned short old;
-> 
->  	if (!do_swap_account)
-> -		return NULL;
-> +		return 0;
-> 
->  	ctrl = &swap_cgroup_ctrl[type];
-> 
->  	mappage = ctrl->map[idx];
->  	sc = page_address(mappage);
->  	sc += pos;
-> -	old = sc->val;
-> -	sc->val = mem;
-> +	old = sc->id;
-> +	sc->id = id;
-> 
->  	return old;
->  }
-> @@ -374,9 +374,9 @@ struct mem_cgroup *swap_cgroup_record(sw
->   * lookup_swap_cgroup - lookup mem_cgroup tied to swap entry
->   * @ent: swap entry to be looked up.
->   *
-> - * Returns pointer to mem_cgroup at success. NULL at failure.
-> + * Returns CSS ID of mem_cgroup at success. NULL at failure.
->   */
-> -struct mem_cgroup *lookup_swap_cgroup(swp_entry_t ent)
-> +unsigned short lookup_swap_cgroup(swp_entry_t ent)
->  {
->  	int type = swp_type(ent);
->  	unsigned long offset = swp_offset(ent);
-> @@ -385,16 +385,16 @@ struct mem_cgroup *lookup_swap_cgroup(sw
->  	struct swap_cgroup_ctrl *ctrl;
->  	struct page *mappage;
->  	struct swap_cgroup *sc;
-> -	struct mem_cgroup *ret;
-> +	unsigned short ret;
-> 
->  	if (!do_swap_account)
-> -		return NULL;
-> +		return 0; /* 0 is invalid ID */
-> 
->  	ctrl = &swap_cgroup_ctrl[type];
->  	mappage = ctrl->map[idx];
->  	sc = page_address(mappage);
->  	sc += pos;
-> -	ret = sc->val;
-> +	ret = sc->id;
->  	return ret;
->  }
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+but task is already holding lock:
+ (&q->__queue_lock){.+..}, at: [<ffffffff8040e4da>] blk_end_io+0x5a/0xa0
+
+other info that might help us debug this:
+1 lock held by swapper/0:
+ #0:  (&q->__queue_lock){.+..}, at: [<ffffffff8040e4da>] blk_end_io+0x5a/0xa0
+
+stack backtrace:
+Pid: 0, comm: swapper Not tainted 2.6.28.3-dbg #1
+Call Trace:
+ <IRQ>  [<ffffffff8026cc87>] __lock_acquire+0x1797/0x1930
+ [<ffffffff806abd7b>] error_exit+0x29/0xa9
+ [<ffffffff80521e20>] sg_rq_end_io+0x0/0x2e0
+ [<ffffffff8026ceba>] lock_acquire+0x9a/0xe0
+ [<ffffffff8040e5f5>] blk_put_request+0x25/0x60
+ [<ffffffff806ab763>] _spin_lock_irqsave+0x43/0x90
+ [<ffffffff8040e5f5>] blk_put_request+0x25/0x60
+ [<ffffffff8040e5f5>] blk_put_request+0x25/0x60
+ [<ffffffff80520974>] sg_finish_rem_req+0xa4/0x100
+ [<ffffffff80522098>] sg_rq_end_io+0x278/0x2e0
+ [<ffffffff8040e281>] end_that_request_last+0x61/0x260
+ [<ffffffff8040e4e8>] blk_end_io+0x68/0xa0
+ [<ffffffff80508061>] scsi_end_request+0x41/0xd0
+ [<ffffffff80508750>] scsi_io_completion+0x130/0x470
+ [<ffffffff804133e5>] blk_done_softirq+0x75/0x90
+ [<ffffffff802488ab>] __do_softirq+0x9b/0x180
+ [<ffffffff80213df3>] native_sched_clock+0x13/0x70
+ [<ffffffff8020d6ec>] call_softirq+0x1c/0x30
+ [<ffffffff8020f175>] do_softirq+0x65/0xa0
+ [<ffffffff80248345>] irq_exit+0xa5/0xb0
+ [<ffffffff8020f467>] do_IRQ+0x107/0x1d0
+ [<ffffffff8020c7fb>] ret_from_intr+0x0/0xf
+ <EOI>  [<ffffffff80214ba6>] mwait_idle+0x56/0x60
+ [<ffffffff80214b9d>] mwait_idle+0x4d/0x60
+ [<ffffffff8020b353>] cpu_idle+0x63/0xc0
