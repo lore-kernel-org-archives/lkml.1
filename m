@@ -1,84 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbZBEJa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758769AbZBEJd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbZBEJa3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 04:30:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbZBEJaJ
+	id S1758769AbZBEJd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 04:33:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755005AbZBEJdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 04:30:09 -0500
-Received: from rv-out-0506.google.com ([209.85.198.238]:38393 "EHLO
+	Thu, 5 Feb 2009 04:33:11 -0500
+Received: from rv-out-0506.google.com ([209.85.198.228]:36084 "EHLO
 	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755440AbZBEJaH (ORCPT
+	with ESMTP id S1753231AbZBEJdJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 04:30:07 -0500
+	Thu, 5 Feb 2009 04:33:09 -0500
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Fk6xUazk9aglHNTPD8SWofcIhjEzoKxq8rHPpkzC24BOqMguXcEpWbZEdI22xyfuxy
-         As7+5ajVmst3uNXTu4C5eo1KpZcrH/Cwd4pbcMPLp7E1uLR8rWZeDgLH9sK2UX7GpEg5
-         5Z0kAtDXSKMsZjZNRb6kalS40O2I4sfedw2Xk=
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=blR4puUD0FB5UiRJ3KAdiyVoB4pRkA4ZZZR/uhTJo9VcoTXLkUkwM5+thzpXK0YHW5
+         lE4W6Hno58rsPdwW2wm6Z6iMgWzkAMcwAZ6WC3i18Im/WR1W3Pa3/fOBxEJ3IRev21bE
+         yXEMlLzw7KhOEjJtdwgZUfssooq6YoiqQBmUs=
 MIME-Version: 1.0
-In-Reply-To: <200811201405.06811.david-b@pacbell.net>
-References: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
-	 <200811201347.46355.david-b@pacbell.net>
-	 <8bd0f97a0811201357g1ffeb7d3pfad6e178fb20050e@mail.gmail.com>
-	 <200811201405.06811.david-b@pacbell.net>
-Date: Thu, 5 Feb 2009 17:30:06 +0800
-X-Google-Sender-Auth: 5390efd639528437
-Message-ID: <386072610902050130k27c6d7far752ac49183bf36ae@mail.gmail.com>
-Subject: Re: [PATCH 01/16] Blackfin SPI Driver: ensure cache coherency before 
-	doing DMA
-From: Bryan Wu <cooloney@kernel.org>
-To: David Brownell <david-b@pacbell.net>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Vitja Makarov <vitja.makarov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090204235949.GA300@kroah.com>
+References: <49857F23.3090208@gmail.com> <20090201155117.GA10018@kroah.com>
+	 <a8e1da0902011743o47764edfjf53a397b5a4aeeef@mail.gmail.com>
+	 <20090203235814.GA22380@kroah.com>
+	 <a8e1da0902031710u2ebd69b0r4de5916fab2d3cba@mail.gmail.com>
+	 <20090204235949.GA300@kroah.com>
+Date: Thu, 5 Feb 2009 17:33:08 +0800
+Message-ID: <a8e1da0902050133n5cc5db62j4a48cd1ea32442b2@mail.gmail.com>
+Subject: Re: [PATCH 1/2] usb-serial : fix the nousb oops
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Nov 21, 2008 at 6:05 AM, David Brownell <david-b@pacbell.net> wrote:
-> On Thursday 20 November 2008, Mike Frysinger wrote:
->> On Thu, Nov 20, 2008 at 16:47, David Brownell wrote:
->
->> > Basically, dma_map_single(), dma_unmap_single() ... and
->> > remember that the caller may have done the mappings for
->> > you already.
+On Thu, Feb 5, 2009 at 7:59 AM, Greg KH <greg@kroah.com> wrote:
+> On Wed, Feb 04, 2009 at 09:10:20AM +0800, Dave Young wrote:
+>> remove wgreathouse@smva.com in cc-list because this mail will be
+>> rejected by the smva.com email server.
 >>
->> these arent required to provide coherent memory right ?  if that's the
->> case, i can take a look at getting things updated.
->
-> Right.  If caller provides dma-coherent memory to you, they
-> must also have provided the DMA addresses the controller
-> driver should be using ... so you won't need dma mapping
-> calls on those paths.
->
->
->> > It'd be nice if one of patches snuck in a comment on that
->> > point:  "Full duplex only works for non-DMA transfers."
->> > Same rationale:  you may know this hardware inside out,
->> > but the next person won't.
+>> On Wed, Feb 4, 2009 at 7:58 AM, Greg KH <greg@kroah.com> wrote:
+>> > On Mon, Feb 02, 2009 at 09:43:04AM +0800, Dave Young wrote:
+>> >> On Sun, Feb 1, 2009 at 11:51 PM, Greg KH <greg@kroah.com> wrote:
+>> >> > On Sun, Feb 01, 2009 at 06:53:23PM +0800, Dave Young wrote:
+>> >> >>
+>> >> >> In case with "nousb" booting, serial drivers will trigger kernel oops.
+>> >> >
+>> >> > They will?  What is the oops message?
+>> >>
+>> >> Yes, they will, at lease I saw usb_serial/aircable/ftdi_sio oops. I
+>> >> will manage to copy the oops message later.
+>> >>
+>> >> >
+>> >> >> Here add usb_disabled() check in usb_serial_init and usb_serial_register
+>> >> >
+>> >> > This is odd, is it something new?  Why is usb-serial the only driver
+>> >> > that needs such a thing?
+>> >>
+>> >> No, it is not new thing.  usb serial drivers normally call
+>> >> usb_serial_register first, then usb_register, usb_register will fail
+>> >> due to "nousb" checking, but usb_serial_register no.
+>> >
+>> > But as usb_register will fail, shouldn't they properly back out and no
+>> > oopses happen?  This sounds like a simple fix to the drivers that are
+>> > failing here, not changing the usb-serial core.
 >>
->> well, hopefully if they dont know they wont be touching the driver ;).
->>  i'll add a comment in this code chunk.  thanks for the feedback.
+>> Hi greg
+>>
+>> I think all usb serial drivers which call usb_serial_register will
+>> oops, so IMHO usb core should be fixed.
+>>
+>> I think maybe you missed my another reply, copy the content here again.
 >
-> The way it usually works is someone observes a problem and
-> then starts experimenting on relevant code.  So they learn
-> a bit while debugging ... and code authors/maintainers need
-> to keep that learning curve from being too steep.  ;)
+> No, I got it.
 >
-> - Dave
+> I'm more interested in why usb-serial is oopsing, as it should't be.
 >
+>> ---
+>> hand copy part of the oops message:
+>
+> Can you take a picture of the oops?
+
+Hi, I have no camera at hand, I will take the picture tomorrow.
+
+>
+> thanks,
+>
+> greg k-h
 >
 
-Hi Dave,
 
-As you acked this patchset, is that possible to merge it?
-Or need Andrew to keep them in -mm for a while.
 
-Thanks
--Bryan
+-- 
+Regards
+dave
