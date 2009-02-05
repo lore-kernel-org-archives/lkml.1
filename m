@@ -1,29 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757447AbZBENhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757754AbZBENhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757447AbZBENhP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 08:37:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbZBENg7
+	id S1757754AbZBENhu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 08:37:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756358AbZBENhk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 08:36:59 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47412 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Feb 2009 08:37:40 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47647 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756266AbZBENg6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 08:36:58 -0500
-Date: Thu, 5 Feb 2009 14:36:43 +0100
+	id S1755099AbZBENhj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 08:37:39 -0500
+Date: Thu, 5 Feb 2009 14:37:20 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 1/1] trace: assign defaults at register_ftrace_event
-Message-ID: <20090205133643.GA19907@elte.hu>
-References: <20090204221639.GO3440@ghostprotocols.net>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/3] ftrace: updates for tip
+Message-ID: <20090205133720.GB19907@elte.hu>
+References: <20090205061335.917484162@goodmis.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090204221639.GO3440@ghostprotocols.net>
+In-Reply-To: <20090205061335.917484162@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,25 +36,40 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Arnaldo Carvalho de Melo <acme@redhat.com> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Impact: simplification of tracers
+> Ingo,
 > 
-> As all tracers are doing this we might as well do it in
-> register_ftrace_event and save one branch each time we call these
-> callbacks.
+> Arnaldo was nice enough to do something that was on my todo list
+> for quite some time.
 > 
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  block/blktrace.c            |    2 --
->  kernel/trace/trace.c        |   13 +++++--------
->  kernel/trace/trace_branch.c |    3 ---
->  kernel/trace/trace_output.c |   13 +++++++++++--
->  4 files changed, 16 insertions(+), 15 deletions(-)
+> I also included the change you asked for.
+> 
+> The following patches are in:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> 
+>     branch: tip/devel
+> 
+> 
+> Arnaldo Carvalho de Melo (2):
+>       trace_branch: Remove unused function
+>       trace: Remove unused trace_array_cpu parameter
+> 
+> Steven Rostedt (1):
+>       trace: code style clean up
+> 
+> ----
+>  block/blktrace.c                  |    2 +-
+>  kernel/trace/trace.c              |   76 ++++++++++++++++---------------------
+>  kernel/trace/trace.h              |    4 --
+>  kernel/trace/trace_branch.c       |   17 --------
+>  kernel/trace/trace_functions.c    |    8 ++--
+>  kernel/trace/trace_irqsoff.c      |   10 ++--
+>  kernel/trace/trace_sched_switch.c |    4 +-
+>  kernel/trace/trace_sched_wakeup.c |   12 ++---
+>  8 files changed, 50 insertions(+), 83 deletions(-)
 
-Applied to tip/tracing/ftrace, thanks guys!
+Applied to tip:tracing/ftrace, thanks guys!
 
 	Ingo
