@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755347AbZBEOWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZBEO0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755347AbZBEOWr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 09:22:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZBEOWi
+	id S1754868AbZBEO0e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 09:26:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752049AbZBEO0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 09:22:38 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52410 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Feb 2009 09:26:25 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46359 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbZBEOWi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 09:22:38 -0500
-Date: Thu, 5 Feb 2009 15:22:29 +0100
+	id S1751067AbZBEO0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 09:26:24 -0500
+Date: Thu, 5 Feb 2009 15:26:07 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_counter: Prevent oopses from per-cpu software
-	counters
-Message-ID: <20090205142229.GB28443@elte.hu>
-References: <18826.28805.120988.303819@drongo.ozlabs.ibm.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perfcounters: fix "perf counters kills oprofile" bug
+Message-ID: <20090205142607.GC28443@elte.hu>
+References: <1233813650.9044.29.camel@marge.simson.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18826.28805.120988.303819@drongo.ozlabs.ibm.com>
+In-Reply-To: <1233813650.9044.29.camel@marge.simson.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,47 +37,88 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul Mackerras <paulus@samba.org> wrote:
+* Mike Galbraith <efault@gmx.de> wrote:
 
-> Impact: oops fix
+> Impact: fix "perf counters kills oprofile" bug
 > 
-> Yanmin Zhang reported that using a PERF_COUNT_TASK_CLOCK software
-> counter as a per-cpu counter would reliably crash the system, because
-> it calls __task_delta_exec with a null pointer.  And indeed, a "task
-> clock" counter only makes sense as a per-task counter.  Similarly,
-> counting page faults, context switches or cpu migrations only makes
-> sense for a per-task counter.
+> Both oprofile and perfcounters register an NMI die handler, but only one
+> can handle the NMI.  Conveniently, oprofile unregisters it's notifier
+> when not actively in use, so setting it's notifier priority higher than
+> perfcounter's allows oprofile to borrow the NMI for the duration of it's
+> run.  Tested/works both as module and built-in.
 > 
-> This fixes the problem by disallowing the use of the task clock,
-> page fault, context switch and cpu migration software counters as
-> per-cpu counters, since they all require a task context to obtain their
-> data.  The only software counter that can be used as a per-cpu counter
-> is the cpu clock counter (PERF_COUNT_CPU_CYCLES).
-> 
-> In order for sw_perf_counter_init to be able to tell whether we are
-> setting up a per-task or a per-cpu counter, this arranges for counter->ctx
-> to be initialized earlier, in perf_counter_alloc.
-> 
-> The other minor change this makes is to ensure that if sw_perf_counter_init
-> fails, we don't try to initialize the counter as a hardware counter.
-> Since the user has passed a negative event type (and it isn't raw), they
-> clearly don't intend it to be interpreted as a hardware event.  This
-> matters now that sw_perf_counter_init can fail for valid software event
-> types (because of the check that the counter is a per-task counter).
+> While testing, I found that if kerneltop was generating NMIs at very
+> high frequency, the kernel may panic when oprofile registered it's
+> handler.  This turned out to be because oprofile registers it's handler
+> before reset_value has been allocated, so if an NMI comes in while it's
+> still setting up, kabOom.  Rather than try more invasive changes, I
+> followed the lead of other places in op_model_ppro.c, and simply
+> returned in that highly unlikely event.  (debug warnings attached)
 
-Hm, i dont really think that the notion that it should not be possible to 
-use sw counters on a per CPU basis is valid.
+applied to tip:perfcounters/core, thanks Mike!
 
-You are right that "pagefaults" and "context switches" do get generated by 
-tasks - but there is a per cpu and system wide notion of 'number of 
-pagefaults', and people might be interested in monitoring that.
+> I can break this into two patches if you prefer, but since the panic was 
+> initiated by borrowing the active NMI, I figured they belong together.
 
-The existence and widespread use of "vmstat", and its display of system-wide 
-count of "context switches" (and administrator's reliance on judging a 
-workload based on those counts) is i think ample proof that it makes sense 
-to have those counters on a per CPU basis too.
+No need, it's fine this way. Note that there's two commits from you: i 
+applied your earier fix of this already, and now i did a delta patch of the 
+other bug you found. The delta patch i have applied is below.
 
-So how about fixing these sw counts to properly work as percpu counters too? 
-Or am i misssing something subtle that makes that impossible?
+Thanks,
 
 	Ingo
+
+--------------------->
+>From 82aa9a1829199233f9bdaf26e2ee271114f4701e Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Thu, 5 Feb 2009 15:23:08 +0100
+Subject: [PATCH] perfcounters: fix "perf counters kills oprofile" bug, v2
+
+Impact: fix kernel crash
+
+Both oprofile and perfcounters register an NMI die handler, but only one
+can handle the NMI.  Conveniently, oprofile unregisters it's notifier
+when not actively in use, so setting it's notifier priority higher than
+perfcounter's allows oprofile to borrow the NMI for the duration of it's
+run.  Tested/works both as module and built-in.
+
+While testing, I found that if kerneltop was generating NMIs at very
+high frequency, the kernel may panic when oprofile registered it's
+handler.  This turned out to be because oprofile registers it's handler
+before reset_value has been allocated, so if an NMI comes in while it's
+still setting up, kabOom.  Rather than try more invasive changes, I
+followed the lead of other places in op_model_ppro.c, and simply
+returned in that highly unlikely event.  (debug warnings attached)
+
+Signed-off-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/oprofile/op_model_ppro.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/arch/x86/oprofile/op_model_ppro.c b/arch/x86/oprofile/op_model_ppro.c
+index 07c9145..85eb626 100644
+--- a/arch/x86/oprofile/op_model_ppro.c
++++ b/arch/x86/oprofile/op_model_ppro.c
+@@ -126,6 +126,13 @@ static int ppro_check_ctrs(struct pt_regs * const regs,
+ 	u64 val;
+ 	int i;
+ 
++	/*
++	 * This can happen if perf counters are in use when
++	 * we steal the die notifier NMI.
++	 */
++	if (unlikely(!reset_value))
++		goto out;
++
+ 	for (i = 0 ; i < num_counters; ++i) {
+ 		if (!reset_value[i])
+ 			continue;
+@@ -136,6 +143,7 @@ static int ppro_check_ctrs(struct pt_regs * const regs,
+ 		}
+ 	}
+ 
++out:
+ 	/* Only P6 based Pentium M need to re-unmask the apic vector but it
+ 	 * doesn't hurt other P6 variant */
+ 	apic_write(APIC_LVTPC, apic_read(APIC_LVTPC) & ~APIC_LVT_MASKED);
