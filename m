@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759881AbZBETfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbZBETfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759881AbZBETfL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:35:11 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759729AbZBETcZ
+	id S1760862AbZBETfp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:35:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759761AbZBETc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:32:25 -0500
-Received: from gw.goop.org ([64.81.55.164]:40054 "EHLO mail.goop.org"
+	Thu, 5 Feb 2009 14:32:26 -0500
+Received: from gw.goop.org ([64.81.55.164]:40053 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758653AbZBETcU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 14:32:20 -0500
+	id S1758203AbZBETcT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 14:32:19 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 08 of 36] x86: unify pmd_present
-X-Mercurial-Node: 9124edefaa2775b447abb9bf76d9a2b5bb7b212d
-Message-Id: <9124edefaa2775b447ab.1233862250@abulafia.goop.org>
+Subject: [PATCH 06 of 36] x86: unify pud_present
+X-Mercurial-Node: 1a2d423b84b3857d1772df986f6418408e8155b0
+Message-Id: <1a2d423b84b3857d1772.1233862248@abulafia.goop.org>
 In-Reply-To: <patchbomb.1233862242@abulafia.goop.org>
 References: <patchbomb.1233862242@abulafia.goop.org>
-Date: Thu, 05 Feb 2009 11:30:50 -0800
+Date: Thu, 05 Feb 2009 11:30:48 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
@@ -27,51 +27,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-Unify and demacro pmd_present.
+Unify and demacro pud_present.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/pgtable.h    |    5 +++++
- arch/x86/include/asm/pgtable_32.h |    1 -
- arch/x86/include/asm/pgtable_64.h |    1 -
- 3 files changed, 5 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/pgtable-3level.h |    5 -----
+ arch/x86/include/asm/pgtable.h        |    7 +++++++
+ arch/x86/include/asm/pgtable_64.h     |    1 -
+ 3 files changed, 7 insertions(+), 6 deletions(-)
 
+diff --git a/arch/x86/include/asm/pgtable-3level.h b/arch/x86/include/asm/pgtable-3level.h
+--- a/arch/x86/include/asm/pgtable-3level.h
++++ b/arch/x86/include/asm/pgtable-3level.h
+@@ -28,11 +28,6 @@
+ 	return (pud_val(pud) & ~(PTE_PFN_MASK | _KERNPG_TABLE | _PAGE_USER)) != 0;
+ }
+ 
+-static inline int pud_present(pud_t pud)
+-{
+-	return pud_val(pud) & _PAGE_PRESENT;
+-}
+-
+ /* Rules for using set_pte: the pte being assigned *must* be
+  * either not present or in a state where the hardware will
+  * not attempt to update the pte.  In places where this is
 diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
 --- a/arch/x86/include/asm/pgtable.h
 +++ b/arch/x86/include/asm/pgtable.h
-@@ -483,6 +483,11 @@
+@@ -483,6 +483,13 @@
  	return pte_flags(pte) & _PAGE_HIDDEN;
  }
  
-+static inline int pmd_present(pmd_t pmd)
++#if PAGETABLE_LEVELS > 2
++static inline int pud_present(pud_t pud)
 +{
-+	return pmd_val(pmd) & _PAGE_PRESENT;
++	return pud_val(pud) & _PAGE_PRESENT;
 +}
++#endif	/* PAGETABLE_LEVELS > 2 */
 +
- #if PAGETABLE_LEVELS > 2
- static inline int pud_present(pud_t pud)
- {
-diff --git a/arch/x86/include/asm/pgtable_32.h b/arch/x86/include/asm/pgtable_32.h
---- a/arch/x86/include/asm/pgtable_32.h
-+++ b/arch/x86/include/asm/pgtable_32.h
-@@ -87,7 +87,6 @@
+ #endif	/* __ASSEMBLY__ */
  
- /* To avoid harmful races, pmd_none(x) should check only the lower when PAE */
- #define pmd_none(x)	(!(unsigned long)pmd_val((x)))
--#define pmd_present(x)	(pmd_val((x)) & _PAGE_PRESENT)
- #define pmd_bad(x) ((pmd_val(x) & (PTE_FLAGS_MASK & ~_PAGE_USER)) != _KERNPG_TABLE)
- 
- #define pages_to_mb(x) ((x) >> (20-PAGE_SHIFT))
+ #ifdef CONFIG_X86_32
 diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
 --- a/arch/x86/include/asm/pgtable_64.h
 +++ b/arch/x86/include/asm/pgtable_64.h
-@@ -207,7 +207,6 @@
- #define pmd_offset(dir, address) ((pmd_t *)pud_page_vaddr(*(dir)) + \
- 				  pmd_index(address))
- #define pmd_none(x)	(!pmd_val((x)))
--#define pmd_present(x)	(pmd_val((x)) & _PAGE_PRESENT)
- #define pfn_pmd(nr, prot) (__pmd(((nr) << PAGE_SHIFT) | pgprot_val((prot))))
- #define pmd_pfn(x)  ((pmd_val((x)) & __PHYSICAL_MASK) >> PAGE_SHIFT)
+@@ -193,7 +193,6 @@
+ #define pud_index(address) (((address) >> PUD_SHIFT) & (PTRS_PER_PUD - 1))
+ #define pud_offset(pgd, address)					\
+ 	((pud_t *)pgd_page_vaddr(*(pgd)) + pud_index((address)))
+-#define pud_present(pud) (pud_val((pud)) & _PAGE_PRESENT)
  
+ static inline int pud_large(pud_t pte)
+ {
 
 
