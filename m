@@ -1,620 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZBEIzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757512AbZBEI5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752138AbZBEIzs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:55:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZBEIzP
+	id S1757512AbZBEI5m (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:57:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZBEI5c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:55:15 -0500
-Received: from ms1.nttdata.co.jp ([163.135.193.232]:40511 "EHLO
-	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbZBEIzL (ORCPT
+	Thu, 5 Feb 2009 03:57:32 -0500
+Received: from fk-out-0910.google.com ([209.85.128.186]:27974 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751641AbZBEI5b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:55:11 -0500
-X-Greylist: delayed 1959 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 03:55:09 EST
-Message-Id: <20090205082232.562805442@nttdata.co.jp>
-References: <20090205081810.331987920@nttdata.co.jp>
-User-Agent: quilt/0.45-1
-Date: Thu, 05 Feb 2009 17:18:16 +0900
-From: Kentaro Takeda <takedakn@nttdata.co.jp>
-To: jmorris@namei.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, haradats@nttdata.co.jp,
-       Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #15 6/8] LSM adapter functions.
-X-OriginalArrivalTime: 05 Feb 2009 08:22:33.0980 (UTC) FILETIME=[E548B3C0:01C9876A]
+	Thu, 5 Feb 2009 03:57:31 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XI7qxEx3oOY7YG+Y3arDocgI+Y7GtYZtbjjNz1VrXOT68YZ5HR5kGs1c4V4I4RrVNq
+         5CFtFeGBnvbGXyeshxTEKmTmo95RP2GWPymCsmmbPc/IFfxISxA1ShuXvFn05loWtXkr
+         korva0FFfGokAzA6AjUScXEegQlTqh0vfshmk=
+MIME-Version: 1.0
+In-Reply-To: <56e1b5710902050047h2c58eec7l812a838491a0256a@mail.gmail.com>
+References: <56e1b5710902050047h2c58eec7l812a838491a0256a@mail.gmail.com>
+Date: Thu, 5 Feb 2009 09:57:28 +0100
+Message-ID: <56e1b5710902050057r598f03ddhf3de4aa835071832@mail.gmail.com>
+Subject: Re: [PATCH] Kbuild: Enable the gcc flag -Wformat-security (was: Re: 
+	[PATCH] Kbuild: Disable the -Wformat-security gcc flag)
+From: Floris Kraak <randakar@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Robert Hancock <hancockrwd@gmail.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       Roland Dreier <rdreier@cisco.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-DAC's permissions and TOMOYO's permissions are not one-to-one mapping.
+On Thu, Feb 5, 2009 at 9:47 AM, Floris Kraak <randakar@gmail.com> wrote:
+>
+> Here goes:
+>
 
-Regarding DAC, there are "read", "write", "execute" permissions.
-Regarding TOMOYO, there are "allow_read", "allow_write", "allow_read/write",
-"allow_execute", "allow_create", "allow_unlink", "allow_mkdir", "allow_rmdir",
-"allow_mkfifo", "allow_mksock", "allow_mkblock", "allow_mkchar",
-"allow_truncate", "allow_symlink", "allow_rewrite", "allow_link",
-"allow_rename" permissions.
-
-+----------------------------------+----------------------------------+
-| requested operation              | required TOMOYO's permission     |
-+----------------------------------+----------------------------------+
-| sys_open(O_RDONLY)               | allow_read                       |
-+----------------------------------+----------------------------------+
-| sys_open(O_WRONLY)               | allow_write                      |
-+----------------------------------+----------------------------------+
-| sys_open(O_RDWR)                 | allow_read/write                 |
-+----------------------------------+----------------------------------+
-| open_exec() from do_execve()     | allow_execute                    |
-+----------------------------------+----------------------------------+
-| open_exec() from !do_execve()    | allow_read                       |
-+----------------------------------+----------------------------------+
-| sys_read()                       | (none)                           |
-+----------------------------------+----------------------------------+
-| sys_write()                      | (none)                           |
-+----------------------------------+----------------------------------+
-| sys_mmap()                       | (none)                           |
-+----------------------------------+----------------------------------+
-| sys_uselib()                     | allow_read                       |
-+----------------------------------+----------------------------------+
-| sys_open(O_CREAT)                | allow_create                     |
-+----------------------------------+----------------------------------+
-| sys_open(O_TRUNC)                | allow_truncate                   |
-+----------------------------------+----------------------------------+
-| sys_truncate()                   | allow_truncate                   |
-+----------------------------------+----------------------------------+
-| sys_ftruncate()                  | allow_truncate                   |
-+----------------------------------+----------------------------------+
-| sys_open() without O_APPEND      | allow_rewrite                    |
-+----------------------------------+----------------------------------+
-| setfl() without O_APPEND         | allow_rewrite                    |
-+----------------------------------+----------------------------------+
-| sys_sysctl() for writing         | allow_write                      |
-+----------------------------------+----------------------------------+
-| sys_sysctl() for reading         | allow_read                       |
-+----------------------------------+----------------------------------+
-| sys_unlink()                     | allow_unlink                     |
-+----------------------------------+----------------------------------+
-| sys_mknod(S_IFREG)               | allow_create                     |
-+----------------------------------+----------------------------------+
-| sys_mknod(0)                     | allow_create                     |
-+----------------------------------+----------------------------------+
-| sys_mknod(S_IFIFO)               | allow_mkfifo                     |
-+----------------------------------+----------------------------------+
-| sys_mknod(S_IFSOCK)              | allow_mksock                     |
-+----------------------------------+----------------------------------+
-| sys_bind(AF_UNIX)                | allow_mksock                     |
-+----------------------------------+----------------------------------+
-| sys_mknod(S_IFBLK)               | allow_mkblock                    |
-+----------------------------------+----------------------------------+
-| sys_mknod(S_IFCHR)               | allow_mkchar                     |
-+----------------------------------+----------------------------------+
-| sys_symlink()                    | allow_symlink                    |
-+----------------------------------+----------------------------------+
-| sys_mkdir()                      | allow_mkdir                      |
-+----------------------------------+----------------------------------+
-| sys_rmdir()                      | allow_rmdir                      |
-+----------------------------------+----------------------------------+
-| sys_link()                       | allow_link                       |
-+----------------------------------+----------------------------------+
-| sys_rename()                     | allow_rename                     |
-+----------------------------------+----------------------------------+
-
-TOMOYO requires "allow_execute" permission of a pathname passed to do_execve()
-but does not require "allow_read" permission of that pathname.
-Let's consider 3 patterns (statically linked, dynamically linked,
-shell script). This description is to some degree simplified.
-
-  $ cat hello.c
-  #include <stdio.h>
-  int main() {
-          printf("Hello\n");
-          return 0;
-  }
-  $ cat hello.sh
-  #! /bin/sh
-  echo "Hello"
-  $ gcc -static -o hello-static hello.c
-  $ gcc -o hello-dynamic hello.c
-  $ chmod 755 hello.sh
-
-Case 1 -- Executing hello-static from bash.
-
-  (1) The bash process calls fork() and the child process requests
-      do_execve("hello-static").
-
-  (2) The kernel checks "allow_execute hello-static" from "bash" domain.
-
-  (3) The kernel calculates "bash hello-static" as the domain to transit to.
-
-  (4) The kernel overwrites the child process by "hello-static".
-
-  (5) The child process transits to "bash hello-static" domain.
-
-  (6) The "hello-static" starts and finishes.
-
-Case 2 -- Executing hello-dynamic from bash.
-
-  (1) The bash process calls fork() and the child process requests
-      do_execve("hello-dynamic").
-
-  (2) The kernel checks "allow_execute hello-dynamic" from "bash" domain.
-
-  (3) The kernel calculates "bash hello-dynamic" as the domain to transit to.
-
-  (4) The kernel checks "allow_read ld-linux.so" from "bash hello-dynamic"
-      domain. I think permission to access ld-linux.so should be charged
-      hello-dynamic program, for "hello-dynamic needs ld-linux.so" is not
-      a fault of bash program.
-
-  (5) The kernel overwrites the child process by "hello-dynamic".
-
-  (6) The child process transits to "bash hello-dynamic" domain.
-
-  (7) The "hello-dynamic" starts and finishes.
-
-Case 3 -- Executing hello.sh from bash.
-
-  (1) The bash process calls fork() and the child process requests
-      do_execve("hello.sh").
-
-  (2) The kernel checks "allow_execute hello.sh" from "bash" domain.
-
-  (3) The kernel calculates "bash hello.sh" as the domain to transit to.
-
-  (4) The kernel checks "allow_read /bin/sh" from "bash hello.sh" domain.
-      I think permission to access /bin/sh should be charged hello.sh program,
-      for "hello.sh needs /bin/sh" is not a fault of bash program.
-
-  (5) The kernel overwrites the child process by "/bin/sh".
-
-  (6) The child process transits to "bash hello.sh" domain.
-
-  (7) The "/bin/sh" requests open("hello.sh").
-
-  (8) The kernel checks "allow_read hello.sh" from  "bash hello.sh" domain.
-
-  (9) The "/bin/sh" starts and finishes.
-
-Whether a file is interpreted as a program or not depends on an application.
-The kernel cannot know whether the file is interpreted as a program or not.
-Thus, TOMOYO treats "hello-static" "hello-dynamic" "ld-linux.so" "hello.sh"
-"/bin/sh" equally as merely files; no distinction between executable and
-non-executable. Therefore, TOMOYO doesn't check DAC's execute permission.
-TOMOYO checks "allow_read" permission instead.
-
-Calling do_execve() is a bold gesture that an old program's instance (i.e.
-current process) is ready to be overwritten by a new program and is ready to
-transfer control to the new program. To split purview of programs, TOMOYO
-requires "allow_execute" permission of the new program against the old
-program's instance and performs domain transition. If do_execve() succeeds,
-the old program is no longer responsible against the consequence of the new
-program's behavior. Only the new program is responsible for all consequences.
-
-But TOMOYO doesn't require "allow_read" permission of the new program.
-If TOMOYO requires "allow_read" permission of the new program, TOMOYO will
-allow an attacker (who hijacked the old program's instance) to open the new
-program and steal data from the new program. Requiring "allow_read" permission
-will widen purview of the old program.
-
-Not requiring "allow_read" permission of the new program against the old
-program's instance is my design for reducing purview of the old program.
-To be able to know whether the current process is in do_execve() or not,
-I want to add in_execve flag to "task_struct".
-
-Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+Resend, seems like the earlier patch doesn't quite actually work as
+advertised; -Wformat-security needs -Wformat enabled as well.
 ---
- security/tomoyo/tomoyo.c |  293 +++++++++++++++++++++++++++++++++++++++++++++++
- security/tomoyo/tomoyo.h |  106 +++++++++++++++++
- 2 files changed, 399 insertions(+)
+[PATCH] Kbuild: Enable the gcc flag -Wformat-security
 
---- /dev/null
-+++ security-testing-2.6.git/security/tomoyo/tomoyo.c
-@@ -0,0 +1,293 @@
-+/*
-+ * security/tomoyo/tomoyo.c
-+ *
-+ * LSM hooks for TOMOYO Linux.
-+ *
-+ * Copyright (C) 2005-2009  NTT DATA CORPORATION
-+ *
-+ * Version: 2.2.0-pre   2009/02/01
-+ *
-+ */
-+
-+#include <linux/security.h>
-+#include "common.h"
-+#include "tomoyo.h"
-+#include "realpath.h"
-+
-+static int tomoyo_cred_prepare(struct cred *new, const struct cred *old,
-+			       gfp_t gfp)
-+{
-+	/*
-+	 * Since "struct tomoyo_domain_info *" is a sharable pointer,
-+	 * we don't need to duplicate.
-+	 */
-+	new->security = old->security;
-+	return 0;
-+}
-+
-+static int tomoyo_bprm_set_creds(struct linux_binprm *bprm)
-+{
-+	/*
-+	 * Do only if this function is called for the first time of an execve
-+	 * operation.
-+	 */
-+	if (bprm->cred_prepared)
-+		return 0;
-+	/*
-+	 * Load policy if /sbin/tomoyo-init exists and /sbin/init is requested
-+	 * for the first time.
-+	 */
-+	if (!tomoyo_policy_loaded)
-+		tomoyo_load_policy(bprm->filename);
-+	/*
-+	 * Tell tomoyo_bprm_check_security() is called for the first time of an
-+	 * execve operation.
-+	 */
-+	bprm->cred->security = NULL;
-+	return 0;
-+}
-+
-+static int tomoyo_bprm_check_security(struct linux_binprm *bprm)
-+{
-+	struct tomoyo_domain_info *domain = bprm->cred->security;
-+
-+	/*
-+	 * Execute permission is checked against pathname passed to do_execve()
-+	 * using current domain.
-+	 */
-+	if (!domain) {
-+		struct tomoyo_domain_info *next_domain = NULL;
-+		int retval = tomoyo_find_next_domain(bprm, &next_domain);
-+
-+		if (!retval)
-+			bprm->cred->security = next_domain;
-+		return retval;
-+	}
-+	/*
-+	 * Read permission is checked against interpreters using next domain.
-+	 * '1' is the result of open_to_namei_flags(O_RDONLY).
-+	 */
-+	return tomoyo_check_open_permission(domain, &bprm->file->f_path, 1);
-+}
-+
-+#ifdef CONFIG_SYSCTL
-+
-+static int tomoyo_prepend(char **buffer, int *buflen, const char *str)
-+{
-+	int namelen = strlen(str);
-+
-+	if (*buflen < namelen)
-+		return -ENOMEM;
-+	*buflen -= namelen;
-+	*buffer -= namelen;
-+	memcpy(*buffer, str, namelen);
-+	return 0;
-+}
-+
-+/**
-+ * tomoyo_sysctl_path - return the realpath of a ctl_table.
-+ * @table: pointer to "struct ctl_table".
-+ *
-+ * Returns realpath(3) of the @table on success.
-+ * Returns NULL on failure.
-+ *
-+ * This function uses tomoyo_alloc(), so the caller must call tomoyo_free()
-+ * if this function didn't return NULL.
-+ */
-+static char *tomoyo_sysctl_path(struct ctl_table *table)
-+{
-+	int buflen = TOMOYO_MAX_PATHNAME_LEN;
-+	char *buf = tomoyo_alloc(buflen);
-+	char *end = buf + buflen;
-+	int error = -ENOMEM;
-+
-+	if (!buf)
-+		return NULL;
-+
-+	*--end = '\0';
-+	buflen--;
-+	while (table) {
-+		char buf[32];
-+		const char *sp = table->procname;
-+
-+		if (!sp) {
-+			memset(buf, 0, sizeof(buf));
-+			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
-+			sp = buf;
-+		}
-+		if (tomoyo_prepend(&end, &buflen, sp) ||
-+		    tomoyo_prepend(&end, &buflen, "/"))
-+			goto out;
-+		table = table->parent;
-+	}
-+	if (tomoyo_prepend(&end, &buflen, "/proc/sys"))
-+		goto out;
-+	error = tomoyo_encode(buf, end - buf, end);
-+ out:
-+	if (!error)
-+		return buf;
-+	tomoyo_free(buf);
-+	return NULL;
-+}
-+
-+static int tomoyo_sysctl(struct ctl_table *table, int op)
-+{
-+	int error;
-+	char *name;
-+
-+	op &= MAY_READ | MAY_WRITE;
-+	if (!op)
-+		return 0;
-+	name = tomoyo_sysctl_path(table);
-+	if (!name)
-+		return -ENOMEM;
-+	error = tomoyo_check_file_perm(tomoyo_domain(), name, op);
-+	tomoyo_free(name);
-+	return error;
-+}
-+#endif
-+
-+static int tomoyo_path_truncate(struct path *path, loff_t length,
-+				unsigned int time_attrs)
-+{
-+	return tomoyo_check_1path_perm(tomoyo_domain(),
-+				       TOMOYO_TYPE_TRUNCATE_ACL,
-+				       path);
-+}
-+
-+static int tomoyo_path_unlink(struct path *parent, struct dentry *dentry)
-+{
-+	struct path path = { parent->mnt, dentry };
-+	return tomoyo_check_1path_perm(tomoyo_domain(),
-+				       TOMOYO_TYPE_UNLINK_ACL,
-+				       &path);
-+}
-+
-+static int tomoyo_path_mkdir(struct path *parent, struct dentry *dentry,
-+			     int mode)
-+{
-+	struct path path = { parent->mnt, dentry };
-+	return tomoyo_check_1path_perm(tomoyo_domain(),
-+				       TOMOYO_TYPE_MKDIR_ACL,
-+				       &path);
-+}
-+
-+static int tomoyo_path_rmdir(struct path *parent, struct dentry *dentry)
-+{
-+	struct path path = { parent->mnt, dentry };
-+	return tomoyo_check_1path_perm(tomoyo_domain(),
-+				       TOMOYO_TYPE_RMDIR_ACL,
-+				       &path);
-+}
-+
-+static int tomoyo_path_symlink(struct path *parent, struct dentry *dentry,
-+			       const char *old_name)
-+{
-+	struct path path = { parent->mnt, dentry };
-+	return tomoyo_check_1path_perm(tomoyo_domain(),
-+				       TOMOYO_TYPE_SYMLINK_ACL,
-+				       &path);
-+}
-+
-+static int tomoyo_path_mknod(struct path *parent, struct dentry *dentry,
-+			     int mode, unsigned int dev)
-+{
-+	struct path path = { parent->mnt, dentry };
-+	int type = TOMOYO_TYPE_CREATE_ACL;
-+
-+	switch (mode & S_IFMT) {
-+	case S_IFCHR:
-+		type = TOMOYO_TYPE_MKCHAR_ACL;
-+		break;
-+	case S_IFBLK:
-+		type = TOMOYO_TYPE_MKBLOCK_ACL;
-+		break;
-+	case S_IFIFO:
-+		type = TOMOYO_TYPE_MKFIFO_ACL;
-+		break;
-+	case S_IFSOCK:
-+		type = TOMOYO_TYPE_MKSOCK_ACL;
-+		break;
-+	}
-+	return tomoyo_check_1path_perm(tomoyo_domain(),
-+				       type, &path);
-+}
-+
-+static int tomoyo_path_link(struct dentry *old_dentry, struct path *new_dir,
-+			    struct dentry *new_dentry)
-+{
-+	struct path path1 = { new_dir->mnt, old_dentry };
-+	struct path path2 = { new_dir->mnt, new_dentry };
-+	return tomoyo_check_2path_perm(tomoyo_domain(),
-+				       TOMOYO_TYPE_LINK_ACL,
-+				       &path1, &path2);
-+}
-+
-+static int tomoyo_path_rename(struct path *old_parent,
-+			      struct dentry *old_dentry,
-+			      struct path *new_parent,
-+			      struct dentry *new_dentry)
-+{
-+	struct path path1 = { old_parent->mnt, old_dentry };
-+	struct path path2 = { new_parent->mnt, new_dentry };
-+	return tomoyo_check_2path_perm(tomoyo_domain(),
-+				       TOMOYO_TYPE_RENAME_ACL,
-+				       &path1, &path2);
-+}
-+
-+static int tomoyo_file_fcntl(struct file *file, unsigned int cmd,
-+			     unsigned long arg)
-+{
-+	if (cmd == F_SETFL && ((arg ^ file->f_flags) & O_APPEND))
-+		return tomoyo_check_rewrite_permission(tomoyo_domain(), file);
-+	return 0;
-+}
-+
-+static int tomoyo_dentry_open(struct file *f, const struct cred *cred)
-+{
-+	int flags = f->f_flags;
-+
-+	if ((flags + 1) & O_ACCMODE)
-+		flags++;
-+	flags |= f->f_flags & (O_APPEND | O_TRUNC);
-+	/* Don't check read permission here if called from do_execve(). */
-+	if (current->in_execve)
-+		return 0;
-+	return tomoyo_check_open_permission(tomoyo_domain(), &f->f_path, flags);
-+}
-+
-+static struct security_operations tomoyo_security_ops = {
-+	.name                = "tomoyo",
-+	.cred_prepare        = tomoyo_cred_prepare,
-+	.bprm_set_creds      = tomoyo_bprm_set_creds,
-+	.bprm_check_security = tomoyo_bprm_check_security,
-+#ifdef CONFIG_SYSCTL
-+	.sysctl              = tomoyo_sysctl,
-+#endif
-+	.file_fcntl          = tomoyo_file_fcntl,
-+	.dentry_open         = tomoyo_dentry_open,
-+	.path_truncate       = tomoyo_path_truncate,
-+	.path_unlink         = tomoyo_path_unlink,
-+	.path_mkdir          = tomoyo_path_mkdir,
-+	.path_rmdir          = tomoyo_path_rmdir,
-+	.path_symlink        = tomoyo_path_symlink,
-+	.path_mknod          = tomoyo_path_mknod,
-+	.path_link           = tomoyo_path_link,
-+	.path_rename         = tomoyo_path_rename,
-+};
-+
-+static int __init tomoyo_init(void)
-+{
-+	struct cred *cred = (struct cred *) current_cred();
-+
-+	if (!security_module_enable(&tomoyo_security_ops))
-+		return 0;
-+	/* register ourselves with the security framework */
-+	if (register_security(&tomoyo_security_ops))
-+		panic("Failure registering TOMOYO Linux");
-+	printk(KERN_INFO "TOMOYO Linux initialized\n");
-+	cred->security = &tomoyo_kernel_domain;
-+	return 0;
-+}
-+
-+security_initcall(tomoyo_init);
---- /dev/null
-+++ security-testing-2.6.git/security/tomoyo/tomoyo.h
-@@ -0,0 +1,106 @@
-+/*
-+ * security/tomoyo/tomoyo.h
-+ *
-+ * Implementation of the Domain-Based Mandatory Access Control.
-+ *
-+ * Copyright (C) 2005-2009  NTT DATA CORPORATION
-+ *
-+ * Version: 2.2.0-pre   2009/02/01
-+ *
-+ */
-+
-+#ifndef _SECURITY_TOMOYO_TOMOYO_H
-+#define _SECURITY_TOMOYO_TOMOYO_H
-+
-+struct tomoyo_path_info;
-+struct path;
-+struct inode;
-+struct linux_binprm;
-+struct pt_regs;
-+struct tomoyo_page_buffer;
-+
-+int tomoyo_check_file_perm(struct tomoyo_domain_info *domain,
-+			   const char *filename, const u8 perm);
-+int tomoyo_check_exec_perm(struct tomoyo_domain_info *domain,
-+			   const struct tomoyo_path_info *filename,
-+			   struct tomoyo_page_buffer *buf);
-+int tomoyo_check_open_permission(struct tomoyo_domain_info *domain,
-+				 struct path *path, const int flag);
-+int tomoyo_check_1path_perm(struct tomoyo_domain_info *domain,
-+			    const u8 operation, struct path *path);
-+int tomoyo_check_2path_perm(struct tomoyo_domain_info *domain,
-+			    const u8 operation, struct path *path1,
-+			    struct path *path2);
-+int tomoyo_check_rewrite_permission(struct tomoyo_domain_info *domain,
-+				    struct file *filp);
-+int tomoyo_find_next_domain(struct linux_binprm *bprm,
-+			    struct tomoyo_domain_info **next_domain);
-+
-+/* Index numbers for Access Controls. */
-+
-+#define TOMOYO_TYPE_SINGLE_PATH_ACL                 0
-+#define TOMOYO_TYPE_DOUBLE_PATH_ACL                 1
-+
-+/* Index numbers for File Controls. */
-+
-+/*
-+ * TYPE_READ_WRITE_ACL is special. TYPE_READ_WRITE_ACL is automatically set
-+ * if both TYPE_READ_ACL and TYPE_WRITE_ACL are set. Both TYPE_READ_ACL and
-+ * TYPE_WRITE_ACL are automatically set if TYPE_READ_WRITE_ACL is set.
-+ * TYPE_READ_WRITE_ACL is automatically cleared if either TYPE_READ_ACL or
-+ * TYPE_WRITE_ACL is cleared. Both TYPE_READ_ACL and TYPE_WRITE_ACL are
-+ * automatically cleared if TYPE_READ_WRITE_ACL is cleared.
-+ */
-+
-+#define TOMOYO_TYPE_READ_WRITE_ACL    0
-+#define TOMOYO_TYPE_EXECUTE_ACL       1
-+#define TOMOYO_TYPE_READ_ACL          2
-+#define TOMOYO_TYPE_WRITE_ACL         3
-+#define TOMOYO_TYPE_CREATE_ACL        4
-+#define TOMOYO_TYPE_UNLINK_ACL        5
-+#define TOMOYO_TYPE_MKDIR_ACL         6
-+#define TOMOYO_TYPE_RMDIR_ACL         7
-+#define TOMOYO_TYPE_MKFIFO_ACL        8
-+#define TOMOYO_TYPE_MKSOCK_ACL        9
-+#define TOMOYO_TYPE_MKBLOCK_ACL      10
-+#define TOMOYO_TYPE_MKCHAR_ACL       11
-+#define TOMOYO_TYPE_TRUNCATE_ACL     12
-+#define TOMOYO_TYPE_SYMLINK_ACL      13
-+#define TOMOYO_TYPE_REWRITE_ACL      14
-+#define TOMOYO_MAX_SINGLE_PATH_OPERATION 15
-+
-+#define TOMOYO_TYPE_LINK_ACL         0
-+#define TOMOYO_TYPE_RENAME_ACL       1
-+#define TOMOYO_MAX_DOUBLE_PATH_OPERATION 2
-+
-+#define TOMOYO_DOMAINPOLICY          0
-+#define TOMOYO_EXCEPTIONPOLICY       1
-+#define TOMOYO_DOMAIN_STATUS         2
-+#define TOMOYO_PROCESS_STATUS        3
-+#define TOMOYO_MEMINFO               4
-+#define TOMOYO_SELFDOMAIN            5
-+#define TOMOYO_VERSION               6
-+#define TOMOYO_PROFILE               7
-+#define TOMOYO_MANAGER               8
-+
-+extern struct tomoyo_domain_info tomoyo_kernel_domain;
-+
-+static inline struct tomoyo_domain_info *tomoyo_domain(void)
-+{
-+	return current_cred()->security;
-+}
-+
-+/* Caller holds tasklist_lock spinlock. */
-+static inline struct tomoyo_domain_info *tomoyo_real_domain(struct task_struct
-+							    *task)
-+{
-+	/***** CRITICAL SECTION START *****/
-+	const struct cred *cred = get_task_cred(task);
-+	struct tomoyo_domain_info *domain = cred->security;
-+
-+	put_cred(cred);
-+	return domain;
-+	/***** CRITICAL SECTION END *****/
-+}
-+
-+#endif /* !defined(_SECURITY_TOMOYO_TOMOYO_H) */
+Some distributions have enabled the gcc flag -Wformat-security by
+default. This causes about 150 new warnings to show up in an
+allyesconfig kernel build that are never seen by the majority of the
+developers. However there is some value to having this warning. In
+some cases there are potential (security) bugs involved where
+malicious or simply malformed data from outside the kernel could
+trigger stack overflows or other nastyness.
+Instead of having a cleanup team running around in perpetuity going
+over all new format strings in code it's better to just emit the
+warning in all cases.
 
---
+Signed-off-by: Floris Kraak <randakar@gmail.com>
+---
+diff --git a/Makefile b/Makefile
+index 7715b2c..d186e41 100644
+--- a/Makefile
++++ b/Makefile
+@@ -346,7 +346,8 @@ KBUILD_CPPFLAGS := -D__KERNEL__
 
+ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+ 		   -fno-strict-aliasing -fno-common \
+-		   -Werror-implicit-function-declaration
++		   -Werror-implicit-function-declaration \
++		   -Wformat -Wformat-security
+ KBUILD_AFLAGS   := -D__ASSEMBLY__
+
+ # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+---
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."
+  -- Ben Franklin
+
+"The course of history shows that as a government grows, liberty
+decreases."
+  -- Thomas Jefferson
