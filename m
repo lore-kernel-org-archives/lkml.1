@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762672AbZBECIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762087AbZBECNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762672AbZBECIF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 21:08:05 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757746AbZBECHq
+	id S1762087AbZBECNk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 21:13:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757282AbZBECNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 21:07:46 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:49631 "EHLO ogre.sisk.pl"
+	Wed, 4 Feb 2009 21:13:30 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49644 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757885AbZBECHp convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 21:07:45 -0500
+	id S1752313AbZBECN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 21:13:29 -0500
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
-Date: Thu, 5 Feb 2009 03:07:03 +0100
+To: Theodore Tso <tytso@mit.edu>
+Subject: Re: [Bug #12416] Recent change to kernel spikes out ccache/distcc
+Date: Thu, 5 Feb 2009 03:13:02 +0100
 User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Norbert Preining <preining@logic.at>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-       Ingo Molnar <mingo@elte.hu>
-References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Jan Beulich <jbeulich@novell.com>, Sam Ravnborg <sam@ravnborg.org>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.5f.SwYiJB@chimera> <20090205015725.GF8945@mit.edu>
+In-Reply-To: <20090205015725.GF8945@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200902050307.04955.rjw@sisk.pl>
+Message-Id: <200902050313.03605.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009, Linus Torvalds wrote:
-> 
-> On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
+On Thursday 05 February 2009, Theodore Tso wrote:
+> On Wed, Feb 04, 2009 at 11:23:55AM +0100, Rafael J. Wysocki wrote:
+> > This message has been generated automatically as a part of a report
+> > of recent regressions.
 > > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12599
-> > Subject		: dri /dev node disappeared with 2.6.29-rc1
-> > Submitter	: Norbert Preining <preining@logic.at>
-> > Date		: 2009-01-15 13:42 (21 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123202701026647&w=4
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.28.  Please verify if it still should be listed and let me know
+> > (either way).
+> > 
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12416
+> > Subject		: Recent change to kernel spikes out ccache/distcc
+> > Submitter	: Theodore Ts'o <tytso@mit.edu>
+> > Date		: 2009-01-06 15:15 (30 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123125495000603&w=4
+> > Patch		: http://lkml.org/lkml/2009/1/20/78
 > 
-> I think this one is simply that Intel DRI now requires CONFIG_FB.
+> This can be closed; Sam reverted the necessary patch the relevent
+> commits in 2ea03891, which is in Linus's tree.
 > 
-> So make sure that you say yes to the CONFIG_FB question (easiest fix: just 
-> edit the .config file and change the line "# CONFIG_FB is not set" to 
-> "CONFIG_FB=y" and do "make oldconfig" - I realize that people think that 
-> graphical config front-ends are simpler, but often just editing the file 
-> is the quickest way).
+> Rafael, I've closed the bug in the Kernel Bugzilla for your convenience.
 
-Well, I always have doubts whether to list such things or not and I usually
-end up deciding that listing is probably better than not listing.
+Great, thanks a lot!
 
-I think I'll close this one, it's got enough attention IMO.
-
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12591
-> > Subject		: NULL pointer dereference in blk_queue_io_stat
-> > Submitter	: Petr Vandrovec <vandrove@vc.cvut.cz>
-> > Date		: 2009-01-31 23:58 (5 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=bc58ba9468d94d62c56ab9b47173583ec140b165
-> > Handled-By	: Jens Axboe <jens.axboe@oracle.com>
-> 
-> I think this one is fixed by commit fb8ec18c316d8.
-
-Closed.
-
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12511
-> > Subject		: WARNING: at drivers/dma/dmaengine.c:352
-> > Submitter	: Ingo Molnar <mingo@elte.hu>
-> > Date		: 2009-01-19 21:31 (17 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123240070614443&w=4
-> > Handled-By	: Dan Williams <dan.j.williams@intel.com>
-> 
-> This warning just got removed as bogus.
-> 
-> Commit 83436a0560e9ef8af2f0796264dde4bed1415359
-
-Closed.
- 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12506
-> > Subject		: Undefined symbols when CONFIG_MFD_PCF50633 is enabled
-> > Submitter	: Ozan Çağlayan <ozan@pardus.org.tr>
-> > Date		: 2009-01-17 10:56 (19 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123218991104592&w=4
-> 
-> Commit 9e6f8ed7c3a303d37eb119847dd3029701e37e28
-
-Closed.
-
-Thanks,
+Best,
 Rafael
