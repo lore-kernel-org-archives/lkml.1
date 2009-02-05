@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761829AbZBEUZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761042AbZBEU0F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761829AbZBEUZq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 15:25:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760738AbZBEUXu
+	id S1761042AbZBEU0F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 15:26:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760783AbZBEUXy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 15:23:50 -0500
-Received: from x35.xmailserver.org ([64.71.152.41]:33479 "EHLO
+	Thu, 5 Feb 2009 15:23:54 -0500
+Received: from x35.xmailserver.org ([64.71.152.41]:33486 "EHLO
 	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760567AbZBEUXs (ORCPT
+	with ESMTP id S1760774AbZBEUXx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 15:23:48 -0500
+	Thu, 5 Feb 2009 15:23:53 -0500
 X-AuthUser: davidel@xmailserver.org
 From: Davide Libenzi <davidel@xmailserver.org>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
@@ -18,16 +18,15 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
        David Miller <davem@davemloft.net>
 Date: Thu, 05 Feb 2009 12:23:39 -0800
-Subject: [patch 5/6] epoll keyed wakeups v3 - make eventfd use keyed wakeups
+Subject: [patch 6/6] epoll keyed wakeups v3 - make tty use keyed wakeups
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.21761.1233865424.5>
+Message-ID: <send-serie.davidel@xmailserver.org.21761.1233865424.6>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following patch introduces keyed event wakeups inside the eventfd code.
-
+The following patch introduces keyed event wakeups inside the TTY code.
 
 
 Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
@@ -37,38 +36,84 @@ Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
 
 ---
- fs/eventfd.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/char/tty_io.c |   20 ++++++++++----------
+ 1 file changed, 10 insertions(+), 10 deletions(-)
 
-Index: linux-2.6.mod/fs/eventfd.c
+Index: linux-2.6.mod/drivers/char/tty_io.c
 ===================================================================
---- linux-2.6.mod.orig/fs/eventfd.c	2009-02-03 13:43:52.000000000 -0800
-+++ linux-2.6.mod/fs/eventfd.c	2009-02-03 13:44:05.000000000 -0800
-@@ -50,7 +50,7 @@ int eventfd_signal(struct file *file, in
- 		n = (int) (ULLONG_MAX - ctx->count);
- 	ctx->count += n;
- 	if (waitqueue_active(&ctx->wqh))
--		wake_up_locked(&ctx->wqh);
-+		wake_up_locked_poll(&ctx->wqh, POLLIN);
- 	spin_unlock_irqrestore(&ctx->wqh.lock, flags);
- 
- 	return n;
-@@ -120,7 +120,7 @@ static ssize_t eventfd_read(struct file 
- 	if (res > 0) {
- 		ctx->count = 0;
- 		if (waitqueue_active(&ctx->wqh))
--			wake_up_locked(&ctx->wqh);
-+			wake_up_locked_poll(&ctx->wqh, POLLOUT);
+--- linux-2.6.mod.orig/drivers/char/tty_io.c	2009-02-03 13:43:52.000000000 -0800
++++ linux-2.6.mod/drivers/char/tty_io.c	2009-02-03 13:44:07.000000000 -0800
+@@ -464,7 +464,7 @@ void tty_wakeup(struct tty_struct *tty)
+ 			tty_ldisc_deref(ld);
+ 		}
  	}
- 	spin_unlock_irq(&ctx->wqh.lock);
- 	if (res > 0 && put_user(ucnt, (__u64 __user *) buf))
-@@ -169,7 +169,7 @@ static ssize_t eventfd_write(struct file
- 	if (res > 0) {
- 		ctx->count += ucnt;
- 		if (waitqueue_active(&ctx->wqh))
--			wake_up_locked(&ctx->wqh);
-+			wake_up_locked_poll(&ctx->wqh, POLLIN);
- 	}
- 	spin_unlock_irq(&ctx->wqh.lock);
+-	wake_up_interruptible(&tty->write_wait);
++	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
+ }
  
+ EXPORT_SYMBOL_GPL(tty_wakeup);
+@@ -587,8 +587,8 @@ static void do_tty_hangup(struct work_st
+ 	 * FIXME: Once we trust the LDISC code better we can wait here for
+ 	 * ldisc completion and fix the driver call race
+ 	 */
+-	wake_up_interruptible(&tty->write_wait);
+-	wake_up_interruptible(&tty->read_wait);
++	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
++	wake_up_interruptible_poll(&tty->read_wait, POLLIN);
+ 	/*
+ 	 * Shutdown the current line discipline, and reset it to
+ 	 * N_TTY.
+@@ -879,7 +879,7 @@ void stop_tty(struct tty_struct *tty)
+ 	if (tty->link && tty->link->packet) {
+ 		tty->ctrl_status &= ~TIOCPKT_START;
+ 		tty->ctrl_status |= TIOCPKT_STOP;
+-		wake_up_interruptible(&tty->link->read_wait);
++		wake_up_interruptible_poll(&tty->link->read_wait, POLLIN);
+ 	}
+ 	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+ 	if (tty->ops->stop)
+@@ -913,7 +913,7 @@ void start_tty(struct tty_struct *tty)
+ 	if (tty->link && tty->link->packet) {
+ 		tty->ctrl_status &= ~TIOCPKT_STOP;
+ 		tty->ctrl_status |= TIOCPKT_START;
+-		wake_up_interruptible(&tty->link->read_wait);
++		wake_up_interruptible_poll(&tty->link->read_wait, POLLIN);
+ 	}
+ 	spin_unlock_irqrestore(&tty->ctrl_lock, flags);
+ 	if (tty->ops->start)
+@@ -970,7 +970,7 @@ static ssize_t tty_read(struct file *fil
+ void tty_write_unlock(struct tty_struct *tty)
+ {
+ 	mutex_unlock(&tty->atomic_write_lock);
+-	wake_up_interruptible(&tty->write_wait);
++	wake_up_interruptible_poll(&tty->write_wait, POLLOUT);
+ }
+ 
+ int tty_write_lock(struct tty_struct *tty, int ndelay)
+@@ -1623,21 +1623,21 @@ void tty_release_dev(struct file *filp)
+ 
+ 		if (tty_closing) {
+ 			if (waitqueue_active(&tty->read_wait)) {
+-				wake_up(&tty->read_wait);
++				wake_up_poll(&tty->read_wait, POLLIN);
+ 				do_sleep++;
+ 			}
+ 			if (waitqueue_active(&tty->write_wait)) {
+-				wake_up(&tty->write_wait);
++				wake_up_poll(&tty->write_wait, POLLOUT);
+ 				do_sleep++;
+ 			}
+ 		}
+ 		if (o_tty_closing) {
+ 			if (waitqueue_active(&o_tty->read_wait)) {
+-				wake_up(&o_tty->read_wait);
++				wake_up_poll(&o_tty->read_wait, POLLIN);
+ 				do_sleep++;
+ 			}
+ 			if (waitqueue_active(&o_tty->write_wait)) {
+-				wake_up(&o_tty->write_wait);
++				wake_up_poll(&o_tty->write_wait, POLLOUT);
+ 				do_sleep++;
+ 			}
+ 		}
 
