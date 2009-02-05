@@ -1,47 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbZBEOoP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbZBEOvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbZBEOoP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 09:44:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZBEOn7
+	id S1752953AbZBEOvu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 09:51:50 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZBEOvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 09:43:59 -0500
-Received: from mx2.redhat.com ([66.187.237.31]:44487 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751833AbZBEOn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 09:43:58 -0500
-Date: Thu, 5 Feb 2009 15:41:35 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jerome Marchand <jmarchan@redhat.com>,
-       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 4/4] ptrace: fix possible zombie leak on PTRACE_DETACH
-Message-ID: <20090205144135.GB20953@redhat.com>
-References: <20090129042923.GA5118@redhat.com> <20090205013042.C833EFC381@magilla.sf.frob.com>
+	Thu, 5 Feb 2009 09:51:41 -0500
+Received: from mx.logic.tuwien.ac.at ([128.130.175.19]:37400 "EHLO
+	mx.logic.tuwien.ac.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbZBEOvk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 09:51:40 -0500
+Date: Thu, 5 Feb 2009 15:51:01 +0100
+To: Eric Anholt <eric@anholt.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Subject: Re: 2.6.29-rc3-git6: Reported regressions from 2.6.28
+Message-ID: <20090205145101.GE26072@gamma.logic.tuwien.ac.at>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <alpine.LFD.2.00.0902040759420.3247@localhost.localdomain> <20090204181109.GR21085@gamma.logic.tuwien.ac.at> <alpine.LFD.2.00.0902041012440.3247@localhost.localdomain> <20090204185606.GA12991@elte.hu> <1233809147.13118.8.camel@gaiman>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090205013042.C833EFC381@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1233809147.13118.8.camel@gaiman>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: Norbert Preining <preining@logic.at>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 02/04, Roland McGrath wrote:
->
-> ACK on the change, though looks different if you put __ptrace_detach in
-> ptrace.c with the earliar patch, as I suggest.  Also, I think this warrants
-> a comment for the release_task call mentioning briefly what it means:
-> 
-> 	/*
-> 	 * The flag means __ptrace_detach() determined that this child
-> 	 * was a zombie that should have been auto-reaped already.
-> 	 * Don't leak it.
-> 	 */
-> 	if (unlikely(dead))
-> 		release_task(child);
+On Mi, 04 Feb 2009, Eric Anholt wrote:
+> I tried select FB.  It's the right thing to do.  It doesn't work.  I
+> posted to the mailing list two weeks ago about the insane dependency
+> chain that kbuild comes up with and fails on when we do this, and got
+> silence.
 
-OK, will add this to the cleanup patch too.
+Right, I agree that I have tried to do it myself, and it was impossible
+when:
+- editing .config by hand removing any *FB* and *DRM* related stuff
+- calling make oldconfig
+in all cases DRM was disabled.
 
-Oleg.
+I managed only to activate it by hand-editing .config and there putting
+by hand
+	CONFIG_something=y
+(don't remember which it was) and after that the make oldconfig did
+actually select everything I need.
 
+So, that seems to be a Kconfig bug.
+
+Best wishes
+
+Norbert
+
+-------------------------------------------------------------------------------
+Dr. Norbert Preining <preining@logic.at>        Vienna University of Technology
+Debian Developer <preining@debian.org>                         Debian TeX Group
+gpg DSA: 0x09C5B094      fp: 14DF 2E6C 0307 BE6D AD76  A9C0 D2BF 4AA3 09C5 B094
+-------------------------------------------------------------------------------
+KINGSTON BAGPUISE (n.)
+A forty-year-old sixteen-stone man trying to commit suicide by
+jogging.
+			--- Douglas Adams, The Meaning of Liff
