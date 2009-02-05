@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761782AbZBETk5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762803AbZBETlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761782AbZBETk5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:40:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760044AbZBETcg
+	id S1762803AbZBETlW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:41:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760058AbZBETch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:32:36 -0500
-Received: from gw.goop.org ([64.81.55.164]:40070 "EHLO mail.goop.org"
+	Thu, 5 Feb 2009 14:32:37 -0500
+Received: from gw.goop.org ([64.81.55.164]:40053 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759583AbZBETcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759563AbZBETcW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 5 Feb 2009 14:32:22 -0500
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Subject: [PATCH 32 of 36] x86: unify pgd_none
-X-Mercurial-Node: 0007c65ca74a5db407834de37cc92778ca0c7612
-Message-Id: <0007c65ca74a5db40783.1233862274@abulafia.goop.org>
+Subject: [PATCH 36 of 36] x86: make the X_bad functions consistent
+X-Mercurial-Node: d0b8ae3ef338132ad60d131dcc30dc22b0ce6eac
+Message-Id: <d0b8ae3ef338132ad60d.1233862278@abulafia.goop.org>
 In-Reply-To: <patchbomb.1233862242@abulafia.goop.org>
 References: <patchbomb.1233862242@abulafia.goop.org>
-Date: Thu, 05 Feb 2009 11:31:14 -0800
+Date: Thu, 05 Feb 2009 11:31:18 -0800
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, the arch/x86 maintainers <x86@kernel.org>
@@ -27,41 +27,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Impact: cleanup
 
-Unify and demacro pgd_none.
+Use the same logic to implement all 3 _bad() functions.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
 ---
- arch/x86/include/asm/pgtable.h    |    5 +++++
- arch/x86/include/asm/pgtable_64.h |    2 --
- 2 files changed, 5 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/pgtable.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
 --- a/arch/x86/include/asm/pgtable.h
 +++ b/arch/x86/include/asm/pgtable.h
-@@ -637,6 +637,11 @@
+@@ -554,7 +554,7 @@
+ 
+ static inline int pmd_bad(pmd_t pmd)
  {
- 	return (pgd_val(pgd) & ~(PTE_PFN_MASK | _PAGE_USER)) != _KERNPG_TABLE;
+-	return (pmd_flags(pmd) & ~_PAGE_USER) != _KERNPG_TABLE;
++	return (pmd_flags(pmd) & ~(_KERNPG_TABLE | _PAGE_USER)) != 0;
  }
-+
-+static inline int pgd_none(pgd_t pgd)
-+{
-+	return !pgd_val(pgd);
-+}
- #endif	/* PAGETABLE_LEVELS > 3 */
  
- #endif	/* __ASSEMBLY__ */
-diff --git a/arch/x86/include/asm/pgtable_64.h b/arch/x86/include/asm/pgtable_64.h
---- a/arch/x86/include/asm/pgtable_64.h
-+++ b/arch/x86/include/asm/pgtable_64.h
-@@ -66,8 +66,6 @@
- 	printk("%s:%d: bad pgd %p(%016lx).\n",		\
- 	       __FILE__, __LINE__, &(e), pgd_val(e))
+ static inline unsigned long pages_to_mb(unsigned long npg)
+@@ -638,7 +638,7 @@
  
--#define pgd_none(x)	(!pgd_val(x))
--
- struct mm_struct;
+ static inline int pgd_bad(pgd_t pgd)
+ {
+-	return (pgd_flags(pgd) & ~_PAGE_USER) != _KERNPG_TABLE;
++	return (pgd_flags(pgd) & ~(_KERNPG_TABLE | _PAGE_USER)) != 0;
+ }
  
- void set_pte_vaddr_pud(pud_t *pud_page, unsigned long vaddr, pte_t new_pte);
+ static inline int pgd_none(pgd_t pgd)
 
 
