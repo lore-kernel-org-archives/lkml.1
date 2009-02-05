@@ -1,74 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbZBECrz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbZBEC5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757230AbZBECrz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 21:47:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZBECrp
+	id S1756011AbZBEC5j (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 21:57:39 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752584AbZBEC53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 21:47:45 -0500
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51609 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750847AbZBECrp (ORCPT
+	Wed, 4 Feb 2009 21:57:29 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55834 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750847AbZBEC53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 21:47:45 -0500
-Message-ID: <498A5348.3090508@jp.fujitsu.com>
-Date: Thu, 05 Feb 2009 11:47:36 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-CC: Matthew Wilcox <willy@linux.intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [PATCH] PCI/MSI: fix msi_mask()
-Content-Type: text/plain; charset=ISO-2022-JP
+	Wed, 4 Feb 2009 21:57:29 -0500
+Date: Wed, 4 Feb 2009 18:56:45 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alex Romosan <romosan@sycorax.lbl.gov>, linux-kernel@vger.kernel.org,
+       Takashi Iwai <tiwai@suse.de>
+Subject: Re: 2.6.29-rc3: weird process after resume
+Message-Id: <20090204185645.bb9d86b2.akpm@linux-foundation.org>
+In-Reply-To: <20090204183142.11e6f661.akpm@linux-foundation.org>
+References: <878womf727.fsf@sycorax.lbl.gov>
+	<20090204153954.844ac67b.akpm@linux-foundation.org>
+	<87hc39ejx2.fsf@sycorax.lbl.gov>
+	<20090204183142.11e6f661.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit bffac3c593eba1f9da3efd0199e49ea6558a40ce does:
+On Wed, 4 Feb 2009 18:31:42 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
 
- -    temp = (1 << multi_msi_capable(control));
- -    temp = ((temp - 1) & ~temp);
- +    temp = msi_mask((control & PCI_MSI_FLAGS_QMASK) >> 1);
+> On Wed, 04 Feb 2009 17:45:13 -0800 Alex Romosan <romosan@sycorax.lbl.gov> wrote:
+> 
+> > Andrew Morton <akpm@linux-foundation.org> writes:
+> > 
+> > > On Wed, 04 Feb 2009 09:25:20 -0800
+> > > Alex Romosan <romosan@sycorax.lbl.gov> wrote:
+> > >
+> > >> this is on a thinkpad t61p with an intel core2 cpu. i just noticed
+> > >> that after resuming from suspending to memory i get a weirdly named
+> > >> process. i did a ps before and after and the only difference was that
+> > >> before i had this process:
+> > >> 
+> > >>   [hda0/1]
+> > >> 
+> > >> and after this one:
+> > >> 
+> > >>   [__?__;??____D__"?______]
+> > >> 
+> > >> with everything else being the same. the laptop seems to be working
+> > >> fine and the problem could have been there for a while but i just
+> > >> didn't notice it. i am including my .config file. let me know if you
+> > >> need anything else.
+> > >
+> > > Were earlier kernels OK?  If so, which version?
+> > 
+> > i just tried 2.6.28 and there was no [hda0] kernel thread. 2.6.29-rc1
+> > and rc2 never resumed from suspend so i couldn't really try it.
+> > 
+> > > What the heck is that kernel thread anyway?  It looks like something
+> > > derived from an IDE device.
+> > 
+> > i have no idea. hda is the cdrom (the disk is sata and shows up as
+> > sda).
+> > 
+> 
+> <rummages through a 68MB diff for a while>
+> 
+> <finds a plum>
+> 
+> +       snprintf(qname, sizeof(qname), "hda%d", card->number);
+> +       bus->workq = create_workqueue(qname);
+> +       if (!bus->workq) {
+> +               snd_printk(KERN_ERR "cannot create workqueue %s\n", qname);
+> +               kfree(bus);
+> +               return -ENOMEM;
+> +       }
+> 
+> so it's not IDE after all.
+> 
+> commit 6acaed38a32e8571e92cfc832b971f9e4450c207
+> Author:     Takashi Iwai <tiwai@suse.de>
+> AuthorDate: Mon Jan 12 10:09:24 2009 +0100
+> Commit:     Takashi Iwai <tiwai@suse.de>
+> CommitDate: Mon Jan 12 10:33:56 2009 +0100
+> 
+>     ALSA: hda - Use own workqueue
+> 
 
-and provides msi_mask() to avoid undefined shift by 32.
-
-According to PCI Local Bus Spec 3.0 "6.8.1.3 Message Control for MSI",
-relations between the encoded bits in control register, the number of
-vectors and the proper maskbits should be as following table:
-
- control[3::1] | vectors  | maskbits
- --------------+----------+-----------
-          000b |        1 | 0x1
-          001b |        2 | 0x3
-          010b |        4 | 0xf
-          011b |        8 | 0xff
-          100b |       16 | 0xffff
-          101b |       32 | 0xffffffff
-          110b | Reserved | n/a
-          111b | Reserved | n/a
-
-This patch fix the wrong array in the msi_mask().
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- drivers/pci/msi.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 44f15ff..1c88958 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -109,7 +109,7 @@ static void msix_set_enable(struct pci_dev *dev, int enable)
-  */
- static inline __attribute_const__ u32 msi_mask(unsigned x)
- {
--	static const u32 mask[] = { 1, 2, 4, 0xf, 0xff, 0xffff, 0xffffffff };
-+	static const u32 mask[] = { 1, 3, 0xf, 0xff, 0xffff, 0xffffffff };
- 	return mask[x];
- }
- 
--- 
-1.6.0
-
+btw.  Please use create_singlethread_workqueue() if at all possible.  I
+don't think we need a thread per CPU here.
 
