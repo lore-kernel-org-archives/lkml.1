@@ -1,85 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756969AbZBEIzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZBEIzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756969AbZBEIzc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:55:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZBEIzM
+	id S1752138AbZBEIzs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:55:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZBEIzP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:55:12 -0500
+	Thu, 5 Feb 2009 03:55:15 -0500
 Received: from ms1.nttdata.co.jp ([163.135.193.232]:40511 "EHLO
 	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751371AbZBEIzJ (ORCPT
+	with ESMTP id S1751377AbZBEIzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:55:09 -0500
+	Thu, 5 Feb 2009 03:55:11 -0500
 X-Greylist: delayed 1959 seconds by postgrey-1.27 at vger.kernel.org; Thu, 05 Feb 2009 03:55:09 EST
-Message-Id: <20090205082226.069361474@nttdata.co.jp>
+Message-Id: <20090205082232.562805442@nttdata.co.jp>
 References: <20090205081810.331987920@nttdata.co.jp>
 User-Agent: quilt/0.45-1
-Date: Thu, 05 Feb 2009 17:18:12 +0900
+Date: Thu, 05 Feb 2009 17:18:16 +0900
 From: Kentaro Takeda <takedakn@nttdata.co.jp>
 To: jmorris@namei.org
 Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
        akpm@linux-foundation.org, haradats@nttdata.co.jp,
        Kentaro Takeda <takedakn@nttdata.co.jp>,
        Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Subject: [TOMOYO #15 2/8] Memory and pathname management functions.
-X-OriginalArrivalTime: 05 Feb 2009 08:22:27.0386 (UTC) FILETIME=[E15A89A0:01C9876A]
+Subject: [TOMOYO #15 6/8] LSM adapter functions.
+X-OriginalArrivalTime: 05 Feb 2009 08:22:33.0980 (UTC) FILETIME=[E548B3C0:01C9876A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-TOMOYO Linux performs pathname based access control.
-To remove factors that make pathname based access control difficult
-(e.g. symbolic links, "..", "//" etc.), TOMOYO Linux derives realpath
-of requested pathname from "struct dentry" and "struct vfsmount".
+DAC's permissions and TOMOYO's permissions are not one-to-one mapping.
 
-The maximum length of string data is limited to 4000 including trailing '\0'.
-Since TOMOYO Linux uses '\ooo' style representation for non ASCII printable
-characters, maybe TOMOYO Linux should be able to support 16336 (which means
-(NAME_MAX * (PATH_MAX / (NAME_MAX + 1)) * 4 + (PATH_MAX / (NAME_MAX + 1)))
-including trailing '\0'), but I think 4000 is enough for practical use.
+Regarding DAC, there are "read", "write", "execute" permissions.
+Regarding TOMOYO, there are "allow_read", "allow_write", "allow_read/write",
+"allow_execute", "allow_create", "allow_unlink", "allow_mkdir", "allow_rmdir",
+"allow_mkfifo", "allow_mksock", "allow_mkblock", "allow_mkchar",
+"allow_truncate", "allow_symlink", "allow_rewrite", "allow_link",
+"allow_rename" permissions.
 
-TOMOYO uses only 0x21 - 0x7E (as printable characters) and 0x20 (as word
-delimiter) and 0x0A (as line delimiter).
-0x01 - 0x20 and 0x80 - 0xFF is handled in \ooo style representation.
-The reason to use \ooo is to guarantee that "%s" won't damage logs.
-Userland program can request
++----------------------------------+----------------------------------+
+| requested operation              | required TOMOYO's permission     |
++----------------------------------+----------------------------------+
+| sys_open(O_RDONLY)               | allow_read                       |
++----------------------------------+----------------------------------+
+| sys_open(O_WRONLY)               | allow_write                      |
++----------------------------------+----------------------------------+
+| sys_open(O_RDWR)                 | allow_read/write                 |
++----------------------------------+----------------------------------+
+| open_exec() from do_execve()     | allow_execute                    |
++----------------------------------+----------------------------------+
+| open_exec() from !do_execve()    | allow_read                       |
++----------------------------------+----------------------------------+
+| sys_read()                       | (none)                           |
++----------------------------------+----------------------------------+
+| sys_write()                      | (none)                           |
++----------------------------------+----------------------------------+
+| sys_mmap()                       | (none)                           |
++----------------------------------+----------------------------------+
+| sys_uselib()                     | allow_read                       |
++----------------------------------+----------------------------------+
+| sys_open(O_CREAT)                | allow_create                     |
++----------------------------------+----------------------------------+
+| sys_open(O_TRUNC)                | allow_truncate                   |
++----------------------------------+----------------------------------+
+| sys_truncate()                   | allow_truncate                   |
++----------------------------------+----------------------------------+
+| sys_ftruncate()                  | allow_truncate                   |
++----------------------------------+----------------------------------+
+| sys_open() without O_APPEND      | allow_rewrite                    |
++----------------------------------+----------------------------------+
+| setfl() without O_APPEND         | allow_rewrite                    |
++----------------------------------+----------------------------------+
+| sys_sysctl() for writing         | allow_write                      |
++----------------------------------+----------------------------------+
+| sys_sysctl() for reading         | allow_read                       |
++----------------------------------+----------------------------------+
+| sys_unlink()                     | allow_unlink                     |
++----------------------------------+----------------------------------+
+| sys_mknod(S_IFREG)               | allow_create                     |
++----------------------------------+----------------------------------+
+| sys_mknod(0)                     | allow_create                     |
++----------------------------------+----------------------------------+
+| sys_mknod(S_IFIFO)               | allow_mkfifo                     |
++----------------------------------+----------------------------------+
+| sys_mknod(S_IFSOCK)              | allow_mksock                     |
++----------------------------------+----------------------------------+
+| sys_bind(AF_UNIX)                | allow_mksock                     |
++----------------------------------+----------------------------------+
+| sys_mknod(S_IFBLK)               | allow_mkblock                    |
++----------------------------------+----------------------------------+
+| sys_mknod(S_IFCHR)               | allow_mkchar                     |
++----------------------------------+----------------------------------+
+| sys_symlink()                    | allow_symlink                    |
++----------------------------------+----------------------------------+
+| sys_mkdir()                      | allow_mkdir                      |
++----------------------------------+----------------------------------+
+| sys_rmdir()                      | allow_rmdir                      |
++----------------------------------+----------------------------------+
+| sys_link()                       | allow_link                       |
++----------------------------------+----------------------------------+
+| sys_rename()                     | allow_rename                     |
++----------------------------------+----------------------------------+
 
- open("/tmp/file granted.\nAccess /tmp/file ", O_WRONLY | O_CREAT, 0600)
+TOMOYO requires "allow_execute" permission of a pathname passed to do_execve()
+but does not require "allow_read" permission of that pathname.
+Let's consider 3 patterns (statically linked, dynamically linked,
+shell script). This description is to some degree simplified.
 
-and logging such crazy pathname using "Access %s denied.\n" format will cause
-"fabrication of logs" like
+  $ cat hello.c
+  #include <stdio.h>
+  int main() {
+          printf("Hello\n");
+          return 0;
+  }
+  $ cat hello.sh
+  #! /bin/sh
+  echo "Hello"
+  $ gcc -static -o hello-static hello.c
+  $ gcc -o hello-dynamic hello.c
+  $ chmod 755 hello.sh
 
- Access /tmp/file granted.
- Access /tmp/file denied.
+Case 1 -- Executing hello-static from bash.
 
-TOMOYO converts such characters to \ooo so that the logs will become
+  (1) The bash process calls fork() and the child process requests
+      do_execve("hello-static").
 
- Access /tmp/file\040granted.\012Access\040/tmp/file denied.
+  (2) The kernel checks "allow_execute hello-static" from "bash" domain.
 
-and the administrator can read the logs safely using /bin/cat .
-Likewise, a crazy request like
+  (3) The kernel calculates "bash hello-static" as the domain to transit to.
 
- open("/tmp/\x01\x02\x03\x04\x05\x06\x07\x08\x09", O_WRONLY | O_CREAT, 0600)
+  (4) The kernel overwrites the child process by "hello-static".
 
-will be processed safely by converting to
+  (5) The child process transits to "bash hello-static" domain.
 
- Access /tmp/\001\002\003\004\005\006\007\010\011 denied.
+  (6) The "hello-static" starts and finishes.
+
+Case 2 -- Executing hello-dynamic from bash.
+
+  (1) The bash process calls fork() and the child process requests
+      do_execve("hello-dynamic").
+
+  (2) The kernel checks "allow_execute hello-dynamic" from "bash" domain.
+
+  (3) The kernel calculates "bash hello-dynamic" as the domain to transit to.
+
+  (4) The kernel checks "allow_read ld-linux.so" from "bash hello-dynamic"
+      domain. I think permission to access ld-linux.so should be charged
+      hello-dynamic program, for "hello-dynamic needs ld-linux.so" is not
+      a fault of bash program.
+
+  (5) The kernel overwrites the child process by "hello-dynamic".
+
+  (6) The child process transits to "bash hello-dynamic" domain.
+
+  (7) The "hello-dynamic" starts and finishes.
+
+Case 3 -- Executing hello.sh from bash.
+
+  (1) The bash process calls fork() and the child process requests
+      do_execve("hello.sh").
+
+  (2) The kernel checks "allow_execute hello.sh" from "bash" domain.
+
+  (3) The kernel calculates "bash hello.sh" as the domain to transit to.
+
+  (4) The kernel checks "allow_read /bin/sh" from "bash hello.sh" domain.
+      I think permission to access /bin/sh should be charged hello.sh program,
+      for "hello.sh needs /bin/sh" is not a fault of bash program.
+
+  (5) The kernel overwrites the child process by "/bin/sh".
+
+  (6) The child process transits to "bash hello.sh" domain.
+
+  (7) The "/bin/sh" requests open("hello.sh").
+
+  (8) The kernel checks "allow_read hello.sh" from  "bash hello.sh" domain.
+
+  (9) The "/bin/sh" starts and finishes.
+
+Whether a file is interpreted as a program or not depends on an application.
+The kernel cannot know whether the file is interpreted as a program or not.
+Thus, TOMOYO treats "hello-static" "hello-dynamic" "ld-linux.so" "hello.sh"
+"/bin/sh" equally as merely files; no distinction between executable and
+non-executable. Therefore, TOMOYO doesn't check DAC's execute permission.
+TOMOYO checks "allow_read" permission instead.
+
+Calling do_execve() is a bold gesture that an old program's instance (i.e.
+current process) is ready to be overwritten by a new program and is ready to
+transfer control to the new program. To split purview of programs, TOMOYO
+requires "allow_execute" permission of the new program against the old
+program's instance and performs domain transition. If do_execve() succeeds,
+the old program is no longer responsible against the consequence of the new
+program's behavior. Only the new program is responsible for all consequences.
+
+But TOMOYO doesn't require "allow_read" permission of the new program.
+If TOMOYO requires "allow_read" permission of the new program, TOMOYO will
+allow an attacker (who hijacked the old program's instance) to open the new
+program and steal data from the new program. Requiring "allow_read" permission
+will widen purview of the old program.
+
+Not requiring "allow_read" permission of the new program against the old
+program's instance is my design for reducing purview of the old program.
+To be able to know whether the current process is in do_execve() or not,
+I want to add in_execve flag to "task_struct".
 
 Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
 Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
 Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 ---
- security/tomoyo/realpath.c |  487 +++++++++++++++++++++++++++++++++++++++++++++
- security/tomoyo/realpath.h |   63 +++++
- 2 files changed, 550 insertions(+)
+ security/tomoyo/tomoyo.c |  293 +++++++++++++++++++++++++++++++++++++++++++++++
+ security/tomoyo/tomoyo.h |  106 +++++++++++++++++
+ 2 files changed, 399 insertions(+)
 
 --- /dev/null
-+++ security-testing-2.6.git/security/tomoyo/realpath.c
-@@ -0,0 +1,487 @@
++++ security-testing-2.6.git/security/tomoyo/tomoyo.c
+@@ -0,0 +1,293 @@
 +/*
-+ * security/tomoyo/realpath.c
++ * security/tomoyo/tomoyo.c
 + *
-+ * Get the canonicalized absolute pathnames. The basis for TOMOYO.
++ * LSM hooks for TOMOYO Linux.
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + *
@@ -87,489 +224,295 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + */
 +
-+#include <linux/types.h>
-+#include <linux/mount.h>
-+#include <linux/mnt_namespace.h>
++#include <linux/security.h>
 +#include "common.h"
++#include "tomoyo.h"
 +#include "realpath.h"
 +
-+/**
-+ * tomoyo_encode: Convert binary string to ascii string.
-+ *
-+ * @buffer:  Buffer for ASCII string.
-+ * @buflen:  Size of @buffer.
-+ * @str:     Binary string.
-+ *
-+ * Returns 0 on success, -ENOMEM otherwise.
-+ */
-+int tomoyo_encode(char *buffer, int buflen, const char *str)
++static int tomoyo_cred_prepare(struct cred *new, const struct cred *old,
++			       gfp_t gfp)
 +{
-+	while (1) {
-+		const unsigned char c = *(unsigned char *) str++;
++	/*
++	 * Since "struct tomoyo_domain_info *" is a sharable pointer,
++	 * we don't need to duplicate.
++	 */
++	new->security = old->security;
++	return 0;
++}
 +
-+		if (tomoyo_is_valid(c)) {
-+			if (--buflen <= 0)
-+				break;
-+			*buffer++ = (char) c;
-+			if (c != '\\')
-+				continue;
-+			if (--buflen <= 0)
-+				break;
-+			*buffer++ = (char) c;
-+			continue;
-+		}
-+		if (!c) {
-+			if (--buflen <= 0)
-+				break;
-+			*buffer = '\0';
-+			return 0;
-+		}
-+		buflen -= 4;
-+		if (buflen <= 0)
-+			break;
-+		*buffer++ = '\\';
-+		*buffer++ = (c >> 6) + '0';
-+		*buffer++ = ((c >> 3) & 7) + '0';
-+		*buffer++ = (c & 7) + '0';
++static int tomoyo_bprm_set_creds(struct linux_binprm *bprm)
++{
++	/*
++	 * Do only if this function is called for the first time of an execve
++	 * operation.
++	 */
++	if (bprm->cred_prepared)
++		return 0;
++	/*
++	 * Load policy if /sbin/tomoyo-init exists and /sbin/init is requested
++	 * for the first time.
++	 */
++	if (!tomoyo_policy_loaded)
++		tomoyo_load_policy(bprm->filename);
++	/*
++	 * Tell tomoyo_bprm_check_security() is called for the first time of an
++	 * execve operation.
++	 */
++	bprm->cred->security = NULL;
++	return 0;
++}
++
++static int tomoyo_bprm_check_security(struct linux_binprm *bprm)
++{
++	struct tomoyo_domain_info *domain = bprm->cred->security;
++
++	/*
++	 * Execute permission is checked against pathname passed to do_execve()
++	 * using current domain.
++	 */
++	if (!domain) {
++		struct tomoyo_domain_info *next_domain = NULL;
++		int retval = tomoyo_find_next_domain(bprm, &next_domain);
++
++		if (!retval)
++			bprm->cred->security = next_domain;
++		return retval;
 +	}
-+	return -ENOMEM;
++	/*
++	 * Read permission is checked against interpreters using next domain.
++	 * '1' is the result of open_to_namei_flags(O_RDONLY).
++	 */
++	return tomoyo_check_open_permission(domain, &bprm->file->f_path, 1);
++}
++
++#ifdef CONFIG_SYSCTL
++
++static int tomoyo_prepend(char **buffer, int *buflen, const char *str)
++{
++	int namelen = strlen(str);
++
++	if (*buflen < namelen)
++		return -ENOMEM;
++	*buflen -= namelen;
++	*buffer -= namelen;
++	memcpy(*buffer, str, namelen);
++	return 0;
 +}
 +
 +/**
-+ * tomoyo_realpath_from_path2 - Returns realpath(3) of the given dentry but ignores chroot'ed root.
++ * tomoyo_sysctl_path - return the realpath of a ctl_table.
++ * @table: pointer to "struct ctl_table".
 + *
-+ * @path:        Pointer to "struct path".
-+ * @newname:     Pointer to buffer to return value in.
-+ * @newname_len: Size of @newname.
++ * Returns realpath(3) of the @table on success.
++ * Returns NULL on failure.
 + *
-+ * Returns 0 on success, negative value otherwise.
-+ *
-+ * If dentry is a directory, trailing '/' is appended.
-+ * Characters out of 0x20 < c < 0x7F range are converted to
-+ * \ooo style octal string.
-+ * Character \ is converted to \\ string.
++ * This function uses tomoyo_alloc(), so the caller must call tomoyo_free()
++ * if this function didn't return NULL.
 + */
-+int tomoyo_realpath_from_path2(struct path *path, char *newname,
-+			       int newname_len)
++static char *tomoyo_sysctl_path(struct ctl_table *table)
 +{
++	int buflen = TOMOYO_MAX_PATHNAME_LEN;
++	char *buf = tomoyo_alloc(buflen);
++	char *end = buf + buflen;
 +	int error = -ENOMEM;
-+	struct dentry *dentry = path->dentry;
-+	char *sp;
 +
-+	if (!dentry || !path->mnt || !newname || newname_len <= 2048)
-+		return -EINVAL;
-+	if (dentry->d_op && dentry->d_op->d_dname) {
-+		/* For "socket:[\$]" and "pipe:[\$]". */
-+		static const int offset = 1536;
-+		sp = dentry->d_op->d_dname(dentry, newname + offset,
-+					   newname_len - offset);
-+	} else {
-+		/* Taken from d_namespace_path(). */
-+		struct path root;
-+		struct path ns_root = { };
-+		struct path tmp;
-+
-+		read_lock(&current->fs->lock);
-+		root = current->fs->root;
-+		path_get(&root);
-+		read_unlock(&current->fs->lock);
-+		spin_lock(&vfsmount_lock);
-+		if (root.mnt && root.mnt->mnt_ns)
-+			ns_root.mnt = mntget(root.mnt->mnt_ns->root);
-+		if (ns_root.mnt)
-+			ns_root.dentry = dget(ns_root.mnt->mnt_root);
-+		spin_unlock(&vfsmount_lock);
-+		spin_lock(&dcache_lock);
-+		tmp = ns_root;
-+		sp = __d_path(path, &tmp, newname, newname_len);
-+		spin_unlock(&dcache_lock);
-+		path_put(&root);
-+		path_put(&ns_root);
-+	}
-+	if (IS_ERR(sp))
-+		error = PTR_ERR(sp);
-+	else
-+		error = tomoyo_encode(newname, sp - newname, sp);
-+	/* Append trailing '/' if dentry is a directory. */
-+	if (!error && dentry->d_inode && S_ISDIR(dentry->d_inode->i_mode)
-+	    && *newname) {
-+		sp = newname + strlen(newname);
-+		if (*(sp - 1) != '/') {
-+			if (sp < newname + newname_len - 4) {
-+				*sp++ = '/';
-+				*sp = '\0';
-+			} else {
-+				error = -ENOMEM;
-+			}
-+		}
-+	}
-+	if (error)
-+		printk(KERN_WARNING "tomoyo_realpath: Pathname too long.\n");
-+	return error;
-+}
-+
-+/**
-+ * tomoyo_realpath_from_path - Returns realpath(3) of the given pathname but ignores chroot'ed root.
-+ *
-+ * @path: Pointer to "struct path".
-+ *
-+ * Returns the realpath of the given @path on success, NULL otherwise.
-+ *
-+ * These functions use tomoyo_alloc(), so the caller must call tomoyo_free()
-+ * if these functions didn't return NULL.
-+ */
-+char *tomoyo_realpath_from_path(struct path *path)
-+{
-+	char *buf = tomoyo_alloc(sizeof(struct tomoyo_page_buffer));
-+
-+	BUILD_BUG_ON(sizeof(struct tomoyo_page_buffer)
-+		     <= TOMOYO_MAX_PATHNAME_LEN - 1);
 +	if (!buf)
 +		return NULL;
-+	if (tomoyo_realpath_from_path2(path, buf,
-+				       TOMOYO_MAX_PATHNAME_LEN - 1) == 0)
++
++	*--end = '\0';
++	buflen--;
++	while (table) {
++		char buf[32];
++		const char *sp = table->procname;
++
++		if (!sp) {
++			memset(buf, 0, sizeof(buf));
++			snprintf(buf, sizeof(buf) - 1, "=%d=", table->ctl_name);
++			sp = buf;
++		}
++		if (tomoyo_prepend(&end, &buflen, sp) ||
++		    tomoyo_prepend(&end, &buflen, "/"))
++			goto out;
++		table = table->parent;
++	}
++	if (tomoyo_prepend(&end, &buflen, "/proc/sys"))
++		goto out;
++	error = tomoyo_encode(buf, end - buf, end);
++ out:
++	if (!error)
 +		return buf;
 +	tomoyo_free(buf);
 +	return NULL;
 +}
 +
-+/**
-+ * tomoyo_realpath - Get realpath of a pathname.
-+ *
-+ * @pathname: The pathname to solve.
-+ *
-+ * Returns the realpath of @pathname on success, NULL otherwise.
-+ */
-+char *tomoyo_realpath(const char *pathname)
++static int tomoyo_sysctl(struct ctl_table *table, int op)
 +{
-+	struct nameidata nd;
++	int error;
++	char *name;
 +
-+	if (pathname && path_lookup(pathname, LOOKUP_FOLLOW, &nd) == 0) {
-+		char *buf = tomoyo_realpath_from_path(&nd.path);
-+		path_put(&nd.path);
-+		return buf;
-+	}
-+	return NULL;
-+}
-+
-+/**
-+ * tomoyo_realpath_nofollow - Get realpath of a pathname.
-+ *
-+ * @pathname: The pathname to solve.
-+ *
-+ * Returns the realpath of @pathname on success, NULL otherwise.
-+ */
-+char *tomoyo_realpath_nofollow(const char *pathname)
-+{
-+	struct nameidata nd;
-+
-+	if (pathname && path_lookup(pathname, 0, &nd) == 0) {
-+		char *buf = tomoyo_realpath_from_path(&nd.path);
-+		path_put(&nd.path);
-+		return buf;
-+	}
-+	return NULL;
-+}
-+
-+/* Memory allocated for non-string data. */
-+static unsigned int tomoyo_allocated_memory_for_elements;
-+/* Quota for holding non-string data. */
-+static unsigned int tomoyo_quota_for_elements;
-+
-+/**
-+ * tomoyo_alloc_element - Allocate permanent memory for structures.
-+ *
-+ * @size: Size in bytes.
-+ *
-+ * Returns pointer to allocated memory on success, NULL otherwise.
-+ *
-+ * Memory has to be zeroed.
-+ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
-+ */
-+void *tomoyo_alloc_element(const unsigned int size)
-+{
-+	static char *buf;
-+	static DEFINE_MUTEX(lock);
-+	static unsigned int buf_used_len = PATH_MAX;
-+	char *ptr = NULL;
-+	/*Assumes sizeof(void *) >= sizeof(long) is true. */
-+	const unsigned int word_aligned_size
-+		= roundup(size, max(sizeof(void *), sizeof(long)));
-+	if (word_aligned_size > PATH_MAX)
-+		return NULL;
-+	/***** EXCLUSIVE SECTION START *****/
-+	mutex_lock(&lock);
-+	if (buf_used_len + word_aligned_size > PATH_MAX) {
-+		if (!tomoyo_quota_for_elements ||
-+		    tomoyo_allocated_memory_for_elements
-+		    + PATH_MAX <= tomoyo_quota_for_elements)
-+			ptr = kzalloc(PATH_MAX, GFP_KERNEL);
-+		if (!ptr) {
-+			printk(KERN_WARNING "ERROR: Out of memory "
-+			       "for tomoyo_alloc_element().\n");
-+			if (!tomoyo_policy_loaded)
-+				panic("MAC Initialization failed.\n");
-+		} else {
-+			buf = ptr;
-+			tomoyo_allocated_memory_for_elements += PATH_MAX;
-+			buf_used_len = word_aligned_size;
-+			ptr = buf;
-+		}
-+	} else if (word_aligned_size) {
-+		int i;
-+		ptr = buf + buf_used_len;
-+		buf_used_len += word_aligned_size;
-+		for (i = 0; i < word_aligned_size; i++) {
-+			if (!ptr[i])
-+				continue;
-+			printk(KERN_ERR "WARNING: Reserved memory was tainted! "
-+			       "The system might go wrong.\n");
-+			ptr[i] = '\0';
-+		}
-+	}
-+	mutex_unlock(&lock);
-+	/***** EXCLUSIVE SECTION END *****/
-+	return ptr;
-+}
-+
-+/* Memory allocated for string data in bytes. */
-+static unsigned int tomoyo_allocated_memory_for_savename;
-+/* Quota for holding string data in bytes. */
-+static unsigned int tomoyo_quota_for_savename;
-+
-+/*
-+ * TOMOYO uses this hash only when appending a string into the string
-+ * table. Frequency of appending strings is very low. So we don't need
-+ * large (e.g. 64k) hash size. 256 will be sufficient.
-+ */
-+#define TOMOYO_MAX_HASH 256
-+
-+/* Structure for string data. */
-+struct tomoyo_name_entry {
-+	struct list_head list;
-+	struct tomoyo_path_info entry;
-+};
-+
-+/* Structure for available memory region. */
-+struct tomoyo_free_memory_block_list {
-+	struct list_head list;
-+	char *ptr;             /* Pointer to a free area. */
-+	int len;               /* Length of the area.     */
-+};
-+
-+/*
-+ * The list for "struct tomoyo_name_entry".
-+ *
-+ * This list is updated only inside tomoyo_save_name(), thus
-+ * no global mutex exists.
-+ */
-+static struct list_head tomoyo_name_list[TOMOYO_MAX_HASH];
-+
-+/**
-+ * tomoyo_save_name - Allocate permanent memory for string data.
-+ *
-+ * @name: The string to store into the permernent memory.
-+ *
-+ * Returns pointer to "struct tomoyo_path_info" on success, NULL otherwise.
-+ *
-+ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
-+ */
-+const struct tomoyo_path_info *tomoyo_save_name(const char *name)
-+{
-+	static LIST_HEAD(fmb_list);
-+	static DEFINE_MUTEX(lock);
-+	struct tomoyo_name_entry *ptr;
-+	unsigned int hash;
-+	/* fmb contains available size in bytes.
-+	   fmb is removed from the fmb_list when fmb->len becomes 0. */
-+	struct tomoyo_free_memory_block_list *fmb;
-+	int len;
-+	char *cp;
-+
++	op &= MAY_READ | MAY_WRITE;
++	if (!op)
++		return 0;
++	name = tomoyo_sysctl_path(table);
 +	if (!name)
-+		return NULL;
-+	len = strlen(name) + 1;
-+	if (len > TOMOYO_MAX_PATHNAME_LEN) {
-+		printk(KERN_WARNING "ERROR: Name too long "
-+		       "for tomoyo_save_name().\n");
-+		return NULL;
-+	}
-+	hash = full_name_hash((const unsigned char *) name, len - 1);
-+	/***** EXCLUSIVE SECTION START *****/
-+	mutex_lock(&lock);
-+	list_for_each_entry(ptr, &tomoyo_name_list[hash % TOMOYO_MAX_HASH],
-+			     list) {
-+		if (hash == ptr->entry.hash && !strcmp(name, ptr->entry.name))
-+			goto out;
-+	}
-+	list_for_each_entry(fmb, &fmb_list, list) {
-+		if (len <= fmb->len)
-+			goto ready;
-+	}
-+	if (!tomoyo_quota_for_savename ||
-+	    tomoyo_allocated_memory_for_savename + PATH_MAX
-+	    <= tomoyo_quota_for_savename)
-+		cp = kzalloc(PATH_MAX, GFP_KERNEL);
-+	else
-+		cp = NULL;
-+	fmb = kzalloc(sizeof(*fmb), GFP_KERNEL);
-+	if (!cp || !fmb) {
-+		kfree(cp);
-+		kfree(fmb);
-+		printk(KERN_WARNING "ERROR: Out of memory "
-+		       "for tomoyo_save_name().\n");
-+		if (!tomoyo_policy_loaded)
-+			panic("MAC Initialization failed.\n");
-+		ptr = NULL;
-+		goto out;
-+	}
-+	tomoyo_allocated_memory_for_savename += PATH_MAX;
-+	list_add(&fmb->list, &fmb_list);
-+	fmb->ptr = cp;
-+	fmb->len = PATH_MAX;
-+ ready:
-+	ptr = tomoyo_alloc_element(sizeof(*ptr));
-+	if (!ptr)
-+		goto out;
-+	ptr->entry.name = fmb->ptr;
-+	memmove(fmb->ptr, name, len);
-+	tomoyo_fill_path_info(&ptr->entry);
-+	fmb->ptr += len;
-+	fmb->len -= len;
-+	list_add_tail(&ptr->list, &tomoyo_name_list[hash % TOMOYO_MAX_HASH]);
-+	if (fmb->len == 0) {
-+		list_del(&fmb->list);
-+		kfree(fmb);
-+	}
-+ out:
-+	mutex_unlock(&lock);
-+	/***** EXCLUSIVE SECTION END *****/
-+	return ptr ? &ptr->entry : NULL;
++		return -ENOMEM;
++	error = tomoyo_check_file_perm(tomoyo_domain(), name, op);
++	tomoyo_free(name);
++	return error;
++}
++#endif
++
++static int tomoyo_path_truncate(struct path *path, loff_t length,
++				unsigned int time_attrs)
++{
++	return tomoyo_check_1path_perm(tomoyo_domain(),
++				       TOMOYO_TYPE_TRUNCATE_ACL,
++				       path);
 +}
 +
-+/**
-+ * tomoyo_realpath_init - Initialize realpath related code.
-+ *
-+ * Returns 0.
-+ */
-+static int __init tomoyo_realpath_init(void)
++static int tomoyo_path_unlink(struct path *parent, struct dentry *dentry)
 +{
-+	int i;
++	struct path path = { parent->mnt, dentry };
++	return tomoyo_check_1path_perm(tomoyo_domain(),
++				       TOMOYO_TYPE_UNLINK_ACL,
++				       &path);
++}
 +
-+	BUILD_BUG_ON(TOMOYO_MAX_PATHNAME_LEN > PATH_MAX);
-+	for (i = 0; i < TOMOYO_MAX_HASH; i++)
-+		INIT_LIST_HEAD(&tomoyo_name_list[i]);
-+	INIT_LIST_HEAD(&tomoyo_kernel_domain.acl_info_list);
-+	tomoyo_kernel_domain.domainname = tomoyo_save_name(TOMOYO_ROOT_NAME);
-+	list_add_tail(&tomoyo_kernel_domain.list, &tomoyo_domain_list);
-+	down_read(&tomoyo_domain_list_lock);
-+	if (tomoyo_find_domain(TOMOYO_ROOT_NAME) != &tomoyo_kernel_domain)
-+		panic("Can't register tomoyo_kernel_domain");
-+	up_read(&tomoyo_domain_list_lock);
++static int tomoyo_path_mkdir(struct path *parent, struct dentry *dentry,
++			     int mode)
++{
++	struct path path = { parent->mnt, dentry };
++	return tomoyo_check_1path_perm(tomoyo_domain(),
++				       TOMOYO_TYPE_MKDIR_ACL,
++				       &path);
++}
++
++static int tomoyo_path_rmdir(struct path *parent, struct dentry *dentry)
++{
++	struct path path = { parent->mnt, dentry };
++	return tomoyo_check_1path_perm(tomoyo_domain(),
++				       TOMOYO_TYPE_RMDIR_ACL,
++				       &path);
++}
++
++static int tomoyo_path_symlink(struct path *parent, struct dentry *dentry,
++			       const char *old_name)
++{
++	struct path path = { parent->mnt, dentry };
++	return tomoyo_check_1path_perm(tomoyo_domain(),
++				       TOMOYO_TYPE_SYMLINK_ACL,
++				       &path);
++}
++
++static int tomoyo_path_mknod(struct path *parent, struct dentry *dentry,
++			     int mode, unsigned int dev)
++{
++	struct path path = { parent->mnt, dentry };
++	int type = TOMOYO_TYPE_CREATE_ACL;
++
++	switch (mode & S_IFMT) {
++	case S_IFCHR:
++		type = TOMOYO_TYPE_MKCHAR_ACL;
++		break;
++	case S_IFBLK:
++		type = TOMOYO_TYPE_MKBLOCK_ACL;
++		break;
++	case S_IFIFO:
++		type = TOMOYO_TYPE_MKFIFO_ACL;
++		break;
++	case S_IFSOCK:
++		type = TOMOYO_TYPE_MKSOCK_ACL;
++		break;
++	}
++	return tomoyo_check_1path_perm(tomoyo_domain(),
++				       type, &path);
++}
++
++static int tomoyo_path_link(struct dentry *old_dentry, struct path *new_dir,
++			    struct dentry *new_dentry)
++{
++	struct path path1 = { new_dir->mnt, old_dentry };
++	struct path path2 = { new_dir->mnt, new_dentry };
++	return tomoyo_check_2path_perm(tomoyo_domain(),
++				       TOMOYO_TYPE_LINK_ACL,
++				       &path1, &path2);
++}
++
++static int tomoyo_path_rename(struct path *old_parent,
++			      struct dentry *old_dentry,
++			      struct path *new_parent,
++			      struct dentry *new_dentry)
++{
++	struct path path1 = { old_parent->mnt, old_dentry };
++	struct path path2 = { new_parent->mnt, new_dentry };
++	return tomoyo_check_2path_perm(tomoyo_domain(),
++				       TOMOYO_TYPE_RENAME_ACL,
++				       &path1, &path2);
++}
++
++static int tomoyo_file_fcntl(struct file *file, unsigned int cmd,
++			     unsigned long arg)
++{
++	if (cmd == F_SETFL && ((arg ^ file->f_flags) & O_APPEND))
++		return tomoyo_check_rewrite_permission(tomoyo_domain(), file);
 +	return 0;
 +}
 +
-+security_initcall(tomoyo_realpath_init);
-+
-+/* Memory allocated for temporary purpose. */
-+static atomic_t tomoyo_dynamic_memory_size;
-+
-+/**
-+ * tomoyo_alloc - Allocate memory for temporary purpose.
-+ *
-+ * @size: Size in bytes.
-+ *
-+ * Returns pointer to allocated memory on success, NULL otherwise.
-+ */
-+void *tomoyo_alloc(const size_t size)
++static int tomoyo_dentry_open(struct file *f, const struct cred *cred)
 +{
-+	void *p = kzalloc(size, GFP_KERNEL);
-+	if (p)
-+		atomic_add(ksize(p), &tomoyo_dynamic_memory_size);
-+	return p;
++	int flags = f->f_flags;
++
++	if ((flags + 1) & O_ACCMODE)
++		flags++;
++	flags |= f->f_flags & (O_APPEND | O_TRUNC);
++	/* Don't check read permission here if called from do_execve(). */
++	if (current->in_execve)
++		return 0;
++	return tomoyo_check_open_permission(tomoyo_domain(), &f->f_path, flags);
 +}
 +
-+/**
-+ * tomoyo_free - Release memory allocated by tomoyo_alloc().
-+ *
-+ * @p: Pointer returned by tomoyo_alloc(). May be NULL.
-+ *
-+ * Returns nothing.
-+ */
-+void tomoyo_free(const void *p)
-+{
-+	if (p) {
-+		atomic_sub(ksize(p), &tomoyo_dynamic_memory_size);
-+		kfree(p);
-+	}
-+}
++static struct security_operations tomoyo_security_ops = {
++	.name                = "tomoyo",
++	.cred_prepare        = tomoyo_cred_prepare,
++	.bprm_set_creds      = tomoyo_bprm_set_creds,
++	.bprm_check_security = tomoyo_bprm_check_security,
++#ifdef CONFIG_SYSCTL
++	.sysctl              = tomoyo_sysctl,
++#endif
++	.file_fcntl          = tomoyo_file_fcntl,
++	.dentry_open         = tomoyo_dentry_open,
++	.path_truncate       = tomoyo_path_truncate,
++	.path_unlink         = tomoyo_path_unlink,
++	.path_mkdir          = tomoyo_path_mkdir,
++	.path_rmdir          = tomoyo_path_rmdir,
++	.path_symlink        = tomoyo_path_symlink,
++	.path_mknod          = tomoyo_path_mknod,
++	.path_link           = tomoyo_path_link,
++	.path_rename         = tomoyo_path_rename,
++};
 +
-+/**
-+ * tomoyo_read_memory_counter - Check for memory usage in bytes.
-+ *
-+ * @head: Pointer to "struct tomoyo_io_buffer".
-+ *
-+ * Returns memory usage.
-+ */
-+int tomoyo_read_memory_counter(struct tomoyo_io_buffer *head)
++static int __init tomoyo_init(void)
 +{
-+	if (!head->read_eof) {
-+		const unsigned int shared
-+			= tomoyo_allocated_memory_for_savename;
-+		const unsigned int private
-+			= tomoyo_allocated_memory_for_elements;
-+		const unsigned int dynamic
-+			= atomic_read(&tomoyo_dynamic_memory_size);
-+		char buffer[64];
++	struct cred *cred = (struct cred *) current_cred();
 +
-+		memset(buffer, 0, sizeof(buffer));
-+		if (tomoyo_quota_for_savename)
-+			snprintf(buffer, sizeof(buffer) - 1,
-+				 "   (Quota: %10u)",
-+				 tomoyo_quota_for_savename);
-+		else
-+			buffer[0] = '\0';
-+		tomoyo_io_printf(head, "Shared:  %10u%s\n", shared, buffer);
-+		if (tomoyo_quota_for_elements)
-+			snprintf(buffer, sizeof(buffer) - 1,
-+				 "   (Quota: %10u)",
-+				 tomoyo_quota_for_elements);
-+		else
-+			buffer[0] = '\0';
-+		tomoyo_io_printf(head, "Private: %10u%s\n", private, buffer);
-+		tomoyo_io_printf(head, "Dynamic: %10u\n", dynamic);
-+		tomoyo_io_printf(head, "Total:   %10u\n",
-+				 shared + private + dynamic);
-+		head->read_eof = true;
-+	}
++	if (!security_module_enable(&tomoyo_security_ops))
++		return 0;
++	/* register ourselves with the security framework */
++	if (register_security(&tomoyo_security_ops))
++		panic("Failure registering TOMOYO Linux");
++	printk(KERN_INFO "TOMOYO Linux initialized\n");
++	cred->security = &tomoyo_kernel_domain;
 +	return 0;
 +}
 +
-+/**
-+ * tomoyo_write_memory_quota - Set memory quota.
-+ *
-+ * @head: Pointer to "struct tomoyo_io_buffer".
-+ *
-+ * Returns 0.
-+ */
-+int tomoyo_write_memory_quota(struct tomoyo_io_buffer *head)
-+{
-+	char *data = head->write_buf;
-+	unsigned int size;
-+
-+	if (sscanf(data, "Shared: %u", &size) == 1)
-+		tomoyo_quota_for_savename = size;
-+	else if (sscanf(data, "Private: %u", &size) == 1)
-+		tomoyo_quota_for_elements = size;
-+	return 0;
-+}
++security_initcall(tomoyo_init);
 --- /dev/null
-+++ security-testing-2.6.git/security/tomoyo/realpath.h
-@@ -0,0 +1,63 @@
++++ security-testing-2.6.git/security/tomoyo/tomoyo.h
+@@ -0,0 +1,106 @@
 +/*
-+ * security/tomoyo/realpath.h
++ * security/tomoyo/tomoyo.h
 + *
-+ * Get the canonicalized absolute pathnames. The basis for TOMOYO.
++ * Implementation of the Domain-Based Mandatory Access Control.
 + *
 + * Copyright (C) 2005-2009  NTT DATA CORPORATION
 + *
@@ -577,58 +520,101 @@ Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
 + *
 + */
 +
-+#ifndef _SECURITY_TOMOYO_REALPATH_H
-+#define _SECURITY_TOMOYO_REALPATH_H
++#ifndef _SECURITY_TOMOYO_TOMOYO_H
++#define _SECURITY_TOMOYO_TOMOYO_H
 +
-+struct path;
 +struct tomoyo_path_info;
-+struct tomoyo_io_buffer;
++struct path;
++struct inode;
++struct linux_binprm;
++struct pt_regs;
++struct tomoyo_page_buffer;
 +
-+/* Convert binary string to ascii string. */
-+int tomoyo_encode(char *buffer, int buflen, const char *str);
++int tomoyo_check_file_perm(struct tomoyo_domain_info *domain,
++			   const char *filename, const u8 perm);
++int tomoyo_check_exec_perm(struct tomoyo_domain_info *domain,
++			   const struct tomoyo_path_info *filename,
++			   struct tomoyo_page_buffer *buf);
++int tomoyo_check_open_permission(struct tomoyo_domain_info *domain,
++				 struct path *path, const int flag);
++int tomoyo_check_1path_perm(struct tomoyo_domain_info *domain,
++			    const u8 operation, struct path *path);
++int tomoyo_check_2path_perm(struct tomoyo_domain_info *domain,
++			    const u8 operation, struct path *path1,
++			    struct path *path2);
++int tomoyo_check_rewrite_permission(struct tomoyo_domain_info *domain,
++				    struct file *filp);
++int tomoyo_find_next_domain(struct linux_binprm *bprm,
++			    struct tomoyo_domain_info **next_domain);
 +
-+/* Returns realpath(3) of the given pathname but ignores chroot'ed root. */
-+int tomoyo_realpath_from_path2(struct path *path, char *newname,
-+			       int newname_len);
++/* Index numbers for Access Controls. */
++
++#define TOMOYO_TYPE_SINGLE_PATH_ACL                 0
++#define TOMOYO_TYPE_DOUBLE_PATH_ACL                 1
++
++/* Index numbers for File Controls. */
 +
 +/*
-+ * Returns realpath(3) of the given pathname but ignores chroot'ed root.
-+ * These functions use tomoyo_alloc(), so the caller must call tomoyo_free()
-+ * if these functions didn't return NULL.
++ * TYPE_READ_WRITE_ACL is special. TYPE_READ_WRITE_ACL is automatically set
++ * if both TYPE_READ_ACL and TYPE_WRITE_ACL are set. Both TYPE_READ_ACL and
++ * TYPE_WRITE_ACL are automatically set if TYPE_READ_WRITE_ACL is set.
++ * TYPE_READ_WRITE_ACL is automatically cleared if either TYPE_READ_ACL or
++ * TYPE_WRITE_ACL is cleared. Both TYPE_READ_ACL and TYPE_WRITE_ACL are
++ * automatically cleared if TYPE_READ_WRITE_ACL is cleared.
 + */
-+char *tomoyo_realpath(const char *pathname);
-+/*
-+ * Same with tomoyo_realpath() except that it doesn't follow the final symlink.
-+ */
-+char *tomoyo_realpath_nofollow(const char *pathname);
-+/* Same with tomoyo_realpath() except that the pathname is already solved. */
-+char *tomoyo_realpath_from_path(struct path *path);
 +
-+/*
-+ * Allocate memory for ACL entry.
-+ * The RAM is chunked, so NEVER try to kfree() the returned pointer.
-+ */
-+void *tomoyo_alloc_element(const unsigned int size);
++#define TOMOYO_TYPE_READ_WRITE_ACL    0
++#define TOMOYO_TYPE_EXECUTE_ACL       1
++#define TOMOYO_TYPE_READ_ACL          2
++#define TOMOYO_TYPE_WRITE_ACL         3
++#define TOMOYO_TYPE_CREATE_ACL        4
++#define TOMOYO_TYPE_UNLINK_ACL        5
++#define TOMOYO_TYPE_MKDIR_ACL         6
++#define TOMOYO_TYPE_RMDIR_ACL         7
++#define TOMOYO_TYPE_MKFIFO_ACL        8
++#define TOMOYO_TYPE_MKSOCK_ACL        9
++#define TOMOYO_TYPE_MKBLOCK_ACL      10
++#define TOMOYO_TYPE_MKCHAR_ACL       11
++#define TOMOYO_TYPE_TRUNCATE_ACL     12
++#define TOMOYO_TYPE_SYMLINK_ACL      13
++#define TOMOYO_TYPE_REWRITE_ACL      14
++#define TOMOYO_MAX_SINGLE_PATH_OPERATION 15
 +
-+/*
-+ * Keep the given name on the RAM.
-+ * The RAM is shared, so NEVER try to modify or kfree() the returned name.
-+ */
-+const struct tomoyo_path_info *tomoyo_save_name(const char *name);
++#define TOMOYO_TYPE_LINK_ACL         0
++#define TOMOYO_TYPE_RENAME_ACL       1
++#define TOMOYO_MAX_DOUBLE_PATH_OPERATION 2
 +
-+/* Allocate memory for temporary use (e.g. permission checks). */
-+void *tomoyo_alloc(const size_t size);
++#define TOMOYO_DOMAINPOLICY          0
++#define TOMOYO_EXCEPTIONPOLICY       1
++#define TOMOYO_DOMAIN_STATUS         2
++#define TOMOYO_PROCESS_STATUS        3
++#define TOMOYO_MEMINFO               4
++#define TOMOYO_SELFDOMAIN            5
++#define TOMOYO_VERSION               6
++#define TOMOYO_PROFILE               7
++#define TOMOYO_MANAGER               8
 +
-+/* Free memory allocated by tomoyo_alloc(). */
-+void tomoyo_free(const void *p);
++extern struct tomoyo_domain_info tomoyo_kernel_domain;
 +
-+/* Check for memory usage. */
-+int tomoyo_read_memory_counter(struct tomoyo_io_buffer *head);
++static inline struct tomoyo_domain_info *tomoyo_domain(void)
++{
++	return current_cred()->security;
++}
 +
-+/* Set memory quota. */
-+int tomoyo_write_memory_quota(struct tomoyo_io_buffer *head);
++/* Caller holds tasklist_lock spinlock. */
++static inline struct tomoyo_domain_info *tomoyo_real_domain(struct task_struct
++							    *task)
++{
++	/***** CRITICAL SECTION START *****/
++	const struct cred *cred = get_task_cred(task);
++	struct tomoyo_domain_info *domain = cred->security;
 +
-+#endif /* !defined(_SECURITY_TOMOYO_REALPATH_H) */
++	put_cred(cred);
++	return domain;
++	/***** CRITICAL SECTION END *****/
++}
++
++#endif /* !defined(_SECURITY_TOMOYO_TOMOYO_H) */
 
 --
 
