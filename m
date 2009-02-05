@@ -1,543 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759928AbZBEKHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbZBEKKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759928AbZBEKHr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 05:07:47 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757438AbZBEKFu
+	id S1759377AbZBEKKh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 05:10:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZBEKK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 05:05:50 -0500
-Received: from nwd2mail10.analog.com ([137.71.25.55]:29526 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756758AbZBEKFq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 05:05:46 -0500
-X-IronPort-AV: E=Sophos;i="4.37,384,1231131600"; 
-   d="scan'208";a="82351965"
-From: Bryan Wu <cooloney@kernel.org>
-To: dbrownell@users.sourceforge.net, spi-devel-general@lists.sourceforge.net
-Cc: linux-kernel@vger.kernel.org, Wolfgang Muees <wolfgang.mues@auerswald.de>,
-       Yi Li <yi.li@analog.com>, Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH 5/5] Blackfin SPI Driver: Make mmc_spi driver work on Blackfin
-Date: Thu,  5 Feb 2009 18:07:33 +0800
-Message-Id: <1233828453-13311-6-git-send-email-cooloney@kernel.org>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1233828453-13311-1-git-send-email-cooloney@kernel.org>
-References: <1233828453-13311-1-git-send-email-cooloney@kernel.org>
+	Thu, 5 Feb 2009 05:10:27 -0500
+Received: from gir.skynet.ie ([193.1.99.77]:46343 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753765AbZBEKK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 05:10:26 -0500
+Date: Thu, 5 Feb 2009 10:10:23 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Miller <davem@davemloft.net>
+Cc: kamezawa.hiroyu@jp.fujitsu.com, heiko.carstens@de.ibm.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org
+Subject: Re: HOLES_IN_ZONE...
+Message-ID: <20090205101023.GD26878@csn.ul.ie>
+References: <20090204.222651.26527737.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090204.222651.26527737.davem@davemloft.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Wolfgang Muees <wolfgang.mues@auerswald.de>
+On Wed, Feb 04, 2009 at 10:26:51PM -0800, David Miller wrote:
+> 
+> So I've been fighting mysterious crashes on my main sparc64 devel
+> machine.  What's happening is that the assertion in
+> mm/page_alloc.c:move_freepages() is triggering:
+> 
+> 	BUG_ON(page_zone(start_page) != page_zone(end_page));
+> 
+> Once I knew this is what was happening, I added some annotations:
+> 
+> 	if (unlikely(page_zone(start_page) != page_zone(end_page))) {
+> 		printk(KERN_ERR "move_freepages: Bogus zones: "
+> 		       "start_page[%p] end_page[%p] zone[%p]\n",
+> 		       start_page, end_page, zone);
+> 		printk(KERN_ERR "move_freepages: "
+> 		       "start_zone[%p] end_zone[%p]\n",
+> 		       page_zone(start_page), page_zone(end_page));
+> 		printk(KERN_ERR "move_freepages: "
+> 		       "start_pfn[0x%lx] end_pfn[0x%lx]\n",
+> 		       page_to_pfn(start_page), page_to_pfn(end_page));
+> 		printk(KERN_ERR "move_freepages: "
+> 		       "start_nid[%d] end_nid[%d]\n",
+> 		       page_to_nid(start_page), page_to_nid(end_page));
+>  ...
+> 
+> And here's what I got:
+> 
+> 	move_freepages: Bogus zones: start_page[2207d0000] end_page[2207dffc0] zone[fffff8103effcb00]
+> 	move_freepages: start_zone[fffff8103effcb00] end_zone[fffff8003fffeb00]
+> 	move_freepages: start_pfn[0x81f600] end_pfn[0x81f7ff]
+> 	move_freepages: start_nid[1] end_nid[0]
+> 
+> My memory layout on this box is:
+> 
+> [    0.000000] Zone PFN ranges:
+> [    0.000000]   Normal   0x00000000 -> 0x0081ff5d
+> [    0.000000] Movable zone start PFN for each node
+> [    0.000000] early_node_map[8] active PFN ranges
+> [    0.000000]     0: 0x00000000 -> 0x00020000
+> [    0.000000]     1: 0x00800000 -> 0x0081f7ff
+> [    0.000000]     1: 0x0081f800 -> 0x0081fe50
+> [    0.000000]     1: 0x0081fed1 -> 0x0081fed8
+> [    0.000000]     1: 0x0081feda -> 0x0081fedb
+> [    0.000000]     1: 0x0081fedd -> 0x0081fee5
+> [    0.000000]     1: 0x0081fee7 -> 0x0081ff51
+> [    0.000000]     1: 0x0081ff59 -> 0x0081ff5d
 
-1. Rewrite of the non-dma data transfer functions to use only ONE
-mode of TIMOD (TIMOD=0x1). With TIMOD=0, it was not possible to set
-the TX bit pattern. So the TDBR = 0xFFFF inside the read calls won't
-work.
+Based on your memory layout, it would appear that end_pfn was not
+initialised at startup. What is the full dmesg output when
+CONFIG_MEMORY_INIT is set and mminit_loglevel=4? It'll tell me what
+ranges of memory were actually initialised.
 
-2. Clear SPI_RDBR before reading and before duplex transfer. Otherwise
-the garbage data in RDBR will get read. Since mmc_spi uses a lot of
-duplex transfers, this is the main cause of mmc_spi failure.
+> 
+> So it's a block move in that 0x81f600-->0x81f7ff region which triggers
+> the problem.
+> 
+> So I did a lot (and I do mean _A LOT_) of digging.  And it seems that
+> unless you set HOLES_IN_ZONE you have to make sure that all of the
+> memmap regions of free space in a zone begin and end on an HPAGE_SIZE
+> boundary (the requirement used to be that it had to be MAX_ORDER
+> sized).
+> 
 
-3. Poll RXS for transfer completion. Polling SPIF or TXS cannot
-guarantee transfer completion. This may interrupt a transfer before
-it is finished. Also this may leave garbage data in buffer and
-affect next transfer.
+hmm, it still should be a MAX_ORDER boundary. HPAGE_SIZE defines
+pageblock_order and it should be smaller than MAX_ORDER. Has this
+changed?
 
-[Yi Li <yi.li@analog.com>: add a field "u16 idle_tx_val" in "struct
-bfin5xx_spi_chip" to specify the value to transmit if no TX value
-is supplied.]
+> Well, this assumption enterred the tree back in 2005 (!!!) from
+> the following commit in the history-2.6 tree:
+> 
+> commit 69fba2dd0335abec0b0de9ac53d5bbb67c31fc60
+> Author: Kamezawa Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Date:   Fri Jan 7 22:01:35 2005 -0800
+> 
+>     [PATCH] no buddy bitmap patch revisit: for mm/page_alloc.c
+> 
+> At the time only IA64 had HOLES_IN_ZONE added, this happens in the
+> commit right after the above one.
+> 
+> So in theory Sparc64 has been broken since that commit and subject to
+> potential memory corruption and other unnice things.
+> 
 
-Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
-Signed-off-by: Yi Li <yi.li@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
----
- arch/blackfin/include/asm/bfin5xx_spi.h |    2 +
- drivers/spi/spi_bfin5xx.c               |  247 ++++++++++++++-----------------
- 2 files changed, 110 insertions(+), 139 deletions(-)
+Potentially, but unlikely. The number of areas that read a block of
+pages are fairly small and relatively recent. move_freepages() is one
+obviously and it had that BUG_ON() in place just in case this assumption
+triggered. Conceivably, you might also be able to trigger badness with 
+"cat /proc/pagetypeinfo".
 
-diff --git a/arch/blackfin/include/asm/bfin5xx_spi.h b/arch/blackfin/include/asm/bfin5xx_spi.h
-index da8b9ca..2202b9d 100644
---- a/arch/blackfin/include/asm/bfin5xx_spi.h
-+++ b/arch/blackfin/include/asm/bfin5xx_spi.h
-@@ -125,6 +125,8 @@ struct bfin5xx_spi_chip {
- 	u8 cs_change_per_word;
- 	u16 cs_chg_udelay; /* Some devices require 16-bit delays */
- 	u32 cs_gpio;
-+	/* Value to send if no TX value is supplied, usually 0x0 or 0xFFFF */
-+	u16 idle_tx_val;
- };
- 
- #endif /* _SPI_CHANNEL_H_ */
-diff --git a/drivers/spi/spi_bfin5xx.c b/drivers/spi/spi_bfin5xx.c
-index 5089afe..0f6c15a 100644
---- a/drivers/spi/spi_bfin5xx.c
-+++ b/drivers/spi/spi_bfin5xx.c
-@@ -45,6 +45,9 @@ MODULE_LICENSE("GPL");
- #define QUEUE_RUNNING	0
- #define QUEUE_STOPPED	1
- 
-+/* Value to send if no TX value is supplied */
-+#define SPI_IDLE_TXVAL 0x0000
-+
- struct driver_data {
- 	/* Driver model hookup */
- 	struct platform_device *pdev;
-@@ -115,6 +118,7 @@ struct chip_data {
- 	u8 cs_change_per_word;
- 	u16 cs_chg_udelay;	/* Some devices require > 255usec delay */
- 	u32 cs_gpio;
-+	u16 idle_tx_val;
- 	void (*write) (struct driver_data *);
- 	void (*read) (struct driver_data *);
- 	void (*duplex) (struct driver_data *);
-@@ -229,134 +233,126 @@ static void bfin_spi_restore_state(struct driver_data *drv_data)
- 	bfin_spi_cs_active(drv_data, chip);
- }
- 
--/* used to kick off transfer in rx mode */
--static unsigned short bfin_spi_dummy_read(struct driver_data *drv_data)
-+/* used to kick off transfer in rx mode and read unwanted RX data */
-+static inline void bfin_spi_dummy_read(struct driver_data *drv_data)
- {
--	unsigned short tmp;
--	tmp = read_RDBR(drv_data);
--	return tmp;
-+	(void) read_RDBR(drv_data);
- }
- 
- static void bfin_spi_null_writer(struct driver_data *drv_data)
- {
- 	u8 n_bytes = drv_data->n_bytes;
-+	u16 tx_val = drv_data->cur_chip->idle_tx_val;
-+
-+	/* clear RXS (we check for RXS inside the loop) */
-+	bfin_spi_dummy_read(drv_data);
- 
- 	while (drv_data->tx < drv_data->tx_end) {
--		write_TDBR(drv_data, 0);
--		while ((read_STAT(drv_data) & BIT_STAT_TXS))
--			cpu_relax();
-+		write_TDBR(drv_data, tx_val);
- 		drv_data->tx += n_bytes;
-+		/* wait until transfer finished.
-+		   checking SPIF or TXS may not guarantee transfer completion */
-+		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
-+			cpu_relax();
-+		/* discard RX data and clear RXS */
-+		bfin_spi_dummy_read(drv_data);
- 	}
- }
- 
- static void bfin_spi_null_reader(struct driver_data *drv_data)
- {
- 	u8 n_bytes = drv_data->n_bytes;
-+	u16 tx_val = drv_data->cur_chip->idle_tx_val;
-+
-+	/* discard old RX data and clear RXS */
- 	bfin_spi_dummy_read(drv_data);
- 
- 	while (drv_data->rx < drv_data->rx_end) {
-+		write_TDBR(drv_data, tx_val);
-+		drv_data->rx += n_bytes;
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
- 		bfin_spi_dummy_read(drv_data);
--		drv_data->rx += n_bytes;
- 	}
- }
- 
- static void bfin_spi_u8_writer(struct driver_data *drv_data)
- {
--	dev_dbg(&drv_data->pdev->dev,
--		"cr8-s is 0x%x\n", read_STAT(drv_data));
-+	/* clear RXS (we check for RXS inside the loop) */
-+	bfin_spi_dummy_read(drv_data);
- 
- 	while (drv_data->tx < drv_data->tx_end) {
--		write_TDBR(drv_data, (*(u8 *) (drv_data->tx)));
--		while (read_STAT(drv_data) & BIT_STAT_TXS)
-+		write_TDBR(drv_data, (*(u8 *) (drv_data->tx++)));
-+		/* wait until transfer finished.
-+		   checking SPIF or TXS may not guarantee transfer completion */
-+		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
--		++drv_data->tx;
-+		/* discard RX data and clear RXS */
-+		bfin_spi_dummy_read(drv_data);
- 	}
--
--	/* poll for SPI completion before return */
--	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--		cpu_relax();
- }
- 
- static void bfin_spi_u8_cs_chg_writer(struct driver_data *drv_data)
- {
- 	struct chip_data *chip = drv_data->cur_chip;
- 
-+	/* clear RXS (we check for RXS inside the loop) */
-+	bfin_spi_dummy_read(drv_data);
-+
- 	while (drv_data->tx < drv_data->tx_end) {
- 		bfin_spi_cs_active(drv_data, chip);
--
--		write_TDBR(drv_data, (*(u8 *) (drv_data->tx)));
--		while (read_STAT(drv_data) & BIT_STAT_TXS)
--			cpu_relax();
--		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
-+		write_TDBR(drv_data, (*(u8 *) (drv_data->tx++)));
-+		/* make sure transfer finished before deactiving CS */
-+		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
--
-+		bfin_spi_dummy_read(drv_data);
- 		bfin_spi_cs_deactive(drv_data, chip);
--
--		++drv_data->tx;
- 	}
- }
- 
- static void bfin_spi_u8_reader(struct driver_data *drv_data)
- {
--	dev_dbg(&drv_data->pdev->dev,
--		"cr-8 is 0x%x\n", read_STAT(drv_data));
--
--	/* poll for SPI completion before start */
--	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--		cpu_relax();
--
--	/* clear TDBR buffer before read(else it will be shifted out) */
--	write_TDBR(drv_data, 0xFFFF);
-+	u16 tx_val = drv_data->cur_chip->idle_tx_val;
- 
-+	/* discard old RX data and clear RXS */
- 	bfin_spi_dummy_read(drv_data);
- 
--	while (drv_data->rx < drv_data->rx_end - 1) {
-+	while (drv_data->rx < drv_data->rx_end) {
-+		write_TDBR(drv_data, tx_val);
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
--		*(u8 *) (drv_data->rx) = read_RDBR(drv_data);
--		++drv_data->rx;
-+		*(u8 *) (drv_data->rx++) = read_RDBR(drv_data);
- 	}
--
--	while (!(read_STAT(drv_data) & BIT_STAT_RXS))
--		cpu_relax();
--	*(u8 *) (drv_data->rx) = read_SHAW(drv_data);
--	++drv_data->rx;
- }
- 
- static void bfin_spi_u8_cs_chg_reader(struct driver_data *drv_data)
- {
- 	struct chip_data *chip = drv_data->cur_chip;
-+	u16 tx_val = chip->idle_tx_val;
-+
-+	/* discard old RX data and clear RXS */
-+	bfin_spi_dummy_read(drv_data);
- 
- 	while (drv_data->rx < drv_data->rx_end) {
- 		bfin_spi_cs_active(drv_data, chip);
--		read_RDBR(drv_data);	/* kick off */
--
-+		write_TDBR(drv_data, tx_val);
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
--		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--			cpu_relax();
--
--		*(u8 *) (drv_data->rx) = read_SHAW(drv_data);
-+		*(u8 *) (drv_data->rx++) = read_RDBR(drv_data);
- 		bfin_spi_cs_deactive(drv_data, chip);
--
--		++drv_data->rx;
- 	}
- }
- 
- static void bfin_spi_u8_duplex(struct driver_data *drv_data)
- {
--	/* in duplex mode, clk is triggered by writing of TDBR */
-+	/* discard old RX data and clear RXS */
-+	bfin_spi_dummy_read(drv_data);
-+
- 	while (drv_data->rx < drv_data->rx_end) {
--		write_TDBR(drv_data, (*(u8 *) (drv_data->tx)));
--		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--			cpu_relax();
-+		write_TDBR(drv_data, (*(u8 *) (drv_data->tx++)));
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
--		*(u8 *) (drv_data->rx) = read_RDBR(drv_data);
--		++drv_data->rx;
--		++drv_data->tx;
-+		*(u8 *) (drv_data->rx++) = read_RDBR(drv_data);
- 	}
- }
- 
-@@ -364,130 +360,102 @@ static void bfin_spi_u8_cs_chg_duplex(struct driver_data *drv_data)
- {
- 	struct chip_data *chip = drv_data->cur_chip;
- 
-+	/* discard old RX data and clear RXS */
-+	bfin_spi_dummy_read(drv_data);
-+
- 	while (drv_data->rx < drv_data->rx_end) {
- 		bfin_spi_cs_active(drv_data, chip);
--
--		write_TDBR(drv_data, (*(u8 *) (drv_data->tx)));
--
--		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--			cpu_relax();
-+		write_TDBR(drv_data, (*(u8 *) (drv_data->tx++)));
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
--		*(u8 *) (drv_data->rx) = read_RDBR(drv_data);
--
-+		*(u8 *) (drv_data->rx++) = read_RDBR(drv_data);
- 		bfin_spi_cs_deactive(drv_data, chip);
--
--		++drv_data->rx;
--		++drv_data->tx;
- 	}
- }
- 
- static void bfin_spi_u16_writer(struct driver_data *drv_data)
- {
--	dev_dbg(&drv_data->pdev->dev,
--		"cr16 is 0x%x\n", read_STAT(drv_data));
-+	/* clear RXS (we check for RXS inside the loop) */
-+	bfin_spi_dummy_read(drv_data);
- 
- 	while (drv_data->tx < drv_data->tx_end) {
- 		write_TDBR(drv_data, (*(u16 *) (drv_data->tx)));
--		while ((read_STAT(drv_data) & BIT_STAT_TXS))
--			cpu_relax();
- 		drv_data->tx += 2;
-+		/* wait until transfer finished.
-+		   checking SPIF or TXS may not guarantee transfer completion */
-+		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
-+			cpu_relax();
-+		/* discard RX data and clear RXS */
-+		bfin_spi_dummy_read(drv_data);
- 	}
--
--	/* poll for SPI completion before return */
--	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--		cpu_relax();
- }
- 
- static void bfin_spi_u16_cs_chg_writer(struct driver_data *drv_data)
- {
- 	struct chip_data *chip = drv_data->cur_chip;
- 
-+	/* clear RXS (we check for RXS inside the loop) */
-+	bfin_spi_dummy_read(drv_data);
-+
- 	while (drv_data->tx < drv_data->tx_end) {
- 		bfin_spi_cs_active(drv_data, chip);
--
- 		write_TDBR(drv_data, (*(u16 *) (drv_data->tx)));
--		while ((read_STAT(drv_data) & BIT_STAT_TXS))
--			cpu_relax();
--		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
-+		drv_data->tx += 2;
-+		/* make sure transfer finished before deactiving CS */
-+		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
--
-+		bfin_spi_dummy_read(drv_data);
- 		bfin_spi_cs_deactive(drv_data, chip);
--
--		drv_data->tx += 2;
- 	}
- }
- 
- static void bfin_spi_u16_reader(struct driver_data *drv_data)
- {
--	dev_dbg(&drv_data->pdev->dev,
--		"cr-16 is 0x%x\n", read_STAT(drv_data));
--
--	/* poll for SPI completion before start */
--	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--		cpu_relax();
--
--	/* clear TDBR buffer before read(else it will be shifted out) */
--	write_TDBR(drv_data, 0xFFFF);
-+	u16 tx_val = drv_data->cur_chip->idle_tx_val;
- 
-+	/* discard old RX data and clear RXS */
- 	bfin_spi_dummy_read(drv_data);
- 
--	while (drv_data->rx < (drv_data->rx_end - 2)) {
-+	while (drv_data->rx < drv_data->rx_end) {
-+		write_TDBR(drv_data, tx_val);
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
- 		*(u16 *) (drv_data->rx) = read_RDBR(drv_data);
- 		drv_data->rx += 2;
- 	}
--
--	while (!(read_STAT(drv_data) & BIT_STAT_RXS))
--		cpu_relax();
--	*(u16 *) (drv_data->rx) = read_SHAW(drv_data);
--	drv_data->rx += 2;
- }
- 
- static void bfin_spi_u16_cs_chg_reader(struct driver_data *drv_data)
- {
- 	struct chip_data *chip = drv_data->cur_chip;
-+	u16 tx_val = chip->idle_tx_val;
- 
--	/* poll for SPI completion before start */
--	while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--		cpu_relax();
--
--	/* clear TDBR buffer before read(else it will be shifted out) */
--	write_TDBR(drv_data, 0xFFFF);
--
--	bfin_spi_cs_active(drv_data, chip);
-+	/* discard old RX data and clear RXS */
- 	bfin_spi_dummy_read(drv_data);
- 
--	while (drv_data->rx < drv_data->rx_end - 2) {
--		bfin_spi_cs_deactive(drv_data, chip);
--
-+	while (drv_data->rx < drv_data->rx_end) {
-+		bfin_spi_cs_active(drv_data, chip);
-+		write_TDBR(drv_data, tx_val);
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
--		bfin_spi_cs_active(drv_data, chip);
- 		*(u16 *) (drv_data->rx) = read_RDBR(drv_data);
- 		drv_data->rx += 2;
-+		bfin_spi_cs_deactive(drv_data, chip);
- 	}
--	bfin_spi_cs_deactive(drv_data, chip);
--
--	while (!(read_STAT(drv_data) & BIT_STAT_RXS))
--		cpu_relax();
--	*(u16 *) (drv_data->rx) = read_SHAW(drv_data);
--	drv_data->rx += 2;
- }
- 
- static void bfin_spi_u16_duplex(struct driver_data *drv_data)
- {
--	/* in duplex mode, clk is triggered by writing of TDBR */
--	while (drv_data->tx < drv_data->tx_end) {
-+	/* discard old RX data and clear RXS */
-+	bfin_spi_dummy_read(drv_data);
-+
-+	while (drv_data->rx < drv_data->rx_end) {
- 		write_TDBR(drv_data, (*(u16 *) (drv_data->tx)));
--		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--			cpu_relax();
-+		drv_data->tx += 2;
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
- 		*(u16 *) (drv_data->rx) = read_RDBR(drv_data);
- 		drv_data->rx += 2;
--		drv_data->tx += 2;
- 	}
- }
- 
-@@ -495,20 +463,18 @@ static void bfin_spi_u16_cs_chg_duplex(struct driver_data *drv_data)
- {
- 	struct chip_data *chip = drv_data->cur_chip;
- 
--	while (drv_data->tx < drv_data->tx_end) {
--		bfin_spi_cs_active(drv_data, chip);
-+	/* discard old RX data and clear RXS */
-+	bfin_spi_dummy_read(drv_data);
- 
-+	while (drv_data->rx < drv_data->rx_end) {
-+		bfin_spi_cs_active(drv_data, chip);
- 		write_TDBR(drv_data, (*(u16 *) (drv_data->tx)));
--		while (!(read_STAT(drv_data) & BIT_STAT_SPIF))
--			cpu_relax();
-+		drv_data->tx += 2;
- 		while (!(read_STAT(drv_data) & BIT_STAT_RXS))
- 			cpu_relax();
- 		*(u16 *) (drv_data->rx) = read_RDBR(drv_data);
--
--		bfin_spi_cs_deactive(drv_data, chip);
--
- 		drv_data->rx += 2;
--		drv_data->tx += 2;
-+		bfin_spi_cs_deactive(drv_data, chip);
- 	}
- }
- 
-@@ -685,6 +651,13 @@ static void bfin_spi_pump_transfers(unsigned long data)
- 		return;
- 	}
- 
-+	if (transfer->len == 0) {
-+		/* Move to next transfer of this msg */
-+		message->state = bfin_spi_next_transfer(drv_data);
-+		/* Schedule next transfer tasklet */
-+		tasklet_schedule(&drv_data->pump_transfers);
-+	}
-+
- 	if (transfer->tx_buf != NULL) {
- 		drv_data->tx = (void *)transfer->tx_buf;
- 		drv_data->tx_end = drv_data->tx + transfer->len;
-@@ -881,6 +854,11 @@ static void bfin_spi_pump_transfers(unsigned long data)
- 		/* IO mode write then read */
- 		dev_dbg(&drv_data->pdev->dev, "doing IO transfer\n");
- 
-+		/* we always use SPI_WRITE mode. SPI_READ mode
-+		   seems to have problems with setting up the
-+		   output value in TDBR prior to the transfer. */
-+		write_CTRL(drv_data, (cr | CFG_SPI_WRITE));
-+
- 		if (full_duplex) {
- 			/* full duplex mode */
- 			BUG_ON((drv_data->tx_end - drv_data->tx) !=
-@@ -888,9 +866,6 @@ static void bfin_spi_pump_transfers(unsigned long data)
- 			dev_dbg(&drv_data->pdev->dev,
- 				"IO duplex: cr is 0x%x\n", cr);
- 
--			/* set SPI transfer mode */
--			write_CTRL(drv_data, (cr | CFG_SPI_WRITE));
--
- 			drv_data->duplex(drv_data);
- 
- 			if (drv_data->tx != drv_data->tx_end)
-@@ -900,9 +875,6 @@ static void bfin_spi_pump_transfers(unsigned long data)
- 			dev_dbg(&drv_data->pdev->dev,
- 				"IO write: cr is 0x%x\n", cr);
- 
--			/* set SPI transfer mode */
--			write_CTRL(drv_data, (cr | CFG_SPI_WRITE));
--
- 			drv_data->write(drv_data);
- 
- 			if (drv_data->tx != drv_data->tx_end)
-@@ -912,9 +884,6 @@ static void bfin_spi_pump_transfers(unsigned long data)
- 			dev_dbg(&drv_data->pdev->dev,
- 				"IO read: cr is 0x%x\n", cr);
- 
--			/* set SPI transfer mode */
--			write_CTRL(drv_data, (cr | CFG_SPI_READ));
--
- 			drv_data->read(drv_data);
- 			if (drv_data->rx != drv_data->rx_end)
- 				tranf_success = 0;
-@@ -934,7 +903,6 @@ static void bfin_spi_pump_transfers(unsigned long data)
- 		}
- 		/* Schedule next transfer tasklet */
- 		tasklet_schedule(&drv_data->pump_transfers);
--
- 	}
- }
- 
-@@ -1154,6 +1122,7 @@ static int bfin_spi_setup(struct spi_device *spi)
- 		chip->cs_change_per_word = chip_info->cs_change_per_word;
- 		chip->cs_chg_udelay = chip_info->cs_chg_udelay;
- 		chip->cs_gpio = chip_info->cs_gpio;
-+		chip->idle_tx_val = chip_info->idle_tx_val;
- 	}
- 
- 	/* translate common spi framework into our register */
+The real badness happens when pages belonging to different zones or node are
+considered to be buddies of each other and merged but that situation would
+not have triggered on your machine at least.
+
+> I also noticed that when S390 got virtual memmap support, it acquired
+> the HOLES_IN_ZONE setting as well, in this commit:
+> 
+> commit f4eb07c17df2e6cf9bd58bfcd9cc9e05e9489d07
+> Author: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Date:   Fri Dec 8 15:56:07 2006 +0100
+> 
+>     [S390] Virtual memmap for s390.
+> 
+> This is confusing.  Is HOLES_IN_ZONE only required when virtual mmap
+> is being used?  If so, why is that?  This is a very poorly documented
+> flag, and I'm saying this after pouring over every commit referencing
+> it.
+> 
+
+!HOLES_IN_ZONE
+	If any one PFN within a MAX_ORDER_NR_PAGES is valid, then you
+	can assume all PFNs in there are valid.
+
+HOLES_IN_ZONE
+	Due to memory holes or unaligned zones, all PFNs within a
+	MAX_ORDER_NR_PAGE may not be valid.
+
+What this affects in practice is what pfn_valid_within() does. If you are
+walking all the PFNs within a MAX_ORDER block, you need to call pfn_valid()
+once per MAX_ORDER and pfn_valid_within() for each PFN. When
+!HOLES_IN_ZONE, this becomes a no-op.
+
+> Later this HOLES_IN_ZONE requirement was removed on s390 by commit:
+> 
+> commit 9f4b0ba81f158df459fa2cfc98ab1475c090f29c
+> Author: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Date:   Sat Jan 26 14:11:02 2008 +0100
+> 
+>     [S390] Get rid of HOLES_IN_ZONE requirement.
+> 
+> Anyways...
+> 
+> The point of this email is, do I really need to set this thing on
+> sparc64? I've never seen this check triggered before, it only seems
+> to have started triggering in 2.6.27 or so but I obviously can't find
+> anything that would influence something of this nature.
+> 
+
+Possibly not. If we ensure there is valid memmap for each PFN within a
+MAX_ORDER block, then they would get marked reserved and never merged.
+Other walkers should just ignore them in that case and you don't need
+HOLES_IN_ZONE.
+
+> It takes a lot of stressing to get that specific chunk of pages to
+> attempt to be freed up in a group like that :-/
+> 
+
+It'd be down to luck.
+
+> As a suggestion, it would have been a lot more pleasant if the code
+> validated this requirement (in the !HOLES_IN_ZONE case) at boot time
+> instead of after 2 hours of stress testing :-(
+> 
+
+Nice maybe, but we'd take a hit on pfn_valid_within() which goes from
+being compiled-away on architectures that don't need it to being
+a read of a shared cacheline and a branch.
+
 -- 
-1.5.6.3
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
