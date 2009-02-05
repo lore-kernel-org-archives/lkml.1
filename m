@@ -1,187 +1,705 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757568AbZBEQon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbZBEQqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757568AbZBEQon (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 11:44:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753506AbZBEQoe
+	id S1758240AbZBEQqb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 11:46:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752121AbZBEQqW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 11:44:34 -0500
-Received: from mail-gx0-f21.google.com ([209.85.217.21]:64958 "EHLO
-	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751540AbZBEQod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 11:44:33 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vQmdyayli7bjOA1sXwC3NHml0hpxf5qOlwhorRQSJZmeDpEL9MjpUPAdJ9JVsYUwBk
-         jCCKpOVpDNBBgfldcf/RLIHcKIHQJ1gXyFBg9QSrFcN82TYw9Q6LDyXzeTJl1rhwNvf8
-         YlboVfpXfsM7eYTa37oZ1h1mUw5GQp7RFyHzo=
+	Thu, 5 Feb 2009 11:46:22 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:52603 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751641AbZBEQqT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 11:46:19 -0500
+Date: Thu, 5 Feb 2009 11:45:20 -0500
+From: Jason Baron <jbaron@redhat.com>
+To: linux-kernel@vger.kernel.org, gnb@sgi.com, gregkh@suse.de
+Cc: nfsv4@linux-nfs.org, systemtap@sources.redhat.com
+Subject: [Patch 0/2] dynamic debug
+Message-ID: <20090205164520.GB3114@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0902051730300.5553@axis700.grange>
-References: <Pine.LNX.4.64.0902051730300.5553@axis700.grange>
-Date: Thu, 5 Feb 2009 17:44:31 +0100
-Message-ID: <74d0deb30902050844m7b6ac56fw8d3c49dbfb49b547@mail.gmail.com>
-Subject: Re: [PATCH] gpio-keys: poll for release if GPIO cannot interrupt on 
-	both edges
-From: pHilipp Zabel <philipp.zabel@gmail.com>
-To: Guennadi Liakhovetski <lg@denx.de>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dmitry.torokhov@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 5:38 PM, Guennadi Liakhovetski <lg@denx.de> wrote:
-> There are GPIO controllers, that cannot be configured to produce
-> interrupts on both edges. To be able to meaningfully use these for
-> gpio-keys, add a polling option.
+hi,
 
-Are those controllers that can't even switch between rising/falling
-edge detection? If you can switch, you can emulate both edge
-triggering in the irqchip driver, like it is done for mfd/asic3.
+This patchset combines Greg Bank's dprintk() patchset with the dynamic printk
+patchset. We are renaming the combined solution 'dynamic debug'. As a reminder,
+the patchset allows debug printk style statements to be dynamically 
+enabled/disabled at runtime.
 
->
-> Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
-> ---
->
-> I previously tried to solve this problem by reporting a release event
-> immediately after press, but this proved to be not very useful. This patch
-> adds a timer to poll for release events on such buttons. I so far set the
-> polling period to 50ms, don't know how good or bad this is, and whether we
-> want to have it configurable.
->
-> diff --git a/drivers/input/keyboard/gpio_keys.c b/drivers/input/keyboard/gpio_keys.c
-> index ad67d76..2203fd0 100644
-> --- a/drivers/input/keyboard/gpio_keys.c
-> +++ b/drivers/input/keyboard/gpio_keys.c
-> @@ -29,10 +29,13 @@ struct gpio_button_data {
->        struct gpio_keys_button *button;
->        struct input_dev *input;
->        struct timer_list timer;
-> +       struct timer_list *release;
-> +       int state;
->  };
->
->  struct gpio_keys_drvdata {
->        struct input_dev *input;
-> +       struct timer_list release;
->        struct gpio_button_data data[0];
->  };
->
-> @@ -43,10 +46,41 @@ static void gpio_keys_report_event(struct gpio_button_data *bdata)
->        unsigned int type = button->type ?: EV_KEY;
->        int state = (gpio_get_value(button->gpio) ? 1 : 0) ^ button->active_low;
->
-> -       input_event(input, type, button->code, !!state);
-> +       bdata->state = !!state;
-> +       input_event(input, type, button->code, bdata->state);
-> +       /* If the button only supports press events, poll for release */
-> +       if (state && button->irq_trigger != (IRQF_TRIGGER_RISING |
-> +                                            IRQF_TRIGGER_FALLING))
-> +               mod_timer(bdata->release, jiffies + msecs_to_jiffies(50));
-> +
->        input_sync(input);
->  }
->
-> +static void gpio_poll_button(unsigned long _data)
-> +{
-> +       struct platform_device *pdev = (struct platform_device *)_data;
-> +       struct gpio_keys_platform_data *pdata = pdev->dev.platform_data;
-> +       struct gpio_keys_drvdata *ddata = platform_get_drvdata(pdev);
-> +       int i;
-> +
-> +       for (i = 0; i < pdata->nbuttons; i++) {
-> +               struct gpio_button_data *bdata = &ddata->data[i];
-> +               struct gpio_keys_button *button = bdata->button;
-> +
-> +               if (bdata->state && button->irq_trigger !=
-> +                   (IRQF_TRIGGER_RISING | IRQF_TRIGGER_FALLING)) {
-> +                       int state = (gpio_get_value(button->gpio) ? 1 : 0) ^
-> +                               button->active_low;
-> +
-> +                       if (!state)
-> +                               gpio_keys_report_event(bdata);
-> +                       else
-> +                               mod_timer(bdata->release, jiffies +
-> +                                         msecs_to_jiffies(50));
-> +               }
-> +       }
-> +}
-> +
->  static void gpio_check_button(unsigned long _data)
->  {
->        struct gpio_button_data *data = (struct gpio_button_data *)_data;
-> @@ -104,6 +138,9 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
->
->        ddata->input = input;
->
-> +       setup_timer(&ddata->release,
-> +                   gpio_poll_button, (unsigned long)pdev);
-> +
->        for (i = 0; i < pdata->nbuttons; i++) {
->                struct gpio_keys_button *button = &pdata->buttons[i];
->                struct gpio_button_data *bdata = &ddata->data[i];
-> @@ -141,9 +178,19 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
->                        goto fail2;
->                }
->
-> +               button->irq_trigger &= IRQF_TRIGGER_RISING |
-> +                       IRQF_TRIGGER_FALLING;
-> +
-> +               if (!button->irq_trigger)
-> +                       button->irq_trigger = IRQF_TRIGGER_RISING |
-> +                               IRQF_TRIGGER_FALLING;
-> +
-> +               if (button->irq_trigger != (IRQF_TRIGGER_RISING |
-> +                                           IRQF_TRIGGER_FALLING))
-> +                       bdata->release = &ddata->release;
-> +
->                error = request_irq(irq, gpio_keys_isr,
-> -                                   IRQF_SAMPLE_RANDOM | IRQF_TRIGGER_RISING |
-> -                                       IRQF_TRIGGER_FALLING,
-> +                                   IRQF_SAMPLE_RANDOM | button->irq_trigger,
->                                    button->desc ? button->desc : "gpio_keys",
->                                    bdata);
->                if (error) {
-> @@ -171,6 +218,7 @@ static int __devinit gpio_keys_probe(struct platform_device *pdev)
->        return 0;
->
->  fail2:
-> +       del_timer_sync(&ddata->release);
->        while (--i >= 0) {
->                free_irq(gpio_to_irq(pdata->buttons[i].gpio), &ddata->data[i]);
->                if (pdata->buttons[i].debounce_interval)
-> @@ -195,6 +243,8 @@ static int __devexit gpio_keys_remove(struct platform_device *pdev)
->
->        device_init_wakeup(&pdev->dev, 0);
->
-> +       del_timer_sync(&ddata->release);
-> +
->        for (i = 0; i < pdata->nbuttons; i++) {
->                int irq = gpio_to_irq(pdata->buttons[i].gpio);
->                free_irq(irq, &ddata->data[i]);
-> diff --git a/include/linux/gpio_keys.h b/include/linux/gpio_keys.h
-> index 1289fa7..d0bd8e2 100644
-> --- a/include/linux/gpio_keys.h
-> +++ b/include/linux/gpio_keys.h
-> @@ -10,6 +10,7 @@ struct gpio_keys_button {
->        int type;               /* input event type (EV_KEY, EV_SW) */
->        int wakeup;             /* configure the button as a wake-up source */
->        int debounce_interval;  /* debounce ticks interval in msecs */
-> +       unsigned long irq_trigger; /* IRQF_TRIGGER_{RISING,FALLING} */
->  };
->
->  struct gpio_keys_platform_data {
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+The key new feature of this patchset is a richer /debugfs control file
+interface, (an example output from my system is at the bottom), which allows
+fined grained control over the the debug output. The output can be controlled by
+function, file and line number, module, and format string. 
+
+For example, to enable all debug statement in module 'nf_conntrack':
+
+#echo -n 'module nf_conntrack +p' > /mnt/debugfs/dynamic_debug/control
+
+A further explanation can be found in the documentation patch.
+
+While adding these new features we have dropped a couple that we intend to add
+back in subsequent patches. The ability to turn on/off all debugging at once,
+either via the /debugfs control file, or via the kernel command line.
+
+thanks,
+
+-Jason and Greg
 
 
-regards
-Philipp
+# filename:lineno [module]function flags format
+arch/x86/kernel/setup_percpu.c:260 [setup_percpu]numa_set_node - "Setting\040node\040for\040non-present\040cpu\040%d\012"
+arch/x86/kernel/setup_percpu.c:197 [setup_percpu]setup_per_cpu_areas - "per\040cpu\040data\040for\040cpu%d\040on\040node%d\040at\040%016lx\012"
+arch/x86/kernel/setup_percpu.c:192 [setup_percpu]setup_per_cpu_areas - "per\040cpu\040data\040for\040cpu%d\040at\040%016lx\012"
+arch/x86/kernel/setup_percpu.c:240 [setup_percpu]setup_node_to_cpumask_map - "Node\040to\040cpumask\040map\040at\040%p\040for\040%d\040nodes\012"
+arch/x86/kernel/cpu/perfctr-watchdog.c:255 [perfctr_watchdog]write_watchdog_counter - "setting\040%s\040to\040-0x%08Lx\012"
+arch/x86/kernel/cpu/perfctr-watchdog.c:266 [perfctr_watchdog]write_watchdog_counter32 - "setting\040%s\040to\040-0x%08Lx\012"
+arch/x86/kernel/acpi/boot.c:1156 [boot]mp_register_gsi - "Pin\040%d-%d\040already\040programmed\012"
+arch/x86/kernel/acpi/boot.c:1049 [boot]mp_config_acpi_legacy_irqs - "Bus\040#%d\040is\040ISA\012"
+arch/x86/kernel/smpboot.c:1254 [smpboot]native_smp_cpus_done - "Boot\040done.\012"
+arch/x86/kernel/smpboot.c:530 [smpboot]impress_friends - "Before\040bogocount\040-\040setting\040activated=1.\012"
+arch/x86/kernel/smpboot.c:520 [smpboot]impress_friends - "Before\040bogomips.\012"
+arch/x86/kernel/smpboot.c:1009 [smpboot]native_cpu_up - "do_boot_cpu\040failed\040%d\012"
+arch/x86/kernel/smpboot.c:982 [smpboot]native_cpu_up - "do_boot_cpu\040%d\040Already\040started\012"
+arch/x86/kernel/smpboot.c:970 [smpboot]native_cpu_up - "++++++++++++++++++++=_---CPU\040UP\040\040%u\012"
+arch/x86/kernel/smpboot.c:920 [smpboot]do_boot_cpu - "CPU\040has\040booted.\012"
+arch/x86/kernel/smpboot.c:917 [smpboot]do_boot_cpu - "OK.\012"
+arch/x86/kernel/smpboot.c:904 [smpboot]do_boot_cpu - "After\040Callout\040%d.\012"
+arch/x86/kernel/smpboot.c:902 [smpboot]do_boot_cpu - "Before\040Callout\040%d.\012"
+arch/x86/kernel/smpboot.c:879 [smpboot]do_boot_cpu - "Setting\040warm\040reset\040code\040and\040vector.\012"
+arch/x86/include/asm/mach-default/smpboot_hooks.h:21 [smpboot]smpboot_setup_warm_reset_vector - "3.\012"
+arch/x86/include/asm/mach-default/smpboot_hooks.h:18 [smpboot]smpboot_setup_warm_reset_vector - "2.\012"
+arch/x86/include/asm/mach-default/smpboot_hooks.h:15 [smpboot]smpboot_setup_warm_reset_vector - "1.\012"
+arch/x86/kernel/smpboot.c:261 [smpboot]smp_callin - "Stack\040at\040about\040%p\012"
+arch/x86/kernel/smpboot.c:245 [smpboot]smp_callin - "CALLIN,\040before\040setup_local_APIC().\012"
+arch/x86/kernel/smpboot.c:210 [smpboot]smp_callin - "CPU#%d\040(phys\040ID:\040%d)\040waiting\040for\040CALLOUT\012"
+arch/x86/kernel/smpboot.c:722 [smpboot]wakeup_secondary_cpu_via_init - "After\040Startup.\012"
+arch/x86/kernel/smpboot.c:709 [smpboot]wakeup_secondary_cpu_via_init - "Waiting\040for\040send\040to\040finish...\012"
+arch/x86/kernel/smpboot.c:707 [smpboot]wakeup_secondary_cpu_via_init - "Startup\040point\0401.\012"
+arch/x86/kernel/smpboot.c:690 [smpboot]wakeup_secondary_cpu_via_init - "After\040apic_write.\012"
+arch/x86/kernel/smpboot.c:686 [smpboot]wakeup_secondary_cpu_via_init - "Sending\040STARTUP\040#%d.\012"
+arch/x86/kernel/smpboot.c:683 [smpboot]wakeup_secondary_cpu_via_init - "#startup\040loops:\040%d.\012"
+arch/x86/kernel/smpboot.c:656 [smpboot]wakeup_secondary_cpu_via_init - "Waiting\040for\040send\040to\040finish...\012"
+arch/x86/kernel/smpboot.c:650 [smpboot]wakeup_secondary_cpu_via_init - "Deasserting\040INIT.\012"
+arch/x86/kernel/smpboot.c:645 [smpboot]wakeup_secondary_cpu_via_init - "Waiting\040for\040send\040to\040finish...\012"
+arch/x86/kernel/smpboot.c:634 [smpboot]wakeup_secondary_cpu_via_init - "Asserting\040INIT.\012"
+arch/x86/kernel/smpboot.c:601 [smpboot]wakeup_secondary_cpu_via_nmi - "NMI\040sent.\012"
+arch/x86/kernel/smpboot.c:588 [smpboot]wakeup_secondary_cpu_via_nmi - "Waiting\040for\040send\040to\040finish...\012"
+arch/x86/kernel/apic.c:1712 [apic]smp_error_interrupt - "APIC\040error\040on\040CPU%d:\040%02x(%02x)\012"
+arch/x86/kernel/microcode_core.c:439 [microcode]mc_cpu_callback - "microcode:\040CPU%d\040removed\012"
+arch/x86/kernel/microcode_core.c:430 [microcode]mc_cpu_callback - "microcode:\040CPU%d\040added\012"
+arch/x86/kernel/microcode_core.c:304 [microcode]microcode_resume_cpu - "microcode:\040CPU%d\040resumed\012"
+arch/x86/kernel/microcode_core.c:393 [microcode]mc_sysdev_remove - "microcode:\040CPU%d\040removed\012"
+arch/x86/kernel/microcode_core.c:375 [microcode]mc_sysdev_add - "microcode:\040CPU%d\040added\012"
+arch/x86/kernel/microcode_intel.c:189 [microcode]collect_cpu_info - "microcode:\040collect_cpu_info\040:\040sig=0x%x,\040pf=0x%x,\040rev=0x%x\012"
+arch/x86/kernel/microcode_intel.c:441 [microcode]request_microcode_fw - "microcode:\040data\040file\040%s\040load\040failed\012"
+arch/x86/kernel/microcode_intel.c:414 [microcode]generic_load_microcode - "microcode:\040CPU%d\040found\040a\040matching\040microcode\040update\040with\040version\0400x%x\040(current=0x%x)\012"
+arch/x86/mm/init_64.c:166 [init_64]spp_getpage - "spp_getpage\040%p\012"
+arch/x86/mm/init_64.c:214 [init_64]set_pte_vaddr - "set_pte_vaddr\040%lx\040to\040%lx\012"
+arch/x86/mm/ioremap.c:274 [ioremap]__ioremap_caller - "ioremap\040error\040for\0400x%llx-0x%llx,\040requested\0400x%lx,\040got\0400x%lx\012"
+arch/x86/mm/ioremap.c:253 [ioremap]__ioremap_caller - "Warning:\040reserve_memtype\040returned\040%d\012"
+kernel/pm_qos_params.c:157 [pm_qos_params]update_target - "<3>new\040target\040for\040qos\040%d\040is\040%d\012"
+kernel/freezer.c:116 [freezer]cancel_freezing - "\040\040clean\040up:\040%s\012"
+kernel/freezer.c:53 [freezer]refrigerator - "%s\040left\040refrigerator\012"
+kernel/freezer.c:41 [freezer]refrigerator - "%s\040entered\040refrigerator\012"
+kernel/irq/manage.c:374 [manage]__irq_set_trigger - "No\040set_type\040function\040for\040IRQ\040%d\040(%s)\012"
+mm/mempolicy.c:194 [mempolicy]mpol_new - "setting\040mode\040%d\040flags\040%d\040nodes[0]\040%lx\012"
+mm/mempolicy.c:1891 [mempolicy]mpol_set_shared_policy - "set_shared_policy\040%lx\040sz\040%lu\040%d\040%d\040%lx\012"
+mm/mempolicy.c:1779 [mempolicy]sp_delete - "deleting\040%lx-l%lx\012"
+mm/mempolicy.c:1755 [mempolicy]sp_insert - "inserting\040%lx-%lx:\040%d\012"
+mm/mempolicy.c:973 [mempolicy]do_mbind - "mbind\040%lx-%lx\040mode:%d\040flags:%d\040nodes:%lx\012"
+mm/mempolicy.c:535 [mempolicy]policy_vma - "vma\040%lx-%lx/%lx\040vm_ops\040%p\040vm_file\040%p\040set_policy\040%p\012"
+fs/aio.c:77 [aio]aio_setup - "aio_setup:\040sizeof(struct\040page)\040=\040%d\012"
+fs/aio.c:222 [aio]__put_ioctx - "__put_ioctx:\040freeing\040%p\012"
+fs/aio.c:1770 [aio]sys_io_cancel - "calling\040cancel\012"
+fs/aio.c:1680 [aio]sys_io_submit - "EINVAL:\040io_submit:\040invalid\040context\040id\012"
+fs/aio.c:1587 [aio]io_submit_one - "EINVAL:\040io_submit:\040overflow\040check\012"
+fs/aio.c:1577 [aio]io_submit_one - "EINVAL:\040io_submit:\040reserve\040field\040set\012"
+fs/aio.c:1318 [aio]sys_io_destroy - "EINVAL:\040io_destroy:\040invalid\040context\040id\012"
+fs/aio.c:1286 [aio]sys_io_setup - "EINVAL:\040io_setup:\040ctx\040%lu\040nr_events\040%u\012"
+fs/aio.c:248 [aio]ioctx_alloc - "ENOMEM:\040nr_events\040too\040high\012"
+fs/aio.c:1005 [aio]aio_complete - "added\040to\040ring\040%p\040at\040[%lu]\012"
+fs/partitions/efi.c:611 [efi]efi_partition - "GUID\040Partition\040Table\040is\040valid!\040\040Yea!\012"
+fs/partitions/efi.c:355 [efi]is_gpt_valid - "GUID\040Partitition\040Entry\040Array\040CRC\040check\040failed.\012"
+fs/partitions/efi.c:342 [efi]is_gpt_valid - "GPT:\040last_usable_lba\040incorrect:\040%lld\040>\040%lld\012"
+fs/partitions/efi.c:336 [efi]is_gpt_valid - "GPT:\040first_usable_lba\040incorrect:\040%lld\040>\040%lld\012"
+fs/partitions/efi.c:325 [efi]is_gpt_valid - "GPT\040my_lba\040incorrect:\040%lld\040!=\040%lld\012"
+fs/partitions/efi.c:315 [efi]is_gpt_valid - "GUID\040Partition\040Table\040Header\040CRC\040is\040wrong:\040%x\040!=\040%x\012"
+fs/partitions/efi.c:304 [efi]is_gpt_valid - "GUID\040Partition\040Table\040Header\040signature\040is\040wrong:%lld\040!=\040%lld\012"
+fs/sysfs/file.c:147 [file]sysfs_read_file - "%s:\040count\040=\040%zd,\040ppos\040=\040%lld,\040buf\040=\040%s\012"
+fs/sysfs/dir.c:759 [dir]__sysfs_remove_dir - "sysfs\040%s:\040removing\040dir\012"
+fs/sysfs/bin.c:94 [bin]read - "offs\040=\040%lld,\040*off\040=\040%lld,\040count\040=\040%d\012"
+fs/debugfs/inode.c:216 [debugfs]debugfs_create_file - "debugfs:\040creating\040file\040'%s'\012"
+fs/debugfs/inode.c:156 [debugfs]debugfs_create_by_name - "debugfs:\040Ah!\040can\040not\040find\040a\040parent!\012"
+security/capability.c:1060 [capability]security_fixup_ops - "Had\040to\040override\040the\040audit_rule_free\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1059 [capability]security_fixup_ops - "Had\040to\040override\040the\040audit_rule_match\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1058 [capability]security_fixup_ops - "Had\040to\040override\040the\040audit_rule_known\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1057 [capability]security_fixup_ops - "Had\040to\040override\040the\040audit_rule_init\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1054 [capability]security_fixup_ops - "Had\040to\040override\040the\040key_getsecurity\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1053 [capability]security_fixup_ops - "Had\040to\040override\040the\040key_permission\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1052 [capability]security_fixup_ops - "Had\040to\040override\040the\040key_free\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1051 [capability]security_fixup_ops - "Had\040to\040override\040the\040key_alloc\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1036 [capability]security_fixup_ops - "Had\040to\040override\040the\040req_classify_flow\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1035 [capability]security_fixup_ops - "Had\040to\040override\040the\040inet_conn_established\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1034 [capability]security_fixup_ops - "Had\040to\040override\040the\040inet_csk_clone\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1033 [capability]security_fixup_ops - "Had\040to\040override\040the\040inet_conn_request\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1032 [capability]security_fixup_ops - "Had\040to\040override\040the\040sock_graft\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1031 [capability]security_fixup_ops - "Had\040to\040override\040the\040sk_getsecid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1030 [capability]security_fixup_ops - "Had\040to\040override\040the\040sk_clone_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1029 [capability]security_fixup_ops - "Had\040to\040override\040the\040sk_free_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1028 [capability]security_fixup_ops - "Had\040to\040override\040the\040sk_alloc_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1027 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_getpeersec_dgram\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1026 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_getpeersec_stream\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1025 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_sock_rcv_skb\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1024 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_shutdown\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1023 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_getsockopt\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1022 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_setsockopt\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1021 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_getpeername\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1020 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_getsockname\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1019 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_recvmsg\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1018 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_sendmsg\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1017 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_post_accept\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1016 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_accept\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1015 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_listen\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1014 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_connect\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1013 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_bind\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1012 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_post_create\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1011 [capability]security_fixup_ops - "Had\040to\040override\040the\040socket_create\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1010 [capability]security_fixup_ops - "Had\040to\040override\040the\040unix_may_send\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1009 [capability]security_fixup_ops - "Had\040to\040override\040the\040unix_stream_connect\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1007 [capability]security_fixup_ops - "Had\040to\040override\040the\040release_secctx\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1006 [capability]security_fixup_ops - "Had\040to\040override\040the\040secctx_to_secid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1005 [capability]security_fixup_ops - "Had\040to\040override\040the\040secid_to_secctx\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1004 [capability]security_fixup_ops - "Had\040to\040override\040the\040setprocattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1003 [capability]security_fixup_ops - "Had\040to\040override\040the\040getprocattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1002 [capability]security_fixup_ops - "Had\040to\040override\040the\040d_instantiate\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1001 [capability]security_fixup_ops - "Had\040to\040override\040the\040netlink_recv\040security\040operation\040with\040the\040default.\012"
+security/capability.c:1000 [capability]security_fixup_ops - "Had\040to\040override\040the\040netlink_send\040security\040operation\040with\040the\040default.\012"
+security/capability.c:999 [capability]security_fixup_ops - "Had\040to\040override\040the\040sem_semop\040security\040operation\040with\040the\040default.\012"
+security/capability.c:998 [capability]security_fixup_ops - "Had\040to\040override\040the\040sem_semctl\040security\040operation\040with\040the\040default.\012"
+security/capability.c:997 [capability]security_fixup_ops - "Had\040to\040override\040the\040sem_associate\040security\040operation\040with\040the\040default.\012"
+security/capability.c:996 [capability]security_fixup_ops - "Had\040to\040override\040the\040sem_free_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:995 [capability]security_fixup_ops - "Had\040to\040override\040the\040sem_alloc_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:994 [capability]security_fixup_ops - "Had\040to\040override\040the\040shm_shmat\040security\040operation\040with\040the\040default.\012"
+security/capability.c:993 [capability]security_fixup_ops - "Had\040to\040override\040the\040shm_shmctl\040security\040operation\040with\040the\040default.\012"
+security/capability.c:992 [capability]security_fixup_ops - "Had\040to\040override\040the\040shm_associate\040security\040operation\040with\040the\040default.\012"
+security/capability.c:991 [capability]security_fixup_ops - "Had\040to\040override\040the\040shm_free_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:990 [capability]security_fixup_ops - "Had\040to\040override\040the\040shm_alloc_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:989 [capability]security_fixup_ops - "Had\040to\040override\040the\040msg_queue_msgrcv\040security\040operation\040with\040the\040default.\012"
+security/capability.c:988 [capability]security_fixup_ops - "Had\040to\040override\040the\040msg_queue_msgsnd\040security\040operation\040with\040the\040default.\012"
+security/capability.c:987 [capability]security_fixup_ops - "Had\040to\040override\040the\040msg_queue_msgctl\040security\040operation\040with\040the\040default.\012"
+security/capability.c:986 [capability]security_fixup_ops - "Had\040to\040override\040the\040msg_queue_associate\040security\040operation\040with\040the\040default.\012"
+security/capability.c:985 [capability]security_fixup_ops - "Had\040to\040override\040the\040msg_queue_free_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:984 [capability]security_fixup_ops - "Had\040to\040override\040the\040msg_queue_alloc_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:983 [capability]security_fixup_ops - "Had\040to\040override\040the\040msg_msg_free_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:982 [capability]security_fixup_ops - "Had\040to\040override\040the\040msg_msg_alloc_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:981 [capability]security_fixup_ops - "Had\040to\040override\040the\040ipc_getsecid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:980 [capability]security_fixup_ops - "Had\040to\040override\040the\040ipc_permission\040security\040operation\040with\040the\040default.\012"
+security/capability.c:979 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_to_inode\040security\040operation\040with\040the\040default.\012"
+security/capability.c:978 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_prctl\040security\040operation\040with\040the\040default.\012"
+security/capability.c:977 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_kill\040security\040operation\040with\040the\040default.\012"
+security/capability.c:976 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_wait\040security\040operation\040with\040the\040default.\012"
+security/capability.c:975 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_movememory\040security\040operation\040with\040the\040default.\012"
+security/capability.c:974 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_getscheduler\040security\040operation\040with\040the\040default.\012"
+security/capability.c:973 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_setscheduler\040security\040operation\040with\040the\040default.\012"
+security/capability.c:972 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_setrlimit\040security\040operation\040with\040the\040default.\012"
+security/capability.c:971 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_getioprio\040security\040operation\040with\040the\040default.\012"
+security/capability.c:970 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_setioprio\040security\040operation\040with\040the\040default.\012"
+security/capability.c:969 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_setnice\040security\040operation\040with\040the\040default.\012"
+security/capability.c:968 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_setgroups\040security\040operation\040with\040the\040default.\012"
+security/capability.c:967 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_getsecid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:966 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_getsid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:965 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_getpgid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:964 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_setpgid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:963 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_setgid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:962 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_fix_setuid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:961 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_setuid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:960 [capability]security_fixup_ops - "Had\040to\040override\040the\040kernel_create_files_as\040security\040operation\040with\040the\040default.\012"
+security/capability.c:959 [capability]security_fixup_ops - "Had\040to\040override\040the\040kernel_act_as\040security\040operation\040with\040the\040default.\012"
+security/capability.c:958 [capability]security_fixup_ops - "Had\040to\040override\040the\040cred_commit\040security\040operation\040with\040the\040default.\012"
+security/capability.c:957 [capability]security_fixup_ops - "Had\040to\040override\040the\040cred_prepare\040security\040operation\040with\040the\040default.\012"
+security/capability.c:956 [capability]security_fixup_ops - "Had\040to\040override\040the\040cred_free\040security\040operation\040with\040the\040default.\012"
+security/capability.c:955 [capability]security_fixup_ops - "Had\040to\040override\040the\040task_create\040security\040operation\040with\040the\040default.\012"
+security/capability.c:954 [capability]security_fixup_ops - "Had\040to\040override\040the\040dentry_open\040security\040operation\040with\040the\040default.\012"
+security/capability.c:953 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_receive\040security\040operation\040with\040the\040default.\012"
+security/capability.c:952 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_send_sigiotask\040security\040operation\040with\040the\040default.\012"
+security/capability.c:951 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_set_fowner\040security\040operation\040with\040the\040default.\012"
+security/capability.c:950 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_fcntl\040security\040operation\040with\040the\040default.\012"
+security/capability.c:949 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_lock\040security\040operation\040with\040the\040default.\012"
+security/capability.c:948 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_mprotect\040security\040operation\040with\040the\040default.\012"
+security/capability.c:947 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_mmap\040security\040operation\040with\040the\040default.\012"
+security/capability.c:946 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_ioctl\040security\040operation\040with\040the\040default.\012"
+security/capability.c:945 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_free_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:944 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_alloc_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:943 [capability]security_fixup_ops - "Had\040to\040override\040the\040file_permission\040security\040operation\040with\040the\040default.\012"
+security/capability.c:932 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_getsecid\040security\040operation\040with\040the\040default.\012"
+security/capability.c:931 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_listsecurity\040security\040operation\040with\040the\040default.\012"
+security/capability.c:930 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_setsecurity\040security\040operation\040with\040the\040default.\012"
+security/capability.c:929 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_getsecurity\040security\040operation\040with\040the\040default.\012"
+security/capability.c:928 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_killpriv\040security\040operation\040with\040the\040default.\012"
+security/capability.c:927 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_need_killpriv\040security\040operation\040with\040the\040default.\012"
+security/capability.c:926 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_removexattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:925 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_listxattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:924 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_getxattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:923 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_post_setxattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:922 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_setxattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:921 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_delete\040security\040operation\040with\040the\040default.\012"
+security/capability.c:920 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_getattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:919 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_setattr\040security\040operation\040with\040the\040default.\012"
+security/capability.c:918 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_permission\040security\040operation\040with\040the\040default.\012"
+security/capability.c:917 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_follow_link\040security\040operation\040with\040the\040default.\012"
+security/capability.c:916 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_readlink\040security\040operation\040with\040the\040default.\012"
+security/capability.c:915 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_rename\040security\040operation\040with\040the\040default.\012"
+security/capability.c:914 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_mknod\040security\040operation\040with\040the\040default.\012"
+security/capability.c:913 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_rmdir\040security\040operation\040with\040the\040default.\012"
+security/capability.c:912 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_mkdir\040security\040operation\040with\040the\040default.\012"
+security/capability.c:911 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_symlink\040security\040operation\040with\040the\040default.\012"
+security/capability.c:910 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_unlink\040security\040operation\040with\040the\040default.\012"
+security/capability.c:909 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_link\040security\040operation\040with\040the\040default.\012"
+security/capability.c:908 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_create\040security\040operation\040with\040the\040default.\012"
+security/capability.c:907 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_init_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:906 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_free_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:905 [capability]security_fixup_ops - "Had\040to\040override\040the\040inode_alloc_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:904 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_parse_opts_str\040security\040operation\040with\040the\040default.\012"
+security/capability.c:903 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_clone_mnt_opts\040security\040operation\040with\040the\040default.\012"
+security/capability.c:902 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_set_mnt_opts\040security\040operation\040with\040the\040default.\012"
+security/capability.c:901 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_post_pivotroot\040security\040operation\040with\040the\040default.\012"
+security/capability.c:900 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_pivotroot\040security\040operation\040with\040the\040default.\012"
+security/capability.c:899 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_post_addmount\040security\040operation\040with\040the\040default.\012"
+security/capability.c:898 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_post_remount\040security\040operation\040with\040the\040default.\012"
+security/capability.c:897 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_umount_busy\040security\040operation\040with\040the\040default.\012"
+security/capability.c:896 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_umount_close\040security\040operation\040with\040the\040default.\012"
+security/capability.c:895 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_umount\040security\040operation\040with\040the\040default.\012"
+security/capability.c:894 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_check_sb\040security\040operation\040with\040the\040default.\012"
+security/capability.c:893 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_mount\040security\040operation\040with\040the\040default.\012"
+security/capability.c:892 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_statfs\040security\040operation\040with\040the\040default.\012"
+security/capability.c:891 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_show_options\040security\040operation\040with\040the\040default.\012"
+security/capability.c:890 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_kern_mount\040security\040operation\040with\040the\040default.\012"
+security/capability.c:889 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_copy_data\040security\040operation\040with\040the\040default.\012"
+security/capability.c:888 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_free_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:887 [capability]security_fixup_ops - "Had\040to\040override\040the\040sb_alloc_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:886 [capability]security_fixup_ops - "Had\040to\040override\040the\040bprm_secureexec\040security\040operation\040with\040the\040default.\012"
+security/capability.c:885 [capability]security_fixup_ops - "Had\040to\040override\040the\040bprm_check_security\040security\040operation\040with\040the\040default.\012"
+security/capability.c:884 [capability]security_fixup_ops - "Had\040to\040override\040the\040bprm_committed_creds\040security\040operation\040with\040the\040default.\012"
+security/capability.c:883 [capability]security_fixup_ops - "Had\040to\040override\040the\040bprm_committing_creds\040security\040operation\040with\040the\040default.\012"
+security/capability.c:882 [capability]security_fixup_ops - "Had\040to\040override\040the\040bprm_set_creds\040security\040operation\040with\040the\040default.\012"
+security/capability.c:881 [capability]security_fixup_ops - "Had\040to\040override\040the\040vm_enough_memory\040security\040operation\040with\040the\040default.\012"
+security/capability.c:880 [capability]security_fixup_ops - "Had\040to\040override\040the\040settime\040security\040operation\040with\040the\040default.\012"
+security/capability.c:879 [capability]security_fixup_ops - "Had\040to\040override\040the\040syslog\040security\040operation\040with\040the\040default.\012"
+security/capability.c:878 [capability]security_fixup_ops - "Had\040to\040override\040the\040sysctl\040security\040operation\040with\040the\040default.\012"
+security/capability.c:877 [capability]security_fixup_ops - "Had\040to\040override\040the\040quota_on\040security\040operation\040with\040the\040default.\012"
+security/capability.c:876 [capability]security_fixup_ops - "Had\040to\040override\040the\040quotactl\040security\040operation\040with\040the\040default.\012"
+security/capability.c:875 [capability]security_fixup_ops - "Had\040to\040override\040the\040capable\040security\040operation\040with\040the\040default.\012"
+security/capability.c:874 [capability]security_fixup_ops - "Had\040to\040override\040the\040acct\040security\040operation\040with\040the\040default.\012"
+security/capability.c:873 [capability]security_fixup_ops - "Had\040to\040override\040the\040capset\040security\040operation\040with\040the\040default.\012"
+security/capability.c:872 [capability]security_fixup_ops - "Had\040to\040override\040the\040capget\040security\040operation\040with\040the\040default.\012"
+security/capability.c:871 [capability]security_fixup_ops - "Had\040to\040override\040the\040ptrace_traceme\040security\040operation\040with\040the\040default.\012"
+security/capability.c:870 [capability]security_fixup_ops - "Had\040to\040override\040the\040ptrace_may_access\040security\040operation\040with\040the\040default.\012"
+lib/kobject.c:764 [kobject]kset_release - "kobject:\040'%s'\040(%p):\040%s\012"
+lib/kobject.c:185 [kobject]kobject_add_internal - "kobject:\040'%s'\040(%p):\040%s:\040parent:\040'%s',\040set:\040'%s'\012"
+lib/kobject.c:599 [kobject]dynamic_kobj_release - "kobject:\040(%p):\040%s\012"
+lib/kobject.c:570 [kobject]kobject_cleanup - "kobject:\040'%s':\040free\040name\012"
+lib/kobject.c:564 [kobject]kobject_cleanup - "kobject:\040'%s'\040(%p):\040calling\040ktype\040release\012"
+lib/kobject.c:558 [kobject]kobject_cleanup - "kobject:\040'%s'\040(%p):\040auto\040cleanup\040kobject_del\012"
+lib/kobject.c:551 [kobject]kobject_cleanup - "kobject:\040'%s'\040(%p):\040auto\040cleanup\040'remove'\040event\012"
+lib/kobject.c:546 [kobject]kobject_cleanup - "kobject:\040'%s'\040(%p):\040does\040not\040have\040a\040release()\040function,\040it\040is\040broken\040and\040must\040be\040fixed.\012"
+lib/kobject.c:541 [kobject]kobject_cleanup - "kobject:\040'%s'\040(%p):\040%s\012"
+lib/kobject.c:93 [kobject]fill_kobj_path - "kobject:\040'%s'\040(%p):\040%s:\040path\040=\040'%s'\012"
+lib/kobject_uevent.c:180 [kobject_uevent]kobject_uevent_env - "kobject:\040'%s'\040(%p):\040%s:\040uevent()\040returned\040%d\012"
+lib/kobject_uevent.c:138 [kobject_uevent]kobject_uevent_env - "kobject:\040'%s'\040(%p):\040%s:\040unset\040subsystem\040caused\040the\040event\040to\040drop!\012"
+lib/kobject_uevent.c:126 [kobject_uevent]kobject_uevent_env - "kobject:\040'%s'\040(%p):\040%s:\040filter\040function\040caused\040the\040event\040to\040drop!\012"
+lib/kobject_uevent.c:114 [kobject_uevent]kobject_uevent_env - "kobject:\040'%s'\040(%p):\040%s:\040attempted\040to\040send\040uevent\040without\040kset!\012"
+lib/kobject_uevent.c:104 [kobject_uevent]kobject_uevent_env - "kobject:\040'%s'\040(%p):\040%s\012"
+drivers/pci/probe.c:1128 [probe]pci_create_bus - "PCI:\040Bus\040%04x:%02x\040already\040known\012"
+drivers/pci/probe.c:1098 [probe]pci_scan_child_bus - "PCI:\040Bus\040scan\040for\040%04x:%02x\040returning\040with\040max=%02x\012"
+drivers/pci/probe.c:1081 [probe]pci_scan_child_bus - "PCI:\040Fixups\040for\040bus\040%04x:%02x\012"
+drivers/pci/probe.c:1071 [probe]pci_scan_child_bus - "PCI:\040Scanning\040bus\040%04x:%02x\012"
+drivers/pci/probe.c:704 [probe]pci_setup_device - "found\040[%04x:%04x]\040class\040%06x\040header\040type\040%02x\012"
+drivers/pci/probe.c:651 [probe]pci_scan_bridge - "PCI:\040Bus\040#%02x\040(-#%02x)\040is\040%s\040hidden\040behind%s\040bridge\040#%02x\040(-#%02x)\012"
+drivers/pci/probe.c:492 [probe]pci_scan_bridge - "bus\040configuration\040invalid,\040reconfiguring\012"
+drivers/pci/probe.c:487 [probe]pci_scan_bridge - "scanning\040behind\040bridge,\040config\040%06x,\040pass\040%d\012"
+drivers/pci/pci.c:1816 [pci]pci_set_mwi - "enabling\040Mem-Wr-Inval\012"
+drivers/pci/pci.c:1705 [pci]__pci_set_master - "%s\040bus\040mastering\012"
+drivers/pci/quirks.c:2158 [quirks]pci_do_fixups - "calling\040%pF\012"
+drivers/pci/slot.c:304 [slot]pci_destroy_slot - "%s:\040dec\040refcount\040to\040%d\040on\040%04x:%02x:%02x\012"
+drivers/pci/slot.c:253 [slot]pci_create_slot - "%s:\040created\040pci_slot\040on\040%04x:%02x:%02x\012"
+drivers/pci/slot.c:56 [slot]pci_slot_release - "%s:\040releasing\040pci_slot\040on\040%x:%d\012"
+drivers/pci/setup-res.c:96 [setup_res]pci_update_resource - "BAR\040%d:\040moved\040to\040bus\040[%#llx-%#llx]\040flags\040%#lx\012"
+drivers/pci/setup-res.c:58 [setup_res]pci_update_resource - "BAR\040%d:\040got\040res\040%pR\040bus\040[%#llx-%#llx]\040flags\040%#lx\012"
+drivers/pci/hotplug/acpi_pcihp.c:320 [pci_hotplug]acpi_run_oshp - "%s:%s\040OSHP\040passes\012"
+drivers/pci/hotplug/acpi_pcihp.c:288 [pci_hotplug]acpi_run_hpp - "\040\040_HPP:\040enable\040PERR\040\040\040\040=0x%x\012"
+drivers/pci/hotplug/acpi_pcihp.c:287 [pci_hotplug]acpi_run_hpp - "\040\040_HPP:\040enable\040SERR\040\040\040\040=0x%x\012"
+drivers/pci/hotplug/acpi_pcihp.c:286 [pci_hotplug]acpi_run_hpp - "\040\040_HPP:\040latency\040timer\040\040=0x%x\012"
+drivers/pci/hotplug/acpi_pcihp.c:285 [pci_hotplug]acpi_run_hpp - "\040\040_HPP:\040cache_line_size=0x%x\012"
+drivers/pci/hotplug/acpi_pcihp.c:249 [pci_hotplug]acpi_run_hpp - "%s:%s\040_HPP\040fail=0x%x\012"
+drivers/pci/dmar.c:537 [dmar]alloc_iommu - "IOMMU\040%llx:\040ver\040%d:%d\040cap\040%llx\040ecap\040%llx\012"
+drivers/pci/intel-iommu.c:1469 [intel_iommu]domain_context_mapping_one - "Set\040context\040mapping\040for\040%02x:%02x.%d\012"
+drivers/pci/intel-iommu.c:1192 [intel_iommu]iommu_init_domains - "Number\040of\040Domains\040supportd\040<%ld>\012"
+drivers/pci/intel-iommu.c:1860 [intel_iommu]iommu_prepare_identity_map - "Mapping\040reserved\040region\040%lx@%llx\040for\040%s\012"
+drivers/pci/intel-iommu.c:1409 [intel_iommu]domain_init - "IOMMU:\040hardware\040doesn't\040support\040agaw\040%d\012"
+drivers/pci/intel-iommu.c:912 [intel_iommu]__iommu_flush_iotlb - "IOMMU:\040tlb\040flush\040request\040%Lx,\040actual\040%Lx\012"
+drivers/pci/intel-iommu.c:2369 [intel_iommu]intel_unmap_single - "Device\040%s\040unmapping:\040%lx@%llx\012"
+drivers/video/backlight/backlight.c:137 [backlight]backlight_store_brightness - "backlight:\040set\040brightness\040to\040%lu\012"
+drivers/video/backlight/backlight.c:98 [backlight]backlight_store_power - "backlight:\040set\040power\040to\040%lu\012"
+drivers/video/backlight/backlight.c:235 [backlight]backlight_device_register - "backlight_device_register:\040name=%s\012"
+drivers/acpi/osl.c:1368 [osl]acpi_os_validate_address - "Added\040%s\040resource:\040start:\0400x%llx,\040end:\0400x%llx,\040name:\040%s\012"
+drivers/acpi/ec.c:602 [ec]acpi_ec_gpe_handler - "ACPI:\040EC:\040non-query\040interrupt\040received,\040switching\040to\040interrupt\040mode\012"
+drivers/acpi/ec.c:581 [ec]acpi_ec_gpe_handler - "ACPI:\040EC:\040~~~>\040interrupt\012"
+drivers/acpi/ec.c:155 [ec]acpi_ec_read_status - "ACPI:\040EC:\040--->\040status\040=\0400x%2.2x\012"
+drivers/acpi/ec.c:174 [ec]acpi_ec_write_data - "ACPI:\040EC:\040<---\040data\040=\0400x%2.2x\012"
+drivers/acpi/ec.c:162 [ec]acpi_ec_read_data - "ACPI:\040EC:\040--->\040data\040=\0400x%2.2x\012"
+drivers/acpi/ec.c:300 [ec]acpi_ec_transaction_unlocked - "ACPI:\040EC:\040transaction\040end\012"
+drivers/acpi/ec.c:281 [ec]acpi_ec_transaction_unlocked - "ACPI:\040EC:\040transaction\040start\012"
+drivers/acpi/ec.c:168 [ec]acpi_ec_write_cmd - "ACPI:\040EC:\040<---\040command\040=\0400x%2.2x\012"
+drivers/acpi/ec.c:235 [ec]acpi_ec_wait - "ACPI:\040EC:\040controller\040reset,\040restart\040transaction\012"
+drivers/acpi/dock.c:363 [dock]dock_remove_acpi_device - "error\040removing\040bus,\040%x\012"
+drivers/acpi/dock.c:341 [dock]dock_create_acpi_device - "error\040adding\040bus,\040%x\012"
+drivers/acpi/dock.c:461 [dock]eject_dock - "Failed\040to\040evaluate\040_EJ0!\012"
+drivers/acpi/dock.c:450 [dock]eject_dock - "No\040_EJ0\040support\040for\040dock\040device\012"
+drivers/serial/serial_core.c:1386 [serial_core]uart_wait_until_sent - "uart_wait_until_sent(%d),\040jiffies=%lu,\040expire=%lu...\012"
+drivers/serial/serial_core.c:574 [serial_core]uart_flush_buffer - "uart_flush_buffer(%d)\040called\012"
+drivers/serial/serial_core.c:1416 [serial_core]uart_hangup - "uart_hangup(%d)\012"
+drivers/serial/serial_core.c:1266 [serial_core]uart_close - "uart_close(%d)\040called\012"
+drivers/serial/serial_core.c:1594 [serial_core]uart_open - "uart_open(%d)\040called\012"
+drivers/serial/8250.c:2099 [8250]serial8250_startup - "ttyS%d\040-\040enabling\040bad\040tx\040status\040workarounds\012"
+drivers/serial/8250.c:2039 [8250]serial8250_startup - "ttyS%d\040-\040using\040backup\040timer\012"
+drivers/base/core.c:1614 [core]device_shutdown - "shutdown\012"
+drivers/base/core.c:1611 [core]device_shutdown - "shutdown\012"
+drivers/base/core.c:1557 [core]device_move - "device:\040'%s':\040%s:\040moving\040to\040'%s'\012"
+drivers/base/core.c:1442 [core]device_rename - "device:\040'%s':\040%s:\040renaming\040to\040'%s'\012"
+drivers/base/core.c:1296 [core]device_create_release - "device:\040'%s':\040%s\012"
+drivers/base/core.c:230 [core]dev_uevent - "device:\040'%s':\040%s:\040dev_type\040uevent()\040returned\040%d\012"
+drivers/base/core.c:221 [core]dev_uevent - "device:\040'%s':\040%s:\040class\040uevent()\040returned\040%d\012"
+drivers/base/core.c:212 [core]dev_uevent - "device:\040'%s':\040%s:\040bus\040uevent()\040returned\040%d\012"
+drivers/base/core.c:1092 [core]device_unregister - "device:\040'%s':\040%s\012"
+drivers/base/core.c:869 [core]device_add - "device:\040'%s':\040%s\012"
+drivers/base/sys.c:459 [sys]sysdev_resume - "\040%s\012"
+drivers/base/sys.c:456 [sys]sysdev_resume - "Resuming\040type\040'%s':\012"
+drivers/base/sys.c:450 [sys]sysdev_resume - "Resuming\040System\040Devices\012"
+drivers/base/sys.c:429 [sys]sysdev_suspend - "\040%s\012"
+drivers/base/sys.c:422 [sys]sysdev_suspend - "\040%s\012"
+drivers/base/sys.c:381 [sys]sysdev_suspend - "\040%s\012"
+drivers/base/sys.c:378 [sys]sysdev_suspend - "Suspending\040type\040'%s':\012"
+drivers/base/sys.c:374 [sys]sysdev_suspend - "Suspending\040System\040Devices\012"
+drivers/base/sys.c:322 [sys]sysdev_shutdown - "\040%s\012"
+drivers/base/sys.c:318 [sys]sysdev_shutdown - "Shutting\040down\040type\040'%s':\012"
+drivers/base/sys.c:311 [sys]sysdev_shutdown - "Shutting\040Down\040System\040Devices\012"
+drivers/base/sys.c:258 [sys]sysdev_register - "Registering\040sys\040device\040'%s'\012"
+drivers/base/sys.c:241 [sys]sysdev_register - "Registering\040sys\040device\040of\040class\040'%s'\012"
+drivers/base/sys.c:147 [sys]sysdev_class_unregister - "Unregistering\040sysdev\040class\040'%s'\012"
+drivers/base/sys.c:133 [sys]sysdev_class_register - "Registering\040sysdev\040class\040'%s'\012"
+drivers/base/bus.c:948 [bus]bus_unregister - "bus:\040'%s':\040unregistering\012"
+drivers/base/bus.c:920 [bus]bus_register - "bus:\040'%s':\040registered\012"
+drivers/base/bus.c:720 [bus]bus_remove_driver - "bus:\040'%s':\040remove\040driver\040%s\012"
+drivers/base/bus.c:652 [bus]bus_add_driver - "bus:\040'%s':\040add\040driver\040%s\012"
+drivers/base/bus.c:82 [bus]driver_release - "driver:\040'%s':\040%s\012"
+drivers/base/bus.c:535 [bus]bus_remove_device - "bus:\040'%s':\040remove\040device\040%s\012"
+drivers/base/bus.c:464 [bus]bus_add_device - "bus:\040'%s':\040add\040device\040%s\012"
+drivers/base/dd.c:197 [dd]driver_probe_device - "bus:\040'%s':\040%s:\040matched\040device\040%s\040with\040driver\040%s\012"
+drivers/base/dd.c:130 [dd]really_probe - "bus:\040'%s':\040%s:\040bound\040device\040%s\040to\040driver\040%s\012"
+drivers/base/dd.c:107 [dd]really_probe - "bus:\040'%s':\040%s:\040probing\040driver\040%s\040with\040device\040%s\012"
+drivers/base/dd.c:38 [dd]driver_bound - "driver:\040'%s':\040%s:\040bound\040to\040device\040'%s'\012"
+drivers/base/dd.c:164 [dd]driver_probe_done - "%s:\040probe_count\040=\040%d\012"
+drivers/base/class.c:207 [class]class_create_release - "%s\040called\040for\040%s\012"
+drivers/base/class.c:200 [class]class_unregister - "device\040class\040'%s':\040unregistering\012"
+drivers/base/class.c:157 [class]__class_register - "device\040class\040'%s':\040registering\012"
+drivers/base/class.c:61 [class]class_release - "class\040'%s'\040does\040not\040have\040a\040release()\040function,\040be\040careful\012"
+drivers/base/class.c:55 [class]class_release - "class\040'%s':\040release.\012"
+drivers/base/platform.c:273 [platform]platform_device_add - "Registering\040platform\040device\040'%s'.\040Parent\040at\040%s\012"
+drivers/base/power/main.c:260 [main]pm_dev_dbg - "%s%s%s\012"
+drivers/base/power/main.c:103 [main]device_pm_remove - "PM:\040Removing\040info\040for\040%s:%s\012"
+drivers/base/power/main.c:74 [main]device_pm_add - "PM:\040Adding\040info\040for\040%s:%s\012"
+drivers/net/sky2.c:1445 [sky2]sky2_up - "sky2\040%s:\040ram\040buffer\040%dK\012"
+drivers/net/phy/phy_device.c:883 [libphy]phy_driver_register - "%s:\040Registered\040new\040driver\012"
+drivers/pcmcia/yenta_socket.c:68 [yenta_socket]cb_readl - "%04x\040%08x\012"
+drivers/pcmcia/yenta_socket.c:124 [yenta_socket]exca_readb - "%04x\040%02x\012"
+drivers/pcmcia/yenta_socket.c:74 [yenta_socket]cb_writel - "%04x\040%08x\012"
+drivers/pcmcia/yenta_socket.c:139 [yenta_socket]exca_writeb - "%04x\040%02x\012"
+drivers/pcmcia/yenta_socket.c:83 [yenta_socket]config_readb - "%04x\040%02x\012"
+drivers/pcmcia/yenta_socket.c:105 [yenta_socket]config_writeb - "%04x\040%02x\012"
+drivers/pcmcia/yenta_socket.c:111 [yenta_socket]config_writew - "%04x\040%04x\012"
+drivers/pcmcia/yenta_socket.c:91 [yenta_socket]config_readw - "%04x\040%04x\012"
+drivers/pcmcia/yenta_socket.c:99 [yenta_socket]config_readl - "%04x\040%08x\012"
+drivers/pcmcia/yenta_socket.c:117 [yenta_socket]config_writel - "%04x\040%08x\012"
+drivers/pcmcia/yenta_socket.c:146 [yenta_socket]exca_writew - "%04x\040%04x\012"
+drivers/input/ff-core.c:248 [input_core]flush_effects - "ff-core:\040flushing\040now\012"
+drivers/input/ff-core.c:126 [input_core]input_ff_upload - "ff-core:\040invalid\040or\040not\040supported\040wave\040form\040in\040upload\012"
+drivers/input/ff-core.c:118 [input_core]input_ff_upload - "ff-core:\040invalid\040or\040not\040supported\040effect\040type\040in\040upload\012"
+drivers/input/ff-memless.c:200 [ff_memless]apply_envelope - "ff-memless:\040difference\040=\040%d\012"
+drivers/input/ff-memless.c:196 [ff_memless]apply_envelope - "ff-memless:\040time_of_envelope\040=\0400x%x\012"
+drivers/input/ff-memless.c:195 [ff_memless]apply_envelope - "ff-memless:\040time_from_level\040=\0400x%x\012"
+drivers/input/ff-memless.c:194 [ff_memless]apply_envelope - "ff-memless:\040difference\040=\040%d\012"
+drivers/input/ff-memless.c:177 [ff_memless]apply_envelope - "ff-memless:\040value\040=\0400x%x,\040attack_level\040=\0400x%x\012"
+drivers/input/ff-memless.c:155 [ff_memless]ml_schedule_timer - "ff-memless:\040timer\040set\012"
+drivers/input/ff-memless.c:152 [ff_memless]ml_schedule_timer - "ff-memless:\040no\040actions\012"
+drivers/input/ff-memless.c:132 [ff_memless]ml_schedule_timer - "ff-memless:\040calculating\040next\040timer\012"
+drivers/input/ff-memless.c:418 [ff_memless]ml_ff_playback - "ff-memless:\040initiated\040stop\012"
+drivers/input/ff-memless.c:405 [ff_memless]ml_ff_playback - "ff-memless:\040initiated\040play\012"
+drivers/input/ff-memless.c:372 [ff_memless]ml_effect_timer - "ff-memless:\040timer:\040updating\040effects\012"
+drivers/rtc/interface.c:276 [rtc_core]rtc_read_alarm - "alarm\040rollover:\040%s\012"
+drivers/rtc/interface.c:261 [rtc_core]rtc_read_alarm - "alarm\040rollover:\040%s\012"
+drivers/rtc/interface.c:250 [rtc_core]rtc_read_alarm - "alarm\040rollover:\040%s\012"
+drivers/rtc/rtc-dev.c:513 [rtc_core]rtc_dev_add_device - "%s:\040dev\040(%d:%d)\012"
+drivers/rtc/rtc-dev.c:491 [rtc_core]rtc_dev_prepare - "%s:\040too\040many\040RTC\040devices\012"
+drivers/rtc/rtc-cmos.c:948 [rtc_cmos]cmos_resume - "%s:\040resume,\040ctrl\040%02x\012"
+drivers/rtc/rtc-cmos.c:893 [rtc_cmos]cmos_suspend - "%s:\040suspend%s,\040ctrl\040%02x\012"
+drivers/rtc/rtc-cmos.c:1033 [rtc_cmos]cmos_wake_setup - "bogus\040FADT\040month_alarm\040(%d)\012"
+drivers/rtc/rtc-cmos.c:796 [rtc_cmos]cmos_do_probe - "can't\040create\040nvram\040file?\040%d\012"
+drivers/rtc/rtc-cmos.c:786 [rtc_cmos]cmos_do_probe - "IRQ\040%d\040is\040already\040in\040use\012"
+drivers/rtc/rtc-cmos.c:761 [rtc_cmos]cmos_do_probe - "only\04024-hr\040BCD\040mode\040supported\012"
+drivers/rtc/rtc-cmos.c:680 [rtc_cmos]cmos_do_probe - "i/o\040registers\040already\040in\040use\012"
+drivers/i2c/i2c-boardinfo.c:77 [i2c_boardinfo]i2c_register_board_info - "i2c-core:\040can't\040register\040boardinfo!\012"
+drivers/i2c/i2c-core.c:133 [i2c_core]i2c_device_remove - "remove\012"
+drivers/i2c/i2c-core.c:114 [i2c_core]i2c_device_probe - "probe\012"
+drivers/i2c/i2c-core.c:94 [i2c_core]i2c_device_uevent - "uevent\012"
+drivers/i2c/i2c-core.c:1575 [i2c_core]i2c_smbus_check_pec - "i2c-core:\040Bad\040PEC\0400x%02x\040vs.\0400x%02x\012"
+drivers/i2c/i2c-core.c:1490 [i2c_core]i2c_new_probed_device - "Probing\040failed,\040no\040device\040found\012"
+drivers/i2c/i2c-core.c:1460 [i2c_core]i2c_new_probed_device - "Address\0400x%02x\040already\040in\040use,\040not\040probing\012"
+drivers/i2c/i2c-core.c:1252 [i2c_core]i2c_probe - "found\040normal\040entry\040for\040adapter\040%d,\040addr\0400x%02x\012"
+drivers/i2c/i2c-core.c:1242 [i2c_core]i2c_probe - "found\040ignore\040parameter\040for\040adapter\040%d,\040addr\0400x%02x\012"
+drivers/i2c/i2c-core.c:1219 [i2c_core]i2c_probe - "found\040probe\040parameter\040for\040adapter\040%d,\040addr\0400x%02x\012"
+drivers/i2c/i2c-core.c:1208 [i2c_core]i2c_probe - "SMBus\040Quick\040command\040not\040supported,\040can't\040probe\040for\040chips\012"
+drivers/i2c/i2c-core.c:1190 [i2c_core]i2c_probe - "found\040force\040parameter\040for\040adapter\040%d,\040addr\0400x%02x,\040kind\040%d\012"
+drivers/i2c/i2c-core.c:1060 [i2c_core]i2c_transfer - "I2C\040level\040transfers\040not\040supported\012"
+drivers/i2c/i2c-core.c:865 [i2c_core]i2c_attach_client - "client_register\040failed\040for\040client\040[%s]\040at\0400x%02x\012"
+drivers/i2c/i2c-core.c:859 [i2c_core]i2c_attach_client - "client\040[%s]\040registered\040with\040bus\040id\040%s\012"
+drivers/i2c/i2c-core.c:803 [i2c_core]i2c_del_driver - "i2c-core:\040driver\040[%s]\040unregistered\012"
+drivers/i2c/i2c-core.c:779 [i2c_core]__detach_adapter - "detaching\040client\040[%s]\040at\0400x%02x\012"
+drivers/i2c/i2c-core.c:754 [i2c_core]__detach_adapter - "Removing\040%s\040at\0400x%x\012"
+drivers/i2c/i2c-core.c:734 [i2c_core]i2c_register_driver - "i2c-core:\040driver\040[%s]\040registered\012"
+drivers/i2c/i2c-core.c:1424 [i2c_core]i2c_detect - "found\040normal\040entry\040for\040adapter\040%d,\040addr\0400x%02x\012"
+drivers/i2c/i2c-core.c:1414 [i2c_core]i2c_detect - "found\040ignore\040parameter\040for\040adapter\040%d,\040addr\0400x%02x\012"
+drivers/i2c/i2c-core.c:1392 [i2c_core]i2c_detect - "found\040probe\040parameter\040for\040adapter\040%d,\040addr\0400x%02x\012"
+drivers/i2c/i2c-core.c:1358 [i2c_core]i2c_detect - "found\040force\040parameter\040for\040adapter\040%d,\040addr\0400x%02x,\040kind\040%d\012"
+drivers/i2c/i2c-core.c:1315 [i2c_core]i2c_detect_address - "Creating\040%s\040at\0400x%02x\012"
+drivers/i2c/i2c-core.c:664 [i2c_core]i2c_del_adapter - "adapter\040[%s]\040unregistered\012"
+drivers/i2c/i2c-core.c:621 [i2c_core]i2c_del_adapter - "i2c-core:\040attempting\040to\040delete\040unregistered\040adapter\040[%s]\012"
+drivers/i2c/i2c-core.c:588 [i2c_core]i2c_do_del_adapter - "Removing\040%s\040at\0400x%x\012"
+drivers/i2c/i2c-core.c:469 [i2c_core]i2c_register_adapter - "adapter\040[%s]\040registered\012"
+drivers/i2c/i2c-core.c:460 [i2c_core]i2c_register_adapter - "I2C\040adapter\040driver\040[%s]\040forgot\040to\040specify\040physical\040device\012"
+drivers/i2c/busses/i2c-i801.c:687 [i2c_i801]i801_probe - "SMBus\040using\040PCI\040Interrupt\012"
+drivers/i2c/busses/i2c-i801.c:685 [i2c_i801]i801_probe - "SMBus\040using\040interrupt\040SMI#\012"
+drivers/i2c/busses/i2c-i801.c:154 [i2c_i801]i801_check_pre - "Clearing\040status\040flags\040(%02x)\012"
+drivers/i2c/busses/i2c-i801.c:202 [i2c_i801]i801_check_post - "Lost\040arbitration\012"
+drivers/i2c/busses/i2c-i801.c:198 [i2c_i801]i801_check_post - "No\040response\012"
+drivers/i2c/busses/i2c-i801.c:177 [i2c_i801]i801_check_post - "Terminating\040the\040current\040operation\012"
+drivers/i2c/busses/i2c-i801.c:260 [i2c_i801]i801_wait_hwpec - "PEC\040Timeout!\012"
+drivers/power/power_supply_core.c:42 [power_supply]power_supply_changed_work - "%s\012"
+drivers/power/power_supply_core.c:85 [power_supply]power_supply_am_i_supplied - "%s\040%d\012"
+drivers/power/power_supply_core.c:54 [power_supply]power_supply_changed - "%s\012"
+drivers/power/power_supply_sysfs.c:277 [power_supply]power_supply_uevent - "prop\040%s=%s\012"
+drivers/power/power_supply_sysfs.c:248 [power_supply]power_supply_uevent - "%zd\040dynamic\040props\012"
+drivers/power/power_supply_sysfs.c:240 [power_supply]power_supply_uevent - "Static\040prop\040%s=%s\012"
+drivers/power/power_supply_sysfs.c:210 [power_supply]power_supply_uevent - "POWER_SUPPLY_NAME=%s\012"
+drivers/power/power_supply_sysfs.c:206 [power_supply]power_supply_uevent - "No\040power\040supply\040yet\012"
+drivers/power/power_supply_sysfs.c:203 [power_supply]power_supply_uevent - "uevent\012"
+drivers/power/power_supply_leds.c:27 [power_supply]power_supply_update_bat_leds - "%s\040%d\012"
+drivers/power/power_supply_leds.c:104 [power_supply]power_supply_update_gen_leds - "%s\040%d\012"
+drivers/hid/hid-pl.c:67 [hid_pl]hid_plff_play - "hid-plff:\040running\040with\0400x%02x\0400x%02x\012"
+drivers/hid/hid-pl.c:60 [hid_pl]hid_plff_play - "hid-plff:\040called\040with\0400x%04x\0400x%04x\012"
+drivers/hid/usbhid/hid-core.c:1081 [usbhid]hid_resume - "resume\040status\040%d\012"
+drivers/hid/usbhid/hid-core.c:1065 [usbhid]hid_suspend - "suspend\012"
+drivers/hid/usbhid/hid-core.c:94 [usbhid]hid_retry_timeout - "retrying\040intr\040urb\012"
+drivers/hid/usbhid/hid-core.c:115 [usbhid]hid_reset - "resetting\040device\012"
+drivers/hid/usbhid/hid-core.c:108 [usbhid]hid_reset - "clear\040halt\012"
+drivers/hid/usbhid/hid-pidff.c:1304 [usbhid]hid_pidff_init - "hid-pidff:\040device\040memory\040size\040is\040%d\040bytes\012"
+drivers/hid/usbhid/hid-pidff.c:1300 [usbhid]hid_pidff_init - "hid-pidff:\040max\040simultaneous\040effects\040is\040%d\012"
+drivers/hid/usbhid/hid-pidff.c:1293 [usbhid]hid_pidff_init - "hid-pidff:\040max\040effects\040is\040%d\012"
+drivers/hid/usbhid/hid-pidff.c:1268 [usbhid]hid_pidff_init - "hid-pidff:\040reports\040not\040ok,\040aborting\012"
+drivers/hid/usbhid/hid-pidff.c:1254 [usbhid]hid_pidff_init - "hid-pidff:\040not\040a\040PID\040device,\040no\040output\040report\012"
+drivers/hid/usbhid/hid-pidff.c:1251 [usbhid]hid_pidff_init - "hid-pidff:\040starting\040pid\040init\012"
+drivers/hid/usbhid/hid-pidff.c:848 [usbhid]pidff_find_reports - "hid-pidff:\040found\040usage\0400x%02x\040from\040collection\040array\012"
+drivers/hid/usbhid/hid-pidff.c:829 [usbhid]pidff_find_reports - "hid-pidff:\040found\040usage\0400x%02x\040from\040field->logical\012"
+drivers/hid/usbhid/hid-pidff.c:863 [usbhid]pidff_reports_ok - "hid-pidff:\040%d\040missing\012"
+drivers/hid/usbhid/hid-pidff.c:947 [usbhid]pidff_find_special_fields - "hid-pidff:\040search\040done\012"
+drivers/hid/usbhid/hid-pidff.c:926 [usbhid]pidff_find_special_fields - "hid-pidff:\040finding\040special\040fields\012"
+drivers/hid/usbhid/hid-pidff.c:791 [usbhid]pidff_find_fields - "hid-pidff:\040failed\040to\040locate\040%d\012"
+drivers/hid/usbhid/hid-pidff.c:779 [usbhid]pidff_find_fields - "hid-pidff:\040found\040%d\040at\040%d->%d\012"
+drivers/hid/usbhid/hid-pidff.c:773 [usbhid]pidff_find_fields - "hid-pidff:\040maxusage\040and\040report_count\040do\040not\040match,\040skipping\012"
+drivers/hid/usbhid/hid-pidff.c:1192 [usbhid]pidff_reset - "hid-pidff:\040pid_pool\040requested\040again\012"
+drivers/hid/usbhid/hid-pidff.c:222 [usbhid]pidff_set - "hid-pidff:\040calculated\040from\040%d\040to\040%d\012"
+drivers/hid/usbhid/hid-pidff.c:490 [usbhid]pidff_request_effect_upload - "hid-pidff:\040not\040enough\040memory\040free:\040%d\040bytes\012"
+drivers/hid/usbhid/hid-pidff.c:483 [usbhid]pidff_request_effect_upload - "hid-pidff:\040device\040reported\040free\040memory:\040%d\040bytes\012"
+drivers/hid/usbhid/hid-pidff.c:475 [usbhid]pidff_request_effect_upload - "hid-pidff:\040pid_block_load\040requested\012"
+drivers/hid/usbhid/hid-pidff.c:468 [usbhid]pidff_request_effect_upload - "hid-pidff:\040create_new_effect\040sent,\040type:\040%d\012"
+drivers/hid/usbhid/hid-pidff.c:548 [usbhid]pidff_erase_effect - "hid-pidff:\040starting\040to\040erase\040%d/%d\012"
+drivers/hid/usbhid/hid-pidff.c:706 [usbhid]pidff_upload_effect - "hid-pidff:\040uploaded\012"
+drivers/hid/usbhid/hid-pidff.c:237 [usbhid]pidff_set_signed - "hid-pidff:\040calculated\040from\040%d\040to\040%d\012"
+drivers/hid/usbhid/hid-pidff.c:262 [usbhid]pidff_set_envelope_report - "hid-pidff:\040attack\040%u\040=>\040%d\012"
+arch/x86/pci/i386.c:186 [i386]pcibios_allocate_resources - "disabling\040ROM\012"
+arch/x86/pci/i386.c:170 [i386]pcibios_allocate_resources - "resource\040%#08llx-%#08llx\040(f=%lx,\040d=%d,\040p=%d)\012"
+arch/x86/pci/fixup.c:26 [fixup]pci_fixup_i450nx - "i450NX\040PXB\040%d:\040%02x/%02x/%02x\012"
+arch/x86/pci/fixup.c:83 [fixup]pci_fixup_latency - "Setting\040max\040latency\040to\04032\012"
+arch/x86/pci/irq.c:1028 [irq]pcibios_fixup_irqs - "ignoring\040bogus\040IRQ\040%d\012"
+arch/x86/pci/irq.c:975 [irq]pcibios_lookup_irq - "can't\040route\040interrupt\012"
+arch/x86/pci/irq.c:951 [irq]pcibios_lookup_irq - "PCI\040INT\040%c\040->\040newirq\040%d"
+arch/x86/pci/irq.c:909 [irq]pcibios_lookup_irq - "PCI\040INT\040%c\040->\040PIRQ\040%02x,\040mask\040%04x,\040excl\040%04x"
+arch/x86/pci/irq.c:905 [irq]pcibios_lookup_irq - "PCI\040INT\040%c\040not\040routed\012"
+arch/x86/pci/irq.c:899 [irq]pcibios_lookup_irq - "PCI\040INT\040%c\040not\040found\040in\040routing\040table\012"
+arch/x86/pci/irq.c:887 [irq]pcibios_lookup_irq - "no\040interrupt\040pin\012"
+arch/x86/pci/early.c:55 [early]write_pci_config_16 - "%x\040writing\040to\040%x:\040%x\012"
+arch/x86/pci/early.c:48 [early]write_pci_config_byte - "%x\040writing\040to\040%x:\040%x\012"
+arch/x86/pci/early.c:41 [early]write_pci_config - "%x\040writing\040to\040%x:\040%x\012"
+arch/x86/pci/early.c:34 [early]read_pci_config_16 - "%x\040reading\0402\040from\040%x:\040%x\012"
+arch/x86/pci/early.c:25 [early]read_pci_config_byte - "%x\040reading\0401\040from\040%x:\040%x\012"
+arch/x86/pci/early.c:16 [early]read_pci_config - "%x\040reading\0404\040from\040%x:\040%x\012"
+net/netfilter/nf_conntrack_core.c:217 [nf_conntrack]destroy_conntrack - "destroy_conntrack:\040returning\040ct=%p\040to\040slab\012"
+net/netfilter/nf_conntrack_core.c:180 [nf_conntrack]destroy_conntrack - "destroy_conntrack(%p)\012"
+net/netfilter/nf_conntrack_core.c:165 [nf_conntrack]clean_from_lists - "clean_from_lists(%p)\012"
+net/netfilter/nf_conntrack_core.c:771 [nf_conntrack]nf_conntrack_alter_reply - "Altering\040reply\040tuple\040of\040%p\040to\040"
+net/netfilter/nf_conntrack_core.c:732 [nf_conntrack]nf_conntrack_in - "nf_conntrack_in:\040Can't\040track\040with\040proto\040module\012"
+net/netfilter/nf_conntrack_core.c:692 [nf_conntrack]nf_conntrack_in - "not\040prepared\040to\040track\040yet\040or\040error\040occured\012"
+net/netfilter/nf_conntrack_core.c:658 [nf_conntrack]resolve_normal_ct - "nf_conntrack_in:\040new\040packet\040for\040%p\012"
+net/netfilter/nf_conntrack_core.c:655 [nf_conntrack]resolve_normal_ct - "nf_conntrack_in:\040related\040packet\040for\040%p\012"
+net/netfilter/nf_conntrack_core.c:651 [nf_conntrack]resolve_normal_ct - "nf_conntrack_in:\040normal\040packet\040for\040%p\012"
+net/netfilter/nf_conntrack_core.c:628 [nf_conntrack]resolve_normal_ct - "resolve_normal_ct:\040Can't\040get\040tuple\012"
+net/netfilter/nf_conntrack_core.c:571 [nf_conntrack]init_conntrack - "conntrack:\040expectation\040arrives\040ct=%p\040exp=%p\012"
+net/netfilter/nf_conntrack_core.c:561 [nf_conntrack]init_conntrack - "init\040conntrack:\040can't\040track\040with\040proto\040module\012"
+net/netfilter/nf_conntrack_core.c:555 [nf_conntrack]init_conntrack - "Can't\040allocate\040conntrack.\012"
+net/netfilter/nf_conntrack_core.c:549 [nf_conntrack]init_conntrack - "Can't\040invert\040tuple.\012"
+include/net/netfilter/nf_conntrack_acct.h:39 [nf_conntrack]nf_ct_acct_ext_add - "failed\040to\040add\040accounting\040extension\040area"
+net/netfilter/nf_conntrack_core.c:497 [nf_conntrack]nf_conntrack_alloc - "nf_conntrack_alloc:\040Can't\040alloc\040conntrack.\012"
+net/netfilter/nf_conntrack_core.c:346 [nf_conntrack]__nf_conntrack_confirm - "Confirming\040conntrack\040%p\012"
+net/netfilter/nf_conntrack_helper.c:92 [nf_conntrack]nf_ct_helper_ext_add - "failed\040to\040add\040helper\040extension\040area"
+net/netfilter/nf_conntrack_proto_tcp.c:1080 [nf_conntrack]tcp_new - "tcp_new:\040sender\040end=%u\040maxend=%u\040maxwin=%u\040scale=%i\040receiver\040end=%u\040maxend=%u\040maxwin=%u\040scale=%i\012"
+net/netfilter/nf_conntrack_proto_tcp.c:1022 [nf_conntrack]tcp_new - "nf_ct_tcp:\040invalid\040new\040deleting.\012"
+net/netfilter/nf_conntrack_proto_tcp.c:956 [nf_conntrack]tcp_packet - "syn=%i\040ack=%i\040fin=%i\040rst=%i\040old=%i\040new=%i\012"
+net/netfilter/nf_conntrack_proto_tcp.c:951 [nf_conntrack]tcp_packet - "tcp_conntracks:\040"
+net/netfilter/nf_conntrack_proto_tcp.c:911 [nf_conntrack]tcp_packet - "nf_ct_tcp:\040Invalid\040dir=%i\040index=%u\040ostate=%u\012"
+net/netfilter/nf_conntrack_proto_tcp.c:688 [nf_conntrack]tcp_in_window - "tcp_in_window:\040res=%u\040sender\040end=%u\040maxend=%u\040maxwin=%u\040receiver\040end=%u\040maxend=%u\040maxwin=%u\012"
+net/netfilter/nf_conntrack_proto_tcp.c:612 [nf_conntrack]tcp_in_window - "tcp_in_window:\040I=%i\040II=%i\040III=%i\040IV=%i\012"
+net/netfilter/nf_conntrack_proto_tcp.c:606 [nf_conntrack]tcp_in_window - "tcp_in_window:\040sender\040end=%u\040maxend=%u\040maxwin=%u\040scale=%i\040receiver\040end=%u\040maxend=%u\040maxwin=%u\040scale=%i\012"
+net/netfilter/nf_conntrack_proto_tcp.c:600 [nf_conntrack]tcp_in_window - "seq=%u\040ack=%u\040sack\040=%u\040win=%u\040end=%u\012"
+net/netfilter/nf_conntrack_proto_tcp.c:597 [nf_conntrack]tcp_in_window - "tcp_in_window:\040"
+net/netfilter/nf_conntrack_proto_tcp.c:519 [nf_conntrack]tcp_in_window - "tcp_in_window:\040sender\040end=%u\040maxend=%u\040maxwin=%u\040scale=%i\040receiver\040end=%u\040maxend=%u\040maxwin=%u\040scale=%i\012"
+net/netfilter/nf_conntrack_proto_tcp.c:513 [nf_conntrack]tcp_in_window - "seq=%u\040ack=%u\040sack=%u\040win=%u\040end=%u\012"
+net/netfilter/nf_conntrack_proto_tcp.c:510 [nf_conntrack]tcp_in_window - "tcp_in_window:\040"
+net/netfilter/nf_conntrack_proto_tcp.c:509 [nf_conntrack]tcp_in_window - "tcp_in_window:\040START\012"
+net/netfilter/nf_conntrack_proto_tcp.c:721 [nf_conntrack]nf_conntrack_tcp_update - "tcp_update:\040sender\040end=%u\040maxend=%u\040maxwin=%u\040scale=%i\040receiver\040end=%u\040maxend=%u\040maxwin=%u\040scale=%i\012"
+include/net/netfilter/nf_conntrack_acct.h:39 [nf_conntrack_netlink]nf_ct_acct_ext_add - "failed\040to\040add\040accounting\040extension\040area"
+net/netfilter/nf_conntrack_ftp.c:574 [nf_conntrack_ftp]nf_conntrack_ftp_init - "nf_ct_ftp:\040registering\040helper\040for\040pf:\040%d\040port:\040%d\012"
+net/netfilter/nf_conntrack_ftp.c:470 [nf_conntrack_ftp]help - "conntrack_ftp:\040NOT\040RECORDING:\040%pI6\040!=\040%pI6\012"
+net/netfilter/nf_conntrack_ftp.c:466 [nf_conntrack_ftp]help - "conntrack_ftp:\040NOT\040RECORDING:\040%pI4\040!=\040%pI4\012"
+net/netfilter/nf_conntrack_ftp.c:442 [nf_conntrack_ftp]help - "conntrack_ftp:\040match\040`%.*s'\040(%u\040bytes\040at\040%u)\012"
+net/netfilter/nf_conntrack_ftp.c:432 [nf_conntrack_ftp]help - "conntrack_ftp:\040partial\040%s\040%u+%u\012"
+net/netfilter/nf_conntrack_ftp.c:404 [nf_conntrack_ftp]help - "nf_conntrack_ftp:\040wrong\040seq\040pos\040%s(%u)\040or\040%s(%u)\012"
+net/netfilter/nf_conntrack_ftp.c:385 [nf_conntrack_ftp]help - "ftp:\040dataoff(%u)\040>=\040skblen(%u)\012"
+net/netfilter/nf_conntrack_ftp.c:373 [nf_conntrack_ftp]help - "ftp:\040Conntrackinfo\040=\040%u\012"
+net/netfilter/nf_conntrack_ftp.c:182 [nf_conntrack_ftp]get_port - "get_port:\040invalid\040char.\012"
+net/netfilter/nf_conntrack_ftp.c:176 [nf_conntrack_ftp]get_port - "get_port:\040return\040%d\012"
+net/netfilter/nf_conntrack_ftp.c:232 [nf_conntrack_ftp]try_eprt - "EPRT:\040Got\040IP\040address!\012"
+net/netfilter/nf_conntrack_ftp.c:214 [nf_conntrack_ftp]try_eprt - "EPRT:\040Got\040%c%c%c\012"
+net/netfilter/nf_conntrack_ftp.c:210 [nf_conntrack_ftp]try_eprt - "EPRT:\040invalid\040protocol\040number.\012"
+net/netfilter/nf_conntrack_ftp.c:204 [nf_conntrack_ftp]try_eprt - "try_eprt:\040invalid\040delimitter.\012"
+net/netfilter/nf_conntrack_ftp.c:199 [nf_conntrack_ftp]try_eprt - "EPRT:\040too\040short\012"
+net/netfilter/nf_conntrack_ftp.c:142 [nf_conntrack_ftp]try_number - "Failed\040to\040fill\040%u\040numbers\040separated\040by\040%c\012"
+net/netfilter/nf_conntrack_ftp.c:137 [nf_conntrack_ftp]try_number - "Char\040%u\040(got\040%u\040nums)\040`%u'\040unexpected\012"
+net/netfilter/nf_conntrack_ftp.c:306 [nf_conntrack_ftp]find_pattern - "Match\040succeeded!\012"
+net/netfilter/nf_conntrack_ftp.c:299 [nf_conntrack_ftp]find_pattern - "Skipped\040up\040to\040`%c'!\012"
+net/netfilter/nf_conntrack_ftp.c:290 [nf_conntrack_ftp]find_pattern - "Pattern\040matches!\012"
+net/netfilter/nf_conntrack_ftp.c:265 [nf_conntrack_ftp]find_pattern - "find_pattern\040`%s':\040dlen\040=\040%Zu\012"
+net/netfilter/nf_conntrack_ftp.c:534 [nf_conntrack_ftp]nf_conntrack_ftp_fini - "nf_ct_ftp:\040unregistering\040helper\040for\040pf:\040%d\040port:\040%d\012"
+net/netfilter/nf_conntrack_irc.c:181 [nf_conntrack_irc]help - "DCC\040bound\040ip/port:\040%u.%u.%u.%u:%u\012"
+net/netfilter/nf_conntrack_irc.c:177 [nf_conntrack_irc]help - "unable\040to\040parse\040dcc\040command\012"
+net/netfilter/nf_conntrack_irc.c:170 [nf_conntrack_irc]help - "DCC\040%s\040detected\012"
+net/netfilter/nf_conntrack_irc.c:162 [nf_conntrack_irc]help - "DCC\040found\040in\040master\040%pI4:%u\040%pI4:%u\012"
+net/netfilter/nf_conntrack_sip.c:1362 [nf_conntrack_sip]nf_conntrack_sip_init - "port\040#%u:\040%u\012"
+net/netfilter/nf_conntrack_sip.c:1281 [nf_conntrack_sip]sip_help - "Copy\040of\040skbuff\040not\040supported\040yet.\012"
+net/netfilter/nf_conntrack_sip.c:175 [nf_conntrack_sip]epaddr_len - "ip:\040%s\040parse\040failed.!\012"
+include/net/inet_connection_sock.h:236 [tcp_input]inet_csk_reset_xmit_timer - "%s"
+include/net/inet_connection_sock.h:220 [tcp_input]inet_csk_reset_xmit_timer - "reset_xmit_timer:\040sk=%p\040%d\040when=0x%lx,\040caller=%p\012"
+include/net/inet_connection_sock.h:203 [tcp_input]inet_csk_clear_xmit_timer - "%s"
+include/net/inet_connection_sock.h:236 [tcp_output]inet_csk_reset_xmit_timer - "%s"
+include/net/inet_connection_sock.h:220 [tcp_output]inet_csk_reset_xmit_timer - "reset_xmit_timer:\040sk=%p\040%d\040when=0x%lx,\040caller=%p\012"
+include/net/inet_connection_sock.h:203 [tcp_output]inet_csk_clear_xmit_timer - "%s"
+include/net/inet_connection_sock.h:236 [tcp_timer]inet_csk_reset_xmit_timer - "%s"
+include/net/inet_connection_sock.h:220 [tcp_timer]inet_csk_reset_xmit_timer - "reset_xmit_timer:\040sk=%p\040%d\040when=0x%lx,\040caller=%p\012"
+include/net/inet_connection_sock.h:236 [tcp_ipv4]inet_csk_reset_xmit_timer - "%s"
+include/net/inet_connection_sock.h:220 [tcp_ipv4]inet_csk_reset_xmit_timer - "reset_xmit_timer:\040sk=%p\040%d\040when=0x%lx,\040caller=%p\012"
+net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c:296 [nf_conntrack_ipv4]getorigdst - "SO_ORIGINAL_DST:\040Can't\040find\040%pI4/%u-%pI4/%u.\012"
+net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c:287 [nf_conntrack_ipv4]getorigdst - "SO_ORIGINAL_DST:\040%pI4\040%u\012"
+net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c:270 [nf_conntrack_ipv4]getorigdst - "SO_ORIGINAL_DST:\040len\040%d\040not\040%Zu\012"
+net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c:264 [nf_conntrack_ipv4]getorigdst - "SO_ORIGINAL_DST:\040Not\040a\040TCP\040socket\012"
+net/ipv4/netfilter/nf_conntrack_proto_icmp.c:160 [nf_conntrack_ipv4]icmp_error_message - "icmp_error_message:\040no\040match\012"
+net/ipv4/netfilter/nf_conntrack_proto_icmp.c:152 [nf_conntrack_ipv4]icmp_error_message - "icmp_error_message:\040no\040match\012"
+net/ipv4/netfilter/nf_conntrack_proto_icmp.c:141 [nf_conntrack_ipv4]icmp_error_message - "icmp_error_message:\040failed\040to\040get\040tuple\012"
+net/ipv4/netfilter/nf_conntrack_proto_icmp.c:116 [nf_conntrack_ipv4]icmp_new - "icmp:\040can't\040create\040new\040conn\040with\040type\040%u\012"
+net/ipv4/netfilter/nf_nat_core.c:465 [nf_nat]nf_nat_icmp_reply_translation - "icmp_reply_translation:\040translating\040error\040%p\040manip\040%u\040dir\040%s\012"
+net/ipv4/netfilter/nf_nat_core.c:295 [nf_nat]nf_nat_setup_info - "failed\040to\040add\040NAT\040extension\012"
+net/ipv4/netfilter/nf_nat_core.c:245 [nf_nat]get_unique_tuple - "get_unique_tuple:\040Found\040current\040src\040map\012"
+net/ipv4/netfilter/nf_nat_helper.c:408 [nf_nat]nf_nat_seq_adjust - "Adjusting\040sequence\040number\040from\040%u->%u,\040ack\040from\040%u->%u\012"
+net/ipv4/netfilter/nf_nat_helper.c:314 [nf_nat]sack_adjust - "sack_adjust:\040start_seq:\040%d->%d,\040end_seq:\040%d->%d\012"
+net/ipv4/netfilter/nf_nat_helper.c:105 [nf_nat]mangle_contents - "nf_nat_mangle_packet:\040Shrinking\040packet\040from\040%u\040from\040%u\040bytes\012"
+net/ipv4/netfilter/nf_nat_helper.c:101 [nf_nat]mangle_contents - "nf_nat_mangle_packet:\040Extending\040packet\040by\040%u\040from\040%u\040bytes\012"
+net/ipv4/netfilter/nf_nat_helper.c:73 [nf_nat]adjust_tcp_sequence - "offset_before=%d,\040offset_after=%d,\040correction_pos=%u\012"
+net/ipv4/netfilter/nf_nat_helper.c:72 [nf_nat]adjust_tcp_sequence - "nf_nat_resize_packet:\040Seq_offset\040after:\040"
+net/ipv4/netfilter/nf_nat_helper.c:56 [nf_nat]adjust_tcp_sequence - "offset_before=%d,\040offset_after=%d,\040correction_pos=%u\012"
+net/ipv4/netfilter/nf_nat_helper.c:55 [nf_nat]adjust_tcp_sequence - "nf_nat_resize_packet:\040Seq_offset\040before:\040"
+net/ipv4/netfilter/nf_nat_helper.c:48 [nf_nat]adjust_tcp_sequence - "adjust_tcp_sequence:\040seq\040=\040%u,\040sizediff\040=\040%d\012"
+net/ipv4/netfilter/nf_nat_ftp.c:114 [nf_nat_ftp]nf_nat_ftp - "FTP_NAT:\040type\040%i,\040off\040%u\040len\040%u\012"
+net/ipv4/netfilter/nf_nat_ftp.c:84 [nf_nat_ftp]mangle_epsv_packet - "calling\040nf_nat_mangle_tcp_packet\012"
+net/ipv4/netfilter/nf_nat_ftp.c:64 [nf_nat_ftp]mangle_eprt_packet - "calling\040nf_nat_mangle_tcp_packet\012"
+net/ipv4/netfilter/nf_nat_ftp.c:44 [nf_nat_ftp]mangle_rfc959_packet - "calling\040nf_nat_mangle_tcp_packet\012"
+net/ipv4/netfilter/nf_nat_irc.c:59 [nf_nat_irc]help - "nf_nat_irc:\040inserting\040'%s'\040==\040%pI4,\040port\040%u\012"
+net/ipv4/netfilter/nf_nat_rule.c:145 [iptable_nat]alloc_null_binding - "Allocating\040NULL\040binding\040for\040%p\040(%pI4)\012"
+net/ipv4/netfilter/nf_nat_standalone.c:146 [iptable_nat]nf_nat_fn - "Already\040setup\040manip\040%s\040for\040ct\040%p\012"
+net/ipv4/netfilter/nf_nat_standalone.c:110 [iptable_nat]nf_nat_fn - "failed\040to\040add\040NAT\040extension\012"
+net/ipv4/netfilter/ipt_LOG.c:452 [ipt_LOG]log_tg_check - "LOG:\040prefix\040term\040%i\012"
+net/ipv4/netfilter/ipt_LOG.c:447 [ipt_LOG]log_tg_check - "LOG:\040level\040%u\040>=\0408\012"
+net/ipv4/netfilter/ipt_MASQUERADE.c:43 [ipt_MASQUERADE]masquerade_tg_check - "masquerade_check:\040bad\040rangesize\040%u\012"
+net/ipv4/netfilter/ipt_MASQUERADE.c:39 [ipt_MASQUERADE]masquerade_tg_check - "masquerade_check:\040bad\040MAP_IPS.\012"
+net/ipv4/netfilter/ipt_ULOG.c:392 [ipt_ULOG]ulog_tg_init - "ipt_ULOG:\040init\040module\012"
+net/ipv4/netfilter/ipt_ULOG.c:202 [ipt_ULOG]ipt_ulog_packet - "ipt_ULOG:\040qlen\040%d,\040qthreshold\040%Zu\012"
+net/ipv4/netfilter/ipt_ULOG.c:108 [ipt_ULOG]ulog_send - "ipt_ULOG:\040throwing\040%d\040packets\040to\040netlink\040group\040%u\012"
+net/ipv4/netfilter/ipt_ULOG.c:98 [ipt_ULOG]ulog_send - "ipt_ULOG:\040ulog_send:\040nothing\040to\040send\012"
+net/ipv4/netfilter/ipt_ULOG.c:93 [ipt_ULOG]ulog_send - "ipt_ULOG:\040ulog_send:\040timer\040was\040pending,\040deleting\012"
+net/ipv4/netfilter/ipt_ULOG.c:327 [ipt_ULOG]ulog_tg_check - "ipt_ULOG:\040queue\040threshold\040%Zu\040>\040MAX_QLEN\012"
+net/ipv4/netfilter/ipt_ULOG.c:322 [ipt_ULOG]ulog_tg_check - "ipt_ULOG:\040prefix\040term\040%i\012"
+net/ipv4/netfilter/ipt_ULOG.c:120 [ipt_ULOG]ulog_timer - "ipt_ULOG:\040timer\040function\040called,\040calling\040ulog_send\012"
+net/ipv4/netfilter/ipt_ULOG.c:436 [ipt_ULOG]ulog_tg_exit - "timer\040was\040pending,\040deleting\012"
+net/ipv4/netfilter/ipt_ULOG.c:425 [ipt_ULOG]ulog_tg_exit - "ipt_ULOG:\040cleanup_module\012"
+include/net/inet_connection_sock.h:236 [ipv6]inet_csk_reset_xmit_timer - "%s"
+include/net/inet_connection_sock.h:220 [ipv6]inet_csk_reset_xmit_timer - "reset_xmit_timer:\040sk=%p\040%d\040when=0x%lx,\040caller=%p\012"
+net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c:173 [nf_conntrack_ipv6]ipv6_confirm - "proto\040header\040not\040found\012"
+net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c:133 [nf_conntrack_ipv6]ipv6_get_l4proto - "ip6_conntrack_core:\040can't\040find\040proto\040in\040pkt\012"
+net/ipv6/netfilter/nf_conntrack_l3proto_ipv6.c:124 [nf_conntrack_ipv6]ipv6_get_l4proto - "ip6_conntrack_core:\040can't\040get\040nexthdr\012"
+net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c:162 [nf_conntrack_ipv6]icmpv6_error_message - "icmpv6_error:\040no\040match\012"
+net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c:154 [nf_conntrack_ipv6]icmpv6_error_message - "icmpv6_error:\040Can't\040invert\040tuple\012"
+net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c:143 [nf_conntrack_ipv6]icmpv6_error_message - "icmpv6_error:\040Can't\040get\040tuple\012"
+net/ipv6/netfilter/nf_conntrack_proto_icmpv6.c:116 [nf_conntrack_ipv6]icmpv6_new - "icmpv6:\040can't\040create\040new\040conn\040with\040type\040%u\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:629 [nf_conntrack_ipv6]nf_ct_frag6_gather - "Can't\040reassemble\040fragmented\040packets\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:620 [nf_conntrack_ipv6]nf_ct_frag6_gather - "Can't\040insert\040skb\040to\040queue\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:612 [nf_conntrack_ipv6]nf_ct_frag6_gather - "Can't\040find\040and\040can't\040create\040new\040queue\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:602 [nf_conntrack_ipv6]nf_ct_frag6_gather - "Invalid\040fragment\040offset\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:593 [nf_conntrack_ipv6]nf_ct_frag6_gather - "message\040is\040too\040short.\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:586 [nf_conntrack_ipv6]nf_ct_frag6_gather - "Can't\040clone\040skb\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:577 [nf_conntrack_ipv6]nf_ct_frag6_gather - "payload\040len\040=\0400\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:536 [nf_conntrack_ipv6]find_prev_fhdr - "next\040header\040is\040none\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:532 [nf_conntrack_ipv6]find_prev_fhdr - "too\040short\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:194 [nf_conntrack_ipv6]fq_find - "Can't\040alloc\040new\040queue\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:316 [nf_conntrack_ipv6]nf_ct_frag6_queue - "Eat\040head\040of\040the\040overlapped\040parts.:\040%d"
+net/ipv6/netfilter/nf_conntrack_reasm.c:297 [nf_conntrack_ipv6]nf_ct_frag6_queue - "Can't\040pull\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:293 [nf_conntrack_ipv6]nf_ct_frag6_queue - "overlap\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:268 [nf_conntrack_ipv6]nf_ct_frag6_queue - "Can't\040trim\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:264 [nf_conntrack_ipv6]nf_ct_frag6_queue - "queue:\040message\040is\040too\040short.\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:252 [nf_conntrack_ipv6]nf_ct_frag6_queue - "last\040packet\040already\040reached.\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:246 [nf_conntrack_ipv6]nf_ct_frag6_queue - "end\040of\040fragment\040not\040rounded\040to\0408\040bytes.\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:233 [nf_conntrack_ipv6]nf_ct_frag6_queue - "already\040received\040last\040fragment\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:215 [nf_conntrack_ipv6]nf_ct_frag6_queue - "offset\040is\040too\040large.\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:206 [nf_conntrack_ipv6]nf_ct_frag6_queue - "Allready\040completed\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:417 [nf_conntrack_ipv6]nf_ct_frag6_reasm - "Can't\040alloc\040skb\012"
+net/ipv6/netfilter/nf_conntrack_reasm.c:405 [nf_conntrack_ipv6]nf_ct_frag6_reasm - "skb\040is\040cloned\040but\040can't\040expand\040head"
+net/ipv6/netfilter/nf_conntrack_reasm.c:399 [nf_conntrack_ipv6]nf_ct_frag6_reasm - "payload\040len\040is\040too\040large.\012"
+net/ipv6/netfilter/ip6t_LOG.c:465 [ip6t_LOG]log_tg6_check - "LOG:\040prefix\040term\040%i\012"
+net/ipv6/netfilter/ip6t_LOG.c:460 [ip6t_LOG]log_tg6_check - "LOG:\040level\040%u\040>=\0408\012"
+net/ipv6/netfilter/ip6t_REJECT.c:181 [ip6t_REJECT]reject_tg6 - "%s:\040medium\040point\012"
+net/ipv6/netfilter/ip6t_REJECT.c:86 [ip6t_REJECT]send_reset - "ip6t_REJECT:\040TCP\040checksum\040is\040invalid\012"
+net/ipv6/netfilter/ip6t_REJECT.c:79 [ip6t_REJECT]send_reset - "ip6t_REJECT:\040RST\040is\040set\012"
+net/ipv6/netfilter/ip6t_REJECT.c:70 [ip6t_REJECT]send_reset - "ip6t_REJECT:\040proto(%d)\040!=\040IPPROTO_TCP,\040or\040too\040short.\040otcplen\040=\040%d\012"
+net/ipv6/netfilter/ip6t_REJECT.c:60 [ip6t_REJECT]send_reset - "ip6t_REJECT:\040Can't\040get\040TCP\040header.\012"
+net/ipv6/netfilter/ip6t_REJECT.c:52 [ip6t_REJECT]send_reset - "ip6t_REJECT:\040addr\040is\040not\040unicast.\012"
+
+
