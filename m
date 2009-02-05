@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZBEO6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756588AbZBEPAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbZBEO6S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 09:58:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZBEO6F
+	id S1756588AbZBEPAw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:00:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZBEPAn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 09:58:05 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42095 "EHLO mx3.mail.elte.hu"
+	Thu, 5 Feb 2009 10:00:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58632 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751617AbZBEO6C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 09:58:02 -0500
-Date: Thu, 5 Feb 2009 15:57:41 +0100
+	id S1752728AbZBEPAm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:00:42 -0500
+Date: Thu, 5 Feb 2009 16:00:28 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
+To: Tejun Heo <htejun@gmail.com>
 Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Brian Gerst <brgerst@gmail.com>,
        Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [PATCH 1/3] xen: setup percpu data pointers
-Message-ID: <20090205145741.GC23903@elte.hu>
-References: <49876BD3.5070804@goop.org> <498A8738.9050200@gmail.com> <498A8C05.30704@kernel.org> <498A9284.8050805@goop.org> <498ABFA9.7060203@kernel.org>
+Subject: Re: [PATCH 2/3] xen: make direct versions of
+	irq_enable/disable/save/restore to common code
+Message-ID: <20090205150028.GD23903@elte.hu>
+References: <4983AC87.5000304@goop.org> <498A87B5.3020808@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498ABFA9.7060203@kernel.org>
+In-Reply-To: <498A87B5.3020808@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,31 +38,54 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Tejun Heo <tj@kernel.org> wrote:
+* Tejun Heo <htejun@gmail.com> wrote:
 
+> Hello,
+> 
 > Jeremy Fitzhardinge wrote:
-> > Tejun Heo wrote:
-> >> Tejun Heo wrote:
-> >>  
-> >>> Applied 1-3 to #tj-percpu with trivial modification on #2 (will reply
-> >>> to the message).
-> >>>     
-> >>
-> >> Oh... hpa already merged them into x86/paravirt.  I'll just pull
-> >> x86/paravirt into core/percpu because the first patch needs to be in
-> >> core/percpu to keep xen working.
-> >>
-> >> hpa, can you please take the other xen patch[1] into x86/paravirt too?
-> >> So that I can receive it via you?
+> > Now that x86-64 has directly accessible percpu variables, it can also
+> > implement the direct versions of these operations, which operate on a
+> > vcpu_info structure directly embedded in the percpu area.
 > > 
-> > Looks like its already there.
+> > In fact, the 64-bit versions are more or less identical, and so can be
+> > shared.  The only two differences are:
+> > 1. xen_restore_fl_direct takes its argument in eax on 32-bit, and rdi on
+> > 64-bit.
+> >    Unfortunately it isn't possible to directly refer to the 2nd lsb of
+> > rdi directly
+> >    (as you can with %ah), so the code isn't quite as dense.
+> > 2. check_events needs to variants to save different registers.
+> > 
+> > Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> > ---
+> > arch/x86/xen/Makefile     |    3 arch/x86/xen/xen-asm.S    |  140
+> > +++++++++++++++++++++++++++++++++++++++++++++
+> > arch/x86/xen/xen-asm.h    |   12 +++
+> > arch/x86/xen/xen-asm_32.S |  113 ++++--------------------------------
+> > arch/x86/xen/xen-asm_64.S |  136
+> > +------------------------------------------
+> > 5 files changed, 171 insertions(+), 233 deletions(-)
+> ...
+> > ===================================================================
+> > --- a/arch/x86/xen/xen-asm_32.S
+> > +++ b/arch/x86/xen/xen-asm_32.S
+> > @@ -11,101 +11,28 @@
+> >     generally too large to inline anyway.
+> >  */
+> > 
+> > -#include <linux/linkage.h>
+> > -
+> > -#include <asm/asm-offsets.h>
+> > +//#include <asm/asm-offsets.h>
 > 
-> Yes, right, which means tj-percpu == x86/paravirt for the time being.
-> Ingo, please pull from the following to fast forward core/percpu to
-> x86/paravirt (or you can just do it yourself :-)
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git tj-percpu
+> Applied without the above addition of //
 
-done, thanks Tejun. Testing results look good so far.
+btw., that's still worth fixing, plus the comments styles could be 
+standardized. And this should grow an extra space after the comma:
+
+        lea 4(%edi),%esp                /* point esp to new frame */
+
+(there's 5-6 similar instructions in that file with this problem - the rest 
+is fine.)
 
 	Ingo
