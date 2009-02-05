@@ -1,152 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZBEHwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbZBEIAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbZBEHwe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 02:52:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZBEHwX
+	id S1757211AbZBEIAe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:00:34 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbZBEIAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 02:52:23 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:34508 "EHLO
-	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751761AbZBEHwW (ORCPT
+	Thu, 5 Feb 2009 03:00:24 -0500
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:43420 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751664AbZBEIAX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 02:52:22 -0500
-Date: Thu, 5 Feb 2009 00:52:20 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-cc: linux-omap@vger.kernel.org, r-woodruff2@ti.com,
-       linux-kernel@vger.kernel.org, catalin.marinas@arm.com
-Subject: [REPOST] [PATCH] ARM: MMU: add a Non-cacheable Normal executable
- memory type 
-Message-ID: <alpine.DEB.2.00.0902050043060.20959@utopia.booyaka.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 5 Feb 2009 03:00:23 -0500
+Date: Thu, 5 Feb 2009 09:00:16 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: David Miller <davem@davemloft.net>
+Cc: mel@csn.ul.ie, kamezawa.hiroyu@jp.fujitsu.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
+Subject: Re: HOLES_IN_ZONE...
+Message-ID: <20090205090016.6197d588@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090204.222651.26527737.davem@davemloft.net>
+References: <20090204.222651.26527737.davem@davemloft.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 04 Feb 2009 22:26:51 -0800 (PST)
+David Miller <davem@davemloft.net> wrote:
 
-Hello,
+> I also noticed that when S390 got virtual memmap support, it acquired
+> the HOLES_IN_ZONE setting as well, in this commit:
+> 
+> commit f4eb07c17df2e6cf9bd58bfcd9cc9e05e9489d07
+> Author: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Date:   Fri Dec 8 15:56:07 2006 +0100
+> 
+>     [S390] Virtual memmap for s390.
+> 
+> This is confusing.  Is HOLES_IN_ZONE only required when virtual mmap
+> is being used?  If so, why is that?  This is a very poorly documented
+> flag, and I'm saying this after pouring over every commit referencing
+> it.
 
-Any comments on this patch?  It is an unusual use for executable, uncached 
-memory; but for our purposes, it should be much faster than a full cache 
-flush, and conceptually cleaner than strongly-ordered executable memory, 
-which appear to be our only other options in this situation.
+I should have split that into two commits back then. When writing the
+vmemmap code for s390 I realized that we never guaranteed that zones
+start on a MAX_ORDER boundary or have a size that is a multiple of
+MAX_ORDER. So I just added HOLES_IN_ZONE.
 
-We've tested this on ARMv7 (OMAP3).  If anyone would care to doublecheck 
-the setup for architectures below ARMv7, it would be much appreciated.
+> Later this HOLES_IN_ZONE requirement was removed on s390 by commit:
+> 
+> commit 9f4b0ba81f158df459fa2cfc98ab1475c090f29c
+> Author: Heiko Carstens <heiko.carstens@de.ibm.com>
+> Date:   Sat Jan 26 14:11:02 2008 +0100
+> 
+>     [S390] Get rid of HOLES_IN_ZONE requirement.
 
-This patch has been entered into rmk's parch system as patch 5356/1. 
-Unfortunately, we can't merge any of the OMAP3 CORE DVFS code until this 
-patch, or one like it, is merged.  Any reason why this patch, or one like 
-it, shouldn't be merged?
+This just made sure that all zones start on a MAX_ORDER boundary and
+just leaves memory that doesn't fit unused. So the requirement for
+HOLES_IN_ZONE went away.
 
-thanks for any review and comment,
-
-
-- Paul
-
----------- Forwarded message ----------
-Date: Mon, 15 Dec 2008 14:07:07 -0700 (MST)
-From: Paul Walmsley <paul@pwsan.com>
-To: linux-arm-kernel@lists.arm.linux.org.uk
-Cc: linux-omap@vger.kernel.org, r-woodruff2@ti.com
-Subject: [PATCH] ARM: MMU: add a Non-cacheable Normal executable memory type
-
-
-This patch adds a Non-cacheable Normal ARM executable memory type, 
-MT_MEMORY_NONCACHED.
-
-On OMAP3, this is used for rapid dynamic voltage/frequency scaling in the 
-VDD2 voltage domain.  OMAP3's SDRAM controller (SDRC) is in the VDD2 
-voltage domain, and its clock frequency must change along with voltage.  
-The SDRC clock change code cannot run from SDRAM itself, since SDRAM 
-accesses are paused during the clock change.  So the current 
-implementation of the DVFS code executes from OMAP on-chip SRAM, aka "OCM 
-RAM."
-
-If the OCM RAM pages are marked as Cacheable, the ARM cache controller 
-will attempt to flush dirty cache lines to the SDRC, so it can fill those 
-lines with OCM RAM instruction code.  The problem is that the SDRC is 
-paused during DVFS, and so any SDRAM access causes the ARM MPU subsystem 
-to hang.
-
-TI's original solution to this problem was to mark the OCM RAM sections as 
-Strongly Ordered memory, thus preventing caching.  This is overkill: since 
-the memory is marked as non-bufferable, OCM RAM writes become quite 
-needlessly slow.  The idea of "Strongly Ordered SRAM" is also conceptually 
-disturbing.  Previous LAKML list discussion is here:
-
-   http://www.spinics.net/lists/arm-kernel/msg54312.html
-
-Now this memory type MT_MEMORY_NONCACHED is used by a future patch for OCM 
-RAM.
-
-Signed-off-by: Paul Walmsley <paul@pwsan.com>
-Cc: Richard Woodruff <r-woodruff2@ti.com>
----
- arch/arm/include/asm/mach/map.h |    1 +
- arch/arm/mm/mmu.c               |   23 +++++++++++++++++++++++
- 2 files changed, 24 insertions(+), 0 deletions(-)
-
-diff --git a/arch/arm/include/asm/mach/map.h b/arch/arm/include/asm/mach/map.h
-index 39d949b..58cf91f 100644
---- a/arch/arm/include/asm/mach/map.h
-+++ b/arch/arm/include/asm/mach/map.h
-@@ -26,6 +26,7 @@ struct map_desc {
- #define MT_HIGH_VECTORS		8
- #define MT_MEMORY		9
- #define MT_ROM			10
-+#define MT_MEMORY_NONCACHED	11
- 
- #ifdef CONFIG_MMU
- extern void iotable_init(struct map_desc *, int);
-diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
-index 7f36c82..9ad6413 100644
---- a/arch/arm/mm/mmu.c
-+++ b/arch/arm/mm/mmu.c
-@@ -242,6 +242,10 @@ static struct mem_type mem_types[] = {
- 		.prot_sect = PMD_TYPE_SECT,
- 		.domain    = DOMAIN_KERNEL,
- 	},
-+	[MT_MEMORY_NONCACHED] = {
-+		.prot_sect = PMD_TYPE_SECT | PMD_SECT_AP_WRITE,
-+		.domain    = DOMAIN_KERNEL,
-+	},
- };
- 
- const struct mem_type *get_mem_type(unsigned int type)
-@@ -405,9 +409,28 @@ static void __init build_mem_type_table(void)
- 		kern_pgprot |= L_PTE_SHARED;
- 		vecs_pgprot |= L_PTE_SHARED;
- 		mem_types[MT_MEMORY].prot_sect |= PMD_SECT_S;
-+		mem_types[MT_MEMORY_NONCACHED].prot_sect |= PMD_SECT_S;
- #endif
- 	}
- 
-+	/*
-+	 * Non-cacheable Normal - intended for memory areas that must
-+	 * not cause dirty cache line writebacks when used
-+	 */
-+	if (cpu_arch >= CPU_ARCH_ARMv6) {
-+		if (cpu_arch >= CPU_ARCH_ARMv7 && (cr & CR_TRE)) {
-+			/* Non-cacheable Normal is XCB = 001 */
-+			mem_types[MT_MEMORY_NONCACHED].prot_sect |=
-+				PMD_SECT_BUFFERED;
-+		} else {
-+			/* For both ARMv6 and non-TEX-remapping ARMv7 */
-+			mem_types[MT_MEMORY_NONCACHED].prot_sect |=
-+				PMD_SECT_TEX(1);
-+		}
-+	} else {
-+		mem_types[MT_MEMORY_NONCACHED].prot_sect |= PMD_SECT_BUFFERABLE;
-+	}
-+
- 	for (i = 0; i < 16; i++) {
- 		unsigned long v = pgprot_val(protection_map[i]);
- 		protection_map[i] = __pgprot(v | user_pgprot);
-
--------------------------------------------------------------------
-List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
+Later I reduced MAX_ORDER to 9 on s390, so we don't leave large
+portions of memory unused.
