@@ -1,187 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZBEPKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbZBEPNa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZBEPKZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:10:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZBEPKN
+	id S1756183AbZBEPNa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:13:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751562AbZBEPNW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:10:13 -0500
-Received: from mx0.towertech.it ([213.215.222.73]:35294 "HELO mx0.towertech.it"
+	Thu, 5 Feb 2009 10:13:22 -0500
+Received: from mx0.towertech.it ([213.215.222.73]:55377 "HELO mx0.towertech.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750885AbZBEPKL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:10:11 -0500
-Date: Thu, 5 Feb 2009 16:10:07 +0100
-From: Alessandro Zummo <azummo-lists@towertech.it>
-Cc: jordan@cosmicpenguin.net, "David Brownell" <david-b@pacbell.net>,
-       jordan@cosmicpenguin.net, linux-geode@lists.infradead.org,
-       dilinger@queued.net, dsaxena@laptop.org,
-       "=?ISO-8859-1?Q?Martin-=C9ric?= Racine" <q-funk@iki.fi>,
-       lkml <linux-kernel@vger.kernel.org>, rpurdie@rpsys.net,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] AMD Geode CS5535/5536 GPIO driver
-Message-ID: <20090205161007.4d121cbf@i1501.lan.towertech.it>
+	id S1751423AbZBEPNV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:13:21 -0500
+Date: Thu, 5 Feb 2009 16:13:19 +0100
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: rpurdie@rpsys.net, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] Soekris net5501 board support code
+Message-ID: <20090205161319.32219d93@i1501.lan.towertech.it>
 Organization: Tower Technologies
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+X-Mailer: Sylpheed
+X-This-Is-A-Real-Message: Yes
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Board support code for the Soekris net5501. 
 
-A GPIO driver for the AMD Geode CS5535/5536 Companion Devices.
-
-In the release 2 I've addressed all the concerns expressed by the
-various subsys maintainers involved.
+Signed-off-by: Alessandro Zummo <a.zummo@towertech.it>
 
 ---
- arch/x86/Kconfig           |   10 ++++
- arch/x86/kernel/geode_32.c |   91 +++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 101 insertions(+)
+ drivers/platform/x86/Kconfig   |   14 ++++++
+ drivers/platform/x86/Makefile  |    1 
+ drivers/platform/x86/soekris.c |   92 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 107 insertions(+)
 
---- linux-2.6.28.orig/arch/x86/Kconfig	2009-02-03 19:38:43.000000000 +0100
-+++ linux-2.6.28/arch/x86/Kconfig	2009-02-03 20:15:25.000000000 +0100
-@@ -1911,6 +1911,16 @@ config GEODE_MFGPT_TIMER
- 	  MFGPTs have a better resolution and max interval than the
- 	  generic PIT, and are suitable for use as high-res timers.
- 
-+config GEODE_GPIO
-+	bool "Geode GPIO support"
-+	depends on MGEODE_LX && !CS5535_GPIO
-+	default n
-+	help
-+          Say yes here to provide support for the 28 GPIO pins on
-+          the AMD CS5535 and CS5536 Geode Companion Devices.
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.28/drivers/platform/x86/soekris.c	2009-02-03 22:45:16.000000000 +0100
+@@ -0,0 +1,92 @@
++/*
++ * Soekris board support code
++ *
++ * Copyright (C) 2008-2009 Tower Technologies
++ * Written by Alessandro Zummo <a.zummo@towertech.it>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation.
++ */
 +
-+          If unsure, say N.
-+
- config OLPC
- 	bool "One Laptop Per Child support"
- 	default n
---- linux-2.6.28.orig/arch/x86/kernel/geode_32.c	2008-12-25 00:26:37.000000000 +0100
-+++ linux-2.6.28/arch/x86/kernel/geode_32.c	2009-02-03 20:22:32.000000000 +0100
-@@ -2,6 +2,7 @@
-  * AMD Geode southbridge support code
-  * Copyright (C) 2006, Advanced Micro Devices, Inc.
-  * Copyright (C) 2007, Andres Salomon <dilinger@debian.org>
-+ * Copyright (C) 2009, Tower Technologies
-  *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of version 2 of the GNU General Public License
-@@ -12,6 +13,8 @@
- #include <linux/module.h>
- #include <linux/ioport.h>
- #include <linux/io.h>
-+#include <linux/gpio.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/io.h>
++#include <linux/string.h>
++#include <linux/leds.h>
 +#include <linux/platform_device.h>
- #include <asm/msr.h>
- #include <asm/geode.h>
- 
-@@ -183,6 +186,89 @@ int geode_has_vsa2(void)
- }
- EXPORT_SYMBOL_GPL(geode_has_vsa2);
- 
-+/* GPIO subsystem functions */
-+#ifdef CONFIG_GEODE_GPIO
-+static void cs5535_gpio_set(struct gpio_chip *chip, unsigned offset, int value)
-+{
-+	if (value)
-+		geode_gpio_set(geode_gpio(offset), GPIO_OUTPUT_VAL);
-+	else
-+		geode_gpio_clear(geode_gpio(offset), GPIO_OUTPUT_VAL);
-+}
++#include <linux/gpio.h>
 +
-+static int cs5535_gpio_get(struct gpio_chip *chip, unsigned offset)
-+{
-+	return geode_gpio_isset(geode_gpio(offset), GPIO_READ_BACK);
-+}
++#include <asm/geode.h>
 +
-+static int cs5535_direction_input(struct gpio_chip *chip, unsigned offset)
-+{
-+	geode_gpio_clear(geode_gpio(offset), GPIO_OUTPUT_ENABLE);
-+	geode_gpio_set(geode_gpio(offset), GPIO_INPUT_ENABLE);
-+
-+	return 0;
-+}
-+
-+static int cs5535_direction_output(struct gpio_chip *chip, unsigned offset,
-+					int value)
-+{
-+	cs5535_gpio_set(chip, offset, value);
-+
-+	geode_gpio_set(geode_gpio(offset), GPIO_OUTPUT_ENABLE);
-+	geode_gpio_clear(geode_gpio(offset), GPIO_INPUT_ENABLE);
-+
-+	return 0;
-+}
-+
-+static struct gpio_chip cs5535 = {
-+	.owner	= THIS_MODULE,
-+	.label	= "cs5535-gpio",
-+
-+	.base	= 0,
-+	.ngpio	= 28,
-+
-+	.get	= cs5535_gpio_get,
-+	.set	= cs5535_gpio_set,
-+
-+	.direction_input = cs5535_direction_input,
-+	.direction_output = cs5535_direction_output,
-+};
-+
-+static int __init cs5535_gpio_probe(struct platform_device *pdev)
-+{
-+	int rc;
-+
-+	if (!request_region(geode_gpio_base(), LBAR_GPIO_SIZE, "cs5535-gpio")) {
-+		dev_err(&pdev->dev, "cannot allocate I/O region at %x\n",
-+				geode_gpio_base());
-+		return -ENODEV;
-+	}
-+
-+	rc = gpiochip_add(&cs5535);
-+	if (rc < 0) {
-+		dev_err(&pdev->dev, "cannot add GPIO\n");
-+		goto fail_release;
-+	}
-+
-+	dev_info(&pdev->dev, "registered at 0x%x, GPIO base %d\n",
-+			geode_gpio_base(), cs5535.base);
-+
-+	return 0;
-+
-+fail_release:
-+	release_region(geode_gpio_base(), LBAR_GPIO_SIZE);
-+
-+	return rc;
-+}
-+
-+static struct platform_driver cs5535_gpio_driver = {
-+	.driver	 = {
-+		.name   = "cs5535-gpio",
-+		.owner  = THIS_MODULE,
++static struct gpio_led net5501_leds[] = {
++	{
++		.name = "error",
++		.gpio = 6,
++		.default_trigger = "default-on",
 +	},
 +};
-+#endif
 +
- static int __init geode_southbridge_init(void)
- {
- 	if (!is_geode())
-@@ -190,6 +276,11 @@ static int __init geode_southbridge_init
- 
- 	init_lbars();
- 	(void) mfgpt_timer_setup();
++static struct gpio_led_platform_data net5501_leds_data = {
++	.num_leds = ARRAY_SIZE(net5501_leds),
++	.leds = net5501_leds,
++};
 +
-+#ifdef CONFIG_GEODE_GPIO
-+	platform_device_register_simple("cs5535-gpio", 0, NULL, 0);
-+	platform_driver_probe(&cs5535_gpio_driver, cs5535_gpio_probe);
-+#endif
- 	return 0;
- }
++static struct platform_device net5501_leds_dev = {
++	.name = "leds-gpio",
++	.id = -1,
++	.dev.platform_data = &net5501_leds_data,
++};
++
++static void __init init_net5501(void)
++{
++	platform_device_register(&net5501_leds_dev);
++}
++
++struct soekris_board {
++	u16	offset;
++	char	*sig;
++	u8	len;
++	void	(*init)(void);
++};
++
++static struct soekris_board __initdata boards[] = {
++	{ 0xb7b, "net5501", 7, init_net5501 },	/* net5501 v1.33/1.33c */
++	{ 0xb1f, "net5501", 7, init_net5501 },	/* net5501 v1.32i */
++};
++
++static int __init soekris_init(void)
++{
++	int i;
++	unsigned char *rombase, *bios;
++
++	if (!is_geode() || geode_has_vsa2())
++		return 0;
++
++	rombase = ioremap(0xffff0000, 0xffff);
++	if (!rombase)
++		return 0;
++
++	bios = rombase + 0x20;	/* null terminated */
++
++	if (strncmp(bios, "comBIOS", 7))
++		goto unmap;
++
++	for (i = 0; i < ARRAY_SIZE(boards); i++) {
++		unsigned char *model = rombase + boards[i].offset;
++
++		if (strncmp(model, boards[i].sig, boards[i].len) == 0) {
++			printk(KERN_INFO "Soekris %s: %s\n", model, bios);
++
++			if (boards[i].init)
++				boards[i].init();
++			break;
++		}
++	}
++
++unmap:
++	iounmap(rombase);
++	return 0;
++}
++
++arch_initcall(soekris_init);
+--- linux-2.6.28.orig/drivers/platform/x86/Kconfig	2009-02-03 19:30:25.000000000 +0100
++++ linux-2.6.28/drivers/platform/x86/Kconfig	2009-02-03 22:39:28.000000000 +0100
+@@ -395,4 +395,18 @@ config ACPI_TOSHIBA
  
+ 	  If you have a legacy free Toshiba laptop (such as the Libretto L1
+ 	  series), say Y.
++
++config SOEKRIS
++	bool "Soekris net5501 support"
++	depends on MGEODE_LX
++	select GPIOLIB
++	select GEODE_GPIO
++	select LEDS_CLASS
++	select LEDS_GPIO
++	select LEDS_TRIGGER_DEFAULT_ON
++	default n
++	help
++	  Add support for the Soekris net5501 board (detection, error led
++	  and GPIO).
++
+ endif # X86_PLATFORM_DEVICES
+--- linux-2.6.28.orig/drivers/platform/x86/Makefile	2009-02-03 19:30:25.000000000 +0100
++++ linux-2.6.28/drivers/platform/x86/Makefile	2009-02-03 20:26:33.000000000 +0100
+@@ -18,3 +18,4 @@ obj-$(CONFIG_INTEL_MENLOW)	+= intel_menl
+ obj-$(CONFIG_ACPI_WMI)		+= wmi.o
+ obj-$(CONFIG_ACPI_ASUS)		+= asus_acpi.o
+ obj-$(CONFIG_ACPI_TOSHIBA)	+= toshiba_acpi.o
++obj-$(CONFIG_SOEKRIS)		+= soekris.o
+
 
 -- 
 
