@@ -1,59 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZBEXvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755867AbZBEXws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZBEXvZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 18:51:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZBEXvR
+	id S1755867AbZBEXws (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 18:52:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZBEXwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 18:51:17 -0500
-Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:37483 "HELO
-	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753014AbZBEXvQ (ORCPT
+	Thu, 5 Feb 2009 18:52:37 -0500
+Received: from rhun.apana.org.au ([64.62.148.172]:57425 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752805AbZBEXwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 18:51:16 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=EsnwZVP+BNUYIpc85G6SuekBrUXQrUs5ob37Qe3uPsh7KKh8WKe2XUnhku9VzSzo15zsl7fT1MOYfTO9H7WgMqi0tTAaVA9XFwP/Pq1BrRDUxN1oUkWo4skYVwC3qKgh8jXk0NtwI5cDq0YqgpSBr87HpN31Brmeni3yjasSPng=  ;
-X-YMail-OSG: stcfbucVM1nq7FwweFySE99kjuBeE9_yJ_CZuAaRmQCrVLVaAZarNDhPjxqypByg461E8Q33Rd9QR1niCv86cM6KwrslNUjkp_qLV6sGzltbNBT37q2W6xSpJWmjsARI4mtY3tgzBW_Ytgej9lHe0ot6Bu8N.GRFWk.j9HE_M62iz.5uMQOLQKB4FAFN
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH 01/16] Blackfin SPI Driver: ensure cache coherency before  doing DMA
-Date: Thu, 5 Feb 2009 15:51:13 -0800
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Vitja Makarov <vitja.makarov@gmail.com>
-References: <1226994760-4301-1-git-send-email-cooloney@kernel.org> <200811201405.06811.david-b@pacbell.net> <386072610902050130k27c6d7far752ac49183bf36ae@mail.gmail.com>
-In-Reply-To: <386072610902050130k27c6d7far752ac49183bf36ae@mail.gmail.com>
+	Thu, 5 Feb 2009 18:52:36 -0500
+Date: Fri, 6 Feb 2009 10:52:23 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>, jeff.chua.linux@gmail.com, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
+Message-ID: <20090205235223.GB1929@gondor.apana.org.au>
+References: <b6a2187b0902050641h7943816ds26275a320e724440@mail.gmail.com> <20090205.152906.221253085.davem@davemloft.net> <alpine.LFD.2.00.0902051530520.3048@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902051551.14146.david-b@pacbell.net>
+In-Reply-To: <alpine.LFD.2.00.0902051530520.3048@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 05 February 2009, Bryan Wu wrote:
-> As you acked this patchset, is that possible to merge it?
-> Or need Andrew to keep them in -mm for a while.
+On Thu, Feb 05, 2009 at 03:32:20PM -0800, Linus Torvalds wrote:
+> 
+> Why is there even any discussion?
+> 
+> URG is broken as a concept, no sane/modern use case exists. It's totally 
+> uninteresting _except_ as a "legacy binary" issue, so
+> 
+>  - there's no point in trying to "improve" it.
+> 
+>  - even just a whiff of "breaks legacy app" just says "revert it".
+> 
+> No?
 
-ISTR *NOT* acking the whole series though.  In fact, I recall
-giving a generic NAK part way through because of patches that
-didn't include comments (after manually NAKing many individual
-patches) and ones where $SUBJECT didn't match the patch comments.
-Plus even a few which seemed to be wrong.
+It's more complex than that.  We'll need to do exactly this in
+the future in order to support IPv6 jumbograms because that's
+the only way to use the 16-bit urgent pointer in a packet bigger
+than 64K.  It's also what RFC2675 (http://tools.ietf.org/html/rfc2675,
+section 5.2) prescribes.
 
-(And I've said the same thing about Blackfin patches before,
-too.  Please help the message get through to your co-workers:
-make sure the patches come with useful public descriptions.)
+IPv6 jumbograms are absolutely required if we ever want to move
+beyond 10Gb/s Ethernet.
 
-At this point, best to resend the whole series, with the
-updates I requested.  The few patches which I did ack can
-include that ack.
+But as we're still struggling with 10Gb/s Ethernet, I'm fine with
+a revert for now while we look for a fix for rlogin.
 
-- Dave
-
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
