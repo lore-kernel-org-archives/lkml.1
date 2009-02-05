@@ -1,109 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756505AbZBEWxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZBEWzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756505AbZBEWxg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 17:53:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZBEWwP
+	id S1755538AbZBEWzQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 17:55:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZBEWzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 17:52:15 -0500
-Received: from everest.las.ic.unicamp.br ([143.106.60.118]:52322 "EHLO
-	mail.las.ic.unicamp.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752853AbZBEWwN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 17:52:13 -0500
-From: "Gustavo F. Padovan" <gustavo@las.ic.unicamp.br>
-To: linux-kernel@vger.kernel.org
-Cc: glommer@redhat.com, mingo@elte.hu
-Subject: [PATCH 3/6] x86: define reserve_top_address for x86_64
-Date: Thu,  5 Feb 2009 20:39:43 -0200
-Message-Id: <1233873586-7149-4-git-send-email-gustavo@las.ic.unicamp.br>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1233873586-7149-3-git-send-email-gustavo@las.ic.unicamp.br>
-References: <1233873586-7149-1-git-send-email-gustavo@las.ic.unicamp.br>
- <1233873586-7149-2-git-send-email-gustavo@las.ic.unicamp.br>
- <1233873586-7149-3-git-send-email-gustavo@las.ic.unicamp.br>
+	Thu, 5 Feb 2009 17:55:00 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:55619 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752645AbZBEWy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 17:54:59 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Hugh Dickins <hugh@veritas.com>
+Subject: Re: [Bug #12609] v2.6.29-rc2 libata sff 32bit PIO regression
+Date: Thu, 5 Feb 2009 23:54:15 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       Mikael Pettersson <mikpe@it.uu.se>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+References: <kkuKoQJIW-D.A.61C.auYiJB@chimera> <pWZw1SZjMCH.A.o-D.uuYiJB@chimera> <Pine.LNX.4.64.0902051723520.1445@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0902051723520.1445@blonde.anvils>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902052354.16361.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Only for later x86 integration.
+On Thursday 05 February 2009, Hugh Dickins wrote:
+> On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12609
+> > Subject		: v2.6.29-rc2 libata sff 32bit PIO regression
+> > Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> > Date		: 2009-01-23 23:52 (13 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=123275478111406&w=4
+> > 		  http://marc.info/?l=linux-kernel&m=123254501314058&w=4
+> > Handled-By	: Mikael Pettersson <mikpe@it.uu.se>
+> > 		  Hugh Dickins <hugh@veritas.com>
+> > Patch		: http://marc.info/?l=linux-kernel&m=123254501314058&w=2
+> 
+> Yes, this does still need to be listed.  My initial patch for it was
+> not enough, but I think the three patches necessary have all now been
+> posted (though Sergei may rewrite mine).  I'm expecting Alan to gather
+> them together and send them in due course, but I believe he's occupied
+> with other stuff just at the moment.
 
-Signed-off-by: Gustavo F. Padovan <gustavo@las.ic.unicamp.br>
-Acked-by: Glauber Costa <gcosta@redhat.com>
----
- arch/x86/include/asm/fixmap_64.h |    2 ++
- arch/x86/mm/pgtable.c            |   18 ++++++++++++++++++
- arch/x86/mm/pgtable_32.c         |   16 ----------------
- 3 files changed, 20 insertions(+), 16 deletions(-)
+Thanks for the update.
 
-diff --git a/arch/x86/include/asm/fixmap_64.h b/arch/x86/include/asm/fixmap_64.h
-index 678b9c5..773b657 100644
---- a/arch/x86/include/asm/fixmap_64.h
-+++ b/arch/x86/include/asm/fixmap_64.h
-@@ -72,6 +72,8 @@ enum fixed_addresses {
- 	__end_of_fixed_addresses
- };
- 
-+extern void reserve_top_address(unsigned long reserve);
-+
- #define FIXADDR_TOP	(VSYSCALL_END-PAGE_SIZE)
- 
- #define FIXADDR_SIZE	(__end_of_permanent_fixed_addresses << PAGE_SHIFT)
-diff --git a/arch/x86/mm/pgtable.c b/arch/x86/mm/pgtable.c
-index 86f2ffc..5b7c7c8 100644
---- a/arch/x86/mm/pgtable.c
-+++ b/arch/x86/mm/pgtable.c
-@@ -313,6 +313,24 @@ int ptep_clear_flush_young(struct vm_area_struct *vma,
- 	return young;
- }
- 
-+/**
-+ * reserve_top_address - reserves a hole in the top of kernel address space
-+ * @reserve - size of hole to reserve
-+ *
-+ * Can be used to relocate the fixmap area and poke a hole in the top
-+ * of kernel address space to make room for a hypervisor.
-+ */
-+void __init reserve_top_address(unsigned long reserve)
-+{
-+#ifdef CONFIG_X86_32
-+	BUG_ON(fixmaps_set > 0);
-+	printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
-+	       (int)-reserve);
-+	__FIXADDR_TOP = -reserve - PAGE_SIZE;
-+	__VMALLOC_RESERVE += reserve;
-+#endif
-+}
-+
- int fixmaps_set;
- 
- void __native_set_fixmap(enum fixed_addresses idx, pte_t pte)
-diff --git a/arch/x86/mm/pgtable_32.c b/arch/x86/mm/pgtable_32.c
-index 0951db9..c3cf6e1 100644
---- a/arch/x86/mm/pgtable_32.c
-+++ b/arch/x86/mm/pgtable_32.c
-@@ -97,22 +97,6 @@ void set_pmd_pfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags)
- unsigned long __FIXADDR_TOP = 0xfffff000;
- EXPORT_SYMBOL(__FIXADDR_TOP);
- 
--/**
-- * reserve_top_address - reserves a hole in the top of kernel address space
-- * @reserve - size of hole to reserve
-- *
-- * Can be used to relocate the fixmap area and poke a hole in the top
-- * of kernel address space to make room for a hypervisor.
-- */
--void __init reserve_top_address(unsigned long reserve)
--{
--	BUG_ON(fixmaps_set > 0);
--	printk(KERN_INFO "Reserving virtual address space above 0x%08x\n",
--	       (int)-reserve);
--	__FIXADDR_TOP = -reserve - PAGE_SIZE;
--	__VMALLOC_RESERVE += reserve;
--}
--
- /*
-  * vmalloc=size forces the vmalloc area to be exactly 'size'
-  * bytes. This can be used to increase (or decrease) the
--- 
-1.5.6.4
-
+Rafael
