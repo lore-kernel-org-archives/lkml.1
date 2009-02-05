@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZBEI24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758636AbZBEIaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911AbZBEI24 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 03:28:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756027AbZBEI2q
+	id S1758636AbZBEIaU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 03:30:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753912AbZBEIaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 03:28:46 -0500
-Received: from edu.joroinen.fi ([194.89.68.130]:49123 "EHLO edu.joroinen.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753148AbZBEI2q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 03:28:46 -0500
-Date: Thu, 5 Feb 2009 10:28:43 +0200
-From: Pasi =?iso-8859-1?Q?K=E4rkk=E4inen?= <pasik@iki.fi>
-To: linux-kernel@vger.kernel.org
-Cc: linux-ide@vger.kernel.org
-Subject: Suggestions for debugging ata_piix and ahci driver failures on Xen pv_ops dom0 kernel (2.6.29-rcX)
-Message-ID: <20090205082843.GD15052@edu.joroinen.fi>
-MIME-Version: 1.0
+	Thu, 5 Feb 2009 03:30:05 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:52407 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbZBEIaE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 03:30:04 -0500
+Date: Thu, 5 Feb 2009 09:46:27 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?iso-8859-1?Q?J=F6rn?= Engel <joern@logfs.org>,
+       Theodore Tso <tytso@mit.edu>, Andi Kleen <andi@firstfloor.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: [PATCH] add b+tree library
+Message-ID: <20090205084627.GF14832@one.firstfloor.org>
+References: <2f11576a0901100429h415d3a87o40ba4849120832c8@mail.gmail.com> <20090110183921.GD20611@logfs.org> <1231613042.3706.16.camel@johannes> <87fxjrgd9s.fsf@basil.nowhere.org> <20090110202315.GE20611@logfs.org> <20090110212740.GE31579@mit.edu> <20090110220135.GF20611@logfs.org> <20090110142330.295a8847.akpm@linux-foundation.org> <1231631840.13420.24.camel@twins> <1233793066.7390.34.camel@johannes.local>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <1233793066.7390.34.camel@johannes.local>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+> In my use case, tracking the wifi APs around you, you have to scale from
+> a single one to >1k (yes, it's happening!), and lookups better be fast
+> because you might be doing them a lot (dozens of times per second).
 
-I'm trying to figure out what's wrong with the pv_ops dom0 kernel/patches [1]
-causing at least ata_piix and ahci drivers to fail to work.
+dozens of times per second is actually not a lot on any reasonable system.
+anything that's not totally screwed up (like the rbtrees) should be fine.
 
-There was legacy IRQ enabling problem earlier with the pv_ops dom0 patches, 
-which pretty much prevented the disks from being detected.. but that got fixed. 
-It could still be something related to Xen/dom0 irq handling.. 
+-Andi
 
-I'd be glad if someone could take a look at this 2.6.29-rc3-tip pv_ops dom0 kernel boot log
-and comment about _possible_ causes for such behaviour of ata_piix and ahci:
-
-http://pasik.reaktio.net/xen/pv_ops-dom0-debug/pv_ops-dom0-bootlog-11-xen331-linux-2.6.29-rc3-atadebug3.txt
-
-In that testing box I have just one IDE hdd attached to ata_piix controller, the AHCI controller doesn't
-have any disks attached.
-
-The exact same kernel works OK without problems on baremetal without Xen
-hypervisor. 
-
-[1] http://xenbits.xen.org/paravirt_ops/patches.hg/ and
-http://wiki.xensource.com/xenwiki/XenParavirtOps
-
--- Pasi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
