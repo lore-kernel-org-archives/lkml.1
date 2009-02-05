@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754057AbZBEVcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752530AbZBEVdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754057AbZBEVcx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 16:32:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbZBEVco
+	id S1752530AbZBEVdQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 16:33:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753073AbZBEVcu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 16:32:44 -0500
-Received: from mx1.redhat.com ([66.187.233.31]:36868 "EHLO mx1.redhat.com"
+	Thu, 5 Feb 2009 16:32:50 -0500
+Received: from mx1.redhat.com ([66.187.233.31]:36876 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752417AbZBEVcn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 16:32:43 -0500
+	id S1752964AbZBEVct (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 16:32:49 -0500
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
 To: Oleg Nesterov <oleg@redhat.com>
 X-Fcc: ~/Mail/linus
-Cc: Kaz Kylheku <kkylheku@gmail.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: Re: main thread pthread_exit/sys_exit bug!
-In-Reply-To: Oleg Nesterov's message of  Thursday, 5 February 2009 17:15:44 +0100 <20090205161544.GA24799@redhat.com>
-References: <3f43f78b0902011432y354c1b35m8f645640433f7b49@mail.gmail.com>
-	<20090201174159.4a52e15c.akpm@linux-foundation.org>
-	<20090202064509.GA20237@redhat.com>
-	<3f43f78b0902012310p46186417m66873f410b948fd3@mail.gmail.com>
-	<20090202165606.GA13346@redhat.com>
-	<20090205030553.49650FC381@magilla.sf.frob.com>
-	<3f43f78b0902042055p37ff9ab2u84840273b34c7373@mail.gmail.com>
-	<20090205161544.GA24799@redhat.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20090205212234.934D1FC381@magilla.sf.frob.com>
-Date: Thu,  5 Feb 2009 13:22:34 -0800 (PST)
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jerome Marchand <jmarchan@redhat.com>,
+       Denys Vlasenko <dvlasenk@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] ptrace: reintroduce __ptrace_detach() as a callee
+	of ptrace_exit()
+In-Reply-To: Oleg Nesterov's message of  Thursday, 5 February 2009 15:39:59 +0100 <20090205143959.GA20953@redhat.com>
+References: <20090129042920.GA5111@redhat.com>
+	<20090205012334.9E60FFC381@magilla.sf.frob.com>
+	<20090205143959.GA20953@redhat.com>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090205203731.1E02BFC381@magilla.sf.frob.com>
+Date: Thu,  5 Feb 2009 12:37:31 -0800 (PST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes we have the bug, and wait_task_stopped() should be fixed. But it is
-> buggy anyway, even if we delay the death of the main thread. But I also
-> think we shouldn't.
+> > Given its content, this function now better belongs in ptrace.c, I think.
+> 
+> I don't completely agree... This helper imho has nothing to do with
+> ptracing, except it does __ptrace_unlink(). But OK, I will move it
+> if you prefer. 
 
-Sorry, I'd missed the actual bug report among all the tangential verbiage.
-I wrote this test case for it.  Is there any problem other than this one?
+Obviously where it goes is not a big deal.  But I think it's clear that it
+has everything to do with ptrace and nothing to do with anything else.
+It resolves a situation that can only arise because of ptrace magic.
+
+> In that case we should export task_detached().
+
+Or just recognize that this trivial wrapper around == -1 has little
+value two lines away from a place where = -1 is done explicitly.  
+Really, the "abstraction" is more confusing than not in this function, IMHO.
 
 
 Thanks,
 Roland
-
-==========
-
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <pthread.h>
-#include <assert.h>
-
-static void *
-thfunc (void *arg)
-{
-  sleep (2);
-  puts ("stopping");
-  raise (SIGSTOP);
-  puts ("resumed");
-  exit (0);
-}
-
-int
-main (void)
-{
-  pthread_t th;
-  int rc = pthread_create (&th, NULL, &thfunc, NULL);
-  assert_perror (rc);
-  pthread_exit (0);
-  /*NOTREACHED*/
-  return 1;
-}
