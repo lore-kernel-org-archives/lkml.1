@@ -1,139 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762607AbZBECdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762450AbZBECiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762607AbZBECdx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 21:33:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755431AbZBECdn
+	id S1762450AbZBECiA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 21:38:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZBEChv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 21:33:43 -0500
-Received: from gw.goop.org ([64.81.55.164]:57732 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753327AbZBECdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 21:33:42 -0500
-Message-ID: <498A5002.9080408@goop.org>
-Date: Wed, 04 Feb 2009 18:33:38 -0800
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-CC: William Lee Irwin III <wli@holomorphy.com>,
+	Wed, 4 Feb 2009 21:37:51 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52827 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752643AbZBEChu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 21:37:50 -0500
+Date: Wed, 4 Feb 2009 18:36:54 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: __supported_pte_mask breaks PROT_NONE pages
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Arthur Jones <ajones@riverbed.com>, C Sights <csights@fastmail.fm>,
+       Eric Sandeen <sandeen@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [Bug #12224] journal activity on inactive partition causes
+ inactive harddrive spinup
+Message-Id: <20090204183654.4c6cbf63.akpm@linux-foundation.org>
+In-Reply-To: <20090205020013.GG8945@mit.edu>
+References: <a47yn9c9JrF.A.hz.L5YiJB@chimera>
+	<CGyEB0S4BpO.A.haD.S6YiJB@chimera>
+	<20090205020013.GG8945@mit.edu>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On an x86 system which doesn't support global mappings, 
-__supported_pte_mask has _PAGE_GLOBAL clear, to make sure it never 
-appears in the PTE.  pfn_pte() and so on will enforce it with:
+On Wed, 4 Feb 2009 21:00:13 -0500 Theodore Tso <tytso@mit.edu> wrote:
 
-static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
-{
-	return __pte((((phys_addr_t)page_nr << PAGE_SHIFT) |
-		      pgprot_val(pgprot)) & __supported_pte_mask);
-}
+> On Wed, Feb 04, 2009 at 11:58:33AM +0100, Rafael J. Wysocki wrote:
+> > 
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12224
+> > Subject		: journal activity on inactive partition causes inactive harddrive spinup
+> > Submitter	: C Sights <csights@fastmail.fm>
+> > Date		: 2008-12-14 11:39 (53 days old)
+> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=c87591b719737b4e91eb1a9fa8fd55a4ff1886d6
+> > Handled-By	: Eric Sandeen <sandeen@redhat.com>
+> 
+> Patches against ext3 have been posted by Jan Kara and have been sucked
+> into the mm tree.  I don't know if Andrew is planning on waiting until
+> the next merge window, or is planning on pushing it sooner given that
+> it is a regression.
 
+Yes, I have jbd-fix-return-value-of-journal_start_commit.patch and
+revert-ext3-wait-on-all-pending-commits-in-ext3_sync_fs.patch queued
+for 2.6.29.
 
-However, we overload _PAGE_GLOBAL with _PAGE_PROTNONE on non-present 
-ptes to distinguish them from swap entries.  However, applying 
-__supported_pte_mask indiscriminately will clear the bit and corrupt the 
-pte.
+The secret algorithm for determining this is to peek in the series file
+(http://userweb.kernel.org/~akpm/mmotm/series) and see where I positioned the
+patch:
 
-I guess the best fix is to only apply __supported_pte_mask to present 
-ptes.  This seems like the right solution to me, as it means we can 
-completely ignore the issue of overlaps between the present pte bits and 
-the non-present pte-as-swap entry use of the bits.  (Patch below.)
-
-Alternatively we could filter the unwanted bits in set_pte and so on, 
-but that seems to undermine the utility of __supported_pte_mask.
-
-    J
-
-Subject: x86: don't apply __supported_pte_mask to non-present ptes
-
-__supported_pte_mask contains the set of flags we support on the
-current hardware.  We also use bits in the pte for things like
-logically present ptes with no permissions, and swap entries for
-swapped out pages.  We should only apply __supported_pte_mask to
-present ptes, because otherwise we may destroy other information being
-stored in the ptes.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/include/asm/pgtable.h  |   26 ++++++++++++++++++++------
- arch/x86/include/asm/xen/page.h |    2 +-
- 2 files changed, 21 insertions(+), 7 deletions(-)
-
-===================================================================
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -316,16 +316,30 @@
- 
- extern pteval_t __supported_pte_mask;
- 
-+/*
-+ * Mask out unsupported bits in a present pgprot.  Non-present pgprots
-+ * can use those bits for other purposes, so leave them be.
-+ */
-+static inline pgprotval_t massage_pgprot(pgprot_t pgprot)
-+{
-+	pgprotval_t protval = pgprot_val(pgprot);
-+
-+	if (protval & _PAGE_PRESENT)
-+		protval &= __supported_pte_mask;
-+
-+	return protval;
-+}
-+
- static inline pte_t pfn_pte(unsigned long page_nr, pgprot_t pgprot)
- {
--	return __pte((((phys_addr_t)page_nr << PAGE_SHIFT) |
--		      pgprot_val(pgprot)) & __supported_pte_mask);
-+	return __pte(((phys_addr_t)page_nr << PAGE_SHIFT) |
-+		     massage_pgprot(pgprot));
- }
- 
- static inline pmd_t pfn_pmd(unsigned long page_nr, pgprot_t pgprot)
- {
--	return __pmd((((phys_addr_t)page_nr << PAGE_SHIFT) |
--		      pgprot_val(pgprot)) & __supported_pte_mask);
-+	return __pmd(((phys_addr_t)page_nr << PAGE_SHIFT) |
-+		     massage_pgprot(pgprot));
- }
- 
- static inline pte_t pte_modify(pte_t pte, pgprot_t newprot)
-@@ -337,7 +351,7 @@
- 	 * the newprot (if present):
- 	 */
- 	val &= _PAGE_CHG_MASK;
--	val |= pgprot_val(newprot) & (~_PAGE_CHG_MASK) & __supported_pte_mask;
-+	val |= massage_pgprot(newprot) & ~_PAGE_CHG_MASK;
- 
- 	return __pte(val);
- }
-@@ -353,7 +367,7 @@
- 
- #define pte_pgprot(x) __pgprot(pte_flags(x) & PTE_FLAGS_MASK)
- 
--#define canon_pgprot(p) __pgprot(pgprot_val(p) & __supported_pte_mask)
-+#define canon_pgprot(p) __pgprot(massage_pgprot(p))
- 
- static inline int is_new_memtype_allowed(unsigned long flags,
- 						unsigned long new_flags)
-===================================================================
---- a/arch/x86/include/asm/xen/page.h
-+++ b/arch/x86/include/asm/xen/page.h
-@@ -137,7 +137,7 @@
- 	pte_t pte;
- 
- 	pte.pte = ((phys_addr_t)page_nr << PAGE_SHIFT) |
--		(pgprot_val(pgprot) & __supported_pte_mask);
-+			massage_pgprot(pgprot);
- 
- 	return pte;
- }
-
-
+   #
+-> # more 2.6.29 queue:
+   #
+   # me:
+   #
+   migration-migrate_vmas-should-check-vma.patch
+   rtc-update-maintainership-of-pxa-rtc-driver.patch
+   lxfb-properly-alloc-cmap-in-all-cases-and-dont-leak-the-memory.patch
+   gxfb-properly-alloc-cmap-and-plug-cmap-leak.patch
+   gx1fb-properly-alloc-cmap-and-plug-cmap-leak.patch
+   mm-fix-dirty_bytes-dirty_background_bytes-sysctls-on-64bit-arches.patch
+   mm-fix-dirty_bytes-dirty_background_bytes-sysctls-on-64bit-arches-fix.patch
+-> jbd-fix-return-value-of-journal_start_commit.patch
+-> revert-ext3-wait-on-all-pending-commits-in-ext3_sync_fs.patch
+   writeback-fix-nr_to_write-counter.patch
+   
+   
