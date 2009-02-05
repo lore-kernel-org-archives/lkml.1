@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbZBER5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759812AbZBER7D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759602AbZBER5o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 12:57:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZBER5e
+	id S1759812AbZBER7D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 12:59:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753111AbZBER6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 12:57:34 -0500
-Received: from terminus.zytor.com ([198.137.202.10]:53416 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752368AbZBER5d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 12:57:33 -0500
-Message-ID: <498B27DB.9000808@zytor.com>
-Date: Thu, 05 Feb 2009 09:54:35 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Feb 2009 12:58:52 -0500
+Received: from sycorax.lbl.gov ([128.3.11.121]:46274 "EHLO sycorax.lbl.gov"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbZBER6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 12:58:51 -0500
+From: Alex Romosan <romosan@sycorax.lbl.gov>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29-rc3: weird process after resume
+References: <878womf727.fsf@sycorax.lbl.gov>
+	<20090204153954.844ac67b.akpm@linux-foundation.org>
+	<87hc39ejx2.fsf@sycorax.lbl.gov>
+	<20090204183142.11e6f661.akpm@linux-foundation.org>
+	<20090204185645.bb9d86b2.akpm@linux-foundation.org>
+	<s5h3aet8joa.wl%tiwai@suse.de>
+Date: Thu, 05 Feb 2009 09:58:15 -0800
+In-Reply-To: <s5h3aet8joa.wl%tiwai@suse.de> (message from Takashi Iwai on Thu,
+	05 Feb 2009 07:47:01 +0100)
+Message-ID: <871vuc3gw8.fsf@sycorax.lbl.gov>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>, mingo@elte.hu, x86@kernel.org,
-       sam@ravnborg.org, jirislaby@gmail.com, gregkh@suse.de,
-       davem@davemloft.net, xyzzy@speakeasy.org, mchehab@infradead.org,
-       jens.axboe@oracle.com, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH] Make exported headers use strict posix types
-References: <20090204064307.GA18415@gondor.apana.org.au> <200902051530.25897.arnd@arndb.de> <498B0315.5080804@zytor.com> <200902051707.55457.arnd@arndb.de>
-In-Reply-To: <200902051707.55457.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> A number of standard posix types are used in exported headers, which
-> is not allowed if __STRICT_KERNEL_NAMES is defined. Change them all
-> to use the safe __kernel variant so that we can make __STRICT_KERNEL_NAMES
-> the default.
-> 
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> 
-> ---
-> On Thursday 05 February 2009, H. Peter Anvin wrote:
-> 
->> I have been advocating for hacking headers_install for a while.  That
->> takes care of the 106.  The 15 *need* to be audited immediately, because
->> that is even likely to be actual manifest bugs.
-> 
-> This is what I found, please review.
-> 
+Takashi Iwai <tiwai@suse.de> writes:
 
-Indeed a lot of these look like real bugs, e.g. the use of off_t (which 
-may be 32 bits in userspace while __kernel_off_t is 64 bits.)
+> Alex, could you try the patch below?  It's now in sound git tree:
+>    git://git.kernel.org/pub/scm/linux/kernel/git/tiwai/sound-2.6.git
 
-So these are, indeed, critical bug fixes and should go into 2.6.29.
+the patch seems to work. there is now only one kernel process named
+hd-audio and it keeps its name after suspending to memory. thanks.
 
-Some of these changes may require changes in userspace code if userspace 
-has hacked around the problems.  Those changes, though, really should 
-happen, too.
+--alex--
 
-	-hpa
+-- 
+| I believe the moment is at hand when, by a paranoiac and active |
+|  advance of the mind, it will be possible (simultaneously with  |
+|  automatism and other passive states) to systematize confusion  |
+|  and thus to help to discredit completely the world of reality. |
