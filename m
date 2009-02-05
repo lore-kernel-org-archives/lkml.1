@@ -1,52 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759487AbZBERvt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757067AbZBERz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759487AbZBERvt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 12:51:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751568AbZBERvl
+	id S1757067AbZBERz2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 12:55:28 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751540AbZBERzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 12:51:41 -0500
-Received: from smtp.nokia.com ([192.100.122.230]:31243 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751513AbZBERvk (ORCPT
+	Thu, 5 Feb 2009 12:55:17 -0500
+Received: from ey-out-2122.google.com ([74.125.78.24]:58716 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbZBERzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 12:51:40 -0500
-Date: Thu, 5 Feb 2009 19:38:10 +0200
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Kevin Hilman <khilman@deeprootsystems.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "wim@iguana.be" <wim@iguana.be>
-Subject: Re: [PATCH] watchdog: davinci: convert to ioremap() +
-	io[read|write]
-Message-ID: <20090205173810.GE10567@scadufax.research.nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <1233854782-3642-1-git-send-email-khilman@deeprootsystems.com>
+	Thu, 5 Feb 2009 12:55:15 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=RHXjAfYjASGyxwpXj/2cvjGC/17ie5Krhibf404h6qu5AT/aK0P/9kGtEhzs3p0Vjc
+         XXpDcBpT1UoPYnP6uL8zy0Dbe1tWymUEvHzhSerg/4w/fcsrj6nWQKHflo/aij8E2d+d
+         SUY/RHpYm494PmT7vmGA9ppC1XML/Mcb6exSw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233854782-3642-1-git-send-email-khilman@deeprootsystems.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 05 Feb 2009 17:51:32.0207 (UTC) FILETIME=[6140BFF0:01C987BA]
-X-Nokia-AV: Clean
+In-Reply-To: <1233385816.17794.16.camel@localhost.localdomain>
+References: <1233385816.17794.16.camel@localhost.localdomain>
+Date: Thu, 5 Feb 2009 09:55:13 -0800
+X-Google-Sender-Auth: 72176f87bc76b10e
+Message-ID: <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com>
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+From: Tony Luck <tony.luck@intel.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 06:26:22PM +0100, Kevin Hilman wrote:
-> +       wdt_base = ioremap(res->start, res->end);
+On Fri, Jan 30, 2009 at 11:10 PM, Jaswinder Singh Rajput
+<jaswinder@kernel.org> wrote:
+> These are clean patches, I did not included anything which leads to any
+> confusion or conflicts. I hope maintainers do not mind if these patches
+> go to mainstream via Ingo's -tip along with other headers_check fixes.
+>      headers_check fix: ia64, fpu.h
 
-second argument should be size right ??
+> diff --git a/arch/ia64/include/asm/fpu.h b/arch/ia64/include/asm/fpu.h
+> index 3859558..b6395ad 100644
+> --- a/arch/ia64/include/asm/fpu.h
+> +++ b/arch/ia64/include/asm/fpu.h
+> @@ -6,7 +6,7 @@
+>  *     David Mosberger-Tang <davidm@hpl.hp.com>
+>  */
+>
+> -#include <asm/types.h>
+> +#include <linux/types.h>
+>
+>  /* floating point status register: */
+>  #define FPSR_TRAP_VD   (1 << 0)        /* invalid op trap disabled */
 
-ioremap(res->start, res->end - res->start + 1);
+This one breaks the ia64 build for linux-next (since some assembly files
+include <asm/fpu.h> which then goes on to pull in a whole bunch of
+"C" include files that don't have __ASSEMBLY__ guards and so the
+assembler chokes on "enum" and "typedef" etc.)
 
-in fact you have a size variable in this driver used for
-request_mem_region() just be sure the value is still valid and use it
-;-)
+Either revert this part ... or wrap the #include like this in fpu.h:
 
-> +       if (!wdt_base) {
-> +               printk(KERN_ERR MODULE_NAME "failed to map memory region\n");
+#ifndef __ASSEMBLY__
+#include <linux/types.h>
+#endif
 
-you have a dev pointer in platform_device would be cool
-to use dev_err() here
+Thanks
 
--- 
-balbi
+-Tony
