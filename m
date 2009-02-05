@@ -1,62 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763037AbZBETyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbZBET7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763037AbZBETyW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 14:54:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759459AbZBETyF
+	id S1760284AbZBET7Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 14:59:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZBET66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 14:54:05 -0500
-Received: from rtr.ca ([76.10.145.34]:41990 "EHLO mail.rtr.ca"
+	Thu, 5 Feb 2009 14:58:58 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35719 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762592AbZBETyD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 14:54:03 -0500
-Message-ID: <498B43D9.2080800@rtr.ca>
-Date: Thu, 05 Feb 2009 14:54:01 -0500
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1752064AbZBET65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 14:58:57 -0500
+Date: Thu, 5 Feb 2009 20:58:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Ben Greear <greearb@candelatech.com>, Yinghai Lu <yinghai@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, len.brown@intel.com
+Subject: Re: PATCH:  Allow over-ride of smp_found_cfg with kernel cmd-line
+	option.
+Message-ID: <20090205195832.GD3129@elte.hu>
+References: <498B421D.9090609@candelatech.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>,
-       Christian Borntraeger <borntraeger@de.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [PATCH v2] NOHZ: fix nohz on cpu unplug
-References: <200901301729.30284.borntraeger@de.ibm.com> <200902030948.13519.borntraeger@de.ibm.com> <20090203122847.GG19979@elte.hu> <200902040719.25593.borntraeger@de.ibm.com> <1233777584.16238.16.camel@vayu> <20090204213202.GP22608@elte.hu>
-In-Reply-To: <20090204213202.GP22608@elte.hu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <498B421D.9090609@candelatech.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Suresh Siddha <suresh.b.siddha@intel.com> wrote:
-> 
->> On Tue, 2009-02-03 at 22:19 -0800, Christian Borntraeger wrote:
->>> Am Tuesday 03 February 2009 13:28:47 schrieb Ingo Molnar:
->>>>>> +         if (!cpu_active(cpu) {
->>>>> That does not compile...I used the following:
->>>>>             if (!cpu_active(cpu)) {
->>>> Could you please resubmit an updated patch?
->>> Suresh,
->>>
->>> can you send the updated patch? After all, its your work and we need your
->>> Signed-off-by anyway.
->>>
->>> You can add my
->>> Reported-by: Christian Borntraeger <borntraeger@de.ibm.com>
->>> Tested-by: Christian Borntraeger <borntraeger@de.ibm.com>
->> Thanks Christian for testing the fix. Ingo, appended is the updated patch. 
->> Thanks.
-> 
-> applied to tip:sched/urgent, thanks guys!
-> 
-> 	Ingo
-..
 
-How far back in (kernel release) time does this problem exist?
-Candidate for -stable ?
+* Ben Greear <greearb@candelatech.com> wrote:
 
-Cheers
+> Allow user to keep smp_found_cfg set to 1 even if MADT
+> cannot be parsed.  This works around funky BIOS on FWA-7304
+> (VIA CN700 chipset) system, and possibly other systems as well.
+> Without this override, performance drops by around 15% on
+> network throughput tests on this system.
+>
+> This is based on 2.6.29-rc3
+>
+> Signed-Off-By:  Ben Greear <greearb@candelatech.com>
+>
+>
+> Thanks,
+> Ben
+>
+> -- 
+> Ben Greear <greearb@candelatech.com>
+> Candela Technologies Inc  http://www.candelatech.com
+>
+
+> diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+> index d37593c..e96bf19 100644
+> --- a/arch/x86/kernel/acpi/boot.c
+> +++ b/arch/x86/kernel/acpi/boot.c
+> @@ -87,6 +87,7 @@ u8 acpi_sci_flags __initdata;
+>  int acpi_sci_override_gsi __initdata;
+>  int acpi_skip_timer_override __initdata;
+>  int acpi_use_timer_override __initdata;
+> +int force_smp_found_cfg __initdata;
+>  
+>  #ifdef CONFIG_X86_LOCAL_APIC
+>  static u64 acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
+> @@ -1335,6 +1336,14 @@ static void __init early_acpi_process_madt(void)
+>  #endif
+>  }
+>  
+> +static int __init parse_force_smp_found_cfg(char *arg)
+> +{
+> +	force_smp_found_cfg = 1;
+> +	return 0;
+> +}
+> +early_param("force_smp_found_cfg", parse_force_smp_found_cfg);
+> +
+> +
+>  static void __init acpi_process_madt(void)
+>  {
+>  #ifdef CONFIG_X86_LOCAL_APIC
+> @@ -1381,9 +1390,14 @@ static void __init acpi_process_madt(void)
+>   		 * Boot with "acpi=off" to use MPS on such a system.
+>   		 */
+>  		if (smp_found_config) {
+> -			printk(KERN_WARNING PREFIX
+> -				"No APIC-table, disabling MPS\n");
+> -			smp_found_config = 0;
+> +			if (force_smp_found_cfg)
+> +				printk(KERN_WARNING PREFIX
+> +				       "No APIC-table, wanted to disable MPS, but will not\n  due to force_smp_found_cfg=1\n");
+> +			else {
+> +				printk(KERN_WARNING PREFIX
+> +				       "No APIC-table, disabling MPS.  Use force_smp_found_cfg=1 to override\n");
+> +				smp_found_config = 0;
+> +			}
+>  		}
+>  	}
+>  
+
+I'd _much_ rather have a warning message printed and have a default, 
+unconditional fallback to mptable parsing in this case.
+
+I.e. same end result just no ugly and inconvenient force_smp_found_cfg.
+
+The mptable works fine in most such cases to enumerate apic details. (as it 
+does in your case, evidently)
+
+And if both the ACPI and the MPTABLE is hosed on a box, it cannot be of much 
+use on other OSs either, right?
+
+So please do a patch that removes the 'smp_found_config' and which changes 
+the warning message to warn about no ACPI table in the MADT table. Ok?
+
+	Ingo
