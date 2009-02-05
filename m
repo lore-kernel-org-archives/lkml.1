@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759901AbZBER3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbZBERaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759901AbZBER3h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 12:29:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759067AbZBER30
+	id S1759401AbZBERaH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 12:30:07 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZBER3u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 12:29:26 -0500
-Received: from mail-qy0-f11.google.com ([209.85.221.11]:55491 "EHLO
-	mail-qy0-f11.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbZBER30 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 12:29:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Q4OVXCPqTYtQTzU+h332ULWLDoumyu1djP2x6DToRnJci+iTMNfS/wf/T5Uqq5PIQs
-         8WTiYqvDlsniGnjYZRj8lbinnU6z5V39VHWqtUJbot1VYsMdh+3bjXF0iDLxzBy24b7H
-         lD6RS9p477jg+DxI1KPtEQZDLJag+3i/Q6TiU=
+	Thu, 5 Feb 2009 12:29:50 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46310 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752061AbZBER3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 12:29:49 -0500
+Date: Thu, 5 Feb 2009 18:29:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Tim Pepper <tpepper@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: Genapic cleanup & NUMAQ/es7000 removal
+Message-ID: <20090205172941.GA24599@elte.hu>
+References: <1233310639-27916-1-git-send-email-andi@firstfloor.org> <eada2a070902050815h6ba682e2u158c4bb7c32f89ef@mail.gmail.com>
 MIME-Version: 1.0
-Date: Fri, 6 Feb 2009 02:29:24 +0900
-Message-ID: <703a7cde0902050929s200cd6a4m95f32aa9c93293ad@mail.gmail.com>
-Subject: [PATCH] [ARM] Fix condition in arm_elf_read_implies_exec() to set 
-	READ_IMPLIES_EXEC
-From: Makito SHIOKAWA <lkhmkt@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <eada2a070902050815h6ba682e2u158c4bb7c32f89ef@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-READ_IMPLIES_EXEC must be set when binary _is an executable stack_
-(i.e. not EXSTACK_DISABLE_X).
 
-Signed-off-by: Makito SHIOKAWA <lkhmkt@gmail.com>
----
- arch/arm/kernel/elf.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+* Tim Pepper <tpepper@gmail.com> wrote:
 
---- a/arch/arm/kernel/elf.c
-+++ b/arch/arm/kernel/elf.c
-@@ -74,7 +74,7 @@ EXPORT_SYMBOL(elf_set_personality);
-  */
- int arm_elf_read_implies_exec(const struct elf32_hdr *x, int executable_stack)
- {
--	if (executable_stack != EXSTACK_ENABLE_X)
-+	if (executable_stack != EXSTACK_DISABLE_X)
- 		return 1;
- 	if (cpu_architecture() <= CPU_ARCH_ARMv6)
- 		return 1;
+> On Fri, Jan 30, 2009 at 2:17 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> > Just to demonstrate the clean up possibilities by removing es7000
+> > and numaq here's a sample patch series. It doesn't actually remove
+> > the es7000/numaq code, but just marks them broken and then
+> > removes all the hooks only used by them. I'm not actually sure
+> > I caught all the now unused hooks, there are probably now more.
+> > Also I think there's still some other NUMAQ only code in smpboot.c
+> > that could be exercised.
+> >
+> > This removes 6 hooks and 2 fields out of struct genapic (out of 26
+> > hooks, a reduction of ~23%!)
+> >
+> > The first three patches are independent cleanups that should
+> > be applied anyways.
+> >
+> > This gives a nice generic cleanup:
+> 
+> These look good to me for inclusion along with the big "x86: unify genapic 
+> code, unify subarchitectures, remove old subarchitecture code" series, or 
+> as Andi's indicated the initial cleanups themselves if the other big set 
+> doesn't make the 2.6.30 for some reason.  For this series:
+> 
+> Acked-by: Tim Pepper <lnxninja@linux.vnet.ibm.com>
+
+I'm not going to apply that series for the reasons i outlined in the NUMAQ 
+discussion already. The runtime callbacks arent really a maintenance 
+problem: most of them are in boot code so it's not a runtime overhead issue.
+
+The build and code readability complications that came from the broken 
+subarch design were the real maintenance problem - and i fixed that. If i 
+wanted to simply drop these subarchitectures i could have done that via 5 
+straightforward patches.
+
+The unified x86 tree and the whole x86 platform is all about being 
+compatible. We do drop hardware features occasionally but only when they are 
+undeniably not reachable via any Linux user anymore and have been broken and 
+unfixed for a long time. We are not there yet.
+
+We could de-quirk the whole x86 code but then there would not be much code 
+left :-)
+
+	Ingo
