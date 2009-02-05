@@ -1,222 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbZBEC0m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762558AbZBEC1U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760902AbZBEC0m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 4 Feb 2009 21:26:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZBEC0a
+	id S1762558AbZBEC1U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 4 Feb 2009 21:27:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbZBEC07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 4 Feb 2009 21:26:30 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35497 "EHLO hera.kernel.org"
+	Wed, 4 Feb 2009 21:26:59 -0500
+Received: from ogre.sisk.pl ([217.79.144.158]:49685 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753136AbZBEC03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 4 Feb 2009 21:26:29 -0500
-Message-ID: <498A4DFB.7040608@kernel.org>
-Date: Wed, 04 Feb 2009 18:24:59 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1753170AbZBEC06 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 4 Feb 2009 21:26:58 -0500
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [Bug 12561] hang during suspend to RAM
+Date: Thu, 5 Feb 2009 03:26:14 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
+Cc: bugme-daemon@bugzilla.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>, jakethompson1@gmail.com,
+       Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       Mike Travis <travis@sgi.com>
+References: <20090204153842.C703C108042@picon.linux-foundation.org>
+In-Reply-To: <20090204153842.C703C108042@picon.linux-foundation.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ed Swierk <eswierk@aristanetworks.com>, tglx@linutronix.de,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lenb@kernel.org, linux-acpi@vger.kernel.org, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org
-Subject: [PATCH] x86/pci: host mmconfig detect clean up v2
-References: <1233765552.16414.6.camel@localhost.localdomain> <86802c440902041212q51f2a444l84e1ac29ee6f702e@mail.gmail.com> <20090204212517.GM22608@elte.hu>
-In-Reply-To: <20090204212517.GM22608@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200902050326.15583.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Impact: not assume one place for mmconfig in nb
+We seem to have problems with cpufreq_suspend and later with hres_timers_resume
+on the Jake's machine:
 
-prepare for following case: amd fam10h + mcp55
-CPU MSR has some range, mcp55 pci config will have another one.
-
-also prepare for mcp55 + io55 system. every one will have one range.
-
-if it s mcp55 detect duties to execlude range that is used by CPU MSR
-aka, if CPU state bus 0-255, range in mcp55 need to be dropped.
-because HW in CPU will not route that mcp55 mmconfig to handle it.
-
-v2: fix e7520 exit path
-
-Signed-off-by: Yinghai Lu <yinghai.lu@kernel.org>
-
----
- arch/x86/pci/mmconfig-shared.c |   98 ++++++++++++++++++++++-------------------
- 1 file changed, 54 insertions(+), 44 deletions(-)
-
-Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
-+++ linux-2.6/arch/x86/pci/mmconfig-shared.c
-@@ -24,24 +24,49 @@
- /* Indicate if the mmcfg resources have been placed into the resource table. */
- static int __initdata pci_mmcfg_resources_inserted;
- 
-+static __init int extend_mmcfg(int num)
-+{
-+	struct acpi_mcfg_allocation *new;
-+	int new_num = pci_mmcfg_config_num + num;
-+
-+	new = kzalloc(sizeof(pci_mmcfg_config[0]) * new_num, GFP_KERNEL);
-+	if (!new)
-+		return -1;
-+
-+	if (pci_mmcfg_config) {
-+		memcpy(new, pci_mmcfg_config,
-+			 sizeof(pci_mmcfg_config[0]) * new_num);
-+		kfree(pci_mmcfg_config);
-+	}
-+	pci_mmcfg_config = new;
-+
-+	return 0;
-+}
-+
-+static __init void fill_one_mmcfg(u64 addr, int segment, int start, int end)
-+{
-+	int i = pci_mmcfg_config_num;
-+
-+	pci_mmcfg_config_num++;
-+	pci_mmcfg_config[i].address = addr;
-+	pci_mmcfg_config[i].pci_segment = segment;
-+	pci_mmcfg_config[i].start_bus_number = start;
-+	pci_mmcfg_config[i].end_bus_number = end;
-+}
-+
- static const char __init *pci_mmcfg_e7520(void)
- {
- 	u32 win;
- 	raw_pci_ops->read(0, 0, PCI_DEVFN(0, 0), 0xce, 2, &win);
- 
- 	win = win & 0xf000;
--	if(win == 0x0000 || win == 0xf000)
--		pci_mmcfg_config_num = 0;
--	else {
--		pci_mmcfg_config_num = 1;
--		pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]), GFP_KERNEL);
--		if (!pci_mmcfg_config)
--			return NULL;
--		pci_mmcfg_config[0].address = win << 16;
--		pci_mmcfg_config[0].pci_segment = 0;
--		pci_mmcfg_config[0].start_bus_number = 0;
--		pci_mmcfg_config[0].end_bus_number = 255;
--	}
-+	if (win == 0x0000 || win == 0xf000)
-+		return NULL;
-+
-+	if (extend_mmcfg(1) == -1)
-+		return NULL;
-+
-+	fill_one_mmcfg(win << 16, 0, 0, 255);
- 
- 	return "Intel Corporation E7520 Memory Controller Hub";
- }
-@@ -50,13 +75,11 @@ static const char __init *pci_mmcfg_inte
- {
- 	u32 pciexbar, mask = 0, len = 0;
- 
--	pci_mmcfg_config_num = 1;
--
- 	raw_pci_ops->read(0, 0, PCI_DEVFN(0, 0), 0x48, 4, &pciexbar);
- 
- 	/* Enable bit */
- 	if (!(pciexbar & 1))
--		pci_mmcfg_config_num = 0;
-+		return NULL;
- 
- 	/* Size bits */
- 	switch ((pciexbar >> 1) & 3) {
-@@ -73,28 +96,23 @@ static const char __init *pci_mmcfg_inte
- 		len  = 0x04000000U;
- 		break;
- 	default:
--		pci_mmcfg_config_num = 0;
-+		return NULL;
- 	}
- 
- 	/* Errata #2, things break when not aligned on a 256Mb boundary */
- 	/* Can only happen in 64M/128M mode */
- 
- 	if ((pciexbar & mask) & 0x0fffffffU)
--		pci_mmcfg_config_num = 0;
-+		return NULL;
- 
- 	/* Don't hit the APIC registers and their friends */
- 	if ((pciexbar & mask) >= 0xf0000000U)
--		pci_mmcfg_config_num = 0;
-+		return NULL;
- 
--	if (pci_mmcfg_config_num) {
--		pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]), GFP_KERNEL);
--		if (!pci_mmcfg_config)
--			return NULL;
--		pci_mmcfg_config[0].address = pciexbar & mask;
--		pci_mmcfg_config[0].pci_segment = 0;
--		pci_mmcfg_config[0].start_bus_number = 0;
--		pci_mmcfg_config[0].end_bus_number = (len >> 20) - 1;
--	}
-+	if (extend_mmcfg(1) == -1)
-+		return NULL;
-+
-+	fill_one_mmcfg(pciexbar & mask, 0, 0, (len >> 20) - 1);
- 
- 	return "Intel Corporation 945G/GZ/P/PL Express Memory Controller Hub";
- }
-@@ -138,18 +156,11 @@ static const char __init *pci_mmcfg_amd_
- 		busnbits = 8;
- 	}
- 
--	pci_mmcfg_config_num = (1 << segnbits);
--	pci_mmcfg_config = kzalloc(sizeof(pci_mmcfg_config[0]) *
--				   pci_mmcfg_config_num, GFP_KERNEL);
--	if (!pci_mmcfg_config)
-+	if (extend_mmcfg(1 << segnbits) == -1)
- 		return NULL;
- 
--	for (i = 0; i < (1 << segnbits); i++) {
--		pci_mmcfg_config[i].address = base + (1<<28) * i;
--		pci_mmcfg_config[i].pci_segment = i;
--		pci_mmcfg_config[i].start_bus_number = 0;
--		pci_mmcfg_config[i].end_bus_number = (1 << busnbits) - 1;
--	}
-+	for (i = 0; i < (1 << segnbits); i++)
-+		fill_one_mmcfg(base + (1<<28) * i, i, 0, (1 << busnbits) - 1);
- 
- 	return "AMD Family 10h NB";
- }
-@@ -186,26 +197,25 @@ static int __init pci_mmcfg_check_hostbr
- 
- 	pci_mmcfg_config_num = 0;
- 	pci_mmcfg_config = NULL;
--	name = NULL;
- 
--	for (i = 0; !name && i < ARRAY_SIZE(pci_mmcfg_probes); i++) {
-+	for (i = 0; i < ARRAY_SIZE(pci_mmcfg_probes); i++) {
- 		bus =  pci_mmcfg_probes[i].bus;
- 		devfn = pci_mmcfg_probes[i].devfn;
- 		raw_pci_ops->read(0, bus, devfn, 0, 4, &l);
- 		vendor = l & 0xffff;
- 		device = (l >> 16) & 0xffff;
- 
-+		name = NULL;
- 		if (pci_mmcfg_probes[i].vendor == vendor &&
- 		    pci_mmcfg_probes[i].device == device)
- 			name = pci_mmcfg_probes[i].probe();
--	}
- 
--	if (name) {
--		printk(KERN_INFO "PCI: Found %s %s MMCONFIG support.\n",
--		       name, pci_mmcfg_config_num ? "with" : "without");
-+		if (name)
-+			printk(KERN_INFO "PCI: Found %s with MMCONFIG support.\n",
-+			       name);
- 	}
- 
--	return name != NULL;
-+	return pci_mmcfg_config_num != 0;
- }
- 
- static void __init pci_mmcfg_insert_resources(void)
+On Wednesday 04 February 2009, bugme-daemon@bugzilla.kernel.org wrote:
+> ------- Comment #15 from jakethompson1@gmail.com  2009-02-04 07:38 -------
+> 2.6.29-rc3 without acpi_sleep=old_ordering -> still freezes during suspend
+> 
+> 2.6.29-rc3 with acpi_sleep=old_ordering produces the same symptoms as 2.6.28.2,
+> and the dmesg includes the following errors:
+> 
+> BUG: sleeping function called from invalid context at kernel/workqueue.c:440
+> in_atomic(): 0, irqs_disabled(): 1, pid: 2431, name: pm-suspend
+> Pid: 2431, comm: pm-suspend Not tainted 2.6.29-rc3 #1
+> Call Trace:
+>  [<c04286fc>] __might_sleep+0xdf/0xe4
+>  [<c043c6a4>] flush_work+0x1a/0x93
+>  [<c06c2d9e>] ? _spin_unlock_irqrestore+0x22/0x38
+>  [<c043c871>] ? __queue_work+0x26/0x2b
+>  [<c043c926>] work_on_cpu+0x3c/0x46
+>  [<c043bf75>] ? do_work_for_cpu+0x0/0x12
+>  [<f045144a>] ? do_drv_read+0x0/0x3e [acpi_cpufreq]
+>  [<f0451391>] get_cur_val+0x9a/0xbf [acpi_cpufreq]
+>  [<f045140a>] get_cur_freq_on_cpu+0x54/0x94 [acpi_cpufreq]
+>  [<c0626b80>] cpufreq_suspend+0x9c/0x114
+>  [<c05a4c98>] sysdev_suspend+0x3e/0x175
+>  [<c05a8e04>] device_power_down+0xb4/0xf0
+>  [<c045037d>] suspend_devices_and_enter+0xcf/0x16d
+>  [<c0450570>] enter_state+0x130/0x190
+>  [<c045065f>] state_store+0x8f/0xa2
+>  [<c04505d0>] ? state_store+0x0/0xa2
+>  [<c0527bc1>] kobj_attr_store+0x1a/0x22
+>  [<c04d3a7b>] sysfs_write_file+0xb4/0xdf
+>  [<c04d39c7>] ? sysfs_write_file+0x0/0xdf
+>  [<c04973da>] vfs_write+0x84/0xdf
+>  [<c04974ce>] sys_write+0x3b/0x60
+>  [<c04038df>] sysenter_do_call+0x12/0x34
+> ------------[ cut here ]------------
+> WARNING: at kernel/hrtimer.c:618 hres_timers_resume+0x2f/0x45()
+> Hardware name: CF-51LCMDDBM
+> hres_timers_resume() called with IRQs enabled!Modules linked in: i915 drm
+> i2c_al
+> go_bit ip6t_REJECT nf_conntrack_ipv6 ip6table_filter ip6_tables ipv6
+> cpufreq_ond
+> emand acpi_cpufreq dm_multipath uinput snd_intel8x0 snd_intel8x0m snd_seq_dummy 
+> snd_ac97_codec ac97_bus snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device
+> sn
+> d_pcm_oss snd_mixer_oss snd_pcm snd_timer ppdev parport_pc snd soundcore
+> yenta_s
+> ocket snd_page_alloc i2c_i801 rsrc_nonstatic ipw2200 serio_raw firewire_ohci
+> par
+> port video i2c_core iTCO_wdt iTCO_vendor_support libipw sky2 pcspkr
+> firewire_cor
+> e crc_itu_t output lib80211 joydev ata_generic pata_acpi [last unloaded:
+> microco
+> de]
+> Pid: 2431, comm: pm-suspend Not tainted 2.6.29-rc3 #1
+> Call Trace:
+>  [<c042e4e1>] warn_slowpath+0x71/0xa8
+>  [<c0414740>] ? lapic_next_event+0x13/0x17
+>  [<c044769b>] ? clockevents_program_event+0xdb/0xea
+>  [<c044848d>] ? tick_dev_program_event+0x28/0x95
+>  [<c0448544>] ? tick_program_event+0x22/0x29
+>  [<c0447b2e>] ? tick_notify+0x2e1/0x2f0
+>  [<c043c21f>] ? insert_work+0x3d/0x45
+>  [<c06c4e4c>] ? notifier_call_chain+0x2b/0x4a
+>  [<c04416ef>] hres_timers_resume+0x2f/0x45
+>  [<c0444d3a>] timekeeping_resume+0x13c/0x142
+>  [<c05a4b4c>] __sysdev_resume+0x14/0x38
+>  [<c05a4b91>] sysdev_resume+0x21/0x54
+>  [<c05a915a>] device_power_up+0xb/0x15
+>  [<c04503b1>] suspend_devices_and_enter+0x103/0x16d
+>  [<c0450570>] enter_state+0x130/0x190
+>  [<c045065f>] state_store+0x8f/0xa2
+>  [<c04505d0>] ? state_store+0x0/0xa2
+>  [<c0527bc1>] kobj_attr_store+0x1a/0x22
+>  [<c04d3a7b>] sysfs_write_file+0xb4/0xdf
+>  [<c04d39c7>] ? sysfs_write_file+0x0/0xdf
+>  [<c04973da>] vfs_write+0x84/0xdf
+>  [<c04974ce>] sys_write+0x3b/0x60
+>  [<c04038df>] sysenter_do_call+0x12/0x34
+> ---[ end trace 104058e15f9549d5 ]---
+> pcmcia_socket pcmcia_socket0: *** DANGER *** unable to remove socket power
+> pcmcia_socket pcmcia_socket1: *** DANGER *** unable to remove socket power
+> firewire_ohci: Failed to reset ohci card.
+> pm_op(): pci_pm_resume+0x0/0x4f returns -16
+> PM: Device 0000:06:00.2 failed to resume: error -16
+> irq 23: nobody cared (try booting with the "irqpoll" option)
+> Pid: 0, comm: swapper Tainted: G        W  2.6.29-rc3 #1
+> Call Trace:
+>  [<c04653e6>] __report_bad_irq+0x2e/0x6f
+>  [<c0465517>] note_interrupt+0xf0/0x149
+>  [<c0465a4d>] handle_fasteoi_irq+0x8f/0xb5
+>  [<c04659be>] ? handle_fasteoi_irq+0x0/0xb5
+>  <IRQ>  [<c0403fac>] ? common_interrupt+0x2c/0x34
+>  [<c0574e13>] ? acpi_idle_enter_simple+0x150/0x18b
+>  [<c0628658>] ? cpuidle_idle_call+0x60/0x94
+>  [<c0402a23>] ? cpu_idle+0x7f/0xa0
+>  [<c06b2116>] ? rest_init+0x4e/0x50
+> handlers:
+> [<c05e441b>] (usb_hcd_irq+0x0/0xa3)
+> [<c05e441b>] (usb_hcd_irq+0x0/0xa3)
+> Disabling IRQ #23
