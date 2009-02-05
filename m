@@ -1,176 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZBEHpB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757027AbZBEHvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757249AbZBEHpB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 02:45:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZBEHou
+	id S1757027AbZBEHvv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 02:51:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751761AbZBEHvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 02:44:50 -0500
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48116 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752773AbZBEHot (ORCPT
+	Thu, 5 Feb 2009 02:51:42 -0500
+Received: from relay.parallels.com ([195.214.232.42]:46484 "EHLO
+	relay.parallels.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbZBEHvl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 02:44:49 -0500
-Date: Thu, 5 Feb 2009 16:43:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: David Miller <davem@davemloft.net>
-Cc: mel@csn.ul.ie, heiko.carstens@de.ibm.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org
-Subject: Re: HOLES_IN_ZONE...
-Message-Id: <20090205164330.83777a4d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090204.222651.26527737.davem@davemloft.net>
-References: <20090204.222651.26527737.davem@davemloft.net>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
+	Thu, 5 Feb 2009 02:51:41 -0500
+From: Kirill Korotaev <dev@parallels.com>
+To: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pavel Emelyanov <xemul@openvz.org>, Kirill Korotaev <dev@openvz.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Date: Thu, 5 Feb 2009 10:51:34 +0300
+Subject: Re: [git pull] timer fix
+Thread-Topic: [git pull] timer fix
+Thread-Index: AcmHHDKCNcHpXGZmTfqZcAI+1DKYBAASl4ly
+Message-ID: <C5B07536.B77D%dev@parallels.com>
+In-Reply-To: <20090204225848.GA3251@elte.hu>
+Accept-Language: en-US, ru-RU
+Content-Language: en
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US, ru-RU
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 7BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 04 Feb 2009 22:26:51 -0800 (PST)
-David Miller <davem@davemloft.net> wrote:
+ACK, it works. Why not save another 4 bytes of .bss then by changing
+hept_t1_cmp to u32? ;-)
+
+Kirill
+
+
+On 2/5/09 1:58 AM, "Ingo Molnar" <mingo@elte.hu> wrote:
 
 > 
-> So I've been fighting mysterious crashes on my main sparc64 devel
-> machine.  What's happening is that the assertion in
-> mm/page_alloc.c:move_freepages() is triggering:
 > 
-> 	BUG_ON(page_zone(start_page) != page_zone(end_page));
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> Once I knew this is what was happening, I added some annotations:
+>>       } while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
 > 
-> 	if (unlikely(page_zone(start_page) != page_zone(end_page))) {
-> 		printk(KERN_ERR "move_freepages: Bogus zones: "
-> 		       "start_page[%p] end_page[%p] zone[%p]\n",
-> 		       start_page, end_page, zone);
-> 		printk(KERN_ERR "move_freepages: "
-> 		       "start_zone[%p] end_zone[%p]\n",
-> 		       page_zone(start_page), page_zone(end_page));
-> 		printk(KERN_ERR "move_freepages: "
-> 		       "start_pfn[0x%lx] end_pfn[0x%lx]\n",
-> 		       page_to_pfn(start_page), page_to_pfn(end_page));
-> 		printk(KERN_ERR "move_freepages: "
-> 		       "start_nid[%d] end_nid[%d]\n",
-> 		       page_to_nid(start_page), page_to_nid(end_page));
->  ...
+> that is also more efficient code by 6 bytes:
 > 
-> And here's what I got:
+> before:
 > 
-> 	move_freepages: Bogus zones: start_page[2207d0000] end_page[2207dffc0] zone[fffff8103effcb00]
-> 	move_freepages: start_zone[fffff8103effcb00] end_zone[fffff8003fffeb00]
-> 	move_freepages: start_pfn[0x81f600] end_pfn[0x81f7ff]
-> 	move_freepages: start_nid[1] end_nid[0]
+> ffffffff81020856:       ff c3                   inc    %ebx
+> ffffffff81020858:       48 05 f0 00 00 00       add    $0xf0,%rax
+> ffffffff8102085e:       8b 00                   mov    (%rax),%eax
+> ffffffff81020860:       8b 15 2a 79 85 00       mov    0x85792a(%rip),%edx
+> # ffffffff81878190 <hpet_t1_cmp>
+> ffffffff81020866:       89 c0                   mov    %eax,%eax
+> ffffffff81020868:       48 29 d0                sub    %rdx,%rax
+> ffffffff8102086b:       48 85 c0                test   %rax,%rax
+> ffffffff8102086e:       7f bf                   jg     ffffffff8102082f
+> <hpet_rtc_interrupt+0x68>
+> ffffffff81020870:       85 db                   test   %ebx,%ebx
 > 
-> My memory layout on this box is:
+> after:
 > 
-> [    0.000000] Zone PFN ranges:
-> [    0.000000]   Normal   0x00000000 -> 0x0081ff5d
-> [    0.000000] Movable zone start PFN for each node
-> [    0.000000] early_node_map[8] active PFN ranges
-> [    0.000000]     0: 0x00000000 -> 0x00020000
-> [    0.000000]     1: 0x00800000 -> 0x0081f7ff
-> [    0.000000]     1: 0x0081f800 -> 0x0081fe50
-> [    0.000000]     1: 0x0081fed1 -> 0x0081fed8
-> [    0.000000]     1: 0x0081feda -> 0x0081fedb
-> [    0.000000]     1: 0x0081fedd -> 0x0081fee5
-> [    0.000000]     1: 0x0081fee7 -> 0x0081ff51
-> [    0.000000]     1: 0x0081ff59 -> 0x0081ff5d
+> ffffffff81020856:       ff c3                   inc    %ebx
+> ffffffff81020858:       48 05 f0 00 00 00       add    $0xf0,%rax
+> ffffffff8102085e:       8b 00                   mov    (%rax),%eax
+> ffffffff81020860:       2b 05 2a 79 85 00       sub    0x85792a(%rip),%eax
+> # ffffffff81878190 <hpet_t1_cmp>
+> ffffffff81020866:       85 c0                   test   %eax,%eax
+> ffffffff81020868:       7f c5                   jg     ffffffff8102082f
+> <hpet_rtc_interrupt+0x68>
+> ffffffff8102086a:       85 db                   test   %ebx,%ebx
 > 
-
-Ah, end_pfn is not valid page. And, page->flags shows nid 0.
-It seems memmap for end_pfn is not initialized correctly.
-
-At first, there are some complicated around here..
-
-1. pfn_valid() is just for "there is memmap." not for "the memory is valid"
-2. If "memory is invalid" && it has memmap, it should be marked as PG_Reserved.
-   And it will never be put into buddy allocator. 
-3. memmap for not exisiting memory can be initialized but it's depends on
-   zone->spanned_pages. (see free_area_init_core())
-4. What CONFIG_HOLES_IN_ZONE means is 
-   "there can be invalid memmap within coutinuous range of zone->mem_map"
-   This comes from VIRTUAL_MEMMAP.
-   In usual arch, mem_map is guaranteed to be coutinuous always.
-
-
-
-
-> 	move_freepages: start_zone[fffff8103effcb00] end_zone[fffff8003fffeb00]
-> 	move_freepages: start_pfn[0x81f600] end_pfn[0x81f7ff]
-> 	move_freepages: start_nid[1] end_nid[0]
-> [    0.000000]     0: 0x00000000 -> 0x00020000
-> [    0.000000]     1: 0x00800000 -> 0x0081f7ff
-
-> [    0.000000]     1: 0x00800000 -> 0x0081f7ff
-
-I think it's strange that end_pfn's nid is 0.
-
->From this log, mem_map for end_pfn exists (means pfn_valid(end_pfn) == true)
-So, it should be initialized correctly and should have nid 1 if initialized.
-
-Maybe Node1's zone->start_pfn and zone->spanned_pages covers 0x81f7ff, and it's
-range is 0x00800000 -> 0x0081ff5d
-
-But,  this check in memmap_init_zone()
-==
-2619                 if (context == MEMMAP_EARLY) {
-2620                         if (!early_pfn_valid(pfn))
-2621                                 continue;
-2622                         if (!early_pfn_in_nid(pfn, nid))
-2623                                 continue;
-2624                 }
-==
-will allow skip to init this mem_map of 0x8af7ff.
-*AND*, SetPageResreved() is never called. This is a problem I think.
-
-> It takes a lot of stressing to get that specific chunk of pages to
-> attempt to be freed up in a group like that :-/
+> Kirill, Pavel, could you please re-test the updated commit attached below?
 > 
-> As a suggestion, it would have been a lot more pleasant if the code
-> validated this requirement (in the !HOLES_IN_ZONE case) at boot time
-> instead of after 2 hours of stress testing :-(
+>         Ingo
 > 
-
-Can this patch help you ? (maybe more careful study is necessary...)
----
- mm/page_alloc.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
-
-Index: mmotm-2.6.29-Feb03/mm/page_alloc.c
-===================================================================
---- mmotm-2.6.29-Feb03.orig/mm/page_alloc.c
-+++ mmotm-2.6.29-Feb03/mm/page_alloc.c
-@@ -2618,6 +2618,7 @@ void __meminit memmap_init_zone(unsigned
- 	unsigned long end_pfn = start_pfn + size;
- 	unsigned long pfn;
- 	struct zone *z;
-+	int tmp;
- 
- 	if (highest_memmap_pfn < end_pfn - 1)
- 		highest_memmap_pfn = end_pfn - 1;
-@@ -2632,7 +2633,8 @@ void __meminit memmap_init_zone(unsigned
- 		if (context == MEMMAP_EARLY) {
- 			if (!early_pfn_valid(pfn))
- 				continue;
--			if (!early_pfn_in_nid(pfn, nid))
-+			tmp = early_pfn_in_nid(pfn, nid);
-+			if (tmp > -1 && tmp != nid)
- 				continue;
- 		}
- 		page = pfn_to_page(pfn);
-@@ -2999,8 +3001,9 @@ int __meminit early_pfn_to_nid(unsigned 
- 			return early_node_map[i].nid;
- 	}
- 
--	return 0;
-+	return -1;
- }
-+
- #endif /* CONFIG_HAVE_ARCH_EARLY_PFN_TO_NID */
- 
- /* Basic iterator support to walk early_node_map[] */
-
-
-
+> ---------------->
+> From 66a36a1e95fe9de9c6a56f0bcd01f4ba21929f86 Mon Sep 17 00:00:00 2001
+> From: Pavel Emelyanov <xemul@openvz.org>
+> Date: Wed, 4 Feb 2009 13:40:31 +0300
+> Subject: [PATCH] x86: fix hpet timer reinit for x86_64
+> 
+> There's a small problem with hpet_rtc_reinit function - it checks
+> for the:
+> 
+>         hpet_readl(HPET_COUNTER) - hpet_t1_cmp > 0
+> 
+> to continue increasing both the HPET_T1_CMP (register) and the
+> hpet_t1_cmp (variable).
+> 
+> But since the HPET_COUNTER is always 32-bit, if the hpet_t1_cmp
+> is 64-bit this condition will always be FALSE once the latter hits
+> the 32-bit boundary, and we can have a situation, when we don't
+> increase the HPET_T1_CMP register high enough.
+> 
+> The result - timer stops ticking, since HPET_T1_CMP becomes less,
+> than the COUNTER and never increased again.
+> 
+> The solution is (based on Linus's suggestion) to compare 64-bits
+> (on 64-bit x86), but to do the comparison on 32-bit signed
+> integers.
+> 
+> Reported-by: Kirill Korotaev <dev@openvz.org>
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> ---
+>  arch/x86/kernel/hpet.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+> index 64d5ad0..c761f91 100644
+> --- a/arch/x86/kernel/hpet.c
+> +++ b/arch/x86/kernel/hpet.c
+> @@ -1075,7 +1075,7 @@ static void hpet_rtc_timer_reinit(void)
+>                 hpet_t1_cmp += delta;
+>                 hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
+>                 lost_ints++;
+> -       } while ((long)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
+> +       } while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
+> 
+>         if (lost_ints) {
+>                 if (hpet_rtc_flags & RTC_PIE)
 
