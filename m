@@ -1,66 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756075AbZBEKlw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZBEKuV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756075AbZBEKlw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 05:41:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752415AbZBEKll
+	id S1754656AbZBEKuV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 05:50:21 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751878AbZBEKuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 05:41:41 -0500
-Received: from gir.skynet.ie ([193.1.99.77]:41678 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751377AbZBEKlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 05:41:40 -0500
-Date: Thu, 5 Feb 2009 10:41:38 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Miller <davem@davemloft.net>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, heiko.carstens@de.ibm.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       sparclinux@vger.kernel.org
-Subject: Re: HOLES_IN_ZONE...
-Message-ID: <20090205104138.GF26878@csn.ul.ie>
-References: <20090204.222651.26527737.davem@davemloft.net> <20090205101023.GD26878@csn.ul.ie> <20090205.021429.170975463.davem@davemloft.net>
+	Thu, 5 Feb 2009 05:50:06 -0500
+Received: from fg-out-1718.google.com ([72.14.220.154]:5963 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbZBEKuE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 05:50:04 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RU83lcuWwjauxsLcrgHNCAqtsKYyCkY3cFvY1ZD8UmZy7t5mgZGHdNejSYnoN7tP+7
+         lZdU8MdgNzDGAeNUpLu07U2Zql876D/2HZu4CHl73tYmxmHdcxrfpF398RyCeCW5x9YJ
+         TUkRk94K+wB+kLiVoY+yyn5E7uGJQNkfhMe/o=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090205.021429.170975463.davem@davemloft.net>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <jeab91w54x.fsf@sykes.suse.de>
+References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
+	 <20090204221451.GA27254@uranus.ravnborg.org>
+	 <adavdrplty2.fsf@cisco.com> <498A295A.4090008@gmail.com>
+	 <adaskmtjsnn.fsf@cisco.com>
+	 <56e1b5710902050026s5a8fd48fhf4a65c05a533dbc3@mail.gmail.com>
+	 <56e1b5710902050215l5b34adb1ofb8a972318ebe353@mail.gmail.com>
+	 <jeab91w54x.fsf@sykes.suse.de>
+Date: Thu, 5 Feb 2009 11:50:02 +0100
+Message-ID: <56e1b5710902050250u244a7499k90ad1825ee85bbad@mail.gmail.com>
+Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
+From: Floris Kraak <randakar@gmail.com>
+To: Andreas Schwab <schwab@suse.de>
+Cc: Roland Dreier <rdreier@cisco.com>, Robert Hancock <hancockrwd@gmail.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 02:14:29AM -0800, David Miller wrote:
-> From: Mel Gorman <mel@csn.ul.ie>
-> Date: Thu, 5 Feb 2009 10:10:23 +0000
-> 
-> > On Wed, Feb 04, 2009 at 10:26:51PM -0800, David Miller wrote:
-> > > As a suggestion, it would have been a lot more pleasant if the code
-> > > validated this requirement (in the !HOLES_IN_ZONE case) at boot time
-> > > instead of after 2 hours of stress testing :-(
-> > > 
-> > 
-> > Nice maybe, but we'd take a hit on pfn_valid_within() which goes from
-> > being compiled-away on architectures that don't need it to being
-> > a read of a shared cacheline and a branch.
-> 
-> I said at boot time Mel, not in the fast paths. 
+On Thu, Feb 5, 2009 at 11:27 AM, Andreas Schwab <schwab@suse.de> wrote:
+> Floris Kraak <randakar@gmail.com> writes:
+>
+>> Example:
+>>
+>> kernel/power/main.c:717: warning: format not a string literal and no
+>> format arguments
+>>
+>> This complains about:
+>> ..
+>>         if (!rtc) {
+>>                 printk(warn_no_rtc);
+>>                 goto done;
+>>         }
+>> ..
+>>
+>> So what is this "warn_no_rtc" thing?
+>>
+>>         static char             warn_no_rtc[] __initdata =
+>>                 KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
+>
+> Does it help to make it const?
+>
+>> That's pretty much GCC failing to recognize that the format is a
+>> string literal and then complaining that it isn't.
+>
+> Since it's a non-const variable it cannot be a string literal.
+>
 
-pfn_valid_within() is not used in any critical paths, but it's used in
-the page free path so it would be a hit there.
+kernel/power/main.c:698: error: warn_no_rtc causes a section type conflict
 
-> Meaning, we'd
-> check it after all the available ranges get registered and
-> tossed into the free page lists.
-> 
+Nice try ;-)
 
-It's not a free-list problem, it's walkers of PFN ranges. Anyway, it's
-not important to the current problem.
+Replacing __initdata with __devinitconst sounded like it might solve
+things ( - http://mail.nl.linux.org/kernelnewbies/2008-02/msg00042.html,
+interesting reading) but alas, the warning persists.
 
-> Anyways, it appears we have a fix already, read the rest of
-> the thread.
-> 
+(apologies to Andreas for the resend)
 
-Yes. Thanks Kamezawa Hiroyu for the fix.
+Regards,
+Floris
+---
+"They that give up essential liberty to obtain temporary safety,
+deserve neither liberty nor safety."
+  -- Ben Franklin
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+"The course of history shows that as a government grows, liberty
+decreases."
+  -- Thomas Jefferson
