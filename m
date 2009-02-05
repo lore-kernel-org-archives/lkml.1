@@ -1,355 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZBEXMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754163AbZBEXX5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbZBEXMx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 18:12:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZBEXMp
+	id S1754163AbZBEXX5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 18:23:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZBEXXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 18:12:45 -0500
-Received: from fg-out-1718.google.com ([72.14.220.158]:50418 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751368AbZBEXMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 18:12:44 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=aYFvb1pNygiT8HtGIKXOy3RsoXilTjKEu+He15U83mDmheH8AeaV3/+XDA46yapuOn
-         CqdOIzaxNdq4TQk6IvVr9fyme7VskT4yMIAZkaAKI24aPiA7gVM/Ai7qpRd497dJqerj
-         y5w2r89k8OFvf0BJ4YdubElKRL5iLbh74HQ38=
-Date: Fri, 6 Feb 2009 00:12:37 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH tip 1/1] trace: Call tracing_reset_online_cpus before
-	tracer->init()
-Message-ID: <20090205231236.GC23999@nowhere>
-References: <20090205200200.GB9846@ghostprotocols.net>
+	Thu, 5 Feb 2009 18:23:49 -0500
+Received: from serv04.lahn.de ([213.239.197.57]:45830 "EHLO serv04.lahn.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751761AbZBEXXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 18:23:48 -0500
+Date: Fri, 6 Feb 2009 00:23:43 +0100
+From: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+To: Yinghai Lu <yhlu.kernel@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jgarzik@redhat.com>
+Subject: Re: WOL with forcedeth broken since
+	f55c21fd9a92a444e55ad1ca4e4732d56661bf2e
+Message-ID: <20090205232343.GA9455@pmhahn.de>
+Mail-Followup-To: Yinghai Lu <yhlu.kernel@gmail.com>,
+	"Rafael J. Wysocki" <rjw@sisk.pl>,
+	Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+	Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
+	Kernel Testers List <kernel-testers@vger.kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Jeff Garzik <jgarzik@redhat.com>
+References: <a47yn9c9JrF.A.hz.L5YiJB@chimera> <CGyEB0S4BpO.A.MFB.R5YiJB@chimera> <20090129063118.GA3586@pmhahn.de> <86802c440901292253ie9e2a9dmb4580a3da1480c81@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090205200200.GB9846@ghostprotocols.net>
+In-Reply-To: <CGyEB0S4BpO.A.MFB.R5YiJB@chimera> <86802c440901292253ie9e2a9dmb4580a3da1480c81@mail.gmail.com>
+Organization: UUCP-Freunde Lahn e.V.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 06:02:00PM -0200, Arnaldo Carvalho de Melo wrote:
-> Impact: cleanup
-> 
-> To make it easy for ftrace plugin writers, as this was open coded in
-> the existing plugins
-> 
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Frédéric Weisbecker <fweisbec@gmail.com>
-> Cc: Jens Axboe <jens.axboe@oracle.com>
-> Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-> ---
->  block/blktrace.c                     |    2 --
->  kernel/trace/trace.c                 |    8 +++++++-
->  kernel/trace/trace.h                 |    1 +
->  kernel/trace/trace_branch.c          |    1 -
->  kernel/trace/trace_functions.c       |   17 +++--------------
->  kernel/trace/trace_functions_graph.c |    1 -
->  kernel/trace/trace_hw_branches.c     |    1 -
->  kernel/trace/trace_nop.c             |    1 -
->  kernel/trace/trace_sched_switch.c    |    8 +-------
->  kernel/trace/trace_selftest.c        |   18 +++++++++---------
->  kernel/trace/trace_sysprof.c         |   14 ++++----------
->  11 files changed, 25 insertions(+), 47 deletions(-)
-> 
-> diff --git a/block/blktrace.c b/block/blktrace.c
-> index 834cd84..ca6d320 100644
-> --- a/block/blktrace.c
-> +++ b/block/blktrace.c
-> @@ -1086,8 +1086,6 @@ static void blk_tracer_print_header(struct seq_file *m)
->  
->  static void blk_tracer_start(struct trace_array *tr)
->  {
-> -	tracing_reset_online_cpus(tr);
-> -
->  	mutex_lock(&blk_probe_mutex);
->  	if (atomic_add_return(1, &blk_probes_ref) == 1)
->  		if (blk_register_tracepoints())
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 8fad377..ef4dbac 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -2171,6 +2171,12 @@ tracing_set_trace_read(struct file *filp, char __user *ubuf,
->  	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
->  }
->  
-> +int tracer_init(struct tracer *t, struct trace_array *tr)
-> +{
-> +	tracing_reset_online_cpus(tr);
-> +	return t->init(tr);
-> +}
-> +
->  static int tracing_set_tracer(const char *buf)
->  {
->  	struct trace_array *tr = &global_trace;
-> @@ -2195,7 +2201,7 @@ static int tracing_set_tracer(const char *buf)
->  
->  	current_trace = t;
->  	if (t->init) {
-> -		ret = t->init(tr);
-> +		ret = tracer_init(t, tr);
->  		if (ret)
->  			goto out;
->  	}
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index e03f157..f2742fb 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -395,6 +395,7 @@ struct trace_iterator {
->  	cpumask_var_t		started;
->  };
->  
-> +int tracer_init(struct tracer *t, struct trace_array *tr);
->  int tracing_is_enabled(void);
->  void trace_wake_up(void);
->  void tracing_reset(struct trace_array *tr, int cpu);
-> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-> index 48b2196..f8ae2c5 100644
-> --- a/kernel/trace/trace_branch.c
-> +++ b/kernel/trace/trace_branch.c
-> @@ -131,7 +131,6 @@ static void stop_branch_trace(struct trace_array *tr)
->  
->  static int branch_trace_init(struct trace_array *tr)
->  {
-> -	tracing_reset_online_cpus(tr);
->  	start_branch_trace(tr);
->  	return 0;
->  }
-> diff --git a/kernel/trace/trace_functions.c b/kernel/trace/trace_functions.c
-> index d067cea..36bf956 100644
-> --- a/kernel/trace/trace_functions.c
-> +++ b/kernel/trace/trace_functions.c
-> @@ -24,32 +24,21 @@ static struct trace_array	*func_trace;
->  static void tracing_start_function_trace(void);
->  static void tracing_stop_function_trace(void);
->  
-> -static void start_function_trace(struct trace_array *tr)
-> +static int function_trace_init(struct trace_array *tr)
->  {
->  	func_trace = tr;
->  	tr->cpu = get_cpu();
-> -	tracing_reset_online_cpus(tr);
->  	put_cpu();
->  
->  	tracing_start_cmdline_record();
->  	tracing_start_function_trace();
-> -}
-> -
-> -static void stop_function_trace(struct trace_array *tr)
-> -{
-> -	tracing_stop_function_trace();
-> -	tracing_stop_cmdline_record();
-> -}
-> -
-> -static int function_trace_init(struct trace_array *tr)
-> -{
-> -	start_function_trace(tr);
->  	return 0;
->  }
->  
->  static void function_trace_reset(struct trace_array *tr)
->  {
-> -	stop_function_trace(tr);
-> +	tracing_stop_function_trace();
-> +	tracing_stop_cmdline_record();
->  }
->  
->  static void function_trace_start(struct trace_array *tr)
-> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-> index c97594d..222f97d 100644
-> --- a/kernel/trace/trace_functions_graph.c
-> +++ b/kernel/trace/trace_functions_graph.c
-> @@ -56,7 +56,6 @@ static int graph_trace_init(struct trace_array *tr)
->  					&trace_graph_entry);
->  	if (ret)
->  		return ret;
-> -	tracing_reset_online_cpus(tr);
->  	tracing_start_cmdline_record();
->  
->  	return 0;
-> diff --git a/kernel/trace/trace_hw_branches.c b/kernel/trace/trace_hw_branches.c
-> index 2aa1c9f..ca4bbcf 100644
-> --- a/kernel/trace/trace_hw_branches.c
-> +++ b/kernel/trace/trace_hw_branches.c
-> @@ -132,7 +132,6 @@ static int bts_trace_init(struct trace_array *tr)
->  	hw_branch_trace = tr;
->  
->  	register_hotcpu_notifier(&bts_hotcpu_notifier);
-> -	tracing_reset_online_cpus(tr);
->  	bts_trace_start(tr);
->  
->  	return 0;
-> diff --git a/kernel/trace/trace_nop.c b/kernel/trace/trace_nop.c
-> index 087b6cb..9aa84bd 100644
-> --- a/kernel/trace/trace_nop.c
-> +++ b/kernel/trace/trace_nop.c
-> @@ -48,7 +48,6 @@ static void stop_nop_trace(struct trace_array *tr)
->  static int nop_trace_init(struct trace_array *tr)
->  {
->  	ctx_trace = tr;
-> -	tracing_reset_online_cpus(tr);
->  	start_nop_trace(tr);
->  	return 0;
->  }
-> diff --git a/kernel/trace/trace_sched_switch.c b/kernel/trace/trace_sched_switch.c
-> index c4f9add..30e14fe 100644
-> --- a/kernel/trace/trace_sched_switch.c
-> +++ b/kernel/trace/trace_sched_switch.c
-> @@ -185,12 +185,6 @@ void tracing_sched_switch_assign_trace(struct trace_array *tr)
->  	ctx_trace = tr;
->  }
->  
-> -static void start_sched_trace(struct trace_array *tr)
-> -{
-> -	tracing_reset_online_cpus(tr);
-> -	tracing_start_sched_switch_record();
-> -}
-> -
->  static void stop_sched_trace(struct trace_array *tr)
->  {
->  	tracing_stop_sched_switch_record();
-> @@ -199,7 +193,7 @@ static void stop_sched_trace(struct trace_array *tr)
->  static int sched_switch_trace_init(struct trace_array *tr)
->  {
->  	ctx_trace = tr;
-> -	start_sched_trace(tr);
-> +	tracing_start_sched_switch_record();
->  	return 0;
->  }
->  
-> diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
-> index 5013812..445700e 100644
-> --- a/kernel/trace/trace_selftest.c
-> +++ b/kernel/trace/trace_selftest.c
-> @@ -115,7 +115,7 @@ int trace_selftest_startup_dynamic_tracing(struct tracer *trace,
->  	ftrace_set_filter(func_name, strlen(func_name), 1);
->  
->  	/* enable tracing */
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		goto out;
-> @@ -189,7 +189,7 @@ trace_selftest_startup_function(struct tracer *trace, struct trace_array *tr)
->  	ftrace_enabled = 1;
->  	tracer_enabled = 1;
->  
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		goto out;
-> @@ -236,7 +236,7 @@ trace_selftest_startup_irqsoff(struct tracer *trace, struct trace_array *tr)
->  	int ret;
->  
->  	/* start the tracing */
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		return ret;
-> @@ -290,7 +290,7 @@ trace_selftest_startup_preemptoff(struct tracer *trace, struct trace_array *tr)
->  	}
->  
->  	/* start the tracing */
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		return ret;
-> @@ -344,7 +344,7 @@ trace_selftest_startup_preemptirqsoff(struct tracer *trace, struct trace_array *
->  	}
->  
->  	/* start the tracing */
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		goto out;
-> @@ -476,7 +476,7 @@ trace_selftest_startup_wakeup(struct tracer *trace, struct trace_array *tr)
->  	wait_for_completion(&isrt);
->  
->  	/* start the tracing */
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		return ret;
-> @@ -537,7 +537,7 @@ trace_selftest_startup_sched_switch(struct tracer *trace, struct trace_array *tr
->  	int ret;
->  
->  	/* start the tracing */
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		return ret;
-> @@ -569,7 +569,7 @@ trace_selftest_startup_sysprof(struct tracer *trace, struct trace_array *tr)
->  	int ret;
->  
->  	/* start the tracing */
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		return 0;
-> @@ -596,7 +596,7 @@ trace_selftest_startup_branch(struct tracer *trace, struct trace_array *tr)
->  	int ret;
->  
->  	/* start the tracing */
-> -	ret = trace->init(tr);
-> +	ret = tracer_init(trace, tr);
->  	if (ret) {
->  		warn_failed_init_tracer(trace, ret);
->  		return ret;
-> diff --git a/kernel/trace/trace_sysprof.c b/kernel/trace/trace_sysprof.c
-> index eaca5ad..84ca9d8 100644
-> --- a/kernel/trace/trace_sysprof.c
-> +++ b/kernel/trace/trace_sysprof.c
-> @@ -226,15 +226,6 @@ static void stop_stack_timers(void)
->  		stop_stack_timer(cpu);
->  }
->  
-> -static void start_stack_trace(struct trace_array *tr)
-> -{
-> -	mutex_lock(&sample_timer_lock);
-> -	tracing_reset_online_cpus(tr);
-> -	start_stack_timers();
-> -	tracer_enabled = 1;
-> -	mutex_unlock(&sample_timer_lock);
-> -}
-> -
->  static void stop_stack_trace(struct trace_array *tr)
->  {
->  	mutex_lock(&sample_timer_lock);
-> @@ -247,7 +238,10 @@ static int stack_trace_init(struct trace_array *tr)
->  {
->  	sysprof_trace = tr;
->  
-> -	start_stack_trace(tr);
-> +	mutex_lock(&sample_timer_lock);
-> +	start_stack_timers();
-> +	tracer_enabled = 1;
-> +	mutex_unlock(&sample_timer_lock);
->  	return 0;
->  }
->  
-> -- 
-> 1.6.0.6
-> 
+Hello!
 
-Heh, I will have to manage an "arnaldo" topic in my local git tree
-if I want to stay synced :-)
+On Thu, Jan 29, 2009 at 10:53:40PM -0800, Yinghai Lu wrote:
+> can not find the reason why the WOL doesn't work...
+> 
+> please post
+> 1. boot log for just after AC is pluged-in... ===> you should have
+> "nv_probe: set workaround bit for reversed mac addr"
+> 2. and boot log after boot from WOL...==> you have have "nv_probe: set
+> workaround bit for reversed mac addr" too.
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+On Wed, Feb 04, 2009 at 11:58:53AM +0100, Rafael J. Wysocki wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12614
+> Subject		: WOL with forcedeth broken since f55c21fd9a92a444e55ad1ca4e4732d56661bf2e
+> Submitter	: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
+> Date		: 2009-01-29 6:31 (7 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123321232825316&w=4
+> Handled-By	: Yinghai Lu <yinghai@kernel.org>
+> Patch		: http://marc.info/?l=linux-kernel&m=123330459229248&w=4
 
+Strage, at the moment I can't seem to reproduce the problem. I've
+switched back to the version of 2.6.28.3 and now it seems to work.
+I'll continue with tesing.
+
+Some additional data:
+The BIOS-upgrade tool (Afud408.exe) resets the MAC address. I had to run
+the tool a second time to re-programm the MAC-address using its /M
+option. I useed the unreversed MAC-address back than.
+I also tried the reversed address once, but after that forcedeth.c
+complained about a wrong MAC-address.
+
+If I completely turn off the power (pull the plug), WOL doesn't work,
+even when it's enabled in the BIOS.
+
+Only after I'v started Linux, do "echo NMAC > /proc/acpi/wakeup" and
+"ethtool -s eth0 wol g" does it work again.
+
+Nether the less here's the output of dmesg:
+        forcedeth: Reverse Engineered nFoce ethernet driver. Version 0.61.
+        ACPI: PCI Interrupt Link [LMAC] enables at IRQ 23
+        forcedeth: 0000:00:14.0: PCI INT A -> Link[LMAC] -> GSI 23 (level, low) -> IRQ 23
+        forcedeth: 0000:00:14.0: setting latency timer to 64
+*       nv_probe: MAC_ADDR_REV ELSE
+        nv_probe: set workaround bit for reversed mac addr
+        forcedeth: 0000:00:14.0: ifname eth0, PHY OUI 0x732 @ 1, addr 00:19:db:f2:e1:35
+        forcedeth: 0000:00:14.0: highdma pwrctl timirq gbit lnktim desc-v3
+The line maked * was inserted by me in the source file for my debugging.
+
+BYtE
+Philipp Hahn
+-- 
+  / /  (_)__  __ ____  __ Philipp Hahn
+ / /__/ / _ \/ // /\ \/ /
+/____/_/_//_/\_,_/ /_/\_\ pmhahn@titan.lahn.de
