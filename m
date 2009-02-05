@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZBEWEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754158AbZBEWHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbZBEWEX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 17:04:23 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752265AbZBEWEN
+	id S1754158AbZBEWHp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 17:07:45 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZBEWHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 17:04:13 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:50658 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750915AbZBEWEM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 17:04:12 -0500
+	Thu, 5 Feb 2009 17:07:38 -0500
+Received: from gw.goop.org ([64.81.55.164]:46251 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751815AbZBEWHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 17:07:37 -0500
+Message-ID: <498B6325.1040401@goop.org>
+Date: Thu, 05 Feb 2009 14:07:33 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <86802c440902051031l78e4cb25va1b0e6274205a3a0@mail.gmail.com>
-References: <1233765552.16414.6.camel@localhost.localdomain>
-	 <86802c440902041212q51f2a444l84e1ac29ee6f702e@mail.gmail.com>
-	 <20090204212517.GM22608@elte.hu> <498A4DFB.7040608@kernel.org>
-	 <20090205181534.GC5661@elte.hu>
-	 <86802c440902051031l78e4cb25va1b0e6274205a3a0@mail.gmail.com>
-Date: Thu, 5 Feb 2009 14:04:10 -0800
-Message-ID: <9ae48b020902051404g34b25c2cv189f0da8c947cc02@mail.gmail.com>
-Subject: Re: [PATCH] x86/pci: host mmconfig detect clean up v2
-From: Ed Swierk <eswierk@aristanetworks.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, lenb@kernel.org,
-       linux-acpi@vger.kernel.org, linux-pci@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Hugh Dickins <hugh@veritas.com>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: pud_bad vs pud_bad
+References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu> <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu> <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <498B4F1F.5070306@goop.org> <Pine.LNX.4.64.0902052046240.18431@blonde.anvils> <498B54A0.7040005@goop.org> <20090205215050.GB28097@elte.hu>
+In-Reply-To: <20090205215050.GB28097@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 10:31 AM, Yinghai Lu <yinghai@kernel.org> wrote:
-> should go with Ed's updated patch before.
->
-> to tip or pci tree.
+Ingo Molnar wrote:
+> We'd also lose a fair bit of performance (not to mention the pagetable 
+> footprint doubling that Hugh already mentioned) on 32-bit PAE capable 
+> systems that dont actually have RAM above 4G physical.
+>   
 
-This looks good to me, too. Thanks.
+Why's that?  Do you mean directly from using PAE, or as a side-effect of 
+highmem?
 
-Do you want me to submit a revised patch for detecting MCP55 mmconfig?
-
---Ed
+    J
