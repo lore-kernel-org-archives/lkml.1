@@ -1,116 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbZBEPC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZBEPEz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756867AbZBEPC4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 10:02:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZBEPCr
+	id S1757121AbZBEPEz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 10:04:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZBEPEp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 10:02:47 -0500
-Received: from tomts10-srv.bellnexxia.net ([209.226.175.54]:40877 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752565AbZBEPCq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 10:02:46 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEALGOiklMQWt2/2dsb2JhbACBbs9WhBYG
-Date: Thu, 5 Feb 2009 10:02:42 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090205150242.GA27895@Krystal>
-References: <20090130200757.GA14999@Krystal> <20090205140432.GE6915@linux.vnet.ibm.com>
+	Thu, 5 Feb 2009 10:04:45 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:42737 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752906AbZBEPEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 10:04:44 -0500
+Subject: Re: [PATCH] wireless: introduce POWEROF2_BLOCKSIZE_ONLY option
+From: Dan Williams <dcbw@redhat.com>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Cliff Cai <cliff.cai@analog.com>
+In-Reply-To: <1233819002-6912-1-git-send-email-cooloney@kernel.org>
+References: <1233819002-6912-1-git-send-email-cooloney@kernel.org>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 10:03:15 -0500
+Message-Id: <1233846195.3028.14.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090205140432.GE6915@linux.vnet.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 09:56:02 up 35 days, 14:54,  7 users,  load average: 0.45, 0.31,
-	0.23
-User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> On Fri, Jan 30, 2009 at 03:07:57PM -0500, Mathieu Desnoyers wrote:
-> > Hi,
-> > 
-> > I just ported LTTng to the 2.6.29-rc3 kernel. It includes the following
-> > changes :
-> > 
-> > - Tree RCU instrumentation
-> > - Updated ext4 and jbd2 instrumentation
-> > 
-> > Please feel free to try it and report any success/problem you may have.
-> > Note that cross-build has been slightly less tested this time because
-> > I'll have to upgrade many of my compilers to a version compatible with
-> > kernel 2.6.29-rc.
-> > 
-> > It also includes the recently added kprobes support through a simple
-> > 
-> > echo symbol_name > /mnt/debugfs/ltt/kprobes/enable
-> > 
-> > It's available at the new LTTng website :
-> > 
-> > http://www.lttng.org/
+On Thu, 2009-02-05 at 15:30 +0800, Bryan Wu wrote:
+> From: Cliff Cai <cliff.cai@analog.com>
 > 
-> Hello, Matheiu,
+> Introduce POWEROF2_BLOCKSIZE_ONLY option for those SD/SDIO host
+> which only support transferring block with size of power-of-2
+
+Is the point here to avoid copying in the controller code?  As with the
+other patches on libertas-dev, I really dislike adding code to *every
+SDIO driver* just because the host has certain restrictions.  I'd much
+rather that the host/controller code became aware of it's own
+restrictions, and exposed those generically to drivers above it.
+Without a KConfig option.
+
+Seriously.  The host knows what it needs.  The code to handle that
+should go in the host.
+
+How about adding a method like "sdio_align_size" that takes the
+controller's constraints into account?  That seems a lot cleaner than
+adding #define/KConfig junk to every SDIO driver in the kernel.  One
+less codepath to test, makes your life and all our lives easier.
+
+Dan
+
+> [ Bryan Wu <cooloney@kernel.org>:
+>  - remove some useless coding style cleanup
+>  - using roundup() function as upstream does
+> ]
 > 
-> When I try to apply this to v2.6.29-rc3, I get the following:
+> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
+> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+> ---
+>  drivers/net/wireless/Kconfig            |    6 ++++++
+>  drivers/net/wireless/libertas/if_sdio.c |   16 ++++++++++++++++
+>  2 files changed, 22 insertions(+), 0 deletions(-)
 > 
-> 	can't find file to patch at input line 61
-> 	Perhaps you used the wrong -p or --strip option?
-> 	The text leading up to this was:
-> 	--------------------------
-> 	|get_ltt_root() is necessary for ltt-trace-control to create subdirs in
-> 	ltt's
-> 	|debugfs dir.
-> 	|
-> 	|From: Zhao Lei <zhaolei@cn.fujitsu.com>
-> 	|Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> 	|Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> 	|---
-> 	| include/linux/ltt-core.h |    8 ++++++++
-> 	| ltt/ltt-core.c           |   14 ++++++++++++++
-> 	| ltt/ltt-relay.c          |    8 +-------
-> 	| 3 files changed, 23 insertions(+), 7 deletions(-)
-> 	|
-> 	|Index: linux-2.6-lttng/include/linux/ltt-core.h
-> 	|===================================================================
-> 	|--- linux-2.6-lttng.orig/include/linux/ltt-core.h      2009-01-15
-> 	15:55:18.000000000 -0500
-> 	|+++ linux-2.6-lttng/include/linux/ltt-core.h   2009-01-15
-> 	15:55:24.000000000 -0500
-> 
-> Help?
-> 
+> diff --git a/drivers/net/wireless/Kconfig b/drivers/net/wireless/Kconfig
+> index e4f9f74..a2685fa 100644
+> --- a/drivers/net/wireless/Kconfig
+> +++ b/drivers/net/wireless/Kconfig
+> @@ -151,6 +151,12 @@ config LIBERTAS_SDIO
+>  	---help---
+>  	  A driver for Marvell Libertas 8385 and 8686 SDIO devices.
+>  
+> +config POWEROF2_BLOCKSIZE_ONLY
+> +	bool "Support transferring block with size of power-of-2 only"
+> +	depends on LIBERTAS_SDIO
+> +	---help---
+> +	  For SD/SDIO host which only supports transferring block with size of power-of-2.
+> +
+>  config LIBERTAS_DEBUG
+>  	bool "Enable full debugging output in the Libertas module."
+>  	depends on LIBERTAS
+> diff --git a/drivers/net/wireless/libertas/if_sdio.c b/drivers/net/wireless/libertas/if_sdio.c
+> index 4519d73..5efc056 100644
+> --- a/drivers/net/wireless/libertas/if_sdio.c
+> +++ b/drivers/net/wireless/libertas/if_sdio.c
+> @@ -272,6 +272,11 @@ static int if_sdio_card_to_host(struct if_sdio_card *card)
+>  	 */
+>  	chunk = sdio_align_size(card->func, size);
+>  
+> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
+> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
+> +	chunk = (chunk + card->func->cur_blksize - 1) /
+> +			card->func->cur_blksize * card->func->cur_blksize;
+> +#endif
+>  	ret = sdio_readsb(card->func, card->buffer, card->ioport, chunk);
+>  	if (ret)
+>  		goto out;
+> @@ -581,8 +586,14 @@ static int if_sdio_prog_real(struct if_sdio_card *card)
+>  			lbs_deb_sdio("sending %d bytes (%d bytes) chunk\n",
+>  				chunk_size, (chunk_size + 31) / 32 * 32);
+>  */
+> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
+> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
+> +  			ret = sdio_writesb(card->func, card->ioport,
+> + 				chunk_buffer, roundup(chunk_size, 256);
+> +#else
+>  			ret = sdio_writesb(card->func, card->ioport,
+>  				chunk_buffer, roundup(chunk_size, 32));
+> +#endif
+>  			if (ret)
+>  				goto release;
+>  
+> @@ -699,6 +710,11 @@ static int if_sdio_host_to_card(struct lbs_private *priv,
+>  	 */
+>  	size = sdio_align_size(card->func, nb + 4);
+>  
+> +/* For SD/SDIO host which only supports transferring block with size of power-of-2 */
+> +#if defined(CONFIG_POWEROF2_BLOCKSIZE_ONLY)
+> +	size = (size + card->func->cur_blksize - 1) /
+> +			card->func->cur_blksize * card->func->cur_blksize;
+> +#endif
+>  	packet = kzalloc(sizeof(struct if_sdio_packet) + size,
+>  			GFP_ATOMIC);
+>  	if (!packet) {
 
-Hi Paul,
-
-I must admit I'm a bit puzzled. I've tried to quilt push -a both 
-LTTng 0.89 and LTTng 0.92 taken from the website and they both apply
-correctly on 2.6.29-rc3. When I quilt pop -a, neither of those 3 files
-(include/linux/ltt-core.h, ltt/ltt-core.c, ltt/ltt-relay.c) are stucked
-in my tree.
-
-I've used files from :
-
-http://www.lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
-
-Which tarballs are you using exactly ?
-
-I guess you need to apply them to your existing tree, so pointing you to
-git.kernel.org lttng tree won't help much here.
-
-Mathieu
-
-> 							Thanx, Paul
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
