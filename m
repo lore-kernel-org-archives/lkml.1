@@ -1,107 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbZBEKP2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758998AbZBEKTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759573AbZBEKP2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 05:15:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbZBEKPR
+	id S1758998AbZBEKTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 05:19:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZBEKTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 05:15:17 -0500
-Received: from fg-out-1718.google.com ([72.14.220.157]:58337 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755376AbZBEKPP (ORCPT
+	Thu, 5 Feb 2009 05:19:10 -0500
+Received: from mail-ausfall.charite.de ([193.175.70.131]:50550 "EHLO
+	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754996AbZBEKTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 05:15:15 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JXpJ0mevI0bDPhesqGpRB32uatulN+p7fljQaf3ycW4VRusFT3sd1CvNvQFqSbLCkA
-         L9iHuP3TRn74MAzRaQSkCJBVt9wxYYMB1uUSmCWd2d8OTaFB99fRCBrYjFHmVcFzNAEG
-         WF8iZwPB2zIesQ3pR6g4O9/f/4ww6Oj3xOpj4=
+	Thu, 5 Feb 2009 05:19:08 -0500
+Date: Thu, 5 Feb 2009 11:19:04 +0100
+From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
+To: Federico Cuello <fedux@lugmen.org.ar>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: sync-Regression in 2.6.28.2?
+Message-ID: <20090205101904.GJ23918@charite.de>
+Mail-Followup-To: Federico Cuello <fedux@lugmen.org.ar>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+	linux-kernel@vger.kernel.org
+References: <20090127093533.GB7037@charite.de> <200902031209.12615.nickpiggin@yahoo.com.au> <4988A034.20406@lugmen.org.ar> <200902041717.27320.nickpiggin@yahoo.com.au> <4989D0D4.80300@lugmen.org.ar>
 MIME-Version: 1.0
-In-Reply-To: <56e1b5710902050026s5a8fd48fhf4a65c05a533dbc3@mail.gmail.com>
-References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
-	 <20090204221451.GA27254@uranus.ravnborg.org>
-	 <adavdrplty2.fsf@cisco.com> <498A295A.4090008@gmail.com>
-	 <adaskmtjsnn.fsf@cisco.com>
-	 <56e1b5710902050026s5a8fd48fhf4a65c05a533dbc3@mail.gmail.com>
-Date: Thu, 5 Feb 2009 11:15:12 +0100
-Message-ID: <56e1b5710902050215l5b34adb1ofb8a972318ebe353@mail.gmail.com>
-Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
-From: Floris Kraak <randakar@gmail.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Robert Hancock <hancockrwd@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4989D0D4.80300@lugmen.org.ar>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 5, 2009 at 9:26 AM, Floris Kraak <randakar@gmail.com> wrote:
-> On Thu, Feb 5, 2009 at 7:37 AM, Roland Dreier <rdreier@cisco.com> wrote:
->>  > Just how many of these warnings are showing up? In the cases you
->>  > posted it's presumably no problem, but if the string could either a)
->>  > be potentially set by a malicious user or b) accidentally contain
->>  > printk format characters then this code has a risk that things could
->>  > blow up..
->>
->> I get ~150 of them on an x86 allyesconfig build here (see below).  Many
->> but not all are trivial; some at least appear to be passing in strings
->> that come from random hardware/firmware or DNS names etc (ie there's at
->> least a chance of a '%'); and I didn't exhaustively audit to make sure
->> none of them could print something from an unprivileged user.
->>
->
-> There are probably some real bugs in there. On the other hand there is
-> some overhead to fixing the warnings. Kernel text size increase,
-> possibly some CPU overhead from parsing the format string. Hopefully
-> none of these calls are in really hot code paths ;-)
-> As I noted applying a patch that does the reverse and enables the
-> check instead is perfectly acceptable to me. Long term somebody
-> probably needs to go through all of them and fix (most of) them
-> anyway.
->
-> What remains an open question to me though is what to do with cases
-> where the warning not only can be ignored but literally should be. eg.
-> when there is zero chance of something unexpected getting passed in
-> and 'fixing' it would just bloat the kernel.
-> Can sparse be used to check this kind of thing for correctness?
->
+* Federico Cuello <fedux@lugmen.org.ar>:
+> Nick Piggin wrote:
+> > [...]
+> > Thanks, could you reply-to-all when replying to retain ccs please?
+> >
+> > Common theme is ext4, which uses no_nrwrite_index_update, and I introduced
+> > a bug in there which could possibly cause ext4 to go into a loop...
+> >
+> > Would it be possible if you can test the following patch?
+> >   
+> 
+> I'll test it as soon as I get home.
+> 
+> Meanwhile, I think the new patch may be slightly wrong. If I understand
+> correctly PageWriteback(page) is called before nr_to_write is tested for
+> being > 0 and then decremented if true, but "done" is  not set to 1
+> until the next iteration. So another call to PageWriteback(page) while
+> take place and then "done" will be set to true (if wbc->sync_mode ==
+> WB_SYNC_NONE).
+> 
+> If nr_to_write == 1 at the beginning of the loop then two pages will be
+> written.
+> 
+> I think the test condition should something like:
+> 
+> if (--nr_to_write <= 0 && wbc->sync_mode == WB_SYNC_NONE) {
+>     done = 1;
+>     break;
+> }
+> 
+> .
+> .
+> 
+> > Signed-off-by: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+> > Acked-by: Nick Piggin <npiggin@suse.de>
+> > Cc: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> >  mm/page-writeback.c |   21 +++++++++++++++------
+> >  1 files changed, 15 insertions(+), 6 deletions(-)
+> >
+> > diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> > index b493db7..dc32dae 100644
+> > --- a/mm/page-writeback.c
+> > +++ b/mm/page-writeback.c
+> > @@ -1051,13 +1051,22 @@ continue_unlock:
+> >  				}
+> >   			}
+> >  
+> > -			if (wbc->sync_mode == WB_SYNC_NONE) {
+> > -				wbc->nr_to_write--;
+> > -				if (wbc->nr_to_write <= 0) {
+> > -					done = 1;
+> > -					break;
+> > -				}
+> > +			if (nr_to_write > 0)
+> > +				nr_to_write--;
+> > +			else if (wbc->sync_mode == WB_SYNC_NONE) {
+> > +				/*
+> > +				 * We stop writing back only if we are not
+> > +				 * doing integrity sync. In case of integrity
+> > +				 * sync we have to keep going because someone
+> > +				 * may be concurrently dirtying pages, and we
+> > +				 * might have synced a lot of newly appeared
+> > +				 * dirty pages, but have not synced all of the
+> > +				 * old dirty pages.
+> > +				 */
+> > +				done = 1;
+> > +				break;
+> >  			}
+> > +
+> >  			if (wbc->nonblocking && bdi_write_congested(bdi)) {
+> >  				wbc->encountered_congestion = 1;
+> >  				done = 1;
+> >   
+> 
+While I didn't test the patch, I can confirm that the problem is also
+in 2.6.28.3
 
-Example:
-
-kernel/power/main.c:717: warning: format not a string literal and no
-format arguments
-
-This complains about:
-..
-        if (!rtc) {
-                printk(warn_no_rtc);
-                goto done;
-        }
-..
-
-So what is this "warn_no_rtc" thing?
-
-        static char             warn_no_rtc[] __initdata =
-                KERN_WARNING "PM: no wakealarm-capable RTC driver is ready\n";
-
-That's pretty much GCC failing to recognize that the format is a
-string literal and then complaining that it isn't.
-How do we make the warning go away without growing the kernel text?
-Given the use of __initdata flags I'm not even sure if doing the
-obvious printk("%s", warn_no_rtc) isn't going to introduce a subtle
-bug somehow..
-
-Regards,
-Floris
----
-"They that give up essential liberty to obtain temporary safety,
-deserve neither liberty nor safety."
-  -- Ben Franklin
-
-"The course of history shows that as a government grows, liberty
-decreases."
-  -- Thomas Jefferson
+-- 
+Ralf Hildebrandt                                Ralf.Hildebrandt@charite.de
+Charite - Universitätsmedizin Berlin            Tel.  +49 (0)30-450 570-155
+Geschäftsbereich IT | Abt. Netzwerk             Fax.  +49 (0)30-450 570-962
+Hindenburgdamm 30 | 12200 Berlin
