@@ -1,28 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbZBEOaQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZBEOb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753731AbZBEOaQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 09:30:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751825AbZBEOaA
+	id S1756223AbZBEOb7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 09:31:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751963AbZBEObr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 09:30:00 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47068 "EHLO mx2.mail.elte.hu"
+	Thu, 5 Feb 2009 09:31:47 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38208 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751932AbZBEOaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 09:30:00 -0500
-Date: Thu, 5 Feb 2009 15:29:12 +0100
+	id S1751932AbZBEObq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 09:31:46 -0500
+Date: Thu, 5 Feb 2009 15:30:54 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: __supported_pte_mask breaks PROT_NONE pages
-Message-ID: <20090205142912.GE28443@elte.hu>
-References: <498A5002.9080408@goop.org>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Kirill Korotaev <dev@parallels.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Kirill Korotaev <dev@openvz.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [git pull] timer fix
+Message-ID: <20090205143054.GF28443@elte.hu>
+References: <C5B07536.B77D%dev@parallels.com> <498AB837.1040404@openvz.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498A5002.9080408@goop.org>
+In-Reply-To: <498AB837.1040404@openvz.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,12 +39,15 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Pavel Emelyanov <xemul@openvz.org> wrote:
 
-> On an x86 system which doesn't support global mappings,  
-> __supported_pte_mask has _PAGE_GLOBAL clear, to make sure it never  
-> appears in the PTE.  pfn_pte() and so on will enforce it with:
+> Reported-by: Kirill Korotaev <dev@openvz.org>
+> Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+> 
+> This one also works. Should I re-send this patch in a proper way?
 
-btw., did you actually see a boot crash due to this, on a pre-PGE system?
+Yes, please do. Also, please have a look at the helper function cleanup 
+suggestion from Linus - such a patch would be welcome too.
 
 	Ingo
+
