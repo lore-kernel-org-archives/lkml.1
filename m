@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755855AbZBFNIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbZBFNMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755855AbZBFNIP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:08:15 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZBFNH7
+	id S1755548AbZBFNMa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:12:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZBFNMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:07:59 -0500
-Received: from tundra.namei.org ([65.99.196.166]:1567 "EHLO tundra.namei.org"
+	Fri, 6 Feb 2009 08:12:22 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:55162 "EHLO mail.atlantis.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752528AbZBFNH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:07:58 -0500
-Date: Sat, 7 Feb 2009 00:06:56 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: David Howells <dhowells@redhat.com>
-cc: torvalds@osdl.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH] fork.c: fix NULL pointer dereference when nr_threads ==
- threads-max
-In-Reply-To: <20090206081719.20378.39341.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LRH.1.10.0902070006370.18789@tundra.namei.org>
-References: <20090206081719.20378.39341.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1753405AbZBFNMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:12:21 -0500
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH] [resend] Resume from hibernation fails with pata_it821x RAID volume
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Disposition: inline
+From: Ondrej Zary <linux@rainbow-software.org>
+Date: Fri, 6 Feb 2009 14:12:07 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200902061412.09839.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Feb 2009, David Howells wrote:
+Hello,
+hibernation didn't work for me since I started to use IT8212 controller. Now I 
+did some debugging (booting with no_console_suspend init=/bin/sh).
 
-> From: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> I happened to forked lots of processes, and hit NULL pointer dereference.
-> It is because in copy_process() after checking max_threads, 0 is returned
-> but not -EAGAIN.
-> 
-> The bug is introduced by this patch:
-> 
-> | commit f1752eec6145c97163dbce62d17cf5d928e28a27
-> | Author: David Howells <dhowells@redhat.com>
-> | Date:   Fri Nov 14 10:39:17 2008 +1100
-> |
-> |    CRED: Detach the credentials from task_struct
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> Signed-off-by: David Howells <dhowells@redhat.com>
+Found that resume fails (2.6.28) with "serial number mismatch 'some 
+garbage' != 'some other garbage'" and "revalidation failed" messages. That's 
+because the controller firmware fills different serial number in the IDENTIFY 
+every boot.
 
-Acked-by: James Morris <jmorris@namei.org>
+The patch below fixes the resume simply clearing the serial number. The proper 
+fix would be probably to fill in the serial number of the RAID volume 
+instead. I assume that there must be something like that stored on the drives 
+but I don't know where.
 
 
-> ---
-> 
->  kernel/fork.c |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/kernel/fork.c b/kernel/fork.c
-> index bf0cef8..586874d 100644
-> --- a/kernel/fork.c
-> +++ b/kernel/fork.c
-> @@ -1007,6 +1007,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
->  	 * triggers too late. This doesn't hurt, the check is only there
->  	 * to stop root fork bombs.
->  	 */
-> +	retval = -EAGAIN;
->  	if (nr_threads >= max_threads)
->  		goto bad_fork_cleanup_count;
->  
-> 
+Fix resume on pata_it821x RAID volume by clearing the serial number in 
+IDENTIFY data, which is otherwise different on each boot.
+
+Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
+
+--- linux-2.6.28-orig/drivers/ata/pata_it821x.c	2009-01-02 17:18:36.000000000 
++0100
++++ linux/drivers/ata/pata_it821x.c	2009-02-02 17:47:57.000000000 +0100
+@@ -561,6 +561,9 @@
+ 		id[83] |= 0x4400;	/* Word 83 is valid and LBA48 */
+ 		id[86] |= 0x0400;	/* LBA48 on */
+ 		id[ATA_ID_MAJOR_VER] |= 0x1F;
++		/* Clear the serial number because it's different each boot
++		   which breaks validation on resume */
++		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
+ 	}
+ 	return err_mask;
+ }
+
 
 -- 
-James Morris
-<jmorris@namei.org>
+Ondrej Zary
