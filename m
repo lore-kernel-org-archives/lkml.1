@@ -1,54 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZBFA1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbZBFAd1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZBFA1f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 19:27:35 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753424AbZBFA10
+	id S1756501AbZBFAd1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 19:33:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZBFAdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 19:27:26 -0500
-Received: from yw-out-2324.google.com ([74.125.46.30]:29002 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752700AbZBFA10 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 19:27:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
-         :subject:references:in-reply-to:content-type
-         :content-transfer-encoding;
-        b=OoVBRWKyVZJMOV6xYB6Y4mBvvQMyA0QVdPVTd/bWM2TnGY0FCCtQ01KYLJHHVztMeo
-         19uMyHJCJNPYiwFHfLDIfYb6NprbpJJIyhdHU31MHVpFs8n0BY6ummn407wbjCQ5FMJ5
-         CELX6zbm+Q0uXrY7dq9Vr4eANaPUBD6TbqWQ0=
-Message-ID: <498B83EA.4040608@gmail.com>
-Date: Thu, 05 Feb 2009 18:27:22 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 5 Feb 2009 19:33:13 -0500
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:55431 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbZBFAdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 19:33:11 -0500
+Date: Thu, 5 Feb 2009 16:33:08 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
+Message-ID: <20090206003308.GO6915@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090205151841.GF6915@linux.vnet.ibm.com> <20090205153825.GA30255@Krystal> <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal> <20090205184456.GK6915@linux.vnet.ibm.com> <20090205202249.GA26964@Krystal> <20090205210415.GM6915@linux.vnet.ibm.com> <20090205210627.GA1313@Krystal>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Vira <sri1369_s@yahoo.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Mapping non-page aligned data to user
-References: <305692.9769.qm@web33402.mail.mud.yahoo.com>
-In-Reply-To: <305692.9769.qm@web33402.mail.mud.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090205210627.GA1313@Krystal>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vira wrote:
-> Hi, 
+On Thu, Feb 05, 2009 at 04:06:27PM -0500, Mathieu Desnoyers wrote:
+> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > On Thu, Feb 05, 2009 at 03:22:49PM -0500, Mathieu Desnoyers wrote:
+> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
+> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
+> > > > > > > Hi Paul,
+> > > > > > > 
+> > > > > > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
+> > > > > > > <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > > >>
+> > > > > > > >> Are you using quilt to apply the patchset series file in the right order ?
+> > > > > > > >
+> > > > > > > > Ummm...  No.  I never have used quilt.
+> > > > > > > >
+> > > > > > > > Ah, there is a series file.  I guess it would not be too hard to make
+> > > > > > > > an appropriate "sh" command:
+> > > > > > > 
+> > > > > > > How about trying?
+> > > > > > > 
+> > > > > > > #quilt push -a
+> > > > > > 
+> > > > > > Is the appropriate incantation as follows?
+> > > > > > 
+> > > > > > 	cd <top of git tree>
+> > > > > > 	mkdir patches
+> > > > > > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
+> > > > > > 	quilt push -a
+> > > > > > 
+> > > > > 
+> > > > > Yes, exactly.
+> > > > 
+> > > > Whew!  ;-)
+> > > > 
+> > > > > And from there you can follow the LTTng manual here :
+> > > > > 
+> > > > > http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
+> > > > 
+> > > > I get some fuzz and the following:
+> > > > 
+> > > > 	patching file kernel/trace/trace-clock-32-to-64.c
+> > > > 	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
+> > > > 	which already exists.
+> > > > 	Hunk #1 FAILED at 1.
+> > > > 	1 out of 1 hunk FAILED -- rejects in file
+> > > > 	kernel/trace/trace-clock-32-to-64.c
+> > > > 
+> > > > Should I be starting from somewhere other than v2.6.29-rc3?
+> > > > 
+> > > 
+> > > Let's see it step by step, that should get us there.
+> > > 
+> > > With patches :
+> > > 
+> > > mkdir ~/lttng
+> > > cd ~/lttng
+> > > wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2
+> > > wget http://lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
+> > > bzip2 -cd linux-2.6.29-rc3.tar.bz2 |tar xvof -
+> > > bzip2 -cd patch-2.6.29-rc3-lttng-0.92.tar.bz2  |tar xvof -
+> > > cd linux-2.6.29-rc3
+> > > mkdir patches
+> > > ln -s ../patch-2.6.29-rc3-lttng-0.92 patches
+> > > quilt push -a
+> > > 
+> > > Does this work ?
+> > 
+> > Leaving out the "mkdir", yes.
 > 
-> Is there a way to map a non-page aligned kernel physical address to user virtual address? remap_pfn_range and vm_insert_page operate only on page-aligned physical addresses.
+> Ah, yes, my mistake.
 > 
-> If there is no such support, would it be too complicated to try out
-> writing something on my own to map non-page aligned addresses (the data
-> size is under my control - so I can make that a multiple of page size)?
+> > My apologies -- I was forgetting that
+> > "git reset --hard" doesn't get rid of untracked files.  I do see fuzz
+> > in a few places, but hopefully this is non-fatal.  And in any case, I
+> > can now make the patch required to actually try this out.  ;-)
+> > 
 > 
-> Any suggestions appreciated.
+> Great !
+> 
+> Don't hesitate to ask if you have any question.
+> 
+> Mathieu
 
-The CPU, and therefore the kernel, couldn't ensure that the user doesn't 
-write outside the mapped region of kernel memory if it's not page 
-aligned (the access control is page granularity only). That seems like 
-it would be a show-stopper in most cases.
+Fails to build on Power, so trying x86...  (Stock 2.6.29-rc3 does
+build and boot, FWIW.)
 
-What exactly is it you're trying to achieve with this?
+Looks like misplaced file.
+
+							Thanx, Paul
+
+------------------------------------------------------------------------
+
+  CHK     include/linux/version.h
+  UPD     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  UPD     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-powerpc
+  HOSTCC  scripts/ihex2fw
+  HOSTCC  scripts/kallsyms
+  HOSTCC  scripts/pnmtologo
+  HOSTCC  scripts/genksyms/genksyms.o
+  HOSTCC  scripts/conmakehash
+  HOSTCC  scripts/bin2c
+  CC      scripts/mod/empty.o
+  HOSTCC  scripts/mod/mk_elfconfig
+  SHIPPED scripts/genksyms/lex.c
+  SHIPPED scripts/genksyms/parse.h
+  SHIPPED scripts/genksyms/keywords.c
+  SHIPPED scripts/genksyms/parse.c
+  HOSTCC  scripts/genksyms/parse.o
+  HOSTCC  scripts/genksyms/lex.o
+  MKELF   scripts/mod/elfconfig.h
+  HOSTCC  scripts/mod/file2alias.o
+  HOSTCC  scripts/mod/modpost.o
+  HOSTCC  scripts/mod/sumversion.o
+  HOSTLD  scripts/genksyms/genksyms
+  HOSTLD  scripts/mod/modpost
+  CC      kernel/bounds.s
+  GEN     include/linux/bounds.h
+  CC      arch/powerpc/kernel/asm-offsets.s
+In file included from include/linux/module.h:18,
+                 from include/linux/sysdev.h:25,
+                 from include/linux/node.h:22,
+                 from include/linux/swap.h:10,
+                 from include/linux/suspend.h:7,
+                 from arch/powerpc/kernel/asm-offsets.c:24:
+include/linux/immediate.h:15:27: error: asm/immediate.h: No such file or directory
+In file included from include/linux/module.h:18,
+                 from include/linux/sysdev.h:25,
+                 from include/linux/node.h:22,
+                 from include/linux/swap.h:10,
+                 from include/linux/suspend.h:7,
+                 from arch/powerpc/kernel/asm-offsets.c:24:
+include/linux/immediate.h:37: warning: â€˜struct __imvâ€™ declared
+inside parameter list
+include/linux/immediate.h:37: warning: its scope is only this definition
+or declaration, which is probably not what you want
+include/linux/immediate.h:40: warning: â€˜struct __imvâ€™ declared
+inside parameter list
+make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
+make: *** [prepare0] Error 2
+02/05/2009-17:57:41 Build the kernel. Failed rc = 2
+02/05/2009-17:57:41 build: Building kernel... Failed rc = 1
