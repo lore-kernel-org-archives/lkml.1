@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756202AbZBFKGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZBFKUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756202AbZBFKGo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 05:06:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752937AbZBFKGg
+	id S1755959AbZBFKUq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 05:20:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753694AbZBFKUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 05:06:36 -0500
-Received: from el-out-1112.google.com ([209.85.162.180]:35961 "EHLO
-	el-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751180AbZBFKGf (ORCPT
+	Fri, 6 Feb 2009 05:20:38 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:51423 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751642AbZBFKUh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 05:06:35 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=IHrRL4OWjcMureVACdH+Odd3iEQHQr89rJIW6T18kIc95QPJ8noCQy0JAYJpKxx0XI
-         +LHPiZfzrb7Xxu/kPfewOoxXlrWR59Q5fuVCzvLaC0eWVRZvt93JVfsz67m4me5DAgNF
-         PcQPbeSBS8jfe8l1Yzb6Qk/+up2VgX5tlFmic=
-MIME-Version: 1.0
-In-Reply-To: <20090206080354.GA6516@barrios-desktop>
-References: <20090206031125.693559239@cmpxchg.org>
-	 <20090206031324.004715023@cmpxchg.org>
-	 <20090206080354.GA6516@barrios-desktop>
-Date: Fri, 6 Feb 2009 19:06:34 +0900
-Message-ID: <28c262360902060206h78c15a1dsf52b481c5cc1bc74@mail.gmail.com>
-Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
-From: MinChan Kim <minchan.kim@gmail.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 05:20:37 -0500
+X-IronPort-AV: E=Sophos;i="4.37,390,1231131600"; 
+   d="scan'208";a="82429930"
+From: Bryan Wu <cooloney@kernel.org>
+To: felipe.balbi@nokia.com
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mike Frysinger <vapier.adi@gmail.com>, Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] usb: musb: tweak musb_read_fifo() to avoid unused warnings
+Date: Fri,  6 Feb 2009 18:22:16 +0800
+Message-Id: <1233915736-18506-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 6, 2009 at 5:03 PM, MinChan Kim <minchan.kim@gmail.com> wrote:
-> Hi, Johannes.
-> I have some questions.
-> Just out of curiosity. :)
->
-> On Fri, Feb 06, 2009 at 04:11:28AM +0100, Johannes Weiner wrote:
->> File cache pages are saved to disk either through normal writeback by
->> reclaim or by including them in the suspend image written to a
->> swapfile.
->>
->> Writing them either way should take the same amount of time but doing
->> normal writeback and unmap changes the fault behaviour on resume from
->> prefault to on-demand paging, smoothening out resume and giving
->
-> What do you mean "unmap"?
-> Why normal writeback and unmap chnages the fault behavior on resume ?
+From: Mike Frysinger <vapier.adi@gmail.com>
 
-Please, Ignore poor first my question. :(
-I agree with your opinion.
+Signed-off-by: Mike Frysinger <vapier.adi@gmail.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/usb/musb/blackfin.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
->> previously cached pages the chance to stay out of memory completely if
->> they are not used anymore.
->>
->> Another reason for preferring file page eviction is that the locality
->> principle is visible in fault patterns and swap might perform really
->> bad with subsequent faulting of contiguously mapped pages.
->
-> Why do you think that swap might perform bad with subsequent faulting
-> of contiguusly mapped page ?
-> You mean normal file system is faster than swap due to readahead and
-> smart block of allocation ?
-
-But, I still can't understand this issue.
-what mean "page eviction" ? Is it reclaim or swap out ?
-
->
-> --
-> Kinds Regards
-> MinChan Kim
->
->
-
-
-
+diff --git a/drivers/usb/musb/blackfin.c b/drivers/usb/musb/blackfin.c
+index 7861348..0ebb19d 100644
+--- a/drivers/usb/musb/blackfin.c
++++ b/drivers/usb/musb/blackfin.c
+@@ -54,13 +54,11 @@ void musb_write_fifo(struct musb_hw_ep *hw_ep, u16 len, const u8 *src)
+ void musb_read_fifo(struct musb_hw_ep *hw_ep, u16 len, u8 *dst)
+ {
+ 	void __iomem *fifo = hw_ep->fifo;
++
++#ifdef CONFIG_BF52x
+ 	u8 epnum = hw_ep->epnum;
+ 	u16 dma_reg = 0;
+ 
+-	DBG(4, "%cX ep%d fifo %p count %d buf %p\n",
+-			'R', hw_ep->epnum, fifo, len, dst);
+-
+-#ifdef CONFIG_BF52x
+ 	invalidate_dcache_range((unsigned int)dst,
+ 		(unsigned int)(dst + len));
+ 
+@@ -103,6 +101,9 @@ void musb_read_fifo(struct musb_hw_ep *hw_ep, u16 len, u8 *dst)
+ 			len & 0x01 ? (len >> 1) + 1 : len >> 1);
+ #endif
+ 
++	DBG(4, "%cX ep%d fifo %p count %d buf %p\n",
++			'R', hw_ep->epnum, fifo, len, dst);
++
+ 	dump_fifo_data(dst, len);
+ }
+ 
 -- 
-Kinds regards,
-MinChan Kim
+1.5.6.3
