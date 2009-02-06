@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbZBFDxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbZBFDyA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758460AbZBFDxa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 22:53:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZBFDwy
+	id S1758906AbZBFDyA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 22:54:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZBFDw5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 22:52:54 -0500
-Received: from utopia.booyaka.com ([72.9.107.138]:59976 "EHLO
+	Thu, 5 Feb 2009 22:52:57 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:59990 "EHLO
 	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752650AbZBFDwx (ORCPT
+	with ESMTP id S1752358AbZBFDwy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 22:52:53 -0500
-MBOX-Line: From nobody Thu Feb  5 20:45:16 2009
+	Thu, 5 Feb 2009 22:52:54 -0500
+MBOX-Line: From nobody Thu Feb  5 20:45:28 2009
 From: Paul Walmsley <paul@pwsan.com>
-Subject: [PATCH 1/3] ARM: OMAP: Fix omap34xx revision detection for ES3.1
+Subject: [PATCH 3/3] OMAP3 powerdomains: make USBTLL SAR only available on
+	ES3.1 and beyond
 To: linux@arm.linux.org.uk
 Cc: linux-omap@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       linux-kernel@vger.kernel.org, Tony Lindgren <tony@atomide.com>,
-       Paul Walmsley <paul@pwsan.com>
-Date: Thu, 05 Feb 2009 20:45:16 -0700
-Message-ID: <20090206034513.31313.42445.stgit@localhost.localdomain>
+       linux-kernel@vger.kernel.org, paul@pwsan.com,
+       Richard Woodruff <r-woodruff2@ti.com>
+Date: Thu, 05 Feb 2009 20:45:28 -0700
+Message-ID: <20090206034525.31313.32758.stgit@localhost.localdomain>
 In-Reply-To: <20090206033847.31313.45612.stgit@localhost.localdomain>
 References: <20090206033847.31313.45612.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3.222.gddca
@@ -29,49 +30,66 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tony Lindgren <tony@atomide.com>
+Richard Woodruff writes that chip errata prevent USBTLL SAR from working
+on OMAP3 ES levels before ES3.1:
 
-Fix omap34xx revision detection for ES3.1
+http://marc.info/?l=linux-arm-kernel&m=123319614808833&w=2
 
-linux-omap source commit is 1bafdfd33cc7a2b053ca705cf8623e1ae6cd4c52.
+Update the OMAP3 powerdomain structures appropriately.
 
-Signed-off-by: Tony Lindgren <tony@atomide.com>
 Signed-off-by: Paul Walmsley <paul@pwsan.com>
+Cc: Richard Woodruff <r-woodruff2@ti.com>
 ---
- arch/arm/mach-omap2/id.c              |    6 +++++-
- arch/arm/plat-omap/include/mach/cpu.h |    1 +
- 2 files changed, 6 insertions(+), 1 deletions(-)
+ arch/arm/mach-omap2/powerdomains.h     |    4 ++--
+ arch/arm/mach-omap2/powerdomains34xx.h |   10 ++++++----
+ 2 files changed, 8 insertions(+), 6 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/id.c b/arch/arm/mach-omap2/id.c
-index b0f8e7d..b52a02f 100644
---- a/arch/arm/mach-omap2/id.c
-+++ b/arch/arm/mach-omap2/id.c
-@@ -172,9 +172,13 @@ void __init omap34xx_check_revision(void)
- 			omap_revision = OMAP3430_REV_ES3_0;
- 			rev_name = "ES3.0";
- 			break;
-+		case 4:
-+			omap_revision = OMAP3430_REV_ES3_1;
-+			rev_name = "ES3.1";
-+			break;
- 		default:
- 			/* Use the latest known revision as default */
--			omap_revision = OMAP3430_REV_ES3_0;
-+			omap_revision = OMAP3430_REV_ES3_1;
- 			rev_name = "Unknown revision\n";
- 		}
- 	}
-diff --git a/arch/arm/plat-omap/include/mach/cpu.h b/arch/arm/plat-omap/include/mach/cpu.h
-index b2062f1..a8e1178 100644
---- a/arch/arm/plat-omap/include/mach/cpu.h
-+++ b/arch/arm/plat-omap/include/mach/cpu.h
-@@ -339,6 +339,7 @@ IS_OMAP_TYPE(3430, 0x3430)
- #define OMAP3430_REV_ES2_0	0x34301034
- #define OMAP3430_REV_ES2_1	0x34302034
- #define OMAP3430_REV_ES3_0	0x34303034
-+#define OMAP3430_REV_ES3_1	0x34304034
+diff --git a/arch/arm/mach-omap2/powerdomains.h b/arch/arm/mach-omap2/powerdomains.h
+index 51623e2..691470e 100644
+--- a/arch/arm/mach-omap2/powerdomains.h
++++ b/arch/arm/mach-omap2/powerdomains.h
+@@ -171,8 +171,8 @@ static struct powerdomain *powerdomains_omap[] __initdata = {
+ 	&iva2_pwrdm,
+ 	&mpu_34xx_pwrdm,
+ 	&neon_pwrdm,
+-	&core_34xx_es1_pwrdm,
+-	&core_34xx_es2_pwrdm,
++	&core_34xx_pre_es3_1_pwrdm,
++	&core_34xx_es3_1_pwrdm,
+ 	&cam_pwrdm,
+ 	&dss_pwrdm,
+ 	&per_pwrdm,
+diff --git a/arch/arm/mach-omap2/powerdomains34xx.h b/arch/arm/mach-omap2/powerdomains34xx.h
+index 6b9d126..4dcf94b 100644
+--- a/arch/arm/mach-omap2/powerdomains34xx.h
++++ b/arch/arm/mach-omap2/powerdomains34xx.h
+@@ -200,10 +200,12 @@ static struct powerdomain mpu_34xx_pwrdm = {
+ };
  
- /*
-  * omap_chip bits
+ /* No wkdeps or sleepdeps for 34xx core apparently */
+-static struct powerdomain core_34xx_es1_pwrdm = {
++static struct powerdomain core_34xx_pre_es3_1_pwrdm = {
+ 	.name		  = "core_pwrdm",
+ 	.prcm_offs	  = CORE_MOD,
+-	.omap_chip	  = OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1),
++	.omap_chip	  = OMAP_CHIP_INIT(CHIP_IS_OMAP3430ES1 |
++					   CHIP_IS_OMAP3430ES2 |
++					   CHIP_IS_OMAP3430ES3_0),
+ 	.pwrsts		  = PWRSTS_OFF_RET_ON,
+ 	.dep_bit	  = OMAP3430_EN_CORE_SHIFT,
+ 	.banks		  = 2,
+@@ -218,10 +220,10 @@ static struct powerdomain core_34xx_es1_pwrdm = {
+ };
+ 
+ /* No wkdeps or sleepdeps for 34xx core apparently */
+-static struct powerdomain core_34xx_es2_pwrdm = {
++static struct powerdomain core_34xx_es3_1_pwrdm = {
+ 	.name		  = "core_pwrdm",
+ 	.prcm_offs	  = CORE_MOD,
+-	.omap_chip	  = OMAP_CHIP_INIT(CHIP_GE_OMAP3430ES2),
++	.omap_chip	  = OMAP_CHIP_INIT(CHIP_GE_OMAP3430ES3_1),
+ 	.pwrsts		  = PWRSTS_OFF_RET_ON,
+ 	.dep_bit	  = OMAP3430_EN_CORE_SHIFT,
+ 	.flags		  = PWRDM_HAS_HDWR_SAR, /* for USBTLL only */
 
 
