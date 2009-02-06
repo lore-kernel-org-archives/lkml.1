@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755381AbZBFGjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754094AbZBFGwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755381AbZBFGjq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:39:46 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZBFGji
+	id S1754094AbZBFGwZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:52:25 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZBFGwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:39:38 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:55703 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751049AbZBFGjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:39:37 -0500
-Message-ID: <498BDB15.6050609@cn.fujitsu.com>
-Date: Fri, 06 Feb 2009 14:39:17 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Fri, 6 Feb 2009 01:52:16 -0500
+Received: from gw.goop.org ([64.81.55.164]:42769 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750707AbZBFGwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 01:52:16 -0500
+Message-ID: <498BDE1D.8030101@goop.org>
+Date: Thu, 05 Feb 2009 22:52:13 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Gautham R Shenoy <ego@in.ibm.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] cpu hotplug: remove unused cpuhotplug_mutex_lock()
-Content-Type: text/plain; charset=UTF-8
+To: akataria@vmware.com
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Zach Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Rohit Jain <rjain@vmware.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PARAVIRT/x86] BUGFIX: Put a missing paravirt_release_pmd in
+ pgd_dtor
+References: <1233885731.29693.26.camel@alok-dev1>	 <498BA0CA.2040603@goop.org> <1233901043.8943.6.camel@alok-dev1>
+In-Reply-To: <1233901043.8943.6.camel@alok-dev1>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alok Kataria wrote:
+> As it affects only VMI, instead of adding another callback, i have
+> hooked on the paravirt_pgd_free call for vmi to release the pgd page.
+> Below is the patch. I will run some overnight tests with this patch and
+> get back if there are any errors.
+>   
 
-cpuhotplug_mutex_lock() is not used. this patch remove it.
+I'd forgotten that I'd already added pgd_alloc/pgd_free.  So, yes, just 
+use pgd_free.
 
-Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
----
- cpu.h |   16 ----------------
- 1 file changed, 16 deletions(-)
-diff --git a/include/linux/cpu.h b/include/linux/cpu.h
-index c2747ac..2643d84 100644
---- a/include/linux/cpu.h
-+++ b/include/linux/cpu.h
-@@ -23,7 +23,6 @@
- #include <linux/node.h>
- #include <linux/compiler.h>
- #include <linux/cpumask.h>
--#include <linux/mutex.h>
- 
- struct cpu {
- 	int node_id;		/* The node which contains the CPU */
-@@ -103,16 +102,6 @@ extern struct sysdev_class cpu_sysdev_class;
- #ifdef CONFIG_HOTPLUG_CPU
- /* Stop CPUs going up and down. */
- 
--static inline void cpuhotplug_mutex_lock(struct mutex *cpu_hp_mutex)
--{
--	mutex_lock(cpu_hp_mutex);
--}
--
--static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
--{
--	mutex_unlock(cpu_hp_mutex);
--}
--
- extern void get_online_cpus(void);
- extern void put_online_cpus(void);
- #define hotcpu_notifier(fn, pri) {				\
-@@ -126,11 +115,6 @@ int cpu_down(unsigned int cpu);
- 
- #else		/* CONFIG_HOTPLUG_CPU */
- 
--static inline void cpuhotplug_mutex_lock(struct mutex *cpu_hp_mutex)
--{ }
--static inline void cpuhotplug_mutex_unlock(struct mutex *cpu_hp_mutex)
--{ }
--
- #define get_online_cpus()	do { } while (0)
- #define put_online_cpus()	do { } while (0)
- #define hotcpu_notifier(fn, pri)	do { (void)(fn); } while (0)
+>> But either way, calling release_pmd here is wrong, since its only meant 
+>> to be applied to pmds,
+>>     
+> Maybe i misunderstand, but that's how it used to work before that
+> commit, we had a single call to release_*pd*, no ?
+>   
 
+I rearranged things, but I don't remember the details.  I think pd was 
+being overloaded for both pgd and pmd, and I split it out so there was a 
+specific function for each level.
 
+>>  and it would break the Xen code.
+>>     
+>
+> i see xen doesn't define the alloc_pmd_clone call. 
+>   
+
+It defines alloc_pmd, but has no need for alloc_pmd_clone (there's no 
+shadow pagetable, so there's nothing to sync).  Zach added specifically 
+for vmi's use.
+
+    J
