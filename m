@@ -1,110 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760284AbZBFRmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbZBFRoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760284AbZBFRmk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:42:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759041AbZBFRmV
+	id S1759758AbZBFRoy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:44:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753014AbZBFRoq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:42:21 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56708 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757079AbZBFRmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:42:19 -0500
-Date: Fri, 6 Feb 2009 18:41:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
-       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
-Message-ID: <20090206174148.GB19148@elte.hu>
-References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com> <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206173249.GC11299@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206173249.GC11299@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 6 Feb 2009 12:44:46 -0500
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:32698 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751878AbZBFRop (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 12:44:45 -0500
+From: Ian Campbell <ijc@hellion.org.uk>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+In-Reply-To: <1233935101.20597.28.camel@zakaz.uk.xensource.com>
+References: <patchbomb.1233862242@abulafia.goop.org>
+	 <ab45a6865df539a36a75.1233862277@abulafia.goop.org>
+	 <1233934150.20597.26.camel@zakaz.uk.xensource.com>
+	 <1233935101.20597.28.camel@zakaz.uk.xensource.com>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 17:43:52 +0000
+Message-Id: <1233942232.20597.33.camel@zakaz.uk.xensource.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 62.200.22.2
+X-SA-Exim-Mail-From: ijc@hellion.org.uk
+Subject: Re: [PATCH 35 of 36] x86: make pgd/pud/pmd/pte_none consistent
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on hopkins.hellion.org.uk)
+X-Cloudmark-Analysis: v=1.0 c=1 a=NkRAZMAOj8gA:10 a=x2RMdOTEVusA:10 a=JxU_R2U-SVHvJynmarQA:9 a=snQ9TkyEyc8BAGN2VyQA:7 a=QU_9AvxSQ2IDq8hi8jtOq9GKeYYA:4 a=LY0hPdMaydYA:10 a=6O0IECtVFhoA:10 a=KciULlu47koA:10 a=W39ifWXXhksA:10 a=LI9Vle30uBYA:10
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> On Fri, Feb 06, 2009 at 03:55:12PM +0000, Russell King - ARM Linux wrote:
-> > On Fri, Feb 06, 2009 at 09:18:48PM +0530, Jaswinder Singh Rajput wrote:
-> > > On Fri, 2009-02-06 at 15:33 +0000, Russell King - ARM Linux wrote:
-> > > > On Fri, Feb 06, 2009 at 08:59:01PM +0530, Jaswinder Singh Rajput wrote:
-> > > > > Jaswinder Singh Rajput (2):
-> > > > >       Neither asm/types.h nor linux/types.h is required for arch/ia64/include/asm/fpu.h
-> > > > >       make linux/types.h as assembly safe
-> > > > 
-> > > > I continue to disagree with the need for the second patch.
+On Fri, 2009-02-06 at 15:45 +0000, Ian Campbell wrote:
+> On Fri, 2009-02-06 at 15:29 +0000, Ian Campbell wrote:
+> > On Thu, 2009-02-05 at 11:31 -0800, Jeremy Fitzhardinge wrote:
+> > > The _none test is done differently for every level of the pagetable.
+> > > Standardize them by:
 > > > 
-> > > Like Ingo suggested:
-> > > 
-> > > On Fri, 2009-02-06 at 15:58 +0100, Ingo Molnar wrote:
-> > > >  Well types.h easily gets included in other files though, which might be 
-> > > > partially suited for assembly - and have !__ASSEMBLY__ portions that rely on 
-> > > > a types.h include.
-> > > > 
-> > > > So making this file an invariant in .S files does not sound like a bad idea 
-> > > > to me. Is there any downside?
-> > > > 
-> > > 
-> > > We cannot see any downside of this patch.
-> > > 
-> > > But we can see upside of this patch is:
-> > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
-> > > files
-> > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
+> > >  1: Use the native_X_val to extract the raw entry, with no need to go
+> > >     via paravirt_ops, diff -r 1d0646d0d319 arch/x86/include/asm/pgtable.h, and
+> > >  2: Compare with 0 rather than using a boolean !, since they are actually values
+> > >     and not booleans.
 > > 
-> > The point is:
+> > In a 32 bit Xen guest this one causes
 > > 
-> > 1. If the parent include needs to include linux/types.h to get at C
-> >    types _and_ the include file needs to also be included by assembly
-> >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
-> >    uses from the assembly code.
-> > 
-> >    In that case, the linux/types.h include should be contained within
-> >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
-> >    parts of the header file.
-> > 
-> > 2. if it doesn't need C types from linux/types.h, then that header has
-> >    no business including linux/types.h, and the include should be
-> >    eliminated to save the already dirbolically slow compiler from
-> >    having to read and parse that file, and more importantly allowing
-> >    it to eliminate linux/types.h from the build dependencies.
-> > 
-> > Yes, you can wrap linux/types.h with that ifndef, and yes it will fix
-> > any problems, but I view it as a hack rather than fixing the real problem
-> > which is lazyness by code writers to get their include dependencies right.
+> >         [    8.354898] 1 multicall(s) failed: cpu 1
 > 
-> You guys are getting this wrong.
-> The patch from Jaswinder needs to be fixed so we unconditionally
-> include <asm/types.h> from linux/types.h.
+> Spoke too soon, it's not as 100% reliably reproducing as I thought which
+> confused my bisection attempt. Will try and locate the real culprit...
 
-Yeah, that's true.
+Real culprit was somewhere else entirely:
 
-> And then ll users can safely include linux/types.h and when we one
-> day realize we can move some stuff used in .S files from
-> asm/types.h to linux/types.h then we are all safe and no breakage.
+Subject: Fix xen_flush_tlb_others after const cpumask changes 
 
-Yeah.
+The commit
+    commit 4595f9620cda8a1e973588e743cf5f8436dd20c6
+    Author: Rusty Russell <rusty@rustcorp.com.au>
+    Date:   Sat Jan 10 21:58:09 2009 -0800
 
-	Ingo
+        x86: change flush_tlb_others to take a const struct cpumask
+
+causes xen_flush_tlb_others to allocate a multicall and then issue it
+without initializing it in the case where the cpumask is empty,
+leading to:
+
+        [    8.354898] 1 multicall(s) failed: cpu 1
+        [    8.354921] Pid: 2213, comm: bootclean Not tainted 2.6.29-rc3-x86_32p-xenU-tip #135
+        [    8.354937] Call Trace:
+        [    8.354955]  [<c01036e3>] xen_mc_flush+0x133/0x1b0
+        [    8.354971]  [<c0105d2a>] ? xen_force_evtchn_callback+0x1a/0x30
+        [    8.354988]  [<c0105a60>] xen_flush_tlb_others+0xb0/0xd0
+        [    8.355003]  [<c0126643>] flush_tlb_page+0x53/0xa0
+        [    8.355018]  [<c0176a80>] do_wp_page+0x2a0/0x7c0
+        [    8.355034]  [<c0238f0a>] ? notify_remote_via_irq+0x3a/0x70
+        [    8.355049]  [<c0178950>] handle_mm_fault+0x7b0/0xa50
+        [    8.355065]  [<c0131a3e>] ? wake_up_new_task+0x8e/0xb0
+        [    8.355079]  [<c01337b5>] ? do_fork+0xe5/0x320
+        [    8.355095]  [<c0121919>] do_page_fault+0xe9/0x240
+        [    8.355109]  [<c0121830>] ? do_page_fault+0x0/0x240
+        [    8.355125]  [<c032457a>] error_code+0x72/0x78
+        [    8.355139]   call  1/1: op=2863311530 arg=[aaaaaaaa] result=-38     xen_flush_tlb_others+0x41/0xd0
+
+Since empty cpumasks are rare and undoing an xen_mc_entry() is tricky
+just issue such requests normally.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Mike Travis <travis@sgi.com>
+Cc: x86@kernel.org
+---
+ arch/x86/xen/mmu.c |    3 ---
+ 1 files changed, 0 insertions(+), 3 deletions(-)
+
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index d2e8ed1..319bd40 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -1273,8 +1273,6 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
+ 	/* Remove us, and any offline CPUS. */
+ 	cpumask_and(to_cpumask(args->mask), cpus, cpu_online_mask);
+ 	cpumask_clear_cpu(smp_processor_id(), to_cpumask(args->mask));
+-	if (unlikely(cpumask_empty(to_cpumask(args->mask))))
+-		goto issue;
+ 
+ 	if (va == TLB_FLUSH_ALL) {
+ 		args->op.cmd = MMUEXT_TLB_FLUSH_MULTI;
+@@ -1285,7 +1283,6 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
+ 
+ 	MULTI_mmuext_op(mcs.mc, &args->op, 1, NULL, DOMID_SELF);
+ 
+-issue:
+ 	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ }
+ 
+-- 
+1.5.6.5
+
+
+-- 
+Ian Campbell
+
+We are now enjoying total mutual interaction in an imaginary hot tub ...
+
