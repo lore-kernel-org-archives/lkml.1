@@ -1,62 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755358AbZBFHeg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754264AbZBFHqn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755358AbZBFHeg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 02:34:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZBFHe1
+	id S1754264AbZBFHqn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 02:46:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZBFHqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 02:34:27 -0500
-Received: from sh.osrg.net ([192.16.179.4]:45792 "EHLO sh.osrg.net"
+	Fri, 6 Feb 2009 02:46:32 -0500
+Received: from brick.kernel.dk ([93.163.65.50]:13912 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751206AbZBFHe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 02:34:26 -0500
-Date: Fri, 6 Feb 2009 16:33:44 +0900
-To: hias@horus.com
-Cc: rjw@sisk.pl, linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, James.Bottomley@HansenPartnership.com
-Subject: Re: [Bug #12612] hard lockup when interrupting cdda2wav
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090205131644.GA5731@horus.com>
-References: <a47yn9c9JrF.A.hz.L5YiJB@chimera>
-	<CGyEB0S4BpO.A.fLB.T5YiJB@chimera>
-	<20090205131644.GA5731@horus.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090206163257W.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 06 Feb 2009 16:33:46 +0900 (JST)
+	id S1752530AbZBFHqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 02:46:31 -0500
+Date: Fri, 6 Feb 2009 08:44:28 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       ISS StorageDev <iss_storagedev@hp.com>,
+       scsi <linux-scsi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: Re: cciss: WARNING/BUG in do_cciss_intr (it's back)
+Message-ID: <20090206074427.GR30821@kernel.dk>
+References: <4989D435.7010003@oracle.com> <0F5B06BAB751E047AB5C87D1F77A778859F9EAD9D5@GVW0547EXC.americas.hpqcorp.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <0F5B06BAB751E047AB5C87D1F77A778859F9EAD9D5@GVW0547EXC.americas.hpqcorp.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009 14:16:44 +0100
-Matthias Reichl <hias@horus.com> wrote:
-
-> On Wed, Feb 04, 2009 at 11:58:51AM +0100, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.27 and 2.6.28.
-> > 
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.27 and 2.6.28.  Please verify if it still should
-> > be listed and let me know (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12612
-> > Subject		: hard lockup when interrupting cdda2wav
-> > Submitter	: Matthias Reichl <hias@horus.com>
-> > Date		: 2009-01-28 16:41 (8 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123316111415677&w=4
-> > Handled-By	: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+On Thu, Feb 05 2009, Miller, Mike (OS Dev) wrote:
+>  
 > 
-> This bug is still present in 2.6.28.3.
+> > -----Original Message-----
+> > From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
+> > Sent: Wednesday, February 04, 2009 11:45 AM
+> > To: Miller, Mike (OS Dev); ISS StorageDev; scsi; Linux Kernel 
+> > Mailing List
+> > Subject: cciss: WARNING/BUG in do_cciss_intr (it's back)
+> > 
+> > Hi Mike,
+> > 
+> > Was there any debugging code added to try to help with this problem?
+> > or is that the WARNING before the BUG?
+> > 
+> 
+> Randy,
+> I think this is a different bug than the one you reported previously.
+> Please open a new bugzilla.
 
-There is a fix against scsi-misc:
+I think it's the same one. The first warning that now triggers is:
 
-http://marc.info/?l=linux-scsi&m=123371501613019&w=2
+WARNING: at drivers/block/cciss.c:225 
 
-I might need to fix it in a different way though.
+which is
 
-There are other pending patches to fix other sg oops in scsi-misc so
-the above fix can't be cleanly applied to 2.6.28.X. I'll send a patch
-for 2.6.28.X once I get SCSI maintainer's ACK on it.
+        if (WARN_ON(hlist_unhashed(&c->list)))
 
-Sorry for the inconvenience,
+removeQ(), this is where we would have crashed before due to trying to
+remove a command from a list it didn't belong to. And then we crash
+right after in the interrupt handler. So I'm pretty sure this is 100%
+the same bug.
+
+Randy, is this still using kexec? Perhaps cciss needs a better
+kick-in-the-pants reset on driver load to clear EVERYTHING, there's
+clearly something very bad happening there.
+
+
+> 
+> Thanks,
+> -- mikem
+> 
+> > 
+> > Booting 2.6.29-rc3-git6 oopsed with:
+> > 
+> > calling  cciss_init+0x0/0x2e [cciss] @ 733 HP CISS Driver (v 3.6.20)
+> > ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54 cciss 
+> > 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) 
+> > -> IRQ 54 cciss 0000:42:08.0: irq 56 for MSI/MSI-X IRQ 
+> > 56/cciss0: IRQF_DISABLED is not guaranteed on shared IRQs
+> > cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 56 using DAC 
+> > ------------[ cut here ]------------
+> > WARNING: at drivers/block/cciss.c:225 
+> > do_cciss_intr+0x58f/0x99a [cciss]() Hardware name: ProLiant 
+> > BL685c G1 Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+> > Pid: 0, comm: swapper Not tainted 2.6.29-rc3-git6 #1 Call Trace:
+> >  <IRQ>  [<ffffffff8023a741>] warn_slowpath+0xd3/0xf2  
+> > [<ffffffff80243a44>] ? __mod_timer+0xc1/0xd3  
+> > [<ffffffff8041469f>] ? smi_timeout+0xd9/0xe5  
+> > [<ffffffff8024f86a>] ? ktime_get_ts+0x49/0x4e  
+> > [<ffffffff804145c6>] ? smi_timeout+0x0/0xe5  
+> > [<ffffffffa0024c4b>] do_cciss_intr+0x58f/0x99a [cciss]  
+> > [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57  
+> > [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f  
+> > [<ffffffff8020e302>] do_IRQ+0xdc/0x152  [<ffffffff8020ca13>] 
+> > ret_from_intr+0x0/0xa  <EOI> <4>---[ end trace a8b437cd48391e28 ]---
+> > BUG: unable to handle kernel NULL pointer dereference at 
+> > 00000000000000f4
+> > IP: [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss] PGD 0
+> > Oops: 0002 [#1] SMP
+> > last sysfs file: /sys/block/ram15/dev
+> > CPU 2
+> > Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
+> > Pid: 0, comm: swapper Tainted: G        W  2.6.29-rc3-git6 #1
+> > RIP: 0010:[<ffffffffa0024c93>]  [<ffffffffa0024c93>] 
+> > do_cciss_intr+0x5d7/0x99a [cciss]
+> > RSP: 0018:ffff88027f12fef0  EFLAGS: 00010046
+> > RAX: 0000000000000000 RBX: ffff88007f840270 RCX: 0000000000013888
+> > RDX: 0000000000008080 RSI: 0000000000000046 RDI: 0000000000000009
+> > RBP: ffff88027f12ff20 R08: 000000447f12fa70 R09: ffff88017e540700
+> > R10: 0000000000000000 R11: 0000000000000000 R12: ffff88007f8404b0
+> > R13: ffff88027e1a0000 R14: 0000000000000000 R15: 0000000000000086
+> > FS:  0000000000680850(0000) GS:ffff88017f121380(0000) 
+> > knlGS:0000000000000000
+> > CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> > CR2: 00000000000000f4 CR3: 0000000000201000 CR4: 00000000000006e0
+> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
+> > 0000000000000400 Process swapper (pid: 0, threadinfo 
+> > ffff88017f164000, task ffff88017fa5d4c0)
+> > Stack:
+> >  0000000000000001 ffff88027f126280 0000000000000000 0000000000000000
+> >  0000000000000038 0000000000000000 ffff88027f12ff50 
+> > ffffffff8026ed21  ffffffff8076e000 0000000000000038 
+> > ffff88027f126280 ffffffff8076e054 Call Trace:
+> >  <IRQ> <0> [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57  
+> > [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f  
+> > [<ffffffff8020e302>] do_IRQ+0xdc/0x152  [<ffffffff8020ca13>] 
+> > ret_from_intr+0x0/0xa  <EOI> <0>Code: 50 08 48 c7 83 40 02 00 
+> > 00 00 00 00 00 49 c7 44 24 08 00 00 00 00 8b 83 34 02 00 00 
+> > 85 c0 0f 85 49 03 00 00 4c 8b b3 50 02 00 00 <41> c7 86 f4 00 
+> > 00 00 00 00 00 00 4c 8b 83 28 02 00 00 66 41 8b RIP  
+> > [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss]  RSP 
+> > <ffff88027f12fef0>
+> > CR2: 00000000000000f4
+> > ---[ end trace a8b437cd48391e29 ]---
+> > Kernel panic - not syncing: Fatal exception in interrupt
+> > 
+> > 
+> > 
+> > This is on an HP ProLiant BL685c G1, 4-proc system with
+> > 8 GB of RAM.  (same as previous reports)
+> > 
+> > 
+> > Rebooting worked successfully.
+> > 
+> > Thanks,
+> > --
+> > ~Randy
+> > 
+-- 
+Jens Axboe
+
