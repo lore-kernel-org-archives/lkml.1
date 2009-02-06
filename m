@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZBFS7E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZBFTHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756038AbZBFS7E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:59:04 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZBFS6t
+	id S1755959AbZBFTHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 14:07:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZBFTGt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:58:49 -0500
-Received: from mail-fx0-f20.google.com ([209.85.220.20]:58580 "EHLO
-	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751206AbZBFS6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 13:58:48 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:in-reply-to:x-mutt-fcc:user-agent;
-        b=QBCXVBr+1DmOxq/vobvJh58pdsQayFd3721bUxVFKyUFxFEb/liockpX+XxyGvi4VD
-         w2y0Gp5c0YwoRkhths6o40YgshO/91FCi4mnUnGhnMS0h0jNASjjYgQASBs8U3pJafHx
-         ITN7h6vuL6l9/Rp2kRb72MlsN2vUcXCaQkRJc=
-Date: Fri, 6 Feb 2009 19:59:01 +0100
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
-       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jens.axboe@oracle.com
-Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
-Message-ID: <20090206185901.GA2542@ami.dom.local>
+	Fri, 6 Feb 2009 14:06:49 -0500
+Received: from mga01.intel.com ([192.55.52.88]:41231 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750782AbZBFTGt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 14:06:49 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,392,1231142400"; 
+   d="scan'208";a="663512077"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Brian Gerst <brgerst@gmail.com>
+CC: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 6 Feb 2009 11:06:41 -0800
+Subject: RE: [PATCH 2/5] percpu: Refactor percpu.h
+Thread-Topic: [PATCH 2/5] percpu: Refactor percpu.h
+Thread-Index: AcmIS7IUAxOpGujLTu6Z45+9mpaRUAAQJbag
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA36121A4D5@orsmsx505.amr.corp.intel.com>
+References: <73c1f2160901181651w3dff5e2co762b767168416c92@mail.gmail.com>
+	 <1232326345-3534-1-git-send-email-brgerst@gmail.com>
+	 <1232326345-3534-2-git-send-email-brgerst@gmail.com>
+	 <12c511ca0902051430w78ca10d9rf96804748ce6ea79@mail.gmail.com>
+ <73c1f2160902060311k4be188f5nd6a43d085d0c4e7d@mail.gmail.com>
+In-Reply-To: <73c1f2160902060311k4be188f5nd6a43d085d0c4e7d@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090205.235258.257422341.davem@davemloft.net>
-X-Mutt-Fcc: =outbox
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha id n16J75wM021638
 
-David Miller wrote, On 02/06/2009 08:52 AM:
+> Why does IA64 still have a special percpu section on UP?  Is there a
+> particular reason why it can't degenerate to regular .data like every
+> other arch?
 
-> From: Jarek Poplawski <jarkao2@gmail.com>
-> Date: Tue, 3 Feb 2009 09:41:08 +0000
-> 
->> Yes, this looks reasonable. On the other hand, I think it would be
->> nice to get some opinions of slab folks (incl. Evgeniy) on the expected
->> efficiency of such a solution. (It seems releasing with put_page() will
->> always have some cost with delayed reusing and/or waste of space.)
-> 
-> I think we can't avoid using carved up pages for skb->data in the end.
-> The whole kernel wants to speak in pages and be able to grab and
-> release them in one way and one way only (get_page() and put_page()).
-> 
-> What do you think is more likely?  Us teaching the whole entire kernel
-> how to hold onto SKB linear data buffers, or the networking fixing
-> itself to operate on pages for it's header metadata? :-)
-> 
-> What we'll end up with is likely a hybrid scheme.  High speed devices
-> will receive into pages.  And also the skb->data area will be page
-> backed and held using get_page()/put_page() references.
+There are a few per-cpu variables that are accessed in the machine
+check handlers with MMU turned off[1], so access is in physical mode.
+We handle this with the GET_THIS_PADDR() macro which computes the
+address of percpu objects based on offsets from a special register
+(ar.k3) that has the base physical address of the .data.percpu
+section for this processor.  The addressing mode used here has
+a limited offset, so if percpu variables are scattered throughout
+.data we get link errors.
 
-So, after a full awakening I think I got your point at last! I thought
-all the time we're trying to do something more general, and you're
-seemingly focused on SG capable NICs, with myri10ge or niu as model
-to follow. I'm OK with this. Very nice idea and much less work! (It's
-only enough to CC all the maintainers !)
+-Tony
 
-> It is not even worth optimizing for skb->data holding the entire
-> packet, that's not the case that matters.
-> 
-> These skb->data areas will thus be 128 bytes plus the skb_shinfo
-> structure blob.  They also will be recycled often, rather than held
-> onto for long periods of time.
-> 
-> In fact we can optimize that even further in many ways, for example by
-> dropping the skb->data backed memory once the skb is queued to the
-> socket receive buffer.  That will make skb->data buffer lifetimes
-> miniscule even under heavy receive load.
-> 
-> In that kind of situation, doing even the most stupidest page slicing
-> algorithm, similar to what we do now with sk->sk_sndmsg_page, is
-> more than adequate and things like NTA (purely to solve this problem)
-> is overengineering.
+[1] The MMU may have been the cause of the machine check.
 
-This is 100% right, except if we try to do something with non-SG and/or
-jumbos - IMHO this requires some overengineering.
-
-Jarek P.
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
