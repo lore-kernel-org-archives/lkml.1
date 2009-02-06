@@ -1,90 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757903AbZBFCJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754511AbZBFCOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757903AbZBFCJV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:09:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbZBFCJK
+	id S1754511AbZBFCOx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:14:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZBFCOp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:09:10 -0500
-Received: from hera.kernel.org ([140.211.167.34]:35625 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752445AbZBFCJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:09:08 -0500
+	Thu, 5 Feb 2009 21:14:45 -0500
+Received: from mail-gx0-f21.google.com ([209.85.217.21]:62367 "EHLO
+	mail-gx0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751371AbZBFCOo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:14:44 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=QRuzdEuOOrQGV69BCiV8wF1w6ulF74XuqDi+Z1iAdlrwPD4YF2qYT14TyJx3WyFqOB
+         7EDMtz03GyDMy+NMoHJjDngD1hdRm69wC4PjSIKg8w1y+8bXPrwkuyeE2NmafQbRlUFH
+         6P6OXUv3A6J4AUuZwRl5kskV6/sZDCWOokSI4=
+MIME-Version: 1.0
+In-Reply-To: <1233886017.3463.26.camel@localhost.localdomain>
+References: <1233385816.17794.16.camel@localhost.localdomain>
+	 <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com>
+	 <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain>
+	 <20090205191907.GA27422@elte.hu>
+	 <1233886017.3463.26.camel@localhost.localdomain>
+Date: Thu, 5 Feb 2009 21:14:43 -0500
+Message-ID: <8bd0f97a0902051814hce886aenec7d7b0c89e04401@mail.gmail.com>
 Subject: Re: [git pull -tip] headers_check fixes for other architectures
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Russell King - ARM Linux <linux@arm.linux.org.uk>,
        hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
        dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
        LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090205191907.GA27422@elte.hu>
-References: <1233385816.17794.16.camel@localhost.localdomain>
-	 <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com>
-	 <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain>
-	 <20090205191907.GA27422@elte.hu>
-Content-Type: text/plain
-Date: Fri, 06 Feb 2009 07:36:57 +0530
-Message-Id: <1233886017.3463.26.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-05 at 20:19 +0100, Ingo Molnar wrote:
+On Thu, Feb 5, 2009 at 21:06, Jaswinder Singh Rajput wrote:
+> 2. fix linux/types.h so that assembly file can also use it
 
-> Jaswinder, because they can break the build we should proactively drop all 
-> architecture patches that do asm/types.h conversions.
-> 
-> I did build all the affected architectures via their defconfigs and they 
-> built just fine - but i cannot do wide coverage testing of them.
-> 
-> So i think we should drop these bits:
-> 
->  earth4:~/tip> gll --grep='asm/types.h' linus..core/header-fixes
->  1ff8f73: headers_check fix: xtensa, swab.h
->  4810987: headers_check fix: powerpc, swab.h
->  9f2cd96: headers_check fix: powerpc, kvm.h
->  785857f: headers_check fix: powerpc, elf.h
->  4be2c7f: headers_check fix: powerpc, bootx.h
->  726da1e: headers_check fix: parisc, swab.h
->  bef53ca: headers_check fix: mn10300, swab.h
->  a9f6acc: headers_check fix: mips, swab.h
->  d8cbec1: headers_check fix: m32r, swab.h
->  040c92b: headers_check fix: ia64, swab.h
->  6ce7950: headers_check fix: ia64, kvm.h
->  fa9ea6c: headers_check fix: ia64, fpu.h
->  295803e: headers_check fix: h8300, swab.h
->  dacd762: headers_check fix: frv, swab.h
->  350eb8b: headers_check fix: blackfin, swab.h
->  1c6ce70: headers_check fix: avr32, swab.h
->  e42ec24: headers_check fix: arm, swab.h
->  4af3bf6: headers_check fix: arm, setup.h
->  f100e6d: headers_check fix: arm, a.out.h
->  3fd5906: headers_check fix: alpha, swab.h
-> 
-> and send the rest to Linus if all outstanding observations have been 
-> addressed. What do you think?
-> 
-
-The problem is if we include linux/types.h in assembly file we will get
-error.
-
-We can solve this problem by four options (or may be more):
-1. by wrapping #ifndef __ASSEMBLY__ files which are used by assembly
-code as suggested by Tony.
-
-2. fix linux/types.h so that assembly file can also use it
-
-3. drop patches which are used by assembly files
-
-4. drop all architecture patches as you suggested.
-
-Please do whatever seems best to you.
-
---
-JSR
-
+considering checkpatch.pl also whines about asm/types.h ->
+linux/types.h, this sound reasonable.  have the file pull in
+asm/types.h and wrap the rest of it in !__ASSEMBLY__ ...
+-mike
