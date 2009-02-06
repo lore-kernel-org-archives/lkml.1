@@ -1,70 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753619AbZBFInh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZBFIuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753619AbZBFInh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 03:43:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752066AbZBFIn0
+	id S1753902AbZBFIuF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 03:50:05 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752221AbZBFIty
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 03:43:26 -0500
-Received: from nf-out-0910.google.com ([64.233.182.188]:16589 "EHLO
-	nf-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751117AbZBFIn0 (ORCPT
+	Fri, 6 Feb 2009 03:49:54 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:61334 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750945AbZBFItx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 03:43:26 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=cFIXmH3aAZVY3lCNlerTUHwjej0qIxwqPNDZMOJUqRz6v7g4YOqQdBps1DRoPU8Vsa
-         REqeFHQynlJPB1fTCLE5fOPWiw97eZXf/T+s94HyiNRcWOFGZsaq7RahDRtGy6L6sLdy
-         kB0zqoNUld1ztV2nalMarAL3QaVxy2gwYr2/A=
+	Fri, 6 Feb 2009 03:49:53 -0500
+X-IronPort-AV: E=Sophos;i="4.37,390,1231131600"; 
+   d="scan'208";a="82425754"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Date: Fri, 6 Feb 2009 09:43:23 +0100
-Message-ID: <4dcf7d360902060043y7d11b9d7m94af9f7d06862660@mail.gmail.com>
-Subject: Strange traffic control behaviour?
-From: Lorenzo Allegrucci <l.allegrucci@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] Input: bf54x-keys: ! has a higher priority than >
+Date: Fri, 6 Feb 2009 08:49:49 -0000
+Message-ID: <8A42379416420646B9BFAC9682273B6D0883413D@limkexm3.ad.analog.com>
+In-Reply-To: <20090205140045.ef9fd5e6.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] Input: bf54x-keys: ! has a higher priority than >
+thread-index: AcmH3VDX44+tbDi1RNqHjsc/gi9YMwAWIB4Q
+References: <1233818395-6461-1-git-send-email-cooloney@kernel.org> <20090205140045.ef9fd5e6.akpm@linux-foundation.org>
+From: "Hennerich, Michael" <Michael.Hennerich@analog.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Bryan Wu" <cooloney@kernel.org>
+Cc: <dmitry.torokhov@gmail.com>, <linux-input@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <roel.kluin@gmail.com>,
+       <michael.hennerich@analog.com>, <cooloney@kernel.org>
+X-OriginalArrivalTime: 06 Feb 2009 08:49:51.0808 (UTC) FILETIME=[DFEB2C00:01C98837]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, I noticed a strange behaviour on a small sample network I used to test my
-traffic control setup.
-Below is the network setup (sorry for my ascii art..):
 
-end user1|------------|router1|------------|router2|------------|end user2|
-        eth0         eth1     eth0        eth0    eth1         eth0
 
-(Static routes on router1 and router2).
+>From: Andrew Morton [mailto:akpm@linux-foundation.org]
+>Sent: Thursday, February 05, 2009 11:01 PM
+>Subject: Re: [PATCH] Input: bf54x-keys: ! has a higher priority than >
+>
+>On Thu,  5 Feb 2009 15:19:55 +0800
+>Bryan Wu <cooloney@kernel.org> wrote:
+>
+>> From: Roel Kluin <roel.kluin@gmail.com>
+>>
+>> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+>> Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+>> Signed-off-by: Bryan Wu <cooloney@kernel.org>
+>> ---
+>>  drivers/input/keyboard/bf54x-keys.c |    4 ++--
+>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/drivers/input/keyboard/bf54x-keys.c
+>b/drivers/input/keyboard/bf54x-keys.c
+>> index 1928401..ee855c5 100644
+>> --- a/drivers/input/keyboard/bf54x-keys.c
+>> +++ b/drivers/input/keyboard/bf54x-keys.c
+>> @@ -209,8 +209,8 @@ static int __devinit bfin_kpad_probe(struct
+>platform_device *pdev)
+>>  		goto out;
+>>  	}
+>>
+>> -	if (!pdata->debounce_time || !pdata->debounce_time > MAX_MULT ||
+>> -	    !pdata->coldrive_time || !pdata->coldrive_time > MAX_MULT) {
+>> +	if (!pdata->debounce_time || pdata->debounce_time > MAX_MULT ||
+>> +	    !pdata->coldrive_time || pdata->coldrive_time > MAX_MULT) {
+>
+>What is this `pdata' thing from which the data comes?
 
-Test1:
+Platform device data.
 
-I applied the following tc rules on eth1 of router1 to limit the bandwidth
-to 3Mbit for a download flux (by wget or scp) from "end user2" to "end user1":
+struct bfin_kpad_platform_data *pdata = pdev->dev.platform_data;
 
-tc qdisc add dev eth1 root handle 1:0 htb default 100
-tc class add dev eth1 parent 1:0 classid 1:1 htb rate 3Mbit ceil 3Mbit
-tc class add dev eth1 parent 1:1 classid 1:100 htb rate 2Mbit ceil 3Mbit
-tc class add dev eth1 parent 1:1 classid 1:200 htb rate 1Mbit ceil 3Mbit
+>
+>It seems a bit rude to kill the driver when we've detected an error
+>which could easily be fixed up.
 
-Theoretically "end user1" should get about 375kbyte/s (3Mbit), but instead
-I get bit less, about 330 kbye/s and the flux tends to fluctuate a bit.
-(all other interfaces are "clean", no tc rules).
+It actually just prints the error and then uses some default value later
+on.
 
-Test2:
+>
+>>  		printk(KERN_ERR DRV_NAME
+>>  			": Invalid Debounce/Columdrive Time from
+pdata\n");
+>
+>nit: a colon does not terminate a sentence.
+>
+>This comment misspells "column".
 
-However, if I apply the same tc rules to the router2's eth0 instead, I get
-a *stable* flux of *exactly* 3Mbit (375kbyte/s), to be more precise what
-I should have gotten on test1!
+Bryan will send a patch addressing this typo.
 
-How can this be explained?
-
-In general, noticed that tc applied "upstream" gives better results than
-tc applied downstream.  In other words, it's better to limit network
-traffic near the source, can you confirm?
-
-Thanks.
-
--- 
-Lorenzo
+Best regards,
+Michael
