@@ -1,216 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbZBFOTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756129AbZBFOUA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755221AbZBFOTn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:19:43 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZBFOTe
+	id S1756129AbZBFOUA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:20:00 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754184AbZBFOTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:19:34 -0500
-Received: from ns.suse.de ([195.135.220.2]:48980 "EHLO mx1.suse.de"
+	Fri, 6 Feb 2009 09:19:38 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53414 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752249AbZBFOTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:19:33 -0500
-Message-ID: <498C46DE.8040700@suse.de>
-Date: Fri, 06 Feb 2009 15:19:10 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: linux kernel <linux-kernel@vger.kernel.org>
-Cc: akpm@linux-foundation.org, "David S. Miller" <davem@davemloft.net>,
-       linux-crypto@vger.kernel.org, Frank Seidel <fseidel@suse.de>,
-       frank@f-seidel.de, herbert@gondor.apana.org.au, jarod@redhat.com
-Subject: [PATCH] crypto: add missing KERN_* constants to printks
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
+	id S1754002AbZBFOTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:19:37 -0500
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090206022025.GA8317@elte.hu>
+References: <1233385816.17794.16.camel@localhost.localdomain>
+	 <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com>
+	 <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain>
+	 <20090205191907.GA27422@elte.hu>
+	 <1233886017.3463.26.camel@localhost.localdomain>
+	 <20090206022025.GA8317@elte.hu>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 19:48:42 +0530
+Message-Id: <1233929922.3209.6.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Frank Seidel <frank@f-seidel.de>
+On Fri, 2009-02-06 at 03:20 +0100, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+> 
+> > On Thu, 2009-02-05 at 20:19 +0100, Ingo Molnar wrote:
+> > 
+> > > Jaswinder, because they can break the build we should proactively drop all 
+> > > architecture patches that do asm/types.h conversions.
+> > > 
+> > > I did build all the affected architectures via their defconfigs and they 
+> > > built just fine - but i cannot do wide coverage testing of them.
+> > > 
+> > > So i think we should drop these bits:
+> > > 
+> > >  earth4:~/tip> gll --grep='asm/types.h' linus..core/header-fixes
+> > >  1ff8f73: headers_check fix: xtensa, swab.h
+> > >  4810987: headers_check fix: powerpc, swab.h
+> > >  9f2cd96: headers_check fix: powerpc, kvm.h
+> > >  785857f: headers_check fix: powerpc, elf.h
+> > >  4be2c7f: headers_check fix: powerpc, bootx.h
+> > >  726da1e: headers_check fix: parisc, swab.h
+> > >  bef53ca: headers_check fix: mn10300, swab.h
+> > >  a9f6acc: headers_check fix: mips, swab.h
+> > >  d8cbec1: headers_check fix: m32r, swab.h
+> > >  040c92b: headers_check fix: ia64, swab.h
+> > >  6ce7950: headers_check fix: ia64, kvm.h
+> > >  fa9ea6c: headers_check fix: ia64, fpu.h
+> > >  295803e: headers_check fix: h8300, swab.h
+> > >  dacd762: headers_check fix: frv, swab.h
+> > >  350eb8b: headers_check fix: blackfin, swab.h
+> > >  1c6ce70: headers_check fix: avr32, swab.h
+> > >  e42ec24: headers_check fix: arm, swab.h
+> > >  4af3bf6: headers_check fix: arm, setup.h
+> > >  f100e6d: headers_check fix: arm, a.out.h
+> > >  3fd5906: headers_check fix: alpha, swab.h
+> > > 
+> > > and send the rest to Linus if all outstanding observations have been 
+> > > addressed. What do you think?
+> > > 
+> > 
+> > The problem is if we include linux/types.h in assembly file we will get
+> > error.
+> > 
+> > We can solve this problem by four options (or may be more):
+> > 1. by wrapping #ifndef __ASSEMBLY__ files which are used by assembly
+> > code as suggested by Tony.
+> > 
+> > 2. fix linux/types.h so that assembly file can also use it
+> > 
+> > 3. drop patches which are used by assembly files
+> > 
+> > 4. drop all architecture patches as you suggested.
+> 
+> hm, the highest quality approach seems to be #2, right?
+> 
 
-According to kerneljanitors todo list all printk calls (beginning
-a new line) should have an according KERN_* constant.
-Those are the missing pieces here for the crypto subsystem.
+Is this safe OR we can make it more safer:
 
-Signed-off-by: Frank Seidel <frank@f-seidel.de>
+Subject: [PATCH] make linux/types.h as assembly safe
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
- crypto/ansi_cprng.c |    2 +-
- crypto/tcrypt.c     |   48 +++++++++++++++++++++++++++---------------------
- 2 files changed, 28 insertions(+), 22 deletions(-)
+ include/linux/types.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -74,7 +74,7 @@ static int test_cipher_jiffies(struct bl
- 			return ret;
- 	}
+diff --git a/include/linux/types.h b/include/linux/types.h
+index 712ca53..c30973a 100644
+--- a/include/linux/types.h
++++ b/include/linux/types.h
+@@ -1,6 +1,7 @@
+ #ifndef _LINUX_TYPES_H
+ #define _LINUX_TYPES_H
  
--	printk("%d operations in %d seconds (%ld bytes)\n",
-+	printk(KERN_WARNING "%d operations in %d seconds (%ld bytes)\n",
- 	       bcount, sec, (long)bcount * blen);
- 	return 0;
- }
-@@ -122,7 +122,7 @@ out:
- 	local_bh_enable();
++#ifndef __ASSEMBLY__
+ #ifdef	__KERNEL__
  
- 	if (ret == 0)
--		printk("1 operation in %lu cycles (%d bytes)\n",
-+		printk(KERN_WARNING "1 operation in %lu cycles (%d bytes)\n",
- 		       (cycles + 4) / 8, blen);
+ #define DECLARE_BITMAP(name,bits) \
+@@ -212,5 +213,5 @@ struct ustat {
+ };
  
- 	return ret;
-@@ -146,13 +146,13 @@ static void test_cipher_speed(const char
- 	else
- 		e = "decryption";
- 
--	printk("\ntesting speed of %s %s\n", algo, e);
-+	printk(KERN_WARNING "\ntesting speed of %s %s\n", algo, e);
- 
- 	tfm = crypto_alloc_blkcipher(algo, 0, CRYPTO_ALG_ASYNC);
- 
- 	if (IS_ERR(tfm)) {
--		printk("failed to load transform for %s: %ld\n", algo,
--		       PTR_ERR(tfm));
-+		printk(KERN_WARNING "failed to load transform for %s: %ld\n",
-+		       algo, PTR_ERR(tfm));
- 		return;
- 	}
- 	desc.tfm = tfm;
-@@ -166,14 +166,16 @@ static void test_cipher_speed(const char
- 			struct scatterlist sg[TVMEMSIZE];
- 
- 			if ((*keysize + *b_size) > TVMEMSIZE * PAGE_SIZE) {
--				printk("template (%u) too big for "
-+				printk(KERN_WARNING
-+				       "template (%u) too big for "
- 				       "tvmem (%lu)\n", *keysize + *b_size,
- 				       TVMEMSIZE * PAGE_SIZE);
- 				goto out;
- 			}
- 
--			printk("test %u (%d bit key, %d byte blocks): ", i,
--					*keysize * 8, *b_size);
-+			printk(KERN_WARNING
-+					"test %u (%d bit key, %d byte blocks): ",
-+					i, *keysize * 8, *b_size);
- 
- 			memset(tvmem[0], 0xff, PAGE_SIZE);
- 
-@@ -188,7 +190,8 @@ static void test_cipher_speed(const char
- 
- 			ret = crypto_blkcipher_setkey(tfm, key, *keysize);
- 			if (ret) {
--				printk("setkey() failed flags=%x\n",
-+				printk(KERN_WARNING
-+						"setkey() failed flags=%x\n",
- 						crypto_blkcipher_get_flags(tfm));
- 				goto out;
- 			}
-@@ -215,7 +218,8 @@ static void test_cipher_speed(const char
- 							 *b_size);
- 
- 			if (ret) {
--				printk("%s() failed flags=%x\n", e, desc.flags);
-+				printk(KERN_WARNING "%s() failed flags=%x\n",
-+				       e, desc.flags);
- 				break;
- 			}
- 			b_size++;
-@@ -243,7 +247,7 @@ static int test_hash_jiffies_digest(stru
- 			return ret;
- 	}
- 
--	printk("%6u opers/sec, %9lu bytes/sec\n",
-+	printk(KERN_WARNING "%6u opers/sec, %9lu bytes/sec\n",
- 	       bcount / sec, ((long)bcount * blen) / sec);
- 
- 	return 0;
-@@ -275,7 +279,7 @@ static int test_hash_jiffies(struct hash
- 			return ret;
- 	}
- 
--	printk("%6u opers/sec, %9lu bytes/sec\n",
-+	printk(KERN_WARNING "%6u opers/sec, %9lu bytes/sec\n",
- 	       bcount / sec, ((long)bcount * blen) / sec);
- 
- 	return 0;
-@@ -320,7 +324,7 @@ out:
- 	if (ret)
- 		return ret;
- 
--	printk("%6lu cycles/operation, %4lu cycles/byte\n",
-+	printk(KERN_WARNING "%6lu cycles/operation, %4lu cycles/byte\n",
- 	       cycles / 8, cycles / (8 * blen));
- 
- 	return 0;
-@@ -384,7 +388,7 @@ out:
- 	if (ret)
- 		return ret;
- 
--	printk("%6lu cycles/operation, %4lu cycles/byte\n",
-+	printk(KERN_WARNING "%6lu cycles/operation, %4lu cycles/byte\n",
- 	       cycles / 8, cycles / (8 * blen));
- 
- 	return 0;
-@@ -400,13 +404,13 @@ static void test_hash_speed(const char *
- 	int i;
- 	int ret;
- 
--	printk("\ntesting speed of %s\n", algo);
-+	printk(KERN_WARNING "\ntesting speed of %s\n", algo);
- 
- 	tfm = crypto_alloc_hash(algo, 0, CRYPTO_ALG_ASYNC);
- 
- 	if (IS_ERR(tfm)) {
--		printk("failed to load transform for %s: %ld\n", algo,
--		       PTR_ERR(tfm));
-+		printk(KERN_WARNING "failed to load transform for %s: %ld\n",
-+		       algo, PTR_ERR(tfm));
- 		return;
- 	}
- 
-@@ -414,7 +418,7 @@ static void test_hash_speed(const char *
- 	desc.flags = 0;
- 
- 	if (crypto_hash_digestsize(tfm) > sizeof(output)) {
--		printk("digestsize(%u) > outputbuffer(%zu)\n",
-+		printk(KERN_WARNING "digestsize(%u) > outputbuffer(%zu)\n",
- 		       crypto_hash_digestsize(tfm), sizeof(output));
- 		goto out;
- 	}
-@@ -427,12 +431,14 @@ static void test_hash_speed(const char *
- 
- 	for (i = 0; speed[i].blen != 0; i++) {
- 		if (speed[i].blen > TVMEMSIZE * PAGE_SIZE) {
--			printk("template (%u) too big for tvmem (%lu)\n",
-+			printk(KERN_WARNING
-+			       "template (%u) too big for tvmem (%lu)\n",
- 			       speed[i].blen, TVMEMSIZE * PAGE_SIZE);
- 			goto out;
- 		}
- 
--		printk("test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
-+		printk(KERN_WARNING
-+		       "test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
- 		       i, speed[i].blen, speed[i].plen, speed[i].blen / speed[i].plen);
- 
- 		if (sec)
-@@ -443,7 +449,7 @@ static void test_hash_speed(const char *
- 					       speed[i].plen, output);
- 
- 		if (ret) {
--			printk("hashing failed ret=%d\n", ret);
-+			printk(KERN_WARNING "hashing failed ret=%d\n", ret);
- 			break;
- 		}
- 	}
---- a/crypto/ansi_cprng.c
-+++ b/crypto/ansi_cprng.c
-@@ -167,7 +167,7 @@ static int _get_more_prng_bytes(struct p
- 			break;
- 	}
- 
--	dbgprint("Returning new block for context %p\n", ctx);
-+	dbgprint(KERN_WARNING "Returning new block for context %p\n", ctx);
- 	ctx->rand_data_valid = 0;
- 
- 	hexdump("Output DT: ", ctx->DT, DEFAULT_BLK_SZ);
+ #endif	/* __KERNEL__ */
+-
++#endif /*  __ASSEMBLY__ */
+ #endif /* _LINUX_TYPES_H */
+-- 
+1.6.0.6
+
+
+
