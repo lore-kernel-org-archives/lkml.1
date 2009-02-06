@@ -1,88 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbZBFC2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758175AbZBFC3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757831AbZBFC2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:28:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbZBFC22
+	id S1758175AbZBFC3U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:29:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZBFC3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:28:28 -0500
-Received: from sous-sol.org ([216.99.217.87]:53246 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750885AbZBFC22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:28:28 -0500
-Date: Thu, 5 Feb 2009 18:27:59 -0800
-From: Chris Wright <chrisw@sous-sol.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Joerg Roedel <joerg.roedel@amd.com>, fujita.tomonori@lab.ntt.co.jp,
-       netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
-       mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
-Message-ID: <20090206022759.GF27684@sequoia.sous-sol.org>
-References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com> <1233874352.8135.12.camel@macbook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233874352.8135.12.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 5 Feb 2009 21:29:11 -0500
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:46552 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750885AbZBFC3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:29:09 -0500
+Subject: Re: [PATCH 0/6] integrity
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: James Morris <jmorris@namei.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       "<David Safford" <safford@watson.ibm.com>,
+       Serge Hallyn <serue@us.ibm.com>
+In-Reply-To: <alpine.LRH.1.10.0902061059510.13961@tundra.namei.org>
+References: <cover.1233262162.git.zohar@linux.vnet.ibm.com>
+	 <alpine.LRH.1.10.0902061059510.13961@tundra.namei.org>
+Content-Type: text/plain
+Date: Thu, 05 Feb 2009 21:29:01 -0500
+Message-Id: <1233887341.3135.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* David Woodhouse (dwmw2@infradead.org) wrote:
-> This adds a function to dump the DMA mappings that the debugging code is
-> aware of -- either for a single device, or for _all_ devices.
+On Fri, 2009-02-06 at 11:00 +1100, James Morris wrote:
+> I seem to be getting a bunch of these in my logs with IMA running:
 > 
-> This can be useful for debugging -- sticking a call to it in the DMA
-> page fault handler, for example, to see if the faulting address _should_
-> be mapped or not, and hence work out whether it's IOMMU bugs we're
-> seeing, or driver bugs.
+> auditd[1746]: dispatch err (Bad address) event lost
+> 
 
-BTW, here's how I hooked it up:
+auditd needs to reflect the integrity definitions defined in
+include/linux/audit.h.  ausearch-parse needs to be updated as well. For
+which version of auditd should I post a patch? I have one for
+audit-1.7.9.
 
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index c933980..df593d1 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -1072,6 +1072,34 @@ void dmar_msi_read(int irq, struct msi_msg *msg)
- 	spin_unlock_irqrestore(&iommu->register_lock, flag);
- }
- 
-+static struct pci_dev *domain_find_pdev(u8 bus, u8 devfn)
-+{
-+	unsigned long flags;
-+	struct pci_dev *pdev = NULL;
-+	struct device_domain_info *info;
-+
-+	spin_lock_irqsave(&device_domain_lock, flags);
-+	list_for_each_entry(info, &device_domain_list, global) {
-+		if (info->bus == bus && info->devfn == devfn) {
-+			pdev = info->dev;
-+			break;
-+		}
-+	}
-+	spin_unlock_irqrestore(&device_domain_lock, flags);
-+	return pdev;
-+}
-+
-+static void dump_mappings(u16 source_id)
-+{
-+	struct pci_dev *pdev;
-+	u8 bus = source_id >> 8;
-+	u8 devfn = source_id & 0xff;
-+
-+	pdev = domain_find_pdev(bus, devfn);
-+	if (pdev)
-+		debug_dma_dump_mappings(&pdev->dev);
-+}
-+
- static int iommu_page_fault_do_one(struct intel_iommu *iommu, int type,
- 		u8 fault_reason, u16 source_id, unsigned long long addr)
- {
-@@ -1086,6 +1114,8 @@ static int iommu_page_fault_do_one(struct intel_iommu *iommu, int type,
- 		(type ? "DMA Read" : "DMA Write"),
- 		(source_id >> 8), PCI_SLOT(source_id & 0xFF),
- 		PCI_FUNC(source_id & 0xFF), addr, fault_reason, reason);
-+
-+	dump_mappings(source_id);
- 	return 0;
- }
- 
+Thanks!
+
+Mimi
+
+
