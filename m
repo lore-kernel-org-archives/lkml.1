@@ -1,135 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZBFBkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757316AbZBFBmg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756990AbZBFBkA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:40:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbZBFBjO
+	id S1757316AbZBFBmg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:42:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752659AbZBFBm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:39:14 -0500
-Received: from cmpxchg.org ([85.214.51.133]:33748 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753944AbZBFBjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:39:13 -0500
-Message-Id: <E1LVFj4-000335-Cx@cmpxchg.org>
-From: hannes@cmpxchg.org
-Date: Fri, 06 Feb 2009 02:41:50 +0100
-To: unlisted-recipients:; (no To-header on input)
+	Thu, 5 Feb 2009 20:42:28 -0500
+Received: from www262.sakura.ne.jp ([202.181.97.72]:63028 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752650AbZBFBm1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:42:27 -0500
+Message-Id: <200902060141.n161fBl6043702@www262.sakura.ne.jp>
+Subject: Re: [TOMOYO #15 6/8] LSM adapter functions.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: adobriyan@gmail.com
+Cc: jmorris@namei.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       haradats@nttdata.co.jp, takedakn@nttdata.co.jp
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+Date: Fri, 06 Feb 2009 10:41:11 +0900
+References: <20090205081810.331987920@nttdata.co.jp> <20090205082232.562805442@nttdata.co.jp> <20090205171055.GA2809@x200.localdomain>
+In-Reply-To: <20090205171055.GA2809@x200.localdomain>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 06022009 #1583542, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From hannes@cmpxchg.org Fri Feb  6 02:28:55 2009
-Message-Id: <20090206012854.901599170@cmpxchg.org>
-User-Agent: quilt/0.47-1
-Date: Fri, 06 Feb 2009 02:26:08 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
- Rik van Riel <riel@redhat.com>,
- linux-kernel@vger.kernel.org,
- linux-mm@kvack.org
-Subject: [PATCH 3/3][RFC] swsusp: shrink file cache first
-References: <20090206012605.378214179@cmpxchg.org>
-Content-Disposition: inline; filename=swsusp-shrink-file-cache-first.patch
+Alexey Dobriyan wrote:
+> > +	if (tomoyo_prepend(&end, &buflen, "/proc/sys"))
+> 
+> Hardcoded path?
+> 
+Yes.
 
-File cache pages are saved to disk either through normal writeback by
-reclaim or by including them in the suspend image written to a
-swapfile.
+The sysctl's table tree is accessible via sys/ directory of proc filesystem.
+Since this function is called by sysctl(2), we don't have a mount point.
+On the assumption that proc filesystem is mounted on /proc/ , TOMOYO pretends
+as if corresponding sysctl table entry under sys/ directory of proc filesystem
+is accessed.
 
-Writing them either way should take the same amount of time but doing
-normal writeback and unmap changes the fault behaviour on resume from
-prefault to on-demand paging, smoothening out resume and giving
-previously cached pages the chance to stay out of memory completely if
-they are not used anymore.
-
-Another reason for preferring file page eviction is that the locality
-principle is visible in fault patterns and swap might perform really
-bad with subsequent faulting of contiguously mapped pages.
-
-Since anon and file pages now live on different lists, selectively
-scanning one type only is straight-forward.
-
-This patch also removes the scanning of anon pages without allowing to
-swap, which does not make much sense.
-
-The five memory shrinking passes now look like this:
-
-Pass 0:  shrink inactive file cache
-This has the best chances of not being used any time soon again after
-resume, so trade inactive file cache against space for anon pages.
-
-Pass 1:  shrink file cache
-Essentially the same as before but replenish the inactive file list
-with borderline active pages.
-
-Pass 2:  shrink all file pages and inactive anon
-Reclaim mapped pages file pages and go for aged anon pages as well.
-
-Pass 3:  shrink all file pages and anon
-Same as before but also shrink the active anon list to have enough
-anon pages for actual reclaim should we need pass 4.
-
-Pass 4:  repeat pass 3
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
----
- mm/vmscan.c |   34 ++++++++++++++++++++++------------
- 1 file changed, 22 insertions(+), 12 deletions(-)
-
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2069,13 +2069,23 @@ static unsigned long shrink_all_zones(un
- 
- 		for_each_evictable_lru(l) {
- 			enum zone_stat_item ls = NR_LRU_BASE + l;
--			unsigned long lru_pages = zone_page_state(zone, ls);
-+			unsigned long lru_pages;
- 
--			/* For pass = 0, we don't shrink the active list */
--			if (pass == 0 && (l == LRU_ACTIVE_ANON ||
--						l == LRU_ACTIVE_FILE))
--				continue;
-+			switch (pass) {
-+			case 0:
-+				if (l == LRU_ACTIVE_FILE)
-+					continue;
-+			case 1:
-+				if (l == LRU_INACTIVE_ANON)
-+					continue;
-+			case 2:
-+				if (l == LRU_ACTIVE_ANON)
-+					continue;
-+			default:
-+				break;
-+			}
- 
-+			lru_pages = zone_page_state(zone, ls);
- 			zone->lru[l].nr_scan += (lru_pages >> prio) + 1;
- 			if (zone->lru[l].nr_scan >= nr_pages || pass > 3) {
- 				unsigned long nr_to_scan;
-@@ -2134,17 +2144,17 @@ unsigned long shrink_all_memory(unsigned
- 
- 	/*
- 	 * We try to shrink LRUs in 5 passes:
--	 * 0 = Reclaim from inactive_list only
--	 * 1 = Reclaim from active list but don't reclaim mapped
--	 * 2 = 2nd pass of type 1
--	 * 3 = Reclaim mapped (normal reclaim)
--	 * 4 = 2nd pass of type 3
-+	 * 0 = Reclaim unmapped inactive file pages
-+	 * 1 = Reclaim unmapped file pages
-+	 * 2 = Reclaim file and inactive anon pages
-+	 * 3 = Reclaim file and anon pages
-+	 * 4 = Second pass 3
- 	 */
- 	for (pass = 0; pass < 5; pass++) {
- 		int prio;
- 
--		/* Force reclaiming mapped pages in the passes #3 and #4 */
--		if (pass > 2)
-+		/* Reclaim mapped pages in higher passes */
-+		if (pass > 1)
- 			sc.may_swap = 1;
- 
- 		for (prio = DEF_PRIORITY; prio >= 0; prio--) {
-
-
+Regards.
