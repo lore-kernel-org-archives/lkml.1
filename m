@@ -1,154 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZBFEt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbZBFEwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZBFEt4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 23:49:56 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZBFEtr
+	id S1754958AbZBFEwW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 23:52:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBFEwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 23:49:47 -0500
-Received: from cmpxchg.org ([85.214.51.133]:33721 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752400AbZBFEtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 23:49:47 -0500
-Date: Fri, 6 Feb 2009 05:49:07 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
-Message-ID: <20090206044907.GA18467@cmpxchg.org>
-References: <20090206031125.693559239@cmpxchg.org> <20090206031324.004715023@cmpxchg.org> <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	Thu, 5 Feb 2009 23:52:14 -0500
+Received: from mga06.intel.com ([134.134.136.21]:49044 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752388AbZBFEwN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 23:52:13 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,389,1231142400"; 
+   d="scan'208";a="384548609"
+Subject: Re: [PATCH 0/2] fix the itimer regression (BZ 12618)
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, tglx@linutronix.de,
+       oleg@redhat.com, linux-kernel@vger.kernel.org,
+       seto.hidetoshi@jp.fujitsu.com, ming.m.lin@intel.com
+In-Reply-To: <20090205120608.GB8799@elte.hu>
+References: <20090205112414.104100700@chello.nl>
+	 <20090205120608.GB8799@elte.hu>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 12:51:59 +0800
+Message-Id: <1233895919.2604.323.camel@ymzhang>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 12:39:22PM +0900, KOSAKI Motohiro wrote:
-> Hi
+On Thu, 2009-02-05 at 13:06 +0100, Ingo Molnar wrote:
+> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 > 
-> I have some comment.
+> > This should hopefully address all the itimer borkage.
 > 
-> > File cache pages are saved to disk either through normal writeback by
-> > reclaim or by including them in the suspend image written to a
-> > swapfile.
-> > 
-> > Writing them either way should take the same amount of time but doing
-> > normal writeback and unmap changes the fault behaviour on resume from
-> > prefault to on-demand paging, smoothening out resume and giving
-> > previously cached pages the chance to stay out of memory completely if
-> > they are not used anymore.
-> > 
-> > Another reason for preferring file page eviction is that the locality
-> > principle is visible in fault patterns and swap might perform really
-> > bad with subsequent faulting of contiguously mapped pages.
-> > 
-> > Since anon and file pages now live on different lists, selectively
-> > scanning one type only is straight-forward.
+> Applied to tip:timers/urgent, thanks Peter!
 > 
-> I don't understand your point.
-> Which do you want to improve suspend performance or resume performance?
+> Yanmin: could you check hacbench_pth with latest tip/master, do
+> these fixes resolve that 3% regression you reported?
+Lin Ming tested it and hackbench_pth/volanoMark regression all
+disappear. But oltp has a regression. We think oltp new regression isn't related
+to the patch. Ming is investigating it.
 
-If there is lots of clean file cache, memory shrinking time on suspend
-is fast.  In a test here, a shrink that swaps a lot had 60mb/s
-throughput while a shrink on memory crowded with file cache had a
-throughput of 500mb/s.
+Yanmin
 
-If we have to shrink n pages, aggressively shrinking the
-cheap-to-evict ones is a speed improvement already.
 
-The patch is also an improvement in suspend time becauses it doesn't
-scan the anon list while it's not allowed to swap.  And what should it
-do with anon pages if not swap them out? :)
-
-But that is more a nice side effect.
-
-> if we think suspend performance, we should consider swap device and file-backed device
-> are different block device.
-> the interleave of file-backed page out and swap out can improve total write out performce.
-
-Hm, good point.  We could probably improve that but I don't think it's
-too pressing because at least on my test boxen, actual shrinking time
-is really short compared to the total of suspending to disk.
-
-> if we think resume performance, we shold how think the on-disk contenious of the swap consist
-> process's virtual address contenious.
-> it cause to reduce unnecessary seek.
-> but your patch doesn't this.
-> 
-> Could you explain this patch benefit?
-
-The patch tries to shrink those pages first that are most unlikely to
-be needed again after resume.  It assumes that active anon pages are
-immediately needed after resume while inactive file pages are not.  So
-it defers shrinking anon pages after file cache.
-
-But I just noticed that the old behaviour defers it as well, because
-even if it does scan anon pages from the beginning, it allows writing
-only starting from pass 3.
-
-I couldn't quite understand what you wrote about on-disk
-contiguousness, but that claim still stands: faulting in contiguous
-pages from swap can be much slower than faulting file pages.  And my
-patch prefers mapped file pages over anon pages.  This is probably
-where I have seen the improvements after resume in my tests.
-
-So assuming that we can not save the whole working set, it's better to
-preserve as much as possible of those pages that are the most
-expensive ones to refault.
-
-> and, I think you should mesure performence result.
-
-Yes, I'm still thinking about ideas how to quantify it properly.  I
-have not yet found a reliable way to check for whether the working set
-is intact besides seeing whether the resumed applications are
-responsive right away or if they first have to swap in their pages
-again.
-
-> <snip>
-> 
-> 
-> > @@ -2134,17 +2144,17 @@ unsigned long shrink_all_memory(unsigned
-> >  
-> >  	/*
-> >  	 * We try to shrink LRUs in 5 passes:
-> > -	 * 0 = Reclaim from inactive_list only
-> > -	 * 1 = Reclaim from active list but don't reclaim mapped
-> > -	 * 2 = 2nd pass of type 1
-> > -	 * 3 = Reclaim mapped (normal reclaim)
-> > -	 * 4 = 2nd pass of type 3
-> > +	 * 0 = Reclaim unmapped inactive file pages
-> > +	 * 1 = Reclaim unmapped file pages
-> 
-> I think your patch reclaim mapped file at priority 0 and 1 too.
-
-Doesn't the following check in shrink_page_list prevent this:
-
-                if (!sc->may_swap && page_mapped(page))
-                        goto keep_locked;
-
-?
-
-> > +	 * 2 = Reclaim file and inactive anon pages
-> > +	 * 3 = Reclaim file and anon pages
-> > +	 * 4 = Second pass 3
-> >  	 */
-> >  	for (pass = 0; pass < 5; pass++) {
-> >  		int prio;
-> >  
-> > -		/* Force reclaiming mapped pages in the passes #3 and #4 */
-> > -		if (pass > 2)
-> > +		/* Reclaim mapped pages in higher passes */
-> > +		if (pass > 1)
-> >  			sc.may_swap = 1;
-> 
-> Why need this line?
-> If you reclaim only file backed lru, may_swap isn't effective.
-> So, Can't we just remove this line and always set may_swap=1 ?
-
-Same as the above, I think mapped pages are not touched when may_swap
-is 0 due to the check quoted above.  Please correct me if I'm wrong.
-
-	Hannes
