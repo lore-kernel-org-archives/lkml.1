@@ -1,76 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbZBFONx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755221AbZBFOTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757677AbZBFONx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:13:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZBFONp
+	id S1755221AbZBFOTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:19:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZBFOTe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:13:45 -0500
-Received: from mga09.intel.com ([134.134.136.24]:61905 "EHLO mga09.intel.com"
+	Fri, 6 Feb 2009 09:19:34 -0500
+Received: from ns.suse.de ([195.135.220.2]:48980 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752245AbZBFONo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:13:44 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,391,1231142400"; 
-   d="scan'208";a="384643239"
-Date: Fri, 6 Feb 2009 15:16:06 +0100
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Matt Reimer <mreimer@vpop.net>
-Subject: Re: [PATCH 0/6] fix PASIC3/DS1WM, use MFD core
-Message-ID: <20090206141606.GK3341@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <1233852820-28549-1-git-send-email-philipp.zabel@gmail.com>
+	id S1752249AbZBFOTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:19:33 -0500
+Message-ID: <498C46DE.8040700@suse.de>
+Date: Fri, 06 Feb 2009 15:19:10 +0100
+From: Frank Seidel <fseidel@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233852820-28549-1-git-send-email-philipp.zabel@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux kernel <linux-kernel@vger.kernel.org>
+Cc: akpm@linux-foundation.org, "David S. Miller" <davem@davemloft.net>,
+       linux-crypto@vger.kernel.org, Frank Seidel <fseidel@suse.de>,
+       frank@f-seidel.de, herbert@gondor.apana.org.au, jarod@redhat.com
+Subject: [PATCH] crypto: add missing KERN_* constants to printks
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Philipp,
+From: Frank Seidel <frank@f-seidel.de>
 
-On Thu, Feb 05, 2009 at 05:53:34PM +0100, Philipp Zabel wrote:
-> Hi,
-> 
-> the following patches turn DS1WM into an MFD cell driver, make PASIC3 use 
-> the MFD core functions to register it and remove the generic clock API
-> code from DS1WM as MFDs currently can't register their clocks with it.
-> With those applied, 1-Wire is finally in a working state on magician.
-> 
-> Patch #2 depends on #1, patch #4 depends on #3 and patch #6 depends on #5.
-> Therefor I propose that this whole patchset be queued in the mfd tree.
-> If so, #4 could be merged into #2. But it won't hurt to just leave out 
-> #3 and #4 for now and apply them as cleanups later.
-The patches look good to me. I'll merge the 6 of them into my for-next branch.
+According to kerneljanitors todo list all printk calls (beginning
+a new line) should have an according KERN_* constant.
+Those are the missing pieces here for the crypto subsystem.
 
-Thanks for this work.
+Signed-off-by: Frank Seidel <frank@f-seidel.de>
+---
+ crypto/ansi_cprng.c |    2 +-
+ crypto/tcrypt.c     |   48 +++++++++++++++++++++++++++---------------------
+ 2 files changed, 28 insertions(+), 22 deletions(-)
 
-Cheers,
-Samuel.
-
-
-> Philipp Zabel (6):
->       mfd: DS1WM: convert to use MFD core
->       mfd: PASIC3: convert to use MFD core
->       pxa/magician: remove deprecated .bus_shift from PASIC3 platform_data
->       mfd: PASIC3: remove unused bus_shift field
->       mfd: DS1WM: remove clock handling
->       mfd: PASIC3: supply clock_rate to DS1WM via driver_data
-> 
->  arch/arm/mach-pxa/magician.c   |    1 -
->  drivers/mfd/Kconfig            |    1 +
->  drivers/mfd/htc-pasic3.c       |  169 ++++++++++++++++------------------------
->  drivers/w1/masters/ds1wm.c     |   53 ++++++-------
->  include/linux/ds1wm.h          |   12 ---
->  include/linux/mfd/ds1wm.h      |    6 ++
->  include/linux/mfd/htc-pasic3.h |    1 -
->  7 files changed, 100 insertions(+), 143 deletions(-)
->  delete mode 100644 include/linux/ds1wm.h
->  create mode 100644 include/linux/mfd/ds1wm.h
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -74,7 +74,7 @@ static int test_cipher_jiffies(struct bl
+ 			return ret;
+ 	}
+ 
+-	printk("%d operations in %d seconds (%ld bytes)\n",
++	printk(KERN_WARNING "%d operations in %d seconds (%ld bytes)\n",
+ 	       bcount, sec, (long)bcount * blen);
+ 	return 0;
+ }
+@@ -122,7 +122,7 @@ out:
+ 	local_bh_enable();
+ 
+ 	if (ret == 0)
+-		printk("1 operation in %lu cycles (%d bytes)\n",
++		printk(KERN_WARNING "1 operation in %lu cycles (%d bytes)\n",
+ 		       (cycles + 4) / 8, blen);
+ 
+ 	return ret;
+@@ -146,13 +146,13 @@ static void test_cipher_speed(const char
+ 	else
+ 		e = "decryption";
+ 
+-	printk("\ntesting speed of %s %s\n", algo, e);
++	printk(KERN_WARNING "\ntesting speed of %s %s\n", algo, e);
+ 
+ 	tfm = crypto_alloc_blkcipher(algo, 0, CRYPTO_ALG_ASYNC);
+ 
+ 	if (IS_ERR(tfm)) {
+-		printk("failed to load transform for %s: %ld\n", algo,
+-		       PTR_ERR(tfm));
++		printk(KERN_WARNING "failed to load transform for %s: %ld\n",
++		       algo, PTR_ERR(tfm));
+ 		return;
+ 	}
+ 	desc.tfm = tfm;
+@@ -166,14 +166,16 @@ static void test_cipher_speed(const char
+ 			struct scatterlist sg[TVMEMSIZE];
+ 
+ 			if ((*keysize + *b_size) > TVMEMSIZE * PAGE_SIZE) {
+-				printk("template (%u) too big for "
++				printk(KERN_WARNING
++				       "template (%u) too big for "
+ 				       "tvmem (%lu)\n", *keysize + *b_size,
+ 				       TVMEMSIZE * PAGE_SIZE);
+ 				goto out;
+ 			}
+ 
+-			printk("test %u (%d bit key, %d byte blocks): ", i,
+-					*keysize * 8, *b_size);
++			printk(KERN_WARNING
++					"test %u (%d bit key, %d byte blocks): ",
++					i, *keysize * 8, *b_size);
+ 
+ 			memset(tvmem[0], 0xff, PAGE_SIZE);
+ 
+@@ -188,7 +190,8 @@ static void test_cipher_speed(const char
+ 
+ 			ret = crypto_blkcipher_setkey(tfm, key, *keysize);
+ 			if (ret) {
+-				printk("setkey() failed flags=%x\n",
++				printk(KERN_WARNING
++						"setkey() failed flags=%x\n",
+ 						crypto_blkcipher_get_flags(tfm));
+ 				goto out;
+ 			}
+@@ -215,7 +218,8 @@ static void test_cipher_speed(const char
+ 							 *b_size);
+ 
+ 			if (ret) {
+-				printk("%s() failed flags=%x\n", e, desc.flags);
++				printk(KERN_WARNING "%s() failed flags=%x\n",
++				       e, desc.flags);
+ 				break;
+ 			}
+ 			b_size++;
+@@ -243,7 +247,7 @@ static int test_hash_jiffies_digest(stru
+ 			return ret;
+ 	}
+ 
+-	printk("%6u opers/sec, %9lu bytes/sec\n",
++	printk(KERN_WARNING "%6u opers/sec, %9lu bytes/sec\n",
+ 	       bcount / sec, ((long)bcount * blen) / sec);
+ 
+ 	return 0;
+@@ -275,7 +279,7 @@ static int test_hash_jiffies(struct hash
+ 			return ret;
+ 	}
+ 
+-	printk("%6u opers/sec, %9lu bytes/sec\n",
++	printk(KERN_WARNING "%6u opers/sec, %9lu bytes/sec\n",
+ 	       bcount / sec, ((long)bcount * blen) / sec);
+ 
+ 	return 0;
+@@ -320,7 +324,7 @@ out:
+ 	if (ret)
+ 		return ret;
+ 
+-	printk("%6lu cycles/operation, %4lu cycles/byte\n",
++	printk(KERN_WARNING "%6lu cycles/operation, %4lu cycles/byte\n",
+ 	       cycles / 8, cycles / (8 * blen));
+ 
+ 	return 0;
+@@ -384,7 +388,7 @@ out:
+ 	if (ret)
+ 		return ret;
+ 
+-	printk("%6lu cycles/operation, %4lu cycles/byte\n",
++	printk(KERN_WARNING "%6lu cycles/operation, %4lu cycles/byte\n",
+ 	       cycles / 8, cycles / (8 * blen));
+ 
+ 	return 0;
+@@ -400,13 +404,13 @@ static void test_hash_speed(const char *
+ 	int i;
+ 	int ret;
+ 
+-	printk("\ntesting speed of %s\n", algo);
++	printk(KERN_WARNING "\ntesting speed of %s\n", algo);
+ 
+ 	tfm = crypto_alloc_hash(algo, 0, CRYPTO_ALG_ASYNC);
+ 
+ 	if (IS_ERR(tfm)) {
+-		printk("failed to load transform for %s: %ld\n", algo,
+-		       PTR_ERR(tfm));
++		printk(KERN_WARNING "failed to load transform for %s: %ld\n",
++		       algo, PTR_ERR(tfm));
+ 		return;
+ 	}
+ 
+@@ -414,7 +418,7 @@ static void test_hash_speed(const char *
+ 	desc.flags = 0;
+ 
+ 	if (crypto_hash_digestsize(tfm) > sizeof(output)) {
+-		printk("digestsize(%u) > outputbuffer(%zu)\n",
++		printk(KERN_WARNING "digestsize(%u) > outputbuffer(%zu)\n",
+ 		       crypto_hash_digestsize(tfm), sizeof(output));
+ 		goto out;
+ 	}
+@@ -427,12 +431,14 @@ static void test_hash_speed(const char *
+ 
+ 	for (i = 0; speed[i].blen != 0; i++) {
+ 		if (speed[i].blen > TVMEMSIZE * PAGE_SIZE) {
+-			printk("template (%u) too big for tvmem (%lu)\n",
++			printk(KERN_WARNING
++			       "template (%u) too big for tvmem (%lu)\n",
+ 			       speed[i].blen, TVMEMSIZE * PAGE_SIZE);
+ 			goto out;
+ 		}
+ 
+-		printk("test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
++		printk(KERN_WARNING
++		       "test%3u (%5u byte blocks,%5u bytes per update,%4u updates): ",
+ 		       i, speed[i].blen, speed[i].plen, speed[i].blen / speed[i].plen);
+ 
+ 		if (sec)
+@@ -443,7 +449,7 @@ static void test_hash_speed(const char *
+ 					       speed[i].plen, output);
+ 
+ 		if (ret) {
+-			printk("hashing failed ret=%d\n", ret);
++			printk(KERN_WARNING "hashing failed ret=%d\n", ret);
+ 			break;
+ 		}
+ 	}
+--- a/crypto/ansi_cprng.c
++++ b/crypto/ansi_cprng.c
+@@ -167,7 +167,7 @@ static int _get_more_prng_bytes(struct p
+ 			break;
+ 	}
+ 
+-	dbgprint("Returning new block for context %p\n", ctx);
++	dbgprint(KERN_WARNING "Returning new block for context %p\n", ctx);
+ 	ctx->rand_data_valid = 0;
+ 
+ 	hexdump("Output DT: ", ctx->DT, DEFAULT_BLK_SZ);
