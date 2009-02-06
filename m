@@ -1,248 +1,282 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbZBFLoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZBFLpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbZBFLoa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 06:44:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZBFLoW
+	id S1757516AbZBFLpz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 06:45:55 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZBFLpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 06:44:22 -0500
-Received: from mail.nvtl.com ([209.132.114.200]:5357 "EHLO mail.nvtl.com"
+	Fri, 6 Feb 2009 06:45:47 -0500
+Received: from chilli.pcug.org.au ([203.10.76.44]:43112 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752281AbZBFLoV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 06:44:21 -0500
-X-Greylist: delayed 912 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Feb 2009 06:44:21 EST
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH 001/001]  usbserial: New mobile broadband modems to be supported through option module
-Date: Fri, 6 Feb 2009 11:29:06 -0000
-Message-ID: <B29F014DE7B1F949B0BC4C1EBCF29DD6C6D2A3@Vectra.nvtl.local>
-In-Reply-To: <20090206003352.GA22530@kroah.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 001/001]  usbserial: New mobile broadband modems to be supported through option module
-Thread-Index: AcmH9837gUZ4kRWjRDGuGbaCN9BkIAAPz1cQ
-References: <12047829252365@kroah.org> <B29F014DE7B1F949B0BC4C1EBCF29DD6C6D1E0@Vectra.nvtl.local> <20090206003352.GA22530@kroah.com>
-From: "Dirk DeSchepper" <ddeschepper@nvtl.com>
-To: "Greg KH" <greg@kroah.com>, <smurf@smurf.noris.de>
-Cc: <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 06 Feb 2009 11:29:08.0727 (UTC) FILETIME=[20494870:01C9884E]
+	id S1753368AbZBFLpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 06:45:45 -0500
+Date: Fri, 6 Feb 2009 22:45:38 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for February 6
+Message-Id: <20090206224538.7d9f8126.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__6_Feb_2009_22_45_38_+1100_9IlQHBPcg937/_+L"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dirk De Schepper <ddeschepper@nvtl.com>
+--Signature=_Fri__6_Feb_2009_22_45_38_+1100_9IlQHBPcg937/_+L
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Patch for option.c, based on kernel v2.6.28.3
-- New Novatel and Dell mobile broadband modem products added
-- Dell pid variables used in stead of numerical PIDs for known products 
+Hi all,
 
-Signed-off-by: Dirk De Schepper <ddeschepper@nvtl.com>
----
+Changes since 20090205:
 
+Removed tree:
+	cpu_alloc (until work recommences)
 
---- linux-2.6.28.3/drivers/usb/serial/option.c.orig	2009-02-06
-11:52:16.000000000 +0100
-+++ linux-2.6.28.3/drivers/usb/serial/option.c	2009-02-06
-11:52:56.000000000 +0100
-@@ -192,14 +192,15 @@ static int  option_send_setup(struct tty
- #define NOVATELWIRELESS_PRODUCT_MC950D		0x4400
- 
- /* FUTURE NOVATEL PRODUCTS */
--#define NOVATELWIRELESS_PRODUCT_EVDO_1		0x6000
--#define NOVATELWIRELESS_PRODUCT_HSPA_1		0x7000
--#define NOVATELWIRELESS_PRODUCT_EMBEDDED_1	0x8000
--#define NOVATELWIRELESS_PRODUCT_GLOBAL_1	0x9000
--#define NOVATELWIRELESS_PRODUCT_EVDO_2		0x6001
--#define NOVATELWIRELESS_PRODUCT_HSPA_2		0x7001
--#define NOVATELWIRELESS_PRODUCT_EMBEDDED_2	0x8001
--#define NOVATELWIRELESS_PRODUCT_GLOBAL_2	0x9001
-+#define NOVATELWIRELESS_PRODUCT_EVDO_FULLSPEED	0X6000
-+#define NOVATELWIRELESS_PRODUCT_EVDO_HIGHSPEED	0X6001
-+#define NOVATELWIRELESS_PRODUCT_HSPA_FULLSPEED	0X7000
-+#define NOVATELWIRELESS_PRODUCT_HSPA_HIGHSPEED	0X7001
-+#define NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_FULLSPEED	0X8000
-+#define NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_HIGHSPEED	0X8001
-+#define NOVATELWIRELESS_PRODUCT_HSPA_EMBEDDED_FULLSPEED	0X9000
-+#define NOVATELWIRELESS_PRODUCT_HSPA_EMBEDDED_HIGHSPEED	0X9001
-+#define NOVATELWIRELESS_PRODUCT_GLOBAL		0XA001
- 
- /* AMOI PRODUCTS */
- #define AMOI_VENDOR_ID				0x1614
-@@ -209,6 +210,27 @@ static int  option_send_setup(struct tty
- 
- #define DELL_VENDOR_ID				0x413C
- 
-+/* Dell modems */
-+#define DELL_PRODUCT_5700_MINICARD		0x8114
-+#define DELL_PRODUCT_5500_MINICARD		0x8115
-+#define DELL_PRODUCT_5505_MINICARD		0x8116
-+#define DELL_PRODUCT_5700_EXPRESSCARD		0x8117
-+#define DELL_PRODUCT_5510_EXPRESSCARD		0x8118
-+
-+#define DELL_PRODUCT_5700_MINICARD_SPRINT	0x8128
-+#define DELL_PRODUCT_5700_MINICARD_TELUS	0x8129
-+
-+#define DELL_PRODUCT_5720_MINICARD_VZW		0x8133
-+#define DELL_PRODUCT_5720_MINICARD_SPRINT	0x8134
-+#define DELL_PRODUCT_5720_MINICARD_TELUS	0x8135
-+#define DELL_PRODUCT_5520_MINICARD_CINGULAR	0x8136
-+#define DELL_PRODUCT_5520_MINICARD_GENERIC_L	0x8137
-+#define DELL_PRODUCT_5520_MINICARD_GENERIC_I	0x8138
-+
-+#define DELL_PRODUCT_5730_MINICARD_SPRINT	0x8180
-+#define DELL_PRODUCT_5730_MINICARD_TELUS	0x8181
-+#define DELL_PRODUCT_5730_MINICARD_VZW		0x8182
-+
- #define KYOCERA_VENDOR_ID			0x0c88
- #define KYOCERA_PRODUCT_KPC650			0x17da
- #define KYOCERA_PRODUCT_KPC680			0x180a
-@@ -383,31 +405,57 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EU870D) }, /* Novatel EU850D/EU860D/EU870D */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_MC950D) }, /* Novatel MC930D/MC950D */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_MC727) }, /* Novatel MC727/U727/USB727 */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EVDO_1) }, /* Novatel EVDO product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_HSPA_1) }, /* Novatel HSPA product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EMBEDDED_1) }, /* Novatel Embedded product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_GLOBAL_1) }, /* Novatel Global product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EVDO_2) }, /* Novatel EVDO product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_HSPA_2) }, /* Novatel HSPA product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EMBEDDED_2) }, /* Novatel Embedded product */
--	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_GLOBAL_2) }, /* Novatel Global product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EVDO_FULLSPEED) }, /* Novatel EVDO product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_HSPA_FULLSPEED) }, /* Novatel HSPA product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_FULLSPEED) }, /* Novatel EVDO
-Embedded product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_HSPA_EMBEDDED_FULLSPEED) }, /* Novatel HSPA
-Embedded product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EVDO_HIGHSPEED) }, /* Novatel EVDO product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_HSPA_HIGHSPEED) }, /* Novatel HSPA product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_HIGHSPEED) }, /* Novatel EVDO
-Embedded product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_HSPA_EMBEDDED_HIGHSPEED) }, /* Novatel HSPA
-Embedded product */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID,
-NOVATELWIRELESS_PRODUCT_GLOBAL) }, /* Novatel Global product */
- 
- 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_H01) },
- 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_H01A) },
- 	{ USB_DEVICE(AMOI_VENDOR_ID, AMOI_PRODUCT_H02) },
- 
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8114) },	/* Dell Wireless 5700
-Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite EV620
-CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8115) },	/* Dell Wireless 5500
-Mobile Broadband HSDPA Mini-Card == Novatel Expedite EU740 HSDPA/3G */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8116) },	/* Dell Wireless 5505
-Mobile Broadband HSDPA Mini-Card == Novatel Expedite EU740 HSDPA/3G */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8117) },	/* Dell Wireless 5700
-Mobile Broadband CDMA/EVDO ExpressCard == Novatel Merlin XV620
-CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8118) },	/* Dell Wireless 5510
-Mobile Broadband HSDPA ExpressCard == Novatel Merlin XU870 HSDPA/3G */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8128) },	/* Dell Wireless 5700
-Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite E720 CDMA/EV-DO
-*/
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8129) },	/* Dell Wireless 5700
-Mobile Broadband CDMA/EVDO Mini-Card == Novatel Expedite ET620
-CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8133) }, /* Dell Wireless 5720 ==
-Novatel EV620 CDMA/EV-DO */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8136) },	/* Dell Wireless HSDPA
-5520 == Novatel Expedite EU860D */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8137) },	/* Dell Wireless HSDPA
-5520 */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8138) },	/* Dell Wireless 5520
-Voda I Mobile Broadband (3G HSDPA) Minicard */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8147) },	/* Dell Wireless 5530
-Mobile Broadband (3G HSPA) Mini-Card */
-+#define DELL_PRODUCT_5700_MINICARD		0x8114
-+#define DELL_PRODUCT_5500_MINICARD		0x8115
-+#define DELL_PRODUCT_5505_MINICARD		0x8116
-+#define DELL_PRODUCT_5700_EXPRESSCARD		0x8117
-+#define DELL_PRODUCT_5510_EXPRESSCARD		0x8118
-+
-+#define DELL_PRODUCT_5700_MINICARD_SPRINT	0x8128
-+#define DELL_PRODUCT_5700_MINICARD_TELUS	0x8129
-+
-+#define DELL_PRODUCT_5720_MINICARD_VZW		0x8133
-+#define DELL_PRODUCT_5720_MINICARD_SPRINT	0x8134
-+#define DELL_PRODUCT_5720_MINICARD_TELUS	0x8135
-+#define DELL_PRODUCT_5520_MINICARD_CINGULAR	0x8136
-+#define DELL_PRODUCT_5520_MINICARD_GENERIC_L	0x8137
-+#define DELL_PRODUCT_5520_MINICARD_GENERIC_I	0x8138
-+
-+#define DELL_PRODUCT_5730_MINICARD_SPRINT	0x8180
-+#define DELL_PRODUCT_5730_MINICARD_TELUS	0x8181
-+#define DELL_PRODUCT_5730_MINICARD_VZW		0x8182
-+
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5700_MINICARD) },
-/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card == Novatel
-Expedite EV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5500_MINICARD) },
-/* Dell Wireless 5500 Mobile Broadband HSDPA Mini-Card == Novatel
-Expedite EU740 HSDPA/3G */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5505_MINICARD) },
-/* Dell Wireless 5505 Mobile Broadband HSDPA Mini-Card == Novatel
-Expedite EU740 HSDPA/3G */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5700_EXPRESSCARD) },
-/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO ExpressCard == Novatel
-Merlin XV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5510_EXPRESSCARD) },
-/* Dell Wireless 5510 Mobile Broadband HSDPA ExpressCard == Novatel
-Merlin XU870 HSDPA/3G */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5700_MINICARD_SPRINT)
-},	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card ==
-Novatel Expedite E720 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5700_MINICARD_TELUS)
-},	/* Dell Wireless 5700 Mobile Broadband CDMA/EVDO Mini-Card ==
-Novatel Expedite ET620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5720_MINICARD_VZW) },
-/* Dell Wireless 5720 == Novatel EV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5720_MINICARD_SPRINT)
-}, 	/* Dell Wireless 5720 == Novatel EV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5720_MINICARD_TELUS)
-}, 	/* Dell Wireless 5720 == Novatel EV620 CDMA/EV-DO */
-+	{ USB_DEVICE(DELL_VENDOR_ID,
-DELL_PRODUCT_5520_MINICARD_CINGULAR) },	/* Dell Wireless HSDPA 5520 ==
-Novatel Expedite EU860D */
-+	{ USB_DEVICE(DELL_VENDOR_ID,
-DELL_PRODUCT_5520_MINICARD_GENERIC_L) },	/* Dell Wireless HSDPA
-5520 */
-+	{ USB_DEVICE(DELL_VENDOR_ID,
-DELL_PRODUCT_5520_MINICARD_GENERIC_I) },	/* Dell Wireless 5520
-Voda I Mobile Broadband (3G HSDPA) Minicard */
-+	{ USB_DEVICE(DELL_VENDOR_ID, 0x8147) },
-/* Dell Wireless 5530 Mobile Broadband (3G HSPA) Mini-Card */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_SPRINT)
-},	/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_TELUS)
-},	/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
-+	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_VZW) },
-/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_E100A) },
-/* ADU-E100, ADU-310 */
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_500A) },
- 	{ USB_DEVICE(ANYDATA_VENDOR_ID, ANYDATA_PRODUCT_ADU_620UW) },
+Dropped trees (temporarily):
+	quota (build problem)
+	ide (build problem)
+	security-testing (build problem)
+	audit (difficult conflicts)
+
+The tip-core tree gained a conflict against Linus' tree.
+
+The pci tree gained a conflict against the pci-current tree.
+
+The quota tree gained a build failure and was dropped.
+
+The ide tree lost its 2 conflicts but gained a build failure and was
+dropped.
+
+The security-testing tree gained a conflict against Linus' tree and a
+build failure and was dropped.
+
+The proc tree lost its conflict.
+
+The cpufreq tree lost its build failure.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig,
+ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
+i386, sparc and sparc64 defconfig.
+
+Below is a summary of the state of the merge.
+
+We are up to 131 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
+CONFLICT (content): Merge conflict in kernel/auditsc.c
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+CONFLICT (content): Merge conflict in arch/arm/configs/magician_defconfig
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+Merging xtensa/master
+Merging quilt/driver-core
+Merging quilt/usb
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in arch/x86/mach-voyager/voyager_smp.c
+Merging cpus4096/auto-cpus4096-next
+Merging ftrace/auto-ftrace-next
+Merging genirq/auto-genirq-next
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in drivers/pci/pcie/portdrv_pci.c
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+Merging quota/for_next
+$ git reset --hard HEAD^
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+$ git reset --hard HEAD^
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Created commit d79806d: Revert "platform/x86: Add oqo-wmi driver for model =
+2 OQO backlight and rfkill control"
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/ext4/ext4.h
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-agn.c
+CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl3945-=
+base.c
+Merging mtd/master
+Merging wireless/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
+k8.c
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in sound/isa/Kconfig
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in include/linux/slub_def.h
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging uclinux/for-next
+Merging md/for-next
+Merging kmemcheck/auto-kmemcheck-next
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in arch/x86/mm/fault.c
+CONFLICT (content): Merge conflict in mm/Makefile
+Merging generic-ipi/auto-generic-ipi-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+Merging voltage/for-next
+Merging security-testing/next
+CONFLICT (content): Merge conflict in fs/namei.c
+$ git reset --hard HEAD^
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+Merging iommu/auto-iommu-next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in include/linux/slab.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slab.c
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging quilt/staging
+Merging scsi-post-merge/master
+
+--Signature=_Fri__6_Feb_2009_22_45_38_+1100_9IlQHBPcg937/_+L
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmMIuIACgkQjjKRsyhoI8ywGgCeNHMAADa5nDYo8Afv2rvvrDNS
+P5kAoIBcP682ksNVA8MqKgX7dDh3mnFI
+=t57N
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__6_Feb_2009_22_45_38_+1100_9IlQHBPcg937/_+L--
