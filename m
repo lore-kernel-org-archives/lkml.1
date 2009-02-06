@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbZBFWJh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757147AbZBFWM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbZBFWJh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 17:09:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZBFWJR
+	id S1757147AbZBFWM7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 17:12:59 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753593AbZBFWMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 17:09:17 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33422
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754691AbZBFWJQ (ORCPT
+	Fri, 6 Feb 2009 17:12:51 -0500
+Received: from mailout.artfiles.de ([80.252.97.80]:57420 "EHLO
+	mailout.artfiles.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753254AbZBFWMu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 17:09:16 -0500
-Date: Fri, 06 Feb 2009 14:09:12 -0800 (PST)
-Message-Id: <20090206.140912.40800913.davem@davemloft.net>
-To: dan.j.williams@intel.com
-Cc: anemo@mba.ocn.ne.jp, maciej.sosnowski@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] net_dma: call dmaengine_get only if NET_DMA enabled
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <e9c3a7c20902061315n7184c55ck7fcaa2c519a035d4@mail.gmail.com>
-References: <1233936169-5243-1-git-send-email-anemo@mba.ocn.ne.jp>
-	<e9c3a7c20902061315n7184c55ck7fcaa2c519a035d4@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 17:12:50 -0500
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: AW:  Re: linux 2.6.29-rc3 kernel failure with mptsas
+Content-class: urn:content-classes:message
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Date: Fri, 6 Feb 2009 23:12:46 +0100
+Message-ID: <B4ED8DE8E195E84A872496A085BC07822F13@exchange01.corp.win-professional.com>
+In-Reply-To: <gmhsk4$4ht$2@ger.gmane.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: linux 2.6.29-rc3 kernel failure with mptsas
+Thread-Index: AcmIggqG3poM/JQ1RKeimaJMua330QAJP9pQ
+References: <B4ED8DE8E195E84A872496A085BC07822F11@exchange01.corp.win-professional.com> <gmhsk4$4ht$2@ger.gmane.org>
+From: "Morten P.D. Stevens" <mstevens@win-professional.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 06 Feb 2009 22:12:47.0672 (UTC) FILETIME=[0AF8A380:01C988A8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 6 Feb 2009 14:15:02 -0700
+> See what it does without the tainted kernel?
 
-> [ please cc netdev on net_dma patches ]
+Same problem without a tainted kernel. (2.6.29-rc3)
+
+-----Ursprüngliche Nachricht-----
+Von: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-owner@vger.kernel.org] Im Auftrag von Bill Davidsen
+Gesendet: Freitag, 6. Februar 2009 18:39
+An: linux-kernel@vger.kernel.org
+Betreff: Re: linux 2.6.29-rc3 kernel failure with mptsas
+
+Morten P.D. Stevens wrote:
+> Hi,
 > 
-> On Fri, Feb 6, 2009 at 9:02 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
-> > The commit 649274d993212e7c23c0cb734572c2311c200872 ("net_dma:
-> > acquire/release dma channels on ifup/ifdown") added unconditional call
-> > of dmaengine_get() to net_dma.  The API should be called only if
-> > NET_DMA was enabled.
-> >
-> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+> I get a kernel failure with linux 2.6.29-rc3 on my Dell T7400
+> Workstation.
 > 
-> Acked-by: Dan Williams <dan.j.williams@intel.com>
+> failure message:
 > 
-> I was looking to avoid ifdefs in this path by making
-> dmaengine_{get,put} a nop in the DMAENGINE=n case.  However, the
-> current code with DMAENGINE=y NET_DMA=n will pin channels even though
-> the network stack is not using them.
+> WARNING: at lib/debugobjects.c:253 __debug_object_init+0x2a8/0x353()
+> (Tainted: G        W )
+> Hardware name: Precision WorkStation T7400  
+> Modules linked in: ata_generic pata_acpi mptsas(+) mptscsih mptbase
+> scsi_transport_sas
+> Pid: 35, comm: work_on_cpu/0 Tainted: G        W
+> 2.6.29-0.66.rc3.fc11.x86_64 #1
 
-I don't want to apply this patch at all.
+> 
+> Any ideas about the problem?
+> 
+See what it does without the tainted kernel?
 
-What is the purpose of keeping the ugly ifdefs in dmaengine.h if we're
-just going to pollute the networking code with the ifdefs anyways?
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
 
-Make the NOP versions in linux/dmaengine.h actually work.
-
-The NET_DMA stuff is the one thing which is polluting up the networking
-stack with ugly ifdefs, I'm not adding new ones.
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
