@@ -1,65 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754908AbZBFQth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753567AbZBFQuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754908AbZBFQth (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:49:37 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZBFQt2
+	id S1753567AbZBFQuX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752621AbZBFQuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:49:28 -0500
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:5672 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751642AbZBFQt1 (ORCPT
+	Fri, 6 Feb 2009 11:50:05 -0500
+Received: from fg-out-1718.google.com ([72.14.220.159]:4900 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752051AbZBFQuB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:49:27 -0500
-Date: Fri, 6 Feb 2009 09:49:06 -0700
-From: Alex Chiang <achiang@hp.com>
-To: tony.luck@intel.com
-Cc: linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ia64: don't need cpu_set() when migrate_platform_irqs()
-	fails
-Message-ID: <20090206164906.GA2445@ldl.fc.hp.com>
-Mail-Followup-To: Alex Chiang <achiang@hp.com>, tony.luck@intel.com,
-	linux-ia64@vger.kernel.org, linux-kernel@vger.kernel.org
+	Fri, 6 Feb 2009 11:50:01 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=LL9kWsx/+5jmxpGDAOQ3GVZ2fhlMQFzmqMOJoQoEWzGlsFQQLiKYpcC68y/rCSnFKF
+         ngtvsi7qpznHqpDh4w6dt9gPLh5Qs8OFzlIkPSuJoYGMftF4+xHQuVggRrYJnVtUm8RU
+         qrYTy+3wdnml7Hx0hcoZRU3S8aS2CyjqE2Euw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
+Date: Fri, 6 Feb 2009 17:21:46 +0100
+User-Agent: KMail/1.10.4 (Linux/2.6.29-rc3-next-20090206; KDE/4.1.4; i686; ; )
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, geert@linux-m68k.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       apw@canonical.com
+References: <20090201174916.19144.11318.sendpatchset@localhost.localdomain> <200902052214.31483.bzolnier@gmail.com> <498B7D09.6040100@ru.mvista.com>
+In-Reply-To: <498B7D09.6040100@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200902061721.46813.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit e7b14036 (prevent ia64 from invoking irq handlers on
-offline CPUs) removed the call to cpu_clear() before we call
-migrate_platform_irqs().
 
-Thus, if migrate_platform_irqs() fails (returns -EBUSY), we do
-not need to re-set our CPU in the cpu_online_map, since it was
-never cleared.
+Hi,
 
-Remove the redundant call and cleanup the resulting stylistic
-fallout.
+On Friday 06 February 2009, Sergei Shtylyov wrote:
+> Hello.
+> 
+> Bartlomiej Zolnierkiewicz wrote:
+> 
+> >>>>> +#include <asm/ide.h>
+> >>>>>           
+> >>>> Did you try checkpatch.pl?
+> >>>>         
+> >>> Sure.
+> >>>
+> >>> This driver uses stuff from <asm-mips/ide.h>.
+> >>>
+> >>> [ I guess I could put '-mips' there to silence warnings on tx493{8,9}.c,
+> >>>   however I don't know of the way to get rid of ide-io-std.c's one... ]
+> >>>       
+> >> BTW, tx4939ide_{in,out}put_data_swap and
+> >> tx4939ide_{in,out}put_data_swap do exactly same thing.
+> >>
+> >> If byte-swapped version of ide_{in,out}put_data() were available by
+> >> ide core, they can be used instead.  The byte-swapped version of
+> >> default_tp_ops would much helps such queer big-endian platforms.  Is
+> >> it worth to bloat ide core? ;-)
+> >>     
+> >
+> > Seems to be a good idea and it may also help some other host drivers
+> > (ide-h8300.c?).
+> >   
+> 
+>    I'm not sure we need to carry the extra little used code just to help 
+> some exotic driver.
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
+It doesn't seem like we would need to carry any extra extra code for host
+drivers that don't need it because we have flexible Kconfig language to take
+care of such cases, i.e.
 
-Tony, unlike my previous patch, this patch is .30 material,
-thanks.
+...
+config CONFIG_IDE_BE_IO
+	bool
+...
+config BLK_DEV_IDE_TX4938
+	tristate "TX4938 internal IDE support"
+	depends on SOC_TX4938
+	select IDE_TIMINGS
+	select IDE_BE_IO
+...
 
----
+Thus having be_tp_ops would decrease code duplication [ I now also see that
+m68k host drivers would benefit from it.  I haven't noticed it before because
+readw()/writew() are redefined in <asm-m68k/ide.h> ] and decrease total IDE
+subsystem maintainance costs.
 
-diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
-index 1146399..92fe9cf 100644
---- a/arch/ia64/kernel/smpboot.c
-+++ b/arch/ia64/kernel/smpboot.c
-@@ -736,10 +736,8 @@ int __cpu_disable(void)
- 			return -EBUSY;
- 	}
- 
--	if (migrate_platform_irqs(cpu)) {
--		cpu_set(cpu, cpu_online_map);
--		return (-EBUSY);
--	}
-+	if (migrate_platform_irqs(cpu))
-+		return -EBUSY;
- 
- 	remove_siblinginfo(cpu);
- 	fixup_irqs();
+Thanks,
+Bart
