@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756469AbZBFSJM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756317AbZBFSIq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756469AbZBFSJM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:09:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759909AbZBFSG6
+	id S1756317AbZBFSIq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 13:08:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755077AbZBFSG5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:06:58 -0500
-Received: from rtsoft3.corbina.net ([85.21.88.6]:3226 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759736AbZBFSG5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 6 Feb 2009 13:06:57 -0500
-Date: Fri, 6 Feb 2009 21:06:55 +0300
+Received: from rtsoft3.corbina.net ([85.21.88.6]:3221 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759159AbZBFSGz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 13:06:55 -0500
+Date: Fri, 6 Feb 2009 21:06:54 +0300
 From: Anton Vorontsov <avorontsov@ru.mvista.com>
 To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
 Cc: Ben Dooks <ben-linux@fluff.org>, Arnd Bergmann <arnd@arndb.de>,
        Kumar Gala <galak@kernel.crashing.org>,
        Liu Dave <DaveLiu@freescale.com>, sdhci-devel@list.drzeus.cx,
        linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 07/11] sdhci: Add quirk to suppress PIO interrupts during
-	DMA transfers
-Message-ID: <20090206180655.GG11548@oksana.dev.rtsoft.ru>
+Subject: [PATCH 06/11] sdhci: Add support for hosts with strict 32 bit
+	addressing
+Message-ID: <20090206180654.GF11548@oksana.dev.rtsoft.ru>
 References: <20090206180520.GA16123@oksana.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf8
@@ -30,97 +30,110 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some hosts (that is, FSL eSDHC) throw PIO interrupts during DMA
-transfers, this causes tons of unneeded interrupts, and thus highly
-degraded speed.
+SDHCI driver must take special care when working with "triggering"
+registers on hosts with strict 32 bit addressing.
 
-This patch adds SDHCI_QUIRK_PIO_IRQS_DURING_DMA quirk. When specified,
-the sdhci driver will disable PIO interrupts during DMA transfers.
+In FSL eSDHC hosts all registers are 32 bit width, writing to the
+first half of any register will cause [undefined?] write the second
+half of the register. That is, 16 bit write to the TRANSFER_MODE
+register, makes hardware see a bogus write to the COMMAND register
+(these two registers are adjacent).
+
+This patch adds SDHCI_QUIRK_32BIT_REGISTERS quirk. When specified,
+the sdhci driver will try to "pack" all dangerous writes into single
+32 bit write transaction.
 
 Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 ---
- drivers/mmc/host/sdhci.c |   32 ++++++++++++++++++++++++++++++++
- drivers/mmc/host/sdhci.h |    3 +++
- 2 files changed, 35 insertions(+), 0 deletions(-)
+ drivers/mmc/host/sdhci.c |   19 ++++++++++++++-----
+ drivers/mmc/host/sdhci.h |    4 ++++
+ 2 files changed, 18 insertions(+), 5 deletions(-)
 
 diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-index 9b43588..ede3790 100644
+index 85f3780..9b43588 100644
 --- a/drivers/mmc/host/sdhci.c
 +++ b/drivers/mmc/host/sdhci.c
-@@ -167,6 +167,8 @@ static void sdhci_init(struct sdhci_host *host)
- 
- 	sdhci_writel(host, intmask, SDHCI_INT_ENABLE);
- 	sdhci_writel(host, intmask, SDHCI_SIGNAL_ENABLE);
-+
-+	host->flags &= ~SDHCI_PIO_DISABLED;
+@@ -747,13 +747,13 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+ 	sdhci_writew(host, data->blocks, SDHCI_BLOCK_COUNT);
  }
  
- static void sdhci_activate_led(struct sdhci_host *host)
-@@ -594,6 +596,33 @@ static u8 sdhci_calc_timeout(struct sdhci_host *host, struct mmc_data *data)
- 	return count;
- }
- 
-+static void sdhci_set_pio_irqs(struct sdhci_host *host, bool state)
-+{
-+	bool current_state = !(host->flags & SDHCI_PIO_DISABLED);
-+	u32 ier;
-+
-+	/*
-+	 * We only care about PIO IRQs if the host issues PIO IRQs during
-+	 * DMA transfers. Otherwise we can keep the irqs always enabled.
-+	 */
-+	if (!(host->quirks & SDHCI_QUIRK_PIO_IRQS_DURING_DMA))
-+		return;
-+
-+	if (current_state == state)
-+		return;
-+
-+	ier = sdhci_readl(host, SDHCI_INT_ENABLE);
-+	if (state) {
-+		ier |= SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL;
-+		host->flags &= ~SDHCI_PIO_DISABLED;
-+	} else {
-+		ier &= ~(SDHCI_INT_DATA_AVAIL | SDHCI_INT_SPACE_AVAIL);
-+		host->flags |= SDHCI_PIO_DISABLED;
-+	}
-+	sdhci_writel(host, ier, SDHCI_INT_ENABLE);
-+	sdhci_writel(host, ier, SDHCI_SIGNAL_ENABLE);
-+}
-+
- static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
+-static void sdhci_set_transfer_mode(struct sdhci_host *host,
++static u16 sdhci_get_transfer_mode(struct sdhci_host *host,
+ 	struct mmc_data *data)
  {
- 	u8 count;
-@@ -740,6 +769,9 @@ static void sdhci_prepare_data(struct sdhci_host *host, struct mmc_data *data)
- 		sg_miter_start(&host->sg_miter,
- 			data->sg, data->sg_len, SG_MITER_ATOMIC);
- 		host->blocks = data->blocks;
-+		sdhci_set_pio_irqs(host, true);
-+	} else {
-+		sdhci_set_pio_irqs(host, false);
- 	}
+ 	u16 mode;
  
- 	/* We do not handle DMA boundaries, so set it to max (512 KiB) */
+ 	if (data == NULL)
+-		return;
++		return 0;
+ 
+ 	WARN_ON(!host->data);
+ 
+@@ -765,7 +765,7 @@ static void sdhci_set_transfer_mode(struct sdhci_host *host,
+ 	if (host->flags & SDHCI_REQ_USE_DMA)
+ 		mode |= SDHCI_TRNS_DMA;
+ 
+-	sdhci_writew(host, mode, SDHCI_TRANSFER_MODE);
++	return mode;
+ }
+ 
+ static void sdhci_finish_data(struct sdhci_host *host)
+@@ -817,6 +817,7 @@ static void sdhci_finish_data(struct sdhci_host *host)
+ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ {
+ 	int flags;
++	u16 xfer_mode;
+ 	u32 mask;
+ 	unsigned long timeout;
+ 
+@@ -855,7 +856,7 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ 
+ 	sdhci_writel(host, cmd->arg, SDHCI_ARGUMENT);
+ 
+-	sdhci_set_transfer_mode(host, cmd->data);
++	xfer_mode = sdhci_get_transfer_mode(host, cmd->data);
+ 
+ 	if ((cmd->flags & MMC_RSP_136) && (cmd->flags & MMC_RSP_BUSY)) {
+ 		printk(KERN_ERR "%s: Unsupported response type!\n",
+@@ -881,7 +882,15 @@ static void sdhci_send_command(struct sdhci_host *host, struct mmc_command *cmd)
+ 	if (cmd->data)
+ 		flags |= SDHCI_CMD_DATA;
+ 
+-	sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags), SDHCI_COMMAND);
++	if (host->quirks & SDHCI_QUIRK_32BIT_REGISTERS) {
++		sdhci_writel(host,
++			SDHCI_MAKE_CMD_32BIT(cmd->opcode, flags, xfer_mode),
++			SDHCI_TRANSFER_MODE);
++	} else {
++		sdhci_writew(host, xfer_mode, SDHCI_TRANSFER_MODE);
++		sdhci_writew(host, SDHCI_MAKE_CMD(cmd->opcode, flags),
++			SDHCI_COMMAND);
++	}
+ }
+ 
+ static void sdhci_finish_command(struct sdhci_host *host)
 diff --git a/drivers/mmc/host/sdhci.h b/drivers/mmc/host/sdhci.h
-index c4edd52..2e8dfd1 100644
+index fd151a1..c4edd52 100644
 --- a/drivers/mmc/host/sdhci.h
 +++ b/drivers/mmc/host/sdhci.h
-@@ -235,6 +235,8 @@ struct sdhci_host {
+@@ -58,6 +58,8 @@ static inline int sdhci_off(sdhci_reg_t reg)
+ #define  SDHCI_CMD_RESP_SHORT_BUSY 0x03
+ 
+ #define SDHCI_MAKE_CMD(c, f) (((c & 0xff) << 8) | (f & 0xff))
++#define SDHCI_MAKE_CMD_32BIT(c, f, m) \
++	((((c) & 0xff) << 24) | (((f) & 0xff) << 16) | ((m) & 0x37))
+ 
+ #define SDHCI_RESPONSE		sdhci_reg(0x10)
+ 
+@@ -231,6 +233,8 @@ struct sdhci_host {
+ #define SDHCI_QUIRK_BROKEN_CARD_DETECTION		(1<<16)
+ /* Controller reports inverted write-protect state */
  #define SDHCI_QUIRK_INVERTED_WRITE_PROTECT		(1<<17)
- /* Controller has all registers of 32 bit width */
- #define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
-+/* Controller issues PIO interrupts during DMA transfers */
-+#define SDHCI_QUIRK_PIO_IRQS_DURING_DMA			(1<<19)
++/* Controller has all registers of 32 bit width */
++#define SDHCI_QUIRK_32BIT_REGISTERS			(1<<18)
  
  	int			irq;		/* Device IRQ */
  	void __iomem *		ioaddr;		/* Mapped address */
-@@ -256,6 +258,7 @@ struct sdhci_host {
- #define SDHCI_USE_ADMA		(1<<1)		/* Host is ADMA capable */
- #define SDHCI_REQ_USE_DMA	(1<<2)		/* Use DMA for this req. */
- #define SDHCI_DEVICE_DEAD	(1<<3)		/* Device unresponsive */
-+#define SDHCI_PIO_DISABLED	(1<<4)		/* PIO IRQs disabled */
- 
- 	unsigned int		version;	/* SDHCI spec. version */
- 
 -- 
 1.5.6.5
 
