@@ -1,67 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758273AbZBFCbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbZBFCcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758273AbZBFCbU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:31:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZBFCbH
+	id S1758233AbZBFCcv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:32:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZBFCco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:31:07 -0500
-Received: from wf-out-1314.google.com ([209.85.200.170]:35032 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752093AbZBFCbG (ORCPT
+	Thu, 5 Feb 2009 21:32:44 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33933 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752920AbZBFCcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:31:06 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=yBeMs13bTzzlIhpZMqkwBvAkzMwuT+mHGNRBLH68Ylc3DwMzJoZr12VJe6uFB+fjUs
-         qD8jQZlTdq7O3Ok2l7CXIYEd4ad9VmlYEedO4ECWrdv01ywaWbqn7dP/Bj60/ZXLqi28
-         EyKCdZWZUmys7hXZG7HJZanzKOep9+XDiABWQ=
+	Thu, 5 Feb 2009 21:32:43 -0500
+Date: Thu, 5 Feb 2009 21:32:41 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/2] ring-buffer: add NMI protection for spinlocks
+In-Reply-To: <alpine.DEB.1.10.0902052058470.5262@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.1.10.0902052131080.5262@gandalf.stny.rr.com>
+References: <20090206011315.360405659@goodmis.org> <20090206011350.976972261@goodmis.org> <20090205175321.e1455c0e.akpm@linux-foundation.org> <alpine.DEB.1.10.0902052058470.5262@gandalf.stny.rr.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <200902051551.14146.david-b@pacbell.net>
-References: <1226994760-4301-1-git-send-email-cooloney@kernel.org>
-	 <200811201405.06811.david-b@pacbell.net>
-	 <386072610902050130k27c6d7far752ac49183bf36ae@mail.gmail.com>
-	 <200902051551.14146.david-b@pacbell.net>
-Date: Fri, 6 Feb 2009 10:31:05 +0800
-X-Google-Sender-Auth: 894e7286b36b379a
-Message-ID: <386072610902051831k7b3530b1lc19a07b4a0e1eacc@mail.gmail.com>
-Subject: Re: [PATCH 01/16] Blackfin SPI Driver: ensure cache coherency before 
-	doing DMA
-From: Bryan Wu <cooloney@kernel.org>
-To: David Brownell <david-b@pacbell.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Mike Frysinger <vapier.adi@gmail.com>,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Vitja Makarov <vitja.makarov@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 6, 2009 at 7:51 AM, David Brownell <david-b@pacbell.net> wrote:
-> On Thursday 05 February 2009, Bryan Wu wrote:
->> As you acked this patchset, is that possible to merge it?
->> Or need Andrew to keep them in -mm for a while.
->
-> ISTR *NOT* acking the whole series though.  In fact, I recall
-> giving a generic NAK part way through because of patches that
-> didn't include comments (after manually NAKing many individual
-> patches) and ones where $SUBJECT didn't match the patch comments.
-> Plus even a few which seemed to be wrong.
->
-> (And I've said the same thing about Blackfin patches before,
-> too.  Please help the message get through to your co-workers:
-> make sure the patches come with useful public descriptions.)
->
-> At this point, best to resend the whole series, with the
-> updates I requested.  The few patches which I did ack can
-> include that ack.
->
 
-OK, I will resend these 16 patches and next new 5 patches soon.
-Thanks a lot
+On Thu, 5 Feb 2009, Steven Rostedt wrote:
 
--Bryan
+> 
+> [ added Arjan ]
+> 
+> On Thu, 5 Feb 2009, Andrew Morton wrote:
+> > > diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> > > index 4d33224..4c68358 100644
+> > > --- a/arch/x86/kernel/ftrace.c
+> > > +++ b/arch/x86/kernel/ftrace.c
+> > > @@ -113,7 +113,7 @@ static void ftrace_mod_code(void)
+> > >  					     MCOUNT_INSN_SIZE);
+> > >  }
+> > >  
+> > > -void ftrace_nmi_enter(void)
+> > > +void arch_ftrace_nmi_enter(void)
+> > >  {
+> > >  	atomic_inc(&in_nmi);
+> > 
+> > This in_nmi thing looks a bit awkward.  It's not very clear from the
+> > code what it does or why it exists, but it looks like I'm going to have
+> > to get used to that...
+> > 
+> > Surely it is buggy?  It's incremented by _any_ cpu, so code which reads
+> > it (eg, prepare_ftrace_return()) will bale out if some other CPU
+> > happened to be in the middle of taking an NMI.
+
+Arg! Completely ignore this. I did not look at the function you mentioned.
+I was thinking about the code modification.
+
+Yes! It is buggy :-p
+
+The prepare_ftrace_return only wants to bail if it is in an nmi on the 
+current CPU.
+
+/me goes to write a patch.
+
+-- Steve
+
+> 
+> And that is exactly what we want it to do ;-)
+> 
+> This is code modification. If you modify code that another cpu is 
+> executing with, the result is undefined. In my tests to cause this type of 
+> error, I usually get a general protection fault.
+> 
+> To modify code safely, you must act like a uniprocessor. That is, the code 
+> you modify must not be executing on another CPU. We use stop_machine to 
+> help us out here, but under NMI stress tests, we found that we can crash, 
+> because the NMI will execute code being modified. Stop_machine does not 
+> disable NMIs on other CPUS.
+> 
+> To solve this, we sync up the modification with the NMI with a couple of 
+> variables. That's what all those memory barriers are for.
+> 
+> When we go to modify a line of code, we set a variable that we are doing 
+> so, wait for all NMIs to finish, then modify the code, wait for NMIs
+> again, and repeat on the next line to modify.
+> 
+> If the NMI goes off on any CPU, it increments the in_nmi counter. If the 
+> mod code flag is set, the NMI modifies the code.
+> 
+> The trick here is that the crash only occurs if the code is modified as it 
+> is being executed on. But it will not crash if the code is written to with 
+> the same data as it was. In other words, it is fine to write the code and 
+> execute it, if what you are writing is what is already there. No 
+> modification being done.
+> 
+> All NMIs that go off will modify the same code. Even if the code being 
+> modified is in a NMI code path, only the first NMI that goes off will 
+> actually modify it, the rest will just be writting the same data to the 
+> location. Even the main code will be writing the same data. No races.
+> 
+> 
+> 
+> > 
+> > Would it not be better to make in_nmi a per-cpu thing, make it a piece
+> > of first-class kernel infrastructure, add a nice interface to it, hoist
+> > it up into generic code, call that code from arch NMI handlers, call
+> > that interface from ftrace, etc?  Or perhaps it could be implemented in
+> > task_struct, alongside in_irq(), in_softirq(), etc.  There are three bits
+> > left in ->preempt_count.
+> 
+> I agree, we should have a per cpu nmi code. I can write that up and use
+> it for the ring buffer. But the call back for the ftrace code that I 
+> explained here must still be made. We need a "global" nmi counter for it 
+> to work.
+> 
+> -- Steve
+> 
+> > 
+> > This approach would remove the duplication which this patch is
+> > attempting to add.
+> > 
+> > Plus there's already quite a bit of duplication in
+> > arch/x86/kernel/ftrace.c between the
+> > CONFIG_DYNAMIC_FTRACE/!CONFIG_DYNAMIC_FTRACE hunks.  Two definitions of
+> > in_nmi, duplicated inc/dec thereof?
+> > 
+> > 
+> > 
+> > 
+> > 
+> 
