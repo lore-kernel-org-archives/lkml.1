@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbZBFVp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbZBFVvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757742AbZBFVp5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 16:45:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZBFVpt
+	id S1757334AbZBFVvb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 16:51:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753405AbZBFVvX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 16:45:49 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37998 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753243AbZBFVps (ORCPT
+	Fri, 6 Feb 2009 16:51:23 -0500
+Received: from rcsinet12.oracle.com ([148.87.113.124]:60716 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753325AbZBFVvW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 16:45:48 -0500
-Date: Fri, 6 Feb 2009 13:44:10 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gerald Schaefer <gerald.schaefer@de.ibm.com>
-Cc: roland@redhat.com, linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
-       heiko.carstens@de.ibm.com, torvalds@linux-foundation.org
-Subject: Re: [BUG] binfmt_elf: get_user() called in vma_dump_size() after
- set_fs(KERNEL_DS)
-Message-Id: <20090206134410.d548b72c.akpm@linux-foundation.org>
-In-Reply-To: <1233940235.22140.9.camel@localhost.localdomain>
-References: <1233940235.22140.9.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 6 Feb 2009 16:51:22 -0500
+Subject: Re: [GIT PULL] Btrfs updates for 2.6.29-rc
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LFD.2.00.0902060851270.3048@localhost.localdomain>
+References: <1233937349.17551.18.camel@think.oraclecorp.com>
+	 <alpine.LFD.2.00.0902060851270.3048@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 16:51:07 -0500
+Message-Id: <1233957067.10366.0.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.498CB0CF.0045:SCFSTAT928724,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Feb 2009 18:10:35 +0100
-Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
-
-> Hi,
+On Fri, 2009-02-06 at 08:53 -0800, Linus Torvalds wrote:
 > 
-> elf_core_dump() does a set_fs(KERNEL_DS) and then calls vma_dump_size(),
-> which uses get_user() to check for an ELF header at vma->vm_start in the
-> user mapping. This is a bug because vm_start is a user virtual address and
-> get_user() will fail or even read from a kernel address (KERNEL_DS).
+> On Fri, 6 Feb 2009, Chris Mason wrote:
+> > 
+> > Here's the shortlog:
 > 
-> Maybe a get_user_pages() should be used to get the user data, or a temporary
-> set_fs(USER_DS)?
+> Diffstats too, please.
 > 
 
-Could use __get_user() to skip the access_ok() check?
+Whoops, here we go:
 
-We'd need to be sure that the address isn't a kernel address or iomem
-or something. 
+fs/btrfs/Kconfig        |   13 ++
+ fs/btrfs/async-thread.c |   60 +++++++-
+ fs/btrfs/ctree.c        |  259 ++++++++++++++++++++++++++++--
+ fs/btrfs/ctree.h        |    5 +-
+ fs/btrfs/disk-io.c      |   16 ++-
+ fs/btrfs/extent-tree.c  |  397 +++++++++++++++++++++++++++++++++++++++++------
+ fs/btrfs/extent_io.c    |   39 ++---
+ fs/btrfs/extent_io.h    |   16 ++-
+ fs/btrfs/inode.c        |   57 ++++++-
+ fs/btrfs/locking.c      |  208 ++++++++++++++++++++++--
+ fs/btrfs/locking.h      |    6 +
+ fs/btrfs/ref-cache.c    |    1 +
+ fs/btrfs/ref-cache.h    |    1 -
+ fs/btrfs/tree-defrag.c  |    1 +
+ fs/btrfs/tree-log.c     |    4 +
+ fs/btrfs/volumes.c      |   11 +-
+ fs/btrfs/xattr.c        |   34 ++++-
+ fs/btrfs/xattr.h        |    2 +
+ 18 files changed, 996 insertions(+), 134 deletions(-)
+
+This time around, there are actually lots of comments added.
+
+-chris
+
+
