@@ -1,100 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756258AbZBFSuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbZBFSuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756258AbZBFSuZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:50:25 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZBFSuK
+	id S1757236AbZBFSuv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 13:50:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZBFSum
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:50:10 -0500
-Received: from mu-out-0910.google.com ([209.85.134.184]:33935 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZBFSuJ (ORCPT
+	Fri, 6 Feb 2009 13:50:42 -0500
+Received: from gateway-1237.mvista.com ([63.81.120.158]:54905 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752816AbZBFSum (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 13:50:09 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=obDjugSPt/Mr5nj9CdQoGiyLgq2BjAO3g+ja36x6OE59zuZHMFKhvrB1B7+BB0uy00
-         NNf7jBaKTi5RBR0mbXP2p/xVHyg5bV7MvKKLUeCjHWb03SHgwKpbWImtlmZVzMXnnpSq
-         9VqnFFkv6NWt6fhSn4B2u/lil9+P5b3G+ay58=
-From: Bert Wesarg <bert.wesarg@googlemail.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: linux-kernel@vger.kernel.org, Bert Wesarg <bert.wesarg@googlemail.com>
-Subject: [urcu PATCH] test_urcu.c: use gettid()
-Date: Fri,  6 Feb 2009 19:49:57 +0100
-Message-Id: <1233946197-32046-1-git-send-email-bert.wesarg@googlemail.com>
-X-Mailer: git-send-email 1.6.1.rc4
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+	Fri, 6 Feb 2009 13:50:42 -0500
+Message-ID: <498C8681.3070205@ct.jp.nec.com>
+Date: Fri, 06 Feb 2009 10:50:41 -0800
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] sched_rt: protect rt_rq->rt_time by rt_runtime_lock
+References: <498B77F6.4020702@ct.jp.nec.com>	 <498B7862.2040004@ct.jp.nec.com> <1233878343.4620.44.camel@laptop> <498B7F13.7040104@ct.jp.nec.com>
+In-Reply-To: <498B7F13.7040104@ct.jp.nec.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's probably better to print the tid for each thread, not the pid.
+Hiroshi Shimamoto wrote:
+> Peter Zijlstra wrote:
+>> On Thu, 2009-02-05 at 15:38 -0800, Hiroshi Shimamoto wrote:
+>>> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+>>>
+>>> Impact: fix possible race condition
+>>>
+>>> rt_rq->rt_time should be protected.
+>> Don't think so, all we do is check the value for non-zero outside the
+>> lock, that should be ok.
 
-Signed-off-by: Bert Wesarg <bert.wesarg@googlemail.com>
+OK, now I see. I didn't find any real race.
 
----
- test_urcu.c |   28 ++++++++++++++++++++++++----
- 1 files changed, 24 insertions(+), 4 deletions(-)
-
-diff --git a/test_urcu.c b/test_urcu.c
-index db0b68c..ea5a784 100644
---- a/test_urcu.c
-+++ b/test_urcu.c
-@@ -17,6 +17,23 @@
- #include <unistd.h>
- #include <stdio.h>
- #include <assert.h>
-+#include <sys/syscall.h>
-+
-+#if defined(_syscall0)
-+_syscall0(pid_t, gettid)
-+#elif defined(__NR_gettid)
-+static inline pid_t gettid(void)
-+{
-+	return syscall(__NR_gettid);
-+}
-+#else
-+#warning "use pid as tid"
-+static inline pid_t gettid(void)
-+{
-+	return getpid();
-+}
-+#endif
-+
- #include "urcu.h"
- 
- struct test_array {
-@@ -36,8 +53,8 @@ void *thr_reader(void *arg)
- 	int qparity, i, j;
- 	struct test_array *local_ptr;
- 
--	printf("thread %s, thread id : %lu, pid %lu\n",
--			"reader", pthread_self(), (unsigned long)getpid());
-+	printf("thread %s, thread id : %lx, tid %lu\n",
-+			"reader", pthread_self(), (unsigned long)gettid());
- 	sleep(2);
- 
- 	urcu_register_thread();
-@@ -66,8 +83,8 @@ void *thr_writer(void *arg)
- 	int i;
- 	struct test_array *new, *old;
- 
--	printf("thread %s, thread id : %lu, pid %lu\n",
--			"writer", pthread_self(), (unsigned long)getpid());
-+	printf("thread %s, thread id : %lx, tid %lu\n",
-+			"writer", pthread_self(), (unsigned long)gettid());
- 	sleep(2);
- 
- 	for (i = 0; i < 10000000; i++) {
-@@ -104,6 +121,9 @@ int main()
- 	void *tret;
- 	int i;
- 
-+	printf("thread %-6s, thread id : %lx, tid %lu\n",
-+			"main", pthread_self(), (unsigned long)gettid());
-+
- 	for (i = 0; i < NR_READ; i++) {
- 		err = pthread_create(&tid_reader[i], NULL, thr_reader, NULL);
- 		if (err != 0)
--- 
-tg: (24316d1..) bw/use-gettid (depends on: master)
+Thanks,
+Hiroshi
