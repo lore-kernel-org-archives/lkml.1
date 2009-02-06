@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758575AbZBFOxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZBFOzG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758575AbZBFOxu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:53:50 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752938AbZBFOxj
+	id S1757471AbZBFOzG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:55:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbZBFOyy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:53:39 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56285 "EHLO mx3.mail.elte.hu"
+	Fri, 6 Feb 2009 09:54:54 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49863 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZBFOxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:53:38 -0500
-Date: Fri, 6 Feb 2009 15:53:24 +0100
+	id S1752358AbZBFOyx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:54:53 -0500
+Date: Fri, 6 Feb 2009 15:54:31 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: akataria@vmware.com, "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Zach Amsden <zach@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>,
-       Rohit Jain <rjain@vmware.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PARAVIRT/x86] BUGFIX: Put a missing paravirt_release_pmd in
-	pgd_dtor
-Message-ID: <20090206145324.GF18368@elte.hu>
-References: <1233885731.29693.26.camel@alok-dev1> <498BA0CA.2040603@goop.org> <1233901043.8943.6.camel@alok-dev1> <498BDE1D.8030101@goop.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
+Message-ID: <20090206145431.GG18368@elte.hu>
+References: <20090206065352.940088243@goodmis.org> <20090206065437.986292747@goodmis.org> <1233912891.4731.1.camel@laptop> <20090206144609.GB18368@elte.hu> <alpine.DEB.1.10.0902060950250.10059@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498BDE1D.8030101@goop.org>
+In-Reply-To: <alpine.DEB.1.10.0902060950250.10059@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,18 +38,32 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Alok Kataria wrote:
->> As it affects only VMI, instead of adding another callback, i have
->> hooked on the paravirt_pgd_free call for vmi to release the pgd page.
->> Below is the patch. I will run some overnight tests with this patch and
->> get back if there are any errors.
->>   
->
-> I'd forgotten that I'd already added pgd_alloc/pgd_free.  So, yes, just  
-> use pgd_free.
+> On Fri, 6 Feb 2009, Ingo Molnar wrote:
+> 
+> > 
+> > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > 
+> > > On Fri, 2009-02-06 at 01:53 -0500, Steven Rostedt wrote:
+> > > 
+> > > > This code adds an in_nmi() macro that uses the current tasks preempt count
+> > > > to track when it is in NMI context. Other parts of the kernel can
+> > > > use this to determine if the context is in NMI context or not.
+> > > > 
+> > > > This code was inspired by the -rt patch in_nmi version that was
+> > > > written by Peter Zijlstra.
+> > > 
+> > > Which in turn I borrowed from Mathieu.
+> > 
+> > Steve, could you please fix the attribution?
+> 
+> Is it OK to rebase the branch to do so?
 
-Can i take that as an Acked-by?
+Sure, that's necessary.
+
+And note that unless you base your tree against tip:tracing/ftrace i cannot 
+do a straight pull anyway. (your trees are usually based against tip:master 
+- which brings in all other branches)
 
 	Ingo
