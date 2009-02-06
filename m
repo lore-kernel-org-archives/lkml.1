@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753031AbZBFS6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756038AbZBFS7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753031AbZBFS6I (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:58:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZBFS5z
+	id S1756038AbZBFS7E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 13:59:04 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZBFS6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:57:55 -0500
-Received: from vms173009pub.verizon.net ([206.46.173.9]:57672 "EHLO
-	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751641AbZBFS5y (ORCPT
+	Fri, 6 Feb 2009 13:58:49 -0500
+Received: from mail-fx0-f20.google.com ([209.85.220.20]:58580 "EHLO
+	mail-fx0-f20.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751206AbZBFS6s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 13:57:54 -0500
-Date: Fri, 06 Feb 2009 13:57:47 -0500 (EST)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Ben Greear <greearb@candelatech.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: Regression on VIA C3 motherboard, commit: 66f2173e2
-In-reply-to: <498A93E5.2080509@candelatech.com>
-Message-id: <alpine.LFD.2.00.0902061350470.26256@localhost.localdomain>
-References: <498A93E5.2080509@candelatech.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 6 Feb 2009 13:58:48 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:x-mutt-fcc:user-agent;
+        b=QBCXVBr+1DmOxq/vobvJh58pdsQayFd3721bUxVFKyUFxFEb/liockpX+XxyGvi4VD
+         w2y0Gp5c0YwoRkhths6o40YgshO/91FCi4mnUnGhnMS0h0jNASjjYgQASBs8U3pJafHx
+         ITN7h6vuL6l9/Rp2kRb72MlsN2vUcXCaQkRJc=
+Date: Fri, 6 Feb 2009 19:59:01 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, zbr@ioremap.net, w@1wt.eu,
+       dada1@cosmosbay.com, ben@zeus.com, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jens.axboe@oracle.com
+Subject: Re: [PATCH v2] tcp: splice as many packets as possible at once
+Message-ID: <20090206185901.GA2542@ami.dom.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090205.235258.257422341.davem@davemloft.net>
+X-Mutt-Fcc: =outbox
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks for the bisect, Ben.
+David Miller wrote, On 02/06/2009 08:52 AM:
 
-Please test the patch below.
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Tue, 3 Feb 2009 09:41:08 +0000
+> 
+>> Yes, this looks reasonable. On the other hand, I think it would be
+>> nice to get some opinions of slab folks (incl. Evgeniy) on the expected
+>> efficiency of such a solution. (It seems releasing with put_page() will
+>> always have some cost with delayed reusing and/or waste of space.)
+> 
+> I think we can't avoid using carved up pages for skb->data in the end.
+> The whole kernel wants to speak in pages and be able to grab and
+> release them in one way and one way only (get_page() and put_page()).
+> 
+> What do you think is more likely?  Us teaching the whole entire kernel
+> how to hold onto SKB linear data buffers, or the networking fixing
+> itself to operate on pages for it's header metadata? :-)
+> 
+> What we'll end up with is likely a hybrid scheme.  High speed devices
+> will receive into pages.  And also the skb->data area will be page
+> backed and held using get_page()/put_page() references.
 
-I assume even without the patch, booting with "acpi=off" on your
-BIOS-ACPI-disabled box works?  (if no, this patch will not solve
-all your problems, for you have additional trouble elsewhere)
+So, after a full awakening I think I got your point at last! I thought
+all the time we're trying to do something more general, and you're
+seemingly focused on SG capable NICs, with myri10ge or niu as model
+to follow. I'm OK with this. Very nice idea and much less work! (It's
+only enough to CC all the maintainers !)
 
-I am curious why you're running a CONFIG_ACPI=y kernel
-for a box with ACPI disabled. (though yes, it is supposed to work)
+> It is not even worth optimizing for skb->data holding the entire
+> packet, that's not the case that matters.
+> 
+> These skb->data areas will thus be 128 bytes plus the skb_shinfo
+> structure blob.  They also will be recycled often, rather than held
+> onto for long periods of time.
+> 
+> In fact we can optimize that even further in many ways, for example by
+> dropping the skb->data backed memory once the skb is queued to the
+> socket receive buffer.  That will make skb->data buffer lifetimes
+> miniscule even under heavy receive load.
+> 
+> In that kind of situation, doing even the most stupidest page slicing
+> algorithm, similar to what we do now with sk->sk_sndmsg_page, is
+> more than adequate and things like NTA (purely to solve this problem)
+> is overengineering.
 
-I'm even more curious what bad things happen when
-you enable ACPI in the BIOS -- can you let me know
-and we can try to fix them so the machine can run as shipped?
+This is 100% right, except if we try to do something with non-SG and/or
+jumbos - IMHO this requires some overengineering.
 
-thanks,
--Len Brown
-Intel Open Source Technology Center
-
-diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
-index 775c97a..a885295 100644
---- a/drivers/acpi/tables.c
-+++ b/drivers/acpi/tables.c
-@@ -293,7 +293,12 @@ static void __init check_multiple_madt(void)
- 
- int __init acpi_table_init(void)
- {
--	acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
-+	acpi_status status;
-+
-+	status = acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
-+	if (ACPI_FAILURE(status))
-+		return 1;
-+
- 	check_multiple_madt();
- 	return 0;
- }
+Jarek P.
