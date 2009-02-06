@@ -1,134 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759408AbZBFUox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZBFUsG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759408AbZBFUox (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 15:44:53 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZBFUon
+	id S1758256AbZBFUsG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 15:48:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752825AbZBFUrz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 15:44:43 -0500
-Received: from rere.qmqm.pl ([89.167.52.164]:50757 "EHLO rere.qmqm.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753863AbZBFUom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 15:44:42 -0500
-Date: Fri, 6 Feb 2009 21:44:41 +0100
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: Jens Axboe <axboe@kernel.dk>, Pierre Ossman <drzeus-mmc@drzeus.cx>
+	Fri, 6 Feb 2009 15:47:55 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:55184 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751880AbZBFUry (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 15:47:54 -0500
+Date: Fri, 6 Feb 2009 22:51:29 +0200
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 02/02] mmc/sdhci: use PIO - scatterlist wrappers
-Message-ID: <20090206204441.GC13217@rere.qmqm.pl>
+Subject: Re: [PATCH 2/3] binfmt_script: rewrite using parse_shell_args()
+Message-ID: <20090206205129.GA4394@epbyminw8406h.minsk.epam.com>
+References: <1233866864-14422-1-git-send-email-kirill@shutemov.name> <1233866864-14422-2-git-send-email-kirill@shutemov.name> <20090206122556.00290967.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="nFreZHaLTZJo0R7j"
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090206122556.00290967.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-10-30)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use sg_dwiter_*_io() in sdhci_*_block_pio(). This assumes that
-buffer sizes are multiple of 4 when transferring more than one
-block consecutively.
 
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+--nFreZHaLTZJo0R7j
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff -urN b/drivers/mmc/host/sdhci.c c/drivers/mmc/host/sdhci.c
---- b/drivers/mmc/host/sdhci.c	2008-12-25 00:26:37.000000000 +0100
-+++ c/drivers/mmc/host/sdhci.c	2009-02-03 00:12:23.000000000 +0100
-@@ -176,44 +176,17 @@
- static void sdhci_read_block_pio(struct sdhci_host *host)
- {
- 	unsigned long flags;
--	size_t blksize, len, chunk;
--	u32 uninitialized_var(scratch);
--	u8 *buf;
-+	size_t blksize;
- 
- 	DBG("PIO reading\n");
- 
--	blksize = host->data->blksz;
--	chunk = 0;
-+	blksize = (host->data->blksz + 3) >> 2;
- 
- 	local_irq_save(flags);
- 
--	while (blksize) {
--		if (!sg_miter_next(&host->sg_miter))
--			BUG();
--
--		len = min(host->sg_miter.length, blksize);
--
--		blksize -= len;
--		host->sg_miter.consumed = len;
--
--		buf = host->sg_miter.addr;
--
--		while (len) {
--			if (chunk == 0) {
--				scratch = readl(host->ioaddr + SDHCI_BUFFER);
--				chunk = 4;
--			}
--
--			*buf = scratch & 0xFF;
--
--			buf++;
--			scratch >>= 8;
--			chunk--;
--			len--;
--		}
--	}
--
--	sg_miter_stop(&host->sg_miter);
-+	sg_dwiter_write_from_io(&host->sg_miter,
-+		host->ioaddr + SDHCI_BUFFER, blksize);
-+	sg_miter_stop_writing(&host->sg_miter);
- 
- 	local_irq_restore(flags);
- }
-@@ -221,44 +194,16 @@
- static void sdhci_write_block_pio(struct sdhci_host *host)
- {
- 	unsigned long flags;
--	size_t blksize, len, chunk;
--	u32 scratch;
--	u8 *buf;
-+	size_t blksize;
- 
- 	DBG("PIO writing\n");
- 
--	blksize = host->data->blksz;
--	chunk = 0;
--	scratch = 0;
-+	blksize = (host->data->blksz + 3) >> 2;
- 
- 	local_irq_save(flags);
- 
--	while (blksize) {
--		if (!sg_miter_next(&host->sg_miter))
--			BUG();
--
--		len = min(host->sg_miter.length, blksize);
--
--		blksize -= len;
--		host->sg_miter.consumed = len;
--
--		buf = host->sg_miter.addr;
--
--		while (len) {
--			scratch |= (u32)*buf << (chunk * 8);
--
--			buf++;
--			chunk++;
--			len--;
--
--			if ((chunk == 4) || ((len == 0) && (blksize == 0))) {
--				writel(scratch, host->ioaddr + SDHCI_BUFFER);
--				chunk = 0;
--				scratch = 0;
--			}
--		}
--	}
--
-+	sg_dwiter_read_to_io(&host->sg_miter,
-+		host->ioaddr + SDHCI_BUFFER, blksize);
- 	sg_miter_stop(&host->sg_miter);
- 
- 	local_irq_restore(flags);
+On Fri, Feb 06, 2009 at 12:25:56PM -0800, Andrew Morton wrote:
+> On Thu,  5 Feb 2009 22:47:43 +0200
+> "Kirill A. Shutemov" <kirill@shutemov.name> wrote:
+>=20
+> > parse_shell_args() allows to use more than one argument in shebang
+>=20
+> What is the benefit in all of this?  Why should we merge it??
+
+Now, we have to write wrapper if we need to pass more than one argument
+to the interpreter.
+
+For example, now we can't write something like
+
+#!/usr/bin/env python -c
+
+in shebang. It will be interpreted as /usr/bin/env "python -c" and we will
+get ENOENT.
+
+With the patch it will be interpreted according to shell syntax.
+
+--=20
+Regards,  Kirill A. Shutemov
+ + Belarus, Minsk
+ + ALT Linux Team, http://www.altlinux.org/
+
+--nFreZHaLTZJo0R7j
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkmMotEACgkQbWYnhzC5v6qPwQCZAUieRYjNhBVbLOKM8sGZI3To
+/AIAn1+VOxx3szkGvP30ClGCEsu4YIzu
+=81fJ
+-----END PGP SIGNATURE-----
+
+--nFreZHaLTZJo0R7j--
