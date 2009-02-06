@@ -1,282 +1,235 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757516AbZBFLpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758163AbZBFLqh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757516AbZBFLpz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 06:45:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZBFLpr
+	id S1758163AbZBFLqh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 06:46:37 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753668AbZBFLq2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 06:45:47 -0500
-Received: from chilli.pcug.org.au ([203.10.76.44]:43112 "EHLO smtps.tip.net.au"
+	Fri, 6 Feb 2009 06:46:28 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:35272 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753368AbZBFLpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 06:45:45 -0500
-Date: Fri, 6 Feb 2009 22:45:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for February 6
-Message-Id: <20090206224538.7d9f8126.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__6_Feb_2009_22_45_38_+1100_9IlQHBPcg937/_+L"
+	id S1753356AbZBFLq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 06:46:27 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] CRED: Fix SUID exec regression
+To: jmorris@namei.org, dsmith@redhat.com
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org, roland@redhat.com,
+       fche@redhat.com, oleg@redhat.com, linux-security-module@vger.kernel.org
+Date: Fri, 06 Feb 2009 11:45:46 +0000
+Message-ID: <20090206114546.4255.74054.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__6_Feb_2009_22_45_38_+1100_9IlQHBPcg937/_+L
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+The patch:
 
-Hi all,
+	commit a6f76f23d297f70e2a6b3ec607f7aeeea9e37e8d
+	CRED: Make execve() take advantage of copy-on-write credentials
 
-Changes since 20090205:
+moved the place in which the 'safeness' of a SUID/SGID exec was performed to
+before de_thread() was called.  This means that LSM_UNSAFE_SHARE is now
+calculated incorrectly.  This flag is set if any of the usage counts for
+fs_struct, files_struct and sighand_struct are greater than 1 at the time the
+determination is made.  All of which are true for threads created by the
+pthread library.
 
-Removed tree:
-	cpu_alloc (until work recommences)
+However, since we wish to make the security calculation before irrevocably
+damaging the process so that we can return it an error code in the case where
+we decide we want to reject the exec request on this basis, we have to make the
+determination before calling de_thread().
 
-Dropped trees (temporarily):
-	quota (build problem)
-	ide (build problem)
-	security-testing (build problem)
-	audit (difficult conflicts)
+So, instead, we count up the number of threads (CLONE_THREAD) that are sharing
+our fs_struct (CLONE_FS), files_struct (CLONE_FILES) and sighand_structs
+(CLONE_SIGHAND/CLONE_THREAD) with us.  These will be killed by de_thread() and
+so can be discounted by check_unsafe_exec().
 
-The tip-core tree gained a conflict against Linus' tree.
+We do have to be careful because CLONE_THREAD does not imply FS or FILES.
 
-The pci tree gained a conflict against the pci-current tree.
+We _assume_ that there will be no extra references to these structs held by the
+threads we're going to kill.
 
-The quota tree gained a build failure and was dropped.
+This can be tested with the attached pair of programs.  Build the two programs
+using the Makefile supplied, and run ./test1 as a non-root user.  If
+successful, you should see something like:
 
-The ide tree lost its 2 conflicts but gained a build failure and was
-dropped.
+	[dhowells@andromeda tmp]$ ./test1
+	--TEST1--
+	uid=4043, euid=4043 suid=4043
+	exec ./test2
+	--TEST2--
+	uid=4043, euid=0 suid=0
+	SUCCESS - Correct effective user ID
 
-The security-testing tree gained a conflict against Linus' tree and a
-build failure and was dropped.
+and if unsuccessful, something like:
 
-The proc tree lost its conflict.
+	[dhowells@andromeda tmp]$ ./test1
+	--TEST1--
+	uid=4043, euid=4043 suid=4043
+	exec ./test2
+	--TEST2--
+	uid=4043, euid=4043 suid=4043
+	ERROR - Incorrect effective user ID!
 
-The cpufreq tree lost its build failure.
+The non-root user ID you see will depend on the user you run as.
 
-----------------------------------------------------------------------------
 
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
+[test1.c]
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <pthread.h>
 
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig,
-ppc44x_defconfig and allyesconfig (minus CONFIG_PROFILE_ALL_BRANCHES) and
-i386, sparc and sparc64 defconfig.
+static void *thread_func(void *arg)
+{
+	while (1) {}
+}
 
-Below is a summary of the state of the merge.
+int main(int argc, char **argv)
+{
+	pthread_t tid;
+	uid_t uid, euid, suid;
 
-We are up to 131 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
+	printf("--TEST1--\n");
+	getresuid(&uid, &euid, &suid);
+	printf("uid=%d, euid=%d suid=%d\n", uid, euid, suid);
 
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
+	if (pthread_create(&tid, NULL, thread_func, NULL) < 0) {
+		perror("pthread_create");
+		exit(1);
+	}
 
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
+	printf("exec ./test2\n");
+	execlp("./test2", "test2", NULL);
+	perror("./test2");
+	_exit(1);
+}
 
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+[test2.c]
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+int main(int argc, char **argv)
+{
+	uid_t uid, euid, suid;
 
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-CONFLICT (content): Merge conflict in drivers/char/tty_audit.c
-CONFLICT (content): Merge conflict in kernel/auditsc.c
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-CONFLICT (content): Merge conflict in arch/arm/configs/magician_defconfig
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging quilt/driver-core
-Merging quilt/usb
-Merging tip-core/auto-core-next
-CONFLICT (content): Merge conflict in arch/x86/mach-voyager/voyager_smp.c
-Merging cpus4096/auto-cpus4096-next
-Merging ftrace/auto-ftrace-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in drivers/pci/pcie/portdrv_pci.c
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-$ git reset --hard HEAD^
-Merging jfs/next
-Merging kbuild/master
-Merging quilt/ide
-$ git reset --hard HEAD^
-Merging libata/NEXT
-Merging nfs/linux-next
-Merging xfs/master
-Merging infiniband/for-next
-Merging acpi/test
-Created commit d79806d: Revert "platform/x86: Add oqo-wmi driver for model =
-2 OQO backlight and rfkill control"
-Merging nfsd/nfsd-next
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging ocfs2/linux-next
-Merging ext4/next
-CONFLICT (content): Merge conflict in fs/ext4/ext4.h
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl-agn.c
-CONFLICT (content): Merge conflict in drivers/net/wireless/iwlwifi/iwl3945-=
-base.c
-Merging mtd/master
-Merging wireless/master
-Merging crypto/master
-Merging vfs/for-next
-Merging sound/for-next
-Merging cpufreq/next
-Merging v9fs/for-next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
-k8.c
-CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
-Merging cifs/master
-Merging mmc/next
-Merging gfs2/master
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging ubifs/linux-next
-Merging lsm/for-next
-Merging block/for-next
-Merging embedded/master
-Merging firmware/master
-CONFLICT (content): Merge conflict in sound/isa/Kconfig
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-CONFLICT (content): Merge conflict in include/linux/slub_def.h
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging uclinux/for-next
-Merging md/for-next
-Merging kmemcheck/auto-kmemcheck-next
-CONFLICT (content): Merge conflict in MAINTAINERS
-CONFLICT (content): Merge conflict in arch/x86/mm/fault.c
-CONFLICT (content): Merge conflict in mm/Makefile
-Merging generic-ipi/auto-generic-ipi-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-CONFLICT (content): Merge conflict in fs/namei.c
-$ git reset --hard HEAD^
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-CONFLICT (content): Merge conflict in kernel/irq/handle.c
-Merging iommu/auto-iommu-next
-CONFLICT (content): Merge conflict in arch/x86/include/asm/dma-mapping.h
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging proc/proc
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in include/linux/dma_remapping.h
-Merging cputime/cputime
-Merging osd/linux-next
-Merging fatfs/master
-Merging fuse/for-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging squashfs/master
-Merging omap/for-next
-Merging kmemleak/kmemleak
-CONFLICT (content): Merge conflict in include/linux/slab.h
-CONFLICT (content): Merge conflict in init/main.c
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slab.c
-CONFLICT (content): Merge conflict in mm/slob.c
-CONFLICT (content): Merge conflict in mm/slub.c
-Merging quilt/staging
-Merging scsi-post-merge/master
+	getresuid(&uid, &euid, &suid);
+	printf("--TEST2--\n");
+	printf("uid=%d, euid=%d suid=%d\n", uid, euid, suid);
 
---Signature=_Fri__6_Feb_2009_22_45_38_+1100_9IlQHBPcg937/_+L
-Content-Type: application/pgp-signature
+	if (euid != 0) {
+		fprintf(stderr, "ERROR - Incorrect effective user ID!\n");
+		exit(1);
+	}
+	printf("SUCCESS - Correct effective user ID\n");
+	exit(0);
+}
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+[Makefile]
+CFLAGS = -D_GNU_SOURCE -Wall -Werror -Wunused
+all: test1 test2
 
-iEYEARECAAYFAkmMIuIACgkQjjKRsyhoI8ywGgCeNHMAADa5nDYo8Afv2rvvrDNS
-P5kAoIBcP682ksNVA8MqKgX7dDh3mnFI
-=t57N
------END PGP SIGNATURE-----
+test1: test1.c
+	gcc $(CFLAGS) -o test1 test1.c -lpthread
 
---Signature=_Fri__6_Feb_2009_22_45_38_+1100_9IlQHBPcg937/_+L--
+test2: test2.c
+	gcc $(CFLAGS) -o test2 test2.c
+	sudo chown root.root test2
+	sudo chmod +s test2
+
+
+Reported-by: David Smith <dsmith@redhat.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ fs/compat.c   |    2 +-
+ fs/exec.c     |   28 ++++++++++++++++++++++------
+ fs/internal.h |    2 +-
+ 3 files changed, 24 insertions(+), 8 deletions(-)
+
+
+diff --git a/fs/compat.c b/fs/compat.c
+index 65a070e..d0145ca 100644
+--- a/fs/compat.c
++++ b/fs/compat.c
+@@ -1407,7 +1407,7 @@ int compat_do_execve(char * filename,
+ 	bprm->cred = prepare_exec_creds();
+ 	if (!bprm->cred)
+ 		goto out_unlock;
+-	check_unsafe_exec(bprm);
++	check_unsafe_exec(bprm, current->files);
+ 
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+diff --git a/fs/exec.c b/fs/exec.c
+index 0dd60a0..929b580 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1049,16 +1049,32 @@ EXPORT_SYMBOL(install_exec_creds);
+  * - the caller must hold current->cred_exec_mutex to protect against
+  *   PTRACE_ATTACH
+  */
+-void check_unsafe_exec(struct linux_binprm *bprm)
++void check_unsafe_exec(struct linux_binprm *bprm, struct files_struct *files)
+ {
+-	struct task_struct *p = current;
++	struct task_struct *p = current, *t;
++	unsigned long flags;
++	unsigned n_fs, n_files, n_sighand;
+ 
+ 	bprm->unsafe = tracehook_unsafe_exec(p);
+ 
+-	if (atomic_read(&p->fs->count) > 1 ||
+-	    atomic_read(&p->files->count) > 1 ||
+-	    atomic_read(&p->sighand->count) > 1)
++	n_fs = 1;
++	n_files = 1;
++	n_sighand = 1;
++	lock_task_sighand(p, &flags);
++	for (t = next_thread(p); t != p; t = next_thread(t)) {
++		if (t->fs == p->fs)
++			n_fs++;
++		if (t->files == files)
++			n_files++;
++		n_sighand++;
++	}
++
++	if (atomic_read(&p->fs->count) > n_fs ||
++	    atomic_read(&p->files->count) > n_files ||
++	    atomic_read(&p->sighand->count) > n_sighand)
+ 		bprm->unsafe |= LSM_UNSAFE_SHARE;
++
++	unlock_task_sighand(p, &flags);
+ }
+ 
+ /* 
+@@ -1273,7 +1289,7 @@ int do_execve(char * filename,
+ 	bprm->cred = prepare_exec_creds();
+ 	if (!bprm->cred)
+ 		goto out_unlock;
+-	check_unsafe_exec(bprm);
++	check_unsafe_exec(bprm, displaced);
+ 
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+diff --git a/fs/internal.h b/fs/internal.h
+index 53af885..0d8ac49 100644
+--- a/fs/internal.h
++++ b/fs/internal.h
+@@ -43,7 +43,7 @@ extern void __init chrdev_init(void);
+ /*
+  * exec.c
+  */
+-extern void check_unsafe_exec(struct linux_binprm *);
++extern void check_unsafe_exec(struct linux_binprm *, struct files_struct *);
+ 
+ /*
+  * namespace.c
+
