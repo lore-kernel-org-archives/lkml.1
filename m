@@ -1,120 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZBFCZd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753431AbZBFC0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbZBFCZd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:25:33 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZBFCZ0
+	id S1753431AbZBFC0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:26:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752402AbZBFC0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:25:26 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49886 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbZBFCZZ (ORCPT
+	Thu, 5 Feb 2009 21:26:08 -0500
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:41578 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbZBFC0H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:25:25 -0500
-Date: Thu, 5 Feb 2009 21:25:22 -0500 (EST)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
+	Thu, 5 Feb 2009 21:26:07 -0500
+Date: Fri, 6 Feb 2009 07:56:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH 1/2] ring-buffer: add NMI protection for spinlocks
-In-Reply-To: <20090205175321.e1455c0e.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.1.10.0902052058470.5262@gandalf.stny.rr.com>
-References: <20090206011315.360405659@goodmis.org> <20090206011350.976972261@goodmis.org> <20090205175321.e1455c0e.akpm@linux-foundation.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+Cc: kamezawa.hiroyu@jp.fujitsu.com, linux-kernel@vger.kernel.org,
+       nishimura@mxp.nes.nec.co.jp, lizf@cn.fujitsu.com, linux-mm@kvack.org
+Subject: Re: [-mm patch] Show memcg information during OOM (v3)
+Message-ID: <20090206022600.GC13655@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090203172135.GF918@balbir.in.ibm.com> <20090203144647.09bf9c97.akpm@linux-foundation.org> <20090205135554.61488ed6.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090205135554.61488ed6.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Andrew Morton <akpm@linux-foundation.org> [2009-02-05 13:55:54]:
 
-[ added Arjan ]
-
-On Thu, 5 Feb 2009, Andrew Morton wrote:
-> > diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-> > index 4d33224..4c68358 100644
-> > --- a/arch/x86/kernel/ftrace.c
-> > +++ b/arch/x86/kernel/ftrace.c
-> > @@ -113,7 +113,7 @@ static void ftrace_mod_code(void)
-> >  					     MCOUNT_INSN_SIZE);
-> >  }
-> >  
-> > -void ftrace_nmi_enter(void)
-> > +void arch_ftrace_nmi_enter(void)
-> >  {
-> >  	atomic_inc(&in_nmi);
+> On Tue, 3 Feb 2009 14:46:47 -0800
+> Andrew Morton <akpm@linux-foundation.org> wrote:
 > 
-> This in_nmi thing looks a bit awkward.  It's not very clear from the
-> code what it does or why it exists, but it looks like I'm going to have
-> to get used to that...
+> > > +/**
+> > > + * mem_cgroup_print_mem_info: Called from OOM with tasklist_lock held in
+> > > + * read mode.
+> > > + * @memcg: The memory cgroup that went over limit
+> > > + * @p: Task that is going to be killed
+> > > + *
+> > > + * NOTE: @memcg and @p's mem_cgroup can be different when hierarchy is
+> > > + * enabled
+> > > + */
+> > > +void mem_cgroup_print_oom_info(struct mem_cgroup *memcg, struct task_struct *p)
+> > > +{
+> > > +	struct cgroup *task_cgrp;
+> > > +	struct cgroup *mem_cgrp;
+> > > +	/*
+> > > +	 * Need a buffer on stack, can't rely on allocations. The code relies
+> > > +	 * on the assumption that OOM is serialized for memory controller.
+> > > +	 * If this assumption is broken, revisit this code.
+> > > +	 */
+> > > +	static char task_memcg_name[PATH_MAX];
+> > > +	static char memcg_name[PATH_MAX];
+> > 
+> > I don't think we need both of these.  With a bit of shuffling we could
+> > reuse the single buffer?
 > 
-> Surely it is buggy?  It's incremented by _any_ cpu, so code which reads
-> it (eg, prepare_ftrace_return()) will bale out if some other CPU
-> happened to be in the middle of taking an NMI.
+> ping?
+>
 
-And that is exactly what we want it to do ;-)
+We can use a single buffer, I'll post a patch to fix it.
+ 
 
-This is code modification. If you modify code that another cpu is 
-executing with, the result is undefined. In my tests to cause this type of 
-error, I usually get a general protection fault.
-
-To modify code safely, you must act like a uniprocessor. That is, the code 
-you modify must not be executing on another CPU. We use stop_machine to 
-help us out here, but under NMI stress tests, we found that we can crash, 
-because the NMI will execute code being modified. Stop_machine does not 
-disable NMIs on other CPUS.
-
-To solve this, we sync up the modification with the NMI with a couple of 
-variables. That's what all those memory barriers are for.
-
-When we go to modify a line of code, we set a variable that we are doing 
-so, wait for all NMIs to finish, then modify the code, wait for NMIs
-again, and repeat on the next line to modify.
-
-If the NMI goes off on any CPU, it increments the in_nmi counter. If the 
-mod code flag is set, the NMI modifies the code.
-
-The trick here is that the crash only occurs if the code is modified as it 
-is being executed on. But it will not crash if the code is written to with 
-the same data as it was. In other words, it is fine to write the code and 
-execute it, if what you are writing is what is already there. No 
-modification being done.
-
-All NMIs that go off will modify the same code. Even if the code being 
-modified is in a NMI code path, only the first NMI that goes off will 
-actually modify it, the rest will just be writting the same data to the 
-location. Even the main code will be writing the same data. No races.
-
-
-
-> 
-> Would it not be better to make in_nmi a per-cpu thing, make it a piece
-> of first-class kernel infrastructure, add a nice interface to it, hoist
-> it up into generic code, call that code from arch NMI handlers, call
-> that interface from ftrace, etc?  Or perhaps it could be implemented in
-> task_struct, alongside in_irq(), in_softirq(), etc.  There are three bits
-> left in ->preempt_count.
-
-I agree, we should have a per cpu nmi code. I can write that up and use
-it for the ring buffer. But the call back for the ftrace code that I 
-explained here must still be made. We need a "global" nmi counter for it 
-to work.
-
--- Steve
-
-> 
-> This approach would remove the duplication which this patch is
-> attempting to add.
-> 
-> Plus there's already quite a bit of duplication in
-> arch/x86/kernel/ftrace.c between the
-> CONFIG_DYNAMIC_FTRACE/!CONFIG_DYNAMIC_FTRACE hunks.  Two definitions of
-> in_nmi, duplicated inc/dec thereof?
-> 
-> 
-> 
-> 
-> 
+-- 
+	Balbir
