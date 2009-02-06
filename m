@@ -1,55 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZBFRP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760084AbZBFRPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753675AbZBFRP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:15:29 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757867AbZBFRPE
+	id S1760084AbZBFRPq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:15:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbZBFRPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:15:04 -0500
-Received: from outbound-mail-319.bluehost.com ([67.222.54.251]:57098 "HELO
-	outbound-mail-319.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756885AbZBFRPD (ORCPT
+	Fri, 6 Feb 2009 12:15:24 -0500
+Received: from yx-out-2324.google.com ([74.125.44.30]:54115 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753363AbZBFRPW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:15:03 -0500
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
-	b=IlQL5rV0cL6IwksHeNn5fTiYdpk4HpayyxqzDuCAN3oJ+8sgvdtZjdpRxcw8CmToVCsNr4RBrNAbgkmYTDHR345Z8I8Jla+Z5yGKWvn442rrwe4kGhg6uGbqjQ841eeK;
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Eric Anholt <eric@anholt.net>
-Subject: Re: Gem GTT mmaps..
-Date: Fri, 6 Feb 2009 09:14:59 -0800
-User-Agent: KMail/1.9.10
-Cc: Thomas =?iso-8859-15?q?Hellstr=F6m?= <thomas@shipmail.org>,
-       DRI <dri-devel@lists.sourceforge.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <498A1760.7010108@shipmail.org> <1233790920.16368.4.camel@gaiman> <200902051037.20590.jbarnes@virtuousgeek.org>
-In-Reply-To: <200902051037.20590.jbarnes@virtuousgeek.org>
+	Fri, 6 Feb 2009 12:15:22 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=x4ztT2bT4PFwJMj9L5MgaBKFxMK6gPpQFp04K1vKvyeHvawk/8FDGJEfGBfvQdpVBB
+         wjh2sp5733tweQ9BaQWASctSQ7DDUrnCNJ3GlLk+rrsls5BxCrxUCI4mU23SW/Qa0kEW
+         mBZX8z/VoIj+4n2+eN7qt8yTz5DO/OdgFMBZo=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+In-Reply-To: <28c262360902060535g22facdd0tf082ca0abaec3f80@mail.gmail.com>
+References: <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090206044907.GA18467@cmpxchg.org>
+	 <20090206135302.628E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090206122417.GB1580@cmpxchg.org>
+	 <28c262360902060535g22facdd0tf082ca0abaec3f80@mail.gmail.com>
+Date: Sat, 7 Feb 2009 02:15:21 +0900
+Message-ID: <28c262360902060915u18b2fb54t5f2c1f44d03306e3@mail.gmail.com>
+Subject: Re: [PATCH 3/3][RFC] swsusp: shrink file cache first
+From: MinChan Kim <minchan.kim@gmail.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902060914.59956.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, February 5, 2009 10:37 am Jesse Barnes wrote:
-> So if we leave the lookup reference around from the GTT mapping ioctl, that
-> would take care of new mappings.  And if we added/removed references at VM
-> open/close time, we should be covered for fork.  But is it ok to add a new
-> unref in the finish ioctl for GTT mapped objects?  I don't think so,
-> because we don't know for sure if the caller was the one that created the
-> new fake offset (which would be one way of detecting whether it was GTT
-> mapped). Seems like we need a new unmap ioctl?  Or we could put the mapping
-> ref/unref in libdrm, where it would be tracked on a per-process basis...
+>>> Grr, you are right.
+>>> I agree, currently may_swap doesn't control swap out or not.
+>>> so I think we should change it correct name ;)
+>>
+>> Agreed.  What do you think about the following patch?
+>
+> As for me, I can't agree with you.
+> There are two kinds of file-mapped pages.
+>
+> 1. file-mapped and dirty page.
+> 2. file-mapped and no-dirty page
+>
+> Both pages are not swapped.
+> File-mapped and dirty page is synced with original file
+> File-mapped and no-dirty page is just discarded with viewpoint of reclaim.
+>
+> So, may_swap is just related to anon-pages
+> Thus, I think may_swap is reasonable.
+> How about you ?
 
-Ah but maybe we should just tear down the fake offset at unmap time; then we'd 
-be able to use it as an existence test for the mapping and get the 
-refcounting right.  The last thing I thought of was whether we'd be ok in a 
-map_gtt -> crash case.  I *think* the vm_close code will deal with that, if 
-we do a deref there?
+Sorry for misunderstood your point.
+It would be better to remain more detaily for git log ?
 
-Thanks,
+'may_swap' applies not only to anon pages but to mapped file pages as
+well. 'may_swap' term is sometime used for 'swap', sometime used for
+'sync|discard'.
+In case of anon pages, 'may_swap' determines whether pages were swapout or not.
+but In case of mapped file pages, it determines whether pages are
+synced or discarded. so, 'may_swap' is rather awkward. Rename it to
+'may_unmap' which is the actual meaning.
+
+If you find wrong word and sentence, Please, fix it. :)
+
+>
+>>
+>> ---
+>> Subject: vmscan: rename may_swap scan control knob
+>>
+>> may_swap applies not only to anon pages but to mapped file pages as
+>> well.  Rename it to may_unmap which is the actual meaning.
+>>
+>> Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+>> ---
+>>
+>> diff --git a/mm/vmscan.c b/mm/vmscan.c
+>> index 9a27c44..2523600 100644
+>> --- a/mm/vmscan.c
+>> +++ b/mm/vmscan.c
+>> @@ -60,8 +60,8 @@ struct scan_control {
+>>
+>>        int may_writepage;
+>>
+>> -       /* Can pages be swapped as part of reclaim? */
+>> -       int may_swap;
+>> +       /* Reclaim mapped pages */
+>> +       int may_unmap;
+>>
+>>        /* This context's SWAP_CLUSTER_MAX. If freeing memory for
+>>         * suspend, we effectively ignore SWAP_CLUSTER_MAX.
+>> @@ -606,7 +606,7 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+>>                if (unlikely(!page_evictable(page, NULL)))
+>>                        goto cull_mlocked;
+>>
+>> -               if (!sc->may_swap && page_mapped(page))
+>> +               if (!sc->may_unmap && page_mapped(page))
+>>                        goto keep_locked;
+>>
+>>                /* Double the slab pressure for mapped and swapcache pages */
+>> @@ -1694,7 +1694,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+>>                .gfp_mask = gfp_mask,
+>>                .may_writepage = !laptop_mode,
+>>                .swap_cluster_max = SWAP_CLUSTER_MAX,
+>> -               .may_swap = 1,
+>> +               .may_unmap = 1,
+>>                .swappiness = vm_swappiness,
+>>                .order = order,
+>>                .mem_cgroup = NULL,
+>> @@ -1713,7 +1713,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
+>>  {
+>>        struct scan_control sc = {
+>>                .may_writepage = !laptop_mode,
+>> -               .may_swap = 1,
+>> +               .may_unmap = 1,
+>>                .swap_cluster_max = SWAP_CLUSTER_MAX,
+>>                .swappiness = swappiness,
+>>                .order = 0,
+>> @@ -1723,7 +1723,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
+>>        struct zonelist *zonelist;
+>>
+>>        if (noswap)
+>> -               sc.may_swap = 0;
+>> +               sc.may_unmap = 0;
+>>
+>>        sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
+>>                        (GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
+>> @@ -1762,7 +1762,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
+>>        struct reclaim_state *reclaim_state = current->reclaim_state;
+>>        struct scan_control sc = {
+>>                .gfp_mask = GFP_KERNEL,
+>> -               .may_swap = 1,
+>> +               .may_unmap = 1,
+>>                .swap_cluster_max = SWAP_CLUSTER_MAX,
+>>                .swappiness = vm_swappiness,
+>>                .order = order,
+>> @@ -2109,7 +2109,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+>>        struct reclaim_state reclaim_state;
+>>        struct scan_control sc = {
+>>                .gfp_mask = GFP_KERNEL,
+>> -               .may_swap = 0,
+>> +               .may_unmap = 0,
+>>                .swap_cluster_max = nr_pages,
+>>                .may_writepage = 1,
+>>                .swappiness = vm_swappiness,
+>> @@ -2147,7 +2147,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
+>>
+>>                /* Force reclaiming mapped pages in the passes #3 and #4 */
+>>                if (pass > 2) {
+>> -                       sc.may_swap = 1;
+>> +                       sc.may_unmap = 1;
+>>                        sc.swappiness = 100;
+>>                }
+>>
+>> @@ -2292,7 +2292,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
+>>        int priority;
+>>        struct scan_control sc = {
+>>                .may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
+>> -               .may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
+>> +               .may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
+>>                .swap_cluster_max = max_t(unsigned long, nr_pages,
+>>                                        SWAP_CLUSTER_MAX),
+>>                .gfp_mask = gfp_mask,
+>>
+>> --
+>> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+>> the body to majordomo@kvack.org.  For more info on Linux MM,
+>> see: http://www.linux-mm.org/ .
+>> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+>>
+>
+>
+>
+> --
+> Kinds regards,
+> MinChan Kim
+>
+
+
+
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Kinds regards,
+MinChan Kim
