@@ -1,161 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757287AbZBFQem@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbZBFQe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757287AbZBFQem (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:34:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760011AbZBFQeL
+	id S1757245AbZBFQe6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:34:58 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760129AbZBFQef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:34:11 -0500
-Received: from rcsinet12.oracle.com ([148.87.113.124]:44547 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759868AbZBFQeJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:34:09 -0500
-Message-ID: <498C667D.3080702@oracle.com>
-Date: Fri, 06 Feb 2009 08:34:05 -0800
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Fri, 6 Feb 2009 11:34:35 -0500
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:50024 "EHLO e3.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759803AbZBFQee (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 11:34:34 -0500
+Date: Fri, 6 Feb 2009 08:34:32 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org,
+       Robert Wisniewski <bob@watson.ibm.com>
+Subject: Re: [RFC git tree] Userspace RCU (urcu) for Linux (repost)
+Message-ID: <20090206163432.GF10918@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090206030543.GB8560@Krystal> <20090206045841.GA12995@Krystal> <20090206130640.GB10918@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>,
-       ISS StorageDev <iss_storagedev@hp.com>,
-       scsi <linux-scsi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: Re: cciss: WARNING/BUG in do_cciss_intr (it's back)
-References: <4989D435.7010003@oracle.com> <0F5B06BAB751E047AB5C87D1F77A778859F9EAD9D5@GVW0547EXC.americas.hpqcorp.net> <20090206074427.GR30821@kernel.dk>
-In-Reply-To: <20090206074427.GR30821@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt702.oracle.com [141.146.40.80]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.498C6675.011B:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206130640.GB10918@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Thu, Feb 05 2009, Miller, Mike (OS Dev) wrote:
->>  
->>
->>> -----Original Message-----
->>> From: Randy Dunlap [mailto:randy.dunlap@oracle.com] 
->>> Sent: Wednesday, February 04, 2009 11:45 AM
->>> To: Miller, Mike (OS Dev); ISS StorageDev; scsi; Linux Kernel 
->>> Mailing List
->>> Subject: cciss: WARNING/BUG in do_cciss_intr (it's back)
->>>
->>> Hi Mike,
->>>
->>> Was there any debugging code added to try to help with this problem?
->>> or is that the WARNING before the BUG?
->>>
->> Randy,
->> I think this is a different bug than the one you reported previously.
->> Please open a new bugzilla.
+On Fri, Feb 06, 2009 at 05:06:40AM -0800, Paul E. McKenney wrote:
+> On Thu, Feb 05, 2009 at 11:58:41PM -0500, Mathieu Desnoyers wrote:
+> > (sorry for repost, I got the ltt-dev email wrong in the previous one)
+> > 
+> > Hi Paul,
+> > 
+> > I figured out I needed some userspace RCU for the userspace tracing part
+> > of LTTng (for quick read access to the control variables) to trace
+> > userspace pthread applications. So I've done a quick-and-dirty userspace
+> > RCU implementation.
+> > 
+> > It works so far, but I have not gone through any formal verification
+> > phase. It seems to work on paper, and the tests are also OK (so far),
+> > but I offer no guarantee for this 300-lines-ish 1-day hack. :-) If you
+> > want to comment on it, it would be welcome. It's a userland-only
+> > library. It's also currently x86-only, but only a few basic definitions
+> > must be adapted in urcu.h to port it.
+> > 
+> > Here is the link to my git tree :
+> > 
+> > git://lttng.org/userspace-rcu.git
+> > 
+> > http://lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=summary
 > 
-> I think it's the same one. The first warning that now triggers is:
+> Very cool!!!  I will take a look!
 > 
-> WARNING: at drivers/block/cciss.c:225 
+> I will also point you at a few that I have put together:
 > 
-> which is
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulmck/perfbook.git
 > 
->         if (WARN_ON(hlist_unhashed(&c->list)))
-> 
-> removeQ(), this is where we would have crashed before due to trying to
-> remove a command from a list it didn't belong to. And then we crash
-> right after in the interrupt handler. So I'm pretty sure this is 100%
-> the same bug.
+> (In the CodeSamples/defer directory.)
 
-I agree, looks like the same bug to me also.
+Interesting approach, using the signal to force memory-barrier execution!
 
-> Randy, is this still using kexec? Perhaps cciss needs a better
-> kick-in-the-pants reset on driver load to clear EVERYTHING, there's
-> clearly something very bad happening there.
+o	One possible optimization would be to avoid sending a signal to
+	a blocked thread, as the context switch leading to blocking
+	will have implied a memory barrier -- otherwise it would not
+	be safe to resume the thread on some other CPU.  That said,
+	not sure whether checking to see whether a thread is blocked is
+	any faster than sending it a signal and forcing it to wake up.
 
-Yes, still using kexec for loading/testing the new kernel.
+	Of course, this approach does require that the enclosing
+	application be willing to give up a signal.  I suspect that most
+	applications would be OK with this, though some might not.
 
-> 
->> Thanks,
->> -- mikem
->>
->>> Booting 2.6.29-rc3-git6 oopsed with:
->>>
->>> calling  cciss_init+0x0/0x2e [cciss] @ 733 HP CISS Driver (v 3.6.20)
->>> ACPI: PCI Interrupt Link [LNKA] enabled at IRQ 54 cciss 
->>> 0000:42:08.0: PCI INT A -> Link[LNKA] -> GSI 54 (level, high) 
->>> -> IRQ 54 cciss 0000:42:08.0: irq 56 for MSI/MSI-X IRQ 
->>> 56/cciss0: IRQF_DISABLED is not guaranteed on shared IRQs
->>> cciss0: <0x3238> at PCI 0000:42:08.0 IRQ 56 using DAC 
->>> ------------[ cut here ]------------
->>> WARNING: at drivers/block/cciss.c:225 
->>> do_cciss_intr+0x58f/0x99a [cciss]() Hardware name: ProLiant 
->>> BL685c G1 Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
->>> Pid: 0, comm: swapper Not tainted 2.6.29-rc3-git6 #1 Call Trace:
->>>  <IRQ>  [<ffffffff8023a741>] warn_slowpath+0xd3/0xf2  
->>> [<ffffffff80243a44>] ? __mod_timer+0xc1/0xd3  
->>> [<ffffffff8041469f>] ? smi_timeout+0xd9/0xe5  
->>> [<ffffffff8024f86a>] ? ktime_get_ts+0x49/0x4e  
->>> [<ffffffff804145c6>] ? smi_timeout+0x0/0xe5  
->>> [<ffffffffa0024c4b>] do_cciss_intr+0x58f/0x99a [cciss]  
->>> [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57  
->>> [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f  
->>> [<ffffffff8020e302>] do_IRQ+0xdc/0x152  [<ffffffff8020ca13>] 
->>> ret_from_intr+0x0/0xa  <EOI> <4>---[ end trace a8b437cd48391e28 ]---
->>> BUG: unable to handle kernel NULL pointer dereference at 
->>> 00000000000000f4
->>> IP: [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss] PGD 0
->>> Oops: 0002 [#1] SMP
->>> last sysfs file: /sys/block/ram15/dev
->>> CPU 2
->>> Modules linked in: cciss(+) ehci_hcd ohci_hcd uhci_hcd
->>> Pid: 0, comm: swapper Tainted: G        W  2.6.29-rc3-git6 #1
->>> RIP: 0010:[<ffffffffa0024c93>]  [<ffffffffa0024c93>] 
->>> do_cciss_intr+0x5d7/0x99a [cciss]
->>> RSP: 0018:ffff88027f12fef0  EFLAGS: 00010046
->>> RAX: 0000000000000000 RBX: ffff88007f840270 RCX: 0000000000013888
->>> RDX: 0000000000008080 RSI: 0000000000000046 RDI: 0000000000000009
->>> RBP: ffff88027f12ff20 R08: 000000447f12fa70 R09: ffff88017e540700
->>> R10: 0000000000000000 R11: 0000000000000000 R12: ffff88007f8404b0
->>> R13: ffff88027e1a0000 R14: 0000000000000000 R15: 0000000000000086
->>> FS:  0000000000680850(0000) GS:ffff88017f121380(0000) 
->>> knlGS:0000000000000000
->>> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
->>> CR2: 00000000000000f4 CR3: 0000000000201000 CR4: 00000000000006e0
->>> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
->>> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
->>> 0000000000000400 Process swapper (pid: 0, threadinfo 
->>> ffff88017f164000, task ffff88017fa5d4c0)
->>> Stack:
->>>  0000000000000001 ffff88027f126280 0000000000000000 0000000000000000
->>>  0000000000000038 0000000000000000 ffff88027f12ff50 
->>> ffffffff8026ed21  ffffffff8076e000 0000000000000038 
->>> ffff88027f126280 ffffffff8076e054 Call Trace:
->>>  <IRQ> <0> [<ffffffff8026ed21>] handle_IRQ_event+0x27/0x57  
->>> [<ffffffff8027057d>] handle_edge_irq+0xde/0x11f  
->>> [<ffffffff8020e302>] do_IRQ+0xdc/0x152  [<ffffffff8020ca13>] 
->>> ret_from_intr+0x0/0xa  <EOI> <0>Code: 50 08 48 c7 83 40 02 00 
->>> 00 00 00 00 00 49 c7 44 24 08 00 00 00 00 8b 83 34 02 00 00 
->>> 85 c0 0f 85 49 03 00 00 4c 8b b3 50 02 00 00 <41> c7 86 f4 00 
->>> 00 00 00 00 00 00 4c 8b 83 28 02 00 00 66 41 8b RIP  
->>> [<ffffffffa0024c93>] do_cciss_intr+0x5d7/0x99a [cciss]  RSP 
->>> <ffff88027f12fef0>
->>> CR2: 00000000000000f4
->>> ---[ end trace a8b437cd48391e29 ]---
->>> Kernel panic - not syncing: Fatal exception in interrupt
->>>
->>>
->>>
->>> This is on an HP ProLiant BL685c G1, 4-proc system with
->>> 8 GB of RAM.  (same as previous reports)
->>>
->>>
->>> Rebooting worked successfully.
->>>
->>> Thanks,
->>> --
->>> ~Randy
+	Of course, I cannot resist pointing to an old LKML thread:
 
+		http://lkml.org/lkml/2001/10/8/189
 
--- 
-~Randy
+	But I think that the time is now right.  ;-)
+
+o	I don't understand the purpose of rcu_write_lock() and
+	rcu_write_unlock().  I am concerned that it will lead people
+	to decide that a single global lock must protect RCU updates,
+	which is of course absolutely not the case.  I strongly
+	suggest making these internal to the urcu.c file.  Yes,
+	uses of urcu_publish_content() would then hit two locks (the
+	internal-to-urcu.c one and whatever they are using to protect
+	their data structure), but let's face it, if you are sending a
+	signal to each and every thread, the additional overhead of the
+	extra lock is the least of your worries.
+
+	If you really want to heavily optimize this, I would suggest
+	setting up a state machine that permits multiple concurrent
+	calls to urcu_publish_content() to share the same set of signal
+	invocations.  That way, if the caller has partitioned the
+	data structure, global locking might be avoided completely
+	(or at least greatly restricted in scope).
+
+	Of course, if updates are rare, the optimization would not
+	help, but in that case, acquiring two locks would be even less
+	of a problem.
+
+o	Is urcu_qparity relying on initialization to zero?  Or on the
+	fact that, for all x, 1-x!=x mod 2^32?  Ah, given that this is
+	used to index urcu_active_readers[], you must be relying on
+	initialization to zero.
+
+o	In rcu_read_lock(), why is a non-atomic increment of the
+	urcu_active_readers[urcu_parity] element safe?  Are you
+	relying on the compiler generating an x86 add-to-memory
+	instruction?
+
+	Ditto for rcu_read_unlock().
+
+	Ah, never mind!!!  I now see the __thread specification,
+	and the keeping of references to it in the reader_data list.
+
+o	Combining the equivalent of rcu_assign_pointer() and
+	synchronize_rcu() into urcu_publish_content() is an interesting
+	approach.  Not yet sure whether or not it is a good idea.  I
+	guess trying it out on several applications would be the way
+	to find out.  ;-)
+
+	That said, I suspect that it would be very convenient in a
+	number of situations.
+
+o	It would be good to avoid having to pass the return value
+	of rcu_read_lock() into rcu_read_unlock().  It should be
+	possible to avoid this via counter value tricks, though this
+	would add a bit more code in rcu_read_lock() on 32-bit machines.
+	(64-bit machines don't have to worry about counter overflow.)
+
+	See the recently updated version of CodeSamples/defer/rcu_nest.[ch]
+	in the aforementioned git archive for a way to do this.
+	(And perhaps I should apply this change to SRCU...)
+
+o	Your test looks a bit strange, not sure why you test all the
+	different variables.  It would be nice to take a test duration
+	as an argument and run the test for that time.
+
+	I killed the test after better part of an hour on my laptop,
+	will retry on a larger machine (after noting the 18 threads
+	created!).  (And yes, I first tried Power, which objected
+	strenously to the "mfence" and "lock; incl" instructions,
+	so getting an x86 machine to try on.)
+
+Again, looks interesting!  Looks plausible, although I have not 100%
+convinced myself that it is perfectly bug-free.  But I do maintain
+a healthy skepticism of purported RCU algorithms, especially ones that
+I have written.  ;-)
+
+							Thanx, Paul
