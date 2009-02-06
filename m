@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758069AbZBFNzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZBFN4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758069AbZBFNzi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:55:38 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754561AbZBFNzb
+	id S1758272AbZBFN4Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:56:16 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbZBFNz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:55:31 -0500
-Received: from mga07.intel.com ([143.182.124.22]:10703 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754238AbZBFNza (ORCPT
+	Fri, 6 Feb 2009 08:55:59 -0500
+Received: from mga05.intel.com ([192.55.52.89]:5378 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754326AbZBFNz6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:55:30 -0500
+	Fri, 6 Feb 2009 08:55:58 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.37,391,1231142400"; 
-   d="scan'208";a="107941563"
-Date: Fri, 6 Feb 2009 14:57:53 +0100
+   d="scan'208";a="663431908"
+Date: Fri, 6 Feb 2009 14:58:22 +0100
 From: Samuel Ortiz <sameo@openedhand.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] mfd: Mark WM835x USB_SLV_500MA bit as accessible
-Message-ID: <20090206135753.GC3341@sortiz.org>
+To: Roel Kluin <roel.kluin@gmail.com>
+Cc: broonie@opensource.wolfsonmicro.com, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mfd: tries reaches -1
+Message-ID: <20090206135821.GD3341@sortiz.org>
 Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <1232727516-5049-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <4981CB45.8010108@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1232727516-5049-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+In-Reply-To: <4981CB45.8010108@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Jan 23, 2009 at 04:18:34PM +0000, Mark Brown wrote:
-> Brings the data table into sync with the silicon.
-All 3 patches applied, thanks.
-
-Cheers,
-Samuel.
+On Thu, Jan 29, 2009 at 04:29:09PM +0100, Roel Kluin wrote:
+> With a postfix decrement tries will reach -1 rather than 0,
+> so the warning will not be issued even upon timeout.
+Thanks Roel, applied.
 
  
-> Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
 > ---
->  drivers/mfd/wm8350-regmap.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/mfd/wm8350-regmap.c b/drivers/mfd/wm8350-regmap.c
-> index 68887b8..9a4cc95 100644
-> --- a/drivers/mfd/wm8350-regmap.c
-> +++ b/drivers/mfd/wm8350-regmap.c
-> @@ -3188,7 +3188,7 @@ const struct wm8350_reg_access wm8350_reg_io_map[] = {
->  	{ 0x7CFF, 0x0C00, 0x7FFF }, /* R1   - ID */
->  	{ 0x0000, 0x0000, 0x0000 }, /* R2 */
->  	{ 0xBE3B, 0xBE3B, 0x8000 }, /* R3   - System Control 1 */
-> -	{ 0xFCF7, 0xFCF7, 0xF800 }, /* R4   - System Control 2 */
-> +	{ 0xFEF7, 0xFEF7, 0xF800 }, /* R4   - System Control 2 */
->  	{ 0x80FF, 0x80FF, 0x8000 }, /* R5   - System Hibernate */
->  	{ 0xFB0E, 0xFB0E, 0x0000 }, /* R6   - Interface Control */
->  	{ 0x0000, 0x0000, 0x0000 }, /* R7 */
-> -- 
-> 1.5.6.5
+> diff --git a/drivers/mfd/wm8350-core.c b/drivers/mfd/wm8350-core.c
+> index f92595c..2e0e5c2 100644
+> --- a/drivers/mfd/wm8350-core.c
+> +++ b/drivers/mfd/wm8350-core.c
+> @@ -1111,7 +1111,7 @@ int wm8350_read_auxadc(struct wm8350 *wm8350, int channel, int scale, int vref)
+>  	do {
+>  		schedule_timeout_interruptible(1);
+>  		reg = wm8350_reg_read(wm8350, WM8350_DIGITISER_CONTROL_1);
+> -	} while (tries-- && (reg & WM8350_AUXADC_POLL));
+> +	} while (--tries && (reg & WM8350_AUXADC_POLL));
+>  
+>  	if (!tries)
+>  		dev_err(wm8350->dev, "adc chn %d read timeout\n", channel);
 > 
 
 -- 
