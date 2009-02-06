@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757023AbZBFTxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZBFUAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757023AbZBFTxR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 14:53:17 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZBFTxF
+	id S1756811AbZBFUAY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 15:00:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZBFUAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 14:53:05 -0500
-Received: from mail.candelatech.com ([208.74.158.172]:50594 "EHLO
-	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751259AbZBFTxE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 14:53:04 -0500
-X-Greylist: delayed 1971 seconds by postgrey-1.27 at vger.kernel.org; Fri, 06 Feb 2009 14:53:03 EST
-Message-ID: <498C951A.3070101@candelatech.com>
-Date: Fri, 06 Feb 2009 11:52:58 -0800
-From: Ben Greear <greearb@candelatech.com>
-Organization: Candela Technologies
-User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
+	Fri, 6 Feb 2009 15:00:10 -0500
+Received: from mail.suse.de ([195.135.220.2]:59842 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752969AbZBFUAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 15:00:08 -0500
+Message-ID: <498C96B0.7050408@suse.de>
+Date: Fri, 06 Feb 2009 20:59:44 +0100
+From: Frank Seidel <fseidel@suse.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Len Brown <lenb@kernel.org>
-CC: linux-kernel <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>, linux-acpi@vger.kernel.org
-Subject: Re: Regression on VIA C3 motherboard, commit: 66f2173e2
-References: <498A93E5.2080509@candelatech.com> <alpine.LFD.2.00.0902061350470.26256@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0902061350470.26256@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= <ukleinek@strlen.de>
+Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
+       khali@linux-fr.org, ben-linux@fluff.org, linux-i2c@vger.kernel.org,
+       frank@f-seidel.de, w.sang@pengutronix.de,
+       "David S. Miller" <davem@davemloft.net>, Frans Pop <elendil@planet.nl>,
+       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH] i2c: add missing KERN_* constants to printks
+References: <498C3EEA.5060508@suse.de> <20090206183542.GB6361@strlen.de>
+In-Reply-To: <20090206183542.GB6361@strlen.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Len Brown wrote:
-> Thanks for the bisect, Ben.
-> 
-> Please test the patch below.
+Uwe Kleine-König schrieb:
+> Are you sure about KERN_WARNING?  I havn't looked deeper, but DEB2
+> suggests KERN_DEBUG?  What about fixing DEB[1-3] directly instead of
+> each "call".  e.g.
 
-With this patch, performance is fine, and I do not see
-my smp hack being exercised.  I still have ACPI off
-in the BIOS, and on in the kernel (ie, no change
-from the original test case).
-
-So, this very well could be the fix.
+No, in this case the DEB* macro was already in many places used
+with KERN_* constants just like direct printk. I didn't wanna
+change that.
+KERN_WARNING is just the standard/default loglevel so that this
+change doesn't introduce different behaviour.
 
 Thanks,
-Ben
-
-> diff --git a/drivers/acpi/tables.c b/drivers/acpi/tables.c
-> index 775c97a..a885295 100644
-> --- a/drivers/acpi/tables.c
-> +++ b/drivers/acpi/tables.c
-> @@ -293,7 +293,12 @@ static void __init check_multiple_madt(void)
->  
->  int __init acpi_table_init(void)
->  {
-> -	acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
-> +	acpi_status status;
-> +
-> +	status = acpi_initialize_tables(initial_tables, ACPI_MAX_TABLES, 0);
-> +	if (ACPI_FAILURE(status))
-> +		return 1;
-> +
->  	check_multiple_madt();
->  	return 0;
->  }
-
-
--- 
-Ben Greear <greearb@candelatech.com>
-Candela Technologies Inc  http://www.candelatech.com
-
+Frank
