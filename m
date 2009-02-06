@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbZBFBPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbZBFBUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbZBFBPV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:15:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbZBFBO7
+	id S1756596AbZBFBUy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:20:54 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbZBFBUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:14:59 -0500
-Received: from cn.fujitsu.com ([222.73.24.84]:54011 "EHLO song.cn.fujitsu.com"
+	Thu, 5 Feb 2009 20:20:46 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62869 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754543AbZBFBO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:14:58 -0500
-Message-ID: <498B8EEB.7050104@cn.fujitsu.com>
-Date: Fri, 06 Feb 2009 09:14:19 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1753024AbZBFBUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:20:45 -0500
+Message-ID: <498B9055.8020407@cn.fujitsu.com>
+Date: Fri, 06 Feb 2009 09:20:21 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Howells <dhowells@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] fork.c: fix NULL pointer dereference when nr_threads == threads-max
+To: Oleg Nesterov <oleg@redhat.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlz?= =?UTF-8?B?YmVja2Vy?= 
+	<fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] workqueue: not allow recursion run_workqueue
+References: <497838F0.7020408@cn.fujitsu.com> <20090122093046.GC5891@nowhere> <20090122093649.GD24758@elte.hu> <c62985530901220306p78ea541cs28912a844297b304@mail.gmail.com> <1232622615.4890.114.camel@laptop> <498AA0F1.2030003@cn.fujitsu.com> <20090205170156.GA25517@redhat.com>
+In-Reply-To: <20090205170156.GA25517@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I happened to forked lots of processes, and hit NULL pointer dereference.
-It is because in copy_process() after checking max_threads, 0 is returned
-but not -EAGAIN.
+Oleg Nesterov wrote:
+> On 02/05, Lai Jiangshan wrote:
+>> DEADLOCK EXAMPLE for explain my above option:
+>>
+>> (work_func0() and work_func1() are work callback, and they
+>> calls flush_workqueue())
+>>
+>> CPU#0					CPU#1
+>> run_workqueue()                         run_workqueue()
+>>   work_func0()                            work_func1()
+>>     flush_workqueue()                       flush_workqueue()
+>>       flush_cpu_workqueue(0)                  .
+>>       flush_cpu_workqueue(cpu#1)              flush_cpu_workqueue(cpu#0)
+>>         waiting work_func1() in cpu#1           waiting work_func0 in cpu#0
+>>
+>> DEADLOCK!
+> 
+> I am not sure. Note that when work_func0() calls run_workqueue(),
+> it will clear cwq->current_work, so another flush_ on CPU#1 will
+> not wait for work_func0, no?
 
-The bug is introduced by this patch:
+cwq->current_work is changed only when
+!list_empty(&cwq->worklist)
+in run_workqueue().
 
-| commit f1752eec6145c97163dbce62d17cf5d928e28a27
-| Author: David Howells <dhowells@redhat.com>
-| Date:   Fri Nov 14 10:39:17 2008 +1100
-|
-|    CRED: Detach the credentials from task_struct
+so cwq->current_work may not be changed.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/fork.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> But anyway. Nobody argues, "if (cwq->thread == current) {...}" code in
+> flush_cpu_workqueue() is bad and should die. Otrherwise, we should
+> fix the lockdep warning ;)
+> 
+> The only problem: if we still have the users of this hack, they will
+> deadlock. But perhaps it is time to fix them.
+> 
+> And, if it was not clear, I do agree with this change. And Peter
+> seems to agree as well.
+> 
+> Oleg.
+> 
+> 
+> 
+> 
 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 242a706..6d5dbb7 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1005,6 +1005,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 	 * triggers too late. This doesn't hurt, the check is only there
- 	 * to stop root fork bombs.
- 	 */
-+	retval = -EAGAIN;
- 	if (nr_threads >= max_threads)
- 		goto bad_fork_cleanup_count;
- 
--- 
-1.5.4.rc3
 
