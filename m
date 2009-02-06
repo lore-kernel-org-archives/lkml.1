@@ -1,48 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754692AbZBFGys@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756254AbZBFGzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754692AbZBFGys (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:54:48 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751622AbZBFGyj
+	id S1756254AbZBFGzD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:55:03 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752120AbZBFGyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:54:39 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60660 "EHLO
+	Fri, 6 Feb 2009 01:54:40 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60665 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750707AbZBFGyi (ORCPT
+	with ESMTP id S1750745AbZBFGyj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:54:38 -0500
-Message-Id: <20090206065352.940088243@goodmis.org>
+	Fri, 6 Feb 2009 01:54:39 -0500
+Message-Id: <20090206065437.600251891@goodmis.org>
+References: <20090206065352.940088243@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 06 Feb 2009 01:53:52 -0500
+Date: Fri, 06 Feb 2009 01:53:53 -0500
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 0/4] ftrace: updates for tip
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 1/4] ftrace, x86: rename in_nmi variable
+Content-Disposition: inline; filename=0001-ftrace-x86-rename-in_nmi-variable.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo,
+From: Steven Rostedt <srostedt@redhat.com>
 
-The following patches are in:
+Impact: clean up
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+The in_nmi variable in x86 arch ftrace.c is a misnomer.
+Andrew Morton pointed out that the in_nmi variable is incremented
+by all CPUS. It can be set when another CPU is running an NMI.
 
-    branch: tip/devel
+Since this is actually intentional, the fix is to rename it to
+what it really is: "nmi_running"
 
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ arch/x86/kernel/ftrace.c |   22 +++++++++++-----------
+ 1 files changed, 11 insertions(+), 11 deletions(-)
 
-Steven Rostedt (4):
-      ftrace, x86: rename in_nmi variable
-      nmi: add generic nmi tracking state
-      ftrace: change function graph tracer to use new in_nmi
-      ring-buffer: use generic version of in_nmi
+diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+index 4c68358..e3fad2e 100644
+--- a/arch/x86/kernel/ftrace.c
++++ b/arch/x86/kernel/ftrace.c
+@@ -82,7 +82,7 @@ static unsigned char *ftrace_call_replace(unsigned long ip, unsigned long addr)
+  * are the same as what exists.
+  */
+ 
+-static atomic_t in_nmi = ATOMIC_INIT(0);
++static atomic_t nmi_running = ATOMIC_INIT(0);
+ static int mod_code_status;		/* holds return value of text write */
+ static int mod_code_write;		/* set when NMI should do the write */
+ static void *mod_code_ip;		/* holds the IP to write to */
+@@ -115,8 +115,8 @@ static void ftrace_mod_code(void)
+ 
+ void arch_ftrace_nmi_enter(void)
+ {
+-	atomic_inc(&in_nmi);
+-	/* Must have in_nmi seen before reading write flag */
++	atomic_inc(&nmi_running);
++	/* Must have nmi_running seen before reading write flag */
+ 	smp_mb();
+ 	if (mod_code_write) {
+ 		ftrace_mod_code();
+@@ -126,19 +126,19 @@ void arch_ftrace_nmi_enter(void)
+ 
+ void arch_ftrace_nmi_exit(void)
+ {
+-	/* Finish all executions before clearing in_nmi */
++	/* Finish all executions before clearing nmi_running */
+ 	smp_wmb();
+-	atomic_dec(&in_nmi);
++	atomic_dec(&nmi_running);
+ }
+ 
+ static void wait_for_nmi(void)
+ {
+-	if (!atomic_read(&in_nmi))
++	if (!atomic_read(&nmi_running))
+ 		return;
+ 
+ 	do {
+ 		cpu_relax();
+-	} while(atomic_read(&in_nmi));
++	} while (atomic_read(&nmi_running));
+ 
+ 	nmi_wait_count++;
+ }
+@@ -374,16 +374,16 @@ int ftrace_disable_ftrace_graph_caller(void)
+  * this page for dynamic ftrace. They have been
+  * simplified to ignore all traces in NMI context.
+  */
+-static atomic_t in_nmi;
++static atomic_t nmi_running;
+ 
+ void arch_ftrace_nmi_enter(void)
+ {
+-	atomic_inc(&in_nmi);
++	atomic_inc(&nmi_running);
+ }
+ 
+ void arch_ftrace_nmi_exit(void)
+ {
+-	atomic_dec(&in_nmi);
++	atomic_dec(&nmi_running);
+ }
+ 
+ #endif /* !CONFIG_DYNAMIC_FTRACE */
+@@ -475,7 +475,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 				&return_to_handler;
+ 
+ 	/* Nmi's are currently unsupported */
+-	if (unlikely(atomic_read(&in_nmi)))
++	if (unlikely(atomic_read(&nmi_running)))
+ 		return;
+ 
+ 	if (unlikely(atomic_read(&current->tracing_graph_pause)))
+-- 
+1.5.6.5
 
-----
- arch/x86/Kconfig           |    2 +-
- arch/x86/kernel/ftrace.c   |   39 ++++++++++-----------------------------
- include/linux/ftrace_irq.h |    8 --------
- include/linux/hardirq.h    |   15 +++++++++++++++
- kernel/trace/ring_buffer.c |   43 +++++++++++++------------------------------
- 5 files changed, 39 insertions(+), 68 deletions(-)
 -- 
