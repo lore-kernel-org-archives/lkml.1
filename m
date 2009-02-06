@@ -1,75 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZBFIzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753290AbZBFIzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbZBFIzW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 03:55:22 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZBFIzJ
+	id S1753290AbZBFIzw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 03:55:52 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752104AbZBFIzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 03:55:09 -0500
-Received: from mailrelay007.isp.belgacom.be ([195.238.6.173]:45233 "EHLO
-	mailrelay007.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752104AbZBFIzH (ORCPT
+	Fri, 6 Feb 2009 03:55:43 -0500
+Received: from mail-ew0-f21.google.com ([209.85.219.21]:36882 "EHLO
+	mail-ew0-f21.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752387AbZBFIzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 03:55:07 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEABWIi0nCTtAn/2dsb2JhbACBbs0ShBYG
-Date: Fri, 6 Feb 2009 09:55:01 +0100
-From: Philippe De Muyter <phdm@macqel.be>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hancockrwd@gmail.com, abelay@mit.edu, lenb@kernel.org,
-       stable@kernel.org
-Subject: [PATCH] floppy: release only the ports we actually requested
-Message-ID: <20090206085501.GA18125@frolo.macqel>
-References: <20090205174859.18396.68512.stgit@bob.kio> <200902051055.34149.bjorn.helgaas@hp.com> <20090205142948.1a48d983.akpm@linux-foundation.org> <200902051643.32591.bjorn.helgaas@hp.com>
+	Fri, 6 Feb 2009 03:55:42 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dU85oT67W9Ljz2g/4uGOcHrZllhGW251MvhVCNCEfnz8eB78XD6eNVEICxV+B2GZA3
+         kzLB/8c0/TmD4WxJFUsz7ePzKV1LsXctUDsks44VKq5PiFzs7amQKiETwQcvdf9YxZWv
+         zTY9hcK2uzXC9yAJ1tSHKAA2FTnaE9ngazA38=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200902051643.32591.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090206030543.GB8560@Krystal>
+References: <20090206030543.GB8560@Krystal>
+Date: Fri, 6 Feb 2009 09:55:38 +0100
+Message-ID: <36ca99e90902060055g67e53ae5k938a4e94c4637885@mail.gmail.com>
+Subject: Re: [RFC git tree] Userspace RCU (urcu) for Linux
+From: Bert Wesarg <bert.wesarg@googlemail.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, ltt-dev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bjorn, Andrew,
+On Fri, Feb 6, 2009 at 04:05, Mathieu Desnoyers
+<compudj@krystal.dyndns.org> wrote:
+> Hi Paul,
+>
+> I figured out I needed some userspace RCU for the userspace tracing part
+> of LTTng (for quick read access to the control variables) to trace
+> userspace pthread applications. So I've done a quick-and-dirty userspace
+> RCU implementation.
+>
+> It works so far, but I have not gone through any formal verification
+> phase. It seems to work on paper, and the tests are also OK (so far),
+> but I offer no guarantee for this 300-lines-ish 1-day hack. :-) If you
+> want to comment on it, it would be welcome. It's a userland-only
+> library. It's also currently x86-only, but only a few basic definitions
+> must be adapted in urcu.h to port it.
+>
+> Here is the link to my git tree :
+>
+> git://lttng.org/userspace-rcu.git
+>
+> http://lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=summary
+>
+Really interesting, thanks.
 
---
+But you should use pthread_equal() for you equality test of pthread_t.
 
-With the last floppy patch, the floppy driver requests only the ports that
-it really uses, but the code contains yet places where it releases those
-unrequested ports.  I don't know if it is harmfull, but I think it is cleaner
-that the parameters of the release_region calls match the request_region ones.
+Regards,
+Bert
 
-Signed-off-by: Philippe De Muyter <phdm@macqel.be>
-
---- a/drivers/block/floppy.c	2009-02-06 08:56:33.000000000 +0100
-+++ b/drivers/block/floppy.c	2009-02-06 09:05:55.000000000 +0100
-@@ -4274,7 +4274,8 @@ static int __init floppy_init(void)
- 		FDCS->rawcmd = 2;
- 		if (user_reset_fdc(-1, FD_RESET_ALWAYS, 0)) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
-+			release_region(FDCS->address + 2, 1);
-+			release_region(FDCS->address + 4, 2);
- 			release_region(FDCS->address + 7, 1);
- 			FDCS->address = -1;
- 			FDCS->version = FDC_NONE;
-@@ -4284,7 +4285,8 @@ static int __init floppy_init(void)
- 		FDCS->version = get_fdc_version();
- 		if (FDCS->version == FDC_NONE) {
- 			/* free ioports reserved by floppy_grab_irq_and_dma() */
--			release_region(FDCS->address + 2, 4);
-+			release_region(FDCS->address + 2, 1);
-+			release_region(FDCS->address + 4, 2);
- 			release_region(FDCS->address + 7, 1);
- 			FDCS->address = -1;
- 			continue;
-@@ -4510,7 +4512,8 @@ static void floppy_release_irq_and_dma(v
- 	old_fdc = fdc;
- 	for (fdc = 0; fdc < N_FDC; fdc++)
- 		if (FDCS->address != -1) {
--			release_region(FDCS->address + 2, 4);
-+			release_region(FDCS->address + 2, 1);
-+			release_region(FDCS->address + 4, 2);
- 			release_region(FDCS->address + 7, 1);
- 		}
- 	fdc = old_fdc;
+> Thanks,
+>
+> Mathieu
