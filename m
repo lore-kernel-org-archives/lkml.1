@@ -1,84 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758400AbZBFQVI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759286AbZBFQWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758400AbZBFQVI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:21:08 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZBFQUz
+	id S1759286AbZBFQWY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:22:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753491AbZBFQWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:20:55 -0500
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:23879 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752621AbZBFQUy (ORCPT
+	Fri, 6 Feb 2009 11:22:16 -0500
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:48036 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753165AbZBFQWO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:20:54 -0500
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Philippe De Muyter <phdm@macqel.be>
-Subject: Re: [PATCH] floppy: release only the ports we actually requested
-Date: Fri, 6 Feb 2009 09:20:13 -0700
-User-Agent: KMail/1.9.10
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hancockrwd@gmail.com, abelay@mit.edu, lenb@kernel.org,
-       stable@kernel.org
-References: <20090205174859.18396.68512.stgit@bob.kio> <200902051643.32591.bjorn.helgaas@hp.com> <20090206085501.GA18125@frolo.macqel>
-In-Reply-To: <20090206085501.GA18125@frolo.macqel>
+	Fri, 6 Feb 2009 11:22:14 -0500
+Date: Fri, 6 Feb 2009 09:22:13 -0700
+From: Alex Chiang <achiang@hp.com>
+To: tony.luck@intel.com
+Cc: paulmck@linux.vnet.ibm.com, stable@kernel.org, linux-ia64@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ia64: prevent irq migration race in __cpu_disable path
+Message-ID: <20090206162213.GD8208@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>, tony.luck@intel.com,
+	paulmck@linux.vnet.ibm.com, stable@kernel.org,
+	linux-ia64@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902060920.14194.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 February 2009 01:55:01 am Philippe De Muyter wrote:
-> Bjorn, Andrew,
-> 
-> --
-> 
-> With the last floppy patch, the floppy driver requests only the ports that
-> it really uses, but the code contains yet places where it releases those
-> unrequested ports.  I don't know if it is harmfull, but I think it is cleaner
-> that the parameters of the release_region calls match the request_region ones.
+Commit e7b14036 (prevent ia64 from invoking irq handlers on
+offline CPUs) introduced a bug, where we call fixup_irqs before
+removing the CPU from the cpu_online_map.
 
-Doh!  Boy, do I feel stupid.  I doubt this is in any git trees yet,
-so I'll combine the two patches and send a cleaner one.
+This is wrong because fixup_irqs calls migrate_irqs, and in
+migrate_irqs, we use the cpu_online_map to:
 
-Bjorn
+	1. look for interrupts on current CPU
+	2. if we find one, move it to the first available CPU in
+	the cpu_online_map
 
-> Signed-off-by: Philippe De Muyter <phdm@macqel.be>
-> 
-> --- a/drivers/block/floppy.c	2009-02-06 08:56:33.000000000 +0100
-> +++ b/drivers/block/floppy.c	2009-02-06 09:05:55.000000000 +0100
-> @@ -4274,7 +4274,8 @@ static int __init floppy_init(void)
->  		FDCS->rawcmd = 2;
->  		if (user_reset_fdc(-1, FD_RESET_ALWAYS, 0)) {
->  			/* free ioports reserved by floppy_grab_irq_and_dma() */
-> -			release_region(FDCS->address + 2, 4);
-> +			release_region(FDCS->address + 2, 1);
-> +			release_region(FDCS->address + 4, 2);
->  			release_region(FDCS->address + 7, 1);
->  			FDCS->address = -1;
->  			FDCS->version = FDC_NONE;
-> @@ -4284,7 +4285,8 @@ static int __init floppy_init(void)
->  		FDCS->version = get_fdc_version();
->  		if (FDCS->version == FDC_NONE) {
->  			/* free ioports reserved by floppy_grab_irq_and_dma() */
-> -			release_region(FDCS->address + 2, 4);
-> +			release_region(FDCS->address + 2, 1);
-> +			release_region(FDCS->address + 4, 2);
->  			release_region(FDCS->address + 7, 1);
->  			FDCS->address = -1;
->  			continue;
-> @@ -4510,7 +4512,8 @@ static void floppy_release_irq_and_dma(v
->  	old_fdc = fdc;
->  	for (fdc = 0; fdc < N_FDC; fdc++)
->  		if (FDCS->address != -1) {
-> -			release_region(FDCS->address + 2, 4);
-> +			release_region(FDCS->address + 2, 1);
-> +			release_region(FDCS->address + 4, 2);
->  			release_region(FDCS->address + 7, 1);
->  		}
->  	fdc = old_fdc;
-> 
+This means we can potentially migrate an interrupt off ourself
+back to... ourself. Uh oh.
 
+We hit a NULL deref later which causes us to oops (output trimmed):
 
+Unable to handle kernel NULL pointer dereference (address 0000000000000040)
+ip is at profile_tick+0xd0/0x1c0
+
+Call Trace:
+ [<a00000010003c700>] die+0x1a0/0x2e0
+                                sp=e0000009c922fbd0 bsp=e0000009c9221438
+ [<a0000001006e92f0>] ia64_do_page_fault+0x950/0xa80
+                                sp=e0000009c922fbd0 bsp=e0000009c92213d8
+ [<a00000010000c7a0>] ia64_native_leave_kernel+0x0/0x270
+                                sp=e0000009c922fc60 bsp=e0000009c92213d8
+ [<a0000001000ecdb0>] profile_tick+0xd0/0x1c0
+                                sp=e0000009c922fe30 bsp=e0000009c9221398
+ [<a00000010003bb90>] timer_interrupt+0x170/0x3e0
+                                sp=e0000009c922fe30 bsp=e0000009c9221330
+ [<a00000010013a800>] handle_IRQ_event+0x80/0x120
+                                sp=e0000009c922fe30 bsp=e0000009c92212f8
+ [<a00000010013aa00>] __do_IRQ+0x160/0x4a0
+                                sp=e0000009c922fe30 bsp=e0000009c9221290
+ [<a000000100012290>] ia64_process_pending_intr+0x2b0/0x360
+                                sp=e0000009c922fe30 bsp=e0000009c9221208
+ [<a0000001000112d0>] fixup_irqs+0xf0/0x2a0
+                                sp=e0000009c922fe30 bsp=e0000009c92211a8
+ [<a00000010005bd80>] __cpu_disable+0x140/0x240
+                                sp=e0000009c922fe30 bsp=e0000009c9221168
+ [<a0000001006c5870>] take_cpu_down+0x50/0xa0
+                                sp=e0000009c922fe30 bsp=e0000009c9221148
+ [<a000000100122610>] stop_cpu+0xd0/0x200
+                                sp=e0000009c922fe30 bsp=e0000009c92210f0
+
+Reading through the original thread:
+
+	http://lkml.org/lkml/2008/8/31/116
+
+It looks like Paul fixed his original issue correctly, put in a
+new call to cpu_clear() in the wrong spot, and then was convinced
+to remove the _correct_ call to cpu_clear().
+
+Cc: stable@kernel.org
+Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
+In my opinion, this is .29 material.
+
+Sorry for the huge changelog:patch ratio, but this area is tricky
+enough that more explanation is better than less, I think.
+
+Also, I'm still a little troubled by Paul's original patch. What
+happens if we're trying to offline the CPEI target? The code in
+migrate_platform_irqs() uses cpu_online_map to select the new
+CPEI target, and it seems like we can end up in the same
+situation as the problem I'm trying to fix now.
+
+Paul?
+
+My patch has held up for over 24 hours of stress testing, where
+we put the system under a heavy load and then randomly
+offline/online CPUs every 2 seconds. Without this patch, the
+machine would crash reliably within 15 minutes.
+
+---
+
+diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+index 1146399..2a17d1c 100644
+--- a/arch/ia64/kernel/smpboot.c
++++ b/arch/ia64/kernel/smpboot.c
+@@ -742,8 +742,8 @@ int __cpu_disable(void)
+ 	}
+ 
+ 	remove_siblinginfo(cpu);
+-	fixup_irqs();
+ 	cpu_clear(cpu, cpu_online_map);
++	fixup_irqs();
+ 	local_flush_tlb_all();
+ 	cpu_clear(cpu, cpu_callin_map);
+ 	return 0;
