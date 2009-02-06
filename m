@@ -1,29 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756630AbZBFOrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZBFOuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756630AbZBFOrN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:47:13 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbZBFOq4
+	id S1755159AbZBFOuX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:50:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbZBFOuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:46:56 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46596 "EHLO mx2.mail.elte.hu"
+	Fri, 6 Feb 2009 09:50:08 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59795 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754567AbZBFOq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:46:56 -0500
-Date: Fri, 6 Feb 2009 15:46:09 +0100
+	id S1750699AbZBFOuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:50:07 -0500
+Date: Fri, 6 Feb 2009 15:49:48 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
-Message-ID: <20090206144609.GB18368@elte.hu>
-References: <20090206065352.940088243@goodmis.org> <20090206065437.986292747@goodmis.org> <1233912891.4731.1.camel@laptop>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Ayaz Abdulla <aabdulla@nvidia.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] forcedeth: make msi-x different name for rx-tx
+Message-ID: <20090206144948.GD18368@elte.hu>
+References: <498BC3A8.9040203@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1233912891.4731.1.camel@laptop>
+In-Reply-To: <498BC3A8.9040203@kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,19 +38,17 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+Cool cleanups!
 
-> On Fri, 2009-02-06 at 01:53 -0500, Steven Rostedt wrote:
-> 
-> > This code adds an in_nmi() macro that uses the current tasks preempt count
-> > to track when it is in NMI context. Other parts of the kernel can
-> > use this to determine if the context is in NMI context or not.
-> > 
-> > This code was inspired by the -rt patch in_nmi version that was
-> > written by Peter Zijlstra.
-> 
-> Which in turn I borrowed from Mathieu.
+Would you mind to also fix the following - on all my systems that have 
+forcedeth gigabit ethernet i've been getting these bogus warnings for 
+_years_, under moderate load:
 
-Steve, could you please fix the attribution?
+  eth2: too many iterations (16) in nv_nic_irq.
+
+I think a 64 iterations limit will work much better. (i tried a limit of 50 
+a year ago for a while and it worked fine and had no side effects - and the 
+bogus warnings were done.)
 
 	Ingo
+
