@@ -1,45 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758511AbZBFJf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbZBFJkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758511AbZBFJf6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 04:35:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbZBFJfm
+	id S1756780AbZBFJkx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 04:40:53 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZBFJkn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 04:35:42 -0500
-Received: from casper.infradead.org ([85.118.1.10]:34043 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753677AbZBFJfl (ORCPT
+	Fri, 6 Feb 2009 04:40:43 -0500
+Received: from nwd2mail10.analog.com ([137.71.25.55]:42655 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbZBFJkm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 04:35:41 -0500
-Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20090206065437.986292747@goodmis.org>
-References: <20090206065352.940088243@goodmis.org>
-	 <20090206065437.986292747@goodmis.org>
-Content-Type: text/plain
-Date: Fri, 06 Feb 2009 10:34:51 +0100
-Message-Id: <1233912891.4731.1.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 04:40:42 -0500
+X-IronPort-AV: E=Sophos;i="4.37,390,1231131600"; 
+   d="scan'208";a="82428291"
+From: Bryan Wu <cooloney@kernel.org>
+To: greg@kroah.com
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ivan Kuten <ivan.kuten@promwad.com>,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: [PATCH] usb: Correct Makefile to make isp1760 buildable
+Date: Fri,  6 Feb 2009 17:42:34 +0800
+Message-Id: <1233913354-13755-1-git-send-email-cooloney@kernel.org>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-02-06 at 01:53 -0500, Steven Rostedt wrote:
+From: Ivan Kuten <ivan.kuten@promwad.com>
 
-> This code adds an in_nmi() macro that uses the current tasks preempt count
-> to track when it is in NMI context. Other parts of the kernel can
-> use this to determine if the context is in NMI context or not.
-> 
-> This code was inspired by the -rt patch in_nmi version that was
-> written by Peter Zijlstra.
+Signed-off-by: Ivan Kuten <ivan.kuten@promwad.com>
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Bryan Wu <cooloney@kernel.org>
+---
+ drivers/usb/Makefile |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-Which in turn I borrowed from Mathieu.
-
-
+diff --git a/drivers/usb/Makefile b/drivers/usb/Makefile
+index 8bcde8c..b2ceb4a 100644
+--- a/drivers/usb/Makefile
++++ b/drivers/usb/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_USB_MON)		+= mon/
+ obj-$(CONFIG_PCI)		+= host/
+ obj-$(CONFIG_USB_EHCI_HCD)	+= host/
+ obj-$(CONFIG_USB_ISP116X_HCD)	+= host/
++obj-$(CONFIG_USB_ISP1760_HCD)	+= host/
+ obj-$(CONFIG_USB_OHCI_HCD)	+= host/
+ obj-$(CONFIG_USB_UHCI_HCD)	+= host/
+ obj-$(CONFIG_USB_FHCI_HCD)	+= host/
+-- 
+1.5.6.3
