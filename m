@@ -1,63 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758411AbZBFSvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758746AbZBFSwG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758411AbZBFSvg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:51:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757467AbZBFSvQ
+	id S1758746AbZBFSwG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 13:52:06 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753317AbZBFSvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:51:16 -0500
-Received: from ug-out-1314.google.com ([66.249.92.173]:10256 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753248AbZBFSvO (ORCPT
+	Fri, 6 Feb 2009 13:51:52 -0500
+Received: from e38.co.us.ibm.com ([32.97.110.159]:46196 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752795AbZBFSvv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 13:51:14 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Y0t4BdZ5LWwejk9dqkOzeq0ZR5OSlrjSgo30IZ66S2NkuTiBjHTy51ps6e94j+DpJP
-         V5QPa4zlnQZ1YwUtvCqmJQrEyp2qOlGt5BKONPKVou/MzgkNGkG1wNlin90ob72+FJCx
-         PzO3AhjMVIZMsrg9hVr1RuSscYxwhRvl7R6DE=
-Message-ID: <498C86A1.8030404@gmail.com>
-Date: Fri, 06 Feb 2009 19:51:13 +0100
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081105)
+	Fri, 6 Feb 2009 13:51:51 -0500
+Date: Fri, 6 Feb 2009 12:51:42 -0600
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, hpa@zytor.com, hch@lst.de,
+       sukadev@us.ibm.com, Containers <containers@lists.osdl.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [v2][PATCH 5/5] Merge code for single and multiple-instance
+	mounts
+Message-ID: <20090206185142.GA29582@us.ibm.com>
+References: <20090204043516.GB25963@us.ibm.com> <20090204043813.GE26202@us.ibm.com>
 MIME-Version: 1.0
-To: Roland Dreier <rdreier@cisco.com>
-CC: riku.voipio@iki.fi, rpurdie@rpsys.net, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH v2] leds: Fix &&/|| confusion
-References: <498863FC.1090008@gmail.com> <adaiqnnxwxm.fsf@cisco.com>
-In-Reply-To: <adaiqnnxwxm.fsf@cisco.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090204043813.GE26202@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Dreier wrote:
->  > -	if (type != EV_SND && (code != SND_BELL || code != SND_TONE))
->  > +	if (type != EV_SND && (code != SND_BELL && code != SND_TONE))
+Quoting Sukadev Bhattiprolu (sukadev@linux.vnet.ibm.com):
 > 
-> Actually more likely seems to be
+> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> Date: Wed, 28 Jan 2009 19:11:15 -0800
+> Subject: [v2][PATCH 5/5] Merge code for single and multiple-instance mounts
 > 
-> 	if (type != EV_SND || (code != SND_BELL && code != SND_TONE))
+> new_pts_mount() (including the get_sb_nodev()), shares a lot of code
+> with init_pts_mount(). The only difference between them is the 'test-super'
+> function passed into sget().
+> 
+> Move all common code into devpts_get_sb() and remove the new_pts_mount() and
+> init_pts_mount() functions,
+> 
+> Changelog[v2]:
+> 	(Christoph Hellwig): Merge code in 'do_pts_mount()' into devpts_get_sb()
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 
-Thanks for your review,
+Acked-by: Serge Hallyn <serue@us.ibm.com>
+Tested-by: Serge Hallyn <serue@us.ibm.com>
 
------------------------>8--------------8<-------------------------------
-Fix &&/|| confusion
+except that:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/leds/leds-pca9532.c b/drivers/leds/leds-pca9532.c
-index 76ec749..11d3f1e 100644
---- a/drivers/leds/leds-pca9532.c
-+++ b/drivers/leds/leds-pca9532.c
-@@ -169,7 +169,7 @@ static int pca9532_event(struct input_dev *dev, unsigned int type,
- {
- 	struct pca9532_data *data = input_get_drvdata(dev);
- 
--	if (type != EV_SND && (code != SND_BELL || code != SND_TONE))
-+	if (type != EV_SND || (code != SND_BELL && code != SND_TONE))
- 		return -1;
- 
- 	/* XXX: allow different kind of beeps with psc/pwm modifications */
+> @@ -414,24 +365,41 @@ static int devpts_get_sb(struct file_system_type *fs_type,
+>  			return error;
+>  	}
+> 
+> -	if (opts.newinstance)
+> -		error = new_pts_mount(fs_type, flags, data, &opts, mnt);
+> -	else
+> -		error = init_pts_mount(fs_type, flags, data, &opts, mnt);
+> +	if (opts.newinstance) {
+> +		printk(KERN_NOTICE "devpts: newinstance mount\n");
+> +		s = sget(fs_type, NULL, set_anon_super, NULL);
+> +	} else {
+> +		printk(KERN_NOTICE "devpts: single-instance mount\n");
+
+These printks probably shouldn't stay in...
+
+> +		s = sget(fs_type, compare_init_pts_sb, set_anon_super, NULL);
+> +	}
+
+thanks,
+-serge
