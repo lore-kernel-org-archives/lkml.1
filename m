@@ -1,102 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760319AbZBFHSe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbZBFH3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760319AbZBFHSe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 02:18:34 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757480AbZBFHMu
+	id S1756495AbZBFH3Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 02:29:24 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752205AbZBFH3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 02:12:50 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58599 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758544AbZBFHMt (ORCPT
+	Fri, 6 Feb 2009 02:29:15 -0500
+Received: from one.firstfloor.org ([213.235.205.2]:42243 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752096AbZBFH3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 02:12:49 -0500
-Date: Thu, 5 Feb 2009 23:12:15 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
-Message-Id: <20090205231215.412def47.akpm@linux-foundation.org>
-In-Reply-To: <20090206065437.986292747@goodmis.org>
-References: <20090206065352.940088243@goodmis.org>
-	<20090206065437.986292747@goodmis.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 6 Feb 2009 02:29:15 -0500
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Zachary Amsden <zach@vmware.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       the arch/x86 maintainers <x86@kernel.org>, linux-kernel@vger.kernel.org,
+       Ravikiran Thirumalai <kiran@scalemp.com>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [PATCH 5 of 7] x86/paravirt: add register-saving thunks to reduce caller register pressure
+From: Andi Kleen <andi@firstfloor.org>
+References: <patchbomb.1233182100@abulafia.goop.org>
+	<7d4a052c499dbfe5e816.1233182105@abulafia.goop.org>
+Date: Fri, 06 Feb 2009 08:28:26 +0100
+In-Reply-To: <7d4a052c499dbfe5e816.1233182105@abulafia.goop.org> (Jeremy Fitzhardinge's message of "Wed, 28 Jan 2009 14:35:05 -0800")
+Message-ID: <87fxisvxb9.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/21.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 06 Feb 2009 01:53:54 -0500 Steven Rostedt <rostedt@goodmis.org> wrote:
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> This code adds an in_nmi() macro that uses the current tasks preempt count
-> to track when it is in NMI context. Other parts of the kernel can
-> use this to determine if the context is in NMI context or not.
-> 
-> This code was inspired by the -rt patch in_nmi version that was
-> written by Peter Zijlstra.
-> 
-> Reported-by: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  include/linux/hardirq.h |   15 +++++++++++++++
->  1 files changed, 15 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/hardirq.h b/include/linux/hardirq.h
-> index f832883..f3cf86e 100644
-> --- a/include/linux/hardirq.h
-> +++ b/include/linux/hardirq.h
-> @@ -61,6 +61,12 @@
->  #error PREEMPT_ACTIVE is too low!
->  #endif
->  
-> +#define NMI_OFFSET	(PREEMPT_ACTIVE << 1)
-> +
-> +#if NMI_OFFSET >= 0x80000000
-> +#error PREEMPT_ACTIVE too high!
-> +#endif
-> +
->  #define hardirq_count()	(preempt_count() & HARDIRQ_MASK)
->  #define softirq_count()	(preempt_count() & SOFTIRQ_MASK)
->  #define irq_count()	(preempt_count() & (HARDIRQ_MASK | SOFTIRQ_MASK))
-> @@ -73,6 +79,11 @@
->  #define in_softirq()		(softirq_count())
->  #define in_interrupt()		(irq_count())
->  
-> +/*
-> + * Are we in NMI context?
-> + */
-> +#define in_nmi()	(preempt_count() & NMI_OFFSET)
-> +
->  #if defined(CONFIG_PREEMPT)
->  # define PREEMPT_INATOMIC_BASE kernel_locked()
->  # define PREEMPT_CHECK_OFFSET 1
-> @@ -167,6 +178,8 @@ extern void irq_exit(void);
->  #define nmi_enter()				\
->  	do {					\
->  		ftrace_nmi_enter();		\
-> +		BUG_ON(in_nmi());		\
-> +		add_preempt_count(NMI_OFFSET);	\
->  		lockdep_off();			\
->  		rcu_nmi_enter();		\
->  		__irq_enter();			\
-> @@ -177,6 +190,8 @@ extern void irq_exit(void);
->  		__irq_exit();			\
->  		rcu_nmi_exit();			\
->  		lockdep_on();			\
-> +		BUG_ON(!in_nmi());		\
-> +		sub_preempt_count(NMI_OFFSET);	\
->  		ftrace_nmi_exit();		\
->  	} while (0)
->  
+> One of the problems with inserting a pile of C calls where previously
+> there were none is that the register pressure is greatly increased.
+> The C calling convention says that the caller must expect a certain
+> set of registers may be trashed by the callee, and that the callee can
+> use those registers without restriction.  This includes the function
+> argument registers, and several others.
+>
+> This patch seeks to alleviate this pressure by introducing wrapper
+> thunks that will do the register saving/restoring, so that the
+> callsite doesn't need to worry about it, but the callee function can
+> be conventional compiler-generated code. 
 
-Well that was tidy.
+I had something like this (but not as generic) for the old pre
+unification semaphores on x86-64 too. I think it's a generally useful
+facility for lots of things (in fact I've been asking gcc developers
+for providing this in a general way for some time).
 
-We're sure that no present or future architecture will for some weird
-reason nest NMIs?
+So I would suggest to move the necessary macros to do that outside
+paravirt.h into a separate include so that it can be used independently
+and not call it PV_*.
 
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
