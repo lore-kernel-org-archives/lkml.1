@@ -1,55 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755996AbZBFMFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbZBFMWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755996AbZBFMFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 07:05:31 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753207AbZBFMFW
+	id S1754274AbZBFMWi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 07:22:38 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752880AbZBFMW2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 07:05:22 -0500
-Received: from casper.infradead.org ([85.118.1.10]:33675 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753199AbZBFMFV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 07:05:21 -0500
-Subject: Re: [patch 07/41] fbdev/atyfb: Fix DSP config on some PowerMacs &
- PowerBooks
-From: David Woodhouse <dwmw2@infradead.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Risto Suominen <Risto.Suominen@gmail.com>
-In-Reply-To: <1233791475.4612.24.camel@pasglop>
-References: <20090204184029.881610776@mini.kroah.org>
-	 <20090204184602.GH25246@kroah.com>  <1233791475.4612.24.camel@pasglop>
-Content-Type: text/plain
-Date: Fri, 06 Feb 2009 12:05:04 +0000
-Message-Id: <1233921904.17724.181.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 6 Feb 2009 07:22:28 -0500
+Received: from mail.gmx.net ([213.165.64.20]:49181 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752399AbZBFMW1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 07:22:27 -0500
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18OnWhLFKYOVY4P7IwtdYA2eTT4icsQrdvLQzDKgu
+	Sg/WiVkkje4QE7
+Date: Fri, 6 Feb 2009 13:22:33 +0100 (CET)
+From: Guennadi Liakhovetski <lg@denx.de>
+X-X-Sender: lyakh@axis700.grange
+To: linux-kernel@vger.kernel.org
+cc: Paul Mundt <lethal@linux-sh.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       adrian@newgolddream.dyndns.info, lkmladrian@gmail.com,
+       linux-sh@vger.kernel.org, penberg@cs.helsinki.fi, dbaryshkov@gmail.com,
+       penguin-kernel@i-love.sakura.ne.jp, hannes@cmpxchg.org
+Subject: [PATCH] fix broken size test in bitmap_find_free_region()
+In-Reply-To: <Pine.LNX.4.64.0901280913090.4926@axis700.grange>
+Message-ID: <Pine.LNX.4.64.0902061313260.6241@axis700.grange>
+References: <8b67d60901201348r6a59928dw3fcf8c9c823d5c68@mail.gmail.com>
+ <1232488507.6794.8.camel@localhost.localdomain> <20090121033951.GB14094@linux-sh.org>
+ <20090121081118.GA14537@linux-sh.org> <20090127134831.3dd04182.akpm@linux-foundation.org>
+ <20090127225458.GA8756@linux-sh.org> <Pine.LNX.4.64.0901280913090.4926@axis700.grange>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-02-05 at 10:51 +1100, Benjamin Herrenschmidt wrote:
-> My only possible worry with that one is the first generation clamshell
-> iBook which uses a Mobility M1 chip, for which we haven't had anybody
-> testing whether this would break it or not ... 
-> 
-> So if anybody with such a machine is reading this, please holler...
+This loop and test in bitmap_find_free_region()
 
-I think I have one in the shed. That's a PowerBook1,1?
+	for (pos = 0; pos < bits; pos += (1 << order))
+		if (__reg_op(bitmap, pos, order, REG_OP_ISFREE))
+			break;
+	if (pos == bits)
+		return -ENOMEM;
 
--- 
-dwmw2
+can only return an error (-ENOMEM) if bits is a multiple of (1 << order), 
+which is, for instance, true, if bits is (also) a power of 2. This 
+is not necessarily the case with dma_alloc_from_coherent(). A failure to 
+recognise too large a request leads in dma_alloc_from_coherent() to 
+accessing beyond available memory, and to writing beyond the bitmap.
 
+Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
+---
+
+diff --git a/lib/bitmap.c b/lib/bitmap.c
+index 1338469..d49c37f 100644
+--- a/lib/bitmap.c
++++ b/lib/bitmap.c
+@@ -953,7 +953,7 @@ int bitmap_find_free_region(unsigned long *bitmap, int bits, int order)
+ 	for (pos = 0; pos < bits; pos += (1 << order))
+ 		if (__reg_op(bitmap, pos, order, REG_OP_ISFREE))
+ 			break;
+-	if (pos == bits)
++	if (pos + (1 << order) > bits)
+ 		return -ENOMEM;
+ 	__reg_op(bitmap, pos, order, REG_OP_ALLOC);
+ 	return pos;
