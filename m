@@ -1,100 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752796AbZBFRPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753675AbZBFRP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752796AbZBFRPB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:15:01 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752380AbZBFROv
+	id S1753675AbZBFRP3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:15:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757867AbZBFRPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:14:51 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:38050 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751633AbZBFROu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:14:50 -0500
-Date: Fri, 6 Feb 2009 18:14:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
-       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-next <linux-next@vger.kernel.org>,
-       linux-ia64 <linux-ia64@vger.kernel.org>
-Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
-Message-ID: <20090206171400.GA14818@elte.hu>
-References: <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206161229.GA8256@elte.hu> <20090206162352.GI13758@n2100.arm.linux.org.uk> <20090206163314.GA11216@elte.hu> <20090206163857.GJ13758@n2100.arm.linux.org.uk>
+	Fri, 6 Feb 2009 12:15:04 -0500
+Received: from outbound-mail-319.bluehost.com ([67.222.54.251]:57098 "HELO
+	outbound-mail-319.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756885AbZBFRPD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 12:15:03 -0500
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id:X-Identified-User;
+	b=IlQL5rV0cL6IwksHeNn5fTiYdpk4HpayyxqzDuCAN3oJ+8sgvdtZjdpRxcw8CmToVCsNr4RBrNAbgkmYTDHR345Z8I8Jla+Z5yGKWvn442rrwe4kGhg6uGbqjQ841eeK;
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Eric Anholt <eric@anholt.net>
+Subject: Re: Gem GTT mmaps..
+Date: Fri, 6 Feb 2009 09:14:59 -0800
+User-Agent: KMail/1.9.10
+Cc: Thomas =?iso-8859-15?q?Hellstr=F6m?= <thomas@shipmail.org>,
+       DRI <dri-devel@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <498A1760.7010108@shipmail.org> <1233790920.16368.4.camel@gaiman> <200902051037.20590.jbarnes@virtuousgeek.org>
+In-Reply-To: <200902051037.20590.jbarnes@virtuousgeek.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090206163857.GJ13758@n2100.arm.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200902060914.59956.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, February 5, 2009 10:37 am Jesse Barnes wrote:
+> So if we leave the lookup reference around from the GTT mapping ioctl, that
+> would take care of new mappings.  And if we added/removed references at VM
+> open/close time, we should be covered for fork.  But is it ok to add a new
+> unref in the finish ioctl for GTT mapped objects?  I don't think so,
+> because we don't know for sure if the caller was the one that created the
+> new fake offset (which would be one way of detecting whether it was GTT
+> mapped). Seems like we need a new unmap ioctl?  Or we could put the mapping
+> ref/unref in libdrm, where it would be tracked on a per-process basis...
 
-* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+Ah but maybe we should just tear down the fake offset at unmap time; then we'd 
+be able to use it as an existence test for the mapping and get the 
+refcounting right.  The last thing I thought of was whether we'd be ok in a 
+map_gtt -> crash case.  I *think* the vm_close code will deal with that, if 
+we do a deref there?
 
-> On Fri, Feb 06, 2009 at 05:33:14PM +0100, Ingo Molnar wrote:
-> > 
-> > * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> > 
-> > > On Fri, Feb 06, 2009 at 05:12:29PM +0100, Ingo Molnar wrote:
-> > > > 
-> > > > * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
-> > > > 
-> > > > > > We cannot see any downside of this patch.
-> > > > > > 
-> > > > > > But we can see upside of this patch is:
-> > > > > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
-> > > > > > files
-> > > > > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
-> > > > > 
-> > > > > The point is:
-> > > > > 
-> > > > > 1. If the parent include needs to include linux/types.h to get at C
-> > > > >    types _and_ the include file needs to also be included by assembly
-> > > > >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
-> > > > >    uses from the assembly code.
-> > > > > 
-> > > > >    In that case, the linux/types.h include should be contained within
-> > > > >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
-> > > > >    parts of the header file.
-> > > > 
-> > > > That makes the code much less clean: putting #include's in the middle of a 
-> > > > header is poor style and leads to people failing to consider dependencies. 
-> > > > We generally put them to the header portion.
-> > > > 
-> > > > Putting an #include line in the middle of a header file is a receipe for a 
-> > > > dependency hell (it can easily fall inside #ifdefs, can be overlooked, 
-> > > > etc.), so it's _strongly_ discouraged (at least on arch/x86).
-> > > 
-> > > Put them at the top then with an additional ifndef.
-> > 
-> > So you advocate 40 stupid pairs of #ifdefs spread out, instead of a 
-> > _single_, obvious #ifdef in a commonly used header?
-> 
-> As I see it, if you want all your style points to be adhered to, then yes.
-> And I do believe it to be a valid solution.
-> 
-> Personally, I'd put them nearer the C code.
-> 
-> That's precisely what I do with the ARM include files.  Never been a
-> problem.
-
-I take this that you kind of agree that that removing ugly #ifdefs spread 
-out is an upside. You failed to point out any downsides - you just seem to 
-claim that you can live without the upsides. That is fine.
-
-	Ingo
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
