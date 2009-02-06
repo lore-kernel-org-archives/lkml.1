@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755681AbZBFIP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755733AbZBFISL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755681AbZBFIP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 03:15:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbZBFIPP
+	id S1755733AbZBFISL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 03:18:11 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbZBFIR6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 03:15:15 -0500
-Received: from tundra.namei.org ([65.99.196.166]:3406 "EHLO tundra.namei.org"
+	Fri, 6 Feb 2009 03:17:58 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57001 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751468AbZBFIPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 03:15:13 -0500
-Date: Fri, 6 Feb 2009 19:14:54 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       "<David Safford" <safford@watson.ibm.com>,
-       Serge Hallyn <serue@us.ibm.com>
-Subject: Re: [PATCH 0/6] integrity
-In-Reply-To: <1233887341.3135.14.camel@localhost.localdomain>
-Message-ID: <alpine.LRH.1.10.0902061914420.16725@tundra.namei.org>
-References: <cover.1233262162.git.zohar@linux.vnet.ibm.com>  <alpine.LRH.1.10.0902061059510.13961@tundra.namei.org> <1233887341.3135.14.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (LRH 962 2008-03-14)
+	id S1751507AbZBFIR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 03:17:57 -0500
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] fork.c: fix NULL pointer dereference when nr_threads ==
+	threads-max
+To: torvalds@osdl.org, akpm@linux-foundation.org, jmorris@namei.org
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+Date: Fri, 06 Feb 2009 08:17:19 +0000
+Message-ID: <20090206081719.20378.39341.stgit@warthog.procyon.org.uk>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 5 Feb 2009, Mimi Zohar wrote:
+From: Li Zefan <lizf@cn.fujitsu.com>
 
-> On Fri, 2009-02-06 at 11:00 +1100, James Morris wrote:
-> > I seem to be getting a bunch of these in my logs with IMA running:
-> > 
-> > auditd[1746]: dispatch err (Bad address) event lost
-> > 
-> 
-> auditd needs to reflect the integrity definitions defined in
-> include/linux/audit.h.  ausearch-parse needs to be updated as well. For
-> which version of auditd should I post a patch? I have one for
-> audit-1.7.9.
+I happened to forked lots of processes, and hit NULL pointer dereference.
+It is because in copy_process() after checking max_threads, 0 is returned
+but not -EAGAIN.
 
-I don't know, ask the audit folk.
+The bug is introduced by this patch:
 
--- 
-James Morris
-<jmorris@namei.org>
+| commit f1752eec6145c97163dbce62d17cf5d928e28a27
+| Author: David Howells <dhowells@redhat.com>
+| Date:   Fri Nov 14 10:39:17 2008 +1100
+|
+|    CRED: Detach the credentials from task_struct
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ kernel/fork.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+
+diff --git a/kernel/fork.c b/kernel/fork.c
+index bf0cef8..586874d 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1007,6 +1007,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+ 	 * triggers too late. This doesn't hurt, the check is only there
+ 	 * to stop root fork bombs.
+ 	 */
++	retval = -EAGAIN;
+ 	if (nr_threads >= max_threads)
+ 		goto bad_fork_cleanup_count;
+ 
+
