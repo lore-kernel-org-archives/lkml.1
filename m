@@ -1,128 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755196AbZBFBhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756736AbZBFBi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755196AbZBFBhM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 20:37:12 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZBFBg6
+	id S1756736AbZBFBi1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 20:38:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752301AbZBFBiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 20:36:58 -0500
-Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:52885 "EHLO
-	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751684AbZBFBg5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 20:36:57 -0500
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, snakebyte@gmx.de, sliedes@cc.hut.fi
-Subject: [PATCH V2] Squashfs: Fix oops when reading fsfuzzer corrupted filesystems
-Cc: phillip@lougher.demon.co.uk
-Message-Id: <E1LVFfH-0007Ak-PK@dylan.lougher.demon.co.uk>
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date: Fri, 06 Feb 2009 01:37:55 +0000
+	Thu, 5 Feb 2009 20:38:19 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:56224 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751690AbZBFBiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 20:38:18 -0500
+Date: Fri, 6 Feb 2009 02:38:05 +0100
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Robin Holt <holt@sgi.com>, linux-mm@kvack.org,
+       Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [Patch] mmu_notifiers destroyed by __mmu_notifier_release()
+	retain extra mm_count.
+Message-ID: <20090206013805.GL14011@random.random>
+References: <20090205172303.GB8559@sgi.com> <alpine.DEB.1.10.0902051427280.13692@qirst.com> <20090205200214.GN8577@sgi.com> <alpine.DEB.1.10.0902051844390.17441@qirst.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0902051844390.17441@qirst.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Feb 05, 2009 at 06:54:33PM -0500, Christoph Lameter wrote:
+> One also needs to wonder why we acquire the refcount for the mmu
+> notifier on the mmstruct at all. Maybe remove the
+> 
+> 	atomic_inc()
+> 
+> from mmu_notifier_register() instead? Looks strange there especially since
+> we have a BUG_ON there as well that verifies that the number of refcount
+> is already above 0.
+> 
+> How about this patch instead?
 
-This fixes a code regression caused by the recent mainlining changes.
-Zlib sometimes tries to output more data than expected when
-decompressing corrupted data.   The recent code changes call
-zlib_inflate repeatedly, decompressing into separate 4K buffers, this
-code didn't check for the possibility that zlib_inflate might ask
-for too many buffers.
+Surely you have to remove mmdrop from mmu_notifier_unregister if you
+do that. But with the other patch that mmdrop should also be mvoed up
+now that I think about it. So both patches looks wrong.
 
-Signed-off-by: Phillip Lougher <phillip@lougher.demon.co.uk>
----
- fs/squashfs/block.c    |   13 +++++++++++--
- fs/squashfs/cache.c    |    4 ++--
- fs/squashfs/squashfs.h |    2 +-
- fs/squashfs/super.c    |    2 +-
- 4 files changed, 15 insertions(+), 6 deletions(-)
 
-diff --git a/fs/squashfs/block.c b/fs/squashfs/block.c
-index c837dfc..321728f 100644
---- a/fs/squashfs/block.c
-+++ b/fs/squashfs/block.c
-@@ -80,7 +80,7 @@ static struct buffer_head *get_block_length(struct super_block *sb,
-  * generated a larger block - this does occasionally happen with zlib).
-  */
- int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
--			int length, u64 *next_index, int srclength)
-+			int length, u64 *next_index, int srclength, int pages)
- {
- 	struct squashfs_sb_info *msblk = sb->s_fs_info;
- 	struct buffer_head **bh;
-@@ -185,6 +185,14 @@ int squashfs_read_data(struct super_block *sb, void **buffer, u64 index,
- 			}
- 
- 			if (msblk->stream.avail_out == 0) {
-+				if (page == pages) {
-+					ERROR("zlib_inflate tried to "
-+						"decompress too much data, "
-+						"expected %d bytes.  Zlib "
-+						"data probably corrupt\n",
-+						srclength);
-+					goto release_mutex;
-+				}
- 				msblk->stream.next_out = buffer[page++];
- 				msblk->stream.avail_out = PAGE_CACHE_SIZE;
- 			}
-@@ -268,7 +276,8 @@ block_release:
- 		put_bh(bh[k]);
- 
- read_failure:
--	ERROR("sb_bread failed reading block 0x%llx\n", cur_index);
-+	ERROR("squashfs_read_data failed to read block 0x%llx\n",
-+					(unsigned long long) index);
- 	kfree(bh);
- 	return -EIO;
- }
-diff --git a/fs/squashfs/cache.c b/fs/squashfs/cache.c
-index f29eda1..1c4739e 100644
---- a/fs/squashfs/cache.c
-+++ b/fs/squashfs/cache.c
-@@ -119,7 +119,7 @@ struct squashfs_cache_entry *squashfs_cache_get(struct super_block *sb,
- 
- 			entry->length = squashfs_read_data(sb, entry->data,
- 				block, length, &entry->next_index,
--				cache->block_size);
-+				cache->block_size, cache->pages);
- 
- 			spin_lock(&cache->lock);
- 
-@@ -406,7 +406,7 @@ int squashfs_read_table(struct super_block *sb, void *buffer, u64 block,
- 	for (i = 0; i < pages; i++, buffer += PAGE_CACHE_SIZE)
- 		data[i] = buffer;
- 	res = squashfs_read_data(sb, data, block, length |
--		SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length);
-+		SQUASHFS_COMPRESSED_BIT_BLOCK, NULL, length, pages);
- 	kfree(data);
- 	return res;
- }
-diff --git a/fs/squashfs/squashfs.h b/fs/squashfs/squashfs.h
-index 6b2515d..0e9feb6 100644
---- a/fs/squashfs/squashfs.h
-+++ b/fs/squashfs/squashfs.h
-@@ -34,7 +34,7 @@ static inline struct squashfs_inode_info *squashfs_i(struct inode *inode)
- 
- /* block.c */
- extern int squashfs_read_data(struct super_block *, void **, u64, int, u64 *,
--				int);
-+				int, int);
- 
- /* cache.c */
- extern struct squashfs_cache *squashfs_cache_init(char *, int, int);
-diff --git a/fs/squashfs/super.c b/fs/squashfs/super.c
-index a0466d7..f0d82a9 100644
---- a/fs/squashfs/super.c
-+++ b/fs/squashfs/super.c
-@@ -388,7 +388,7 @@ static int __init init_squashfs_fs(void)
- 		return err;
- 	}
- 
--	printk(KERN_INFO "squashfs: version 4.0 (2009/01/03) "
-+	printk(KERN_INFO "squashfs: version 4.0 (2009/01/31) "
- 		"Phillip Lougher\n");
- 
- 	return 0;
--- 
-1.5.6.3
+Ok I think the issue here is that with the current code the unregister
+call is mandatory to avoid memleak, if you do like KVM does everything
+is fine, even if ->release fires through exit_mmap, later unregister
+is called when the fd is closed so all works fine then.
 
+The reason of the mm_count pin is to avoid the driver having to
+increase mm_count itself _before_ mmu_notifier_register, basically the
+mm has to exist as long as any mmu notifier is attached to an mm, if
+mm goes away, clearly the notifier list gets corrupted.
+
+It all boils down if unregister is mandatory or not. If it's mandatory
+current code is ok, if it's not, then you've to decide if to remove
+both mmdrop and atomic_inc and have the caller handle it (which is
+likely ok with kvm) or to add mmdrop to the auto-disarming code, and
+then move the mmdrop up in the !hlist_unhashed path of unregister
+(which was missing from Robin's patch and could trigger a double
+mmdrop if one always calls unregister unconditionally which is meant
+to be allowed with current code and that's the kvm usage model too).
