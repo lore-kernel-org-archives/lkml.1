@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbZBFWwt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbZBFXEa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbZBFWwt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 17:52:49 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZBFWwi
+	id S1755382AbZBFXEa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 18:04:30 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752844AbZBFXEV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 17:52:38 -0500
-Received: from wf-out-1314.google.com ([209.85.200.174]:17982 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750831AbZBFWwh (ORCPT
+	Fri, 6 Feb 2009 18:04:21 -0500
+Received: from utopia.booyaka.com ([72.9.107.138]:39532 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752404AbZBFXEU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 17:52:37 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=sV8IAy3VgEIXUjYaQRhT5W45idss7np/WJai1TCnzwkicRrbIf+T3KuMNwoWx4bJxg
-         g3+UwZLqunZ7a3co6MoeAk0RuCErPUcHDQMUjhCX0a69S+IWgu9JYj1FzE3ndr8Ri2tp
-         WEHnB7pJtuXbxTA6nJ/puQU83Qho/uoV/LR8Y=
+	Fri, 6 Feb 2009 18:04:20 -0500
+Date: Fri, 6 Feb 2009 16:04:18 -0700 (MST)
+From: Paul Walmsley <paul@pwsan.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
+       linux-omap@vger.kernel.org, Tony Lindgren <tony@atomide.com>
+Subject: Re: [PATCH D 11/11] Fix omap1 clock issues
+In-Reply-To: <20090206214450.GN13758@n2100.arm.linux.org.uk>
+Message-ID: <alpine.DEB.2.00.0902061447430.26737@utopia.booyaka.com>
+References: <20090128191638.16688.33452.stgit@localhost.localdomain> <20090128191844.16688.39372.stgit@localhost.localdomain> <20090129143733.GB18233@n2100.arm.linux.org.uk> <alpine.DEB.2.00.0902061417390.26737@utopia.booyaka.com>
+ <20090206214450.GN13758@n2100.arm.linux.org.uk>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090206.140912.40800913.davem@davemloft.net>
-References: <1233936169-5243-1-git-send-email-anemo@mba.ocn.ne.jp>
-	 <e9c3a7c20902061315n7184c55ck7fcaa2c519a035d4@mail.gmail.com>
-	 <20090206.140912.40800913.davem@davemloft.net>
-Date: Fri, 6 Feb 2009 15:52:35 -0700
-X-Google-Sender-Auth: 0bbcf475b0f06eaa
-Message-ID: <e9c3a7c20902061452r40a97fa2p1fccfa78e3905458@mail.gmail.com>
-Subject: Re: [PATCH] net_dma: call dmaengine_get only if NET_DMA enabled
-From: Dan Williams <dan.j.williams@intel.com>
-To: David Miller <davem@davemloft.net>
-Cc: anemo@mba.ocn.ne.jp, maciej.sosnowski@intel.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 6, 2009 at 3:09 PM, David Miller <davem@davemloft.net> wrote:
-> From: Dan Williams <dan.j.williams@intel.com>
-> Date: Fri, 6 Feb 2009 14:15:02 -0700
->
->> [ please cc netdev on net_dma patches ]
->>
->> On Fri, Feb 6, 2009 at 9:02 AM, Atsushi Nemoto <anemo@mba.ocn.ne.jp> wrote:
->> > The commit 649274d993212e7c23c0cb734572c2311c200872 ("net_dma:
->> > acquire/release dma channels on ifup/ifdown") added unconditional call
->> > of dmaengine_get() to net_dma.  The API should be called only if
->> > NET_DMA was enabled.
->> >
->> > Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
->>
->> Acked-by: Dan Williams <dan.j.williams@intel.com>
->>
->> I was looking to avoid ifdefs in this path by making
->> dmaengine_{get,put} a nop in the DMAENGINE=n case.  However, the
->> current code with DMAENGINE=y NET_DMA=n will pin channels even though
->> the network stack is not using them.
->
-> I don't want to apply this patch at all.
->
-> What is the purpose of keeping the ugly ifdefs in dmaengine.h if we're
-> just going to pollute the networking code with the ifdefs anyways?
->
-> Make the NOP versions in linux/dmaengine.h actually work.
->
-> The NET_DMA stuff is the one thing which is polluting up the networking
-> stack with ugly ifdefs, I'm not adding new ones.
+Hi Russell,
 
-Yes, it has been on the todo list for a while, but I eventually want
-the net case to look more like the raid case.  I.e. have one code path
-that picks async versus sync at runtime, with the option to compile
-out async support with header file ifdefs only.
+On Fri, 6 Feb 2009, Russell King - ARM Linux wrote:
+
+> On Fri, Feb 06, 2009 at 02:19:34PM -0700, Paul Walmsley wrote:
+> > [paul@pwsan.com: This patch has been updated to use offsets for OMAP1 
+> > clock enable registers, to resolve all current sparse warnings with the 
+> > clock code, and to convert most magic constants into symbolic macros.  
+> 
+> Wish you hadn't;
+
+If it's the patch that is problematic, I'm certainly open to comments to 
+revise it.
+
+As you've probably seen, the OMAP1 clock control registers and memory map 
+are structured quite differently than the OMAP2/3 PRCM and module layout.
+
+> I've been avoiding the patches changing the way registers
+> are accessed for the time being - until I have an opportunity to think
+> about them for a bit.
+>
+> As can be seen in the OMAP2 updates, this approach causes additional 
+> struct clk's to appear for mcbsp clocks because they have controlling 
+> registers split across two subsystems.  This is contary to one of your 
+> other statements about wanting the struct clk's to reflect the real 
+> clock structure without virtual clocks.
+
+I think we're just using the term "virtual clock" differently.
+
+"Virtual clocks" in my usage are clocks that have no direct connection to 
+a particular clock tree entity in the hardware, such as a gate, divider, 
+source multiplexer, or oscillator source.  Examples of these virtual 
+clocks are those that were created simply for convenience to switch a 
+group of hardware clocks on and off (as the old McBSP clocks were).
+
+In the medium-term, the plan here is to modify the OMAP clk_set_parent() 
+and clk_set_rate() functions to walk up the clock tree if the device 
+driver-supplied clock does not support parent/rate selection.  This is a 
+relatively minor fix that should make parent and rate selection 
+transparent for device drivers (e.g., drivers shouldn't need 
+clk_get_parent() at that point).
+
+
+- Paul
