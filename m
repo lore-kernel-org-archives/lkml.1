@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760126AbZBFRQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759123AbZBFRVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760126AbZBFRQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:16:28 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbZBFRQO
+	id S1759123AbZBFRVT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:21:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbZBFRVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:16:14 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58357 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752796AbZBFRQN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:16:13 -0500
-Date: Fri, 6 Feb 2009 18:15:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Ayaz Abdulla <aabdulla@nvidia.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Subject: Re: [PATCH] forcedeth: make msi-x different name for rx-tx
-Message-ID: <20090206171544.GA16190@elte.hu>
-References: <498BC3A8.9040203@kernel.org> <20090206144948.GD18368@elte.hu> <498C6C15.3050807@kernel.org>
-MIME-Version: 1.0
+	Fri, 6 Feb 2009 12:21:09 -0500
+Received: from pfepb.post.tele.dk ([195.41.46.236]:37758 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751751AbZBFRVI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 12:21:08 -0500
+Date: Fri, 6 Feb 2009 18:22:52 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Pete Wyckoff <pw@padd.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, akpm@osdl.org, albcamus@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tags: fix config symbols generation
+Message-ID: <20090206172252.GA11299@uranus.ravnborg.org>
+References: <20090129102618.GB4425@x200.localdomain> <20090206150858.GA15565@padd.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498C6C15.3050807@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090206150858.GA15565@padd.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> Ingo Molnar wrote:
-> > Cool cleanups!
+On Fri, Feb 06, 2009 at 07:08:58AM -0800, Pete Wyckoff wrote:
+> adobriyan@gmail.com wrote on Thu, 29 Jan 2009 13:26 +0300:
+> > commit 4f628248a578585472e19e4cba2c604643af8c6c aka
+> > "kbuild: reintroduce ALLSOURCE_ARCHS support for tags/cscope"
+> > breaks tags generation for Kconfig symbols.
 > > 
-> > Would you mind to also fix the following - on all my systems that have 
-> > forcedeth gigabit ethernet i've been getting these bogus warnings for 
-> > _years_, under moderate load:
+> > Steps to reproduce:
 > > 
-> >   eth2: too many iterations (16) in nv_nic_irq.
+> > 	make tags
+> > 	vi -t PROC_FS
 > > 
-> > I think a 64 iterations limit will work much better. (i tried a limit of 50 
-> > a year ago for a while and it worked fine and had no side effects - and the 
-> > bogus warnings were done.)
+> > It should jump to 'config PROC_FS' line.
+> > 
+> > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+> > ---
+> > 
+> >  scripts/tags.sh |    5 ++++-
+> >  1 file changed, 4 insertions(+), 1 deletion(-)
+> > 
+> > --- a/scripts/tags.sh
+> > +++ b/scripts/tags.sh
+> > @@ -76,7 +76,10 @@ all_sources()
+> >  
+> >  all_kconfigs()
+> >  {
+> > -	find_sources $ALLSOURCE_ARCHS 'Kconfig*'
+> > +	for arch in $ALLSOURCE_ARCHS; do
+> > +		find_sources $arch 'Kconfig*'
+> > +	done
+> > +	find_other_sources 'Kconfig*'
+> >  }
+> >  
+> >  all_defconfigs()
 > 
-> you may enable CONFIG_FORCEDETH_NAPI.
+> Yes, this is necessary.  It fixes the problem introduced by
+> 4f628248a578585472e19e4cba2c604643af8c6c (kbuild: reintroduce
+> ALLSOURCE_ARCHS support for tags/cscope).
 > 
-> we should enable NAPI for forcedeth by default, and try to squash more bugs out.
+> Tested-by: Pete Wyckoff <pw@padd.com>
 
-i do have that:
+Thanks for testing.
+I'm heading for vacation in a few hours and has been busy at job due to this.
+I will add this (and other pending stuff) to my kbuild-fixes.git tree
+when I'm back.
 
- CONFIG_FORCEDETH=y
- CONFIG_FORCEDETH_NAPI=y
-
-and the messages still come.
-
-	Ingo
+	Sam
