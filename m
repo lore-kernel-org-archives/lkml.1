@@ -1,42 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbZBFJdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757562AbZBFJe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758562AbZBFJdy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 04:33:54 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756707AbZBFJc1
+	id S1757562AbZBFJe5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 04:34:57 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758650AbZBFJeP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 04:32:27 -0500
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59574
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754422AbZBFJcZ (ORCPT
+	Fri, 6 Feb 2009 04:34:15 -0500
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37369 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758621AbZBFJeM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 04:32:25 -0500
-Date: Fri, 06 Feb 2009 01:32:20 -0800 (PST)
-Message-Id: <20090206.013220.250415322.davem@davemloft.net>
-To: yinghai@kernel.org
-Cc: jeff@garzik.org, mingo@elte.hu, akpm@linux-foundation.org,
-       aabdulla@nvidia.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] forcedeth: ck804 and mcp55 doesn't need timerirq
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <498BC43D.6020704@kernel.org>
-References: <498BC3A8.9040203@kernel.org>
-	<498BC43D.6020704@kernel.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 6 Feb 2009 04:34:12 -0500
+Date: Fri, 6 Feb 2009 10:06:07 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Bryan Wu <cooloney@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH] tty: fix bug - kernel can't be pinged through when
+ bootargs console=null
+Message-ID: <20090206100607.277d83e2@the-village.bc.nu>
+In-Reply-To: <1233908877-7729-1-git-send-email-cooloney@kernel.org>
+References: <1233908877-7729-1-git-send-email-cooloney@kernel.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
+ Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
+ Lloegr o'r rhif cofrestru 3798903
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Yinghai Lu <yinghai@kernel.org>
-Date: Thu, 05 Feb 2009 21:01:49 -0800
+On Fri,  6 Feb 2009 16:27:57 +0800
+Bryan Wu <cooloney@kernel.org> wrote:
 
+> From: Sonic Zhang <sonic.zhang@analog.com>
 > 
-> Impact: cleanup
+> when pass bootargs console=null into kernel from u-boot, the booted up
+> kernel can't be pinged through. This happens after the kernel is upgraded
+> to 2.6.28.
 > 
-> so get less irq.
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> Should check if tty_driver is NULL before call kref_get() in tty_driver_kref_get().
 
-Applied to net-next-2.6
+Should not call tty_driver_kref_get(NULL) in the first place....
+
+Need to fix the real bug not paper over it
