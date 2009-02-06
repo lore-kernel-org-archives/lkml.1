@@ -1,45 +1,234 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756811AbZBFUAY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757457AbZBFUDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756811AbZBFUAY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 15:00:24 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZBFUAK
+	id S1757457AbZBFUDq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 15:03:46 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753144AbZBFUDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 15:00:10 -0500
-Received: from mail.suse.de ([195.135.220.2]:59842 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752969AbZBFUAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 15:00:08 -0500
-Message-ID: <498C96B0.7050408@suse.de>
-Date: Fri, 06 Feb 2009 20:59:44 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 6 Feb 2009 15:03:39 -0500
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:35421 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751744AbZBFUDi convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 15:03:38 -0500
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AsIEANskjElMQWt2/2dsb2JhbACBbsxmhBYG
+Date: Fri, 6 Feb 2009 15:03:29 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>,
+       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
+Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
+Message-ID: <20090206200329.GA1824@Krystal>
+References: <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal> <20090205184456.GK6915@linux.vnet.ibm.com> <20090205202249.GA26964@Krystal> <20090205210415.GM6915@linux.vnet.ibm.com> <20090205210627.GA1313@Krystal> <20090206003308.GO6915@linux.vnet.ibm.com> <20090206020005.GA8560@Krystal> <20090206134833.GC10918@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= <ukleinek@strlen.de>
-Cc: linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       khali@linux-fr.org, ben-linux@fluff.org, linux-i2c@vger.kernel.org,
-       frank@f-seidel.de, w.sang@pengutronix.de,
-       "David S. Miller" <davem@davemloft.net>, Frans Pop <elendil@planet.nl>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] i2c: add missing KERN_* constants to printks
-References: <498C3EEA.5060508@suse.de> <20090206183542.GB6361@strlen.de>
-In-Reply-To: <20090206183542.GB6361@strlen.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20090206134833.GC10918@linux.vnet.ibm.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 15:02:22 up 36 days, 20:00,  4 users,  load average: 0.39, 0.28,
+	0.24
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uwe Kleine-K�nig schrieb:
-> Are you sure about KERN_WARNING?  I havn't looked deeper, but DEB2
-> suggests KERN_DEBUG?  What about fixing DEB[1-3] directly instead of
-> each "call".  e.g.
+* Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> On Thu, Feb 05, 2009 at 09:00:05PM -0500, Mathieu Desnoyers wrote:
+> > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > On Thu, Feb 05, 2009 at 04:06:27PM -0500, Mathieu Desnoyers wrote:
+> > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > On Thu, Feb 05, 2009 at 03:22:49PM -0500, Mathieu Desnoyers wrote:
+> > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > > > On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
+> > > > > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > > > > > > > > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
+> > > > > > > > > > Hi Paul,
+> > > > > > > > > > 
+> > > > > > > > > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
+> > > > > > > > > > <paulmck@linux.vnet.ibm.com> wrote:
+> > > > > > > > > > >>
+> > > > > > > > > > >> Are you using quilt to apply the patchset series file in the right order ?
+> > > > > > > > > > >
+> > > > > > > > > > > Ummm...  No.  I never have used quilt.
+> > > > > > > > > > >
+> > > > > > > > > > > Ah, there is a series file.  I guess it would not be too hard to make
+> > > > > > > > > > > an appropriate "sh" command:
+> > > > > > > > > > 
+> > > > > > > > > > How about trying?
+> > > > > > > > > > 
+> > > > > > > > > > #quilt push -a
+> > > > > > > > > 
+> > > > > > > > > Is the appropriate incantation as follows?
+> > > > > > > > > 
+> > > > > > > > > 	cd <top of git tree>
+> > > > > > > > > 	mkdir patches
+> > > > > > > > > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
+> > > > > > > > > 	quilt push -a
+> > > > > > > > > 
+> > > > > > > > 
+> > > > > > > > Yes, exactly.
+> > > > > > > 
+> > > > > > > Whew!  ;-)
+> > > > > > > 
+> > > > > > > > And from there you can follow the LTTng manual here :
+> > > > > > > > 
+> > > > > > > > http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
+> > > > > > > 
+> > > > > > > I get some fuzz and the following:
+> > > > > > > 
+> > > > > > > 	patching file kernel/trace/trace-clock-32-to-64.c
+> > > > > > > 	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
+> > > > > > > 	which already exists.
+> > > > > > > 	Hunk #1 FAILED at 1.
+> > > > > > > 	1 out of 1 hunk FAILED -- rejects in file
+> > > > > > > 	kernel/trace/trace-clock-32-to-64.c
+> > > > > > > 
+> > > > > > > Should I be starting from somewhere other than v2.6.29-rc3?
+> > > > > > > 
+> > > > > > 
+> > > > > > Let's see it step by step, that should get us there.
+> > > > > > 
+> > > > > > With patches :
+> > > > > > 
+> > > > > > mkdir ~/lttng
+> > > > > > cd ~/lttng
+> > > > > > wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2
+> > > > > > wget http://lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
+> > > > > > bzip2 -cd linux-2.6.29-rc3.tar.bz2 |tar xvof -
+> > > > > > bzip2 -cd patch-2.6.29-rc3-lttng-0.92.tar.bz2  |tar xvof -
+> > > > > > cd linux-2.6.29-rc3
+> > > > > > mkdir patches
+> > > > > > ln -s ../patch-2.6.29-rc3-lttng-0.92 patches
+> > > > > > quilt push -a
+> > > > > > 
+> > > > > > Does this work ?
+> > > > > 
+> > > > > Leaving out the "mkdir", yes.
+> > > > 
+> > > > Ah, yes, my mistake.
+> > > > 
+> > > > > My apologies -- I was forgetting that
+> > > > > "git reset --hard" doesn't get rid of untracked files.  I do see fuzz
+> > > > > in a few places, but hopefully this is non-fatal.  And in any case, I
+> > > > > can now make the patch required to actually try this out.  ;-)
+> > > > > 
+> > > > 
+> > > > Great !
+> > > > 
+> > > > Don't hesitate to ask if you have any question.
+> > > > 
+> > > > Mathieu
+> > > 
+> > > Fails to build on Power, so trying x86...  (Stock 2.6.29-rc3 does
+> > > build and boot, FWIW.)
+> > > 
+> > > Looks like misplaced file.
+> > > 
+> > > 							Thanx, Paul
+> > > 
+> > > ------------------------------------------------------------------------
+> > > 
+> > >   CHK     include/linux/version.h
+> > >   UPD     include/linux/version.h
+> > >   CHK     include/linux/utsrelease.h
+> > >   UPD     include/linux/utsrelease.h
+> > >   SYMLINK include/asm -> include/asm-powerpc
+> > >   HOSTCC  scripts/ihex2fw
+> > >   HOSTCC  scripts/kallsyms
+> > >   HOSTCC  scripts/pnmtologo
+> > >   HOSTCC  scripts/genksyms/genksyms.o
+> > >   HOSTCC  scripts/conmakehash
+> > >   HOSTCC  scripts/bin2c
+> > >   CC      scripts/mod/empty.o
+> > >   HOSTCC  scripts/mod/mk_elfconfig
+> > >   SHIPPED scripts/genksyms/lex.c
+> > >   SHIPPED scripts/genksyms/parse.h
+> > >   SHIPPED scripts/genksyms/keywords.c
+> > >   SHIPPED scripts/genksyms/parse.c
+> > >   HOSTCC  scripts/genksyms/parse.o
+> > >   HOSTCC  scripts/genksyms/lex.o
+> > >   MKELF   scripts/mod/elfconfig.h
+> > >   HOSTCC  scripts/mod/file2alias.o
+> > >   HOSTCC  scripts/mod/modpost.o
+> > >   HOSTCC  scripts/mod/sumversion.o
+> > >   HOSTLD  scripts/genksyms/genksyms
+> > >   HOSTLD  scripts/mod/modpost
+> > >   CC      kernel/bounds.s
+> > >   GEN     include/linux/bounds.h
+> > >   CC      arch/powerpc/kernel/asm-offsets.s
+> > > In file included from include/linux/module.h:18,
+> > >                  from include/linux/sysdev.h:25,
+> > >                  from include/linux/node.h:22,
+> > >                  from include/linux/swap.h:10,
+> > >                  from include/linux/suspend.h:7,
+> > >                  from arch/powerpc/kernel/asm-offsets.c:24:
+> > > include/linux/immediate.h:15:27: error: asm/immediate.h: No such file or directory
+> > > In file included from include/linux/module.h:18,
+> > >                  from include/linux/sysdev.h:25,
+> > >                  from include/linux/node.h:22,
+> > >                  from include/linux/swap.h:10,
+> > >                  from include/linux/suspend.h:7,
+> > >                  from arch/powerpc/kernel/asm-offsets.c:24:
+> > > include/linux/immediate.h:37: warning: â€˜struct __imvâ€™ declared
+> > > inside parameter list
+> > > include/linux/immediate.h:37: warning: its scope is only this definition
+> > > or declaration, which is probably not what you want
+> > > include/linux/immediate.h:40: warning: â€˜struct __imvâ€™ declared
+> > > inside parameter list
+> > > make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
+> > > make: *** [prepare0] Error 2
+> > > 02/05/2009-17:57:41 Build the kernel. Failed rc = 2
+> > > 02/05/2009-17:57:41 build: Building kernel... Failed rc = 1
+> > > 
+> > 
+> > Hrm, does the file
+> > 
+> > arch/powerpc/include/asm/immediate.h exist in your tree ?
+> > 
+> > Here, with the setup done following the commands I gave you (minus the
+> > mkdir patch), I get :
+> > 
+> > 
+> > compudj@ok:~$ head testpaulmck/linux-2.6.29-rc3/arch/powerpc/include/asm/immediate.h 
+> > #ifndef _ASM_POWERPC_IMMEDIATE_H
+> > #define _ASM_POWERPC_IMMEDIATE_H
+> > 
+> > /*
+> >  * Immediate values. PowerPC architecture optimizations.
+> >  *
+> >  * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> >  *
+> >  * This file is released under the GPLv2.
+> >  * See the file COPYING for more details.
+> > 
+> > ....
+> > 
+> > Which defines struct __imv. So hrm, normally the header should be there.
+> > (/me still confused) :)
+> 
+> It does indeed, see the patch I generated against 2.6.29-rc3:
+> 
+> 	http://www.rdrop.com/users/paulmck/patches/2.6.29-rc3-ltt-1.patch
+> 
+> I get a similar failure on x86 -- perhaps my tools or build environment
+> does not match yours?
+> 
 
-No, in this case the DEB* macro was already in many places used
-with KERN_* constants just like direct printk. I didn't wanna
-change that.
-KERN_WARNING is just the standard/default loglevel so that this
-change doesn't introduce different behaviour.
+Maybe. If you want a quick and dirty solution, try :
 
-Thanks,
-Frank
+CONFIG_IMMEDIATE=n
+
+Immediate values are just an optimization, not necessary anyway.
+
+Mathieu
+
+> 							Thanx, Paul
+> 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
