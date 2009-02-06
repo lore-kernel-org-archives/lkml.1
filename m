@@ -1,54 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZBFSmc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756812AbZBFSnU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756205AbZBFSmc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:42:32 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZBFSmX
+	id S1756812AbZBFSnU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 13:43:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZBFSnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:42:23 -0500
-Received: from mga09.intel.com ([134.134.136.24]:51378 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752614AbZBFSmW convert rfc822-to-8bit (ORCPT
+	Fri, 6 Feb 2009 13:43:09 -0500
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:17547 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752758AbZBFSnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 13:42:22 -0500
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.37,392,1231142400"; 
-   d="scan'208";a="487937208"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Alex Chiang <achiang@hp.com>
-CC: "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
-       "stable@kernel.org" <stable@kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Date: Fri, 6 Feb 2009 10:42:07 -0800
-Subject: RE: [PATCH] ia64: prevent irq migration race in __cpu_disable path
-Thread-Topic: [PATCH] ia64: prevent irq migration race in __cpu_disable path
-Thread-Index: AcmIdyLRu9kZvdXOSYeGPI+/zsIb1gAEylJQ
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA36121A469@orsmsx505.amr.corp.intel.com>
-References: <20090206162213.GD8208@ldl.fc.hp.com>
-In-Reply-To: <20090206162213.GD8208@ldl.fc.hp.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 6 Feb 2009 13:43:08 -0500
+Date: Fri, 6 Feb 2009 11:43:04 -0700
+From: Alex Chiang <achiang@hp.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu
+Subject: Re: [PATCH] ia64: prevent irq migration race in __cpu_disable path
+Message-ID: <20090206184304.GE2445@ldl.fc.hp.com>
+Mail-Followup-To: Alex Chiang <achiang@hp.com>,
+	"Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+	tony.luck@intel.com, linux-ia64@vger.kernel.org,
+	linux-kernel <linux-kernel@vger.kernel.org>, mingo@elte.hu
+References: <20090206162213.GD8208@ldl.fc.hp.com> <20090206170055.GI10918@linux.vnet.ibm.com> <20090206180742.GC2445@ldl.fc.hp.com> <20090206183304.GJ10918@linux.vnet.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206183304.GJ10918@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> This is wrong because fixup_irqs calls migrate_irqs, and in
-> migrate_irqs, we use the cpu_online_map to:
->
->       1. look for interrupts on current CPU
->       2. if we find one, move it to the first available CPU in
->       the cpu_online_map
->
-> This means we can potentially migrate an interrupt off ourself
-> back to... ourself. Uh oh.
+* Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> On Fri, Feb 06, 2009 at 11:07:42AM -0700, Alex Chiang wrote:
+> > 
+> > [removing stable@kernel.org for now while we figure this out]
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com>:
+> > > On Fri, Feb 06, 2009 at 09:22:13AM -0700, Alex Chiang wrote:
+> > > > ---
+> > > > In my opinion, this is .29 material.
+> > > > 
+> > > > Sorry for the huge changelog:patch ratio, but this area is tricky
+> > > > enough that more explanation is better than less, I think.
+> > > > 
+> > > > Also, I'm still a little troubled by Paul's original patch. What
+> > > > happens if we're trying to offline the CPEI target? The code in
+> > > > migrate_platform_irqs() uses cpu_online_map to select the new
+> > > > CPEI target, and it seems like we can end up in the same
+> > > > situation as the problem I'm trying to fix now.
+> > > > 
+> > > > Paul?
+> > > > 
+> > > > My patch has held up for over 24 hours of stress testing, where
+> > > > we put the system under a heavy load and then randomly
+> > > > offline/online CPUs every 2 seconds. Without this patch, the
+> > > > machine would crash reliably within 15 minutes.
+> > > 
+> > > I don't claim much expertise on IA64 low-level architectural details,
+> > 
+> > I'm starting to get a bit out of my depth here too... :-/
+> > 
+> > > so am reduced to asking the usual question...  Does this patch guarantee
+> > > that a given CPU won't be executing irq handlers while marked offline?
+> > > If there is no such guarantee, things can break.  (See below.)
+> > 
+> > My patch makes no guarantee. What it does do is prevent a NULL
+> > deref while we are, in fact, executing an irq handler while
+> > marked offline.
+> > 
+> > > In any case, apologies for failing to correctly fix the original
+> > > problem!!!
+> > 
+> > I'm curious, reading through your old change log:
+> > 
+> >     Make ia64 refrain from clearing a given to-be-offlined CPU's
+> >     bit in the cpu_online_mask until it has processed pending
+> >     irqs.  This change prevents other CPUs from being blindsided
+> >     by an apparently offline CPU nevertheless changing globally
+> >     visible state. 
+> > 
+> > Was your patch fixing a theoretical problem or a real bug? What
+> > globally visible state were you referencing there?
+> > 
+> > > > ---
+> > > > 
+> > > > diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+> > > > index 1146399..2a17d1c 100644
+> > > > --- a/arch/ia64/kernel/smpboot.c
+> > > > +++ b/arch/ia64/kernel/smpboot.c
+> > > > @@ -742,8 +742,8 @@ int __cpu_disable(void)
+> > > >  	}
+> > > > 
+> > > >  	remove_siblinginfo(cpu);
+> > > > -	fixup_irqs();
+> > > >  	cpu_clear(cpu, cpu_online_map);
+> > > > +	fixup_irqs();
+> > > 
+> > > So you argument is that because we are running in the context of
+> > > stop_machine(), even though fixup_irqs() does in fact cause irq handlers
+> > > to run on the current CPU which is marked offline, the fact that there
+> > > is no one running to notice this misbehavior makes it OK?  (Which
+> > > perhaps it is, just asking the question.)
+> > 
+> > I wouldn't say that I have a solid argument, per se, just fixing
+> > symptoms. ;)
+> > 
+> > My reading of the cpu_down() path makes it seem like we need to
+> > process pending interrupts on the current CPU, and the original
+> > author certainly thought it was ok to call an irq handler on the
+> > current CPU. We don't disable local irqs until the very last step
+> > of fixup_irqs().
+> > 
+> > So the actual design of this path assumed it was ok to call an
+> > irq handler on a marked-offline CPU.
+> > 
+> > Can you educate me on the danger of doing such a thing? That
+> > might help in how I interpret the code.
+> 
+> Well, RCU happily ignores CPUs that don't have their bits set in
+> cpu_online_map, so if there are RCU read-side critical sections in the
+> irq handlers being run, RCU will ignore them.  If the other CPUs were
+> running, they might sequence through the RCU state machine, which could
+> result in data structures being yanked out from under those irq handlers,
+> which in turn could result in oopses or worse.
 
-Should we make migrate_irqs smarter then ... does any caller really
-expect that it would "migrate" the irq to the same cpu?
+Ok, that makes sense.
 
--Tony
+As I'm continuing to dig, I took a look at the x86 side of the 
+house and they have this interesting sequence:
+
+cpu_disable_common()
+	remove_cpu_from_maps()  /* remove cpu from online map */
+	fixup_irqs()
+		[break irq-CPU affinity]
+
+		local_irq_enable();
+		mdelay(1);
+		local_irq_disable();
+                
+So in x86, we allow interrupt handlers to run on a CPU that's 
+already been removed from the online map.
+
+Does that seem like an analagous situation to what we have in
+ia64?
+
+Thanks.
+
+/ac, still digging
+
