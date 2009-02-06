@@ -1,60 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758673AbZBFO50@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758354AbZBFO6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758673AbZBFO50 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:57:26 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZBFO5R
+	id S1758354AbZBFO6v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:58:51 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbZBFO6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:57:17 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:43570 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbZBFO5Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:57:16 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=TDVP+BAH0HRfoWx2aVcoxdK9XI2WG8fp2P7AoKzSFiTEvkFOFN7caTdYnF0ktKQOhR
-         wDQ50S12bXOeBSTIPjTgEpCYc4l4k34IFJW3UxV2p+j8JdqYimvfj7ldNoqpzSBA96FD
-         pX6TLZPRF1M6sP/6ABDlnebmQTUpLz2WOnQUs=
-Date: Fri, 6 Feb 2009 18:03:15 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Frank Seidel <frank@f-seidel.de>
-Cc: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
-       herbert@gondor.apana.org.au, jarod@redhat.com
-Subject: Re: [PATCH] crypto: add missing KERN_* constants to printks
-Message-ID: <20090206150315.GA28249@x200.localdomain>
-References: <498C46DE.8040700@suse.de> <20090206145838.GA28197@x200.localdomain> <498C4F2E.1070204@f-seidel.de>
+	Fri, 6 Feb 2009 09:58:43 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35581 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753368AbZBFO6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:58:42 -0500
+Date: Fri, 6 Feb 2009 15:58:06 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, ralf@linux-mips.org, dhowells@redhat.com,
+       matthew@wil.cx, chris@zankel.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+Message-ID: <20090206145806.GI18368@elte.hu>
+References: <1233385816.17794.16.camel@localhost.localdomain> <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com> <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain> <20090205191907.GA27422@elte.hu> <1233886017.3463.26.camel@localhost.localdomain> <20090206022025.GA8317@elte.hu> <1233929922.3209.6.camel@localhost.localdomain> <20090206142134.GA13758@n2100.arm.linux.org.uk> <1233930860.3209.13.camel@localhost.localdomain> <20090206145119.GB13758@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <498C4F2E.1070204@f-seidel.de>
+In-Reply-To: <20090206145119.GB13758@n2100.arm.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 06, 2009 at 03:54:38PM +0100, Frank Seidel wrote:
-> Alexey Dobriyan schrieb:
-> > On Fri, Feb 06, 2009 at 03:19:10PM +0100, Frank Seidel wrote:
-> >> According to kerneljanitors todo list all printk calls (beginning
-> >> a new line) should have an according KERN_* constant.
-> > 
-> > Forget about kernel janitors todo list, fix a bug instead.
-> 
-> Sure, i am eager to get my hands dirty in the kernel ;-),
-> but i needed to start somewhere and everybody told me
-> that the janitors todo list would be good place to start.
-> 
-> >> Those are the missing pieces here for the crypto subsystem.
-> > 
-> > You're inserting KERN_WARNING everywhere, what for?
-> 
-> Because every new line should have KERN_* constant and
-> KERN_WARNING is default/doesn't change current printout
-> behaviour.
 
-Some messages there were truly debugging and some clearly weren't
-WARNING, but INFO.
+* Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+
+> On Fri, Feb 06, 2009 at 08:04:20PM +0530, Jaswinder Singh Rajput wrote:
+> > On Fri, 2009-02-06 at 14:21 +0000, Russell King - ARM Linux wrote:
+> > > On Fri, Feb 06, 2009 at 07:48:42PM +0530, Jaswinder Singh Rajput wrote:
+> > > > diff --git a/include/linux/types.h b/include/linux/types.h
+> > > > index 712ca53..c30973a 100644
+> > > > --- a/include/linux/types.h
+> > > > +++ b/include/linux/types.h
+> > > > @@ -1,6 +1,7 @@
+> > > >  #ifndef _LINUX_TYPES_H
+> > > >  #define _LINUX_TYPES_H
+> > > >  
+> > > > +#ifndef __ASSEMBLY__
+> > > >  #ifdef	__KERNEL__
+> > > >  
+> > > >  #define DECLARE_BITMAP(name,bits) \
+> > > > @@ -212,5 +213,5 @@ struct ustat {
+> > > >  };
+> > > >  
+> > > >  #endif	/* __KERNEL__ */
+> > > > -
+> > > > +#endif /*  __ASSEMBLY__ */
+> > > >  #endif /* _LINUX_TYPES_H */
+> > > 
+> > > So no point including this file in assembly with this patch - the ifndef
+> > > disables the entire file.
+> > 
+> > Truth Table of linux/types.h :
+> > 
+> > If Assembly then N
+> > otherwise Y
+> > 
+> > what your table says.
+> 
+> If the entire file is not suitable for assembly, don't include the file
+> in assembly files.  Nice and simple, and no need to add additional ifdefs.
+
+Well types.h easily gets included in other files though, which might be 
+partially suited for assembly - and have !__ASSEMBLY__ portions that rely on 
+a types.h include.
+
+So making this file an invariant in .S files does not sound like a bad idea 
+to me. Is there any downside?
+
+	Ingo
