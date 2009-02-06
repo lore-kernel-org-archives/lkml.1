@@ -1,93 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbZBFWBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZBFWDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758772AbZBFWBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 17:01:19 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753913AbZBFWBG
+	id S1757606AbZBFWDt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 17:03:49 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZBFWDk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 17:01:06 -0500
-Received: from ns.km10614-05.keymachine.de ([87.118.102.170]:53763 "EHLO
-	km10614-05.keymachine.de" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753972AbZBFWBF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 17:01:05 -0500
-Date: Fri, 6 Feb 2009 23:00:38 +0100
-From: Harald Braumann <harry@unheit.net>
-To: =?ISO-8859-1?B?Sm9z6Q==?= Luis =?ISO-8859-1?B?VGFsbPNu?= 
-	<jltallon@adv-solutions.net>
-Cc: debian-devel@lists.debian.org, linux-kernel@vger.kernel.org
-Subject: Re: cgroup mount point
-Message-ID: <20090206230038.166d4f7f@sbs173>
-In-Reply-To: <498B57E9.2020707@adv-solutions.net>
-References: <20090202200013.GU3643@vespa.holoscopio.com>
- <1233606371.15779.32.camel@radis.liafa.jussieu.fr>
- <20090202205246.GA28593@glandium.org>
- <20090202214153.GV3643@vespa.holoscopio.com>
- <20090203102416.GA8886@redhat.com>
- <87ljsnzo4v.fsf@benfinney.id.au>
- <1233671913.8902.53.camel@abacate.horta>
- <6599ad830902030855h1753f4a4o3a303b4dbddf10de@mail.gmail.com>
- <20090203184915.GA10004@glandium.org>
- <20090203185117.GB3359@mini-me.seanius.net>
- <6599ad830902031114t7de1b570p4ed5ec497e2e150e@mail.gmail.com>
- <20090204003847.308cd0df@sbs173>
- <498B57E9.2020707@adv-solutions.net>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.11; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/bcfEbR/bi5uv3niIa9R58.n";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Fri, 6 Feb 2009 17:03:40 -0500
+Received: from h155.mvista.com ([63.81.120.155]:31058 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753948AbZBFWDj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 17:03:39 -0500
+Message-ID: <498CB3CF.8070306@ru.mvista.com>
+Date: Sat, 07 Feb 2009 01:03:59 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, geert@linux-m68k.org,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       apw@canonical.com
+Subject: Re: [PATCH 01/15] ide: include <asm/ide.h> only when needed
+References: <20090201174916.19144.11318.sendpatchset@localhost.localdomain> <200902052214.31483.bzolnier@gmail.com> <498B7D09.6040100@ru.mvista.com> <200902061721.46813.bzolnier@gmail.com>
+In-Reply-To: <200902061721.46813.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/bcfEbR/bi5uv3niIa9R58.n
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Bartlomiej Zolnierkiewicz wrote:
 
-On Thu, 05 Feb 2009 22:19:37 +0100
-Jos=E9 Luis Tall=F3n <jltallon@adv-solutions.net> wrote:
-> [...]
-> whereas I can't fathom why a cgroup "feels" like a /device/.
->=20
-> I admit not being an expert in virtualization abstraction (I do run a
-> significant number of virtual machines, tough), but in fact /sys seems
-> to be a much better place for it. Please feel free to argue against if
-> my proposal does not in fact make sense.
+>>Hello.
 
-Agreed. Semantically /sys is probably the place for cgroups.=20
+>>Bartlomiej Zolnierkiewicz wrote:
 
-> While it does indeed feel "hackish", mounting a tmpfs on /sys/cgroups
-> and then creating as many subdirs as/if necessary is indeed
-> achievable, practical and flexible.
+>>>>>>>+#include <asm/ide.h>
 
-Yes, folks have brought forth this technical difficulty and that's why
-I initially thought /dev to be a better place.
+>>>>>>Did you try checkpatch.pl?
 
-For me, either would be OK. I don't care that much as long as it's not
-mounted in root.
+>>>>>Sure.
 
-> /proc might be useable though, but it has historically been associated
-> with "processes" and the information related to them. And yes, that
-> means that /proc/cpuinfo, /proc/meminfo, and /proc/bus would actually
-> be out of place there... but keeping backwards compatibility and not
-> surprising users is most important.
+>>>>>This driver uses stuff from <asm-mips/ide.h>.
 
-Agreed. I think the trend is to remove things not related to processes
-from /proc. Of course not everything can be removed immediately, but at
-least no new things should be added.
+>>>>>[ I guess I could put '-mips' there to silence warnings on tx493{8,9}.c,
+>>>>>  however I don't know of the way to get rid of ide-io-std.c's one... ]
 
-Cheers,
-harry
+>>>>BTW, tx4939ide_{in,out}put_data_swap and
+>>>>tx4939ide_{in,out}put_data_swap do exactly same thing.
 
---Sig_/bcfEbR/bi5uv3niIa9R58.n
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+>>>>If byte-swapped version of ide_{in,out}put_data() were available by
+>>>>ide core, they can be used instead.  The byte-swapped version of
+>>>>default_tp_ops would much helps such queer big-endian platforms.  Is
+>>>>it worth to bloat ide core? ;-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+>>>Seems to be a good idea and it may also help some other host drivers
+>>>(ide-h8300.c?).
 
-iEYEARECAAYFAkmMswYACgkQwMFqDB+mz26++QCgtLFUAMA1XixyAybIjIP5OWl7
-o1IAni+crbmNnZwFSYSSy3ATAUTsXkkV
-=vexm
------END PGP SIGNATURE-----
+>>   I'm not sure we need to carry the extra little used code just to help 
+>>some exotic driver.
 
---Sig_/bcfEbR/bi5uv3niIa9R58.n--
+> It doesn't seem like we would need to carry any extra extra code for host
+> drivers that don't need it because we have flexible Kconfig language to take
+> care of such cases, i.e.
+
+> ...
+> config CONFIG_IDE_BE_IO
+> 	bool
+
+    If it was that simple... Normally the BE case gets handled automagically 
+(moreover, there is MIPS option that additionally controls I/O and memory 
+space byte swapping). The case we have to address for TX493x is actually where 
+the usual magic fails (or actually the code just doesn't want to use that 
+option). So this doesn't look like a good name to me...
+
+> Thanks,
+> Bart
+
+WBR, Sergei
