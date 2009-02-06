@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZBFCsS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbZBFDDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756691AbZBFCsS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:48:18 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZBFCsG
+	id S1753628AbZBFDDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 22:03:35 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZBFDD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:48:06 -0500
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40576 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750885AbZBFCsF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:48:05 -0500
-Date: Thu, 5 Feb 2009 18:47:35 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Bryan Wu <cooloney@kernel.org>, dbrownell@users.sourceforge.net,
-       spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       vapier.adi@gmail.com
-Subject: Re: [PATCH 1/5] Blackfin SPI Driver: use bfin_spi_ prefix on all
- functions
-Message-Id: <20090205184735.f82c8bc3.akpm@linux-foundation.org>
-In-Reply-To: <20090206133436.199d9282.sfr@canb.auug.org.au>
-References: <1233828453-13311-1-git-send-email-cooloney@kernel.org>
-	<1233828453-13311-2-git-send-email-cooloney@kernel.org>
-	<20090205141245.2945141e.akpm@linux-foundation.org>
-	<20090206133436.199d9282.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 5 Feb 2009 22:03:27 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:62178 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751562AbZBFDD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 22:03:26 -0500
+Message-ID: <498BA857.3080809@cn.fujitsu.com>
+Date: Fri, 06 Feb 2009 11:02:47 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: balbir@linux.vnet.ibm.com
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [-mm patch] Show memcg information during OOM (v3)
+References: <20090203172135.GF918@balbir.in.ibm.com>
+In-Reply-To: <20090203172135.GF918@balbir.in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 6 Feb 2009 13:34:36 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> +	mem_cgrp = memcg->css.cgroup;
+> +	task_cgrp = mem_cgroup_from_task(p)->css.cgroup;
 
-> Hi Andrew,
-> 
-> On Thu, 5 Feb 2009 14:12:45 -0800 Andrew Morton <akpm@linux-foundation.org> wrote:
-> >
-> > As usual, the driver core guys have gone trompling all over other people's code
-> > and your patch doesn't apply to linux-next.
-> > 
-> > 11 out of 61 hunks FAILED -- saving rejects to file drivers/spi/spi_bfin5xx.c.rej
-> 
-> To be fair
+I just noticed since v2, task's cgroup is also printed. Then 2 issues here:
 
-no, they don't deserve it!  They just got lucky this time ;)
+1. this is better: task_cgrp = task_subsys_state(p, mem_cgroup_subsys_id);
+2. getting cgroup from a task should be protected by task_lock or rcu_read_lock,
+   so we can put the above statement inside rcu_read_lock below.
 
->, next-20090206 has one patch to that file it is a single hunk
-> and only affects 2 lines and the patch was cc'd to the spi folks (I can't
-> easily tell when as the driver-core stuff (being a quilt tree) gets
-> rebased often).
-
-yup.
+> +
+> +	rcu_read_lock();
+> +	ret = cgroup_path(task_cgrp, task_memcg_name, PATH_MAX);
+> +	if (ret < 0) {
+> +		/*
+> +		 * Unfortunately, we are unable to convert to a useful name
+> +		 * But we'll still print out the usage information
+> +		 */
+> +		rcu_read_unlock();
+> +		goto done;
+> +	}
+> +	ret = cgroup_path(mem_cgrp, memcg_name, PATH_MAX);
+> +	 if (ret < 0) {
+> +		rcu_read_unlock();
+> +		goto done;
+> +	}
+> +
+> +	rcu_read_unlock();
