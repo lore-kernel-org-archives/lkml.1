@@ -1,44 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759615AbZBFPs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbZBFPvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759615AbZBFPs1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:48:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbZBFPr1
+	id S1758887AbZBFPvT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:51:19 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZBFPvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 10:47:27 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:59843 "EHLO ogre.sisk.pl"
+	Fri, 6 Feb 2009 10:51:05 -0500
+Received: from hera.kernel.org ([140.211.167.34]:53370 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758886AbZBFPrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 10:47:25 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [Bug #12405] oops in __bounce_end_io_read under kvm
-Date: Fri, 6 Feb 2009 16:46:46 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-References: <a47yn9c9JrF.A.hz.L5YiJB@chimera> <CGyEB0S4BpO.A.eRC.y5YiJB@chimera> <20090206081302.GB31358@lst.de>
-In-Reply-To: <20090206081302.GB31358@lst.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	id S1753222AbZBFPvC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:51:02 -0500
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+In-Reply-To: <20090206153315.GD13758@n2100.arm.linux.org.uk>
+References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com>
+	 <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com>
+	 <20090206145556.GH18368@elte.hu>
+	 <1233934141.3209.20.camel@localhost.localdomain>
+	 <20090206153315.GD13758@n2100.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 21:18:48 +0530
+Message-Id: <1233935328.3209.30.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200902061646.46598.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 February 2009, Christoph Hellwig wrote:
-> On Wed, Feb 04, 2009 at 11:58:40AM +0100, Rafael J. Wysocki wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12405
-> > Subject		: oops in __bounce_end_io_read under kvm
-> > Submitter	: Christoph Hellwig <hch@lst.de>
-> > Date		: 2008-12-26 17:36 (41 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123031303400676&w=4
-> > Handled-By	: Jens Axboe <jens.axboe@oracle.com>
+On Fri, 2009-02-06 at 15:33 +0000, Russell King - ARM Linux wrote:
+> On Fri, Feb 06, 2009 at 08:59:01PM +0530, Jaswinder Singh Rajput wrote:
+> > On Fri, 2009-02-06 at 15:55 +0100, Ingo Molnar wrote:
+> > > * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > 
+> > > > > > Index: b/arch/ia64/include/asm/fpu.h
+> > > > > > ===================================================================
+> > > > > > --- a/arch/ia64/include/asm/fpu.h
+> > > > > > +++ b/arch/ia64/include/asm/fpu.h
+> > > > > > @@ -6,7 +6,7 @@
+> > > > > >  *     David Mosberger-Tang <davidm@hpl.hp.com>
+> > > > > >  */
+> > > > > >
+> > > > > > -#include <linux/types.h>
+> > > > > > +#include <asm/types.h>
+> > > > > >
+> > > > > 
+> > > > > No , we do not even need asm/types.h
+> > > > > 
+> > > > > Subject: [PATCH] Neither asm/types.h nor linux/types.h is not required
+> > > > > for arch/ia64/include/asm/fpu.h
+> > > > > 
+> > > > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > > 
+> > > > ok. I confirmed.
+> > > > 	Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > > 	Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > 
+> > > Thanks.
+> > > 
+> > > Jaswinder, mind adding these tags to the commit and sending a pull request 
+> > > with all fixes?
+> > 
+> > The following changes since commit 0b86a4e34d885e734a4c4e46293376f3f1c639eb:
+> >   Ingo Molnar (1):
+> >         Merge branch 'core/header-fixes' of git://git.kernel.org/.../jaswinder/linux-2.6-tip into core/header-fixes
+> > 
+> > are available in the git repository at:
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git core/header-fixes
+> > 
+> > Jaswinder Singh Rajput (2):
+> >       Neither asm/types.h nor linux/types.h is required for arch/ia64/include/asm/fpu.h
+> >       make linux/types.h as assembly safe
 > 
-> Still around.  Btw, I'm not sure it's a regression as I only started
-> using virtio_blk heavily during the 2.6.28 cycle.
+> I continue to disagree with the need for the second patch.
 
-Well, assuming that it is a regression raises its chances to be fixed faster. ;-)
+Like Ingo suggested:
+
+On Fri, 2009-02-06 at 15:58 +0100, Ingo Molnar wrote:
+>  Well types.h easily gets included in other files though, which might be 
+> partially suited for assembly - and have !__ASSEMBLY__ portions that rely on 
+> a types.h include.
+> 
+> So making this file an invariant in .S files does not sound like a bad idea 
+> to me. Is there any downside?
+> 
+
+We cannot see any downside of this patch.
+
+But we can see upside of this patch is:
+1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
+files
+2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
+
+Thanks,
+
+--
+JSR
+
+
