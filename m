@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZBFOEH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756227AbZBFOIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbZBFOEH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:04:07 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbZBFODz
+	id S1756227AbZBFOIg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:08:36 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbZBFOI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:03:55 -0500
-Received: from mga09.intel.com ([134.134.136.24]:37060 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752310AbZBFODy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:03:54 -0500
+	Fri, 6 Feb 2009 09:08:28 -0500
+Received: from mga10.intel.com ([192.55.52.92]:8582 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753180AbZBFOI1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:08:27 -0500
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.37,391,1231142400"; 
-   d="scan'208";a="487861988"
-Date: Fri, 6 Feb 2009 15:06:18 +0100
+   d="scan'208";a="663434206"
+Date: Fri, 6 Feb 2009 15:10:52 +0100
 From: Samuel Ortiz <sameo@openedhand.com>
-To: Huang Weiyi <weiyi.huang@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: mfd: PCF50633: remove duplicated #include
-Message-ID: <20090206140617.GI3341@sortiz.org>
+Subject: Re: [PATCH 0/2] WM8350 updates
+Message-ID: <20090206141051.GJ3341@sortiz.org>
 Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <20090115064950.1F10.WEIYI.HUANG@gmail.com>
+References: <20090205181235.GA4851@sirena.org.uk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090115064950.1F10.WEIYI.HUANG@gmail.com>
+In-Reply-To: <20090205181235.GA4851@sirena.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Jan 15, 2009 at 06:53:29AM +0800, Huang Weiyi wrote:
-> Removed duplicated #include <linux/device.h> in
->   drivers/mfd/pcf50633-core.c
-Applied to my for-next branch, thanks.
+On Thu, Feb 05, 2009 at 06:12:35PM +0000, Mark Brown wrote:
+> I saw you had applied most of the outstanding patches for the WM8350
+> except for these two so I figured they may have been lost in the shuffle
+> and am resending them:
+Ok, I got them now. Will apply, thanks.
 
 Cheers,
 Samuel.
 
  
-> Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+> The following changes since commit e3d31e08fa03bb896ddea609dc5a703cf072babc:
+>   Mark Brown (1):
+>         mfd: Use bulk read to fill WM8350 register cache
 > 
-> diff --git a/drivers/mfd/pcf50633-core.c b/drivers/mfd/pcf50633-core.c
-> index 24508e2..feb8ddd 100644
-> --- a/drivers/mfd/pcf50633-core.c
-> +++ b/drivers/mfd/pcf50633-core.c
-> @@ -15,7 +15,6 @@
->  #include <linux/kernel.h>
->  #include <linux/device.h>
->  #include <linux/sysfs.h>
-> -#include <linux/device.h>
->  #include <linux/module.h>
->  #include <linux/types.h>
->  #include <linux/interrupt.h>
+> are available in the git repository at:
 > 
+>   git://opensource.wolfsonmicro.com/linux-2.6-audioplus for-sameo
+> 
+> Mark Brown (2):
+>       mfd: Support active high IRQs on WM835x
+>       mfd: Ensure all WM8350 IRQs are masked at startup
+> 
+>  drivers/mfd/wm8350-core.c       |   23 ++++++++++++++++++++++-
+>  include/linux/mfd/wm8350/core.h |    2 ++
+>  2 files changed, 24 insertions(+), 1 deletions(-)
 
 -- 
 Intel Open Source Technology Centre
