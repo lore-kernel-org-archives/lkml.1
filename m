@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760758AbZBFR4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbZBFR43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760758AbZBFR4m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:56:42 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760645AbZBFR4T
+	id S1760658AbZBFR43 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:56:29 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbZBFRz3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:56:19 -0500
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:40080 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760488AbZBFR4R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:56:17 -0500
-Date: Fri, 6 Feb 2009 17:56:35 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Ondrej Zary <linux@rainbow-software.org>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [resend] Resume from hibernation fails with pata_it821x
- RAID volume
-Message-ID: <20090206175635.5344ce37@lxorguk.ukuu.org.uk>
-In-Reply-To: <498C778B.7020309@ru.mvista.com>
-References: <200902061412.09839.linux@rainbow-software.org>
-	<498C778B.7020309@ru.mvista.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Organization: Red Hat UK Cyf., Amberley Place, 107-111 Peascod Street,
- Windsor, Berkshire, SL4 1TE, Y Deyrnas Gyfunol. Cofrestrwyd yng Nghymru a
- Lloegr o'r rhif cofrestru 3798903
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 6 Feb 2009 12:55:29 -0500
+Received: from hera.kernel.org ([140.211.167.34]:40732 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757557AbZBFRz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 12:55:28 -0500
+Message-ID: <498C7958.4010109@kernel.org>
+Date: Fri, 06 Feb 2009 09:54:32 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Ayaz Abdulla <aabdulla@nvidia.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] forcedeth: make msi-x different name for rx-tx
+References: <498BC3A8.9040203@kernel.org> <20090206144948.GD18368@elte.hu> <498C6C15.3050807@kernel.org> <20090206171544.GA16190@elte.hu>
+In-Reply-To: <20090206171544.GA16190@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->     See CodingStyle chapter 8 for the preferred multiline comment style.
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
 > 
-> > +		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
+>> Ingo Molnar wrote:
+>>> Cool cleanups!
+>>>
+>>> Would you mind to also fix the following - on all my systems that have 
+>>> forcedeth gigabit ethernet i've been getting these bogus warnings for 
+>>> _years_, under moderate load:
+>>>
+>>>   eth2: too many iterations (16) in nv_nic_irq.
+>>>
+>>> I think a 64 iterations limit will work much better. (i tried a limit of 50 
+>>> a year ago for a while and it worked fine and had no side effects - and the 
+>>> bogus warnings were done.)
+>> you may enable CONFIG_FORCEDETH_NAPI.
+>>
+>> we should enable NAPI for forcedeth by default, and try to squash more bugs out.
 > 
->     Why not ' '?
+> i do have that:
 > 
-> MBR, Sergei
+>  CONFIG_FORCEDETH=y
+>  CONFIG_FORCEDETH_NAPI=y
+> 
+> and the messages still come.
 
+so you systems are using ioapic routing, or msi.
 
-Digging into the docs the RAID serial number (and what that means isn't
-defined anywhere I can see) is byte offset 54-73 in each of the 4 128
-byte blocks returned by the chip status query we do at boot
-(it821x_probe_firmware).
+and those messages are from 
+nv_nic_irq_optimized or nv_nic_irq
+for TX or OTHER (timerirq).
 
-Alan
+YH
