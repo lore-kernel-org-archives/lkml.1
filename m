@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZBFSk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZBFSmc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbZBFSk1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 13:40:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZBFSkR
+	id S1756205AbZBFSmc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 13:42:32 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZBFSmX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 13:40:17 -0500
-Received: from pfepa.post.tele.dk ([195.41.46.235]:47297 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752758AbZBFSkQ (ORCPT
+	Fri, 6 Feb 2009 13:42:23 -0500
+Received: from mga09.intel.com ([134.134.136.24]:51378 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752614AbZBFSmW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 13:40:16 -0500
-Date: Fri, 6 Feb 2009 19:42:05 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull -tip] headers_check fixes for other architectures
-Message-ID: <20090206184205.GA11879@uranus.ravnborg.org>
-References: <1233385816.17794.16.camel@localhost.localdomain> <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com> <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain> <20090205191907.GA27422@elte.hu> <1233886017.3463.26.camel@localhost.localdomain> <20090206022025.GA8317@elte.hu> <1233929922.3209.6.camel@localhost.localdomain> <20090206172453.GB11299@uranus.ravnborg.org> <1233943912.3209.90.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233943912.3209.90.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 6 Feb 2009 13:42:22 -0500
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.37,392,1231142400"; 
+   d="scan'208";a="487937208"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Alex Chiang <achiang@hp.com>
+CC: "paulmck@linux.vnet.ibm.com" <paulmck@linux.vnet.ibm.com>,
+       "stable@kernel.org" <stable@kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Date: Fri, 6 Feb 2009 10:42:07 -0800
+Subject: RE: [PATCH] ia64: prevent irq migration race in __cpu_disable path
+Thread-Topic: [PATCH] ia64: prevent irq migration race in __cpu_disable path
+Thread-Index: AcmIdyLRu9kZvdXOSYeGPI+/zsIb1gAEylJQ
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA36121A469@orsmsx505.amr.corp.intel.com>
+References: <20090206162213.GD8208@ldl.fc.hp.com>
+In-Reply-To: <20090206162213.GD8208@ldl.fc.hp.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> Subject: [PATCH] make linux/types.h as assembly safe
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  include/linux/types.h |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/types.h b/include/linux/types.h
-> index 712ca53..e1322a7 100644
-> --- a/include/linux/types.h
-> +++ b/include/linux/types.h
-> @@ -1,6 +1,10 @@
->  #ifndef _LINUX_TYPES_H
->  #define _LINUX_TYPES_H
->  
-> +#ifdef __ASSEMBLY__
-> +# include <asm/types.h>
-> +#else /* __ASSEMBLY__ */
+> This is wrong because fixup_irqs calls migrate_irqs, and in
+> migrate_irqs, we use the cpu_online_map to:
+>
+>       1. look for interrupts on current CPU
+>       2. if we find one, move it to the first available CPU in
+>       the cpu_online_map
+>
+> This means we can potentially migrate an interrupt off ourself
+> back to... ourself. Uh oh.
 
-Please use:
-#ifndef __ASEMBLY__
+Should we make migrate_irqs smarter then ... does any caller really
+expect that it would "migrate" the irq to the same cpu?
 
-This is what is used in the most cases.
-
-And I think you need to nuke an include in the file a bit later
-so we do not include asm/types.h twice.
-
-	Sam
+-Tony
