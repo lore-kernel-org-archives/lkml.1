@@ -1,89 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbZBFAG7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZBFAIn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbZBFAG7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 19:06:59 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756410AbZBFAGp
+	id S1756383AbZBFAIn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 19:08:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZBFAIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 19:06:45 -0500
-Received: from gateway-1237.mvista.com ([63.81.120.158]:49391 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756223AbZBFAGo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 19:06:44 -0500
-Message-ID: <498B7F13.7040104@ct.jp.nec.com>
-Date: Thu, 05 Feb 2009 16:06:43 -0800
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Thu, 5 Feb 2009 19:08:35 -0500
+Received: from gw.goop.org ([64.81.55.164]:47566 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752462AbZBFAIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 19:08:34 -0500
+Message-ID: <498B7F7F.3090701@goop.org>
+Date: Thu, 05 Feb 2009 16:08:31 -0800
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] sched_rt: protect rt_rq->rt_time by rt_runtime_lock
-References: <498B77F6.4020702@ct.jp.nec.com>	 <498B7862.2040004@ct.jp.nec.com> <1233878343.4620.44.camel@laptop>
-In-Reply-To: <1233878343.4620.44.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Hugh Dickins <hugh@veritas.com>,
+       William Lee Irwin III <wli@movementarian.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: pud_bad vs pud_bad
+References: <498B2EBC.60700@goop.org> <20090205184355.GF5661@elte.hu> <498B35F9.601@goop.org> <20090205191017.GF20470@elte.hu> <Pine.LNX.4.64.0902051921150.30938@blonde.anvils> <498B4F1F.5070306@goop.org> <Pine.LNX.4.64.0902052046240.18431@blonde.anvils> <498B54A0.7040005@goop.org> <20090205215050.GB28097@elte.hu> <498B6325.1040401@goop.org> <20090205234241.GA14203@elte.hu>
+In-Reply-To: <20090205234241.GA14203@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-02-05 at 15:38 -0800, Hiroshi Shimamoto wrote:
->> From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->>
->> Impact: fix possible race condition
->>
->> rt_rq->rt_time should be protected.
-> 
-> Don't think so, all we do is check the value for non-zero outside the
-> lock, that should be ok.
-> 
-> If there's still a race, your changelog utterly fails to mention the
-> race scenario.
+Ingo Molnar wrote:
+> just the act of using PAE was measured to cause multi-percent slowdown in 
+> fork() and exec() latencies, etc. The pagetables are twice as large so is 
+> that really surprising?
+>   
 
-OK. I just noticed rt_time is accessed with rt_runtime_lock held except
-this point. Will look at this again.
+Is there a similar slowdown running the CPU in 32 vs 64 bit mode?  Or 
+does having more/wider registers mitigate it?
 
-Thanks,
-Hiroshi
-
-> 
->> Signed-off-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
->> ---
->>  kernel/sched_rt.c |    4 ++--
->>  1 files changed, 2 insertions(+), 2 deletions(-)
->>
->> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
->> index 299d012..d7654a3 100644
->> --- a/kernel/sched_rt.c
->> +++ b/kernel/sched_rt.c
->> @@ -496,10 +496,10 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
->>  		struct rq *rq = rq_of_rt_rq(rt_rq);
->>  
->>  		spin_lock(&rq->lock);
->> +		spin_lock(&rt_rq->rt_runtime_lock);
->>  		if (rt_rq->rt_time) {
->>  			u64 runtime;
->>  
->> -			spin_lock(&rt_rq->rt_runtime_lock);
->>  			if (rt_rq->rt_throttled)
->>  				balance_runtime(rt_rq);
->>  			runtime = rt_rq->rt_runtime;
->> @@ -510,9 +510,9 @@ static int do_sched_rt_period_timer(struct rt_bandwidth *rt_b, int overrun)
->>  			}
->>  			if (rt_rq->rt_time || rt_rq->rt_nr_running)
->>  				idle = 0;
->> -			spin_unlock(&rt_rq->rt_runtime_lock);
->>  		} else if (rt_rq->rt_nr_running)
->>  			idle = 0;
->> +		spin_unlock(&rt_rq->rt_runtime_lock);
->>  
->>  		if (enqueue)
->>  			sched_rt_rq_enqueue(rt_rq);
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
-
+    J
