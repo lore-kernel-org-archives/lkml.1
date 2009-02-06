@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZBFGHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZBFGIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbZBFGHg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 01:07:36 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZBFGH2
+	id S1756147AbZBFGIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 01:08:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752051AbZBFGID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 01:07:28 -0500
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:57810 "EHLO
+	Fri, 6 Feb 2009 01:08:03 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:55216 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751349AbZBFGH2 (ORCPT
+	with ESMTP id S1751491AbZBFGIB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 01:07:28 -0500
-Date: Fri, 6 Feb 2009 01:07:26 -0500 (EST)
+	Fri, 6 Feb 2009 01:08:01 -0500
+Date: Fri, 6 Feb 2009 01:07:59 -0500 (EST)
 From: Steven Rostedt <rostedt@goodmis.org>
 X-X-Sender: rostedt@gandalf.stny.rr.com
 To: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>
@@ -19,11 +19,11 @@ cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Michael Neuling <mikey@neuling.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 1/2] ftrace, powerpc: replace debug macro with proper
- pr_deug
-In-Reply-To: <20090206060527.148611255@goodmis.org>
-Message-ID: <alpine.DEB.1.10.0902060106440.5262@gandalf.stny.rr.com>
-References: <20090206060328.181057235@goodmis.org> <20090206060527.148611255@goodmis.org>
+Subject: Re: [PATCH 2/2] powerpc, ftrace: fix compile error when modules not
+ configured
+In-Reply-To: <20090206060527.369616736@goodmis.org>
+Message-ID: <alpine.DEB.1.10.0902060107350.5262@gandalf.stny.rr.com>
+References: <20090206060328.181057235@goodmis.org> <20090206060527.369616736@goodmis.org>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -34,122 +34,92 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 [ forgot to add linuxppc ]
 
+
 On Fri, 6 Feb 2009, Steven Rostedt wrote:
 
 > From: Steven Rostedt <srostedt@redhat.com>
 > 
-> Impact: cleanup
+> Michael Neuling reported a compile bug when dynamic ftrace was
+> configured in and modules were not. This was due to the ftrace
+> code referencing module specific structures.
 > 
-> The PowerPC ftrace code uses a hacked up DEBUGP macro for prints.
-> This patch converts it to the standard pr_debug.
-> 
+> Reported-by: Michael Neuling <mikey@neuling.org>
 > Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 > ---
->  arch/powerpc/kernel/ftrace.c |   26 ++++++++++----------------
->  1 files changed, 10 insertions(+), 16 deletions(-)
+>  arch/powerpc/kernel/ftrace.c |   16 +++++++++++++++-
+>  1 files changed, 15 insertions(+), 1 deletions(-)
 > 
 > diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
-> index 5355244..a913f91 100644
+> index a913f91..88c641d 100644
 > --- a/arch/powerpc/kernel/ftrace.c
 > +++ b/arch/powerpc/kernel/ftrace.c
-> @@ -20,12 +20,6 @@
->  #include <asm/code-patching.h>
->  #include <asm/ftrace.h>
+> @@ -113,6 +113,8 @@ static int test_24bit_addr(unsigned long ip, unsigned long addr)
+>  	return create_branch((unsigned int *)ip, addr, 0);
+>  }
 >  
-> -#if 0
-> -#define DEBUGP printk
-> -#else
-> -#define DEBUGP(fmt , ...)	do { } while (0)
-> -#endif
+> +#ifdef CONFIG_MODULES
+> +
+>  static int is_bl_op(unsigned int op)
+>  {
+>  	return (op & 0xfc000003) == 0x48000001;
+> @@ -323,6 +325,7 @@ __ftrace_make_nop(struct module *mod,
+>  	return 0;
+>  }
+>  #endif /* PPC64 */
+> +#endif /* CONFIG_MODULES */
+>  
+>  int ftrace_make_nop(struct module *mod,
+>  		    struct dyn_ftrace *rec, unsigned long addr)
+> @@ -342,6 +345,7 @@ int ftrace_make_nop(struct module *mod,
+>  		return ftrace_modify_code(ip, old, new);
+>  	}
+>  
+> +#ifdef CONFIG_MODULES
+>  	/*
+>  	 * Out of range jumps are called from modules.
+>  	 * We should either already have a pointer to the module
+> @@ -366,9 +370,13 @@ int ftrace_make_nop(struct module *mod,
+>  		mod = rec->arch.mod;
+>  
+>  	return __ftrace_make_nop(mod, rec, addr);
 > -
->  static unsigned int ftrace_nop = PPC_NOP_INSTR;
+> +#else
+> +	/* We should not get here without modules */
+> +	return -EINVAL;
+> +#endif /* CONFIG_MODULES */
+>  }
 >  
->  #ifdef CONFIG_PPC32
-> @@ -175,7 +169,7 @@ __ftrace_make_nop(struct module *mod,
->  	 * 0xe8, 0x4c, 0x00, 0x28,    ld      r2,40(r12)
->  	 */
+> +#ifdef CONFIG_MODULES
+>  #ifdef CONFIG_PPC64
+>  static int
+>  __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+> @@ -457,6 +465,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+>  	return 0;
+>  }
+>  #endif /* CONFIG_PPC64 */
+> +#endif /* CONFIG_MODULES */
 >  
-> -	DEBUGP("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
-> +	pr_debug("ip:%lx jumps to %lx r2: %lx", ip, tramp, mod->arch.toc);
->  
->  	/* Find where the trampoline jumps to */
->  	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
-> @@ -183,7 +177,7 @@ __ftrace_make_nop(struct module *mod,
->  		return -EFAULT;
+>  int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+>  {
+> @@ -475,6 +484,7 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
+>  		return ftrace_modify_code(ip, old, new);
 >  	}
 >  
-> -	DEBUGP(" %08x %08x", jmp[0], jmp[1]);
-> +	pr_debug(" %08x %08x", jmp[0], jmp[1]);
->  
->  	/* verify that this is what we expect it to be */
->  	if (((jmp[0] & 0xffff0000) != 0x3d820000) ||
-> @@ -198,18 +192,18 @@ __ftrace_make_nop(struct module *mod,
->  	offset = (unsigned)((unsigned short)jmp[0]) << 16 |
->  		(unsigned)((unsigned short)jmp[1]);
->  
-> -	DEBUGP(" %x ", offset);
-> +	pr_debug(" %x ", offset);
->  
->  	/* get the address this jumps too */
->  	tramp = mod->arch.toc + offset + 32;
-> -	DEBUGP("toc: %lx", tramp);
-> +	pr_debug("toc: %lx", tramp);
->  
->  	if (probe_kernel_read(jmp, (void *)tramp, 8)) {
->  		printk(KERN_ERR "Failed to read %lx\n", tramp);
->  		return -EFAULT;
+> +#ifdef CONFIG_MODULES
+>  	/*
+>  	 * Out of range jumps are called from modules.
+>  	 * Being that we are converting from nop, it had better
+> @@ -486,6 +496,10 @@ int ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
 >  	}
 >  
-> -	DEBUGP(" %08x %08x\n", jmp[0], jmp[1]);
-> +	pr_debug(" %08x %08x\n", jmp[0], jmp[1]);
+>  	return __ftrace_make_call(rec, addr);
+> +#else
+> +	/* We should not get here without modules */
+> +	return -EINVAL;
+> +#endif /* CONFIG_MODULES */
+>  }
 >  
->  	ptr = ((unsigned long)jmp[0] << 32) + jmp[1];
->  
-> @@ -286,7 +280,7 @@ __ftrace_make_nop(struct module *mod,
->  	 *  0x4e, 0x80, 0x04, 0x20  bctr
->  	 */
->  
-> -	DEBUGP("ip:%lx jumps to %lx", ip, tramp);
-> +	pr_debug("ip:%lx jumps to %lx", ip, tramp);
->  
->  	/* Find where the trampoline jumps to */
->  	if (probe_kernel_read(jmp, (void *)tramp, sizeof(jmp))) {
-> @@ -294,7 +288,7 @@ __ftrace_make_nop(struct module *mod,
->  		return -EFAULT;
->  	}
->  
-> -	DEBUGP(" %08x %08x ", jmp[0], jmp[1]);
-> +	pr_debug(" %08x %08x ", jmp[0], jmp[1]);
->  
->  	/* verify that this is what we expect it to be */
->  	if (((jmp[0] & 0xffff0000) != 0x3d600000) ||
-> @@ -310,7 +304,7 @@ __ftrace_make_nop(struct module *mod,
->  	if (tramp & 0x8000)
->  		tramp -= 0x10000;
->  
-> -	DEBUGP(" %x ", tramp);
-> +	pr_debug(" %x ", tramp);
->  
->  	if (tramp != addr) {
->  		printk(KERN_ERR
-> @@ -413,7 +407,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  	/* ld r2,40(r1) */
->  	op[1] = 0xe8410028;
->  
-> -	DEBUGP("write to %lx\n", rec->ip);
-> +	pr_debug("write to %lx\n", rec->ip);
->  
->  	if (probe_kernel_write((void *)ip, op, MCOUNT_INSN_SIZE * 2))
->  		return -EPERM;
-> @@ -453,7 +447,7 @@ __ftrace_make_call(struct dyn_ftrace *rec, unsigned long addr)
->  		return -EINVAL;
->  	}
->  
-> -	DEBUGP("write to %lx\n", rec->ip);
-> +	pr_debug("write to %lx\n", rec->ip);
->  
->  	if (probe_kernel_write((void *)ip, &op, MCOUNT_INSN_SIZE))
->  		return -EPERM;
+>  int ftrace_update_ftrace_func(ftrace_func_t func)
 > -- 
 > 1.5.6.5
 > 
