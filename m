@@ -1,93 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759888AbZBFQW5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759105AbZBFQZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759888AbZBFQW5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:22:57 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbZBFQWt
+	id S1759105AbZBFQZW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:25:22 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZBFQZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:22:49 -0500
-Received: from acsinet12.oracle.com ([141.146.126.234]:46258 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753491AbZBFQWs (ORCPT
+	Fri, 6 Feb 2009 11:25:07 -0500
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46215 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752199AbZBFQZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:22:48 -0500
-Subject: [GIT PULL] Btrfs updates for 2.6.29-rc
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Fri, 06 Feb 2009 11:22:29 -0500
-Message-Id: <1233937349.17551.18.camel@think.oraclecorp.com>
+	Fri, 6 Feb 2009 11:25:06 -0500
+Date: Fri, 6 Feb 2009 16:23:52 +0000
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Jaswinder Singh Rajput <jaswinderlinux@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, tony.luck@intel.com, ralf@linux-mips.org,
+       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
+       LKML <linux-kernel@vger.kernel.org>,
+       linux-next <linux-next@vger.kernel.org>,
+       linux-ia64 <linux-ia64@vger.kernel.org>
+Subject: Re: [linux-next][PATCH] revert headers_check fix: ia64, fpu.h
+Message-ID: <20090206162352.GI13758@n2100.arm.linux.org.uk>
+References: <20090206164546.6291.KOSAKI.MOTOHIRO@jp.fujitsu.com> <3f9a31f40902060053x18dacf58u40c739ab89f13860@mail.gmail.com> <20090206180957.6294.KOSAKI.MOTOHIRO@jp.fujitsu.com> <20090206145556.GH18368@elte.hu> <1233934141.3209.20.camel@localhost.localdomain> <20090206153315.GD13758@n2100.arm.linux.org.uk> <1233935328.3209.30.camel@localhost.localdomain> <20090206155512.GF13758@n2100.arm.linux.org.uk> <20090206161229.GA8256@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.498C63CB.0284:SCFSTAT928724,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090206161229.GA8256@elte.hu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+On Fri, Feb 06, 2009 at 05:12:29PM +0100, Ingo Molnar wrote:
+> 
+> * Russell King - ARM Linux <linux@arm.linux.org.uk> wrote:
+> 
+> > > We cannot see any downside of this patch.
+> > > 
+> > > But we can see upside of this patch is:
+> > > 1. No need to protect linux/types.h with #ifndef __ASSEMBLY__ in many
+> > > files
+> > > 2. So we trying to replace multiple #ifndef __ASSEMBLY__ with one.
+> > 
+> > The point is:
+> > 
+> > 1. If the parent include needs to include linux/types.h to get at C
+> >    types _and_ the include file needs to also be included by assembly
+> >    code, it itself needs to have #ifndef __ASSEMBLY__ to protect those
+> >    uses from the assembly code.
+> > 
+> >    In that case, the linux/types.h include should be contained within
+> >    the #ifndef __ASSEMBLY__ .. #endif block along with all C only
+> >    parts of the header file.
+> 
+> That makes the code much less clean: putting #include's in the middle of a 
+> header is poor style and leads to people failing to consider dependencies. 
+> We generally put them to the header portion.
+> 
+> Putting an #include line in the middle of a header file is a receipe for a 
+> dependency hell (it can easily fall inside #ifdefs, can be overlooked, 
+> etc.), so it's _strongly_ discouraged (at least on arch/x86).
 
-The current btrfs unstable tree should be ready for 2.6.29-rc:
+Put them at the top then with an additional ifndef.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+> > 2. if it doesn't need C types from linux/types.h, then that header has
+> >    no business including linux/types.h, and the include should be
+> >    eliminated to save the already dirbolically slow compiler from
+> >    having to read and parse that file, and more importantly allowing
+> >    it to eliminate linux/types.h from the build dependencies.
+> > 
+> > Yes, you can wrap linux/types.h with that ifndef, and yes it will fix any 
+> > problems, but I view it as a hack rather than fixing the real problem 
+> > which is lazyness by code writers to get their include dependencies right.
+> 
+> It is not about include dependencies at all - it is about the existing and 
+> accepted practice which you did not consider in your argument: the use of 
+> mixed-mode headers. A linux/types.h include there is perfectly clean and 
+> should not break the build.
 
-We've been busy working on cleanups and improvements based on the
-feedback for Btrfs.  There are still lots of cleanups left to do,
-especially the ones pointed out by Andrew.
+It _is_ about include dependencies.
 
-Some of them I've been holding on to as starter tasks for people that
-are interested in the project.
+> Again, i repeat: there is nothing wrong about making a small number of very 
+> commonly used C header assembly-invariant. It results in better structured 
+> header files and cleaner code.
+> 
+> The argument is as simple as that, and up until this email you wrote roughly 
+> 10 replies and it's not even that you disagreed with our point on some 
+> honest basis that we could argue with - the ting is that you failed to even 
+> _realize_ this argument of us and you tried to force your partial (and 
+> trivially flawed) world view on us impatiently. In view of that you need to 
+> be more careful before calling people 'stupidly obtuse' ;-)
 
-The current btrfs unstable tree also has a number of fixes hit by
-testers and by the Fedora alpha integration.  These include selinux
-support, an oops in the compression code, and a few different IO stalls.
+If you think that I'm ignoring your argument, then screw you.
 
-There are two big performance related changes in the tree.  I got rid of
-the adaptive mutex implementation and switched to a lock that explicitly
-switches between a spinlock and a waitqueue.  This is faster and it
-allows us to pick off the blocking lock points one by one over time in a
-controlled fashion.
+I'm making a counter argument which I believe is _equally_ valid and which
+I believe is actually far more important - at least it is _to_ _me_.
 
-The second big performance fix deals with snapshot deletion.  It makes
-progress much more effectively and is able to keep up with bigger
-workloads.  This is important because every transaction ends up deleting
-a snapshot.
+I don't wish to see my build times extended any more than they already
+have been by sloppy and lazy programming in the kernel.  And if I didn't
+make that point earlier, what a shame.  I'm making it NOW.
 
-There wasn't much code involved in the snapshot deletion improvements,
-it is basically just sorting the block pointers before updating their
-reference counts, and working on leaves in bulk instead of one by one.
+I've been trying over the last six months to (a) reduce the number of
+files included in the ARM sub-tree and (b) reduce the namespace pollution
+from ARM headers into the generic kernel both with the aim of trying to
+improve build time.  That's something you can verify by looking through
+the commits in arch/arm/include/asm if you think I'm making this up,
+which clearly you will do.
 
-Here's the shortlog:
-
-Chris Ball (1):
-      Btrfs: Handle SGID bit when creating inodes
-
-Chris Mason (14):
-      Btrfs: Catch missed bios in the async bio submission thread
-      Btrfs: async threads should try harder to find work
-      Btrfs: sort references by byte number during btrfs_inc_ref
-      Btrfs: disable leak debugging checks in extent_io.c
-      Btrfs: hash_lock is no longer needed
-      Btrfs: Change btree locking to use explicit blocking points
-      Btrfs: Make btrfs_drop_snapshot work in larger and more efficient chunks
-      Btrfs: Don't try to compress pages past i_size
-      Btrfs: Change btrfs_truncate_inode_items to stop when it hits the inode
-      Btrfs: change btrfs_del_leaf to drop locks earlier
-      Btrfs: fix btrfs_unlock_up_safe to walk the entire path
-      Btrfs: Only prep for btree deletion balances when nodes are mostly empty
-      Btrfs: don't return congestion in write_cache_pages as often
-      Btrfs: Fix memory leak in cache_drop_leaf_ref
-
-Christian Hesse (1):
-      Btrfs: make btrfs acls selectable
-
-Jim Owens (1):
-      Btrfs: selinux support
-
-Josef Bacik (1):
-      Btrfs: join the transaction in __btrfs_setxattr
-
-
-
+Oh why bring it up after 11 replies.  I guess I'm just useless at
+expressing myself clearly.
