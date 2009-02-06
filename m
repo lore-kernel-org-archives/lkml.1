@@ -1,77 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbZBFPcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbZBFPd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758843AbZBFPcQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:32:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752376AbZBFPb4
+	id S1758017AbZBFPd4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:33:56 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751368AbZBFPds
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 10:31:56 -0500
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38548 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750699AbZBFPbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 10:31:55 -0500
-Date: Fri, 6 Feb 2009 16:31:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_counter: Prevent oopses from per-cpu software
-	counters
-Message-ID: <20090206153138.GM18368@elte.hu>
-References: <18826.28805.120988.303819@drongo.ozlabs.ibm.com> <20090205142229.GB28443@elte.hu> <18827.48582.613391.869829@cargo.ozlabs.ibm.com>
+	Fri, 6 Feb 2009 10:33:48 -0500
+Received: from fg-out-1718.google.com ([72.14.220.153]:60477 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750699AbZBFPdr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:33:47 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=qRM7d60LdDl4KU1fFNqczAEd3dZqTrCaqSqAqAVO7NDHe3K7wFUC/A98nAmFea0dij
+         X7glUXNXzZlLwoYlsqdba4kn19CIfMkq8MIsT5pC03aEgZPtYb4MbLrqNYKNyM217+Fq
+         QjvYFu49uEEwLe1LWihkAZNmamccgr1cnWtFg=
+Date: Fri, 6 Feb 2009 16:33:42 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH 2/4] nmi: add generic nmi tracking state
+Message-ID: <20090206153340.GA5033@nowhere>
+References: <20090206065352.940088243@goodmis.org> <20090206065437.986292747@goodmis.org> <1233912891.4731.1.camel@laptop> <20090206144609.GB18368@elte.hu> <alpine.DEB.1.10.0902060950250.10059@gandalf.stny.rr.com> <20090206145431.GG18368@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18827.48582.613391.869829@cargo.ozlabs.ibm.com>
+In-Reply-To: <20090206145431.GG18368@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mackerras <paulus@samba.org> wrote:
-
-> Ingo Molnar writes:
+On Fri, Feb 06, 2009 at 03:54:31PM +0100, Ingo Molnar wrote:
 > 
-> > So how about fixing these sw counts to properly work as percpu counters too? 
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> OK, so for page faults it looks like I want to look at
+> > On Fri, 6 Feb 2009, Ingo Molnar wrote:
+> > 
+> > > 
+> > > * Peter Zijlstra <peterz@infradead.org> wrote:
+> > > 
+> > > > On Fri, 2009-02-06 at 01:53 -0500, Steven Rostedt wrote:
+> > > > 
+> > > > > This code adds an in_nmi() macro that uses the current tasks preempt count
+> > > > > to track when it is in NMI context. Other parts of the kernel can
+> > > > > use this to determine if the context is in NMI context or not.
+> > > > > 
+> > > > > This code was inspired by the -rt patch in_nmi version that was
+> > > > > written by Peter Zijlstra.
+> > > > 
+> > > > Which in turn I borrowed from Mathieu.
+> > > 
+> > > Steve, could you please fix the attribution?
+> > 
+> > Is it OK to rebase the branch to do so?
 > 
-> 	get_cpu_var(vm_event_states).event[PGFAULT]
+> Sure, that's necessary.
 > 
-> to get the per-cpu page fault count, as long as
-> CONFIG_VM_EVENT_COUNTERS is set.
+> And note that unless you base your tree against tip:tracing/ftrace i cannot 
+> do a straight pull anyway. (your trees are usually based against tip:master 
+> - which brings in all other branches)
 
-Yeah - i'd suggest that. Note hat VM_EVENT_COUNTERS is default enabled on 
-99.99% of kernels:
 
- config VM_EVENT_COUNTERS
-        default y
-        bool "Enable VM event counters for /proc/vmstat" if EMBEDDED
+Oh really? I always base my tracing patches against tip/master, assuming
+tracing/ftrace is about always quickly merged into master.
+But the opposite is not necessarily true, I guess you don't merge master
+into tracing/ftrace so quickly to not break the history right? And I guess
+it's better to catch bugs if each individual topics is not too quickly synced
+against tip/master.
 
-> It looks like the scheduler doesn't keep per-cpu counts of context 
-> switches or task migrations, or if it does I couldn't find them.  We could 
-> do stuff in perf_counter_task_sched_in/out to implement per-cpu context 
-> switch and migration counters by adding up the delta values for each task 
-> that gets scheduled onto the cpu.  Or we could add explicit per-cpu 
-> counters for these things in the scheduler.
-> 
-> What do you think?
+ 
+> 	Ingo
 
-For per-cpu counts of context switches we already have rq->nr_switches. 
-
-We dont have per-cpu counts of migrations - but could add them.
-
-We should do it this way becaue it would be nice to make per-cpu counters 
-work just fine even if they are never switched in and out during context 
-switches. That turns per-cpu counters into even lower-overhead ways of 
-monitoring those values.
-
-	Ingo
