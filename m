@@ -1,96 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZBFCU6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZBFCZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbZBFCU6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 21:20:58 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZBFCUu
+	id S1756869AbZBFCZd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 21:25:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZBFCZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 21:20:50 -0500
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34326 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbZBFCUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 21:20:49 -0500
-Date: Fri, 6 Feb 2009 03:20:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       hskinnemoen@atmel.com, cooloney@kernel.org, ralf@linux-mips.org,
-       dhowells@redhat.com, matthew@wil.cx, chris@zankel.net,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull -tip] headers_check fixes for other architectures
-Message-ID: <20090206022025.GA8317@elte.hu>
-References: <1233385816.17794.16.camel@localhost.localdomain> <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com> <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain> <20090205191907.GA27422@elte.hu> <1233886017.3463.26.camel@localhost.localdomain>
+	Thu, 5 Feb 2009 21:25:26 -0500
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49886 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbZBFCZZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 21:25:25 -0500
+Date: Thu, 5 Feb 2009 21:25:22 -0500 (EST)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [PATCH 1/2] ring-buffer: add NMI protection for spinlocks
+In-Reply-To: <20090205175321.e1455c0e.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.1.10.0902052058470.5262@gandalf.stny.rr.com>
+References: <20090206011315.360405659@goodmis.org> <20090206011350.976972261@goodmis.org> <20090205175321.e1455c0e.akpm@linux-foundation.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1233886017.3463.26.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+[ added Arjan ]
 
-> On Thu, 2009-02-05 at 20:19 +0100, Ingo Molnar wrote:
+On Thu, 5 Feb 2009, Andrew Morton wrote:
+> > diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
+> > index 4d33224..4c68358 100644
+> > --- a/arch/x86/kernel/ftrace.c
+> > +++ b/arch/x86/kernel/ftrace.c
+> > @@ -113,7 +113,7 @@ static void ftrace_mod_code(void)
+> >  					     MCOUNT_INSN_SIZE);
+> >  }
+> >  
+> > -void ftrace_nmi_enter(void)
+> > +void arch_ftrace_nmi_enter(void)
+> >  {
+> >  	atomic_inc(&in_nmi);
 > 
-> > Jaswinder, because they can break the build we should proactively drop all 
-> > architecture patches that do asm/types.h conversions.
-> > 
-> > I did build all the affected architectures via their defconfigs and they 
-> > built just fine - but i cannot do wide coverage testing of them.
-> > 
-> > So i think we should drop these bits:
-> > 
-> >  earth4:~/tip> gll --grep='asm/types.h' linus..core/header-fixes
-> >  1ff8f73: headers_check fix: xtensa, swab.h
-> >  4810987: headers_check fix: powerpc, swab.h
-> >  9f2cd96: headers_check fix: powerpc, kvm.h
-> >  785857f: headers_check fix: powerpc, elf.h
-> >  4be2c7f: headers_check fix: powerpc, bootx.h
-> >  726da1e: headers_check fix: parisc, swab.h
-> >  bef53ca: headers_check fix: mn10300, swab.h
-> >  a9f6acc: headers_check fix: mips, swab.h
-> >  d8cbec1: headers_check fix: m32r, swab.h
-> >  040c92b: headers_check fix: ia64, swab.h
-> >  6ce7950: headers_check fix: ia64, kvm.h
-> >  fa9ea6c: headers_check fix: ia64, fpu.h
-> >  295803e: headers_check fix: h8300, swab.h
-> >  dacd762: headers_check fix: frv, swab.h
-> >  350eb8b: headers_check fix: blackfin, swab.h
-> >  1c6ce70: headers_check fix: avr32, swab.h
-> >  e42ec24: headers_check fix: arm, swab.h
-> >  4af3bf6: headers_check fix: arm, setup.h
-> >  f100e6d: headers_check fix: arm, a.out.h
-> >  3fd5906: headers_check fix: alpha, swab.h
-> > 
-> > and send the rest to Linus if all outstanding observations have been 
-> > addressed. What do you think?
-> > 
+> This in_nmi thing looks a bit awkward.  It's not very clear from the
+> code what it does or why it exists, but it looks like I'm going to have
+> to get used to that...
 > 
-> The problem is if we include linux/types.h in assembly file we will get
-> error.
-> 
-> We can solve this problem by four options (or may be more):
-> 1. by wrapping #ifndef __ASSEMBLY__ files which are used by assembly
-> code as suggested by Tony.
-> 
-> 2. fix linux/types.h so that assembly file can also use it
-> 
-> 3. drop patches which are used by assembly files
-> 
-> 4. drop all architecture patches as you suggested.
+> Surely it is buggy?  It's incremented by _any_ cpu, so code which reads
+> it (eg, prepare_ftrace_return()) will bale out if some other CPU
+> happened to be in the middle of taking an NMI.
 
-hm, the highest quality approach seems to be #2, right?
+And that is exactly what we want it to do ;-)
 
-	Ingo
+This is code modification. If you modify code that another cpu is 
+executing with, the result is undefined. In my tests to cause this type of 
+error, I usually get a general protection fault.
+
+To modify code safely, you must act like a uniprocessor. That is, the code 
+you modify must not be executing on another CPU. We use stop_machine to 
+help us out here, but under NMI stress tests, we found that we can crash, 
+because the NMI will execute code being modified. Stop_machine does not 
+disable NMIs on other CPUS.
+
+To solve this, we sync up the modification with the NMI with a couple of 
+variables. That's what all those memory barriers are for.
+
+When we go to modify a line of code, we set a variable that we are doing 
+so, wait for all NMIs to finish, then modify the code, wait for NMIs
+again, and repeat on the next line to modify.
+
+If the NMI goes off on any CPU, it increments the in_nmi counter. If the 
+mod code flag is set, the NMI modifies the code.
+
+The trick here is that the crash only occurs if the code is modified as it 
+is being executed on. But it will not crash if the code is written to with 
+the same data as it was. In other words, it is fine to write the code and 
+execute it, if what you are writing is what is already there. No 
+modification being done.
+
+All NMIs that go off will modify the same code. Even if the code being 
+modified is in a NMI code path, only the first NMI that goes off will 
+actually modify it, the rest will just be writting the same data to the 
+location. Even the main code will be writing the same data. No races.
+
+
+
+> 
+> Would it not be better to make in_nmi a per-cpu thing, make it a piece
+> of first-class kernel infrastructure, add a nice interface to it, hoist
+> it up into generic code, call that code from arch NMI handlers, call
+> that interface from ftrace, etc?  Or perhaps it could be implemented in
+> task_struct, alongside in_irq(), in_softirq(), etc.  There are three bits
+> left in ->preempt_count.
+
+I agree, we should have a per cpu nmi code. I can write that up and use
+it for the ring buffer. But the call back for the ftrace code that I 
+explained here must still be made. We need a "global" nmi counter for it 
+to work.
+
+-- Steve
+
+> 
+> This approach would remove the duplication which this patch is
+> attempting to add.
+> 
+> Plus there's already quite a bit of duplication in
+> arch/x86/kernel/ftrace.c between the
+> CONFIG_DYNAMIC_FTRACE/!CONFIG_DYNAMIC_FTRACE hunks.  Two definitions of
+> in_nmi, duplicated inc/dec thereof?
+> 
+> 
+> 
+> 
+> 
