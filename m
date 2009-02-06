@@ -1,63 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755548AbZBFNMa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755483AbZBFNWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755548AbZBFNMa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 08:12:30 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZBFNMW
+	id S1755483AbZBFNWb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 08:22:31 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZBFNWX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 08:12:22 -0500
-Received: from mail.atlantis.sk ([80.94.52.35]:55162 "EHLO mail.atlantis.sk"
+	Fri, 6 Feb 2009 08:22:23 -0500
+Received: from mail.atlantis.sk ([80.94.52.35]:46018 "EHLO mail.atlantis.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753405AbZBFNMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 08:12:21 -0500
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] [resend] Resume from hibernation fails with pata_it821x RAID volume
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Disposition: inline
+	id S1753141AbZBFNWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 08:22:23 -0500
 From: Ondrej Zary <linux@rainbow-software.org>
-Date: Fri, 6 Feb 2009 14:12:07 +0100
+Subject: 3c509 resume from hibernation broken somewhere between 2.6.25 and 2.6.28
+Date: Fri, 6 Feb 2009 14:22:13 +0100
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
+Content-Disposition: inline
+X-Length: 1312
+To: netdev@vger.kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>
 Content-Type: text/plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200902061412.09839.linux@rainbow-software.org>
+Message-Id: <200902061422.14746.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hello,
-hibernation didn't work for me since I started to use IT8212 controller. Now I 
-did some debugging (booting with no_console_suspend init=/bin/sh).
+last year, I posted a patch which fixed hibernation on 3c509 cards. That was 
+back in 2.6.24. It worked fine in 2.6.25. But then I stopped using 
+hibernation (as it did not work with my new IT8212 RAID controller).
 
-Found that resume fails (2.6.28) with "serial number mismatch 'some 
-garbage' != 'some other garbage'" and "revalidation failed" messages. That's 
-because the controller firmware fills different serial number in the IDENTIFY 
-every boot.
+Now I fixed it and noticed that 3c509 does not wake up properly anymore (in 
+2.6.28) - neither in PnP nor in ISA modes. ifconfig down/up makes the card 
+work again in PnP mode. However, in ISA mode, ifconfig up ends with "No such 
+device" error.
 
-The patch below fixes the resume simply clearing the serial number. The proper 
-fix would be probably to fill in the serial number of the RAID volume 
-instead. I assume that there must be something like that stored on the drives 
-but I don't know where.
+Comparing the 3c509 driver between 2.6.25 and 2.6.28, there's only some 
+statistics-related change. So the cause of the problem must be somewhere 
+else.
 
+This patch makes the resume work in PnP mode, but it's still not enough for 
+ISA mode.
 
-Fix resume on pata_it821x RAID volume by clearing the serial number in 
-IDENTIFY data, which is otherwise different on each boot.
-
-Signed-off-by: Ondrej Zary <linux@rainbow-software.org>
-
---- linux-2.6.28-orig/drivers/ata/pata_it821x.c	2009-01-02 17:18:36.000000000 
-+0100
-+++ linux/drivers/ata/pata_it821x.c	2009-02-02 17:47:57.000000000 +0100
-@@ -561,6 +561,9 @@
- 		id[83] |= 0x4400;	/* Word 83 is valid and LBA48 */
- 		id[86] |= 0x0400;	/* LBA48 on */
- 		id[ATA_ID_MAJOR_VER] |= 0x1F;
-+		/* Clear the serial number because it's different each boot
-+		   which breaks validation on resume */
-+		memset(&id[ATA_ID_SERNO], 0x20, ATA_ID_SERNO_LEN);
- 	}
- 	return err_mask;
- }
-
+--- linux-2.6.28-orig/drivers/net/3c509.c	2009-01-02 17:19:07.000000000 +0100
++++ linux/drivers/net/3c509.c	2009-02-05 22:36:20.000000000 +0100
+@@ -1477,6 +1477,7 @@
+ 	spin_lock_irqsave(&lp->lock, flags);
+ 
+ 	outw(PowerUp, ioaddr + EL3_CMD);
++	EL3WINDOW(0);
+ 	el3_up(dev);
+ 
+ 	if (netif_running(dev))
 
 -- 
 Ondrej Zary
