@@ -1,66 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754784AbZBFE6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753346AbZBFFBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754784AbZBFE6w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 23:58:52 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752115AbZBFE6o
+	id S1753346AbZBFFBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 00:01:20 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750831AbZBFFBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 23:58:44 -0500
-Received: from tomts25-srv.bellnexxia.net ([209.226.175.188]:33795 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751259AbZBFE6n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 23:58:43 -0500
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AsIEAOtRi0lMQWt2/2dsb2JhbACBbsx7hBYG
-Date: Thu, 5 Feb 2009 23:58:41 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       ltt-dev@lists.casi.polymtl.ca, linux-kernel@vger.kernel.org
-Cc: Robert Wisniewski <bob@watson.ibm.com>
-Subject: [RFC git tree] Userspace RCU (urcu) for Linux (repost)
-Message-ID: <20090206045841.GA12995@Krystal>
-References: <20090206030543.GB8560@Krystal>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 6 Feb 2009 00:01:03 -0500
+Received: from hera.kernel.org ([140.211.167.34]:60937 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750818AbZBFFBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 00:01:01 -0500
+Message-ID: <498BC3A8.9040203@kernel.org>
+Date: Thu, 05 Feb 2009 20:59:20 -0800
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ayaz Abdulla <aabdulla@nvidia.com>,
+       "David S. Miller" <davem@davemloft.net>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Subject: [PATCH] forcedeth: make msi-x different name for rx-tx
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090206030543.GB8560@Krystal>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:56:23 up 36 days,  4:54,  5 users,  load average: 0.62, 0.41,
-	0.27
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(sorry for repost, I got the ltt-dev email wrong in the previous one)
 
-Hi Paul,
+Impact: make /proc/interrupts could show more info which irq is rx or other for msi-x
 
-I figured out I needed some userspace RCU for the userspace tracing part
-of LTTng (for quick read access to the control variables) to trace
-userspace pthread applications. So I've done a quick-and-dirty userspace
-RCU implementation.
+add three name fields for rx, tx, other
 
-It works so far, but I have not gone through any formal verification
-phase. It seems to work on paper, and the tests are also OK (so far),
-but I offer no guarantee for this 300-lines-ish 1-day hack. :-) If you
-want to comment on it, it would be welcome. It's a userland-only
-library. It's also currently x86-only, but only a few basic definitions
-must be adapted in urcu.h to port it.
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Here is the link to my git tree :
+---
+ drivers/net/forcedeth.c |   17 ++++++++++++++---
+ 1 file changed, 14 insertions(+), 3 deletions(-)
 
-git://lttng.org/userspace-rcu.git
-
-http://lttng.org/cgi-bin/gitweb.cgi?p=userspace-rcu.git;a=summary
-
-Thanks,
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Index: linux-2.6/drivers/net/forcedeth.c
+===================================================================
+--- linux-2.6.orig/drivers/net/forcedeth.c
++++ linux-2.6/drivers/net/forcedeth.c
+@@ -812,6 +812,11 @@ struct fe_priv {
+ 
+ 	/* power saved state */
+ 	u32 saved_config_space[NV_PCI_REGSZ_MAX/4];
++
++	/* for different msi-x irq type */
++	char name_rx[IFNAMSIZ + 3];       /* -rx    */
++	char name_tx[IFNAMSIZ + 3];       /* -tx    */
++	char name_other[IFNAMSIZ + 6];    /* -other */
+ };
+ 
+ /*
+@@ -3918,21 +3923,27 @@ static int nv_request_irq(struct net_dev
+ 			np->msi_flags |= NV_MSI_X_ENABLED;
+ 			if (optimization_mode == NV_OPTIMIZATION_MODE_THROUGHPUT && !intr_test) {
+ 				/* Request irq for rx handling */
+-				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector, &nv_nic_irq_rx, IRQF_SHARED, dev->name, dev) != 0) {
++				sprintf(np->name_rx, "%s-rx", dev->name);
++				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_RX].vector,
++						&nv_nic_irq_rx, IRQF_SHARED, np->name_rx, dev) != 0) {
+ 					printk(KERN_INFO "forcedeth: request_irq failed for rx %d\n", ret);
+ 					pci_disable_msix(np->pci_dev);
+ 					np->msi_flags &= ~NV_MSI_X_ENABLED;
+ 					goto out_err;
+ 				}
+ 				/* Request irq for tx handling */
+-				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector, &nv_nic_irq_tx, IRQF_SHARED, dev->name, dev) != 0) {
++				sprintf(np->name_tx, "%s-tx", dev->name);
++				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_TX].vector,
++						&nv_nic_irq_tx, IRQF_SHARED, np->name_tx, dev) != 0) {
+ 					printk(KERN_INFO "forcedeth: request_irq failed for tx %d\n", ret);
+ 					pci_disable_msix(np->pci_dev);
+ 					np->msi_flags &= ~NV_MSI_X_ENABLED;
+ 					goto out_free_rx;
+ 				}
+ 				/* Request irq for link and timer handling */
+-				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_OTHER].vector, &nv_nic_irq_other, IRQF_SHARED, dev->name, dev) != 0) {
++				sprintf(np->name_other, "%s-other", dev->name);
++				if (request_irq(np->msi_x_entry[NV_MSI_X_VECTOR_OTHER].vector,
++						&nv_nic_irq_other, IRQF_SHARED, np->name_other, dev) != 0) {
+ 					printk(KERN_INFO "forcedeth: request_irq failed for link %d\n", ret);
+ 					pci_disable_msix(np->pci_dev);
+ 					np->msi_flags &= ~NV_MSI_X_ENABLED;
