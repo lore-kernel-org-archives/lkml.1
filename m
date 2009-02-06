@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758895AbZBFPAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758797AbZBFPBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758895AbZBFPAU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 10:00:20 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZBFO7y
+	id S1758797AbZBFPBm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 10:01:42 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754035AbZBFPBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:59:54 -0500
-Received: from ns1.suse.de ([195.135.220.2]:50294 "EHLO mx1.suse.de"
+	Fri, 6 Feb 2009 10:01:34 -0500
+Received: from hera.kernel.org ([140.211.167.34]:55429 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755227AbZBFO7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:59:53 -0500
-Message-ID: <498C5053.4010809@suse.de>
-Date: Fri, 06 Feb 2009 15:59:31 +0100
-From: Frank Seidel <fseidel@suse.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Frank Seidel <frank@f-seidel.de>,
-       linux kernel <linux-kernel@vger.kernel.org>, akpm@linux-foundation.org,
-       "David S. Miller" <davem@davemloft.net>, linux-crypto@vger.kernel.org,
-       herbert@gondor.apana.org.au, jarod@redhat.com
-Subject: Re: [PATCH] crypto: add missing KERN_* constants to printks
-References: <498C46DE.8040700@suse.de> <20090206145838.GA28197@x200.localdomain> <498C4F2E.1070204@f-seidel.de> <20090206150315.GA28249@x200.localdomain>
-In-Reply-To: <20090206150315.GA28249@x200.localdomain>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1752467AbZBFPBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 10:01:33 -0500
+Subject: Re: [git pull -tip] headers_check fixes for other architectures
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Tony Luck <tony.luck@intel.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, hskinnemoen@atmel.com,
+       cooloney@kernel.org, ralf@linux-mips.org, dhowells@redhat.com,
+       matthew@wil.cx, chris@zankel.net, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090206145119.GB13758@n2100.arm.linux.org.uk>
+References: <1233385816.17794.16.camel@localhost.localdomain>
+	 <12c511ca0902050955x1acb3907jdbfc1d0e6392cb91@mail.gmail.com>
+	 <alpine.LFD.2.00.0902051101040.3247@localhost.localdomain>
+	 <20090205191907.GA27422@elte.hu>
+	 <1233886017.3463.26.camel@localhost.localdomain>
+	 <20090206022025.GA8317@elte.hu>
+	 <1233929922.3209.6.camel@localhost.localdomain>
+	 <20090206142134.GA13758@n2100.arm.linux.org.uk>
+	 <1233930860.3209.13.camel@localhost.localdomain>
+	 <20090206145119.GB13758@n2100.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Fri, 06 Feb 2009 20:30:07 +0530
+Message-Id: <1233932407.3209.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Dobriyan schrieb:
-> Some messages there were truly debugging and some clearly weren't
-> WARNING, but INFO.
+On Fri, 2009-02-06 at 14:51 +0000, Russell King - ARM Linux wrote:
+> > > 
+> > > So no point including this file in assembly with this patch - the ifndef
+> > > disables the entire file.
+> > 
+> > Truth Table of linux/types.h :
+> > 
+> > If Assembly then N
+> > otherwise Y
+> > 
+> > what your table says.
+> 
+> If the entire file is not suitable for assembly, don't include the file
+> in assembly files.  Nice and simple, and no need to add additional ifdefs.
 
-Yes, i also thought so, but i didn't venture to change it
-to i think it looks like. And as bevor they also were all at
-the same (unspecified/default) level...
-Do you think its worth/i should redo it and adapt the loglevel
-more appropriate?
+Ahh, so your truth table says:
+
+If Assembly then make different header files
+If C then make another header files
+
+Do not you think your truth table is complex and very difficult to
+handle and maintain ?
+
+Can we make things simple and easier.
 
 Thanks,
-Frank
+--
+JSR
+
 
