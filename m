@@ -1,92 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758336AbZBFVvp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757374AbZBFV5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758336AbZBFVvp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 16:51:45 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZBFVv1
+	id S1757374AbZBFV5s (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 16:57:48 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753771AbZBFV5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 16:51:27 -0500
-Received: from hera.kernel.org ([140.211.167.34]:57978 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754010AbZBFVvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 16:51:25 -0500
-Message-ID: <498CB0B7.8030009@kernel.org>
-Date: Fri, 06 Feb 2009 13:50:47 -0800
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 6 Feb 2009 16:57:40 -0500
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45651 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753505AbZBFV5j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 16:57:39 -0500
+Date: Fri, 6 Feb 2009 13:57:18 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Gerald Schaefer <gerald.schaefer@de.ibm.com>, roland@redhat.com,
+       linux-kernel@vger.kernel.org, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com
+Subject: Re: [BUG] binfmt_elf: get_user() called in vma_dump_size() after
+ set_fs(KERNEL_DS)
+In-Reply-To: <20090206134410.d548b72c.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0902061351390.3048@localhost.localdomain>
+References: <1233940235.22140.9.camel@localhost.localdomain> <20090206134410.d548b72c.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] irq: clear kstat_irqs
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: get correct kstat_irqs for msi etc
 
-need to call clear_kstat_irqs(), so when reuse that irq_desc, could get correct
-kstat in /proc/interrupts
+On Fri, 6 Feb 2009, Andrew Morton wrote:
 
-also could make /proc/interrupts don't have none-<NULL> entries
+> On Fri, 06 Feb 2009 18:10:35 +0100
+> Gerald Schaefer <gerald.schaefer@de.ibm.com> wrote:
+> > 
+> > elf_core_dump() does a set_fs(KERNEL_DS) and then calls vma_dump_size(),
+> > which uses get_user() to check for an ELF header at vma->vm_start in the
+> > user mapping. This is a bug because vm_start is a user virtual address and
+> > get_user() will fail or even read from a kernel address (KERNEL_DS).
+> > 
+> > Maybe a get_user_pages() should be used to get the user data, or a temporary
+> > set_fs(USER_DS)?
+> > 
+> 
+> Could use __get_user() to skip the access_ok() check?
 
-don't need to worry about arch that doesn't support genirq, because they
-will not call dynamic_irq_cleanup().
+That's not the problem.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+The problem is that
+ (a) some architectures actually use separate address spaces (sparc, at 
+     least), so using "get_user()" while you are in KERNEL_DS will 
+     literally access the wrong thing.
 
----
- kernel/irq/chip.c      |    1 +
- kernel/irq/handle.c    |   11 +++++++++++
- kernel/irq/internals.h |    1 +
- 3 files changed, 13 insertions(+)
+     __get_user doesn't affect this part.
 
-Index: linux-2.6/kernel/irq/chip.c
-===================================================================
---- linux-2.6.orig/kernel/irq/chip.c
-+++ linux-2.6/kernel/irq/chip.c
-@@ -81,6 +81,7 @@ void dynamic_irq_cleanup(unsigned int ir
- 	desc->handle_irq = handle_bad_irq;
- 	desc->chip = &no_irq_chip;
- 	desc->name = NULL;
-+	clear_kstat_irqs(desc);
- 	spin_unlock_irqrestore(&desc->lock, flags);
- }
- 
-Index: linux-2.6/kernel/irq/handle.c
-===================================================================
---- linux-2.6.orig/kernel/irq/handle.c
-+++ linux-2.6/kernel/irq/handle.c
-@@ -270,6 +270,17 @@ struct irq_desc *irq_to_desc_alloc_cpu(u
- }
- #endif /* !CONFIG_SPARSE_IRQ */
- 
-+void clear_kstat_irqs(struct irq_desc *desc)
-+{
-+	unsigned long bytes;
-+	char *ptr;
-+
-+	ptr = (char *)desc->kstat_irqs;
-+	/* Compute how many bytes we need to clear */
-+	bytes = nr_cpu_ids * sizeof(unsigned int);
-+	memset(ptr, 0, bytes);
-+}
-+
- /*
-  * What should we do if we get a hw irq event on an illegal vector?
-  * Each architecture has to answer this themself.
-Index: linux-2.6/kernel/irq/internals.h
-===================================================================
---- linux-2.6.orig/kernel/irq/internals.h
-+++ linux-2.6/kernel/irq/internals.h
-@@ -15,6 +15,7 @@ extern int __irq_set_trigger(struct irq_
- 
- extern struct lock_class_key irq_desc_lock_class;
- extern void init_kstat_irqs(struct irq_desc *desc, int cpu, int nr);
-+extern void clear_kstat_irqs(struct irq_desc *desc);
- extern spinlock_t sparse_irq_lock;
- 
- #ifdef CONFIG_SPARSE_IRQ
+ (b) the security one: KERNEL_DS will change the access checks that 
+     get_user() does, and allow access to kernel memory.
+
+     Using __get_user _does_ affect this part by removing the checks, but 
+     since the problem was that KERNEL_DS already _weakened_ the checks, 
+     removign the too-weak checking doesn't actually help.
+
+> We'd need to be sure that the address isn't a kernel address or iomem
+> or something. 
+
+As mentioned, even this won't actually help. On at least some sparc 
+machines (sparc64?), memory accesses really are segmented, with different 
+address spaces for user and kernel mode, so a user and kernel address may 
+actually have the exact same pointer value, but point to different memory!
+
+So you can't just check the address. You really have to do the whole 
+"set_fs()" thing to set the segment register.
+
+		Linus
