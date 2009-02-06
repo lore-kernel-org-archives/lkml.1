@@ -1,78 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758108AbZBFOJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757951AbZBFOK0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758108AbZBFOJo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 09:09:44 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZBFOJg
+	id S1757951AbZBFOK0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 09:10:26 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZBFOKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 09:09:36 -0500
-Received: from smtpauth21.prod.mesa1.secureserver.net ([64.202.165.38]:54900
-	"HELO smtpauth21.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753598AbZBFOJf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 09:09:35 -0500
-From: "Andrew S. Johnson" <andy@asjohnson.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #12426] TMDC Joystick no longer works in kernel 2.6.28
-Date: Fri, 6 Feb 2009 08:09:21 -0600
-User-Agent: KMail/1.9.9
-Cc: Jiri Kosina <jkosina@suse.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-References: <a47yn9c9JrF.A.hz.L5YiJB@chimera> <alpine.LRH.1.10.0902041453190.22097@twin.jikos.cz> <200902050234.56056.rjw@sisk.pl>
-In-Reply-To: <200902050234.56056.rjw@sisk.pl>
+	Fri, 6 Feb 2009 09:10:06 -0500
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50308 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753108AbZBFOKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 09:10:03 -0500
+Date: Fri, 6 Feb 2009 15:09:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pavel Emelyanov <xemul@openvz.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kirill Korotaev <dev@openvz.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] x86: clean up hpet timer reinit
+Message-ID: <20090206140943.GD3415@elte.hu>
+References: <498BF9DA.5030302@openvz.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902060809.21985.andy@asjohnson.com>
+In-Reply-To: <498BF9DA.5030302@openvz.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 04 February 2009 07:34:55 pm Rafael J. Wysocki wrote:
-> On Wednesday 04 February 2009, Jiri Kosina wrote:
-> > On Wed, 4 Feb 2009, Rafael J. Wysocki wrote:
-> > > This message has been generated automatically as a part of a
-> > > report of regressions introduced between 2.6.27 and 2.6.28.
-> > >
-> > > The following bug entry is on the current list of known
-> > > regressions introduced between 2.6.27 and 2.6.28.  Please
-> > > verify if it still should be listed and let me know (either
-> > > way).
-> > >
-> > >
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12426
-> > > Subject		: TMDC Joystick no longer works in kernel 2.6.28
-> > > Submitter	: Andrew S. Johnson <andy@asjohnson.com>
-> > > Date		: 2009-01-10 21:53 (26 days old)
-> > > References	:
-> > > http://marc.info/?l=linux-kernel&m=123162486415366&w=4
-> >
-> > I asked [1] the Submitter some time ago to check whether
-> > reverting a particular commit fixes the issue, but never heard
-> > back.
-> >
-> > [1] http://lkml.org/lkml/2009/1/26/70
->
-> Rejected as "insufficient data" and closed.
 
-I never received the email referring to a particular commit because
-I am not subscribed to LKML.  The commit revert seemed to work OK on 
-gameport.c, but I get an error that gameport.h requires merge 
-resolution.
+* Pavel Emelyanov <xemul@openvz.org> wrote:
 
-Can you send the gameport.c and gameport.h files to me with the
-reverted commit, or tell me how to get this resolved?
+> Sorry for late response - took some time to re-check this...
 
-Please CC me directly.
+Applied to tip:timers/urgent, thanks Pavel!
 
-Thanks,
+Note, since i've already queued up the minimal fix i've created a delta 
+cleanup patch from your v2 patch - see it below. (It is the exact same end 
+result in terms of code, just a nicer splitup.)
 
-Andy Johnson
+	Ingo
 
->
-> Thanks,
-> Rafael
+------------------->
+>From ff08f76d738d0ec0f334b187f61e160caa321d54 Mon Sep 17 00:00:00 2001
+From: Pavel Emelyanov <xemul@openvz.org>
+Date: Wed, 4 Feb 2009 13:40:31 +0300
+Subject: [PATCH] x86: clean up hpet timer reinit
 
+Implement Linus's suggestion: introduce the hpet_cnt_ahead()
+helper function to compare hpet time values - like other
+wrapping counter comparisons are abstracted away elsewhere.
+(jiffies, ktime_t, etc.)
 
+Reported-by: Kirill Korotaev <dev@openvz.org>
+Signed-off-by: Pavel Emelyanov <xemul@openvz.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/hpet.c |   12 ++++++++++--
+ 1 files changed, 10 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index c761f91..388254f 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -897,7 +897,7 @@ static unsigned long hpet_rtc_flags;
+ static int hpet_prev_update_sec;
+ static struct rtc_time hpet_alarm_time;
+ static unsigned long hpet_pie_count;
+-static unsigned long hpet_t1_cmp;
++static u32 hpet_t1_cmp;
+ static unsigned long hpet_default_delta;
+ static unsigned long hpet_pie_delta;
+ static unsigned long hpet_pie_limit;
+@@ -905,6 +905,14 @@ static unsigned long hpet_pie_limit;
+ static rtc_irq_handler irq_handler;
+ 
+ /*
++ * Check that the hpet counter c1 is ahead of the c2
++ */
++static inline int hpet_cnt_ahead(u32 c1, u32 c2)
++{
++	return (s32)(c2 - c1) < 0;
++}
++
++/*
+  * Registers a IRQ handler.
+  */
+ int hpet_register_irq_handler(rtc_irq_handler handler)
+@@ -1075,7 +1083,7 @@ static void hpet_rtc_timer_reinit(void)
+ 		hpet_t1_cmp += delta;
+ 		hpet_writel(hpet_t1_cmp, HPET_T1_CMP);
+ 		lost_ints++;
+-	} while ((s32)(hpet_readl(HPET_COUNTER) - hpet_t1_cmp) > 0);
++	} while (!hpet_cnt_ahead(hpet_t1_cmp, hpet_readl(HPET_COUNTER)));
+ 
+ 	if (lost_ints) {
+ 		if (hpet_rtc_flags & RTC_PIE)
