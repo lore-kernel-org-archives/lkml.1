@@ -1,80 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756030AbZBFAOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbZBFAP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756030AbZBFAOV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 19:14:21 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753562AbZBFAOM
+	id S1755701AbZBFAP1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 19:15:27 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZBFAPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 19:14:12 -0500
-Received: from ogre.sisk.pl ([217.79.144.158]:55910 "EHLO ogre.sisk.pl"
+	Thu, 5 Feb 2009 19:15:18 -0500
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38137 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbZBFAOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 19:14:11 -0500
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-Subject: Re: WOL with forcedeth broken since f55c21fd9a92a444e55ad1ca4e4732d56661bf2e
-Date: Fri, 6 Feb 2009 01:13:30 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.29-rc2-tst; KDE/4.2.0; x86_64; ; )
-Cc: Yinghai Lu <yhlu.kernel@gmail.com>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Ayaz Abdulla <aabdulla@nvidia.com>, Jeff Garzik <jeff@garzik.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@redhat.com>
-References: <a47yn9c9JrF.A.hz.L5YiJB@chimera> <86802c440901292253ie9e2a9dmb4580a3da1480c81@mail.gmail.com> <20090205232343.GA9455@pmhahn.de>
-In-Reply-To: <20090205232343.GA9455@pmhahn.de>
+	id S1753069AbZBFAPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 19:15:16 -0500
+Date: Fri, 6 Feb 2009 01:15:00 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ring_buffer: remove unused flags parameter, fix
+Message-ID: <20090206001500.GA30095@elte.hu>
+References: <20090205181256.GH17653@ghostprotocols.net> <20090206000223.GB16040@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200902060113.31651.rjw@sisk.pl>
+In-Reply-To: <20090206000223.GB16040@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 06 February 2009, Philipp Matthias Hahn wrote:
-> Hello!
-> 
-> On Thu, Jan 29, 2009 at 10:53:40PM -0800, Yinghai Lu wrote:
-> > can not find the reason why the WOL doesn't work...
-> > 
-> > please post
-> > 1. boot log for just after AC is pluged-in... ===> you should have
-> > "nv_probe: set workaround bit for reversed mac addr"
-> > 2. and boot log after boot from WOL...==> you have have "nv_probe: set
-> > workaround bit for reversed mac addr" too.
-> 
-> On Wed, Feb 04, 2009 at 11:58:53AM +0100, Rafael J. Wysocki wrote:
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12614
-> > Subject		: WOL with forcedeth broken since f55c21fd9a92a444e55ad1ca4e4732d56661bf2e
-> > Submitter	: Philipp Matthias Hahn <pmhahn@titan.lahn.de>
-> > Date		: 2009-01-29 6:31 (7 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=123321232825316&w=4
-> > Handled-By	: Yinghai Lu <yinghai@kernel.org>
-> > Patch		: http://marc.info/?l=linux-kernel&m=123330459229248&w=4
-> 
-> Strage, at the moment I can't seem to reproduce the problem. I've
-> switched back to the version of 2.6.28.3 and now it seems to work.
-> I'll continue with tesing.
 
-OK, but for now I'll close the bug as unreproducible.
+Small fixlet below, applied to tip:tracing/ftrace.
 
-> Some additional data:
-> The BIOS-upgrade tool (Afud408.exe) resets the MAC address. I had to run
-> the tool a second time to re-programm the MAC-address using its /M
-> option. I useed the unreversed MAC-address back than.
-> I also tried the reversed address once, but after that forcedeth.c
-> complained about a wrong MAC-address.
-> 
-> If I completely turn off the power (pull the plug), WOL doesn't work,
-> even when it's enabled in the BIOS.
-> 
-> Only after I'v started Linux, do "echo NMAC > /proc/acpi/wakeup" and
-> "ethtool -s eth0 wol g" does it work again.
+	Ingo
 
-The "echo NMAC > /proc/acpi/wakeup" thing shouldn't be necessary if you do
-"ethtool -s eth0 wol g".
+--------------->
+>From 304cc6ae1bf7a8e6d00053fbe0b7e2b26cdddda2 Mon Sep 17 00:00:00 2001
+From: Ingo Molnar <mingo@elte.hu>
+Date: Fri, 6 Feb 2009 01:12:02 +0100
+Subject: [PATCH] ring_buffer: remove unused flags parameter, fix
 
-Thanks,
-Rafael
+Oprofile's ring-buffer use was not considered.
+
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+---
+ drivers/oprofile/cpu_buffer.c |    5 ++---
+ 1 files changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/oprofile/cpu_buffer.c b/drivers/oprofile/cpu_buffer.c
+index e76d715..f0e99d4 100644
+--- a/drivers/oprofile/cpu_buffer.c
++++ b/drivers/oprofile/cpu_buffer.c
+@@ -161,7 +161,7 @@ struct op_sample
+ {
+ 	entry->event = ring_buffer_lock_reserve
+ 		(op_ring_buffer_write, sizeof(struct op_sample) +
+-		 size * sizeof(entry->sample->data[0]), &entry->irq_flags);
++		 size * sizeof(entry->sample->data[0]));
+ 	if (entry->event)
+ 		entry->sample = ring_buffer_event_data(entry->event);
+ 	else
+@@ -178,8 +178,7 @@ struct op_sample
+ 
+ int op_cpu_buffer_write_commit(struct op_entry *entry)
+ {
+-	return ring_buffer_unlock_commit(op_ring_buffer_write, entry->event,
+-					 entry->irq_flags);
++	return ring_buffer_unlock_commit(op_ring_buffer_write, entry->event);
+ }
+ 
+ struct op_sample *op_cpu_buffer_read_entry(struct op_entry *entry, int cpu)
