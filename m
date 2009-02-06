@@ -1,45 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbZBFRrQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759349AbZBFRwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760324AbZBFRrQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 12:47:16 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759901AbZBFRq7
+	id S1759349AbZBFRwd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 12:52:33 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZBFRwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 12:46:59 -0500
-Received: from omr2.bezeqint.net ([192.115.104.10]:50802 "EHLO
-	omr2.bezeqint.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753037AbZBFRq6 (ORCPT
+	Fri, 6 Feb 2009 12:52:24 -0500
+Received: from mail.candelatech.com ([208.74.158.172]:55597 "EHLO
+	ns3.lanforge.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752537AbZBFRwY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 12:46:58 -0500
-X-Mirapoint-IP-Reputation: reputation=good-1,
-	source=Fixed,
-	refid=n/a,
-	actions=tag
-From: "Mrs. Rose Wood." <nokia@live.com>
-Subject: FINAL NOTIFICATION 
-Reply-To: nokia.bonanza@btinternet.com
-X-Mailer: Mirapoint Webmail Direct 3.8.6-GA
+	Fri, 6 Feb 2009 12:52:24 -0500
+Message-ID: <498C78C9.5090405@candelatech.com>
+Date: Fri, 06 Feb 2009 09:52:09 -0800
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jiri Kosina <jkosina@suse.cz>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, rusty@rustcorp.com.au
+Subject: Re: PATCH:  Allow user to force 'tsc' to be treated as stable.
+References: <498B42C5.7010905@candelatech.com> <alpine.LRH.1.10.0902061531560.22097@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.1.10.0902061531560.22097@twin.jikos.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090206194648.FPI00419@mas26.bezeqint.net>
-Date: Fri,  6 Feb 2009 19:46:48 +0200 (IST)
-X-Junkmail: UCE(52)
-X-Junkmail-Status: score=52/45, host=mr8.bezeqint.net
-X-Junkmail-SD-Raw: score=bulk(2),
-	refid=str=0001.0A0B0208.498C7790.0088,ss=3,pt=DBB_66867,fgs=0,
-	ip=192.115.104.156,
-	so=2008-09-22 23:22:13,
-	dmn=5.7.1/2008-09-02,
-	mode=single engine
-X-Junkmail-IWF: false
-To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The sum of$1,000,000(One Million United State Dollars) was 
-won by your E-MAIL ID IN OUR NOKIA NATIONAL BONANZA ONLINE 
-PROMO PROGRAMME, Do get back to this office with your infor 
-via (nokia.bonanza@btinternet.com)
-Name:           Country:          Sex:         Age:       
-Addres
+Jiri Kosina wrote:
+> On Thu, 5 Feb 2009, Ben Greear wrote:
+> 
+>> Allow user to force TSC as stable clock-source. Works around BIOS issues 
+>> in the FWA-7304 (Via CN700 chipset) system, and possibly others.
+> 
+> How do you know that the TSC is stable on such system? What was the reason 
+> for kernel marking it unstable?
+
+I've used it for a timing source in my own modules and it has
+worked well.  It could still be broken in some way, but if so,
+I'm not sure how to detect it.  Ingo sent me a program to test
+the tsc, and at least for short runs, it showed no problem.
+
+Another person suggested the system might think it is unstable
+because I have ACPI disabled in my BIOS and that might cause
+the kernel not to have a 'PM timer' that it uses to check the
+tsc?
+
+Other than that, I have no idea why the kernel thinks the tsc
+is unstable.
+
+Thanks,
+Ben
+
+-- 
+Ben Greear <greearb@candelatech.com>
+Candela Technologies Inc  http://www.candelatech.com
+
