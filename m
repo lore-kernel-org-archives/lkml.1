@@ -1,175 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbZBFAd1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZBFAdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756501AbZBFAd1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 19:33:27 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZBFAdN
+	id S1754327AbZBFAdn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 19:33:43 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754736AbZBFAdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 19:33:13 -0500
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55431 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751972AbZBFAdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 19:33:11 -0500
-Date: Thu, 5 Feb 2009 16:33:08 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Trilok Soni <soni.trilok@gmail.com>, ltt-dev@lists.casi.polymtl.ca,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>,
-       "Theodore Ts'o" <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Subject: Re: [ltt-dev] LTTng 0.89 for Linux 2.6.29-rc3
-Message-ID: <20090206003308.GO6915@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090205151841.GF6915@linux.vnet.ibm.com> <20090205153825.GA30255@Krystal> <20090205155854.GG6915@linux.vnet.ibm.com> <5d5443650902050822r2e4d08ffg2322b45a5e009fb8@mail.gmail.com> <20090205180132.GJ6915@linux.vnet.ibm.com> <20090205183158.GA1969@Krystal> <20090205184456.GK6915@linux.vnet.ibm.com> <20090205202249.GA26964@Krystal> <20090205210415.GM6915@linux.vnet.ibm.com> <20090205210627.GA1313@Krystal>
+	Thu, 5 Feb 2009 19:33:18 -0500
+Received: from yx-out-2324.google.com ([74.125.44.28]:11592 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754058AbZBFAdQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 19:33:16 -0500
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:newsgroups:to:cc
+         :subject:references:in-reply-to:content-type
+         :content-transfer-encoding;
+        b=HOC8QkD9XVPpbyszPId+5f9YAhyr7signrhxXupTM1lS4TY+XPiuT3N1dDmvTvR3NQ
+         pAZTORYMt21eRZxKzInN9H4WaiwWpJUyJqNp1QiGkYqTzeuKh9AEk/kz/wJsiDPONg97
+         wxIduBqZ8MMQjy+5PnBcE1udFms4XzvEHVaLw=
+Message-ID: <498B8547.1010803@gmail.com>
+Date: Thu, 05 Feb 2009 18:33:11 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090205210627.GA1313@Krystal>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Newsgroups: gmane.linux.network,gmane.linux.kernel
+To: Ben Greear <greearb@candelatech.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>, len.brown@intel.com,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: Regression on VIA C3 motherboard, commit: 66f2173e2
+References: <498A93E5.2080509@candelatech.com>
+In-Reply-To: <498A93E5.2080509@candelatech.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 04:06:27PM -0500, Mathieu Desnoyers wrote:
-> * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > On Thu, Feb 05, 2009 at 03:22:49PM -0500, Mathieu Desnoyers wrote:
-> > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > On Thu, Feb 05, 2009 at 01:31:59PM -0500, Mathieu Desnoyers wrote:
-> > > > > * Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > > > > > On Thu, Feb 05, 2009 at 09:52:16PM +0530, Trilok Soni wrote:
-> > > > > > > Hi Paul,
-> > > > > > > 
-> > > > > > > On Thu, Feb 5, 2009 at 9:28 PM, Paul E. McKenney
-> > > > > > > <paulmck@linux.vnet.ibm.com> wrote:
-> > > > > > > >>
-> > > > > > > >> Are you using quilt to apply the patchset series file in the right order ?
-> > > > > > > >
-> > > > > > > > Ummm...  No.  I never have used quilt.
-> > > > > > > >
-> > > > > > > > Ah, there is a series file.  I guess it would not be too hard to make
-> > > > > > > > an appropriate "sh" command:
-> > > > > > > 
-> > > > > > > How about trying?
-> > > > > > > 
-> > > > > > > #quilt push -a
-> > > > > > 
-> > > > > > Is the appropriate incantation as follows?
-> > > > > > 
-> > > > > > 	cd <top of git tree>
-> > > > > > 	mkdir patches
-> > > > > > 	cp /tmp/patch-2.6.29-rc3-lttng-0.92/* patches
-> > > > > > 	quilt push -a
-> > > > > > 
-> > > > > 
-> > > > > Yes, exactly.
-> > > > 
-> > > > Whew!  ;-)
-> > > > 
-> > > > > And from there you can follow the LTTng manual here :
-> > > > > 
-> > > > > http://ltt.polymtl.ca/svn/trunk/lttv/LTTngManual.html
-> > > > 
-> > > > I get some fuzz and the following:
-> > > > 
-> > > > 	patching file kernel/trace/trace-clock-32-to-64.c
-> > > > 	Patch attempted to create file kernel/trace/trace-clock-32-to-64.c,
-> > > > 	which already exists.
-> > > > 	Hunk #1 FAILED at 1.
-> > > > 	1 out of 1 hunk FAILED -- rejects in file
-> > > > 	kernel/trace/trace-clock-32-to-64.c
-> > > > 
-> > > > Should I be starting from somewhere other than v2.6.29-rc3?
-> > > > 
-> > > 
-> > > Let's see it step by step, that should get us there.
-> > > 
-> > > With patches :
-> > > 
-> > > mkdir ~/lttng
-> > > cd ~/lttng
-> > > wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc3.tar.bz2
-> > > wget http://lttng.org/files/lttng/patch-2.6.29-rc3-lttng-0.92.tar.bz2
-> > > bzip2 -cd linux-2.6.29-rc3.tar.bz2 |tar xvof -
-> > > bzip2 -cd patch-2.6.29-rc3-lttng-0.92.tar.bz2  |tar xvof -
-> > > cd linux-2.6.29-rc3
-> > > mkdir patches
-> > > ln -s ../patch-2.6.29-rc3-lttng-0.92 patches
-> > > quilt push -a
-> > > 
-> > > Does this work ?
-> > 
-> > Leaving out the "mkdir", yes.
+Ben Greear wrote:
+> I have a via motherboard with C3 processor and some real-tek NICs.  I 
+> noticed
+> when using the top-of-tree that performance on it sucked (30Mbps v/s 54Mbps
+> network throughput in one pertinent test).
 > 
-> Ah, yes, my mistake.
+> After several hours of bisecting, I see this as the culprit:
 > 
-> > My apologies -- I was forgetting that
-> > "git reset --hard" doesn't get rid of untracked files.  I do see fuzz
-> > in a few places, but hopefully this is non-fatal.  And in any case, I
-> > can now make the patch required to actually try this out.  ;-)
-> > 
+> 7b37b5fd9ba32c0c5afc3537eed7e7466f2173e2 is first bad commit
+> commit 7b37b5fd9ba32c0c5afc3537eed7e7466f2173e2
+> Author: Len Brown <len.brown@intel.com>
+> Date:   Tue Dec 23 01:47:42 2008 -0500
 > 
-> Great !
+>    ACPI: disable MPS when NO APIC-table found
+>      When ACPI is asked to find an MADT (APIC table)
+>    and fails, then ACPI expects to run in PIC mode.
+>      However, if an MP Table is was found, IRQs will be
+>    registered as if an IOAPIC is being used, even
+>    though ACPI is configuring interrupt links links for PIC mode.
+>      In this scenario, disable MPS so that IRQs
+>    are registered in PIC mode, consistent with ACPI.
+>      http://bugzilla.kernel.org/show_bug.cgi?id=12257
+>      Signed-off-by: Len Brown <len.brown@intel.com>
 > 
-> Don't hesitate to ask if you have any question.
+> :040000 040000 86ce74daee3a9fe6ff21ef7f8fb364af23ec0c1e 
+> 364933dfec0df34e63b1aeff6aff4092d421886b M      arch
 > 
-> Mathieu
+> 
+> In addition, I see this warning in my logs, which is likely the symptom:
+> 
+> ACPI Exception (tbxface-0627): AE_NO_ACPI_TABLES, While loading 
+> namespace from ACPI tables ]
+> ACPI: Unable to load the System Description Tables
 
-Fails to build on Power, so trying x86...  (Stock 2.6.29-rc3 does
-build and boot, FWIW.)
+You're getting this on boot:
 
-Looks like misplaced file.
+ACPI Error (tbxfroot-0218): A valid RSDP was not found [20080926]
 
-							Thanx, Paul
-
-------------------------------------------------------------------------
-
-  CHK     include/linux/version.h
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-powerpc
-  HOSTCC  scripts/ihex2fw
-  HOSTCC  scripts/kallsyms
-  HOSTCC  scripts/pnmtologo
-  HOSTCC  scripts/genksyms/genksyms.o
-  HOSTCC  scripts/conmakehash
-  HOSTCC  scripts/bin2c
-  CC      scripts/mod/empty.o
-  HOSTCC  scripts/mod/mk_elfconfig
-  SHIPPED scripts/genksyms/lex.c
-  SHIPPED scripts/genksyms/parse.h
-  SHIPPED scripts/genksyms/keywords.c
-  SHIPPED scripts/genksyms/parse.c
-  HOSTCC  scripts/genksyms/parse.o
-  HOSTCC  scripts/genksyms/lex.o
-  MKELF   scripts/mod/elfconfig.h
-  HOSTCC  scripts/mod/file2alias.o
-  HOSTCC  scripts/mod/modpost.o
-  HOSTCC  scripts/mod/sumversion.o
-  HOSTLD  scripts/genksyms/genksyms
-  HOSTLD  scripts/mod/modpost
-  CC      kernel/bounds.s
-  GEN     include/linux/bounds.h
-  CC      arch/powerpc/kernel/asm-offsets.s
-In file included from include/linux/module.h:18,
-                 from include/linux/sysdev.h:25,
-                 from include/linux/node.h:22,
-                 from include/linux/swap.h:10,
-                 from include/linux/suspend.h:7,
-                 from arch/powerpc/kernel/asm-offsets.c:24:
-include/linux/immediate.h:15:27: error: asm/immediate.h: No such file or directory
-In file included from include/linux/module.h:18,
-                 from include/linux/sysdev.h:25,
-                 from include/linux/node.h:22,
-                 from include/linux/swap.h:10,
-                 from include/linux/suspend.h:7,
-                 from arch/powerpc/kernel/asm-offsets.c:24:
-include/linux/immediate.h:37: warning: â€˜struct __imvâ€™ declared
-inside parameter list
-include/linux/immediate.h:37: warning: its scope is only this definition
-or declaration, which is probably not what you want
-include/linux/immediate.h:40: warning: â€˜struct __imvâ€™ declared
-inside parameter list
-make[1]: *** [arch/powerpc/kernel/asm-offsets.s] Error 1
-make: *** [prepare0] Error 2
-02/05/2009-17:57:41 Build the kernel. Failed rc = 2
-02/05/2009-17:57:41 build: Building kernel... Failed rc = 1
+That essentially means ACPI isn't working at all, I think. Did previous 
+kernels produce this error? Do you have ACPI disabled in the BIOS or 
+something?
