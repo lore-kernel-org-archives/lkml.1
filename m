@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759939AbZBFQbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759983AbZBFQck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759939AbZBFQbz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 11:31:55 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbZBFQbq
+	id S1759983AbZBFQck (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 11:32:40 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753048AbZBFQca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 11:31:46 -0500
-Received: from fg-out-1718.google.com ([72.14.220.152]:65363 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752776AbZBFQbp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 11:31:45 -0500
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Q64bPK9+2BCtgZzStUF16T7ZWEfyUqpQMdjJozUW9uk67gh3cQHlHVhaxyYRHzeEWr
-         rgUKHX8sCNhSggjg/vSUqdwfRPezhS4mJG4oHQsTfO+IwfN/rVceHnCVhTowctR8yFQn
-         V4q+6Ekysr9Zlk0ucGy/1KPh6Hvjq1YYV9s/E=
-From: Philipp Zabel <philipp.zabel@gmail.com>
-To: Samuel Ortiz <sameo@openedhand.com>
-Cc: linux-kernel@vger.kernel.org, Philipp Zabel <philipp.zabel@gmail.com>
-Subject: [PATCH] mfd: DS1WM: remove warning about unused label err2
-Date: Fri,  6 Feb 2009 17:31:40 +0100
-Message-Id: <1233937900-18710-1-git-send-email-philipp.zabel@gmail.com>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1233852820-28549-6-git-send-email-philipp.zabel@gmail.com>
-References: <1233852820-28549-6-git-send-email-philipp.zabel@gmail.com>
+	Fri, 6 Feb 2009 11:32:30 -0500
+Received: from mx2.redhat.com ([66.187.237.31]:57689 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752776AbZBFQc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 6 Feb 2009 11:32:29 -0500
+Message-ID: <498C6613.1030400@redhat.com>
+Date: Fri, 06 Feb 2009 10:32:19 -0600
+From: David Smith <dsmith@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: jmorris@namei.org, linux-kernel@vger.kernel.org, roland@redhat.com,
+       fche@redhat.com, oleg@redhat.com, linux-security-module@vger.kernel.org
+Subject: Re: [PATCH] CRED: Fix SUID exec regression
+References: <20090206114546.4255.74054.stgit@warthog.procyon.org.uk>
+In-Reply-To: <20090206114546.4255.74054.stgit@warthog.procyon.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Samuel,
+David Howells wrote:
+> The patch:
+> 
+> 	commit a6f76f23d297f70e2a6b3ec607f7aeeea9e37e8d
+> 	CRED: Make execve() take advantage of copy-on-write credentials
+> 
+> moved the place in which the 'safeness' of a SUID/SGID exec was performed to
+> before de_thread() was called.  This means that LSM_UNSAFE_SHARE is now
+> calculated incorrectly.  This flag is set if any of the usage counts for
+> fs_struct, files_struct and sighand_struct are greater than 1 at the time the
+> determination is made.  All of which are true for threads created by the
+> pthread library.
+> 
+> However, since we wish to make the security calculation before irrevocably
+> damaging the process so that we can return it an error code in the case where
+> we decide we want to reject the exec request on this basis, we have to make the
+> determination before calling de_thread().
+> 
+> So, instead, we count up the number of threads (CLONE_THREAD) that are sharing
+> our fs_struct (CLONE_FS), files_struct (CLONE_FILES) and sighand_structs
+> (CLONE_SIGHAND/CLONE_THREAD) with us.  These will be killed by de_thread() and
+> so can be discounted by check_unsafe_exec().
 
-thanks for queuing the patchset. Could you please fold this into the DS1WM clock removal patch? 
+...
 
-Signed-off-by: Philipp Zabel <philipp.zabel@gmail.com>
----
- drivers/w1/masters/ds1wm.c |    5 ++---
- 1 files changed, 2 insertions(+), 3 deletions(-)
+> Reported-by: David Smith <dsmith@redhat.com>
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-diff --git a/drivers/w1/masters/ds1wm.c b/drivers/w1/masters/ds1wm.c
-index b982aa6..37f08c8 100644
---- a/drivers/w1/masters/ds1wm.c
-+++ b/drivers/w1/masters/ds1wm.c
-@@ -387,13 +387,12 @@ static int ds1wm_probe(struct platform_device *pdev)
- 
- 	ret = w1_add_master_device(&ds1wm_master);
- 	if (ret)
--		goto err3;
-+		goto err2;
- 
- 	return 0;
- 
--err3:
--	ds1wm_down(ds1wm_data);
- err2:
-+	ds1wm_down(ds1wm_data);
- 	free_irq(ds1wm_data->irq, ds1wm_data);
- err1:
- 	iounmap(ds1wm_data->map);
+I've tested this patch (applied on top of v2.6.29-rc3-634-g9be260a) and
+it applies correctly and fixes the problem.  David, thanks for fixing this.
+
+Acked-by: David Smith <dsmith@redhat.com>
+
 -- 
-1.5.6.5
-
+David Smith
+dsmith@redhat.com
+Red Hat
+http://www.redhat.com
+256.217.0141 (direct)
+256.837.0057 (fax)
