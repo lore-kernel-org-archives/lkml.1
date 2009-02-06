@@ -1,224 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZBFH4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbZBFH5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911AbZBFH4k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 6 Feb 2009 02:56:40 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752660AbZBFH4b
+	id S1756562AbZBFH5S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 6 Feb 2009 02:57:18 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753175AbZBFH44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 6 Feb 2009 02:56:31 -0500
-Received: from smtp127.sbc.mail.sp1.yahoo.com ([69.147.65.186]:31567 "HELO
-	smtp127.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752610AbZBFH43 (ORCPT
+	Fri, 6 Feb 2009 02:56:56 -0500
+Received: from casper.infradead.org ([85.118.1.10]:59351 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753162AbZBFH4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 6 Feb 2009 02:56:29 -0500
-X-YMail-OSG: 1nhzNlkVM1mNTCe3U1jHsljkvXODB5MXp.hbDPhe2Y1YqH.fvwrBXv8bYAByYQh3tGZ1yQlVjgQq57bA0OjIjF8yG2rLhwcEZ6iADIcRz0OgTniAbINRFeCEXkoX7mcZlK9YdVWFumTNx_W0S9TVR0G4sDpooegj0VCb0MPArt25Gx4euYH2nOdHsFNaS48Btqtm79Jz..cBR3AXf_Hb7aaYrtA2.s8-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 0/6] [Target_Core_Mod/ALUA]: Add Logical Unit and Target
-	Port Group infrastructure
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Hannes Reinecke <hare@suse.de>, Christoph Hellwig <hch@lst.de>,
-       "Ross S. W. Walker" <rswwalker@gmail.com>,
-       Arne Redlich <agr@powerkom-dd.de>, Rafiu Fakunle <rafiu@openfiler.com>
-Content-Type: text/plain
-Date: Thu, 05 Feb 2009 23:55:22 -0800
-Message-Id: <1233906922.12375.353.camel@haakon2.linux-iscsi.org>
+	Fri, 6 Feb 2009 02:56:55 -0500
+Subject: Re: [PATCH 0/16] DMA-API debugging facility v2
+From: David Woodhouse <dwmw2@infradead.org>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>, fujita.tomonori@lab.ntt.co.jp,
+       netdev@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <20090206020535.GE27684@sequoia.sous-sol.org>
+References: <1231517970-20288-1-git-send-email-joerg.roedel@amd.com>
+	 <1233874352.8135.12.camel@macbook.infradead.org>
+	 <20090206020535.GE27684@sequoia.sous-sol.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 06 Feb 2009 07:56:46 +0000
+Message-Id: <1233907006.17724.83.camel@macbook.infradead.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 (2.24.3-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+On Thu, 2009-02-05 at 18:05 -0800, Chris Wright wrote:
+> extra tab
 
-The princible functionality for SPC-3 compliant ALUA Logical Unit and Target Port
-groups is now up and running with Target_Core_Mod/ConfigFS and LIO-Target/ConfigFS.
-So far, you can create, change, associate ConfigFS objects and release ALUA Logical
-Unit and Target Port group abstractions through /sys/kernel/config/target/core/alua.
+Thanks. Your code to hook it up is better than mine too. I'll steal
+that.
 
-Changing of alua_access_state via ConfigFS is not supported just yet, but the transition
-between Active/Optimized and Active/Non-Optimized should be easy enough.
+> Sample output below (2 of ~2500 faults), pages don't appear to be
+> mapped:
 
-This patch is made against lio-core-2.6.git/master
-and tested on v2.6.29-rc2 x86 32-bit HVM.  The lio-core-2.6.git tree can be
-found at:
+What machine did you get that on?
 
-http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+Yeah, I saw one of those. If could be a driver bug, of course -- it
+could be unmapping a range before it's actually finished with it. But
+that's unlikely.
 
-Here is what it looks like in action so far:
+An alternative explanation... The DMA is aborted¹, and the device
+interrupts us to tell us about it at the _same_ time that the IOMMU
+interrupts us to tell us about the fault. We process the device
+interrupt first, unmap that buffer. And then we process the IOMMU
+interrupt... and the buffer is already gone from the list.
 
-*) Target ConfigFS side:
+It might be interesting to make this code also remember and print the
+last range that was unmapped, as well as the currently-mapped ranges.
 
-# Create a ALUA Logical Unit Group
-target:/sys/kernel/config/target/core# mkdir -p alua/lu_gps/lio_lun_group
-# Create two ALUA Target Port Groups
-target:/sys/kernel/config/target/core# mkdir -p alua/tg_pt_gps/lio_west_group
-target:/sys/kernel/config/target/core# mkdir -p alua/tg_pt_gps/lio_east_group
-target:/sys/kernel/config/target/core# tree alua/
-alua/
-|-- lu_gps
-|   |-- default_lu_gp
-|   |   |-- alua_access_state
-|   |   |-- lu_gp_id
-|   |   `-- members
-|   `-- lio_lun_group
-|       |-- alua_access_state
-|       |-- lu_gp_id
-|       `-- members
-`-- tg_pt_gps
-    |-- default_tg_pt_gp
-    |   |-- alua_access_state
-    |   |-- members
-    |   `-- tg_pt_gp_id
-    |-- lio_east_group
-    |   |-- alua_access_state
-    |   |-- members
-    |   `-- tg_pt_gp_id
-    `-- lio_west_group
-        |-- alua_access_state
-        |-- members
-        `-- tg_pt_gp_id
+> (interesting hash_fn spread ;-)
 
-7 directories, 15 files
+Yeah, that's a little suboptimal, isn't it :)
 
-# Create an ALUA Logical Unit Group assocation for iblock_0/lvm_test0 to lio_lun_group
-target:/sys/kernel/config/target/core# echo lio_lun_group > iblock_0/lvm_test0/alua_lu_gp 
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-# Create an Target Port Group assocation for lio_west_group
-target:/sys/kernel/config/target/iscsi/$TARGETNAME/$TPGT/lun/lun_0# echo lio_west_group > alua_tg_pt_gp 
-
-# Create an Target Port Group assocation for lio_east_group
-target:/sys/kernel/config/target/iscsi/$ANOTHER_TARGETNAME/$TPGT/lun/lun_0# echo lio_east_group > alua_tg_pt_gp 
-
-*) From target side dmesg:
-
-Target_Core_ConfigFS: Allocated ALUA Logical Unit Group: core/alua/lu_gps/lio_lun_group, ID: 1
-Target_Core_ConfigFS: Allocated ALUA Target Port Group: core/alua/tg_pt_gps/lio_west_group, ID: 1
-Target_Core_ConfigFS: Allocated ALUA Target Port Group: core/alua/tg_pt_gps/lio_east_group, ID: 2
-Target_Core_ConfigFS: Moving iblock_0/lvm_test0 to ALUA LU Group: core/alua/lu_gps/lio_lun_group, ID: 1
-Target_Core_ConfigFS: Moving iqn.2003-01.org.linux-iscsi.target.i686:sn.cff3eedbd2fd/tpgt_1/lun_0 to ALUA Target Port Group: core/alua/tg_pt_gps/lio_east_group, ID: 2
-Target_Core_ConfigFS: Moving iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0/tpgt_1/lun_0 to ALUA Target Port Group: core/alua/tg_pt_gps/lio_west_group, ID: 1
-
-*) From the iSCSI Initiator side connected to LIO-Target v3.0 iSCSI Target Ports using sg3_utils:
-
-# First LIO-Target iSCSI Target port:
-initiator# sg_inq -v -l 16384 -p 0x83 /dev/sde
-VPD INQUIRY: Device Identification page
-    inquiry cdb: 12 01 83 00 fc 00 
-  Designation descriptor number 1, descriptor length: 58
-    id_type: T10 vendor identification,  code_set: ASCII
-    associated with the addressed logical unit
-      vendor id: LIO-ORG
-      vendor specific: IBLOCK:eEaqKo-gYF8-vnDA-jJhf-Xqzy-pjGF-G6Y50v
-  Designation descriptor number 2, descriptor length: 8
-    transport: Internet SCSI (iSCSI)
-    id_type: Relative target port,  code_set: Binary
-    associated with the target port
-      Relative target port: 0x1
-  Designation descriptor number 3, descriptor length: 8
-    transport: Internet SCSI (iSCSI)
-    id_type: Target port group,  code_set: Binary
-    associated with the target port
-      Target port group: 0x1
-  Designation descriptor number 4, descriptor length: 8
-    id_type: Logical unit group,  code_set: Binary
-    associated with the addressed logical unit
-      Logical unit group: 0x1
-  Designation descriptor number 5, descriptor length: 72
-    transport: Internet SCSI (iSCSI)
-    id_type: SCSI name string,  code_set: UTF-8
-    associated with the target port
-      SCSI name string:
-      iqn.2003-01.org.linux-iscsi.target.i686:sn.e475ed6fcdd0,t,0x0001
-
-# Second LIO-Target iSCSI Target Port
-initiator# sg_inq -v -l 16384 -p 0x83 /dev/sdf
-VPD INQUIRY: Device Identification page
-    inquiry cdb: 12 01 83 00 fc 00 
-  Designation descriptor number 1, descriptor length: 58
-    id_type: T10 vendor identification,  code_set: ASCII
-    associated with the addressed logical unit
-      vendor id: LIO-ORG
-      vendor specific: IBLOCK:eEaqKo-gYF8-vnDA-jJhf-Xqzy-pjGF-G6Y50v
-  Designation descriptor number 2, descriptor length: 8
-    transport: Internet SCSI (iSCSI)
-    id_type: Relative target port,  code_set: Binary
-    associated with the target port
-      Relative target port: 0x2
-  Designation descriptor number 3, descriptor length: 8
-    transport: Internet SCSI (iSCSI)
-    id_type: Target port group,  code_set: Binary
-    associated with the target port
-      Target port group: 0x2
-  Designation descriptor number 4, descriptor length: 8
-    id_type: Logical unit group,  code_set: Binary
-    associated with the addressed logical unit
-      Logical unit group: 0x1
-  Designation descriptor number 5, descriptor length: 72
-    transport: Internet SCSI (iSCSI)
-    id_type: SCSI name string,  code_set: UTF-8
-    associated with the target port
-      SCSI name string:
-      iqn.2003-01.org.linux-iscsi.target.i686:sn.cff3eedbd2fd,t,0x0001
-
-# REPORT_TARGET_PORT_GROUPS response data:
-initiator# sg_rtpg -v /dev/sde
-    report target port groups cdb: a3 0a 00 00 00 00 00 00 04 00 00 00 
-Report list length = 36
-Report target port groups:
-  target port group id : 0x0 , Pref=0
-    target port group asymmetric access state : 0x00
-    T_SUP : 0, O_SUP : 0, U_SUP : 0, S_SUP : 0, AN_SUP : 1, AO_SUP : 1
-    status code : 0x02
-    vendor unique status : 0x00
-    target port count : 00
-  target port group id : 0x1 , Pref=0
-    target port group asymmetric access state : 0x00
-    T_SUP : 0, O_SUP : 0, U_SUP : 0, S_SUP : 0, AN_SUP : 1, AO_SUP : 1
-    status code : 0x02
-    vendor unique status : 0x00
-    target port count : 01
-    Relative target port ids:
-      0x01
-  target port group id : 0x2 , Pref=0
-    target port group asymmetric access state : 0x00
-    T_SUP : 0, O_SUP : 0, U_SUP : 0, S_SUP : 0, AN_SUP : 1, AO_SUP : 1
-    status code : 0x02
-    vendor unique status : 0x00
-    target port count : 01
-    Relative target port ids:
-      0x02
-
-Comments folks..?
-
---nab
-
-[PATCH 1/6] [Target_Core_Mod/ALUA]: Add support for SPC-3 Target Port and Logical Unit Groups
-[PATCH 2/6] [Target_Core_Mod/ALUA]: Add setup for target_core_device.c code
-[PATCH 3/6] [Target_Core_Mod]: Update FILEIO and RAMDISK subsystem plugins to SPC-3 revision identifer
-[PATCH 4/6] [Target_Core_Mod/ALUA]: Add ALUA struct kmem_caches and update EVPD 0x83 information
-[PATCH 5/6] [Target_Core_Mod/ConfigFS]: Add ALUA infrastructure
-[PATCH 6/6] [LIO-Target/ConfigFS]: Add ALUA wrapper functions to Target_Core_Mod/ALUA code
-
->From /pub/scm/linux/kernel/git/nab/lio-core-2.6
- * branch            master     -> FETCH_HEAD
-Updating 3466517..07c4589
-Fast forward
- drivers/lio-core/iscsi_target_configfs.c |   42 +--
- drivers/lio-core/target_core_alua.c      |  496 +++++++++++++++++++++++----
- drivers/lio-core/target_core_alua.h      |   14 +
- drivers/lio-core/target_core_base.h      |   42 +++
- drivers/lio-core/target_core_configfs.c  |  564 +++++++++++++++++++++++++++++-
- drivers/lio-core/target_core_device.c    |   16 +
- drivers/lio-core/target_core_file.c      |    2 +-
- drivers/lio-core/target_core_rd.c        |    2 +-
- drivers/lio-core/target_core_transport.c |   56 +++-
- 9 files changed, 1113 insertions(+), 121 deletions(-)
-
+¹ due to the bug we're chasing now. The range _is_ supposed to be mapped.
 
