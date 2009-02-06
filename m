@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758389AbZBFDLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbZBFDLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758389AbZBFDLA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 5 Feb 2009 22:11:00 -0500
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753581AbZBFDKm
+	id S1758585AbZBFDLX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 5 Feb 2009 22:11:23 -0500
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758437AbZBFDLD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 5 Feb 2009 22:10:42 -0500
-Received: from rhun.apana.org.au ([64.62.148.172]:33941 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753305AbZBFDKl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 5 Feb 2009 22:10:41 -0500
-Date: Fri, 6 Feb 2009 14:10:25 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: David Miller <davem@davemloft.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: commit 64ff3b938ec6782e6585a83d5459b98b0c3f6eb8 breaks rlogin
-Message-ID: <20090206031025.GA3281@gondor.apana.org.au>
-References: <b6a2187b0902050641h7943816ds26275a320e724440@mail.gmail.com>
+	Thu, 5 Feb 2009 22:11:03 -0500
+Received: from cn.fujitsu.com ([222.73.24.84]:57680 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758418AbZBFDLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 5 Feb 2009 22:11:02 -0500
+Message-ID: <498BAA22.50709@cn.fujitsu.com>
+Date: Fri, 06 Feb 2009 11:10:26 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b6a2187b0902050641h7943816ds26275a320e724440@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: balbir@linux.vnet.ibm.com
+CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [-mm patch] Show memcg information during OOM (v3)
+References: <20090203172135.GF918@balbir.in.ibm.com> <498BA857.3080809@cn.fujitsu.com>
+In-Reply-To: <498BA857.3080809@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 05, 2009 at 10:41:52PM +0800, Jeff Chua wrote:
-> The following commit breaks "rlogin". Symptom is the terminal just
-> hangs before login to the remote machine. No error, just the cursor
-> never come back. "~." or type "exit" will exit from remote session.
-> Only happens "sometimes". Happens more often if you try many times.
+Li Zefan wrote:
+>> +	mem_cgrp = memcg->css.cgroup;
+>> +	task_cgrp = mem_cgroup_from_task(p)->css.cgroup;
 > 
-> I've reverted the commit, and rlogin works now.
+> I just noticed since v2, task's cgroup is also printed. Then 2 issues here:
+> 
+> 1. this is better: task_cgrp = task_subsys_state(p, mem_cgroup_subsys_id);
 
-Could you please try a strace on both sides, with and without
-this patch applied?
+sorry, s/task_subsys_state/task_cgroup/
 
-This breakage may well be unintentional since I can't see rlogin
-producing more than 64K of data in urgent mode.
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> 2. getting cgroup from a task should be protected by task_lock or rcu_read_lock,
+>    so we can put the above statement inside rcu_read_lock below.
